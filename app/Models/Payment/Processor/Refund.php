@@ -17,6 +17,7 @@ use RZP\Models\Reversal;
 use RZP\Models\Currency;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
+use RZP\Models\Admin\Org;
 use RZP\Models\Card\Type;
 use RZP\Models\Settlement;
 use RZP\Constants\Timezone;
@@ -115,15 +116,37 @@ trait Refund
 
     public function isCapturedPaymentAndFeatureEnabled(Payment\Entity $payment)
     {
+        // old flow
+        $cardTransferRefundFeatureEnabled = ($this->merchant->isFeatureEnabled(Feature::CARD_TRANSFER_REFUND) === true);
+
+        // new flow
+        $disableInstantRefundsFeatureDisabled = ($this->merchant->isFeatureEnabled(Feature::DISABLE_INSTANT_REFUNDS) === false);
+
+        //
+        // Using razorx to ramp up instant refunds self serve
+        //
+        $variant = $this->app->razorx->getTreatment($payment->getMerchantId(),
+            Merchant\RazorxTreatment::INSTANT_REFUNDS_SELF_SERVE,
+            $this->mode
+        );
+
+        $featureCheck = ($variant === RefundConstants::RAZORX_VARIANT_ON) ? $disableInstantRefundsFeatureDisabled :
+            $cardTransferRefundFeatureEnabled;
+
         return (($payment->isCaptured() === true) and
-                ($this->merchant->isFeatureEnabled(Feature::CARD_TRANSFER_REFUND) === true));
+                ($featureCheck === true));
     }
 
     protected function isInvalidInstantRefundsRequest(Payment\Entity $payment, array $input)
     {
+        //
+        // Pricing is defined only for merchants of RZP Org - please refer calculator/refund.php : getPricingRule()
+        // before removing org checks
+        //
         return ((isset($input[RefundEntity::SPEED]) === true) and
                 (in_array($input[RefundEntity::SPEED], RefundSpeed::REFUND_INSTANT_SPEEDS) === true) and
-                ($this->isCapturedPaymentAndFeatureEnabled($payment) === false));
+                (($this->isCapturedPaymentAndFeatureEnabled($payment) === false) or
+                 ($payment->merchant->org->getId() !== Org\Entity::RAZORPAY_ORG_ID)));
     }
 
     protected function pushMetrics()
@@ -1430,7 +1453,24 @@ trait Refund
         $refund->setSpeedRequested(RefundSpeed::NORMAL);
         $refund->setSpeedDecisioned(RefundSpeed::NORMAL);
 
-        if ($this->merchant->isFeatureEnabled(Feature::CARD_TRANSFER_REFUND) === true)
+        // old flow
+        $cardTransferRefundFeatureEnabled = ($this->merchant->isFeatureEnabled(Feature::CARD_TRANSFER_REFUND) === true);
+
+        // new flow
+        $disableInstantRefundsFeatureDisabled = ($this->merchant->isFeatureEnabled(Feature::DISABLE_INSTANT_REFUNDS) === false);
+
+        //
+        // Using razorx to ramp up instant refunds self serve
+        //
+        $variant = $this->app->razorx->getTreatment($payment->getMerchantId(),
+            Merchant\RazorxTreatment::INSTANT_REFUNDS_SELF_SERVE,
+            $this->mode
+        );
+
+        $isInstantRefundsEnabled = ($variant === RefundConstants::RAZORX_VARIANT_ON) ? $disableInstantRefundsFeatureDisabled :
+            $cardTransferRefundFeatureEnabled;
+
+        if ($isInstantRefundsEnabled === true)
         {
             $refund->setSpeedRequested($this->merchant->getDefaultRefundSpeed());
 
@@ -1742,6 +1782,8 @@ trait Refund
 
     public function callRefundRetryFunctionOnScrooge($refund, $input)
     {
+        $dispatchDelayTime = $input[RefundConstants::DISPATCH_DELAY_TIME] ?? 0;
+
         $data = $this->getGatewayDataForScroogeRefund($refund, $refund->payment, $input);
 
         $data['mode'] = $this->mode;
@@ -1753,7 +1795,7 @@ trait Refund
 
         try
         {
-            ScroogeRefundRetry::dispatch($data);
+            ScroogeRefundRetry::dispatch($data)->delay($dispatchDelayTime);
         }
         catch (\Throwable $e)
         {
@@ -1770,17 +1812,23 @@ trait Refund
     {
         $payment = $refund->payment;
 
-        $verifyResponse = $this->verifyRefund($refund);
+        $refundedOnGateway = $this->mutex->acquireAndRelease(
+            $payment->getId(),
+            function() use ($data, $payment, $refund)
+            {
+                $verifyResponse = $this->verifyRefund($refund);
 
-        // true  if refunded
-        // false if not refunded
-        $refundedOnGateway = $verifyResponse[Payment\Gateway::SUCCESS];
+                // true  if refunded
+                // false if not refunded
+                $refundedOnGateway = $verifyResponse[Payment\Gateway::SUCCESS];
 
-        if ($refundedOnGateway === false)
-        {
-            $refundedOnGateway = $this->mutex->acquireAndRelease(
-                $payment->getId(),
-                function() use ($data, $payment, $refund)
+                if ($refundedOnGateway === true)
+                {
+                    $refund->setStatusProcessed();
+
+                    $this->setRefundReference1($verifyResponse);
+                }
+                else if ($refund->isStatusFailed() === true)
                 {
                     //
                     // Setting retry to true, will use this action later to decide weather
@@ -1790,17 +1838,15 @@ trait Refund
                     //
                     $refundResponse = $this->callRefundFunction($refund, $payment, $data, true);
 
+                    $this->setRefundReference1($refundResponse);
+
+                    $refund->incrementAttempts();
+
                     return $refundResponse[Payment\Gateway::SUCCESS];
-                });
+                }
 
-            $refund->incrementAttempts();
-        }
-        else
-        {
-            $refund->setStatusProcessed();
-        }
-
-        $this->setRefundReference1($verifyResponse);
+                return $verifyResponse[Payment\Gateway::SUCCESS];
+            });
 
         $refund->setGatewayRefunded($refundedOnGateway);
 
@@ -1881,7 +1927,7 @@ trait Refund
 
         if ($merchant->getRefundSource() === RefundSource::CREDITS)
         {
-            return (new Merchant\Balance\Core)->checkMerchantRefundCredits($merchant, -1 * $refund->getAmount(),
+            return (new Merchant\Balance\Core)->checkMerchantRefundCredits($merchant, -1 * $refund->getNetAmount(),
                                                             Transaction\Type::REFUND, $negativeBalanceEnabled);
         }
 
@@ -1889,6 +1935,8 @@ trait Refund
         {
             return $this->checkMerchantBalance($merchant, $refund, $type, $traceData, $negativeBalanceEnabled);
         }
+
+        return false;
     }
 
     protected function getGatewayDataForRefund(Payment\Refund\Entity $refund, Payment\Entity $payment)
@@ -1992,6 +2040,22 @@ trait Refund
     {
         $refundData = $refund->toArray();
 
+        $gatewayAcquirer = $payment->getGateway();
+
+        //
+        //
+        // This terminal was deleted due to Yesbank moratorium
+        // This particular terminal is not a direct settlement terminal
+        // Will be removing this check once the terminal is fixed.
+        //
+        // Slack thread for reference:
+        // https://razorpay.slack.com/archives/CA66F3ACS/p1584100168218900?thread_ts=1584090894.210900&cid=CA66F3ACS
+        //
+        if ($this->payment->getTerminalId() !== 'B2K2t8JD9z98vh')
+        {
+            $gatewayAcquirer = $payment->terminal->getGatewayAcquirer() ?? $payment->getGateway();
+        }
+
         $extraData = [
             'method'                    => $payment->getMethod(),
             'bank'                      => $payment->getBank(),
@@ -1999,7 +2063,7 @@ trait Refund
             'payment_base_amount'       => $payment->getBaseAmount(),
             'payment_created_at'        => $payment->getCreatedAt(),
             'payment_gateway_captured'  => $payment->getGatewayCaptured(),
-            'gateway_acquirer'          => $payment->terminal->getGatewayAcquirer() ?? $payment->getGateway(),
+            'gateway_acquirer'          => $gatewayAcquirer,
             'payment_authorized_at'     => $payment->getAuthorizeTimestamp(),
             'payment_service_route'     => $payment->getCpsRoute(),
         ];
@@ -2524,6 +2588,11 @@ trait Refund
         Payment\Entity $payment,
         bool $ignoreFeatureFlag = false): bool
     {
+        // proceeding only if decisioned speed is OPTIMUM
+        if ($refund->getSpeedRequested() !== Payment\Refund\Speed::OPTIMUM)
+        {
+            return false;
+        }
         //
         // Check if any card FTA already exists, not allowing card fta if any previous card fta exists
         //
@@ -2550,8 +2619,25 @@ trait Refund
                     (in_array($cardIssuer, FundTransfer\Mode::getSupportedIssuers(), true) === true) and
                     (IIN::isIinPrepaid($iin->getIin()) === false))
                 {
+                    // old flow
+                    $cardTransferRefundFeatureDisabled = ($this->merchant->isFeatureEnabled(Feature::CARD_TRANSFER_REFUND) === false);
+
+                    // new flow
+                    $disableInstantRefundsFeatureEnabled = ($this->merchant->isFeatureEnabled(Feature::DISABLE_INSTANT_REFUNDS) === true);
+
+                    //
+                    // Using razorx to ramp up instant refunds self serve
+                    //
+                    $variant = $this->app->razorx->getTreatment($payment->getMerchantId(),
+                        Merchant\RazorxTreatment::INSTANT_REFUNDS_SELF_SERVE,
+                        $this->mode
+                    );
+
+                    $featureCheck = ($variant === RefundConstants::RAZORX_VARIANT_ON) ? $disableInstantRefundsFeatureEnabled :
+                        $cardTransferRefundFeatureDisabled;
+
                     if (($ignoreFeatureFlag === false) and
-                        ($this->merchant->isFeatureEnabled(Feature::CARD_TRANSFER_REFUND) === false))
+                        ($featureCheck === true))
                     {
                         return false;
                     }
@@ -2596,8 +2682,25 @@ trait Refund
             (empty($payment->getVpa()) === false) and
             ($payment->isGatewayCaptured() === true))
         {
+            // old flow
+            $cardTransferRefundFeatureDisabled = ($this->merchant->isFeatureEnabled(Feature::CARD_TRANSFER_REFUND) === false);
+
+            // new flow
+            $disableInstantRefundsFeatureEnabled = ($this->merchant->isFeatureEnabled(Feature::DISABLE_INSTANT_REFUNDS) === true);
+
+            //
+            // Using razorx to ramp up instant refunds self serve
+            //
+            $variant = $this->app->razorx->getTreatment($payment->getMerchantId(),
+                Merchant\RazorxTreatment::INSTANT_REFUNDS_SELF_SERVE,
+                $this->mode
+            );
+
+            $featureCheck = ($variant === RefundConstants::RAZORX_VARIANT_ON) ? $disableInstantRefundsFeatureEnabled :
+                $cardTransferRefundFeatureDisabled;
+
             if (($ignoreFeatureFlag === false) and
-                ($this->merchant->isFeatureEnabled(Feature::CARD_TRANSFER_REFUND) === false))
+                ($featureCheck === true))
             {
                 return false;
             }
@@ -2640,8 +2743,25 @@ trait Refund
         if (($payment->getMethod() === Payment\Method::NETBANKING) and
             ($payment->isGatewayCaptured() === true))
         {
+            // old flow
+            $cardTransferRefundFeatureDisabled = ($this->merchant->isFeatureEnabled(Feature::CARD_TRANSFER_REFUND) === false);
+
+            // new flow
+            $disableInstantRefundsFeatureEnabled = ($this->merchant->isFeatureEnabled(Feature::DISABLE_INSTANT_REFUNDS) === true);
+
+            //
+            // Using razorx to ramp up instant refunds self serve
+            //
+            $variant = $this->app->razorx->getTreatment($payment->getMerchantId(),
+                Merchant\RazorxTreatment::INSTANT_REFUNDS_SELF_SERVE,
+                $this->mode
+            );
+
+            $featureCheck = ($variant === RefundConstants::RAZORX_VARIANT_ON) ? $disableInstantRefundsFeatureEnabled :
+                $cardTransferRefundFeatureDisabled;
+
             if (($ignoreFeatureFlag === false) and
-                ($this->merchant->isFeatureEnabled(Feature::CARD_TRANSFER_REFUND) === false))
+                ($featureCheck === true))
             {
                 return false;
             }
@@ -2688,6 +2808,22 @@ trait Refund
         }
         else if ($payment->isBankTransfer() === true)
         {
+            //
+            // Using razorx to ramp up instant refunds self serve
+            //
+            $variant = $this->app->razorx->getTreatment($payment->getMerchantId(),
+                Merchant\RazorxTreatment::ENABLE_BANK_TRANSFER_REFUNDS,
+                $this->mode
+            );
+
+            if (($variant !== RefundConstants::RAZORX_VARIANT_ON) and
+                ((empty($this->refund->getAttempts())) === true))
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_REFUND_NOT_SUPPORTED,
+                    $input);
+            }
+
             $paymentId = $payment->getId();
 
             // https://github.com/razorpay/api/pull/9612/files#diff-45d61a7b834fae07d62a86dd461e5940R1697
@@ -2717,6 +2853,14 @@ trait Refund
 
             $input[BankAccount\Entity::IFSC_CODE]          = $token->getIfsc();
             $input[BankAccount\Entity::ACCOUNT_NUMBER]     = $token->getAccountNumber();
+            $input[BankAccount\Entity::BENEFICIARY_NAME]   = $customerName;
+        }
+        else if ($this->isPaymentUpiTransferAndUpiTransferRefund($payment))
+        {
+            $customerName = $this->getFormattedCustomerNameFromPayment($payment);
+
+            $input[BankAccount\Entity::IFSC_CODE]          = $payment->upiTransfer->getPayerIfsc();
+            $input[BankAccount\Entity::ACCOUNT_NUMBER]     = $payment->upiTransfer->getPayerAccount();
             $input[BankAccount\Entity::BENEFICIARY_NAME]   = $customerName;
         }
 
@@ -2752,12 +2896,6 @@ trait Refund
         if (isset($data['vpa']) === true)
         {
             $input = $data['vpa'];
-        }
-        else if ($this->isPaymentUpiTransferAndUpiTransferRefund($payment))
-        {
-            $input = [
-                VPA\Entity::ADDRESS => $payment->getVpa(),
-            ];
         }
 
         return $input;
@@ -2994,10 +3132,10 @@ trait Refund
     {
         try
         {
-            return (new Merchant\Balance\Core)->checkMerchantBalance($merchant, -1 * $refund->getAmount(),
+            return (new Merchant\Balance\Core)->checkMerchantBalance($merchant, -1 * $refund->getNetAmount(),
                                                         Transaction\Type::REFUND, $negativeBalanceEnabled);
         }
-        catch (\Exception $e)
+        catch (\Throwable $e)
         {
             if ($type === 'refund')
             {

@@ -6,7 +6,6 @@ use RZP\Models\Base;
 use RZP\Diag\EventCode;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
-
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\AutoKyc;
@@ -41,9 +40,10 @@ class Core extends Base\Core
      * @param array           $params
      * @param Entity|null     $inputDocument
      *
+     * @return array
      * @throws BadRequestException
      */
-    public function storeInMerchantDocument(Merchant\Entity $merchant, array $params, Entity $inputDocument = null)
+    public function storeInMerchantDocument(Merchant\Entity $merchant, array $params, Entity $inputDocument = null) : array
     {
         $this->trace->info(TraceCode::DOCUMENT_CREATE_REQUEST, ['input' => $params]);
 
@@ -56,10 +56,13 @@ class Core extends Base\Core
                 ErrorCode::BAD_REQUEST_NOT_SUPPORTED_FEATURE);
         }
 
-        foreach ($params as $documentType => $fileStoreId)
+        $uploadedDocuments = [];
+
+        foreach ($params as $documentType => $fileAttributes)
         {
             $input = [
-                Entity::FILE_STORE_ID => $fileStoreId,
+                Entity::FILE_STORE_ID => $fileAttributes[Constants::FILE_ID],
+                Entity::SOURCE        => $fileAttributes[Constants::SOURCE],
                 Entity::DOCUMENT_TYPE => $documentType,
             ];
 
@@ -72,7 +75,11 @@ class Core extends Base\Core
             $document->setEntityType();
 
             $this->repo->saveOrFail($document);
+
+            $uploadedDocuments[$documentType] = $document;
         }
+
+        return $uploadedDocuments;
     }
 
     /**
@@ -83,12 +90,17 @@ class Core extends Base\Core
      * @param bool            $validateLock
      *
      * @return array
+     * @throws BadRequestException
+     * @throws \RZP\Exception\BadRequestValidationFailureException
+     * @throws \RZP\Exception\LogicException
      */
     public function uploadActivationFile(Merchant\Entity $merchant, array $input, bool $validateLock = true)
     {
-        $merchantDetailCore = new Detail\Core();
+        (new Validator)->validateInput('uploadDocument', $input);
 
         $this->trace->info(TraceCode::DOCUMENT_CREATE_REQUEST, ['input' => $input]);
+
+        $merchantDetailCore = new Detail\Core();
 
         $merchantDetails = $merchantDetailCore->getMerchantDetails($merchant);
 
@@ -97,23 +109,23 @@ class Core extends Base\Core
             $merchantDetails->getValidator()->validateIsNotLocked();
         }
 
-        $document = (new Entity)->generateId()->build($input);
+        $documentType = $input[Entity::DOCUMENT_TYPE];
+
+        $param = [
+            $documentType => $input[Entity::FILE]
+        ];
+
+        $document = (new Entity)->generateId();
 
         $document->merchant()->associate($merchant);
 
-        $document->setEntityType();
+        $fileAttributes = (new Detail\Service())->storeActivationFile($document, $param);
 
-        $this->repo->transaction(function() use ($document, $merchant, $input, $merchantDetails)
-        {
-            $this->repo->saveOrFail($document);
+        $this->repo->transaction(function() use ($documentType, $merchant, $merchantDetails, $fileAttributes, $document) {
 
-            $param = [
-                $input[Entity::DOCUMENT_TYPE] => $input[Entity::FILE]
-            ];
+            $uploadedDocuments = $this->storeInMerchantDocument($merchant, $fileAttributes, $document);
 
-            $param = (new Detail\Service())->storeActivationFile($document, $param);
-
-            $this->storeInMerchantDocument($merchant, $param, $document);
+            $document = $uploadedDocuments[$documentType];
 
             $this->handleAndPerformOcrForUnRegisteredBusinessType(
                 $merchantDetails,
@@ -132,6 +144,8 @@ class Core extends Base\Core
      * @param string $merchantId
      *
      * @return array
+     * @throws \RZP\Exception\BadRequestValidationFailureException
+     * @throws \RZP\Exception\LogicException
      */
     public function fetchActivationFilesFromDocument(string $merchantId): array
     {
@@ -143,13 +157,14 @@ class Core extends Base\Core
 
         foreach ($documentsResponse as $documentType => &$documentMetaData)
         {
-            foreach($documentMetaData as &$document)
+            foreach ($documentMetaData as &$document)
             {
-                $signedUrl = $detailService->getSignedUrl($document[Entity::FILE_STORE_ID], $merchantId);
+                $signedUrl = $detailService->getSignedUrl($document[Entity::FILE_STORE_ID], $document[Entity::MERCHANT_ID]);
 
                 $document[Entity::SIGNED_URL] = $signedUrl;
             }
         }
+
         return $documentsResponse;
     }
 
@@ -195,7 +210,8 @@ class Core extends Base\Core
         {
             $documentMetaData = [
                 Entity::ID            => $document->getId(),
-                Entity::FILE_STORE_ID => $document->getFileStoreId()
+                Entity::FILE_STORE_ID => $document->getFileStoreId(),
+                Entity::MERCHANT_ID   => $document->getMerchantId(),
             ];
 
             if (isset($documentsResponse[$document->getDocumentType()]) === false)
@@ -222,18 +238,10 @@ class Core extends Base\Core
             return;
         }
 
-        $ocrResponse = $this->performOcr($document, $merchantDetails);
+        $response = $this->verifyPOA($document, $merchantDetails);
 
-        $ocrDetails = $ocrResponse != null ? $ocrResponse->getResponseData() : [];
-
-        (new AutoKyc\Events())->sendServiceVerifierEvents($ocrDetails);
-
-        $pOAVerifier = new POAVerifier($merchantDetails->getPromoterPanName(),
-                                       $ocrDetails);
-
-        $verificationData = $pOAVerifier->verify();
-
-        $document->setOcrVerify($verificationData[Detail\Constants::DOCUMENT_VERIFICATION_STATUS]);
+        $ocrDetails       = $response[Detail\Constants::OCR_RESPONSE] ?? [];
+        $verificationData = $response[Detail\Constants::VERIFICATION_RESULT] ?? [];
 
         $this->trace->count(Detail\Metric::MERCHANT_DOCUMENT_OCR_PERFORMED_TOTAL,
                             [
@@ -243,37 +251,44 @@ class Core extends Base\Core
         $this->pushEventsForOCRVerification($merchant,
                                             $ocrDetails,
                                             $document,
-                                            $verificationData[Detail\Constants::OCR_MATCHING_PERCENTAGE_WITH_PAN_NAME],
+                                            $verificationData,
                                             $merchantDetails->getPromoterPanName());
     }
 
     /**
      * @param Entity        $document
-     *
      * @param Detail\Entity $merchantDetails
      *
-     * @return null|AutoKyc\Response
+     * @return array
+     * @throws \RZP\Exception\BadRequestValidationFailureException
+     * @throws \RZP\Exception\LogicException
      */
-    protected function performOcr(Entity $document, Merchant\Detail\Entity $merchantDetails)
+    protected function verifyPOA(Entity $document, Merchant\Detail\Entity $merchantDetails) : array
     {
-        $signedUrl = (new FileStoreCore)->getSignedUrl(
+        $signedUrl = (new Detail\Service())->getSignedUrl(
             $document->getFileStoreId(),
             $document->getMerchantId()
         );
 
         $input = [
-            DetailConstant::SIGNED_URL                  => $signedUrl,
-            Merchant\Detail\Constants::ENTITY_ID        => $document->getMerchantId(),
-            Merchant\Detail\Constants::DOCUMENT_TYPE    => $this->mapToKycDocType($document->getDocumentType()),
-            Merchant\Detail\Constants::DOCUMENT_FILE_ID => $document->getFileStoreId(),
-            Merchant\Detail\Constants::KYC_ID           => $merchantDetails->getKycId(),
+            DetailConstant::SIGNED_URL        => $signedUrl,
+            DetailConstant::DOCUMENT_TYPE     => $this->mapToKycDocType($document->getDocumentType()),
+            DetailConstant::DOCUMENT_FILE_ID  => $document->getFileStoreId(),
+            DetailConstant::PROMOTER_PAN_NAME => $merchantDetails->getPromoterPanName(),
+            DetailConstant::DOCUMENT_SOURCE   => $document->getFileStoreSource(),
         ];
+
+        $response = [];
+
+        $verificationStatus = OcrVerificationStatus::FAILED;
 
         try
         {
-            $processor = ProcessorFactoryImpl::getPOAProcessor($input);
+            $response = (new AutoKyc\Core())->verifyPOA($merchantDetails, $input);
 
-            return $processor->process();
+            $verificationData = $response[Detail\Constants::VERIFICATION_RESULT] ?? [];
+
+            $verificationStatus = $verificationData[Detail\Constants::DOCUMENT_VERIFICATION_STATUS] ?? OcrVerificationStatus::FAILED;
         }
         catch (\Throwable $exception)
         {
@@ -285,9 +300,11 @@ class Core extends Base\Core
                                          null,
                                          TraceCode::MERCHANT_POA_VERIFICATION_FAILED,
                                          $data);
-
-            return null;
         }
+
+        $document->setOcrVerify($verificationStatus);
+
+        return $response;
     }
 
     protected function mapToKycDocType(string $document_type): ?string
@@ -328,14 +345,15 @@ class Core extends Base\Core
     protected function pushEventsForOCRVerification(Merchant\Entity $merchant,
                                                     array $ocrDetails,
                                                     Entity $document,
-                                                    $ocrMatchingPercentage = 0,
+                                                    $verificationData,
                                                     $promoterPanName = null)
     {
         $eventProperties = [
             Entity::DOCUMENT_TYPE              => $document->getDocumentType(),
             Constants::API_CALL_SUCCESSFUL     => $ocrDetails[Constants::SUCCESS] ?? false,
             Constants::VERIFIED                => ($document->getOcrVerify() === OcrVerificationStatus::VERIFIED),
-            Constants::OCR_MATCHING_PERCENTAGE => $ocrMatchingPercentage,
+            Constants::OCR_MATCHING_PERCENTAGE => $verificationData[Detail\Constants::OCR_MATCHING_PERCENTAGE_WITH_PAN_NAME] ?? 0,
+            Constants::OCR_MATCH_TYPE          => $verificationData[Detail\Constants::POA_FUZZY_MATCH_TYPE] ?? null,
             Constants::OCR_MATCHING_THRESHOLD  => OcrVerificationStatus::OCR_VERIFICATION_THRESHOLD,
             Constants::OCR_NAME                => $ocrDetails[Constants::NAME] ?? null,
             Detail\Entity::PROMOTER_PAN_NAME   => $promoterPanName,

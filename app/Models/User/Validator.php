@@ -37,6 +37,7 @@ class Validator extends Base\Validator
         Entity::CAPTCHA_DISABLE                 => 'sometimes|string',
         Entity::SETTINGS                        => 'nullable|associative_array',
         Merchant\Constants::PARTNER_INTENT      => 'sometimes|boolean',
+        Entity::APP                             => 'sometimes|string',
     ];
 
     protected static $editRules = [
@@ -65,12 +66,16 @@ class Validator extends Base\Validator
     protected static $loginRules = [
         Entity::EMAIL                 => 'required|email',
         Entity::PASSWORD              => 'required|between:6,50',
-        Entity::OTP                   => 'sometimes|filled',
+        Entity::CAPTCHA               => 'required_without:captcha_disable',
+        Entity::CAPTCHA_DISABLE       => 'sometimes|string',
+        Entity::APP                   => 'sometimes|string',
+    ];
+
+    protected static $verifyUserSecondFactorRules = [
+        Entity::OTP                   => 'required|string|between:4,6',
     ];
 
     protected static $setup2faMobileRules = [
-        Entity::EMAIL                 => 'required|email',
-        Entity::PASSWORD              => 'required|between:6,50',
         Entity::CONTACT_MOBILE        => 'required|max:15',
     ];
 
@@ -113,7 +118,8 @@ class Validator extends Base\Validator
     ];
 
     protected static $editContactMobileRules = [
-        Entity::CONTACT_MOBILE => 'required|max:15',
+        Entity::OTP_AUTH_TOKEN => 'sometimes|filled',
+        Entity::CONTACT_MOBILE => 'required|numeric|digits_between:8,11',
         Entity::OTP            => 'sometimes|filled|min:4',
     ];
 
@@ -122,13 +128,21 @@ class Validator extends Base\Validator
         Entity::CONTACT_MOBILE => 'required|numeric|digits_between:8,11',
     ];
 
+    protected static $bulkUserMappingRules = [
+        Entity::USER_ID               => 'required|alpha_num|size:14',
+        Entity::MERCHANT_ID           => 'required|alpha_num|size:14',
+        Merchant\Entity::PRODUCT      => 'required|in:primary,banking',
+        Entity::ROLE                  => 'required|string|custom',
+        Entity::ACTION                => 'required|custom',
+    ];
+
     protected static $actionValidators = [
         'product_role'
     ];
 
     protected static $userAccountLockUnlockRules = [
-        Entity::USER_ID         =>  'required|alpha_num|size:14',
-        Entity::ACTION          =>  'required|string|filled|in:lock,unlock',
+        Entity::USER_ID => 'required|alpha_num|size:14',
+        Entity::ACTION  => 'required|string|filled|in:lock,unlock',
     ];
 
     protected static $createOtpRules = [
@@ -137,16 +151,18 @@ class Validator extends Base\Validator
         Entity::ACTION        => 'required|filled|in:'
                                  . 'verify_contact,'
                                  . 'create_payout,'
+                                 . 'create_payout_link,'
                                  . 'create_payout_batch,'
                                  . 'approve_payout,'
-                                 . 'approve_payout_bulk,',
+                                 . 'approve_payout_bulk,'
+                                 . 'user_auth',
         Entity::TOKEN         => 'sometimes|filled',
 
         // Applicable to select actions: Need to send these payloads for raven's sms content.
-        'amount'              => 'required_if:action,create_payout,approve_payout|integer|min:100',
-        'account_number'      => 'required_if:action,create_payout,create_payout_batch,approve_payout,approve_payout_bulk|alpha_num|between:5,22',
+        'amount'              => 'required_if:action,create_payout,approve_payout,create_payout_link|integer|min:100',
+        'account_number'      => 'required_if:action,create_payout,create_payout_batch,approve_payout,approve_payout_bulk,create_payout_link|alpha_num|between:5,22',
         'fund_account_id'     => 'required_if:action,create_payout|public_id|size:17',
-        'purpose'             => 'required_if:action,create_payout|string|max:30|alpha_dash_space',
+        'purpose'             => 'required_if:action,create_payout,create_payout_link|string|max:30|alpha_dash_space',
         'payout_id'           => 'required_if:action,approve_payout|public_id|size:19',
         'payout_total_amount' => 'required_if:action,approve_payout_bulk|integer|min:100',
         'payout_count'        => 'required_if:action,approve_payout_bulk|integer|min:1',
@@ -175,8 +191,23 @@ class Validator extends Base\Validator
         'captcha'
     ];
 
+    protected static $loginValidators = [
+        'captcha'
+    ];
+
     protected static $changePasswordValidators = [
         'old_password'
+    ];
+
+    protected static $verifyUserThroughEmailRules = [
+        Entity::OTP             => 'required|filled|min:4',
+        Entity::TOKEN           => 'required|unsigned_id',
+    ];
+
+    protected static $editContactMobileForBankingRules = [
+        Entity::OTP_AUTH_TOKEN => 'required|filled',
+        Entity::CONTACT_MOBILE => 'required|max:15',
+        Entity::OTP            => 'sometimes|filled|min:4',
     ];
 
     /**
@@ -284,6 +315,11 @@ class Validator extends Base\Validator
 
             $noCaptchaSecret = config('app.signup.nocaptcha_secret');
 
+            if ((empty($input[Entity::APP]) === false) and ($input[Entity::APP] === 'android'))
+            {
+                $noCaptchaSecret = config('app.signup.android_captcha_secret');
+            }
+
             $input = [
                 'secret'   => $noCaptchaSecret,
                 'response' => $captchaResponse,
@@ -302,7 +338,13 @@ class Validator extends Base\Validator
             {
                 $app['diag']->trackOnboardingEvent(EventCode::SIGNUP_CAPTCH_VERIFICATION_FAILED, null, null, $emailData);
 
-                throw new BadRequestException(ErrorCode::BAD_REQUEST_CAPTCHA_FAILED);
+                throw new BadRequestException(
+                    ErrorCode::BAD_REQUEST_CAPTCHA_FAILED,
+                    null,
+                    [
+                        'output_from_google'        => (array)$output,
+                    ]
+                );
             }
         }
 
@@ -333,6 +375,12 @@ class Validator extends Base\Validator
         $action = $input[Entity::ACTION];
         // Medium is optional input, for validation logic here assigns 'both' as the value.
         $medium = $input[Entity::MEDIUM] ?? 'both';
+
+        if (($action === 'user_auth') and
+            ($medium !== 'email'))
+        {
+            throw new BadRequestValidationFailureException('Otp must be sent to registered email');
+        }
 
         if (($action === 'verify_contact') and
             ($medium !== 'sms'))
@@ -384,5 +432,23 @@ class Validator extends Base\Validator
         }
 
         throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_USER_DOES_NOT_BELONG_TO_MERCHANT);
+    }
+
+    public function validatePasswordIsNotSameAsLastThree(string $newPassword)
+    {
+        $oldPassword = $this->entity->getAttribute(Entity::PASSWORD);
+        $oldPassword1 = $this->entity->getAttribute(Entity::OLD_PASSWORD_1);
+        $oldPassword2 = $this->entity->getAttribute(Entity::OLD_PASSWORD_2);
+
+        assertTrue($oldPassword);
+
+        foreach (array_filter([$oldPassword, $oldPassword1, $oldPassword2]) as $old)
+        {
+            if (Hash::check($newPassword, $old) === true)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_NEW_PASSWORD_SAME_AS_OLD_PASSWORD);
+            }
+        }
     }
 }

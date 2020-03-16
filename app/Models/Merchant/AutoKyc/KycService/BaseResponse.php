@@ -35,7 +35,12 @@ class BaseResponse implements Response
      */
     protected $statusCode;
 
-    public function __construct(Requests_Response $response, array $responseMetaData = [])
+    /**
+     * @var array
+     */
+    protected $requestInput;
+
+    public function __construct(Requests_Response $response, array $responseMetaData = [], array $input = [])
     {
         $this->response = $response;
 
@@ -44,6 +49,8 @@ class BaseResponse implements Response
         $this->statusCode = $response !== null ? $response->status_code : null;
 
         $this->responseBody = $this->getResponseBody();
+
+        $this->requestInput = $input;
 
         $this->validateResponse();
     }

@@ -119,6 +119,9 @@ abstract class Base extends BaseModel\Core
     /**
      * Calculate by pricing plan according to pricing rule
      *
+     * @param Pricing\Plan $pricing
+     *
+     * @return array
      */
 
     public function calculate(Pricing\Plan $pricing): array
@@ -219,6 +222,9 @@ abstract class Base extends BaseModel\Core
     /**
      * Filter Pricing rule
      *
+     * @param Pricing\Plan $pricing
+     *
+     * @throws Exception\LogicException
      */
     public function getRelevantPricingRule(Pricing\Plan $pricing)
     {

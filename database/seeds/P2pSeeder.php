@@ -70,7 +70,7 @@ class P2pSeeder extends Seeder
                 'id'                    => Constants::CUSTOMER_1_DEVICE_1,
                 'customer_id'           => Constants::RZP_LOCAL_CUSTOMER_1,
                 'merchant_id'           => Constants::TEST_MERCHANT,
-                'contact'               => '+919988771111',
+                'contact'               => '919988771111',
                 'auth_token'            => Constants::CUSTOMER_1_DEVICE_1
             ]);
 
@@ -79,7 +79,7 @@ class P2pSeeder extends Seeder
                 'id'                    => Constants::CUSTOMER_2_DEVICE_1,
                 'customer_id'           => Constants::RZP_LOCAL_CUSTOMER_2,
                 'merchant_id'           => Constants::TEST_MERCHANT,
-                'contact'               => '+919988772222',
+                'contact'               => '919988772222',
                 'auth_token'            => Constants::CUSTOMER_2_DEVICE_1
             ]);
     }
@@ -220,7 +220,11 @@ class P2pSeeder extends Seeder
                 'id'                    => Constants::CUSTOMER_1_BANK_ACCOUNT_1_SHARP,
                 'device_id'             => Constants::CUSTOMER_1_DEVICE_1,
                 'handle'                => Constants::RAZOR_SHARP,
-                'bank_id'               => Constants::ARZP
+                'bank_id'               => Constants::ARZP,
+                'gateway_data'          => [
+                    'id'                => Constants::CUSTOMER_1_BANK_ACCOUNT_1_SHARP,
+                    'sharpId'           => Constants::CUSTOMER_1_BANK_ACCOUNT_1_SHARP,
+                ],
             ]);
 
         factory(P2p\BankAccount\Entity::class)->create(
@@ -228,7 +232,11 @@ class P2pSeeder extends Seeder
                 'id'                    => Constants::CUSTOMER_2_BANK_ACCOUNT_1_SHARP,
                 'device_id'             => Constants::CUSTOMER_2_DEVICE_1,
                 'handle'                => Constants::RAZOR_SHARP,
-                'bank_id'               => Constants::BRZP
+                'bank_id'               => Constants::BRZP,
+                'gateway_data'          => [
+                    'id'                => Constants::CUSTOMER_2_BANK_ACCOUNT_1_SHARP,
+                    'sharpId'           => Constants::CUSTOMER_2_BANK_ACCOUNT_1_SHARP,
+                ]
             ]);
 
         factory(P2p\BankAccount\Entity::class)->create(

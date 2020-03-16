@@ -69,8 +69,8 @@ class HitachiOnboardTest extends TestCase
         $merchantDetail[Detail\Entity::BUSINESS_OPERATION_ADDRESS] =  null;
         $merchantDetail[Detail\Entity::BUSINESS_OPERATION_STATE]   =  "dasf";
         $merchantDetail[Detail\Entity::BUSINESS_OPERATION_PIN]     =  "123";
-        $merchantDetail[Detail\Entity::BUSINESS_DBA]               =  null;
-        $merchantDetail[Detail\Entity::BUSINESS_NAME]              =  null;
+        $merchantDetail[Detail\Entity::BUSINESS_DBA]               =  "abc";
+        $merchantDetail[Detail\Entity::BUSINESS_NAME]              =  "xyz";
         $merchantDetail[Detail\Entity::BUSINESS_OPERATION_CITY]    =  null;
         $merchantDetail->save();
 

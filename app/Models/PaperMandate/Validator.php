@@ -6,12 +6,15 @@ use Carbon\Carbon;
 
 use RZP\Base;
 use RZP\Models\Customer;
+use RZP\Models\BankAccount;
 use RZP\Exception\BadRequestValidationFailureException;
 
 class Validator extends Base\Validator
 {
+    const MAX_AMOUNT_LIMIT = 1000000000;
+
     protected static $createRules = [
-        Entity::AMOUNT                   => 'filled|mysql_unsigned_int|min:500|max:1000000000|custom',
+        Entity::AMOUNT                   => 'filled|mysql_unsigned_int|min:500|max:'. self::MAX_AMOUNT_LIMIT .'|custom',
         Entity::TYPE                     => 'filled|string|custom',
         Entity::DEBIT_TYPE               => 'filled|string|custom',
         Entity::TERMINAL_ID              => 'filled|string',
@@ -23,7 +26,12 @@ class Validator extends Base\Validator
         Entity::END_AT                   => 'sometimes|epoch|nullable',
         Entity::SECONDARY_ACCOUNT_HOLDER => 'sometimes|string|max:22|nullable',
         Entity::TERTIARY_ACCOUNT_HOLDER  => 'sometimes|string|max:22|nullable',
-        Entity::GENERATE_FORM            => 'sometimes|bool',
+    ];
+
+    protected static $bankAccountRules = [
+        BankAccount\Entity::BENEFICIARY_NAME   => 'required|between:4,32|string',
+        BankAccount\Entity::BENEFICIARY_EMAIL  => 'sometimes|email|max:30',
+        BankAccount\Entity::BENEFICIARY_MOBILE => 'sometimes|numeric|digits_between:10,12',
     ];
 
     protected static $createValidators = [
@@ -183,5 +191,16 @@ class Validator extends Base\Validator
                 'payment can\'t be created without nach form submission'
             );
         }
+    }
+
+    public function validateBankAccount(BankAccount\Entity $bankAccount)
+    {
+        $input = [
+            BankAccount\Entity::BENEFICIARY_NAME   => $bankAccount->getBeneficiaryName(),
+            BankAccount\Entity::BENEFICIARY_EMAIL  => $bankAccount->getBeneficiaryEmail(),
+            BankAccount\Entity::BENEFICIARY_MOBILE => $bankAccount->getBeneficiaryMobile(),
+        ];
+
+        $this->validateInput('bank_account', $input);
     }
 }

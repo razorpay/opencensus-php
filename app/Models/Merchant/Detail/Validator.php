@@ -10,6 +10,7 @@ use Razorpay\IFSC\IFSC;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Error\PublicErrorDescription;
+use RZP\Models\Merchant\Document\Type;
 use RZP\Models\Merchant\Detail\ActivationFlow\Factory;
 
 class Validator extends Base\Validator
@@ -40,6 +41,7 @@ class Validator extends Base\Validator
     const INVALID_BUSINESS_SUBCATEGORY_FOR_CATEGORY     = 'Invalid business subcategory for business category';
     const BUSINESS_CATEGORY_MISSING_FOR_SUBCATEGORY     = 'Business category missing for business subcategory';
     const INVALID_REASON_TYPE                           = 'Invalid reason type';
+    const BLACKLISTED_BANK_ACCOUNT_NUMBER               = 'Accounts from this Bank are temporarily not supported. Please contact our support for help.';
     const ADDITIONAL_FIELD_NOT_REQUIRED                 = 'Not required additional field ';
 
     // Constant representing operations for which Validation rules exists
@@ -119,96 +121,100 @@ class Validator extends Base\Validator
         Entity::LOCKED                          => 'sometimes|boolean',
         Entity::COMMENT                         => 'sometimes|max:255',
         Entity::SUBMIT                          => 'sometimes',
-        Entity::ADDITIONAL_WEBSITES             => 'sometimes|array|max:5',
-        Entity::ADDITIONAL_WEBSITES. '.*'       => 'required_with:'. Entity::ADDITIONAL_WEBSITES . '|string|url',
+        Entity::ADDITIONAL_WEBSITES             => 'sometimes|array|max:9',
+        Entity::ADDITIONAL_WEBSITES. '.*'       => 'required_with:'. Entity::ADDITIONAL_WEBSITES . '|string|active_url',
     ];
 
     protected static $editRules = [
-        Entity::CONTACT_NAME                    => 'sometimes|alpha_space|max:255',
-        Entity::CONTACT_EMAIL                   => 'sometimes|email|max:255',
-        Entity::CONTACT_MOBILE                  => 'sometimes|numeric|digits_between:8,11',
-        Entity::CONTACT_LANDLINE                => 'sometimes|numeric|digits_between:8,11',
-        Entity::BUSINESS_TYPE                   => 'sometimes|numeric|digits_between:1,10',
-        Entity::BUSINESS_NAME                   => 'filled|max:255',
-        Entity::BUSINESS_DESCRIPTION            => 'filled|max:255',
-        Entity::BUSINESS_DBA                    => 'sometimes|max:255',
-        Entity::BUSINESS_WEBSITE                => 'sometimes|active_url|max:255|nullable',
-        Entity::ADDITIONAL_WEBSITE              => 'sometimes|active_url|max:255|nullable',
-        Entity::BUSINESS_INTERNATIONAL          => 'sometimes|in:0,1',
-        Entity::BUSINESS_PAYMENTDETAILS         => 'sometimes|max:2000',
-        Entity::BUSINESS_MODEL                  => 'sometimes|max:255',
-        Entity::BUSINESS_REGISTERED_ADDRESS     => 'sometimes|max:255',
-        Entity::BUSINESS_REGISTERED_ADDRESS_L2  => 'sometimes|max:255',
-        Entity::BUSINESS_REGISTERED_STATE       => 'sometimes|alpha_space|max:255',
-        Entity::BUSINESS_REGISTERED_COUNTRY     => 'sometimes|alpha_space|max:255',
-        Entity::BUSINESS_REGISTERED_CITY        => 'sometimes|alpha_space|max:255',
-        Entity::BUSINESS_REGISTERED_DISTRICT    => 'sometimes|alpha_space|max:255',
-        Entity::BUSINESS_REGISTERED_PIN         => 'sometimes|size:6',
-        Entity::BUSINESS_OPERATION_ADDRESS      => 'sometimes|max:255',
-        Entity::BUSINESS_OPERATION_ADDRESS_L2   => 'sometimes|max:255',
-        Entity::BUSINESS_OPERATION_STATE        => 'sometimes|alpha_space|max:255',
-        Entity::BUSINESS_OPERATION_COUNTRY      => 'sometimes|alpha_space|max:255',
-        Entity::BUSINESS_OPERATION_CITY         => 'sometimes|alpha_space|max:255',
-        Entity::BUSINESS_OPERATION_DISTRICT     => 'sometimes|alpha_space|max:255',
-        Entity::BUSINESS_OPERATION_PIN          => 'sometimes|size:6',
-        Entity::BUSINESS_DOE                    => 'sometimes|date_format:"Y-m-d"|before:"today"',
-        Entity::GSTIN                           => 'sometimes|string|size:15|nullable',
-        Entity::P_GSTIN                         => 'sometimes|string|size:15',
-        Entity::COMPANY_CIN                     => 'sometimes|alpha_num|max:21',
-        Entity::COMPANY_PAN                     => 'sometimes|pan',
-        Entity::COMPANY_PAN_NAME                => 'sometimes|max:255',
-        Entity::BUSINESS_CATEGORY               => 'sometimes|max:255|custom',
-        Entity::BUSINESS_SUBCATEGORY            => 'sometimes|max:255|custom',
-        Entity::TRANSACTION_VOLUME              => 'sometimes|numeric|digits_between:1,4',
-        Entity::TRANSACTION_VALUE               => 'filled|numeric|min:0|max:10000000',
-        Entity::PROMOTER_PAN                    => 'sometimes|pan',
-        Entity::PROMOTER_PAN_NAME               => 'sometimes|max:255',
-        Entity::BANK_NAME                       => 'sometimes|alpha_num|between:5,20',
-        Entity::BANK_ACCOUNT_NUMBER             => 'sometimes|regex:/^[a-zA-Z0-9-]+$/|between:5,22|custom',
-        Entity::BANK_ACCOUNT_NAME               => 'sometimes|string|min:4|max:120',
-        Entity::BANK_ACCOUNT_TYPE               => 'sometimes|alpha_space|max:20',
-        Entity::BANK_BRANCH                     => 'sometimes|max:255',
-        Entity::BANK_BRANCH_IFSC                => 'sometimes|alpha_num|max:11|custom',
-        Entity::BANK_BENEFICIARY_ADDRESS1       => 'sometimes|max:30',
-        Entity::BANK_BENEFICIARY_ADDRESS2       => 'sometimes|max:30',
-        Entity::BANK_BENEFICIARY_ADDRESS3       => 'sometimes|max:30',
-        Entity::BANK_BENEFICIARY_CITY           => 'sometimes|max:30',
-        Entity::BANK_BENEFICIARY_STATE          => 'sometimes|max:2',
-        Entity::BANK_BENEFICIARY_PIN            => 'sometimes|max:15',
-        Entity::WEBSITE_ABOUT                   => 'sometimes|max:255|url',
-        Entity::WEBSITE_CONTACT                 => 'sometimes|max:255|url',
-        Entity::WEBSITE_PRIVACY                 => 'sometimes|max:255|url',
-        Entity::WEBSITE_TERMS                   => 'sometimes|max:255|url',
-        Entity::WEBSITE_REFUND                  => 'sometimes|max:255|url',
-        Entity::WEBSITE_PRICING                 => 'sometimes|max:255|url',
-        Entity::WEBSITE_LOGIN                   => 'sometimes|max:255|url',
-        Entity::BUSINESS_PROOF_URL              => 'sometimes|file|mimes:pdf,jpeg,jpg,png,zip',
-        Entity::BUSINESS_OPERATION_PROOF_URL    => 'sometimes|file|mimes:pdf,jpeg,jpg,png,zip',
-        Entity::BUSINESS_PAN_URL                => 'sometimes|file|mimes:pdf,jpeg,jpg,png,zip',
-        Entity::ADDRESS_PROOF_URL               => 'sometimes|file|mimes:pdf,jpeg,jpg,png,zip',
-        Entity::PROMOTER_PROOF_URL              => 'sometimes|file|mimes:pdf,jpeg,jpg,png,zip',
-        Entity::PROMOTER_PAN_URL                => 'sometimes|file|mimes:pdf,jpeg,jpg,png,zip',
-        Entity::PROMOTER_ADDRESS_URL            => 'sometimes|file|mimes:pdf,jpeg,jpg,png,zip',
-        Entity::FORM_12A_URL                    => 'sometimes|file|mimes:pdf,jpeg,jpg,png,zip|custom',
-        Entity::FORM_80G_URL                    => 'sometimes|file|mimes:pdf,jpeg,jpg,png,zip|custom',
-        Entity::TRANSACTION_REPORT_EMAIL        => 'sometimes|custom',
-        Entity::ROLE                            => 'sometimes|max:255',
-        Entity::DEPARTMENT                      => 'sometimes|max:255',
-        Entity::LOCKED                          => 'sometimes|boolean',
-        Entity::COMMENT                         => 'sometimes|max:255',
-        Entity::SUBMIT                          => 'sometimes|boolean',
-        Entity::ACTIVATION_STATUS               => 'sometimes|max:30',
-        Entity::CLARIFICATION_MODE              => 'sometimes|max:15',
-        Entity::ISSUE_FIELDS                    => 'sometimes|string',
-        Entity::ISSUE_FIELDS_REASON             => 'sometimes|string',
-        Entity::INTERNAL_NOTES                  => 'sometimes|string',
-        Entity::INTERNATIONAL_ACTIVATION_FLOW   => 'sometimes|custom',
-        Entity::CUSTOM_FIELDS                   => 'filled|array',
-        Entity::LIVE_TRANSACTION_DONE           => 'filled|numeric|in:0,1,2',
-        Entity::KYC_CLARIFICATION_REASONS       => 'sometimes|array|custom',
-        Entity::KYC_ADDITIONAL_DETAILS          => 'sometimes|array|custom',
-        Entity::ADDITIONAL_WEBSITES             => 'sometimes|array|max:5',
-        Entity::ADDITIONAL_WEBSITES. '.*'       => 'required_with:'. Entity::ADDITIONAL_WEBSITES . '|string|url',
+        Entity::CONTACT_NAME                             => 'sometimes|alpha_space|max:255',
+        Entity::CONTACT_EMAIL                            => 'sometimes|email|max:255',
+        Entity::CONTACT_MOBILE                           => 'sometimes|numeric|digits_between:8,11',
+        Entity::CONTACT_LANDLINE                         => 'sometimes|numeric|digits_between:8,11',
+        Entity::BUSINESS_TYPE                            => 'sometimes|numeric|digits_between:1,10',
+        Entity::BUSINESS_NAME                            => 'filled|max:255',
+        Entity::BUSINESS_DESCRIPTION                     => 'filled|max:255',
+        Entity::BUSINESS_DBA                             => 'sometimes|max:255',
+        Entity::BUSINESS_WEBSITE                         => 'sometimes|active_url|max:255|nullable',
+        Entity::ADDITIONAL_WEBSITE                       => 'sometimes|active_url|max:255|nullable',
+        Entity::BUSINESS_INTERNATIONAL                   => 'sometimes|in:0,1',
+        Entity::BUSINESS_PAYMENTDETAILS                  => 'sometimes|max:2000',
+        Entity::BUSINESS_MODEL                           => 'sometimes|max:255',
+        Entity::BUSINESS_REGISTERED_ADDRESS              => 'sometimes|max:255',
+        Entity::BUSINESS_REGISTERED_ADDRESS_L2           => 'sometimes|max:255',
+        Entity::BUSINESS_REGISTERED_STATE                => 'sometimes|alpha_space|max:255',
+        Entity::BUSINESS_REGISTERED_COUNTRY              => 'sometimes|alpha_space|max:255',
+        Entity::BUSINESS_REGISTERED_CITY                 => 'sometimes|alpha_space|max:255',
+        Entity::BUSINESS_REGISTERED_DISTRICT             => 'sometimes|alpha_space|max:255',
+        Entity::BUSINESS_REGISTERED_PIN                  => 'sometimes|size:6',
+        Entity::BUSINESS_OPERATION_ADDRESS               => 'sometimes|max:255',
+        Entity::BUSINESS_OPERATION_ADDRESS_L2            => 'sometimes|max:255',
+        Entity::BUSINESS_OPERATION_STATE                 => 'sometimes|alpha_space|max:255',
+        Entity::BUSINESS_OPERATION_COUNTRY               => 'sometimes|alpha_space|max:255',
+        Entity::BUSINESS_OPERATION_CITY                  => 'sometimes|alpha_space|max:255',
+        Entity::BUSINESS_OPERATION_DISTRICT              => 'sometimes|alpha_space|max:255',
+        Entity::BUSINESS_OPERATION_PIN                   => 'sometimes|size:6',
+        Entity::BUSINESS_DOE                             => 'sometimes|date_format:"Y-m-d"|before:"today"',
+        Entity::GSTIN                                    => 'sometimes|string|size:15|nullable',
+        Entity::P_GSTIN                                  => 'sometimes|string|size:15',
+        Entity::COMPANY_CIN                              => 'sometimes|alpha_num|max:21',
+        Entity::COMPANY_PAN                              => 'sometimes|pan',
+        Entity::COMPANY_PAN_NAME                         => 'sometimes|max:255',
+        Entity::BUSINESS_CATEGORY                        => 'sometimes|max:255|custom',
+        Entity::BUSINESS_SUBCATEGORY                     => 'sometimes|max:255|custom',
+        Entity::TRANSACTION_VOLUME                       => 'sometimes|numeric|digits_between:1,4',
+        Entity::TRANSACTION_VALUE                        => 'filled|numeric|min:0|max:10000000',
+        Entity::PROMOTER_PAN                             => 'sometimes|pan',
+        Entity::PROMOTER_PAN_NAME                        => 'sometimes|max:255',
+        Entity::BANK_NAME                                => 'sometimes|alpha_num|between:5,20',
+        Entity::BANK_ACCOUNT_NUMBER                      => 'sometimes|regex:/^[a-zA-Z0-9-]+$/|between:5,22|custom',
+        Entity::BANK_ACCOUNT_NAME                        => 'sometimes|string|min:4|max:120',
+        Entity::BANK_ACCOUNT_TYPE                        => 'sometimes|alpha_space|max:20',
+        Entity::BANK_BRANCH                              => 'sometimes|max:255',
+        Entity::BANK_BRANCH_IFSC                         => 'sometimes|alpha_num|max:11|custom',
+        Entity::BANK_BENEFICIARY_ADDRESS1                => 'sometimes|max:30',
+        Entity::BANK_BENEFICIARY_ADDRESS2                => 'sometimes|max:30',
+        Entity::BANK_BENEFICIARY_ADDRESS3                => 'sometimes|max:30',
+        Entity::BANK_BENEFICIARY_CITY                    => 'sometimes|max:30',
+        Entity::BANK_BENEFICIARY_STATE                   => 'sometimes|max:2',
+        Entity::BANK_BENEFICIARY_PIN                     => 'sometimes|max:15',
+        Entity::WEBSITE_ABOUT                            => 'sometimes|max:255|url',
+        Entity::WEBSITE_CONTACT                          => 'sometimes|max:255|url',
+        Entity::WEBSITE_PRIVACY                          => 'sometimes|max:255|url',
+        Entity::WEBSITE_TERMS                            => 'sometimes|max:255|url',
+        Entity::WEBSITE_REFUND                           => 'sometimes|max:255|url',
+        Entity::WEBSITE_PRICING                          => 'sometimes|max:255|url',
+        Entity::WEBSITE_LOGIN                            => 'sometimes|max:255|url',
+        Entity::BUSINESS_PROOF_URL                       => 'sometimes|file|mimes:pdf,jpeg,jpg,png,zip',
+        Entity::BUSINESS_OPERATION_PROOF_URL             => 'sometimes|file|mimes:pdf,jpeg,jpg,png,zip',
+        Entity::BUSINESS_PAN_URL                         => 'sometimes|file|mimes:pdf,jpeg,jpg,png,zip',
+        Entity::ADDRESS_PROOF_URL                        => 'sometimes|file|mimes:pdf,jpeg,jpg,png,zip',
+        Entity::PROMOTER_PROOF_URL                       => 'sometimes|file|mimes:pdf,jpeg,jpg,png,zip',
+        Entity::PROMOTER_PAN_URL                         => 'sometimes|file|mimes:pdf,jpeg,jpg,png,zip',
+        Entity::PROMOTER_ADDRESS_URL                     => 'sometimes|file|mimes:pdf,jpeg,jpg,png,zip',
+        Entity::FORM_12A_URL                             => 'sometimes|file|mimes:pdf,jpeg,jpg,png,zip|custom',
+        Entity::FORM_80G_URL                             => 'sometimes|file|mimes:pdf,jpeg,jpg,png,zip|custom',
+        Entity::TRANSACTION_REPORT_EMAIL                 => 'sometimes|custom',
+        Entity::ROLE                                     => 'sometimes|max:255',
+        Entity::DEPARTMENT                               => 'sometimes|max:255',
+        Entity::LOCKED                                   => 'sometimes|boolean',
+        Entity::COMMENT                                  => 'sometimes|max:255',
+        Entity::SUBMIT                                   => 'sometimes|boolean',
+        Entity::ACTIVATION_STATUS                        => 'sometimes|max:30',
+        Entity::CLARIFICATION_MODE                       => 'sometimes|max:15',
+        Entity::ISSUE_FIELDS                             => 'sometimes|string',
+        Entity::ISSUE_FIELDS_REASON                      => 'sometimes|string',
+        Entity::INTERNAL_NOTES                           => 'sometimes|string',
+        Entity::INTERNATIONAL_ACTIVATION_FLOW            => 'sometimes|custom',
+        Entity::CUSTOM_FIELDS                            => 'filled|array',
+        Entity::LIVE_TRANSACTION_DONE                    => 'filled|numeric|in:0,1,2',
+        Entity::KYC_CLARIFICATION_REASONS                => 'sometimes|array|custom',
+        Entity::KYC_ADDITIONAL_DETAILS                   => 'sometimes|array|custom',
+        Entity::ADDITIONAL_WEBSITES                      => 'sometimes|array|max:9',
+        Entity::ADDITIONAL_WEBSITES . '.*'               => 'required_with:' . Entity::ADDITIONAL_WEBSITES . '|string|active_url',
+        Entity::ESTD_YEAR                                => 'sometimes|max:4',
+        Entity::AUTHORIZED_SIGNATORY_RESIDENTIAL_ADDRESS => 'sometimes|max:255',
+        Entity::AUTHORIZED_SIGNATORY_DOB                 => 'sometimes|date_format:"Y-m-d"|before:"today"',
+        Entity::PLATFORM                                 => 'sometimes|max:40',
     ];
 
     protected static $preSignupRules = [
@@ -222,6 +228,11 @@ class Validator extends Base\Validator
         Entity::CONTACT_NAME                    => 'sometimes|alpha_space|max:255',
         Entity::CONTACT_MOBILE                  => 'sometimes|numeric|digits_between:8,11',
         Entity::BUSINESS_WEBSITE                => 'sometimes|active_url|max:255|nullable',
+    ];
+
+    protected static $uploadDocumentRules = [
+        Merchant\Document\Entity::DOCUMENT_TYPE => 'required|string|max:255|custom',
+        Entity::FILE                            => 'required|file|mimes:pdf,jpeg,jpg,png',
     ];
 
     protected static $archiveFormRules = [
@@ -245,10 +256,12 @@ class Validator extends Base\Validator
 
     protected static $createValidators = [
         'business_subcategory_for_category',
+        'blacklisted_bank',
     ];
 
     protected static $editValidators = [
         'business_subcategory_for_category',
+        'blacklisted_bank',
     ];
 
     protected static $pennyTestingEventPayloadRules = [
@@ -291,16 +304,20 @@ class Validator extends Base\Validator
     ];
 
     protected static $patchMerchantDetailsRules = [
-        Entity::BUSINESS_OPERATION_ADDRESS       => 'filled|max:255',
-        Entity::BUSINESS_OPERATION_STATE         => 'filled|alpha_space|max:255',
-        Entity::BUSINESS_OPERATION_CITY          => 'filled|alpha_space|max:255',
-        Entity::BUSINESS_OPERATION_PIN           => 'filled|size:6',
-        Entity::BUSINESS_CATEGORY                => 'sometimes|max:255|custom',
-        Entity::BUSINESS_SUBCATEGORY             => 'sometimes|max:255|custom',
-        Entity::BUSINESS_MODEL                   => 'sometimes|max:255',
-        Entity::INTERNATIONAL_ACTIVATION_FLOW    => 'filled|custom',
-        Entity::BANK_DETAILS_VERIFICATION_STATUS => 'filled|custom',
-        Entity::POA_VERIFICATION_STATUS          => 'filled|custom'
+        Entity::BUSINESS_OPERATION_ADDRESS               => 'filled|max:255',
+        Entity::BUSINESS_OPERATION_STATE                 => 'filled|alpha_space|max:255',
+        Entity::BUSINESS_OPERATION_CITY                  => 'filled|alpha_space|max:255',
+        Entity::BUSINESS_OPERATION_PIN                   => 'filled|size:6',
+        Entity::BUSINESS_CATEGORY                        => 'sometimes|max:255|custom',
+        Entity::BUSINESS_SUBCATEGORY                     => 'sometimes|max:255|custom',
+        Entity::BUSINESS_MODEL                           => 'sometimes|max:255',
+        Entity::INTERNATIONAL_ACTIVATION_FLOW            => 'filled|custom',
+        Entity::BANK_DETAILS_VERIFICATION_STATUS         => 'filled|custom',
+        Entity::POA_VERIFICATION_STATUS                  => 'filled|custom',
+        Entity::ESTD_YEAR                                => 'filled|max:4',
+        Entity::AUTHORIZED_SIGNATORY_RESIDENTIAL_ADDRESS => 'filled|max:255',
+        Entity::AUTHORIZED_SIGNATORY_DOB                 => 'filled|date_format:"Y-m-d"|before:"today"',
+        Entity::PLATFORM                                 => 'filled|max:40',
     ];
 
     protected static $updateEntityBatchActionRules = [
@@ -308,6 +325,36 @@ class Validator extends Base\Validator
         Entity::BUSINESS_REGISTERED_ADDRESS => 'filled|max:255',
         Entity::BUSINESS_REGISTERED_STATE   => 'filled|max:255',
     ];
+
+    public function validateDocumentUpload(array $input)
+    {
+        if (empty($input) === true)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                PublicErrorDescription::BAD_REQUEST_DOCUMENT_TYPE_INVALID
+            );
+        }
+
+        foreach ($input as $key => $value)
+        {
+            $payload = [
+                Merchant\Document\Entity::DOCUMENT_TYPE => $key,
+                Entity::FILE                            => $value,
+            ];
+
+            $this->validateInput('uploadDocument', $payload);
+        }
+    }
+
+    public function validateDocumentType(string $attribute, $value)
+    {
+        if (Type::isValid($value) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                PublicErrorDescription::BAD_REQUEST_DOCUMENT_TYPE_INVALID . ':' . $value
+            );
+        }
+    }
 
     public function validateBankDetailsVerificationStatus($attribute, $value)
     {
@@ -558,6 +605,29 @@ class Validator extends Base\Validator
         }
     }
 
+    /**
+     * @param array $input
+     */
+    public function validateBlacklistedBank(array $input)
+    {
+        if (isset($input[Entity::BANK_BRANCH_IFSC]) === true)
+        {
+            $code = $input[Entity::BANK_BRANCH_IFSC];
+
+            $bankCode   = strtoupper(substr($code, 0, 4));
+
+            if (in_array($bankCode, Constants::BLACKLISTED_BANKS) === true)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    self::BLACKLISTED_BANK_ACCOUNT_NUMBER,
+                    Merchant\Detail\Entity::BANK_BRANCH_IFSC,
+                    [
+                        Merchant\Detail\Entity::BANK_BRANCH_IFSC => $code
+                    ]);
+            }
+        }
+    }
+
     public function validateBusinessSubcategoryForCategory(array $input)
     {
         // If category and subcategory are not set
@@ -758,7 +828,7 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validateFileType($file)
+    public function validateFile($file)
     {
         $extension = strtolower($file->getClientOriginalExtension());
 

@@ -803,7 +803,7 @@ trait PaymentTrait
         return $content;
     }
 
-    protected function capturePayment($id, $amount, $currency = 'INR', $verifyAmount = 0)
+    protected function capturePayment($id, $amount, $currency = 'INR', $verifyAmount = 0, $status = 'captured')
     {
         $request = array(
             'method'  => 'POST',
@@ -830,7 +830,7 @@ trait PaymentTrait
             $this->assertEquals($content['amount'], $amount);
         }
 
-        $this->assertEquals($content['status'], 'captured');
+        $this->assertEquals($content['status'], $status);
 
         return $content;
     }
@@ -1547,6 +1547,19 @@ trait PaymentTrait
 
         $payment['method'] = 'upi';
         $payment['vpa'] = 'vishnu@icici';
+
+        return $payment;
+    }
+
+    protected function getDefaultUpiBlockPaymentArray()
+    {
+        $payment = $this->getDefaultPaymentArrayNeutral();
+
+        $payment['method'] = 'upi';
+
+        $payment['upi'] = [
+            'vpa'   => 'vishnu@icici'
+        ];
 
         return $payment;
     }
@@ -2548,5 +2561,27 @@ trait PaymentTrait
 
         $this->app->razorx->method('getTreatment')
                           ->willReturn('on');
+    }
+
+    protected function mockRazorXTreatmentForEnableBankTransferRefunds()
+    {
+        // Sending FTA to FTS
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                           ->setConstructorArgs([$this->app])
+                           ->setMethods(['getTreatment'])
+                           ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+                          ->will($this->returnCallback(
+                            function ($mid, $feature, $mode) {
+                                if ($feature === 'enable_bank_transfer_refunds')
+                                {
+                                    return 'on';
+                                }
+
+                                return 'off';
+                            }));
     }
 }

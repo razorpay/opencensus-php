@@ -50,6 +50,8 @@ class Entity extends Base\PublicEntity
     const RUPAY_MPAN                    = 'rupay_mpan';
     const VPA                           = 'vpa';
 
+    const ACCOUNT_TYPE                  = 'account_type';
+
     const CARD                          = 'card';
     const NETBANKING                    = 'netbanking';
     const EMI                           = 'emi';
@@ -181,6 +183,7 @@ class Entity extends Base\PublicEntity
         self::VIRTUAL_UPI_ROOT,
         self::VIRTUAL_UPI_MERCHANT_PREFIX,
         self::VIRTUAL_UPI_HANDLE,
+        self::ACCOUNT_TYPE,
     ];
 
     protected $public = [
@@ -248,6 +251,7 @@ class Entity extends Base\PublicEntity
         self::CARDLESS_EMI,
         self::PAYLATER,
         self::MPAN,
+        self::ACCOUNT_TYPE,
         self::CREATED_AT
     ];
 
@@ -315,6 +319,7 @@ class Entity extends Base\PublicEntity
         self::MC_MPAN                    => null,
         self::VISA_MPAN                  => null,
         self::RUPAY_MPAN                 => null,
+        self::ACCOUNT_TYPE               => null,
     ];
 
     protected $casts = [
@@ -465,6 +470,11 @@ class Entity extends Base\PublicEntity
     public function getEmiSubvention()
     {
         return $this->getAttribute(self::EMI_SUBVENTION);
+    }
+
+    public function getAccountType()
+    {
+        return $this->getAttribute(self::ACCOUNT_TYPE);
     }
 
     /**
@@ -1372,13 +1382,14 @@ class Entity extends Base\PublicEntity
         return ($this->isCardEnabled() === true);
     }
 
-    public  function isValidVirtualVpaForTerminal(string $virtualVpa)
+    public function isValidVirtualVpaForTerminal(string $virtualVpa)
     {
         $prefix = $this->getAttribute(self::VIRTUAL_UPI_ROOT) . $this->getAttribute(self::VIRTUAL_UPI_MERCHANT_PREFIX);
 
         $handle = $this->getAttribute(self::VIRTUAL_UPI_HANDLE);
 
-        return (substr($virtualVpa, 0, strlen($prefix)) === $prefix) && (substr($virtualVpa, -strlen($handle), strlen($virtualVpa)) === $handle);
+        return ((strcasecmp(substr($virtualVpa, 0, strlen($prefix)), $prefix) === 0) &&
+                (strcasecmp(substr($virtualVpa, -strlen($handle), strlen($virtualVpa)), $handle) === 0));
     }
 
     /**

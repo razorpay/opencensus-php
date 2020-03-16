@@ -33,7 +33,7 @@ return [
             'content' => [
                 'verification' => [
                     'required_fields' => [
-                        'address_proof_url',
+
                     ]
                 ],
             ]
@@ -118,7 +118,7 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'The file must be a file of type: pdf, jpeg, jpg, png, zip.',
+                    'description' => 'The file must be a file of type: pdf, jpeg, jpg, png.',
                 ],
             ],
             'status_code' => 400,
@@ -151,7 +151,7 @@ return [
         ],
     ],
 
-    'testFileUpload' => [
+    'testDocumentUpload' => [
         'request'  => [
             'url'     => '/merchant/documents/upload',
             'method'  => 'POST',
@@ -215,6 +215,9 @@ return [
             'content' => [
                 'document_type' => 'aadhar_front'
             ],
+            'server'  => [
+                'HTTP_X-Request-Origin' => 'https://dashboard.razorpay.com',
+            ],
         ],
         'response' => [
             'content' => [
@@ -238,6 +241,11 @@ return [
                     [
                         'file_store_id' => 'DM6dXJfU4WzeAF',
                     ]
+                ],
+                'Aadhar_back'       => [
+                    [
+                        'file_store_id' => 'DA6dXJfU4WzeAF',
+                    ]
                 ]
             ],
         ],
@@ -253,6 +261,11 @@ return [
                 'Address_proof_url' => [
                     [
                         'file_store_id' => 'DM6dXJfU4WzeAF',
+                    ]
+                ],
+                'Aadhar_back'       => [
+                    [
+                        'file_store_id' => 'DA6dXJfU4WzeAF',
                     ]
                 ]
             ],

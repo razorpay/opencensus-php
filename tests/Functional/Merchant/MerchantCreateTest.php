@@ -5,13 +5,17 @@ namespace RZP\Tests\Functional\Merchant;
 use DB;
 use Mail;
 use RZP\Constants;
+use Carbon\Carbon;
 use RZP\Constants\Mode;
+use RZP\Constants\Timezone;
 use RZP\Models\User\Role;
 use RZP\Models\Batch\Header;
 use Razorpay\OAuth\Application;
 use RZP\Mail\User\MappedToAccount;
 use RZP\Models\Settlement\Channel;
+use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
+use RZP\Models\Pricing\DefaultPlan;
 use RZP\Models\Merchant\Methods\Entity;
 use Illuminate\Database\Eloquent\Factory;
 use RZP\Mail\User\LinkedAccountUserAccess;
@@ -23,7 +27,7 @@ use RZP\Tests\Functional\Fixtures\Entity\Pricing;
 use Razorpay\OAuth\Application\Entity as OAuthApp;
 use RZP\Mail\User\PasswordReset as PasswordResetMail;
 use RZP\Models\Feature\Constants as FeatureConstants;
-use \RZP\Tests\Functional\Fixtures\Entity\Pricing as TestPricing;
+use RZP\Tests\Functional\Fixtures\Entity\Pricing as TestPricing;
 use RZP\Mail\Merchant\CreateSubMerchant as CreateSubMerchantMail;
 use RZP\Mail\Merchant\CreateSubMerchantPartner as CreateSubMerchantPartnerMail;
 use RZP\Mail\Merchant\CreateSubMerchantAffiliate as CreateSubMerchantAffiliateMail;
@@ -195,7 +199,7 @@ class MerchantCreateTest extends TestCase
         {
             $schedule = $this->getEntityById('schedule', $scheduledTask['schedule_id'], true);
 
-            $delay = $scheduledTask['international'] ? 7 : 3;
+            $delay = $scheduledTask['international'] ? 7 : 2;
 
             $this->assertEquals($merchant['id'], $scheduledTask['merchant_id']);
             $this->assertEquals($schedule['period'], 'daily');
@@ -212,6 +216,47 @@ class MerchantCreateTest extends TestCase
         $content = $this->runRequestResponseFlow($testData);
 
         $this->assertSame(array(), $content['disabled']);
+    }
+
+    public function testCheckSalesforceGroupForSubmerchantCreate()
+    {
+        $this->fixtures->merchant->addFeatures(['aggregator']);
+        $this->fixtures->merchant->editPricingPlanId(TestPricing::DEFAULT_PRICING_PLAN_ID);
+
+        $user = $this->createUserMerchantMapping('10000000000000', 'owner');
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', $user['id']);
+
+        $this->startTest();
+
+        $merchantMap = \DB::connection('test')->table('merchant_map')
+                          ->where('merchant_id', 'NewSubmerchant')
+                          ->first();
+
+        $this->assertEquals($merchantMap->entity_id, 'E15BhsdMSofcUJ');
+        $this->assertEquals($merchantMap->entity_type, 'group');
+        $this->assertEquals($merchantMap->merchant_id, 'NewSubmerchant');
+    }
+
+    public function  testCheckSalesforceGroupForMarketplaceLinkedAccount()
+    {
+        $user = $this->createUserMerchantMapping('10000000000000', 'owner');
+
+        $this->fixtures->merchant->addFeatures(['marketplace']);
+
+        $this->ba->proxyAuth();
+
+        $this->testData[__FUNCTION__]['request']['content']['user_id'] = $user['id'];
+
+        $this->startTest();
+
+        $merchantMap = \DB::connection('test')->table('merchant_map')
+                          ->where('merchant_id', '7gcKngYfqyDMjN')
+                          ->first();
+
+        $this->assertEquals($merchantMap->entity_id, 'E15BhsdMSofcUJ');
+        $this->assertEquals($merchantMap->entity_type, 'group');
+        $this->assertEquals($merchantMap->merchant_id, '7gcKngYfqyDMjN');
     }
 
     public function testCreateSubMerchant()
@@ -268,6 +313,20 @@ class MerchantCreateTest extends TestCase
         $this->assertNull($testMapping);
 
         $this->assertNull($liveMapping);
+    }
+
+    protected function mockRazorxTreatment()
+    {
+        // Mock Razorx
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                           ->setConstructorArgs([$this->app])
+                           ->setMethods(['getTreatment'])
+                           ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+                          ->willReturn('On');
     }
 
     public function testCreateSubMerchantWithoutFeatureMarketplaceOrPartner()
@@ -371,6 +430,33 @@ class MerchantCreateTest extends TestCase
         $this->ba->proxyAuth('rzp_test_10000000000000', $user['id']);
 
         $this->startTest();
+    }
+
+    public function testCreateSubMerchantAndAssignPromotionalPricingPlan()
+    {
+        Mail::fake();
+
+        $app = $this->markPartnerAndCreateAppAndUserMapping('fully_managed');
+
+        $configAttributes = [
+            PartnerConfig\Entity::DEFAULT_PLAN_ID => DefaultPlan::SUBMERCHANT_PRICING_OF_ONBOARDED_PARTNERS,
+        ];
+
+        $this->createConfigForPartnerApp($app->getId(), null, $configAttributes);
+
+        $this->ba->proxyAuth('rzp_test_10000000000000');
+
+        $this->mockRazorxTreatment();
+
+        $testTime = Carbon::create(2020, 4, 1, 8, 1, 0, Timezone::IST);
+
+        Carbon::setTestNow($testTime);
+
+        $this->startTest();
+
+        $submerchant = $this->getLastEntity('merchant', true);
+
+        $this->assertEquals(DefaultPlan::SUBMERCHANT_PROMOTIONAL_PRICING_PLAN, $submerchant['pricing_plan_id']);
     }
 
     public function testCreateSubMerchantByFullyManagedWOEmail()
@@ -963,7 +1049,7 @@ class MerchantCreateTest extends TestCase
             $this->assertEquals($linkedAcc['id'], $scheduleTask['merchant_id']);
 
             // 7 is default delay for international schedule
-            $delay =  $scheduleTask['international'] === 1 ? 7 : 3;
+            $delay =  $scheduleTask['international'] === 1 ? 7 : 2;
 
             $this->assertEquals($schedule['delay'], $delay);
         }

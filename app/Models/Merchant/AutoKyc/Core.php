@@ -5,6 +5,7 @@ namespace RZP\Models\Merchant\AutoKyc;
 use RZP\Models\Base;
 use RZP\Error\ErrorCode;
 use RZP\Exception\LogicException;
+use RZP\Models\Merchant\AutoKyc\Verifiers\POAVerifier;
 use RZP\Models\Merchant\AutoKyc\Verifiers\POIVerifier;
 use RZP\Models\Merchant\Detail\Constants as DEConstants;
 use RZP\Models\Merchant\AutoKyc\KycService\ProcessorFactoryImpl as KycProcessorFactory;
@@ -68,6 +69,43 @@ class Core extends Base\Core
     }
 
     /**
+     * @param KycEntity $entity
+     *
+     * @param array     $input
+     *
+     * @return array
+     * @throws LogicException
+     */
+    public function verifyPOA(KycEntity $entity, array $input): array
+    {
+        $this->registerKyc($entity);
+
+        $poaInput = [
+            DEConstants::SIGNED_URL       => $input[DEConstants::SIGNED_URL],
+            DEConstants::DOCUMENT_TYPE    => $input[DEConstants::DOCUMENT_TYPE],
+            DEConstants::DOCUMENT_SOURCE  => $input[DEConstants::DOCUMENT_SOURCE],
+            DEConstants::DOCUMENT_FILE_ID => $input[DEConstants::DOCUMENT_FILE_ID],
+            DEConstants::ENTITY_ID        => $entity->getEntityId(),
+            DEConstants::KYC_ID           => $entity->getKycId(),
+        ];
+
+        $response = $this->process($poaInput, DEConstants::POA);
+
+        (new Events())->sendServiceVerifierEvents($response);
+
+        $poaVerifier = new POAVerifier($input[DEConstants::PROMOTER_PAN_NAME],
+                                       $response);
+
+        $verificationResult = $poaVerifier->verify();
+
+        return [
+            DEConstants::OCR_RESPONSE        => $response,
+            DEConstants::VERIFICATION_RESULT => $verificationResult,
+        ];
+
+    }
+
+    /**
      * Returns kyc details from kyc service
      * @param array $input
      *
@@ -104,7 +142,8 @@ class Core extends Base\Core
      */
     private function process(array $input, string $processorType)
     {
-        $kycVerifierFactory = ServiceFactory::getVerifierServiceFactory($input[DEConstants::ENTITY_ID],
+        $kycVerifierFactory = ServiceFactory::getVerifierServiceFactory($input,
+                                                                        $processorType,
                                                                         $this->mode);
 
         $processor = self::getProcessor($input, $processorType, $kycVerifierFactory);

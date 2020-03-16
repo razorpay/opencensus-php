@@ -56,6 +56,18 @@ class RequestHeader
     const X_TASK_ID                     = 'X-Task-ID';
     const X_SERVICE_ID                  = 'X-Service-ID';
 
+    const X_RAZORPAY_TRACKID            = 'X-Razorpay-TrackId';
+
     const AUTHORIZATION                 = 'AUTHORIZATION';
     const BEARER                        = 'Bearer';
+
+    /**
+     * Request header for Typeform auth
+     */
+
+    const TYPEFORM_SIGNATURE            =  'typeform-signature';
+
+    // For testing purpose
+    const X_RZP_TESTCASE_ID             = 'X-RZP-TESTCASE-ID';
+
 }

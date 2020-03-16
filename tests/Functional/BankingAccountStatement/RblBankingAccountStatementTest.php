@@ -58,6 +58,7 @@ class RblBankingAccountStatementTest extends TestCase
         $balanceId = $this->balance->getId();
 
         $this->fixtures->create('banking_account', [
+            'id'                    => 'xba00000000001',
             'account_number'        => '2224440041626905',
             'account_type'          => 'current',
             'merchant_id'           => '10000000000000',
@@ -67,6 +68,8 @@ class RblBankingAccountStatementTest extends TestCase
             'account_ifsc'          => 'RATN0000156',
             'balance_id'            => $balanceId,
         ]);
+
+        $this->balance = $this->getDbEntity('balance', ['merchant_id' => '10000000000000', 'type' => 'banking']);
     }
 
     public function testRblXlsxStatementGeneration()
@@ -310,6 +313,10 @@ class RblBankingAccountStatementTest extends TestCase
 
         $payout = $this->getDbLastEntity('payout');
 
+        $this->assertEquals(590, $payout['fees']);
+        $this->assertEquals(90, $payout['tax']);
+        $this->assertEquals('Bbg7cl6t6I3XA6', $payout['pricing_rule_id']);
+
         $attempt = $this->getDbLastEntity('fund_transfer_attempt');
 
         $this->fixtures->edit('payout', $payout['id'], ['status' => 'initiated']);
@@ -370,9 +377,15 @@ class RblBankingAccountStatementTest extends TestCase
         $this->assertEquals(0, $feeBreakup1->count());
         $this->assertEquals(2, $feeBreakup2->count());
 
+        $this->assertEquals('Bbg7cl6t6I3XA6', $feeBreakup2[0]['pricing_rule_id']);
         $this->assertEquals(EntityConstants::PAYOUT, $feeBreakup2[0]['name']);
-        $this->assertEquals(0, $feeBreakup2[1]['amount']);
+        $this->assertEquals(500, $feeBreakup2[0]['amount']);
+        $this->assertEquals(90, $feeBreakup2[1]['amount']);
         $this->assertEquals(EntityConstants::TAX, $feeBreakup2[1]['name']);
+
+        $txn = $this->getDbEntity('transaction', ['entity_id' => $payout['id']])->toArray();
+        $this->assertEquals($txn['fee'], $payout['fees']);
+        $this->assertEquals($txn['tax'], $payout['tax']);
     }
 
     /**
@@ -387,6 +400,10 @@ class RblBankingAccountStatementTest extends TestCase
         $this->setupForRblPayout($channel);
 
         $payout = $this->getDbLastEntity('payout');
+
+        $this->assertEquals(590, $payout['fees']);
+        $this->assertEquals(90, $payout['tax']);
+        $this->assertEquals('Bbg7cl6t6I3XA6', $payout['pricing_rule_id']);
 
         $attempt = $this->getDbLastEntity('fund_transfer_attempt');
 
@@ -474,8 +491,10 @@ class RblBankingAccountStatementTest extends TestCase
         $this->assertEquals(0, $feeBreakup1->count());
         $this->assertEquals(1, $feeBreakup2->count());
 
+        $this->assertEquals('Bbg7cl6t6I3XA6', $feeBreakup2[0]['pricing_rule_id']);
         $this->assertEquals(EntityConstants::PAYOUT, $feeBreakup2[0]['name']);
-        $this->assertEquals(0, $feeBreakup2[1]['amount']);
+        $this->assertEquals(500, $feeBreakup2[0]['amount']);
+        $this->assertEquals(90, $feeBreakup2[1]['amount']);
         $this->assertEquals(EntityConstants::TAX, $feeBreakup2[1]['name']);
     }
 
@@ -490,6 +509,10 @@ class RblBankingAccountStatementTest extends TestCase
         $this->setupForRblPayout($channel);
 
         $payout = $this->getDbLastEntity('payout');
+
+        $this->assertEquals(590, $payout['fees']);
+        $this->assertEquals(90, $payout['tax']);
+        $this->assertEquals('Bbg7cl6t6I3XA6', $payout['pricing_rule_id']);
 
         $attempt = $this->getDbLastEntity('fund_transfer_attempt');
 
@@ -551,10 +574,10 @@ class RblBankingAccountStatementTest extends TestCase
 
         $feeBreakup = $this->getDbEntities('fee_breakup', ['transaction_id' => $payout['transaction_id']]);
 
-        $this->assertEquals('Bbg7fgaDwax04u', $feeBreakup[0]['pricing_rule_id']);
-        $this->assertEquals(0, $feeBreakup[0]['amount']);
+        $this->assertEquals('Bbg7cl6t6I3XA6', $feeBreakup[0]['pricing_rule_id']);
+        $this->assertEquals(500, $feeBreakup[0]['amount']);
         $this->assertEquals(EntityConstants::PAYOUT, $feeBreakup[0]['name']);
-        $this->assertEquals(0, $feeBreakup[1]['amount']);
+        $this->assertEquals(90, $feeBreakup[1]['amount']);
         $this->assertEquals(EntityConstants::TAX, $feeBreakup[1]['name']);
     }
 
@@ -830,8 +853,8 @@ class RblBankingAccountStatementTest extends TestCase
         $mock = Mockery::mock(Mozart::class, [$this->app])->shouldAllowMockingProtectedMethods()->makePartial();
 
         $mock->shouldReceive([
-            'sendRawRequest' => json_encode($mockedResponse)
-        ]);
+                                 'sendRawRequest' => json_encode($mockedResponse)
+                             ]);
 
         $this->app->instance('mozart', $mock);
     }
@@ -861,6 +884,10 @@ class RblBankingAccountStatementTest extends TestCase
 
         $initialBalance = $this->getDbEntityById('balance', $balanceId)->toArray();
 
+        $bankingAccount = $this->fixtures->edit('banking_account', 'xba00000000001', [
+            'balance_last_fetched_at' => 1578044039
+        ]);
+
         $startTime = Carbon::now()->timestamp;
 
         $this->testRblAccountStatementCase1();
@@ -875,8 +902,7 @@ class RblBankingAccountStatementTest extends TestCase
         {
             if (isset($balance['type']) and ($balance['type'] === 'banking') and ($balance['account_type'] === 'direct'))
             {
-                $this->assertGreaterThanOrEqual($startTime, $balance['last_fetched_at']);
-                $this->assertLessThanOrEqual($endTime, $balance['last_fetched_at']);
+                $this->assertEquals('1578044039', $balance['last_fetched_at']);
             }
         }
 
@@ -896,6 +922,10 @@ class RblBankingAccountStatementTest extends TestCase
 
         $initialBalance = $this->getDbEntityById('balance', $balanceId)->toArray();
 
+        $bankingAccount = $this->fixtures->edit('banking_account', 'xba00000000001', [
+            'balance_last_fetched_at' => 1578044039
+        ]);
+
         $startTime = Carbon::now()->timestamp;
 
         $this->testRblAccountStatementCase2();
@@ -910,8 +940,7 @@ class RblBankingAccountStatementTest extends TestCase
         {
             if (isset($balance['type']) and ($balance['type'] === 'banking') and ($balance['account_type'] === 'direct'))
             {
-                $this->assertGreaterThanOrEqual($startTime, $balance['last_fetched_at']);
-                $this->assertLessThanOrEqual($endTime, $balance['last_fetched_at']);
+                $this->assertEquals('1578044039', $balance['last_fetched_at']);
             }
         }
 
@@ -930,6 +959,10 @@ class RblBankingAccountStatementTest extends TestCase
         // Need to edit here as balance creation and update occur in test within the same second.
         $this->fixtures->edit('balance', $balanceId, ['updated_at' => 1578044039]);
 
+        $bankingAccount = $this->fixtures->edit('banking_account', 'xba00000000001', [
+            'balance_last_fetched_at' => 1578044039
+        ]);
+
         $initialBalance = $this->getDbEntityById('balance', $balanceId)->toArray();
 
         $this->testRblAccountStatementCase3();
@@ -944,8 +977,7 @@ class RblBankingAccountStatementTest extends TestCase
         {
             if (isset($balance['type']) and ($balance['type'] === 'banking') and ($balance['account_type'] === 'direct'))
             {
-                // Since, BAS wasn't fetched, last_fetched_at will be equal to balance's updated_at
-                $this->assertEquals($finalBalance['updated_at'], $balance['last_fetched_at']);
+                $this->assertEquals('1578044039', $balance['last_fetched_at']);
             }
         }
 

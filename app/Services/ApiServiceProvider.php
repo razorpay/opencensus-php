@@ -46,6 +46,7 @@ use RZP\Gateway\GatewayManager;
 use RZP\Models\Workflow\Action;
 use RZP\Models\Plan\Subscription;
 use RZP\Models\Partner\Commission;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Base\Database\MySqlConnection;
 use RZP\Models\Plan\Subscription\Addon;
 use RZP\Services\FreshdeskTicketClient;
@@ -53,6 +54,7 @@ use RZP\Models\SubscriptionRegistration;
 use RZP\Models\Gateway\File as GatewayFile;
 use RZP\Models\PaymentLink\PaymentPageItem;
 use RZP\Services\Beam\Service as BeamService;
+use RZP\Base\Database\Connectors\MySqlConnector;
 use RZP\Models\Merchant\Request as MerchantRequest;
 
 class ApiServiceProvider extends BaseServiceProvider
@@ -355,6 +357,10 @@ class ApiServiceProvider extends BaseServiceProvider
         $this->registerHyperVerge();
 
         $this->registerFreshdeskTicketService();
+
+        $this->registerTokenService();
+
+        $this->registerTerminalsService();
     }
 
     /**
@@ -404,7 +410,9 @@ class ApiServiceProvider extends BaseServiceProvider
             'mozart',
             'hubspot',
             'salesforce',
-            'freshdesk_client'
+            'freshdesk_client',
+            'token_service',
+            'terminals_service',
         ];
     }
 
@@ -826,6 +834,11 @@ class ApiServiceProvider extends BaseServiceProvider
 
     protected function registerDatabaseConnection()
     {
+        $this->app->singleton('db.connector.mysql', function($app)
+        {
+            return (new MySqlConnector($app));
+        });
+
         Connection::resolverFor('mysql', function ($connection, $database, $prefix, $config) {
             //
             // If the connection config has lag_check configuration set use the
@@ -907,6 +920,30 @@ class ApiServiceProvider extends BaseServiceProvider
             }
 
             return new FreshDeskTicketClient($app);
+        });
+    }
+
+    protected function registerTerminalsService()
+    {
+        $this->app->singleton('terminals_service', function ($app)
+        {
+            $terminalsServiceMock = $app['config']->get('applications.terminals_service.mock');
+
+            if ($terminalsServiceMock === true)
+            {
+                return new Mock\TerminalsService($app);
+            }
+
+            return new TerminalsService($app);
+        });
+
+    }
+
+    protected function registerTokenService()
+    {
+        $this->app->singleton('token_service', function($app)
+        {
+            return new TokenService($app);
         });
     }
 }

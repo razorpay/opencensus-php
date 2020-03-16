@@ -3,6 +3,7 @@
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
+use RZP\Exception\BadRequestException;
 
 return [
     'testPostRequestForCreatingPayoutLink' => [
@@ -33,6 +34,325 @@ return [
                     'hi' => 'hello'
                 ],
                 'status'      => 'issued',
+            ]
+        ]
+    ],
+
+    'testExceptionOnCreatePayoutLinkWithoutOtpOnProxyAuth' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payout-links',
+            'content' => [
+                'amount'      => 1000,
+                'currency'    => 'INR',
+                'description' => 'This is a test payout',
+                'purpose'     => 'refund',
+                'contact'     => [
+                    'name'       => 'cskdsds',
+                    'email'      => 'dsknlds@gmail.com',
+                    'contact'    => ''
+                ],
+                'notes'       => ['hi' => 'hello'],
+                'receipt'     => 'Test Payout Receipt'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The otp field is required.'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ]
+    ],
+
+    'testMerchantSettingsUpdateApi' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payout-links/merchant/dashboardsettings',
+            'content' => [
+                'UPI'             => true,
+                'IMPS'            => '0',
+                'support_email'   => 'anubhav@f.com',
+                'support_url'     => 'http://dsjsd',
+                'support_contact' => '1212121212'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'UPI'             => '1',
+                'IMPS'            => '0',
+                'support_email'   => 'anubhav@f.com',
+                'support_url'     => 'http://dsjsd',
+                'support_contact' => '1212121212'
+            ]
+        ]
+    ],
+
+    'testMerchantSettingsGetApi' => [
+        'request'  => [
+            'method'  => 'GET',
+            'url'     => '/payout-links/merchant/dashboardsettings',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'UPI'             => '1',
+                'IMPS'            => '0',
+                'support_email'   => 'anubhav@f.com',
+                'support_url'     => 'http://dsjsd',
+                'support_contact' => '1212121212'
+            ]
+        ]
+    ],
+
+    'testExceptionOnCreatePayoutLinkWithInvalidOtpOnProxyAuth' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payout-links',
+            'content' => [
+                'amount'      => 1000,
+                'currency'    => 'INR',
+                'description' => 'This is a test payout',
+                'purpose'     => 'refund',
+                'contact'     => [
+                    'name'       => 'cskdsds',
+                    'email'      => 'dsknlds@gmail.com',
+                    'contact'    => ''
+                ],
+                'notes'       => ['hi' => 'hello'],
+                'receipt'     => 'Test Payout Receipt',
+                'otp'         => '123123',
+                'token'       => 'EFMCRjw1Dq8oHn'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Verification failed because of incorrect OTP.'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INCORRECT_OTP,
+        ]
+    ],
+
+    'testExceptionOnCreatePayoutLinkWithoutTokenOnProxyAuth' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payout-links',
+            'content' => [
+                'amount'      => 1000,
+                'currency'    => 'INR',
+                'description' => 'This is a test payout',
+                'purpose'     => 'refund',
+                'contact'     => [
+                    'name'       => 'cskdsds',
+                    'email'      => 'dsknlds@gmail.com',
+                    'contact'    => ''
+                ],
+                'notes'       => ['hi' => 'hello'],
+                'receipt'     => 'Test Payout Receipt',
+                'otp'         => '12312'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The token field is required.'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ]
+    ],
+
+    'testCreatePayoutLinkPassesWithoutOtpWhenPrivateAuth' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payout-links',
+            'content' => [
+                'amount'      => 1000,
+                'currency'    => 'INR',
+                'description' => 'This is a test payout',
+                'purpose'     => 'refund',
+                'contact'     => [
+                    'name'       => 'cskdsds',
+                    'email'      => 'dsknlds@gmail.com',
+                    'contact'    => ''
+                ],
+                'notes'       => ['hi' => 'hello'],
+                'receipt'     => 'Test Payout Receipt'
+            ]
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
+    'testExceptionWhenSendSmsEnabledWithNoPhoneInContact' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payout-links',
+            'content' => [
+                'amount'      => 1000,
+                'currency'    => 'INR',
+                'description' => 'This is a test payout',
+                'purpose'     => 'refund',
+                'contact'     => [
+                    'name'       => 'cskdsds',
+                    'email'      => 'dsknlds@gmail.com',
+                    'contact'    => ''
+                ],
+                'notes'       => ['hi' => 'hello'],
+                'receipt'     => 'Test Payout Receipt',
+                'send_sms'    => true
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_SMS_NOTIFICATION_WITH_EMPTY_PHONE
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_SMS_NOTIFICATION_WITH_EMPTY_PHONE,
+        ]
+    ],
+
+    'testExceptionWhenSendEmailEnabledWithNoEmailInContact' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payout-links',
+            'content' => [
+                'amount'      => 1000,
+                'currency'    => 'INR',
+                'description' => 'This is a test payout',
+                'purpose'     => 'refund',
+                'contact'     => [
+                    'name'       => 'cskdsds',
+                    'email'      => '',
+                    'contact'    => '123123123'
+                ],
+                'notes'       => ['hi' => 'hello'],
+                'receipt'     => 'Test Payout Receipt',
+                'send_email'    => true
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_EMAIL_NOTIFICATION_WITH_EMPTY_EMAIL
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_EMAIL_NOTIFICATION_WITH_EMPTY_EMAIL,
+        ]
+    ],
+
+    'testSendLinkEmailQueuedWhenOnPayoutLinkCreate' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payout-links',
+            'content' => [
+                'amount'      => 1000,
+                'currency'    => 'INR',
+                'description' => 'This is a test payout',
+                'purpose'     => 'refund',
+                'contact'     => [
+                    'name'       => 'cskdsds',
+                    'email'      => 'test@r.com',
+                ],
+                'notes'       => ['hi' => 'hello'],
+                'receipt'     => 'Test Payout Receipt',
+                'send_email'    => true
+            ]
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ]
+    ],
+
+    'testOnBoardingApiBrandingTrue' => [
+        'request'  => [
+            'method'  => 'GET',
+            'url'     => '/payout-links/_meta/onboarding',
+            'content' => []
+        ],
+        'response' => [
+            'content' => [
+                'branding_completed' => true,
+                'link_created'       => false,
+                'link_processed'     => false
+            ]
+        ]
+    ],
+
+    'testOnBoardingApiPayoutLinkCreatedTrue' => [
+        'request'  => [
+            'method'  => 'GET',
+            'url'     => '/payout-links/_meta/onboarding',
+            'content' => []
+        ],
+        'response' => [
+            'content' => [
+                'branding_completed' => false,
+                'link_created'       => true,
+                'link_processed'     => false,
+            ]
+        ]
+    ],
+
+    'testOnBoardingApiPayoutLinkProcessedTrue' => [
+        'request'  => [
+            'method'  => 'GET',
+            'url'     => '/payout-links/_meta/onboarding',
+            'content' => []
+        ],
+        'response' => [
+            'content' => [
+                'branding_completed' => false,
+                'link_created'       => true,
+                'link_processed'     => true,
+            ]
+        ]
+    ],
+
+    'testOnBoardingApiAllFalseInDefaultState' => [
+        'request'  => [
+            'method'  => 'GET',
+            'url'     => '/payout-links/_meta/onboarding',
+            'content' => []
+        ],
+        'response' => [
+            'content' => [
+                'branding_completed'    => false,
+                'link_created'          => false,
+                'link_processed'        => false,
             ]
         ]
     ],
@@ -188,14 +508,14 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_AT_LEAST_ONE_OF_EMAIL_OR_PHONE_REQUIRED,
+                    'description' => PublicErrorDescription::BAD_REQUEST_CONTACT_ID_EMAIL_AND_PHONE_NUMBER_MISSING,
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
             'class'               => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_AT_LEAST_ONE_OF_EMAIL_OR_PHONE_REQUIRED,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_CONTACT_ID_EMAIL_AND_PHONE_NUMBER_MISSING,
         ]
     ],
 
@@ -272,41 +592,6 @@ return [
         ]
     ],
 
-    'testCreateThrowsExceptionWhenContactIdAndInformationGivenTogether' => [
-        'request'  => [
-            'method'  => 'POST',
-            'url'     => '/payout-links/',
-            'content' => [
-                'amount'      => 1000,
-                'currency'    => 'INR',
-                'description' => 'This is a test payout',
-                'purpose'     => 'refund',
-                'contact'     => [
-                    'id'         => 'cont_1000011contact',
-                    'name'       => 'cskdsds',
-                    'email'      => 'dsknlds@gmail.com',
-                    'contact'    => '1231231231'
-                ],
-                'notes'       => ['hi' => 'hello'],
-                'receipt'     => 'Test Payout Receipt'
-            ]
-        ],
-        'response' => [
-            'content' => [
-                'error' => [
-                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_EITHER_CONTACT_ID_OR_INFORMATION_TO_BE_SENT,
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'               => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_EITHER_CONTACT_ID_OR_INFORMATION_TO_BE_SENT,
-        ]
-    ],
-
-
     'testPayoutAmountAboveLimitFailsCreation' => [
         'request'  => [
             'method'  => 'POST',
@@ -345,10 +630,10 @@ return [
         'request'  => [
             'method'  => 'POST',
             'url'     => '',
-
+            'content' => []
         ],
         'response' => [
-            'content' => ['success' => 'OK']
+            'content' => []
         ]
     ],
 
@@ -1035,6 +1320,209 @@ return [
                 ],
                 'status'      => 'issued',
             ]
+        ]
+    ],
+
+    'testExceptionWhenSendSmsEnabledWithNoPhoneInContact' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payout-links',
+            'content' => [
+                'amount'      => 1000,
+                'currency'    => 'INR',
+                'description' => 'This is a test payout',
+                'purpose'     => 'refund',
+                'contact'     => [
+                    'name'       => 'cskdsds',
+                    'email'      => 'dsknlds@gmail.com',
+                    'contact'    => ''
+                ],
+                'notes'       => ['hi' => 'hello'],
+                'receipt'     => 'Test Payout Receipt',
+                'send_sms'    => true
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_SMS_NOTIFICATION_WITH_EMPTY_PHONE
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_SMS_NOTIFICATION_WITH_EMPTY_PHONE,
+        ]
+    ],
+
+    'testExceptionWhenSendEmailEnabledWithNoEmailInContact' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payout-links',
+            'content' => [
+                'amount'      => 1000,
+                'currency'    => 'INR',
+                'description' => 'This is a test payout',
+                'purpose'     => 'refund',
+                'contact'     => [
+                    'name'       => 'cskdsds',
+                    'email'      => '',
+                    'contact'    => '123123123'
+                ],
+                'notes'       => ['hi' => 'hello'],
+                'receipt'     => 'Test Payout Receipt',
+                'send_email'    => true
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_EMAIL_NOTIFICATION_WITH_EMPTY_EMAIL
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_EMAIL_NOTIFICATION_WITH_EMPTY_EMAIL,
+        ]
+    ],
+
+    'testResendApiQueuesEmail' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payout-links',
+            'content' => [
+            ]
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ]
+    ],
+
+    'testResendApiThrowsErrorForSendSmsWithoutContact' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payout-links',
+            'content' => [
+                'send_sms' => true
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_SMS_NOTIFICATION_WITH_EMPTY_PHONE,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_SMS_NOTIFICATION_WITH_EMPTY_PHONE,
+        ]
+    ],
+
+    'testResendApiThrowsErrorForSendEmailWithoutEmail' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payout-links',
+            'content' => [
+                'send_email' => true
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_EMAIL_NOTIFICATION_WITH_EMPTY_EMAIL,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_EMAIL_NOTIFICATION_WITH_EMPTY_EMAIL,
+        ]
+    ],
+
+    'testResendApiSendSmsWithSmsPassed' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payout-links',
+            'content' => [
+                'send_sms' => true,
+                'contact_phone_number' => 1231231231
+            ]
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ]
+    ],
+
+    'testResendApiSendEmailWithEmailPassed' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payout-links',
+            'content' => [
+                'send_email' => true,
+                'contact_email' => 'test@rzp.com'
+            ]
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ]
+    ],
+
+    'testResendApiUpdateContactThrowExceptionWhenContactPresent' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payout-links',
+            'content' => [
+                'contact_phone_number' => 1234123412
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_REWRITING_PHONE_NUMBER_NOT_PERMITTED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_REWRITING_PHONE_NUMBER_NOT_PERMITTED,
+        ]
+    ],
+
+    'testResendApiUpdateEmailThrowExceptionWhenEmailPresent' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payout-links',
+            'content' => [
+                'contact_email' => 'test@rzp.com'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_REWRITING_EMAIL_NOT_PERMITTED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_REWRITING_EMAIL_NOT_PERMITTED,
         ]
     ],
 

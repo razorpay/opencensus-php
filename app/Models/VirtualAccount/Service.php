@@ -149,8 +149,10 @@ class Service extends Base\Service
 
     public function fetchMultiple(array $input)
     {
-        // Via http route virtual accounts of primary balance only are exposed.
-        $input[Entity::BALANCE_ID] = $this->merchant->primaryBalance->getId();
+        if (isset($input[Entity::BALANCE_ID]) === false)
+        {
+            $input[Entity::BALANCE_ID] = $this->merchant->primaryBalance->getId();
+        }
 
         $virtualAccounts = $this->repo
                                 ->virtual_account
@@ -395,6 +397,8 @@ class Service extends Base\Service
     {
         (new Entity)->validateInput('create_offline_qr', $input);
 
+        $device = $this->getDeviceForQr($input);
+
         $order = $this->createOrder($input);
 
         // We don't any mutex here unlike create from order, since
@@ -416,7 +420,7 @@ class Service extends Base\Service
 
         $virtualAccount = $this->core->create($createVaArray, $this->merchant, null, $order);
 
-        $this->pushToDeviceIfApplicable($input, $virtualAccount);
+        $this->pushToDeviceIfApplicable($device, $input, $virtualAccount);
 
         // Doing this separately since we don't want to affect the VA entity code
         $orderId = $order->getPublicId();
@@ -428,7 +432,12 @@ class Service extends Base\Service
         return $va;
     }
 
-    protected function pushToDeviceIfApplicable(array $input, $virtualAccount)
+    public function bulkMigrateYesbank(array $input)
+    {
+        return (new Core)->bulkMigrateYesbank($input);
+    }
+
+    protected function getDeviceForQr(array $input)
     {
         if (isset($input['notifications']['device_id']) === false)
         {
@@ -439,9 +448,35 @@ class Service extends Base\Service
                        ->offline_device
                        ->findByPublicIdAndMerchant($input['notifications']['device_id'], $this->merchant);
 
+        if ($device === null)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Device Id provided is invalid.');
+        }
+
+        // We are locking a device, if the device is already lock that means it is in use.
+        // We are relying on auto-release mechanism of the redis for this.
+        $lockedAcquired = $this->mutex->acquire($device->getId(), 120);
+
+        if ($lockedAcquired === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Device Id provided is already in use.');
+        }
+
+        return $device;
+    }
+
+    protected function pushToDeviceIfApplicable($device, $input, $virtualAccount)
+    {
+        if ($device === null)
+        {
+            return;
+        }
+
         $currency = $input['currency'];
 
-        $formattedAmount = Currency::getSymbol($currency) . ' ' . ($input['amount'] / Currency::getExponent($currency));
+        $formattedAmount = Currency::getSymbol($currency) . ' ' . ($input['amount'] / Currency::getDenomination($currency));
 
         $payload = [
             'id'                => $virtualAccount->getPublicId(),

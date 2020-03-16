@@ -572,6 +572,33 @@ class Terminal extends Base
             'id'                        => $termId,
             'merchant_id'               => '100000Razorpay',
             'gateway'                   => 'enach_npci_netbanking',
+            'gateway_acquirer'          => 'citi',
+            'card'                      => 0,
+            'emandate'                  => 1,
+            'type'                      => [
+                Type::RECURRING_3DS => '1',
+                Type::RECURRING_NON_3DS => '1',
+            ],
+            'shared'                    => 1,
+            'gateway_merchant_id'       => 'shared_utility_code',
+            'gateway_merchant_id2'      => 'true',
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        //$this->create($attributes);
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
+    public function createSharedEnachNpciNetbankingOldTerminal(array $attributes = [])
+    {
+        $termId = \RZP\Models\Terminal\Shared::ENACH_NPCI_NETBANKING_TERMINAL;
+
+        $defaultValues = [
+            'id'                        => $termId,
+            'merchant_id'               => '100000Razorpay',
+            'gateway'                   => 'enach_npci_netbanking',
             'gateway_acquirer'          => 'yesb',
             'card'                      => 0,
             'emandate'                  => 1,
@@ -581,6 +608,7 @@ class Terminal extends Base
             ],
             'shared'                    => 1,
             'gateway_merchant_id'       => 'shared_utility_code',
+            'gateway_merchant_id2'      => 'false',
         ];
 
         $attributes = array_merge($defaultValues, $attributes);
@@ -1308,7 +1336,19 @@ class Terminal extends Base
             ],
         ];
 
-        return $this->createBankAccountTerminal(array_merge($defaultValues, $attributes));
+        $defaultValues1 = [
+            'id'                  => 'BANKACC3DSN3DZ',
+            'gateway_merchant_id' => '232323',
+            'type'                => [
+                Type::NON_RECURRING    => '1',
+                Type::NUMERIC_ACCOUNT  => '1',
+                Type::BUSINESS_BANKING => '1',
+            ],
+        ];
+
+         $this->createBankAccountTerminal(array_merge($defaultValues, $attributes));
+
+        $this->createBankAccountTerminal(array_merge($defaultValues1, $attributes));
     }
 
     public function createSharedBankAccountTerminal(array $attributes = [])

@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\UpiTransfer;
 
 use RZP\Models\Pricing\Fee;
+use RZP\Services\RazorXClient;
 use RZP\Models\Payment\Gateway;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -66,6 +67,41 @@ class UpiTransferTest extends TestCase
         $this->assertEquals($upiTransfer['expected'], true);
     }
 
+    public function testProcessUpiTransferPaymentIgnoreCase()
+    {
+        $this->processUpiTransferIgnoreCase();
+
+        $upiTransfer = $this->getLastEntity('upi_transfer', true);
+        $payment     = $this->getLastEntity('payment', true);
+        $upi         = $this->getLastEntity('upi', true);
+
+        $this->assertEquals('upi', $payment['method']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals(10000, $payment['amount']);
+        $this->assertEquals(Gateway::UPI_MINDGATE, $payment['gateway']);
+        $this->assertEquals('vpa', $payment['receiver_type']);
+
+        $this->assertEquals($upiTransfer['payment_id'], $payment['id']);
+        $this->assertEquals($this->vpa['address'], $upiTransfer['payee_vpa'], '', 0.0, 10, false, true);
+
+        $this->assertNotNull($upi['payment_id']);
+
+        $this->assertEquals($upiTransfer['expected'], true);
+    }
+
+    public function testProcessFailedUpiTransferPayment()
+    {
+        $this->processUpiTransfer(__FUNCTION__, false);
+
+        $upiTransfer = $this->getLastEntity('upi_transfer', true);
+        $payment     = $this->getLastEntity('payment', true);
+        $upi         = $this->getLastEntity('upi', true);
+
+        $this->assertNull($payment);
+        $this->assertNull($upiTransfer);
+        $this->assertNull($upi);
+    }
+
     public function testProcessUpiTransferRefund()
     {
         $this->processUpiTransfer();
@@ -90,14 +126,27 @@ class UpiTransferTest extends TestCase
         // Being used in scrooge checks
         $this->gateway = $payment['gateway'];
 
+        // Sending FTA to FTS
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                           ->setConstructorArgs([$this->app])
+                           ->setMethods(['getTreatment'])
+                           ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+                          ->willReturn('on');
+
         $this->refundPayment(
             $payment['id'],
             4000,
             [
                 'is_fta' => true,
                 'fta_data' => [
-                    'vpa' => [
-                        'address' => $payment['vpa']
+                    'bank_account' => [
+                        'account_number'   => $upiTransfer['payer_account'],
+                        'ifsc_code'        => $upiTransfer['payer_ifsc'],
+                        'beneficiary_name' => 'Not Available',
                     ],
                 ],
             ]
@@ -112,7 +161,9 @@ class UpiTransferTest extends TestCase
 
         $this->assertEquals($refund->getId(), $fta['source_id']);
         $this->assertEquals('refund', $fta['source_type']);
-        $this->assertNotNull($fta['vpa_id']);
+        $this->assertNotNull($fta['bank_account_id']);
+        $this->assertEquals(1, $fta['is_fts']);
+        $this->assertEquals('icici', $fta['channel']);
     }
 
     public function testProcessUpiTransferUnexpectedPayment()
@@ -143,6 +194,23 @@ class UpiTransferTest extends TestCase
         $this->assertEquals($transaction['amount'] * 1 / 100, $transaction['fee'] - $transaction['tax']);
     }
 
+    /**
+     * This test is to verify the case when merchant doesn't have either UPI or vpa pricing enabled.
+     * In that case, default/fallback pricing has to be picked up for payment creation.
+     */
+    public function testProcessUpiTransferWithDefaultPricing()
+    {
+        $pricingPlanId = $this->fixtures->create('pricing:standard_plan');
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => $pricingPlanId]);
+
+        $this->processUpiTransfer();
+
+        $transaction = $this->getLastEntity('transaction', true);
+        // Pricing 2%
+        $this->assertEquals($transaction['amount'] * 2 / 100, $transaction['fee'] - $transaction['tax']);
+    }
+
     protected function createVirtualAccount($mode = 'test', $merchantId = '10000000000000')
     {
         $this->ba->privateAuth();
@@ -161,7 +229,7 @@ class UpiTransferTest extends TestCase
         return $vpa;
     }
 
-    protected function processUpiTransfer($function = __FUNCTION__)
+    protected function processUpiTransfer($function = __FUNCTION__, $valid = true)
     {
         $this->ba->privateAuth();
 
@@ -173,7 +241,24 @@ class UpiTransferTest extends TestCase
 
         $response = $this->makeRequestAndGetContent($request);
 
-        $this->assertTrue($response['valid']);
+        $this->assertEquals($response['valid'], $valid);
+
+        return $response;
+    }
+
+    protected function processUpiTransferIgnoreCase($function = __FUNCTION__, $valid = true)
+    {
+        $this->ba->privateAuth();
+
+        $request = $this->testData[$function];
+
+        $data = $request['content'];
+
+        $request['content']['meRes'] = $this->mockServer(Gateway::UPI_MINDGATE)->encrypt($data['meRes']);
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals($response['valid'], $valid);
 
         return $response;
     }

@@ -5,6 +5,7 @@ namespace RZP\Models\FileStore;
 use RZP\Constants;
 use RZP\Exception;
 use RZP\Models\Feature\Constants as FeatureConstants;
+use RZP\Models\Merchant\Document\Type as MerchantDocumentType;
 
 class Type
 {
@@ -41,6 +42,8 @@ class Type
     const IDFC_NETBANKING_SUMMARY           = 'idfc_netbanking_summary';
 
     const ICICI_NETBANKING_REFUND           = 'icici_netbanking_refund';
+
+    const ICICI_PAYLATER_REFUND             = 'icici_paylater_refund';
 
     const OBC_NETBANKING_REFUND             = 'obc_netbanking_refund';
 
@@ -169,25 +172,6 @@ class Type
 
     const FIRST_DATA_PARES_FILE             = 'first_data_pares_file';
 
-    const MERCHANT_BUSINESS_PROOF_URL           = 'business_proof_url';
-    const MERCHANT_BUSINESS_OPERATION_PROOF_URL = 'business_operation_proof_url';
-    const MERCHANT_BUSINESS_PAN_URL             = 'business_pan_url';
-    const MERCHANT_ADDRESS_PROOF_URL            = 'address_proof_url';
-    const MERCHANT_PROMOTER_PROOF_URL           = 'promoter_proof_url';
-    const MERCHANT_PROMOTER_PAN_URL             = 'promoter_pan_url';
-    const MERCHANT_PROMOTER_ADDRESS_URL         = 'promoter_address_url';
-    const MERCHANT_FORM_12A_URL                 = 'form_12a_url';
-    const MERCHANT_FORM_80G_URL                 = 'form_80g_url';
-    const MERCHANT_DRIVER_LICENSE_FRONT         = 'driver_license_front';
-    const MERCHANT_DRIVER_LICENSE_BACK          = 'driver_license_back';
-    const MERCHANT_AADHAR_FRONT                 = 'aadhar_front';
-    const MERCHANT_AADHAR_BACK                  = 'aadhar_back';
-    const MERCHANT_CANCELLED_CHEQUE             = 'cancelled_cheque';
-    const MERCHANT_PASSPORT_BACK                = 'passport_back';
-    const MERCHANT_PASSPORT_FRONT               = 'passport_front';
-    const MERCHANT_VOTER_ID_FRONT               = 'voter_id_front';
-    const MERCHANT_VOTER_ID_BACK                = 'voter_id_back';
-
     const SETTLEMENT_BUCKET_CONFIG              = 'settlement_bucket_config';
     const TEST_BUCKET_CONFIG                    = 'test_bucket_config';
     const INVOICE_BUCKET_CONFIG                 = 'invoice_bucket_config';
@@ -226,6 +210,7 @@ class Type
             self::CITI_NACH_DEBIT_SUMMARY,
             self::SBI_EMANDATE_DEBIT,
             self::ICICI_NETBANKING_REFUND,
+            self::ICICI_PAYLATER_REFUND,
             self::ICICI_NETBANKING_REFUND_DIRECT_SETTLEMENT,
             self::AXIS_NETBANKING_REFUND,
             self::AXIS_EMANDATE_DEBIT,
@@ -308,26 +293,7 @@ class Type
             self::RECONCILIATION_BATCH_ANALYTICS_OUTPUT,
         ],
 
-        Constants\Entity::MERCHANT_DETAIL => [
-            self::MERCHANT_BUSINESS_PROOF_URL,
-            self::MERCHANT_BUSINESS_OPERATION_PROOF_URL,
-            self::MERCHANT_BUSINESS_PAN_URL,
-            self::MERCHANT_ADDRESS_PROOF_URL,
-            self::MERCHANT_PROMOTER_PROOF_URL,
-            self::MERCHANT_PROMOTER_PAN_URL,
-            self::MERCHANT_PROMOTER_ADDRESS_URL,
-            self::MERCHANT_FORM_12A_URL,
-            self::MERCHANT_FORM_80G_URL,
-            self::MERCHANT_DRIVER_LICENSE_FRONT,
-            self::MERCHANT_DRIVER_LICENSE_BACK,
-            self::MERCHANT_AADHAR_FRONT,
-            self::MERCHANT_AADHAR_BACK,
-            self::MERCHANT_PASSPORT_FRONT,
-            self::MERCHANT_PASSPORT_BACK,
-            self::MERCHANT_VOTER_ID_FRONT,
-            self::MERCHANT_VOTER_ID_BACK,
-            self::MERCHANT_CANCELLED_CHEQUE,
-        ],
+        Constants\Entity::MERCHANT_DETAIL => MerchantDocumentType::VALID_DOCUMENTS,
 
         Constants\Entity::INVOICE => [
             self::INVOICE_PDF,
@@ -393,6 +359,7 @@ class Type
         self::ALLAHABAD_NETBANKING_REFUND,
         self::ICICI_NETBANKING_REFUND,
         self::ICICI_NETBANKING_REFUND_DIRECT_SETTLEMENT,
+        self::ICICI_PAYLATER_REFUND,
         self::AXIS_NETBANKING_REFUND,
         self::AXIS_EMANDATE_DEBIT,
         self::FEDERAL_NETBANKING_REFUND,
@@ -498,17 +465,7 @@ class Type
             self::QR_CODE_IMAGE,
         ],
 
-        self::ACTIVATION_BUCKET_CONFIG => [
-            self::MERCHANT_BUSINESS_PROOF_URL,
-            self::MERCHANT_BUSINESS_OPERATION_PROOF_URL,
-            self::MERCHANT_BUSINESS_PAN_URL,
-            self::MERCHANT_ADDRESS_PROOF_URL,
-            self::MERCHANT_PROMOTER_PROOF_URL,
-            self::MERCHANT_PROMOTER_PAN_URL,
-            self::MERCHANT_PROMOTER_ADDRESS_URL,
-            self::MERCHANT_FORM_12A_URL,
-            self::MERCHANT_FORM_80G_URL,
-        ],
+        self::ACTIVATION_BUCKET_CONFIG => MerchantDocumentType::VALID_DOCUMENTS,
 
         self::H2H_BUCKET_CONFIG => [
             self::FUND_TRANSFER_H2H,

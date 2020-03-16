@@ -6,9 +6,11 @@ use RZP\Models\Base;
 use RZP\Constants\Table;
 use RZP\Constants\Entity as E;
 use RZP\Models\Base\Traits\HardDeletes;
+use RZP\Models\Base\QueryCache\Cacheable;
 
 class Entity extends Base\PublicEntity
 {
+    use Cacheable;
     use HardDeletes;
 
     const NAME        = 'name';
@@ -133,5 +135,25 @@ class Entity extends Base\PublicEntity
     public function isMerchantFeature(): bool
     {
         return ($this->getEntityType() === Constants::MERCHANT);
+    }
+
+    /**
+     * Returns the cache_tags to be used for Feature entities
+     *
+     * feature_<entity_name>_<entity_id>
+     *
+     * @param string $entityType
+     * @param string $entityId
+     *
+     * @return string
+     */
+    public static function getCacheTagsForEntities(string $entityType, string $entityId): string
+    {
+        return implode('_', [Entity::FEATURE, $entityType, $entityId]);
+    }
+
+    public static function getCacheTagsForNames(string $entityType, string $entityId): string
+    {
+        return implode('_', [Entity::FEATURE , 'names', $entityType, $entityId]);
     }
 }

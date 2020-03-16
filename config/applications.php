@@ -171,8 +171,16 @@ return [
         'secret'    => env('YESBANK_SECRET'),
     ],
 
+    'rbl_va'    => [
+        'org_token' => env('RBL_VA_SECRET'),
+    ],
+
     'rbl' => [
         'secret' => env('BANKING_ACCOUNT_RBL_WEBHOOK_SECRET'),
+    ],
+
+    'ecom' => [
+        'secret' => env('ECOM_WEBHOOK_SECRET'),
     ],
 
     'bharatqr' => [
@@ -344,6 +352,13 @@ return [
         'secret'   => env('APP_SUBSCRIPTIONS_SECRET'),
     ],
 
+    'offline_verification' => [
+        'url'           => env('APP_OFFLINE_VERIFICATION_URL'),
+        'username'      => 'api',
+        'secret'        => env('APP_OFFLINE_VERIFICATION_SECRET'),
+        'timeout'       => env('APP_OFFLINE_VERIFICATION_TIMEOUT', 60),
+    ],
+
     'payment_links' => [
         'secret'   => env('APP_PAYMENT_LINKS_SECRET'),
     ],
@@ -458,4 +473,21 @@ return [
         'client_id'     => env('SALESFORCE_CLIENT_ID'),
         'client_secret' => env('SALESFORCE_CLIENT_SECRET'),
     ],
+
+    'terminals_service' => [
+        'mock'          => env('TERMINALS_SERVICE_MOCK', false),
+        'live'          => [
+            'password'      => env('TERMINALS_SERVICE_LIVE_PASSWORD'),
+            'url'           => env('TERMINALS_SERVICE_LIVE_URL'),
+        ],
+        'test'          => [
+            'password'      => env('TERMINALS_SERVICE_TEST_PASSWORD'),
+            'url'           => env('TERMINALS_SERVICE_TEST_URL'),
+        ],
+
+    ],
+
+    'typeform' => [
+        'typeform_webhook_secret'  => env('TYPEFORM_WEBHOOK_SECRET'),
+    ]
 ];

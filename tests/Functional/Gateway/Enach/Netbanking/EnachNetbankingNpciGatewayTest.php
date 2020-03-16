@@ -32,9 +32,20 @@ class EnachNetbankingNpciGatewayTest extends TestCase
     use AttemptReconcileTrait;
     use PartnerTrait;
 
+    // Conditions for debit file generation
+    // 1. Has to be a working day
+    // 2. Payments selected in the file are created within the time interval of 9 AM of previous day to 9 AM today
+
+    const FIXED_WORKING_DAY_TIME     = 1583548200;  // 07-03-2020 8:00 AM
+    const FIXED_NON_WORKING_DAY_TIME = 1583634600;  // 08-03-2020 8:00 AM (sunday)
+
     public function setUp()
     {
         $this->testDataFilePath = __DIR__ . '/EnachNetbankingNpciGatewayTestData.php';
+
+        $fixedTime = (new Carbon())->timestamp(self::FIXED_WORKING_DAY_TIME);
+
+        Carbon::setTestNow($fixedTime);
 
         parent::setUp();
 
@@ -51,11 +62,11 @@ class EnachNetbankingNpciGatewayTest extends TestCase
 
     public function testPayment()
     {
-        $payment                 = $this->getEmandatePaymentArray('YESB', 'netbanking', 0);
+        $payment                 = $this->getEmandatePaymentArray('SBIN', 'netbanking', 0);
 
         $payment['bank_account'] = [
-            'account_number' => '914010009305862',
-            'ifsc'           => 'yesb0000123',
+            'account_number' => '1111111111111',
+            'ifsc'           => 'sbin0000123',
             'name'           => 'Test account',
         ];
 
@@ -66,18 +77,20 @@ class EnachNetbankingNpciGatewayTest extends TestCase
 
         $payment = $this->getLastEntity('payment', true);
         $this->assertEquals(0, $payment['amount']);
-        $this->assertEquals('authorized', $payment['status']);
+        $this->assertEquals('captured', $payment['status']);
         $this->assertEquals('initial', $payment['recurring_type']);
 
         $enach = $this->getLastEntity('enach', true);
         $this->assertNotNull($enach['gateway_reference_id']);
         $this->assertNotNull($enach['gateway_reference_id2']);
+        $this->assertNotNull($enach['umrn']);
         $this->assertEquals('true', $enach['status']);
-        $this->assertEquals('true' ,$enach['acknowledge_status']);
 
         $token = $this->getLastEntity('token', true);
         $this->assertEquals('netbanking', $token['auth_type']);
-        $this->assertEquals('initiated', $token['recurring_status']);
+        $this->assertEquals('confirmed', $token['recurring_status']);
+        $this->assertNotNull($token['gateway_token']);
+        $this->assertEquals($token['gateway_token'], $enach['umrn']);
     }
 
     public function testPaymentWithDisplayFeature()
@@ -91,11 +104,11 @@ class EnachNetbankingNpciGatewayTest extends TestCase
 
     public function testPaymentAuthCard()
     {
-        $payment                 = $this->getEmandatePaymentArray('YESB', 'debitcard', 0);
+        $payment                 = $this->getEmandatePaymentArray('SBIN', 'debitcard', 0);
 
         $payment['bank_account'] = [
-            'account_number' => '914010009305862',
-            'ifsc'           => 'yesb0000123',
+            'account_number' => '1111111111111',
+            'ifsc'           => 'sbin0000123',
             'name'           => 'Test account',
         ];
 
@@ -108,7 +121,7 @@ class EnachNetbankingNpciGatewayTest extends TestCase
 
         $this->assertEquals(0, $payment['amount']);
 
-        $this->assertEquals('authorized', $payment['status']);
+        $this->assertEquals('captured', $payment['status']);
 
         $this->assertEquals('initial', $payment['recurring_type']);
 
@@ -116,6 +129,7 @@ class EnachNetbankingNpciGatewayTest extends TestCase
 
         $this->assertNotNull($enach['gateway_reference_id']);
         $this->assertNotNull($enach['gateway_reference_id2']);
+        $this->assertNotNull($enach['umrn']);
 
         $this->assertEquals('true', $enach['status']);
 
@@ -125,15 +139,19 @@ class EnachNetbankingNpciGatewayTest extends TestCase
 
         $this->assertEquals('debitcard', $token['auth_type']);
 
-        $this->assertEquals('initiated', $token['recurring_status']);
+        $this->assertEquals('confirmed', $token['recurring_status']);
+
+        $this->assertNotNull($token['gateway_token']);
+
+        $this->assertEquals($token['gateway_token'], $enach['umrn']);
     }
 
     public function testPartnerPayment()
     {
-        $payment                 = $this->getEmandatePaymentArray('YESB', 'netbanking', 0);
+        $payment                 = $this->getEmandatePaymentArray('SBIN', 'netbanking', 0);
         $payment['bank_account'] = [
-            'account_number' => '914010009305862',
-            'ifsc'           => 'yesb0000123',
+            'account_number' => '1111111111111',
+            'ifsc'           => 'sbin0000123',
             'name'           => 'Test account',
         ];
 
@@ -146,7 +164,7 @@ class EnachNetbankingNpciGatewayTest extends TestCase
 
         $payment = $this->getLastEntity('payment', true);
 
-        $this->assertSame('authorized', $payment['status']);
+        $this->assertSame('captured', $payment['status']);
     }
 
     public function testPaymentRejectResponse()
@@ -165,6 +183,8 @@ class EnachNetbankingNpciGatewayTest extends TestCase
 
         $this->assertEquals('false', $enach['status']);
 
+        $this->assertEquals(null, $enach['umrn']);
+
         // if we get a non-error but failed registration response, we also get the NPCI reference id
         $this->assertNotNull($enach['gateway_reference_id']);
 
@@ -173,14 +193,16 @@ class EnachNetbankingNpciGatewayTest extends TestCase
         $this->assertEquals('netbanking', $token['auth_type']);
 
         $this->assertEquals(null , $token['recurring_status']);
+
+        $this->assertEquals(null, $token['gateway_token']);
     }
 
     public function testPaymentErrorResponse()
     {
-        $payment                 = $this->getEmandatePaymentArray('YESB', 'netbanking', 0);
+        $payment                 = $this->getEmandatePaymentArray('SBIN', 'netbanking', 0);
         $payment['bank_account'] = [
-            'account_number' => '914010009305862',
-            'ifsc'           => 'yesb0000123',
+            'account_number' => '1111111111111',
+            'ifsc'           => 'sbin0000123',
             'name'           => 'Test account',
         ];
 
@@ -205,6 +227,8 @@ class EnachNetbankingNpciGatewayTest extends TestCase
 
         $enach = $this->getLastEntity('enach', true);
 
+        $this->assertEquals(null, $enach['umrn']);
+
         $this->assertEquals('false', $enach['status']);
 
         $token = $this->getLastEntity('token', true);
@@ -212,14 +236,16 @@ class EnachNetbankingNpciGatewayTest extends TestCase
         $this->assertEquals('netbanking', $token['auth_type']);
 
         $this->assertEquals(null, $token['recurring_status']);
+
+        $this->assertEquals(null, $token['gateway_token']);
     }
 
     public function testPaymentVerify()
     {
-        $payment                 = $this->getEmandatePaymentArray('YESB', 'netbanking', 0);
+        $payment                 = $this->getEmandatePaymentArray('SBIN', 'netbanking', 0);
         $payment['bank_account'] = [
-            'account_number' => '914010009305862',
-            'ifsc'           => 'yesb0000123',
+            'account_number' => '1111111111111',
+            'ifsc'           => 'sbin0000123',
             'name'           => 'Test account',
         ];
 
@@ -254,6 +280,7 @@ class EnachNetbankingNpciGatewayTest extends TestCase
 
         $this->assertNotNull($enach['gateway_reference_id']);
         $this->assertEquals('true', $enach['status']);
+        $this->assertNotNull($enach['umrn']);
     }
 
     public function testAuthorizeFailedPayment()
@@ -272,140 +299,19 @@ class EnachNetbankingNpciGatewayTest extends TestCase
         $this->assertNotNull($enach['gateway_reference_id2']);
         $this->assertEquals('true', $enach['status']);
         $this->assertEquals('true' ,$enach['acknowledge_status']);
+        $this->assertNotNull($enach['umrn']);
 
         $token = $this->getLastEntity('token', true);
         $this->assertEquals('netbanking', $token['auth_type']);
-        $this->assertEquals('initiated', $token['recurring_status']);
-    }
-
-    public function testRegisterReconSuccess()
-    {
-        $payment                 = $this->getEmandatePaymentArray('YESB', 'netbanking', 0);
-
-        $payment['bank_account'] = [
-            'account_number' => '914010009305862',
-            'ifsc'           => 'yesb0000123',
-            'name'           => 'Test account',
-        ];
-
-        $order               = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
-
-        $payment['order_id'] = $order->getPublicId();
-
-        $this->doAuthPayment($payment);
-
-        $payment = $this->getLastEntity('payment', true);
-
-        $batchFile = $this->getBatchFileToUpload($payment, 'Active');
-
-        $url = '/admin/batches';
-
-        $this->ba->adminAuth();
-
-        $batch = $this->makeRequestWithGivenUrlAndFile($url, $batchFile);
-
-        $this->assertEquals('emandate', $batch['type']);
-        $this->assertEquals('created', $batch['status']);
-
-        $enach = $this->getDbLastEntityToArray('enach');
-
-        $this->assertNotNull($enach['umrn']);
-        $this->assertEquals('Active', $enach['registration_status']);
-
-        $token = $this->getDbLastEntityToArray('token');
-
-        $this->assertNotNull($token['gateway_token']);
         $this->assertEquals('confirmed', $token['recurring_status']);
-
-        $payment = $this->getDbLastEntityToArray('payment');
-
-        $this->assertEquals('captured', $payment['status']);
-
-        $transaction = $this->getDbLastEntityToArray('transaction');
-
-        $this->assertNotNull($transaction['reconciled_at']);
-    }
-
-    public function testPaymentSuccessRegisterFileRejected()
-    {
-        $payment                 = $this->getEmandatePaymentArray('YESB', 'netbanking', 0);
-
-        $payment['bank_account'] = [
-            'account_number' => '914010009305862',
-            'ifsc'           => 'yesb0000123',
-            'name'           => 'Test account',
-        ];
-
-        $order               = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
-
-        $payment['order_id'] = $order->getPublicId();
-
-        $this->doAuthPayment($payment);
-
-        $payment = $this->getLastEntity('payment', true);
-
-        $batchFile = $this->getBatchFileToUpload($payment, 'cancel', 'M032', 'Rejected as per customer confirmation');
-
-        $url = '/admin/batches';
-
-        $this->ba->adminAuth();
-
-        $batch = $this->makeRequestWithGivenUrlAndFile($url, $batchFile);
-
-        $this->assertEquals('emandate', $batch['type']);
-        $this->assertEquals('created', $batch['status']);
-
-        $payment = $this->getDbLastEntityToArray('payment');
-
-        $this->assertEquals('refunded', $payment['status']);
-
-        $transaction = $this->getDbLastEntityToArray('transaction');
-
-        $this->assertNotNull($transaction['reconciled_at']);
-
-        $enach = $this->getDbLastEntityToArray('enach');
-
-        $this->assertEquals('M032', $enach['error_code']);
-        $this->assertEquals('Rejected as per customer confirmation', $enach['error_message']);
-
-        $token = $this->getDbLastEntityToArray('token');
-
-        $this->assertEquals('rejected', $token['recurring_status']);
-        $this->assertEquals('E-Mandate registration cancelled by the customer', $token['recurring_failure_reason']);
-    }
-
-    public function testPaymentFailedRegisterFileRejected()
-    {
-        // Since registration during API failed, the payment will not be picked during register batch file processing
-        $this->createPaymentFailed();
-
-        $payment = $this->getLastEntity('payment', true);
-
-        $batchFile = $this->getBatchFileToUpload($payment, 'cancel', 'M032', 'Rejected as per customer confirmation');
-
-        $url = '/admin/batches';
-
-        $this->ba->adminAuth();
-
-        $batch = $this->makeRequestWithGivenUrlAndFile($url, $batchFile);
-
-        $this->assertEquals('emandate', $batch['type']);
-        $this->assertEquals('created', $batch['status']);
-
-        $payment = $this->getDbLastEntityToArray('payment');
-
-        $this->assertEquals('failed', $payment['status']);
-
-        $token = $this->getDbLastEntityToArray('token');
-
-        $this->assertEquals(null, $token['recurring_status']);
+        $this->assertNotNull($token['gateway_token']);
     }
 
     public function testDebitFileGeneration()
     {
         $response = $this->makeDebitPayment();
 
-        $paymentId = $this->updateCreatedAtOfPayment($response['razorpay_payment_id']);
+        $this->fixtures->stripSign($response['razorpay_payment_id']);
 
         $this->ba->adminAuth();
 
@@ -415,22 +321,35 @@ class EnachNetbankingNpciGatewayTest extends TestCase
 
         $content = $content['items'][0];
 
-        $file = $this->getLastEntity('file_store', true);
+        $files = $this->getEntities('file_store', [], true);
 
-        $expectedFileContent = [
-            'type'        => 'enach_npci_nb_debit',
+        $this->assertCount(2, $files['items']);
+
+        $summary = $files['items'][0];
+        $debit = $files['items'][1];
+
+        $expectedFileContentSummary = [
+            'type'        => 'citi_nach_debit_summary',
             'entity_type' => 'gateway_file',
             'entity_id'   => $content['id'],
-            'extension'   => 'csv',
+            'extension'   => 'xls',
         ];
 
-        $this->assertArraySelectiveEquals($expectedFileContent, $file);
+        $expectedFileContentDebit = [
+            'type'        => 'citi_nach_debit',
+            'entity_type' => 'gateway_file',
+            'entity_id'   => $content['id'],
+            'extension'   => 'txt',
+        ];
+
+        $this->assertArraySelectiveEquals($expectedFileContentSummary, $summary);
+        $this->assertArraySelectiveEquals($expectedFileContentDebit, $debit);
 
         $enach = $this->getLastEntity('enach', true);
 
         $this->assertArraySelectiveEquals(
             [
-                'payment_id' => $paymentId,
+                'payment_id' => $response['razorpay_payment_id'],
                 'action'     => 'authorize',
                 'bank'       => 'UTIB',
                 'status'     => null,
@@ -445,15 +364,11 @@ class EnachNetbankingNpciGatewayTest extends TestCase
 
     public function testDebitFileGenerationMultipleUtilityCode()
     {
-        $response = $this->makeDebitPayment();
-
-        $this->updateCreatedAtOfPayment($response['razorpay_payment_id']);
+        $this->makeDebitPayment();
 
         $this->fixtures->create('terminal:direct_enach_npci_netbanking_terminal');
 
-        $response = $this->makeDebitPayment();
-
-        $this->updateCreatedAtOfPayment($response['razorpay_payment_id']);
+        $this->makeDebitPayment();
 
         $this->ba->adminAuth();
 
@@ -465,29 +380,31 @@ class EnachNetbankingNpciGatewayTest extends TestCase
 
         $content = $content['items'][0];
 
-        $files = $this->getEntities('file_store', ['count' => 2], true);
+        $files = $this->getEntities('file_store', [], true);
 
-        $directTerminalFile = $files['items'][0];
-        $sharedTerminalFile = $files['items'][1];
+        $this->assertCount(3, $files['items']);
+
+        $directTerminalFile = $files['items'][1];
+        $sharedTerminalFile = $files['items'][2];
 
         $fileNamingConvention = 'yesbank/nach/input_file/NACH_DR_{$date}_{$utilityCode}_RAZORPAY_001';
         $date = Carbon::now(Timezone::IST)->format('dmY');
 
+        // TODO add assertion for file name
         $expectedFileContentForDirectTerminal = [
-            'type'        => 'enach_npci_nb_debit',
+            'type'        => 'citi_nach_debit',
             'entity_type' => 'gateway_file',
             'entity_id'   => $content['id'],
-            'extension'   => 'csv',
-            'name'        => strtr($fileNamingConvention, ['{$date}' => $date, '{$utilityCode}' => 'direct_utility_code'])
+            'extension'   => 'txt',
         ];
 
         $expectedFileContentForSharedTerminal = [
-            'type'        => 'enach_npci_nb_debit',
+            'type'        => 'citi_nach_debit',
             'entity_type' => 'gateway_file',
             'entity_id'   => $content['id'],
-            'extension'   => 'csv',
-            'name'        => strtr($fileNamingConvention, ['{$date}' => $date, '{$utilityCode}' => 'shared_utility_code'])
+            'extension'   => 'txt',
         ];
+
 
         $this->assertArraySelectiveEquals($expectedFileContentForDirectTerminal, $directTerminalFile);
         $this->assertArraySelectiveEquals($expectedFileContentForSharedTerminal, $sharedTerminalFile);
@@ -495,6 +412,21 @@ class EnachNetbankingNpciGatewayTest extends TestCase
         Queue::assertPushed(BeamJob::class, 1);
 
         Queue::assertPushedOn('beam_test', BeamJob::class);
+    }
+
+    public function testDebitFileGenerationOnNonWorkingDay()
+    {
+        $fixedTime = (new Carbon())->timestamp(self::FIXED_NON_WORKING_DAY_TIME);
+
+        Carbon::setTestNow($fixedTime);
+
+        $response = $this->makeDebitPayment();
+
+        $this->ba->adminAuth();
+
+        Queue::fake();
+
+        $this->startTest();
     }
 
     public function testDebitFileReconciliation()
@@ -511,9 +443,8 @@ class EnachNetbankingNpciGatewayTest extends TestCase
 
         Carbon::setTestNow(Carbon::now()->addDays(10));
 
-        $batch = $this->makeBatchDebitPayment($payment, $fileStatuses);
+        $batch = $this->makeBatchDebitPayment($payment);
 
-        $this->assertEquals('emandate', $batch['type']);
         $this->assertEquals('processed', $batch['status']);
 
         $payment = $this->getDbEntityById('payment', $payment['id']);
@@ -528,7 +459,7 @@ class EnachNetbankingNpciGatewayTest extends TestCase
 
         $this->assertArraySelectiveEquals(
             [
-                'status' => 'ACCEPTED',
+                'status' => '1',
             ],
             $enach
         );
@@ -548,22 +479,18 @@ class EnachNetbankingNpciGatewayTest extends TestCase
 
         Carbon::setTestNow(Carbon::now()->addDays(10));
 
-        $batch = $this->makeBatchDebitPayment($payment, $fileStatuses);
+        $batch = $this->makeBatchDebitPayment($payment, '0');
 
-        $this->assertEquals('emandate', $batch['type']);
         $this->assertEquals('processed', $batch['status']);
 
         $payment = $this->getDbEntityById('payment', $payment['id']);
 
         $this->assertEquals('failed', $payment['status']);
-        $this->assertEquals('BAD_REQUEST_PAYMENT_ACCOUNT_INSUFFICIENT_BALANCE', $payment['internal_error_code']);
+        $this->assertEquals('BAD_REQUEST_PAYMENT_FAILED', $payment['internal_error_code']);
 
         $enach = $this->getDbEntities('enach', ['payment_id' => $payment['id']])->first()->toArray();
 
-        $this->assertEquals('04', $enach['error_code']);
-        $this->assertEquals('Balance insufficient', $enach['error_message']);
-
-        $this->assertEquals('REJECTED', $enach['status']);
+        $this->assertEquals('0', $enach['status']);
     }
 
     public function testDebitFilePendingResponse()
@@ -580,9 +507,8 @@ class EnachNetbankingNpciGatewayTest extends TestCase
 
         Carbon::setTestNow(Carbon::now()->addDays(10));
 
-        $batch = $this->makeBatchDebitPayment($payment, $fileStatuses);
+        $batch = $this->makeBatchDebitPayment($payment, '3');
 
-        $this->assertEquals('emandate', $batch['type']);
         $this->assertEquals('processed', $batch['status']);
 
         $payment = $this->getDbEntityById('payment', $payment['id']);
@@ -590,81 +516,12 @@ class EnachNetbankingNpciGatewayTest extends TestCase
         $this->assertEquals('created', $payment['status']);
     }
 
-    public function testRegisterReconLateAuth()
-    {
-        // Late Auth will not work as we are doing recon based on NPCI Ref Id. Force Auth will be disabled.
-        // Depending on NPCI, this may be taken up later based on verify or if they send payment id in response file
-        $this->markTestSkipped();
-
-        $this->createPaymentFailed();
-
-        $payment = $this->getLastEntity('payment', true);
-
-        $batchFile = $this->getBatchFileToUpload($payment, 'Active');
-
-        $url = '/admin/batches';
-
-        $this->ba->adminAuth();
-
-        $batch = $this->makeRequestWithGivenUrlAndFile($url, $batchFile);
-
-        $this->assertEquals('emandate', $batch['type']);
-        $this->assertEquals('created', $batch['status']);
-
-        $enach = $this->getDbLastEntityToArray('enach');
-
-        $this->assertNotNull($enach['umrn']);
-        $this->assertEquals('Active', $enach['registration_status']);
-
-        $token = $this->getDbLastEntityToArray('token');
-
-        $this->assertNotNull($token['gateway_token']);
-        $this->assertEquals('confirmed', $token['recurring_status']);
-
-        $payment = $this->getDbLastEntityToArray('payment');
-
-        $this->assertEquals('captured', $payment['status']);
-
-        $transaction = $this->getDbLastEntityToArray('transaction');
-
-        $this->assertNotNull($transaction['reconciled_at']);
-    }
-
-    public function testRegisterErrorReconLateAuth()
-    {
-        // Tests a case where there is no match against gateway_reference_id in enach table
-        // Db query will fail and batch gracefully handles this and continues its execution.
-
-        $this->createPaymentFailed();
-
-        $payment = $this->getLastEntity('payment', true);
-
-        $batchFile = $this->getBatchFileToUpload($payment, 'Active');
-
-        $url = '/admin/batches';
-
-        $this->ba->adminAuth();
-
-        $batch = $this->makeRequestWithGivenUrlAndFile($url, $batchFile);
-
-        $this->assertEquals('emandate', $batch['type']);
-        $this->assertEquals('created', $batch['status']);
-
-        $token = $this->getDbLastEntityToArray('token');
-
-        $this->assertEquals(null, $token['recurring_status']);
-
-        $payment = $this->getDbLastEntityToArray('payment');
-
-        $this->assertEquals('failed', $payment['status']);
-    }
-
     protected function makeDebitPayment()
     {
         $payment                 = $this->getEmandatePaymentArray('UTIB', 'netbanking', 0);
 
         $payment['bank_account'] = [
-            'account_number' => '914010009305862',
+            'account_number' => '1111111111111',
             'ifsc'           => 'UTIB0000123',
             'name'           => 'Test account',
         ];
@@ -681,7 +538,7 @@ class EnachNetbankingNpciGatewayTest extends TestCase
 
         $tokenId = $paymentEntity[Payment::TOKEN_ID];
 
-        $order = $this->fixtures->create('order:emandate_order', ['amount' => 3000]);
+        $order = $this->fixtures->create('order:emandate_order', ['amount' => 300000]);
 
         $this->fixtures->edit(
             'token',
@@ -692,7 +549,7 @@ class EnachNetbankingNpciGatewayTest extends TestCase
                 Token\Entity::RECURRING_STATUS => Token\RecurringStatus::CONFIRMED,
             ]);
 
-        $payment             = $this->getEmandatePaymentArray('UTIB', null, 3000);
+        $payment             = $this->getEmandatePaymentArray('UTIB', null, 300000);
 
         $payment['token']    = $tokenId;
 
@@ -785,7 +642,7 @@ class EnachNetbankingNpciGatewayTest extends TestCase
                         'BRANCH'          => '',
                         'BANK_CODE'       => 'UTIB0000123',
                         'AC_TYPE'         => 'SAVINGS',
-                        'AC_NO'            => '914010009305862',
+                        'AC_NO'            => '1111111111111',
                         'AMOUNT'          => '99999',
                         'FREQUENCY'       => 'ADHO',
                         'DEBIT_TYPE'      => 'MAXIMUM AMOUNT',
@@ -837,7 +694,27 @@ class EnachNetbankingNpciGatewayTest extends TestCase
         return $file;
     }
 
-    protected function makeBatchDebitPayment($payment, $fileStatuses)
+    protected function getBatchDebitFile($payment, $status = '1')
+    {
+        $paymentId = $payment['id'];
+        $this->fixtures->stripSign($paymentId);
+
+        $data = '56       RAZORPAY SOFTWARE PVT LTD                             000000000                           000005000000000000000020001701202047642224498136619848   NACH00000000013149000000000000000000CITI000PIGW000018003                          00000000227
+67         10                  ABIJITO GUHA                            17012020        RAZORPAY SOFTWARE PV             000000030000047642224504081750481'. $status .'00HDFC00024971111111111111                      CITI000PIGWNACH00000000013149CTTATAAIAA' . $paymentId . '      10 000000000000000HDFC0000000010936518
+';
+
+        $name = 'temp.txt';
+
+        $handle = tmpfile();
+        fwrite($handle, $data);
+        fseek($handle, 0);
+
+        $file = (new TestingFile($name, $handle));
+
+        return $file;
+    }
+
+    protected function makeBatchDebitPayment($payment, $status='1')
     {
         $this->fixtures->create(
             'enach',
@@ -849,68 +726,26 @@ class EnachNetbankingNpciGatewayTest extends TestCase
             ]
         );
 
-        $data = [
-            [
-                'Presentation Date' => Carbon::now(Timezone::IST)->format('m/d/Y'),
-                'UMRN' => 'UTIB6000000005844847',
-                'Transaction Ref No' => $payment['id'],
-                'Utility Code' => '',
-                'Bank A/c Number' => '',
-                'Account Holder Name' => '',
-                'Bank' => '',
-                'IFSC/MICR' => '',
-                'Amount' => $payment['amount'] / 100,
-                'Reference 1' => '',
-                'Reference 2' => '',
-                'Status' => $fileStatuses['status'],
-                'Reason Code' => $fileStatuses['error_code'],
-                'Reason Discription' => $fileStatuses['error_desc'],
-                'User Reference' => '',
-            ]
-        ];
-
-        $handle = tmpfile();
-
-        $first = true;
-
-        foreach ($data as $row)
-        {
-            if ($first === true)
-            {
-                $headers = array_keys($row);
-
-                fputs($handle, implode(',', $headers) . "\n");
-
-                $first = false;
-            }
-
-            $row = $this->flatten($row);
-
-            fputs($handle, implode(',', $row) . "\n");
-        }
-
-        fseek($handle, 0);
-
-        $file = (new TestingFile('Debit MIS.csv', $handle));
+        $file = $this->getBatchDebitFile($payment, $status);
 
         $url = '/admin/batches';
 
         $this->ba->adminAuth();
 
-        $batch = $this->makeRequestWithGivenUrlAndFile($url, $file, 'debit');
+        $batch = $this->makeRequestWithGivenUrlAndFile($url, $file);
 
         return $this->getDbEntityById('batch', $batch['id']);
     }
 
-    protected function makeRequestWithGivenUrlAndFile($url, $file, $type = 'register')
+    protected function makeRequestWithGivenUrlAndFile($url, $file)
     {
         $request = [
             'url'     => $url,
             'method'  => 'POST',
             'content' => [
-                'type'     => 'emandate',
-                'sub_type' => $type,
-                'gateway'  => 'enach_npci_netbanking',
+                'type'     => 'nach',
+                'sub_type' => 'debit',
+                'gateway'  => 'nach_citi',
             ],
             'files'   => [
                 'file' => $file,
@@ -934,9 +769,8 @@ class EnachNetbankingNpciGatewayTest extends TestCase
 
         Carbon::setTestNow(Carbon::now()->addDays(10));
 
-        $batch = $this->makeBatchDebitPayment($payment, $fileStatuses);
+        $batch = $this->makeBatchDebitPayment($payment);
 
-        $this->assertEquals('emandate', $batch['type']);
         $this->assertEquals('processed', $batch['status']);
 
         $payment = $this->getDbEntityById('payment', $payment['id']);
@@ -969,7 +803,7 @@ class EnachNetbankingNpciGatewayTest extends TestCase
 
         $this->assertEquals('test', $bankAccount['beneficiary_name']);
 
-        $this->assertEquals('914010009305862', $bankAccount['account_number']);
+        $this->assertEquals('1111111111111', $bankAccount['account_number']);
 
         $this->assertEquals($bankAccount['id'], 'ba_' . $refund['bank_account_id']);
 
@@ -1007,29 +841,12 @@ class EnachNetbankingNpciGatewayTest extends TestCase
         $this->assertNotNull($attempt['utr']);
     }
 
-    protected function updateCreatedAtOfPayment($paymentId)
-    {
-        $this->fixtures->stripSign($paymentId);
-
-        // setting created at to 8am. Payments are picked from 9 to 9 cycle.
-        $createdAt = Carbon::today(Timezone::IST)->addHours(8)->getTimestamp();
-
-        $this->fixtures->edit(
-            'payment',
-            $paymentId,
-            [
-                'created_at' => $createdAt,
-            ]);
-
-        return $paymentId;
-    }
-
     protected function createPaymentFailed()
     {
-        $payment                 = $this->getEmandatePaymentArray('YESB', 'netbanking', 0);
+        $payment                 = $this->getEmandatePaymentArray('SBIN', 'netbanking', 0);
         $payment['bank_account'] = [
-            'account_number' => '914010009305862',
-            'ifsc'           => 'yesb0000123',
+            'account_number' => '1111111111111',
+            'ifsc'           => 'sbin0000123',
             'name'           => 'Test account',
         ];
 

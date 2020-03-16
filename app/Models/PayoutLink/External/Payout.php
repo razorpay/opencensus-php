@@ -20,7 +20,7 @@ class Payout
     public function processPayout(PayoutLinkEntity $payoutLink, MerchantEntity $merchant, string $mode): PayoutEntity
     {
         $input = [
-            PayoutEntity::NARRATION            => $payoutLink->getDescription(),
+            PayoutEntity::NARRATION            => $payoutLink->getTrimmedDescription(),
             PayoutEntity::PURPOSE              => $payoutLink->getPurpose(),
             PayoutEntity::AMOUNT               => $payoutLink->getAmount(),
             PayoutEntity::CURRENCY             => $payoutLink->getCurrency(),

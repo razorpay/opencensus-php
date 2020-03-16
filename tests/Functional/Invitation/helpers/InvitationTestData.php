@@ -122,6 +122,32 @@ return [
         ],
     ],
 
+    'testPostSendInvitationWithOwnerRole' => [
+        'request' => [
+            'url'     => '/invitations',
+            'method'  => 'POST',
+            'content' => [
+                'email'       => 'testteaminvite@razorpay.com',
+                'role'        => 'owner',
+                'token'       => str_random(40),
+                'sender_name' => 'sender_name'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The given role is not supported',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_USER_ROLE_INVALID,
+        ],
+    ],
+
     'testPostSendInvitationByRBLSupervisorToValidRole' => [
         'request'  => [
             'url'     => '/invitations',
@@ -200,6 +226,55 @@ return [
         'response' => [
             'content' => [
                 'role'        => 'manager',
+                'user_id'     => '1000InviteUser',
+                'merchant_id' => '1000InviteMerc',
+                'email'       => 'testteaminvite@razorpay.com',
+            ]
+        ]
+    ],
+
+    'testAcceptInvitationByAlreadyExistingUserOnX' => [
+        'request' => [
+            'url'     => '/invitations/8hd48md930kel3/accept',
+            'method'  => 'POST',
+            'content' => [
+                'user_id' => '1000InviteUser',
+            ],
+            'server'  => [
+                'HTTP_X-Dashboard-User-Id'    => '1000InviteUser',
+                'HTTP_X-Dashboard-User-Email' => 'testteaminvite@razorpay.com',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_USER_WITH_ROLE_ALREADY_EXISTS,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_USER_WITH_ROLE_ALREADY_EXISTS,
+        ],
+    ],
+
+    'testAcceptInvitationByAlreadyExistingUserOnXWithExperimentOff' => [
+        'request' => [
+            'url'     => '/invitations/8hd48md930kel3/accept',
+            'method'  => 'POST',
+            'content' => [
+                'user_id' => '1000InviteUser',
+            ],
+            'server'  => [
+                'HTTP_X-Dashboard-User-Id'    => '1000InviteUser',
+                'HTTP_X-Dashboard-User-Email' => 'testteaminvite@razorpay.com',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'role'        => 'admin',
                 'user_id'     => '1000InviteUser',
                 'merchant_id' => '1000InviteMerc',
                 'email'       => 'testteaminvite@razorpay.com',
@@ -538,7 +613,7 @@ return [
             'method'  => 'POST',
             'content' => [
                 'email'       => 'testteaminvite@razorpay.com',
-                'role'        => 'owner',
+                'role'        => 'admin',
                 'sender_name' => 'sender_name'
             ],
         ],
@@ -563,7 +638,7 @@ return [
             'method'  => 'POST',
             'content' => [
                 'email'       => 'testteaminvite@razorpay.com',
-                'role'        => 'owner',
+                'role'        => 'admin',
                 'sender_name' => 'sender_name'
             ],
         ],

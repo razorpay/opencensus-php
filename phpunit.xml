@@ -99,6 +99,7 @@
           <directory>./tests/Functional/Transaction/</directory>
           <directory>./tests/Functional/Transfer/</directory>
           <directory>./tests/Functional/User/</directory>
+          <directory>./tests/Functional/UserRole/</directory>
           <directory>./tests/Functional/VirtualAccount/</directory>
           <directory>./tests/Functional/Workflow/</directory>
           <directory>./tests/Functional/Reminders/</directory>

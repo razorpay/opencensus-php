@@ -446,6 +446,15 @@ class TerminalTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreatePaytmCardTerminal()
+    {
+        $url = '/merchants/100000Razorpay/terminals';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
     public function testDeleteTerminal()
     {
         $merchant = $this->fixtures
@@ -467,13 +476,13 @@ class TerminalTest extends TestCase
             'gateway'     => 'worldline',
             'status'      => 'pending'
         ]);
-        
+
         $terminalId = $terminal->getId();
 
         $this->testData[__FUNCTION__]['request']['url'] = '/terminals/' . $terminalId;
 
         $terminal = $this->getEntityById('terminal', $terminalId, true);
-            
+
         $content = $this->startTest();
 
         $this->expectException(Exception\BadRequestException::class);
@@ -583,7 +592,6 @@ class TerminalTest extends TestCase
         $tid = $terminal['id'];
 
         $data = [
-            'gateway' => 'hitachi',
             'type'    => [
                 'recurring_non_3ds' => '1',
                 'recurring_3ds'     => '1',
@@ -1186,7 +1194,14 @@ class TerminalTest extends TestCase
             return true;
         });
 
-        Event::assertNotDispatched(CacheHit::class);
+        Event::assertNotDispatched(CacheHit::class, function ($e)
+        {
+            foreach ($e->tags as $tag)
+            {
+                $this->assertNotEquals($tag, 'terminal_10000000000000');
+            }
+            return false;
+        });
 
         $this->defaultAuthPayment();
 
@@ -1355,5 +1370,52 @@ class TerminalTest extends TestCase
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
         $this->startTest();
+    }
+
+    public function testCreateCybersourceYesBTerminal()
+    {
+        $url = '/merchants/100000Razorpay/terminals';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+
+        $terminal = $this->getLastEntity('terminal', true);
+
+        $this->assertEquals('yesb', $terminal['gateway_acquirer']);
+
+        // Adding below assert to check if the org is being associated to terminal (via merchant) properly
+        $this->assertEquals('100000razorpay', $terminal['org_id']);
+    }
+
+    public function testAssignTerminalWithNoAccountTypeAttribute()
+    {
+        $merchant = $this->testAssignTerminalWithDifferentAccountTypeAttribute();
+
+        $url = '/merchants/' . $merchant->getKey() . '/terminals';
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+        $this->testData[__FUNCTION__]['request']['content']['gateway_merchant_id'] = '9999';
+
+        $this->startTest();
+    }
+
+    public function testAssignTerminalWithDifferentAccountTypeAttribute()
+    {
+        $merchant = $this->fixtures->create('merchant');
+
+        $url = '/merchants/' . $merchant->getKey() . '/terminals';
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+
+        $url = '/merchants/' . $merchant->getKey() . '/terminals';
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+        $this->testData[__FUNCTION__]['request']['content']['gateway_merchant_id'] = '9999';
+        $this->testData[__FUNCTION__]['response']['content']['gateway_merchant_id'] = '9999';
+        $this->testData[__FUNCTION__]['request']['content']['account_type'] = 'nodal';
+
+        $this->startTest();
+
+        return $merchant;
     }
 }

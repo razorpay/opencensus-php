@@ -80,6 +80,13 @@ class UserController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function bulkUpdateUserMapping()
+    {
+        $data = $this->service()->bulkUpdateUserMapping($this->input);
+
+        return ApiResponse::json($data);
+    }
+
     public function loginUser()
     {
         $input = Request::all();
@@ -98,11 +105,18 @@ class UserController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function setup2faMobileOnLogin()
+    public function setup2faContactMobile()
     {
         $input = Request::all();
 
-        $data = $this->service()->setup2faMobileOnLogin($input);
+        $data = $this->service()->setup2faContactMobile($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function resendOtp()
+    {
+        $data = $this->service()->resendOtp();
 
         return ApiResponse::json($data);
     }
@@ -112,6 +126,15 @@ class UserController extends Controller
         $input = Request::all();
 
         $data = $this->service()->setup2faVerifyMobileOnLogin($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function verifyUserSecondFactorAuth()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->verifyUserSecondFactorAuth($input);
 
         return ApiResponse::json($data);
     }
@@ -236,6 +259,22 @@ class UserController extends Controller
         $input = Request::all();
 
         $data = $this->service()->accountLockUnlock($id, $action);
+
+        return ApiResponse::json($data);
+    }
+
+    public function verifyUserThroughEmail()
+    {
+        $data = $this->service()->verifyUserThroughEmail($this->input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function loginUserNo2fa()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->login($input, false);
 
         return ApiResponse::json($data);
     }

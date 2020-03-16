@@ -83,6 +83,7 @@ class Constants
     const AXIS_EXPRESS_PAY                = 'axis_express_pay';
     const BANK_TRANSFER_REFUND            = 'bank_transfer_refund';
     const CARD_TRANSFER_REFUND            = 'card_transfer_refund';
+    const DISABLE_INSTANT_REFUNDS         = 'disable_instant_refunds';
     const LOG_RESPONSE                    = 'log_response';
     const EXCESS_ORDER_AMOUNT             = 'excess_order_amount';
     const DISABLE_AMOUNT_CHECK            = 'disable_amount_check';
@@ -133,7 +134,6 @@ class Constants
     const USE_MSWIPE_TERMINALS            = 'use_mswipe_terminals';
     const EXPOSE_GATEWAY_PROVIDER         = 'expose_gateway_provider';
     const EXPOSE_FA_VALIDATION_UTR        = 'expose_fa_validation_utr';
-    const VALIDATE_MERCHANT_DOMAIN        = 'validate_merchant_domain';
     const GOOGLE_PAY_CARDS                = 'google_pay_cards';
 
     const ENACH_INTERMEDIATE              = 'enach_intermediate';
@@ -299,8 +299,6 @@ class Constants
 
     const REDIRECTION_ONHOLD       = 'redirection_onhold';
 
-    const ERROR_METADATA_RESPONSE  = 'error_metadata_response';
-
     /*
      * This flag will be used to enable x_pro on a merchant. Once enabled the merchant can
      * decide to upgrade his account to x_pro. This feature gives flexibility initially
@@ -309,9 +307,19 @@ class Constants
     const X_PRO_INVITE  = 'x_pro_invite';
 
     /*
+     * This is a feature flag to enable Payout-Links V1+(Dashboard access) for merchants.
+     */
+    const X_PAYOUT_LINKS  = 'x_payout_links';
+
+    /*
      * This flag will be used to skip some merchants from hitachi automatic onboarding
      */
     const SKIP_HITACHI_AUTO_ONBOARD  = 'skip_hitachi_auto_onboard';
+
+    /*
+     * This flag will be used to enable payment created webhook
+     */
+    const PAYMENT_CREATED_WEBHOOK  = 'payment_created_webhook';
 
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
@@ -419,6 +427,7 @@ class Constants
         self::PRE_AUTH_SHIELD_INTG            => true,
         self::BANK_TRANSFER_REFUND            => true,
         self::CARD_TRANSFER_REFUND            => true,
+        self::DISABLE_INSTANT_REFUNDS         => true,
         self::LOG_RESPONSE                    => true,
         self::EXCESS_ORDER_AMOUNT             => true,
         self::DISABLE_AMOUNT_CHECK            => true,
@@ -476,6 +485,7 @@ class Constants
         self::PAYOUT_TO_CARDS                 => true,
         self::PAYMENT_ONHOLD                  => true,
         self::X_PRO_INVITE                    => true,
+        self::X_PAYOUT_LINKS                  => true,
         self::GOOGLE_PAY_OMNICHANNEL          => true,
         self::TERMINAL_ONBOARDING             => true,
         self::TEST_MODE_SETTLEMENT            => true,
@@ -493,7 +503,6 @@ class Constants
         self::NO_COMM_WITH_SUBMERCHANTS       => true,
         self::SUBMERCHANT_ONBOARDING          => true,
         self::EXPOSE_FA_VALIDATION_UTR        => true,
-        self::VALIDATE_MERCHANT_DOMAIN        => true,
         self::PARTNER_ACTIVATE_MERCHANT       => true,
         self::GOOGLE_PAY_CARDS                => true,
         self::FORCE_GREYLIST_INTERNAT         => true,
@@ -507,11 +516,11 @@ class Constants
         self::GENERATE_PARTNER_INVOICE        => true,
         self::AUTOMATED_COMM_PAYOUT           => true,
         self::OFFLINE_PAYMENTS                => true,
-        self::ERROR_METADATA_RESPONSE         => true,
         self::SKIP_HITACHI_AUTO_ONBOARD       => true,
         self::SKIP_WORKFLOWS_FOR_API          => true,
         self::DISPLAY_LA_PARENT_PAYMENT_ID    => true,
         self::REDIRECTION_ONHOLD              => true,
+        self::PAYMENT_CREATED_WEBHOOK         => true,
     ];
 
     // Entity type constants
@@ -641,6 +650,11 @@ class Constants
             'display_name'  => 'Razorpay X Pro Invite',
             'documentation' => '',
         ],
+        self::X_PAYOUT_LINKS              => [
+            'feature'       => self::X_PAYOUT_LINKS,
+            'display_name'  => 'Razorpay X - Payout Links',
+            'documentation' => '',
+        ],
         self::PAYOUT_WORKFLOWS          => [
             'feature'       => self::PAYOUT_WORKFLOWS,
             'display_name'  => 'Razorpay X - Workflows',
@@ -654,6 +668,16 @@ class Constants
         self::SKIP_WORKFLOWS_FOR_API         => [
             'feature'       => self::SKIP_WORKFLOWS_FOR_API,
             'display_name'  => 'Razorpay X - Skip workflows for API requests',
+            'documentation' => '',
+        ],
+        self::DISABLE_INSTANT_REFUNDS     => [
+            'feature'       => self::DISABLE_INSTANT_REFUNDS,
+            'display_name'  => 'Disable Instant Refunds',
+            'documentation' => '',
+        ],
+        self::CARD_TRANSFER_REFUND        => [
+            'feature'       => self::CARD_TRANSFER_REFUND,
+            'display_name'  => 'Card Transfer Refund',
             'documentation' => '',
         ],
     ];

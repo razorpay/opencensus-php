@@ -9,6 +9,12 @@ class Repository extends Base\Repository
 {
     protected $entity = EntityConstant::SETTLEMENT_DESTINATION;
 
+    protected $adminFetchParamRules = [
+        Entity::DESTINATION_ID   => 'sometimes|string|size:14',
+        Entity::DESTINATION_TYPE => 'sometimes|string|max:255',
+        Entity::SETTLEMENT_ID    => 'sometimes|string|size:14',
+    ];
+
     /**
      * fetches the active destination entry for given settlement ID
      *

@@ -55,7 +55,8 @@ class SmsOtpAuth implements BaseAuth
      * NOTE: Please make sure you send the sms before calling
      *       this method.
      *
-     * @param   array   $input
+     * @param array $input
+     *
      * @return  bool
      */
     public function is2faCredentialValid(array $input): bool

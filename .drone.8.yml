@@ -1,0 +1,594 @@
+pipeline:
+  prepare_test:
+    pull: false
+    image: razorpay/onggi:php-7.2
+    secrets: [docker_username, docker_password, git_token, git_username]
+    commands:
+      - cp ./environment/.env.drone ./environment/.env.testing
+      - touch /etc/php7/conf.d/assertion.ini
+      - 'echo "zend.assertions=1" >> /etc/php7/conf.d/assertion.ini'
+      - 'echo "assert.exception=1" >> /etc/php7/conf.d/assertion.ini'
+      - php -m
+      - chmod 777 -R storage
+      - git config --global user.name $GIT_USERNAME
+      - composer config --global github-oauth.github.com $GIT_TOKEN
+      - composer config -g repos.packagist composer https://packagist.in
+      - composer global require hirak/prestissimo
+      - composer install --no-interaction --optimize-autoloader
+      - mkdir -p /opt/razorpay/certs/first_data
+    when:
+      event:
+        include:
+          - push
+        exclude:
+          - deployment
+          - tag
+          - pull_request
+  validate_php_syntax:
+    group: A
+    pull: false
+    image: php:7.2-cli-alpine
+    commands:
+      - "find -path ./vendor -prune -o -iname '*.php'|xargs -n1 php -l"
+    when:
+      event:
+        include:
+          - push
+        exclude:
+          - deployment
+          - pull_request
+  application_test_suite:
+    group: A
+    pull: false
+    image: razorpay/onggi:php-7.2-apache-api
+    commands:
+      - "php vendor/phpunit/phpunit/phpunit --testsuite \"Application Test Suite\" --printer=\"Codedungeon\\\\PHPUnitPrettyResultPrinter\\\\Printer\""
+    environment:
+      - DB_LIVE_HOST=mysql
+      - DB_TEST_HOST=mysql
+      - DB_AUTH_HOST=mysql
+      - DB_LIVE_DATABASE=api_live_application
+      - DB_TEST_DATABASE=api_test_application
+      - DB_AUTH_DATABASE=api_auth_applicaiton
+      - REDIS_HOST=redis
+      - REDIS_LABS_HOST=redis
+      - ES_HOST=elasticsearch
+      - ES_AUDIT_HOST=elasticsearch
+    when:
+      event:
+        include:
+          - push
+        exclude:
+          - deployment
+          - tag
+          - pull_request
+  features_test_suite:
+    group: A
+    pull: false
+    image: razorpay/onggi:php-7.2-apache-api
+    commands:
+      - "php vendor/phpunit/phpunit/phpunit --testsuite \"Features-1 Test Suite\" --printer=\"Codedungeon\\\\PHPUnitPrettyResultPrinter\\\\Printer\""
+    environment:
+      - DB_LIVE_HOST=mysql
+      - DB_TEST_HOST=mysql
+      - DB_AUTH_HOST=mysql
+      - DB_LIVE_DATABASE=api_live_feature_1
+      - DB_TEST_DATABASE=api_test_feature_1
+      - DB_AUTH_DATABASE=api_auth_feature_1
+      - REDIS_HOST=redis2
+      - REDIS_LABS_HOST=redis2
+      - ES_HOST=elasticsearch
+      - ES_AUDIT_HOST=elasticsearch
+      - ES_ENTITY_INDEX_PREFIX=testing_features_1_
+      - ES_ENTITY_TYPE_PREFIX=testing_features_1_
+    when:
+      event:
+        include:
+          - push
+        exclude:
+          - deployment
+          - tag
+          - pull_request
+
+  feature_2_test_suite:
+    group: A
+    pull: false
+    image: razorpay/onggi:php-7.2-apache-api
+    commands:
+      - "php vendor/phpunit/phpunit/phpunit --testsuite \"Features-2 Test Suite\" --printer=\"Codedungeon\\\\PHPUnitPrettyResultPrinter\\\\Printer\""
+    environment:
+      - DB_LIVE_HOST=mysql
+      - DB_TEST_HOST=mysql
+      - DB_AUTH_HOST=mysql
+      - DB_LIVE_DATABASE=api_live_feature_2
+      - DB_TEST_DATABASE=api_test_feature_2
+      - DB_AUTH_DATABASE=api_auth_feature_2
+      - REDIS_HOST=redis3
+      - REDIS_LABS_HOST=redis3
+      - ES_HOST=elasticsearch
+      - ES_AUDIT_HOST=elasticsearch
+      - ES_ENTITY_INDEX_PREFIX=testing_features_2_
+      - ES_ENTITY_TYPE_PREFIX=testing_features_2_
+    when:
+      event:
+        include:
+          - push
+        exclude:
+          - deployment
+          - tag
+          - pull_request
+
+  feature_3_test_suite:
+    group: A
+    pull: false
+    image: razorpay/onggi:php-7.2-apache-api
+    commands:
+      - "php vendor/phpunit/phpunit/phpunit --testsuite \"Features-3 Test Suite\" --printer=\"Codedungeon\\\\PHPUnitPrettyResultPrinter\\\\Printer\""
+    environment:
+      - DB_LIVE_HOST=mysql2
+      - DB_TEST_HOST=mysql2
+      - DB_AUTH_HOST=mysql2
+      - DB_LIVE_DATABASE=api_live_feature_3
+      - DB_TEST_DATABASE=api_test_feature_3
+      - DB_AUTH_DATABASE=api_auth_feature_3
+      - REDIS_HOST=redis4
+      - REDIS_LABS_HOST=redis4
+      - ES_HOST=elasticsearch
+      - ES_AUDIT_HOST=elasticsearch
+      - ES_ENTITY_INDEX_PREFIX=testing_features_3_
+      - ES_ENTITY_TYPE_PREFIX=testing_features_3_
+    when:
+      event:
+        include:
+          - push
+        exclude:
+          - deployment
+          - tag
+          - pull_request
+  feature_4_test_suite:
+    group: A
+    pull: false
+    image: razorpay/onggi:php-7.2-apache-api
+    commands:
+      - "php vendor/phpunit/phpunit/phpunit --testsuite \"Features-4 Test Suite\" --printer=\"Codedungeon\\\\PHPUnitPrettyResultPrinter\\\\Printer\""
+    environment:
+      - DB_LIVE_HOST=mysql2
+      - DB_TEST_HOST=mysql2
+      - DB_AUTH_HOST=mysql2
+      - DB_LIVE_DATABASE=api_live_feature_4
+      - DB_TEST_DATABASE=api_test_feature_4
+      - DB_AUTH_DATABASE=api_auth_feature_4
+      - REDIS_HOST=redis5
+      - REDIS_LABS_HOST=redis5
+      - ES_HOST=elasticsearch
+      - ES_AUDIT_HOST=elasticsearch
+      - ES_ENTITY_INDEX_PREFIX=testing_features_4_
+      - ES_ENTITY_TYPE_PREFIX=testing_features_4_
+    when:
+      event:
+        include:
+          - push
+        exclude:
+          - deployment
+          - tag
+          - pull_request
+
+  feature_6_test_suite:
+    group: A
+    pull: false
+    image: razorpay/onggi:php-7.2-apache-api
+    commands:
+      - "php vendor/phpunit/phpunit/phpunit --testsuite \"Feature-6 Test Suite\" --printer=\"Codedungeon\\\\PHPUnitPrettyResultPrinter\\\\Printer\""
+    environment:
+    - DB_AUTH_DATABASE=api_auth_feature_6
+    - DB_AUTH_HOST=mysql4
+    - DB_LIVE_DATABASE=api_live_feature_6
+    - DB_LIVE_HOST=mysql4
+    - DB_TEST_DATABASE=api_test_feature_6
+    - DB_TEST_HOST=mysql4
+    - DB_UPI_PAYMENTS_MOCKED=false
+    - DB_UPI_PAYMENTS_LIVE_HOST=mysql4
+    - DB_UPI_PAYMENTS_TEST_HOST=mysql4
+    - SLAVE_DB_UPI_PAYMENTS_LIVE_HOST=mysql4
+    - SLAVE_DB_UPI_PAYMENTS_TEST_HOST=mysql4
+    - ES_AUDIT_HOST=elasticsearch
+    - ES_ENTITY_INDEX_PREFIX=testing_feature_6_
+    - ES_ENTITY_TYPE_PREFIX=testing_feature_6_
+    - ES_HOST=elasticsearch
+    - REDIS_HOST=redis5
+    - REDIS_LABS_HOST=redis5
+    when:
+      event:
+        include:
+          - push
+        exclude:
+          - deployment
+          - tag
+          - pull_request
+
+  gateway_3_test_suite:
+    group: A
+    pull: false
+    image: razorpay/onggi:php-7.2-apache-api
+    commands:
+      - "php vendor/phpunit/phpunit/phpunit --testsuite \"Gateway-3 Test Suite\" --printer=\"Codedungeon\\\\PHPUnitPrettyResultPrinter\\\\Printer\""
+    environment:
+    - DB_AUTH_DATABASE=api_auth_feature_5
+    - DB_AUTH_HOST=mysql2
+    - DB_LIVE_DATABASE=api_live_feature_5
+    - DB_LIVE_HOST=mysql2
+    - DB_TEST_DATABASE=api_test_feature_5
+    - DB_TEST_HOST=mysql2
+    - ES_AUDIT_HOST=elasticsearch
+    - ES_ENTITY_INDEX_PREFIX=testing_features_5_
+    - ES_ENTITY_TYPE_PREFIX=testing_features_5_
+    - ES_HOST=elasticsearch
+    - REDIS_HOST=redis6
+    - REDIS_LABS_HOST=redis6
+    when:
+      event:
+        include:
+          - push
+        exclude:
+          - deployment
+          - tag
+          - pull_request
+
+  payment_test_suite:
+    group: A
+    pull: false
+    image: razorpay/onggi:php-7.2-apache-api
+    commands:
+      - "php vendor/phpunit/phpunit/phpunit --testsuite \"Payment Test Suite\" --printer=\"Codedungeon\\\\PHPUnitPrettyResultPrinter\\\\Printer\""
+    environment:
+    - DB_AUTH_DATABASE=api_auth_payment
+    - DB_AUTH_HOST=mysql3
+    - DB_LIVE_DATABASE=api_live_payment
+    - DB_LIVE_HOST=mysql3
+    - DB_TEST_DATABASE=api_test_payment
+    - DB_TEST_HOST=mysql3
+    - ES_AUDIT_HOST=elasticsearch
+    - ES_ENTITY_INDEX_PREFIX=testing_payments_
+    - ES_ENTITY_TYPE_PREFIX=testing_payments_
+    - ES_HOST=elasticsearch
+    - REDIS_HOST=redis7
+    - REDIS_LABS_HOST=redis7
+    when:
+      event:
+        include:
+          - push
+        exclude:
+          - deployment
+          - tag
+          - pull_request
+
+  gateway_1_test_suite:
+    group: A
+    pull: false
+    image: razorpay/onggi:php-7.2-apache-api
+    commands:
+      - "php vendor/phpunit/phpunit/phpunit --testsuite \"Gateway-1 Test Suite\" --printer=\"Codedungeon\\\\PHPUnitPrettyResultPrinter\\\\Printer\""
+
+    environment:
+    - DB_AUTH_DATABASE=api_auth_gateway1
+    - DB_AUTH_HOST=mysql3
+    - DB_LIVE_DATABASE=api_live_gateway1
+    - DB_LIVE_HOST=mysql3
+    - DB_TEST_DATABASE=api_test_gateway1
+    - DB_TEST_HOST=mysql3
+    - ES_AUDIT_HOST=elasticsearch
+    - ES_ENTITY_INDEX_PREFIX=testing_gateway_1_
+    - ES_ENTITY_TYPE_PREFIX=testing_gateway_1_
+    - ES_HOST=elasticsearch
+    - REDIS_HOST=redis8
+    - REDIS_LABS_HOST=redis8
+    when:
+      event:
+        include:
+          - push
+        exclude:
+          - deployment
+          - tag
+          - pull_request
+
+  gateway_2_test_suite:
+    group: A
+    pull: false
+    image: razorpay/onggi:php-7.2-apache-api
+    commands:
+      - "php vendor/phpunit/phpunit/phpunit --testsuite \"Gateway-2 Test Suite\" --printer=\"Codedungeon\\\\PHPUnitPrettyResultPrinter\\\\Printer\""
+    environment:
+    - DB_AUTH_DATABASE=api_auth_gateway2
+    - DB_AUTH_HOST=mysql3
+    - DB_LIVE_DATABASE=api_live_gateway2
+    - DB_LIVE_HOST=mysql3
+    - DB_TEST_DATABASE=api_test_gateway2
+    - DB_TEST_HOST=mysql3
+    - ES_AUDIT_HOST=elasticsearch
+    - ES_ENTITY_INDEX_PREFIX=testing_gateway_2_
+    - ES_ENTITY_TYPE_PREFIX=testing_gateway_2_
+    - ES_HOST=elasticsearch
+    - REDIS_HOST=redis9
+    - REDIS_LABS_HOST=redis9
+    when:
+      event:
+        include:
+          - push
+        exclude:
+          - deployment
+          - tag
+          - pull_request
+  build-app:
+    group: A
+    pull: false
+    image: lomkju/drone-plugins:build
+    secrets: [docker_username, docker_password, git_token, git_username]
+    repo: razorpay/api
+    build_args_from_env: [git_token, git_username]
+    build_args:
+     - GIT_COMMIT_HASH=${DRONE_COMMIT_SHA}
+    tags: ${DRONE_COMMIT_SHA}
+    when:
+      event:
+        include:
+          - push
+        exclude:
+          - deployment
+          - pull_request
+      status:
+        - success
+
+  build-checkout:
+    group: A
+    pull: false
+    image: lomkju/drone-plugins:build
+    secrets: [docker_username, docker_password, git_token, git_username]
+    repo: razorpay/api
+    build_args_from_env: [git_token, git_username]
+    build_args:
+     - GIT_COMMIT_HASH=${DRONE_COMMIT_SHA}
+    tags: "checkout-${DRONE_COMMIT_SHA}"
+    dockerfile: Dockerfile.checkout
+    when:
+      event:
+        include:
+          - push
+        exclude:
+          - deployment
+          - pull_request
+      status:
+        - success
+
+  build-openresty:
+    group: A
+    pull: false
+    image: lomkju/drone-plugins:build
+    secrets: [docker_username, docker_password, git_token, git_username]
+    build_args:
+    - "GIT_COMMIT_HASH=${DRONE_COMMIT_SHA}"
+    build_args_from_env: [git_token, git_username]
+    repo: razorpay/api
+    tags: "openresty-${DRONE_COMMIT_SHA}"
+    dockerfile: Dockerfile.openresty
+    when:
+      event:
+        include:
+          - push
+        exclude:
+          - deployment
+          - pull_request
+      status:
+        - success
+
+  trigger_regression_suite:
+    pull: false
+    image: plugins/webhook
+    urls: "https://deploy-api.razorpay.com/webhooks/webhook/x-regression"
+    content_type: application/json
+    template: { "branch" : "{{build.branch}}", "commit": "{{build.commit}}" , "status": "{{build.status}}" , "repo": "{{repo.name}}"}
+    when:
+      branch:
+        - master
+      status:
+        - success
+
+  build-notify:
+    pull: false
+    image: plugins/slack
+    secrets: [slack_webhook]
+    channel: tech_builds
+    icon_url: "https://avatars2.githubusercontent.com/u/2181346?s=200&v=4"
+    template: "{{#success build.status}}\n  Build succeeded.\n{{else}}\n  Build failed.\n{{/success}}\n  Build No:{{build.number}}\n  Branch: {{build.branch}}\n  Commit: {{build.commit}}\n  Author: {{build.author}}\n  Started at: {{build.started}}\n  Time taken: {{since build.started}}\n  Link: {{build.link}}\n"
+    username: drone
+    when:
+      event:
+        include:
+          - push
+        exclude:
+          - deployment
+          - pull_request
+      status:
+        - success
+
+  build-notify-master:
+    pull: false
+    image: plugins/slack
+    secrets: [slack_webhook]
+    channel: tech_backend
+    icon_url: "https://avatars2.githubusercontent.com/u/2181346?s=200&v=4"
+    template: "Master Build failed. Build No:{{build.number}}\n Branch: {{build.branch}}\n Commit: {{build.commit}}\n Author: {{build.author}}\n Started at: {{build.started}}\n Time taken: {{since build.started}}\n Link: {{build.link}}\n"
+    username: drone
+    when:
+      branch:
+        - master
+      status:
+        - failure
+
+services:
+  mysql:
+    pull: false
+    image: mysql:5.7
+    environment:
+      MYSQL_DATABASE: api
+      MYSQL_ROOT_PASSWORD: root
+    when:
+      event:
+        include:
+          - push
+        exclude:
+          - deployment
+          - pull_request
+
+  mysql2:
+    pull: false
+    image: mysql:5.7
+    environment:
+      MYSQL_DATABASE: api
+      MYSQL_ROOT_PASSWORD: root
+    when:
+      event:
+        include:
+          - push
+        exclude:
+          - deployment
+          - pull_request
+
+  mysql3:
+    pull: false
+    image: mysql:5.7
+    environment:
+      MYSQL_DATABASE: api
+      MYSQL_ROOT_PASSWORD: root
+    when:
+      event:
+        include:
+          - push
+        exclude:
+          - deployment
+          - pull_request
+
+  mysql4:
+    pull: false
+    image: mysql:5.7
+    environment:
+      MYSQL_DATABASE: payments_upi
+      MYSQL_ROOT_PASSWORD: root
+    when:
+      event:
+        include:
+          - push
+        exclude:
+          - deployment
+          - pull_request
+
+  redis:
+    pull: false
+    image: redis
+    when:
+      event:
+        include:
+          - push
+        exclude:
+          - deployment
+          - pull_request
+
+  redis2:
+    pull: false
+    image: redis
+    when:
+      event:
+        include:
+          - push
+        exclude:
+          - deployment
+          - pull_request
+
+  redis3:
+    pull: false
+    image: redis
+    when:
+      event:
+        include:
+          - push
+        exclude:
+          - deployment
+          - pull_request
+
+  redis4:
+    pull: false
+    image: redis
+    when:
+      event:
+        include:
+          - push
+        exclude:
+          - deployment
+          - pull_request
+
+  redis5:
+    pull: false
+    image: redis
+    when:
+      event:
+        include:
+          - push
+        exclude:
+          - deployment
+          - pull_request
+
+  redis6:
+    pull: false
+    image: redis
+    when:
+      event:
+        include:
+          - push
+        exclude:
+          - deployment
+          - pull_request
+
+  redis7:
+    pull: false
+    image: redis
+    when:
+      event:
+        include:
+          - push
+        exclude:
+          - deployment
+          - pull_request
+
+  redis8:
+    pull: false
+    image: redis
+    when:
+      event:
+        include:
+          - push
+        exclude:
+          - deployment
+          - pull_request
+
+  redis9:
+    pull: false
+    image: redis
+    when:
+      event:
+        include:
+          - push
+        exclude:
+          - deployment
+          - pull_request
+
+  elasticsearch:
+    pull: false
+    image: elasticsearch:5.2-alpine
+    environment:
+      ES_JAVA_OPTS: -Xms512m -Xmx512m
+    when:
+      event:
+        include:
+          - push
+        exclude:
+          - deployment
+          - pull_request

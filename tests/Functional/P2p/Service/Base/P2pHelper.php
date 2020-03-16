@@ -62,6 +62,12 @@ class P2pHelper
     protected $isMerchantOnAuth;
 
     /**
+     * A valid scenario can we added to in request, which will be passed as header
+     * @var Scenario
+     */
+    protected $scenarioInContext;
+
+    /**
      * Set fixtures,
      * Initiate Auth for Device 1
      * Resets response callbacks
@@ -78,6 +84,27 @@ class P2pHelper
 
         $this->resetResponseCallbacks([[$this, 'defaultResponseCallback']]);
     }
+
+    /******************************* Common Functions ******************************/
+
+    public function callback(string $gateway, array $options = [])
+    {
+        // This API work on direct auth
+        $this->setMerchantInContext(false);
+        $this->setCustomerInContext(false);
+        $this->setDeviceInContext(false);
+
+        $request = $this->request('callback/%s', [$gateway]);
+
+        $this->resetContexts();
+
+        $request->server($options['server'] ?? []);
+
+        $request->json($options['content']);
+
+        return $this->post($request);
+    }
+
 
     /**
      * Enable or disable Merchant Context
@@ -132,6 +159,59 @@ class P2pHelper
     }
 
     /**
+     * Scenario documentation is kept separately
+     */
+    public function setScenarioInContext(
+        string $id = null,
+        string $sub = '000',
+        string $contact = '919999999999',
+        string $stan = null): self
+    {
+        $scenario = ($id === null) ? null : new Scenario($id, $sub, $contact, $stan);
+
+        $this->scenarioInContext = $scenario;
+
+        // If a scenario is passed to actually set it
+        if ($scenario instanceof Scenario)
+        {
+            $callback = $scenario->getScenarioCallback();
+
+            $wrapper = function(TestResponse $response) use ($callback, $id)
+            {
+                // Run for the scenario only
+                if (($this->scenarioInContext instanceof Scenario) and
+                    ($this->scenarioInContext->getId() === $id))
+                {
+                    $callback($response);
+                }
+            };
+
+            if ($scenario->isSuccess())
+            {
+                $this->registerResponseCallback($wrapper);
+            }
+            else
+            {
+                // For failure scenario we are disabling the validation by force
+                $this->withSchemaValidated(false);
+
+                $this->withFailureResponse($wrapper);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * Only to be called once set
+     * @return Scenario
+     */
+    public function getScenarioInContext(): Scenario
+    {
+        return $this->scenarioInContext;
+    }
+
+    /**
      * Reset contexts to their initial value
      */
     public function resetContexts()
@@ -139,6 +219,7 @@ class P2pHelper
         $this->setMerchantInContext(true);
         $this->setCustomerInContext(true);
         $this->setDeviceInContext(true);
+        $this->setScenarioInContext();
     }
 
     /**
@@ -176,6 +257,11 @@ class P2pHelper
     {
         if ($response->isSuccessful() === true)
         {
+            if ($this->expectFailureInResponse === true)
+            {
+                $this->throwTestingException('Expecting a failure', $response->json());
+            }
+
             $response->assertHeader('X-Razorpay-Request-Id');
             $response->assertHeader('Content-Type', 'application/json');
 
@@ -405,7 +491,7 @@ class P2pHelper
         {
             $suffix = 'processed';
 
-            if (isset($data->type) and in_array($data->type, ['sdk', 'sms', 'post'], true))
+            if (isset($data->type) and in_array($data->type, ['sdk', 'sms', 'redirect', 'poll'], true))
             {
                 $suffix = 'next';
             }
@@ -439,7 +525,7 @@ class P2pHelper
             $errors[$error['property']][] = $error['message'];
         }
 
-        $this->throwTestingException('Json schema validation failed', $errors);
+        $this->throwTestingException('Json schema validation failed' . $jsonPath, $errors);
     }
 
     protected function makeUri(string $uri, array $parameters)
@@ -484,6 +570,11 @@ class P2pHelper
         else if ($this->isDeviceInContext === true)
         {
             $servers['PHP_AUTH_PW'] = $this->fixtures->device->getAuthToken();
+        }
+
+        if ($this->scenarioInContext instanceof Scenario)
+        {
+            $servers['HTTP_X_RAZORPAY_REQUEST_ID'] = $this->scenarioInContext->toRequestId();
         }
 
         return $servers;

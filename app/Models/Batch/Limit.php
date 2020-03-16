@@ -17,10 +17,12 @@ class Limit
         Type::REFUND                                => 1000,
         Type::PAYMENT_LINK                          => 500100,
         Type::INSTANT_ACTIVATION                    => 50001,
+        Type::ENTITY_UPDATE_ACTION                  => 50000,
         Type::IRCTC_REFUND                          => 100000,
         Type::IRCTC_DELTA_REFUND                    => 100000,
         Type::IRCTC_SETTLEMENT                      => 100000,
         Type::VIRTUAL_BANK_ACCOUNT                  => 50000,
+        Type::BANK_TRANSFER                         => 3000,
         Type::PAYOUT                                => 50000,
         'emandate_register_hdfc'                    => 50000,
         'emandate_register_enach_rbl'               => 10000,
@@ -35,7 +37,7 @@ class Limit
         Type::PARTNER_SUBMERCHANTS                  => 5000,
         Type::ENTITY_MAPPING                        => 10000,
         Type::AUTH_LINK                             => 10000,
-        Type::RECURRING_CHARGE                      => 10000,
+        Type::RECURRING_CHARGE                      => 50000,
         Type::SUB_MERCHANT                          => 5000,
         Type::SUBMERCHANT_ASSIGN                    => 50000,
         TYPE::IIN_NPCI_RUPAY                        => 50000,
@@ -44,6 +46,8 @@ class Limit
         TYPE::PRICING_RULE                          => 50000,
         Type::ADMIN_BATCH                           => 5000,
         Type::MDR_ADJUSTMENT                        => 1100000,
+        Type::ECOLLECT_ICICI                        => 100000,
+        'nach_debit_nach_citi'                      => 50000,
     ];
 
     /**

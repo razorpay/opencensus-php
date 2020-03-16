@@ -104,6 +104,17 @@ class CalculatorTest extends OAuthTestCase
         $this->ruleEngine->execute(__FUNCTION__);
     }
 
+    public function testImplicitVariableWithSubmerchantPartnerDiffPricingRules()
+    {
+        $this->ruleEngine->execute(__FUNCTION__);
+    }
+
+    public function testImplicitVariableWithSubmerchantPartnerESPricingRules()
+    {
+        $this->ruleEngine->execute(__FUNCTION__);
+
+    }
+
     /**
      * Asserts that the commission doesn't get created if implicit commission is expired and explicit is not defined.
      */

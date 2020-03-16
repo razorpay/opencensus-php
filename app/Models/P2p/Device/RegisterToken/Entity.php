@@ -179,4 +179,12 @@ class Entity extends Base\Entity
     {
         return $this->getAttribute(self::DEVICE_DATA);
     }
+
+    /**
+     * @return bool Whether the register token is completed
+     */
+    public function isCompleted(): bool
+    {
+        return ($this->getStatus() === Status::COMPLETED);
+    }
 }

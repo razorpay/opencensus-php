@@ -39,6 +39,11 @@ class Gateway extends Base\Gateway
         return $this->context->getDeviceToken()->toArrayBag();
     }
 
+    public function getContextHandle()
+    {
+        return $this->context->getHandle()->toArrayBag();
+    }
+
     public function getRequestId()
     {
         return $this->context->getRequestId();
@@ -107,5 +112,10 @@ class Gateway extends Base\Gateway
         // Here we can add logic to check for synchronisation
 
         return $response;
+    }
+
+    protected function getContextHandleCode()
+    {
+        return $this->context->handleCode();
     }
 }

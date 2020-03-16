@@ -84,11 +84,13 @@ class Entity
     const BANK_ACCOUNT              = 'bank_account';
     const FILE_HANDLER              = 'file_handler';
     const PAPER_MANDATE             = 'paper_mandate';
+    const PAPER_MANDATE_UPLOAD      = 'paper_mandate_upload';
 
     const EXTERNAL                   = 'external';
     const ENTITY_OFFER               = 'entity_offer';
     const FUND_ACCOUNT               = 'fund_account';
     const UPI_TRANSFER               = 'upi_transfer';
+    const UPI_METADATA               = 'upi_metadata';
     const ENTITY_ORIGIN              = 'entity_origin';
     const GATEWAY_TOKEN              = 'gateway_token';
     const BANK_TRANSFER              = 'bank_transfer';
@@ -142,6 +144,8 @@ class Entity
     const D2C_BUREAU_DETAIL          = 'd2c_bureau_detail';
     const D2C_BUREAU_REPORT          = 'd2c_bureau_report';
     const BANKING_ACCOUNT_STATE      = 'banking_account_state';
+
+    const UPI_MANDATE                = 'upi_mandate';
 
     // heimdall
     const ORG                   = 'org';
@@ -348,6 +352,10 @@ class Entity
             QueryCacheConstants::VERSION => 'v1',
             QueryCacheConstants::TTL     => 1,
         ],
+        self::FEATURE => [
+            QueryCacheConstants::VERSION => 'v1',
+            QueryCacheConstants::TTL     => 30,
+        ],
         self::TERMINAL  => [
             QueryCacheConstants::VERSION => 'v1',
            QueryCacheConstants::TTL     => 15,
@@ -484,6 +492,7 @@ class Entity
         self::FUND_ACCOUNT_VALIDATION   => \RZP\Models\FundAccount\Validation::class,
         self::SUBSCRIPTION_REGISTRATION => \RZP\Models\SubscriptionRegistration::class,
         self::PAPER_MANDATE             => \RZP\Models\PaperMandate::class,
+        self::PAPER_MANDATE_UPLOAD      => \RZP\Models\PaperMandate\PaperMandateUpload::class,
         self::PARTNER_CONFIG            => \RZP\Models\Partner\Config::class,
         self::CREDITNOTE                => \RZP\Models\CreditNote::class,
         self::CREDITNOTE_INVOICE        => \RZP\Models\CreditNote\Invoice::class,
@@ -494,6 +503,7 @@ class Entity
         self::ADDON                     => \RZP\Models\Plan\Subscription\Addon::class,
         self::BANKING_ACCOUNT_DETAIL    => \RZP\Models\BankingAccount\Detail::class,
         self::OFFLINE_DEVICE            => \RZP\Models\Offline\Device::class,
+        self::UPI_METADATA              => \RZP\Models\Payment\UpiMetadata::class,
 
         // gateways
         self::EBS                    => \RZP\Gateway\Ebs::class,
@@ -631,9 +641,9 @@ class Entity
         self::PAYMENTS_UPI_VPA              => \RZP\Models\PaymentsUpi\Vpa::class,
         self::PAYMENTS_UPI_BANK_ACCOUNT     => \RZP\Models\PaymentsUpi\BankAccount::class,
         self::PAYMENTS_UPI_VPA_BANK_ACCOUNT => \RZP\Models\PaymentsUpi\Vpa\BankAccount::class,
-        
+
         self::MERCHANT_FRESHDESK_TICKETS    => \RZP\Models\Merchant\FreshdeskTicket::class,
-        
+
     ];
 
     protected static $repository = [

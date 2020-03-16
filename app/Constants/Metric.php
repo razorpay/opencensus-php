@@ -25,6 +25,8 @@ class Metric
     // Using '.histogram' as suffix for pattern match to work(refer statsd_mapping.yml) for statsd_exporter
     const HTTP_REQUEST_DURATION_MILLISECONDS    = 'http_request_duration_milliseconds.histogram';
 
+    const TRANSACTION_DURATION_MILLISECONDS     = 'transaction_duration_milliseconds.histogram';
+
     // Labels
     const LABEL_RZP_MODE                        = 'rzp_mode';
     const LABEL_STATUS                          = 'status';

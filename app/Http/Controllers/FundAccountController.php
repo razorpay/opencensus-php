@@ -26,9 +26,9 @@ class FundAccountController extends Controller
 
         $data = $this->service()->create($input);
 
-        $entity = $data[Constants\Entity::FUND_ACCOUNT];
+        $fundAccount = $data[Constants\Entity::FUND_ACCOUNT];
 
-        $entity = $entity->ToArrayPublic();
+        $fundAccountData = $fundAccount->toArrayPublic();
 
         //
         // fund account can be created for different sources like
@@ -42,7 +42,7 @@ class FundAccountController extends Controller
                         $data[FundAccount\Entity::RESPONSE_CODE] :
                         Response::HTTP_OK;
 
-        return ApiResponse::json($entity, $responseCode);
+        return ApiResponse::json($fundAccountData, $responseCode);
     }
 
     public function get(string $id)

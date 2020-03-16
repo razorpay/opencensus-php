@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Gateway\Upi\Sbi;
 
+use Mail;
 use Excel;
 use Mockery;
 use Carbon\Carbon;
@@ -27,6 +28,7 @@ use RZP\Gateway\Upi\Sbi\Status as SbiStatus;
 use RZP\Constants\Entity as ConstantsEntity;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Mail\Gateway\RefundFile\Base as RefundFileMail;
 
 class UpiSbiGatewayTest extends TestCase
 {
@@ -66,17 +68,15 @@ class UpiSbiGatewayTest extends TestCase
     public function testPayment()
     {
         $response = $this->doAuthPaymentViaAjaxRoute($this->payment);
-
-        $paymentId = $response[Constants::PAYMENT_ID];
-
         // Coproto must be working
         $this->assertEquals(Constants::ASYNC, $response[Constants::TYPE]);
 
-        $this->checkPaymentStatus($paymentId, Payment\Status::CREATED);
+        $payment = $this->getDbLastPayment();
+        $upiEntity = $this->getDbLastEntity(Entity::UPI);
 
-        $upiEntity = $this->getLastEntity(Entity::UPI, true);
+        $this->assertSame(Payment\Status::CREATED, $payment->getStatus());
 
-        $content = $this->mockServer()->getAsyncCallbackContent($upiEntity);
+        $content = $this->mockServer()->getAsyncCallbackContent($upiEntity->toArray());
 
         $response = $this->makeS2SCallbackAndGetContent($content);
 
@@ -85,10 +85,10 @@ class UpiSbiGatewayTest extends TestCase
         $this->assertEquals('SUCCESS', $response['status']);
 
         // The payment should now be authorized
-        $payment = $this->getEntityById(Entity::PAYMENT, $paymentId, true);
-        $upiEntity = $this->getLastEntity(Entity::UPI, true);
+        $payment->refresh();
+        $upiEntity->refresh();
 
-        $this->assertEquals(Payment\Status::AUTHORIZED, $payment[Payment\Entity::STATUS]);
+        $this->assertEquals(Payment\Status::AUTHORIZED, $payment->getStatus());
 
         $content = ($this->getDecryptedContent($content[ResponseFields::MESSAGE]))[ResponseFields::API_RESPONSE];
 
@@ -98,6 +98,46 @@ class UpiSbiGatewayTest extends TestCase
         $this->assertEquals(Type::COLLECT, $upiEntity[Upi::TYPE]);
         $this->assertEquals($payment[Payment\Entity::VPA], $upiEntity[Upi::VPA]);
         $this->assertNotNull($upiEntity[Upi::EXPIRY_TIME]);
+
+        $this->assertNotNull($upiEntity[Upi::GATEWAY_DATA]);
+        $this->assertEquals('99999999999',$upiEntity[Upi::NPCI_TXN_ID]);
+        $this->assertEquals('7971807546', $upiEntity[Upi::GATEWAY_DATA]['addInfo2']);
+    }
+
+    public function testLateAuthorization()
+    {
+        $response = $this->doAuthPaymentViaAjaxRoute($this->payment);
+
+        $payment = $this->getDbLastPayment();
+
+        $upi = $this->getDbLastEntity('upi');
+
+        $this->assertArraySubset([
+            'npci_txn_id'   => '99999999999',
+            'gateway_data'  => [],
+        ], $upi->toArray());
+
+        $this->assertEmpty($upi[Upi::GATEWAY_DATA]);
+
+        $this->authorizedFailedPayment($payment->getPublicId());
+
+        $payment->reload();
+
+        $this->assertTrue($payment->isAuthorized());
+        $this->assertTrue($payment->isLateAuthorized());
+
+        $upi->reload();
+        $this->assertEquals($upi->getPaymentId(), $payment['id']);
+        $this->assertSame('vishnu@icici', $upi->getVpa());
+        $this->assertSame('icici', $upi->provider);
+        $this->assertSame('ICIC', $upi->bank);
+
+        $this->assertArraySubset([
+            'npci_txn_id'   => '99999999999',
+            'gateway_data'  => [
+                'addInfo2'  => '7971807546',
+            ],
+        ], $upi->toArray());
     }
 
     public function testPaymentWithRetryOnGatewayRequestExceptions()
@@ -275,7 +315,7 @@ class UpiSbiGatewayTest extends TestCase
     public function testValidateAccountInvalidInput()
     {
         Gateway::$upiValidateVpaTerminals['test'] = ['100UPIMgateSbi'];
-        
+
         $this->ba->publicAuth();
 
         $this->startTest();
@@ -498,6 +538,32 @@ class UpiSbiGatewayTest extends TestCase
         $this->assertEquals(1, $payment[Payment\Entity::VERIFIED]);
     }
 
+    public function testPaymentFailedVerifyFailedWithIncompleteResponse()
+    {
+        $this->testPayment();
+
+        $upiEntity = $this->getDbLastEntity(Entity::UPI);
+        $payment = $this->getDbLastPayment();
+
+        $this->assertNotNull($upiEntity[Upi::GATEWAY_DATA]);
+
+        $this->mockVerifyFailed();
+
+        $data = $this->testData['testVerifyFailed'];
+
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($payment)
+            {
+                $this->verifyPayment($payment->getPublicId());
+            });
+
+        $payment->refresh();
+        $upiEntity->refresh();
+
+        $this->assertNotEquals([], $upiEntity[Upi::GATEWAY_DATA]);
+    }
+
     public function testAmountAssertionFailure()
     {
         $response = $this->doAuthPaymentViaAjaxRoute($this->payment);
@@ -527,6 +593,7 @@ class UpiSbiGatewayTest extends TestCase
 
     public function testRefundFileFlow()
     {
+        Mail::fake();
         $payments = [];
 
         // Create 3 payments
@@ -585,8 +652,10 @@ class UpiSbiGatewayTest extends TestCase
         $time = Carbon::now(Timezone::IST)->format('dmY_Hi');
 
         $this->assertEquals('file_store', $file['entity']);
-        $this->assertEquals('SBI_UPI_' . $time .'.csv', $file['location']);
-        $this->assertEquals('SBI_UPI_' . $time, $file['name']);
+        $this->assertEquals('SBI0000000000232_' . $time .'.csv', $file['location']);
+        $this->assertEquals('SBI0000000000232_' . $time, $file['name']);
+
+        Mail::assertQueued(RefundFileMail::class);
     }
 
     public function testUpiResponseAssertionFailure()
@@ -648,6 +717,7 @@ class UpiSbiGatewayTest extends TestCase
             function(& $content, $action = null)
             {
                 $content[ResponseFields::API_RESPONSE][ResponseFields::STATUS] = SbiStatus::FAILED;
+                $content[ResponseFields::ADDITIONAL_INFO] = [];
             }
         );
     }

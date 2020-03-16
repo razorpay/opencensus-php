@@ -365,6 +365,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::STATUS,
         self::ORDER_ID,
         self::INVOICE_ID,
+        self::TERMINAL_ID,
         self::INTERNATIONAL,
         self::METHOD,
         self::REFUNDS,
@@ -461,6 +462,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::GATEWAY_PROVIDER,
         self::ACQUIRER_DATA,
         self::ACCOUNT_ID,
+        self::TERMINAL_ID,
     ];
 
     protected $appends = [self::PUBLIC_ID, self::CAPTURED, self::ACQUIRER_DATA, self::GATEWAY_PROVIDER];
@@ -2656,6 +2658,34 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         }
 
         return $reference;
+    }
+
+    /**
+     * Partners who can onboard terminals would want to see terminal_id associated in their payments entity
+     */
+    public function setPublicTerminalIdAttribute(array & $array)
+    {
+        $merchant = $this->merchant;
+
+        if ($merchant->isFeatureEnabledOnNonPurePlatformPartner(Feature\Constants::TERMINAL_ONBOARDING) === true)
+        {
+            $terminalId = $this->getTerminalId();
+
+            $signedTerminalId = isset($terminalId) ? (new Terminal\Entity())->getSignedId($terminalId) : null;
+
+            $array[self::TERMINAL_ID] = $signedTerminalId;
+
+            return;
+        }
+
+        // unset terminal_id from public, if above condition is not true
+        // not unsetting from $array as doing so will break anywhere someone do $payment['terminal'] in the code
+        $key = array_search(self::TERMINAL_ID, $this->public);
+
+        if ($key !== false)
+        {
+            unset($this->public[$key]);
+        }
     }
 
     /**

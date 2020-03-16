@@ -2,24 +2,28 @@
 
 namespace RZP\Models\Gateway\File\Processor\Refund;
 
+use Mail;
 use RZP\Exception;
 use Carbon\Carbon;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
+use RZP\Trace\TraceCode;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
 use RZP\Mail\Base\Constants;
 use RZP\Models\Gateway\File\Status;
 use RZP\Gateway\Upi\Sbi\RefundFile;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Base\PublicCollection;
 use RZP\Services\Beam\Service as BeamService;
 use RZP\Services\Beam\Constants as BeamConstants;
+use RZP\Mail\Gateway\RefundFile\Base as RefundFileMail;
 use RZP\Models\Payment\Refund\Constants as RefundConstants;
 
 class UpiSbi extends Base
 {
-    const FILE_NAME       = 'SBI_UPI';
+    const FILE_NAME       = 'SBI0000000000232';
     const EXTENSION       = FileStore\Format::CSV;
     const FILE_TYPE       = FileStore\Type::SBI_UPI_REFUND;
     const GATEWAY         = Payment\Gateway::UPI_SBI;
@@ -84,10 +88,12 @@ class UpiSbi extends Base
             $refAmt       = trim(RefundFile::REFUND_REQ_AMT, '"');
             $refRemark    = trim(RefundFile::REFUND_REMARK, '"');
 
+            $referenceNo = $row['gateway']['gateway_data']['addInfo2'] ?? '';
+
             $formattedData[] = [
                 $pgMerchantId  => trim($row['gateway']['gateway_merchant_id'], '"'),
                 $refReqNo      => trim($row['refund']['id'], '"'),
-                $txnRefNo      => trim($row['gateway']['npci_reference_id'], '"'),
+                $txnRefNo      => trim($referenceNo, '"'),
                 $custRefNo     => trim($row['gateway']['gateway_payment_id'], '"'),
                 $orderNo       => trim($row['payment']['id'], '"'),
                 $refAmt        => trim($row['refund']['amount'] / 100, '"'),
@@ -171,6 +177,41 @@ class UpiSbi extends Base
         ];
 
         $this->app['beam']->beamPush($data, $timelines, $mailInfo);
+
+        try
+        {
+            $this->sendConfirmationMail();
+        }
+        catch (\Throwable $e)
+        {
+           $this->trace->traceException($e,
+               Trace::ERROR,
+               TraceCode::GATEWAY_FILE_ERROR_SENDING_FILE,
+               [
+                   'file_name' => $fullFileName,
+               ]);
+        }
+    }
+
+    protected function sendConfirmationMail()
+    {
+        $file = $this->gatewayFile
+                    ->files()
+                    ->where(FileStore\Entity::TYPE, static::FILE_TYPE)
+                    ->first();
+
+        $signedUrl = (new FileStore\Accessor)->getSignedUrlOfFile($file);
+
+        $mailData = [
+            'file_name' => $file->getLocation(),
+            'signed_url' => $signedUrl
+        ];
+
+        $recipients =['finances.recon@razorpay.com'];
+
+        $refundFileMail = new RefundFileMail($mailData, static::GATEWAY, $recipients);
+
+        Mail::queue($refundFileMail);
     }
 
     protected function getFormattedAmount($amount)

@@ -366,8 +366,6 @@ class ApiEventSubscriber extends Base\Core
     {
         $payload = $this->getPaymentPayload($payment);
 
-        $payment->setAttribute('updated_at', Carbon::now(Timezone::IST)->getTimestamp());
-
         $this->prepareAndDispatchWebhook($payload);
     }
 
@@ -695,6 +693,15 @@ class ApiEventSubscriber extends Base\Core
     }
 
     protected function onPayoutRejected(Payout\Entity $payout)
+    {
+        if ($this->webhookEnabledForEvent === true)
+        {
+            $payload = $this->getPayoutPayload($payout);
+            $this->prepareAndDispatchWebhook($payload);
+        }
+    }
+
+    protected function onPayoutPending(Payout\Entity $payout)
     {
         if ($this->webhookEnabledForEvent === true)
         {

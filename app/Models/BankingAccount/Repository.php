@@ -4,6 +4,7 @@ namespace RZP\Models\BankingAccount;
 
 use RZP\Base;
 use RZP\Models\Merchant;
+use RZP\Constants\Table;
 
 class Repository extends Base\Repository
 {
@@ -74,25 +75,71 @@ class Repository extends Base\Repository
     public function getBankingAccountsWithBalance($merchantId)
     {
         return $this->newQuery()
-                    ->with(['balance:id,balance,currency'])
+                    ->with(['balance'])
                     ->where(Entity::MERCHANT_ID, $merchantId)
                     ->get();
     }
 
-    // To be used for x test mode migration purpose only
-    public function fetchBankingAccounts(array $merchantIds, int $skip, int $limit)
+    public function getBankingAccountByMerchantIdAndChannel($merchantId, string $channel)
     {
-         $query = $this->newQuery()
-                       ->where(Entity::CHANNEL, '=', Channel::YESBANK)
-                       ->orderBy(Entity::CREATED_AT)
-                       ->skip($skip)
-                       ->take($limit);
+        $bankingAccountBalanceIdColumn = $this->dbColumn(Entity::BALANCE_ID);
+        $channelColumn                 = $this->dbColumn(Entity::CHANNEL);
+        $merchantIdColumn              = $this->dbColumn(Entity::MERCHANT_ID);
 
-        if (empty($merchantIds) === false)
-        {
-            $query->whereIn(Entity::MERCHANT_ID, $merchantIds);
-        }
+        $balanceIdColumn            = $this->repo->balance->dbColumn(Entity::ID);
+        $balanceAccountTypeColumn   = $this->repo->balance->dbColumn(Merchant\Balance\Entity::ACCOUNT_TYPE);
+        $balanceTypeColumn          = $this->repo->balance->dbColumn(Merchant\Balance\Entity::TYPE);
 
-         return $query->get();
+        $bankingAccountAttrs = $this->dbColumn('*');
+
+        return $this->newQuery()
+                    ->select($bankingAccountAttrs)
+                    ->where($merchantIdColumn, '=', $merchantId)
+                    ->join(Table::BALANCE, $bankingAccountBalanceIdColumn, '=', $balanceIdColumn)
+                    ->where($balanceAccountTypeColumn, '=', Merchant\Balance\AccountType::DIRECT)
+                    ->where($balanceTypeColumn, '=', Merchant\Balance\Type::BANKING)
+                    ->where($channelColumn, '=', $channel)
+                    ->first();
+    }
+
+    public function getMerchantIdsByChannel($channel, $limit)
+    {
+        $bankingAccountBalanceIdColumn = $this->dbColumn(Entity::BALANCE_ID);
+        $channelColumn                 = $this->dbColumn(Entity::CHANNEL);
+        $merchantIdColumn              = $this->dbColumn(Entity::MERCHANT_ID);
+
+        $balanceIdColumn                = $this->repo->balance->dbColumn(Entity::ID);
+        $accountTypeColumn              = $this->repo->balance->dbColumn(Merchant\Balance\Entity::ACCOUNT_TYPE);
+        $balanceTypeColumn              = $this->repo->balance->dbColumn(Merchant\Balance\Entity::TYPE);
+
+        $bankingAccountAttrs = $this->dbColumn('*');
+
+        return $this->newQuery()
+                    ->select($bankingAccountAttrs)
+                    ->where($channelColumn, '=', $channel)
+                    ->where(Entity::STATUS, '=', Status::ACTIVATED)
+                    ->join(Table::BALANCE, $bankingAccountBalanceIdColumn, '=', $balanceIdColumn)
+                    ->where($accountTypeColumn, '=', Merchant\Balance\AccountType::DIRECT)
+                    ->where($balanceTypeColumn, '=', Merchant\Balance\Type::BANKING)
+                    ->oldest(Entity::BALANCE_LAST_FETCHED_AT)
+                    ->limit($limit)
+                    ->pluck($merchantIdColumn);
+    }
+
+    public function fetchByMerchantIdAndAccountType(string $merchantId, string $accountType)
+    {
+        $bankingAccountBalanceIdColumn = $this->dbColumn(Entity::BALANCE_ID);
+        $merchantIdColumn              = $this->dbColumn(Entity::MERCHANT_ID);
+
+        $balanceIdColumn                = $this->repo->balance->dbColumn(Entity::ID);
+        $balanceAccountTypeColumn       = $this->repo->balance->dbColumn(Merchant\Balance\Entity::ACCOUNT_TYPE);
+        $balanceTypeColumn              = $this->repo->balance->dbColumn(Merchant\Balance\Entity::TYPE);
+
+        return $this->newQuery()
+                    ->join(Table::BALANCE, $bankingAccountBalanceIdColumn, '=', $balanceIdColumn)
+                    ->where($merchantIdColumn, '=', $merchantId)
+                    ->where($balanceTypeColumn, '=', Merchant\Balance\Type::BANKING)
+                    ->where($balanceAccountTypeColumn, '=', $accountType)
+                    ->get();
     }
 }

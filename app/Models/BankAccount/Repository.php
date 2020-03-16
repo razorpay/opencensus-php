@@ -299,6 +299,17 @@ class Repository extends Base\Repository
                     ->first();
     }
 
+    public function isBankAccountChanged(Entity $bankAccount): bool
+    {
+        return $this->newQuery()
+                    ->withTrashed()
+                    ->whereNotNull(Entity::DELETED_AT)
+                    ->where(Entity::ID, '<', $bankAccount->getId())
+                    ->where(Entity::ENTITY_ID, '=', $bankAccount->getEntityId())
+                    ->where(Entity::TYPE, '=', 'merchant')
+                    ->exists();
+    }
+
     /**
      * @param string $accountNumber
      * @param string $ifscCode
