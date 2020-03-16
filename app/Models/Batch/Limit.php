@@ -22,6 +22,7 @@ class Limit
         Type::IRCTC_DELTA_REFUND                    => 100000,
         Type::IRCTC_SETTLEMENT                      => 100000,
         Type::VIRTUAL_BANK_ACCOUNT                  => 50000,
+        Type::BANK_TRANSFER                         => 3000,
         Type::PAYOUT                                => 50000,
         'emandate_register_hdfc'                    => 50000,
         'emandate_register_enach_rbl'               => 10000,

@@ -12,7 +12,7 @@ class VpaGateway extends Gateway implements Contracts\VpaGateway
     {
         $request = new Request();
 
-        $request->setUrl(null);
+        $request->setRedirect(null);
 
         $request->setContent([
             'username'          => $this->input->get('username')

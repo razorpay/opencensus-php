@@ -675,6 +675,11 @@ class Constants
             'display_name'  => 'Disable Instant Refunds',
             'documentation' => '',
         ],
+        self::CARD_TRANSFER_REFUND        => [
+            'feature'       => self::CARD_TRANSFER_REFUND,
+            'display_name'  => 'Card Transfer Refund',
+            'documentation' => '',
+        ],
     ];
 
     /**

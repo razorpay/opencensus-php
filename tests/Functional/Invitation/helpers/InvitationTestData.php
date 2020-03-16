@@ -122,6 +122,32 @@ return [
         ],
     ],
 
+    'testPostSendInvitationWithOwnerRole' => [
+        'request' => [
+            'url'     => '/invitations',
+            'method'  => 'POST',
+            'content' => [
+                'email'       => 'testteaminvite@razorpay.com',
+                'role'        => 'owner',
+                'token'       => str_random(40),
+                'sender_name' => 'sender_name'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The given role is not supported',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_USER_ROLE_INVALID,
+        ],
+    ],
+
     'testPostSendInvitationByRBLSupervisorToValidRole' => [
         'request'  => [
             'url'     => '/invitations',
@@ -587,7 +613,7 @@ return [
             'method'  => 'POST',
             'content' => [
                 'email'       => 'testteaminvite@razorpay.com',
-                'role'        => 'owner',
+                'role'        => 'admin',
                 'sender_name' => 'sender_name'
             ],
         ],
@@ -612,7 +638,7 @@ return [
             'method'  => 'POST',
             'content' => [
                 'email'       => 'testteaminvite@razorpay.com',
-                'role'        => 'owner',
+                'role'        => 'admin',
                 'sender_name' => 'sender_name'
             ],
         ],

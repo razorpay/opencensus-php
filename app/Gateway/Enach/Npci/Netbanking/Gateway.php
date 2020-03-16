@@ -31,13 +31,9 @@ class Gateway extends Base\Gateway
 
     protected $crypto;
 
-    protected $switch;
-
     public function authorize(array $input)
     {
         parent::authorize($input);
-
-        $this->switch = $input['terminal']['gateway_merchant_id2'];
 
         $this->setCrypto();
 
@@ -50,8 +46,6 @@ class Gateway extends Base\Gateway
 
     public function callback(array $input)
     {
-        $this->switch = $input['terminal']['gateway_merchant_id2'];
-
         parent::callback($input);
 
         $this->setCrypto();
@@ -68,14 +62,6 @@ class Gateway extends Base\Gateway
 
         if ($input['gateway'][ResponseFields::RESPONSE_TYPE] === ResponseType::SUCCESS)
         {
-            if ($this->switch === 'false')
-            {
-                $responseArray[ResponseXmlTags::MANDATE_ACCEPT_RESPONSE]
-                              [ResponseXmlTags::ACCEPT_DETAILS]
-                              [ResponseXmlTags::ORIGINAL_MSG_INFO]
-                              [ResponseXmlTags::MANDATE_ID] = null;
-            }
-
             $xmlData = $this->getDataFromResponse($responseArray);
 
             $secureData = [
@@ -161,8 +147,6 @@ class Gateway extends Base\Gateway
 
     public function verify(array $input)
     {
-        $this->switch = $input['terminal']['gateway_merchant_id2'];
-
         parent::verify($input);
 
         $verify = new Verify($this->gateway, $input);
@@ -186,15 +170,6 @@ class Gateway extends Base\Gateway
         $encryptedChecksum = $this->crypto->encrypt($checksum);
 
         $data = $this->getDataForXml($input, $secureData);
-
-        if ($this->switch === 'false')
-        {
-            $pid = $data[NpciXmlHeaderTags::MANDATE][RequestNpciTags::MANDATE_ID];
-
-            unset($data[NpciXmlHeaderTags::INFO][RequestNpciTags::SPONSORED_BANK_NAME], $data[NpciXmlHeaderTags::MANDATE], $data[NpciXmlHeaderTags::DEBTOR][RequestNpciTags::ACCOUNT_TYPE]);
-
-            $data[RequestNpciTags::MANDATE_ID] = $pid;
-        }
 
         $xml = $this->getXml($data);
 
@@ -220,11 +195,6 @@ class Gateway extends Base\Gateway
         ];
 
         $request = $this->getStandardRequestArray($content, 'post', 'npciauth_old');
-
-        if ($this->switch === 'false')
-        {
-            $request = $this->getStandardRequestArray($content, 'post', 'npciauth_old');
-        }
 
         $request = $this->addHeadersForNpciRequest($request);
 
@@ -365,14 +335,7 @@ class Gateway extends Base\Gateway
 
         $mandate = $mandateroot->addChild(NpciXmlHeaderTags::MANDATE);
 
-        if ($this->switch === 'false')
-        {
-            $mandate->addChild(RequestNpciTags::MANDATE_ID, $data[RequestNpciTags::MANDATE_ID]);
-        }
-        else
-        {
-            $this->addChildren($data[NpciXmlHeaderTags::MANDATE], $mandate);
-        }
+        $this->addChildren($data[NpciXmlHeaderTags::MANDATE], $mandate);
 
         $occurrence = $mandate->addChild(NpciXmlHeaderTags::OCCURENCE);
 
@@ -640,11 +603,6 @@ class Gateway extends Base\Gateway
 
         $recurringStatus = RegistrationStatus::STATUS_TO_RECURRING_STATUS_MAP[$status];
 
-        if (($this->switch === 'false') and ($recurringStatus === Token\RecurringStatus::CONFIRMED))
-        {
-            $recurringStatus = Token\RecurringStatus::INITIATED;
-        }
-
         $errorCode = $gatewayPayment->getErrorCode();
 
         $recurringFailureReason = null;
@@ -793,11 +751,6 @@ class Gateway extends Base\Gateway
     protected function getVerifyAttributesToSave(Verify $verify)
     {
         $content = $verify->verifyResponseContent;
-
-        if ($this->switch === 'false')
-        {
-            $content[ResponseXmlTags::MANDATE_ID] = null;
-        }
 
         $gatewayPayment = $verify->payment;
 

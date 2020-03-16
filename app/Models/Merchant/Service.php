@@ -40,6 +40,7 @@ use RZP\Models\BankAccount;
 use RZP\Models\Transaction;
 use RZP\Base\RuntimeManager;
 use RZP\Models\Pricing\Plan;
+use RZP\Models\Payment\Refund;
 use RZP\Models\Workflow\Action;
 use RZP\Models\Merchant\Methods;
 use RZP\Models\Admin as MainAdmin;
@@ -516,6 +517,9 @@ class Service extends Base\Service
         $response = $merchant->toArray();
 
         $response['settlement_ux_revamp'] = $this->shouldShowSettlementUxRevamp();
+
+        $response[Refund\Constants::REFUND_STATUS_FILTER] =
+            (new Refund\Service)->getRefundStatusFilterFlagForMerchantDashboard($merchantId);
 
         return $response;
     }
@@ -3615,30 +3619,61 @@ class Service extends Base\Service
         });
     }
 
-    public function enableBusinessBankingTestMode(array $input)
+    public function migrationBankingVAs(array $input)
     {
         $merchantIds = $input['merchant_ids'] ?? [];
-        $skip        = $input['skip'] ?? 0;
-        $limit       = $input['limit'] ?? 500;
+        $mode        = $input['mode'] ?? Mode::LIVE;
 
-        $bankingAccounts = $this->repo->banking_account->fetchBankingAccounts($merchantIds, $skip, $limit);
+        $processedCount = 0;
 
-        foreach ($bankingAccounts as $bankingAccount)
+        $illegal = [];
+
+        $failed = [];
+
+        foreach ($merchantIds as $merchantId)
         {
-            $this->trace->info(
-                TraceCode::MERCHANT_X_TEST_MODE_MIGRATION,
-                [
-                    'banking_account_id'  => $bankingAccount->getId(),
-                    'merchant_id'         => $bankingAccount->merchant->getId(),
-                ]
-            );
+            try
+            {
+                /** @var Merchant\Entity $merchant */
+                $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
-            $this->app['basicauth']->setMerchant($bankingAccount->merchant);
+                $this->trace->info(
+                    TraceCode::MERCHANT_RAZORPAYX_VA_MIGRATION,
+                    [
+                        'merchant_id'        => $merchantId,
+                        'category'           => $merchant->getCategory(),
+                        'category2'          => $merchant->getCategory2(),
+                        'billing_label'      => $merchant->getBillingLabel(),
+                    ]);
 
-            (new Activate)->activateBusinessBankingIfApplicable($bankingAccount->merchant);
+                if ($merchant->isBusinessBankingEnabled() === false)
+                {
+                    $illegal[] = $merchantId;
+
+                    continue;
+                }
+
+                (new Activate)->createBankingEntitiesForMode($merchant, $mode);
+
+                $processedCount++;
+            }
+            catch (\Throwable $e)
+            {
+                $failed[] = $merchantId;
+
+                $this->trace->traceException(
+                    $e,
+                    Trace::CRITICAL,
+                    TraceCode::MERCHANT_RAZORPAYX_VA_MIGRATION_FAILED);
+            }
         }
 
-        return ['processed' => count($bankingAccounts)];
+        return [
+            'total'     => count($merchantIds),
+            'processed' => $processedCount,
+            'illegal'   => $illegal,
+            'failed'    => $failed
+        ];
     }
 
     /**

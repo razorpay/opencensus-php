@@ -101,7 +101,7 @@
                                             <td align="left" style="font-size:0px;padding:0px;word-break:break-word;">
 
                                                 <div style="font-family:Trebuchet MS;font-size:13px;line-height:1;text-align:left;color:#000000;">
-                                                    <div class="header" style="box-sizing: border-box; padding-top: 16px; max-width: 100%;"> <div class="content branding rzp" style="width: 85%; width: calc(46000% - 211600px); max-width: 460px; min-width: 308px; margin-left: auto; margin-right: auto; box-sizing: border-box; padding-left: 16px; padding-right: 16px; padding-bottom: 16px;"><div class="branding-content" style="text-align: center; width: fit-content; margin: 0 auto; font-size: 12px; line-height: 1.5;"><div class="content-element logo" style="display: inline-block; vertical-align: middle; height: 18px; width: 85px;"><img src="https://cdn.razorpay.com/static/assets/logo/rzpX.png" width="100px" style="height: 100%; width: 100%;"></div></div></div><div class="content title" style="width: 85%; width: calc(46000% - 211600px); max-width: 460px; min-width: 308px; margin-left: auto; margin-right: auto; box-sizing: border-box; padding-left: 16px; padding-right: 16px; background-color: #242b4d; padding-top: 24px;"><div class="title-content" style="text-align: center; width: fit-content; margin: 0 auto;"></div></div></div>
+                                                    <div class="header" style="box-sizing: border-box; padding-top: 16px; max-width: 100%;"> <div class="content branding rzp" style="width: 85%; width: calc(46000% - 211600px); max-width: 460px; min-width: 308px; margin-left: auto; margin-right: auto; box-sizing: border-box; padding-left: 16px; padding-right: 16px; padding-bottom: 16px;"><div class="branding-content" style="text-align: center; width: fit-content; margin: 0 auto; font-size: 12px; line-height: 1.5;"><div class="content-element logo" style="display: inline-block; vertical-align: middle; height: 18px; width: 85px;"><img src="https://cdn.razorpay.com/static/assets/logo/rzpX.png" width="100px" style="height: 100%; width: 100%;"></div></div></div><div class="content title highlight" style="border-top: 2px solid #528ff0; width: 85%; width: calc(46000% - 211600px); max-width: 460px; min-width: 308px; margin-left: auto; margin-right: auto; box-sizing: border-box; padding-left: 16px; padding-right: 16px; background-color: #242b4d; padding-top: 24px;"><div class="title-content" style="text-align: center; width: fit-content; margin: 0 auto;"></div></div></div>
                                                 </div>
 
                                             </td>
@@ -173,7 +173,7 @@
                                             <td align="left" style="font-size:0px;padding:0px;word-break:break-word;">
 
                                                 <div style="font-family:Trebuchet MS;font-size:13px;line-height:1;text-align:left;color:#000000;">
-                                                    <div class="card secondary  title informative descriptive" style="width: 85%; width: calc(46000% - 211600px); max-width: 460px; min-width: 308px; margin-left: auto; margin-right: auto; box-sizing: border-box; background-color: #242b4d; padding-bottom: 16px; padding-left: 24px; padding-right: 24px;"><div class="center-align" style="text-align: center;"><img class="image medium" src="https://cdn.razorpay.com/static/assets/email/rejected.png" style="margin: 8px; background: transparent; height: 80px;" height="80"></div><div class="center-align font-size-18 font-color-primary line-height-26" style="text-align: center; font-size: 18px; color: #FFF; line-height: 26px;">Your application could not be taken forward!</div><div class="center-align" style="text-align: center;"><div class="puck para" style="padding: 12px 0; margin: 0;"><div class="bar" style="margin: 0px auto; width: 24px; height: 4px; background-color: #DD5C5C;"></div></div></div><div class="description" style="text-align: center; color: #bdbfC9; font-size: 14px; line-height: 1.5;">Unfortunately, your request for RazorpayX Current Account was not approved by our partner bank.</div></div>
+                                                    <div class="card secondary  title informative descriptive" style="width: 85%; width: calc(46000% - 211600px); max-width: 460px; min-width: 308px; margin-left: auto; margin-right: auto; box-sizing: border-box; background-color: #242b4d; padding-bottom: 16px; padding-left: 24px; padding-right: 24px;"><div class="center-align" style="text-align: center;"><img class="image medium" src="https://cdn.razorpay.com/static/assets/email/rejected.png" style="margin: 8px; background: transparent; height: 80px;" height="80"></div><div class="center-align font-size-18 font-color-primary line-height-26" style="text-align: center; font-size: 18px; color: #FFF; line-height: 26px;">Your Current Account request was not approved!</div><div class="center-align" style="text-align: center;"><div class="puck para" style="padding: 12px 0; margin: 0;"><div class="bar" style="margin: 0px auto; width: 24px; height: 4px; background-color: #08CA73;"></div></div></div><div class="description" style="text-align: center; color: #bdbfC9; font-size: 14px; line-height: 1.5;">Unfortunately, your request for RazorpayX Current Account was not approved by our partner bank.</div></div>
                                                 </div>
 
                                             </td>
@@ -245,7 +245,7 @@
                                             <td align="left" style="font-size:0px;padding:0px;word-break:break-word;">
 
                                                 <div style="font-family:Trebuchet MS;font-size:13px;line-height:1;text-align:left;color:#000000;">
-                                                    <div class="card secondary highlight descriptive" style="width: 85%; width: calc(46000% - 211600px); max-width: 460px; min-width: 308px; margin-left: auto; margin-right: auto; box-sizing: border-box; background-color: #242b4d; border-top: 2px solid #3281FF; padding-top: 20px; padding-bottom: 20px; padding-left: 24px; padding-right: 24px; border-color: #528ff0; margin-top: 8px;"><div class="title-white" style="font-size: 14px; line-height: 1.5; color: #FFF; margin-bottom: 8px;">But some silver lining...</div><div class="description dark" style="font-size: 14px; line-height: 1.5; text-align: left; color: #9195A6;">However, this will not impact your existing RazorpayX setup. You can continue to use RazorpayX for your business without any issues.</div><div class="divider" style="padding: 12px 0;"><div class="divider-line" style="height: 1px; background: #3a405f;"></div></div><div class="title-white" style="font-size: 14px; line-height: 1.5; color: #FFF; margin-bottom: 8px;">Some more silver lining...</div><div class="description dark" style="font-size: 14px; line-height: 1.5; text-align: left; color: #9195A6;">We are adding more banks on RazorpayX current account. Once they go live, we will re-initiate the process to open a current account for you. We will keep you posted as well.<button class="btn primary font-bold" style="font-weight: 700; font-size: 14px; line-height: 1.5; border: 1px solid; padding: 8px 12px; letter-spacing: 1px; border-radius: 2px; overflow: hidden; min-width: 185px; font-family: Trebuchet MS; color: #FFF; background-color: #3281FF; border-color: #3281FF; margin: 24px auto 0 auto; display: block;"><a class="link" href="{{ $view_dashboard_url }}" target="_blank" style="text-decoration: none; color: #FFF;">VIEW DASHBOARD</a></button></div></div>
+                                                    <div class="card secondary highlight descriptive" style="width: 85%; width: calc(46000% - 211600px); max-width: 460px; min-width: 308px; margin-left: auto; margin-right: auto; box-sizing: border-box; background-color: #242b4d; border-top: 2px solid #3281FF; padding-top: 20px; padding-bottom: 20px; padding-left: 24px; padding-right: 24px; border-color: #528ff0; margin-top: 8px;"><div class="title-white" style="font-size: 14px; line-height: 1.5; color: #FFF; margin-bottom: 8px;">But some silver lining...</div><div class="description dark" style="font-size: 14px; line-height: 1.5; text-align: left; color: #9195A6;">However, this will not impact your existing RazorpayX setup. You can continue to use RazorpayX for your business without any issues.</div><div class="divider" style="padding: 12px 0;"><div class="divider-line" style="height: 1px; background: #3a405f;"></div></div><div class="title-white" style="font-size: 14px; line-height: 1.5; color: #FFF; margin-bottom: 8px;">Some more silver lining...</div><div class="description dark" style="font-size: 14px; line-height: 1.5; text-align: left; color: #9195A6;">We are in the process of adding more banks on RazorpayX. Once live with these banks, we will re-initiate the current account opening process. We will keep you posted on the same.<div class="center-align" style="text-align: center;"><a class="link btn primary font-bold" href="{{ $view_dashboard_url }}" target="_blank" style="text-decoration: none; font-weight: 700; font-size: 14px; line-height: 1.5; border: 1px solid; padding: 8px 12px; letter-spacing: 1px; border-radius: 2px; overflow: hidden; min-width: 145px; display: inline-block; font-family: Trebuchet MS; margin: 24px auto 0 auto; color: #FFF; background-color: #3281FF; border-color: #3281FF;">GO TO DASHBOARD</a></div></div></div>
                                                 </div>
 
                                             </td>
@@ -317,79 +317,7 @@
                                             <td align="left" style="font-size:0px;padding:0px;word-break:break-word;">
 
                                                 <div style="font-family:Trebuchet MS;font-size:13px;line-height:1;text-align:left;color:#000000;">
-                                                    <div class="card secondary descriptive" style="width: 85%; width: calc(46000% - 211600px); max-width: 460px; min-width: 308px; margin-left: auto; margin-right: auto; box-sizing: border-box; background-color: #242b4d; padding-top: 20px; padding-bottom: 20px; padding-left: 24px; padding-right: 24px; margin-top: 8px;"><div class="title-white" style="font-size: 14px; line-height: 1.5; color: #FFF; margin-bottom: 8px;">Need further help?</div><div class="description dark margin-bottom-24" style="margin-bottom: 24px; font-size: 14px; line-height: 1.5; text-align: left; color: #9195A6;">If you have any questions or need any assistance, simply reply to this e-mail and we'll get back to you.<div class="para-dark margin-top-8" style="color: #9195A6; font-size: 14px; line-height: 1.5; margin-top: 8px;"> Team RazorpayX</div><div class="para-dark" style="color: #9195A6; font-size: 14px; line-height: 1.5;"> Xperience the future of banking</div></div></div>
-                                                </div>
-
-                                            </td>
-                                        </tr>
-
-                                    </table>
-
-                                </td>
-                            </tr>
-                            </tbody>
-                        </table>
-
-                    </div>
-
-                    <!--[if mso | IE]>
-                    </td>
-
-                    </tr>
-
-                    </table>
-                    <![endif]-->
-                </td>
-            </tr>
-            </tbody>
-        </table>
-
-    </div>
-
-
-    <!--[if mso | IE]>
-    </td>
-    </tr>
-    </table>
-
-    <table
-            align="center" border="0" cellpadding="0" cellspacing="0" class="footer-outlook" style="width:600px;" width="600"
-    >
-        <tr>
-            <td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;">
-    <![endif]-->
-
-
-    <div class="footer" style="width: 300px; Margin: 0px auto; max-width: 600px; margin-top: 8px; margin-bottom: 8px;">
-
-        <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%;">
-            <tbody>
-            <tr>
-                <td style="direction:ltr;font-size:0px;padding:0px;text-align:center;vertical-align:top;">
-                    <!--[if mso | IE]>
-                    <table role="presentation" border="0" cellpadding="0" cellspacing="0">
-
-                        <tr>
-
-                            <td
-                                    class="" style="vertical-align:top;width:600px;"
-                            >
-                    <![endif]-->
-
-                    <div class="mj-column-per-100 outlook-group-fix" style="font-size:13px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
-
-                        <table border="0" cellpadding="0" cellspacing="0" role="presentation" width="100%">
-                            <tbody>
-                            <tr>
-                                <td style="vertical-align:top;padding:0px;">
-
-                                    <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="" width="100%">
-
-                                        <tr>
-                                            <td align="left" style="font-size:0px;padding:0px;word-break:break-word;">
-
-                                                <div style="font-family:Trebuchet MS;font-size:13px;line-height:1;text-align:left;color:#000000;">
-                                                    <div class="footer-text" style="font-size: 12px; line-height: 1.5; color: #9195A6; text-align: center; padding: 8px 0;">You are receiving this email because you have subscribed to updates from RazorpayX</div>
+                                                    <div class="card secondary descriptive" style="width: 85%; width: calc(46000% - 211600px); max-width: 460px; min-width: 308px; margin-left: auto; margin-right: auto; box-sizing: border-box; background-color: #242b4d; padding-top: 20px; padding-bottom: 20px; padding-left: 24px; padding-right: 24px; margin-top: 8px;"><div class="title-white" style="font-size: 14px; line-height: 1.5; color: #FFF; margin-bottom: 8px;">Need further help?</div><div class="description dark margin-bottom-24" style="margin-bottom: 24px; font-size: 14px; line-height: 1.5; text-align: left; color: #9195A6;">As always, help is just an email reply away: do get in touch if you have questions.<div class="para-dark margin-top-8" style="color: #9195A6; font-size: 14px; line-height: 1.5; margin-top: 8px;"> Team RazorpayX</div><div class="para-dark" style="color: #9195A6; font-size: 14px; line-height: 1.5;"> Xperience the future of banking</div></div></div>
                                                 </div>
 
                                             </td>
