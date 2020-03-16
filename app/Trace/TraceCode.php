@@ -514,6 +514,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const INVOICE_WITHOUT_GSTIN                                 = 'INVOICE_WITHOUT_GSTIN';
     const STOP_BATCH_PROCESS_NOT_REQUIRED                       = 'STOP_BATCH_PROCESS_NOT_REQUIRED';
     const BATCH_NOT_FOUND                                       = 'BATCH_NOT_FOUND';
+    const ADMIN_BATCH_UPDATE                                    = 'ADMIN_BATCH_UPDATE';
 
     const PAYMENT_LINK_CREATE_REQUEST                           = 'PAYMENT_LINK_CREATE_REQUEST';
     const PAYMENT_LINK_CREATED                                  = 'PAYMENT_LINK_CREATED';
