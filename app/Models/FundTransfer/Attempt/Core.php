@@ -22,6 +22,7 @@ use RZP\Models\Card\Issuer as CardIssuer;
 use RZP\Models\Transaction\ReconciledType;
 use RZP\Constants\Entity as EntityConstant;
 use RZP\Mail\Base\Constants as MailConstants;
+use RZP\Models\Payout\Entity as PayoutEntity;
 use RZP\Services\Beam\Constants as BeamConstants;
 use RZP\Models\Payment\Refund\Status as RefundStatus;
 use RZP\Models\BankAccount\Entity as BankAccountEntity;
@@ -829,15 +830,20 @@ class Core extends Base\Core
     {
         $source = $fta->source;
 
-        if (empty($source->getChannel()) === true)
+        $channel = $source->getChannel();
+
+        if (empty($channel) === true)
         {
             return [false, Settlement\Channel::YESBANK];
         }
 
-        if (($source->isBalanceTypeBanking() === true) or ($source->getChannel() === Settlement\Channel::YESBANK))
+        if (($source->isBalanceTypeBanking() === true) or
+            (($source->getPayoutType() === PayoutEntity::ON_DEMAND) and
+            (in_array($channel, Settlement\Channel::getFtsSupportedOnDemandChannels(), true) === true)))
         {
             return [true, $source->getChannel()];
         }
+
 
         return [false, $source->getChannel()];
     }

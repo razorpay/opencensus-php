@@ -155,4 +155,6 @@ final class Constants
     const VALIDATION_ERROR               = 'VALIDATION_ERROR';
 
     const STATUS_FAILED                  = 'failed';
+
+    const PAYOUT_ON_DEMAND               = 'PAYOUT_ON_DEMAND';
 }
