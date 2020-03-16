@@ -89,6 +89,7 @@ class Validator extends Base\Validator
         Payment\Gateway::CYBERSOURCE,
         Payment\Gateway::UPI_MINDGATE,
         Payment\Gateway::UPI_AXIS,
+        Payment\Gateway::MPGS,
         Payment\Gateway::NETBANKING_CSB,
         Payment\Gateway::NETBANKING_BOB,
         Payment\Gateway::NETBANKING_ICICI,
@@ -217,6 +218,16 @@ class Validator extends Base\Validator
         Entity::EXPECTED                   => 'sometimes_if:type.bharat_qr,1|boolean',
         Entity::ACCOUNT_NUMBER             => 'sometimes_if:type.bharat_qr,1|string|max:50',
         Entity::IFSC_CODE                  => 'sometimes_if:type.bharat_qr,1|string|size:11'
+    ];
+
+    protected static $mpgsTerminalRules = [
+        Entity::GATEWAY                    => 'required|in:mpgs',
+        Entity::GATEWAY_MERCHANT_ID        => 'required|string|max:20',
+        Entity::GATEWAY_TERMINAL_PASSWORD  => 'required|string',
+        Entity::CARD                       => 'sometimes|boolean|in:1',
+        Entity::TYPE                       => 'sometimes|array',
+        Entity::INTERNATIONAL              => 'sometimes|boolean',
+        Entity::CURRENCY                   => 'sometimes',
     ];
 
     protected static $isgTerminalRules = [
@@ -407,6 +418,17 @@ class Validator extends Base\Validator
         Entity::RUPAY_MPAN                 => 'sometimes|string|size:16',
         Entity::ACCOUNT_NUMBER             => 'sometimes|string|max:50',
         Entity::IFSC_CODE                  => 'sometimes|string|size:11'
+    ];
+
+    protected static $mpgsEditTerminalRules = [
+        Entity::GATEWAY_TERMINAL_PASSWORD  => 'sometimes|string',
+        Entity::GATEWAY                    => 'sometimes|in:mpgs',
+        Entity::TYPE                       => 'sometimes|array',
+        Entity::CARD                       => 'sometimes|boolean|in:1',
+        Entity::INTERNATIONAL              => 'sometimes|boolean',
+        Entity::MODE                       => 'sometimes|in:3',
+        Entity::NETWORK_CATEGORY           => 'sometimes|string|max:30',
+        Entity::CAPABILITY                 => 'sometimes',
     ];
 
     protected static $firstDataEditTerminalRules = [
