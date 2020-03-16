@@ -71,10 +71,11 @@ class Core extends Base\Core
         }
         else
         {
-            // If the entity is a user, then the role ids for that user for the merchant in context
-            // will have to be fetched from the merchant_users table. This is because the role_map table
-            // doesn't have any merchant context.
-            $checkerRoleIds = (new User\Core())->getUserRoleIdsInMerchant($checkerEntity->getId());
+            // If the entity is a user(which implies the product is banking),
+            // then the role id for that user for the merchant in context
+            // will have to be fetched from the merchant_users table.
+            // This is because the role_map table doesn't have any merchant context.
+            $checkerRoleIds = (new User\Core())->getUserRoleIdInMerchantForBanking($checkerEntity->getId());
         }
 
         $currentLevel = $action->getCurrentLevel();

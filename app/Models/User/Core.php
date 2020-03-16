@@ -1469,14 +1469,15 @@ class Core extends Base\Core
     }
 
     /**
-     * Fetch role ids for a particular user by fetching through merchant_users table.
-     * This function provides merchant context which is needed while fetching user roles,
-     * and hence the role_map table cannot be used for fetching role ids.
+     * Fetch role id for a particular user by fetching through merchant_users table for the
+     * product banking. Note that only one id should and will be returned.
+     * This function fetches a user's role id through the merchant_users table,
+     * since the role_map table being used earlier didn't have merchant context.
      *
      * @param string $userId
      * @return array
      */
-    public function getUserRoleIdsInMerchant(string $userId) : array
+    public function getUserRoleIdInMerchantForBanking(string $userId) : array
     {
         $mapping = $this->repo->merchant->getMerchantUserMapping($this->merchant->getId(),
             $userId,
