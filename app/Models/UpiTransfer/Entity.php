@@ -209,6 +209,16 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::PAYER_VPA);
     }
 
+    public function getPayerIfsc()
+    {
+        return $this->getAttribute(self::PAYER_IFSC);
+    }
+
+    public function getPayerAccount()
+    {
+        return $this->getAttribute(self::PAYER_ACCOUNT);
+    }
+
     public function isExpected()
     {
         return $this->getAttribute(self::EXPECTED);

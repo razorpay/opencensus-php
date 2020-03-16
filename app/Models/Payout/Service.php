@@ -778,6 +778,8 @@ class Service extends Base\Service
     // @TODO: refactor this/move it to FundAccount entity.
     protected function unsetSensitiveCardDetails(array $input): array
     {
+        $input = $this->trimCardNumberIfRequired($input);
+
         $fundAccountInput = $input[Entity::FUND_ACCOUNT] ?? [];
 
         if ((isset($fundAccountInput[FundAccount\Entity::CARD]) === true) and
@@ -785,12 +787,12 @@ class Service extends Base\Service
         {
             if (empty($fundAccountInput[FundAccount\Entity::CARD][Card\Entity::NUMBER]) === false)
             {
-                $fundAccountInput[FundAccount\Entity::CARD][Card\Entity::IIN] =
+                $input[Entity::FUND_ACCOUNT][FundAccount\Entity::CARD][Card\Entity::IIN] =
                     substr($fundAccountInput[FundAccount\Entity::CARD][Card\Entity::NUMBER], 0, 6);
             }
 
-            unset($fundAccountInput[FundAccount\Entity::CARD][Card\Entity::CVV]);
-            unset($fundAccountInput[FundAccount\Entity::CARD][Card\Entity::NUMBER]);
+            unset($input[Entity::FUND_ACCOUNT][FundAccount\Entity::CARD][Card\Entity::CVV]);
+            unset($input[Entity::FUND_ACCOUNT][FundAccount\Entity::CARD][Card\Entity::NUMBER]);
         }
 
         return $input;
@@ -839,5 +841,18 @@ class Service extends Base\Service
         $fundAccountResponse = (new FundAccount\Service)->create($fundAccountInput);
 
         return $fundAccountResponse[Constants\Entity::FUND_ACCOUNT]->toArrayPublic();
+    }
+
+
+    protected function trimCardNumberIfRequired(array $input)
+    {
+        if (isset($input[Entity::FUND_ACCOUNT][Entity::CARD][Entity::NUMBER]) === true)
+        {
+            $cardNumber = $input[Entity::FUND_ACCOUNT][Entity::CARD][Entity::NUMBER];
+
+            $input[Entity::FUND_ACCOUNT][Entity::CARD][Entity::NUMBER] = ltrim($cardNumber, '0');
+        }
+
+        return $input;
     }
 }

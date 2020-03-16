@@ -14,7 +14,9 @@ class Mozart extends BaseMozart
         string $action,
         array $input,
         string $version = 'v1',
-        bool $useMozartMappedInternalErrorCode = false)
+        bool $useMozartMappedInternalErrorCode = false,
+        int $timeout = self::TIMEOUT,
+        int $connectTimeout = self::CONNECT_TIMEOUT)
     {
         switch ($action)
         {

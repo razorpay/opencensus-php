@@ -79,6 +79,8 @@ class Calculator extends Base\Core
      */
     protected $merchantFee = 0;
 
+    protected $merchantFeeSplit = [];
+
     /**
      * @var int
      */
@@ -237,6 +239,11 @@ class Calculator extends Base\Core
         return $this->merchantFee;
     }
 
+    public function getMerchantFeeSplit()
+    {
+        return $this->merchantFeeSplit;
+    }
+
     /**
      * @return int
      */
@@ -356,6 +363,11 @@ class Calculator extends Base\Core
     public function setMerchantTax(int $merchantTax)
     {
         $this->merchantTax = $merchantTax;
+    }
+
+    public function setMerchantFeeSplit($merchantFeeSplit)
+    {
+        $this->merchantFeeSplit = $merchantFeeSplit;
     }
 
     /**
@@ -781,14 +793,12 @@ class Calculator extends Base\Core
             return;
         }
 
-        $merchantFee = $this->getMerchantFee();
-        $merchantTax = $this->getMerchantTax();
-
         $feeDetails = $this->calculateFees($this->getImplicitPricingPlan());
 
-        $partnerFee = $feeDetails['total_fee'];
-        $partnerTax = $feeDetails['total_tax'];
-        $isValid    = $feeDetails['is_valid'];
+        $partnerFee      = $feeDetails['total_fee'];
+        $partnerTax      = $feeDetails['total_tax'];
+        $isValid         = $feeDetails['is_valid'];
+        $partnerFeeSplit = $feeDetails['fee_split'];
 
         // if not valid because of missing pricing rule, don't create commission
         if ($isValid === false)
@@ -802,10 +812,45 @@ class Calculator extends Base\Core
         $this->setPartnerFee($partnerFee);
         $this->setPartnerTax($partnerTax);
 
-        $commissionFee = $merchantFee - $partnerFee;
-        $commissionTax = $merchantTax - $partnerTax;
+        $commissionFee = $this->calculateFeeForImplicitVariableCommission($partnerFeeSplit);
 
-        $this->addImplicitCommission($commissionFee, $commissionTax);
+        // CommissionFee calculated doesnt contain commissionTax. Hence commissionTax is passed as 0.
+        $this->addImplicitCommission($commissionFee, 0);
+    }
+
+    /**
+     * For example:
+     * Partner Pricing Plans: payment and recurring
+     * Submerchant Pricing Plans: payment, recurring and esautomatic (Early Settlement)
+     *
+     * We should not consider submerchant's esautomatic pricing plan while calculating commissionFee.
+     *
+     * @param $partnerFeeSplitCollection
+     *
+     * @return int
+     */
+    protected function calculateFeeForImplicitVariableCommission($partnerFeeSplitCollection)
+    {
+        $commissionFee = 0;
+
+        $merchantFeeSplitCollection = $this->getMerchantFeeSplit();
+
+        foreach ($partnerFeeSplitCollection as $partnerFeeSplit)
+        {
+            $partnerFeeName = $partnerFeeSplit->getName();
+
+            foreach ($merchantFeeSplitCollection as $merchantFeeSplit)
+            {
+                $merchantFeeName = $merchantFeeSplit->getName();
+
+                if ($partnerFeeName == $merchantFeeName && $partnerFeeName !== FeeBreakupName::TAX)
+                {
+                    $commissionFee += ($merchantFeeSplit->getAmount() - $partnerFeeSplit->getAmount());
+                }
+            }
+        }
+
+        return $commissionFee;
     }
 
     protected function addImplicitCommission(int $commissionFee, $commissionTax)
@@ -972,10 +1017,11 @@ class Calculator extends Base\Core
     {
         $pricingFee = new Pricing\Fee;
 
-        list($merchantFee, $merchantTax) = $pricingFee->calculateMerchantRZPFees($this->getSource());
+        list($merchantFee, $merchantTax, $feeSplit) = $pricingFee->calculateMerchantRZPFees($this->getSource());
 
         $this->setMerchantFee($merchantFee);
         $this->setMerchantTax($merchantTax);
+        $this->setMerchantFeeSplit($feeSplit);
     }
 
     /**

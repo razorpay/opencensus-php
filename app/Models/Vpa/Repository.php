@@ -11,7 +11,7 @@ class Repository extends Base\Repository
 
     public function findByAddress($address)
     {
-        return $this->newQuery()
+        return $this->newQueryWithConnection($this->getSlaveConnection())
                     ->address($address)
                     ->first();
     }
@@ -23,7 +23,7 @@ class Repository extends Base\Repository
      */
     public function findLatestByAddressAndMerchantId(string $address, string $merchantId)
     {
-        return $this->newQuery()
+        return $this->newQueryWithConnection($this->getSlaveConnection())
                     ->address($address)
                     ->merchantId($merchantId)
                     ->latest()

@@ -4,15 +4,23 @@ namespace RZP\Services;
 
 use Request;
 use Throwable;
+use Requests_Hooks;
 use Requests_Session;
 use Requests_Response;
-
 use RZP\Error\ErrorCode;
+use RZP\Http\Request\Hooks;
 use RZP\Exception\ServerErrorException;
 use RZP\Exception\BadRequestValidationFailureException;
 
 class Stork
 {
+
+    // Request timeout in milliseconds for all HTTP requests to stork.
+    const REQUEST_TIMEOUT = 350;
+    // Request connect timeout in milliseconds for all HTTP requests to stork.
+    // Request timeout parameter applies after connection is established.
+    const REQUEST_CONNECT_TIMEOUT = 350;
+
     const WEBHOOK = 'webhook';
 
     /**
@@ -32,6 +40,16 @@ class Stork
      * @var Requests_Session
      */
     public $request;
+
+    /**
+     * @var \Razorpay\Trace\Logger
+     */
+    protected $trace;
+
+    public function __construct()
+    {
+        $this->trace = app()->trace;
+    }
 
     /**
      * This method is implements supporting listing requests for admin
@@ -95,6 +113,24 @@ class Stork
 
         $this->mock = $config['mock'];
         $this->service = $config['service_prefix'] . $config['auth'][$mode]['user'];
+
+        // Options and authentication for requests.
+        $options = [
+            'timeout'         => self::REQUEST_TIMEOUT,
+            'connect_timeout' => self::REQUEST_CONNECT_TIMEOUT,
+            'auth'            => [$config['auth'][$mode]['user'], $config['auth'][$mode]['pass']],
+            'hooks'           => new Requests_Hooks(),
+        ];
+
+        // This will add extra hook onto options[hooks] for dns resolution to
+        // ipV4 only. Doing this for internal services only.
+        $hooks = new Hooks($config['url']);
+
+        $hooks->addCurlProperties($options);
+
+        // Sets request timeout in milliseconds via curl options.
+        $options['hooks']->register('curl.before_send', [$this, 'setCurlOptions']);
+
         $this->request = new Requests_Session(
             $config['url'],
             // Common headers for requests.
@@ -103,11 +139,15 @@ class Stork
                 'Content-Type' => 'application/json',
             ],
             [],
-            // Options and authentication for requests.
-            [
-                'timeout' => 1, // Minimum possible value is 1 second.
-                'auth' => [$config['auth'][$mode]['user'], $config['auth'][$mode]['pass']],
-            ]);
+            $options
+        );
+    }
+
+    public function setCurlOptions($curl)
+    {
+        curl_setopt($curl, CURLOPT_TIMEOUT_MS, self::REQUEST_TIMEOUT);
+
+        curl_setopt($curl, CURLOPT_CONNECTTIMEOUT_MS, self::REQUEST_CONNECT_TIMEOUT);
     }
 
     public function request(string $path, array $payload): Requests_Response
@@ -120,14 +160,24 @@ class Stork
 
         $res = null;
         $exception = null;
+        $maxAttempts = 2;
 
-        try
+        while ($maxAttempts--)
         {
-            $res = $this->request->post($path, [], empty($payload) ? '{}' : json_encode($payload));
-        }
-        catch (Throwable $e)
-        {
-            $exception = $e;
+            try
+            {
+                $res = $this->request->post($path, [], empty($payload) ? '{}' : json_encode($payload));
+            }
+            catch (Throwable $e)
+            {
+                $this->trace->traceException($e);
+                $exception = $e;
+                continue;
+            }
+
+            // In case it succeeds in another attempt.
+            $exception = null;
+            break;
         }
 
         if (($exception !== null) or ($res->success !== true))

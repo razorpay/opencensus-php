@@ -5,7 +5,9 @@ namespace RZP\Tests\Functional\Merchant;
 use DB;
 use Mail;
 use RZP\Constants;
+use Carbon\Carbon;
 use RZP\Constants\Mode;
+use RZP\Constants\Timezone;
 use RZP\Models\User\Role;
 use RZP\Models\Batch\Header;
 use Razorpay\OAuth\Application;
@@ -437,7 +439,7 @@ class MerchantCreateTest extends TestCase
         $app = $this->markPartnerAndCreateAppAndUserMapping('fully_managed');
 
         $configAttributes = [
-            PartnerConfig\Entity::DEFAULT_PLAN_ID => Pricing::DEFAULT_PRICING_PLAN_ID,
+            PartnerConfig\Entity::DEFAULT_PLAN_ID => DefaultPlan::SUBMERCHANT_PRICING_OF_ONBOARDED_PARTNERS,
         ];
 
         $this->createConfigForPartnerApp($app->getId(), null, $configAttributes);
@@ -445,6 +447,10 @@ class MerchantCreateTest extends TestCase
         $this->ba->proxyAuth('rzp_test_10000000000000');
 
         $this->mockRazorxTreatment();
+
+        $testTime = Carbon::create(2020, 4, 1, 8, 1, 0, Timezone::IST);
+
+        Carbon::setTestNow($testTime);
 
         $this->startTest();
 

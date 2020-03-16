@@ -82,6 +82,50 @@ class Assertions extends TestCase
         $this->assertEmpty($commissions);
     }
 
+    public function testImplicitVariableWithSubmerchantPartnerESPricingRules(array $data)
+    {
+        $this->assertShouldCreateCommission($data);
+
+        $postAction = $data['post_action'];
+
+        $calculator = $postAction['calculator'];
+
+        $commission = $this->assertCommissionCreatedByType($calculator, Commission\Type::IMPLICIT);
+
+        $this->assertNonZeroCommissionTaxByType($calculator, Commission\Type::IMPLICIT);
+
+        $amount          = 400000; // INR 4000
+        $merchantPricing = 3.5; // 2% base pricing + 1.5% early settlement
+
+        $this->assertEquals($this->getFee($amount, $merchantPricing), $calculator->getMerchantFee());
+        $this->assertEquals($this->getTax($amount, $merchantPricing), $calculator->getMerchantTax());
+
+        $this->assertEquals(3304, $commission->getFee());
+        $this->assertEquals(504, $commission->getTax());
+    }
+    
+    public function testImplicitVariableWithSubmerchantPartnerDiffPricingRules(array $data)
+    {
+        $this->assertShouldCreateCommission($data);
+
+        $postAction = $data['post_action'];
+
+        $calculator = $postAction['calculator'];
+
+        $commission = $this->assertCommissionCreatedByType($calculator, Commission\Type::IMPLICIT);
+
+        $this->assertNonZeroCommissionTaxByType($calculator, Commission\Type::IMPLICIT);
+
+        $amount          = 400000; // INR 4000
+        $merchantPricing = 5.5; // 2% base pricing + 2% recurring payment pricing + 1.5% early settlement
+
+        $this->assertEquals($this->getFee($amount, $merchantPricing), $calculator->getMerchantFee());
+        $this->assertEquals($this->getTax($amount, $merchantPricing), $calculator->getMerchantTax());
+
+        $this->assertEquals(944, $commission->getFee());
+        $this->assertEquals(144, $commission->getTax());
+    }
+
     public function testImplicitVariableMultiplePricingRules(array $data)
     {
         $this->assertShouldCreateCommission($data);

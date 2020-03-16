@@ -29,6 +29,4 @@ class D2cBureauDetail extends Base
 
         return parent::create($attributes);
     }
-
-
 }

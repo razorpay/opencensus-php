@@ -224,6 +224,8 @@ class Service extends Base\Service
     }
 
     /**
+     * This is deprecated , You should use route merchant/documents/upload
+     *
      * Upload the file passed in $input for $merchant
      *
      * @param  Merchant\Entity $merchant          Merchant Entity
@@ -233,11 +235,17 @@ class Service extends Base\Service
      *                                            to bypass locked forms
      *
      * @return array
+     * @throws Exception\BadRequestException
+     * @throws Exception\BadRequestValidationFailureException
+     * @throws Exception\LogicException
      */
     public function uploadActivationFile(Merchant\Entity $merchant,
                                          array $input,
                                          bool $validateLock = true)
     {
+
+        (new Validator)->validateDocumentUpload($input);
+
         $core = new Core;
 
         $merchantDetails = $core->getMerchantDetails($merchant, $input);
@@ -247,12 +255,14 @@ class Service extends Base\Service
             $merchantDetails->getValidator()->validateIsNotLocked();
         }
 
-        $response = $this->repo->transaction(function() use ($merchant, $merchantDetails, $input, $core) {
+        $fileAttributes = $this->storeActivationFile($merchantDetails, $input);
 
-            $this->handleMerchantDocument($input, $merchantDetails, $merchant);
+        $response = $this->repo->transaction(function() use ($merchant, $merchantDetails, $input, $fileAttributes) {
+
+            $this->handleMerchantDocument($input, $merchantDetails, $merchant, $fileAttributes);
 
             // Previous $response would become stale while simultaneous uploads. So prepare fresh response.
-            $response = $core->createResponse($merchantDetails);
+            $response = (new Core)->createResponse($merchantDetails);
 
             return $response;
         }
@@ -269,17 +279,15 @@ class Service extends Base\Service
      * @param Entity          $merchantDetails
      * @param Merchant\Entity $merchant
      *
+     * @param                 $fileAttributes
+     *
      * @throws Exception\BadRequestException
-     * @throws Exception\BadRequestValidationFailureException
-     * @throws Exception\LogicException
      */
-    public function handleMerchantDocument(array &$input, Merchant\Detail\Entity $merchantDetails, Merchant\Entity $merchant)
+    public function handleMerchantDocument(array &$input, Entity $merchantDetails, Merchant\Entity $merchant, $fileAttributes)
     {
         $this->deleteExistingDocuments($input, $merchantDetails);
 
-        $merchantDetails->edit($input);
-
-        $fileAttributes = $this->storeActivationFile($merchantDetails, $input);
+        $merchantDetails->fill($input);
 
         //
         // for backward compatibility we are storing file in both merchant detail and merchant_document table
@@ -326,7 +334,7 @@ class Service extends Base\Service
      */
     public function deleteExistingDocuments($input, $merchantDetails): void
     {
-        $previousFileStoreId = [];
+        $previousFileStoreIds = [];
 
         //
         //find the previous document uploaded with same document type and delete them from Merchant_documents table
@@ -337,23 +345,23 @@ class Service extends Base\Service
 
             if (isset($fileStoreId) === true)
             {
-                $previousFileStoreId[] = $fileStoreId;
+                $previousFileStoreIds[] = $fileStoreId;
             }
         }
 
-        (new DocumentCore)->deleteDocuments($previousFileStoreId);
+        (new DocumentCore)->deleteDocuments($previousFileStoreIds);
     }
 
     /**
      * @param Base\PublicEntity $publicEntity
-     * @param array             $input
      *
+     * @param array             $input
      * @param string|null       $documentSource
      *
      * @return array
      * @throws Exception\BadRequestException
-     * @throws Exception\LogicException
      * @throws Exception\BadRequestValidationFailureException
+     * @throws Exception\LogicException
      */
     public function storeActivationFile(
         Base\PublicEntity $publicEntity,
@@ -612,7 +620,13 @@ class Service extends Base\Service
 
             foreach ($subCategories as $subCategory)
             {
-                $subCategoriesMetaData[$subCategory] =  $this->getSubCategoryMetaDataFields($subCategory);
+                $subcategoryMetaDataFields = BusinessSubCategoryMetaData::SUB_CATEGORY_METADATA[$subCategory];
+
+                if ($this->isSubcategoryToBeShownOnDashboard($subcategoryMetaDataFields) === true)
+                {
+                    $subCategoriesMetaData[$subCategory] = $this->getSubCategoryMetaDataFields($subcategoryMetaDataFields);
+                }
+
             }
             $businessCategories[$businessCategory][BusinessCategory::DESCRIPTION]   = BusinessCategory::DESCRIPTIONS[$businessCategory];
             $businessCategories[$businessCategory][BusinessCategory::SUBCATEGORIES] = $subCategoriesMetaData;
@@ -652,19 +666,34 @@ class Service extends Base\Service
      * for admin all meta data fields(description, category, category2, activation category) will be returned
      * for other then admin description and category2 will be returned
      *
-     * @param string $subCategory
+     * @param array $subcategoryMetaDataFields
      *
      * @return array
      */
-    private function getSubCategoryMetaDataFields(string $subCategory): array
+    private function getSubCategoryMetaDataFields(array $subcategoryMetaDataFields)
     {
         if ($this->auth->isAdminAuth() === true)
         {
-            return BusinessSubCategoryMetaData::SUB_CATEGORY_METADATA[$subCategory];
+            return $subcategoryMetaDataFields;
         }
 
-        return array_only(BusinessSubCategoryMetaData::SUB_CATEGORY_METADATA[$subCategory],
-                          BusinessSubCategoryMetaData::NORMAL_AUTH_FIELDS);
+        return array_only($subcategoryMetaDataFields, BusinessSubCategoryMetaData::NORMAL_AUTH_FIELDS);
+    }
+
+    /**
+     * @param $subcategoryMetaDataFields
+     *
+     * @return bool
+     */
+    private function isSubcategoryToBeShownOnDashboard($subcategoryMetaDataFields): bool
+    {
+        if ($this->auth->isAdminAuth() === true)
+        {
+            return true;
+        }
+
+        return (isset($subcategoryMetaDataFields[BusinessSubCategoryMetaData::EXISTING_OR_NEW_SUBCATEGORY]) === true) and
+               ($subcategoryMetaDataFields[BusinessSubCategoryMetaData::EXISTING_OR_NEW_SUBCATEGORY] === BusinessSubCategoryMetaData::EXISTING_SUBCATEGORY);
     }
 
     public function getRejectionReasons()

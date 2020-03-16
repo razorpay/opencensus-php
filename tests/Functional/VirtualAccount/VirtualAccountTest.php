@@ -1314,6 +1314,9 @@ class VirtualAccountTest extends TestCase
 
     public function testVirtualAccountForOrderPayAndRefund()
     {
+        // Bank Transfer refunds are behind a razorx experiment
+        $this->mockRazorXTreatmentForEnableBankTransferRefunds();
+
         $order = $this->fixtures->create('order');
 
         $virtualAccount = $this->createVirtualAccountForOrder($order);
@@ -1617,6 +1620,18 @@ class VirtualAccountTest extends TestCase
             $merchant->sharedBankingBalance->getAccountNumber());
     }
 
+    public function testFetchVirtualAccountBankingMultipleWithBalanceId()
+    {
+        $this->setUpMerchantForBusinessBanking($skipFeatureAddition = true);
+
+        $bankingBalance = $this->getDbLastEntity('balance');
+
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/virtual_accounts/banking/account?balance_id=' . $bankingBalance['id'];
+
+        $this->startTest();
+    }
+
     public function testUpdateOnVirtualAccountOfBankingBalanceFails()
     {
         $this->setUpMerchantForBusinessBanking($skipFeatureAddition = true);
@@ -1814,5 +1829,57 @@ class VirtualAccountTest extends TestCase
         $virtualAccount = $this->getDbLastEntity('virtual_account');
 
         $this->assertEquals(Status::CLOSED, $virtualAccount->getStatus());
+    }
+
+    public function testFetchVirtualAccountsWithBankAccountId2()
+    {
+        $this->createVirtualAccount();
+
+        $virtualAccount = $this->getDbLastEntity('virtual_account');
+
+        $bankAccount = $this->getDbLastEntity('bank_account');
+
+        $this->assertEquals($bankAccount['id'], $virtualAccount['bank_account_id']);
+
+        $bankAccount2 = $this->createBankAccount(['account_number' => $bankAccount['account_number']]);
+
+        $virtualAccount->bankAccount2()->associate($bankAccount2);
+
+        $this->app['repo']->virtual_account->saveOrFail($virtualAccount);
+
+        $virtualAccount->refresh();
+
+        $this->assertArraySubset([
+            [
+                'entity'          => 'bank_account',
+                'ifsc'            => 'RAZR0000001',
+                'account_number'  => $bankAccount['account_number'],
+            ],
+            [
+                'entity'          => 'bank_account',
+                'ifsc'            => 'RAZOR000002',
+                'account_number'  => $bankAccount['account_number'],
+            ]
+        ], $virtualAccount['receivers']);
+    }
+
+
+    protected function createBankAccount(array $overrideWith = [])
+    {
+        $bankAccount = $this->fixtures
+            ->create(
+                'bank_account',
+                array_merge(
+                    [
+                        'beneficiary_name' => 'Yes bank deactivated',
+                        'ifsc_code'        => 'RAZOR000002',
+                        'account_type'     => 'savings',
+
+                    ],
+                    $overrideWith
+                )
+            );
+
+        return $bankAccount;
     }
 }

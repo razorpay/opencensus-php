@@ -7,8 +7,10 @@ use Carbon\Carbon;
 use RZP\Models\Pricing;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
-use RZP\Constants\Timezone;
+use RZP\Models\Merchant;
+use RZP\Models\Payout\Mode;
 use RZP\Models\Payout\Core;
+use RZP\Constants\Timezone;
 use RZP\Models\Payout\Entity;
 use RZP\Models\Payout\Status;
 use RZP\Models\BankingAccount;
@@ -51,19 +53,7 @@ class Base extends FundAccountPayout\Base
 
         $payoutAmount = $payout->getAmount();
 
-        // In case of current accounts(direct), balance in balance entity is stale since in our system we create
-        // transactions only when we fetch account statement from bank.So for current account we can't use balance
-        // from balance table.
-        // So before making payout we need to get balance amount in merchant's account from gateway which is then stored
-        // in banking account table in our system .
-        // We fetch balance from gateway if balance last fetched at was a while ago(using threshold to decide that).
-        // We then use this balance amount to create payout or queue it if low balance.
-
-        $merchantBankingAccount = $payout->bankingAccount;
-
-        (new Core)->fetchAndUpdateGatewayBalance($merchantBankingAccount);
-
-        $merchantBalance = $merchantBankingAccount->getGatewayBalance();
+        $merchantBalance = $this->getMerchantBalanceToCheckForQueued($payout);
 
         $hasBalance = ($merchantBalance >= $payoutAmount);
 
@@ -87,6 +77,11 @@ class Base extends FundAccountPayout\Base
         return false;
     }
 
+    protected function getMerchantBalanceToCheckForQueued(Entity $payout)
+    {
+        return $payout->balance->getBalance();
+    }
+
     /**
      * ADDING for BACKWARD COMPATIBILITY
      * This function makes sure that we don't queue something that will fail when picked up for processing.
@@ -105,7 +100,7 @@ class Base extends FundAccountPayout\Base
 
         $mode = $payout->getMode();
 
-        $valid = Channel::validateChannelAndMode($channel, $destinationType, $mode);
+        $valid = Mode::validateChannelAndModeForPayouts($channel, $destinationType, $mode);
 
         if ($valid === false)
         {

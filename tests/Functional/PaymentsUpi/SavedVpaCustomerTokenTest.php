@@ -28,6 +28,8 @@ class SavedVpaCustomerTokenTest extends TestCase
         $this->fixtures->create('customer:upi_payments_global_customer_token');
 
         $this->createUpiPaymentsGlobalCustomerVpa();
+
+        $this->createUpiPaymentsLocalCustomerVpa();
     }
 
     public function testGetCustomerTokensWithSaveVpaFeatureEnabled()
@@ -46,6 +48,13 @@ class SavedVpaCustomerTokenTest extends TestCase
         $this->mockSession();
 
         $this->ba->publicAuth();
+
+        $this->startTest();
+    }
+
+    public function testGetAllCustomerTokensWithSavedVpaFeature()
+    {
+        $this->ba->privateAuth();
 
         $this->startTest();
     }

@@ -50,7 +50,7 @@ return [
         ],
     ],
 
-    'testGetUser' => [
+    'testGet' => [
         'request' => [
             'url'    => '/users/id',
             'method' => 'GET',
@@ -74,75 +74,6 @@ return [
                 'invitations'             => [
                 ],
                 'settings'                => [
-                ],
-            ],
-        ],
-    ],
-
-    'testGetUserWithProductPrimary' => [
-        'request' => [
-            'url'    => '/users/id',
-            'method' => 'GET',
-            'server' => [
-                'HTTP_X-Dashboard' => 'true',
-            ],
-        ],
-        'response' => [
-            'content' => [
-                'contact_mobile'          => null,
-                'contact_mobile_verified' => false,
-                'confirmed'               => true,
-                'merchants' => [
-                    [
-                        'activated'    => false,
-                        'archived_at'  => null,
-                        'suspended_at' => null,
-                        'role'         => 'owner',
-                        'product'      => 'primary',
-                    ],
-                    [
-                        'activated'    => false,
-                        'archived_at'  => null,
-                        'suspended_at' => null,
-                        'role'         => 'owner',
-                        'product'      => 'primary',
-                    ],
-                ],
-                'invitations' => [
-                ],
-                'settings' => [
-                ],
-            ],
-        ],
-    ],
-
-    'testGetUserWithProductBanking' => [
-        'request' => [
-            'url'    => '/users/id',
-            'method' => 'GET',
-            'server' => [
-                'HTTP_X-Dashboard'      => 'true',
-                'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
-            ],
-        ],
-        'response' => [
-            'content' => [
-                'contact_mobile'          => null,
-                'contact_mobile_verified' => false,
-                'confirmed'               => true,
-                'merchants' => [
-                    [
-                        'activated'    => false,
-                        'archived_at'  => null,
-                        'suspended_at' => null,
-                        'role'         => null,
-                        'banking_role' => 'admin',
-                        'product'      => 'banking',
-                    ],
-                ],
-                'invitations' => [
-                ],
-                'settings' => [
                 ],
             ],
         ],
@@ -479,53 +410,6 @@ return [
         ],
     ],
 
-    'testLogin2faCorrectOtp' => [
-        'request' => [
-            'url'     => '/users/login',
-            'method'  => 'POST',
-            'content' => [],
-        ],
-        'response' => [
-            'content' => [
-                'contact_mobile'             => '9999999999',
-                'contact_mobile_verified'    => true,
-                'confirmed'                  => true,
-                'second_factor_auth'         => true,
-                'second_factor_auth_setup'   => true,
-                'restricted'                 => false,
-                'merchants'                  => [
-                    [
-                        'activated'    => false,
-                        'archived_at'  => null,
-                        'suspended_at' => null,
-                        'role'         => 'owner'
-                    ]
-                ]
-            ],
-        ]
-    ],
-
-    'testFailedLogin2faIncorrectOtp' => [
-        'request' => [
-            'url'     => '/users/login',
-            'method'  => 'POST',
-            'content' => [],
-        ],
-        'response' => [
-            'content' => [
-                'error' => [
-                    'code'        => ErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_2FA_LOGIN_INCORRECT_OTP,
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'               => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_2FA_LOGIN_INCORRECT_OTP,
-        ],
-    ],
-
     'testFailedLoginAccountLocked' => [
         'request' => [
             'url'     => '/users/login',
@@ -566,123 +450,6 @@ return [
             'class'               => 'RZP\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_USER_LOGIN_2FA_SETUP_REQUIRED,
         ],
-    ],
-
-    'testMaxWrongOtpLocksAccount' => [
-        'request' => [
-            'url'     => '/users/login',
-            'method'  => 'POST',
-            'content' => [],
-        ],
-        'response' => [
-            'content' => [
-                'error' => [
-                    'code'        => ErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_2FA_LOGIN_INCORRECT_OTP,
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'               => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_2FA_LOGIN_INCORRECT_OTP,
-        ],
-    ],
-
-    'testFailed2faSetupUser2faNotEnabled' => [
-        'request' => [
-            'url'     => '/users/login/2fa_setup/mobile',
-            'method'  => 'POST',
-            'content' => [],
-        ],
-        'response' => [
-            'content' => [
-                'error' => [
-                    'code'        => ErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_2FA_SETUP_USER_2FA_NOT_ENABLED,
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'               => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_2FA_SETUP_USER_2FA_NOT_ENABLED,
-        ],
-    ],
-
-    'testFailed2faSetupUserLocked' => [
-        'request' => [
-            'url'     => '/users/login/2fa_setup/mobile',
-            'method'  => 'POST',
-            'content' => [],
-        ],
-        'response' => [
-            'content' => [
-                'error' => [
-                    'code'        => ErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_2FA_SETUP_ACCOUNT_LOCKED,
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'               => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_2FA_SETUP_ACCOUNT_LOCKED,
-        ],
-    ],
-
-    'testFailed2faSetupUserRestricted' => [
-        'request' => [
-            'url'     => '/users/login/2fa_setup/mobile',
-            'method'  => 'POST',
-            'content' => [],
-        ],
-        'response' => [
-            'content' => [
-                'error' => [
-                    'code'        => ErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_RESTRICTED_USER_CANNOT_SETUP_2FA,
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'               => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_RESTRICTED_USER_CANNOT_SETUP_2FA,
-        ],
-    ],
-
-    'testFailed2faSetupUserAlreadySetup' => [
-        'request' => [
-            'url'     => '/users/login/2fa_setup/mobile',
-            'method'  => 'POST',
-            'content' => [],
-        ],
-        'response' => [
-            'content' => [
-                'error' => [
-                    'code'        => ErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_USER_2FA_ALREADY_SETUP,
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'               => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_USER_2FA_ALREADY_SETUP,
-        ],
-    ],
-
-    'test2faSetupMobile' => [
-        'request' => [
-            'url'     => '/users/login/2fa_setup/mobile',
-            'method'  => 'POST',
-            'content' => [],
-        ],
-        'response' => [
-            'content' => [],
-            'status_code' => 200,
-        ]
     ],
 
     'testFailed2faSetupVerifyMobileWrongOtp' => [
@@ -828,6 +595,20 @@ return [
                 'contact_mobile' => null,
                 'confirmed'      => true
             ],
+        ],
+    ],
+
+    'testBulkUpdateUserRoleMapping' => [
+        'request' => [
+            'url'    => '/users/roles-mapping/bulk',
+            'method' => 'PUT',
+            'content' => [],
+            'server'     => [
+                'HTTP_X-Request-Origin'         => 'https://dashboard.razorpay.com',
+            ],
+        ],
+        'response' => [
+            'content' => [],
         ],
     ],
 
@@ -1445,7 +1226,6 @@ return [
             'content' => [],
             'server'  => [
                 'HTTP_X_DASHBOARD_USER_ID' => '30000000000000',
-                'HTTP_X-Request-Origin'    => 'https://x.razorpay.com',
             ]
         ],
         'response' => [
@@ -1462,6 +1242,34 @@ return [
                 'invitations' => [
                 ],
                 'settings'    => [
+                ],
+            ],
+        ],
+    ],
+
+    'testGetBankingUserWithPermissions'   => [
+        'response'      => [
+            'content'     => [
+                'merchants' => [
+                    [],
+                    [
+                        'banking_role' => 'owner',
+                        'role'         => null,
+                    ]
+                ],
+            ],
+        ],
+    ],
+
+    'testGetBankingUserWithPermissionsNull'   => [
+        'response'      => [
+            'content'     => [
+                'merchants' => [
+                    [],
+                    [
+                        'banking_role' => 'random_role',
+                        'role'         => null,
+                    ]
                 ],
             ],
         ],

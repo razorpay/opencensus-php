@@ -69,7 +69,7 @@ class Kotak extends Base
         // Refunds were fetched from scrooge
         if ($this->fetchRefundsFromScrooge === true)
         {
-            foreach ($this->scroogeRefunds as $refund)
+            foreach ($this->scroogeRefundsData as $refund)
             {
                 $payment = $entities->where(Payment\Entity::ID, '=', $refund[RefundConstants::PAYMENT_ID])->first();
 
@@ -104,7 +104,7 @@ class Kotak extends Base
                     $this->populateScroogeRefundsGivenIds($scroogeRefundIds);
                 }
 
-                $scroogeRefundIds = array_unique(array_column($this->scroogeRefunds, RefundConstants::SCROOGE_ID));
+                $scroogeRefundIds = array_unique(array_column($this->scroogeRefundsData, RefundConstants::SCROOGE_ID));
             }
 
             // regular API flow

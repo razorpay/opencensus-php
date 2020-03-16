@@ -101,7 +101,7 @@
                                             <td align="left" style="font-size:0px;padding:0px;word-break:break-word;">
 
                                                 <div style="font-family:Trebuchet MS;font-size:13px;line-height:1;text-align:left;color:#000000;">
-                                                    <div class="header" style="box-sizing: border-box; padding-top: 16px; max-width: 100%;"> <div class="content branding rzp" style="width: 85%; width: calc(46000% - 211600px); max-width: 460px; min-width: 308px; margin-left: auto; margin-right: auto; box-sizing: border-box; padding-left: 16px; padding-right: 16px; padding-bottom: 16px;"><div class="branding-content" style="text-align: center; width: fit-content; margin: 0 auto; font-size: 12px; line-height: 1.5;"><div class="content-element logo" style="display: inline-block; vertical-align: middle; height: 18px; width: 85px;"><img src="https://cdn.razorpay.com/static/assets/logo/rzpX.png" width="100px" style="height: 100%; width: 100%;"></div></div></div><div class="content title" style="width: 85%; width: calc(46000% - 211600px); max-width: 460px; min-width: 308px; margin-left: auto; margin-right: auto; box-sizing: border-box; padding-left: 16px; padding-right: 16px; background-color: #242b4d; padding-top: 24px;"><div class="title-content" style="text-align: center; width: fit-content; margin: 0 auto;"></div></div></div>
+                                                    <div class="header" style="box-sizing: border-box; padding-top: 16px; max-width: 100%;"> <div class="content branding rzp" style="width: 85%; width: calc(46000% - 211600px); max-width: 460px; min-width: 308px; margin-left: auto; margin-right: auto; box-sizing: border-box; padding-left: 16px; padding-right: 16px; padding-bottom: 16px;"><div class="branding-content" style="text-align: center; width: fit-content; margin: 0 auto; font-size: 12px; line-height: 1.5;"><div class="content-element logo" style="display: inline-block; vertical-align: middle; height: 18px; width: 85px;"><img src="https://cdn.razorpay.com/static/assets/logo/rzpX.png" width="100px" style="height: 100%; width: 100%;"></div></div></div><div class="content title highlight" style="border-top: 2px solid #528ff0; width: 85%; width: calc(46000% - 211600px); max-width: 460px; min-width: 308px; margin-left: auto; margin-right: auto; box-sizing: border-box; padding-left: 16px; padding-right: 16px; background-color: #242b4d; padding-top: 24px;"><div class="title-content" style="text-align: center; width: fit-content; margin: 0 auto;"></div></div></div>
                                                 </div>
 
                                             </td>
@@ -173,7 +173,7 @@
                                             <td align="left" style="font-size:0px;padding:0px;word-break:break-word;">
 
                                                 <div style="font-family:Trebuchet MS;font-size:13px;line-height:1;text-align:left;color:#000000;">
-                                                    <div class="card secondary  title informative descriptive" style="width: 85%; width: calc(46000% - 211600px); max-width: 460px; min-width: 308px; margin-left: auto; margin-right: auto; box-sizing: border-box; background-color: #242b4d; padding-bottom: 16px; padding-left: 24px; padding-right: 24px;"><div class="center-align" style="text-align: center;"><img class="image medium" src="https://cdn.razorpay.com/static/assets/email/initiated.png" style="margin: 8px; background: transparent; height: 80px;" height="80"></div><div class="center-align font-size-18 font-color-primary line-height-26" style="text-align: center; font-size: 18px; color: #FFF; line-height: 26px;">Your Current Account is ready to take off!</div><div class="center-align" style="text-align: center;"><div class="puck para" style="padding: 12px 0; margin: 0;"><div class="bar" style="margin: 0px auto; width: 24px; height: 4px; background-color: #08CA73;"></div></div></div><div class="description" style="text-align: center; color: #bdbfC9; font-size: 14px; line-height: 1.5;">Woohoo! Your RazorpayX Current Account is now active. We’re ecstatic to have you onboard 🕺 </div><div class="description margin-top-12" style="margin-top: 12px; text-align: center; color: #bdbfC9; font-size: 14px; line-height: 1.5;"></div></div>
+                                                    <div class="card secondary  title informative descriptive" style="width: 85%; width: calc(46000% - 211600px); max-width: 460px; min-width: 308px; margin-left: auto; margin-right: auto; box-sizing: border-box; background-color: #242b4d; padding-bottom: 16px; padding-left: 24px; padding-right: 24px;"><div class="center-align" style="text-align: center;"><img class="image medium" src="https://cdn.razorpay.com/static/assets/email/initiated.png" style="margin: 8px; background: transparent; height: 80px;" height="80"></div><div class="center-align font-size-18 font-color-primary line-height-26" style="text-align: center; font-size: 18px; color: #FFF; line-height: 26px;">Your Current Account is ready to take off!</div><div class="center-align" style="text-align: center;"><div class="puck para" style="padding: 12px 0; margin: 0;"><div class="bar" style="margin: 0px auto; width: 24px; height: 4px; background-color: #08CA73;"></div></div></div><div class="description" style="text-align: center; color: #bdbfC9; font-size: 14px; line-height: 1.5;">Woohoo! Your RazorpayX Current Account has been Processed. We’re ecstatic to have you onboard </div></div>
                                                 </div>
 
                                             </td>
@@ -245,9 +245,7 @@
                                             <td align="left" style="font-size:0px;padding:0px;word-break:break-word;">
 
                                                 <div style="font-family:Trebuchet MS;font-size:13px;line-height:1;text-align:left;color:#000000;">
-                                                    <div class="card secondary highlight informative descriptive" style="width: 85%; width: calc(46000% - 211600px); max-width: 460px; min-width: 308px; margin-left: auto; margin-right: auto; box-sizing: border-box; background-color: #242b4d; border-top: 2px solid #3281FF; padding-top: 20px; padding-bottom: 20px; padding-left: 24px; padding-right: 24px; border-color: #528ff0; margin-top: 8px;">
-                                                        <div class="title-white" style="font-size: 14px; line-height: 1.5; color: #FFF; margin-bottom: 8px;text-align: left">Your RBL current account are as follows:</div><div class="information-row margin-top-16" style="margin-top: 16px; font-size: 14px; line-height: 1.5; width: 100%; box-sizing: border-box; margin-bottom: 20px; padding-left: 5%;"><div class="label" style="color: #bdbfC9; display: inline-block; width: 50%; vertical-align: middle;">Account Holders Name</div><div class="value" style="color: #bdbfC9; display: inline-block; width: 40%; text-align: right;">{{ $merchant_name }}</div></div><div class="information-row" style="font-size: 14px; line-height: 1.5; width: 100%; box-sizing: border-box; margin-bottom: 20px; padding-left: 5%;"><div class="label" style="color: #bdbfC9; display: inline-block; width: 50%; vertical-align: middle;">Account No.</div><div class="value" style="color: #bdbfC9; display: inline-block; width: 40%; text-align: right;">{{ $account_number }}</div></div><div class="information-row" style="font-size: 14px; line-height: 1.5; width: 100%; box-sizing: border-box; margin-bottom: 20px; padding-left: 5%;"><div class="label" style="color: #bdbfC9; display: inline-block; width: 50%; vertical-align: middle;">IFSC Code</div><div class="value" style="color: #bdbfC9; display: inline-block; width: 40%; text-align: right;">{{ $ifsc_code }}</div></div><div class="description dark" style="font-size: 14px; line-height: 1.5; text-align: left; color: #9195A6;">
-                                                            You can start exploring your current account now by going to the dashboard.<button class="btn primary font-bold" style="font-weight: 700; font-size: 14px; line-height: 1.5; border: 1px solid; padding: 8px 12px; letter-spacing: 1px; border-radius: 2px; overflow: hidden; min-width: 185px; font-family: Trebuchet MS; color: #FFF; background-color: #3281FF; border-color: #3281FF; margin: 24px auto 0 auto; display: block;"><a class="link" href="{{ $view_dashboard_url }}" target="_blank" style="text-decoration: none; color: #FFF;">EXPLORE CURRENT ACCOUNT</a></button></div></div>
+                                                    <div class="card secondary highlight informative descriptive" style="width: 85%; width: calc(46000% - 211600px); max-width: 460px; min-width: 308px; margin-left: auto; margin-right: auto; box-sizing: border-box; background-color: #242b4d; border-top: 2px solid #3281FF; padding-top: 20px; padding-bottom: 20px; padding-left: 24px; padding-right: 24px; border-color: #528ff0; margin-top: 8px;"><div class="title-white" style="font-size: 14px; line-height: 1.5; color: #FFF; margin-bottom: 8px;">Your RBL current account are as follows:</div><div class="information-row margin-top-16" style="margin-top: 16px; font-size: 14px; line-height: 1.5; width: 100%; box-sizing: border-box; margin-bottom: 20px; padding-left: 5%;"><div class="label" style="color: #bdbfC9; display: inline-block; width: 40%; vertical-align: middle;">Beneficiary Name</div><div class="value" style="color: #bdbfC9; display: inline-block; width: 50%; text-align: right;">{{$merchant_name}}</div></div><div class="information-row" style="font-size: 14px; line-height: 1.5; width: 100%; box-sizing: border-box; margin-bottom: 20px; padding-left: 5%;"><div class="label" style="color: #bdbfC9; display: inline-block; width: 40%; vertical-align: middle;">Account No.</div><div class="value" style="color: #bdbfC9; display: inline-block; width: 50%; text-align: right;">{{$account_number}}</div></div><div class="information-row" style="font-size: 14px; line-height: 1.5; width: 100%; box-sizing: border-box; margin-bottom: 20px; padding-left: 5%;"><div class="label" style="color: #bdbfC9; display: inline-block; width: 40%; vertical-align: middle;">IFSC Code</div><div class="value" style="color: #bdbfC9; display: inline-block; width: 50%; text-align: right;">{{$ifsc_code}}</div></div><div class="description dark" style="font-size: 14px; line-height: 1.5; text-align: left; color: #9195A6;">You can start exploring your current account now by going to the dashboard. <div class="center-align" style="text-align: center;"><a class="link btn primary font-bold" href="{{ $view_dashboard_url }}" target="_blank" style="text-decoration: none; font-weight: 700; font-size: 14px; line-height: 1.5; border: 1px solid; padding: 8px 12px; letter-spacing: 1px; border-radius: 2px; overflow: hidden; min-width: 145px; display: inline-block; font-family: Trebuchet MS; margin: 24px auto 0 auto; color: #FFF; background-color: #3281FF; border-color: #3281FF;">EXPLORE CURRENT ACCOUNT</a></div></div></div>
                                                 </div>
 
                                             </td>
@@ -353,78 +351,6 @@
     </td>
     </tr>
     </table>
-
-    <table
-            align="center" border="0" cellpadding="0" cellspacing="0" class="footer-outlook" style="width:600px;" width="600"
-    >
-        <tr>
-            <td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;">
-    <![endif]-->
-
-
-    <div class="footer" style="width: 300px; Margin: 0px auto; max-width: 600px; margin-top: 8px; margin-bottom: 8px;">
-
-        <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%;">
-            <tbody>
-            <tr>
-                <td style="direction:ltr;font-size:0px;padding:0px;text-align:center;vertical-align:top;">
-                    <!--[if mso | IE]>
-                    <table role="presentation" border="0" cellpadding="0" cellspacing="0">
-
-                        <tr>
-
-                            <td
-                                    class="" style="vertical-align:top;width:600px;"
-                            >
-                    <![endif]-->
-
-                    <div class="mj-column-per-100 outlook-group-fix" style="font-size:13px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
-
-                        <table border="0" cellpadding="0" cellspacing="0" role="presentation" width="100%">
-                            <tbody>
-                            <tr>
-                                <td style="vertical-align:top;padding:0px;">
-
-                                    <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="" width="100%">
-
-                                        <tr>
-                                            <td align="left" style="font-size:0px;padding:0px;word-break:break-word;">
-
-                                                <div style="font-family:Trebuchet MS;font-size:13px;line-height:1;text-align:left;color:#000000;">
-                                                    <div class="footer-text" style="font-size: 12px; line-height: 1.5; color: #9195A6; text-align: center; padding: 8px 0;">You are receiving this email because you have subscribed to updates from RazorpayX</div>
-                                                </div>
-
-                                            </td>
-                                        </tr>
-
-                                    </table>
-
-                                </td>
-                            </tr>
-                            </tbody>
-                        </table>
-
-                    </div>
-
-                    <!--[if mso | IE]>
-                    </td>
-
-                    </tr>
-
-                    </table>
-                    <![endif]-->
-                </td>
-            </tr>
-            </tbody>
-        </table>
-
-    </div>
-
-
-    <!--[if mso | IE]>
-    </td>
-    </tr>
-    </table>
     <![endif]-->
 
 
@@ -432,4 +358,3 @@
 
 </body>
 </html>
-

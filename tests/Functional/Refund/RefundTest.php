@@ -99,6 +99,55 @@ class RefundTest extends TestCase
         Mail::assertQueued(RefundedMail::class);
     }
 
+    public function testRefundTerminalDeleted()
+    {
+        Mail::fake();
+
+        $payment = $this->defaultAuthPayment();
+        $payment = $this->capturePayment($payment['id'], $payment['amount']);
+
+        $this->gateway = 'hdfc';
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'verify')
+            {
+                $content['result']       = 'FAILURE(SUSPECT)';
+                $content['authRespCode'] = 'J';
+                $content['udf2']         = '';
+                $content['udf5']         = 'TrackID';
+            }
+
+            return $content;
+        });
+
+        $paymentEntity = $this->getDbEntityById('payment', $payment['id']);
+
+        // Disable foreign key checks to allow testing buggy case
+        DB::statement("SET foreign_key_checks = 0");
+
+        $this->fixtures->edit(
+            'payment',
+            $paymentEntity['id'],
+            ['terminal_id' => 'B2K2t8JD9z98vh']);
+
+        // Enable foreign key checks
+        DB::statement("SET foreign_key_checks = 1");
+
+        $refund = $this->refundPayment($payment['id']);
+
+        $this->assertEquals('rfnd_', substr($refund['id'], 0, 5));
+
+        $this->assertGreaterThan(time() - 30, $refund['created_at']);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertNull($refund['gateway_refunded']);
+        $this->assertEquals(RefundSpeed::NORMAL, $refund['speed_processed']);
+
+        Mail::assertQueued(RefundedMail::class);
+    }
+
     public function testRefundWhenDisabledOnMerchant()
     {
         $this->fixtures->merchant->addFeatures('disable_refunds');
@@ -1352,6 +1401,18 @@ class RefundTest extends TestCase
         $payment = $this->fixtures->create('payment:captured');
         $rfnd = $this->fixtures->create('refund:from_payment', ['payment' => $payment]);
 
+        $this->fixtures->refund->edit(
+            $rfnd['id'],
+            [
+                'speed_requested'  => 'normal',
+                'speed_decisioned' => 'normal',
+                'speed_processed'  => 'normal',
+                'status'           => 'processed'
+            ]
+        );
+
+        $rfnd = $this->getDbEntityById('refund', $rfnd['id']);
+
         $actual = $rfnd->toArrayPublic();
         $actual['acquirer_data'] = $rfnd->getAcquirerData()->toArray();
 
@@ -2334,6 +2395,7 @@ class RefundTest extends TestCase
         });
 
         $this->fixtures->merchant->addFeatures('card_transfer_refund');
+        $this->fixtures->merchant->addFeatures('disable_instant_refunds');
 
         $this->fixtures->pricing->createInstantRefundsDefaultPricingplan();
 

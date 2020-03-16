@@ -5620,11 +5620,17 @@ ALTER TABLE banking_accounts
     ADD COLUMN gateway_balance BIGINT DEFAULT NULL,
     ADD COLUMN balance_last_fetched_at INT DEFAULT NULL;
 
+ALTER TABLE `legal_entity`
+    modify `mcc` char(4) DEFAULT NULL ;
+
 ALTER TABLE merchant_details
     ADD COLUMN estd_year smallint(4) DEFAULT NULL,
     ADD COLUMN authorized_signatory_residential_address varchar(255) DEFAULT NULL,
     ADD COLUMN authorized_signatory_dob date DEFAULT NULL,
     ADD COLUMN platform varchar(40) DEFAULT NULL;
+
+ALTER TABLE d2c_bureau_report
+    ADD COLUMN csv_report_ufh_file_id varchar(255)  DEFAULT NULL;
 
 ALTER TABLE payout_links
     ADD COLUMN send_sms BOOLEAN DEFAULT false,
@@ -5633,3 +5639,33 @@ ALTER TABLE payout_links
 ALTER TABLE users
     ADD COLUMN old_password1 varchar(100) DEFAULT NULL,
     ADD COLUMN old_password2 varchar(100) DEFAULT NULL;
+
+ALTER TABLE blade
+    MODIFY COLUMN amount BIGINT NOT NULL;
+
+ALTER TABLE merchant_details
+    ADD COLUMN fund_account_validation_id char(14) DEFAULT NULL;
+
+ALTER TABLE upi
+    CHANGE `email` `gateway_data` VARCHAR(255);
+
+ALTER TABLE balance
+    ADD COLUMN locked_balance BIGINT UNSIGNED DEFAULT 0;
+
+ALTER TABLE bank_transfers
+    MODIFY COLUMN utr VARCHAR(255) NOT NULL;
+
+ALTER TABLE bank_transfers
+    MODIFY COLUMN payer_ifsc VARCHAR(20) DEFAULT NULL;
+
+ALTER TABLE bank_transfers
+    ADD COLUMN narration VARCHAR(255) DEFAULT NULL,
+    ADD INDEX `narration_payer_ifsc_index` (`narration`, `payer_ifsc`);
+
+ALTER TABLE merchants MODIFY COLUMN whitelisted_domains text COLLATE utf8_bin DEFAULT NULL;
+
+ALTER TABLE webhooks
+    ADD COLUMN events2 BIGINT DEFAULT 0 AFTER events;
+
+ALTER TABLE terminals
+    ADD COLUMN account_type VARCHAR(255) DEFAULT NULL;

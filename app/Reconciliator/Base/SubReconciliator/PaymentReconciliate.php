@@ -43,6 +43,7 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         RequestProcessor\Base::JIOMONEY,
         RequestProcessor\Base::VIRTUAL_ACC_KOTAK,
         RequestProcessor\Base::VIRTUAL_ACC_YESBANK,
+        RequestProcessor\Base::VIRTUAL_ACC_RBL,
         RequestProcessor\Base::NETBANKING_PNB,
         RequestProcessor\Base::NETBANKING_BOB,
         RequestProcessor\Base::UPI_SBI,
@@ -310,11 +311,12 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
 
     public function resetRowProcessingAttributes()
     {
-        $this->payment            = null;
-        $this->reconciled         = false;
-        $this->paymentIin         = null;
-        $this->gatewayPayment     = null;
-        $this->paymentTransaction = null;
+        $this->payment                         = null;
+        $this->reconciled                      = false;
+        $this->paymentIin                      = null;
+        $this->gatewayPayment                  = null;
+        $this->paymentTransaction              = null;
+        $this->isPaymentIdRevalidatedOnGateway = false;
 
         parent::resetRowProcessingAttributes();
     }

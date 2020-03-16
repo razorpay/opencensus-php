@@ -176,7 +176,12 @@ class MailTags
     // Transactions
     const TRANSACTION_CREATED              = 'transaction_created';
 
+    // Yesbank account loads via adjustment -- notifier email
+    const YESBANK_LOAD_ADJUSTMENT          = 'yesbank_load_adjustment';
+
     const BANKING_ACCOUNT_STATUS_UPDATED   = 'banking_account_status_updated';
+
+    const EXPERIAN_REPORT                  = 'D2C_experian_csv_report';
 
     const BANKING_ACCOUNT_X_PRO_ACTIVATION = 'banking_account_x_pro_activation';
 

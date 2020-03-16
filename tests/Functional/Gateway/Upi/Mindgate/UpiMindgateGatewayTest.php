@@ -974,7 +974,7 @@ class UpiMindgateGatewayTest extends TestCase
             'amount'            => 37800,
             'status'            => 'failed',
             'amount_authorized' => 0,
-            'vpa'               => '7013562166@yesbank',
+            'vpa'               => '7013562166@okhdfcbank',
             'gateway'           => 'upi_mindgate',
             'gateway_captured'  => false,
         ], $payment->toArray());
@@ -1088,7 +1088,7 @@ class UpiMindgateGatewayTest extends TestCase
             'amount'            => 37800,
             'status'            => 'failed',
             'amount_authorized' => 0,
-            'vpa'               => '7013562166@yesbank',
+            'vpa'               => '7013562166@okhdfcbank',
             'gateway'           => 'upi_mindgate',
             'terminal_id'       => $terminal->getId(),
             'gateway_captured'  => false,

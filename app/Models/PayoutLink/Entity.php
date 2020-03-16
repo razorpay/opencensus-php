@@ -79,9 +79,9 @@ class Entity extends Base\PublicEntity
     const IMPS                 = 'IMPS';
     const NEFT                 = 'NEFT';
     const UPI                  = 'UPI';
-    const SUPPORT_URL          = 'SUPPORT_URL';
-    const SUPPORT_CONTACT      = 'SUPPORT_CONTACT';
-    const SUPPORT_EMAIL        = 'SUPPORT_EMAIL';
+    const SUPPORT_URL          = 'support_url';
+    const SUPPORT_CONTACT      = 'support_contact';
+    const SUPPORT_EMAIL        = 'support_email';
     const CUSTOM_MESSAGE       = 'payout_links_custom_message';
     const ACCOUNT_TYPE         = 'account_type';
     const VPA                  = 'vpa';
@@ -312,6 +312,12 @@ class Entity extends Base\PublicEntity
     public function getDescription()
     {
         return $this->getAttribute(self::DESCRIPTION);
+    }
+
+    // to handle payouts creation
+    public function getTrimmedDescription()
+    {
+        return substr($this->getAttribute(self::DESCRIPTION), 0, 30);
     }
 
     public function getBalanceId()

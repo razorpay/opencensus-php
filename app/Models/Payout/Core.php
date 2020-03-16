@@ -430,7 +430,7 @@ class Core extends Base\Core
         }
     }
 
-    public function fetchAndUpdateGatewayBalance(BankingAccount\Entity& $merchantBankingAccount)
+    public function fetchAndUpdateGatewayBalance(BankingAccount\Entity $merchantBankingAccount)
     {
         $balanceLastFetchedAt = $merchantBankingAccount->getBalanceLastFetchedAt();
 
@@ -448,17 +448,10 @@ class Core extends Base\Core
 
         if ($diffTime > $lastFetchedAtRateLimit)
         {
-            $response = (new BankingAccount\Core)->fetchAndUpdateGatewayBalance([
-                                                                                    Entity::CHANNEL     => $merchantBankingAccount->getChannel(),
-                                                                                    Entity::MERCHANT_ID => $merchantBankingAccount->getMerchantId(),
-                                                                                ]);
-
-            //need reload since we are updating banking account entity because of above call
-            if ($response['success'] === true)
-            {
-                $merchantBankingAccount->reload();
-            }
+            $merchantBankingAccount = (new BankingAccount\Core)->fetchAndUpdateGatewayBalance($merchantBankingAccount);
         }
+
+        return $merchantBankingAccount;
     }
 
     public function processDispatchForQueuedPayouts(Base\PublicCollection $queuedPayouts)
@@ -472,6 +465,7 @@ class Core extends Base\Core
             // We get balance via payout since we would have already fetched balance entity
             // when fetching the payouts list. Avoiding an extra DB query here by doing this.
 
+            /** @var Merchant\Balance\Entity $balanceEntity */
             $balanceEntity = $payouts->first()->balance;
 
             // In case of current accounts(direct), balance in balance entity is stale since in our system we create
@@ -489,9 +483,13 @@ class Core extends Base\Core
                 /** @var BankingAccount\Entity $merchantBankingAccount */
                 $merchantBankingAccount = $balanceEntity->bankingAccount;
 
-                $this->fetchAndUpdateGatewayBalance($merchantBankingAccount);
+                $merchantBankingAccount = $this->fetchAndUpdateGatewayBalance($merchantBankingAccount);
 
                 $balanceAmount = $merchantBankingAccount->getGatewayBalance();
+
+                // Suppose merchant makes request soon after code is deployed and cron hasn't run yet,
+                // then gateway_balance will be null . In that case use balance from balance table
+                $balanceAmount = $balanceAmount ?? $balanceEntity->getBalance();
             }
 
             $dispatchedData = $this->dispatchApplicablePayouts($balanceAmount, $payouts);

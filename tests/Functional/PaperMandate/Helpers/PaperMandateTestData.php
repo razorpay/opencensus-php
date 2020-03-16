@@ -226,192 +226,45 @@ return [
                 'success' => false,
                 'errors'  => [
                     'not_matching' => [
-                        'bank_account.account_number',
+                        'account_number',
                     ],
                 ]
             ],
         ]
     ],
 
-    'hyperVergeExtractNACHOutput' => array (
-        'type' => 'nach',
-        'details' =>
-            array (
-                'emailId' =>
-                    array (
-                        'to-be-reviewed' => 'yes',
-                        'value' => 'gaurav.kumar12@example.com',
-                        'conf' => 47,
-                    ),
-                'amountInWords' =>
-                    array (
-                        'to-be-reviewed' => 'no',
-                        'value' => 'TEN',
-                        'conf' => 99,
-                    ),
-                'utilityCode' =>
-                    array (
-                        'to-be-reviewed' => 'no',
-                        'value' => 'NACH00000000013149',
-                        'conf' => 100,
-                    ),
-                'reference1' =>
-                    array (
-                        'to-be-reviewed' => 'no',
-                        'value' => '121211212112121121',
-                        'conf' => 100,
-                    ),
-                'bankName' =>
-                    array (
-                        'to-be-reviewed' => 'no',
-                        'value' => 'HDFC BANK',
-                        'conf' => 100,
-                    ),
-                'debitType' =>
-                    array (
-                        'to-be-reviewed' => 'no',
-                        'value' => 'maximumAmount',
-                        'conf' => 100,
-                    ),
-                'MICR' =>
-                    array (
-                        'to-be-reviewed' => 'no',
-                        'value' => '',
-                        'conf' => 98,
-                    ),
-                'frequency' =>
-                    array (
-                        'to-be-reviewed' => 'no',
-                        'value' => 'yearly',
-                        'conf' => 100,
-                    ),
-                'signaturePresentTertiary' =>
-                    array (
-                        'to-be-reviewed' => 'no',
-                        'value' => 'no',
-                        'conf' => 100,
-                    ),
-                'untilCanceled' =>
-                    array (
-                        'to-be-reviewed' => 'no',
-                        'value' => 'true',
-                        'conf' => 100,
-                    ),
-                'signaturePresentSecondary' =>
-                    array (
-                        'to-be-reviewed' => 'no',
-                        'value' => 'no',
-                        'conf' => 100,
-                    ),
-                'NACHType' =>
-                    array (
-                        'to-be-reviewed' => 'no',
-                        'value' => 'create',
-                        'conf' => 100,
-                    ),
-                'accountNumber' =>
-                    array (
-                        'to-be-reviewed' => 'no',
-                        'value' => '1111111111111',
-                        'conf' => 98,
-                    ),
-                'nachDate' =>
-                    array (
-                        'to-be-reviewed' => 'no',
-                        'value' => '19/08/2019',
-                        'conf' => 100,
-                    ),
-                'phoneNumber' =>
-                    array (
-                        'to-be-reviewed' => 'no',
-                        'value' => '9123456780',
-                        'conf' => 100,
-                    ),
-                'tertiaryAccountHolder' =>
-                    array (
-                        'to-be-reviewed' => 'no',
-                        'value' => 'THE DON',
-                        'conf' => 100,
-                    ),
-                'UMRN' =>
-                    array (
-                        'to-be-reviewed' => 'no',
-                        'value' => '',
-                        'conf' => 100,
-                    ),
-                'companyName' =>
-                    array (
-                        'to-be-reviewed' => 'no',
-                        'value' => 'TEST',
-                        'conf' => 100,
-                    ),
-                'IFSCCode' =>
-                    array (
-                        'to-be-reviewed' => 'no',
-                        'value' => 'RZPB0000000',
-                        'conf' => 100,
-                    ),
-                'reference2' =>
-                    array (
-                        'to-be-reviewed' => 'no',
-                        'value' => '121211212112121121',
-                        'conf' => 100,
-                    ),
-                'accountType' =>
-                    array (
-                        'to-be-reviewed' => 'no',
-                        'value' => 'SB',
-                        'conf' => 100,
-                    ),
-                'amountInNumber' =>
-                    array (
-                        'to-be-reviewed' => 'no',
-                        'value' => 10,
-                        'conf' => 100,
-                    ),
-                'base64AlignedJPEG' => 'djdnj',
-                'endDate' =>
-                    array (
-                        'value' => '',
-                        'conf' => 0,
-                    ),
-                'sponsorCode' =>
-                    array (
-                        'to-be-reviewed' => 'no',
-                        'value' => 'RATN0TREASU',
-                        'conf' => 100,
-                    ),
-                'signaturePresentPrimary' =>
-                    array (
-                        'to-be-reviewed' => 'no',
-                        'value' => 'yes',
-                        'conf' => 100,
-                    ),
-                'secondaryAccountHolder' =>
-                    array (
-                        'to-be-reviewed' => 'no',
-                        'value' => 'RANJITH',
-                        'conf' => 100,
-                    ),
-                'startDate' =>
-                    array (
-                        'to-be-reviewed' => 'no',
-                        'value' => '07/12/2025',
-                        'conf' => 100,
-                    ),
-                'primaryAccountHolder' =>
-                    array (
-                        'to-be-reviewed' => 'no',
-                        'value' => 'TEST',
-                        'conf' => 100,
-                    ),
-                'uid' => [
-                    'to-be-reviewed' => 'no',
-                    'value' => 'XXXXXXX',
-                    'conf' => 100,
-                ],
-            ),
-    ),
+    'hyperVergeExtractNACHOutput' => [
+        'email_id' => 'gaurav.kumar12@example.com',
+        'amount_in_words' => 'TEN',
+        'utility_code' => 'NACH00000000013149',
+        'reference_1' => '121211212112121121',
+        'bank_name' => 'HDFC BANK',
+        'debit_type' => 'maximum_amount',
+        'micr' => '',
+        'frequency' => 'as_and_when_presented',
+        'signature_present_tertiary' => 'no',
+        'until_cancelled' => 'true',
+        'signature_present_secondary' => 'no',
+        'nach_type' => 'create',
+        'account_number' => '1111111111111',
+        'nach_date' => '19/08/2019',
+        'phone_number' => '9123456780',
+        'tertiary_account_holder' => 'THE DON',
+        'umrn' => '',
+        'company_name' => 'TEST',
+        'ifsc_code' => 'RZPB0000000',
+        'reference_2' => '121211212112121121',
+        'account_type' => 'savings',
+        'amount_in_number' => '10',
+        'enhanced_image' => 'djdnj',
+        'end_date' => '',
+        'sponsor_code' => 'RATN0TREASU',
+        'signature_present_primary' => 'yes',
+        'secondary_account_holder' => '',
+        'start_date' => '07/12/2025',
+        'primary_account_holder' => 'TEST',
+        'form_checksum' => 'XXXXXXX',
+    ],
 
     'testCreatePaymentForNach' => [
         'request' => [

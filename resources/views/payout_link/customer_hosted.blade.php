@@ -129,7 +129,7 @@
     <div class="loading_container">
         <div class="spinner"></div>
         <h1>
-            Some witty content. Can't think of anything right now.
+            Page is loading. Take in a deep breath.
         </h1>
         <div class="poweredBy"></div>
         <div class="securedFontContainer">

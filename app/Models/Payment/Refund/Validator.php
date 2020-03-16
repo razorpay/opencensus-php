@@ -80,8 +80,9 @@ class Validator extends Base\Validator
     ];
 
     protected static $markProcessedBulkRules = [
-        'refund_ids'    => 'required|sequential_array|max:1000',
-        'refund_ids.*'  => 'required|public_id',
+        'refund_ids'       => 'required|sequential_array|max:1000',
+        'refund_ids.*'     => 'required|public_id',
+        'processed_source' => 'required|string',
     ];
 
     protected static $customerRefundDetailsRules = [

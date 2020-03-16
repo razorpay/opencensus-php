@@ -171,6 +171,10 @@ return [
         'secret'    => env('YESBANK_SECRET'),
     ],
 
+    'rbl_va'    => [
+        'org_token' => env('RBL_VA_SECRET'),
+    ],
+
     'rbl' => [
         'secret' => env('BANKING_ACCOUNT_RBL_WEBHOOK_SECRET'),
     ],
@@ -482,4 +486,8 @@ return [
         ],
 
     ],
+
+    'typeform' => [
+        'typeform_webhook_secret'  => env('TYPEFORM_WEBHOOK_SECRET'),
+    ]
 ];
