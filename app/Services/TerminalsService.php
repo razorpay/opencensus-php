@@ -181,7 +181,7 @@ class TerminalsService
 
         $path = sprintf($params[self::PATH], $gateway);
 
-        $response = $this->sendRequest($path, $input, $params[self::METHOD]);
+        $response = $this->sendRequest($path, json_encode($input), $params[self::METHOD]);
 
         return $this->parseAndReturnResponse($response)[self::DATA] ?? [];
     }
