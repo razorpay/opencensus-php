@@ -67,6 +67,12 @@ class Method
         self::UPI,
     ];
 
+    const INSTANT_REFUND_SUPPORTED_METHODS = [
+        self::CARD,
+        self::UPI,
+        self::NETBANKING,
+    ];
+
     public static function formatted($method)
     {
         return self::$methods[$method];

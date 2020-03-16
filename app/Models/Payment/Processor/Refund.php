@@ -105,13 +105,19 @@ trait Refund
         return $refund;
     }
 
-    public function isInstantRefundSupported(Payment\Entity $payment)
+    public function isInstantRefundSupportedOnPayment(Payment\Entity $payment)
     {
         // This will keep changing as we add more coverage
-        return (($this->isCapturedPaymentAndFeatureEnabled($payment) === true) and
-                (($payment->isUpi() === true) or
-                 ($payment->isCard() === true) or
-                 ($payment->isNetbanking() === true)));
+        if (($this->isCapturedPaymentAndFeatureEnabled($payment) === false) or
+            (in_array($payment->getMethod(), Payment\Method::INSTANT_REFUND_SUPPORTED_METHODS, true) === false))
+        {
+            return false;
+        }
+
+        $mode = $this->getRefundModeFromScrooge($payment);
+
+        // If mode returned by scrooge is empty that means instant refund is not supported for this payment
+        return (empty($mode) === true) ? false : true;
     }
 
     public function isCapturedPaymentAndFeatureEnabled(Payment\Entity $payment)
@@ -3055,7 +3061,7 @@ trait Refund
         ];
     }
 
-    protected function setRefundModeAndSpeed(Payment\Entity $payment, RefundEntity &$refund)
+    protected function getRefundModeFromScrooge(Payment\Entity $payment)
     {
         //
         // Calling Scrooge for speed decisioning and mode selection
@@ -3092,9 +3098,16 @@ trait Refund
 
         $response = $this->app['scrooge']->getInstantRefundsMode($payment->getMerchantId(), $queryParams);
 
+        return $response[RefundConstants::MODE] ?? '';
+    }
+
+    protected function setRefundModeAndSpeed(Payment\Entity $payment, RefundEntity &$refund)
+    {
+        $mode = $this->getRefundModeFromScrooge($payment);
+
         // If the mode is empty we are decisioning the speed to normal
-        (empty($response[RefundConstants::MODE]) === false) ?
-            $refund->setModeRequested($response[RefundConstants::MODE]) :
+        (empty($mode) === false) ?
+            $refund->setModeRequested($mode) :
             $refund->setSpeedDecisioned(RefundSpeed::NORMAL);
     }
 

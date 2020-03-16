@@ -1152,7 +1152,7 @@ class Service extends Base\Service
     protected function addDashboardFlagInstantRefundSupport(array &$entity, $payment)
     {
         $entity[RefundConstants::INSTANT_REFUND_SUPPORT] = $this->getNewProcessor($this->merchant)
-                                                                ->isInstantRefundSupported($payment);
+                                                                ->isInstantRefundSupportedOnPayment($payment);
     }
 
     public function getPaymentFlows(array $input)
