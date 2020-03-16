@@ -59,8 +59,6 @@ class Service extends Base\Service
 
         $terminal = $this->repo->terminal->getByIdAndMerchantId($mid, $tid);
 
-
-
         return $terminal->toArrayAdmin();
     }
 
@@ -80,8 +78,8 @@ class Service extends Base\Service
         $terminal = $this->repo->terminal->getByIdAndMerchantId($mid, $tid);
 
         $this->app['workflow']
-            ->setEntityAndId($terminal->getEntity(), $terminal->getId())
-            ->handle($terminal, (new \stdClass));
+             ->setEntityAndId($terminal->getEntity(), $terminal->getId())
+             ->handle($terminal, (new \stdClass));
 
         $terminal = $this->repo->deleteOrFail($terminal);
 
@@ -104,8 +102,8 @@ class Service extends Base\Service
         $terminal = $this->repo->terminal->findOrFailPublic($id);
 
         $this->app['workflow']
-            ->setEntityAndId($terminal->getEntity(), $terminal->getId())
-            ->handle($terminal, (new \stdClass));
+             ->setEntityAndId($terminal->getEntity(), $terminal->getId())
+             ->handle($terminal, (new \stdClass));
 
         $terminal = $this->repo->deleteOrFail($terminal);
 
@@ -221,8 +219,8 @@ class Service extends Base\Service
         ];
 
         $this->app['workflow']
-            ->setEntityAndId($terminal->getEntity(), $terminal->getId())
-            ->handle($original, $dirty);
+             ->setEntityAndId($terminal->getEntity(), $terminal->getId())
+             ->handle($original, $dirty);
 
         (new Terminal\Core)->toggle($terminal, $toggle);
 

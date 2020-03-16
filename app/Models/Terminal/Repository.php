@@ -63,7 +63,7 @@ class Repository extends Base\Repository
                 // id gets created on save
                 parent::saveOrFail($entity, $options);
 
-                if (RazorxTreatment::shouldMigrateTerminal($syncStatus) === true)
+                if (Migrate::shouldMigrateTerminal($syncStatus) === true)
                 {
                     $entity = (new Terminal\Service)->migrateTerminalCreateOrUpdate($entity->getId());
 
@@ -460,14 +460,16 @@ class Repository extends Base\Repository
                     ->first();
     }
 
-    public function deleteOrFail($entity, string $syncStatus = SyncStatus::NOT_SYNCED)
+    public function deleteOrFail($entity)
     {
         $count = $this->repo->payment->getTotalUsedCountForTerminal(
                     $entity->getId());
 
+        $syncStatus = SyncStatus::NOT_SYNCED;
+
         return $this->transaction(function() use ($entity, $count, $syncStatus)
         {
-            if (RazorxTreatment::shouldMigrateTerminal($syncStatus) === true)
+            if (Migrate::shouldMigrateTerminal($syncStatus) === true)
             {
                 (new Terminal\Service)->migrateTerminalDelete($entity->getId());
 
@@ -509,7 +511,7 @@ class Repository extends Base\Repository
         $this->repo->transaction(function () use ($terminal, $merchant) {
             $terminal->merchants()->attach($merchant);
 
-            if (RazorxTreatment::shouldMigrateSubmerchant() === true)
+            if (Migrate::shouldMigrateSubmerchant() === true)
             {
                 (new Terminal\Service)->migrateTerminalAddMerchant($terminal, $merchant);
             }
@@ -522,7 +524,7 @@ class Repository extends Base\Repository
         $this->repo->transaction(function () use ($terminal, $merchant) {
             $terminal->merchants()->detach($merchant);
 
-            if (RazorxTreatment::shouldMigrateSubmerchant() === true)
+            if (Migrate::shouldMigrateSubmerchant() === true)
             {
                 (new Terminal\Service)->migrateTerminalRemoveMerchant($terminal, $merchant);
             }

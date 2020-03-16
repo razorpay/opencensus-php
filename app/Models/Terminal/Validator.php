@@ -1123,7 +1123,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $migrateTerminalsCronRules = [
-        Entity::SYNC_STATUS     => 'required|in:not_synced,sync_in_progress,sync_success',
+        Entity::SYNC_STATUS     => 'required|in:not_synced,sync_in_progress,sync_success,sync_failed',
         'count'                 => 'required|min:1|max:100',
     ];
 

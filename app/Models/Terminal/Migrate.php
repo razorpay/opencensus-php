@@ -4,10 +4,9 @@
 namespace RZP\Models\Terminal;
 
 use App;
-use RZP\Services\RazorXClient;
 use RZP\Trace\TraceCode;
 
-class RazorxTreatment
+class Migrate
 {
     const shouldMigrateTerminalFeature     = 'TerminalsService_MigrateTerminal';
     const shouldMigrateSubmerchantFeature  = 'TerminalsService_MigrateSubmerchant';
