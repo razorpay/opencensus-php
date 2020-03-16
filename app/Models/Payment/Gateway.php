@@ -178,7 +178,7 @@ class Gateway
         self::CARDLESS_EMI => [CardlessEmi::ZESTMONEY, CardlessEmi::EARLYSALARY, CardlessEmi::FLEXMONEY],
         self::PAYLATER     => [PayLater::EPAYLATER, PayLater::GETSIMPL, PayLater::ICICI],
         self::WORLDLINE    => [self::ACQUIRER_AXIS],
-        self::MPGS         => [self::ACQUIRER_HDFC, self::ACQUIRER_AXIS, self::ACQUIRER_AMEX],
+        self::MPGS         => [self::ACQUIRER_HDFC, self::ACQUIRER_AXIS, self::ACQUIRER_AMEX, self::ACQUIRER_ICIC],
         self::UPI_JUSPAY   => [self::ACQUIRER_AXIS],
     ];
 
@@ -375,6 +375,9 @@ class Gateway
         Netbanking::BARB_R,
         IFSC::SBIN,
         IFSC::ORBC,
+        IFSC::DLXB,
+        IFSC::COSB,
+        IFSC::UBIN,
     ];
 
     // banks supported by enach_npci_netbanking gateway for auth type card
@@ -395,6 +398,9 @@ class Gateway
         //IFSC::YESB,
         Netbanking::PUNB_R,
         IFSC::SBIN,
+        IFSC::RATN,
+        IFSC::DCBL,
+        IFSC::CITI,
     ];
 
     const EMANDATE_NB_DIRECT_BANKS = [
@@ -1387,6 +1393,7 @@ class Gateway
         IFSC::IOBA,
         IFSC::PYTM,
         IFSC::USFB,
+        IFSC::DLXB,
     ];
 
     /**

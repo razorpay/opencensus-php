@@ -38,6 +38,7 @@ class Status
         self::DEBIT_SUCCESS,
         self::DEBIT_REJECT,
         self::DEBIT_PENDING,
+        self::DEBIT_INITIAL_REJECT,
     ];
 
     /**

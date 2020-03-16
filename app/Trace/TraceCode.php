@@ -514,6 +514,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const INVOICE_WITHOUT_GSTIN                                 = 'INVOICE_WITHOUT_GSTIN';
     const STOP_BATCH_PROCESS_NOT_REQUIRED                       = 'STOP_BATCH_PROCESS_NOT_REQUIRED';
     const BATCH_NOT_FOUND                                       = 'BATCH_NOT_FOUND';
+    const ADMIN_BATCH_UPDATE                                    = 'ADMIN_BATCH_UPDATE';
 
     const PAYMENT_LINK_CREATE_REQUEST                           = 'PAYMENT_LINK_CREATE_REQUEST';
     const PAYMENT_LINK_CREATED                                  = 'PAYMENT_LINK_CREATED';
@@ -1060,6 +1061,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const VIRTUAL_ACCOUNT_CLOSED_PAYMENT_REROUTED               = 'VIRTUAL_ACCOUNT_CLOSED_PAYMENT_REROUTED';
     const VIRTUAL_ACCOUNT_ADD_RECEIVER                          = 'VIRTUAL_ACCOUNT_ADD_RECEIVER';
     const VIRTUAL_ACCOUNT_GENERATE_VPA_TERMINAL                 = 'VIRTUAL_ACCOUNT_GENERATE_VPA_TERMINAL';
+    const VIRTUAL_ACCOUNT_CREATE_FOR_BANKING_REQUEST            = 'VIRTUAL_ACCOUNT_CREATE_FOR_BANKING_REQUEST';
 
     const BANK_TRANSFER_PROCESS_REQUEST                         = 'BANK_TRANSFER_PROCESS_REQUEST';
     const BANK_TRANSFER_PROCESSING                              = 'BANK_TRANSFER_PROCESSING';
@@ -1232,6 +1234,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const WEBHOOK_DEACTIVATE                                    = 'WEBHOOK_DEACTIVATE';
     const WEBHOOK_RESPONSE_FAILURE                              = 'WEBHOOK_RESPONSE_FAILURE';
     const WEBHOOK_PRIVATE_IP_FOUND                              = 'WEBHOOK_PRIVATE_IP_FOUND';
+    const WEBHOOK_EVENT_JOB_RECEIVED                            = 'WEBHOOK_EVENT_JOB_RECEIVED';
 
     const AWS_INSTANCE_DATA_RECORD_FAILURE                      = 'AWS_INSTANCE_DATA_RECORD_FAILURE';
     const AWS_INSTANCE_DATA_WRITE_FAILURE                       = 'AWS_INSTANCE_DATA_WRITE_FAILURE';
@@ -2676,7 +2679,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     // DB wait timeout
     const DB_EXECUTING_WAIT_TIMEOUT                             = 'DB_EXECUTING_WAIT_TIMEOUT';
-  
+
     // RBL VA integration
     const RBL_VA_CALLBACK                                       = 'RBL_VA_CALLBACK';
     const RBL_VA_INVALID_CALLBACK_DATA                          = 'RBL_VA_INVALID_CALLBACK_DATA';
