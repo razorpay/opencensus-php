@@ -544,6 +544,9 @@ class Error extends Support\Fluent
         {
             $publicReason   = null;
 
+            //New Error Detailed Field on feature basis will be shown to merchants
+            //This field is fetched from mapping file and concatanated here to
+            //Sample reason: Bank-Authorization-risk_decline
             if($this->getAttribute(self::REASON) !== null)
             {
                 $publicReason   = $this->getAttribute(self::POINT_OF_FAILURE)."-".
