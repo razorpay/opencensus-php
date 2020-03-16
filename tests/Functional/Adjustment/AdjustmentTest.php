@@ -695,8 +695,6 @@ class AdjustmentTest extends TestCase
 
         $this->fixtures->create('merchant', ['id' => $merchantId, 'email' => 'mahbubani.amit@gmail.com']);
 
-//        $this->fixtures->create('balance', ['merchant_id' => $merchantId]);
-
         $admin = $this->ba->getAdmin();
 
         $this->fixtures->admin->edit($admin['id'], ['allow_all_merchants' => true]);
