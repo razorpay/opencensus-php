@@ -93,6 +93,8 @@ class Stork
      */
     public function processEventSafe(Event\Entity $event, string $mode)
     {
+        $this->trace->info(TraceCode::STORK_DISPATCH_EVENT_REQUEST, $event->toArrayPublic());
+
         try
         {
             $this->processEvent($event, $mode);
