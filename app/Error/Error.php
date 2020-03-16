@@ -250,7 +250,7 @@ class Error extends Support\Fluent
             {
                 try
                 {
-                    $errorCodeMap = get_object_vars(json_decode($this->redis->get($cacheKey)));
+                    $errorCodeMap = json_decode($this->redis->get($cacheKey), true);
                 }
                 catch (\Exception $exception)
                 {
