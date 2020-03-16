@@ -146,9 +146,10 @@ class BatchMicroService
                     $this->secret
                 ],
                 'headers'   => [
-                    'X-Entity-Id'         => $merchant->getId(),
-                    'mode'                => $this->mode,
-                    'X-Dashboard-User-Id' => $userId,
+                    'X-Entity-Id'    => $merchant->getId(),
+                    'mode'           => $this->mode,
+                    'X-Creator-Id'   => $userId,
+                    'X-Creator-Type' => 'user',
                 ],
             ]);
         }
