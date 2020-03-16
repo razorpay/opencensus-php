@@ -176,9 +176,14 @@ class P2pHelper
         {
             $callback = $scenario->getScenarioCallback();
 
-            $wrapper = function(TestResponse $response) use ($callback)
+            $wrapper = function(TestResponse $response) use ($callback, $id)
             {
-                $callback($response);
+                // Run for the scenario only
+                if (($this->scenarioInContext instanceof Scenario) and
+                    ($this->scenarioInContext->getId() === $id))
+                {
+                    $callback($response);
+                }
             };
 
             if ($scenario->isSuccess())
@@ -187,11 +192,23 @@ class P2pHelper
             }
             else
             {
+                // For failure scenario we are disabling the validation by force
+                $this->withSchemaValidated(false);
+
                 $this->withFailureResponse($wrapper);
             }
         }
 
         return $this;
+    }
+
+    /**
+     * Only to be called once set
+     * @return Scenario
+     */
+    public function getScenarioInContext(): Scenario
+    {
+        return $this->scenarioInContext;
     }
 
     /**
@@ -474,7 +491,7 @@ class P2pHelper
         {
             $suffix = 'processed';
 
-            if (isset($data->type) and in_array($data->type, ['sdk', 'sms', 'post'], true))
+            if (isset($data->type) and in_array($data->type, ['sdk', 'sms', 'redirect', 'poll'], true))
             {
                 $suffix = 'next';
             }
@@ -508,7 +525,7 @@ class P2pHelper
             $errors[$error['property']][] = $error['message'];
         }
 
-        $this->throwTestingException('Json schema validation failed', $errors);
+        $this->throwTestingException('Json schema validation failed' . $jsonPath, $errors);
     }
 
     protected function makeUri(string $uri, array $parameters)

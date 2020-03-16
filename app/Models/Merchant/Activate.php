@@ -535,7 +535,7 @@ class Activate extends Base\Core
         return $merchant->refresh();
     }
 
-    protected function createBankingEntitiesForMode(Entity $merchant, string $mode)
+    public function createBankingEntitiesForMode(Entity $merchant, string $mode)
     {
         $this->setDbAndModelConnectionWithMode($mode, $merchant);
 

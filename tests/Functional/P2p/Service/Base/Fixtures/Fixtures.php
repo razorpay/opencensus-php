@@ -125,7 +125,7 @@ class Fixtures extends Constants
 
     /**
      * @param string $deviceSetId
-     * @return P2p\Device\Entity
+     * @return P2p\Device\DeviceToken\Entity
      * @throws RuntimeException
      */
     public function deviceToken(string $deviceSetId, bool $verified = true): P2p\Device\DeviceToken\Entity

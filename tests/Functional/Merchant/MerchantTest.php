@@ -1600,6 +1600,11 @@ class MerchantTest extends TestCase
     {
         $documentType = 'address_proof_url';
 
+        $this->fixtures->create('merchant_detail',
+                                [
+                                    'merchant_id' => '10000000000000',
+                                ]);
+
         $this->ba->proxyAuth('rzp_test_10000000000000');
 
         $this->updateUploadDocumentData(__FUNCTION__, $documentType);
@@ -1622,7 +1627,6 @@ class MerchantTest extends TestCase
 
     public function testUpdateBankAccountWithAddressProofUsingUFH()
     {
-
         $this->mockRazorX('testUpdateBankAccountWithAddressProof', 'use_ufh_file_store', 'on', 10000000000000);
 
         $this->testUpdateBankAccountWithAddressProof();
@@ -5215,6 +5219,48 @@ class MerchantTest extends TestCase
     public function testMerchantSwitchProductWhenL1Incomplete()
     {
         $this->testMerchantSwitchProduct('on', null);
+    }
+
+    public function testMerchantBankingVAMigration()
+    {
+        $this->testMerchantSwitchProduct('on', null);
+
+        (new Admin\Service)->setConfigKeys(
+            [
+                Admin\ConfigKey::RX_ACCOUNT_NUMBER_SERIES_PREFIX => [
+                    Merchant\Account::SHARED_ACCOUNT => '232323',
+                ]
+            ]);
+
+        $this->ba->cronAuth('live');
+
+        $this->startTest();
+
+        $balances = $this->getDbEntities('balance',
+            [
+                'merchant_id'   => '10000000000000',
+                'account_type'  => 'shared',
+
+            ], 'live');
+
+        $bankingAccounts = $this->getDbEntities('banking_account',
+            [
+                'merchant_id' => '10000000000000',
+
+            ], 'live');
+
+        $virtualAccounts = $this->getDbEntities('virtual_account',
+            [
+                'merchant_id' => '10000000000000',
+                'balance_id'  => $bankingAccounts->first()->getBalanceId(),
+            ], 'live');
+
+
+        $this->assertEquals($balances->count(), 1);
+
+        $this->assertEquals($virtualAccounts->count(), 2);
+
+        $this->assertEquals($bankingAccounts->count(), 1);
     }
 
     /**

@@ -362,6 +362,7 @@ class Core extends Base\Core
             Order\Entity::CURRENCY        => $orderCurrency,
             Order\Entity::RECEIPT         => $receipt,
             Order\Entity::PAYMENT_CAPTURE => true,
+            Order\Entity::NOTES           => $input[Order\Entity::NOTES] ?? [],
         ];
 
         $this->trace->info(

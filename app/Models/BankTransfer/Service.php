@@ -80,7 +80,7 @@ class Service extends Base\Service
 
         if ($checkForIfsc === true)
         {
-            $this->checkAndReplaceForIfsc($input);
+            $this->checkAndReplaceForIfsc($input, $provider);
         }
 
         $valid = $this->core->process($input, $this->provider);
@@ -135,8 +135,17 @@ class Service extends Base\Service
         return [];
     }
 
-    protected function checkAndReplaceForIfsc(array & $input)
+    protected function checkAndReplaceForIfsc(array & $input, string $provider = null)
     {
+        if ($provider === Provider::ICICI)
+        {
+            if ((isset($input[Entity::PAYER_IFSC]) === false) or
+                ($input[Entity::PAYER_IFSC] === ''))
+            {
+                $input[Entity::PAYER_IFSC] = BankCodes::IFSC_ICIC;
+            }
+        }
+
         if (isset($input[Entity::PAYER_IFSC]) === false)
         {
             return;

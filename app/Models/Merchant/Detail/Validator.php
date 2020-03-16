@@ -10,6 +10,7 @@ use Razorpay\IFSC\IFSC;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Error\PublicErrorDescription;
+use RZP\Models\Merchant\Document\Type;
 use RZP\Models\Merchant\Detail\ActivationFlow\Factory;
 
 class Validator extends Base\Validator
@@ -229,6 +230,11 @@ class Validator extends Base\Validator
         Entity::BUSINESS_WEBSITE                => 'sometimes|active_url|max:255|nullable',
     ];
 
+    protected static $uploadDocumentRules = [
+        Merchant\Document\Entity::DOCUMENT_TYPE => 'required|string|max:255|custom',
+        Entity::FILE                            => 'required|file|mimes:pdf,jpeg,jpg,png',
+    ];
+
     protected static $archiveFormRules = [
         Entity::ARCHIVE                         => 'required|boolean',
     ];
@@ -319,6 +325,36 @@ class Validator extends Base\Validator
         Entity::BUSINESS_REGISTERED_ADDRESS => 'filled|max:255',
         Entity::BUSINESS_REGISTERED_STATE   => 'filled|max:255',
     ];
+
+    public function validateDocumentUpload(array $input)
+    {
+        if (empty($input) === true)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                PublicErrorDescription::BAD_REQUEST_DOCUMENT_TYPE_INVALID
+            );
+        }
+
+        foreach ($input as $key => $value)
+        {
+            $payload = [
+                Merchant\Document\Entity::DOCUMENT_TYPE => $key,
+                Entity::FILE                            => $value,
+            ];
+
+            $this->validateInput('uploadDocument', $payload);
+        }
+    }
+
+    public function validateDocumentType(string $attribute, $value)
+    {
+        if (Type::isValid($value) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                PublicErrorDescription::BAD_REQUEST_DOCUMENT_TYPE_INVALID . ':' . $value
+            );
+        }
+    }
 
     public function validateBankDetailsVerificationStatus($attribute, $value)
     {
