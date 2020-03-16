@@ -521,6 +521,7 @@ class Error extends Support\Fluent
         $error = array(
             self::PUBLIC_ERROR_CODE => $this->getPublicErrorCode(),
             self::DESCRIPTION       => $description,
+            self::METADATA          => $this->getAttribute(self::METADATA)
         );
 
         $isMetadataFeatureEnabled = false;
@@ -545,7 +546,6 @@ class Error extends Support\Fluent
 
             $reasonArr = array(
                 self::REASON            => $publicReason,
-                self::METADATA          => $this->getAttribute(self::METADATA)
             );
 
             $error = array_merge($error, $reasonArr);
