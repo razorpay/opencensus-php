@@ -273,6 +273,8 @@ class HdfcGatewayAuthTest extends TestCase
 
     public function testMetadataErrorResponseWithFeatureFlag()
     {
+        $this->fixtures->merchant->addFeatures(['error_metadata_response']);
+
         $this->hdfcPaymentMockResultCode('DENIED BY RISK', 'authorize');
 
         $content = $this->startTest();
@@ -285,6 +287,8 @@ class HdfcGatewayAuthTest extends TestCase
 
     public function testDetailedErrorResponseForCard()
     {
+        $this->fixtures->merchant->addFeatures(['error_metadata_response']);
+
         $this->hdfcPaymentMockResultCode('DENIED BY RISK', 'authorize');
 
         $content = $this->startTest();
