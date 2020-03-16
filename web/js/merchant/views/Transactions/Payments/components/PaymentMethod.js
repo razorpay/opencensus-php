@@ -36,6 +36,7 @@ export default ({
     emandate: 'emandate',
     aeps: 'aeps',
     cardless_emi: 'cardless_emi',
+    paylater: 'paylater',
   };
 
   const cardDetails = card || {};
