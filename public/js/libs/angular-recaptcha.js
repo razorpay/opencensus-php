@@ -18,7 +18,7 @@ angular
 
       var s = $document[0].createElement('script');
       s.src =
-        'https://www.google.com/recaptcha/api.js?onload=recaptchaOnloadCallback&render=explicit';
+        'https://www.recaptcha.net/recaptcha/api.js?onload=recaptchaOnloadCallback&render=explicit';
       $document[0].body.appendChild(s);
 
       return deferred.promise;
