@@ -438,7 +438,6 @@ class Handler extends ExceptionHandler
         $error->setMetadata($metadata);
     }
 
-
     protected function getExceptionData($exception)
     {
         $previous = $exception->getPrevious();
