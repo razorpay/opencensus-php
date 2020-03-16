@@ -530,17 +530,17 @@ class Error extends Support\Fluent
             self::METADATA          => $this->getAttribute(self::METADATA)
         );
 
-        $isMetadataFeatureEnabled = false;
+        $isReasonFeatureEnabled = false;
 
         if (($this->app['basicauth'] !== null) and
             ($this->app['basicauth']->getMerchant() !== null))
         {
             $merchant = $this->app['basicauth']->getMerchant();
 
-            $isMetadataFeatureEnabled = $merchant->isFeatureEnabled(Constants::ERROR_METADATA_RESPONSE);
+            $isReasonFeatureEnabled = $merchant->isFeatureEnabled(Constants::ERROR_REASON_RESPONSE);
         }
 
-        if ($isMetadataFeatureEnabled === true)
+        if ($isReasonFeatureEnabled === true)
         {
             $publicReason   = null;
 
