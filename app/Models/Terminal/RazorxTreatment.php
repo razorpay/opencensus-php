@@ -9,8 +9,8 @@ use RZP\Trace\TraceCode;
 
 class RazorxTreatment
 {
-    const shouldMigrateTerminalFeature     = 'MigrateTerminal';
-    const shouldMigrateSubmerchantFeature  = 'MigrateSubmerchant';
+    const shouldMigrateTerminalFeature     = 'TerminalsService_MigrateTerminal';
+    const shouldMigrateSubmerchantFeature  = 'TerminalsService_MigrateSubmerchant';
 
     const migrateVariant = 'migrate';
 
