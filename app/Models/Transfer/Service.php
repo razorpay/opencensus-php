@@ -366,8 +366,19 @@ class Service extends Base\Service
             ]
         );
 
-        return $this->repo->transfer->updatetransfersWithSettelement($settelementId);
+        $transfers =  $this->repo->transfer->updatetransfersWithSettelement($settelementId);
 
+        $toalcount = $transfers->count();
+
+        $this->trace->info(
+            TraceCode::TRANSFERS_SETTELEMENT_UPDATE,
+            [
+                'transfers'   => $transfers,
+                '$toalcount'  => $toalcount,
+            ]
+        );
+
+        return $toalcount;
     }
 
     public function processFailedOrderTransfers()

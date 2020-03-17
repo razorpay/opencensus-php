@@ -147,17 +147,18 @@ class Repository extends Base\Repository
                            ->join(Table::PAYMENT,$transferIdColumn, '=', $transferColumn)
                            ->join(Table::TRANSACTION,$entityIdCol, '=', $paymentIdColumn)
                            ->where($entityType, Constant::PAYMENT)
-                           ->WhereNotNull($settlementIdColumn)
+                           ->whereNull($settlementIdColumn)
                            ->where($settlementCol, $settelementId)
                            ->select($transferColumn)
                            ->get();
 
-        return  $this->newQuery()
-                     ->whereIn($transferColumn, $transfers)
-                     ->update
-                     ([
-                        Entity::RECIPIENT_SETTLEMENT_ID => $settelementId
-                     ]);
+                      $this->newQuery()
+                            ->whereIn($transferColumn, $transfers)
+                            ->update
+                            ([
+                              Entity::RECIPIENT_SETTLEMENT_ID => $settelementId
+                            ]);
+        return $transfers;
     }
 
     /**
