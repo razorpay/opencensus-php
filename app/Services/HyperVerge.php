@@ -309,7 +309,7 @@ class HyperVerge
             PaperMandateUpload\Entity::IFSC_CODE                   => $data[self::IFSCCode][self::VALUE] ?? '',
             PaperMandateUpload\Entity::REFERENCE_2                 => $data[self::REFERENCE_2][self::VALUE] ?? '',
             PaperMandateUpload\Entity::ACCOUNT_TYPE                => $this->getFormattedAccountType($data[self::ACCOUNT_TYPE][self::VALUE] ?? ''),
-            PaperMandateUpload\Entity::AMOUNT_IN_NUMBER            => $data[self::AMOUNT_IN_NUMBER][self::VALUE] ?? '',
+            PaperMandateUpload\Entity::AMOUNT_IN_NUMBER            => $this->getFormattedAmountFromExtracted($data[self::AMOUNT_IN_NUMBER][self::VALUE]) ?? '',
             PaperMandateUpload\Entity::END_DATE                    => $data[self::END_DATE][self::VALUE] ?? '',
             PaperMandateUpload\Entity::SPONSOR_CODE                => $data[self::SPONSOR_CODE][self::VALUE] ?? '',
             PaperMandateUpload\Entity::SIGNATURE_PRESENT_PRIMARY   => $data[self::SIGNATURE_PRESENT_PRIMARY][self::VALUE] ?? '',
@@ -320,6 +320,11 @@ class HyperVerge
             PaperMandateUpload\Entity::ENHANCED_IMAGE              => $data[self::ENHANCED_IMAGE] ?? '',
             PaperMandateUpload\Entity::EXTRACTED_RAW_DATA          => $extractedRawData,
         ];
+    }
+
+    private function getFormattedAmountFromExtracted(int $amount): int
+    {
+        return $amount * 100;
     }
 
     private function getFormattedAccountType($accountType): string
