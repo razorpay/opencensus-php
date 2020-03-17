@@ -198,7 +198,7 @@ export default class DefaultRefundSpeed extends Component {
                     }}
                   />
                 </h4>
-                <p>Yor payment will be refunded in 5-7 days*.</p>
+                <p>Your payment will be refunded in 5-7 days*.</p>
                 <br />
                 <span class="refunds-speed-tag">
                   Normal Speed &nbsp;
