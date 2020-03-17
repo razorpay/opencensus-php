@@ -55,7 +55,7 @@
   @if(env('APP_ENV') === 'production')
     <script src="{{$cdnDashboardUrl}}/dist/raven-entry.js"></script>
   @endif
-  <script src="https://www.google.com/recaptcha/api.js?render=explicit"></script>
+  <script src="https://www.recaptcha.net/recaptcha/api.js?render=explicit"></script>
   <script src="{{$cdnDashboardUrl}}/dist/merchant-entry.js"></script>
 @else
   <script type="text/javascript">
