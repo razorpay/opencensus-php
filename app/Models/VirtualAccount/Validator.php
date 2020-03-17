@@ -195,6 +195,19 @@ class Validator extends Base\Validator
         }
     }
 
+    public function validateOfBankingBalance()
+    {
+        if ($this->entity->isBalanceTypeBanking() === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Operation is not allowed for this specific virtual account',
+                null,
+                [
+                    Entity::ID => $this->entity->getId(),
+                ]);
+        }
+    }
+
     public function validateCloseBy(string $attribute, int $closeBy)
     {
         $now = Carbon::now(Timezone::IST);

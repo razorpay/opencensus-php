@@ -800,6 +800,10 @@ return [
                 'description' => 'Updating banking account details of the merchant',
                 'assignable'  => true,
             ],
+            Permission::CREATE_BANKING_VIRTUAL_ACCOUNTS => [
+                'description' => 'Create Banking VAs for a merchant',
+                'assignable'  => true,
+            ],
         ],
 
         PermissionCategory::RAZORPAY_CAPITAL => [

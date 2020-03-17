@@ -357,6 +357,8 @@ final class Route
         'virtual_account_configs'                  => ['get',      'virtual_account/configs',                        'VirtualAccountController@getReceiverConfigs'                       ],
         'virtual_account_batch_migrate_yesbank'    => ['post',     'virtual_accounts/batch_migrate_yesbank',         'VirtualAccountController@bulkMigrateYesbank'                       ],
         'virtual_account_create_for_banking'       => ['post',     'virtual_accounts/banking',                       'VirtualAccountController@createForBanking'                         ],
+        'virtual_account_bulk_create_for_banking'  => ['post',     'virtual_accounts/banking/bulk',                  'VirtualAccountController@bulkCreateForBanking'                     ],
+        'virtual_account_bulk_close_for_banking'   => ['post',     'virtual_accounts/banking/close/bulk',            'VirtualAccountController@bulkCloseForBanking'                      ],
         'upi_transfer_process'                     => ['post',     'live/upi/callback/hdfc/upi_mindgate',            'UpiTransferController@processUpiTransferPayment'                   ],
         'upi_transfer_process_test'                => ['post',     'test/upi/callback/hdfc/upi_mindgate',            'UpiTransferController@processUpiTransferPayment'                   ],
         'payment_upi_transfer_fetch'               => ['get',      'payments/{id}/upi_transfer',                     'UpiTransferController@fetchForPayment'                             ],
@@ -2902,6 +2904,10 @@ final class Route
         'merchant_locked_balance_update',
 
         'merchant_balance_fetch_admin',
+
+        // Banking VA
+        'virtual_account_bulk_create_for_banking',
+        'virtual_account_bulk_close_for_banking',
         ];
 
     public static $routePermission = [
@@ -3337,6 +3343,8 @@ final class Route
         'merchant_pricing_bulk'                    => Permission::PRICING_ASSIGN_BULK,
         'virtual_account_create'                   => Permission::CREATE_VIRTUAL_ACCOUNTS,
         'virtual_account_add_receiver'             => Permission::CREATE_VIRTUAL_ACCOUNTS,
+        'virtual_account_bulk_create_for_banking'  => Permission::CREATE_BANKING_VIRTUAL_ACCOUNTS,
+        'virtual_account_bulk_close_for_banking'   => Permission::CREATE_BANKING_VIRTUAL_ACCOUNTS,
         'entity_balance_id_update'                 => '*',
         'payment_page_items_migrate'               => '*',
         'payment_page_items_migrate_min_purchase'  => '*',

@@ -15,6 +15,7 @@ use RZP\Models\Transaction;
 use RZP\Models\VirtualAccount;
 use RZP\Models\Bank\BankCodes;
 use Razorpay\Trace\Facades\Trace;
+use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Models\Base\Traits\HasBalance;
 
 /**
@@ -283,6 +284,9 @@ class Entity extends Base\PublicEntity
         /** @var BasicAuth $basicAuth */
         $basicAuth = app('basicauth');
 
+        // This is required because payee_Account is required in the
+        // transaction.created webhook fired on bank_transfer
+        // This currently is required only for RX, not for PG
         if (($basicAuth->isAdminAuth() === false) and
             ($this->isBalanceTypeBanking() === false))
         {
