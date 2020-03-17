@@ -844,7 +844,6 @@ class Core extends Base\Core
             return [true, $source->getChannel()];
         }
 
-
         return [false, $source->getChannel()];
     }
 

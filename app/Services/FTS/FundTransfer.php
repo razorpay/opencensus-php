@@ -147,7 +147,7 @@ class FundTransfer extends Base
 
             if ($source->getPayoutType() === PayoutEntity::ON_DEMAND)
             {
-                $product = Constants::PAYOUT_ON_DEMAND;
+                $product = Constants::ES_ON_DEMAND;
             }
         }
 

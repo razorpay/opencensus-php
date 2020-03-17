@@ -156,5 +156,5 @@ final class Constants
 
     const STATUS_FAILED                  = 'failed';
 
-    const PAYOUT_ON_DEMAND               = 'PAYOUT_ON_DEMAND';
+    const ES_ON_DEMAND                   = 'ES_ON_DEMAND';
 }
