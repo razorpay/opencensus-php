@@ -142,6 +142,38 @@ class PaymentCreateDCCTest extends TestCase
         $this->assertTrue(array_key_exists('all_currencies', $responseContent) === false);
     }
 
+    public function testPaymentFlowsCurrencyInfoWithToken()
+    {
+        $token = $this->fixtures->create('token', [
+            'method'  => 'card',
+            'card_id' => '100000001lcard',
+            'bank'    => null,
+            'wallet'  => null
+        ]);
+
+        $card = $this->getDbEntityById('card', $token['card_id']);
+
+        $this->fixtures->iin->edit($card['iin'], ['country' => 'US', 'network' => 'Visa']);
+
+        $tokenId = 'token_' . $token['id'];
+
+        $flowsData = [
+            'content' => ['amount' => 50000, 'currency' => 'INR', 'token' => $tokenId],
+            'method'  => 'POST',
+            'url'     => '/payment/flows',
+        ];
+
+        $response = $this->sendRequest($flowsData);
+        $responseContent = json_decode($response->getContent(), true);
+
+        $cardCurrency = $responseContent['card_currency'];
+        $currencyRequestId = $responseContent['currency_request_id'];
+
+        $this->assertEquals("USD", $cardCurrency);
+        $this->assertNotNull($responseContent['all_currencies']);
+        $this->assertNotNull($currencyRequestId);
+    }
+
     private function getDefaultPaymentFlowsRequestData($iin = null)
     {
         if ($iin === null)

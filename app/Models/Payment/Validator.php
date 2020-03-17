@@ -195,14 +195,16 @@ class Validator extends Base\Validator
         '_'                         => 'sometimes|array',
         'order_id'                  => 'sometimes|filled',
         'currency'                  => 'sometimes|string|size:3',
-        'amount'                    => 'sometimes|integer'
+        'amount'                    => 'sometimes|integer',
+        'token'                     => 'sometimes|string|max:20'
     ];
 
     protected static $postFlowsRules = [
         'card_number'        => 'sometimes|numeric|luhn|digits_between:12,19',
         'iin'                => 'sometimes|numeric|digits:6',
         'currency'           => 'sometimes|string|size:3',
-        'amount'             => 'sometimes|integer'
+        'amount'             => 'sometimes|integer',
+        'token'              => 'sometimes|string|max:20'
     ];
 
     protected static $pspAmountLimit = [

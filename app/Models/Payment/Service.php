@@ -1258,6 +1258,19 @@ class Service extends Base\Service
         {
             $iin = $input['iin'];
         }
+        else if (isset($input['token']) === true)
+        {
+            $tokenId = $input['token'];
+
+            Token\Entity::verifyIdAndSilentlyStripSign($tokenId);
+
+            $token = (new Token\Core())->getByTokenId($tokenId);
+
+            if ($token !== null and $token->hasCard() === true)
+            {
+                $iin = $token->card->getIin();
+            }
+        }
         else
         {
             throw new Exception\BadRequestValidationFailureException('invalid input');

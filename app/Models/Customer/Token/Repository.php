@@ -424,4 +424,11 @@ class Repository extends Base\Repository
                     ->merchantId($merchant->getId())
                     ->find($id);
     }
+
+    public function getByTokenId(string $tokenId)
+    {
+        return $this->newQuery()
+            ->where(Token\Entity::ID, '=', $tokenId)
+            ->first();
+    }
 }
