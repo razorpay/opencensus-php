@@ -354,6 +354,7 @@ final class Route
         'virtual_account_add_receiver'             => ['patch',    'virtual_accounts/{id}/receiver',                 'VirtualAccountController@addReceiver'                              ],
         'virtual_account_configs'                  => ['get',      'virtual_account/configs',                        'VirtualAccountController@getReceiverConfigs'                       ],
         'virtual_account_batch_migrate_yesbank'    => ['post',     'virtual_accounts/batch_migrate_yesbank',         'VirtualAccountController@bulkMigrateYesbank'                       ],
+        'virtual_account_create_for_banking'       => ['post',     'virtual_accounts/banking',                       'VirtualAccountController@createForBanking'                         ],
         'upi_transfer_process'                     => ['post',     'live/upi/callback/hdfc/upi_mindgate',            'UpiTransferController@processUpiTransferPayment'                   ],
         'upi_transfer_process_test'                => ['post',     'test/upi/callback/hdfc/upi_mindgate',            'UpiTransferController@processUpiTransferPayment'                   ],
         'payment_upi_transfer_fetch'               => ['get',      'payments/{id}/upi_transfer',                     'UpiTransferController@fetchForPayment'                             ],
@@ -1765,6 +1766,7 @@ final class Route
         'transfer_failed_process',
         'transfer_create_reversal',
         'virtual_account_create',
+        'virtual_account_create_for_banking',
         'virtual_account_edit',
         'virtual_account_close',
         'virtual_account_fetch',
@@ -4075,6 +4077,7 @@ final class Route
             'entity_bulk_update',
             'adj_add_batch',
             'bank_transfer_process_icici',
+            'reporting_log_create',
         ],
 
         'stork' => [
@@ -4175,6 +4178,7 @@ final class Route
         'virtual_account_fetch_multiple'       => [Feature::VIRTUAL_ACCOUNTS],
         'virtual_account_fetch_payments'       => [Feature::VIRTUAL_ACCOUNTS],
         'virtual_account_configs'              => [Feature::VIRTUAL_ACCOUNTS],
+        'virtual_account_create_for_banking'   => [Feature::VIRTUAL_ACCOUNTS_BANKING],
         'bharat_qr_pay_test'                   => [Feature::VIRTUAL_ACCOUNTS, Feature::BHARAT_QR],
         'reports_refund_irctc'                 => [Feature::IRCTC_REPORT],
         'payment_validate_vpa_old'             => [Feature::ENABLE_VPA_VALIDATE],

@@ -101,8 +101,7 @@ return [
         'google_pay',
         'getsimpl',
         'worldline',
-        'paylater_icici',
-        'hdfc_debit_emi',
+        'paylater_icici'
     ],
 
     'mock_amex'                   => env('AMEX_MOCK'),
@@ -189,8 +188,6 @@ return [
     'mock_worldline'              => env('WORLDLINE_MOCK'),
     'mock_mozart'                 => env('MOZART_MOCK'),
     'mock_upi_citi'               => env('UPI_CITI_MOCK'),
-    'mock_hdfc_debit_emi'         => env('HDFC_DEBIT_EMI_MOCK'),
-
     'certificate_path'            => env('CERTIFICATE_DIR_PATH'),
 
     'p2p_upi_axis' => [

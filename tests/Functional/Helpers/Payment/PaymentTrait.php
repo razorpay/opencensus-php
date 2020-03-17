@@ -51,7 +51,6 @@ trait PaymentTrait
     use PaymentCybersourceTrait;
     use PaymentCardlessEmiTrait;
     use PaymentBajajFinservTrait;
-    use PaymentHdfcDebitEmiTrait;
     use PaymentWalletAmazonpayTrait;
     use PaymentWalletAirtelMoneyTrait;
 

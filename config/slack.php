@@ -182,6 +182,9 @@ return array(
         'x_finops'             => 'CSR546JHW',
 
         'payout_links_alerts'  => 'CT0D3HTBR',
+
+        'payments_cards'       => 'CNVG04YSZ',
+
         //rbl alerts
         'rbl_alerts'           => 'CUT37PDUY',
 

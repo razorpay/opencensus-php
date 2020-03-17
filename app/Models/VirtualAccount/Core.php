@@ -3,10 +3,10 @@
 namespace RZP\Models\VirtualAccount;
 
 use Carbon\Carbon;
-use RZP\Base\BuilderEx;
-use RZP\Constants\Timezone;
+
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Base\BuilderEx;
 use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
 use RZP\Models\Customer;
@@ -104,9 +104,10 @@ class Core extends Base\Core
      *
      * @param Merchant $merchant
      * @param Balance\Entity $balance
+     * @param array $data
      * @return Entity
      */
-    public function createForBankingBalance(Merchant $merchant, Balance\Entity $balance): Entity
+    public function createForBankingBalance(Merchant $merchant, Balance\Entity $balance, array $data = []): Entity
     {
         $merchant->getValidator()->validateBusinessBankingActivated();
 
@@ -117,6 +118,11 @@ class Core extends Base\Core
                 ],
             ],
         ];
+
+        if (empty($data[Entity::NAME]) === false)
+        {
+            $input[Entity::NAME] = $data[Entity::NAME];
+        }
 
         return $this->create($input, $merchant, null, null, $balance);
     }

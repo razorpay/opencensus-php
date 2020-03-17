@@ -2336,25 +2336,6 @@ class MerchantTest extends TestCase
         $this->assertArrayHasKey('earlysalary', $response['methods']['cardless_emi']);
     }
 
-    public function testGetCheckoutPreferencesForDebitEmi()
-    {
-        $this->fixtures->merchant->enableEmi();
-
-        $this->fixtures->emiPlan->create(
-            [
-                'merchant_id' => '10000000000000',
-                'bank'        => 'HDFC',
-                'type'        => 'debit',
-                'rate'        => 1200,
-                'min_amount'  => 300000,
-                'duration'    => 3,
-            ]);
-
-        $response = $this->getPreferences();
-
-        $this->assertArrayHasKey('HDFC_DC', $response['methods']['emi_options']);
-    }
-
     public function testGetCheckoutPreferencesForPayLater()
     {
         $this->fixtures->merchant->enablePayLater();

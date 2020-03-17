@@ -91,25 +91,6 @@ class RefundData extends Base\Mock\Server
         return $response;
     }
 
-    public static function hdfc_debit_emi($entities)
-    {
-        $response = [
-            'data' =>
-                [
-                    'ErrorCode'               => '0000',
-                    'OrderCancellationStatus' => 'Yes',
-                    'BankReferenceNo'         => '12344',
-                    '_raw'                    => '',
-                ],
-            'error'             => null,
-            'success'           => true,
-            'mozart_id'         => '',
-            'external_trace_id' => '',
-        ];
-
-        return $response;
-    }
-
     public static function getsimpl($entities)
     {
         $response = [

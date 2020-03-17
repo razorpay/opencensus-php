@@ -15,6 +15,9 @@ class OtpElf
     const ERROR_INVALID_OTP         = 'INVALID_OTP';
     const ERROR_TIMEOUT             = 'PAYMENT_TIMEOUT';
     const CARD_BLOCKED              = 'CARD_BLOCKED';
+    const CARD_INVALID              = 'CARD_INVALID';
+    const CARD_NOT_ENROLLED         = 'CARD_NOT_ENROLLED';
+    const MOBILE_NOT_UPDATED        = 'MOBILE_NOT_UPDATED';
     const NETWORK_ERROR             = 'NETWORK_ERROR';
     const BANK_ERROR                = 'BANK_ERROR';
     const PAYMENT_TIMEOUT           = 'PAYMENT_TIMEOUT';

@@ -95,10 +95,10 @@ change_db_user_for_workers() {
     sed -i "s/DB_LIVE_USERNAME .*/DB_LIVE_USERNAME=api_worker/g" $vault_file
     sed -i "s/DB_TEST_USERNAME .*/DB_TEST_USERNAME=api_test_worker/g" $vault_file
   else
-    sed -i "s/SLAVE_DB_LIVE_USERNAME .*/SLAVE_DB_LIVE_USERNAME=${APP_MODE}_api_worker/g" $vault_file
-    sed -i "s/SLAVE_DB_TEST_USERNAME .*/SLAVE_DB_TEST_USERNAME=${APP_MODE}_api_test_worker/g" $vault_file
-    sed -i "s/DB_LIVE_USERNAME .*/DB_LIVE_USERNAME=${APP_MODE}_api_worker/g" $vault_file
-    sed -i "s/DB_TEST_USERNAME .*/DB_TEST_USERNAME=${APP_MODE}_api_test_worker/g" $vault_file
+    sed -i "s/SLAVE_DB_LIVE_USERNAME .*/SLAVE_DB_LIVE_USERNAME=api_${APP_MODE}_worker/g" $vault_file
+    sed -i "s/SLAVE_DB_TEST_USERNAME .*/SLAVE_DB_TEST_USERNAME=api_${APP_MODE}_test_worker/g" $vault_file
+    sed -i "s/DB_LIVE_USERNAME .*/DB_LIVE_USERNAME=api_${APP_MODE}_worker/g" $vault_file
+    sed -i "s/DB_TEST_USERNAME .*/DB_TEST_USERNAME=api_${APP_MODE}_test_worker/g" $vault_file
   fi
 }
 

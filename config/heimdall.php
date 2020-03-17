@@ -753,6 +753,10 @@ return [
                 'description' => 'Upload batch file to create adjustments in bulk',
                 'assignable'  => true,
             ],
+            Permission::REPORTING_BATCH_UPLOAD => [
+                'description' => 'Upload batch file to create large reports from reporting',
+                'assignable'  => true,
+            ],
         ],
 
         PermissionCategory::SHIELD => [

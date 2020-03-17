@@ -98,6 +98,8 @@ class Type
 
     const ECOLLECT_ICICI        = 'ecollect_icici';
 
+    const REPORT                = 'report';
+
     public static $disabledTypes = [
         //
         // Removing till auth for this is figured out. Other parts of the code aren't
@@ -271,6 +273,7 @@ class Type
         self::LINKED_ACCOUNT_REVERSAL,
         self::ADJUSTMENT,
         self::ECOLLECT_ICICI,
+        self::REPORT,
     ];
 
     /**
@@ -288,10 +291,12 @@ class Type
         self::ENTITY_UPDATE_ACTION,
         self::ADJUSTMENT,
         self::ECOLLECT_ICICI,
+        self::REPORT,
     ];
 
     public static $batchToAdminPermissionMapping = [
         self::ADJUSTMENT    => Name::ADJUSTMENT_BATCH_UPLOAD,
+        self::REPORT        => Name::REPORTING_BATCH_UPLOAD,
     ];
 
     public static function exists(string $type)

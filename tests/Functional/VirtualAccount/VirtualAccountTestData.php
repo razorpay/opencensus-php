@@ -2,8 +2,10 @@
 
 namespace RZP\Tests\Functional\BankTransfer;
 
+use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
+use RZP\Error\PublicErrorDescription;
 use RZP\Exception\BadRequestValidationFailureException;
 
 return [
@@ -979,6 +981,94 @@ return [
                     ],
                 ],
             ],
+        ],
+    ],
+
+    'testCreateVirtualAccountForBanking' => [
+        'request' => [
+            'url' => '/virtual_accounts/banking',
+            'method' => 'post',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'name'            => 'Test Merchant',
+                'entity'          => 'virtual_account',
+                'status'          => 'active',
+                'description'     => null,
+                'receivers'  => [
+                    [
+                        'entity' => 'bank_account',
+                        'ifsc'   => 'YESB0CMSNOC',
+                        'name'   => 'Test Merchant'
+                    ],
+                ],
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testCreateVirtualAccountForBankingWithBody' => [
+        'request' => [
+            'url' => '/virtual_accounts/banking',
+            'method' => 'post',
+            'content' => [
+                'name'  => 'Akshay Goyal'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'name'            => 'Akshay Goyal',
+                'entity'          => 'virtual_account',
+                'status'          => 'active',
+                'description'     => null,
+                'receivers'  => [
+                    [
+                        'entity' => 'bank_account',
+                        'ifsc'   => 'YESB0CMSNOC',
+                        'name'   => 'Akshay Goyal'
+                    ],
+                ],
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testCreateVirtualAccountForBankingWithoutFeature' => [
+        'request' => [
+            'url' => '/virtual_accounts/banking',
+            'method' => 'post',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The requested URL was not found on the server.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+    ],
+
+    'testCreateVirtualAccountForBankingWithoutBusinessBankingFlagEnabled' => [
+        'request' => [
+            'url' => '/virtual_accounts/banking',
+            'method' => 'post',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_FORBIDDEN_BUSINESS_BANKING_NOT_ENABLED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_FORBIDDEN_BUSINESS_BANKING_NOT_ENABLED,
         ],
     ],
 ];

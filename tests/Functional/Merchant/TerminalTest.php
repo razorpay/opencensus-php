@@ -446,6 +446,32 @@ class TerminalTest extends TestCase
         $this->startTest();
     }
 
+    public function testEditMpgsTerminal()
+    {
+        $attributes = [
+            'merchant_id'               => '10000000000000',
+            'gateway'                   => 'mpgs',
+            'card'                      => 1,
+            'international'             => 1,
+            'gateway_merchant_id'       => '9387723',
+            'gateway_terminal_password' => 'random',
+            'type'                      => [
+                'non_recurring'  => '1',
+            ],
+            'enabled'                   => 1,
+        ];
+
+        $terminal = $this->fixtures->create('terminal', $attributes);
+
+        $tid = $terminal['id'];
+
+        $data = ['international' => 0];
+
+        $content = $this->editTerminal($tid, $data);
+
+        $this->assertEquals($content['international'], 0);
+    }
+
     public function testCreatePaytmCardTerminal()
     {
         $url = '/merchants/100000Razorpay/terminals';

@@ -92,10 +92,7 @@ final class RazorxTreatment
 
     // promotional pricing plan for onboarding submerchants
     const SUBMERCHANT_PROMOTIONAL_PRICING_PLAN = 'submerchant_promotional_pricing_plan';
-
-    // instant refunds self serve ramp up
-    const INSTANT_REFUNDS_SELF_SERVE = 'instant_refunds_self_serve';
-
+    
     // restrict user to one role per merchant and product
     const RESTRICT_USER_TO_ONE_ROLE_PER_MERCHANT_AND_PRODUCT = 'restrict_user_to_one_role_per_merchant_and_product';
 

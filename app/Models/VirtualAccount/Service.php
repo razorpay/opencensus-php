@@ -508,4 +508,27 @@ class Service extends Base\Service
 
         return $this->core->getConfigsForVirtualAccount($receivers);
     }
+
+    public function createForBanking(array $input)
+    {
+        $this->trace->info(TraceCode::VIRTUAL_ACCOUNT_CREATE_FOR_BANKING_REQUEST, $input);
+
+        (new Validator)->validateInput('create_for_banking', $input);
+
+        /** @var \RZP\Models\Merchant\Validator $validator */
+        $validator = $this->merchant->getValidator();
+
+        $validator->validateBusinessBankingActivated();
+
+        if ($this->mode === Mode::LIVE)
+        {
+            $validator->validateIsActivated($this->merchant);
+        }
+
+        $virtualAccount = $this->core->createForBankingBalance($this->merchant,
+            $this->merchant->sharedBankingBalance,
+            $input);
+
+        return $virtualAccount->toArrayPublic();
+    }
 }
