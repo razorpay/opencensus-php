@@ -927,6 +927,7 @@ final class Route
         'transfer_edit'                            => ['patch',    'transfers/{id}',                                 'TransferController@patchTransfer'                                  ],
         'transfer_create'                          => ['post',     'transfers',                                      'TransferController@postTransfer'                                   ],
         'transfer_create_reversal'                 => ['post',     'transfers/{id}/reversals',                       'TransferController@postTransferReversal'                           ],
+        'transfer_settlements_update'              => ['post',     'transfers/{id}/settelement',                     'TransferController@transferUpdateSettelements'                           ],
         'transfer_fetch_reversals'                 => ['get',      'transfers/{id}/reversals',                       'TransferController@getTransferReversals'                           ],
         'reversal_fetch'                           => ['get',      'reversals/{id}',                                 'ReversalController@getReversal'                                    ],
         'reversal_fetch_multiple'                  => ['get',      'reversals',                                      'ReversalController@getReversals'                                   ],
@@ -1766,6 +1767,7 @@ final class Route
         'transfer_edit',
         'transfer_create',
         'transfer_pending_process',
+        'transfer_settlements_update',
         'transfer_failed_process',
         'transfer_create_reversal',
         'virtual_account_create',
@@ -2029,6 +2031,7 @@ final class Route
         'recon_fetch_files_count',
         'mailing_list_remove_suspended_merchant',
         'transfer_pending_process',
+        'transfer_settlements_update',
         'transfer_failed_process',
         'merchant_mtu_update',
         'webhook_deactivate',
@@ -3931,6 +3934,7 @@ final class Route
             'merchant_poc_update',
             'unclaimed_merchant_poc_update',
             'virtual_account_batch_migrate_yesbank',
+            'transfer_settlements_update'
         ],
 
         'subscriptions' => [
