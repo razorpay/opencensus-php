@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Artisan;
 use RZP\Models\Admin;
 use RZP\Models\Payout;
 use RZP\Error\ErrorCode;
+use RZP\Models\Merchant;
 use RZP\Constants\Timezone;
 use RZP\Services\Mock\Mozart;
 use RZP\Models\Feature\Constants;
@@ -698,6 +699,13 @@ class PayoutTest extends TestCase
 
     public function createPayoutWorkflowWithBankingUsersLiveMode()
     {
+        (new Admin\Service)->setConfigKeys(
+            [
+                Admin\ConfigKey::RX_ACCOUNT_NUMBER_SERIES_PREFIX => [
+                    Merchant\Account::SHARED_ACCOUNT => '222444',
+                ]
+            ]);
+
         $workflow = $this->setupWorkflowForLiveMode();
 
         $steps = $workflow->steps()->get()->toArrayPublic();
@@ -751,7 +759,7 @@ class PayoutTest extends TestCase
             'bank_account',
             '1000000lcustba',
             [
-                'ifsc_code'      => 'YESBB000000'
+                'ifsc_code'      => 'YESB0CMSNOC'
             ]);
 
         return $workflow;
@@ -2346,10 +2354,12 @@ class PayoutTest extends TestCase
     public function testWorkflowTriggerForBankingRequest()
     {
         $this->liveSetUp();
-        $workflow = $this->setupWorkflowForLiveMode();
+
+        $workflow = $this->createPayoutWorkflowWithBankingUsersLiveMode();
+
         $this->createPayoutWithWorkflow($workflow, [], 'rzp_live_TheLiveAuthKey');
 
-        $this->ba->proxyAuth('rzp_live_10000000000000', $this->checkerRoleUser->getId());
+        $this->ba->proxyAuth('rzp_live_10000000000000', $this->ownerRoleUser->getId());
 
         $this->startTest();
     }
