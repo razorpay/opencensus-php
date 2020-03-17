@@ -258,7 +258,8 @@ class Core extends Base\Core
 
     public function isNegativeBalanceEnabledForTxnAndMerchant(string $txnType, string $merchantId, string $balanceType = Balance\Type::PRIMARY) : bool
     {
-        if (in_array($txnType, Balance\Core::NEGATIVE_FLOWS[$balanceType]) === false)
+        if ((array_key_exists($balanceType, Balance\Core::NEGATIVE_FLOWS) === false) or
+            (in_array($txnType, Balance\Core::NEGATIVE_FLOWS[$balanceType]) === false))
         {
             return false;
         }
