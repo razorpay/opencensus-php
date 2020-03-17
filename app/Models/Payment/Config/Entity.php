@@ -48,6 +48,7 @@ class Entity extends Base\PublicEntity
     protected $publicSetters = [
             self::ID,
             self::ENTITY,
+            self::CONFIG,
     ];
 
     protected $dates = [
@@ -62,7 +63,6 @@ class Entity extends Base\PublicEntity
 
     protected $casts = [
             self::DEFAULT      => 'bool',
-            self::CONFIG       => 'array',
     ];
 
     public function merchant()
