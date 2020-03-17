@@ -83,13 +83,16 @@ class SmartRouting
         return $this->sendRequest(self::UPDATE_GATEWAY_RULE, $data, null, null,self::REQUEST_TIMEOUT);
     }
 
-    public function deleteGatewayRule($id, $group)
+    public function deleteGatewayRule($id, $group, $step)
     {
         $params = null;
 
         if (empty($group) === false)
         {
-            $params = ['group' => $group];
+            $params = [
+                'group' => $group,
+                'step'  => $step,
+            ];
         }
 
         return $this->sendRequest(self::DELETE_GATEWAY_RULE, null, $id, $params, self::REQUEST_TIMEOUT);
