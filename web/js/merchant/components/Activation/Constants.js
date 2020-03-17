@@ -270,3 +270,18 @@ export const ADDITIONAL_DOCS_LABEL_VALUE_MAP = {
     },
   },
 };
+
+// Footer Buttons
+const SUBMIT_CLARIFICATIONS = 'submit-clarifications';
+const SAVE = 'save';
+const SAVE_AND_NEXT = 'save-next';
+const SUBMIT_L1_FORM = 'submit-L1-form';
+const SUBMIT_KYC_FORM = 'submit-kyc-form';
+
+export const FOOTER_BUTTONS = {
+  SUBMIT_CLARIFICATIONS,
+  SAVE,
+  SAVE_AND_NEXT,
+  SUBMIT_L1_FORM,
+  SUBMIT_KYC_FORM,
+};

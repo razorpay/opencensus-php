@@ -67,8 +67,8 @@ import {
 import QueryString from 'query-string';
 import { getNeedsClarificationTabsData } from './NeedsClarificationFormMap';
 import SubmitFormLayer from './components/SubmitFormLayer';
-import Loader from './components/Loader';
-import { LOADING } from './Constants';
+import Footer from './components/Footer';
+import { LOADING, FOOTER_BUTTONS } from './Constants';
 /*
  *             Main-form        LA-form
  * Submited      E F ~S        ~E ~F ~S
@@ -127,7 +127,7 @@ export default class ActivationWizard extends React.Component {
     has_gstin: this.props.data && this.props.data.gstin === '' ? '1' : '0', // '0' => 0th radio button, value exists
     account_no: this.props.data && this.props.data.bank_account_number,
     activeTab: 0, // Fallback for all cases.
-    callingApi: false,
+    callingAPI: false,
     address_proof: 'aadhar',
     needsClarification: {},
     additional_doc: '',
@@ -1140,7 +1140,7 @@ export default class ActivationWizard extends React.Component {
       }
       return err;
     } finally {
-      this.setState({ callingApi: false });
+      this.setState({ callingAPI: false });
     }
   };
 
@@ -1303,7 +1303,7 @@ export default class ActivationWizard extends React.Component {
   };
 
   /* Find if all tabs are valid */
-  isAllTabsValid() {
+  isAllTabsValid = () => {
     let isValid = true;
 
     for (let i = 0; i < this.state.tabs.length; i++) {
@@ -1319,7 +1319,7 @@ export default class ActivationWizard extends React.Component {
     }
 
     return isValid;
-  }
+  };
 
   /*
    * Toggles backdrop submit layer
@@ -1365,19 +1365,61 @@ export default class ActivationWizard extends React.Component {
     }
   };
 
+  get FooterButtons() {
+    const footerButtons = [];
+    const activeTab = this.state.activeTab;
+    const isLastTab = activeTab === FORM_TABS.length - 1;
+    const isFormLocked = this.isFormLocked;
+    const isLinkedAccountForm = this.isLinkedAccountForm;
+    const isFormSubmitted = !!this.props.data.submitted;
+    const user = this.props.user;
+    const isBusinessDetailsStep = activeTab === BUSINESS_DETAILS_STEP;
+    const showSubmitLayer = this.state.showSubmitLayer;
+
+    if (this.isOnKYCTab()) {
+      footerButtons.push(FOOTER_BUTTONS.SUBMIT_CLARIFICATIONS);
+      return footerButtons;
+    }
+
+    if (isFormLocked || showSubmitLayer) {
+      return [];
+    }
+
+    if (!SAVE_BUTTON_DISABLED_STEPS.includes(activeTab)) {
+      footerButtons.push(FOOTER_BUTTONS.SAVE);
+    }
+
+    if (!isLastTab) {
+      footerButtons.push(FOOTER_BUTTONS.SAVE_AND_NEXT);
+    }
+
+    if (isLastTab && isBusinessDetailsStep && !isLinkedAccountForm) {
+      footerButtons.push(FOOTER_BUTTONS.SUBMIT_L1_FORM);
+    }
+
+    if (
+      isLastTab &&
+      !isFormSubmitted &&
+      user.instantActivation.isL1Submitted &&
+      !user.instantActivation.isBlacklistFlow
+    ) {
+      footerButtons.push(FOOTER_BUTTONS.SUBMIT_KYC_FORM);
+    }
+
+    return footerButtons;
+  }
+
   render() {
     const isFormLocked = this.isFormLocked;
     const isFormActivated = !!this.props.data.activated;
     const isFormSubmitted = !!this.props.data.submitted;
-
-    const { tracking } = this.props;
 
     let activeTab = this.state.activeTab;
     activeTab = activeTab < 0 || !activeTab ? 0 : activeTab; // Graceful failure in case activeTab becomes negative. To handle non-reproducible weird error.
 
     const isCurrentTabValid = this.state.tabs[activeTab];
 
-    const isLastTab = activeTab == FORM_TABS.length - 1;
+    const footerButtons = this.FooterButtons;
 
     let content, documentContent; // Document content will always be shown so that upload progress is maintained in DOM
 
@@ -1629,83 +1671,23 @@ export default class ActivationWizard extends React.Component {
           )}
 
         {/* Form Footer, to show actions btns / saving state */}
-        {!isFormLocked && (
-          <footer>
-            {/* Spinner state */}
-            <Loader
-              isSaving={this.state.isSaving}
-              defaultMsg={this.props.defaultMsg}
-            />
-            {!this.state.showSubmitLayer && (
-              <React.Fragment>
-                {/* Action Button 1 */}
-                {SAVE_BUTTON_DISABLED_STEPS.indexOf(activeTab) === -1 && (
-                  <Button onClick={this.saveCurrentTab}>Save</Button>
-                )}
-
-                {/* Action Button 2 */}
-                {isLastTab ||
-                  ((this.isLinkedAccountForm || !this.isIndividualTypeLock) && (
-                    <Button.Primary
-                      iconAfter="chevron-right"
-                      onClick={this.next}
-                    >
-                      <span className="device--desktop">Save & Next</span>
-                      <span className="device--mobile">Next</span>
-                    </Button.Primary>
-                  ))}
-
-                {/* Action Button 3 */}
-                {isLastTab &&
-                  activeTab == BUSINESS_DETAILS_STEP &&
-                  !this.isLinkedAccountForm && (
-                    <AsyncBtn.Primary
-                      disabled={!this.canSubmitL1Form || this.state.callingAPI}
-                      onClick={this.submitL1}
-                      pendingState={
-                        this.isUnregBiz ? 'Verifying' : 'Submitting'
-                      }
-                      name="submit-and-verify"
-                    >
-                      {this.isUnregBiz ? 'Submit and Verify' : 'Submit'}
-                    </AsyncBtn.Primary>
-                  )}
-
-                {/* Action Button 4 */}
-                {isLastTab &&
-                  !isFormSubmitted &&
-                  this.props.user.instantActivation.isL1Submitted &&
-                  !this.props.user.instantActivation.isBlacklistFlow && (
-                    <Button.Primary
-                      disabled={!this.isAllTabsValid()}
-                      onClick={() => {
-                        tracking.trackEvent(
-                          window.rzpQ.onbr().initiated('kyc.save_documents')
-                        );
-                        this.toggleSubmitLayer();
-                      }}
-                    >
-                      Submit Form
-                    </Button.Primary>
-                  )}
-              </React.Fragment>
-            )}
-          </footer>
-        )}
-        {this.isOnKYCTab() && (
-          <footer>
-            <AsyncBtn.Primary
-              disabled={
-                !this.hasFilledClarificationDetails || this.state.callingApi
-              }
-              onClick={this.submitClarifications}
-              pendingState="Submitting..."
-              name="Submit Clarifications"
-            >
-              Submit Clarifications
-            </AsyncBtn.Primary>
-          </footer>
-        )}
+        <Footer
+          isSaving={this.state.isSaving}
+          defaultMsg={this.state.defaultMsg}
+          footerButtons={footerButtons}
+          canSubmitL1Form={this.canSubmitL1Form && !this.state.callingAPI}
+          canSubmitNeedsClarification={
+            this.hasFilledClarificationDetails && !this.state.callingAPI
+          }
+          isUnregBiz={this.isUnregBiz}
+          isAllTabsValid={this.isAllTabsValid}
+          submitL1={this.submitL1}
+          saveCurrentTab={this.saveCurrentTab}
+          next={this.next}
+          toggleSubmitLayer={this.toggleSubmitLayer}
+          tracking={this.props.tracking}
+          submitClarifications={this.submitClarifications}
+        />
       </div>
     );
   }
