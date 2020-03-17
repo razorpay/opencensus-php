@@ -426,7 +426,7 @@ class Validator extends Base\Validator
         Entity::TYPE                       => 'sometimes|array',
         Entity::CARD                       => 'sometimes|boolean|in:1',
         Entity::INTERNATIONAL              => 'sometimes|boolean',
-        Entity::MODE                       => 'sometimes|in:3',
+        Entity::MODE                       => 'sometimes|in:2,3',
         Entity::NETWORK_CATEGORY           => 'sometimes|string|max:30',
         Entity::CAPABILITY                 => 'sometimes',
     ];
@@ -1332,6 +1332,13 @@ class Validator extends Base\Validator
             Gateway::GETSIMPL,
         ];
 
+        $cardGatewaysWithPurchaseSupport = [
+            Gateway::MPGS,
+        ];
+
+        $isPurchaseSupportedCardGateway = ((Gateway::isMethodSupported(Payment\Method::CARD, $gateway)) and
+                                           (in_array($gateway, $cardGatewaysWithPurchaseSupport, true)));
+
         $isAuthCaptureOnlyGateway = (in_array($gateway, $authCaptureOnly, true));
 
         if ((($isFirstDataNon3DS === true) or ($isNonCardNonMockGateway === true)) and
@@ -1351,6 +1358,7 @@ class Validator extends Base\Validator
         else if (($isFirstDataNon3DS === false) and
                  ($isNonCardNonMockGateway === false) and
                  ($isAuthCaptureOnlyGateway === false) and
+                 ($isPurchaseSupportedCardGateway === false) and
                  ($mode !== Mode::DUAL))
         {
             throw new Exception\BadRequestValidationFailureException(
