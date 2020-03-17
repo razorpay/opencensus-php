@@ -19,25 +19,6 @@ class Core extends Base\Core
         $this->mutex = $this->app['api.mutex'];
     }
 
-    public function getFormattedConfigForCheckout($configId, $merchantId, & $data)
-    {
-        $config = null;
-
-        if (isset($configId) === false)
-        {
-            $config = $this->repo->config->fetchDefaultConfigByMerchantIdAndType($merchantId, 'checkout');
-        }
-        else
-        {
-            $config = $this->repo->config->findByPublicId($configId);
-        }
-
-        if (isset($config) === true)
-        {
-            $data['config'] = json_decode($config->config, true);
-        }
-    }
-
     public function create($input)
     {
         $merchant = $this->merchant;
@@ -59,7 +40,8 @@ class Core extends Base\Core
                 $config = $this->repo->config->transaction(function () use($input, $merchant, $config)
                 {
                     //updating the default value of config if already exist
-                    if ($input['default'] === true or strval($input['default']) === '1')
+                    if (($input['default'] === true) or
+                        (strval($input['default']) === '1'))
                     {
                         $defaultConfig = $this->repo->config->fetchDefaultConfigByMerchantIdAndType($merchant->getId(), $input['type']);
 
@@ -101,18 +83,26 @@ class Core extends Base\Core
 
                 $config = $this->repo->config->findByPublicIdAndMerchantAndType($id, $this->merchant->getId(), $type);
 
-                if (isset($config))
+                if (isset($config) === false)
+                {
+                    throw new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_INVALID_CONFIG_ID, null, null,
+                        'Config is not present for the provided ID');
+                }
+                else
                 {
                     $config = $this->repo->transaction(function () use($input, $merchant, $config, $id, $type)
                     {
                         $config->edit($input);
 
-                        if (isset($input['default']) and ($input['default'] === true or strval($input['default']) === '1'))
+                        if ((isset($input['default']) === true) and
+                            (($input['default'] === true) or (strval($input['default']) === '1')))
                         {
                             // find if any default config exist
                             $defaultConfig = $this->repo->config->fetchDefaultConfigByMerchantIdAndType($this->merchant->getId(), $type);
 
-                            if (isset($defaultConfig) === true and $id !== $defaultConfig->getId())
+                            if ((isset($defaultConfig) === true) and
+                                  $id !== $defaultConfig->getId())
                             {
                                 $defaultConfig->default = false;
 
@@ -126,11 +116,6 @@ class Core extends Base\Core
                     });
 
                     return  $config;
-                }
-                else {
-                    throw new Exception\BadRequestException(
-                        ErrorCode::BAD_REQUEST_INVALID_CONFIG_ID, null, null,
-                        'Config is not present for the provided ID');
                 }
             });
     }

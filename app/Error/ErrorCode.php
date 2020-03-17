@@ -1534,7 +1534,7 @@ class ErrorCode
     const BAD_REQUEST_INVALID_MATCH_TYPE                                            = 'BAD_REQUEST_INVALID_MATCH_TYPE';
 
     //payment config
-    const BAD_REQUEST_INVALID_CONFIG_ID                                             = 'INVALID_CONFIG_ID';
+    const BAD_REQUEST_INVALID_CONFIG_ID                                             = 'Invalid config Id';
 
     const BAD_REQUEST_ANOTHER_CREDITS_OPERATION_IN_PROGRESS                         = 'BAD_REQUEST_ANOTHER_CREDITS_OPERATION_IN_PROGRESS';
 
