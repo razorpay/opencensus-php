@@ -2842,7 +2842,7 @@ class Processor
             return;
         }
 
-        $rblVaRoutes = ['bank_transfer_process_rbl', 'bank_transfer_process_rbl_test'];
+        $rblVaRoutes = ['bank_transfer_process_rbl', 'bank_transfer_process_rbl_test', 'bank_transfer_process_rbl_internal'];
 
         if (in_array(Route::currentRouteName(), $rblVaRoutes, true) === true)
         {

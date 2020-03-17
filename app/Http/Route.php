@@ -302,8 +302,10 @@ final class Route
         'bank_transfer_process'                    => ['post',     'ecollect/validate',                              'BankTransferController@processBankTransfer'                        ],
         'bank_transfer_process_icici'              => ['post',     'ecollect/validate/icici',                        'BankTransferController@processIciciBankTransfer'                   ],
         'bank_transfer_process_file'               => ['post',     'ecollect/validate/file',                         'BankTransferController@processBankTransferFile'                    ],
+        'bank_transfer_process_file_rbl'           => ['post',     'ecollect/validate/file/rbl',                     'BankTransferController@processBankTransferFileRbl'                 ],
         'bank_transfer_process_rbl'                => ['post',     'ecollect/validate/rbl',                          'BankTransferController@processRblBankTransferLive'                 ],
         'bank_transfer_process_rbl_test'           => ['post',     'ecollect/validate/rbl/test',                     'BankTransferController@processRblBankTransferTest'                 ],
+        'bank_transfer_process_rbl_internal'       => ['post',     'ecollect/validate/rbl/internal',                 'BankTransferController@processRblBankTransferInternal'             ],
         'bank_transfer_process_test'               => ['post',     'ecollect/validate/test',                         'BankTransferController@processBankTransfer'                        ],
         'bank_transfer_notify'                     => ['post',     'ecollect/pay',                                   'BankTransferController@notifyBankTransfer'                         ],
         'bank_transfer_refund_retry'               => ['post',     'bank_transfers/refunds/retry',                   'BankTransferController@retryBankTransferRefund'                    ],
@@ -1871,6 +1873,8 @@ final class Route
         'bank_transfer_notify',
         'bank_transfer_process',
         'bank_transfer_process_file',
+        'bank_transfer_process_file_rbl',
+        'bank_transfer_process_rbl_internal',
         'bank_transfer_process_icici',
         'bank_transfer_refund_retry',
         'batch_process_file',
@@ -3989,6 +3993,7 @@ final class Route
             'reconciliate',
             'emandate_debit_reconcile',
             'bank_transfer_process_file',
+            'bank_transfer_process_file_rbl',
         ],
 
         'raven' => [
@@ -4075,6 +4080,7 @@ final class Route
             'adj_add_batch',
             'bank_transfer_process_icici',
             'reporting_log_create',
+            'bank_transfer_process_rbl_internal',
         ],
 
         'stork' => [
