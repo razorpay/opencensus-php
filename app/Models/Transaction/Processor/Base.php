@@ -335,7 +335,7 @@ abstract class Base extends BaseCore
         return $returnDay->getTimestamp();
     }
 
-    public function updateCredits(int $negativeLimit = 0 )
+    public function updateCredits(int $negativeLimit = 0)
     {
         if($this->txn->isGratis() === true)
         {
@@ -627,21 +627,8 @@ abstract class Base extends BaseCore
 
         $this->txn->setBalance($this->merchantBalance->getBalance(), $negativeLimit, $checkNegativeLimit);
 
-        if (in_array($this->txn->getType(), Balance\Core::NEGATIVE_FLOWS[Balance\Type::PRIMARY]) === true)
-        {
-            if ($newBalance < 0)
-            {
-                $dimensions = (new Balance\Metric)->getBalanceNegativeDimensions($this->merchantBalance->merchant->getId(),
-                                                                                     $this->merchantBalance->getType(),
-                                                                                     $this->merchantBalance->getBalance(),
-                                                                                     $this->txn->getType());
-
-                $this->trace->count(Balance\Metric::BALANCE_NEGATIVE, $dimensions);
-            }
-
-            (new Balance\Core)->sendNegativeBalanceMailIfApplicable($this->merchantBalance->merchant, $oldBalance, $newBalance,
-                $this->merchantBalance->getType(), 'merchant balance', $this->txn->getType());
-        }
+        (new Balance\Core)->postProcessingForNegativeBalance($oldBalance, Balance\Entity::BALANCE,
+                                                            $this->txn->getType(), $merchantBalance);
     }
 
     /**

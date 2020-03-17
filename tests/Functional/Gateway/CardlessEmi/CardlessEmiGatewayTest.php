@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Gateway\CardlessEmi;
 
 use RZP\Gateway\CardlessEmi;
+use RZP\Models\Merchant\Account;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -98,6 +99,19 @@ class CardlessEmiGatewayTest extends TestCase
             });
     }
 
+    public function testSubMerchantPreferences()
+    {
+        $this->createSubMerchant();
+
+        $preferences = $this->getPreferences();
+
+        $acquirer = $this->sharedTerminal->getGatewayAcquirer();
+
+        $this->assertArraySelectiveEquals([$acquirer => true], $preferences['methods']['cardless_emi']);
+
+        $this->resetPublicAuthToTestAccount();
+    }
+
     public function testPayment()
     {
         $payment = $this->getDefaultCardlessEmiPaymentArray($this->provider);
@@ -117,6 +131,31 @@ class CardlessEmiGatewayTest extends TestCase
         $cardlessEmiEntity = $this->getLastEntity('cardless_emi', true);
 
         $this->assertTestResponse($cardlessEmiEntity, 'testPaymentCardlessEmiEntity');
+    }
+
+    public function testPaymentForSubMerchant()
+    {
+        $this->createSubMerchant();
+
+        $payment = $this->getDefaultCardlessEmiPaymentArray($this->provider);
+
+        $payment['contact'] = '+91' . $payment['contact'];
+
+        $this->setOtp('123456');
+
+        $response = $this->doAuthPayment($payment);
+
+        $this->assertNotNull($response['razorpay_payment_id']);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertTestResponse($payment);
+
+        $cardlessEmiEntity = $this->getLastEntity('cardless_emi', true);
+
+        $this->assertTestResponse($cardlessEmiEntity, 'testPaymentCardlessEmiEntity');
+
+        $this->resetPublicAuthToTestAccount();
     }
 
     public function testFailedPayment()
@@ -382,5 +421,72 @@ class CardlessEmiGatewayTest extends TestCase
         $content = $this->makeRequestAndGetContent($request);
 
         return $content;
+    }
+
+    protected function getPreferences()
+    {
+        $response = $this->makeRequestAndGetContent([
+            'url'    => '/preferences',
+            'method' => 'get',
+            'content' => [
+                'currency' => 'INR'
+            ]
+        ]);
+
+        return $response;
+    }
+
+    protected function createSubMerchant()
+    {
+        $subMerchant = $this->fixtures->create('merchant');
+
+        $subMerchantId = $subMerchant->getId();
+
+        $this->fixtures->create('methods:default_methods', ['merchant_id' => $subMerchantId]);
+
+        $this->fixtures->merchant->enableCardlessEmi($subMerchantId);
+
+        $this->fixtures->create('balance',
+            [
+                'merchant_id' => $subMerchantId,
+                'type'        => 'primary',
+                'balance'     => 10000000,
+            ]);
+
+        $this->ba->getAdmin()->merchants()->attach($subMerchantId);
+
+        $this->assignSubMerchant($this->sharedTerminal->getId(), $subMerchantId);
+
+        $this->setSubMerchantPublicAuth($subMerchantId);
+
+        return $subMerchantId;
+    }
+
+    protected function assignSubMerchant(string $tid, string $mid)
+    {
+        $url = '/terminals/' . $tid . '/merchants/' . $mid;
+
+        $request = [
+            'url'    => $url,
+            'method' => 'PUT',
+        ];
+
+        $this->ba->adminAuth();
+
+        $this->makeRequestAndGetContent($request);
+    }
+
+    protected function setSubMerchantPublicAuth($merchantId)
+    {
+        $key = $this->fixtures->create('key', ['merchant_id' => $merchantId]);
+
+        $key = $key->getKey();
+
+        $this->ba->publicAuth('rzp_test_' . $key);
+    }
+
+    protected function resetPublicAuthToTestAccount()
+    {
+        $this->ba->publicAuth('rzp_test_' . 'TheTestAuthKey');
     }
 }

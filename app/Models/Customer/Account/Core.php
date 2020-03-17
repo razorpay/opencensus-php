@@ -692,8 +692,13 @@ class Core extends Base\Core
                          ->terminal
                          ->getByMerchantProviderAndMethod($input['provider'], $merchant['id'], $input['method']);
 
+        // merchant id is required to fetch details from cache
+        $input['merchant_id'] = $merchant['id'];
+
         list($emiPlans, $loanUrl) =
             $this->app['gateway']->call(Payment\Gateway::CARDLESS_EMI, 'get_emi_plans', $input, $this->mode, $terminal);
+
+        unset($input['merchant_id']);
 
         $token = (new Payment\Service)->generateAndSaveOneTimeTokenWithContact($input);
 
