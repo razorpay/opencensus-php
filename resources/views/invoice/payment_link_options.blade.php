@@ -868,8 +868,10 @@ $isHostedCheckout               = $hostedpage_options['enable_embedded_checkout'
                 options.prefill.email = invoiceObj.customer_details.customer_email;
             }
 
-            // options.order_id = invoiceObj.order_id;
-            options.customer_id = invoiceObj.customer_details.id;
+            if (options.prefill.contact || options.prefill.email) {
+                // options.order_id = invoiceObj.order_id;
+                options.customer_id = invoiceObj.customer_details.id;
+            }
 
             if (merchant) {
                 var color = $checkout_options.theme.color || merchant.brand_color || '#168AFA';
