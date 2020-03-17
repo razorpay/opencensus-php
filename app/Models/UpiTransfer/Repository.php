@@ -25,10 +25,11 @@ class Repository extends Base\Repository
         return $upiTransfer;
     }
 
-    public function findByNpciReferenceId(string $npciReferenceId)
+    public function findByNpciReferenceId(string $npciReferenceId, string $gateway)
     {
         return $this->newQuery()
                     ->where(Entity::NPCI_REFERENCE_ID, '=', $npciReferenceId)
+                    ->where(Entity::GATEWAY, '=', $gateway)
                     ->first();
     }
 }
