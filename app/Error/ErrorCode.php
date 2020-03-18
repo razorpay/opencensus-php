@@ -1016,7 +1016,6 @@ class ErrorCode
     const SERVER_ERROR_WEBHOOK_IN_TRANSACTION                                       = 'SERVER_ERROR_WEBHOOK_IN_TRANSACTION';
     const SERVER_ERROR_SIGNED_XML_EMPTY                                             = 'SERVER_ERROR_SIGNED_XML_EMPTY';
 
-    const SERVER_ERROR_WEBHOOK_UPDATE_DISABLED                                      = 'SERVER_ERROR_WEBHOOK_UPDATE_DISABLED';
     const SERVER_ERROR_RAZORX_FAILURE                                               = 'SERVER_ERROR_RAZORX_FAILURE';
 
     const SERVER_ERROR_UFH_SERVICE_FAILURE                                          = 'SERVER_ERROR_UFH_SERVICE_FAILURE';
