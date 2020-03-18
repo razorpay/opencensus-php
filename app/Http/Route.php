@@ -5,6 +5,9 @@ namespace RZP\Http;
 use ApiResponse;
 use Illuminate\Routing\Router;
 
+use RZP\Constants\Entity;
+use RZP\Models\IdempotencyKey;
+use RZP\Http\Request\Requests;
 use RZP\Foundation\Application;
 use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Models\Feature\Constants as Feature;
@@ -4259,6 +4262,25 @@ final class Route
     ];
 
     /**
+     * Avoid having any kind of bulk routes here! The entity mapping
+     * should be done correctly if you are adding bulk routes.
+     *
+     * Strongly suggested to understand the flow before adding any new
+     * route to this array.
+     *
+     * NOTE: If you are adding any new source_type here, ensure it's
+     * present in the morph map in ApiServiceProvider class.
+     *
+     * @var array
+     */
+    public static $idempotentRoutesConfig = [
+        'payout_create' => [
+                IdempotencyKey\Entity::SOURCE_TYPE  => Entity::PAYOUT,
+                IdempotencyKey\Entity::HEADER_KEY   => RequestHeader::X_PAYOUT_IDEMPOTENCY,
+            ]
+    ];
+
+    /**
      * Routes with Wildcard permission allowed for restricted orgs
      * @var array
      */
@@ -4431,6 +4453,11 @@ final class Route
     public function getCurrentRouteName()
     {
         return $this->router->currentRouteName();
+    }
+
+    public function getCurrentRouteMethod()
+    {
+        return $this->router->getCurrentRequest()->getMethod();
     }
 
     /**
@@ -4639,6 +4666,48 @@ final class Route
         }
     }
 
+    public function isApplicableForMerchantIdempotency(): bool
+    {
+        $routeName = $this->getCurrentRouteName();
+        $routeMethod = $this->getCurrentRouteMethod();
+
+        // Currently allowing only for defined routes for idempotency and for POST routes.
+        // Keeping only for POST routes since we don't see a use case for other methods currently.
+        if ((array_key_exists($routeName, self::$idempotentRoutesConfig) === true) and
+            ($routeMethod === Requests::POST))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    public function getEntityForIdempotencyRequest()
+    {
+        $routeName = $this->getCurrentRouteName();
+
+        return self::$idempotentRoutesConfig[$routeName][IdempotencyKey\Entity::SOURCE_TYPE] ?? null;
+    }
+
+    public function getHeaderKeyForIdempotencyRequest()
+    {
+        $routeName = $this->getCurrentRouteName();
+
+        return self::$idempotentRoutesConfig[$routeName][IdempotencyKey\Entity::HEADER_KEY] ?? null;
+    }
+
+    public function getEntitiesForIdempotencyRequest()
+    {
+        $sourceTypes = [];
+
+        foreach (self::$idempotentRoutesConfig as $idempotentRouteConfig => $routeName)
+        {
+            $sourceTypes[] = $routeName[IdempotencyKey\Entity::SOURCE_TYPE] ?? null;
+        }
+
+        return array_unique(array_filter($sourceTypes));
+    }
+
     protected function addRoute($name)
     {
         $info = self::$apiRoutes[$name];
@@ -4697,6 +4766,11 @@ final class Route
         if (in_array($name, self::FAILURE_EVENTS_INTERCEPTOR_ROUTES, true) === true)
         {
             $route->middleware('failure_interceptor');
+        }
+
+        if (in_array($name, array_keys(self::$idempotentRoutesConfig, true), true) === true)
+        {
+            $route->middleware('merchant_idempotency_handler');
         }
     }
 

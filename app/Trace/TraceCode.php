@@ -320,6 +320,13 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const HITACHI_ONBOARD_REQUEST_CREATION_ERROR                = 'HITACHI_ONBOARD_REQUEST_CREATION_ERROR';
     const SKIPPING_HITACHI_AUTOMATIC_ONBOARDING                 = 'SKIPPING_HITACHI_AUTOMATIC_ONBOARDING';
 
+    const DUPLICATE_IDEM_KEY_NO_ENTITY_ASSOC                    = 'DUPLICATE_IDEM_KEY_NO_ENTITY_ASSOC';
+    const IDEM_KEY_UPDATE_DATA                                  = 'IDEM_KEY_UPDATE_DATA';
+    const DUPLICATE_IDEM_KEY_RECEIVED                           = 'DUPLICATE_IDEM_KEY_RECEIVED';
+    const DUPLICATE_IDEM_KEY_RESPONSE                           = 'DUPLICATE_IDEM_KEY_RESPONSE';
+    const IDEM_KEY_ENTITY_CREATED                               = 'IDEM_KEY_ENTITY_CREATED';
+    const IDEMPOTENCY_REQUEST_DATA                              = 'IDEMPOTENCY_REQUEST_DATA';
+
     const FTA_MODE_SET                                          = 'FTA_MODE_SET';
     const FTA_SLA_EXPIRED                                       = 'FTA_SLA_EXPIRED';
     const FTA_MODE_NOT_FOUND                                    = 'FTA_MODE_NOT_FOUND';

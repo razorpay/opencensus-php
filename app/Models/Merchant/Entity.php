@@ -162,7 +162,7 @@ class Entity extends Base\PublicEntity
     const AUTO_REFUND_DELAY_DEFAULT = 432000; // 5 days
     const AUTO_REFUND_DELAY_FOR_EMANDATE = 1728000; // 20 days
     const AUTO_REFUND_DELAY_FOR_NACH = 1728000; // 20 days
-  
+
     const DOMESTIC_SETTLEMENT_SCHEDULE_DEFAULT_DELAY = 2;
     const INTERNATIONAL_SETTLEMENT_SCHEDULE_DEFAULT_DELAY = 7;
     // 30 minutes in seconds
@@ -1460,6 +1460,11 @@ class Entity extends Base\PublicEntity
     public function getDefaultRefundSpeed()
     {
         return $this->getAttribute(self::DEFAULT_REFUND_SPEED);
+    }
+
+    public function getMerchantId()
+    {
+        return $this->getId();
     }
 
     /**

@@ -10,6 +10,8 @@ use Config;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Artisan;
 
+use RZP\Constants\Entity;
+use RZP\Http\RequestHeader;
 use RZP\Models\Admin;
 use RZP\Models\Payout;
 use RZP\Error\ErrorCode;
@@ -128,6 +130,83 @@ class PayoutTest extends TestCase
         $this->assertArraySelectiveEquals($expectedBreakup, $feesSplit['items'][1]);
 
         return $payout;
+    }
+
+    public function testCreatePayoutWithIKeyHeader($ikeyValue = 'check', $amount = null)
+    {
+        $headers = [
+            'HTTP_' . RequestHeader::X_PAYOUT_IDEMPOTENCY    => $ikeyValue,
+        ];
+
+        // append headers
+        $this->testData[__FUNCTION__]['request']['server'] = $headers;
+
+        if (empty($amount) === false)
+        {
+            $this->testData[__FUNCTION__]['request']['content']['amount'] = $amount;
+        }
+
+        $this->ba->privateAuth();
+
+        $payout = $this->startTest();
+
+        $ikey = $this->getDbLastEntity(Entity::IDEMPOTENCY_KEY);
+
+        $this->assertEquals($payout['id'], 'pout_' . $ikey->getSourceId());
+        $this->assertEquals($ikeyValue, $ikey->getIdempotencyKey());
+
+        return $payout;
+    }
+
+    public function testCreateTwoPayoutsWithoutIKey()
+    {
+        $payoutOne = $this->testCreatePayout();
+
+        $payoutTwo = $this->testCreatePayout();
+
+        $this->assertNotEquals($payoutTwo['id'], $payoutOne['id']);
+    }
+
+    public function testCreateTwoPayoutsWithSameIKey()
+    {
+        $payout1 = $this->testCreatePayoutWithIKeyHeader('samekey');
+
+        $payout2 = $this->testCreatePayoutWithIKeyHeader('samekey');
+
+        $this->assertEquals($payout1['id'], $payout2['id']);
+
+        $ikeys = $this->getDbEntities(Entity::IDEMPOTENCY_KEY);
+
+        $this->assertCount(1, $ikeys);
+    }
+
+    public function testCreateTwoPayoutsWithDiffIKey()
+    {
+        $payout1 = $this->testCreatePayoutWithIKeyHeader('key1');
+
+        $payout2 = $this->testCreatePayoutWithIKeyHeader('anotherkey');
+
+        $this->assertNotEquals($payout1['id'], $payout2['id']);
+
+        $ikeys = $this->getDbEntities(Entity::IDEMPOTENCY_KEY);
+
+        $this->assertCount(2, $ikeys);
+    }
+
+    public function testCreateTwoPayoutsWithSameIKeyDiffRequest()
+    {
+        $this->testCreatePayoutWithIKeyHeader('samekey');
+
+        $headers = [
+            'HTTP_' . RequestHeader::X_PAYOUT_IDEMPOTENCY    => 'samekey',
+        ];
+
+        // append headers
+        $this->testData[__FUNCTION__]['request']['server'] = $headers;
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
     }
 
     public function testCreatePayoutWithoutFundAccountId()
