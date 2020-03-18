@@ -1091,7 +1091,7 @@ app
         } else if (!merchantData.transaction_volume) {
           $scope.signup.currentSubStep = 1;
         } else {
-          $scope.signup.currentSubStep = 3;
+          $scope.signup.currentSubStep = 2;
         }
         $timeout(function() {
           $scope.noTransition = false;
