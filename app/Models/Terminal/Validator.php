@@ -1022,6 +1022,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_ACCESS_CODE         => 'sometimes|string',
         Entity::GATEWAY_MERCHANT_ID2        => 'sometimes|string',
         Entity::GATEWAY_ACQUIRER            => 'sometimes|string',
+        Entity::GATEWAY_TERMINAL_ID         => 'sometimes|string',
     ];
 
     protected static $editWalletAirtelmoneyTerminalRules = [
