@@ -2705,6 +2705,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const RBL_VA_CALLBACK                                       = 'RBL_VA_CALLBACK';
     const RBL_VA_INVALID_CALLBACK_DATA                          = 'RBL_VA_INVALID_CALLBACK_DATA';
 
+    const TYPEFORM_PARSED_DATA                                  = 'TYPEFORM_PARSED_DATA';
+    const TYPEFORM_WORKFLOW_TRIGGERED                           = 'TYPEFORM_WORKFLOW_TRIGGERED';
+    const TYPEFORM_RAW_DATA                                     = 'TYPEFORM_RAW_DATA';
+
     // VA Migrate - Yesbank -> RBL
     const VA_MIGRATE_REQUEST            = 'VA_MIGRATE_REQUEST';
     const VA_MIGRATE_JOB_TRIGGERED      = 'VA_MIGRATE_JOB_TRIGGERED';

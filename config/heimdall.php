@@ -408,7 +408,9 @@ return [
             Permission::DOWNLOAD_CREDIT_BUREAU_REPORTS => [
                 'description' => 'Allow downloads of credit bureau reports of merchants',
                 'assignable'  => true,
-            ]
+            ],
+            Permission::EDIT_MERCHANT_INTERNATIONAL  => '',
+
         ],
 
         PermissionCategory::SETTLEMENT => [

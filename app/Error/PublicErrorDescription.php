@@ -978,6 +978,8 @@ class PublicErrorDescription
 
     const BAD_REQUEST_RECURRING_TOKEN_EXPIRED                                       = 'Token has expired and cannot be used for recurring payments';
 
+    const BAD_REQUEST_MERCHANT_ID_NOT_PRESENT                                       = 'Invalid Merchant Id';
+
     // Instant refunds
     const BAD_REQUEST_INSTANT_REFUND_NOT_SUPPORTED                                  = 'Instant refund not supported for the payment';
 
