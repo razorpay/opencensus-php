@@ -2,8 +2,10 @@
 
 namespace RZP\Tests\Functional\BankTransfer;
 
+use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
+use RZP\Error\PublicErrorDescription;
 use RZP\Exception\BadRequestValidationFailureException;
 
 return [
@@ -979,6 +981,127 @@ return [
                     ],
                 ],
             ],
+        ],
+    ],
+
+    'testCreateVirtualAccountForBanking' => [
+        'request' => [
+            'url' => '/virtual_accounts/banking',
+            'method' => 'post',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'name'            => 'Test Merchant',
+                'entity'          => 'virtual_account',
+                'status'          => 'active',
+                'description'     => null,
+                'receivers'  => [
+                    [
+                        'entity' => 'bank_account',
+                        'ifsc'   => 'YESB0CMSNOC',
+                        'name'   => 'Test Merchant'
+                    ],
+                ],
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testCreateVirtualAccountForBankingWithBody' => [
+        'request' => [
+            'url' => '/virtual_accounts/banking',
+            'method' => 'post',
+            'content' => [
+                'name'  => 'Akshay Goyal'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'name'            => 'Akshay Goyal',
+                'entity'          => 'virtual_account',
+                'status'          => 'active',
+                'description'     => null,
+                'receivers'  => [
+                    [
+                        'entity' => 'bank_account',
+                        'ifsc'   => 'YESB0CMSNOC',
+                        'name'   => 'Akshay Goyal'
+                    ],
+                ],
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testCreateVirtualAccountForBankingWithoutFeature' => [
+        'request' => [
+            'url' => '/virtual_accounts/banking',
+            'method' => 'post',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The requested URL was not found on the server.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+    ],
+
+    'testCreateVirtualAccountForBankingWithoutBusinessBankingFlagEnabled' => [
+        'request' => [
+            'url' => '/virtual_accounts/banking',
+            'method' => 'post',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_FORBIDDEN_BUSINESS_BANKING_NOT_ENABLED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_FORBIDDEN_BUSINESS_BANKING_NOT_ENABLED,
+        ],
+    ],
+
+    'testCreateVirtualAccountInBulkForBanking' => [
+        'request' => [
+            'url' => '/virtual_accounts/banking/bulk',
+            'method' => 'post',
+            'content' => [
+                "merchant_ids" => ["10000000000000", "10000000000001"]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'success'  => 1,
+                'failure'  => 1,
+                'failures'  => ['10000000000001'],
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testCloseVirtualAccountInBulkForBanking' => [
+        'request' => [
+            'url' => '/virtual_accounts/banking/close/bulk',
+            'method' => 'post',
+        ],
+        'response' => [
+            'content' => [
+                'success'  => 2,
+                'failure'  => 1,
+                'failures'  => ['va_10000000000000'],
+            ],
+            'status_code' => 200,
         ],
     ],
 ];

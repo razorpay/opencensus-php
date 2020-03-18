@@ -1409,11 +1409,9 @@ class ApiEventSubscriber extends Base\Core
     {
         $event = $this->createEventEntity($payload);
 
-        $this->trace->info(TraceCode::STORK_DISPATCH_EVENT_REQUEST, $event->toArrayPublic());
-
         try
         {
-            (new Stork)->processEvent($event, $this->getMode());
+            (new Stork)->processEventSafe($event, $this->getMode());
         }
         catch (Throwable $e)
         {

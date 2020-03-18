@@ -5,6 +5,9 @@ namespace RZP\Http;
 use ApiResponse;
 use Illuminate\Routing\Router;
 
+use RZP\Constants\Entity;
+use RZP\Models\IdempotencyKey;
+use RZP\Http\Request\Requests;
 use RZP\Foundation\Application;
 use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Models\Feature\Constants as Feature;
@@ -305,8 +308,10 @@ final class Route
         'bank_transfer_process'                    => ['post',     'ecollect/validate',                              'BankTransferController@processBankTransfer'                        ],
         'bank_transfer_process_icici'              => ['post',     'ecollect/validate/icici',                        'BankTransferController@processIciciBankTransfer'                   ],
         'bank_transfer_process_file'               => ['post',     'ecollect/validate/file',                         'BankTransferController@processBankTransferFile'                    ],
+        'bank_transfer_process_file_rbl'           => ['post',     'ecollect/validate/file/rbl',                     'BankTransferController@processBankTransferFileRbl'                 ],
         'bank_transfer_process_rbl'                => ['post',     'ecollect/validate/rbl',                          'BankTransferController@processRblBankTransferLive'                 ],
         'bank_transfer_process_rbl_test'           => ['post',     'ecollect/validate/rbl/test',                     'BankTransferController@processRblBankTransferTest'                 ],
+        'bank_transfer_process_rbl_internal'       => ['post',     'ecollect/validate/rbl/internal',                 'BankTransferController@processRblBankTransferInternal'             ],
         'bank_transfer_process_test'               => ['post',     'ecollect/validate/test',                         'BankTransferController@processBankTransfer'                        ],
         'bank_transfer_notify'                     => ['post',     'ecollect/pay',                                   'BankTransferController@notifyBankTransfer'                         ],
         'bank_transfer_refund_retry'               => ['post',     'bank_transfers/refunds/retry',                   'BankTransferController@retryBankTransferRefund'                    ],
@@ -357,6 +362,9 @@ final class Route
         'virtual_account_add_receiver'             => ['patch',    'virtual_accounts/{id}/receiver',                 'VirtualAccountController@addReceiver'                              ],
         'virtual_account_configs'                  => ['get',      'virtual_account/configs',                        'VirtualAccountController@getReceiverConfigs'                       ],
         'virtual_account_batch_migrate_yesbank'    => ['post',     'virtual_accounts/batch_migrate_yesbank',         'VirtualAccountController@bulkMigrateYesbank'                       ],
+        'virtual_account_create_for_banking'       => ['post',     'virtual_accounts/banking',                       'VirtualAccountController@createForBanking'                         ],
+        'virtual_account_bulk_create_for_banking'  => ['post',     'virtual_accounts/banking/bulk',                  'VirtualAccountController@bulkCreateForBanking'                     ],
+        'virtual_account_bulk_close_for_banking'   => ['post',     'virtual_accounts/banking/close/bulk',            'VirtualAccountController@bulkCloseForBanking'                      ],
         'upi_transfer_process'                     => ['post',     'live/upi/callback/hdfc/upi_mindgate',            'UpiTransferController@processUpiTransferPayment'                   ],
         'upi_transfer_process_test'                => ['post',     'test/upi/callback/hdfc/upi_mindgate',            'UpiTransferController@processUpiTransferPayment'                   ],
         'payment_upi_transfer_fetch'               => ['get',      'payments/{id}/upi_transfer',                     'UpiTransferController@fetchForPayment'                             ],
@@ -925,6 +933,7 @@ final class Route
         'transfer_edit'                            => ['patch',    'transfers/{id}',                                 'TransferController@patchTransfer'                                  ],
         'transfer_create'                          => ['post',     'transfers',                                      'TransferController@postTransfer'                                   ],
         'transfer_create_reversal'                 => ['post',     'transfers/{id}/reversals',                       'TransferController@postTransferReversal'                           ],
+        'transfer_settlements_update'              => ['post',     'transfers/{id}/settelement',                     'TransferController@transferUpdateSettelements'                           ],
         'transfer_fetch_reversals'                 => ['get',      'transfers/{id}/reversals',                       'TransferController@getTransferReversals'                           ],
         'reversal_fetch'                           => ['get',      'reversals/{id}',                                 'ReversalController@getReversal'                                    ],
         'reversal_fetch_multiple'                  => ['get',      'reversals',                                      'ReversalController@getReversals'                                   ],
@@ -1764,9 +1773,11 @@ final class Route
         'transfer_edit',
         'transfer_create',
         'transfer_pending_process',
+        'transfer_settlements_update',
         'transfer_failed_process',
         'transfer_create_reversal',
         'virtual_account_create',
+        'virtual_account_create_for_banking',
         'virtual_account_edit',
         'virtual_account_close',
         'virtual_account_fetch',
@@ -1872,6 +1883,8 @@ final class Route
         'bank_transfer_notify',
         'bank_transfer_process',
         'bank_transfer_process_file',
+        'bank_transfer_process_file_rbl',
+        'bank_transfer_process_rbl_internal',
         'bank_transfer_process_icici',
         'bank_transfer_refund_retry',
         'batch_process_file',
@@ -2024,6 +2037,7 @@ final class Route
         'recon_fetch_files_count',
         'mailing_list_remove_suspended_merchant',
         'transfer_pending_process',
+        'transfer_settlements_update',
         'transfer_failed_process',
         'merchant_mtu_update',
         'webhook_deactivate',
@@ -2902,6 +2916,10 @@ final class Route
         'merchant_locked_balance_update',
 
         'merchant_balance_fetch_admin',
+
+        // Banking VA
+        'virtual_account_bulk_create_for_banking',
+        'virtual_account_bulk_close_for_banking',
         ];
 
     public static $routePermission = [
@@ -3337,6 +3355,8 @@ final class Route
         'merchant_pricing_bulk'                    => Permission::PRICING_ASSIGN_BULK,
         'virtual_account_create'                   => Permission::CREATE_VIRTUAL_ACCOUNTS,
         'virtual_account_add_receiver'             => Permission::CREATE_VIRTUAL_ACCOUNTS,
+        'virtual_account_bulk_create_for_banking'  => Permission::CREATE_BANKING_VIRTUAL_ACCOUNTS,
+        'virtual_account_bulk_close_for_banking'   => Permission::CREATE_BANKING_VIRTUAL_ACCOUNTS,
         'entity_balance_id_update'                 => '*',
         'payment_page_items_migrate'               => '*',
         'payment_page_items_migrate_min_purchase'  => '*',
@@ -3923,6 +3943,7 @@ final class Route
             'merchant_poc_update',
             'unclaimed_merchant_poc_update',
             'virtual_account_batch_migrate_yesbank',
+            'transfer_settlements_update'
         ],
 
         'subscriptions' => [
@@ -3993,6 +4014,7 @@ final class Route
             'reconciliate',
             'emandate_debit_reconcile',
             'bank_transfer_process_file',
+            'bank_transfer_process_file_rbl',
         ],
 
         'raven' => [
@@ -4079,6 +4101,7 @@ final class Route
             'adj_add_batch',
             'bank_transfer_process_icici',
             'reporting_log_create',
+            'bank_transfer_process_rbl_internal',
         ],
 
         'stork' => [
@@ -4179,6 +4202,7 @@ final class Route
         'virtual_account_fetch_multiple'       => [Feature::VIRTUAL_ACCOUNTS],
         'virtual_account_fetch_payments'       => [Feature::VIRTUAL_ACCOUNTS],
         'virtual_account_configs'              => [Feature::VIRTUAL_ACCOUNTS],
+        'virtual_account_create_for_banking'   => [Feature::VIRTUAL_ACCOUNTS_BANKING],
         'bharat_qr_pay_test'                   => [Feature::VIRTUAL_ACCOUNTS, Feature::BHARAT_QR],
         'reports_refund_irctc'                 => [Feature::IRCTC_REPORT],
         'payment_validate_vpa_old'             => [Feature::ENABLE_VPA_VALIDATE],
@@ -4241,6 +4265,25 @@ final class Route
         'gateway_create_rule',
         'gateway_update_rule',
         'gateway_delete_rule',
+    ];
+
+    /**
+     * Avoid having any kind of bulk routes here! The entity mapping
+     * should be done correctly if you are adding bulk routes.
+     *
+     * Strongly suggested to understand the flow before adding any new
+     * route to this array.
+     *
+     * NOTE: If you are adding any new source_type here, ensure it's
+     * present in the morph map in ApiServiceProvider class.
+     *
+     * @var array
+     */
+    public static $idempotentRoutesConfig = [
+        'payout_create' => [
+                IdempotencyKey\Entity::SOURCE_TYPE  => Entity::PAYOUT,
+                IdempotencyKey\Entity::HEADER_KEY   => RequestHeader::X_PAYOUT_IDEMPOTENCY,
+            ]
     ];
 
     /**
@@ -4416,6 +4459,11 @@ final class Route
     public function getCurrentRouteName()
     {
         return $this->router->currentRouteName();
+    }
+
+    public function getCurrentRouteMethod()
+    {
+        return $this->router->getCurrentRequest()->getMethod();
     }
 
     /**
@@ -4624,6 +4672,48 @@ final class Route
         }
     }
 
+    public function isApplicableForMerchantIdempotency(): bool
+    {
+        $routeName = $this->getCurrentRouteName();
+        $routeMethod = $this->getCurrentRouteMethod();
+
+        // Currently allowing only for defined routes for idempotency and for POST routes.
+        // Keeping only for POST routes since we don't see a use case for other methods currently.
+        if ((array_key_exists($routeName, self::$idempotentRoutesConfig) === true) and
+            ($routeMethod === Requests::POST))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    public function getEntityForIdempotencyRequest()
+    {
+        $routeName = $this->getCurrentRouteName();
+
+        return self::$idempotentRoutesConfig[$routeName][IdempotencyKey\Entity::SOURCE_TYPE] ?? null;
+    }
+
+    public function getHeaderKeyForIdempotencyRequest()
+    {
+        $routeName = $this->getCurrentRouteName();
+
+        return self::$idempotentRoutesConfig[$routeName][IdempotencyKey\Entity::HEADER_KEY] ?? null;
+    }
+
+    public function getEntitiesForIdempotencyRequest()
+    {
+        $sourceTypes = [];
+
+        foreach (self::$idempotentRoutesConfig as $idempotentRouteConfig => $routeName)
+        {
+            $sourceTypes[] = $routeName[IdempotencyKey\Entity::SOURCE_TYPE] ?? null;
+        }
+
+        return array_unique(array_filter($sourceTypes));
+    }
+
     protected function addRoute($name)
     {
         $info = self::$apiRoutes[$name];
@@ -4682,6 +4772,11 @@ final class Route
         if (in_array($name, self::FAILURE_EVENTS_INTERCEPTOR_ROUTES, true) === true)
         {
             $route->middleware('failure_interceptor');
+        }
+
+        if (in_array($name, array_keys(self::$idempotentRoutesConfig, true), true) === true)
+        {
+            $route->middleware('merchant_idempotency_handler');
         }
     }
 

@@ -847,6 +847,7 @@ $isHostedCheckout               = $hostedpage_options['enable_embedded_checkout'
 
             // set from Rendering preferences
             options.name = $checkout_options.name || invoiceObj.merchant_label; // Same used in dummy  checkout as well
+            options.remember_customer = $checkout_options.remember_customer;
             options.description = $checkout_options.description;
             options.min_amount_label = $checkout_options.first_payment_min_amount;
 
@@ -859,17 +860,20 @@ $isHostedCheckout               = $hostedpage_options['enable_embedded_checkout'
 
 
             // : prefill options
-            options.prefill = $checkout_options.prefill;
+            options.prefill.contact = "";
+            options.prefill.email = "";
 
-            if (options.prefill.contact) {
+            if (invoiceObj.customer_details.customer_contact) {
                 options.prefill.contact = invoiceObj.customer_details.customer_contact;
             }
-            if (options.prefill.email) {
+            if (invoiceObj.customer_details.customer_email) {
                 options.prefill.email = invoiceObj.customer_details.customer_email;
             }
 
-            // options.order_id = invoiceObj.order_id;
-            options.customer_id = invoiceObj.customer_details.id;
+            if (options.prefill.contact || options.prefill.email) {
+                // options.order_id = invoiceObj.order_id;
+                options.customer_id = invoiceObj.customer_details.id;
+            }
 
             if (merchant) {
                 var color = $checkout_options.theme.color || merchant.brand_color || '#168AFA';

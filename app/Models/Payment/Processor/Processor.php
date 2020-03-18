@@ -717,7 +717,12 @@ class Processor
                                                           Payment\Method::CARDLESS_EMI);
         try
         {
+            // merchant id is required to fetch details from cache
+            $input['merchant_id'] = $merchant[Merchant\Entity::ID];
+
             $checkAccountData = $this->app['gateway']->call($gateway, 'check_account', $input, $this->mode, $terminal);
+
+            unset($input['merchant_id']);
         }
         catch (Exception\GatewayErrorException $exception)
         {
@@ -861,8 +866,12 @@ class Processor
                          ->getByMerchantProviderAndMethod($input[Payment\Entity::PROVIDER],
                                                           $merchant[Merchant\Entity::ID],
                                                           Payment\Method::PAYLATER);
+        // merchant id is required to fetch details from cache
+        $input['merchant_id'] = $merchant[Merchant\Entity::ID];
 
         $response = $this->app['gateway']->call($gateway, 'check_account', $input, $this->mode, $terminal);
+
+        unset ($input['merchant_id']);
 
         $coproto  = $this->preProcesspaylaterResponseHandler($response, $payment, $input, $merchant);
 
@@ -2833,7 +2842,7 @@ class Processor
             return;
         }
 
-        $rblVaRoutes = ['bank_transfer_process_rbl', 'bank_transfer_process_rbl_test'];
+        $rblVaRoutes = ['bank_transfer_process_rbl', 'bank_transfer_process_rbl_test', 'bank_transfer_process_rbl_internal'];
 
         if (in_array(Route::currentRouteName(), $rblVaRoutes, true) === true)
         {

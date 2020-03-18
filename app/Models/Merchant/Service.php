@@ -1376,18 +1376,6 @@ class Service extends Base\Service
 
     public function createWebhook($input)
     {
-        $disableWebhookUpdate = $this->app->razorx->getTreatment(
-            'any',
-            RazorxTreatment::DISABLE_WEBHOOK_UPDATE,
-            'live'
-        );
-
-        if (strtolower($disableWebhookUpdate) === 'on')
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::SERVER_ERROR_WEBHOOK_UPDATE_DISABLED);
-        }
-
         $webhook = (new Webhook\Core)->createWebhook($this->merchant, $input);
 
         return $webhook->toArrayPublic();
@@ -1395,18 +1383,6 @@ class Service extends Base\Service
 
     public function editWebhook($webhookId, $input)
     {
-
-        $disableWebhookUpdate = $this->app->razorx->getTreatment(
-            'any',
-            RazorxTreatment::DISABLE_WEBHOOK_UPDATE,
-            'live'
-        );
-
-        if (strtolower($disableWebhookUpdate) === 'on')
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::SERVER_ERROR_WEBHOOK_UPDATE_DISABLED);
-        }
         $this->trace->info(
             TraceCode::WEBHOOK_EDIT,
             [

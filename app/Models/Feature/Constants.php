@@ -40,6 +40,7 @@ class Constants
     const EXPOSE_DOWNTIMES                = 'expose_downtimes';
     const PAYMENT_FAILURE_EMAIL           = 'payment_failure_email';
     const VIRTUAL_ACCOUNTS                = 'virtual_accounts';
+    const VIRTUAL_ACCOUNTS_BANKING        = 'virtual_accounts_banking';
     const BANK_TRANSFER_ON_CHECKOUT       = 'bank_transfer_on_checkout';
     const FUND_ACCOUNT_VALIDATIONS        = 'fund_account_validations';
     const INVOICE_PARTIAL_PAYMENTS        = 'invoice_partial_payments';
@@ -299,6 +300,8 @@ class Constants
 
     const REDIRECTION_ONHOLD       = 'redirection_onhold';
 
+    const ERROR_REASON_RESPONSE    = 'error_reason_response';
+
     /*
      * This flag will be used to enable x_pro on a merchant. Once enabled the merchant can
      * decide to upgrade his account to x_pro. This feature gives flexibility initially
@@ -381,6 +384,7 @@ class Constants
         self::EXPOSE_DOWNTIMES                => true,
         self::PAYMENT_FAILURE_EMAIL           => true,
         self::VIRTUAL_ACCOUNTS                => true,
+        self::VIRTUAL_ACCOUNTS_BANKING        => true,
         self::BANK_TRANSFER_ON_CHECKOUT       => true,
         self::INVOICE_PARTIAL_PAYMENTS        => true,
         self::HIDE_DOWNTIMES                  => true,
@@ -516,6 +520,7 @@ class Constants
         self::GENERATE_PARTNER_INVOICE        => true,
         self::AUTOMATED_COMM_PAYOUT           => true,
         self::OFFLINE_PAYMENTS                => true,
+        self::ERROR_REASON_RESPONSE           => true,
         self::SKIP_HITACHI_AUTO_ONBOARD       => true,
         self::SKIP_WORKFLOWS_FOR_API          => true,
         self::DISPLAY_LA_PARENT_PAYMENT_ID    => true,

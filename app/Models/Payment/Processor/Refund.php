@@ -105,36 +105,25 @@ trait Refund
         return $refund;
     }
 
-    public function isInstantRefundSupported(Payment\Entity $payment)
+    public function isInstantRefundSupportedOnPayment(Payment\Entity $payment)
     {
         // This will keep changing as we add more coverage
-        return (($this->isCapturedPaymentAndFeatureEnabled($payment) === true) and
-                (($payment->isUpi() === true) or
-                 ($payment->isCard() === true) or
-                 ($payment->isNetbanking() === true)));
+        if (($this->isCapturedPaymentAndFeatureEnabled($payment) === false) or
+            (in_array($payment->getMethod(), Payment\Method::INSTANT_REFUND_SUPPORTED_METHODS, true) === false))
+        {
+            return false;
+        }
+
+        $mode = $this->getRefundModeFromScrooge($payment);
+
+        // If mode returned by scrooge is empty that means instant refund is not supported for this payment
+        return (empty($mode) === true) ? false : true;
     }
 
     public function isCapturedPaymentAndFeatureEnabled(Payment\Entity $payment)
     {
-        // old flow
-        $cardTransferRefundFeatureEnabled = ($this->merchant->isFeatureEnabled(Feature::CARD_TRANSFER_REFUND) === true);
-
-        // new flow
-        $disableInstantRefundsFeatureDisabled = ($this->merchant->isFeatureEnabled(Feature::DISABLE_INSTANT_REFUNDS) === false);
-
-        //
-        // Using razorx to ramp up instant refunds self serve
-        //
-        $variant = $this->app->razorx->getTreatment($payment->getMerchantId(),
-            Merchant\RazorxTreatment::INSTANT_REFUNDS_SELF_SERVE,
-            $this->mode
-        );
-
-        $featureCheck = ($variant === RefundConstants::RAZORX_VARIANT_ON) ? $disableInstantRefundsFeatureDisabled :
-            $cardTransferRefundFeatureEnabled;
-
         return (($payment->isCaptured() === true) and
-                ($featureCheck === true));
+                ($this->merchant->isFeatureEnabled(Feature::DISABLE_INSTANT_REFUNDS) === false));
     }
 
     protected function isInvalidInstantRefundsRequest(Payment\Entity $payment, array $input)
@@ -1453,24 +1442,7 @@ trait Refund
         $refund->setSpeedRequested(RefundSpeed::NORMAL);
         $refund->setSpeedDecisioned(RefundSpeed::NORMAL);
 
-        // old flow
-        $cardTransferRefundFeatureEnabled = ($this->merchant->isFeatureEnabled(Feature::CARD_TRANSFER_REFUND) === true);
-
-        // new flow
-        $disableInstantRefundsFeatureDisabled = ($this->merchant->isFeatureEnabled(Feature::DISABLE_INSTANT_REFUNDS) === false);
-
-        //
-        // Using razorx to ramp up instant refunds self serve
-        //
-        $variant = $this->app->razorx->getTreatment($payment->getMerchantId(),
-            Merchant\RazorxTreatment::INSTANT_REFUNDS_SELF_SERVE,
-            $this->mode
-        );
-
-        $isInstantRefundsEnabled = ($variant === RefundConstants::RAZORX_VARIANT_ON) ? $disableInstantRefundsFeatureDisabled :
-            $cardTransferRefundFeatureEnabled;
-
-        if ($isInstantRefundsEnabled === true)
+        if ($this->merchant->isFeatureEnabled(Feature::DISABLE_INSTANT_REFUNDS) === false)
         {
             $refund->setSpeedRequested($this->merchant->getDefaultRefundSpeed());
 
@@ -2619,25 +2591,8 @@ trait Refund
                     (in_array($cardIssuer, FundTransfer\Mode::getSupportedIssuers(), true) === true) and
                     (IIN::isIinPrepaid($iin->getIin()) === false))
                 {
-                    // old flow
-                    $cardTransferRefundFeatureDisabled = ($this->merchant->isFeatureEnabled(Feature::CARD_TRANSFER_REFUND) === false);
-
-                    // new flow
-                    $disableInstantRefundsFeatureEnabled = ($this->merchant->isFeatureEnabled(Feature::DISABLE_INSTANT_REFUNDS) === true);
-
-                    //
-                    // Using razorx to ramp up instant refunds self serve
-                    //
-                    $variant = $this->app->razorx->getTreatment($payment->getMerchantId(),
-                        Merchant\RazorxTreatment::INSTANT_REFUNDS_SELF_SERVE,
-                        $this->mode
-                    );
-
-                    $featureCheck = ($variant === RefundConstants::RAZORX_VARIANT_ON) ? $disableInstantRefundsFeatureEnabled :
-                        $cardTransferRefundFeatureDisabled;
-
                     if (($ignoreFeatureFlag === false) and
-                        ($featureCheck === true))
+                        ($this->merchant->isFeatureEnabled(Feature::DISABLE_INSTANT_REFUNDS) === true))
                     {
                         return false;
                     }
@@ -2682,25 +2637,8 @@ trait Refund
             (empty($payment->getVpa()) === false) and
             ($payment->isGatewayCaptured() === true))
         {
-            // old flow
-            $cardTransferRefundFeatureDisabled = ($this->merchant->isFeatureEnabled(Feature::CARD_TRANSFER_REFUND) === false);
-
-            // new flow
-            $disableInstantRefundsFeatureEnabled = ($this->merchant->isFeatureEnabled(Feature::DISABLE_INSTANT_REFUNDS) === true);
-
-            //
-            // Using razorx to ramp up instant refunds self serve
-            //
-            $variant = $this->app->razorx->getTreatment($payment->getMerchantId(),
-                Merchant\RazorxTreatment::INSTANT_REFUNDS_SELF_SERVE,
-                $this->mode
-            );
-
-            $featureCheck = ($variant === RefundConstants::RAZORX_VARIANT_ON) ? $disableInstantRefundsFeatureEnabled :
-                $cardTransferRefundFeatureDisabled;
-
             if (($ignoreFeatureFlag === false) and
-                ($featureCheck === true))
+                ($this->merchant->isFeatureEnabled(Feature::DISABLE_INSTANT_REFUNDS) === true))
             {
                 return false;
             }
@@ -2743,25 +2681,8 @@ trait Refund
         if (($payment->getMethod() === Payment\Method::NETBANKING) and
             ($payment->isGatewayCaptured() === true))
         {
-            // old flow
-            $cardTransferRefundFeatureDisabled = ($this->merchant->isFeatureEnabled(Feature::CARD_TRANSFER_REFUND) === false);
-
-            // new flow
-            $disableInstantRefundsFeatureEnabled = ($this->merchant->isFeatureEnabled(Feature::DISABLE_INSTANT_REFUNDS) === true);
-
-            //
-            // Using razorx to ramp up instant refunds self serve
-            //
-            $variant = $this->app->razorx->getTreatment($payment->getMerchantId(),
-                Merchant\RazorxTreatment::INSTANT_REFUNDS_SELF_SERVE,
-                $this->mode
-            );
-
-            $featureCheck = ($variant === RefundConstants::RAZORX_VARIANT_ON) ? $disableInstantRefundsFeatureEnabled :
-                $cardTransferRefundFeatureDisabled;
-
             if (($ignoreFeatureFlag === false) and
-                ($featureCheck === true))
+                ($this->merchant->isFeatureEnabled(Feature::DISABLE_INSTANT_REFUNDS) === true))
             {
                 return false;
             }
@@ -3055,7 +2976,7 @@ trait Refund
         ];
     }
 
-    protected function setRefundModeAndSpeed(Payment\Entity $payment, RefundEntity &$refund)
+    protected function getRefundModeFromScrooge(Payment\Entity $payment)
     {
         //
         // Calling Scrooge for speed decisioning and mode selection
@@ -3064,37 +2985,46 @@ trait Refund
         //
 
         $queryParams = [
-            RefundEntity::GATEWAY        => $payment->getGateway(),
-            RefundConstants::METHOD      => $payment->getMethod(),
-            RefundConstants::AMOUNT      => $payment->getAmount(),
+            RefundEntity::GATEWAY   => $payment->getGateway(),
+            RefundConstants::METHOD => $payment->getMethod(),
+            RefundConstants::AMOUNT => $payment->getAmount(),
         ];
 
         if ($payment->getMethod() === Payment\Method::CARD)
         {
             //
-            // The following checks have already been made in isInstantRefundSupported - keeping these for sanity.
+            // The following checks have already been made in scrooge. Keeping these for sanity.
             // Therefore, Scrooge must not send a validation error.
             //
 
-            if ($payment->hasCard() === true)
+            $iin = $payment->card->iinRelation;
+
+            if (($payment->hasCard() === false) or
+                ($iin === null) or
+                (empty($iin->getIssuer()) === true) or
+                (empty($iin->getType()) === true))
             {
-                $queryParams[RefundConstants::NETWORK_CODE] = $payment->card->getNetworkCode();
-
-                $iin = $payment->card->iinRelation;
-
-                if ($iin !== null)
-                {
-                    $queryParams[RefundConstants::ISSUER] = $iin->getIssuer();
-                    $queryParams[RefundConstants::CARD_TYPE] = strtolower($iin->getType());
-                }
+                // This implies Scrooge cannot decision the mode for Instant Refund on this payment
+                return '';
             }
+
+            $queryParams[RefundConstants::NETWORK_CODE] = $payment->card->getNetworkCode();
+            $queryParams[RefundConstants::ISSUER] = $iin->getIssuer();
+            $queryParams[RefundConstants::CARD_TYPE] = strtolower($iin->getType());
         }
 
         $response = $this->app['scrooge']->getInstantRefundsMode($payment->getMerchantId(), $queryParams);
 
+        return $response[RefundConstants::MODE] ?? '';
+    }
+
+    protected function setRefundModeAndSpeed(Payment\Entity $payment, RefundEntity &$refund)
+    {
+        $mode = $this->getRefundModeFromScrooge($payment);
+
         // If the mode is empty we are decisioning the speed to normal
-        (empty($response[RefundConstants::MODE]) === false) ?
-            $refund->setModeRequested($response[RefundConstants::MODE]) :
+        (empty($mode) === false) ?
+            $refund->setModeRequested($mode) :
             $refund->setSpeedDecisioned(RefundSpeed::NORMAL);
     }
 
