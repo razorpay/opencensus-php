@@ -779,7 +779,7 @@ class Selector extends Base\Core
     {
         $payment = $this->input['payment'];
 
-        $card = $this->input['card'];
+        $card = $payment->card;
 
         // For HDFC DC EMI, we need not send the request to smart routing till the same is
         // implemented at the routing service
