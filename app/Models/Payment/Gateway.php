@@ -1724,6 +1724,11 @@ class Gateway
         IFSC::BARB,
     ];
 
+    public static $emiBankToGatewayMapForRouteService = [
+        IFSC::HDFC => Gateway::HDFC,
+        IFSC::HSBC => Gateway::FIRST_DATA,
+    ];
+
     public static $emiBankToGatewayMap = [
         IFSC::HDFC => [
             Emi\Type::CREDIT => Gateway::HDFC,

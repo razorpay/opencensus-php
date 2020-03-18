@@ -7,12 +7,14 @@ use Cache;
 use Config;
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\Card;
 use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
 use RZP\Diag\EventCode;
 use RZP\Models\Terminal;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
+use RZP\Models\Bank\IFSC;
 use RZP\Models\Gateway\Rule;
 use RZP\Constants\Environment;
 use RZP\Models\Payment\Method;
@@ -170,11 +172,9 @@ class Selector extends Base\Core
 
         $sortedTerminals = [];
 
-
         // checking filtered terminals and razorX experiment for smart routing
         if ($this->shouldHitRoutingService(self::RAZORX_SYNC, $payment->getId()) === true)
         {
-
             try
             {
                 $terminalSetSentToSmartRouting = [];
@@ -777,6 +777,19 @@ class Selector extends Base\Core
 
     protected function shouldHitRoutingService(string $feature, string $paymentId = null)
     {
+        $payment = $this->input['payment'];
+
+        $card = $this->input['card'];
+
+        // For HDFC DC EMI, we need not send the request to smart routing till the same is
+        // implemented at the routing service
+        if (($payment[Entity::METHOD] === Method::EMI) and
+            ($payment[Entity::BANK] === IFSC::HDFC) and
+            ($card[Card\Entity::TYPE] === Card\Type::DEBIT))
+        {
+            return false;
+        }
+
         $isProduction = $this->app->environment(Environment::PRODUCTION);
 
         if ($isProduction === false)
@@ -823,7 +836,7 @@ class Selector extends Base\Core
             'upi_intent_gateways'                 => Gateway::$upiIntentGateways,
             'subscription_over_one_year_gateways' => Gateway::$subscriptionOverOneYearGateways,
             'headless'                            => Gateway::$headless,
-            'emi_bank_to_gateway_map'             => Gateway::$emiBankToGatewayMap,
+            'emi_bank_to_gateway_map'             => Gateway::$emiBankToGatewayMapForRouteService,
             'netbanking_to_gateway_map'           => Gateway::$netbankingToGatewayMap,
             'gateways_emandate_banks_map'         => Gateway::$gatewaysEmandateBanksMap,
             'emi_banks_card_terminals'            => Gateway::$emiBanksUsingCardTerminals,
