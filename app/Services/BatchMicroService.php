@@ -138,6 +138,7 @@ class BatchMicroService
         try
         {
             $userId = $this->app['request']->header(RequestHeader::X_DASHBOARD_USER_ID, null);
+            
             $response = $this->client->request(Requests::POST, $relativeUri, [
                 'multipart' =>
                     $multipartData,
