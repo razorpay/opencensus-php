@@ -2754,20 +2754,6 @@ class PaymentCreateTest extends TestCase
             );
     }
 
-    public function testPaymentCreateForYesBankNetbanking()
-    {
-        $payment = $this->getDefaultNetbankingPaymentArray('YESB');
-
-        $this->makeRequestAndCatchException(
-            function() use ($payment)
-            {
-                $this->doAuthPayment($payment);
-            },
-            \RZP\Exception\BadRequestException::class,
-            'We are unable to complete this transaction due to the restrictions on YES Bank\'s operations by RBI (Gazette notification (S.O. 993(E)) dated 5th March 2020'
-            );
-    }
-
     // end tests for fee_bearer attribute of pricing plans and merchant
 
     public function testOrderStatusForUpiPaymentWithFlatCashbackOffer()

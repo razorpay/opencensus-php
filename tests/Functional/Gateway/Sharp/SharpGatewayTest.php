@@ -408,15 +408,6 @@ class SharpGatewayTest extends TestCase
         $this->startTest();
     }
 
-    public function testValidateVpaYesBankInvalid()
-    {
-        $this->ba->privateAuth();
-
-        $this->fixtures->merchant->addFeatures(['enable_vpa_validate']);
-
-        $this->startTest();
-    }
-
     public function testValidateVpaInvalid()
     {
         $this->ba->privateAuth();
