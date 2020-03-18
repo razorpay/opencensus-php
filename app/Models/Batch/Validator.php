@@ -374,6 +374,20 @@ class Validator extends Base\Validator
         Constants::ENTITY       => 'required|string|custom',
     ];
 
+    protected static $ecollectRblCreateRules = [
+        Entity::TYPE                 => 'required|in:ecollect_rbl',
+        Entity::NAME                 => 'filled|string|max:255',
+        Entity::FILE                 => 'required|file|max:102400' . self::DEFAULT_MIME_RULE,
+        Entity::FILE_ID              => 'required_without:file|public_id',
+    ];
+
+    protected static $ecollectIciciCreateRules = [
+        Entity::TYPE                 => 'required|in:ecollect_icici',
+        Entity::NAME                 => 'filled|string|max:255',
+        Entity::FILE                 => 'required|file|max:102400' . self::DEFAULT_MIME_RULE,
+        Entity::FILE_ID              => 'required_without:file|public_id',
+    ];
+    
     public function validateConfig($attribute, $value)
     {
         (new Validator())->validateInput('entityUpdateActionConfig', $value);

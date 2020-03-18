@@ -436,8 +436,7 @@ trait Callback
             $input['gateway'] = $this->submitHeadlessOtp($payment, $input['gateway']);
         }
 
-        if(($payment->isMethod(Payment\Method::EMI) === true) and
-            (in_array($payment->getGateway(), Payment\Gateway::$otpPostFormSubmitGateways, true) === true))
+        if(($payment->isMethod(Payment\Method::EMI) === true) and ($payment->getGateway() === Payment\Gateway::BAJAJ))
         {
             $input['emi'] = $this->repo->emi_plan->findOrFail($payment->getEmiPlanId());
 

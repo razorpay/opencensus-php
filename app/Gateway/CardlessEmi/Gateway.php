@@ -158,7 +158,7 @@ class Gateway extends Base\Gateway
             $paymentIdString = '_' . $input['payment_id'];
         }
 
-        $cacheKey = $this->provider . '_' . $contact . '_' . $this->terminal[Terminal\Entity::MERCHANT_ID] . $paymentIdString;
+        $cacheKey = $this->provider . '_' . $contact . '_' . $input['merchant_id'] . $paymentIdString;
 
         $emiPlanKey = sprintf(self::EMI_PLAN_CACHE_KEY, $cacheKey);
 
@@ -851,7 +851,7 @@ class Gateway extends Base\Gateway
             $paymentIdString = '_' . $input['payment_id'];
         }
 
-        $cacheKey = $input['provider'] . '_' . $contact . '_' . $this->terminal[Terminal\Entity::MERCHANT_ID] . $paymentIdString;
+        $cacheKey = $input['provider'] . '_' . $contact . '_' . $input['merchant_id'] . $paymentIdString;
 
         $emiPlanKey = sprintf(self::EMI_PLAN_CACHE_KEY, $cacheKey );
 

@@ -710,7 +710,7 @@ class Service extends Base\Service
 
         if ($this->app['basicauth']->isProxyAuth() === true)
         {
-            (new Payment\Refund\Service())->addModeAndPublicStatus($refundsArray, $refunds);
+            (new Payment\Refund\Service())->addModeAndPublicStatus($refundsArray);
         }
 
         return $refundsArray;
@@ -1155,7 +1155,7 @@ class Service extends Base\Service
     protected function addDashboardFlagInstantRefundSupport(array &$entity, $payment)
     {
         $entity[RefundConstants::INSTANT_REFUND_SUPPORT] = $this->getNewProcessor($this->merchant)
-                                                                ->isInstantRefundSupported($payment);
+                                                                ->isInstantRefundSupportedOnPayment($payment);
     }
 
     public function getPaymentFlows(array $input)

@@ -80,7 +80,7 @@ class Service extends Base\Service
 
         if ($checkForIfsc === true)
         {
-            $this->checkAndReplaceForIfsc($input);
+            $this->checkAndReplaceForIfsc($input, $provider);
         }
 
         $valid = $this->core->process($input, $this->provider);
@@ -92,14 +92,17 @@ class Service extends Base\Service
         ];
     }
 
-    public function processFile(array $input): array
+    public function processFile(array $input, $batchType): array
     {
         $this->trace->info(
             TraceCode::BANK_TRANSFER_PROCESS_REQUEST,
             [
-                'input'    => $input,
+                'input'      => $input,
+                'batch_type' => $batchType,
             ]
         );
+
+        Batch\Type::validateType($batchType);
 
         $batchCore = new Batch\Core;
 
@@ -119,13 +122,13 @@ class Service extends Base\Service
             $file = new File($fileDetails['file_details'][0]['file_path']);
 
             $params = [
-                Batch\Entity::TYPE          => Batch\Type::ECOLLECT_ICICI,
+                Batch\Entity::TYPE          => $batchType,
                 Batch\Entity::FILE          => $file,
             ];
 
             $sharedMerchant = $this->repo
-                ->merchant
-                ->findOrFailPublic(Account::SHARED_ACCOUNT);
+                                   ->merchant
+                                   ->findOrFailPublic(Account::SHARED_ACCOUNT);
 
             $batch = $batchCore->create($params, $sharedMerchant);
 
@@ -135,8 +138,17 @@ class Service extends Base\Service
         return [];
     }
 
-    protected function checkAndReplaceForIfsc(array & $input)
+    protected function checkAndReplaceForIfsc(array & $input, string $provider = null)
     {
+        if ($provider === Provider::ICICI)
+        {
+            if ((isset($input[Entity::PAYER_IFSC]) === false) or
+                ($input[Entity::PAYER_IFSC] === ''))
+            {
+                $input[Entity::PAYER_IFSC] = BankCodes::IFSC_ICIC;
+            }
+        }
+
         if (isset($input[Entity::PAYER_IFSC]) === false)
         {
             return;

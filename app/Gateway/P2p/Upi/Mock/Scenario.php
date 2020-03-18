@@ -7,10 +7,22 @@ use RZP\Exception\LogicException;
 
 class Scenario
 {
+    // No scenario at all
+    const N0000     = 'N0000';
+
     // Device Scenarios
     const DE101     = 'DE101';
     const DE102     = 'DE102';
     const DE201     = 'DE201';
+    const DE202     = 'DE202';
+    const DE203     = 'DE203';
+    const DE301     = 'DE301';
+    const DE302     = 'DE302';
+    const DE303     = 'DE303';
+    const DE304     = 'DE304';
+    const DE305     = 'DE305';
+    const DE306     = 'DE306';
+    const DE401     = 'DE401';
 
     // Bank Account Scenarios
     const BA101     = 'BA101';
@@ -77,11 +89,75 @@ class Scenario
         ],
         self::DE201 => [
             'entity'    => 'device',
+            'action'    => 'initiateGetToken',
+            'success'   => false,
+            'desc'      => 'Not Registered',
+            'code'      => ErrorCode::BAD_REQUEST_DEVICE_NOT_ATTACHED_TO_HANDLE,
+        ],
+        self::DE202 => [
+            'entity'    => 'device',
+            'action'    => 'initiateGetToken',
+            'success'   => true,
+            'desc'      => 'Force token registration',
+            'code'      => null,
+        ],
+        self::DE203 => [
+            'entity'    => 'device',
+            'action'    => 'initiateGetToken',
+            'success'   => true,
+            'desc'      => 'Force token rotation',
+            'code'      => null,
+        ],
+        self::DE301 => [
+            'entity'    => 'device',
             'action'    => 'getToken',
             'success'   => false,
             'desc'      => 'Not Registered',
             'code'      => ErrorCode::BAD_REQUEST_DEVICE_NOT_ATTACHED_TO_HANDLE,
         ],
+        self::DE302 => [
+            'entity'    => 'device',
+            'action'    => 'getToken',
+            'success'   => true,
+            'desc'      => 'Force token registration',
+            'code'      => null,
+        ],
+        self::DE303 => [
+            'entity'    => 'device',
+            'action'    => 'getToken',
+            'success'   => true,
+            'desc'      => 'Force token rotation',
+            'code'      => null,
+        ],
+        self::DE304 => [
+            'entity'    => 'device',
+            'action'    => 'getToken',
+            'success'   => false,
+            'desc'      => 'Fetch token from npci call failed',
+            'code'      => ErrorCode::GATEWAY_ERROR_TOKEN_REGISTRATION_FAILED,
+        ],
+        self::DE305 => [
+            'entity'    => 'device',
+            'action'    => 'getToken',
+            'success'   => false,
+            'desc'      => 'Invalid Hmac created for npci',
+            'code'      => ErrorCode::GATEWAY_ERROR_TOKEN_REGISTRATION_FAILED,
+        ],
+        self::DE306 => [
+            'entity'    => 'device',
+            'action'    => 'getToken',
+            'success'   => false,
+            'desc'      => 'Mismatch in device id in hmac',
+            'code'      => ErrorCode::GATEWAY_ERROR_TOKEN_REGISTRATION_FAILED,
+        ],
+        self::DE401 => [
+            'entity'    => 'device',
+            'action'    => 'deregister',
+            'success'   => false,
+            'desc'      => 'Failed with gateway error',
+            'code'      => ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
+        ],
+
         self::BA101 => [
             'entity'    => 'bank_account',
             'action'    => 'fetchBanks',
@@ -345,7 +421,7 @@ class Scenario
      */
     public function __construct(string $id = null, string $sub = null, string $contact = null, string $stan = null)
     {
-        $this->id       = $id ?? '00000';
+        $this->id       = $id ?? self::N0000;
         $this->sub      = $sub ?? '000';
         $this->contact  = $contact ?? '919999999999';
         $this->stan     = $stan ?? random_integer(6);
@@ -400,5 +476,10 @@ class Scenario
     public function is(string $id): bool
     {
         return ($this->id === $id);
+    }
+
+    public function in(array $ids): bool
+    {
+        return in_array($this->id, $ids, true);
     }
 }

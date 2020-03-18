@@ -275,8 +275,7 @@ class Core extends Base\Core
             DetailConstant::DOCUMENT_TYPE     => $this->mapToKycDocType($document->getDocumentType()),
             DetailConstant::DOCUMENT_FILE_ID  => $document->getFileStoreId(),
             DetailConstant::PROMOTER_PAN_NAME => $merchantDetails->getPromoterPanName(),
-            DetailConstant::DOCUMENT_TYPE     => $document->getFileStoreSource(),
-
+            DetailConstant::DOCUMENT_SOURCE   => $document->getFileStoreSource(),
         ];
 
         $response = [];

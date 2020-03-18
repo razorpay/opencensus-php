@@ -2,11 +2,9 @@
 
 namespace RZP\Models\Card\IIN;
 
-use RZP\Exception;
 use RZP\Models\Bank;
+use RZP\Exception;
 use RZP\Error\ErrorCode;
-use RZP\Models\Card\Type;
-use RZP\Models\Card\Issuer;
 
 class IIN
 {
@@ -17,13 +15,6 @@ class IIN
         Bank\IFSC::INDB,
         Bank\IFSC::CITI,
     );
-
-    // List of the issuers/type of IIN for which the IIN check on EMI can be ignored
-    protected static $ignoreIinCheckForEmi = [
-        Issuer::HDFC => [
-            Type::DEBIT,
-        ],
-    ];
 
     protected static $emiIins = array(
         Bank\IFSC::UTIB => [
@@ -769,20 +760,9 @@ class IIN
         return true;
     }
 
-    protected static function ignoreIinChecks(Entity $iin)
-    {
-        $issuer = $iin->getIssuer();
-        $type = $iin->getType();
-
-        return ((isset(self::$ignoreIinCheckForEmi[$issuer]) === true) AND
-            (in_array($type, self::$ignoreIinCheckForEmi[$issuer])));
-    }
-
     public static function validateEmiAvailableForCard(Entity $iin, string $cardNumber)
     {
-        // If we can not ignore IIN checks and if emi is not available for this card IIN
-        if ((self::ignoreIinChecks($iin) === false) AND
-            (self::isEmiAvailableForCard($iin, $cardNumber) === false))
+        if (self::isEmiAvailableForCard($iin, $cardNumber) === false)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_EMI_NOT_AVAILABLE_ON_CARD);

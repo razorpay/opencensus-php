@@ -2615,11 +2615,6 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
                         'method'            => $this->getMethod(),
                     ]);
             }
-            // This is a temporary change will be removed once npci is good with the new changes.
-            if (($gateway === 'enach_npci_netbanking') and ($this->terminal->getGatewayMerchantId2() === 'true'))
-            {
-                return false;
-            }
 
             return (Payment\Gateway::isFileBasedEMandateRegistrationGateway($gateway) === true);
         }

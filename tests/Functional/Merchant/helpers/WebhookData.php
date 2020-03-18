@@ -1154,32 +1154,6 @@ return [
         ],
     ],
 
-    'testRefundSpeedChangedWebhookEventDataWithoutInstantRefundsSelfServeEvent' => [
-        'mode' => 'test',
-        'event' => [
-            'entity' => 'event',
-            'event' => 'refund.speed_changed',
-            'contains' => ['refund'],
-            'payload' => [
-                'refund' => [
-                    'entity' => [
-                        'entity'          => 'refund',
-                        'amount'          => 3470,
-                        'currency'        => 'INR',
-                        'notes'           => [],
-                        'receipt'         => null,
-                        'status'          => 'processed',
-                        'speed_requested' => 'optimum',
-                        'speed_processed' => 'normal',
-                        'acquirer_data'   => [
-                            'arn' => null,
-                        ],
-                    ],
-                ],
-            ],
-        ],
-    ],
-
     'testRefundFailedWebhookEventData' => [
         'mode' => 'test',
         'event' => [
@@ -1229,58 +1203,7 @@ return [
         ],
     ],
 
-    'testRefundProcessedInstantWebhookEventDataWithoutInstantRefundsSelfServe' => [
-        'mode' => 'test',
-        'event' => [
-            'entity' => 'event',
-            'event' => 'refund.processed',
-            'contains' => ['refund'],
-            'payload' => [
-                'refund' => [
-                    'entity' => [
-                        'entity'          => 'refund',
-                        'amount'          => 3471,
-                        'currency'        => 'INR',
-                        'notes'           => [],
-                        'receipt'         => null,
-                        'status'          => 'processed',
-                        'speed_requested' => 'optimum',
-                        'speed_processed' => 'instant',
-                        'acquirer_data'   => [
-                        ],
-                    ],
-                ],
-            ],
-        ],
-    ],
-
     'testRefundProcessedNormalWebhookEventData' => [
-        'mode' => 'test',
-        'event' => [
-            'entity' => 'event',
-            'event' => 'refund.processed',
-            'contains' => ['refund'],
-            'payload' => [
-                'refund' => [
-                    'entity' => [
-                        'entity'          => 'refund',
-                        'amount'          => 50000,
-                        'currency'        => 'INR',
-                        'notes'           => [],
-                        'receipt'         => null,
-                        'status'          => 'processed',
-                        'speed_requested' => 'normal',
-                        'speed_processed' => 'normal',
-                        'acquirer_data'   => [
-                            'arn' => null,
-                        ],
-                    ],
-                ],
-            ],
-        ],
-    ],
-
-    'testRefundProcessedNormalWebhookEventDataWithoutInstantRefundsSelfServeEvent' => [
         'mode' => 'test',
         'event' => [
             'entity' => 'event',

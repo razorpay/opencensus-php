@@ -4,15 +4,14 @@ namespace RZP\Models\Payment;
 
 use App;
 use RZP\Exception;
-
-use RZP\Models\Emi;
 use RZP\Constants\Mode;
 use RZP\Models\Payment;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\Settlement;
-use RZP\Models\Card\Issuer;
 use RZP\Models\Card\Network;
+use RZP\Models\Terminal\TpvType;
 use Razorpay\IFSC\IFSC as BaseIFSC;
+use RZP\Models\Terminal\BankingType;
 use RZP\Models\Payment\Processor\Upi;
 use RZP\Models\VirtualAccount\Provider;
 use RZP\Models\Payment\Processor\Wallet;
@@ -138,9 +137,6 @@ class Gateway
     const BAJAJFINSERV       = 'bajajfinserv';
     const GOOGLE_PAY         = 'google_pay';
 
-    // Debit emi gateways
-    const HDFC_DEBIT_EMI     = 'hdfc_debit_emi';
-
 
     //
     // Constant used to store the response of various refund functions, used to prepare response for scrooge/
@@ -182,7 +178,7 @@ class Gateway
         self::CARDLESS_EMI => [CardlessEmi::ZESTMONEY, CardlessEmi::EARLYSALARY, CardlessEmi::FLEXMONEY],
         self::PAYLATER     => [PayLater::EPAYLATER, PayLater::GETSIMPL, PayLater::ICICI],
         self::WORLDLINE    => [self::ACQUIRER_AXIS],
-        self::MPGS         => [self::ACQUIRER_HDFC, self::ACQUIRER_AXIS, self::ACQUIRER_AMEX],
+        self::MPGS         => [self::ACQUIRER_HDFC, self::ACQUIRER_AXIS, self::ACQUIRER_AMEX, self::ACQUIRER_ICIC],
         self::UPI_JUSPAY   => [self::ACQUIRER_AXIS],
     ];
 
@@ -379,6 +375,9 @@ class Gateway
         Netbanking::BARB_R,
         IFSC::SBIN,
         IFSC::ORBC,
+        IFSC::DLXB,
+        IFSC::COSB,
+        IFSC::UBIN,
     ];
 
     // banks supported by enach_npci_netbanking gateway for auth type card
@@ -399,6 +398,9 @@ class Gateway
         //IFSC::YESB,
         Netbanking::PUNB_R,
         IFSC::SBIN,
+        IFSC::RATN,
+        IFSC::DCBL,
+        IFSC::CITI,
     ];
 
     const EMANDATE_NB_DIRECT_BANKS = [
@@ -846,7 +848,6 @@ class Gateway
             self::AMEX,
             self::HDFC,
             self::FIRST_DATA,
-            self::HDFC_DEBIT_EMI,
         ],
 
         Method::UPI => [
@@ -1002,15 +1003,6 @@ class Gateway
         self::BAJAJFINSERV,
     ];
 
-    public static $s2sGateways = [
-        self::HDFC_DEBIT_EMI,
-    ];
-
-    public static $otpPostFormSubmitGateways = [
-        self::HDFC_DEBIT_EMI,
-        self::BAJAJ,
-    ];
-
     public static $headless = [
        self::CYBERSOURCE => [
             Network::VISA,
@@ -1044,16 +1036,6 @@ class Gateway
             Network::MC,
             Network::VISA
         ]
-    ];
-
-    // Some gateways are not dependent on the network and only
-    // depends on the issuer. For example: HDFC Debit EMI
-    // Here, whichever the network the card is, if the issuer is HDFC
-    // and the method is EMI, the gateway is supported
-    public static $ignoreCardNetworkSupport = [
-        Issuer::HDFC => [
-            self::HDFC_DEBIT_EMI,
-        ],
     ];
 
     /**
@@ -1248,7 +1230,6 @@ class Gateway
         self::NETBANKING_VIJAYA,
         self::ENACH_NPCI_NETBANKING,
         self::NETBANKING_CBI,
-        self::HDFC_DEBIT_EMI,
     ];
 
     public static $captureVerifyEnabled = [
@@ -1337,10 +1318,6 @@ class Gateway
         self::UPI_MINDGATE,
     ];
 
-    public static $partialRefundDisabledGateways = [
-        self::HDFC_DEBIT_EMI,
-    ];
-
     public static $authTypeToEmandateGatewayMap = [
         AuthType::NETBANKING  => [
             Gateway::NETBANKING_AXIS,
@@ -1416,6 +1393,7 @@ class Gateway
         IFSC::IOBA,
         IFSC::PYTM,
         IFSC::USFB,
+        IFSC::DLXB,
     ];
 
     /**
@@ -1480,7 +1458,6 @@ class Gateway
     public static $fileBasedEMandateRegistrationGateways = [
         Gateway::NETBANKING_HDFC,
         Gateway::ENACH_RBL,
-        Gateway::ENACH_NPCI_NETBANKING,
         Gateway::NETBANKING_SBI,
     ];
 
@@ -1718,13 +1695,8 @@ class Gateway
     ];
 
     public static $emiBankToGatewayMap = [
-        IFSC::HDFC => [
-            Emi\Type::CREDIT => Gateway::HDFC,
-            Emi\Type::DEBIT  => Gateway::HDFC_DEBIT_EMI,
-        ],
-        IFSC::HSBC => [
-            Emi\Type::CREDIT => Gateway::FIRST_DATA
-        ],
+        IFSC::HDFC => Gateway::HDFC,
+        IFSC::HSBC => Gateway::FIRST_DATA,
     ];
 
     /**
@@ -1798,10 +1770,6 @@ class Gateway
 
     public static $verifyClientOnS2s = [
         Gateway::UPI_CITI,
-    ];
-
-    public static $contactMandatoryGateways = [
-        Gateway::HDFC_DEBIT_EMI,
     ];
 
     public static function isNonTerminalGateway(string $gateway)
@@ -2218,14 +2186,8 @@ class Gateway
      *
      * @return bool
      */
-    public static function isCardNetworkSupported(string $network, string $gateway, $issuer, bool $recurring = false)
+    public static function isCardNetworkSupported(string $network, string $gateway, bool $recurring = false)
     {
-        if ((isset(Gateway::$ignoreCardNetworkSupport[$issuer]) === true) AND
-            (in_array($gateway, Gateway::$ignoreCardNetworkSupport[$issuer]) === true))
-        {
-            return true;
-        }
-
         $supported = ((array_key_exists($gateway, self::$cardNetworkMap) === true) and
                       (in_array($network, self::$cardNetworkMap[$gateway], true) === true));
 

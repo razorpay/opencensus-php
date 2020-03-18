@@ -226,6 +226,7 @@ class Name
     const RETRY_REFUND                        = 'retry_refund';
     const DOWNLOAD_NON_MERCHANT_REPORT        = 'download_non_merchant_report';
     const CREATE_VIRTUAL_ACCOUNTS             = 'create_virtual_accounts';
+    const CREATE_BANKING_VIRTUAL_ACCOUNTS     = 'create_banking_virtual_accounts';
     const BANK_TRANSFER_INSERT                = 'bank_transfer_insert';
     const GET_SELF_SERVE_REPORT               = 'get_self_serve_report';
     const CREATE_SELF_SERVE_REPORT            = 'create_self_serve_report';
@@ -255,6 +256,7 @@ class Name
     const UPDATE_DOWNTIME_CONFIG              = 'update_downtime_config';
     const LIST_DOWNTIME_CONFIG                = 'list_downtime_config';
     const ADJUSTMENT_BATCH_UPLOAD             = 'adjustment_batch_upload';
+    const REPORTING_BATCH_UPLOAD              = 'reporting_batch_upload';
     const DOWNLOAD_CREDIT_BUREAU_REPORTS      = 'download_credit_bureau_reports';
 
     // RazorpayX/Business banking permissions

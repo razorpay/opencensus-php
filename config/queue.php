@@ -193,6 +193,10 @@ return [
             ],
         ],
     ],
+    'webhook_event' => [
+        'test'       => env('AWS_WEBHOOKS_TEST_QUEUE'),
+        'live'       => env('AWS_WEBHOOKS_LIVE_QUEUE'),
+    ],
     'dashboard' => [
         'test'       => env('AWS_GENERAL_TEST_QUEUE'),
         'live'       => env('AWS_GENERAL_LIVE_QUEUE'),

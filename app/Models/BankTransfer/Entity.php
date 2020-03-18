@@ -15,6 +15,7 @@ use RZP\Models\Transaction;
 use RZP\Models\VirtualAccount;
 use RZP\Models\Bank\BankCodes;
 use Razorpay\Trace\Facades\Trace;
+use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Models\Base\Traits\HasBalance;
 
 /**
@@ -120,6 +121,7 @@ class Entity extends Base\PublicEntity
         self::AMOUNT,
         self::PAYER_BANK_ACCOUNT,
         self::VIRTUAL_ACCOUNT_ID,
+        self::PAYEE_ACCOUNT,
     ];
 
     protected $appends = [
@@ -179,6 +181,7 @@ class Entity extends Base\PublicEntity
         self::MODE,
         self::BANK_REFERENCE,
         self::PAYER_BANK_ACCOUNT,
+        self::PAYEE_ACCOUNT,
     ];
 
     protected static $sign = 'bt';
@@ -273,6 +276,21 @@ class Entity extends Base\PublicEntity
         if ($this->getPayerBankAccountId() !== null)
         {
             $array[self::PAYER_BANK_ACCOUNT] = $this->payerBankAccount->toArrayPublic();
+        }
+    }
+
+    public function setPublicPayeeAccountAttribute(array & $array)
+    {
+        /** @var BasicAuth $basicAuth */
+        $basicAuth = app('basicauth');
+
+        // This is required because payee_Account is required in the
+        // transaction.created webhook fired on bank_transfer
+        // This currently is required only for RX, not for PG
+        if (($basicAuth->isAdminAuth() === false) and
+            ($this->isBalanceTypeBanking() === false))
+        {
+            unset($array[self::PAYEE_ACCOUNT]);
         }
     }
 

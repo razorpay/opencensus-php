@@ -1239,14 +1239,9 @@ class Entity extends Base\PublicEntity
 
     public function isValidEmiTerminal($gateway, $emiDuration)
     {
-        $ignoreEmiDurationGateways = [
-            Gateway::BAJAJ,
-            Gateway::HDFC_DEBIT_EMI,
-        ];
-
         if (($this->isEmiEnabled()) and
             ($this->getGateway() === $gateway) and
-            (($this->getEmiDuration() === $emiDuration) or (in_array($gateway, $ignoreEmiDurationGateways) === true)))
+            (($this->getEmiDuration() === $emiDuration) or ($gateway === Gateway::BAJAJ)))
         {
             return true;
         }

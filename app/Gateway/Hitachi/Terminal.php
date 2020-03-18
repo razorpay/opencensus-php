@@ -112,9 +112,7 @@ class Terminal extends Base\Terminal
             // for those cases
             $content[TerminalFields::CITY]             = TerminalConstants::DEFAULT_BUSINESS_OPERATION_CITY;
             $content[TerminalFields::MERCHANT_GROUP]   = substr(TerminalConstants::DEFAULT_BUSINESS_NAME, 0, 8);
-            $content[TerminalFields::MERCHANT_NAME]    = substr(TerminalConstants::DEFAULT_BUSINESS_NAME, 0, 23);
             $content[TerminalFields::ZIPCODE]          = TerminalConstants::DEFAULT_BUSINESS_OPERATION_PIN;
-            $content[TerminalFields::MERCHANT_DB_NAME] = substr(TerminalConstants::DEFAULT_BUSINESS_DBA, 0, 23);
             $content[TerminalFields::LOCATION]         = substr(TerminalConstants::DEFAULT_BUSINESS_OPERATION_ADDRESS, 0, 23);
             $content[TerminalFields::STATE]            = TerminalConstants::DEFAULT_BUSINESS_OPERATION_STATE_CODE;
 

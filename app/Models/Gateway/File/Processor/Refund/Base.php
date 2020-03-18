@@ -36,7 +36,7 @@ class Base extends BaseProcessor
      *
      * @var array
      */
-    protected $scroogeRefunds = [];
+    protected $scroogeRefundsData = [];
 
     /**
      * Being used to populate the scrooge refunds' payment_ids
@@ -74,7 +74,7 @@ class Base extends BaseProcessor
     public function resetFileProcessorAttributes()
     {
         $this->queryLimit              = Constants::QUERY_LIMIT;
-        $this->scroogeRefunds          = [];
+        $this->scroogeRefundsData      = [];
         $this->scroogeMaxAttempts      = Constants::SCROOGE_MAX_ATTEMPTS;
         $this->fetchFromScroogeCount   = Constants::FETCH_FROM_SCROOGE_COUNT;
         $this->scroogeRefundPaymentIds = [];
@@ -95,9 +95,15 @@ class Base extends BaseProcessor
         if ($this->fetchRefundsFromScrooge === true)
         {
             // Populating scrooge refunds data
-            $this->populateScroogeRefunds($begin, $end);
+            $scroogeRefundsData = $this->fetchScroogeRefundsData($begin, $end);
 
-            $this->scroogeRefundPaymentIds = array_unique(array_column($this->scroogeRefunds, RefundConstants::PAYMENT_ID));
+            $this->scroogeRefundsData = $scroogeRefundsData;
+
+            $this->scroogeRefundsData = array_sort($this->scroogeRefundsData, function ($refund1, $refund2) {
+                return $refund1['created_at'] <=> $refund2['created_at'];
+            });
+
+            $this->scroogeRefundPaymentIds = array_unique(array_column($this->scroogeRefundsData, RefundConstants::PAYMENT_ID));
 
             $shouldFetchPayments = true;
             $start = 0;
@@ -162,7 +168,7 @@ class Base extends BaseProcessor
         // Refunds were fetched from scrooge
         if ($this->fetchRefundsFromScrooge === true)
         {
-            foreach ($this->scroogeRefunds as $refund)
+            foreach ($this->scroogeRefundsData as $refund)
             {
                 $payment = $entities->where(Payment\Entity::ID, '=', $refund[RefundConstants::PAYMENT_ID])->first();
 
@@ -194,7 +200,7 @@ class Base extends BaseProcessor
                     $this->populateScroogeRefundsGivenIds($scroogeRefundIds);
                 }
 
-                $scroogeRefundIds = array_unique(array_column($this->scroogeRefunds, RefundConstants::SCROOGE_ID));
+                $scroogeRefundIds = array_unique(array_column($this->scroogeRefundsData, RefundConstants::SCROOGE_ID));
             }
 
             // regular API flow
@@ -415,9 +421,10 @@ class Base extends BaseProcessor
      * @param int $from
      * @param int $to
      * @param array $refundIds
+     * @return array
      * @throws GatewayFileException
      */
-    protected function populateScroogeRefunds(int $from, int $to, $refundIds = [])
+    protected function fetchScroogeRefundsData(int $from, int $to, $refundIds = []): array
     {
         $input = $this->getScroogeQuery($from, $to, $refundIds);
 
@@ -449,11 +456,7 @@ class Base extends BaseProcessor
             );
         }
 
-        $this->scroogeRefunds = array_merge($this->scroogeRefunds, $refunds);
-
-        $this->scroogeRefunds = array_sort($this->scroogeRefunds, function ($refund1, $refund2) {
-            return $refund1['created_at'] <=> $refund2['created_at'];
-        });
+        return $refunds;
     }
 
     /**
@@ -467,6 +470,8 @@ class Base extends BaseProcessor
 
         $fetchLimit = $this->fetchFromScroogeCount;
 
+        $scroogeRefundsData = [];
+
         while ($shouldFetchScroogeRefunds === true)
         {
             $refundIds = array_slice($listOfRefunds, $start, $fetchLimit);
@@ -477,11 +482,20 @@ class Base extends BaseProcessor
             }
             else
             {
-                $this->populateScroogeRefunds($this->gatewayFile->getBegin(), $this->gatewayFile->getEnd(), $refundIds);
+                $scroogeRefundsData = array_merge(
+                    $scroogeRefundsData,
+                    $this->fetchScroogeRefundsData($this->gatewayFile->getBegin(), $this->gatewayFile->getEnd(), $refundIds)
+                );
 
                 $start += $fetchLimit;
             }
         }
+
+        $this->scroogeRefundsData = $scroogeRefundsData;
+
+        $this->scroogeRefundsData = array_sort($this->scroogeRefundsData, function ($refund1, $refund2) {
+            return $refund1['created_at'] <=> $refund2['created_at'];
+        });
     }
 
     // Returns data, success - if scrooge calls fail - success is false
@@ -640,7 +654,7 @@ class Base extends BaseProcessor
     {
         // This check is applicable only for Scrooge refunds
         // SBI - is handling older failed refunds as well - so this check won't be applicable for this gateway
-        if (empty($this->scroogeRefunds) === false)
+        if (empty($this->scroogeRefundsData) === false)
         {
             //
             // Adding checks to ensure refunds are in expected date range - if not throwing exception
