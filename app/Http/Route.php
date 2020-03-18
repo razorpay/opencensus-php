@@ -222,6 +222,7 @@ final class Route
         'merchant_fetch_bank_account'              => ['get',      'merchants/{id}/bank_account',                    'MerchantController@getBankAccount'                                 ],
         'merchant_generate_test_bank_acnt'         => ['post',     'merchants/bank_account/generate/test',           'MerchantController@postGenerateTestBankAccounts'                   ],
         'merchant_create_terminal'                 => ['post',     'merchants/{id}/terminals',                       'MerchantController@postCreateTerminal'                             ],
+        'merchant_create_terminal_internal'        => ['post',     'merchants/{id}/terminals/internal',              'MerchantController@postCreateTerminal',                            ],
         'merchant_get_terminals'                   => ['get',      'merchants/{id}/terminals',                       'MerchantController@getTerminals'                                   ],
         'merchant_onboard_terminal'                => ['post',     'merchants/{id}/terminals/onboard',               'MerchantController@onboardMerchantOnGateway'                       ],
         'merchant_get_terminal'                    => ['get',      'merchants/{mid}/terminals/{tid}',                'MerchantController@getTerminal'                                    ],
@@ -2042,6 +2043,7 @@ final class Route
         'unclaimed_merchant_poc_update',
         'terminal_migrate_cron',
         'virtual_account_batch_migrate_yesbank',
+        'merchant_create_terminal_internal',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -4116,6 +4118,10 @@ final class Route
         //
         'automation' => [
             '*'
+        ],
+
+        'terminals_service' => [
+            'merchant_create_terminal_internal',
         ],
     ];
 
