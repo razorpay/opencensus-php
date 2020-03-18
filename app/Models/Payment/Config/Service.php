@@ -15,12 +15,12 @@ class Service extends Base\Service
         $this->core = new Core;
     }
 
-    /*
-     * Function to fetch the config.
-     * Parameters :- type of config
-     * Return list of config
+    /**
+     * @param string           $type
      *
-     * */
+     *
+     * @return array
+     */
     public function fetch(string $type = 'checkout')
     {
         $configs = $this->repo->config->fetchConfigByMerchantIdAndType($this->merchant->getId(), $type);
@@ -28,12 +28,12 @@ class Service extends Base\Service
         return $configs->toArrayPublic();
     }
 
-    /*
-     * Function to create config
-     * Parameters :- config data and type of config
-     * Return :- Created config
+    /**
+     * @param array           $input
      *
-     * */
+     *
+     * @return Entity
+     */
     public function create(array $input)
     {
         $config = $this->core->create($input);
@@ -41,11 +41,11 @@ class Service extends Base\Service
         return $config->toArrayPublic();
     }
 
-    /*
-     * Function to update the config
-     * Params :- id, data tto update, type of config
-     * Return :- Updated config
+    /**
+     * @param array           $input
      *
+     *
+     * @return Entity
      */
     public function update(array $input)
     {
