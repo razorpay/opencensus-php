@@ -107,7 +107,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         // our payment id for these rows in mis.
         //
 
-        $upiEntity = $this->repo->upi->fetchByNpciReferenceId($rrn, $this->gateway);
+        $upiEntity = $this->repo->upi->fetchByNpciReferenceIdAndGateway($rrn , $this->gateway);
 
         if (empty($upiEntity) === false)
         {
@@ -125,7 +125,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         }
         else
         {
-            $upiTransfer = $this->repo->upi_transfer->findByNpciReferenceId($rrn,  $this->gateway);
+            $upiTransfer = $this->repo->upi_transfer->findByNpciReferenceId($rrn,  $gateway = Gateway::UPI_MINDGATE);
 
             if ($upiTransfer !== null)
             {
