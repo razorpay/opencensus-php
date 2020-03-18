@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
+import RTracking from 'react-tracking';
 
 import { updatePPInReduxList } from 'merchant/reducers/invoices/list';
 import { classList } from 'common/utils/rzp-utils';
@@ -56,6 +57,7 @@ const inActiveStatusReasonMap = {
     addPollInstance,
   }
 )
+@RTracking(() => window.rzpQ.component('PaymentPagesContainer'))
 export default class PaymentPagesV3Entity extends React.Component {
   state = { detailsCollapse: true, isExportInProgress: false };
 
@@ -63,7 +65,15 @@ export default class PaymentPagesV3Entity extends React.Component {
     if (!this.props.reportConfigs) {
       this.props.saveReportConfigs();
     }
+
+    this.trackPaymentPageDetailsView('pp.details.page_open');
   }
+
+  trackPaymentPageDetailsView = event => {
+    return this.props.tracking.trackEvent(
+      window.rzpQ.paymentPages().interaction(event)
+    );
+  };
 
   getStatsTable(paymentPageEntity) {
     return [
@@ -175,6 +185,36 @@ export default class PaymentPagesV3Entity extends React.Component {
         />
       ),
     });
+  };
+
+  trackDateUpdate = (date, type) => {
+    if (type === 'Cancel Expiry') {
+      this.trackPaymentPageDetailsView('pp.details.expiry_cancel');
+
+      return;
+    }
+
+    if (!date) {
+      this.trackPaymentPageDetailsView('pp.details.expiry_tick');
+    }
+  };
+
+  onClickDuplicatePage = () => {
+    this.trackPaymentPageDetailsView('pp.details.duplicate_page');
+  };
+
+  trackEditNotes = (changeType, modified) => {
+    if (changeType === 'Save Notes') {
+      this.trackPaymentPageDetailsView(`pl.details.notes`, { modified });
+    }
+
+    if (changeType === 'Delete Notes (Confirmed)') {
+      this.trackPaymentPageDetailsView(`pl.details.notes_closed`);
+    }
+
+    if (changeType === 'Delete Notes (Cancelled)') {
+      this.trackPaymentPageDetailsView(`pl.details.notes.close`);
+    }
   };
 
   render() {
@@ -333,6 +373,7 @@ export default class PaymentPagesV3Entity extends React.Component {
                       editFn={editPaymentPage}
                       entityId={paymentPageEntity.id}
                       isRoleAllowedEdit={isRoleAllowedEdit}
+                      trackerFn={this.trackDateUpdate}
                     />
                   )}
                 />
@@ -344,7 +385,11 @@ export default class PaymentPagesV3Entity extends React.Component {
                       value={paymentPageEntity.notes}
                       editFn={editPaymentPage}
                       entityId={paymentPageEntity.id}
-                      trackerFn={trackDetailViewEdits}
+                      trackerFn={(...args) => {
+                        this.trackEditNotes(...args);
+
+                        trackDetailViewEdits(...args);
+                      }}
                       isRoleAllowedEdit={isRoleAllowedEdit}
                     />
                   )}

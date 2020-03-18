@@ -513,10 +513,26 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
       trackData.push('form_fields: ' + udf_schema.length); // count of total form fields
     }
 
+    const searchQueryNext = getURLQueryParams(this.props.location.search);
+
     if (isEditExistingId) {
       trackPageSave('save', trackData);
+
+      this.props.tracking.trackEvent(
+        window.rzpQ.paymentPages().interaction('pp.create.publish_page', {
+          is_new_page: false,
+          clone: !!searchQueryNext.duplicate_id,
+        })
+      );
     } else {
       trackPageSave('create', trackData);
+
+      this.props.tracking.trackEvent(
+        window.rzpQ.paymentPages().interaction('pp.create.publish_page', {
+          is_new_page: true,
+          clone: !!searchQueryNext.duplicate_id,
+        })
+      );
     }
 
     return requestAPIPromise

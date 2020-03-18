@@ -1,4 +1,5 @@
 import { connect } from 'react-redux';
+import RTracking from 'react-tracking';
 import AmountDisplayField from './Amount/AmountDisplayField';
 import UDFDisplayField from './UDF/UDFDisplayField';
 import AddUDFButton from './UDF/AddUDFButton';
@@ -81,6 +82,7 @@ class SortableFormItemsList extends React.Component {
   updateInFormItems,
   reorderFormItems,
 })
+@RTracking(() => window.rzpQ.component('wysiwyg_view'))
 export default class View extends React.PureComponent {
   state = {
     isListSorting: false,
@@ -185,6 +187,10 @@ export default class View extends React.PureComponent {
     this.setState({
       isListSorting: true,
     });
+
+    this.props.tracking.trackEvent(
+      window.rzpQ.paymentPages().interaction('pp.create.reorder_field')
+    );
   };
 
   onSortEnd = _ => {

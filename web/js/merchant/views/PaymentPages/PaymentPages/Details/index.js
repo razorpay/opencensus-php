@@ -271,6 +271,14 @@ export default class extends React.Component {
                 'Toggle Status',
                 isActive ? 'deactivate' : 'activate'
               );
+
+              this.props.tracking.trackEvent(
+                window.rzpQ
+                  .paymentPages()
+                  .interaction(
+                    `pp.deactivate.${isActive ? 'deactivate' : 'activate'}`
+                  )
+              );
             }
             return resp;
           })

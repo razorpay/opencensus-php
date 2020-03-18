@@ -81,6 +81,12 @@ export default class PaymentPagesContainer extends ListContainer {
     super.componentWillReceiveProps(nextProps);
   }
 
+  trackPaymentPage = (...args) => {
+    return this.props.tracking.trackEvent(
+      window.rzpQ.paymentPages().interaction(...args)
+    );
+  };
+
   /* Fetch all payment pages list to find whether first-time user */
   fetchAllEntityList() {
     fetchPaymentPagesList({
@@ -132,10 +138,24 @@ export default class PaymentPagesContainer extends ListContainer {
     if (label && label.length > 0) {
       trackListActions('Search', label);
     }
+
+    if (params.count) {
+      this.trackPaymentPage('pp.search.count');
+    }
+
+    if (params.status) {
+      this.trackPaymentPage('pp.search.status');
+    }
+
+    if (params.title) {
+      this.trackPaymentPage('pp.search.title');
+    }
   };
 
   onClearAnalytics = () => {
     trackListActions('Clear');
+
+    this.trackPaymentPage('pp.search.clear');
   };
 
   componentWillUnmount() {
@@ -190,9 +210,27 @@ export default class PaymentPagesContainer extends ListContainer {
     this.props.handleProductQuickGuide(paymentPageProductOnBoarding);
   };
 
+  trackCreatePaymentPage = () => {
+    this.props.tracking.trackEvent(
+      window.rzpQ.onbr().success('dash.pp_action', {
+        action: 'Initiate_PP_Creation',
+      })
+    );
+
+    this.trackPaymentPage('pp.create.click_create');
+  };
+
+  onClickPaginate = (params, type) => {
+    this.trackPaymentPage(`pp.browse.${type}`, {
+      count: params.count,
+    });
+
+    this.paginate(params);
+  };
+
   render() {
     const { loading, loadingAllList, totalPaymentPagesLength } = this.state;
-    const { paymentPages, user, tracking } = this.props;
+    const { paymentPages, user } = this.props;
 
     const isRoleAllowedEdit = user.isAllowedEdit('payment_pages');
 
@@ -262,7 +300,7 @@ export default class PaymentPagesContainer extends ListContainer {
                 count={this.state.count}
                 skip={this.state.skip}
                 length={paymentPages.length}
-                onClick={this.paginate}
+                onClick={this.onClickPaginate}
               />
             )}
         </React.Fragment>
@@ -295,15 +333,7 @@ export default class PaymentPagesContainer extends ListContainer {
                 onClick={this.handleProductQuickGuide}
               >
                 <i class="i i-plus" />
-                <span
-                  onClick={() => {
-                    tracking.trackEvent(
-                      window.rzpQ.onbr().success('dash.pp_action', {
-                        action: 'Initiate_PP_Creation',
-                      })
-                    );
-                  }}
-                >
+                <span onClick={this.trackCreatePaymentPage}>
                   Create Payment Page
                 </span>
               </span>

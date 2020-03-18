@@ -1,3 +1,5 @@
+import RTracking from 'react-tracking';
+
 import Button from 'common/new-ui/Button';
 import FieldsDropdown from '../FieldsDropdown';
 import {
@@ -6,6 +8,7 @@ import {
 } from '../Amount/helpers';
 import CreatorManager from './CreatorManager';
 
+@RTracking(() => window.rzpQ.component('AddAmountButton'))
 class AddAmountButton extends React.PureComponent {
   onSelectFieldType = fieldType => {
     const initWithField = {
@@ -16,13 +19,21 @@ class AddAmountButton extends React.PureComponent {
     this.props.openBaseForm(fieldType.key, initWithField);
   };
 
+  onClickPriceField = () => {
+    this.props.tracking.trackEvent(
+      window.rzpQ.paymentPages().interaction('pp.create.field', {
+        button_type: 'Price Field',
+      })
+    );
+  };
+
   render() {
     return (
       <AmountDropdown
         onSelect={this.onSelectFieldType}
         beforeOptionsTxt="Select Amount Type"
       >
-        <Button.Transparent class="btn-dotted">
+        <Button.Transparent class="btn-dotted" onClick={this.onClickPriceField}>
           <span class="enclose-circle">
             <b>₹</b>
           </span>{' '}

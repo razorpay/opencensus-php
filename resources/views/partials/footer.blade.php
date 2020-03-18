@@ -27,6 +27,9 @@
       routeActions: function() {
         return window.rzpQ;
       },
+      paymentPages: function() {
+        return window.rzpQ;
+      },
       paymentLinks: function() {
         return window.rzpQ;
       },
@@ -38,7 +41,7 @@
       },
       invoice: function() {
         return window.rzpQ;
-      },
+      }
     };
 
     //Above code doesn't perform any function, can avoid application breakage if the library is
@@ -139,6 +142,16 @@
           reporting: [
             { propertyName: 'event_type', value: 'reporting-events' },
             { propertyName: 'event_group', value: 'reporting_events' },
+          ],
+          paymentPages: [
+            {
+              propertyName: 'event_type',
+              value: 'paymentpages'
+            },
+            {
+              propertyName: 'event_group',
+              value: 'paymentpages-dashboard'
+            },
           ],
           'paymentLinks':[
               {

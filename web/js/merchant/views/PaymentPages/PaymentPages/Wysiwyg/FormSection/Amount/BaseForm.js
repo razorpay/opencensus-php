@@ -1,4 +1,6 @@
 import { connect } from 'react-redux';
+import RTracking from 'react-tracking';
+
 import Form from 'common/new-ui/Form';
 import Input from 'common/new-ui/Input';
 import Button from 'common/new-ui/Button';
@@ -21,6 +23,7 @@ import ModalHeader from 'common/ui/ModalHeader';
   openModal,
   closeModal,
 })
+@RTracking(() => window.rzpQ.component('BaseForm'))
 export default class BaseForm extends React.PureComponent {
   constructor(props) {
     super(props);
@@ -93,6 +96,10 @@ export default class BaseForm extends React.PureComponent {
     this.setState({
       mirrorDisplayName: target.value,
     });
+
+    this.props.tracking.trackEvent(
+      window.rzpQ.paymentPages().interaction('pp.create.edit_field')
+    );
   };
 
   onChangeCurrency = selectedCurrency => {
