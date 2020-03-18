@@ -6518,7 +6518,7 @@ class MerchantTest extends TestCase
         $this->assertContains('abc.com', $merchant->getWhitelistedDomains());
     }
 
-    public function testGetCheckoutRouteWithDeviceTokenForDCC()
+    public function testGetCheckoutRouteWithTokenForDCC()
     {
         $this->ba->publicAuth();
         $this->fixtures->merchant->activate('10000000000000');
