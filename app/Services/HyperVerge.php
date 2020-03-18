@@ -322,11 +322,8 @@ class HyperVerge
         ];
     }
 
-    private function getFormattedAmountFromExtracted(int $amount): int
+    private function getFormattedAmountFromExtracted($amount = 0): int
     {
-        if ($amount == null) {
-            return 0;
-        }
         return $amount * 100;
     }
 
