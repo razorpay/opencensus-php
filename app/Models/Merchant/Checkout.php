@@ -296,11 +296,18 @@ class Checkout
             //
             $savedTokens = $tokenCore->removeEmandateRecurringTokens($savedTokens);
 
+            $dccEnabledTokenIds = (new Payment\Service)->getDCCEnabledTokenIds($savedTokens);
+
             $custData =  [
                 'email'     => $customer->getEmail(),
                 'contact'   => $customer->getContact(),
                 'tokens'    => $savedTokens->toArrayPublic(),
             ];
+
+            foreach($custData['tokens']['items'] as & $token)
+            {
+                $token['is_dcc_enabled'] = in_array($token['id'], $dccEnabledTokenIds, true);
+            }
 
             //
             // This case comes when customer_id is sent in the input (always local customer).
