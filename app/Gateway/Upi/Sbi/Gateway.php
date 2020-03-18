@@ -49,6 +49,12 @@ class Gateway extends Base\Gateway
         ResponseFields::UPI_TRANS_REFERENCE_NO => Base\Entity::NPCI_REFERENCE_ID,
         ResponseFields::STATUS                 => Base\Entity::STATUS_CODE,
         Base\Entity::TYPE                      => Base\Entity::TYPE,
+        ResponseFields::NPCI_TRANSACTION_ID    => Base\Entity::NPCI_TXN_ID,
+        ResponseFields::ADDITIONAL_INFO        => Base\Entity::GATEWAY_DATA,
+    ];
+
+    protected $allowedAdditionalInfo = [
+        ResponseFields:: ADDITIONAL_INFO2  => 'string|max:40',
     ];
 
     protected $sortRequestContent = false;
@@ -112,7 +118,9 @@ class Gateway extends Base\Gateway
                 ]);
         }
 
-        $this->updateGatewayPaymentEntity($gatewayPayment, $content);
+        $entityData = $this->processGatewayData($content);
+
+        $this->updateGatewayPaymentEntity($gatewayPayment, $entityData);
 
         $this->checkResponseStatus($content[ResponseFields::STATUS]);
 
@@ -177,7 +185,9 @@ class Gateway extends Base\Gateway
 
         $content = $verify->verifyResponseContent[ResponseFields::API_RESPONSE];
 
-        $this->updateGatewayPaymentEntity($verify->payment, $content);
+        $entityData = $this->processGatewayData($content);
+
+        $this->updateGatewayPaymentEntity($verify->payment, $entityData);
 
         $this->setVerifyStatus($verify);
     }
@@ -641,5 +651,27 @@ class Gateway extends Base\Gateway
         $generated = $this->generateHash($content);
 
         $this->compareHashes($actual, $generated);
+    }
+
+    protected function processGatewayData($content)
+    {
+        /** We are unsetting additional info here as for some cases, in verify we get empty array in additional info
+         * field in verify response. We do not want to update the additional info in gateway entity as we might end
+         * up losing data. We need additional info to be there as it is needed in refund file.
+         * TODO: Fix this for other fields too.
+         */
+
+        if (empty($content[ResponseFields::ADDITIONAL_INFO]) === true)
+        {
+            unset($content[ResponseFields::ADDITIONAL_INFO]);
+        }
+        else
+        {
+            $info = $content[ResponseFields::ADDITIONAL_INFO] ;
+
+            $content[ResponseFields::ADDITIONAL_INFO] = array_only($info, array_keys($this->allowedAdditionalInfo));
+        }
+
+        return $content;
     }
 }

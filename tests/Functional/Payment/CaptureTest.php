@@ -1502,6 +1502,21 @@ class CaptureTest extends TestCase
         });
     }
 
+
+    public function testEmandateCaptureWithZeroBalanceWithAutoRecurringType()
+    {
+        Mail::fake();
+
+        $this->setUpEmandateFixtures(0,0, 'UTIB', 'auto');
+
+        $this->startTest();
+
+        Mail::assertNotQueued(NegativeBalanceAlert::class);
+        Mail::assertNotQueued(NegativeBalanceThresholdAlert::class);
+        Mail::assertNotQueued(BalancePositiveAlert::class);
+    }
+
+
     public function testEmandateCaptureWithNegativeBalance()
     {
         Mail::fake();
@@ -1942,11 +1957,13 @@ class CaptureTest extends TestCase
         $this->assertEquals($internalErrorCode, $payment['internal_error_code']);
     }
 
-    private function setUpEmandateFixtures(int $balanceAmount = 0, int $feeCredits = 0)
+    private function setUpEmandateFixtures(int $balanceAmount = 0, int $feeCredits = 0,
+                                           string $bank = 'UTIB',
+                                           string $recurringType = 'initial')
     {
         $this->fixtures->merchant->addFeatures(['charge_at_will', 's2s', 'emandate_mrn']);
 
-        $paymentData = $this->getEmandateNetbankingRecurringPaymentArray('UTIB');
+        $paymentData = $this->getEmandateNetbankingRecurringPaymentArray($bank);
 
         $paymentData['customer_id'] = '100000customer';
         $paymentData['status'] = 'authorized';
@@ -1972,7 +1989,7 @@ class CaptureTest extends TestCase
         $token = $this->fixtures->create('token', $tokenData);
 
         $paymentData['token_id']  = $token['id'];
-        $paymentData['recurring_type']  = 'initial';
+        $paymentData['recurring_type']  = $recurringType;
         $paymentData['recurring']  = 1;
 
         $payment = $this->fixtures->create('payment', $paymentData);

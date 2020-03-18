@@ -105,6 +105,11 @@ class Entity extends Base\Entity
         return $this->getAttribute('RefStatus');
     }
 
+    public function getCustomerId()
+    {
+        return $this->getAttribute('CustomerID');
+    }
+
     public function isTpv()
     {
         $accountNumber = $this->getAttribute('AccountNumber');

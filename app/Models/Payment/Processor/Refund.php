@@ -105,19 +105,25 @@ trait Refund
         return $refund;
     }
 
-    public function isInstantRefundSupported(Payment\Entity $payment)
+    public function isInstantRefundSupportedOnPayment(Payment\Entity $payment)
     {
         // This will keep changing as we add more coverage
-        return (($this->isCapturedPaymentAndFeatureEnabled($payment) === true) and
-                (($payment->isUpi() === true) or
-                 ($payment->isCard() === true) or
-                 ($payment->isNetbanking() === true)));
+        if (($this->isCapturedPaymentAndFeatureEnabled($payment) === false) or
+            (in_array($payment->getMethod(), Payment\Method::INSTANT_REFUND_SUPPORTED_METHODS, true) === false))
+        {
+            return false;
+        }
+
+        $mode = $this->getRefundModeFromScrooge($payment);
+
+        // If mode returned by scrooge is empty that means instant refund is not supported for this payment
+        return (empty($mode) === true) ? false : true;
     }
 
     public function isCapturedPaymentAndFeatureEnabled(Payment\Entity $payment)
     {
         return (($payment->isCaptured() === true) and
-                ($this->merchant->isFeatureEnabled(Feature::CARD_TRANSFER_REFUND) === true));
+                ($this->merchant->isFeatureEnabled(Feature::DISABLE_INSTANT_REFUNDS) === false));
     }
 
     protected function isInvalidInstantRefundsRequest(Payment\Entity $payment, array $input)
@@ -1436,7 +1442,7 @@ trait Refund
         $refund->setSpeedRequested(RefundSpeed::NORMAL);
         $refund->setSpeedDecisioned(RefundSpeed::NORMAL);
 
-        if ($this->merchant->isFeatureEnabled(Feature::CARD_TRANSFER_REFUND) === true)
+        if ($this->merchant->isFeatureEnabled(Feature::DISABLE_INSTANT_REFUNDS) === false)
         {
             $refund->setSpeedRequested($this->merchant->getDefaultRefundSpeed());
 
@@ -2006,6 +2012,22 @@ trait Refund
     {
         $refundData = $refund->toArray();
 
+        $gatewayAcquirer = $payment->getGateway();
+
+        //
+        //
+        // This terminal was deleted due to Yesbank moratorium
+        // This particular terminal is not a direct settlement terminal
+        // Will be removing this check once the terminal is fixed.
+        //
+        // Slack thread for reference:
+        // https://razorpay.slack.com/archives/CA66F3ACS/p1584100168218900?thread_ts=1584090894.210900&cid=CA66F3ACS
+        //
+        if ($this->payment->getTerminalId() !== 'B2K2t8JD9z98vh')
+        {
+            $gatewayAcquirer = $payment->terminal->getGatewayAcquirer() ?? $payment->getGateway();
+        }
+
         $extraData = [
             'method'                    => $payment->getMethod(),
             'bank'                      => $payment->getBank(),
@@ -2013,7 +2035,7 @@ trait Refund
             'payment_base_amount'       => $payment->getBaseAmount(),
             'payment_created_at'        => $payment->getCreatedAt(),
             'payment_gateway_captured'  => $payment->getGatewayCaptured(),
-            'gateway_acquirer'          => $payment->terminal->getGatewayAcquirer() ?? $payment->getGateway(),
+            'gateway_acquirer'          => $gatewayAcquirer,
             'payment_authorized_at'     => $payment->getAuthorizeTimestamp(),
             'payment_service_route'     => $payment->getCpsRoute(),
         ];
@@ -2538,6 +2560,11 @@ trait Refund
         Payment\Entity $payment,
         bool $ignoreFeatureFlag = false): bool
     {
+        // proceeding only if decisioned speed is OPTIMUM
+        if ($refund->getSpeedRequested() !== Payment\Refund\Speed::OPTIMUM)
+        {
+            return false;
+        }
         //
         // Check if any card FTA already exists, not allowing card fta if any previous card fta exists
         //
@@ -2565,7 +2592,7 @@ trait Refund
                     (IIN::isIinPrepaid($iin->getIin()) === false))
                 {
                     if (($ignoreFeatureFlag === false) and
-                        ($this->merchant->isFeatureEnabled(Feature::CARD_TRANSFER_REFUND) === false))
+                        ($this->merchant->isFeatureEnabled(Feature::DISABLE_INSTANT_REFUNDS) === true))
                     {
                         return false;
                     }
@@ -2611,7 +2638,7 @@ trait Refund
             ($payment->isGatewayCaptured() === true))
         {
             if (($ignoreFeatureFlag === false) and
-                ($this->merchant->isFeatureEnabled(Feature::CARD_TRANSFER_REFUND) === false))
+                ($this->merchant->isFeatureEnabled(Feature::DISABLE_INSTANT_REFUNDS) === true))
             {
                 return false;
             }
@@ -2655,7 +2682,7 @@ trait Refund
             ($payment->isGatewayCaptured() === true))
         {
             if (($ignoreFeatureFlag === false) and
-                ($this->merchant->isFeatureEnabled(Feature::CARD_TRANSFER_REFUND) === false))
+                ($this->merchant->isFeatureEnabled(Feature::DISABLE_INSTANT_REFUNDS) === true))
             {
                 return false;
             }
@@ -2702,6 +2729,22 @@ trait Refund
         }
         else if ($payment->isBankTransfer() === true)
         {
+            //
+            // Using razorx to ramp up instant refunds self serve
+            //
+            $variant = $this->app->razorx->getTreatment($payment->getMerchantId(),
+                Merchant\RazorxTreatment::ENABLE_BANK_TRANSFER_REFUNDS,
+                $this->mode
+            );
+
+            if (($variant !== RefundConstants::RAZORX_VARIANT_ON) and
+                ((empty($this->refund->getAttempts())) === true))
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_REFUND_NOT_SUPPORTED,
+                    $input);
+            }
+
             $paymentId = $payment->getId();
 
             // https://github.com/razorpay/api/pull/9612/files#diff-45d61a7b834fae07d62a86dd461e5940R1697
@@ -2731,6 +2774,14 @@ trait Refund
 
             $input[BankAccount\Entity::IFSC_CODE]          = $token->getIfsc();
             $input[BankAccount\Entity::ACCOUNT_NUMBER]     = $token->getAccountNumber();
+            $input[BankAccount\Entity::BENEFICIARY_NAME]   = $customerName;
+        }
+        else if ($this->isPaymentUpiTransferAndUpiTransferRefund($payment))
+        {
+            $customerName = $this->getFormattedCustomerNameFromPayment($payment);
+
+            $input[BankAccount\Entity::IFSC_CODE]          = $payment->upiTransfer->getPayerIfsc();
+            $input[BankAccount\Entity::ACCOUNT_NUMBER]     = $payment->upiTransfer->getPayerAccount();
             $input[BankAccount\Entity::BENEFICIARY_NAME]   = $customerName;
         }
 
@@ -2766,12 +2817,6 @@ trait Refund
         if (isset($data['vpa']) === true)
         {
             $input = $data['vpa'];
-        }
-        else if ($this->isPaymentUpiTransferAndUpiTransferRefund($payment))
-        {
-            $input = [
-                VPA\Entity::ADDRESS => $payment->getVpa(),
-            ];
         }
 
         return $input;
@@ -2931,7 +2976,7 @@ trait Refund
         ];
     }
 
-    protected function setRefundModeAndSpeed(Payment\Entity $payment, RefundEntity &$refund)
+    protected function getRefundModeFromScrooge(Payment\Entity $payment)
     {
         //
         // Calling Scrooge for speed decisioning and mode selection
@@ -2940,37 +2985,46 @@ trait Refund
         //
 
         $queryParams = [
-            RefundEntity::GATEWAY        => $payment->getGateway(),
-            RefundConstants::METHOD      => $payment->getMethod(),
-            RefundConstants::AMOUNT      => $payment->getAmount(),
+            RefundEntity::GATEWAY   => $payment->getGateway(),
+            RefundConstants::METHOD => $payment->getMethod(),
+            RefundConstants::AMOUNT => $payment->getAmount(),
         ];
 
         if ($payment->getMethod() === Payment\Method::CARD)
         {
             //
-            // The following checks have already been made in isInstantRefundSupported - keeping these for sanity.
+            // The following checks have already been made in scrooge. Keeping these for sanity.
             // Therefore, Scrooge must not send a validation error.
             //
 
-            if ($payment->hasCard() === true)
+            $iin = $payment->card->iinRelation;
+
+            if (($payment->hasCard() === false) or
+                ($iin === null) or
+                (empty($iin->getIssuer()) === true) or
+                (empty($iin->getType()) === true))
             {
-                $queryParams[RefundConstants::NETWORK_CODE] = $payment->card->getNetworkCode();
-
-                $iin = $payment->card->iinRelation;
-
-                if ($iin !== null)
-                {
-                    $queryParams[RefundConstants::ISSUER] = $iin->getIssuer();
-                    $queryParams[RefundConstants::CARD_TYPE] = strtolower($iin->getType());
-                }
+                // This implies Scrooge cannot decision the mode for Instant Refund on this payment
+                return '';
             }
+
+            $queryParams[RefundConstants::NETWORK_CODE] = $payment->card->getNetworkCode();
+            $queryParams[RefundConstants::ISSUER] = $iin->getIssuer();
+            $queryParams[RefundConstants::CARD_TYPE] = strtolower($iin->getType());
         }
 
         $response = $this->app['scrooge']->getInstantRefundsMode($payment->getMerchantId(), $queryParams);
 
+        return $response[RefundConstants::MODE] ?? '';
+    }
+
+    protected function setRefundModeAndSpeed(Payment\Entity $payment, RefundEntity &$refund)
+    {
+        $mode = $this->getRefundModeFromScrooge($payment);
+
         // If the mode is empty we are decisioning the speed to normal
-        (empty($response[RefundConstants::MODE]) === false) ?
-            $refund->setModeRequested($response[RefundConstants::MODE]) :
+        (empty($mode) === false) ?
+            $refund->setModeRequested($mode) :
             $refund->setSpeedDecisioned(RefundSpeed::NORMAL);
     }
 

@@ -7,14 +7,9 @@ use RZP\Models\Admin\Permission\Name as Permission;
 
 class UserRolePermissionsMap
 {
-    protected $rolePermissions = [];
+    private static $rolePermissions;
 
-    public function __construct()
-    {
-        $this->rolePermissions = $this->getRolePermissionMap();
-    }
-
-    private function getRolePermissionMap()
+    private static function init()
     {
          $rolePermissions = [
              BankingRole::OWNER => [
@@ -90,6 +85,9 @@ class UserRolePermissionsMap
                  Permission::USER_PASSWORD_RESET,
                  Permission::EDIT_MERCHANT_WEBSITE_DETAIL,
                  Permission::UPDATE_PAYOUT,
+                 Permission::VIEW_WORKFLOW,
+                 Permission::UPDATE_TEST_MERCHANT_BALANCE,
+                 Permission::VIEW_VIRTUAL_ACCOUNT,
              ],
 
              BankingRole::ADMIN => [
@@ -158,6 +156,10 @@ class UserRolePermissionsMap
                  Permission::CREATE_BATCH,
                  Permission::EDIT_MERCHANT_WEBSITE_DETAIL,
                  Permission::UPDATE_PAYOUT,
+                 Permission::VIEW_WORKFLOW,
+                 Permission::UPDATE_TEST_MERCHANT_BALANCE,
+                 Permission::UPDATE_MERCHANT_FEATURE,
+                 Permission::VIEW_VIRTUAL_ACCOUNT,
              ],
 
              BankingRole::FINANCE_L1 => [
@@ -221,6 +223,9 @@ class UserRolePermissionsMap
                  Permission::MERCHANT_INSTANT_ACTIVATION,
                  Permission::CREATE_BATCH,
                  Permission::UPDATE_PAYOUT,
+                 Permission::VIEW_WORKFLOW,
+                 Permission::UPDATE_TEST_MERCHANT_BALANCE,
+                 Permission::VIEW_VIRTUAL_ACCOUNT,
              ],
 
              BankingRole::OPERATIONS => [
@@ -252,7 +257,6 @@ class UserRolePermissionsMap
                  Permission::VIEW_CONTACT,
                  Permission::VIEW_CONTACT_TYPE,
                  Permission::VIEW_FUND_ACCOUNT_VALIDATION,
-                 Permission::RETRY_BULK_FUND_ACCOUNT_VALIDATION,
                  Permission::VIEW_FUND_ACCOUNT,
                  Permission::VIEW_MERCHANT_KEY,
                  Permission::VIEW_MERCHANT_ANALYTICS,
@@ -262,21 +266,35 @@ class UserRolePermissionsMap
                  Permission::VIEW_MERCHANT_USER,
                  Permission::VIEW_WEBHOOK,
                  Permission::VIEW_WEBHOOK_EVENT,
-                 Permission::VIEW_WEBHOOK,
                  Permission::VIEW_REPORTING,
                  Permission::VIEW_TRANSACTION_STATEMENT,
+                 Permission::GET_SELF_SERVE_REPORT,
+                 Permission::MERCHANT_PRODUCT_SWITCH,
+                 Permission::UPDATE_USER_PROFILE,
+                 Permission::ONBOARDING_PAYOUT_LINKS,
+                 Permission::SUMMARY_PAYOUT_LINKS,
              ],
         ];
 
         $rolePermissions[BankingRole::FINANCE_L2] = $rolePermissions[BankingRole::FINANCE_L1];
         $rolePermissions[BankingRole::FINANCE_L3] = $rolePermissions[BankingRole::FINANCE_L1];
 
-         return $rolePermissions;
+        self::$rolePermissions = $rolePermissions;
     }
 
-    public function isValidRolePermission(string $role, string $permission) : bool
+    private static function getRolePermissionMap()
     {
-        $rolePermissions = $this->rolePermissions[$role] ?? null;
+        if (empty(self::$rolePermissions) === true)
+        {
+            self::init();
+        }
+
+        return self::$rolePermissions;
+    }
+
+    public static function isValidRolePermission(string $role, string $permission) : bool
+    {
+        $rolePermissions = self::getRolePermissions($role);
 
         if (in_array($permission, $rolePermissions, true))
         {
@@ -286,13 +304,18 @@ class UserRolePermissionsMap
         return false;
     }
 
-    public function isInvalidRolePermission(string $role, string $permission) : bool
+    public static function isInvalidRolePermission(string $role, string $permission) : bool
     {
-        if ($this->isValidRolePermission($role, $permission))
+        if (self::isValidRolePermission($role, $permission))
         {
             return false;
         }
 
         return true;
+    }
+
+    public static function getRolePermissions(string $role)
+    {
+        return self::getRolePermissionMap()[$role] ?? [];
     }
 }

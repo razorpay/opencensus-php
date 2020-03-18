@@ -265,6 +265,8 @@ trait CardPaymentService
 
         $this->repo->saveOrFail($payment);
 
+        $this->eventPaymentCreated();
+
         $this->tracePaymentInfo(TraceCode::PAYMENT_CREATED, Trace::DEBUG);
 
         $gatewayInput['payment'] = $payment->toArrayGateway();

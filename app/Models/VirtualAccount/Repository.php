@@ -7,6 +7,8 @@ use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Models\Order;
 use RZP\Base\BuilderEx;
+use RZP\Constants\Table;
+use RZP\Models\BankAccount;
 use RZP\Models\Merchant\Entity as Merchant;
 
 class Repository extends Base\Repository
@@ -26,12 +28,25 @@ class Repository extends Base\Repository
         });
     }
 
-    public function getActiveVirtualAccountFromBalanceId(string $balanceId)
+    /**
+     * Return virtual accounts linked to this balanceId
+     * @param string $balanceId
+     * @param string $seriesPrefix this is the gateway_merchant_id in terminals table
+     * @return Entity|null
+     */
+    public function getActiveVirtualAccountsFromBalanceId(string $balanceId)
     {
+        $virtualAccountAttrs            = $this->repo->virtual_account->dbColumn('*');
+        $virtualAccountBankAccountIdCol = $this->repo->virtual_account->dbColumn(Entity::BANK_ACCOUNT_ID);
+        $bankAccountIdColumn            = $this->repo->bank_account->dbColumn(BankAccount\Entity::ID);
+        $bankAccountAccountNumberColumn = $this->repo->bank_account->dbColumn(BankAccount\Entity::ACCOUNT_NUMBER);
+
         return $this->newQuery()
+                    ->select($virtualAccountAttrs, $bankAccountAccountNumberColumn)
+                    ->join(Table::BANK_ACCOUNT, $virtualAccountBankAccountIdCol, '=', $bankAccountIdColumn)
                     ->where(Entity::STATUS, '=', Status::ACTIVE)
                     ->where(Entity::BALANCE_ID, '=', $balanceId)
-                    ->first();
+                    ->get();
     }
 
     public function getActiveVirtualAccountFromBankAccountId(string $bankAccountId)
@@ -68,6 +83,16 @@ class Repository extends Base\Repository
                     ->with($relations)
                     ->findOrFailPublic($id);
     }
+
+    public function findByPublicIdWithRelations(string $id, array $relations = [])
+    {
+        Entity::verifyIdAndStripSign($id);
+
+        return $this->newQuery()
+                    ->with($relations)
+                    ->findOrFailPublic($id);
+    }
+
 
     public function findActiveByDescriptorAndMerchant(
         string $descriptor,
@@ -120,4 +145,25 @@ class Repository extends Base\Repository
                     ->first();
     }
 
+    public function getYesbankMigrateQuery(string $afterId, string $fromTime, string $toTime, int $limit, array $merchantIds = [])
+    {
+        /** @var BuilderEx $query */
+        $query = $this->newQuery();
+
+        $query->where(Entity::ID, '>', $afterId)
+              ->where(Entity::STATUS, Status::ACTIVE)
+              ->whereNotNull(Entity::BANK_ACCOUNT_ID)
+              ->whereNull(Entity::BANK_ACCOUNT_ID2)
+              ->whereBetween(Entity::CREATED_AT, [$fromTime, $toTime])
+              ->orderBy(Entity::ID);
+
+        if (empty($merchantIds) === false)
+        {
+            $query->whereIn(Entity::MERCHANT_ID, $merchantIds);
+        }
+
+        $query->limit($limit);
+
+        return $query;
+    }
 }

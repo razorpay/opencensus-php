@@ -60,6 +60,7 @@ class Reporting implements ExternalService
     const LINKED_ACCOUNT_HEADER = 'X-Linked-Account-Parent';
     const USER_ID_HEADER        = 'X-Dashboard-User-Id';
     const GENERATED_BY_HEADER   = 'X-Generated-By';
+    const BATCH_ID              = 'X-Batch-Id';
 
     /**
      * @var array
@@ -290,6 +291,11 @@ class Reporting implements ExternalService
         if ($this->ba->isProxyAuth())
         {
             $input['generated_by'] = $this->ba->authCreds->getKey();
+        }
+
+        if (Request::header(self::BATCH_ID) !== null)
+        {
+            $input['batch_id'] = Request::header(self::BATCH_ID);
         }
 
         $path = self::LOG_PATH;
@@ -798,22 +804,30 @@ class Reporting implements ExternalService
         return $items;
     }
 
-    protected function filterOnReportTypeAndNameAndConsumer(Merchant\Entity $merchant, $items)
+    protected function fetchPartnerReportsControls(Merchant\Entity $merchant)
     {
         $features = $merchant->getEnabledFeatures();
 
         $hasOfferTag              = in_array(Feature::OFFERS, $features, true);
         $hasGenericNotesTag       = in_array(Feature::REPORTING_GENRERIC_NOTES, $features, true);
-        $hasCardTransferRefundTag = in_array(Feature::CARD_TRANSFER_REFUND, $features, true);
 
         $showTxnCommissionReport          = false;
         $showAggregateCommissionReport    = false;
         $showSubventionReports            = false;
         $showAggregateReports             = false;
 
+        $isAdmin = $this->ba->isAdminAuth();
+
         if ($merchant->isPartner() === true)
         {
-            if ($merchant->isResellerPartner() === false)
+            //
+            // show aggregate reports if
+            // 1. admin is viewing the reports
+            // 2. merchant is not a reseller partner
+            //
+            $allowReport = (($isAdmin === true) or ($merchant->isResellerPartner() === false));
+
+            if ($allowReport === true)
             {
                 $showAggregateReports = true;
             }
@@ -823,7 +837,7 @@ class Reporting implements ExternalService
             // if at least one commission config is present, we show commission reports
             if ($commissionConfigs->isNotEmpty() === true)
             {
-                if ($merchant->isResellerPartner() === false)
+                if ($allowReport === true)
                 {
                     $showTxnCommissionReport        = true;
                     $showAggregateCommissionReport  = true;
@@ -839,6 +853,24 @@ class Reporting implements ExternalService
                 $showSubventionReports = true;
             }
         }
+
+        return [
+            'showTxnCommissionReport'       => $showTxnCommissionReport,
+            'showAggregateCommissionReport' => $showAggregateCommissionReport,
+            'showSubventionReports'         => $showSubventionReports,
+            'showAggregateReports'          => $showAggregateReports,
+        ];
+    }
+
+    protected function filterOnReportTypeAndNameAndConsumer(Merchant\Entity $merchant, $items)
+    {
+        $features = $merchant->getEnabledFeatures();
+
+        $hasOfferTag              = in_array(Feature::OFFERS, $features, true);
+        $hasGenericNotesTag       = in_array(Feature::REPORTING_GENRERIC_NOTES, $features, true);
+        $hasNotDisableInstantRefundsTag = !(in_array(Feature::DISABLE_INSTANT_REFUNDS, $features, true));
+
+        $partnerFlags = $this->fetchPartnerReportsControls($merchant);
 
         $filterConditions = [
             [
@@ -875,78 +907,78 @@ class Reporting implements ExternalService
                 'name'      => 'Per Transaction Commission Report',
                 'type'      => Table::COMMISSION,
                 'consumer'  => Account::SHARED_ACCOUNT,
-                'condition' => $showTxnCommissionReport,
+                'condition' => $partnerFlags['showTxnCommissionReport'],
             ],
             [
                 'name'      => 'Aggregate Transaction Commission Report',
                 'type'      => null,
                 'consumer'  => Account::SHARED_ACCOUNT,
-                'condition' => $showAggregateCommissionReport,
+                'condition' => $partnerFlags['showAggregateCommissionReport'],
             ],
             [
                 'name'      => 'Daily Earnings Report',
                 'type'      => null,
                 'consumer'  => Account::SHARED_ACCOUNT,
-                'condition' => $showAggregateCommissionReport,
+                'condition' => $partnerFlags['showAggregateCommissionReport'],
             ],
             [
                 'name'      => 'Per Transaction Earnings Report',
                 'type'      => Table::COMMISSION,
                 'consumer'  => Account::SHARED_ACCOUNT,
-                'condition' => $showTxnCommissionReport,
+                'condition' => $partnerFlags['showTxnCommissionReport'],
             ],
             [
                 'name'      => 'Daily Subvention Report',
                 'type'      => null,
                 'consumer'  => Account::SHARED_ACCOUNT,
-                'condition' => $showSubventionReports,
+                'condition' => $partnerFlags['showSubventionReports'],
             ],
             [
                 'name'      => 'Per Transaction Subvention Report',
                 'type'      => Table::COMMISSION,
                 'consumer'  => Account::SHARED_ACCOUNT,
-                'condition' => $showSubventionReports,
+                'condition' => $partnerFlags['showSubventionReports'],
             ],
             [
                 'name'        => 'Payments',
                 'type'        => 'payments',
                 'report_type' => 'partner',
                 'consumer'    => Account::SHARED_ACCOUNT,
-                'condition'   => $showAggregateReports,
+                'condition'   => $partnerFlags['showAggregateReports'],
             ],
             [
                 'name'        => 'Refunds',
                 'type'        => 'refunds',
                 'report_type' => 'partner',
                 'consumer'    => Account::SHARED_ACCOUNT,
-                'condition'   => $showAggregateReports,
+                'condition'   => $partnerFlags['showAggregateReports'],
             ],
             [
                 'name'        => 'Combined',
                 'type'        => 'transactions',
                 'report_type' => 'partner',
                 'consumer'    => Account::SHARED_ACCOUNT,
-                'condition'   => $showAggregateReports,
+                'condition'   => $partnerFlags['showAggregateReports'],
             ],
             [
                 'name'        => 'Settlements',
                 'type'        => 'settlements',
                 'report_type' => 'partner',
                 'consumer'    => Account::SHARED_ACCOUNT,
-                'condition'   => $showAggregateReports,
+                'condition'   => $partnerFlags['showAggregateReports'],
             ],
             [
                 'name'        => 'Settlements Recon',
                 'type'        => 'settlements',
                 'report_type' => 'partner',
                 'consumer'    => Account::SHARED_ACCOUNT,
-                'condition'   => $showAggregateReports,
+                'condition'   => $partnerFlags['showAggregateReports'],
             ],
             [
                 'name'      => 'Instant Refunds',
                 'type'      => 'refunds',
                 'consumer'  => Account::SHARED_ACCOUNT,
-                'condition' => $hasCardTransferRefundTag,
+                'condition' => $hasNotDisableInstantRefundsTag,
             ],
         ];
 

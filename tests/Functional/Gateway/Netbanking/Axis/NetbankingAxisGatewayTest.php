@@ -808,7 +808,7 @@ class NetbankingAxisGatewayTest extends TestCase
 
     public function testDetailedErrorResponseNetBanking()
     {
-        $this->fixtures->merchant->addFeatures(['error_metadata_response']);
+        $this->fixtures->merchant->addFeatures(['error_reason_response']);
 
         $this->mockPaymentFailure();
 

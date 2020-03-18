@@ -26,6 +26,8 @@ class Constants
 
     const ATTRIBUTIONS  = "attributions";
 
+    const PERMISSIONS   = 'permissions';
+
     public static $attributionList = [
         self::UTM_SOURCE,
         self::UTM_CAMPAIGN,

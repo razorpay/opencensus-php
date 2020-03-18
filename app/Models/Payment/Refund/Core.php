@@ -68,7 +68,7 @@ class Core extends Base\Core
                     $data = [
                         Entity::STATUS        => Status::PROCESSED,
                         Entity::REFERENCE1    => $refund->getReference1(),
-                        Entity::MODE          => $ftaData['mode'] ?? '',
+                        Entity::MODE          => $ftaData[Entity::MODE] ?? Constants::FT_UNKNOWN,
                         Constants::FTA_UPDATE => true,
                     ];
 
@@ -200,6 +200,27 @@ class Core extends Base\Core
 
         if ((self::isRefundsPublicStatusMerchant($merchantId) === true) and
             (self::getRefundsPublicStatusMerchantsViaScrooge()[$merchantId] === true))
+        {
+            $fetchPublicStatusFromScrooge = true;
+        }
+
+        return $fetchPublicStatusFromScrooge;
+    }
+
+    /**
+     * This function checks if a given refund's public status is fetched from api
+     * checks if merchant id exists and is mapped to false in the $refundsPublicStatusMerchants
+     *
+     * @param $merchantId
+     * @return bool
+     *
+     */
+    public static function fetchPublicStatusFromApi(string $merchantId): bool
+    {
+        $fetchPublicStatusFromScrooge = false;
+
+        if ((self::isRefundsPublicStatusMerchant($merchantId) === true) and
+            (self::getRefundsPublicStatusMerchantsViaScrooge()[$merchantId] === false))
         {
             $fetchPublicStatusFromScrooge = true;
         }

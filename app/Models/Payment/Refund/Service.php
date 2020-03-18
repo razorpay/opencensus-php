@@ -551,10 +551,10 @@ class Service extends Base\Service
 
         $refundsArray = $refunds->toArrayPublic();
 
-        // Showing public_status only for `CARD_TRANSFER_REFUND` feature enabled dashboard merchants
+        // Showing public_status for all dashboard merchants
         if ($this->app['basicauth']->isProxyAuth() === true)
         {
-            $this->addPublicStatus($refundsArray, $refunds, $input);
+            $this->addPublicStatus($refundsArray, $input);
         }
 
         return $refundsArray;
@@ -599,94 +599,94 @@ class Service extends Base\Service
         return $data;
     }
 
-    protected function getModeForRefunds($refunds)
+    protected function getModeForRefunds($refundsArray)
     {
         $refundModes = [];
 
-        $refundsArray = $refunds->toArrayWithItems();
-
         foreach ($refundsArray[Base\PublicCollection::ITEMS] as $refundArray)
         {
-            $speed = ($refundArray->getSpeedProcessed() === Speed::NORMAL)? Speed::NORMAL : Speed::INSTANT;
+            if (empty($refundArray[Entity::SPEED_PROCESSED]) === true)
+            {
+                $refundModes[$refundArray[Entity::ID]] = '';
 
-            $refundId = $refundArray[Entity::ID];
+                continue;
+            }
 
-            $refundModes[$refundId] = $speed;
+            $speed = ($refundArray[Entity::SPEED_PROCESSED] === Speed::NORMAL) ? Speed::NORMAL : Speed::INSTANT;
+
+            $refundModes[$refundArray[Entity::ID]] = $speed;
         }
 
         return $refundModes;
     }
 
-    protected function getPublicStatusForRefunds($refunds)
+    protected function getPublicStatusValueFromStatus($refundArray)
+    {
+        if (isset($refundArray[Entity::STATUS]) === false)
+        {
+                return '';
+        }
+
+        return ($refundArray[Entity::STATUS] === Status::PENDING) ? Status::PROCESSING : $refundArray[Entity::STATUS];
+    }
+
+    protected function getPublicStatusForRefunds($refundsArray)
     {
         $refundStatus = [];
 
-        $refundsArray = $refunds->toArrayWithItems();
-
         foreach ($refundsArray[Base\PublicCollection::ITEMS] as $refundArray)
         {
-            $status = ($refundArray->getSpeedProcessed() === null)? Status::PROCESSING : Status::PROCESSED;
-
-            $refundId = $refundArray[Entity::ID];
-
-            $refundStatus[$refundId] = $status;
+            $refundStatus[$refundArray[Entity::ID]] = $this->getPublicStatusValueFromStatus($refundArray);
         }
 
         return $refundStatus;
     }
 
-    protected function addPublicStatus(array &$refundsArray, $refunds, array $input = [])
+    protected function addPublicStatus(array &$refundsArray, array $input = [])
     {
-        // Public Status param will be added only for feature enabled merchants
-        if ($this->merchant->isFeatureEnabled(Feature\Constants::CARD_TRANSFER_REFUND) === true)
+        if (isset($input[Entity::PUBLIC_STATUS]) === true)
         {
-            if (isset($input[Entity::PUBLIC_STATUS]))
+            foreach ($refundsArray[Base\PublicCollection::ITEMS] as $key => $refundArray)
             {
-                foreach ($refundsArray[Base\PublicCollection::ITEMS] as $key => $refundArray)
-                {
-                    $refundsArray[Base\PublicCollection::ITEMS][$key][Entity::PUBLIC_STATUS] = $input[Entity::PUBLIC_STATUS];
+                $refundsArray[Base\PublicCollection::ITEMS][$key][Entity::PUBLIC_STATUS] = $input[Entity::PUBLIC_STATUS];
 
-                    $refundsArray[Base\PublicCollection::ITEMS][$key][Entity::STATUS] = $input[Entity::PUBLIC_STATUS];
-                }
-            }
-            else
-            {
-                $refundStatus = $this->getPublicStatusForRefunds($refunds);
-
-                foreach ($refundsArray[Base\PublicCollection::ITEMS] as &$refundArray)
-                {
-                    $refundId = $refundArray[Entity::ID];
-
-                    Entity::verifyIdAndStripSign($refundId);
-
-                    $refundArray[Entity::PUBLIC_STATUS] = $refundStatus[$refundId];
-
-                    $refundArray[Entity::STATUS] = $refundStatus[$refundId];
-                }
+                $refundsArray[Base\PublicCollection::ITEMS][$key][Entity::STATUS] = $input[Entity::PUBLIC_STATUS];
             }
         }
-    }
-
-    public function addModeAndPublicStatus(&$refundsArray, $refunds)
-    {
-        if ($this->merchant->isFeatureEnabled(Feature\Constants::CARD_TRANSFER_REFUND) === true)
+        else
         {
-            $refundModes = $this->getModeForRefunds($refunds);
-
-            $refundStatus = $this->getPublicStatusForRefunds($refunds);
+            $refundStatus = $this->getPublicStatusForRefunds($refundsArray);
 
             foreach ($refundsArray[Base\PublicCollection::ITEMS] as &$refundArray)
             {
                 $refundId = $refundArray[Entity::ID];
 
-                Entity::verifyIdAndStripSign($refundId);
-
-                $refundArray[Entity::MODE] = $refundModes[$refundId];
-
                 $refundArray[Entity::PUBLIC_STATUS] = $refundStatus[$refundId];
 
                 $refundArray[Entity::STATUS] = $refundStatus[$refundId];
             }
+        }
+    }
+
+    public function addModeAndPublicStatus(&$refundsArray)
+    {
+        $refundModes = $this->getModeForRefunds($refundsArray);
+
+        $refundStatus = $this->getPublicStatusForRefunds($refundsArray);
+
+        foreach ($refundsArray[Base\PublicCollection::ITEMS] as &$refundArray)
+        {
+            $refundId = $refundArray[Entity::ID];
+
+            // Has to be removed once we start consuming speed
+            $refundArray[Entity::MODE] = $refundModes[$refundId];
+
+            $refundArray[Entity::SPEED] = $refundModes[$refundId];
+
+            // Has to be removed once we start consuming status
+            $refundArray[Entity::PUBLIC_STATUS] = $refundStatus[$refundId];
+
+            $refundArray[Entity::STATUS] = $refundStatus[$refundId];
         }
     }
 
@@ -1608,7 +1608,8 @@ class Service extends Base\Service
                 if ($refund->isScrooge() === true)
                 {
                     $data = [
-                        Payment\Entity::STATUS => Status::PROCESSED
+                        Entity::MODE           => $input[Entity::PROCESSED_SOURCE] ?? '',
+                        Payment\Entity::STATUS => Status::PROCESSED,
                     ];
 
                     $this->makeScroogeEditRefundRequest($refund, $data);
@@ -1662,7 +1663,7 @@ class Service extends Base\Service
                         Entity::REFERENCE1 => $input[Entity::REFERENCE1] ?? '',
                         Entity::REFERENCE2 => $input[Entity::REFERENCE2] ?? '',
                     ],
-                    'processed_source' => $input[Entity::MODE] ?? '',
+                    Entity::PROCESSED_SOURCE    => $input[Entity::MODE] ?? '',
                     RefundConstants::FTA_UPDATE => $input[RefundConstants::FTA_UPDATE] ?? false,
                 ]
             ],
@@ -2623,30 +2624,32 @@ class Service extends Base\Service
 
     protected function addParamsForDashboard(array &$refundArray)
     {
-        if ($this->merchant->isFeatureEnabled(Feature\Constants::CARD_TRANSFER_REFUND) === true)
+        if (isset($refundArray[Entity::STATUS]) === true)
         {
-            try
-            {
-                $refundId = $refundArray[Entity::ID];
+            $refundArray[Entity::STATUS] = $this->getPublicStatusValueFromStatus($refundArray);
+        }
 
-                Entity::verifyIdAndStripSign($refundId);
+        try
+        {
+            $refundId = $refundArray[Entity::ID];
 
-                $refund = $this->repo->refund->find($refundId);
+            Entity::verifyIdAndStripSign($refundId);
 
-                $this->addProcessedAtTime($refundArray, $refund);
+            $refund = $this->repo->refund->find($refundId);
 
-                $this->addSpeedChangeTime($refundArray, $refund);
-            }
-            catch(\Throwable $exception)
-            {
-                $this->trace->traceException(
-                    $exception,
-                    Trace::WARNING,
-                    TraceCode::REFUND_ADD_DASHBOARD_PARAMS_FAILED,
-                    [
-                        'refund_id' => $refundId,
-                    ]);
-            }
+            $this->addProcessedAtTime($refundArray, $refund);
+
+            $this->addSpeedChangeTime($refundArray, $refund);
+        }
+        catch(\Throwable $exception)
+        {
+            $this->trace->traceException(
+                $exception,
+                Trace::WARNING,
+                TraceCode::REFUND_ADD_DASHBOARD_PARAMS_FAILED,
+                [
+                    'refund_id' => $refundId,
+                ]);
         }
     }
 
@@ -2700,5 +2703,26 @@ class Service extends Base\Service
         $responseData['refunds_updated'] = $updatedCount;
 
         return $responseData;
+    }
+
+    /**
+     * Sends flag to merchant config route for merchant dashboard
+     *
+     * @param string $merchantId
+     * @return bool
+     */
+    public function getRefundStatusFilterFlagForMerchantDashboard(string $merchantId) : bool
+    {
+        $displayRefundPublicStatus = Payment\Refund\Core::fetchPublicStatusFromScrooge($merchantId);
+        $refundPublicStatusFeatureEnabled =
+            $this->merchant->isFeatureEnabled(Feature\Constants::SHOW_REFUND_PUBLIC_STATUS);
+
+        if (($displayRefundPublicStatus === true) or
+            ($refundPublicStatusFeatureEnabled === true))
+        {
+            return false;
+        }
+
+        return true;
     }
 }

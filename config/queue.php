@@ -193,6 +193,10 @@ return [
             ],
         ],
     ],
+    'webhook_event' => [
+        'test'       => env('AWS_WEBHOOKS_TEST_QUEUE'),
+        'live'       => env('AWS_WEBHOOKS_LIVE_QUEUE'),
+    ],
     'dashboard' => [
         'test'       => env('AWS_GENERAL_TEST_QUEUE'),
         'live'       => env('AWS_GENERAL_LIVE_QUEUE'),
@@ -394,6 +398,11 @@ return [
         'test'       =>  env('AWS_PAYMENT_NBPLUS_API_RECONCILIATION_TEST_QUEUE'),
         'live'       =>  env('AWS_PAYMENT_NBPLUS_API_RECONCILIATION_LIVE_QUEUE'),
     ],
+    'rbl_banking_account_gateway_balance_update' => [
+        'test'       =>  env('AWS_RBL_BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_TEST_QUEUE'),
+        'live'       =>  env('AWS_RBL_BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_LIVE_QUEUE'),
+    ],
+
     /*
      | Lists various queues to be used per mailable
      */

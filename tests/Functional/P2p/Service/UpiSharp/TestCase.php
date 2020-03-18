@@ -7,6 +7,8 @@ use RZP\Tests\P2p\Service\Base\Fixtures\Fixtures;
 
 class TestCase extends Service\TestCase
 {
+    use Service\Base\Traits\NpciClTrait;
+
     protected $gateway = 'p2p_upi_sharp';
 
     protected $deviceSetMap = [

@@ -16,6 +16,7 @@ class Entity extends Base\PublicEntity
     const MERCHANT_ID        = 'merchant_id';
     const URL                = 'url';
     const EVENTS             = 'events';
+    const EVENTS2            = 'events2';
     const ENTITY_TYPE        = 'entity_type';
     const ENTITY_ID          = 'entity_id';
     const FAILURE_COUNT      = 'failure_count';
@@ -46,6 +47,7 @@ class Entity extends Base\PublicEntity
     const STORK_UPDATEABLE_FIELDS = [
         self::URL,
         self::EVENTS,
+        self::EVENTS2,
         self::SECRET,
         self::ACTIVE,
     ];
@@ -246,20 +248,86 @@ class Entity extends Base\PublicEntity
     protected function setEventsAttribute($events)
     {
         $hex = 0;
+        $hex2 = 0;
 
-        if (isset($this->attributes[self::EVENTS]))
+        $events2Events = $this->getApplicableEvents($events, Event::$bitPosition2);
+
+        if (empty($events2Events) === false)
         {
-            $hex = $this->attributes[self::EVENTS];
+            if (isset($this->attributes[self::EVENTS2]))
+            {
+                $hex2 = $this->attributes[self::EVENTS2];
+            }
+
+            $this->attributes[self::EVENTS2] = Event::getHexValue($events2Events, $hex2);
         }
 
-        $this->attributes[self::EVENTS] = Event::getHexValue($events, $hex);
+        $events1events = $this->getApplicableEvents($events, Event::$bitPosition);
+
+        if (empty($events1events) === false)
+        {
+            if (isset($this->attributes[self::EVENTS]))
+            {
+                $hex = $this->attributes[self::EVENTS];
+            }
+
+            $this->attributes[self::EVENTS] = Event::getHexValue($events1events, $hex);
+        }
+    }
+
+    protected function getApplicableEvents($events, $bitPosition)
+    {
+        foreach ($events as $event => $value)
+        {
+            if (in_array($event, array_keys($bitPosition), true) === false)
+            {
+                unset($events[$event]);
+            }
+        }
+
+        return $events;
     }
 
     protected function getEventsAttribute()
     {
         $events = $this->attributes[self::EVENTS];
 
-        $enabledEvents = Event::getEnabledEvents($events);
+        $enabledEvents = Event::getEnabledEvents($events, Event::$bitPosition);
+
+        $names = array_keys(Event::getLaunchedEventNames());
+
+        $eventsArray = [];
+
+        foreach ($names as $name)
+        {
+            $eventsArray[$name] = in_array($name, $enabledEvents);
+        }
+
+        $events2Array = $this->getEvents2Attribute();
+
+        $eventsArray = $this->mergeEventArrays($eventsArray, $events2Array);
+
+        return $eventsArray;
+    }
+
+    protected function mergeEventArrays($events1Array, $events2Array)
+    {
+        foreach ($events2Array as $event2 => $value)
+        {
+            if ($value === true)
+            {
+                $events1Array[$event2] = true;
+            }
+        }
+
+        return $events1Array;
+    }
+
+    protected function getEvents2Attribute()
+    {
+        $events2 = $this->attributes[self::EVENTS2] ?? [];
+
+        $enabledEvents = Event::getEnabledEvents($events2, Event::$bitPosition2);
 
         $names = array_keys(Event::getLaunchedEventNames());
 
@@ -290,7 +358,12 @@ class Entity extends Base\PublicEntity
     {
         $hex = $this->getEventsHexValue();
 
-        return Event::isEventEnabled($hex, $event);
+        $hex2 = $this->getEvents2HexValue();
+
+        // to avoid that an event that belongs in $bitPosition2 which is disabled, is marked enabled because
+        // in the same bit-position an event is enabled in the $bitPosition array
+        return ((Event::isEventEnabled($hex, $event) and in_array($event, array_keys(Event::$bitPosition), true) === true) or
+                (Event::isEventEnabled($hex2, $event) and in_array($event, array_keys(Event::$bitPosition2), true) === true));
     }
 
     public function resetFailureCount()
@@ -333,6 +406,11 @@ class Entity extends Base\PublicEntity
     protected function getEventsHexValue()
     {
         return $this->attributes[self::EVENTS];
+    }
+
+    protected function getEvents2HexValue()
+    {
+        return $this->attributes[self::EVENTS2];
     }
 
     public function deactivate()

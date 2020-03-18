@@ -33,6 +33,33 @@ return [
         'wallet'            => 'epaylater'
     ],
 
+    'testPaymentForSubMerchant' => [
+        'amount'            => 50000,
+        'method'            => 'paylater',
+        'status'            => 'captured',
+        'two_factor_auth'   => 'not_applicable',
+        'amount_authorized' => 50000,
+        'amount_refunded'   => 0,
+        'refund_status'     => null,
+        'currency'          => 'INR',
+        'description'       => 'random description',
+        'bank'              => null,
+        'error_code'        => null,
+        'error_description' => null,
+        'email'             => 'a@b.com',
+        'contact'           => '+918602579721',
+        'notes'             => [
+            'merchant_order_id' => 'random order id',
+        ],
+        'gateway'           => 'paylater',
+        'terminal_id'       => '10PayLaterTrml',
+        'signed'            => false,
+        'verified'          => null,
+        'entity'            => 'payment',
+        'otp_attempts'      => null,
+        'wallet'            => 'epaylater'
+    ],
+
     'testPaymentCardlessEmiEntity'   => [
         'provider'              => 'epaylater',
         'currency'              => 'INR',

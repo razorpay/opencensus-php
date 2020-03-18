@@ -16,8 +16,6 @@ class TerminalsService
 
     protected $config;
 
-    protected $mode;
-
     protected $trace;
 
     protected $baseUrl;
@@ -79,8 +77,50 @@ class TerminalsService
         $this->app = $app;
 
         $this->trace = $this->app['trace'];
+    }
 
-        $this->mode = $this->app['rzp.mode'];
+    public function migrateTerminal(Terminal\Entity $terminal): array
+    {
+        $content = json_encode($terminal->toArrayWithPassword());
+
+        $params = self::PARAMS[self::CREATE_TERMINAL];
+
+        $response = $this->sendRequest($params[self::PATH], $content, $params[self::METHOD]);
+
+        return $this->parseAndReturnResponse($response)['data'] ?? [];
+    }
+
+    public function fetchTerminalById(string $terminalId): array
+    {
+        $params = self::PARAMS[self::FETCH_TERMINAL_BY_ID];
+
+        $path = sprintf($params[self::PATH], $terminalId);
+
+        $response = $this->sendRequest($path, '', $params[self::METHOD]);
+
+        return $this->parseAndReturnResponse($response)[self::DATA] ?? [];
+    }
+
+    public function getTerminalsByMerchantId(string $merchantId)
+    {
+        $params = self::PARAMS[self::FETCH_TERMINALS_FOR_MERCHANT];
+
+        $path = sprintf($params[self::PATH], $merchantId);
+
+        $response = $this->sendRequest($path, '', $params[self::METHOD]);
+
+        return $this->parseAndReturnResponse($response)[self::DATA] ?? [];
+    }
+
+    public function deleteTerminalById(string $terminalId): array
+    {
+        $params = self::PARAMS[self::DELETE_TERMINAL_BY_ID];
+
+        $path = sprintf($params[self::PATH], $terminalId);
+
+        $response = $this->sendRequest($path, '', $params[self::METHOD]);
+
+        return $this->parseAndReturnResponse($response)[self::DATA] ?? [];
     }
 
     public function migrateTerminal(Terminal\Entity $terminal): array
@@ -171,9 +211,53 @@ class TerminalsService
         return $this->parseAndReturnResponse($response)[self::DATA][0] ?? [];
     }
 
+    public function addMerchantToTerminal(Terminal\Entity $terminal, Merchant\Entity $merchant) : array
+    {
+        $params = self::PARAMS[self::ADD_MERCHANT_TO_TERMINAL];
+
+        $content = [
+            Terminal\Entity::TERMINAL_ID => $terminal->getId(),
+            Merchant\Entity::MERCHANT_ID => $merchant->getId(),
+        ];
+
+        $response = $this->sendRequest($params[self::PATH], json_encode($content), $params[self::METHOD]);
+
+        return $this->parseAndReturnResponse($response)[self::DATA] ?? [];
+    }
+
+    public function removeMerchantFromTerminal(Terminal\Entity $terminal, Merchant\Entity $merchant) : array
+    {
+        $params = self::PARAMS[self::REMOVE_MERCHANT_FROM_TERMINAL];
+
+        $content = [
+            Terminal\Entity::TERMINAL_ID => $terminal->getId(),
+            Merchant\Entity::MERCHANT_ID => $merchant->getId(),
+        ];
+
+        $response = $this->sendRequest($params[self::PATH], $content, $params[self::METHOD]);
+
+        return $this->parseAndReturnResponse($response)[self::DATA] ?? [];
+    }
+
+    public function fetchMerchantTerminalById(string $terminalId, string $merchantId)
+    {
+        $params = self::PARAMS[self::FETCH_MERCHANT_TERMINAL_BY_ID];
+
+        $path = sprintf($params[self::PATH], $terminalId, $merchantId);
+
+        $content = [
+            Terminal\Entity::TERMINAL_ID => $terminalId,
+            Merchant\Entity::MERCHANT_ID => $merchantId,
+        ];
+
+        $response = $this->sendRequest($path, $content, $params[self::METHOD]);
+
+        return $this->parseAndReturnResponse($response)[self::DATA][0] ?? [];
+    }
+
     protected function sendRequest(string $path, $content = '', string $method = Requests::POST): \Requests_Response
     {
-        $url = $this->getBaseUrl($this->mode) . $path;
+        $url = $this->getBaseUrl() . $path;
 
         $headers = $this->getHeaders();
 
@@ -243,9 +327,10 @@ class TerminalsService
         return $responseArray;
     }
 
-    protected function getBaseUrl(string $mode)
+
+    protected function getBaseUrl()
     {
-        $urlConfig = 'applications.terminals_service.' . $mode . '.url';
+        $urlConfig = 'applications.terminals_service.' . $this->getMode() . '.url';
 
         return $this->app['config']->get($urlConfig);
     }
@@ -275,9 +360,13 @@ class TerminalsService
 
     protected function getPassword()
     {
-        $passwordConfig = 'applications.terminals_service.' . $this->mode . '.password';
+        $passwordConfig = 'applications.terminals_service.' . $this->getMode() . '.password';
 
         return $this->app['config']->get($passwordConfig);
+    }
 
+    protected function getMode()
+    {
+        return $this->app['rzp.mode'];
     }
 }

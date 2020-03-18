@@ -214,6 +214,8 @@ class SharpGatewayTest extends TestCase
 
     public function testAadhaarEmandatePayment()
     {
+        $this->markTestSkipped('aadhar auth type not supported');
+
         $this->fixtures->merchant->enableEmandate('10000000000000');
         $this->fixtures->merchant->addFeatures('charge_at_will');
 
@@ -398,6 +400,15 @@ class SharpGatewayTest extends TestCase
     }
 
     public function testValidateVpaFailure()
+    {
+        $this->ba->privateAuth();
+
+        $this->fixtures->merchant->addFeatures(['enable_vpa_validate']);
+
+        $this->startTest();
+    }
+
+    public function testValidateVpaYesBankInvalid()
     {
         $this->ba->privateAuth();
 

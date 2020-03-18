@@ -119,6 +119,7 @@ class Gateway
     const ACQUIRER_YESB         = 'yesb';
     const ACQUIRER_BARB         = 'barb';
     const ACQUIRER_SBIN         = 'sbin';
+    const ACQUIRER_CITI         = 'citi';
 
     const NOT_SUPPORTED      = 'not_supported';
     const SUPPORTED          = 'supported';
@@ -127,7 +128,9 @@ class Gateway
 
     const BT_YESBANK         = 'bt_yesbank';
     const BT_KOTAK           = 'bt_kotak';
+    const BT_ICICI           = 'bt_icici';
     const BT_DASHBOARD       = 'bt_dashboard';
+    const BT_RBL             = 'bt_rbl';
 
     // this is a dummy gateway. this is required to save MIDs & TIDs of a merchant.
     const EMI_SBI            = 'emi_sbi';
@@ -175,7 +178,7 @@ class Gateway
         self::CARDLESS_EMI => [CardlessEmi::ZESTMONEY, CardlessEmi::EARLYSALARY, CardlessEmi::FLEXMONEY],
         self::PAYLATER     => [PayLater::EPAYLATER, PayLater::GETSIMPL, PayLater::ICICI],
         self::WORLDLINE    => [self::ACQUIRER_AXIS],
-        self::MPGS         => [self::ACQUIRER_HDFC, self::ACQUIRER_AXIS, self::ACQUIRER_AMEX],
+        self::MPGS         => [self::ACQUIRER_HDFC, self::ACQUIRER_AXIS, self::ACQUIRER_AMEX, self::ACQUIRER_ICIC],
         self::UPI_JUSPAY   => [self::ACQUIRER_AXIS],
     ];
 
@@ -367,11 +370,14 @@ class Gateway
         IFSC::TMBL,
         IFSC::USFB,
         IFSC::UTIB,
-        IFSC::YESB,
+        //IFSC::YESB,
         Netbanking::PUNB_R,
         Netbanking::BARB_R,
         IFSC::SBIN,
         IFSC::ORBC,
+        IFSC::DLXB,
+        IFSC::COSB,
+        IFSC::UBIN,
     ];
 
     // banks supported by enach_npci_netbanking gateway for auth type card
@@ -389,9 +395,12 @@ class Gateway
         IFSC::MAHB,
         IFSC::SIBL,
         IFSC::USFB,
-        IFSC::YESB,
+        //IFSC::YESB,
         Netbanking::PUNB_R,
         IFSC::SBIN,
+        IFSC::RATN,
+        IFSC::DCBL,
+        IFSC::CITI,
     ];
 
     const EMANDATE_NB_DIRECT_BANKS = [
@@ -939,6 +948,8 @@ class Gateway
         Provider::YESBANK   => self::BT_YESBANK,
         Provider::KOTAK     => self::BT_KOTAK,
         Provider::DASHBOARD => self::BT_DASHBOARD,
+        Provider::ICICI     => self::BT_ICICI,
+        Provider::RBL       => self::BT_RBL,
     ];
 
     //
@@ -948,6 +959,8 @@ class Gateway
         self::BT_YESBANK,
         self::BT_KOTAK,
         self::BT_DASHBOARD,
+        self::BT_ICICI,
+        self::BT_RBL,
     ];
 
     /**
@@ -1380,6 +1393,7 @@ class Gateway
         IFSC::IOBA,
         IFSC::PYTM,
         IFSC::USFB,
+        IFSC::DLXB,
     ];
 
     /**
@@ -1444,7 +1458,6 @@ class Gateway
     public static $fileBasedEMandateRegistrationGateways = [
         Gateway::NETBANKING_HDFC,
         Gateway::ENACH_RBL,
-        Gateway::ENACH_NPCI_NETBANKING,
         Gateway::NETBANKING_SBI,
     ];
 
@@ -1884,7 +1897,7 @@ class Gateway
 
         foreach (self::getEmandateAuthTypeToBankMap() as $emandateBanks)
         {
-            $banks = array_merge($banks, $emandateBanks);
+             $banks = array_merge($banks, $emandateBanks);
         }
 
         return array_values(array_unique($banks));
@@ -2298,8 +2311,8 @@ class Gateway
 
         return [
             AuthType::NETBANKING  => $netbankingBanks,
-            AuthType::AADHAAR     => self::EMANDATE_AADHAAR_BANKS,
-            AuthType::AADHAAR_FP  => self::EMANDATE_AADHAAR_BANKS,
+            // AuthType::AADHAAR     => self::EMANDATE_AADHAAR_BANKS,
+            // AuthType::AADHAAR_FP  => self::EMANDATE_AADHAAR_BANKS,
             AuthType::DEBITCARD   => self::ENACH_NPCI_NB_AUTH_CARD_BANKS,
         ];
     }

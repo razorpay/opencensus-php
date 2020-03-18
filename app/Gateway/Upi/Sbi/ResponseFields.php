@@ -45,6 +45,7 @@ class ResponseFields
     const STATUS                     = 'status';
     const STATUS_DESCRIPTION         = 'statusDesc';
     const ADDITIONAL_INFO            = 'addInfo';
+    const ADDITIONAL_INFO2           = 'addInfo2';
     const PAYER_VPA                  = 'payerVPA';
     const PAYEE_VPA                  = 'payeeVPA';
     const PG_MERCHANT_ID             = 'pgMerchantId';

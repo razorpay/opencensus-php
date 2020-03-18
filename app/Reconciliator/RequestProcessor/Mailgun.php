@@ -109,6 +109,24 @@ class Mailgun extends Base
         ];
     }
 
+    public function processForVa(array $input): array
+    {
+        // Gets the email details and validates the email details.
+        $inputDetails = $this->getEmailDetails($input);
+
+        $fileLocationType = FileProcessor::UPLOADED;
+
+        $inputDetails[self::SOURCE] = self::MAILGUN;
+
+        $allFilesDetails = $this->getFileDetailsFromInput(
+            $inputDetails, $input, $fileLocationType);
+
+        return [
+            self::FILE_DETAILS  => $allFilesDetails,
+            self::INPUT_DETAILS => $inputDetails,
+        ];
+    }
+
     protected function getEmailDetails($input)
     {
         //

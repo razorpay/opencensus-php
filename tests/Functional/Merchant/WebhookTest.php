@@ -14,9 +14,10 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Models\Settlement;
 use RZP\Models\Feature;
-use RZP\Models\Merchant\Webhook;
 use RZP\Constants\Timezone;
+use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
+use RZP\Models\Merchant\FeeBearer;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\Merchant\Webhook\Inferno;
 use Illuminate\Database\Eloquent\Factory;
@@ -48,6 +49,8 @@ class WebhookTest extends TestCase
     use DbEntityFetchTrait;
     use PartnerTrait;
 
+    protected $sharedTerminal;
+
     public function setUp()
     {
         $this->testDataFilePath = __DIR__.'/helpers/WebhookData.php';
@@ -61,6 +64,7 @@ class WebhookTest extends TestCase
         $this->ba->proxyAuth();
 
         $this->setupMockDns();
+
     }
 
     public function testCreateWebhook()
@@ -751,91 +755,134 @@ class WebhookTest extends TestCase
         $this->doAuthAndCapturePayment($payment);
     }
 
-    public function testWebhookPaymentCreated()
+    public function testWebhookPaymentCreatedForJsonp()
     {
-        $translatedWebhookBody = 'sample translated webhook body';
+        $this->fixtures->merchant->addFeatures(['payment_created_webhook']);
 
-        $webhookSecret = 'sample_secret';
+        $this->createWebhook(['events'      => ['payment.created' => "1"]]);
 
-        // mark as partner
-        $partnerId     = '100000Razorpay';
-        $client        = $this->setUpPartnerMerchantAppAndGetClient('dev', [], $partnerId);
-        $submerchantId = '10000000000000';
+        $inferno = $this->mockInferno();
 
-        $this->fixtures->create(
-            'merchant_access_map',
+        $payment = $this->getDefaultPaymentArray();
+
+        $inferno->shouldReceive('fire')
+            ->once();
+
+        $this->doAuthAndCapturePayment($payment);
+    }
+
+    public function testWebhookPaymentCreatedForAuth()
+    {
+        $this->fixtures->merchant->addFeatures(['payment_created_webhook']);
+
+        $this->createWebhook(['events'      => ['payment.created' => "1"]]);
+
+        $inferno = $this->mockInferno();
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $inferno->shouldReceive('fire')
+            ->once();
+
+        $this->doAuthPayment($payment);
+    }
+
+    public function testWebhookPaymentCreatedForAuthFeatureNotEnabled()
+    {
+        $this->expectException(BadRequestValidationFailureException::class);
+        $this->expectExceptionCode(ErrorCode::BAD_REQUEST_VALIDATION_FAILURE);
+        $this->expectExceptionMessage('Invalid event name/names: payment.created');
+
+        $this->createWebhook(
             [
-                'entity_id'   => $client->getApplicationId(),
-                'merchant_id' => $submerchantId,
-                'entity_owner_id' => $partnerId,
-            ]
-        );
-
-        $app = DB::Connection('auth')
-            ->table('applications')
-            ->orderBy('created_at', 'desc')
-            ->first();
-
-        // create partner webhook
-        $this->createMerchantWebhook(
-            [
-                'events'      => ['payment.created' => "1"],
-                'secret'      => $webhookSecret,
-                'entity_type' => 'application',
-                'entity_id'   => $app->id,
+                'events' => [
+                    'payment.created'   => '1',
+                ],
             ]);
+    }
 
-        // create setting for translation url
-        $this->ba->adminAuth();
-        $this->fixtures->edit('admin', 'RzrpySprAdmnId', ['allow_all_merchants' => 1]);
-        $this->ba->addAccountAuth($partnerId);
+    public function testWebhookPaymentCreatedForAjax()
+    {
+        $this->fixtures->merchant->addFeatures(['payment_created_webhook']);
 
-        $testData = $this->testData['createSettingsForWebhookTranslateUrl'];
+        $this->createWebhook(['events'      => ['payment.created' => "1"]]);
 
-        $this->runRequestResponseFlow($testData);
+        $inferno = $this->mockInferno();
 
-        $this->ba->deleteAccountAuth();
+        $inferno->shouldReceive('fire')
+            ->once();
 
-        $payment  = $this->getDefaultPaymentArray();
+        $this->gateway = 'upi_hulk';
 
-        // mock mozart webhook translate and inferno requests
-        $this->mockMozartWebhookTranslateRequest(function ($path, $content) use ($translatedWebhookBody) {
+        $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
 
-            return [
-                'content'   => $translatedWebhookBody,
-                'headers'   => ['request-id' => ['12345678']],
-            ];
-        });
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_upi_hulk_terminal');
 
-        $webhookFired = [];
+        $this->gateway = 'upi_hulk';
 
-        $this->mockInfernoMakeRequest(function ($request) use (& $webhookFired)
-        {
-            $webhookFired = $request;
+        $payment = $this->getDefaultUpiPaymentArray();
 
-            return $this->getStandardWebhookResponse();
-        });
+        $this->doAuthPaymentViaAjaxRoute($payment);
+    }
 
-        // make payment on submerchant
-        $this->doPartnerAuthPayment($payment, $client->getId(), $submerchantId);
+    public function testWebhookPaymentCreatedForCheckout()
+    {
+        $this->fixtures->merchant->addFeatures(['payment_created_webhook']);
 
-        /*
-         * these asserts cannot be inside the mockInfernoMakeRequest closure because
-         * if assert fails, then exception is thrown. However, the exception is caught and not rethrown
-         * by inferno. this leads to all assert failures failing silently.
-         */
-        $this->assertEquals($translatedWebhookBody, $webhookFired['content']);
+        $this->createWebhook(['events'      => ['payment.created' => "1"]]);
 
-        $this->assertEquals('12345678', $webhookFired['headers']['request-id'][0]);
+        $inferno = $this->mockInferno();
 
-        $this->assertEquals(
-            hash_hmac('sha256', $translatedWebhookBody, $webhookSecret),
-            $webhookFired['headers']['X-Razorpay-Signature']);
+        $payment = $this->getDefaultPaymentArray();
 
-        // to assert that express service does not modify the original url, method etc
-        $this->assertEquals('http://webhook.com/v1/dummy/route', $webhookFired['url']);
+        $inferno->shouldReceive('fire')
+            ->once();
 
-        $this->assertEquals('post', $webhookFired['method']);
+        $this->doAuthPaymentViaCheckoutRoute($payment);
+    }
+
+    public function testWebhookPaymentCreatedForS2SPrivateAuth()
+    {
+        $this->fixtures->merchant->addFeatures(['s2s']);
+
+        $this->fixtures->merchant->addFeatures(['payment_created_webhook']);
+
+        $this->createWebhook(['events'      => ['payment.created' => "1"]]);
+
+        $this->ba->privateAuth();
+
+        $this->mockCardVault();
+
+        $inferno = $this->mockInferno();
+
+        $inferno->shouldReceive('fire')
+            ->once();
+
+        $this->doS2SPrivateAuthPayment();
+    }
+
+    public function testWebhookPaymentCreatedForCustomerFee()
+    {
+        $this->fixtures->merchant->addFeatures(['s2s']);
+
+        $this->fixtures->merchant->enableConvenienceFeeModel();
+
+        $this->fixtures->pricing->editDefaultPlan(['fee_bearer' => FeeBearer::CUSTOMER]);
+
+        $this->fixtures->merchant->addFeatures(['payment_created_webhook']);
+
+        $this->createWebhook(['events'      => ['payment.created' => "1"]]);
+
+        $this->ba->privateAuth();
+
+        $this->mockCardVault();
+
+        $inferno = $this->mockInferno();
+
+        $inferno->shouldReceive('fire')
+            ->never();
+
+        $this->createAndGetFeesForPayment();
     }
 
     public function testOrderPaidWebhookEventData()
@@ -1266,8 +1313,6 @@ class WebhookTest extends TestCase
 
     public function testRefundSpeedChangedWebhookEventData()
     {
-        $this->fixtures->merchant->addFeatures(['card_transfer_refund']);
-
         $this->createWebhook(['events' => ['refund.speed_changed' => '1']]);
 
         $payment = $this->defaultAuthPayment();
@@ -1374,8 +1419,6 @@ class WebhookTest extends TestCase
 
     public function testRefundProcessedInstantWebhookEventData()
     {
-        $this->fixtures->merchant->addFeatures(['card_transfer_refund']);
-
         $this->createWebhook(['events' => ['refund.processed' => '1']]);
 
         $this->fixtures->pricing->createInstantRefundsPricingPlan();
@@ -1426,8 +1469,6 @@ class WebhookTest extends TestCase
 
     public function testRefundProcessedNormalWebhookEventData()
     {
-        $this->fixtures->merchant->addFeatures(['card_transfer_refund']);
-
         $this->createWebhook(['events' => ['refund.processed' => '1']]);
 
         $payment = $this->defaultAuthPayment();

@@ -64,6 +64,7 @@ use RZP\Models\SubscriptionRegistration;
 use RZP\Models\Payment\TerminalAnalytics;
 use RZP\Gateway\Mozart\GetSimpl\Constants;
 use RZP\Gateway\Base\Action as GatewayAction;
+use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Gateway\Enach\Npci\Netbanking\Gateway as enachNpciGateway;
 
 trait Authorize
@@ -262,6 +263,8 @@ trait Authorize
 
             $this->repo->saveOrFail($payment);
 
+            $this->eventPaymentCreated();
+
             $this->validateAndSaveBillingAddressIfApplicable($payment, $input);
 
             return null;
@@ -276,7 +279,6 @@ trait Authorize
 
         if ($this->canAuthorizeViaCps($payment) === true)
         {
-
             $request =  $this->authorizeViaCps($payment, $input, $gatewayInput);
 
             $this->trace->info(
@@ -2025,6 +2027,8 @@ trait Authorize
         );
 
         $this->repo->saveOrFail($payment);
+
+        $this->eventPaymentCreated();
 
         $this->tracePaymentInfo(TraceCode::PAYMENT_CREATED, Trace::DEBUG);
 
@@ -5678,6 +5682,8 @@ trait Authorize
         }
 
         $merchantBanks = ($merchantMethods === null) ? [] : $merchantMethods->getSupportedBanks();
+
+        $merchantBanks = Netbanking::removeDefaultDisableBanks($merchantBanks);
 
         $paymentBank = $payment->getBank();
 

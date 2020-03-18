@@ -248,20 +248,19 @@ class Error extends Support\Fluent
         {
             if ($this->redis->get($cacheKey) !== null)
             {
-                $errorCodeMap = get_object_vars(json_decode($this->redis->get($cacheKey)));
+                $errorCodeMap = json_decode($this->redis->get($cacheKey), true);
             }
             else
             {
                 $this->readMappingFromFile($cacheKey, $method, $errorCodeMap);
             }
-
         }
         else
         {
             $this->readMappingFromFile($cacheKey, $method, $errorCodeMap);
         }
 
-        $this->setErrorParamsIfApplicable($errorCodeMap, $code);
+        $this->setErrorParamsIfApplicable($errorCodeMap, $code, $method);
     }
 
     protected function readMappingFromFile($cacheKey, $method, & $errorCodeMap)
@@ -304,7 +303,7 @@ class Error extends Support\Fluent
         }
     }
 
-    protected function setErrorParamsIfApplicable($errorCodeMap, $code)
+    protected function setErrorParamsIfApplicable($errorCodeMap, $code, $method)
     {
         try
         {
@@ -323,6 +322,21 @@ class Error extends Support\Fluent
                 $this->setFailureStage($errorCodeMap[$code][5] ?: "NA");
 
                 $this->setRecoverable($errorCodeMap[$code][6]);
+            }
+            else
+            {
+                $metadata = $this->getAttribute(self::METADATA);
+
+                if ($metadata !== null)
+                {
+                    $this->trace->info(TraceCode::ERROR_RESPONSE_MAPPING_NOT_FOUND,
+                        [
+                            'payment_method'       => $method,
+                            'internal_error_code'  => $code,
+                            'description'          => $this->getDescription()
+                        ]
+                    );
+                }
             }
         }
         catch (\Exception $exception)
@@ -506,22 +520,26 @@ class Error extends Support\Fluent
         $error = array(
             self::PUBLIC_ERROR_CODE => $this->getPublicErrorCode(),
             self::DESCRIPTION       => $description,
+            self::METADATA          => $this->getAttribute(self::METADATA)
         );
 
-        $isMetadataFeatureEnabled = false;
+        $isReasonFeatureEnabled = false;
 
         if (($this->app['basicauth'] !== null) and
             ($this->app['basicauth']->getMerchant() !== null))
         {
             $merchant = $this->app['basicauth']->getMerchant();
 
-            $isMetadataFeatureEnabled = $merchant->isFeatureEnabled(Constants::ERROR_METADATA_RESPONSE);
+            $isReasonFeatureEnabled = $merchant->isFeatureEnabled(Constants::ERROR_REASON_RESPONSE);
         }
 
-        if ($isMetadataFeatureEnabled === true)
+        if ($isReasonFeatureEnabled === true)
         {
             $publicReason   = null;
 
+            //New Error Detailed Field on feature basis will be shown to merchants
+            //This field is fetched from mapping file and concatanated here to
+            //Sample reason: Bank-Authorization-risk_decline
             if($this->getAttribute(self::REASON) !== null)
             {
                 $publicReason   = $this->getAttribute(self::POINT_OF_FAILURE)."-".
@@ -530,10 +548,15 @@ class Error extends Support\Fluent
 
             $reasonArr = array(
                 self::REASON            => $publicReason,
-                self::METADATA          => $this->getAttribute(self::METADATA)
             );
 
             $error = array_merge($error, $reasonArr);
+
+            $this->trace->info(TraceCode::ERROR_RESPONSE_DATA,
+                [
+                'error_response' => $error
+                ]
+            );
         }
 
         $error = $this->checkAndAddDataToErrorResp($error);

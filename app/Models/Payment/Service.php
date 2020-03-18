@@ -707,7 +707,7 @@ class Service extends Base\Service
 
         if ($this->app['basicauth']->isProxyAuth() === true)
         {
-            (new Payment\Refund\Service())->addModeAndPublicStatus($refundsArray, $refunds);
+            (new Payment\Refund\Service())->addModeAndPublicStatus($refundsArray);
         }
 
         return $refundsArray;
@@ -776,8 +776,18 @@ class Service extends Base\Service
 
                 $merchant = $payment->merchant;
 
+                $amount = $payment->getAmount();
+
+                // For bulk capture, we hit capture with the total payment amount(Payment amount+fee).We are subtracting
+                // fee here as we add fee while capturing the payments. This will ensure that the correct amount is sent
+                // for capture.
+                if ($payment->isFeeBearerCustomer() === true)
+                {
+                    $amount = $amount - $payment->getFee();
+                }
+
                 $captureInput = [
-                    Payment\Entity::AMOUNT   => $payment->getAmount(),
+                    Payment\Entity::AMOUNT   => $amount,
                     Payment\Entity::CURRENCY => $payment->getCurrency()
                 ];
 
@@ -1142,7 +1152,7 @@ class Service extends Base\Service
     protected function addDashboardFlagInstantRefundSupport(array &$entity, $payment)
     {
         $entity[RefundConstants::INSTANT_REFUND_SUPPORT] = $this->getNewProcessor($this->merchant)
-                                                                ->isInstantRefundSupported($payment);
+                                                                ->isInstantRefundSupportedOnPayment($payment);
     }
 
     public function getPaymentFlows(array $input)

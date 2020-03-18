@@ -94,10 +94,11 @@ class Entity extends Base\PublicEntity
 
     // This is only a virtual attribute, not stored in the refund entity in the DB -
     // only being used for pricing and passing to Scrooge
-    const MODE_REQUESTED         = 'mode_requested';
+    const MODE_REQUESTED   = 'mode_requested';
+    const MODE             = 'mode';
+    const SPEED            = 'speed';
+    const PROCESSED_SOURCE = 'processed_source';
 
-    const MODE                   = 'mode';
-    const SPEED                  = 'speed';
 
     const PUBLIC_STATUS = 'public_status';
 
@@ -651,6 +652,20 @@ class Entity extends Base\PublicEntity
 
     public function isDirectSettlementRefund(): bool
     {
+        //
+        //
+        // This terminal was deleted due to Yesbank moratorium
+        // This particular terminal is not a direct settlement terminal
+        // Will be removing this check once the terminal is fixed.
+        //
+        // Slack thread for reference:
+        // https://razorpay.slack.com/archives/CA66F3ACS/p1584100168218900?thread_ts=1584090894.210900&cid=CA66F3ACS
+        //
+        if ($this->payment->getTerminalId() === 'B2K2t8JD9z98vh')
+        {
+            return false;
+        }
+
         if (($this->payment->hasTerminal() === true) and
             ($this->payment->terminal->isDirectSettlementWithRefund() === true))
         {
@@ -1105,7 +1120,6 @@ class Entity extends Base\PublicEntity
     protected function getPublicStatus($response, array $data = [])
     {
         $refundPublicStatusFeatureEnabled = $data[Constants::REFUND_PUBLIC_STATUS_FEATURE_ENABLED] ?? false;
-        $cardTransferFeatureEnabled       = $data[Constants::CARD_TRANSFER_FEATURE_ENABLED_MERCHANT] ?? false;
 
         $refundStatus = $this->getStatus();
 
@@ -1116,32 +1130,28 @@ class Entity extends Base\PublicEntity
 
         $response[self::STATUS] = $publicStatusMap[$refundStatus] ?? Status::PENDING;
 
-        $callScroogeForSpeed = false;
-
-        if ($cardTransferFeatureEnabled === true)
-        {
             // Adding speed and other related params only for Card Transfer Feature enabled merchants
             $callScroogeForSpeed = true;
 
             // If speed_processed is already populated in the refund entity - we need not call scrooge
-            if (empty($this->getSpeedProcessed()) === false)
-            {
-                $response[self::SPEED_PROCESSED] = $this->getSpeedProcessed();
+        if (empty($this->getSpeedProcessed()) === false)
+        {
+            $response[self::SPEED_PROCESSED] = $this->getSpeedProcessed();
 
-                $callScroogeForSpeed = false;
-            }
-            // Populating default values in case scrooge does not return proper response
-            else if ($this->isRefundSpeedInstant() === true)
-            {
-                $response[self::SPEED_PROCESSED] = Speed::INSTANT;
-            }
-            else
-            {
-                $response[self::SPEED_PROCESSED] = Speed::NORMAL;
-            }
-
-            $response[self::SPEED_REQUESTED] = $this->getSpeedRequested();
+            $callScroogeForSpeed = false;
         }
+            // Populating default values in case scrooge does not return proper response
+        else if ($this->isRefundSpeedInstant() === true)
+        {
+            $response[self::SPEED_PROCESSED] = Speed::INSTANT;
+        }
+        else
+        {
+            $response[self::SPEED_PROCESSED] = Speed::NORMAL;
+        }
+
+        $response[self::SPEED_REQUESTED] = $this->getSpeedRequested();
+
 
         $eligibleForScroogeCall = ($response[self::STATUS] === Status::PENDING) and ($this->isScrooge() === true);
 
@@ -1198,7 +1208,8 @@ class Entity extends Base\PublicEntity
             }
         }
 
-        if ((empty($response[self::SPEED_PROCESSED]) === false) and
+        if ((Payment\Refund\Core::isRefundsPublicStatusMerchant($this->getMerchantId()) === false) and
+            ($refundPublicStatusFeatureEnabled === false) and
             ($response[self::SPEED_PROCESSED] === Speed::NORMAL))
         {
             $response[self::STATUS] = Status::PROCESSED;
@@ -1215,26 +1226,15 @@ class Entity extends Base\PublicEntity
     public function toArrayPublic()
     {
         $response = parent::toArrayPublic();
-
-        $displayRefundPublicStatus = Payment\Refund\Core::isRefundsPublicStatusMerchant($this->getMerchantId());
-
+        
         $refundPublicStatusFeatureEnabled = $this->merchant->isFeatureEnabled(Feature::SHOW_REFUND_PUBLIC_STATUS);
-        $cardTransferRefundFeatureEnabled = $this->merchant->isFeatureEnabled(Feature::CARD_TRANSFER_REFUND);
 
-        if (($displayRefundPublicStatus === true) or
-            ($refundPublicStatusFeatureEnabled === true) or
-            ($cardTransferRefundFeatureEnabled === true))
-        {
-            $data = [
-                Constants::REFUND_PUBLIC_STATUS_FEATURE_ENABLED   => $refundPublicStatusFeatureEnabled,
-                Constants::CARD_TRANSFER_FEATURE_ENABLED_MERCHANT => $cardTransferRefundFeatureEnabled,
-            ];
+        $data = [
+            Constants::REFUND_PUBLIC_STATUS_FEATURE_ENABLED => $refundPublicStatusFeatureEnabled,
+        ];
 
-            $scroogeResponse = $this->getPublicStatus($response, $data);
+        $scroogeResponse = $this->getPublicStatus($response, $data);
 
-            return $scroogeResponse;
-        }
-
-        return $response;
+        return $scroogeResponse;
     }
 }
