@@ -34,6 +34,11 @@ class Core extends Base\Core
             $inputTrace
         );
 
+        if (isset($input[Entity::CHECKOUT_CONFIG_ID]) === true)
+        {
+            $this->validateCheckoutConfigId($input[Entity::CHECKOUT_CONFIG_ID]);
+        }
+
         $order = new Entity;
 
         // Needs to be associated first cause merchant entity is required
@@ -330,5 +335,10 @@ class Core extends Base\Core
                 PublicErrorDescription::BAD_REQUEST_ORDER_RECEIPT_NOT_UNIQUE,
                 ['order_ids' => $duplicateOrderIds]);
         }
+    }
+
+    private function validateCheckoutConfigId($configId)
+    {
+        $this->repo->config->findByPublicId($configId);
     }
 }

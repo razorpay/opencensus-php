@@ -5673,3 +5673,6 @@ ALTER TABLE webhooks
 
 ALTER TABLE terminals
     ADD COLUMN account_type VARCHAR(255) DEFAULT NULL;
+
+ALTER TABLE orders
+    ADD COLUMN checkout_config_id CHAR(14) DEFAULT NULL;

@@ -1828,4 +1828,15 @@ class OrderTest extends TestCase
 
         $this->runRequestResponseFlow($this->testData[__FUNCTION__]);
     }
+
+    public function testCreateOrderWithConfigId()
+    {
+        $config = $this->fixtures->create('config');
+
+        $this->testData[__FUNCTION__]['request']['content']['checkout_config_id'] = $config->getPublicId();
+
+        $response = $this->startTest();
+
+        $this->assertEquals($config->getPublicId(), $response['checkout_config_id']);
+    }
 }

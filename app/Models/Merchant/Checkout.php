@@ -25,6 +25,7 @@ use RZP\Models\Offer\Checker;
 use RZP\Base\RepositoryManager;
 use RZP\Models\Gateway\Downtime;
 use RZP\Models\Plan\Subscription;
+use RZP\Models\Payment\Config as Config;
 use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Models\Admin\Org\Entity as ORG_ENTITY;
 
@@ -108,6 +109,11 @@ class Checkout
     {
         if (empty($input[Payment\Entity::ORDER_ID]) === true)
         {
+            if (empty($input['checkout_config_id']) === false)
+            {
+                $this->checkAndFillConfigDetails($input['checkout_config_id'], $merchant->getId(), $data);
+            }
+
             return;
         }
 
@@ -116,6 +122,10 @@ class Checkout
         $order = $this->setOrGetOrder($orderId, $merchant);
 
         $data['order'] = (new Order\Core)->getFormattedDataForCheckout($order, $merchant);
+
+        $configId = (isset($order->checkout_config_id) === true) ? Payment\Config\Entity::getSignedId($order->checkout_config_id) : null;
+
+        $this->checkAndFillConfigDetails($configId, $merchant->getId(), $data);
 
         $this->resetMethodsIfValidBanksPresent($data, $order, $merchant);
     }
@@ -911,5 +921,10 @@ class Checkout
         $contact =  (new Contact\Core)->fetch($input['contact_id'], $merchant)->toArrayPublic();
 
         $data['contact'] = $contact;
+    }
+
+    private function checkAndFillConfigDetails($configId, $merchantId, & $data)
+    {
+        (new Config\Core())->getFormattedConfigForCheckout($configId, $merchantId, $data);
     }
 }
