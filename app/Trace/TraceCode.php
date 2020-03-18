@@ -2688,6 +2688,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const TERMINALS_SERVICE_RESPONSE                            = 'TERMINALS_SERVICE_RESPONSE';
     const TERMINALS_SERVICE_INTEGRATION_ERROR                   = 'TERMINALS_SERVICE_INTEGRATION_ERROR';
 
+    const UPI_MANDATE_CREATE_REQUEST                            = 'UPI_MANDATE_CREATE_REQUEST';
+    const UPI_MANDATE_CREATED                                   = 'UPI_MANDATE_CREATED';
+
     //payment config
     const CONFIG_CREATE_REQUEST                                 = 'CONFIG_CREATE_REQUEST';
     const CONFIG_UPDATE_REQUEST                                 = 'CONFIG_UPDATE_REQUEST';

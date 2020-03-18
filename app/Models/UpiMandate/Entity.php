@@ -3,6 +3,9 @@
 namespace RZP\Models\UpiMandate;
 
 use RZP\Models\Base;
+use RZP\Models\Order;
+use RZP\Models\Merchant;
+use RZP\Models\Customer;
 
 class Entity extends Base\PublicEntity
 {
@@ -60,4 +63,24 @@ class Entity extends Base\PublicEntity
         self::NPCI_TXN_ID,
         self::GATEWAY_REFERENCE_ID,
     ];
+
+    public function merchant()
+    {
+        return $this->belongsTo(Merchant\Entity::class);
+    }
+
+    public function customer()
+    {
+        return $this->belongsTo(Customer\Entity::class);
+    }
+
+    public function token()
+    {
+        return $this->belongsTo(Customer\Token\Entity::class);
+    }
+
+    public function order()
+    {
+        return $this->belongsTo(Order\Entity::class);
+    }
 }
