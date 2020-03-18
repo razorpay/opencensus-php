@@ -330,6 +330,7 @@ class Entity
     const PAYMENTS_UPI_VPA              = 'payments_upi_vpa';
     const PAYMENTS_UPI_BANK_ACCOUNT     = 'payments_upi_bank_account';
     const PAYMENTS_UPI_VPA_BANK_ACCOUNT = 'payments_upi_vpa_bank_account';
+    const CONFIG                        = 'config';
 
 
     /**
@@ -642,6 +643,7 @@ class Entity
 
         self::MERCHANT_FRESHDESK_TICKETS    => \RZP\Models\Merchant\FreshdeskTicket::class,
 
+        self::CONFIG                        => \RZP\Models\Payment\Config::class,
     ];
 
     protected static $repository = [

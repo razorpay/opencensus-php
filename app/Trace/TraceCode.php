@@ -2688,6 +2688,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const TERMINALS_SERVICE_RESPONSE                            = 'TERMINALS_SERVICE_RESPONSE';
     const TERMINALS_SERVICE_INTEGRATION_ERROR                   = 'TERMINALS_SERVICE_INTEGRATION_ERROR';
 
+    //payment config
+    const CONFIG_CREATE_REQUEST                                 = 'CONFIG_CREATE_REQUEST';
+    const CONFIG_UPDATE_REQUEST                                 = 'CONFIG_UPDATE_REQUEST';
+
     // DB wait timeout
     const WAIT_TIMEOUT_EXCEPTION                                = 'WAIT_TIMEOUT_EXCEPTION';
 
