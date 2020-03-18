@@ -682,6 +682,7 @@ class Gateway
         Payment\Gateway::NETBANKING_KOTAK,
         Payment\Gateway::EBS,
         Payment\Gateway::PAYTM,
+        Payment\Gateway::MPGS,
     ];
 
     public static $scroogeFileBasedRefundGatewaysWithTimestamps = [
