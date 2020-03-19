@@ -71,7 +71,7 @@ class TerminalsService
             self::METHOD => Requests::GET,
         ],
         self::TERMINAL_ONBOARD_CALLBACK => [
-            self::PATH   => 'v2/terminal/onboard/callback/%s',
+            self::PATH   => 'v2/terminal/onboard/%s/callback',
             self::METHOD => Requests::POST,
         ]
     ];
