@@ -8,6 +8,7 @@ import DefaultRefundSpeed from './DefaultRefundSpeed';
 import Internationalization from './Internationalization';
 import CheckoutTheme from './CheckoutTheme';
 import EmailNotifications from './EmailNotifications';
+import InternationalConfig from './InternationalConfig';
 
 @connect(
   state => {
@@ -70,8 +71,10 @@ export default class CongfigurationContainer extends Component {
               <FlashCheckout />
             )}
             <DefaultRefundSpeed />
+            {/* Hiding old International Flow. TODO: Remove permanently */}
             {/* temporarily hide internationalization for test mode due to inconsistency in db */}
-            {this.props.mode === 'live' && <Internationalization />}
+            {/* {this.props.mode === 'live' && <Internationalization />} */}
+            {this.props.mode === 'live' && <InternationalConfig />}
             <EmailNotifications form="configForm" onSave={this.saveConfig} />
           </div>
         )}

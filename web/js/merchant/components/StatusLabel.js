@@ -109,6 +109,11 @@ export const offerStatusMap = {
   Disabled: 'label-muted',
 };
 
+export const internationalStatusMap = {
+  'access-requested': 'bg-primary',
+  approved: 'label-success',
+};
+
 const entityMap = {
   payment: paymentStatusMap,
   refund: refundStatusMap,
@@ -124,6 +129,7 @@ const entityMap = {
   dispute: disputeStatusMap,
   token: tokenStatusMap,
   offer: offerStatusMap,
+  international: internationalStatusMap,
 };
 
 export const InvoiceStatusLabel = StatusLabel(invoiceStatusMap);
@@ -140,5 +146,6 @@ export const DisputeStatusLabel = StatusLabel(disputeStatusMap);
 export const TokenStatusLabel = StatusLabel(tokenStatusMap);
 export const OfferStatusLabel = StatusLabel(offerStatusMap);
 export const RefundStatusLabel = StatusLabel(refundStatusMap);
+export const InternationalStatusLabel = StatusLabel(internationalStatusMap);
 
 export default item => StatusLabel(entityMap[item.entity])(item);
