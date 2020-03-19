@@ -163,6 +163,9 @@ export default class SettlementSchedule extends Component {
                       <div class="flex" style={{ fontSize: '16px' }}>
                         <div class="w50 text-left">
                           {titleCase(item.method)}
+                          {' ('}
+                          {item.international ? 'International' : 'Domestic'}
+                          {')'}
                         </div>
                         <div class="w50 text-right">
                           {item.is_early_settlement_schedule ? (
