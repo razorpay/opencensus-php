@@ -11,6 +11,7 @@ class Request
     const SDK           = 'sdk';
     const DESTINATION   = 'destination';
     const URL           = 'url';
+    const TIME          = 'time';
     const ACTION        = 'action';
     const CONTENT       = 'content';
     const VALIDATE      = 'validate';
@@ -45,11 +46,18 @@ class Request
         return $this;
     }
 
-    public function setUrl($url)
+    public function setRedirect(string $time = null)
     {
-        $this->setType('post');
-        $this->load[self::URL] = $url;
+        $this->setType('redirect');
+        $this->load[self::TIME] = $time;
         return $this;
+    }
+
+    public function setPoll(string $time = null, string $url = null)
+    {
+        $this->setType('poll');
+        $this->load[self::TIME] = $time;
+        $this->load[self::URL] = $url;
     }
 
     public function setAction($action)

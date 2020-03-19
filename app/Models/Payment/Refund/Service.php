@@ -551,10 +551,10 @@ class Service extends Base\Service
 
         $refundsArray = $refunds->toArrayPublic();
 
-        // Showing public_status only for `CARD_TRANSFER_REFUND` feature enabled dashboard merchants
+        // Showing public_status for all dashboard merchants
         if ($this->app['basicauth']->isProxyAuth() === true)
         {
-            $this->addPublicStatus($refundsArray, $refunds, $input);
+            $this->addPublicStatus($refundsArray, $input);
         }
 
         return $refundsArray;
@@ -599,45 +599,52 @@ class Service extends Base\Service
         return $data;
     }
 
-    protected function getModeForRefunds($refunds)
+    protected function getModeForRefunds($refundsArray)
     {
         $refundModes = [];
 
-        $refundsArray = $refunds->toArrayWithItems();
-
         foreach ($refundsArray[Base\PublicCollection::ITEMS] as $refundArray)
         {
-            $speed = ($refundArray->getSpeedProcessed() === Speed::NORMAL)? Speed::NORMAL : Speed::INSTANT;
+            if (empty($refundArray[Entity::SPEED_PROCESSED]) === true)
+            {
+                $refundModes[$refundArray[Entity::ID]] = '';
 
-            $refundId = $refundArray[Entity::ID];
+                continue;
+            }
 
-            $refundModes[$refundId] = $speed;
+            $speed = ($refundArray[Entity::SPEED_PROCESSED] === Speed::NORMAL) ? Speed::NORMAL : Speed::INSTANT;
+
+            $refundModes[$refundArray[Entity::ID]] = $speed;
         }
 
         return $refundModes;
     }
 
-    protected function getPublicStatusForRefunds($refunds)
+    protected function getPublicStatusValueFromStatus($refundArray)
+    {
+        if (isset($refundArray[Entity::STATUS]) === false)
+        {
+                return '';
+        }
+
+        return ($refundArray[Entity::STATUS] === Status::PENDING) ? Status::PROCESSING : $refundArray[Entity::STATUS];
+    }
+
+    protected function getPublicStatusForRefunds($refundsArray)
     {
         $refundStatus = [];
 
-        $refundsArray = $refunds->toArrayWithItems();
-
         foreach ($refundsArray[Base\PublicCollection::ITEMS] as $refundArray)
         {
-            $status = ($refundArray->getSpeedProcessed() === null)? Status::PROCESSING : Status::PROCESSED;
-
-            $refundId = $refundArray[Entity::ID];
-
-            $refundStatus[$refundId] = $status;
+            $refundStatus[$refundArray[Entity::ID]] = $this->getPublicStatusValueFromStatus($refundArray);
         }
 
         return $refundStatus;
     }
 
-    protected function addPublicStatus(array &$refundsArray, $refunds, array $input = [])
+    protected function addPublicStatus(array &$refundsArray, array $input = [])
     {
-        if (isset($input[Entity::PUBLIC_STATUS]))
+        if (isset($input[Entity::PUBLIC_STATUS]) === true)
         {
             foreach ($refundsArray[Base\PublicCollection::ITEMS] as $key => $refundArray)
             {
@@ -648,13 +655,11 @@ class Service extends Base\Service
         }
         else
         {
-            $refundStatus = $this->getPublicStatusForRefunds($refunds);
+            $refundStatus = $this->getPublicStatusForRefunds($refundsArray);
 
             foreach ($refundsArray[Base\PublicCollection::ITEMS] as &$refundArray)
             {
                 $refundId = $refundArray[Entity::ID];
-
-                Entity::verifyIdAndStripSign($refundId);
 
                 $refundArray[Entity::PUBLIC_STATUS] = $refundStatus[$refundId];
 
@@ -663,20 +668,22 @@ class Service extends Base\Service
         }
     }
 
-    public function addModeAndPublicStatus(&$refundsArray, $refunds)
+    public function addModeAndPublicStatus(&$refundsArray)
     {
-        $refundModes = $this->getModeForRefunds($refunds);
+        $refundModes = $this->getModeForRefunds($refundsArray);
 
-        $refundStatus = $this->getPublicStatusForRefunds($refunds);
+        $refundStatus = $this->getPublicStatusForRefunds($refundsArray);
 
         foreach ($refundsArray[Base\PublicCollection::ITEMS] as &$refundArray)
         {
             $refundId = $refundArray[Entity::ID];
 
-            Entity::verifyIdAndStripSign($refundId);
-
+            // Has to be removed once we start consuming speed
             $refundArray[Entity::MODE] = $refundModes[$refundId];
 
+            $refundArray[Entity::SPEED] = $refundModes[$refundId];
+
+            // Has to be removed once we start consuming status
             $refundArray[Entity::PUBLIC_STATUS] = $refundStatus[$refundId];
 
             $refundArray[Entity::STATUS] = $refundStatus[$refundId];
@@ -1601,8 +1608,8 @@ class Service extends Base\Service
                 if ($refund->isScrooge() === true)
                 {
                     $data = [
-                        Payment\Entity::STATUS   => Status::PROCESSED,
-                        Entity::PROCESSED_SOURCE => $input[Entity::PROCESSED_SOURCE] ?? '',
+                        Entity::MODE           => $input[Entity::PROCESSED_SOURCE] ?? '',
+                        Payment\Entity::STATUS => Status::PROCESSED,
                     ];
 
                     $this->makeScroogeEditRefundRequest($refund, $data);
@@ -2617,6 +2624,11 @@ class Service extends Base\Service
 
     protected function addParamsForDashboard(array &$refundArray)
     {
+        if (isset($refundArray[Entity::STATUS]) === true)
+        {
+            $refundArray[Entity::STATUS] = $this->getPublicStatusValueFromStatus($refundArray);
+        }
+
         try
         {
             $refundId = $refundArray[Entity::ID];
@@ -2691,5 +2703,26 @@ class Service extends Base\Service
         $responseData['refunds_updated'] = $updatedCount;
 
         return $responseData;
+    }
+
+    /**
+     * Sends flag to merchant config route for merchant dashboard
+     *
+     * @param string $merchantId
+     * @return bool
+     */
+    public function getRefundStatusFilterFlagForMerchantDashboard(string $merchantId) : bool
+    {
+        $displayRefundPublicStatus = Payment\Refund\Core::fetchPublicStatusFromScrooge($merchantId);
+        $refundPublicStatusFeatureEnabled =
+            $this->merchant->isFeatureEnabled(Feature\Constants::SHOW_REFUND_PUBLIC_STATUS);
+
+        if (($displayRefundPublicStatus === true) or
+            ($refundPublicStatusFeatureEnabled === true))
+        {
+            return false;
+        }
+
+        return true;
     }
 }

@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Merchant\Balance;
 
+use RZP\Exception\BadRequestValidationFailureException;
+
 /**
  * Class AccountType
  *
@@ -26,5 +28,13 @@ class AccountType
         $key = __CLASS__ . '::' . strtoupper($accType);
 
         return ((defined($key) === true) and (constant($key) === $accType));
+    }
+
+    public static function validate(string $accountType)
+    {
+        if (self::exists($accountType) === false)
+        {
+            throw new BadRequestValidationFailureException('Not a valid payout account type for balance: ' . $accountType);
+        }
     }
 }

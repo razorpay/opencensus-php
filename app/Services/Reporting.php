@@ -25,7 +25,6 @@ use RZP\Error\PublicErrorDescription;
 use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\Schedule\Task as ScheduleTask;
 use RZP\Models\Admin\Permission\Name as Permission;
-use RZP\Models\Payment\Refund\Constants as RefundConstants;
 
 /**
  * Interface for api to talk to Reporting service
@@ -61,6 +60,7 @@ class Reporting implements ExternalService
     const LINKED_ACCOUNT_HEADER = 'X-Linked-Account-Parent';
     const USER_ID_HEADER        = 'X-Dashboard-User-Id';
     const GENERATED_BY_HEADER   = 'X-Generated-By';
+    const BATCH_ID              = 'X-Batch-Id';
 
     /**
      * @var array
@@ -291,6 +291,11 @@ class Reporting implements ExternalService
         if ($this->ba->isProxyAuth())
         {
             $input['generated_by'] = $this->ba->authCreds->getKey();
+        }
+
+        if (Request::header(self::BATCH_ID) !== null)
+        {
+            $input['batch_id'] = Request::header(self::BATCH_ID);
         }
 
         $path = self::LOG_PATH;
@@ -863,19 +868,7 @@ class Reporting implements ExternalService
 
         $hasOfferTag              = in_array(Feature::OFFERS, $features, true);
         $hasGenericNotesTag       = in_array(Feature::REPORTING_GENRERIC_NOTES, $features, true);
-        $hasCardTransferRefundTag = in_array(Feature::CARD_TRANSFER_REFUND, $features, true);
         $hasNotDisableInstantRefundsTag = !(in_array(Feature::DISABLE_INSTANT_REFUNDS, $features, true));
-
-        //
-        // Using razorx to ramp up instant refunds self serve
-        //
-        $variant = $this->app->razorx->getTreatment($merchant->getId(),
-            Merchant\RazorxTreatment::INSTANT_REFUNDS_SELF_SERVE,
-            $this->mode
-        );
-
-        $showInstantRefundsReport = ($variant === RefundConstants::RAZORX_VARIANT_ON) ? $hasNotDisableInstantRefundsTag :
-            $hasCardTransferRefundTag;
 
         $partnerFlags = $this->fetchPartnerReportsControls($merchant);
 
@@ -985,7 +978,7 @@ class Reporting implements ExternalService
                 'name'      => 'Instant Refunds',
                 'type'      => 'refunds',
                 'consumer'  => Account::SHARED_ACCOUNT,
-                'condition' => $showInstantRefundsReport,
+                'condition' => $hasNotDisableInstantRefundsTag,
             ],
         ];
 

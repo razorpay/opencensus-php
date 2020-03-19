@@ -46,6 +46,7 @@ use RZP\Gateway\GatewayManager;
 use RZP\Models\Workflow\Action;
 use RZP\Models\Plan\Subscription;
 use RZP\Models\Partner\Commission;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Base\Database\MySqlConnection;
 use RZP\Models\Plan\Subscription\Addon;
 use RZP\Services\FreshdeskTicketClient;
@@ -53,6 +54,7 @@ use RZP\Models\SubscriptionRegistration;
 use RZP\Models\Gateway\File as GatewayFile;
 use RZP\Models\PaymentLink\PaymentPageItem;
 use RZP\Services\Beam\Service as BeamService;
+use RZP\Base\Database\Connectors\MySqlConnector;
 use RZP\Models\Merchant\Request as MerchantRequest;
 
 class ApiServiceProvider extends BaseServiceProvider
@@ -832,6 +834,11 @@ class ApiServiceProvider extends BaseServiceProvider
 
     protected function registerDatabaseConnection()
     {
+        $this->app->singleton('db.connector.mysql', function($app)
+        {
+            return (new MySqlConnector($app));
+        });
+
         Connection::resolverFor('mysql', function ($connection, $database, $prefix, $config) {
             //
             // If the connection config has lag_check configuration set use the

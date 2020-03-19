@@ -26,6 +26,7 @@ use RZP\Models\Merchant;
 use RZP\Models\Terminal;
 use RZP\Services\Doppler;
 use RZP\Trace\TraceCode;
+use RZP\Models\Bank\IFSC;
 use RZP\Models\BankAccount;
 use RZP\Models\PaymentLink;
 use RZP\Constants\Timezone;
@@ -45,7 +46,9 @@ use RZP\Models\Payment\Refund\Speed;
 use RZP\Gateway\Base\CardCacheTrait;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\Base\PublicCollection;
+use RZP\Gateway\Upi\Base\ProviderCode;
 use RZP\Models\Feature\Constants as Feature;
+use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Models\Transfer\Core as TransferCore;
 use RZP\Services\NbPlus as NbPlusPaymentService;
 
@@ -328,8 +331,6 @@ class Processor
 
             $payment = $this->payment;
 
-            $this->eventPaymentCreated();
-
             // This flow is being used for only hosted (Shopify).
             $this->checkSignature($input, $payment);
 
@@ -365,11 +366,20 @@ class Processor
 
     protected function eventPaymentCreated()
     {
-        $eventPayload = [
-            ApiEventSubscriber::MAIN => $this->payment,
-        ];
+        // the scenario where same payment id gets generated in live and test mode is not handled currently.
+        $cacheKey = 'EVENT_PAYMENT_CREATED_FIRED_'.$this->payment->getPublicId();
 
-        $this->app['events']->fire('api.payment.created', $eventPayload);
+        if (($this->cache->get($cacheKey) === null) or
+            ($this->cache->get($cacheKey) === false))
+        {
+            $eventPayload = [
+                ApiEventSubscriber::MAIN => $this->payment,
+            ];
+
+            $this->app['events']->fire('api.payment.created', $eventPayload);
+
+            $this->cache->put($cacheKey, true, 1200);
+        }
     }
 
     protected function appendMetadataForPayment(array & $input)
@@ -606,7 +616,12 @@ class Processor
                                                           Payment\Method::CARDLESS_EMI);
         try
         {
+            // merchant id is required to fetch details from cache
+            $input['merchant_id'] = $merchant[Merchant\Entity::ID];
+
             $checkAccountData = $this->app['gateway']->call($gateway, 'check_account', $input, $this->mode, $terminal);
+
+            unset($input['merchant_id']);
         }
         catch (Exception\GatewayErrorException $exception)
         {
@@ -750,8 +765,12 @@ class Processor
                          ->getByMerchantProviderAndMethod($input[Payment\Entity::PROVIDER],
                                                           $merchant[Merchant\Entity::ID],
                                                           Payment\Method::PAYLATER);
+        // merchant id is required to fetch details from cache
+        $input['merchant_id'] = $merchant[Merchant\Entity::ID];
 
         $response = $this->app['gateway']->call($gateway, 'check_account', $input, $this->mode, $terminal);
+
+        unset ($input['merchant_id']);
 
         $coproto  = $this->preProcesspaylaterResponseHandler($response, $payment, $input, $merchant);
 
@@ -2718,6 +2737,13 @@ class Processor
         // or in bulk via the bank transfer batch job (run via cli)
         //
         if ($this->app->runningInQueue() === true)
+        {
+            return;
+        }
+
+        $rblVaRoutes = ['bank_transfer_process_rbl', 'bank_transfer_process_rbl_test', 'bank_transfer_process_rbl_internal'];
+
+        if (in_array(Route::currentRouteName(), $rblVaRoutes, true) === true)
         {
             return;
         }

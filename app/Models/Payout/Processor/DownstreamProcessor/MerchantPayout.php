@@ -18,7 +18,6 @@ class MerchantPayout extends Base
 {
     protected function setChannel(Entity $payout)
     {
-
         $channel = $payout->merchant->getChannel();
 
         //
@@ -35,24 +34,12 @@ class MerchantPayout extends Base
         {
             if ($this->isOutsideBankingHours($channel) === true)
             {
-                if ($payout->getAmount() <= FundTransfer\Base\Initiator\NodalAccount::MAX_IMPS_AMOUNT *100)
-                {
-                    $channel = Settlement\Channel::YESBANK;
-                }
-                else
-                {
-                    $this->trace->error(TraceCode::ES_ON_DEMAND_IMPS_AMOUNT_LIMIT_EXCEEDED, [
-                        'channel'   => $channel,
-                        'message'   => 'Amount provided is greater than max allowed IMPS limit',
-                    ]);
-
-                    throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_PAYOUT_AMOUNT_MODE_MISMATCH,
-                                                            null,
-                                                            [
-                                                                'amount' => $payout->getAmount()
-                                                            ],
-                                                            'Please provide an amount less than 2 Lacs to get a settlement at this point of time.');
-                }
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_PAYOUT_AMOUNT_MODE_MISMATCH,
+                                                        null,
+                                                        [
+                                                            'amount' => $payout->getAmount()
+                                                        ],
+                                                        'Settlements cannot be created at this point of time.');
             }
         }
 

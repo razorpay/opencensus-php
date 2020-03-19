@@ -408,7 +408,9 @@ return [
             Permission::DOWNLOAD_CREDIT_BUREAU_REPORTS => [
                 'description' => 'Allow downloads of credit bureau reports of merchants',
                 'assignable'  => true,
-            ]
+            ],
+            Permission::EDIT_MERCHANT_INTERNATIONAL  => '',
+
         ],
 
         PermissionCategory::SETTLEMENT => [
@@ -753,6 +755,10 @@ return [
                 'description' => 'Upload batch file to create adjustments in bulk',
                 'assignable'  => true,
             ],
+            Permission::REPORTING_BATCH_UPLOAD => [
+                'description' => 'Upload batch file to create large reports from reporting',
+                'assignable'  => true,
+            ],
         ],
 
         PermissionCategory::SHIELD => [
@@ -794,6 +800,10 @@ return [
         PermissionCategory::RAZORPAYX_BANKING => [
             Permission::BANKING_UPDATE_ACCOUNT => [
                 'description' => 'Updating banking account details of the merchant',
+                'assignable'  => true,
+            ],
+            Permission::CREATE_BANKING_VIRTUAL_ACCOUNTS => [
+                'description' => 'Create Banking VAs for a merchant',
                 'assignable'  => true,
             ],
         ],

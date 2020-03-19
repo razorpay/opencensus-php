@@ -32,6 +32,8 @@ class DigioGatewayTest extends TestCase
         $this->fixtures->merchant->addFeatures([Constants::CHARGE_AT_WILL]);
 
         $this->gateway = 'esigner_digio';
+
+        $this->markTestSkipped();
     }
 
     public function testSuccessfulEsignGeneration()

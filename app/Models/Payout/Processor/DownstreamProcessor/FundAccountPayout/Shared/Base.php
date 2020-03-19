@@ -9,7 +9,8 @@ use RZP\Mail\Banking;
 use RZP\Models\Admin;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
-use RZP\Models\Transaction;
+use RZP\Models\Merchant;
+use RZP\Models\Payout\Mode;
 use RZP\Models\Payout\Entity;
 use RZP\Models\Payout\Status;
 use RZP\Models\Base\PublicEntity;
@@ -27,16 +28,16 @@ class Base extends FundAccountPayout\Base
 
             $this->validateModeForChannelAndFundAccount($payout, $ftaAccount);
 
-            $this->createTransaction($payout);
-
-            //
-            // In case of payouts with status=(queued, payouts), we don't create the transaction yet.
-            // This event will be dispatched later when we are actually processing the payout.
-            //
-            if ($payout->isStatusBeforeCreate() === false)
+            // We are overriding only for live mode for now. To check for test mode later.
+            if (($payout->getChannel() === Channel::YESBANK) and
+                ($this->isLiveMode() === true))
             {
-                (new Transaction\Core)->dispatchEventForTransactionCreated($payout->transaction);
+                $payout->setChannel(Channel::ICICI);
             }
+
+            $this->checkAllowModeOnIcici($payout, $ftaAccount);
+
+            $this->createTransaction($payout);
 
             //
             // Create a fund transfer entity where the fund transfers will be processed.
@@ -74,6 +75,65 @@ class Base extends FundAccountPayout\Base
             else
             {
                 throw $ex;
+            }
+        }
+    }
+
+    /**
+     * @param Entity $payout
+     *
+     * @throws BadRequestException
+     */
+    protected function checkAllowModeOnIcici(Entity $payout, $ftaAccount)
+    {
+        $channel = $payout->getChannel();
+
+        $mode = $payout->getMode();
+
+        $destination = $ftaAccount->getEntity();
+
+        $treatmentName = 'RAZORPAY_X_ALLOW_' . strtoupper($mode) .'_PAYOUTS_VIA_ICICI_TO_' . strtoupper($destination);
+
+        $key = Merchant\RazorxTreatment::class . '::' . strtoupper($treatmentName);
+
+        $treatmentExists = ((defined($key) === true) and
+                            (constant($key) === strtolower($treatmentName)));
+
+        // If we don't have a treatment defined, we will allow the mode to go through.
+        if ($treatmentExists === false)
+        {
+            return;
+        }
+
+        //
+        // If we have the treatment defined AND the channel is ICICI, we check RazorX.
+        // If RazorX fails, we assume that the mode is not supported and fail it.
+        // We don't have mode check based on experiment for other channels.
+        //
+        if ($channel === Channel::ICICI)
+        {
+            $variant = $this->app->razorx->getTreatment(
+                $payout->getMerchantId(),
+                constant(Merchant\RazorxTreatment::class . '::' . $treatmentName),
+                $this->mode
+            );
+
+            if ($variant === 'on')
+            {
+                return;
+            }
+            else
+            {
+                throw new BadRequestException(
+                    ErrorCode::BAD_REQUEST_PAYOUT_MODE_NOT_SUPPORTED,
+                    null,
+                    [
+                        'channel'       => $channel,
+                        'mode'          => $mode,
+                        'payout_id'     => $payout->getId()
+                    ],
+                    $mode . ' is not supported'
+                );
             }
         }
     }
@@ -120,7 +180,7 @@ class Base extends FundAccountPayout\Base
 
             $lowBalanceThreshold = $merchantConfig['low_balance_threshold'] ?? 0;
 
-            $balance = $payout->balance->getBalance();
+            $balance = $payout->balance->getBalanceWithLockedBalance();
 
             if ($balance > $lowBalanceThreshold)
             {
@@ -219,7 +279,7 @@ class Base extends FundAccountPayout\Base
 
         $mode = $payout->getMode();
 
-        $valid = Channel::validateChannelAndMode($channel, $destinationType, $mode);
+        $valid = Mode::validateChannelAndModeForPayouts($channel, $destinationType, $mode);
 
         if ($valid === false)
         {

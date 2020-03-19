@@ -125,7 +125,7 @@ class Fixtures extends Constants
 
     /**
      * @param string $deviceSetId
-     * @return P2p\Device\Entity
+     * @return P2p\Device\DeviceToken\Entity
      * @throws RuntimeException
      */
     public function deviceToken(string $deviceSetId, bool $verified = true): P2p\Device\DeviceToken\Entity
@@ -309,6 +309,13 @@ class Fixtures extends Constants
         $entity = factory(P2p\Device\RegisterToken\Entity::class)->create($create);
 
         return $entity;
+    }
+
+    public function disableHandle(string $code, string $mode = 'live')
+    {
+        $this->getDbEntityById('p2p_handle', $code)
+             ->setConnection($mode)
+             ->setActive(false)->saveOrFail();
     }
 
     public function __get($property)

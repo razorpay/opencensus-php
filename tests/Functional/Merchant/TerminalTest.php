@@ -446,6 +446,42 @@ class TerminalTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateMpgsPurchaseTerminal()
+    {
+        $url = '/merchants/10000000000000/terminals';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
+    public function testEditMpgsTerminal()
+    {
+        $attributes = [
+            'merchant_id'               => '10000000000000',
+            'gateway'                   => 'mpgs',
+            'card'                      => 1,
+            'international'             => 1,
+            'gateway_merchant_id'       => '9387723',
+            'gateway_terminal_password' => 'random',
+            'mode'                      => Terminal\Mode::DUAL,
+            'type'                      => [
+                'non_recurring'  => '1',
+            ],
+            'enabled'                   => 1,
+        ];
+
+        $terminal = $this->fixtures->create('terminal', $attributes);
+
+        $tid = $terminal['id'];
+
+        $data = ['international' => 0, 'mode' => Terminal\Mode::PURCHASE];
+
+        $content = $this->editTerminal($tid, $data);
+
+        $this->assertEquals($content['international'], 0);
+    }
+
     public function testCreatePaytmCardTerminal()
     {
         $url = '/merchants/100000Razorpay/terminals';
@@ -1386,5 +1422,36 @@ class TerminalTest extends TestCase
 
         // Adding below assert to check if the org is being associated to terminal (via merchant) properly
         $this->assertEquals('100000razorpay', $terminal['org_id']);
+    }
+
+    public function testAssignTerminalWithNoAccountTypeAttribute()
+    {
+        $merchant = $this->testAssignTerminalWithDifferentAccountTypeAttribute();
+
+        $url = '/merchants/' . $merchant->getKey() . '/terminals';
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+        $this->testData[__FUNCTION__]['request']['content']['gateway_merchant_id'] = '9999';
+
+        $this->startTest();
+    }
+
+    public function testAssignTerminalWithDifferentAccountTypeAttribute()
+    {
+        $merchant = $this->fixtures->create('merchant');
+
+        $url = '/merchants/' . $merchant->getKey() . '/terminals';
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+
+        $url = '/merchants/' . $merchant->getKey() . '/terminals';
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+        $this->testData[__FUNCTION__]['request']['content']['gateway_merchant_id'] = '9999';
+        $this->testData[__FUNCTION__]['response']['content']['gateway_merchant_id'] = '9999';
+        $this->testData[__FUNCTION__]['request']['content']['account_type'] = 'nodal';
+
+        $this->startTest();
+
+        return $merchant;
     }
 }

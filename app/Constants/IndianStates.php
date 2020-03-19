@@ -43,6 +43,7 @@ class IndianStates
 
     protected static $stateCodeMap = [
         'ANDAMAN & NICOBAR ISLANDS'     => self::AN,
+        'ANDAMAN AND NICOBAR ISLANDS'   => self::AN,
         'ANDHRA PRADESH'                => self::AP,
         'ARUNACHAL PRADESH'             => self::AR,
         'ASSAM'                         => self::AS,
@@ -50,13 +51,16 @@ class IndianStates
         'CHANDIGARH'                    => self::CH,
         'CHATTISGARH'                   => self::CT,
         'DADRA & NAGAR HAVELI'          => self::DN,
+        'DADRA AND NAGAR HAVELI'        => self::DN,
         'DAMAN & DIU'                   => self::DD,
+        'DAMAN AND DIU'                 => self::DD,
         'DELHI'                         => self::DL,
         'GOA'                           => self::GO,
         'GUJARAT'                       => self::GJ,
         'HARYANA'                       => self::HA,
         'HIMACHAL PRADESH'              => self::HP,
         'JAMMU & KASHMIR'               => self::JK,
+        'JAMMU AND KASHMIR'             => self::JK,
         'JHARKHAND'                     => self::JH,
         'KARNATAKA'                     => self::KA,
         'KERALA'                        => self::KE,
@@ -94,7 +98,9 @@ class IndianStates
 
     public static function getStateNameByCode(string $code)
     {
-        return array_flip(self::$stateCodeMap)[$code] ?? null;
+        $stateName = array_search($code, self::$stateCodeMap);
+
+        return $stateName ?: null;
     }
 
     public static function stateValueExist(string $value):bool

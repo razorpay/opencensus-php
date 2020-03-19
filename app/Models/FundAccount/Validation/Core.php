@@ -6,6 +6,7 @@ use Carbon\Carbon;
 
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\Admin;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
@@ -14,11 +15,13 @@ use Razorpay\Trace\Logger;
 use RZP\Models\FundAccount;
 use RZP\Models\Pricing\Fee;
 use RZP\Constants\Timezone;
+use RZP\Models\Settlement\Channel;
 use RZP\Models\FundTransfer\Attempt;
+use RZP\Exception\BadRequestException;
+use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
 
 class Core extends Base\Core
 {
-
     protected $fundAccountCore;
     private $mutex;
 
@@ -422,6 +425,32 @@ class Core extends Base\Core
             $balance = $this->repo->balance->findByIdAndMerchant($balanceId, $this->merchant);
         }
 
+        $this->blockFAVIfApplicable($balance);
+
         $fundAccValidation->balance()->associate($balance);
+    }
+
+    protected function blockFAVIfApplicable($balance)
+    {
+        if (($balance->isTypeBanking() === true) and
+            ($balance->getChannel() === Channel::YESBANK))
+        {
+            $config = (new Admin\Service)->getConfigKey(['key' => Admin\ConfigKey::BLOCK_YESBANK_RX_FAV]) ?? false;
+
+            if (boolval($config) === false)
+            {
+                return;
+            }
+
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_FAV_NOT_ALLOWED_CURRENTLY,
+                null,
+                [
+                    'channel'       => 'yesbank',
+                    'merchant_id'   => $balance->getMerchantId(),
+                    'balance_id'    => $balance->getId(),
+                    'config'        => $config,
+                ]);
+        }
     }
 }

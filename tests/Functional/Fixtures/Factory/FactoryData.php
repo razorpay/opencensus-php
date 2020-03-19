@@ -1384,5 +1384,14 @@ final class FactoryData
             'status'             => 'created',
             'activation_token'   => $faker->sha256,
         ]);
+
+        $factory(\RZP\Models\Payment\Config\Entity::class, [
+            'id'                 => $faker->uniqueid,
+            'merchant_id'        => '10000000000000',
+            'name'               => 'Test Config',
+            'type'               => 'checkout',
+            'config'             => '{"method" : "card"}',
+            'default'            => true,
+        ]);
     }
 }

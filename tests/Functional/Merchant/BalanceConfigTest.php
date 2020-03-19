@@ -20,6 +20,14 @@ class BalanceConfigTest extends TestCase
         parent::setUp();
     }
 
+
+    public function testCreateBalanceConfigInvalidAutoSmallerNegativeLimit()
+    {
+        $this->setUpCreateRequestFixtures();
+
+        $this->startTest();
+    }
+
     public function testCreatePrimaryBalanceConfig()
     {
         $this->setUpCreateRequestFixtures();
@@ -28,13 +36,6 @@ class BalanceConfigTest extends TestCase
     }
 
     public function testCreateBankingBalanceConfig()
-    {
-        $this->setUpCreateRequestFixtures();
-
-        $this->startTest();
-    }
-
-    public function testCreateBalanceConfigInvalidSmallerNegativeLimit()
     {
         $this->setUpCreateRequestFixtures();
 
@@ -453,5 +454,43 @@ class BalanceConfigTest extends TestCase
         );
 
         $this->ba->adminAuth();
+    }
+
+    public function testFetchSharedBankingBalances()
+    {
+        $this->fixtures->create('balance',
+                                     [
+                                         'merchant_id'    => '10000000000000',
+                                         'type'           => 'primary',
+                                         'account_type'   => 'shared',
+                                         'balance'        => 100000,
+                                         'account_number' => '2224440041626905',
+                                     ]);
+
+        $this->fixtures->create('balance',
+                                     [
+                                         'merchant_id'    => '10000000000000',
+                                         'type'           => 'banking',
+                                         'account_type'   => 'shared',
+                                         'balance'        => 100000,
+                                         'account_number' => '2224440041626906',
+                                     ]);
+
+        $this->fixtures->create('balance',
+                                     [
+                                         'merchant_id'    => '10000000000000',
+                                         'type'           => 'banking',
+                                         'account_type'   => 'direct',
+                                         'balance'        => 100000,
+                                         'account_number' => '2224440041626907',
+                                     ]);
+
+        $this->ba->adminAuth();
+
+        $admin = $this->ba->getAdmin();
+
+        $this->fixtures->admin->edit($admin["id"], ['allow_all_merchants' => true]);
+
+        $this->startTest();
     }
 }

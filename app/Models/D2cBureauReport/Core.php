@@ -89,5 +89,4 @@ class Core extends Base\Core
                 $bureauDetailArray[D2cBureauDetail\Entity::ADDRESS] = substr($bureauDetailArray[D2cBureauDetail\Entity::ADDRESS], 0, 40);
         }
     }
-
 }

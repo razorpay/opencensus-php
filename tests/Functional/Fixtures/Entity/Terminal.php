@@ -572,7 +572,7 @@ class Terminal extends Base
             'id'                        => $termId,
             'merchant_id'               => '100000Razorpay',
             'gateway'                   => 'enach_npci_netbanking',
-            'gateway_acquirer'          => 'yesb',
+            'gateway_acquirer'          => 'citi',
             'card'                      => 0,
             'emandate'                  => 1,
             'type'                      => [
@@ -1336,7 +1336,19 @@ class Terminal extends Base
             ],
         ];
 
-        return $this->createBankAccountTerminal(array_merge($defaultValues, $attributes));
+        $defaultValues1 = [
+            'id'                  => 'BANKACC3DSN3DZ',
+            'gateway_merchant_id' => '232323',
+            'type'                => [
+                Type::NON_RECURRING    => '1',
+                Type::NUMERIC_ACCOUNT  => '1',
+                Type::BUSINESS_BANKING => '1',
+            ],
+        ];
+
+         $this->createBankAccountTerminal(array_merge($defaultValues, $attributes));
+
+        $this->createBankAccountTerminal(array_merge($defaultValues1, $attributes));
     }
 
     public function createSharedBankAccountTerminal(array $attributes = [])
