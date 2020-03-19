@@ -446,6 +446,15 @@ class TerminalTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateMpgsPurchaseTerminal()
+    {
+        $url = '/merchants/10000000000000/terminals';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
     public function testEditMpgsTerminal()
     {
         $attributes = [
@@ -455,6 +464,7 @@ class TerminalTest extends TestCase
             'international'             => 1,
             'gateway_merchant_id'       => '9387723',
             'gateway_terminal_password' => 'random',
+            'mode'                      => Terminal\Mode::DUAL,
             'type'                      => [
                 'non_recurring'  => '1',
             ],
@@ -465,7 +475,7 @@ class TerminalTest extends TestCase
 
         $tid = $terminal['id'];
 
-        $data = ['international' => 0];
+        $data = ['international' => 0, 'mode' => Terminal\Mode::PURCHASE];
 
         $content = $this->editTerminal($tid, $data);
 

@@ -175,7 +175,7 @@ class Gateway extends Base\Gateway
 
         $signedxml = $this->crypto->addSignature($xml);
 
-        $mid = $this->getMerchantId();
+        $mid2 = $this->getMerchantId2();
 
         $bank = $input['payment']['bank'];
 
@@ -187,7 +187,7 @@ class Gateway extends Base\Gateway
         }
 
         $content = [
-            RequestFields::MERCHANT_ID => $mid,
+            RequestFields::MERCHANT_ID => $mid2,
             RequestFields::REQUEST_XML => $signedxml,
             RequestFields::CHECKSUM    => $encryptedChecksum,
             RequestFields::BANK_ID     => $bank,
@@ -199,7 +199,7 @@ class Gateway extends Base\Gateway
         $request = $this->addHeadersForNpciRequest($request);
 
         $dataToTrace = [
-            RequestFields::MERCHANT_ID => $mid,
+            RequestFields::MERCHANT_ID => $mid2,
             RequestFields::REQUEST_XML => $xml,
             RequestFields::CHECKSUM    => $encryptedChecksum,
             RequestFields::BANK_ID     => $bank,
@@ -252,7 +252,7 @@ class Gateway extends Base\Gateway
     {
         $encryptedData = $this->getEncryptedData($secureData);
 
-        $mid = $this->getMerchantId();
+        $mid2 = $this->getMerchantId2();
 
         $pid = $input['payment']['id'];
 
@@ -263,6 +263,8 @@ class Gateway extends Base\Gateway
         $creditorAccount = $this->getCreditorAccount();
 
         $sponserIfsc = $this->getSponsorIfsc();
+
+        $sponserBank = $this->getSponsorBank();
 
         $catCode = Base\CategoryCode::getCategoryCodeFromMcc($mcc);
 
@@ -278,12 +280,12 @@ class Gateway extends Base\Gateway
             ],
 
             NpciXmlHeaderTags::INFO              => [
-                RequestNpciTags::MID                   => $mid,
+                RequestNpciTags::MID                   => $mid2,
                 RequestNpciTags::CATEGORY_CODE         => $catCode,
-                RequestNpciTags::UTILITY_CODE          => $mid,
+                RequestNpciTags::UTILITY_CODE          => $mid2,
                 RequestNpciTags::CATEGORY_DESCRIPTION  => str_limit(Base\CategoryCode::getCategoryDescriptionFromCode($catCode), 25, ''),
                 RequestNpciTags::NAME                  => $merchantName,
-                RequestNpciTags::SPONSORED_BANK_NAME   => 'CITI BANK'
+                RequestNpciTags::SPONSORED_BANK_NAME   => $sponserBank
             ],
 
             NpciXmlHeaderTags::MANDATE           => [
@@ -385,6 +387,18 @@ class Gateway extends Base\Gateway
         return $mid;
     }
 
+    public function getMerchantId2()
+    {
+        $mid2 = $this->getLiveMerchantId2();
+
+        if ($this->mode === Mode::TEST)
+        {
+            $mid2 = $this->getTestMerchantId2();
+        }
+
+        return $mid2;
+    }
+
     protected function getCreditorAccount()
     {
         if ($this->mode === Mode::TEST)
@@ -408,6 +422,20 @@ class Gateway extends Base\Gateway
         else
         {
             $sponsor = $this->getLiveGatewayAccessCode();
+        }
+
+        return $sponsor;
+    }
+
+    protected function getSponsorBank()
+    {
+        if ($this->mode === Mode::TEST)
+        {
+            $sponsor = $this->config['test_emandate_npci_sponser_bank'];
+        }
+        else
+        {
+            $sponsor = $this->getLiveGatewayTerminalId();
         }
 
         return $sponsor;
@@ -907,7 +935,7 @@ class Gateway extends Base\Gateway
         }
         else
         {
-            $utilityCode = $terminal['gateway_merchant_id'];
+            $utilityCode = $terminal['gateway_merchant_id2'];
         }
 
         $categoryDescription = str_limit(

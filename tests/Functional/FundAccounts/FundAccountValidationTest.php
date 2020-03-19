@@ -296,11 +296,6 @@ class FundAccountValidationTest extends TestCase
         $this->startTest();
     }
 
-    public function testFundAccValidationBlockedForYesbank()
-    {
-        $this->startTest();
-    }
-
     public function testWebhookFundAccountValidationCompleted()
     {
         $this->createWebhook([

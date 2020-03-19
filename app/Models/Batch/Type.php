@@ -98,6 +98,8 @@ class Type
 
     const ECOLLECT_ICICI        = 'ecollect_icici';
 
+    const ECOLLECT_RBL          = 'ecollect_rbl';
+
     const REPORT                = 'report';
 
     public static $disabledTypes = [
@@ -132,6 +134,7 @@ class Type
         self::MDR_ADJUSTMENT,
         self::ADJUSTMENT,
         self::ECOLLECT_ICICI,
+        self::ECOLLECT_RBL,
     ];
 
     /**
@@ -273,6 +276,7 @@ class Type
         self::LINKED_ACCOUNT_REVERSAL,
         self::ADJUSTMENT,
         self::ECOLLECT_ICICI,
+        self::ECOLLECT_RBL,
         self::REPORT,
     ];
 
@@ -291,6 +295,7 @@ class Type
         self::ENTITY_UPDATE_ACTION,
         self::ADJUSTMENT,
         self::ECOLLECT_ICICI,
+        self::ECOLLECT_RBL,
         self::REPORT,
     ];
 

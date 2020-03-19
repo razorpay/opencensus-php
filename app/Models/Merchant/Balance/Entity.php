@@ -239,6 +239,16 @@ class Entity extends Base\PublicEntity
         return ($this->getType() === Type::BANKING);
     }
 
+    public function isAccountTypeShared(): bool
+    {
+        return ($this->getAccountType() === AccountType::SHARED);
+    }
+
+    public function isAccountTypeDirect(): bool
+    {
+        return ($this->getAccountType() === AccountType::DIRECT);
+    }
+
     public function getName()
     {
         return $this->getAttribute(self::NAME);
@@ -374,7 +384,7 @@ class Entity extends Base\PublicEntity
         }
     }
 
-    protected function getBalanceWithLockedBalance()
+    public function getBalanceWithLockedBalance()
     {
         $balance = $this->getBalance();
 
@@ -384,7 +394,8 @@ class Entity extends Base\PublicEntity
         // making a change here. Check for `getBalance` usages specifically, among others.
         //
 
-        if ($this->isTypeBanking() === true)
+        if (($this->isTypeBanking() === true) and
+            ($this->isAccountTypeShared() === true))
         {
             $balance = $balance - $this->getLockedBalance();
         }
@@ -457,7 +468,7 @@ class Entity extends Base\PublicEntity
         assertTrue ($lockedBalance >= 0);
 
         if (($this->isTypeBanking() === false) or
-            ($this->getAccountType() !== AccountType::SHARED))
+            ($this->isAccountTypeShared() === false))
         {
             throw new Exception\LogicException(
                 'Locked balance being set for non-banking or/and non-shared type',
@@ -525,7 +536,7 @@ class Entity extends Base\PublicEntity
     public function getLastFetchedAtAttribute()
     {
         if (($this->getType() === Type::BANKING) and
-            ($this->getAccountType() === AccountType::DIRECT))
+            ($this->isAccountTypeDirect() === true))
         {
             // getLastFetchedAt() returns a sting in case there is a corresponding entry in the DB. It returns an empty
             // dictionary in case RBL BAS fetch cron hasn't run and there is no corresponding entry, in that case we

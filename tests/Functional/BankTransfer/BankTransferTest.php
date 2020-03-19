@@ -491,6 +491,8 @@ class BankTransferTest extends TestCase
 
     public function testBankTransferImps()
     {
+        $this->markTestSkipped();
+
         $accountNumber = $this->bankAccount['account_number'];
 
         $ifsc = Provider::IFSC[Provider::KOTAK];
@@ -1229,6 +1231,8 @@ class BankTransferTest extends TestCase
 
     public function testBankTransferImpsFromRogueBankStripAccount()
     {
+        $this->markTestSkipped();
+
         $accountNumber = $this->bankAccount['account_number'];
 
         $ifsc = Provider::IFSC[Provider::KOTAK];

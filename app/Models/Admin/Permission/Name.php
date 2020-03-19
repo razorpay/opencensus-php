@@ -226,6 +226,7 @@ class Name
     const RETRY_REFUND                        = 'retry_refund';
     const DOWNLOAD_NON_MERCHANT_REPORT        = 'download_non_merchant_report';
     const CREATE_VIRTUAL_ACCOUNTS             = 'create_virtual_accounts';
+    const CREATE_BANKING_VIRTUAL_ACCOUNTS     = 'create_banking_virtual_accounts';
     const BANK_TRANSFER_INSERT                = 'bank_transfer_insert';
     const GET_SELF_SERVE_REPORT               = 'get_self_serve_report';
     const CREATE_SELF_SERVE_REPORT            = 'create_self_serve_report';
@@ -341,6 +342,7 @@ class Name
     const UPDATE_MERCHANT_FEATURE             = 'update_merchant_feature';
     const UPDATE_TEST_MERCHANT_BALANCE        = 'update_test_merchant_balance';
     const VIEW_VIRTUAL_ACCOUNT                = 'view_virtual_account';
+    const EDIT_MERCHANT_INTERNATIONAL         = 'edit_merchant_international';
 
     public static $actionMap = [
         Merchant\Action::ARCHIVE                            => self::EDIT_MERCHANT_ARCHIVE,

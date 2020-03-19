@@ -5,7 +5,9 @@ namespace RZP\Models\Order;
 use RZP\Exception;
 use RZP\Models\Transfer;
 use RZP\Models\Currency\Currency;
+use RZP\Models\Merchant\Methods;
 use RZP\Models\SubscriptionRegistration;
+use RZP\Models\UpiMandate\Core as UpiMandateCore;
 use RZP\Models\SubscriptionRegistration\Core as TokenRegistrationCore;
 
 class PreCreateHook extends Hook
@@ -17,11 +19,29 @@ class PreCreateHook extends Hook
 
     public function validateTokenParams(array $paramInput)
     {
-        $paramInput[SubscriptionRegistration\Entity::METHOD] = $this->orderInput[Entity::METHOD] ?? null;
-
-        (new TokenRegistrationCore())->validateTokenInput($paramInput);
+        if ((isset($this->orderInput[Entity::METHOD]) === true) and
+            ($this->orderInput[Entity::METHOD] === Methods\Entity::UPI))
+        {
+            $this->validateTokenParamsForUpiMandate($paramInput);
+        }
+        else
+        {
+            $this->validateTokenParamsForSubscriptionRegistration($paramInput);
+        }
 
         $this->validateCustomerIdNonEmpty();
+    }
+
+    protected function validateTokenParamsForUpiMandate($input)
+    {
+        (new UpiMandateCore())->validateTokenInput($input);
+    }
+
+    protected function validateTokenParamsForSubscriptionRegistration($input)
+    {
+        $input[SubscriptionRegistration\Entity::METHOD] = $this->orderInput[Entity::METHOD] ?? null;
+
+        (new TokenRegistrationCore())->validateTokenInput($input);
     }
 
     public function validateCustomerIdNonEmpty()

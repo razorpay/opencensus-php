@@ -119,6 +119,10 @@ class Core extends Base\Core
             ],
         ];
 
+        // Since this route is exposed to the merchants now, they may want to pass
+        // custom name for the VA. It's an optional param
+        // If we receive name as input, we'll use that, otherwise fallback on the
+        // default behaviour of VA, i.e.. using merchant.billing_label or merchant.name
         if (empty($data[Entity::NAME]) === false)
         {
             $input[Entity::NAME] = $data[Entity::NAME];
@@ -586,35 +590,14 @@ class Core extends Base\Core
     {
         $virtualAccount->getValidator()->validateOfPrimaryBalance();
 
-        $bankAccount = $virtualAccount->bankAccount;
+        return $this->closeVA($virtualAccount);
+    }
 
-        if ($bankAccount !== null)
-        {
-            $this->repo->deleteOrFail($bankAccount);
+    public function closeForBanking(Entity $virtualAccount)
+    {
+        $virtualAccount->getValidator()->validateOfBankingBalance();
 
-            $this->trace->info(TraceCode::BANK_ACCOUNT_DELETED, $bankAccount->toArray());
-        }
-
-        $vpa = $virtualAccount->vpa;
-
-        if ($vpa !== null)
-        {
-            $this->repo->deleteOrFail($vpa);
-
-            $this->trace->info(TraceCode::VPA_DELETED, $vpa->toArray());
-        }
-
-        $virtualAccount->setStatus(Status::CLOSED);
-
-        $currentTime = Carbon::now()->getTimestamp();
-
-        $virtualAccount->setClosedAt($currentTime);
-
-        $this->repo->saveOrFail($virtualAccount);
-
-        $this->eventVirtualAccountClosed($virtualAccount);
-
-        return $virtualAccount;
+        return $this->closeVA($virtualAccount);
     }
 
     protected function verifyBankTransferEnabled(Merchant $merchant)
@@ -712,6 +695,45 @@ class Core extends Base\Core
             5,
             200,
             400);
+
+        return $virtualAccount;
+    }
+
+    protected function closeVA(Entity $virtualAccount)
+    {
+        $virtualAccount = $this->repo->transaction(function () use ($virtualAccount)
+        {
+            $bankAccount = $virtualAccount->bankAccount;
+
+            if ($bankAccount !== null)
+            {
+                $this->repo->deleteOrFail($bankAccount);
+
+                $this->trace->info(TraceCode::BANK_ACCOUNT_DELETED, $bankAccount->toArray());
+            }
+
+            // Banking VA don't have vpa for now, but still keeping it
+            $vpa = $virtualAccount->vpa;
+
+            if ($vpa !== null)
+            {
+                $this->repo->deleteOrFail($vpa);
+
+                $this->trace->info(TraceCode::VPA_DELETED, $vpa->toArray());
+            }
+
+            $virtualAccount->setStatus(Status::CLOSED);
+
+            $currentTime = Carbon::now()->getTimestamp();
+
+            $virtualAccount->setClosedAt($currentTime);
+
+            $this->repo->saveOrFail($virtualAccount);
+
+            $this->eventVirtualAccountClosed($virtualAccount);
+
+            return $virtualAccount;
+        });
 
         return $virtualAccount;
     }

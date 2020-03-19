@@ -832,6 +832,22 @@ class Header
     const ICICI_ECOLLECT_DEALER_CODE                = 'DEALER CODE';
     const ICICI_ECOLLECT_REMITTANCE_INFORMATION     = 'REMITTANCE INFORMATION';
 
+    const  RBL_ECOLLECT_TRANSACTION_TYPE            = 'TRANSACTION_TYPE';
+    const  RBL_ECOLLECT_AMOUNT                      = 'AMOUNT';
+    const  RBL_ECOLLECT_UTR_NUMBER                  = 'UTR_NUMBER';
+    const  RBL_ECOLLECT_RRN_NUMBER                  = 'RRN_NUMBER';
+    const  RBL_ECOLLECT_SENDER_IFSC                 = 'SENDER_IFSC';
+    const  RBL_ECOLLECT_SENDER_ACCOUNT_NUMBER       = 'SENDER_ACCOUNT_NUMBER';
+    const  RBL_ECOLLECT_SENDER_ACCOUNT_TYPE         = 'SENDER_ACCOUNT_TYPE';
+    const  RBL_ECOLLECT_SENDER_NAME                 = 'SENDER_NAME';
+    const  RBL_ECOLLECT_BENEFICIARY_ACCOUNT_TYPE    = 'BENEFICIARY_ACCOUNT_TYPE';
+    const  RBL_ECOLLECT_BENEFICIARY_ACCOUNT_NUMBER  = 'BENEFICIARY_ACCOUNT_NUMBER';
+    const  RBL_ECOLLECT_BENENAME                    = 'BENENAME';
+    const  RBL_ECOLLECT_CREDIT_DATE                 = 'CREDIT_DATE';
+    const  RBL_ECOLLECT_CREDIT_ACCOUNT_NUMBER       = 'CREDIT_ACCOUNT_NUMBER';
+    const  RBL_ECOLLECT_CORPORATE_CODE              = 'CORPORATE_CODE';
+    const  RBL_ECOLLECT_SENDER_INFORMATION          = 'SENDER_INFORMATION';
+
 
     /**
      * Input and output file headers
@@ -2593,6 +2609,44 @@ class Header
                 self::ICICI_ECOLLECT_TRANSACTION_AMOUNT,
                 self::ICICI_ECOLLECT_TRANSACTION_DATE,
                 self::ICICI_ECOLLECT_REMITTING_BANK_UTR_NO,
+            ],
+        ],
+
+        Type::ECOLLECT_RBL => [
+            self::INPUT => [
+                self::RBL_ECOLLECT_TRANSACTION_TYPE,
+                self::RBL_ECOLLECT_AMOUNT,
+                self::RBL_ECOLLECT_UTR_NUMBER,
+                self::RBL_ECOLLECT_RRN_NUMBER,
+                self::RBL_ECOLLECT_SENDER_IFSC,
+                self::RBL_ECOLLECT_SENDER_ACCOUNT_NUMBER,
+                self::RBL_ECOLLECT_SENDER_ACCOUNT_TYPE,
+                self::RBL_ECOLLECT_SENDER_NAME,
+                self::RBL_ECOLLECT_BENEFICIARY_ACCOUNT_TYPE,
+                self::RBL_ECOLLECT_BENEFICIARY_ACCOUNT_NUMBER,
+                self::RBL_ECOLLECT_BENENAME,
+                self::RBL_ECOLLECT_CREDIT_DATE,
+                self::RBL_ECOLLECT_CREDIT_ACCOUNT_NUMBER,
+                self::RBL_ECOLLECT_CORPORATE_CODE,
+                self::RBL_ECOLLECT_SENDER_INFORMATION,
+            ],
+            self::OUTPUT => [
+                self::RBL_ECOLLECT_TRANSACTION_TYPE,
+                self::RBL_ECOLLECT_AMOUNT,
+                self::RBL_ECOLLECT_UTR_NUMBER,
+                self::RBL_ECOLLECT_RRN_NUMBER,
+                self::RBL_ECOLLECT_SENDER_IFSC,
+                self::RBL_ECOLLECT_SENDER_ACCOUNT_NUMBER,
+                self::RBL_ECOLLECT_SENDER_ACCOUNT_TYPE,
+                self::RBL_ECOLLECT_SENDER_NAME,
+                self::RBL_ECOLLECT_BENEFICIARY_ACCOUNT_TYPE,
+                self::RBL_ECOLLECT_BENEFICIARY_ACCOUNT_NUMBER,
+                self::RBL_ECOLLECT_BENENAME,
+                self::RBL_ECOLLECT_CREDIT_DATE,
+                self::RBL_ECOLLECT_CREDIT_ACCOUNT_NUMBER,
+                self::RBL_ECOLLECT_CORPORATE_CODE,
+                self::RBL_ECOLLECT_SENDER_INFORMATION,
+                self::STATUS,
             ],
         ]
     ];

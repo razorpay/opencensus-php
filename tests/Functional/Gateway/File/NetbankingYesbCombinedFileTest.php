@@ -29,9 +29,6 @@ class NetbankingYesbCombinedFileTest extends TestCase
         $this->bank = 'YESB';
 
         $this->terminal = $this->fixtures->create('terminal:shared_netbanking_yesb_terminal');
-
-        // Ref: https://razorpay.slack.com/archives/C659GARU3/p1583423704061600
-        $this->markTestSkipped('YES Bank? More like NO BANK, amirite?');
     }
 
     public function testNetbankingYesbCombinedFile()

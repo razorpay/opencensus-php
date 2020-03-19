@@ -11,6 +11,7 @@ use RZP\Gateway\Base\Action;
 class Gateway extends Base\Gateway
 {
     const ACQUIRER = null;
+    const X_RZP_TESTCASE_ID = 'X-RZP-TESTCASE-ID';
 
     const RETRIABLE_ACTIONS = [
         Action::AUTHENTICATE,
@@ -154,5 +155,22 @@ class Gateway extends Base\Gateway
         $description = $input['merchant']->getFilteredDba() . ' ' . $filteredPaymentDescription;
 
         return ($description ? substr($description, 0, 50) : 'Pay via Razorpay');
+    }
+
+    protected function getStandardRequestArray($content = [], $method = 'post', $type = null)
+    {
+        $request = parent::getStandardRequestArray($content,$method,$type);
+
+        if ($this->app->environment('production') === false)
+        {
+            $testCaseId = $this->app['request']->header('X-RZP-TESTCASE-ID');
+
+            if (empty($testCaseId) === false)
+            {
+                $request['headers'][self::X_RZP_TESTCASE_ID] = $testCaseId;
+            }
+        }
+
+        return $request;
     }
 }

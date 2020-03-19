@@ -2714,60 +2714,6 @@ class PaymentCreateTest extends TestCase
 
     }
 
-    public function testPaymentCreateForYesBankCard()
-    {
-        $this->fixtures->iin->create([
-            'iin'       => '608399',
-            'country'   => 'US',
-            'network'   => 'MasterCard',
-            'issuer'    => 'YESB',
-            'enabled'    => 0,
-        ]);
-
-        $payment = $this->getDefaultPaymentArray();
-
-        $payment['card']['number'] = '6083995565723838';
-        $this->makeRequestAndCatchException(
-            function() use ($payment)
-            {
-                $this->doAuthPayment($payment);
-            },
-            \RZP\Exception\BadRequestException::class,
-            'We are unable to complete this transaction due to the restrictions on YES Bank\'s operations by RBI (Gazette notification (S.O. 993(E)) dated 5th March 2020'
-            );
-    }
-
-    public function testPaymentCreateForYesBankUpi()
-    {
-        $this->markTestSkipped('Not needed');
-        $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
-        $payment = $this->getDefaultUpiPaymentArray();
-        $payment['vpa'] = 'vishnu@ybl';
-
-        $this->makeRequestAndCatchException(
-            function() use ($payment)
-            {
-                $this->doAuthPayment($payment);
-            },
-            \RZP\Exception\BadRequestException::class,
-            'We are unable to complete this transaction due to the restrictions on YES Bank\'s operations by RBI (Gazette notification (S.O. 993(E)) dated 5th March 2020'
-            );
-    }
-
-    public function testPaymentCreateForYesBankNetbanking()
-    {
-        $payment = $this->getDefaultNetbankingPaymentArray('YESB');
-
-        $this->makeRequestAndCatchException(
-            function() use ($payment)
-            {
-                $this->doAuthPayment($payment);
-            },
-            \RZP\Exception\BadRequestException::class,
-            'We are unable to complete this transaction due to the restrictions on YES Bank\'s operations by RBI (Gazette notification (S.O. 993(E)) dated 5th March 2020'
-            );
-    }
-
     // end tests for fee_bearer attribute of pricing plans and merchant
 
     public function testOrderStatusForUpiPaymentWithFlatCashbackOffer()

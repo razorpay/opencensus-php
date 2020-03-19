@@ -502,6 +502,8 @@ return [
 
     E::UPI_METADATA => [],
 
+    E::IDEMPOTENCY_KEY => [],
+
     E::BALANCE_CONFIG => [
         Type::PROXY_AUTH => [
             [
