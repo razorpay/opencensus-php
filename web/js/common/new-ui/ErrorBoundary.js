@@ -4,18 +4,19 @@ export default class ErrorBoundary extends Component {
   state = {
     error: false,
     info: null,
+    eventId: null,
   };
-
+  componentDidMount() {
+    if (typeof Sentry !== 'undefined') {
+      Sentry.forceLoad();
+    }
+  }
   componentDidCatch(error, info) {
+    let eventId = null;
     if (window.Sentry) {
       Sentry.withScope(scope => {
-        Object.keys(info).forEach(key => {
-          scope.setExtra(key, info[key]);
-          if (window.rzp_user && window.rzp_user.current) {
-            scope.setTag('merchant_id', window.rzp_user.current);
-          }
-        });
-        Sentry.captureException(error);
+        scope.setExtras(info);
+        eventId = Sentry.captureException(error);
       });
     } else if (window.Raven) {
       console.log(error, info);
@@ -24,7 +25,7 @@ export default class ErrorBoundary extends Component {
       console.error(error, info);
     }
 
-    this.setState({ error, info });
+    this.setState({ error, info, eventId });
   }
 
   componentWillReceiveProps() {
@@ -34,16 +35,18 @@ export default class ErrorBoundary extends Component {
   }
 
   render() {
-    const hasRaven = !!window.Raven;
-    const lastEventId = hasRaven && Raven.lastEventId();
+    const SDK = window.Sentry || window.Raven;
+    const hasSDK = !!SDK;
+    const lastEventId =
+      this.state.eventId || (window.Raven && Raven.lastEventId());
 
     if (this.state.error) {
       return (
         <div
           ref={node => (this.node = node)}
-          className={`rzp-error-boundary${hasRaven ? ' has-raven' : ''}`}
+          className={`rzp-error-boundary${hasSDK ? ' has-raven' : ''}`}
         >
-          {hasRaven && (
+          {hasSDK && (
             <div className="js-error-container">
               <div className="js-error-content">
                 <div className="js-error-illustration m-b" />
@@ -53,7 +56,9 @@ export default class ErrorBoundary extends Component {
                     Our team has been notified, but{' '}
                     <a
                       className="error-report-link"
-                      onClick={() => lastEventId && Raven.showReportDialog()}
+                      onClick={() => {
+                        SDK.showReportDialog({ eventId: lastEventId });
+                      }}
                     >
                       click here
                     </a>{' '}
@@ -69,7 +74,7 @@ export default class ErrorBoundary extends Component {
               </div>
             </div>
           )}
-          {!hasRaven && (
+          {!hasSDK && (
             <div className="js-error-details">
               <banner className="warning">
                 <p>

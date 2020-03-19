@@ -23,9 +23,8 @@
     window.rzp_org = {!! $org !!};
     window.api_host = "{!! $api_host !!}"
 </script>
-<!-- Raven Code -->
 @if(env('APP_ENV') === 'production')
-    <script src="{{$cdnDashboardUrl}}/dist/raven-entry.js"></script>
+  @include('partials/sentry')
 @endif
 
 <script src="{{$cdnDashboardUrl}}/dist/merchantLA-entry.js"></script>

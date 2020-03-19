@@ -1,4 +1,16 @@
 (function() {
+  if (typeof Sentry !== 'undefined') {
+    Sentry.onLoad(function() {
+      Sentry.init({
+        environment: 'prod',
+      });
+      if (window.rzp_user && window.rzp_user.current) {
+        Sentry.configureScope(function(scope) {
+          scope.setUser({ id: window.rzp_user.current });
+        });
+      }
+    });
+  }
   var base = Array.prototype.slice
     .call(document.querySelectorAll('script[src]'), -1)[0]
     .src.replace(/[^\/]+$/, '');

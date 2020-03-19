@@ -51,9 +51,8 @@
     window.session_id = "{!! $session_id !!}"
   </script>
 
-  <!-- Raven Code -->
   @if(env('APP_ENV') === 'production')
-    <script src="{{$cdnDashboardUrl}}/dist/raven-entry.js"></script>
+    @include('partials/sentry')
   @endif
   <script src="https://www.recaptcha.net/recaptcha/api.js?render=explicit"></script>
   <script src="{{$cdnDashboardUrl}}/dist/merchant-entry.js"></script>
