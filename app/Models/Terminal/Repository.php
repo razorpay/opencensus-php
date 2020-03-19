@@ -248,10 +248,11 @@ class Repository extends Base\Repository
         return $query->get();
     }
 
-    public function getAllBankTransferTerminals(): PublicCollection
+    public function getAllBankTransferTerminals($gateway): PublicCollection
     {
         $query = $this->newQuery()
                       ->where(Entity::BANK_TRANSFER, true)
+                      ->where(Entity::GATEWAY, $gateway)
                       ->withTrashed();
 
         return $query->get();
