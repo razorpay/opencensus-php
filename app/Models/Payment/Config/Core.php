@@ -40,14 +40,13 @@ class Core extends Base\Core
                 $config = $this->repo->config->transaction(function () use($input, $merchant, $config)
                 {
                     //updating the default value of config if already exist
-                    if (($input['default'] === true) or
-                        (strval($input['default']) === '1'))
+                    if ($this->isDefaultConfig($input))
                     {
                         $defaultConfig = $this->repo->config->fetchDefaultConfigByMerchantIdAndType($merchant->getId(), $input['type']);
 
                         if (isset($defaultConfig) === true)
                         {
-                            $defaultConfig->default = false;
+                            $defaultConfig->is_default = false;
 
                             $this->repo->saveOrFail($defaultConfig);
                         }
@@ -95,8 +94,7 @@ class Core extends Base\Core
                     {
                         $config->edit($input);
 
-                        if ((isset($input['default']) === true) and
-                            (($input['default'] === true) or (strval($input['default']) === '1')))
+                        if ((isset($input['is_default']) === true) and $this->isDefaultConfig($input))
                         {
                             // find if any default config exist
                             $defaultConfig = $this->repo->config->fetchDefaultConfigByMerchantIdAndType($this->merchant->getId(), $type);
@@ -104,7 +102,7 @@ class Core extends Base\Core
                             if ((isset($defaultConfig) === true) and
                                   $id !== $defaultConfig->getId())
                             {
-                                $defaultConfig->default = false;
+                                $defaultConfig->is_default = false;
 
                                 $this->repo->saveOrFail($defaultConfig);
                             }
@@ -124,18 +122,23 @@ class Core extends Base\Core
     {
         $config = null;
 
-        if (isset($configId) === false)
-        {
+        if (isset($configId) === false) {
             $config = $this->repo->config->fetchDefaultConfigByMerchantIdAndType($merchantId, 'checkout');
-        }
-        else
-        {
+        } else {
             $config = $this->repo->config->findByPublicId($configId);
         }
 
-        if (isset($config) === true)
-        {
+        if (isset($config) === true) {
             $data['checkout_config'] = json_decode($config->config, true);
         }
+    }
+    private function isDefaultConfig($input)
+    {
+        if (($input['is_default'] === true) or (strval($input['is_default']) === '1'))
+        {
+            return true;
+        }
+
+        return false;
     }
 }

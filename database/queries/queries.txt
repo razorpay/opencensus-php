@@ -5683,6 +5683,8 @@ ALTER TABLE emi_plans
 ALTER TABLE merchant_details
     ADD COLUMN date_of_establishment date DEFAULT NULL;
 
+ALTER TABLE payment_configs
+    change `default` `is_default` tinyint(1) NOT NULL DEFAULT '0';
+
 ALTER TABLE orders
     ADD COLUMN checkout_config_id CHAR(14) DEFAULT NULL;
-

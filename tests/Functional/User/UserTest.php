@@ -1756,28 +1756,16 @@ class UserTest extends TestCase
 
         Carbon::setTestNow($oldDateTime);
 
-        $this->fixtures->edit('merchant', '10000000000000', [
-            'activated'        => 1,
-            'activated_at'     => Carbon::now(Timezone::IST)->timestamp,
-            'invoice_code'     => 'hello1234567',
-            'business_banking' => 1,
-        ]);
+        $this->setUpMerchantForBusinessBanking(false, 10000000);
 
-        $this->fixtures->create('balance',
-                                [
-                                    'merchant_id'    => '10000000000000',
-                                    'type'           => 'banking',
-                                    'account_number' => '2224440041626905',
-                                    'balance'        => 100000,
-                                ]);
+        $bankingAccountAttributes = [
+            'id'                    =>  'ABCde1234ABCde',
+            'account_number'        =>  '2224440041626998',
+            'balance_id'            =>  $this->bankingBalance->getId(),
+            'account_type'          =>  'nodal',
+        ];
 
-        $this->fixtures->create('bank_account',
-                                [
-                                    'merchant_id'    => '10000000000000',
-                                    'type'           => 'virtual_account',
-                                    'ifsc_code'      => 'RAZRB000000',
-                                    'account_number' => '2224440041626905',
-                                ]);
+        $this->createBankingAccount($bankingAccountAttributes);
 
         $this->fixtures->user->createBankingUserForMerchant('10000000000000',
                                                             $attributes = ['id' => '30000000000000'],

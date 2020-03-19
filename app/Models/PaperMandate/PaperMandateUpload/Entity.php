@@ -388,9 +388,9 @@ class Entity extends Base\PublicEntity
     {
         $expected = $this->paperMandate->getAmount();
 
-        $extracted = $this->getAmountInNumber() * 100;
+        $extracted = $this->getAmountInNumber();
 
-        return $expected === $extracted;
+        return $expected == $extracted;
     }
 
     protected function validateSponsorCode(): bool
@@ -511,7 +511,7 @@ class Entity extends Base\PublicEntity
             ],
             [
                 'key' => 'amount',
-                'expected_value' => $this->paperMandate->getAmount() / 100,
+                'expected_value' => $this->paperMandate->getAmount(),
                 'extracted_value' => $publicArray[Entity::AMOUNT_IN_NUMBER],
             ],
             [
