@@ -2,7 +2,7 @@
 return [
     'testTerminalOnboardCallback' => [
         'request' => [
-            'url'       => '/terminals/onboard/paypal/callback/test',
+            'url'       => '/terminals/onboard/wallet_paypal/callback/test',
             'method'    => 'POST',
             'content'   => [
                 'foo'   => 'bar',
@@ -17,7 +17,7 @@ return [
 
     'testTerminalOnboardCallbackTerminalsServiceError' => [
         'request' => [
-            'url'       => '/terminals/onboard/paypal/callback/test',
+            'url'       => '/terminals/onboard/wallet_paypal/callback/test',
             'method'    => 'POST',
         ],
         'response' => [
