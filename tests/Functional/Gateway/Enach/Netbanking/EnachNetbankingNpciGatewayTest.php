@@ -9,6 +9,7 @@ Use Carbon\Carbon;
 
 use RZP\Jobs\BeamJob;
 use RZP\Models\Feature;
+use RZP\Models\Terminal;
 use RZP\Constants\Entity;
 use RZP\Constants\Timezone;
 use RZP\Models\Customer\Token;
@@ -85,7 +86,7 @@ class EnachNetbankingNpciGatewayTest extends TestCase
         $this->assertNotNull($enach['gateway_reference_id2']);
         $this->assertNotNull($enach['umrn']);
         $this->assertEquals('true', $enach['status']);
-        $this->assertEquals(strtolower("CITI"), $enach['acquirer']);
+        $this->assertEquals($this->sharedTerminal['gateway_acquirer'], $enach['acquirer']);
 
         $token = $this->getLastEntity('token', true);
         $this->assertEquals('netbanking', $token['auth_type']);
@@ -131,7 +132,7 @@ class EnachNetbankingNpciGatewayTest extends TestCase
         $this->assertNotNull($enach['gateway_reference_id']);
         $this->assertNotNull($enach['gateway_reference_id2']);
         $this->assertNotNull($enach['umrn']);
-        $this->assertEquals(strtolower("CITI"), $enach['acquirer']);
+        $this->assertEquals($this->sharedTerminal['gateway_acquirer'], $enach['acquirer']);
 
         $this->assertEquals('true', $enach['status']);
 
@@ -187,7 +188,7 @@ class EnachNetbankingNpciGatewayTest extends TestCase
 
         $this->assertEquals(null, $enach['umrn']);
 
-        $this->assertEquals(strtolower("CITI"), $enach['acquirer']);
+        $this->assertEquals($this->sharedTerminal['gateway_acquirer'], $enach['acquirer']);
 
         // if we get a non-error but failed registration response, we also get the NPCI reference id
         $this->assertNotNull($enach['gateway_reference_id']);
@@ -235,7 +236,7 @@ class EnachNetbankingNpciGatewayTest extends TestCase
 
         $this->assertEquals('false', $enach['status']);
 
-        $this->assertEquals(strtolower("CITI"), $enach['acquirer']);
+        $this->assertEquals($this->sharedTerminal['gateway_acquirer'], $enach['acquirer']);
 
         $token = $this->getLastEntity('token', true);
 
@@ -284,7 +285,7 @@ class EnachNetbankingNpciGatewayTest extends TestCase
 
         $enach = $this->getLastEntity('enach', true);
 
-        $this->assertEquals(strtolower("CITI"), $enach['acquirer']);
+        $this->assertEquals($this->sharedTerminal['gateway_acquirer'], $enach['acquirer']);
 
         $this->assertNotNull($enach['gateway_reference_id']);
         $this->assertEquals('true', $enach['status']);
@@ -308,7 +309,7 @@ class EnachNetbankingNpciGatewayTest extends TestCase
         $this->assertEquals('true', $enach['status']);
         $this->assertEquals('true' ,$enach['acknowledge_status']);
         $this->assertNotNull($enach['umrn']);
-        $this->assertEquals(strtolower("CITI"), $enach['acquirer']);
+        $this->assertEquals($this->sharedTerminal['gateway_acquirer'], $enach['acquirer']);
 
         $token = $this->getLastEntity('token', true);
         $this->assertEquals('netbanking', $token['auth_type']);
@@ -438,6 +439,73 @@ class EnachNetbankingNpciGatewayTest extends TestCase
         $this->startTest();
     }
 
+    public function testDebitFileGenerationCitiAndYesbPayment()
+    {
+        $citiTerminalPaymentResponse = $this->makeDebitPayment();
+
+        $this->fixtures->stripSign($citiTerminalPaymentResponse['razorpay_payment_id']);
+
+        $this->fixtures->terminal->disableTerminal($this->sharedTerminal['id']);
+
+        $yesbTerminal = $this->fixtures->create(
+            'terminal:shared_enach_npci_netbanking_yesb_terminal',
+            [
+                Terminal\Entity::ID               => Terminal\Shared::ENACH_NPCI_NETBANKING_YESB_TERMINAL,
+                Terminal\Entity::GATEWAY_ACQUIRER => 'yesb'
+            ]
+        );
+
+        $yesbTerminalPaymentResponse = $this->makeDebitPayment();
+
+        $this->fixtures->stripSign($yesbTerminalPaymentResponse['razorpay_payment_id']);
+
+        $this->ba->adminAuth();
+
+        Queue::fake();
+
+        $content = $this->startTest($this->testData['testDebitFileGeneration']);
+
+        $content = $content['items'][0];
+
+        $files = $this->getEntities('file_store', [], true);
+
+        $this->assertCount(2, $files['items']);
+
+        $summary = $files['items'][0];
+        $debit = $files['items'][1];
+
+        $expectedFileContentSummary = [
+            'type'        => 'citi_nach_debit_summary',
+            'entity_type' => 'gateway_file',
+            'entity_id'   => $content['id'],
+            'extension'   => 'xls',
+        ];
+
+        $expectedFileContentDebit = [
+            'type'        => 'citi_nach_debit',
+            'entity_type' => 'gateway_file',
+            'entity_id'   => $content['id'],
+            'extension'   => 'txt',
+        ];
+
+        $this->assertArraySelectiveEquals($expectedFileContentSummary, $summary);
+        $this->assertArraySelectiveEquals($expectedFileContentDebit, $debit);
+
+        $fileContent = file_get_contents('storage/files/filestore/' . $debit['location']);
+
+        $this->assertNotFalse(strpos($fileContent, $citiTerminalPaymentResponse['razorpay_payment_id']));
+
+        $this->assertFalse(strpos($fileContent, $yesbTerminalPaymentResponse['razorpay_payment_id']));
+
+        Queue::assertPushed(BeamJob::class, 1);
+
+        Queue::assertPushedOn('beam_test', BeamJob::class);
+
+        $this->fixtures->terminal->disableTerminal($yesbTerminal['id']);
+
+        $this->fixtures->terminal->enableTerminal($this->sharedTerminal['id']);
+    }
+
     public function testDebitFileReconciliation()
     {
         $this->makeDebitPayment();
@@ -445,14 +513,14 @@ class EnachNetbankingNpciGatewayTest extends TestCase
         $payment = $this->getDbLastEntity('payment');
 
         $fileStatuses = [
-            'status'     => 'ACCEPTED',
+            'status'     => '1',
             'error_code' => '',
             'error_desc' => '',
         ];
 
         Carbon::setTestNow(Carbon::now()->addDays(10));
 
-        $batch = $this->makeBatchDebitPayment($payment);
+        $batch = $this->makeBatchDebitPayment($payment, $fileStatuses);
 
         $this->assertEquals('processed', $batch['status']);
 
@@ -481,14 +549,14 @@ class EnachNetbankingNpciGatewayTest extends TestCase
         $payment = $this->getDbLastEntity('payment');
 
         $fileStatuses = [
-            'status'     => 'REJECTED',
-            'error_code' => '04',
-            'error_desc' => 'Balance insufficient',
+            'status'     => '0',
+            'error_code' => '',
+            'error_desc' => '',
         ];
 
         Carbon::setTestNow(Carbon::now()->addDays(10));
 
-        $batch = $this->makeBatchDebitPayment($payment, '0');
+        $batch = $this->makeBatchDebitPayment($payment, $fileStatuses);
 
         $this->assertEquals('processed', $batch['status']);
 
@@ -509,14 +577,14 @@ class EnachNetbankingNpciGatewayTest extends TestCase
         $payment = $this->getDbLastEntity('payment');
 
         $fileStatuses = [
-            'status'     => 'PENDING',
-            'error_code' => '98',
-            'error_desc' => 'BANK EXTENDED',
+            'status'     => '3',
+            'error_code' => '',
+            'error_desc' => '',
         ];
 
         Carbon::setTestNow(Carbon::now()->addDays(10));
 
-        $batch = $this->makeBatchDebitPayment($payment, '3');
+        $batch = $this->makeBatchDebitPayment($payment, $fileStatuses);
 
         $this->assertEquals('processed', $batch['status']);
 
@@ -703,13 +771,13 @@ class EnachNetbankingNpciGatewayTest extends TestCase
         return $file;
     }
 
-    protected function getBatchDebitFile($payment, $status = '1')
+    protected function getBatchDebitFile($payment, $status)
     {
         $paymentId = $payment['id'];
         $this->fixtures->stripSign($paymentId);
 
         $data = '56       RAZORPAY SOFTWARE PVT LTD                             000000000                           000005000000000000000020001701202047642224498136619848   NACH00000000013149000000000000000000CITI000PIGW000018003                          00000000227
-67         10                  ABIJITO GUHA                            17012020        RAZORPAY SOFTWARE PV             000000030000047642224504081750481'. $status .'00HDFC00024971111111111111                      CITI000PIGWNACH00000000013149CTTATAAIAA' . $paymentId . '      10 000000000000000HDFC0000000010936518
+67         10                  ABIJITO GUHA                            17012020        RAZORPAY SOFTWARE PV             000000030000047642224504081750481'. $status['status'] .'00HDFC00024971111111111111                      CITI000PIGWNACH00000000013149CTTATAAIAA' . $paymentId . '      10 000000000000000HDFC0000000010936518
 ';
 
         $name = 'temp.txt';
@@ -723,7 +791,7 @@ class EnachNetbankingNpciGatewayTest extends TestCase
         return $file;
     }
 
-    protected function makeBatchDebitPayment($payment, $status='1')
+    protected function makeBatchDebitPayment($payment, $status)
     {
         $this->fixtures->create(
             'enach',
@@ -771,14 +839,14 @@ class EnachNetbankingNpciGatewayTest extends TestCase
         $payment = $this->getDbLastEntity('payment');
 
         $fileStatuses = [
-            'status'     => 'ACCEPTED',
+            'status'     => '1',
             'error_code' => '',
             'error_desc' => '',
         ];
 
         Carbon::setTestNow(Carbon::now()->addDays(10));
 
-        $batch = $this->makeBatchDebitPayment($payment);
+        $batch = $this->makeBatchDebitPayment($payment, $fileStatuses);
 
         $this->assertEquals('processed', $batch['status']);
 
