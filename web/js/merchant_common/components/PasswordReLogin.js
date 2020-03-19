@@ -49,7 +49,13 @@ export default class PasswordReLogin extends Component {
   }
 
   onSubmit = formData => {
-    const { merchantId } = this.props;
+    if (!formData.password) {
+      this.props.showNotification({
+        type: 'error',
+        message: 'Please enter password',
+      });
+      return;
+    }
 
     this.setState({ isPending: true });
 
@@ -127,7 +133,7 @@ export default class PasswordReLogin extends Component {
               <Button.Primary
                 type="submit"
                 class="Btn--Link Button--input--right"
-                disabled={this.state.isPending}
+                disabled={!this.state.gResponse || this.state.isPending}
               >
                 {this.state.isPending ? 'Unlocking...' : 'Unlock'}
               </Button.Primary>
