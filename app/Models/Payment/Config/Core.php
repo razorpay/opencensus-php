@@ -40,14 +40,14 @@ class Core extends Base\Core
                 $config = $this->repo->config->transaction(function () use($input, $merchant, $config)
                 {
                     //updating the default value of config if already exist
-                    if (($input['default'] === true) or
-                        (strval($input['default']) === '1'))
+                    if (($input['is_default'] === true) or
+                        (strval($input['is_default']) === '1'))
                     {
                         $defaultConfig = $this->repo->config->fetchDefaultConfigByMerchantIdAndType($merchant->getId(), $input['type']);
 
                         if (isset($defaultConfig) === true)
                         {
-                            $defaultConfig->default = false;
+                            $defaultConfig->is_default = false;
 
                             $this->repo->saveOrFail($defaultConfig);
                         }
@@ -95,8 +95,8 @@ class Core extends Base\Core
                     {
                         $config->edit($input);
 
-                        if ((isset($input['default']) === true) and
-                            (($input['default'] === true) or (strval($input['default']) === '1')))
+                        if ((isset($input['is_default']) === true) and
+                            (($input['is_default'] === true) or (strval($input['is_default']) === '1')))
                         {
                             // find if any default config exist
                             $defaultConfig = $this->repo->config->fetchDefaultConfigByMerchantIdAndType($this->merchant->getId(), $type);
@@ -104,7 +104,7 @@ class Core extends Base\Core
                             if ((isset($defaultConfig) === true) and
                                   $id !== $defaultConfig->getId())
                             {
-                                $defaultConfig->default = false;
+                                $defaultConfig->is_default = false;
 
                                 $this->repo->saveOrFail($defaultConfig);
                             }

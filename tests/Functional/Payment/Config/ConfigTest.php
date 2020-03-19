@@ -55,7 +55,7 @@ class ConfigTest extends TestCase
 
         $this->assertEquals(false, $firstConfig->default);
 
-        $this->assertEquals(true, $secondConfig['default']);
+        $this->assertEquals(true, $secondConfig['is_default']);
     }
 
     public function testUpdateDefaultFieldForCheckoutConfig()
