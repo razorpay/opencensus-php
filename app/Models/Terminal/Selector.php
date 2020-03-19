@@ -786,8 +786,6 @@ class Selector extends Base\Core
 
     protected function shouldHitRoutingService(string $feature, string $paymentId = null)
     {
-        return true;
-
         $isProduction = $this->app->environment(Environment::PRODUCTION);
 
         if ($isProduction === false)
