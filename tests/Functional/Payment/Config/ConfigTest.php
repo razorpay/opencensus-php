@@ -53,7 +53,7 @@ class ConfigTest extends TestCase
 
         $firstConfig->reload();
 
-        $this->assertEquals(false, $firstConfig->default);
+        $this->assertEquals(false, $firstConfig->is_default);
 
         $this->assertEquals(true, $secondConfig['is_default']);
     }
