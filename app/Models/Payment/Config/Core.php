@@ -40,8 +40,7 @@ class Core extends Base\Core
                 $config = $this->repo->config->transaction(function () use($input, $merchant, $config)
                 {
                     //updating the default value of config if already exist
-                    if (($input['is_default'] === true) or
-                        (strval($input['is_default']) === '1'))
+                    if ($this->isDefaultConfig($input))
                     {
                         $defaultConfig = $this->repo->config->fetchDefaultConfigByMerchantIdAndType($merchant->getId(), $input['type']);
 
@@ -95,8 +94,7 @@ class Core extends Base\Core
                     {
                         $config->edit($input);
 
-                        if ((isset($input['is_default']) === true) and
-                            (($input['is_default'] === true) or (strval($input['is_default']) === '1')))
+                        if ((isset($input['is_default']) === true) and $this->isDefaultConfig($input))
                         {
                             // find if any default config exist
                             $defaultConfig = $this->repo->config->fetchDefaultConfigByMerchantIdAndType($this->merchant->getId(), $type);
@@ -118,5 +116,15 @@ class Core extends Base\Core
                     return  $config;
                 }
             });
+    }
+
+    private function isDefaultConfig($input)
+    {
+        if (($input['is_default'] === true) or (strval($input['is_default']) === '1'))
+        {
+            return true;
+        }
+
+        return false;
     }
 }
