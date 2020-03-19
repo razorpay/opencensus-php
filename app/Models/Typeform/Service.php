@@ -3,12 +3,15 @@
 namespace RZP\Models\Typeform;
 
 use RZP\Models\Base;
-use RZP\Trace\TraceCode;
-use Razorpay\Trace\Logger as Trace;
 
 class Service extends Base\Service
 {
 
+    /**
+     * @param array $input
+     *
+     * @return mixed
+     */
     public function processTypeformWebhook(array $input)
     {
         $validator = new Validator();
@@ -17,7 +20,9 @@ class Service extends Base\Service
 
         $validator->validateInput('typeform_webhook', $input);
 
-        return ["authorization" => "cleared"];//temporary
+        $response = $this->core()->processTypeformWebhook($input);
+
+        return $response;
     }
 
 }

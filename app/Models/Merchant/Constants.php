@@ -201,6 +201,5 @@ final class Constants
 
     const INSURANCE_CATEGORIES = [
         '6211',
-        '6300',
     ];
 }

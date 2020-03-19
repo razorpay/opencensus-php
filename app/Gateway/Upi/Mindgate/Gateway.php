@@ -275,6 +275,11 @@ class Gateway extends Base\Gateway
         }
     }
 
+    protected function getExternalMockUrl(string $type)
+    {
+        return  env('EXTERNAL_MOCK_GO_GATEWAY_DOMAIN') . $this->getRelativeUrl($type);
+    }
+
     /**
      * We only store the VPA because the rest of the fields
      * are filled by the callback
@@ -1052,9 +1057,7 @@ class Gateway extends Base\Gateway
 
         $request = $this->getStandardRequestArray($content);
 
-        $request['headers'] = [
-            'Content-Type' => 'text/plain'
-        ];
+        $request['headers']['Content-Type'] = 'text/plain';
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,

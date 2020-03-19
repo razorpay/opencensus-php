@@ -1071,4 +1071,37 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_FORBIDDEN_BUSINESS_BANKING_NOT_ENABLED,
         ],
     ],
+
+    'testCreateVirtualAccountInBulkForBanking' => [
+        'request' => [
+            'url' => '/virtual_accounts/banking/bulk',
+            'method' => 'post',
+            'content' => [
+                "merchant_ids" => ["10000000000000", "10000000000001"]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'success'  => 1,
+                'failure'  => 1,
+                'failures'  => ['10000000000001'],
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testCloseVirtualAccountInBulkForBanking' => [
+        'request' => [
+            'url' => '/virtual_accounts/banking/close/bulk',
+            'method' => 'post',
+        ],
+        'response' => [
+            'content' => [
+                'success'  => 2,
+                'failure'  => 1,
+                'failures'  => ['va_10000000000000'],
+            ],
+            'status_code' => 200,
+        ],
+    ],
 ];

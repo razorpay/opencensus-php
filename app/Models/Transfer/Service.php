@@ -357,6 +357,30 @@ class Service extends Base\Service
         return $this->processOrderTransfers($orderIds);
     }
 
+    public function processTransfersSettelements(string $settelementId)
+    {
+        $this->trace->info(
+            TraceCode::TRANSFERS_SETTELEMENT_UPDATE,
+            [
+                '$settelementId' => $settelementId,
+            ]
+        );
+
+        $transfers =  $this->repo->transfer->updatetransfersWithSettelement($settelementId);
+
+        $toalcount = $transfers->count();
+
+        $this->trace->info(
+            TraceCode::TRANSFERS_SETTELEMENT_UPDATE,
+            [
+                'transfers'   => $transfers,
+                '$toalcount'  => $toalcount,
+            ]
+        );
+
+        return $toalcount;
+    }
+
     public function processFailedOrderTransfers()
     {
         $orderIds = $this->repo->transfer->fetchFailedTransfersToRetry(EntityConstant::ORDER);

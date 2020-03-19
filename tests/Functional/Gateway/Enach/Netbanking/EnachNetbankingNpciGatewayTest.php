@@ -85,6 +85,7 @@ class EnachNetbankingNpciGatewayTest extends TestCase
         $this->assertNotNull($enach['gateway_reference_id2']);
         $this->assertNotNull($enach['umrn']);
         $this->assertEquals('true', $enach['status']);
+        $this->assertEquals(strtolower("CITI"), $enach['acquirer']);
 
         $token = $this->getLastEntity('token', true);
         $this->assertEquals('netbanking', $token['auth_type']);
@@ -130,6 +131,7 @@ class EnachNetbankingNpciGatewayTest extends TestCase
         $this->assertNotNull($enach['gateway_reference_id']);
         $this->assertNotNull($enach['gateway_reference_id2']);
         $this->assertNotNull($enach['umrn']);
+        $this->assertEquals(strtolower("CITI"), $enach['acquirer']);
 
         $this->assertEquals('true', $enach['status']);
 
@@ -185,6 +187,8 @@ class EnachNetbankingNpciGatewayTest extends TestCase
 
         $this->assertEquals(null, $enach['umrn']);
 
+        $this->assertEquals(strtolower("CITI"), $enach['acquirer']);
+
         // if we get a non-error but failed registration response, we also get the NPCI reference id
         $this->assertNotNull($enach['gateway_reference_id']);
 
@@ -230,6 +234,8 @@ class EnachNetbankingNpciGatewayTest extends TestCase
         $this->assertEquals(null, $enach['umrn']);
 
         $this->assertEquals('false', $enach['status']);
+
+        $this->assertEquals(strtolower("CITI"), $enach['acquirer']);
 
         $token = $this->getLastEntity('token', true);
 
@@ -278,6 +284,8 @@ class EnachNetbankingNpciGatewayTest extends TestCase
 
         $enach = $this->getLastEntity('enach', true);
 
+        $this->assertEquals(strtolower("CITI"), $enach['acquirer']);
+
         $this->assertNotNull($enach['gateway_reference_id']);
         $this->assertEquals('true', $enach['status']);
         $this->assertNotNull($enach['umrn']);
@@ -300,6 +308,7 @@ class EnachNetbankingNpciGatewayTest extends TestCase
         $this->assertEquals('true', $enach['status']);
         $this->assertEquals('true' ,$enach['acknowledge_status']);
         $this->assertNotNull($enach['umrn']);
+        $this->assertEquals(strtolower("CITI"), $enach['acquirer']);
 
         $token = $this->getLastEntity('token', true);
         $this->assertEquals('netbanking', $token['auth_type']);

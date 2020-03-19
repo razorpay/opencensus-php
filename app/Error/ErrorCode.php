@@ -403,6 +403,8 @@ class ErrorCode
     const BAD_REQUEST_PAYOUT_STATUS_UPDATE_ALLOWED_ONLY_IN_TEST_MODE                = 'BAD_REQUEST_PAYOUT_STATUS_UPDATE_ALLOWED_ONLY_IN_TEST_MODE';
     const BAD_REQUEST_REQUIRED_PERMISSION_NOT_FOUND                                 = 'BAD_REQUEST_REQUIRED_PERMISSION_NOT_FOUND';
 
+    const BAD_REQUEST_SAME_IDEM_KEY_DIFFERENT_REQUEST                               = 'BAD_REQUEST_SAME_IDEM_KEY_DIFFERENT_REQUEST';
+
     const BAD_REQUEST_CUSTOMER_ID_MISSING                                           = 'BAD_REQUEST_CUSTOMER_ID_MISSING';
     const BAD_REQUEST_BANK_ACCOUNT_ID_MISSING                                       = 'BAD_REQUEST_BANK_ACCOUNT_ID_MISSING';
     const BAD_REQUEST_DUPLICATE_VPA                                                 = 'BAD_REQUEST_DUPLICATE_VPA';
@@ -774,6 +776,7 @@ class ErrorCode
     const BAD_REQUEST_BATCH_NOTIFICATIONS_SENT_ALREADY                              = 'BAD_REQUEST_BATCH_NOTIFICATIONS_SENT_ALREADY';
     const BAD_REQUEST_BATCH_STATS_NOT_SUPPORTED_FOR_TYPE                            = 'BAD_REQUEST_BATCH_STATS_NOT_SUPPORTED_FOR_TYPE';
     const BAD_REQUEST_ANOTHER_OPERATION_IN_PROGRESS                                 = 'BAD_REQUEST_ANOTHER_OPERATION_IN_PROGRESS';
+    const BAD_REQUEST_ANOTHER_OPERATION_PROGRESS_SAME_IDEM_KEY                      = 'BAD_REQUEST_ANOTHER_OPERATION_PROGRESS_SAME_IDEM_KEY';
     const BAD_REQUEST_ANOTHER_MPAN_ISSUE_IN_PROGRESS                                = 'BAD_REQUEST_ANOTHER_MPAN_ISSUE_IN_PROGRESS';
 
     const BAD_REQUEST_LAMBDA_ANOTHER_OPERATION_IN_PROGRESS                          = 'BAD_REQUEST_LAMBDA_ANOTHER_OPERATION_IN_PROGRESS';
@@ -949,6 +952,8 @@ class ErrorCode
     const BAD_REQUEST_KYC_ID_MISSING                                                = 'BAD_REQUEST_KYC_ID_MISSING';
     const BAD_REQUEST_INVALID_RESPONSE_BODY                                         = 'BAD_REQUEST_INVALID_RESPONSE_BODY';
 
+    const SERVER_ERROR_JSON_ENCODE_FALSE                                            = 'SERVER_ERROR_JSON_ENCODE_FALSE';
+    const SERVER_ERROR_IDEM_KEY_ROUTE_ENTITY_MAPPING_ABSENT                         = 'SERVER_ERROR_IDEM_KEY_ROUTE_ENTITY_MAPPING_ABSENT';
     const SERVER_ERROR_BANKING_ACCOUNT_GATEWAY_PROCESSOR_CLASS_ABSENCE              = 'SERVER_ERROR_BANKING_ACCOUNT_GATEWAY_PROCESSOR_CLASS_ABSENCE';
     const SERVER_ERROR_LOCKED_BALANCE_SET_FOR_NON_BANKING                           = 'SERVER_ERROR_LOCKED_BALANCE_SET_FOR_NON_BANKING';
     const SERVER_ERROR_INCORRECT_ENTITY_DELETE                                      = 'SERVER_ERROR_INCORRECT_ENTITY_DELETE';
@@ -1016,7 +1021,6 @@ class ErrorCode
     const SERVER_ERROR_WEBHOOK_IN_TRANSACTION                                       = 'SERVER_ERROR_WEBHOOK_IN_TRANSACTION';
     const SERVER_ERROR_SIGNED_XML_EMPTY                                             = 'SERVER_ERROR_SIGNED_XML_EMPTY';
 
-    const SERVER_ERROR_WEBHOOK_UPDATE_DISABLED                                      = 'SERVER_ERROR_WEBHOOK_UPDATE_DISABLED';
     const SERVER_ERROR_RAZORX_FAILURE                                               = 'SERVER_ERROR_RAZORX_FAILURE';
 
     const SERVER_ERROR_UFH_SERVICE_FAILURE                                          = 'SERVER_ERROR_UFH_SERVICE_FAILURE';
@@ -1534,7 +1538,12 @@ class ErrorCode
     const BAD_REQUEST_INVALID_MATCH_PERCENT                                         = 'BAD_REQUEST_INVALID_MATCH_PERCENT';
     const BAD_REQUEST_INVALID_MATCH_TYPE                                            = 'BAD_REQUEST_INVALID_MATCH_TYPE';
 
+    //payment config
+    const BAD_REQUEST_INVALID_CONFIG_ID                                             = 'BAD_REQUEST_INVALID_CONFIG_ID';
+
     const BAD_REQUEST_ANOTHER_CREDITS_OPERATION_IN_PROGRESS                         = 'BAD_REQUEST_ANOTHER_CREDITS_OPERATION_IN_PROGRESS';
 
-    const BAD_REQUEST_YESBANK_PAYMENT_DISABLED                                      = 'BAD_REQUEST_YESBANK_PAYMENT_DISABLED';
+    //typeform Error codes
+
+    const BAD_REQUEST_MERCHANT_ID_NOT_PRESENT                                       = 'BAD_REQUEST_MERCHANT_ID_NOT_PRESENT';
 }

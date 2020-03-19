@@ -1947,7 +1947,7 @@ class Gateway extends Base\Gateway
     {
         $contact = $input['contact'];
 
-        $merchantId = $this->terminal[Terminal\Entity::MERCHANT_ID];
+        $merchantId = $input['merchant_id'];
 
         $cacheKey = strtolower($input['provider']) . '_' . $contact . '_' . $merchantId;
 

@@ -53,6 +53,8 @@ class RequestHeader
     const X_Batch_Id                    = 'x-batch-id';
     const X_IDEMPOTENT_KEY              = 'X-Idempotent-Key';
 
+    const X_PAYOUT_IDEMPOTENCY          = 'X-Payout-Idempotency';
+
     const X_TASK_ID                     = 'X-Task-ID';
     const X_SERVICE_ID                  = 'X-Service-ID';
 

@@ -597,6 +597,10 @@ class AdminFetch
                 ],
             ],
 
+            Entity::BALANCE_CONFIG => [
+                'balance_id' => Fetch::FIELD_BALANCE_ID,
+            ],
+
             Entity::BANK_ACCOUNT => [
                 'deleted' => [
                     Fetch::LABEL  => 'Deleted',

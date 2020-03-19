@@ -320,6 +320,13 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const HITACHI_ONBOARD_REQUEST_CREATION_ERROR                = 'HITACHI_ONBOARD_REQUEST_CREATION_ERROR';
     const SKIPPING_HITACHI_AUTOMATIC_ONBOARDING                 = 'SKIPPING_HITACHI_AUTOMATIC_ONBOARDING';
 
+    const DUPLICATE_IDEM_KEY_NO_ENTITY_ASSOC                    = 'DUPLICATE_IDEM_KEY_NO_ENTITY_ASSOC';
+    const IDEM_KEY_UPDATE_DATA                                  = 'IDEM_KEY_UPDATE_DATA';
+    const DUPLICATE_IDEM_KEY_RECEIVED                           = 'DUPLICATE_IDEM_KEY_RECEIVED';
+    const DUPLICATE_IDEM_KEY_RESPONSE                           = 'DUPLICATE_IDEM_KEY_RESPONSE';
+    const IDEM_KEY_ENTITY_CREATED                               = 'IDEM_KEY_ENTITY_CREATED';
+    const IDEMPOTENCY_REQUEST_DATA                              = 'IDEMPOTENCY_REQUEST_DATA';
+
     const FTA_MODE_SET                                          = 'FTA_MODE_SET';
     const FTA_SLA_EXPIRED                                       = 'FTA_SLA_EXPIRED';
     const FTA_MODE_NOT_FOUND                                    = 'FTA_MODE_NOT_FOUND';
@@ -1061,6 +1068,12 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const VIRTUAL_ACCOUNT_CLOSED_PAYMENT_REROUTED               = 'VIRTUAL_ACCOUNT_CLOSED_PAYMENT_REROUTED';
     const VIRTUAL_ACCOUNT_ADD_RECEIVER                          = 'VIRTUAL_ACCOUNT_ADD_RECEIVER';
     const VIRTUAL_ACCOUNT_GENERATE_VPA_TERMINAL                 = 'VIRTUAL_ACCOUNT_GENERATE_VPA_TERMINAL';
+    const VIRTUAL_ACCOUNT_BULK_CREATE_FOR_BANKING_REQUEST       = 'VIRTUAL_ACCOUNT_BULK_CREATE_FOR_BANKING_REQUEST';
+    const VIRTUAL_ACCOUNT_BULK_CREATE_FOR_BANKING_RESPONSE      = 'VIRTUAL_ACCOUNT_BULK_CREATE_FOR_BANKING_RESPONSE';
+    const VIRTUAL_ACCOUNT_BULK_CLOSE_FOR_BANKING_REQUEST        = 'VIRTUAL_ACCOUNT_BULK_CLOSE_FOR_BANKING_REQUEST';
+    const VIRTUAL_ACCOUNT_BULK_CLOSE_FOR_BANKING_RESPONSE       = 'VIRTUAL_ACCOUNT_BULK_CLOSE_FOR_BANKING_RESPONSE';
+    const VIRTUAL_ACCOUNT_CLOSE_FOR_BANKING_FAILED              = 'VIRTUAL_ACCOUNT_CLOSE_FOR_BANKING_FAILED';
+    const VIRTUAL_ACCOUNT_CREATE_FOR_BANKING_FAILED             = 'VIRTUAL_ACCOUNT_CREATE_FOR_BANKING_FAILED';
     const VIRTUAL_ACCOUNT_CREATE_FOR_BANKING_REQUEST            = 'VIRTUAL_ACCOUNT_CREATE_FOR_BANKING_REQUEST';
 
     const BANK_TRANSFER_PROCESS_REQUEST                         = 'BANK_TRANSFER_PROCESS_REQUEST';
@@ -1556,6 +1569,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PENDING_ORDER_TRANSFER_PROCESS                        = 'PENDING_ORDER_TRANSFER_PROCESS';
     const FAILED_ORDER_TRANSFER_PROCESS                         = 'FAILED_ORDER_TRANSFER_PROCESS';
     const ORDER_TRANSFER_PROCESS_RETRY                          = 'ORDER_TRANSFER_PROCESS_RETRY';
+    const TRANSFERS_SETTELEMENT_UPDATE                          = 'TRANSFERS_SETTELEMENT_UPDATE';
     const ORDER_TRANSFER_PROCESS_INITIATED                      = 'ORDER_TRANSFER_PROCESS_INITIATED';
     const ORDER_TRANSFER_PROCESS_PAYMENT_NOT_CAPTURED           = 'ORDER_TRANSFER_PROCESS_PAYMENT_NOT_CAPTURED';
     const ORDER_TRANSFER_PROCESS_ORDER_NOT_PAID                 = 'ORDER_TRANSFER_PROCESS_ORDER_NOT_PAID';
@@ -2674,6 +2688,13 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const TERMINALS_SERVICE_RESPONSE                            = 'TERMINALS_SERVICE_RESPONSE';
     const TERMINALS_SERVICE_INTEGRATION_ERROR                   = 'TERMINALS_SERVICE_INTEGRATION_ERROR';
 
+    const UPI_MANDATE_CREATE_REQUEST                            = 'UPI_MANDATE_CREATE_REQUEST';
+    const UPI_MANDATE_CREATED                                   = 'UPI_MANDATE_CREATED';
+
+    //payment config
+    const CONFIG_CREATE_REQUEST                                 = 'CONFIG_CREATE_REQUEST';
+    const CONFIG_UPDATE_REQUEST                                 = 'CONFIG_UPDATE_REQUEST';
+
     // DB wait timeout
     const WAIT_TIMEOUT_EXCEPTION                                = 'WAIT_TIMEOUT_EXCEPTION';
 
@@ -2683,6 +2704,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     // RBL VA integration
     const RBL_VA_CALLBACK                                       = 'RBL_VA_CALLBACK';
     const RBL_VA_INVALID_CALLBACK_DATA                          = 'RBL_VA_INVALID_CALLBACK_DATA';
+
+    const TYPEFORM_PARSED_DATA                                  = 'TYPEFORM_PARSED_DATA';
+    const TYPEFORM_WORKFLOW_TRIGGERED                           = 'TYPEFORM_WORKFLOW_TRIGGERED';
+    const TYPEFORM_RAW_DATA                                     = 'TYPEFORM_RAW_DATA';
 
     // VA Migrate - Yesbank -> RBL
     const VA_MIGRATE_REQUEST            = 'VA_MIGRATE_REQUEST';

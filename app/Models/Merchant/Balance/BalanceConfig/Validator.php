@@ -5,6 +5,7 @@ namespace RZP\Models\Merchant\Balance\BalanceConfig;
 use RZP\Base;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant\Balance;
+use RZP\Exception\BadRequestException;
 use RZP\Exception\BadRequestValidationFailureException;
 
 class Validator extends Base\Validator
@@ -15,8 +16,7 @@ class Validator extends Base\Validator
         Entity::NEGATIVE_LIMIT_AUTO                => 'required|integer|between:'.Entity::DEFAULT_MAX_NEGATIVE.','
                                                         .Entity::CUSTOM_MAX_NEGATIVE,
 
-        Entity::NEGATIVE_LIMIT_MANUAL              => 'integer|between:'
-                                                        .Entity::DEFAULT_MAX_NEGATIVE.','.Entity::CUSTOM_MAX_NEGATIVE,
+        Entity::NEGATIVE_LIMIT_MANUAL              => 'integer',
 
         Entity::TYPE                                => 'required|string|custom',
         Entity::NEGATIVE_TRANSACTION_FLOWS         => 'filled|array',
@@ -26,8 +26,7 @@ class Validator extends Base\Validator
         Entity::NEGATIVE_LIMIT_AUTO                => 'integer|between:'.Entity::DEFAULT_MAX_NEGATIVE.','
                                                         .Entity::CUSTOM_MAX_NEGATIVE,
 
-        Entity::NEGATIVE_LIMIT_MANUAL              => 'integer|between:'.Entity::DEFAULT_MAX_NEGATIVE.','
-                                                        .Entity::CUSTOM_MAX_NEGATIVE,
+        Entity::NEGATIVE_LIMIT_MANUAL              => 'integer',
 
         Entity::TYPE                                => 'required|string|custom',
         Entity::NEGATIVE_TRANSACTION_FLOWS         => 'filled|array',
@@ -49,6 +48,8 @@ class Validator extends Base\Validator
     public function validateCreateBalanceConfig(array $input)
     {
         $this->validateInput('create', $input);
+
+        $this->validateManualNegativeLimit($input);
 
         if (array_key_exists(Entity::NEGATIVE_TRANSACTION_FLOWS, $input) === true)
         {
@@ -75,6 +76,8 @@ class Validator extends Base\Validator
      */
     public function validateEditBalanceConfig(array $input, Entity $balanceConfig)
     {
+        $this->validateManualNegativeLimit($input);
+
         $type = (array_key_exists(Entity::TYPE, $input) === true) ? $input[Entity::TYPE] : $balanceConfig->getType();
 
         //If the edit input contains type, and the type is different from existing balance_config type,
@@ -133,11 +136,40 @@ class Validator extends Base\Validator
         if ($areValidFlows === false)
         {
             throw new BadRequestValidationFailureException(
-                ErrorCode::BAD_REQUEST_BALANCE_CONFIG_INVALID_NEGATIVE_TRANSACTION_FLOW,
                 'Negative Flow ['.implode(',', $inputFlows).'] is not in the allowed flows list.'.
-                'Allowed flows for balance type '.$balanceType.' are [' .implode(',',
+                ' Allowed flows for balance type '.$balanceType.' are [' .implode(',',
                     Balance\Core::NEGATIVE_FLOWS[$balanceType]). ']'
             );
+        }
+    }
+
+    /**
+     * @param array $input
+     * @throws BadRequestValidationFailureException
+     */
+    private function validateManualNegativeLimit(array $input)
+    {
+        if ((isset($input[Entity::NEGATIVE_LIMIT_AUTO]) === true) and
+            (isset($input[Entity::NEGATIVE_LIMIT_MANUAL]) === true) and
+            ($input[Entity::NEGATIVE_LIMIT_AUTO] < $input[Entity::NEGATIVE_LIMIT_MANUAL]))
+        {
+            throw new BadRequestValidationFailureException(
+                Entity::NEGATIVE_LIMIT_MANUAL . ' can not be greater than '. Entity::NEGATIVE_LIMIT_AUTO,
+                [
+                    Entity::NEGATIVE_LIMIT_AUTO     => $input[Entity::NEGATIVE_LIMIT_AUTO],
+                    Entity::NEGATIVE_LIMIT_MANUAL   => $input[Entity::NEGATIVE_LIMIT_MANUAL]
+                ]);
+        }
+
+        if ((isset($input[Entity::NEGATIVE_LIMIT_MANUAL]) === true) and
+            ($input[Entity::NEGATIVE_LIMIT_MANUAL] > Entity::CUSTOM_MAX_NEGATIVE))
+        {
+            throw new BadRequestValidationFailureException(
+                'The negative limit manual must be less than or equal to '
+                .Entity::CUSTOM_MAX_NEGATIVE,
+                [
+                    Entity::NEGATIVE_LIMIT_MANUAL   => $input[Entity::NEGATIVE_LIMIT_MANUAL]
+                ]);
         }
     }
 }

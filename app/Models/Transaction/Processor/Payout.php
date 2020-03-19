@@ -44,7 +44,7 @@ class Payout extends Base
 
     public function setFeeDefaults()
     {
-        if ($this->source->balance->getAccountType() === AccountType::DIRECT)
+        if ($this->source->balance->isAccountTypeDirect() === true)
         {
             // In case of CA payouts, fees and tax has already been calculated at time of payout creation.
             // Now we just update the transaction fees data from payout fees data.
@@ -106,7 +106,7 @@ class Payout extends Base
         {
             // In case of CA payouts, transaction amount remains equal to the payout amount.
             // Fees is deducted at a later stage.
-            if ($this->source->balance->getAccountType() === AccountType::DIRECT)
+            if ($this->source->balance->isAccountTypeDirect() === true)
             {
                 $payoutAmount = $amount;
             }

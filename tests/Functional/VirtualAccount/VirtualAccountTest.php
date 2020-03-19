@@ -1925,6 +1925,37 @@ class VirtualAccountTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateVirtualAccountInBulkForBanking()
+    {
+        $this->setUpMerchantForBusinessBanking(true, 10000000);
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testCloseVirtualAccountInBulkForBanking()
+    {
+        $this->setUpMerchantForBusinessBanking(true, 10000000);
+
+        $merchant = $this->getDbEntityById('merchant', '10000000000000');
+
+        $virtualAccount1 = (new Core)->createForBankingBalance($merchant, $merchant->sharedBankingBalance);
+        $virtualAccount2 = (new Core)->createForBankingBalance($merchant, $merchant->sharedBankingBalance);
+
+        $this->testData[__FUNCTION__]['request']['content'] = [
+            'virtual_account_ids' => [
+                $virtualAccount1->getPublicId(),
+                $virtualAccount2->getPublicId(),
+                'va_10000000000000'
+            ]
+        ];
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
     protected function createBankAccount(array $overrideWith = [])
     {
         $bankAccount = $this->fixtures

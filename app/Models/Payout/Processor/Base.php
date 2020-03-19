@@ -242,11 +242,8 @@ class Base extends BaseCore
 
         $this->fireEventForPayoutStatus($payout);
 
-        $accountType = $payout->balance->getAccountType();
-
         // Since RBL transactions are created at a later stage, we skip this flow fo RBL
-
-        if ($accountType === AccountType::SHARED)
+        if ($payout->balance->isAccountTypeShared() === true)
         {
             if ($payout->isStatusCreated() === true)
             {

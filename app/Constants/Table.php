@@ -257,6 +257,8 @@ class Table
 
     const OPTIONS              = 'options';
 
+    const CONFIG               = 'payment_configs';
+
     const UPI_MANDATE          = 'upi_mandates';
 
     protected static $entityToTableMap = [

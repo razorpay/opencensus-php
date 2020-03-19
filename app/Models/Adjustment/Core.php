@@ -61,6 +61,13 @@ class Core extends Base\Core
             ($balanceType === Balance\Type::RESERVE_PRIMARY))
         {
             [$balance, $sendReserveBalanceMail] = (new Balance\Core)->createOrFetchReserveBalance($merchant, $balanceType, $this->mode);
+
+            if ($balance->getBalance() + $amount > Validator::MAX_RESERVE_BALANCE_AMOUNT)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'Reserve Balance Amount should be less than or equal to '
+                    . Validator::MAX_RESERVE_BALANCE_AMOUNT);
+            }
         }
         else
         {
@@ -122,7 +129,7 @@ class Core extends Base\Core
 
         if (($adjustment->getAmount() > 0) and
             ($balance->isTypeBanking() === true) and
-            ($balance->getAccountType() === Balance\AccountType::SHARED))
+            ($balance->isAccountTypeShared() === true))
         {
             $this->sendYesbankBalanceLoadEmail($adjustment, $merchant);
         }
