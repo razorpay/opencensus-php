@@ -5673,3 +5673,12 @@ ALTER TABLE webhooks
 
 ALTER TABLE terminals
     ADD COLUMN account_type VARCHAR(255) DEFAULT NULL;
+
+// Since all the existing emi plans are credit, we need to add this.
+// If not, the duplicate emi plan checks will fail, since the ones existing in db has value null
+// and the new requests have value 'credit'.
+ALTER TABLE emi_plans
+    ADD COLUMN type VARCHAR(255) NOT NULL DEFAULT 'credit';
+
+ALTER TABLE merchant_details
+    ADD COLUMN date_of_establishment date DEFAULT NULL;

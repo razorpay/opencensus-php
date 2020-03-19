@@ -135,6 +135,7 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
     const ADDITIONAL_DETAILS                       = 'additional_details';
     const KYC_ID                                   = 'kyc_id';
     const ESTD_YEAR                                = 'estd_year';
+    const DATE_OF_ESTABLISHMENT                    = 'date_of_establishment';
     const AUTHORIZED_SIGNATORY_RESIDENTIAL_ADDRESS = 'authorized_signatory_residential_address';
     const AUTHORIZED_SIGNATORY_DOB                 = 'authorized_signatory_dob';
     const PLATFORM                                 = 'platform';
@@ -257,6 +258,7 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
         self::AUTHORIZED_SIGNATORY_RESIDENTIAL_ADDRESS,
         self::AUTHORIZED_SIGNATORY_DOB,
         self::PLATFORM,
+        self::DATE_OF_ESTABLISHMENT,
     ];
 
     protected $public = [
@@ -360,6 +362,7 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
         self::AUTHORIZED_SIGNATORY_DOB,
         self::PLATFORM,
         self::FUND_ACCOUNT_VALIDATION_ID,
+        self::DATE_OF_ESTABLISHMENT,
     ];
 
     protected $defaults = [
