@@ -5,6 +5,7 @@ namespace RZP\Models\Merchant\Balance;
 use App;
 use Mail;
 use Carbon\Carbon;
+use Razorpay\Trace\Logger;
 use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
@@ -452,7 +453,10 @@ class Core extends Base\Core
         }
         catch (\Exception $ex)
         {
-            $this->trace->traceException($ex, Trace::DEBUG);
+            $this->trace->warn(TraceCode::RESERVE_BALANCE_NOT_FOUND,
+                [
+                    'merchant_id' => $merchant->getId(),
+                ]);
         }
 
         $reserveAmount = $reserveBalance !== null ? $reserveBalance->getBalance() : 0;
