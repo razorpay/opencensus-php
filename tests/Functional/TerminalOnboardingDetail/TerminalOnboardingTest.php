@@ -30,7 +30,7 @@ class TerminalOnboardingTest extends TestCase
 
             $this->assertEquals(Requests::POST, $method);
 
-            $this->assertEquals("v2/terminal/onboard/callback/paypal", $path);
+            $this->assertEquals("v2/terminal/onboard/paypal/callback", $path);
 
             $this->assertEquals(['foo' => 'bar'], json_decode($content, true));
 
