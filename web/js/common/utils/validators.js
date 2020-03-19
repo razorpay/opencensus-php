@@ -224,3 +224,9 @@ export function validateAlphanumericWithStrictLength(value, length) {
 
   return regex.test(value);
 }
+
+export function validateBeneficiaryName(value) {
+  let regex = new RegExp(/^[a-zA-Z0-9 ]+$/);
+
+  return value.length >= 4 && value.length <= 120 && regex.test(value);
+}

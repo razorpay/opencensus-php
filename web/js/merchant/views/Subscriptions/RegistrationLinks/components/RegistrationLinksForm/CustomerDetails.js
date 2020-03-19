@@ -125,10 +125,10 @@ export default props => {
   );
 };
 
-export function validatePhone(val) {
+function validatePhone(val) {
   return !isPhone(val) && 'Invalid Phone';
 }
 
-export function validateEmail(val) {
+function validateEmail(val) {
   return !isEmail(val) && 'Invalid Email';
 }

@@ -1,5 +1,7 @@
 import Input from 'common/new-ui/Input';
 
+import { validateBeneficiaryName } from 'common/utils/validators';
+
 export const BankDetails = ({
   hideBankName,
   disabled,
@@ -64,6 +66,11 @@ export const AccountDetails = ({
       value={beneficiaryName}
       onBlur={onBlurElement}
       description="Customer/Beneficiary Name on the Account"
+      validator={value =>
+        !validateBeneficiaryName(value)
+          ? 'Please enter a valid name as per your account'
+          : null
+      }
     />
 
     <Input

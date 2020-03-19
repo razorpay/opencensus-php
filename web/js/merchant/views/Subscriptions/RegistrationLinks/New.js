@@ -20,10 +20,12 @@ import Button, { AsyncBtn } from 'common/new-ui/Button';
 import { ModalAsideNav } from 'common/new-ui/Wizard';
 import { Modal, ModalContent } from 'common/new-ui/Modal';
 
-import CustomerDetailsForm, {
-  validatePhone,
-  validateEmail,
-} from 'merchant/views/Subscriptions/RegistrationLinks/components/RegistrationLinksForm/CustomerDetails';
+import CustomerDetailsForm from 'merchant/views/Subscriptions/RegistrationLinks/components/RegistrationLinksForm/CustomerDetails';
+import {
+  isEmail,
+  isPhone,
+  validateBeneficiaryName,
+} from 'common/utils/validators';
 import PaymentDetailsForm, {
   checkIfAmount,
 } from 'merchant/views/Subscriptions/RegistrationLinks/components/RegistrationLinksForm/PaymentDetails';
@@ -40,25 +42,31 @@ const CustomerDetailsMandatoryFields = [
   'description',
   {
     name: 'customerContact',
-    validator: validatePhone,
+    validator: isPhone,
   },
   {
     name: 'customerEmail',
-    validator: validateEmail,
+    validator: isEmail,
   },
 ];
 
 const EmandateMandatoryFields = [
   'bankAccountIFSC',
   'bankName',
-  'beneficiaryName',
+  {
+    name: 'beneficiaryName',
+    validator: validateBeneficiaryName,
+  },
   'bankAccountNumber',
 ];
 
 const NACHMandatoryFields = [
   'accountType',
   'bankAccountIFSC',
-  'beneficiaryName',
+  {
+    name: 'beneficiaryName',
+    validator: validateBeneficiaryName,
+  },
   'bankAccountNumber',
 ];
 
@@ -421,7 +429,7 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
           if (type instanceof Object) {
             value = this.state.formFields[type.name];
 
-            return value && !type.validator(value);
+            return value && type.validator(value);
           }
 
           return value;
@@ -460,7 +468,7 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
           if (type instanceof Object) {
             value = this.state.formFields[type.name];
 
-            return value && !type.validator(value);
+            return value && type.validator(value);
           }
 
           return value;
