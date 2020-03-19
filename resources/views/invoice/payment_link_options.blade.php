@@ -840,15 +840,16 @@ $isHostedCheckout               = $hostedpage_options['enable_embedded_checkout'
             var modalCheckoutOptions = $checkout_options.modal;
             options.modal = Object.assign(modalCheckoutOptions, options.modal); // Shouldn't override base options
 
-            // : description option : Hiding this permanantly as requested by Sriram
-            // if (!$checkout_options.hidden.entity_id) {
-            //     options.description = "#" +  invoiceObj.id;
-            // }
+            if (!options.description && !$checkout_options.hidden.entity_id) {
+                // If description is not set, and entity id is not hidden, then entity id is shown.
+                options.description = "#" + invoiceObj.id;
+            } else {
+                options.description = $checkout_options.description;
+            }
 
             // set from Rendering preferences
             options.name = $checkout_options.name || invoiceObj.merchant_label; // Same used in dummy  checkout as well
             options.remember_customer = $checkout_options.remember_customer;
-            options.description = $checkout_options.description;
             options.min_amount_label = $checkout_options.first_payment_min_amount;
 
             // : hidden option
