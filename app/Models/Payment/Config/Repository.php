@@ -38,7 +38,7 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->where(Entity::MERCHANT_ID, $merchantId)
                     ->where(Entity::TYPE, $type)
-                    ->where(Entity::DEFAULT, true)
+                    ->where(Entity::IS_DEFAULT, true)
                     ->first();
     }
 }
