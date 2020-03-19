@@ -339,6 +339,6 @@ class Core extends Base\Core
 
     private function validateCheckoutConfigId($configId)
     {
-        $this->repo->config->findByPublicId($configId);
+        $this->repo->config->findByPublicIdAndMerchant($configId, $this->merchant);
     }
 }
