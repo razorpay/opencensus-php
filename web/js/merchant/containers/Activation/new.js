@@ -256,38 +256,15 @@ export default class ActivationContainer extends React.Component {
     this.updateSession(response.data); // Updating % activation_progress (side bar)
   }
 
-  saveFile = (fieldName, file, progressTracker, destinationUrl, uploadAs) => {
-    const url =
-      Boolean(destinationUrl) &&
-      typeof destinationUrl === 'string' &&
-      Boolean(destinationUrl.trim(destinationUrl))
-        ? destinationUrl
-        : 'merchant/activation/upload';
+  saveFile = (fieldName, file, progressTracker, uploadAs) => {
     let formData = new FormData();
-
-    //TODO: This mapping is just for past form cross-check. It can be removed now after verifying fields.
-    let fieldNameMapping = {
-      business_proof_url: 'business_proof_url',
-      business_operation_proof: 'business_operation_proof_url',
-      business_pan_url: 'business_pan_url',
-      address_proof_url: 'address_proof_url',
-      promoter_proof: 'promoter_proof_url',
-      promoter_pan_url: 'promoter_pan_url',
-      promoter_address_url: 'promoter_address_url',
-      form_12a_url: 'form_12a_url',
-      form_80g_url: 'form_80g_url',
-    };
     if (typeof uploadAs === 'string') {
       fieldName = uploadAs;
     }
-    //If field name doesn't exist in mapping use document type and generic file name
-    if (Boolean(uploadAs) || !Boolean(fieldNameMapping[fieldName])) {
-      formData.append('document_type', fieldName);
-      fieldName = 'file';
-    }
-    formData.append(fieldName, file);
+    formData.append('document_type', fieldName);
+    formData.append('file', file);
     return merchantFetch({
-      url: url,
+      url: 'merchant/documents/upload',
       method: 'post',
       mode: 'live',
       data: formData,

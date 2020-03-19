@@ -732,10 +732,8 @@ const uploadFields = [
     getName: activation => activation.state.address_proof + '_' + 'front',
     _cmp: Input.File,
     className: 'AddressProof-upload',
-    destinationUrl: 'merchant/documents/upload',
     _when: _showForIndiv,
     _type: 'address_proof_doc_upload',
-    isDeletable: true,
     //linkedfields: ['address_proof'],
   },
   {
@@ -749,10 +747,8 @@ const uploadFields = [
     getName: activation => activation.state.address_proof + '_' + 'back',
     _cmp: Input.File,
     className: 'AddressProof-upload',
-    destinationUrl: 'merchant/documents/upload',
     _when: _showForIndiv,
     _type: 'address_proof_doc_upload',
-    isDeletable: true,
     //linkedfields: ['address_proof'],
   },
   {
@@ -786,8 +782,6 @@ const uploadFields = [
     getName: activation => activation.state.additional_doc,
     _cmp: Input.File,
     className: 'AddressProof-upload',
-    destinationUrl: 'merchant/documents/upload',
-    isDeletable: true,
     _when: doesHaveAdditionalDocs,
     required: activation =>
       isAdditonalDocRequired(activation.state, activation.props),
@@ -804,11 +798,10 @@ export const ndcFields = [
     description: 'Please upload a copy of cancelled cheque.',
     _cmp: Input.File,
     className: 'AddressProof-upload',
-    destinationUrl: 'merchant/documents/upload',
     _when: activation => {
       return activation.isNeedsClarificationMode() && activation.isOnKYCTab(); //Some improvements are possible here regarding placement of this field
     },
-    isDeletable: false,
+    isNotDeletable: true,
   },
 ];
 

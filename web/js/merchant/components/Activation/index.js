@@ -269,13 +269,7 @@ export default class ActivationWizard extends React.Component {
           );
 
           return props
-            .saveFile(
-              filename,
-              file,
-              progressTracker,
-              a.destinationUrl || null,
-              a.uploadAs || null
-            )
+            .saveFile(filename, file, progressTracker, a.uploadAs || null)
             .then(() => {
               updateHubSpotContactsProperties({
                 [filename]: true,
@@ -1752,6 +1746,7 @@ function ActivationField(field) {
     required,
     ...rest
   } = field;
+  const { documents } = this.props.data;
 
   if (_when && !_when(this)) {
     return null;
@@ -1779,6 +1774,9 @@ function ActivationField(field) {
       rest.options = field._optionsFn(this, this.props.categories);
     }
   }
+  if (rest.getName) {
+    rest.name = rest.getName(this);
+  }
 
   let defaultValue, key;
   if (rest.name) {
@@ -1789,7 +1787,9 @@ function ActivationField(field) {
     if (this.isOnKYCTab()) {
       defaultValue = this.state.dirty[key] || null;
     } else {
-      defaultValue = this.state.dirty[key] || this.props.data[key];
+      let docDefaultValue = documents && documents[key] && documents[key][0].id;
+      defaultValue =
+        this.state.dirty[key] || this.props.data[key] || docDefaultValue;
     }
   } else if (_name) {
     defaultValue = this.state[_name];
@@ -1822,30 +1822,11 @@ function ActivationField(field) {
     rest.label = rest.getLabel(this);
   }
 
-  if (rest.getName) {
-    rest.name = rest.getName(this);
-    key = rest.name;
-  }
-
   if (rest.getPlaceholder) {
     rest.placeholder = rest.getPlaceholder(this);
   }
 
-  if (
-    !this.isOnKYCTab() &&
-    rest.destinationUrl === 'merchant/documents/upload'
-  ) {
-    const { documents } = this.props.data;
-    defaultValue =
-      (documents &&
-        documents[`${rest.name}`] &&
-        documents[`${rest.name}`][0].id) ||
-      null;
-  } else if (rest._type === 'address_proof_doc_upload') {
-    defaultValue = this.state.dirty[rest.name] || null;
-  }
-
-  if (rest.isDeletable) {
+  if (!rest.isNotDeletable) {
     rest.onCloseClick = () => {
       this.props.deleteFile(rest.name, () => {
         this.markTabIfActive(DOCUMENT_UPLOAD_STEP);
