@@ -77,7 +77,7 @@ class ConfigTest extends TestCase
     {
         $firstConfig = $this->fixtures->create('config');
 
-        $secondConfig= $this->fixtures->create('config', ['default' => '0']);
+        $secondConfig= $this->fixtures->create('config', ['is_default' => '0']);
 
         $this->testData[__FUNCTION__]['request']['url'] = '/payment/config';
 

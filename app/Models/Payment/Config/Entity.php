@@ -14,7 +14,7 @@ class Entity extends Base\PublicEntity
     const TYPE                = 'type';
     const CONFIG              = 'config';
     const RESTRICTIONS        = 'restrictions';
-    const DEFAULT             = 'default';
+    const IS_DEFAULT          = 'is_default';
 
     protected static $sign    = 'config';
 
@@ -24,7 +24,7 @@ class Entity extends Base\PublicEntity
             self::NAME,
             self::CONFIG,
             self::TYPE,
-            self::DEFAULT,
+            self::IS_DEFAULT,
     ];
 
     protected $visible = [
@@ -33,7 +33,7 @@ class Entity extends Base\PublicEntity
             self::NAME,
             self::MERCHANT_ID,
             self::CONFIG,
-            self::DEFAULT
+            self::IS_DEFAULT
     ];
 
     protected $public = [
@@ -42,7 +42,7 @@ class Entity extends Base\PublicEntity
             self::NAME,
             self::MERCHANT_ID,
             self::CONFIG,
-            self::DEFAULT,
+            self::IS_DEFAULT,
     ];
 
     protected $publicSetters = [
