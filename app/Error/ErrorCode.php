@@ -1543,5 +1543,7 @@ class ErrorCode
 
     const BAD_REQUEST_ANOTHER_CREDITS_OPERATION_IN_PROGRESS                         = 'BAD_REQUEST_ANOTHER_CREDITS_OPERATION_IN_PROGRESS';
 
-    const BAD_REQUEST_YESBANK_PAYMENT_DISABLED                                      = 'BAD_REQUEST_YESBANK_PAYMENT_DISABLED';
+    //typeform Error codes
+
+    const BAD_REQUEST_MERCHANT_ID_NOT_PRESENT                                       = 'BAD_REQUEST_MERCHANT_ID_NOT_PRESENT';
 }

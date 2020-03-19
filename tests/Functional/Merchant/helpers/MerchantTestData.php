@@ -1840,7 +1840,7 @@ return [
                 'netbanking' => [
                     'UTIB' => 'Axis Bank',
 //                    'BARB' => 'Bank of Baroda',
-                    'HDFC' => 'HDFC Bank',
+                    'YESB' => 'Yes Bank',
                 ],
                 'wallet' => [
                     'paytm' => true,

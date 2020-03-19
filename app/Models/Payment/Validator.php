@@ -474,16 +474,6 @@ class Validator extends Base\Validator
     {
         (new Vpa\Validator)->validateAddress($attribute, $vpa);
 
-        if (ProviderCode::isYesBankSpecificVpa($vpa) === true)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_YESBANK_PAYMENT_DISABLED,
-                $attribute,
-                [
-                    'vpa' => $vpa
-                ]);
-        }
-
         $vpaParts = explode('@', $vpa);
 
         if (ProviderCode::validate($vpaParts[1]) === false)

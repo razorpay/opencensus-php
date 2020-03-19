@@ -2688,6 +2688,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const TERMINALS_SERVICE_RESPONSE                            = 'TERMINALS_SERVICE_RESPONSE';
     const TERMINALS_SERVICE_INTEGRATION_ERROR                   = 'TERMINALS_SERVICE_INTEGRATION_ERROR';
 
+    const UPI_MANDATE_CREATE_REQUEST                            = 'UPI_MANDATE_CREATE_REQUEST';
+    const UPI_MANDATE_CREATED                                   = 'UPI_MANDATE_CREATED';
+
     //payment config
     const CONFIG_CREATE_REQUEST                                 = 'CONFIG_CREATE_REQUEST';
     const CONFIG_UPDATE_REQUEST                                 = 'CONFIG_UPDATE_REQUEST';
@@ -2701,6 +2704,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     // RBL VA integration
     const RBL_VA_CALLBACK                                       = 'RBL_VA_CALLBACK';
     const RBL_VA_INVALID_CALLBACK_DATA                          = 'RBL_VA_INVALID_CALLBACK_DATA';
+
+    const TYPEFORM_PARSED_DATA                                  = 'TYPEFORM_PARSED_DATA';
+    const TYPEFORM_WORKFLOW_TRIGGERED                           = 'TYPEFORM_WORKFLOW_TRIGGERED';
+    const TYPEFORM_RAW_DATA                                     = 'TYPEFORM_RAW_DATA';
 
     // VA Migrate - Yesbank -> RBL
     const VA_MIGRATE_REQUEST            = 'VA_MIGRATE_REQUEST';
