@@ -572,6 +572,20 @@ class Notifier extends Base\Core
 
         $invoiceLink = $this->invoice->getShortUrl();
 
+        try
+        {
+            $leastBucketAmount = $this->invoice->getNotes()['least_bucket_amount'] ?? 0;
+
+            if (isset($leastBucketAmount) === false || is_numeric($leastBucketAmount) === false)
+            {
+                $leastBucketAmount = 0;
+            }
+        }
+        catch (\Exception $e)
+        {
+            $leastBucketAmount = 0;
+        }
+
         if(($reminder === true) and (empty($newShortUrl)) === false)
         {
             $invoiceLink = $newShortUrl;
@@ -619,7 +633,7 @@ class Notifier extends Base\Core
                     'receipt'        => $receipt,
                     'invoice_link'   => $invoiceLink,
                     'amount'         => $this->invoice->getAmount() / 100,
-                    'min_amount_due' => ($this->invoice->getFirstPaymentMinAmount() ?? 0) / 100,
+                    'min_amount_due' => $leastBucketAmount / 100,
                 ];
 
                 break;
@@ -634,7 +648,7 @@ class Notifier extends Base\Core
                 break;
 
             case Preferences::MID_APOLLO_MUNICH:
-                $sender = 'AMHIRZ';
+                $sender = 'HDFCHI';
 
                 break;
 

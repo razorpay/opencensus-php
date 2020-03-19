@@ -38,7 +38,8 @@ return [
             'balance_id'                       => '279839248042',
             'negative_transaction_flows'      => ['payment', 'payout']
         ],
-        'expected' => ErrorCode::BAD_REQUEST_BALANCE_CONFIG_INVALID_NEGATIVE_TRANSACTION_FLOW,
+        'expected' => 'Negative Flow [payment,payout] is not in the allowed flows list.'.
+            ' Allowed flows for balance type primary are [payment,transfer,refund,adjustment]' ,
     ],
 
     'testCreateBalanceConfigEntityInvalidTransactionFlowForBanking' => [
@@ -48,7 +49,8 @@ return [
             'balance_id'                       => '279839248042',
             'negative_transaction_flows'      => ['payment', 'payout']
         ],
-        'expected' => ErrorCode::BAD_REQUEST_BALANCE_CONFIG_INVALID_NEGATIVE_TRANSACTION_FLOW,
+        'expected' => 'Negative Flow [payment,payout] is not in the allowed flows list.'.
+            ' Allowed flows for balance type banking are [payout,adjustment]'
     ],
 
     'testCreateBalanceConfigEntityBankingSuccess' => [
@@ -68,7 +70,8 @@ return [
             'balance_id'                         => '279839248042',
             'negative_transaction_flows'        => ['random']
         ],
-        'expected' => ErrorCode::BAD_REQUEST_BALANCE_CONFIG_INVALID_NEGATIVE_TRANSACTION_FLOW,
+        'expected' => 'Negative Flow [random] is not in the allowed flows list.'.
+            ' Allowed flows for balance type banking are [payout,adjustment]'
     ],
 
     'testCreateBalanceConfigEntityTransactionFlowNotArray' => [

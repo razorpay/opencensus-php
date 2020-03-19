@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\UpiTransfer;
 
 use RZP\Models\Pricing\Fee;
+use RZP\Services\RazorXClient;
 use RZP\Models\Payment\Gateway;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -125,14 +126,27 @@ class UpiTransferTest extends TestCase
         // Being used in scrooge checks
         $this->gateway = $payment['gateway'];
 
+        // Sending FTA to FTS
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                           ->setConstructorArgs([$this->app])
+                           ->setMethods(['getTreatment'])
+                           ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+                          ->willReturn('on');
+
         $this->refundPayment(
             $payment['id'],
             4000,
             [
                 'is_fta' => true,
                 'fta_data' => [
-                    'vpa' => [
-                        'address' => $payment['vpa']
+                    'bank_account' => [
+                        'account_number'   => $upiTransfer['payer_account'],
+                        'ifsc_code'        => $upiTransfer['payer_ifsc'],
+                        'beneficiary_name' => 'Not Available',
                     ],
                 ],
             ]
@@ -147,7 +161,9 @@ class UpiTransferTest extends TestCase
 
         $this->assertEquals($refund->getId(), $fta['source_id']);
         $this->assertEquals('refund', $fta['source_type']);
-        $this->assertNotNull($fta['vpa_id']);
+        $this->assertNotNull($fta['bank_account_id']);
+        $this->assertEquals(1, $fta['is_fts']);
+        $this->assertEquals('icici', $fta['channel']);
     }
 
     public function testProcessUpiTransferUnexpectedPayment()

@@ -597,6 +597,10 @@ class AdminFetch
                 ],
             ],
 
+            Entity::BALANCE_CONFIG => [
+                'balance_id' => Fetch::FIELD_BALANCE_ID,
+            ],
+
             Entity::BANK_ACCOUNT => [
                 'deleted' => [
                     Fetch::LABEL  => 'Deleted',
@@ -1880,6 +1884,24 @@ class AdminFetch
                 ],
                 'title' => [
                     Fetch::LABEL => 'Title',
+                    Fetch::TYPE  => Fetch::TYPE_STRING,
+                ],
+            ],
+
+            Entity::PAPER_MANDATE_UPLOAD => [
+                'merchant_id' => Fetch::FIELD_MERCHANT_ID,
+                'status' => [
+                    Fetch::LABEL  => 'status',
+                    Fetch::TYPE   => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => [
+                        'pending',
+                        'failed',
+                        'accepted',
+                        'rejected',
+                    ],
+                ],
+                'paper_mandate_id' => [
+                    Fetch::LABEL => 'paper_mandate_id',
                     Fetch::TYPE  => Fetch::TYPE_STRING,
                 ],
             ],

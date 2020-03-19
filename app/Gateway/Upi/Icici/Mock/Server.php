@@ -9,7 +9,9 @@ use RZP\Models\Payment;
 use phpseclib\Crypt\RSA;
 use RZP\Gateway\Base;
 use RZP\Gateway\Utility;
+use RZP\Exception\LogicException;
 use RZP\Gateway\Upi\Icici\Fields;
+use RZP\Exception\AssertionException;
 
 class Server extends Base\Mock\Server
 {
@@ -47,6 +49,23 @@ class Server extends Base\Mock\Server
         parent::authorize($input);
 
         $this->validateAuthorizeInput($input);
+
+        if (isset($input['payerVa']) === false)
+        {
+            if ((isset($input['payerAccount']) === true) and
+                (isset($input['validatePayerAccFlag']) === false))
+            {
+                throw new AssertionException('validatePayerAccFlag is expected for Collect TPV');
+            }
+        }
+        else
+        {
+            if ((isset($input['payerAccount']) === true) and
+                (isset($input['ValidatePayerAccFlag']) === false))
+            {
+                throw new AssertionException('ValidatePayerAccFlag is expected for Intent TPV');
+            }
+        }
 
         $content = [
             Fields::RESPONSE         => $this->getAuthorizeResponseCode(),

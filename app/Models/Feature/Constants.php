@@ -40,6 +40,7 @@ class Constants
     const EXPOSE_DOWNTIMES                = 'expose_downtimes';
     const PAYMENT_FAILURE_EMAIL           = 'payment_failure_email';
     const VIRTUAL_ACCOUNTS                = 'virtual_accounts';
+    const VIRTUAL_ACCOUNTS_BANKING        = 'virtual_accounts_banking';
     const BANK_TRANSFER_ON_CHECKOUT       = 'bank_transfer_on_checkout';
     const FUND_ACCOUNT_VALIDATIONS        = 'fund_account_validations';
     const INVOICE_PARTIAL_PAYMENTS        = 'invoice_partial_payments';
@@ -134,7 +135,6 @@ class Constants
     const USE_MSWIPE_TERMINALS            = 'use_mswipe_terminals';
     const EXPOSE_GATEWAY_PROVIDER         = 'expose_gateway_provider';
     const EXPOSE_FA_VALIDATION_UTR        = 'expose_fa_validation_utr';
-    const VALIDATE_MERCHANT_DOMAIN        = 'validate_merchant_domain';
     const GOOGLE_PAY_CARDS                = 'google_pay_cards';
 
     const ENACH_INTERMEDIATE              = 'enach_intermediate';
@@ -300,7 +300,7 @@ class Constants
 
     const REDIRECTION_ONHOLD       = 'redirection_onhold';
 
-    const ERROR_METADATA_RESPONSE  = 'error_metadata_response';
+    const ERROR_REASON_RESPONSE    = 'error_reason_response';
 
     /*
      * This flag will be used to enable x_pro on a merchant. Once enabled the merchant can
@@ -318,6 +318,11 @@ class Constants
      * This flag will be used to skip some merchants from hitachi automatic onboarding
      */
     const SKIP_HITACHI_AUTO_ONBOARD  = 'skip_hitachi_auto_onboard';
+
+    /*
+     * This flag will be used to enable payment created webhook
+     */
+    const PAYMENT_CREATED_WEBHOOK  = 'payment_created_webhook';
 
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
@@ -379,6 +384,7 @@ class Constants
         self::EXPOSE_DOWNTIMES                => true,
         self::PAYMENT_FAILURE_EMAIL           => true,
         self::VIRTUAL_ACCOUNTS                => true,
+        self::VIRTUAL_ACCOUNTS_BANKING        => true,
         self::BANK_TRANSFER_ON_CHECKOUT       => true,
         self::INVOICE_PARTIAL_PAYMENTS        => true,
         self::HIDE_DOWNTIMES                  => true,
@@ -501,7 +507,6 @@ class Constants
         self::NO_COMM_WITH_SUBMERCHANTS       => true,
         self::SUBMERCHANT_ONBOARDING          => true,
         self::EXPOSE_FA_VALIDATION_UTR        => true,
-        self::VALIDATE_MERCHANT_DOMAIN        => true,
         self::PARTNER_ACTIVATE_MERCHANT       => true,
         self::GOOGLE_PAY_CARDS                => true,
         self::FORCE_GREYLIST_INTERNAT         => true,
@@ -515,11 +520,12 @@ class Constants
         self::GENERATE_PARTNER_INVOICE        => true,
         self::AUTOMATED_COMM_PAYOUT           => true,
         self::OFFLINE_PAYMENTS                => true,
-        self::ERROR_METADATA_RESPONSE         => true,
+        self::ERROR_REASON_RESPONSE           => true,
         self::SKIP_HITACHI_AUTO_ONBOARD       => true,
         self::SKIP_WORKFLOWS_FOR_API          => true,
         self::DISPLAY_LA_PARENT_PAYMENT_ID    => true,
         self::REDIRECTION_ONHOLD              => true,
+        self::PAYMENT_CREATED_WEBHOOK         => true,
     ];
 
     // Entity type constants
@@ -667,6 +673,16 @@ class Constants
         self::SKIP_WORKFLOWS_FOR_API         => [
             'feature'       => self::SKIP_WORKFLOWS_FOR_API,
             'display_name'  => 'Razorpay X - Skip workflows for API requests',
+            'documentation' => '',
+        ],
+        self::DISABLE_INSTANT_REFUNDS     => [
+            'feature'       => self::DISABLE_INSTANT_REFUNDS,
+            'display_name'  => 'Disable Instant Refunds',
+            'documentation' => '',
+        ],
+        self::CARD_TRANSFER_REFUND        => [
+            'feature'       => self::CARD_TRANSFER_REFUND,
+            'display_name'  => 'Card Transfer Refund',
             'documentation' => '',
         ],
     ];

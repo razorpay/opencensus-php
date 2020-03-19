@@ -109,7 +109,17 @@ class EventTrackerClient extends AbstractEventClient
         // terminal-related properties
         $terminalDetails = [];
 
-        if ($payment->getTerminalId() !== null)
+        //
+        //
+        // This terminal was deleted due to Yesbank moratorium
+        // This particular terminal is not a direct settlement terminal
+        // Will be removing this check once the terminal is fixed.
+        //
+        // Slack thread for reference:
+        // https://razorpay.slack.com/archives/CA66F3ACS/p1584100168218900?thread_ts=1584090894.210900&cid=CA66F3ACS
+        //
+        if (($payment->getTerminalId() !== null) and
+            ($payment->getTerminalId() !== 'B2K2t8JD9z98vh'))
         {
             $terminal = $payment->terminal;
 

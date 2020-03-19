@@ -52,6 +52,7 @@ class Workflow
         Permission::EDIT_MERCHANT_WEBSITE_DETAIL,
         Permission::DELETE_TERMINAL,
         Permission::TOGGLE_TERMINAL,
+        Permission::EDIT_MERCHANT_INTERNATIONAL,
     ];
 
     protected $app;

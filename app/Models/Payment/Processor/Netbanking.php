@@ -619,9 +619,10 @@ class Netbanking
         ],
     ];
 
-   protected static $defaultDisabled = [];
+    protected static $defaultDisabled = [
+    ];
 
-   const DEFAULT_DISABLED_BANKS = [
+    const DEFAULT_DISABLED_BANKS = [
         IFSC::ABPB,
         IFSC::AUBL,
         IFSC::BKDN,

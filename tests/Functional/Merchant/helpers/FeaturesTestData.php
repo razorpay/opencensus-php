@@ -741,6 +741,7 @@ return [
                     'expose_downtimes',
                     'payment_failure_email',
                     'virtual_accounts',
+                    'virtual_accounts_banking',
                     'bank_transfer_on_checkout',
                     'invoice_partial_payments',
                     'hide_downtimes',

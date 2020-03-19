@@ -100,6 +100,18 @@ class TransferController extends Controller
         return ApiResponse::json($transfer);
     }
 
+    public function transferUpdateSettelements(string $id)
+    {
+        $transferscount = $this->service()->processTransfersSettelements($id);
+
+        $data = [
+            'settlementId'       => $id ,
+            'transfersCount'     => $transferscount,
+
+        ];
+        return ApiResponse::json($data);
+    }
+
     public function processPendingOrderTransfers()
     {
         $orderIds = $this->service()->processPendingOrderTransfers();

@@ -39,6 +39,21 @@ class Setup
         $output['application_id'] = $app['id'];
     }
 
+    public function addFeature(array $data, array &$output)
+    {
+        foreach ($data as $featureData)
+        {
+            if (isset($featureData['merchant_id']) === true)
+            {
+                $this->fixtures->merchant->addFeatures($featureData['feature_name'], $featureData['merchant_id']);
+            }
+            else
+            {
+                $this->fixtures->merchant->addFeatures($featureData['feature_name'], $output['merchant_id']);
+            }
+        }
+    }
+
     public function createPlan(array $data, array & $output)
     {
         $defaultPricingPlan = $this->getDefaultPricingPlan();

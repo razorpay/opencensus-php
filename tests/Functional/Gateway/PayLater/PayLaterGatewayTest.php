@@ -30,6 +30,19 @@ class PayLaterGatewayTest extends TestCase
         $this->fixtures->merchant->enablePayLater('10000000000000');
     }
 
+    public function testSubMerchantPreferences()
+    {
+        $this->createSubMerchant();
+
+        $preferences = $this->getPreferences();
+
+        $acquirer = $this->sharedTerminal->getGatewayAcquirer();
+
+        $this->assertArraySelectiveEquals([$acquirer => true], $preferences['methods']['paylater']);
+
+        $this->resetPublicAuthToTestAccount();
+    }
+
     public function testPaymentAndRefund()
     {
         $payment = $this->getDefaultPayLaterPaymentArray($this->provider);
@@ -86,6 +99,47 @@ class PayLaterGatewayTest extends TestCase
         $refund = $this->getLastEntity('refund', true);
 
         $this->assertEquals('1234567', $refund['acquirer_data']['arn']);
+    }
+
+    public function testPaymentForSubMerchant()
+    {
+        $subMerchant = $this->createSubMerchant();
+
+        $payment = $this->getDefaultPayLaterPaymentArray($this->provider);
+
+        $payment['contact'] = '+91' . '8602579721';
+
+        $this->setOtp('123456');
+
+        // authorize
+        $response = $this->doAuthPayment($payment);
+
+        $this->resetPublicAuthToTestAccount();
+
+        $this->assertNotNull($response['razorpay_payment_id']);
+
+        $cardlessEmiEntity = $this->getLastEntity('cardless_emi', true);
+
+        $this->assertNotNull($cardlessEmiEntity['gateway_reference_id']);
+
+        $this->assertTestResponse($cardlessEmiEntity, 'testPaymentCardlessEmiEntity');
+
+        $key = $this->getDbEntity('key', ['merchant_id' => $subMerchant]);
+
+        // capture
+        $this->capturePaymentWithKey($response['razorpay_payment_id'], $payment['amount'], 'rzp_test_' . $key->getKey());
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertTestResponse($payment);
+
+        $this->assertEquals($subMerchant, $payment['merchant_id']);
+
+        $cardlessEmiEntity = $this->getLastEntity('cardless_emi', true);
+
+        $this->assertNotNull($cardlessEmiEntity['gateway_reference_id']);
+
+        $this->assertTestResponse($cardlessEmiEntity, 'testPaymentCaptureEntity');
     }
 
     public function testAccountDoesNotExist()
@@ -267,5 +321,105 @@ class PayLaterGatewayTest extends TestCase
 
                 $this->doAuthPayment($payment);
             });
+    }
+
+    protected function createSubMerchant()
+    {
+        $subMerchant = $this->fixtures->create('merchant');
+
+        $subMerchantId = $subMerchant->getId();
+
+        $this->fixtures->create('methods:default_methods', ['merchant_id' => $subMerchantId]);
+
+        $this->fixtures->merchant->enablePayLater($subMerchantId);
+
+        $this->fixtures->create('balance',
+            [
+                'merchant_id' => $subMerchantId,
+                'type'        => 'primary',
+                'balance'     => 10000000,
+            ]);
+
+        $this->ba->getAdmin()->merchants()->attach($subMerchantId);
+
+        $this->assignSubMerchant($this->sharedTerminal->getId(), $subMerchantId);
+
+        $this->setSubMerchantPublicAuth($subMerchantId);
+
+        return $subMerchantId;
+    }
+
+    protected function assignSubMerchant(string $tid, string $mid)
+    {
+        $url = '/terminals/' . $tid . '/merchants/' . $mid;
+
+        $request = [
+            'url'    => $url,
+            'method' => 'PUT',
+        ];
+
+        $this->ba->adminAuth();
+
+        $this->makeRequestAndGetContent($request);
+    }
+
+    protected function setSubMerchantPublicAuth($merchantId)
+    {
+        $key = $this->fixtures->create('key', ['merchant_id' => $merchantId]);
+
+        $key = $key->getKey();
+
+        $this->ba->publicAuth('rzp_test_' . $key);
+    }
+
+    protected function resetPublicAuthToTestAccount()
+    {
+        $this->ba->publicAuth('rzp_test_' . 'TheTestAuthKey');
+    }
+
+    protected function getPreferences()
+    {
+        $response = $this->makeRequestAndGetContent([
+            'url'    => '/preferences',
+            'method' => 'get',
+            'content' => [
+                'currency' => 'INR'
+            ]
+        ]);
+
+        return $response;
+    }
+
+   // This is required as private auth has to be set with a non-default key for successful capture request
+    protected function capturePaymentWithKey($id, $amount, $key, $currency = 'INR', $verifyAmount = 0, $status = 'captured')
+    {
+        $request = array(
+            'method'  => 'POST',
+            'url'     => '/payments/' . $id . '/capture',
+            'content' => array('amount' => $amount));
+
+        if ($currency !== 'INR')
+        {
+            $request['content']['currency'] = $currency;
+        }
+
+        $this->ba->privateAuth($key);
+        $content = $this->makeRequestAndGetContent($request);
+
+        $this->assertArrayHasKey('amount', $content);
+        $this->assertArrayHasKey('status', $content);
+
+        if ($verifyAmount !== 0)
+        {
+            $this->assertEquals($content['amount'], $verifyAmount);
+        }
+        else
+        {
+            $this->assertEquals($content['amount'], $amount);
+        }
+
+        $this->assertEquals($content['status'], $status);
+
+        return $content;
     }
 }

@@ -6,6 +6,7 @@ use App;
 use Request;
 use Redirect;
 use ApiResponse;
+use Illuminate\Support\Facades\File;
 
 use RZP\Models\Admin;
 use RZP\Models\Report;
@@ -401,5 +402,26 @@ class AdminController extends Controller
         $data = $this->service()->getModeConfigInstruments();
 
         return ApiResponse::json($data);
+    }
+
+    public function setWaitTimeout()
+    {
+        $input = Request::all();
+
+        $oldValue = File::get(base_path() . '/database/wait_timeout', true);
+
+        if (empty($input['value']) === false)
+        {
+            File::put(base_path() . '/database/wait_timeout', $input['value']);
+        }
+
+        $value = File::get(base_path() . '/database/wait_timeout', true);
+
+        $data = [
+            'value' => $value,
+            'old_value' => $oldValue,
+        ];
+
+        return ApiResponse::json($value);
     }
 }

@@ -2071,8 +2071,6 @@ class PaymentCreateTest extends TestCase
 
     public function testRupayPaymentFallbackTo3ds()
     {
-
-
         $this->mockCardVault();
 
         $this->mockOtpElfForFailedRupayResponse();
@@ -2715,6 +2713,7 @@ class PaymentCreateTest extends TestCase
         $this->doAuthAndGetPayment($paymentArray, ['currency' => 'USD']);
 
     }
+
     // end tests for fee_bearer attribute of pricing plans and merchant
 
     public function testOrderStatusForUpiPaymentWithFlatCashbackOffer()

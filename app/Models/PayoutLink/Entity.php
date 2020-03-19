@@ -314,6 +314,12 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::DESCRIPTION);
     }
 
+    // to handle payouts creation
+    public function getTrimmedDescription()
+    {
+        return substr($this->getAttribute(self::DESCRIPTION), 0, 30);
+    }
+
     public function getBalanceId()
     {
         return $this->getAttribute(self::BALANCE_ID);

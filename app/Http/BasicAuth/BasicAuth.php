@@ -339,6 +339,11 @@ class BasicAuth
      */
     protected $batch;
 
+    /**
+     * @var string
+     */
+    protected $idempotencyKeyId = null;
+
     public function __construct($app)
     {
         $this->app = $app;
@@ -1592,6 +1597,11 @@ class BasicAuth
         $this->setMerchant($merchant);
     }
 
+    public function setBasicType(string $type)
+    {
+        $this->type = $type;
+    }
+
     protected function setType($type)
     {
         $this->type = $type;
@@ -2141,6 +2151,18 @@ class BasicAuth
     public function getOrgHostName()
     {
         return $this->orgHostName;
+    }
+
+    public function setIdempotencyKeyId(string $idempotencyKeyId)
+    {
+        $this->idempotencyKeyId = $idempotencyKeyId;
+
+        return $this;
+    }
+
+    public function getIdempotencyKeyId()
+    {
+        return $this->idempotencyKeyId;
     }
 
     /**

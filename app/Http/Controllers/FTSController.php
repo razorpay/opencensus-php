@@ -62,4 +62,11 @@ class FTSController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function getSourceAccountForMerchant()
+    {
+        $response = $this->app['fts_create_account']->getSourceAccountForMerchant($this->input);
+
+        return ApiResponse::json($response);
+    }
+
 }

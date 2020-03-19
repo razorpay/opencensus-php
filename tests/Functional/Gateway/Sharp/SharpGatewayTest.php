@@ -214,6 +214,8 @@ class SharpGatewayTest extends TestCase
 
     public function testAadhaarEmandatePayment()
     {
+        $this->markTestSkipped('aadhar auth type not supported');
+
         $this->fixtures->merchant->enableEmandate('10000000000000');
         $this->fixtures->merchant->addFeatures('charge_at_will');
 

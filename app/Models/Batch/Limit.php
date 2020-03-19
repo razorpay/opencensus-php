@@ -22,6 +22,7 @@ class Limit
         Type::IRCTC_DELTA_REFUND                    => 100000,
         Type::IRCTC_SETTLEMENT                      => 100000,
         Type::VIRTUAL_BANK_ACCOUNT                  => 50000,
+        Type::BANK_TRANSFER                         => 3000,
         Type::PAYOUT                                => 50000,
         'emandate_register_hdfc'                    => 50000,
         'emandate_register_enach_rbl'               => 10000,
@@ -45,6 +46,9 @@ class Limit
         TYPE::PRICING_RULE                          => 50000,
         Type::ADMIN_BATCH                           => 5000,
         Type::MDR_ADJUSTMENT                        => 1100000,
+        Type::ECOLLECT_ICICI                        => 100000,
+        'nach_debit_nach_citi'                      => 50000,
+        Type::ECOLLECT_RBL                          => 100000,
     ];
 
     /**

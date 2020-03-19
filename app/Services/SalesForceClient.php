@@ -114,7 +114,7 @@ class SalesForceClient
             return $this->baseUrl . $nextUrl;
         }
 
-        return $this->baseUrl . '/services/data/v34.0/query?q=select Account.Merchant_ID__c, Account.Owner.Email, Owner_Role__c, Managers_in_role_hierarchy__c from Account where ( First_Transaction_Date__c != null AND Owner_Role__c != null )';
+        return $this->baseUrl . '/services/data/v34.0/query?q=select Account.Merchant_ID__c, Account.Owner.Email, Owner_Role__c, Managers_in_role_hierarchy__c from Account where Owner_Role__c != null AND Merchant_ID__c != null AND ((NOT Website like \'%mswipe%\') OR (Transacting__c = true))';
     }
 
     protected function generateUrl()

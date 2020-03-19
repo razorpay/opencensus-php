@@ -130,7 +130,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $nachCreateRules = [
-        Entity::FILE        => 'required|file|max:1024' . self::DEFAULT_MIME_RULE,
+        Entity::FILE        => 'required|file|max:10240' . self::DEFAULT_MIME_RULE,
         Entity::TYPE        => 'required|in:nach',
         Entity::SUB_TYPE    => 'required|string|in:register,debit',
         Entity::GATEWAY     => 'required|string',
@@ -374,6 +374,20 @@ class Validator extends Base\Validator
         Constants::ENTITY       => 'required|string|custom',
     ];
 
+    protected static $ecollectRblCreateRules = [
+        Entity::TYPE                 => 'required|in:ecollect_rbl',
+        Entity::NAME                 => 'filled|string|max:255',
+        Entity::FILE                 => 'required|file|max:102400' . self::DEFAULT_MIME_RULE,
+        Entity::FILE_ID              => 'required_without:file|public_id',
+    ];
+
+    protected static $ecollectIciciCreateRules = [
+        Entity::TYPE                 => 'required|in:ecollect_icici',
+        Entity::NAME                 => 'filled|string|max:255',
+        Entity::FILE                 => 'required|file|max:102400' . self::DEFAULT_MIME_RULE,
+        Entity::FILE_ID              => 'required_without:file|public_id',
+    ];
+    
     public function validateConfig($attribute, $value)
     {
         (new Validator())->validateInput('entityUpdateActionConfig', $value);
@@ -791,7 +805,8 @@ class Validator extends Base\Validator
         // After validating contents per row only should do following aggregate validations.
 
         $totalPayoutAmount = array_sum(array_column($entries, Header::PAYOUT_AMOUNT));
-        $bankingBalance = $merchant->sharedBankingBalance->getBalance();
+
+        $bankingBalance = $merchant->sharedBankingBalance->getBalanceWithLockedBalance();
 
         if ($totalPayoutAmount > $bankingBalance)
         {

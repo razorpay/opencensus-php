@@ -1,0 +1,93 @@
+<?php
+
+namespace RZP\Tests\Functional\Order;
+
+use RZP\Models\Order;
+use RZP\Models\UpiMandate;
+use RZP\Tests\Functional\TestCase;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+
+class UpiRecurringOrderTest extends TestCase
+{
+    use PaymentTrait;
+    use DbEntityFetchTrait;
+
+    public function setUp()
+    {
+        $this->testDataFilePath = __DIR__.'/UpiRecurringOrderTestData.php';
+
+        parent::setUp();
+
+        $this->ba->privateAuth();
+    }
+
+    public function testCreateUpiRecurringOrder()
+    {
+        $this->startTest();
+
+        $upiMandate = $this->getDbLastEntity('upi_mandate');
+
+        $order = $this->getDbLastEntity('order');
+
+        $this->assertEquals($order[Order\Entity::ID], $upiMandate[UpiMandate\Entity::ORDER_ID]);
+
+        $this->assertEquals($order[Order\Entity::MERCHANT_ID], $upiMandate[UpiMandate\Entity::MERCHANT_ID]);
+
+        $this->assertNotNull($upiMandate[UpiMandate\Entity::CUSTOMER_ID]);
+
+        $this->assertNotNull($upiMandate[UpiMandate\Entity::FREQUENCY]);
+
+        $this->assertNotNull($upiMandate[UpiMandate\Entity::RECURRING_VALUE]);
+
+        $this->assertNotNull($upiMandate[UpiMandate\Entity::RECURRING_TYPE]);
+    }
+
+    public function testCreateOrderWithInvalidAmount()
+    {
+        $this->startTest();
+
+        $upiMandate = $this->getDbLastEntity('upi_mandate');
+
+        $order = $this->getDbLastEntity('order');
+
+        $this->assertNull($upiMandate);
+
+        $this->assertNull($order);
+    }
+
+    public function testCreateOrderWithIncorrectFrequency()
+    {
+        $this->startTest();
+
+        $upiMandate = $this->getDbLastEntity('upi_mandate');
+
+        $order = $this->getDbLastEntity('order');
+
+        $this->assertNull($upiMandate);
+
+        $this->assertNull($order);
+    }
+
+    public function testCreateOrderWithInvalidRecurringType()
+    {
+        $this->startTest();
+
+        $upiMandate = $this->getDbLastEntity('upi_mandate');
+
+        $order = $this->getDbLastEntity('order');
+
+        $this->assertNull($upiMandate);
+
+        $this->assertNull($order);
+    }
+
+    public function testCreateOrderWithInvalidStartTimeAndEndTime()
+    {
+        $this->startTest();
+
+        $upiMandate = $this->getDbLastEntity('upi_mandate');
+
+        $this->assertNull($upiMandate);
+    }
+}

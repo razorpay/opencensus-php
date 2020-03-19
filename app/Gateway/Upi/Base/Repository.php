@@ -36,11 +36,12 @@ class Repository extends Base\Repository
                     ->firstOrFail();
     }
 
-    public function fetchByNpciReferenceId(string $npciReferenceId, string $action = Action::AUTHORIZE)
+    public function fetchByNpciReferenceIdAndGateway(string $npciReferenceId, string $gateway, string $action = Action::AUTHORIZE)
     {
         return $this->newQuery()
                     ->where(Entity::NPCI_REFERENCE_ID, '=', $npciReferenceId)
                     ->where('action', '=', $action)
+                    ->where('gateway', '=', $gateway)
                     ->first();
     }
 
