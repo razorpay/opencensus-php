@@ -832,14 +832,22 @@ class Core extends Base\Core
 
         $channel = $source->getChannel();
 
+        if ($source->getPayoutType() === PayoutEntity::ON_DEMAND)
+        {
+            if (($channel === Settlement\Channel::ICICI) and ($source->getMode() == Mode::IMPS))
+            {
+                return [true, Settlement\Channel::ICICI];
+            }
+
+            return [false, $channel];
+        }
+
         if (empty($channel) === true)
         {
             return [false, Settlement\Channel::YESBANK];
         }
 
-        if (($source->isBalanceTypeBanking() === true) or
-            (($source->getPayoutType() === PayoutEntity::ON_DEMAND) and
-            (in_array($channel, Settlement\Channel::getFtsSupportedOnDemandChannels(), true) === true)))
+        if ($source->isBalanceTypeBanking() === true)
         {
             return [true, $source->getChannel()];
         }
