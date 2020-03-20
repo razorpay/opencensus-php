@@ -1218,7 +1218,7 @@ class Service extends Base\Service
         }
     }
 
-    public function getDCCEnabledTokenIds(array $tokens)
+    public function getDCCEnabledTokenIds($tokens)
     {
         $dccEnabledTokenIds = [];
 
