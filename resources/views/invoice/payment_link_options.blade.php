@@ -840,7 +840,7 @@ $isHostedCheckout               = $hostedpage_options['enable_embedded_checkout'
             var modalCheckoutOptions = $checkout_options.modal;
             options.modal = Object.assign(modalCheckoutOptions, options.modal); // Shouldn't override base options
 
-            if (!options.description && !$checkout_options.hidden.entity_id) {
+            if (!options.description && !Number($checkout_options.hidden.entity_id)) {
                 // If description is not set, and entity id is not hidden, then entity id is shown.
                 options.description = "#" + invoiceObj.id;
             } else {

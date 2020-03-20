@@ -5686,5 +5686,8 @@ ALTER TABLE merchant_details
 ALTER TABLE payment_configs
     change `default` `is_default` tinyint(1) NOT NULL DEFAULT '0';
 
+ALTER TABLE disputes
+    ADD COLUMN conversion_rate BIGINT UNSIGNED DEFAULT NULL;
+
 ALTER TABLE orders
     ADD COLUMN checkout_config_id CHAR(14) DEFAULT NULL;
