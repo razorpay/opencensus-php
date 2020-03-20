@@ -109,10 +109,9 @@ class Checkout
     {
         if (empty($input[Payment\Entity::ORDER_ID]) === true)
         {
-            if (empty($input['checkout_config_id']) === false)
-            {
-                $this->checkAndFillConfigDetails($input['checkout_config_id'], $merchant->getId(), $data);
-            }
+            $configId = (empty($input['checkout_config_id']) === false) ? $input['checkout_config_id'] : null;
+
+            $this->checkAndFillConfigDetails($configId, $merchant->getId(), $data);
 
             return;
         }
