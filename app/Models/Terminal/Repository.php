@@ -475,7 +475,7 @@ class Repository extends Base\Repository
 
                 $entity->setSyncStatus(SyncStatus::SYNC_SUCCESS);
 
-                $this->repo->terminal->saveOrFail($entity, [], SyncStatus::SYNC_SUCCESS);
+                parent::saveOrFail($entity);
             }
 
             if ($count === 0)

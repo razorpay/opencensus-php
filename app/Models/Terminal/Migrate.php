@@ -154,7 +154,7 @@ trait Migrate
             $originalTerminalArray = $terminal->toArrayWithPassword();
         }
 
-        $ignoreAttributes = [Entity::CREATED_AT, Entity::UPDATED_AT, Entity::MPAN, Entity::SYNC_STATUS];
+        $ignoreAttributes = [Entity::CREATED_AT, Entity::UPDATED_AT, Entity::SYNC_STATUS];
 
         foreach (array_keys($originalTerminalArray) as $attribute)
         {

@@ -5636,7 +5636,6 @@ ALTER TABLE terminals
 ALTER TABLE d2c_bureau_report
     ADD COLUMN csv_report_ufh_file_id varchar(255)  DEFAULT NULL;
 
->>>>>>> master
 ALTER TABLE payout_links
     ADD COLUMN send_sms BOOLEAN DEFAULT false,
     ADD COLUMN send_email BOOLEAN DEFAULT false;
@@ -5673,4 +5672,3 @@ ALTER TABLE webhooks
 
 ALTER TABLE terminals
     ADD COLUMN account_type VARCHAR(255) DEFAULT NULL;
->>>>>>> master
