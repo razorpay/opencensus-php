@@ -1074,7 +1074,7 @@ class Currency
         return false;
     }
 
-    public static function getCurrency(string $countryCode)
+    public static function getCurrencyForCountry(string $countryCode)
     {
         return self::COUNTRY_CURRENCY_CODES[$countryCode] ?? null;
     }
