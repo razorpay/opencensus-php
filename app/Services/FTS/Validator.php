@@ -12,7 +12,7 @@ class Validator extends Base\Validator
         'id'               => 'sometimes|alpha_num|size:14',
         'type'             => 'filled|string|required|in:bank_account,banking_account',
         'config'           => 'required|array',
-        'product'          => 'filled|string|required|in:payout,refund,payout_refund,settlement,penny_testing',
+        'product'          => 'filled|string|required|in:payout,refund,payout_refund,settlement,penny_testing,ca_payout,es_on_demand',
         'channel'          => 'filled|string|required|in:yesbank,icici,citi',
         'credentials'      => 'required|array',
         'mozartIdentifier' => 'filled|string|required|in:V1,V2',

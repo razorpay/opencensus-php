@@ -337,12 +337,4 @@ class Channel
             ]
         ];
     }
-
-    public static function getFtsSupportedOnDemandChannels()
-    {
-        return [
-            self::YESBANK,
-            self::ICICI,
-        ];
-    }
 }
