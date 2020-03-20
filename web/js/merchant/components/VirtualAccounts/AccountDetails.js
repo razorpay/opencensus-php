@@ -9,12 +9,7 @@ export default function VirtualAccountDetails({
   return (
     <React.Fragment>
       {bankAccount1 && (
-        <div
-          class={
-            classList(isYESBankAccountVA(bankAccount1)) &&
-            'VirtualAccountDetails-group--disabled'
-          }
-        >
+        <>
           <EntityDetailRow label="Account Number">
             <b>{bankAccount1.account_number}</b>
           </EntityDetailRow>
@@ -26,16 +21,13 @@ export default function VirtualAccountDetails({
           <EntityDetailRow label="IFSC Code">
             <b>{bankAccount1.ifsc}</b>
           </EntityDetailRow>
-        </div>
+        </>
       )}
 
+      {bankAccount1 && bankAccount2 && <div class="divider--dotted" />}
+
       {bankAccount2 && (
-        <div
-          class={
-            classList(isYESBankAccountVA(bankAccount2)) &&
-            'VirtualAccountDetails-group--disabled'
-          }
-        >
+        <>
           <EntityDetailRow label="Account Number">
             <b>{bankAccount2.account_number}</b>
           </EntityDetailRow>
@@ -47,8 +39,11 @@ export default function VirtualAccountDetails({
           <EntityDetailRow label="IFSC Code">
             <b>{bankAccount2.ifsc}</b>
           </EntityDetailRow>
-        </div>
+        </>
       )}
+
+      {(bankAccount1 || bankAccount2) &&
+        upiAddress && <div class="divider--dotted" />}
 
       {upiAddress && (
         <EntityDetailRow label="UPI Address">
@@ -71,18 +66,28 @@ export function getVirtualAccountDetailsToCopy({
 
   // If both bankAccount1 and bankAccount2 exists, then one of them must be YES Bank. Don't add this one in Clipboard.
 
-  if (bankAccount1 && !isYESBankAccountVA(bankAccount1)) {
+  const divider = '---------------------------------';
+
+  if (bankAccount1) {
     const bankAccountDetails = `Account Number: ${
       bankAccount1.account_number
     }\nBeneficiary Name: ${bankAccount1.name}\nIFSC: ${bankAccount1.ifsc}`;
     valueToCopy.push(bankAccountDetails);
   }
 
-  if (bankAccount2 && !isYESBankAccountVA(bankAccount2)) {
+  if (bankAccount1 && bankAccount2) {
+    valueToCopy.push(divider);
+  }
+
+  if (bankAccount2) {
     const bankAccountDetails = `Account Number: ${
       bankAccount2.account_number
     }\nBeneficiary Name: ${bankAccount2.name}\nIFSC: ${bankAccount2.ifsc}`;
     valueToCopy.push(bankAccountDetails);
+  }
+
+  if ((bankAccount1 || bankAccount2) && upiAddress) {
+    valueToCopy.push(divider);
   }
 
   if (upiAddress) {
@@ -116,14 +121,4 @@ export function getVirtualAccountDetails(virtualaccount) {
     });
 
   return { bankAccount1, bankAccount2, upiAddress };
-}
-
-export function isYESBankAccountVA(bankAccount) {
-  const ifsc = bankAccount && bankAccount.ifsc.toLowerCase();
-
-  if (ifsc && ifsc.toLowerCase().indexOf('yes') > -1) {
-    return true;
-  }
-
-  return false;
 }

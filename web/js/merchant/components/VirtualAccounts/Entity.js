@@ -10,7 +10,6 @@ import { VirtualAccountStatusLabel } from 'merchant/components/StatusLabel';
 import AccountDetails, {
   getVirtualAccountDetails,
   getVirtualAccountDetailsToCopy,
-  isYESBankAccountVA,
 } from 'merchant/components/VirtualAccounts/AccountDetails';
 import CustomClipboard from 'common/ui/Clipboard/Custom';
 import Table from 'common/ui/Table/Index';
@@ -109,8 +108,6 @@ export default class extends React.Component {
       virtualaccount
     );
 
-    const hasYESBankAccountVA =
-      isYESBankAccountVA(bankAccount1) || isYESBankAccountVA(bankAccount2);
     const hasBankAccount = bankAccount1 || bankAccount2;
 
     const valueToCopy = getVirtualAccountDetailsToCopy({
@@ -135,57 +132,8 @@ export default class extends React.Component {
             <div class="SliderPanel__Body">
               <Alert type={statusMsg.type} message={statusMsg.message} />
               <div class="panel-body">
-                {/* If only VPA is enabled */}
-                {!hasBankAccount &&
-                  user.isVACreationBankAccountDisabled && (
-                    <>
-                      <Banner>
-                        Bank Transfers (NEFT, RTGS, IMPS) are temporarily
-                        unavailable. Use UPI Transfer to accept payments
-                        <a
-                          class="highlight"
-                          target="_blank"
-                          href="https://lp.razorpay.com/unregistered-businesses-faqs-0"
-                        >
-                          Know more
-                          <i
-                            class="i i-external-link"
-                            style={{ marginLeft: '5px' }}
-                          />
-                        </a>
-                      </Banner>
-
-                      <br />
-                    </>
-                  )}
-
-                {/* If bank account is enabled and has YES bank as bank account details */}
-                {hasBankAccount &&
-                  hasYESBankAccountVA && (
-                    <>
-                      <Banner>
-                        Due to Yes Bank moratorium, existing YESB accounts are
-                        no longer valid. All active accounts created on YBL have
-                        been migrated to RBL with a new IFSC.{' '}
-                        <a
-                          class="highlight"
-                          target="_blank"
-                          href="https://razorpay.com/docs/smart-collect/yesbank-moratorium-migration/"
-                        >
-                          Know more
-                          <i
-                            class="i i-external-link"
-                            style={{ marginLeft: '5px' }}
-                          />
-                        </a>
-                      </Banner>
-
-                      <br />
-                    </>
-                  )}
-
                 <div class="VirtualAccountDetails">
-                  <EntityDetailRow label="Account Details">
+                  <EntityDetailRow label={<b>Account Details</b>}>
                     <CustomClipboard
                       value={valueToCopy}
                       onCopy={() => {
