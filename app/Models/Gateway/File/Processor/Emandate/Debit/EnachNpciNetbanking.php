@@ -7,10 +7,12 @@ Use Config;
 use RZP\Gateway\Enach;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
+use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
 use RZP\Models\Base as ModelBase;
 use RZP\Models\Gateway\File\Status;
+use RZP\Models\Base\PublicCollection;
 use RZP\Exception\GatewayFileException;
 use RZP\Mail\Base\Constants as MailConstants;
 use RZP\Services\Beam\Service as BeamService;
@@ -56,21 +58,18 @@ class EnachNpciNetbanking extends Base
         {
             $terminal = $token->terminal;
 
-            if ($this->isSponsorYesBank($terminal) === true)
-            {
-                $paymentId = $token['payment_id'];
+            $paymentId = $token['payment_id'];
 
-                $debitDate = Carbon::today(Timezone::IST)->format('dmY');
+            $debitDate = Carbon::today(Timezone::IST)->format('dmY');
 
-                $rows[$terminal->getGatewayMerchantId()][] = [
-                    Headings::PAYMENT_ID              => $paymentId,
-                    Headings::UMRN                    => $token->getGatewayToken(),
-                    Headings::AMOUNT                  => $this->getFormattedAmount($token['payment_amount']),
-                    Headings::SETTLEMENT_DATE         => $debitDate,
-                    Headings::UTILITY_CODE            => $token->terminal->getGatewayMerchantId(),
-                ];
+            $rows[$terminal->getGatewayMerchantId()][] = [
+                Headings::PAYMENT_ID              => $paymentId,
+                Headings::UMRN                    => $token->getGatewayToken(),
+                Headings::AMOUNT                  => $this->getFormattedAmount($token['payment_amount']),
+                Headings::SETTLEMENT_DATE         => $debitDate,
+                Headings::UTILITY_CODE            => $token->terminal->getGatewayMerchantId(),
+            ];
 
-            }
         }
 
         return $rows;
@@ -96,13 +95,6 @@ class EnachNpciNetbanking extends Base
             Enach\Base\Entity::ACQUIRER => self::ACQUIRER,
             Enach\Base\Entity::UMRN     => $token['gateway_token'],
         ];
-    }
-
-    protected function isSponsorYesBank($terminal)
-    {
-        $sponsorBank = strtolower($terminal->getGatewayAcquirer());
-
-        return $sponsorBank === Payment\Gateway::ACQUIRER_YESB;
     }
 
     public function sendFile($data)
@@ -194,5 +186,36 @@ class EnachNpciNetbanking extends Base
         }
 
         Config::set('excel.csv.enclosure', '"');
+    }
+
+    public function fetchEntities(): PublicCollection
+    {
+        $begin = Carbon::createFromTimestamp($this->gatewayFile->getBegin(), Timezone::IST)
+            ->addHours(9)
+            ->getTimestamp();
+
+        $end = Carbon::createFromTimestamp($this->gatewayFile->getEnd(), Timezone::IST)
+            ->addHours(9)
+            ->getTimestamp();
+
+        $tokens = $this->repo->token->fetchPendingEMandateDebitWithGatewayAcquirer(
+                                                       static::GATEWAY,
+                                                       $begin,
+                                                       $end,
+                                                       Payment\Gateway::ACQUIRER_YESB
+                                                     );
+
+        $paymentIds = $tokens->pluck('payment_id')->toArray();
+
+        $this->trace->info(
+            TraceCode::EMANDATE_DEBIT_REQUEST,
+            [
+                'gateway_file_id' => $this->gatewayFile->getId(),
+                'entity_ids'      => $paymentIds,
+                'begin'           => $begin,
+                'end'             => $end,
+            ]);
+
+        return $tokens;
     }
 }

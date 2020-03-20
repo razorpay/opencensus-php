@@ -443,7 +443,8 @@ class PaperNachCiti extends Debit\Base
         $tokens = $this->repo->token->fetchPendingNachOrMandateDebit(
                                              [Payment\Gateway::ENACH_NPCI_NETBANKING, Payment\Gateway::NACH_CITI],
                                              $begin,
-                                             $end
+                                             $end,
+                                             Payment\Gateway::ACQUIRER_CITI
                                             );
 
         $paymentIds = $tokens->pluck('payment_id')->toArray();

@@ -2875,6 +2875,16 @@ class TraceCode extends \Razorpay\Trace\TraceCode
         self::NEGATIVE_BALANCE_BREACHED                             => 'Negative Balance has crossed the negative limit threshold',
         ];
 
+    public static $fileBasedReconTraceCodes = [
+        self::RECON_FILE_LINK_NOT_FOUND,
+        self::RECON_FILE_DELETE_FAILURE,
+        self::RECON_BATCH_CREATION_FAILED,
+        self::RECON_PARSE_ERROR,
+        self::RECON_FILE_SKIP,
+        self::RECON_FAILURE,
+        self::BATCH_PROCESSING_ERROR,
+    ];
+
     /**
      * Translate event code to message
      *
