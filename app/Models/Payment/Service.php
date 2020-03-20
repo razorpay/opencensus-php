@@ -1218,24 +1218,6 @@ class Service extends Base\Service
         }
     }
 
-    public function getDCCEnabledTokenIds($tokens)
-    {
-        $dccEnabledTokenIds = [];
-
-        foreach ($tokens as $token)
-        {
-            if ($token->hasCard() === true)
-            {
-                if ($this->isDccEnabledIIN($token->card->iinRelation) === true)
-                {
-                    array_push($dccEnabledTokenIds, $token->getId());
-                }
-            }
-        }
-
-        return $dccEnabledTokenIds;
-    }
-
     public function isDccEnabledIIN($iinEntity): bool
     {
         if (($iinEntity !== null) and
@@ -1280,7 +1262,7 @@ class Service extends Base\Service
         else if (isset($input['token']) === true)
         {
             $tokenId = $input['token'];
-            
+
             $token = $this->repo->token->findByPublicId($tokenId);
 
             if ($token !== null and $token->hasCard() === true)

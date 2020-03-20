@@ -6540,7 +6540,7 @@ class MerchantTest extends TestCase
 
         $tokens = $responseContent['customer']['tokens'];
         $this->assertTrue($tokens['count'] > 0);
-        $this->assertTrue(array_key_exists('is_dcc_enabled', $tokens['items'][0]) === true);
+        $this->assertTrue(array_key_exists('dcc_enabled', $tokens['items'][0]) === true);
     }
 }
 
