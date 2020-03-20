@@ -1280,9 +1280,7 @@ class Service extends Base\Service
         else if (isset($input['token']) === true)
         {
             $tokenId = $input['token'];
-
-            Token\Entity::verifyIdAndSilentlyStripSign($tokenId);
-
+            
             $token = $this->repo->token->findByPublicId($tokenId);
 
             if ($token !== null and $token->hasCard() === true)
