@@ -43,6 +43,7 @@
                 class="google-captcha"
                 no-captcha
                 g-recaptcha-response="login.data.captcha"
+                captcha-loaded="login.isCaptchaLoaded"
                 theme="light"
                 control="noCaptchaControl"
                 site-key="6LdsmwETAAAAADmNGCLvbrjL09O_Fv7WOVTngbO4">
@@ -50,9 +51,14 @@
               <div ng-if="!lockme && isOrgCheckDone" class="highlight-clickable-text forgot-password-text" ng-click="goToForgotPwd()">
                 Forgot Password?
               </div>
+
+              <!-- keep disabled if -->
+              <!-- first check if form is not valid -->
+              <!-- second check if captcha is loaded but not filled -->
+              <!-- NOTE: if captcha is not loaded then only form validation is checked -->
               <button
+                ng-disabled="!loginForm.$valid || (login.isCaptchaLoaded && login.disableLogInSubmission)"
                 override-tab
-                ng-disabled="login.disableLogInSubmission || !loginForm.$valid"
                 class="btn btn-primary form-control"
                 type="submit"
               >

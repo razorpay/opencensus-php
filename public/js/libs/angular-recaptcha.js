@@ -76,6 +76,7 @@ angular
         restrict: 'EA',
         scope: {
           gRecaptchaResponse: '=',
+          captchaLoaded: '=',
           siteKey: '@',
           theme: '@',
           control: '=?',
@@ -114,6 +115,7 @@ angular
           }
 
           googleGrecaptcha.then(function() {
+            scope.captchaLoaded = true;
             widgetId = grecaptcha.render(
               element[0],
               grecaptchaCreateParameters

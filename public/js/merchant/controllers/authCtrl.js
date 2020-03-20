@@ -185,6 +185,7 @@ app
         currentStep: 1, // 3 -> verification, 2 -> questions, 1 -> login, 0 -> forgotpwd
         currentSubStep: 0, // 0 -> email+pwd, 1 -> provision for OTP screen
         disableLogInSubmission: isProd,
+        isCaptchaLoaded: false,
       };
 
       $scope.secondFA = {
