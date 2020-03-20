@@ -852,5 +852,77 @@ return [
                 ],
             ],
         ],
+    ],
+
+    'testBulkAssignReviewersToBankingAccounts' => [
+        'request'  => [
+            'url'     => '/banking_accounts/reviewers',
+            'method'  => 'POST',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'success'       =>  2,
+                'failed'        =>  0,
+                'failedItems'   =>  [],
+            ],
+        ],
+    ],
+
+    'testBulkAssignInvalidReviewersToBankingAccounts' => [
+        'request'  => [
+            'url'     => '/banking_accounts/reviewers',
+            'method'  => 'POST',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'success'       =>  0,
+                'failed'        =>  2,
+                'error'   =>  'The id provided does not exist',
+            ],
+        ],
+    ],
+
+    'testBulkAssignReviewersToInvalidBankingAccounts' => [
+        'request'  => [
+            'url'     => '/banking_accounts/reviewers',
+            'method'  => 'POST',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'success'       =>  0,
+                'failed'        =>  2,
+                'failedItems'   =>  [
+                    [
+                        'error'     => 'The id provided does not exist'
+                    ],
+                    [
+                        'error'     => 'The id provided does not exist'
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testBulkAssignReviewersToPartiallyInvalidBankingAccountList' => [
+        'request'  => [
+            'url'     => '/banking_accounts/reviewers',
+            'method'  => 'POST',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'success'       =>  1,
+                'failed'        =>  1,
+                'failedItems'   =>  [
+                    [
+                        'id'        => 'bacc_wrongCurAccId2',
+                        'error'     => 'The id provided does not exist'
+                    ],
+                ],
+            ],
+        ],
     ]
 ];

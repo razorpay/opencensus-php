@@ -58,4 +58,11 @@ class BankingAccountController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function bulkAssignReviewer()
+    {
+        $response = $this->service()->bulkAssignReviewer($this->input);
+
+        return ApiResponse::json($response);
+    }
 }
