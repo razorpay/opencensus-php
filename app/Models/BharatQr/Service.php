@@ -29,7 +29,7 @@ class Service extends Base\Service
 
         if (is_array($inputTrace) === true)
         {
-            unset($inputTrace['mpan'], $inputTrace['customer_name']);
+            unset($inputTrace['mpan'], $inputTrace['customer_name'], $inputTrace['MERCHANT_PAN']);
         }
 
         $this->trace->info(
