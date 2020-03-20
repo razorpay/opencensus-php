@@ -125,7 +125,7 @@ class Core extends Base\Core
         if (isset($configId) === false) {
             $config = $this->repo->config->fetchDefaultConfigByMerchantIdAndType($merchantId, 'checkout');
         } else {
-            $config = $this->repo->config->findByPublicId($configId);
+            $config = $this->repo->config->findByPublicIdAndMerchant($configId, $this->merchant);
         }
 
         if (isset($config) === true) {
