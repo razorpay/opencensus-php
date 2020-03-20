@@ -834,9 +834,9 @@ class Core extends Base\Core
 
         if ($source->getPayoutType() === PayoutEntity::ON_DEMAND)
         {
-            if (($channel === Settlement\Channel::ICICI) and ($source->getMode() == Mode::IMPS))
+            if (($channel === Settlement\Channel::ICICI) and ($source->getMode() === Mode::IMPS))
             {
-                return [true, Settlement\Channel::ICICI];
+                return [true, $channel];
             }
 
             return [false, $channel];
