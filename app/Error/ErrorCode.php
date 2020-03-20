@@ -1543,6 +1543,9 @@ class ErrorCode
 
     const BAD_REQUEST_ANOTHER_CREDITS_OPERATION_IN_PROGRESS                         = 'BAD_REQUEST_ANOTHER_CREDITS_OPERATION_IN_PROGRESS';
 
+    // Early Settlements and payouts
+    const BAD_REQUEST_ES_ON_DEMAND_IMPS_AMOUNT_LIMIT_EXCEEDED                       = 'BAD_REQUEST_ES_ON_DEMAND_IMPS_AMOUNT_LIMIT_EXCEEDED';
+
     //typeform Error codes
 
     const BAD_REQUEST_MERCHANT_ID_NOT_PRESENT                                       = 'BAD_REQUEST_MERCHANT_ID_NOT_PRESENT';
