@@ -25,10 +25,17 @@ class Service extends Base\Service
 
     public function processPayment($input, string $gateway)
     {
+        $inputTrace = $input;
+
+        if (is_array($inputTrace) === true)
+        {
+            unset($inputTrace['mpan'], $inputTrace['customer_name']);
+        }
+
         $this->trace->info(
             TraceCode::BHARAT_QR_PAYMENT_PROCESS_REQUEST,
             [
-                'input'   => $input,
+                'input'   => $inputTrace,
                 'gateway' => $gateway,
             ]);
 
