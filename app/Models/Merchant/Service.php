@@ -597,7 +597,7 @@ class Service extends Base\Service
         $this->trace->info(TraceCode::LOCKED_BALANCE_UPDATE_REQUEST, $traceData);
 
         if (($balance->isTypeBanking() === false) or
-            ($balance->getAccountType() !== Merchant\Balance\AccountType::SHARED))
+            ($balance->isAccountTypeShared() === false))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_LOCKED_BALANCE_UPDATE_NON_BANKING,
@@ -1376,18 +1376,6 @@ class Service extends Base\Service
 
     public function createWebhook($input)
     {
-        $disableWebhookUpdate = $this->app->razorx->getTreatment(
-            'any',
-            RazorxTreatment::DISABLE_WEBHOOK_UPDATE,
-            'live'
-        );
-
-        if (strtolower($disableWebhookUpdate) === 'on')
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::SERVER_ERROR_WEBHOOK_UPDATE_DISABLED);
-        }
-
         $webhook = (new Webhook\Core)->createWebhook($this->merchant, $input);
 
         return $webhook->toArrayPublic();
@@ -1395,18 +1383,6 @@ class Service extends Base\Service
 
     public function editWebhook($webhookId, $input)
     {
-
-        $disableWebhookUpdate = $this->app->razorx->getTreatment(
-            'any',
-            RazorxTreatment::DISABLE_WEBHOOK_UPDATE,
-            'live'
-        );
-
-        if (strtolower($disableWebhookUpdate) === 'on')
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::SERVER_ERROR_WEBHOOK_UPDATE_DISABLED);
-        }
         $this->trace->info(
             TraceCode::WEBHOOK_EDIT,
             [

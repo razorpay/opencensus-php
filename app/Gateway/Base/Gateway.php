@@ -1270,6 +1270,11 @@ class Gateway
         return $this->input['terminal']['gateway_terminal_password'];
     }
 
+    protected function getLiveGatewayTerminalId()
+    {
+        return $this->input['terminal']['gateway_terminal_id'];
+    }
+
     protected function isTestMode() : bool
     {
         return ($this->mode === Mode::TEST);

@@ -221,6 +221,14 @@ class Reconciliate extends Base\Core
                 ];
 
                 $this->trace->traceException($e, Logger::CRITICAL, TraceCode::BATCH_PROCESSING_ERROR, $tracePayload);
+
+                $this->messenger->raiseReconAlert(
+                    [
+                        'trace_code' => TraceCode::BATCH_PROCESSING_ERROR,
+                        'message'    => $e->getMessage(),
+                        'gateway'    => $batch->getGateway(),
+                        'batch_id'   => $batch->getId(),
+                    ]);
             }
             finally
             {
@@ -740,7 +748,7 @@ class Reconciliate extends Base\Core
         $originalFileName = str_replace('_' . $batch->getId(), '', $fileName);
 
         $summary = [
-            'info'              => 'Processed Batch Summary',
+            'info_code'         => InfoCode::RECON_PROCESSED_BATCH_SUMMARY,
             'file'              => $originalFileName,
             'output_file_id'    => $outputFileIds,
             'total_count'       => $batch->getTotalCount(),

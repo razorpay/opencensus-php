@@ -4,8 +4,6 @@ namespace RZP\Models\Merchant\Webhook;
 
 use RZP\Models\Base;
 use RZP\Models\Merchant;
-use RZP\Error\ErrorCode;
-use RZP\Models\Merchant\RazorxTreatment;
 
 class Service extends Base\Service
 {
@@ -35,17 +33,6 @@ class Service extends Base\Service
      */
     public function webhookDeactivate(string $id)
     {
-        $disableWebhookUpdate = $this->app->razorx->getTreatment(
-            'any',
-            RazorxTreatment::DISABLE_WEBHOOK_UPDATE,
-            'live'
-        );
-
-        if (strtolower($disableWebhookUpdate) === 'on')
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::SERVER_ERROR_WEBHOOK_UPDATE_DISABLED);
-        }
         $this->core()->webhookDeactivate($id);
     }
 }

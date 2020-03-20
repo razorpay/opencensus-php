@@ -476,9 +476,9 @@ class Core extends Base\Core
             // fetched at was a while ago(using threshold to decide that).Use this balance amount to dispatch payout.
             // If account type shared then use balance amount from balance entity.
 
-            $balanceAmount = $balanceEntity->getBalance();
+            $balanceAmount = $balanceEntity->getBalanceWithLockedBalance();
 
-            if ($balanceEntity->getAccountType() === Merchant\Balance\AccountType::DIRECT)
+            if ($balanceEntity->isAccountTypeDirect() === true)
             {
                 /** @var BankingAccount\Entity $merchantBankingAccount */
                 $merchantBankingAccount = $balanceEntity->bankingAccount;
@@ -742,7 +742,7 @@ class Core extends Base\Core
             // have been created and hence the fees also wouldn't have been calculated.
             list($payoutFees, $tax, $feesSplit) = (new Pricing\Fee)->calculateMerchantFees($payout);
 
-            if ($payout->balance->getAccountType() === AccountType::DIRECT)
+            if ($payout->balance->isAccountTypeDirect() === true)
             {
                 $totalPayoutAmount = $payoutAmount;
             }

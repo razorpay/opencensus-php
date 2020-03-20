@@ -1298,9 +1298,10 @@ trait SettlementTrait
      */
     protected function skipForScripBox($txn): bool
     {
-        $merchantId = $txn->getMerchantId();
+        $merchant = $this->merchants[$txn->getMerchantId()];
 
-        if ($merchantId === Preferences::MID_SCRIP_BOX)
+        if (($merchant->getId() === Preferences::MID_SCRIP_BOX) or
+            ($merchant->getParentId() === Preferences::MID_SCRIP_BOX))
         {
             $hour = Carbon::now(Timezone::IST)->hour;
 
@@ -1308,7 +1309,6 @@ trait SettlementTrait
             {
                 return true;
             }
-
         }
 
         return false;

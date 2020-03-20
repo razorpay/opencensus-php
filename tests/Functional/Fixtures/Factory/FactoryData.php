@@ -723,7 +723,7 @@ final class FactoryData
             'description' => 'This is a test group',
             ]
         );
-        
+
         $factory(\RZP\Models\Admin\Admin\Entity::class, [
             'id'                 => $faker->uniqueid,
             'org_id'             => 'factory:\RZP\Models\Admin\Org\Entity',
@@ -1383,6 +1383,15 @@ final class FactoryData
             'type'               => 'android',
             'status'             => 'created',
             'activation_token'   => $faker->sha256,
+        ]);
+
+        $factory(\RZP\Models\Payment\Config\Entity::class, [
+            'id'                 => $faker->uniqueid,
+            'merchant_id'        => '10000000000000',
+            'name'               => 'Test Config',
+            'type'               => 'checkout',
+            'config'             => '{"method" : "card"}',
+            'is_default'         => true,
         ]);
     }
 }
