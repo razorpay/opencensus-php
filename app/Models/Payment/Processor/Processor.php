@@ -1668,7 +1668,12 @@ class Processor
             $this->segment->trackPayment($payment, ErrorCode::BAD_REQUEST_PAYMENT_CANNOT_BE_CANCELLED);
 
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_CANNOT_BE_CANCELLED);
+                ErrorCode::BAD_REQUEST_PAYMENT_CANNOT_BE_CANCELLED, null,
+             [
+                 'payment_id'  => $payment->getPublicId(),
+                 'order_id'    => $payment->getPublicOrderId(),
+                 'method'      => $payment->getMethod(),
+             ]);
         }
 
         $resource = $this->getCallbackMutexResource($payment);
@@ -1703,7 +1708,12 @@ class Processor
                     return $errorCode;
                 });
 
-                throw new Exception\BadRequestException($errorCode);
+                throw new Exception\BadRequestException($errorCode, null,
+                    [
+                        'payment_id'  => $payment->getPublicId(),
+                        'order_id'    => $payment->getPublicOrderId(),
+                        'method'      => $payment->getMethod(),
+                    ]);
             },
             60,
             ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS,
