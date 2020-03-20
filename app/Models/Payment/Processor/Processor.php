@@ -335,7 +335,7 @@ class Processor
             $payment = $this->payment;
 
             $this->preProcessDCCInputs($input, $payment);
-            
+
             // This flow is being used for only hosted (Shopify).
             $this->checkSignature($input, $payment);
 
@@ -650,6 +650,8 @@ class Processor
             ];
 
             $paymentMetaEntity = (new Payment\PaymentMeta\Core)->create($paymentMetaInput);
+
+            $paymentMetaEntity->payment()->associate($payment);
 
             $this->trace->info(TraceCode::PAYMENT_DCC_PROCESSED, $paymentMetaInput);
         }

@@ -1218,15 +1218,15 @@ class Service extends Base\Service
         }
     }
 
-    public function getDCCEnabledTokenIds($tokens)
+    public function getDCCEnabledTokenIds(array $tokens)
     {
         $dccEnabledTokenIds = [];
 
-        foreach($tokens as $token)
+        foreach ($tokens as $token)
         {
-            if($token->hasCard() === true)
+            if ($token->hasCard() === true)
             {
-                if($this->isDccEnabledIIN($token->card->iinRelation) === true)
+                if ($this->isDccEnabledIIN($token->card->iinRelation) === true)
                 {
                     array_push($dccEnabledTokenIds, $token->getId());
                 }
@@ -1283,7 +1283,7 @@ class Service extends Base\Service
 
             Token\Entity::verifyIdAndSilentlyStripSign($tokenId);
 
-            $token = (new Token\Core())->getByTokenId($tokenId);
+            $token = $this->repo->token->findByPublicId($tokenId);
 
             if ($token !== null and $token->hasCard() === true)
             {

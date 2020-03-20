@@ -635,15 +635,4 @@ class Core extends Base\Core
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_UPDATE_NOT_CONFIRMED_TOKEN);
         }
     }
-
-    /**
-     * @param string $id
-     * @return Entity
-     */
-    public function getByTokenId(string $id)
-    {
-        $token = $this->repo->token->getByTokenId($id);
-
-        return $token;
-    }
 }
