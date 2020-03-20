@@ -233,7 +233,7 @@ class Entity extends Base\PublicEntity
 
     public function getAmountInNumber()
     {
-        return $this->getAttribute(self::AMOUNT_IN_NUMBER);
+        return intval($this->getAttribute(self::AMOUNT_IN_NUMBER));
     }
 
     public function getSponsorCode()
