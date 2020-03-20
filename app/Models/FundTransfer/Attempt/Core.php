@@ -832,6 +832,7 @@ class Core extends Base\Core
 
         $channel = $source->getChannel();
 
+        // Imps payout for channel ICICI go via FTS. Rest via API
         if ($source->getPayoutType() === PayoutEntity::ON_DEMAND)
         {
             if (($channel === Settlement\Channel::ICICI) and ($source->getMode() === Mode::IMPS))
