@@ -448,8 +448,6 @@ class Service extends Base\Service
             else
             {
                 $this->processMigrateTerminalFailure($terminal);
-
-                return $terminal;
             }
         });
 
@@ -604,19 +602,17 @@ class Service extends Base\Service
 
     protected function createTerminalMigrateJob(Terminal\Entity $terminal)
     {
-        $data = [
-            Entity::TERMINAL_ID => $terminal->getId(),
-        ];
-
         try
         {
             TerminalsServiceMigrateJob::dispatch($this->mode, $terminal->getId());
         }
         catch (\Exception $exception)
         {
-            $data['message'] = $exception->getMessage();
-
-            $data['code']    = $exception->getCode();
+            $data = [
+                Entity::TERMINAL_ID => $terminal->getId(),
+                'message'           => $exception->getMessage(),
+                'code'              => $exception->getCode(),
+            ];
 
             $this->trace->error(TraceCode::TERMINALS_SERVICE_CREATE_MIGRATE_JOB_FAILURE, $data);
         }

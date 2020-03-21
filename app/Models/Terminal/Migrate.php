@@ -145,6 +145,8 @@ trait Migrate
 
     public function isFetchTerminalFromTerminalsServiceSuccess(Entity $terminal, $fetchTerminalResponse, $ignoreSecrets = False): bool
     {
+        $success = true;
+
         if ($ignoreSecrets === true)
         {
             $originalTerminalArray = $terminal->toArray();
@@ -196,10 +198,10 @@ trait Migrate
 
                 $this->trace->debug(TraceCode::TERMINALS_SERVICE_MIGRATE_FIELD_MISMATCH, $data);
 
-                return false;
+                $success = false;
             }
         }
-        return true;
+        return $success;
     }
 
     protected function areFetchedSubmerchantsSameForTerminal(Entity $terminal, $fetchTerminalResponse): bool
