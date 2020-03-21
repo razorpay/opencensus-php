@@ -32,6 +32,21 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_EMI_PLAN_NOT_EXIST,
         ],
     ],
+    'testHdfcDebitEmiPartialRefundDisabled' => [
+        'response'  => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Partial refund is currently not supported for this payment method',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_PARTIAL_REFUND_NOT_SUPPORTED,
+        ],
+    ],
     'testHdfcDebitEmiMissingContact' => [
         'response'  => [
             'content' => [

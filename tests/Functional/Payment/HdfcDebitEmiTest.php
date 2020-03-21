@@ -103,6 +103,69 @@ class HdfcDebitEmiTest extends TestCase
         );
     }
 
+    public function testHdfcDebitEmiPartialRefundDisabled()
+    {
+        $card = $this->fixtures->card->create(
+            [
+                'name'         => 'Albin',
+                'merchant_id'  => '10000000000000',
+                'expiry_month' => 12,
+                'expiry_year'  => 2024,
+                'iin'          => '485446',
+                'last4'        => '0607',
+                'network'      => 'Visa',
+                'type'         => 'debit',
+                'issuer'       => 'HDFC',
+                'emi'          => false,
+                'vault'        => 'rzpvault',
+                'vault_token'  => 'NDg1NDQ2MDEwMDg0MDYwNw==',
+            ]);
+
+        $payment = $this->fixtures->payment->create(
+            [
+                'amount'      => 300000,
+                'merchant_id' => '10000000000000',
+                'method'      => 'emi',
+                'status'      => 'captured',
+                'gateway'     => 'hdfc_debit_emi',
+                'card_id'     => $card->getId(),
+            ]);
+
+        $transaction = $this->fixtures->create('transaction',
+            ['entity_id' => $payment->getId(), 'merchant_id' => '10000000000000']);
+
+        $this->fixtures->edit('payment', $payment->getId(), ['transaction_id' => $transaction->getId()]);
+
+        $this->fixtures->mozart->create(
+            [
+                'payment_id' => $payment->getId(),
+                'action'     => 'authorize',
+                'amount'     => 300000,
+                'gateway'    => 'hdfc_debit_emi',
+                'raw'        => '{"Token": "123456", "Status": "Success", "ErrorCode": "0000", "BankReferncNo": "abc123456", "EligibilityStatus": "Yes", "MerchantReferenceNo": "DoERhejxpA5CjO", "OrderConfirmationStatus": "Yes"}',
+            ]);
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($payment)
+            {
+                $this->refundPayment('pay_' . $payment->getId(), 10000);
+            });
+
+        $paymentArr = $this->getDbLastEntityToArray('payment');
+
+        // We need to make sure the payment is not marked as refunded even though refund is initiated from merchant.
+        $this->assertArraySelectiveEquals(
+            [
+                'id'     => $payment->getId(),
+                'status' => 'captured',
+            ],
+            $paymentArr
+        );
+    }
+
     public function testHdfcDebitEmiMissingEmiPlan()
     {
         $this->createDependentEntitiesForSuccessPayment(false);
