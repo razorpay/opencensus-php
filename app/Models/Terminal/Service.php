@@ -577,11 +577,10 @@ class Service extends Base\Service
             $fetchedTerminals = $this->app['terminals_service']->getTerminalsByMerchantId($merchant->getId());
 
             $this->compareFetchedTerminals($terminals, $fetchedTerminals);
-
         }
         catch (\Exception $exception)
         {
-
+            s($exception->getTraceAsString());
         }
     }
 

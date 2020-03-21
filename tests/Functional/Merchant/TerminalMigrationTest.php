@@ -1303,4 +1303,52 @@ class TerminalMigrationTest extends TestCase
 
         $this->startTest();
     }
+
+    // tests for fetching all terminals of merchant in admin route
+
+    public function testFetchTerminalsAdminAuthTerminalIdMismatch()
+    {
+        $terminal = $this->fixtures->create(
+            'terminal', [
+            'merchant_id' => '10000000000000',
+            'used'        => true,
+            'enabled'     => '1',
+            'sync_status' => 'sync_success',
+        ]);
+
+        $this->mockTerminalsServiceSendRequest(function ($path, $content, $method) {
+            $response = new \Requests_Response;
+
+            $this->assertEquals(Requests::GET, $method);
+
+            $this->assertEquals("v1/merchants/10000000000000/terminals", $path);
+
+            $this->assertEquals("", $content);
+
+            $data = ['data' => [
+                $this->terminalRepository->getByMerchantId('10000000000000')->first(),
+                ]];
+
+            $body = json_encode($data);
+
+            $response->body = $body;
+
+            return $response;
+        }, 1);
+
+        $this->ba->adminAuth();
+
+        $mock = $this->createMetricsMock();
+
+        $expected = [
+            'route'         => 'merchant_get_terminals',
+            'message'       => null,
+        ];
+
+        $mock->expects($this->at(1))
+            ->method('count')
+            ->with(Terminal\Metric::TERMINAL_FETCH_BY_MERCHANT_ID_TERMINAL_ID_MISMATCH, 1, $expected);
+
+        $this->startTest();
+    }
 }
