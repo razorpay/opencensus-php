@@ -3,9 +3,8 @@
 namespace RZP\Models\BankingAccount;
 
 use RZP\Base;
-use RZP\Constants\Table;
 use RZP\Models\Merchant;
-use RZP\Models\Admin\Admin\Entity as AdminEntity;
+use RZP\Constants\Table;
 
 class Repository extends Base\Repository
 {
@@ -142,19 +141,5 @@ class Repository extends Base\Repository
                     ->where($balanceTypeColumn, '=', Merchant\Balance\Type::BANKING)
                     ->where($balanceAccountTypeColumn, '=', $accountType)
                     ->get();
-    }
-
-    public function addQueryParamReviewerId($query, $params)
-    {
-        AdminEntity::verifyIdAndStripSign($params[Entity::REVIEWER_ID]);
-
-        return $query->whereExists(function ($q) use ($params) {
-            $q->select('admin_id')
-                ->from(Table::ADMIN_AUDIT_MAP)
-                ->where('admin_id', '=', $params[Entity::REVIEWER_ID])
-                ->where(Entity::AUDITOR_TYPE,'=','reviewer')
-                ->where('entity_type','=','banking_account')
-                ->whereRaw(Table::BANKING_ACCOUNT.'.'.Entity::ID.' = '.Table::ADMIN_AUDIT_MAP.'.'.Entity::ENTITY_ID);
-        });
     }
 }

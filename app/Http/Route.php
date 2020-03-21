@@ -1409,7 +1409,6 @@ final class Route
         'banking_serviceable_pincodes'            => ['post',     'banking_account/serviceability/{channel}/pincodes',         'BankingAccountController@postServiceablePincodes'          ],
         'banking_accounts_list'                   => ['get',      'banking_accounts',                                          'BankingAccountController@list'                             ],
         'banking_account_update'                  => ['patch',    'banking_accounts/{id}',                                     'BankingAccountController@update'                           ],
-        'banking_account_bulk_assign_reviewer'    => ['post',     'banking_accounts/reviewers',                                'BankingAccountController@bulkAssignReviewer'               ],
         'banking_account_gateway_balance_fetch'   => ['put',      'banking_accounts/gateway/{channel}/balance',                'BankingAccountController@processGatewayBalanceUpdate'      ],
         'banking_account_webhook_account_info'    => ['post',     'banking_accounts/webhooks/account_info/{channel}',          'BankingAccountController@processAccountInfoWebhook'        ],
         'banking_account_webhook_account_info'
@@ -2797,7 +2796,6 @@ final class Route
         'banking_account_activate',
         'banking_account_webhook_account_info_internal',
         'banking_account_activation_status_change_log',
-        'banking_account_bulk_assign_reviewer',
 
         'governor_create_namespace_v1',
         'governor_get_client_v1',
@@ -3451,7 +3449,6 @@ final class Route
         'banking_account_yesb_bulk_create'         => Permission::BANKING_UPDATE_ACCOUNT,
         'banking_account_activation_status_'
         . 'change_log'                             => '*',
-        'banking_account_bulk_assign_reviewer'     => Permission::ASSIGN_BANKING_ACCOUNT_REVIEWER,
         'set_channel_action'                       => Permission::SETTLEMENT_BULK_UPDATE,
         'get_channel_action'                       => Permission::SETTLEMENT_BULK_UPDATE,
 

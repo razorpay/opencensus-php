@@ -4,8 +4,6 @@ namespace RZP\Models\BankingAccount;
 
 use RZP\Models\Base;
 use RZP\Models\Merchant;
-use RZP\Constants\Table;
-use RZP\Models\Admin\Admin;
 use RZP\Models\Merchant\Balance;
 use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Models\BankingAccount\State;
@@ -108,17 +106,6 @@ class Entity extends Base\PublicEntity
     // Relation Constants
     const BANKING_ACCOUNT_DETAILS = 'banking_account_details';
     const BALANCE                 = 'balance';
-    const REVIEWERS               = 'reviewers';
-
-    // Constants for reviewers() relation
-    const REVIEWER_ID             = 'reviewer_id';
-    const ADMIN_ID                = 'admin_id';
-    const BANKING_ACCOUNT_IDS     = 'banking_account_ids';
-    const AUDITOR_TYPE            = 'auditor_type';
-    const ENTITY                  = 'entity';
-    const ENTITY_ID               = 'entity_id';
-
-    const IDS           = 'ids';
 
     protected $entity = 'banking_account';
 
@@ -206,7 +193,6 @@ class Entity extends Base\PublicEntity
         // 'banking_account_details' works fine
         //
         'bankingAccountDetails',
-        self::REVIEWERS,
         self::PASSWORD,
     ];
 
@@ -476,11 +462,6 @@ class Entity extends Base\PublicEntity
     public function balance()
     {
         return $this->belongsTo(Balance\Entity::class);
-    }
-
-    public function reviewers()
-    {
-        return $this->morphToMany(Admin\Entity::class, self::ENTITY, Table::ADMIN_AUDIT_MAP, self::ENTITY_ID, Entity::ADMIN_ID)->withPivot(Entity::AUDITOR_TYPE);
     }
 
     public function activationStates()

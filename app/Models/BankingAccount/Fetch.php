@@ -19,10 +19,9 @@ class Fetch extends BaseFetch
             Entity::BANK_REFERENCE_NUMBER => 'sometimes|string',
             Entity::FTS_FUND_ACCOUNT_ID   => 'sometimes|unsigned_id',
             Entity::ACCOUNT_TYPE          => 'sometimes|string',
-            Entity::REVIEWER_ID           => 'sometimes|string',
         ],
         BasicAuth\Type::PRIVILEGE_AUTH => [
-            self::EXPAND_EACH             => 'filled|string|in:merchant,merchant.merchantDetail,banking_account_details,reviewers',
+            self::EXPAND_EACH             => 'filled|string|in:merchant,merchant.merchantDetail,banking_account_details',
         ]
     ];
 
@@ -37,7 +36,6 @@ class Fetch extends BaseFetch
             Entity::BANK_REFERENCE_NUMBER,
             Entity::FTS_FUND_ACCOUNT_ID,
             Entity::ACCOUNT_TYPE ,
-            Entity::REVIEWER_ID,
             self::EXPAND_EACH,
         ],
     ];
