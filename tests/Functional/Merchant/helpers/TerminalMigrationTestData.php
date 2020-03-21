@@ -327,4 +327,15 @@ return [
             ],
         ],
     ],
+    'testFetchTerminalsAdminAuth' => [
+        'request' => [
+            'method'  => 'GET',
+            'url'     => '/merchants/10000000000000/terminals'
+        ],
+        'response' => [
+            'content' => [
+
+            ],
+        ],
+    ],
 ];

@@ -1306,6 +1306,63 @@ class TerminalMigrationTest extends TestCase
 
     // tests for fetching all terminals of merchant in admin route
 
+    public function testFetchTerminalsAdminAuth()
+    {
+        $terminal = $this->fixtures->create(
+            'terminal', [
+            'merchant_id' => '10000000000000',
+            'used' => true,
+            'enabled' => '1',
+            'sync_status' => 'sync_success',
+        ]);
+
+        $this->mockTerminalsServiceSendRequest(function ($path, $content, $method) use ($terminal) {
+            $response = new \Requests_Response;
+
+            $this->assertEquals(Requests::GET, $method);
+
+            $this->assertEquals("v1/merchants/10000000000000/terminals", $path);
+
+            $this->assertEquals("", $content);
+
+            $data = $this->terminalRepository->getByMerchantId('10000000000000')->toArray();
+
+            $body = json_encode(['data' => $data]);
+
+            $response->body = $body;
+
+            return $response;
+        }, 1);
+
+        $this->ba->adminAuth();
+
+        $mock = $this->createMetricsMock();
+
+        $expectedSuccess1 = [
+            'route'       => 'merchant_get_terminals',
+            'message'     => null,
+            'terminal_id' => '1n25f6uN5S1Z5a',
+        ];
+
+        $expectedSuccess2 = [
+            'route'       => 'merchant_get_terminals',
+            'message'     => null,
+            'terminal_id' => $terminal['id'],
+        ];
+
+        $mock->expects($this->at(1))
+            ->method('count')
+            ->with(Terminal\Metric::TERMINAL_FETCH_BY_ID_COMPARISON_SUCCESS, 1, $expectedSuccess1);
+
+        $mock->expects($this->at(2))
+            ->method('count')
+            ->with(Terminal\Metric::TERMINAL_FETCH_BY_ID_COMPARISON_SUCCESS, 1, $expectedSuccess2);
+
+        $this->startTest();
+
+
+    }
+
     public function testFetchTerminalsAdminAuthTerminalIdMismatch()
     {
         $terminal = $this->fixtures->create(
