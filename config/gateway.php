@@ -604,9 +604,11 @@ return [
 
     'enach_npci_netbanking' => [
         'test_merchant_id'                          => env('NPCI_EMANDATE_TEST_MERCHANT_ID'),
+        'test_merchant_id2'                         => env('NPCI_EMANDATE_TEST_MERCHANT_ID2'),
         'test_emandate_private_key'                 => env('NPCI_EMANDATE_TEST_PRIVATE_KEY'),
         'test_emandate_npci_creditor_account'       => env('NPCI_EMANDATE_TEST_CREDITOR_ACCOUNT'),
         'test_emandate_npci_sponser_ifsc'           => env('NPCI_EMANDATE_TEST_SPONSER_IFSC'),
+        'test_emandate_npci_sponser_bank'           => env('NPCI_EMANDATE_TEST_SPONSER_BANK'),
         'live_npci_emandate_private_key'            => env('NPCI_EMANDATE_LIVE_PRIVATE_KEY'),
         'live_npci_emandate_encryption_certificate' => env('NPCI_EMANDATE_LIVE_ENCRYPTION_CERTIFICATE'),
         'live_npci_emandate_signing_certificate'    => env('NPCI_EMANDATE_LIVE_SIGNING_CERTIFICATE'),

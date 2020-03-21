@@ -491,6 +491,8 @@ class BankTransferTest extends TestCase
 
     public function testBankTransferImps()
     {
+        $this->markTestSkipped();
+
         $accountNumber = $this->bankAccount['account_number'];
 
         $ifsc = Provider::IFSC[Provider::KOTAK];
@@ -1229,6 +1231,8 @@ class BankTransferTest extends TestCase
 
     public function testBankTransferImpsFromRogueBankStripAccount()
     {
+        $this->markTestSkipped();
+
         $accountNumber = $this->bankAccount['account_number'];
 
         $ifsc = Provider::IFSC[Provider::KOTAK];
@@ -2100,6 +2104,159 @@ class BankTransferTest extends TestCase
         $this->ba->directAuth();
 
         $this->startTest($testData);
+    }
+
+    public function testBankTransferNotDuplicateDiffUTR()
+    {
+        $utr1 = 'utr_one';
+
+        $utr2 = 'utr_two';
+
+        $accountNumber1 = $this->bankAccount['account_number'];
+
+        $ifsc1 = 'HDFC0000001';
+
+        $ifsc2 = 'HDFC0000002';
+
+        $request = $this->testData['testBankTransferProcessDuplicateUtr'];
+
+        $request['content']['payee_account']  = $accountNumber1;
+
+        $request['content']['transaction_id'] = $utr1;
+
+        $request['content']['payee_ifsc']     = $ifsc1;
+
+        $this->ba->appAuth();
+
+        $response1 = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals(true, $response1['valid']);
+
+        $bankTransfer1 = $this->getLastEntity('bank_transfer', true);
+
+        $this->assertEquals(true, $bankTransfer1['expected']);
+
+        $this->assertEquals($utr1, $bankTransfer1['utr']);
+
+        $this->assertEquals($accountNumber1, $bankTransfer1['payee_account']);
+
+        $request['content']['transaction_id'] = $utr2;
+
+        $request['content']['payee_ifsc']    = $ifsc2;
+
+        $this->ba->appAuth();
+
+        $response2 = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals(true, $response2['valid']);
+
+        $bankTransfer2 = $this->getLastEntity('bank_transfer', true);
+
+        $this->assertEquals(true, $bankTransfer2['expected']);
+
+        $this->assertEquals($utr2, $bankTransfer2['utr']);
+
+        $this->assertEquals($accountNumber1, $bankTransfer2['payee_account']);
+    }
+
+    public function testBankTransferNotDuplicateDiffAccount()
+    {
+        $utr1 = 'utr_one';
+
+        $accountNumber1 = $this->bankAccount['account_number'];
+
+        $accountNumber2 = $this->createVirtualAccount()['account_number'];
+
+        $ifsc1 = 'HDFC0000001';
+
+        $ifsc2 = 'HDFC0000002';
+
+        $request = $this->testData['testBankTransferProcessDuplicateUtr'];
+
+        $request['content']['payee_account']  = $accountNumber1;
+
+        $request['content']['transaction_id'] = $utr1;
+
+        $request['content']['payee_ifsc']     = $ifsc1;
+
+        $this->ba->appAuth();
+
+        $response1 = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals(true, $response1['valid']);
+
+        $bankTransfer1 = $this->getLastEntity('bank_transfer', true);
+
+        $this->assertEquals(true, $bankTransfer1['expected']);
+
+        $this->assertEquals($utr1, $bankTransfer1['utr']);
+
+        $this->assertEquals($accountNumber1, $bankTransfer1['payee_account']);
+
+        $request['content']['payee_account'] = $accountNumber2;
+
+        $request['content']['payee_ifsc']    = $ifsc2;
+
+        $this->ba->appAuth();
+
+        $response2 = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals(true, $response2['valid']);
+
+        $bankTransfer2 = $this->getLastEntity('bank_transfer', true);
+
+        $this->assertEquals(true, $bankTransfer2['expected']);
+
+        $this->assertEquals($utr1, $bankTransfer2['utr']);
+
+        $this->assertEquals($accountNumber2, $bankTransfer2['payee_account']);
+    }
+
+    public function testBankTransferDuplicate()
+    {
+        $utr = 'utr_one';
+
+        $accountNumber = $this->bankAccount['account_number'];
+
+        $ifsc1 = 'HDFC0000001';
+
+        $ifsc2 = 'HDFC0000002';
+
+        $request = $this->testData['testBankTransferProcessDuplicateUtr'];
+
+        $request['content']['payee_account']  = $accountNumber;
+
+        $request['content']['transaction_id'] = $utr;
+
+        $request['content']['payee_ifsc'] = $ifsc1;
+
+        $this->ba->appAuth();
+
+        $response1 = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals(true, $response1['valid']);
+
+        $bankTransfer1 = $this->getLastEntity('bank_transfer', true);
+
+        $this->assertEquals(true, $bankTransfer1['expected']);
+
+        $this->assertEquals($utr, $bankTransfer1['utr']);
+
+        $this->assertEquals($accountNumber, $bankTransfer1['payee_account']);
+
+        $this->assertEquals($ifsc1, $bankTransfer1['payee_ifsc']);
+
+        $this->ba->appAuth();
+
+        $request['content']['payee_ifsc'] = $ifsc2;
+
+        $response2 = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals(true, $response2['valid']);
+
+        $bankTransfer2 = $this->getLastEntity('bank_transfer', true);
+
+        $this->assertNotEquals($ifsc2, $bankTransfer2['payee_ifsc']);
     }
 
     public function testBankTransferEditPayerBankAccount()

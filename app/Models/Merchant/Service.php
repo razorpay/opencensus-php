@@ -597,7 +597,7 @@ class Service extends Base\Service
         $this->trace->info(TraceCode::LOCKED_BALANCE_UPDATE_REQUEST, $traceData);
 
         if (($balance->isTypeBanking() === false) or
-            ($balance->getAccountType() !== Merchant\Balance\AccountType::SHARED))
+            ($balance->isAccountTypeShared() === false))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_LOCKED_BALANCE_UPDATE_NON_BANKING,

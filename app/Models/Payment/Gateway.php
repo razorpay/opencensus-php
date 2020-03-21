@@ -370,7 +370,7 @@ class Gateway
         IFSC::TMBL,
         IFSC::USFB,
         IFSC::UTIB,
-        //IFSC::YESB,
+        IFSC::YESB,
         Netbanking::PUNB_R,
         Netbanking::BARB_R,
         IFSC::SBIN,
@@ -395,7 +395,7 @@ class Gateway
         IFSC::MAHB,
         IFSC::SIBL,
         IFSC::USFB,
-        //IFSC::YESB,
+        IFSC::YESB,
         Netbanking::PUNB_R,
         IFSC::SBIN,
         IFSC::RATN,
@@ -682,6 +682,7 @@ class Gateway
         Payment\Gateway::NETBANKING_KOTAK,
         Payment\Gateway::EBS,
         Payment\Gateway::PAYTM,
+        Payment\Gateway::MPGS,
     ];
 
     public static $scroogeFileBasedRefundGatewaysWithTimestamps = [
@@ -2311,8 +2312,8 @@ class Gateway
 
         return [
             AuthType::NETBANKING  => $netbankingBanks,
-            // AuthType::AADHAAR     => self::EMANDATE_AADHAAR_BANKS,
-            // AuthType::AADHAAR_FP  => self::EMANDATE_AADHAAR_BANKS,
+            AuthType::AADHAAR     => self::EMANDATE_AADHAAR_BANKS,
+            AuthType::AADHAAR_FP  => self::EMANDATE_AADHAAR_BANKS,
             AuthType::DEBITCARD   => self::ENACH_NPCI_NB_AUTH_CARD_BANKS,
         ];
     }

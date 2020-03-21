@@ -24,9 +24,16 @@ class Core extends Base\Core
     {
         $input = $this->getBharatQrInputParams($gatewayResponse['qr_data']);
 
+        $inputTrace = $input;
+
+        if (is_array($inputTrace) === true)
+        {
+            unset($inputTrace['mpan'], $inputTrace['customer_name'], $inputTrace['MERCHANT_PAN']);
+        }
+
         $this->trace->info(
             TraceCode::BHARAT_QR_PAYMENT_PROCESS_REQUEST,
-            $input
+            $inputTrace
         );
 
         $bharatQr = null;

@@ -194,6 +194,40 @@ return [
         ]
     ],
 
+    'testValidateVpaCardNumberDetected' => [
+        'request'   => [
+            'url'       => '/payment/validate/vpa',
+            'method'    => 'post',
+            'content'   => []
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_UPI_INVALID_VPA,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_UPI_INVALID_VPA,
+        ]
+    ],
+
+    'testValidateVpaCardNumberLikeVpa' => [
+        'request'   => [
+            'url'       => '/payment/validate/vpa',
+            'method'    => 'post',
+            'content'   => []
+        ],
+        'response'  => [
+            'content' => [
+                'success'   => true,
+            ],
+        ]
+    ],
+
     'testValidateVpaFailure' => [
         'request'   => [
             'url'       => '/payment/validate/vpa',
@@ -230,29 +264,6 @@ return [
         'exception' => [
             'class'               => RZP\Exception\BadRequestException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_UPI_INVALID_VPA,
-        ],
-    ],
-
-    'testValidateVpaYesBankInvalid' => [
-        'request'   => [
-            'url'       => '/payment/validate/vpa',
-            'method'    => 'post',
-            'content'   => [
-                'vpa' => 'razorpay@yesbank',
-            ]
-        ],
-        'response'  => [
-            'content'     => [
-                'error' => [
-                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_YESBANK_PAYMENT_DISABLED,
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'               => RZP\Exception\BadRequestException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_YESBANK_PAYMENT_DISABLED,
         ],
     ],
 

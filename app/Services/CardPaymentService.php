@@ -392,6 +392,15 @@ class CardPaymentService
        unset($traceResponse['data']['content']['vpc_CardExp']);
        unset($traceResponse['data']['content']['vpc_CardSecurityCode']);
 
+       //Redacting fields for First_data
+       unset($traceResponse['data']['content']['cvm']);
+       unset($traceResponse['data']['content']['cardnumber']);
+       unset($traceResponse['data']['content']['dynamicMerchantName']);
+       unset($traceResponse['data']['content']['bname']);
+       unset($traceResponse['data']['content']['expmonth']);
+       unset($traceResponse['data']['content']['expyear']);
+
+
         $this->trace->info(TraceCode::CARD_PAYMENT_SERVICE_RESPONSE, $traceResponse ?? []);
     }
 

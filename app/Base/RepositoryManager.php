@@ -70,6 +70,8 @@ use RZP\Base\Database\Connectors\MySqlConnector;
  * @property Models\Options\Repository                          $options
  * @property Models\Merchant\FreshdeskTicket\Repository         $merchant_freshdesk_tickets
  * @property Models\VirtualAccount\Repository                   $virtual_account
+ * @property Models\Payment\Config\Repository                   $config
+ * @property Models\IdempotencyKey\Repository                   $idempotency_key
  */
 class RepositoryManager extends Illuminate\Support\Manager
 {
