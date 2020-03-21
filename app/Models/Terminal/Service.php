@@ -580,7 +580,6 @@ class Service extends Base\Service
         }
         catch (\Exception $exception)
         {
-            s($exception->getTraceAsString());
         }
     }
 
