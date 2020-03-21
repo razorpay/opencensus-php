@@ -48,10 +48,12 @@ class Entity extends Base\PublicEntity
     protected $casts = [
         self::GATEWAY_AMOUNT   => 'int',
         self::DCC_OFFERED      => 'bool',
+        self::FOREX_RATE       => 'float',
     ];
 
     protected $defaults = [
         self::DCC_OFFERED => false,
+        self::FOREX_RATE => null,
     ];
 
     protected $entity = 'payment_meta';

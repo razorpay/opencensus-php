@@ -182,6 +182,8 @@ class Core extends Base\Core
 
     public function getConvertedAmount($baseAmount, $rate, $markUpPercent)
     {
+        $rate = number_format($rate, 2);
+
         $convertedAmount = $baseAmount * $rate;
 
         return (int) ceil($convertedAmount + (($markUpPercent * $convertedAmount) / 100));
@@ -232,13 +234,15 @@ class Core extends Base\Core
 
             if((empty($rates) === false) and (isset($rates[$requestedCurrency]) === true))
             {
+                $forexRate = number_format($rates[$requestedCurrency], 2);
+
                 $markUpPercent = $this->getDCCMarkUpPercentage($rates);
 
                 $requestedCurrencyData['currency'] = $requestedCurrency;
 
-                $requestedCurrencyData['forex_rate'] = (string)$rates[$requestedCurrency];
+                $requestedCurrencyData['forex_rate'] = $forexRate;
 
-                $requestedCurrencyData['amount'] = (string)$this->getConvertedAmount($baseAmount,$rates[$requestedCurrency], $markUpPercent);
+                $requestedCurrencyData['amount'] = (string)$this->getConvertedAmount($baseAmount,$forexRate, $markUpPercent);
 
                 $requestedCurrencyData['dcc_mark_up_percent'] = $markUpPercent;
             }
