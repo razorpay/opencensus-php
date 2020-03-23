@@ -408,13 +408,65 @@ class SharpGatewayTest extends TestCase
         $this->startTest();
     }
 
-    public function testValidateVpaYesBankInvalid()
+    public function validateVpaCardNumberDetected()
+    {
+        return $cases = [
+            'actual_card_number_without_special_character'  => ['4012001038443335@razorpay'],
+            'actual_card_number_with_hyphen'                => ['4012-0010-3844-3335@razorpay'],
+            'actual_card_number_with_prefix'                => ['ccpay.4012001038443335@razorpay'],
+            'actual_card_number_with_suffix'                => ['4012-0010-3844-3335.ccpay@razorpay'],
+        ];
+    }
+
+    /**
+     * @dataProvider validateVpaCardNumberDetected
+     */
+    public function testValidateVpaCardNumberDetected($vpa)
     {
         $this->ba->privateAuth();
 
         $this->fixtures->merchant->addFeatures(['enable_vpa_validate']);
 
-        $this->startTest();
+        $this->startTest([
+            'request' => [
+                'content' => [
+                    'vpa'   => $vpa,
+                ],
+            ],
+        ]);
+    }
+
+    public function validateVpaCardNumberLikeVpa()
+    {
+        return $cases = [
+            'invalid_card_number_without_special_character'  => ['4012001038443325@razorpay'],
+            'invalid_card_number_with_hyphen'                => ['4012-0010-3844-3325@razorpay'],
+            'invalid_card_number_with_prefix'                => ['ccpay.4012001038443325@razorpay'],
+            'invalid_card_number_with_suffix'                => ['4012-0010-3844-3325.ccpay@razorpay'],
+        ];
+    }
+
+    /**
+     * @dataProvider validateVpaCardNumberLikeVpa
+     */
+    public function testValidateVpaCardNumberLikeVpa($vpa)
+    {
+        $this->ba->privateAuth();
+
+        $this->fixtures->merchant->addFeatures(['enable_vpa_validate']);
+
+        $this->startTest([
+            'request' => [
+                'content' => [
+                    'vpa'   => $vpa,
+                ],
+            ],
+            'response' => [
+                'content' => [
+                    'success'   => true,
+                ],
+            ],
+        ]);
     }
 
     public function testValidateVpaInvalid()

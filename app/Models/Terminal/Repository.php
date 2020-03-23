@@ -248,10 +248,11 @@ class Repository extends Base\Repository
         return $query->get();
     }
 
-    public function getAllBankTransferTerminals(): PublicCollection
+    public function getAllBankTransferTerminals($gateway): PublicCollection
     {
         $query = $this->newQuery()
                       ->where(Entity::BANK_TRANSFER, true)
+                      ->where(Entity::GATEWAY, $gateway)
                       ->withTrashed();
 
         return $query->get();
@@ -481,21 +482,25 @@ class Repository extends Base\Repository
 
     public function getByMerchantProviderAndMethod(string $provider, string $merchantId, string $method)
     {
-        return $this->newQuery()
-                    ->where(Entity::GATEWAY_ACQUIRER, '=', $provider)
-                    ->whereIn(Entity::MERCHANT_ID, [$merchantId, Account::SHARED_ACCOUNT])
-                    ->where($method, '=', 1)
-                    ->enabled()
-                    ->firstOrFail();
+        $query = $this->newQuery()
+                      ->where(Entity::GATEWAY_ACQUIRER, '=', $provider)
+                      ->where($method, '=', 1)
+                      ->enabled();
+
+        $this->addMerchantWhereCondition($query, [$merchantId, Account::SHARED_ACCOUNT]);
+
+        return $query->firstOrFail();
     }
 
     public function findByMerchantIdAndMethod(string $merchantId, string $method)
     {
-        return $this->newQuery()
-                    ->where($method, '=', 1)
-                    ->whereIn(Entity::MERCHANT_ID, [$merchantId, Account::SHARED_ACCOUNT])
-                    ->enabled()
-                    ->get();
+        $query = $this->newQuery()
+                      ->where($method, '=', 1)
+                      ->enabled();
+
+        $this->addMerchantWhereCondition($query, [$merchantId, Account::SHARED_ACCOUNT]);
+
+        return $query->get();
     }
 
     public function findManyEnabledByIds($ids)

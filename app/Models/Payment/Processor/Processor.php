@@ -300,8 +300,6 @@ class Processor
 
             $this->preProcessForUpiIfApplicable($input);
 
-            $this->validateYesBankPayments($input);
-
             $meta = [
                 'metadata' => [
                     'trackId' => $this->app['req.context']->getTrackId()
@@ -364,105 +362,6 @@ class Processor
 
             throw $e;
         }
-    }
-
-    /**
-     * Block all Yesbank payments with the same stipulated error message
-     */
-    protected function validateYesBankPayments($input)
-    {
-        // If there is no method in input, do nothing
-        if (isset($input['method']) === false)
-        {
-            return;
-        }
-
-        $data = [];
-
-        switch ($input['method'])
-        {
-            case Payment\Method::CARD:
-            case Payment\Method::EMI:
-
-                // No card number for card payment
-                if (isset($input[Payment\Entity::CARD][Card\Entity::NUMBER]) === false)
-                {
-                    return;
-                }
-
-                $iinId = substr($input[Payment\Entity::CARD][Card\Entity::NUMBER], 0, 6);
-
-                $iin = $this->repo->iin->find($iinId);
-
-                // IIN not available
-                if (empty($iin) === true)
-                {
-                    return;
-                }
-
-                if (($iin->getIssuer() !== Card\Issuer::YESB) or
-                    ($iin->isEnabled() === true))
-                {
-                    return;
-                }
-
-                $data['iin'] = $iinId;
-
-                break;
-
-            case Payment\Method::NETBANKING:
-                if ((isset($input[Payment\Entity::BANK]) === false) or
-                    (($input[Payment\Entity::BANK] !== IFSC::YESB) and
-                     ($input[Payment\Entity::BANK] !== Netbanking::YESB_C)))
-                {
-                    return;
-                }
-
-                break;
-
-            case Payment\Method::UPI:
-
-                $vpa = '';
-
-                if (isset($input[Payment\Method::UPI][Payment\Entity::VPA]) === true)
-                {
-                    $vpa = $input[Payment\Method::UPI][Payment\Entity::VPA];
-                }
-                else if (isset($input[Payment\Entity::VPA]) === true)
-                {
-                    $vpa =  $input[Payment\Entity::VPA];
-                }
-
-                // VPA Could be anything, validators are not run yet.
-                // If not string, validator will catch this
-                if ((is_string($vpa) === false))
-                {
-                    return;
-                }
-
-                // If it's not Yesbank vpa, return
-                if (ProviderCode::isYesBankSpecificVpa($vpa) === false)
-                {
-                    return;
-                }
-
-                $data['vpa'] = $vpa;
-
-                break;
-
-            default:
-                return;
-        }
-
-        $this->throwYesbankException($data);
-    }
-
-    public function throwYesbankException(array $data = [])
-    {
-        throw new Exception\BadRequestException(
-            ErrorCode::BAD_REQUEST_YESBANK_PAYMENT_DISABLED,
-            null,
-            $data);
     }
 
     protected function eventPaymentCreated()
@@ -717,7 +616,12 @@ class Processor
                                                           Payment\Method::CARDLESS_EMI);
         try
         {
+            // merchant id is required to fetch details from cache
+            $input['merchant_id'] = $merchant[Merchant\Entity::ID];
+
             $checkAccountData = $this->app['gateway']->call($gateway, 'check_account', $input, $this->mode, $terminal);
+
+            unset($input['merchant_id']);
         }
         catch (Exception\GatewayErrorException $exception)
         {
@@ -861,8 +765,12 @@ class Processor
                          ->getByMerchantProviderAndMethod($input[Payment\Entity::PROVIDER],
                                                           $merchant[Merchant\Entity::ID],
                                                           Payment\Method::PAYLATER);
+        // merchant id is required to fetch details from cache
+        $input['merchant_id'] = $merchant[Merchant\Entity::ID];
 
         $response = $this->app['gateway']->call($gateway, 'check_account', $input, $this->mode, $terminal);
+
+        unset ($input['merchant_id']);
 
         $coproto  = $this->preProcesspaylaterResponseHandler($response, $payment, $input, $merchant);
 
@@ -1760,7 +1668,12 @@ class Processor
             $this->segment->trackPayment($payment, ErrorCode::BAD_REQUEST_PAYMENT_CANNOT_BE_CANCELLED);
 
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_CANNOT_BE_CANCELLED);
+                ErrorCode::BAD_REQUEST_PAYMENT_CANNOT_BE_CANCELLED, null,
+             [
+                 'payment_id'  => $payment->getPublicId(),
+                 'order_id'    => $payment->getPublicOrderId(),
+                 'method'      => $payment->getMethod(),
+             ]);
         }
 
         $resource = $this->getCallbackMutexResource($payment);
@@ -1795,7 +1708,12 @@ class Processor
                     return $errorCode;
                 });
 
-                throw new Exception\BadRequestException($errorCode);
+                throw new Exception\BadRequestException($errorCode, null,
+                    [
+                        'payment_id'  => $payment->getPublicId(),
+                        'order_id'    => $payment->getPublicOrderId(),
+                        'method'      => $payment->getMethod(),
+                    ]);
             },
             60,
             ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS,
@@ -2833,7 +2751,7 @@ class Processor
             return;
         }
 
-        $rblVaRoutes = ['bank_transfer_process_rbl', 'bank_transfer_process_rbl_test'];
+        $rblVaRoutes = ['bank_transfer_process_rbl', 'bank_transfer_process_rbl_test', 'bank_transfer_process_rbl_internal'];
 
         if (in_array(Route::currentRouteName(), $rblVaRoutes, true) === true)
         {

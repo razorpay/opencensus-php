@@ -22,6 +22,7 @@ class PaymentLinkDefaultOption implements DefaultOption
             'checkout' =>
                 array (
                     'name'        => '',
+                    'remember_customer'        => '1',
                     'description' => '',
                     'first_payment_min_amount' => 'Minimum Amount Due',
                     'prefill' =>

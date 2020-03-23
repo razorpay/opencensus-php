@@ -89,7 +89,6 @@ class Stork
      * @param  Event\Entity $event
      * @param  string       $mode
      * @return void
-     * @throws \Throwable
      */
     public function processEventSafe(Event\Entity $event, string $mode)
     {
@@ -117,6 +116,8 @@ class Stork
      */
     public function processEvent(Event\Entity $event, string $mode)
     {
+        $this->trace->info(TraceCode::STORK_DISPATCH_EVENT_REQUEST, $event->toArrayPublic());
+
         $this->service->init($mode);
 
         $merchant = $event->merchant;

@@ -180,6 +180,22 @@ class Gateway extends Base\Gateway
             $refund->getRefundId()
         );
 
+        if (empty($response) === true)
+        {
+            throw new GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE,
+                null,
+                Constant::REFUND_NOT_FOUND_ERROR,
+                [
+                    Payment\Gateway::GATEWAY_RESPONSE => json_encode($parsed),
+                    Payment\Gateway::GATEWAY_KEYS => [
+                        'refund_id'  => $refund->getRefundId(),
+                        'error_desc' => Constant::REFUND_NOT_FOUND_ERROR,
+                    ],
+                ]
+            );
+        }
+
         $this->handleRefundResponse($input, $response, $refund);
 
         return [
@@ -235,6 +251,22 @@ class Gateway extends Base\Gateway
             $verify->verifyResponseContent,
             $verify->input['refund']['id']
         );
+
+        if (empty($response) === true)
+        {
+            throw new GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE,
+                null,
+                Constant::REFUND_NOT_FOUND_ERROR,
+                [
+                    Payment\Gateway::GATEWAY_VERIFY_RESPONSE => json_encode($verify->verifyResponseContent),
+                    Payment\Gateway::GATEWAY_KEYS => [
+                        'refund_id'  => $verify->input['refund']['id'],
+                        'error_desc' => Constant::REFUND_NOT_FOUND_ERROR,
+                    ],
+                ]
+            );
+        }
 
         $scroogeResponse->setGatewayVerifyResponse($response)
                         ->setGatewayKeys($this->getGatewayData($response));
@@ -434,6 +466,13 @@ class Gateway extends Base\Gateway
 
     private function getRelevantRefundDetail(string $wrapper, array $response, string $refundId): array
     {
+        if ((isset($response[ResponseFields::RESPONSE_METADATA]) === false) or
+            ((isset($response[ResponseFields::RESPONSE_METADATA][ResponseFields::REQUEST_ID]) === false) and
+             (isset($response[ResponseFields::RESPONSE_METADATA][ResponseFields::REQUEST_UC_ID]) === false)))
+        {
+            return [];
+        }
+
         $requestId = $response[ResponseFields::RESPONSE_METADATA][ResponseFields::REQUEST_ID] ??
                      $response[ResponseFields::RESPONSE_METADATA][ResponseFields::REQUEST_UC_ID];
 
@@ -451,25 +490,13 @@ class Gateway extends Base\Gateway
         foreach ($refundDetails as $refundDetail)
         {
             // We can validate current refund by refund_reference_id
-            if($refundDetail[ResponseFields::REFUND_REF_ID] === $refundId)
+            if ($refundDetail[ResponseFields::REFUND_REF_ID] === $refundId)
             {
                 return array_merge($toReturn, $refundDetail);
             }
         }
 
-        $errorDesc = 'Refund not found in response';
-
-        throw new GatewayErrorException(
-            ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE,
-            null,
-            $errorDesc,
-            [
-                Payment\Gateway::GATEWAY_VERIFY_RESPONSE => json_encode($response),
-                Payment\Gateway::GATEWAY_KEYS => [
-                    'refund_id'  => $refundId,
-                    'error_desc' => $errorDesc,
-                ],
-            ]);
+        return [];
     }
 
     private function getRefundResponseAttributesToSave(array $response): array

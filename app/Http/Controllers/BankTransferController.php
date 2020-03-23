@@ -6,6 +6,7 @@ use Request;
 use ApiResponse;
 use Carbon\Carbon;
 
+use RZP\Models\Batch;
 use RZP\Http\BasicAuth;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
@@ -30,7 +31,16 @@ class BankTransferController extends Controller
     {
         $input = Request::all();
 
-        $response = $this->service()->processFile($input);
+        $response = $this->service()->processFile($input, Batch\Type::ECOLLECT_ICICI);
+
+        return ApiResponse::json($response);
+    }
+
+    public function processBankTransferFileRbl()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->processFile($input, Batch\Type::ECOLLECT_RBL);
 
         return ApiResponse::json($response);
     }
@@ -58,7 +68,14 @@ class BankTransferController extends Controller
         return $this->processRblBankTransfer();
     }
 
-    public function processRblBankTransfer()
+    public function processRblBankTransferInternal()
+    {
+        $this->app['basicauth']->setModeAndDbConnection(Mode::LIVE);
+
+        return $this->processRblBankTransfer(false);
+    }
+
+    public function processRblBankTransfer($validateReqToken = true)
     {
         // hardcoding this for now. We will fix this later.
         $this->app['basicauth']->setBasicType(BasicAuth\Type::PRIVILEGE_AUTH);
@@ -67,7 +84,7 @@ class BankTransferController extends Controller
 
         $this->trace->info(TraceCode::RBL_VA_CALLBACK, $input);
 
-        $errorResp = $this->validateRequestToken();
+        $errorResp = $this->validateRequestToken($validateReqToken);
 
         if ($errorResp !== null)
         {
@@ -95,14 +112,19 @@ class BankTransferController extends Controller
         {
             $this->trace->traceException($e);
 
-            return ApiResponse::json([], 500);
+            return ApiResponse::json(['Status' => 'Failure.']);
         }
 
         return ApiResponse::json(['Status' => 'Success']);
     }
 
-    protected function validateRequestToken()
+    protected function validateRequestToken($validateReqToken)
     {
+        if ($validateReqToken === false)
+        {
+            return null;
+        }
+
         $headers = Request::header();
 
         if (empty($headers['xorgtoken']) === true)

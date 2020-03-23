@@ -92,14 +92,17 @@ class Service extends Base\Service
         ];
     }
 
-    public function processFile(array $input): array
+    public function processFile(array $input, $batchType): array
     {
         $this->trace->info(
             TraceCode::BANK_TRANSFER_PROCESS_REQUEST,
             [
-                'input'    => $input,
+                'input'      => $input,
+                'batch_type' => $batchType,
             ]
         );
+
+        Batch\Type::validateType($batchType);
 
         $batchCore = new Batch\Core;
 
@@ -119,13 +122,13 @@ class Service extends Base\Service
             $file = new File($fileDetails['file_details'][0]['file_path']);
 
             $params = [
-                Batch\Entity::TYPE          => Batch\Type::ECOLLECT_ICICI,
+                Batch\Entity::TYPE          => $batchType,
                 Batch\Entity::FILE          => $file,
             ];
 
             $sharedMerchant = $this->repo
-                ->merchant
-                ->findOrFailPublic(Account::SHARED_ACCOUNT);
+                                   ->merchant
+                                   ->findOrFailPublic(Account::SHARED_ACCOUNT);
 
             $batch = $batchCore->create($params, $sharedMerchant);
 
@@ -364,7 +367,7 @@ class Service extends Base\Service
 
     protected function areBankTransfersBlockedForYesBank(): bool
     {
-        return true;
+        return $this->isBlockedByConfig(ConfigKey::BLOCK_YESBANK);
     }
 
     protected function isBlockedByConfig(string $key): bool

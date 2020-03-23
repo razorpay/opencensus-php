@@ -665,7 +665,7 @@ class Core extends Base\Core
                     return $merchant;
                 }
 
-                $bankAccount = $this->repo->bank_account->getMerchantBankAccountsFromAccountNumber($balance->getAccountNumber());
+                $bankingAccount = $this->repo->banking_account->getFromBalanceId($balance->getId());
 
                 return $merchant +
                     [
@@ -675,7 +675,7 @@ class Core extends Base\Core
                         Merchant\Entity::BANKING_ACTIVATED_AT => $balance->getCreatedAt(),
                         Merchant\Entity::BANKING_BALANCE      => $balance->only([Merchant\Balance\Entity::BALANCE,
                                                                                  Merchant\Balance\Entity::CURRENCY]),
-                        Merchant\Entity::BANKING_ACCOUNT      => $bankAccount->toArrayHosted(),
+                        Merchant\Entity::BANKING_ACCOUNT      => $bankingAccount->toArrayPublic(),
                         Merchant\Entity::ACCOUNTS             => $this->fetchBankingAccountWithBalance($merchant['id']),
                     ];
             },

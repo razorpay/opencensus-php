@@ -30,7 +30,6 @@ class Table
     const CONTACT               = 'contacts';
     const QR_CODE               = 'qr_code';
     const BALANCE               = 'balance';
-    const BALANCE_CONFIG        = 'balance_config';
     const PRICING               = 'pricing';
     const INVOICE               = 'invoices';
     const PAYMENT               = 'payments';
@@ -40,14 +39,16 @@ class Table
     const ADDRESS               = 'addresses';
     const DISCOUNT              = 'discounts';
     const MERCHANT              = 'merchants';
-    const LEGAL_ENTITY          = 'legal_entity';
     const COMMISSION            = 'commissions';
-    const PAYMENT_LINK          = 'payment_links';
     const PAYOUT_LINK           = 'payout_links';
-    const PAYMENT_PAGE_ITEM     = 'payment_page_items';
+    const LEGAL_ENTITY          = 'legal_entity';
     const FUND_ACCOUNT          = 'fund_accounts';
+    const PAYMENT_LINK          = 'payment_links';
+    const BALANCE_CONFIG        = 'balance_config';
     const ENTITY_ORIGIN         = 'entity_origins';
     const OFFLINE_DEVICE        = 'offline_devices';
+    const IDEMPOTENCY_KEY       = 'idempotency_keys';
+    const PAYMENT_PAGE_ITEM     = 'payment_page_items';
 
     // Account entity is currently pointing to the 'merchants' table.
     // It will be used for basic CRUD operations over regular merchants,
@@ -87,19 +88,19 @@ class Table
     const SUBSCRIPTION_TRANSACTION       = 'subscription_transactions';
     //Subscriptions Tables end
 
+    const REFERRALS                  = 'referrals';
+    const UPI_TRANSFER               = 'upi_transfers';
     const PAPER_MANDATE              = 'paper_mandates';
-    const PAPER_MANDATE_UPLOAD       = 'paper_mandate_uploads';
     const METHODS                    = 'merchant_banks';
     const BANK_TRANSFER              = 'bank_transfers';
-    const UPI_TRANSFER               = 'upi_transfers';
     const GATEWAY_TOKEN              = 'gateway_tokens';
     const SCHEDULE_TASK              = 'schedule_tasks';
-    const PARTNER_CONFIG             = 'partner_configs';
     const MERCHANT_USERS             = 'merchant_users';
     const MERCHANT_OFFER             = 'merchant_offer';
+    const MERCHANT_USER              = 'merchant_users';
+    const PARTNER_CONFIG             = 'partner_configs';
     const LINE_ITEM_TAX              = 'line_item_taxes';
     const DISPUTE_REASON             = 'dispute_reasons';
-    const MERCHANT_USER              = 'merchant_users';
     const MERCHANT_EMAIL             = 'merchant_emails';
     const VIRTUAL_ACCOUNT            = 'virtual_accounts';
     const MERCHANT_DETAIL            = 'merchant_details';
@@ -107,23 +108,23 @@ class Table
     const MERCHANT_INVOICE           = 'merchant_invoice';
     const MERCHANT_REQUEST           = 'merchant_requests';
     const MERCHANT_TERMINAL          = 'merchant_terminal';
-    const NODAL_BENEFICIARY          = 'nodal_beneficiaries';
+    const BATCH_FUND_TRANSFER        = 'daily_settlements';
     const MERCHANT_PROMOTION         = 'merchant_promotion';
+    const COMMISSION_INVOICE         = 'commission_invoice';
     const CREDIT_TRANSACTION         = 'credit_transaction';
     const SETTLEMENT_DETAILS         = 'settlement_details';
+    const MERCHANT_DOCUMENT          = 'merchant_documents';
     const MERCHANT_EMI_PLANS         = 'merchant_emi_plans';
+    const NODAL_BENEFICIARY          = 'nodal_beneficiaries';
     const MERCHANT_ACCESS_MAP        = 'merchant_access_map';
-    const BATCH_FUND_TRANSFER        = 'daily_settlements';
+    const PAPER_MANDATE_UPLOAD       = 'paper_mandate_uploads';
     const CUSTOMER_TRANSACTION       = 'customer_transactions';
     const FUND_TRANSFER_ATTEMPT      = 'fund_transfer_attempts';
+    const MERCHANT_INHERITANCE_MAP   = 'merchant_inheritance_map';
     const FUND_ACCOUNT_VALIDATION    = 'fund_account_validations';
     const SUBSCRIPTION_REGISTRATION  = 'subscription_registrations';
-    const MERCHANT_DOCUMENT          = 'merchant_documents';
     const MERCHANT_FRESHDESK_TICKETS = 'merchant_freshdesk_tickets';
     const TERMINAL_ONBOARDING_DETAIL = 'terminal_onboarding_details';
-    const REFERRALS                  = 'referrals';
-    const MERCHANT_INHERITANCE_MAP   = 'merchant_inheritance_map';
-    const COMMISSION_INVOICE         = 'commission_invoice';
 
     const D2C_BUREAU_DETAIL         = 'd2c_bureau_details';
     const D2C_BUREAU_REPORT         = 'd2c_bureau_reports';
@@ -136,26 +137,26 @@ class Table
 
     // organization roles permissions
     const ORG                   = 'orgs';
-    const ORG_HOSTNAME          = 'org_hostname';
     const ROLE                  = 'roles';
-    const PERMISSION            = 'permissions';
-    const PERMISSION_MAP        = 'permission_map';
-    const GROUP                 = 'org_groups';
     const ADMIN                 = 'admins';
-    const GROUP_MAP             = 'group_map';
-    const MERCHANT_MAP          = 'merchant_map';
-    const ADMIN_TOKEN           = 'admin_tokens';
     const ROLE_MAP              = 'role_map';
-    const LOGIN_ATTEMPT         = 'login_attempts';
+    const GROUP_MAP             = 'group_map';
+    const GROUP                 = 'org_groups';
+    const PERMISSION            = 'permissions';
     const ADMIN_LEAD            = 'admin_leads';
+    const MERCHANT_MAP          = 'merchant_map';
+    const ORG_HOSTNAME          = 'org_hostname';
+    const ADMIN_TOKEN           = 'admin_tokens';
     const ORG_FIELD_MAP         = 'org_field_map';
+    const PERMISSION_MAP        = 'permission_map';
+    const LOGIN_ATTEMPT         = 'login_attempts';
 
     // Workflows
     const WORKFLOW              = 'workflows';
-    const WORKFLOW_STEP         = 'workflow_steps';
-    const WORKFLOW_ACTION       = 'workflow_actions';
-    const ACTION_COMMENT        = 'action_comments';
     const ACTION_STATE          = 'action_state';
+    const WORKFLOW_STEP         = 'workflow_steps';
+    const ACTION_COMMENT        = 'action_comments';
+    const WORKFLOW_ACTION       = 'workflow_actions';
     //
     // Currently constants comment and state points to same table
     // as action_comment and action_state but later we plan to rename
@@ -168,6 +169,7 @@ class Table
     const STATE_REASON          = 'action_state_reasons';
 
     // Gateway related
+    const ISG                   = 'isg';
     const EBS                   = 'ebs';
     const UPI                   = 'upi';
     const AEPS                  = 'aeps';
@@ -178,18 +180,17 @@ class Table
     const ENACH                 = 'enach';
     const PAYTM                 = 'paytm';
     const WALLET                = 'wallet';
-    const BILLDESK              = 'billdesk';
+    const MOZART                = 'mozart';
     const HITACHI               = 'hitachi';
+    const BILLDESK              = 'billdesk';
     const MOBIKWIK              = 'mobikwik';
+    const CARD_FSS              = 'card_fss';
+    const WORLDLINE             = 'worldline';
+    const PAYSECURE             = 'paysecure';
     const NETBANKING            = 'netbanking';
     const FIRST_DATA            = 'first_data';
     const CYBERSOURCE           = 'cybersource';
-    const CARD_FSS              = 'card_fss';
-    const ISG                   = 'isg';
-    const PAYSECURE             = 'paysecure';
     const CARDLESS_EMI          = 'cardless_emi';
-    const MOZART                = 'mozart';
-    const WORLDLINE             = 'worldline';
 
     // Upi Related
     const UPI_METADATA          = 'upi_metadata';
@@ -202,10 +203,9 @@ class Table
 
     const NODAL_BENEFICIARIES    = 'nodal_beneficiaries';
 
-    // Terminal Performance
-    const TERMINAL_ACTION       = 'terminal_action_logs';
     const GATEWAY_DOWNTIME      = 'gateway_downtimes';
     const PAYMENT_DOWNTIME      = 'payment_downtimes';
+    const TERMINAL_ACTION       = 'terminal_action_logs';
 
     const GATEWAY_RULE          = 'gateway_rules';
     const GATEWAY_FILE          = 'gateway_files';
@@ -225,22 +225,22 @@ class Table
     // Banking Accounts Tables
     const EXTERNAL                        = 'external';
     const BANKING_ACCOUNT                 = 'banking_accounts';
+    const BANKING_ACCOUNT_STATE           = 'banking_account_state';
     const BANKING_ACCOUNT_DETAIL          = 'banking_account_details';
     const BANKING_ACCOUNT_STATEMENT       = 'banking_account_statement';
-    const BANKING_ACCOUNT_STATE           = 'banking_account_state';
 
     // P2P Service Tables
-    const P2P_DEVICE            = 'p2p_devices';
-    const P2P_DEVICE_TOKEN      = 'p2p_device_tokens';
-    const P2P_REGISTER_TOKEN    = 'p2p_register_tokens';
-    const P2P_BANK              = 'p2p_banks';
-    const P2P_BANK_ACCOUNT      = 'p2p_bank_accounts';
     const P2P_VPA               = 'p2p_vpa';
+    const P2P_BANK              = 'p2p_banks';
     const P2P_HANDLE            = 'p2p_handles';
-    const P2P_BENEFICIARY       = 'p2p_beneficiaries';
-    const P2P_TRANSACTION       = 'p2p_transactions';
-    const P2P_UPI_TRANSACTION   = 'p2p_upi_transactions';
+    const P2P_DEVICE            = 'p2p_devices';
     const P2P_CONCERN           = 'p2p_concerns';
+    const P2P_TRANSACTION       = 'p2p_transactions';
+    const P2P_DEVICE_TOKEN      = 'p2p_device_tokens';
+    const P2P_BANK_ACCOUNT      = 'p2p_bank_accounts';
+    const P2P_BENEFICIARY       = 'p2p_beneficiaries';
+    const P2P_REGISTER_TOKEN    = 'p2p_register_tokens';
+    const P2P_UPI_TRANSACTION   = 'p2p_upi_transactions';
 
     // Payments UPI Service, Store in different database
     const PAYMENTS_UPI_VPA              = 'vpas';
@@ -256,6 +256,8 @@ class Table
     const WORKFLOW_PAYOUT_AMOUNT_RULES = 'workflow_payout_amount_rules';
 
     const OPTIONS              = 'options';
+
+    const CONFIG               = 'payment_configs';
 
     const UPI_MANDATE          = 'upi_mandates';
 

@@ -359,9 +359,14 @@ class Preference extends Base\Core
     {
         $merchantId = $merchant->getId();
 
+        $parentMerchantId = $merchant->getParentId();
+
         if ($merchantId !== Merchant\Preferences::MID_SCRIP_BOX)
         {
-            return [false, 0];
+            if($parentMerchantId !== Merchant\Preferences::MID_SCRIP_BOX)
+            {
+                return [false, 0];
+            }
         }
 
         $hour = Constants::ONE_PM;

@@ -22,12 +22,16 @@ trait HeadlessOtp
         ErrorCode::GATEWAY_ERROR_IVR_AUTHENTICATION_NOT_AVAILABLE => IIN\Flow::IVR,
     ];
 
+    // Error codes for which payment should not be retried on 3DS flow.
     public static $elfErrorCodeMapping = [
         OtpElf::CARD_BLOCKED         => ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_BY_BANK_DUE_TO_BLOCKED_CARD,
+        OtpElf::CARD_INVALID         => ErrorCode::BAD_REQUEST_INVALID_CARD_DETAILS,
+        OtpElf::CARD_NOT_ENROLLED    => ErrorCode::BAD_REQUEST_PAYMENT_CARD_NOT_ENROLLED_FOR_3DSECURE,
+        OtpElf::MOBILE_NOT_UPDATED   => ErrorCode::BAD_REQUEST_PAYMENT_CARD_NOT_LINKED_WITH_MOBILE,
         OtpElf::NETWORK_ERROR        => ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT,
         OtpElf::BANK_ERROR           => ErrorCode::BAD_REQUEST_PAYMENT_BANK_SYSTEM_ERROR,
         OtpElf::PAYMENT_TIMEOUT      => ErrorCode::BAD_REQUEST_PAYMENT_TIMED_OUT_AT_GATEWAY,
-        OtpElf::BANK_SERVICE_DOWN    => ErrorCode::BAD_REQUEST_PAYMENT_BANK_SYSTEM_ERROR,
+        OtpElf::BANK_SERVICE_DOWN    => ErrorCode::GATEWAY_ERROR_ISSUER_DOWN,
         OtpElf::NO_AVAILABLE_ACTIONS => ErrorCode::BAD_REQUEST_PAYMENT_OTP_VALIDATION_ATTEMPT_LIMIT_EXCEEDED,
     ];
 

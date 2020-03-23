@@ -15,7 +15,8 @@ class Messenger
 
     protected $skipSlack = false;
 
-    const ALERT           = 'alert';
+    const TXN_ALERT       = 'txn_alert';
+    const FILE_ALERT      = 'file_alert';
     const INFO            = 'info';
     const WARN            = 'warn';
     const TRACE_CODE      = 'trace_code';
@@ -56,7 +57,9 @@ class Messenger
             $this->setSkipSlack(true);
         }
 
-        $this->notifySlack($data, self::ALERT);
+        $alertLevel = $this->getAlertLevelBasedOnTraceCode($data);
+
+        $this->notifySlack($data, $alertLevel);
         $this->traceReconAlert($data);
     }
 
@@ -70,7 +73,7 @@ class Messenger
     {
         $flag = false;
 
-        if ((isset($data[self::TRACE_CODE]) === true)                    and
+        if ((isset($data[self::TRACE_CODE]) === true)                      and
             (($data[self::TRACE_CODE] === TraceCode::RECON_INFO_ALERT)     or
             ($data[self::TRACE_CODE] === TraceCode::RECON_CRITICAL_ALERT)) and
             (isset($data[self::INFO_CODE]) === true))
@@ -114,6 +117,28 @@ class Messenger
         }
 
         return $flag;
+    }
+
+    /**
+     * Returns alert level as file_alert, If the trace code or
+     * info code is related to Batch file level error.
+     * Otherwise returns txn_alert. This further decides the
+     * slack channel to which this alert will be sent to.
+     *
+     * @param array $data
+     * @return bool
+     */
+    public function getAlertLevelBasedOnTraceCode($data = [])
+    {
+        if (((isset($data[self::TRACE_CODE]) === true)                                                      and
+            (in_array($data[self::TRACE_CODE], TraceCode::$fileBasedReconTraceCodes, true) === true)) or
+            ((isset($data[self::INFO_CODE]) === true)                                                       and
+            (in_array($data[self::INFO_CODE], InfoCode::$fileBasedReconInfoCodes, true) === true)))
+        {
+            return self::FILE_ALERT;
+        }
+
+        return self::TXN_ALERT;
     }
 
     /**
@@ -208,12 +233,8 @@ class Messenger
     {
         switch ($level)
         {
-            case self::ALERT:
-                return 'danger';
             case self::INFO:
                 return 'good';
-            case self::WARN:
-                return 'danger';
 
             default:
                 return 'danger';
@@ -230,12 +251,8 @@ class Messenger
     {
         switch ($level)
         {
-            case self::ALERT:
-                return 'Reconciliation alert';
             case self::INFO:
                 return 'Reconciliation info';
-            case self::WARN:
-                return 'Reconciliation alert';
 
             default:
                 return 'Reconciliation alert';
@@ -252,8 +269,8 @@ class Messenger
     {
         switch ($level)
         {
-            case self::ALERT:
-                return 'slack.channels.reconciliation2';
+            case self::FILE_ALERT:
+                return 'slack.channels.metrics-payments-recon';
             case self::INFO:
                 return 'slack.channels.reconciliation_info';
             case self::WARN:

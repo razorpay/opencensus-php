@@ -51,16 +51,6 @@ class WebhookTest extends TestCase
 
     protected $sharedTerminal;
 
-    public function mockRazorX(string $functionName, string $featureName, string $variant, $merchantId = '1cXSLlUU8V9sXl')
-    {
-        $testData = &$this->testData[$functionName];
-
-        $uniqueLocalId = RazorXClient::getLocalUniqueId($merchantId, $featureName, 'live');
-
-        $testData['request']['cookies'] = [RazorXClient::RAZORX_COOKIE_KEY => '{"' . $uniqueLocalId . '":"' . $variant . '"}'];
-
-    }
-
     public function setUp()
     {
         $this->testDataFilePath = __DIR__.'/helpers/WebhookData.php';
@@ -75,7 +65,6 @@ class WebhookTest extends TestCase
 
         $this->setupMockDns();
 
-        $this->mockRazorX('diableWebhookUpdate', 'disable_webhook_update', 'off', 10000000000000);
     }
 
     public function testCreateWebhook()
@@ -1324,56 +1313,6 @@ class WebhookTest extends TestCase
 
     public function testRefundSpeedChangedWebhookEventData()
     {
-        $this->enableInstantRefundsSelfServeExperiment();
-
-        $this->createWebhook(['events' => ['refund.speed_changed' => '1']]);
-
-        $payment = $this->defaultAuthPayment();
-        $payment = $this->capturePayment($payment['id'], $payment['amount']);
-
-        $this->fixtures->card->edit($payment['card_id'], ['vault_token' => 'XXXXXXXXXXX']);
-
-        $this->gateway = 'hdfc';
-
-        $this->mockServerContentFunction(function (& $content, $action = null) {
-            if ($action === 'verify') {
-                $content['result'] = 'FAILURE(SUSPECT)';
-                $content['authRespCode'] = 'J';
-                $content['udf2'] = '';
-                $content['udf5'] = 'TrackID';
-            }
-
-            if ($action === 'refund') {
-                $content['result'] = 'DENIED BY RISK';
-            }
-
-            return $content;
-        });
-
-        $this->fixtures->pricing->createInstantRefundsPricingPlan();
-
-        $testData = $this->testData[__FUNCTION__];
-
-        $this->mockInfernoFire(function ($data) use ($testData)
-        {
-            $data['event'] = json_decode($data['event'], true);
-
-            $this->assertArraySelectiveEquals($testData, $data);
-            $this->assertArrayHasKey('webhook_id', $data);
-            $this->assertArrayHasKey('created_at', $data['event']);
-
-            return true;
-        });
-
-        // Adding specific amount to refund - this is meant to test failed refunds on scrooge -
-        // in which case we have reversal of refund transactions as well
-        $this->refundPayment($payment['id'], 3470, ['speed' => 'optimum', 'is_fta' => true]);
-    }
-
-    public function testRefundSpeedChangedWebhookEventDataWithoutInstantRefundsSelfServeEvent()
-    {
-        $this->fixtures->merchant->addFeatures(['card_transfer_refund']);
-
         $this->createWebhook(['events' => ['refund.speed_changed' => '1']]);
 
         $payment = $this->defaultAuthPayment();
@@ -1480,60 +1419,6 @@ class WebhookTest extends TestCase
 
     public function testRefundProcessedInstantWebhookEventData()
     {
-        $this->enableInstantRefundsSelfServeExperiment();
-
-        $this->createWebhook(['events' => ['refund.processed' => '1']]);
-
-        $this->fixtures->pricing->createInstantRefundsPricingPlan();
-
-        $payment = $this->defaultAuthPayment();
-        $payment = $this->capturePayment($payment['id'], $payment['amount']);
-
-        $card = $this->getDbLastEntity('card');
-
-        $iin = $this->getDbEntityById('iin', $card['iin']);
-
-        $this->assertEquals($iin['type'], 'credit');
-
-        $this->assertEquals($iin['issuer'], 'HDFC');
-
-        $this->fixtures->card->edit($payment['card_id'], ['vault_token' => 'XXXXXXXXXXX']);
-        $this->gateway = 'hdfc';
-
-        $this->mockServerContentFunction(function (& $content, $action = null)
-        {
-            if ($action === 'verify')
-            {
-                $content['result']       = 'FAILURE(SUSPECT)';
-                $content['authRespCode'] = 'J';
-                $content['udf2']         = '';
-                $content['udf5']         = 'TrackID';
-            }
-
-            return $content;
-        });
-
-        $testData = $this->testData[__FUNCTION__];
-
-        $this->mockInfernoFire(function ($data) use ($testData)
-        {
-            $data['event'] = json_decode($data['event'], true);
-
-            $this->assertArraySelectiveEquals($testData, $data);
-            $this->assertArrayHasKey('webhook_id', $data);
-            $this->assertArrayHasKey('created_at', $data['event']);
-
-            return true;
-        });
-
-        // Adding specific amount to refund - this is meant to test processed instant refunds on scrooge -
-        $this->refundPayment($payment['id'], 3471, ['speed' => 'optimum', 'is_fta' => true]);
-    }
-
-    public function testRefundProcessedInstantWebhookEventDataWithoutInstantRefundsSelfServe()
-    {
-        $this->fixtures->merchant->addFeatures(['card_transfer_refund']);
-
         $this->createWebhook(['events' => ['refund.processed' => '1']]);
 
         $this->fixtures->pricing->createInstantRefundsPricingPlan();
@@ -1584,48 +1469,6 @@ class WebhookTest extends TestCase
 
     public function testRefundProcessedNormalWebhookEventData()
     {
-        $this->enableInstantRefundsSelfServeExperiment();
-
-        $this->createWebhook(['events' => ['refund.processed' => '1']]);
-
-        $payment = $this->defaultAuthPayment();
-        $payment = $this->capturePayment($payment['id'], $payment['amount']);
-
-        $this->gateway = 'hdfc';
-
-        $this->mockServerContentFunction(function (& $content, $action = null)
-        {
-            if ($action === 'verify')
-            {
-                $content['result']       = 'FAILURE(SUSPECT)';
-                $content['authRespCode'] = 'J';
-                $content['udf2']         = '';
-                $content['udf5']         = 'TrackID';
-            }
-
-            return $content;
-        });
-
-        $testData = $this->testData[__FUNCTION__];
-
-        $this->mockInfernoFire(function ($data) use ($testData)
-        {
-            $data['event'] = json_decode($data['event'], true);
-
-            $this->assertArraySelectiveEquals($testData, $data);
-            $this->assertArrayHasKey('webhook_id', $data);
-            $this->assertArrayHasKey('created_at', $data['event']);
-
-            return true;
-        });
-
-        $this->refundPayment($payment['id']);
-    }
-
-    public function testRefundProcessedNormalWebhookEventDataWithoutInstantRefundsSelfServeEvent()
-    {
-        $this->fixtures->merchant->addFeatures(['card_transfer_refund']);
-
         $this->createWebhook(['events' => ['refund.processed' => '1']]);
 
         $payment = $this->defaultAuthPayment();
@@ -2206,27 +2049,5 @@ class WebhookTest extends TestCase
         $merchant = Merchant\Entity::find($merchantId);
         $merchant->reTag(["oauth"]);
         $merchant->saveOrFail();
-    }
-
-    public function enableInstantRefundsSelfServeExperiment()
-    {
-        $razorxMock = $this->getMockBuilder(RazorXClient::class)
-                           ->setConstructorArgs([$this->app])
-                           ->setMethods(['getTreatment'])
-                           ->getMock();
-
-        $this->app->instance('razorx', $razorxMock);
-
-        $this->app->razorx->method('getTreatment')
-                          ->will($this->returnCallback(
-                                function ($mid, $feature, $mode)
-                                {
-                                    if ($feature === 'instant_refunds_self_serve')
-                                    {
-                                        return 'on';
-                                    }
-
-                                    return '';
-                                }));
     }
 }

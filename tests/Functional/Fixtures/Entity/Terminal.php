@@ -591,7 +591,7 @@ class Terminal extends Base
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
-    public function createSharedEnachNpciNetbankingOldTerminal(array $attributes = [])
+    public function createSharedEnachNpciNetbankingYesbTerminal(array $attributes = [])
     {
         $termId = \RZP\Models\Terminal\Shared::ENACH_NPCI_NETBANKING_TERMINAL;
 
@@ -620,11 +620,13 @@ class Terminal extends Base
 
     public function createDirectEnachNpciNetbankingTerminal(array $attributes = [])
     {
-        $attributes = [
+        $default = [
             'id'                        => 'EnachNbNpciTnl',
             'merchant_id'               => '10000000000000',
             'gateway_merchant_id'       => 'direct_utility_code',
         ];
+
+        $attributes = array_merge($default, $attributes);
 
         return $this->createSharedEnachNpciNetbankingTerminal($attributes);
     }
@@ -3406,7 +3408,7 @@ class Terminal extends Base
             'nach'                      => 1,
             'gateway_merchant_id'       => 'NACH00000000013149',
             'gateway_access_code'       => 'CITI000PIGW',
-            'gateway_acquirer'          => 'RATN0TREASU',
+            'gateway_acquirer'          => 'citi',
             'recurring'                 => 1,
             'created_at'                => time(),
             'updated_at'                => time(),
@@ -3534,5 +3536,26 @@ class Terminal extends Base
         $attributes = array_merge($defaultValues, $attributes);
 
         return $this->create($attributes);
+    }
+
+    public function createHdfcDebitEmi(array $attributes = [])
+    {
+        $defaultValues = [
+            'id'                   => 'HdfcDebitEmiTl',
+            'merchant_id'          => '10000000000000',
+            'gateway'              => 'hdfc_debit_emi',
+            'card'                 => 0,
+            'netbanking'           => 0,
+            'cardless_emi'         => 0,
+            'emi'                  => 1,
+            'emi_duration'         => 3,
+            'gateway_merchant_id'  => 'debit_emi_merchant',
+            'gateway_merchant_id2' => 'debit_emi_merchant2',
+            'mode'                 => 1,
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 }

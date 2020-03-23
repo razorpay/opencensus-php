@@ -877,6 +877,13 @@ class Currency
         return self::ISO_NUMERIC_CODES[$currency] ?? null;
     }
 
+    public static function getCurrency(string $isoCode)
+    {
+        $isoCurrencyCode = array_flip(self::ISO_NUMERIC_CODES);
+
+        return $isoCurrencyCode[$isoCode] ?? null;
+    }
+
     public static function getSymbol(string $currency)
     {
         return self::SYMBOL[$currency] ?? '';

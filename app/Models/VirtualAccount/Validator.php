@@ -31,6 +31,10 @@ class Validator extends Base\Validator
         Entity::CUSTOMER                        => 'sometimes|array',
     ];
 
+    protected static $createForBankingRules = [
+        Entity::NAME                            => 'filled|string|max:40',
+    ];
+
     protected static $editRules = [
         Entity::NAME            => 'filled|string|max:40',
         Entity::STATUS          => 'sometimes|in:closed',
@@ -181,6 +185,19 @@ class Validator extends Base\Validator
     public function validateOfPrimaryBalance()
     {
         if ($this->entity->isBalanceTypePrimary() === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Operation is not allowed for this specific virtual account',
+                null,
+                [
+                    Entity::ID => $this->entity->getId(),
+                ]);
+        }
+    }
+
+    public function validateOfBankingBalance()
+    {
+        if ($this->entity->isBalanceTypeBanking() === false)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Operation is not allowed for this specific virtual account',

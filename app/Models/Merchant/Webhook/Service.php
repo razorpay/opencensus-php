@@ -4,42 +4,14 @@ namespace RZP\Models\Merchant\Webhook;
 
 use RZP\Models\Base;
 use RZP\Models\Merchant;
-use RZP\Error\ErrorCode;
-use RZP\Models\Merchant\RazorxTreatment;
 
 class Service extends Base\Service
 {
-    public function processWebhook(String $event, array $input)
+    public function processWebhook(string $event, array $input)
     {
-        $merchant = $this->merchant;
+        $merchant = $this->merchant->isLinkedAccount() ? $this->merchant->parent : $this->merchant;
 
-        $merchantId = $merchant->getId();
-
-        Merchant\Entity::verifyIdAndStripSign($merchantId);
-
-        /*
-        * If the merchant is a linked account, use the parent merchant.
-        */
-        if ($merchant->isLinkedAccount() === true)
-        {
-            $merchant = $merchant->parent;
-        }
-
-        $webhook = $this->repo->webhook->findByMerchant($merchant);
-
-        if ($webhook === null)
-        {
-            return;
-        }
-
-        $enabledForMerchant = $this->core()->isWebhookActiveAndEnabled($webhook, $event);
-
-        if ($enabledForMerchant === false)
-        {
-            return;
-        }
-
-        $this->core()->prepareAndDispatchWebhook($merchant, $event, $input, $webhook);
+        $this->core()->prepareAndDispatchWebhook($merchant, $event, $input);
     }
 
     /**
@@ -61,17 +33,6 @@ class Service extends Base\Service
      */
     public function webhookDeactivate(string $id)
     {
-        $disableWebhookUpdate = $this->app->razorx->getTreatment(
-            'any',
-            RazorxTreatment::DISABLE_WEBHOOK_UPDATE,
-            'live'
-        );
-
-        if (strtolower($disableWebhookUpdate) === 'on')
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::SERVER_ERROR_WEBHOOK_UPDATE_DISABLED);
-        }
         $this->core()->webhookDeactivate($id);
     }
 }

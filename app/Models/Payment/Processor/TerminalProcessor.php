@@ -190,7 +190,9 @@ class TerminalProcessor extends Base\Core
 
     public function getTerminalForBankTransfer(BankTransfer\Entity $bankTransfer, bool $log = false): Terminal\Entity
     {
-        $terminals = $this->repo->terminal->getAllBankTransferTerminals();
+        $gateway = Payment\Gateway::$bankTransferProviderGateway[$bankTransfer->getGateway()];
+
+        $terminals = $this->repo->terminal->getAllBankTransferTerminals($gateway);
 
         return $this->selectTerminalForBankAccount($terminals, $bankTransfer->getPayeeAccount(), $log);
     }

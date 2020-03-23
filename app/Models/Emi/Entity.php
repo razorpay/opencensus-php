@@ -16,6 +16,7 @@ class Entity extends Base\PublicEntity
     const MERCHANT_ID           = 'merchant_id';
     const BANK                  = 'bank';
     const NETWORK               = 'network';
+    const TYPE                  = 'type';
     const RATE                  = 'rate';
     const DURATION              = 'duration';
     const METHODS               = 'methods';
@@ -43,6 +44,7 @@ class Entity extends Base\PublicEntity
         self::MERCHANT_ID,
         self::BANK,
         self::NETWORK,
+        self::TYPE,
         self::RATE,
         self::DURATION,
         self::METHODS,
@@ -57,6 +59,7 @@ class Entity extends Base\PublicEntity
         self::MERCHANT_ID,
         self::BANK,
         self::NETWORK,
+        self::TYPE,
         self::ISSUER,
         self::ISSUER_NAME,
         self::RATE,
@@ -71,6 +74,7 @@ class Entity extends Base\PublicEntity
     protected $public = [
         self::ISSUER,
         self::ISSUER_NAME,
+        self::TYPE,
         self::RATE,
         self::DURATION,
     ];
@@ -79,6 +83,7 @@ class Entity extends Base\PublicEntity
         self::MIN_AMOUNT       => 300000,
         self::BANK             => null,
         self::NETWORK          => null,
+        self::TYPE             => null,
         self::ISSUER_PLAN_ID   => null,
         self::SUBVENTION       => Subvention::CUSTOMER,
         self::MERCHANT_PAYBACK => 0,
@@ -133,6 +138,11 @@ class Entity extends Base\PublicEntity
     public function getNetwork()
     {
         return $this->getAttribute(self::NETWORK);
+    }
+
+    public function getType()
+    {
+        return $this->getAttribute(self::TYPE);
     }
 
     public function getMethods()

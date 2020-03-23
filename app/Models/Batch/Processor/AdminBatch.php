@@ -3,6 +3,7 @@
 namespace RZP\Models\Batch\Processor;
 
 use RZP\Models\Batch;
+use RZP\Trace\TraceCode;
 use RZP\Models\Admin\Admin as AdminModel;
 
 class AdminBatch extends Base
@@ -49,6 +50,13 @@ class AdminBatch extends Base
     protected function processEntryForAdminEntity(array & $entry, AdminModel\Entity $adminEntity): AdminModel\Entity
     {
         $input = Batch\Helpers\AdminEntityInputFilter::getAdminInput($entry, $adminEntity);
+
+        $this->trace->info(
+            TraceCode::ADMIN_BATCH_UPDATE,
+            [
+                'Input data verified',
+                'batch_entry' => $entry
+            ]);
 
         $updatedAdmin = (new AdminModel\Service)->validateAndEditAdmin("admin_" . $adminEntity->getId(), $input);
 

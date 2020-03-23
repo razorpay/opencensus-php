@@ -4,7 +4,6 @@ namespace RZP\Models\Merchant\Webhook;
 
 use Mail;
 
-use RZP\Jobs;
 use RZP\Models;
 use RZP\Exception;
 use Carbon\Carbon;
@@ -12,7 +11,7 @@ use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Base\RuntimeManager;
-use RZP\Models\Merchant\Webhook;
+use RZP\Models\Event\Entity as EventEntity;
 use RZP\Mail\Merchant\Webhook as WebhookMail;
 
 class Core extends Base\Core
@@ -72,68 +71,26 @@ class Core extends Base\Core
         return $this->repo->webhook->findMultipleByMerchantAndEntityId($merchant, $entityId);
     }
 
-    public function prepareAndDispatchWebhook(
-        Merchant\Entity $merchant,
-        String $event,
-        array $input,
-        Webhook\Entity $webhook)
+    public function prepareAndDispatchWebhook(Merchant\Entity $merchant, string $event, array $input)
     {
         $payloads = $input['payloads'] ?? [$input['payload']];
 
-        foreach ($payloads as $payload)
-        {
-            $data = $this->prepareData($payload, $merchant, $event, $webhook);
-
-            $this->dispatchWebhook($data,$event);
-        }
-    }
-
-    protected function prepareData(
-        array $payload,
-        Merchant\Entity $merchant,
-        String $event,
-        Webhook\Entity $webhook) : array
-    {
         $signedAccountId = Merchant\Account\Entity::getSignedId($merchant->getId());
 
-        $attributes = [
-            Models\Event\Entity::EVENT      => $event,
-            Models\Event\Entity::ACCOUNT_ID => $signedAccountId,
-            Models\Event\Entity::CONTAINS   => array_keys($payload),
-            Models\Event\Entity::CREATED_AT => Carbon::now()->getTimestamp(),
-        ];
+        foreach ($payloads as $payload)
+        {
+            $eventAttrs = [
+                EventEntity::EVENT      => $event,
+                EventEntity::ACCOUNT_ID => $signedAccountId,
+                EventEntity::CONTAINS   => array_keys($payload),
+                EventEntity::CREATED_AT => Carbon::now()->getTimestamp(),
+            ];
+            $event = new EventEntity($eventAttrs);
+            $event->setPayload($payload);
+            $event->merchant()->associate($merchant);
 
-        $event = new Models\Event\Entity($attributes);
-
-        $event->setPayload($payload);
-
-        $event->merchant()->associate($merchant);
-
-        $data = [
-            'mode'       => $this->app['rzp.mode'],
-            'event'      => json_encode($event->toArrayPublic()),
-            'event_name' => $event->event,
-            'webhook_id' => $webhook->getId(),
-            // Refer Inferno's eventQueuedAt.
-            'queued_at'  => millitime(),
-        ];
-
-        return $data;
-    }
-
-    protected function dispatchWebhook(array $data, String $event)
-    {
-        Jobs\WebHook::dispatch($data)->using([$event]);
-    }
-
-    /*
-    * Check if the merchant has an active webhook for the event
-    */
-    public function isWebhookActiveAndEnabled(Webhook\Entity $webhook, string $event): bool
-    {
-        return (($webhook !== null) and
-            ($webhook->isActive() === true) and
-            ($webhook->isEventEnabled($event)));
+            (new Stork)->processEventSafe($event, $this->mode);
+        }
     }
 
     /**
