@@ -594,6 +594,7 @@ class Entity
         self::WORLDLINE              => \RZP\Gateway\Worldline::class,
         self::GETSIMPL               => \RZP\Gateway\Mozart::class,
         self::PAYLATER_ICICI         => \RZP\Gateway\Mozart::class,
+        self::HDFC_DEBIT_EMI         => \RZP\Gateway\Mozart::class,
 
         // heimdall
         self::ORG                          => \RZP\Models\Admin\Org::class,

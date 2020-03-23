@@ -7,12 +7,14 @@ use Cache;
 use Config;
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\Card;
 use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
 use RZP\Diag\EventCode;
 use RZP\Models\Terminal;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
+use RZP\Models\Bank\IFSC;
 use RZP\Models\Gateway\Rule;
 use RZP\Constants\Environment;
 use RZP\Models\Payment\Method;
@@ -170,11 +172,9 @@ class Selector extends Base\Core
 
         $sortedTerminals = [];
 
-
         // checking filtered terminals and razorX experiment for smart routing
         if ($this->shouldHitRoutingService(self::RAZORX_SYNC, $payment->getId()) === true)
         {
-
             try
             {
                 $terminalSetSentToSmartRouting = [];
@@ -777,6 +777,19 @@ class Selector extends Base\Core
 
     protected function shouldHitRoutingService(string $feature, string $paymentId = null)
     {
+        $payment = $this->input['payment'];
+
+        $card = $payment->card;
+
+        // For HDFC DC EMI, we need not send the request to smart routing till the same is
+        // implemented at the routing service
+        if (($payment[Entity::METHOD] === Method::EMI) and
+            ($payment[Entity::BANK] === IFSC::HDFC) and
+            ($card[Card\Entity::TYPE] === Card\Type::DEBIT))
+        {
+            return false;
+        }
+
         $isProduction = $this->app->environment(Environment::PRODUCTION);
 
         if ($isProduction === false)
@@ -809,27 +822,28 @@ class Selector extends Base\Core
     protected function getGatewayConfig()
     {
         return [
-            'cybersource_merchant_whitelist'      => Preferences::CYBERSOURCE_MERCHANT_WHITELIST,
-            'mcc_filter_gateways'                 => Gateway::MCC_FILTER_GATEWAYS,
-            'only_authorization_gateway'          => Gateway::$onlyAuthorizationGateway,
-            'bit_position'                        => Terminal\Type::getBitPositions(),
-            'gateway_acquirer_ifsc_mapping'       => Gateway::$gatewayAcquirerIfscMapping,
-            'bharat_qr_card_network'              => Gateway::$bharatQrCardNetwork,
-            'card_network_map'                    => Gateway::$cardNetworkMap,
-            'card_network_recurring_map'          => Gateway::$cardNetworkRecurringMap,
-            'netbanking_gateways'                 => Gateway::$netbankingGateways,
-            'auth_type_to_emandate_gateway_map'   => Gateway::$authTypeToEmandateGatewayMap,
-            'recurring_gateways'                  => Gateway::$recurringGateways,
-            'upi_intent_gateways'                 => Gateway::$upiIntentGateways,
-            'subscription_over_one_year_gateways' => Gateway::$subscriptionOverOneYearGateways,
-            'headless'                            => Gateway::$headless,
-            'emi_bank_to_gateway_map'             => Gateway::$emiBankToGatewayMap,
-            'netbanking_to_gateway_map'           => Gateway::$netbankingToGatewayMap,
-            'gateways_emandate_banks_map'         => Gateway::$gatewaysEmandateBanksMap,
-            'emi_banks_card_terminals'            => Gateway::$emiBanksUsingCardTerminals,
-            'gateway_supported_banks'             => Netbanking::getGatewaySupportedBankList(),
-            'network_codes'                       => NetworkName::$codes,
-            'categories'                          => Terminal\Category::CATEGORIES
+            'cybersource_merchant_whitelist'       => Preferences::CYBERSOURCE_MERCHANT_WHITELIST,
+            'mcc_filter_gateways'                  => Gateway::MCC_FILTER_GATEWAYS,
+            'only_authorization_gateway'           => Gateway::$onlyAuthorizationGateway,
+            'bit_position'                         => Terminal\Type::getBitPositions(),
+            'gateway_acquirer_ifsc_mapping'        => Gateway::$gatewayAcquirerIfscMapping,
+            'bharat_qr_card_network'               => Gateway::$bharatQrCardNetwork,
+            'card_network_map'                     => Gateway::$cardNetworkMap,
+            'card_network_recurring_map'           => Gateway::$cardNetworkRecurringMap,
+            'netbanking_gateways'                  => Gateway::$netbankingGateways,
+            'auth_type_to_emandate_gateway_map'    => Gateway::$authTypeToEmandateGatewayMap,
+            'recurring_gateways'                   => Gateway::$recurringGateways,
+            'upi_intent_gateways'                  => Gateway::$upiIntentGateways,
+            'subscription_over_one_year_gateways'  => Gateway::$subscriptionOverOneYearGateways,
+            'headless'                             => Gateway::$headless,
+            'emi_bank_to_gateway_map'              => Gateway::$emiBankToGatewayMapForRouteService,
+            'emi_bank_to_card_type_to_gateway_map' => Gateway::$emiBankToGatewayMap,
+            'netbanking_to_gateway_map'            => Gateway::$netbankingToGatewayMap,
+            'gateways_emandate_banks_map'          => Gateway::$gatewaysEmandateBanksMap,
+            'emi_banks_card_terminals'             => Gateway::$emiBanksUsingCardTerminals,
+            'gateway_supported_banks'              => Netbanking::getGatewaySupportedBankList(),
+            'network_codes'                        => NetworkName::$codes,
+            'categories'                           => Terminal\Category::CATEGORIES
         ];
     }
 

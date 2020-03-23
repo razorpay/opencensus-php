@@ -115,6 +115,7 @@ class Validator extends Base\Validator
         Payment\Gateway::PAYLATER,
         Payment\Gateway::CARDLESS_EMI,
         Payment\Gateway::NACH_CITI,
+        Payment\Gateway::HDFC_DEBIT_EMI,
         Payment\Gateway::BT_RBL,
     ];
 
@@ -1180,6 +1181,21 @@ class Validator extends Base\Validator
         Entity::VPA                        => 'sometimes|string',
     ];
 
+    protected static $hdfcDebitEmiTerminalRules = [
+        Entity::GATEWAY              => 'required|in:hdfc_debit_emi',
+        Entity::GATEWAY_MERCHANT_ID  => 'required|string',
+        Entity::GATEWAY_MERCHANT_ID2 => 'required|string',
+        Entity::EMI                  => 'required|boolean',
+        Entity::EMI_SUBVENTION       => 'sometimes|in:customer,merchant',
+    ];
+
+    protected static $hdfcDebitEmiEditTerminalRules = [
+        Entity::GATEWAY_MERCHANT_ID  => 'sometimes|string',
+        Entity::GATEWAY_MERCHANT_ID2 => 'sometimes|string',
+        Entity::EMI                  => 'sometimes|boolean',
+        Entity::EMI_SUBVENTION       => 'sometimes|in:customer,merchant',
+    ];
+
     protected static $matchAttributes = [
         Entity::GATEWAY,
         Entity::GATEWAY_ACQUIRER,
@@ -1378,7 +1394,8 @@ class Validator extends Base\Validator
             return;
         }
 
-        if ($input[Entity::GATEWAY] === Gateway::BAJAJ)
+        if (($input[Entity::GATEWAY] === Gateway::BAJAJ) or
+            ($input[Entity::GATEWAY] === Gateway::HDFC_DEBIT_EMI))
         {
             return;
         }
