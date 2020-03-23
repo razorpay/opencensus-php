@@ -5668,5 +5668,5 @@ ALTER TABLE webhooks
     ADD COLUMN events2 BIGINT DEFAULT 0 AFTER events;
 
 ALTER TABLE refunds
-    ADD COLUMN gateway_amount INTEGER UNSIGNED DEFAULT NULL AFTER base_amount,
-    ADD COLUMN gateway_currency CHAR(3) DEFAULT NULL AFTER gateway_amount;
+    ADD COLUMN gateway_amount INTEGER UNSIGNED DEFAULT NULL,
+    ADD COLUMN gateway_currency CHAR(3) DEFAULT NULL;
