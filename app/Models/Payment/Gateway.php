@@ -688,6 +688,7 @@ class Gateway
         Payment\Gateway::PAYTM,
         Payment\Gateway::MPGS,
         Payment\Gateway::MOBIKWIK,
+        Payment\Gateway::NETBANKING_AIRTEL,
     ];
 
     public static $scroogeFileBasedRefundGatewaysWithTimestamps = [
