@@ -216,7 +216,6 @@ class UserController extends Controller
 
         $traceData = [
             'id'          => $userDetails->id,
-            'email'       => $userDetails->email,
         ];
 
         $this->trace->info(TraceCode::USER_LOGOUT, $traceData);
@@ -342,7 +341,6 @@ class UserController extends Controller
 
             $traceData = [
                 'id'          => $userDetails->id,
-                'email'       => $userDetails->email,
             ];
 
             $this->trace->info(TraceCode::USER_LOGOUT, $traceData);

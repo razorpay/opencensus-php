@@ -236,7 +236,6 @@ class Service extends Base\Service
 
         $traceData = [
             'id'          => $user->id,
-            'email'       => $user->email,
             'merchant_id' => $currentMerchantId,
         ];
 
@@ -280,7 +279,6 @@ class Service extends Base\Service
 
             $traceData = [
                 'id'          => $user->id,
-                'email'       => $user->email,
                 'merchant_id' => $merchantId,
             ];
 
