@@ -47,9 +47,7 @@ export default class extends React.Component {
   openEmbedButtonView = () => {
     this.props.openModal({
       size: 'small',
-      component: (
-        <CreateEmbedButton shortUrl={this.props.paymentPageEntity.short_url} />
-      ),
+      component: <CreateEmbedButton id={this.props.paymentPageEntity.id} />,
     });
   };
 

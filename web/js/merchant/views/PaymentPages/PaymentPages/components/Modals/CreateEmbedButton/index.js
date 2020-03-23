@@ -33,7 +33,7 @@ export default class extends React.Component {
   }
 
   render() {
-    const { shortUrl, closeModal } = this.props;
+    const { closeModal, id } = this.props;
     const { btnLabel, btnSize } = this.state;
     const el = document.getElementById('embed-btn-preview');
 
@@ -42,8 +42,9 @@ export default class extends React.Component {
     const scriptURL = 'https://cdn.razorpay.com/static/embed_btn/bundle.js';
     const buttonClass = 'razorpay-embed-btn';
     const scriptTagID = 'razorpay-embed-btn-js';
+    const pageUrl = `https://pages.razorpay.com/${id}/view`;
 
-    const embedBtnCode = `<div class="${buttonClass}" data-url="${shortUrl}" data-text="${
+    const embedBtnCode = `<div class="${buttonClass}" data-url="${pageUrl}" data-text="${
       this.state.btnLabel
     }" data-color="${this.merchantThemeColor}" data-size="${BTN_SIZES[
       btnSize
@@ -88,7 +89,7 @@ export default class extends React.Component {
             <div class="Input Input--vTop Input--radio">
               <div class="Input-label">Preview</div>
               <PreviewEmbedButton
-                url={shortUrl}
+                url={pageUrl}
                 btnSize={btnSize}
                 btnLabel={btnLabel}
               />

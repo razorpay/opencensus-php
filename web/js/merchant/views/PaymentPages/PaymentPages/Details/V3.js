@@ -157,6 +157,7 @@ export default class PaymentPagesV3Entity extends React.Component {
       size: 'small',
       component: (
         <CreateEmbedButton
+          id={this.props.paymentPageEntity.id}
           handleClose={this.props.closeModal}
           trackerFn={function() {}}
           url={this.props.paymentPageEntity.short_url}
@@ -177,7 +178,6 @@ export default class PaymentPagesV3Entity extends React.Component {
           openModal={this.props.openModal}
           handleAction={sendLink.bind(null, paymentPageEntity.id)}
           showNotification={this.props.showNotification}
-          url={paymentPageEntity.short_url}
           title={paymentPageEntity.title}
           description={paymentPageEntity.description}
           trackerFn={trackShareActions}

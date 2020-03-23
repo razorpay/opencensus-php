@@ -252,7 +252,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
     render(<FormSection />, document.getElementById('form-section'));
   };
 
-  openSuccessView = (id, shortUrl, title, description, isEditExistingId) => {
+  openSuccessView = (id, title, description, isEditExistingId) => {
     const isNewPPSuccessModalEnabled = this.props.user
       .isNewPPSuccessModalEnabled;
     let modalContent;
@@ -260,11 +260,11 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
     if (isNewPPSuccessModalEnabled) {
       modalContent = (
         <Success
+          id={id}
           handleClose={this.props.closeModal}
           openModal={this.props.openModal}
           handleSendLink={sendLink.bind(null, id)}
           showNotification={this.props.showNotification}
-          url={shortUrl}
           title={title}
           trackerFn={function() {}}
           trackClickOnCreateEmbedButton={_ =>
@@ -282,13 +282,13 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
     } else {
       modalContent = (
         <PPShareView
+          id={id}
           handleClose={this.props.closeModal}
           openModal={this.props.openModal}
           handleAction={sendLink.bind(null, id)}
           isNew={true}
           isPaymentPagesV2={true}
           showNotification={this.props.showNotification}
-          url={shortUrl}
           title={title}
           description={description}
           trackerFn={function() {}}
@@ -546,7 +546,6 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
           this.props.history.push(`/paymentpages/${entityId}/edit`);
           this.openSuccessView(
             entityId,
-            resp.data.short_url,
             resp.data.title,
             resp.data.description,
             isEditExistingId

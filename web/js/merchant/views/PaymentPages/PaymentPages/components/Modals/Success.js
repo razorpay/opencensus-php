@@ -80,7 +80,7 @@ export default class extends React.PureComponent {
 
     this.props.openModal({
       size: 'small',
-      component: <CreateEmbedButton shortUrl={this.props.url} />,
+      component: <CreateEmbedButton id={this.props.id} />,
     });
   };
 
