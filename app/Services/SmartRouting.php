@@ -175,12 +175,23 @@ class SmartRouting
         }
         catch (\Throwable $e)
         {
+            $traceData = $data;
+
+            // remove sensitive data from logging
+            unset($traceData['payment']['email'], $traceData['payment']['contact'], $traceData['payment']['notes']);
+
+            // checking card key exist or not in array
+            if (isset($traceData['payment']['card']) === true)
+            {
+                unset($traceData['payment']['card']);
+            }
+
             $this->trace->error(
                 TraceCode::SMART_ROUTING_SERVICE_ERROR,
                 [
                     'response' => $e->getMessage(),
                     'action'   => $action,
-                    'data'     => $data,
+                    'data'     => $traceData,
                 ]);
             return null;
         }
