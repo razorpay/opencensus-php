@@ -3722,10 +3722,6 @@ final class Route
             '*'
         ],
 
-        'terminals_service' => [
-          'internal_merchant_fetch'  
-        ],
-
         'mock_gateways' => [
             'mock_hdfc_enroll',
             'mock_hdfc_auth_enrolled',
@@ -4045,10 +4041,11 @@ final class Route
             '*'
         ],
 
-        'terminals' =>  [
-            'internal_merchant_fetch'
-        ]
-    ];
+        'terminals_service' => [
+            'internal_merchant_fetch'  
+        ],
+        
+      ];
 
     //
     // Apps that receive a debug error response by default. We do
