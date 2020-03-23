@@ -66,6 +66,7 @@ app
       $scope.rightLayout = false; // login layout ? right is true : right is false
       $scope.lockme = false; // only turns true for lockme route
       $scope.eventsMode = 'live';
+      $scope.showTopbar = false;
 
       $scope.organization = {};
       $scope.isOrgCheckDone = false;
@@ -249,6 +250,7 @@ app
               $scope.lock_email = data.data.email ? true : false;
             } else {
               $state.transitionTo('access.signin');
+              $scope.showTopbar = false;
             }
           })
           .error(function() {});
@@ -443,6 +445,7 @@ app
                     notify: false,
                   }
                 );
+                $scope.showTopbar = true;
                 $scope.goToSignupStep(1);
               }
             });
@@ -958,6 +961,7 @@ app
             notify: false,
           }
         );
+        $scope.showTopbar = false;
         return $scope.onShowSignin && $scope.onShowSignin();
       };
 
@@ -978,6 +982,7 @@ app
             notify: false,
           }
         );
+        $scope.showTopbar = true;
         return $scope.onShowSignup && $scope.onShowSignup();
       };
 
@@ -1022,6 +1027,7 @@ app
                     notify: false,
                   }
                 );
+                $scope.showTopbar = true;
               } else if (!user.isVerified()) {
                 goToVerification();
               } else {
@@ -1040,6 +1046,7 @@ app
                 notify: false,
               }
             );
+            $scope.showTopbar = false;
             $scope.login.currentStep = 1;
           } else {
             user.identity().then(function(userDetails) {
@@ -1064,6 +1071,7 @@ app
           }
         }
       } else if ($state.current.name === 'access.signup') {
+        $scope.showTopbar = true;
         if (user.isAuthenticated()) {
           $state.transitionTo(
             'access.pre_signup',
@@ -1072,6 +1080,7 @@ app
               notify: false,
             }
           );
+          $scope.showTopbar = true;
           var userDetails = user.getIdentity();
           $scope.rightLayout = true;
           $scope.isLoggedIn = true;
@@ -1124,6 +1133,7 @@ app
             notify: false,
           }
         );
+        $scope.showTopbar = false;
         $scope.login.currentStep = 0;
         $scope.alerts.resetAlerts();
       };
@@ -1573,6 +1583,7 @@ app
               notify: false,
             }
           );
+          $scope.showTopbar = false;
 
           // reset scope variables
           $scope.alerts.resetAlerts();
@@ -1611,6 +1622,53 @@ app
               mode: $scope.eventsMode,
             })
         );
+      };
+
+      $scope.trackBannerClick = function(e) {
+        window.ga &&
+          window.ga('send', 'event', 'Website - Banner', 'Click - Top Banner');
+      };
+
+      $scope.timerFunction = function() {
+        var deadline = new Date('April 1, 2020 00:00:00').getTime();
+        var daysEls = document.querySelector('.topbar-container .days .number');
+        var hoursEls = document.querySelector(
+          '.topbar-container .hours .number'
+        );
+        var minutesEls = document.querySelector(
+          '.topbar-container .minutes .number'
+        );
+        var secondsEls = document.querySelector(
+          '.topbar-container .seconds .number'
+        );
+        var timer = document.querySelector('.topbar-container .top-timer');
+        var now, timeLeft, days, hours, minutes, seconds;
+
+        var interval = setInterval(function() {
+          now = new Date().getTime();
+          timeLeft = deadline - now;
+          days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
+          hours = Math.floor(
+            (timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
+          );
+          minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+          seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+
+          days = days.toString();
+          hours = hours.toString();
+          minutes = minutes.toString();
+          seconds = seconds.toString();
+
+          daysEls.innerHTML = days.length === 1 ? '0' + days : days;
+          hoursEls.innerHTML = hours.length === 1 ? '0' + hours : hours;
+          minutesEls.innerHTML = minutes.length === 1 ? '0' + minutes : minutes;
+          secondsEls.innerHTML = seconds.length === 1 ? '0' + seconds : seconds;
+
+          if (timeLeft < 0) {
+            timer.classList.add('hide');
+            clearInterval(interval);
+          }
+        }, 1000);
       };
 
       /*

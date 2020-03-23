@@ -64,5 +64,196 @@
     padding-top: unset;
 }
 
+/* topbar css */
+.topbar-container {
+    background-image: url("/assets/topbar/pattern.svg"), linear-gradient(91.71deg, #4332a3 0.03%, #286cd5 90.98%);
+    text-align: center;
+    color: #fff;
+    padding: 11px 0;
+    font-size: 16px;
+    position: relative;
+    z-index: 9;
+    font-weight: bold;
+    line-height: 19px;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-origin: border-box;
+    background-size: cover;
+    box-shadow: 0 4px 4px rgba(0,0,0,0.25);
+    height: 53px;
+}
+.topbar-container .msg {
+    display: none !important;
+}
+.topbar-container .no-timer {
+    position: relative;
+    top: 4px;
+}
+.topbar-container .showMe {
+    display: block !important;
+}
+.topbar-container .mob {
+    display: none !important;
+}
+.topbar-container img {
+    display: inline-block;
+    width: 38px;
+}
+.topbar-container p {
+    margin: 0;
+    letter-spacing: 0.2px;
+}
+.topbar-container p>span {
+    margin-right: 4px;
+    margin-left: 4px;
+}
+.topbar-container button, .topbar-container a {
+    padding: 8px 20px;
+    font-weight: bold;
+    font-size: 16px;
+    line-height: 19px;
+    background: #39cea0;
+    border-radius: 2px;
+    color: #fff;
+    margin-left: 16px;
+    cursor: pointer;
+}
+.topbar-container .strike {
+    display: inline-block;
+    text-decoration-line: line-through;
+    color: rgba(255,255,255,0.7);
+}
+.topbar-container .top-timer {
+    display: inline-block;
+    vertical-align: middle;
+}
+.topbar-container .top-timer #top-timer {
+    vertical-align: middle;
+    margin-right: 12px;
+    display: inline-flex;
+}
+.topbar-container .top-timer #top-timer .col {
+    margin-right: 10px; 
+}
+.topbar-container .top-timer #top-timer .col .number {
+    font-size: 16px;
+    line-height: 21px;
+    color: #fff;
+    font-weight: bold;
+}
+.topbar-container .top-timer #top-timer .col .text {
+    font-size: 7px;
+    line-height: 10px;
+    color: rgba(255,255,255,0.8);
+}
+.topbar-container .top-timer #top-timer .col .colon {
+    color: #fff;    
+}
+.topbar-container .separator {
+    display: inline-block;
+    height: 24px;
+    width: 1px;
+    background-image: radial-gradient(#fff 0%, rgba(255,255,255,0) 100%);
+    vertical-align: middle;
+    margin-right: 20px;
+    margin-left: 4px;
+}
+
+@media screen and (max-width: 1024px) {
+
+    .topbar-container {
+        background: linear-gradient(90.44deg, #286cd5 0.03%, #4332a3 88.14%);
+        line-height: 20px;
+        font-size: 14px;
+        font-weight: normal;
+        top: 0;
+        width: 100%;
+        z-index: 99;
+        height: auto;
+        overflow: hidden;
+    }
+    .topbar-container .no-timer {
+        position: static;
+    }
+    .topbar-container:after,.topbar-container:before {
+        content: none;
+    }
+    .topbar-container .shine-strip {
+        position: absolute;
+        width: 15px;
+        height: 40px;
+        top: -6px;
+        background: rgba(141,185,255,0.5);
+        filter: blur(12px);
+        transform: skewX(-30deg);
+        left: 0;
+        animation: 3s ease-in infinite normal both running shine-strip-animate;
+    }
+    .topbar-container .container {
+        padding: 0 10px;
+    }
+    .topbar-container img {
+        width: 46px;
+    }
+    .topbar-container .mob {
+        display: flex !important;
+        justify-content: center;
+        align-items: center;
+    }
+    .topbar-container button,.topbar-container a  {
+        padding: 4px 14px;
+        color: #fff;
+        font-size: 12px;
+        margin-left: 10px;
+        margin-top: 0;
+    }
+    .topbar-container .nomob {
+        display: none !important;
+    }
+    .topbar-container .mob {
+        display: block !important;
+    }
+}
+@media screen and (max-width: 320px) {
+    .topbar-container .mob {
+        font-size: 12px;
+    }
+    .topbar-container button,.topbar-container a  {
+        font-size: 10px;
+        padding: 4px 12px;
+    }
+}
+@-moz-keyframes shine-strip-animate {
+    from {
+        left: -15%;
+    }
+    to {
+        left: 150%;
+    }
+}
+@-webkit-keyframes shine-strip-animate {
+    from {
+        left: -15%;
+    }
+    to {
+        left: 150%;
+    }
+}
+@-o-keyframes shine-strip-animate {
+    from {
+        left: -15%;
+    }
+    to {
+        left: 150%;
+    }
+}
+@keyframes shine-strip-animate {
+    from {
+        left: -15%;
+    }
+    to {
+        left: 150%;
+    }
+}
 
 @media (max-width:890px){.auth-inner{overflow:auto;width:auto;max-width:480px;margin:0px auto; padding: 30px}.auth-messaging{display:none}}

@@ -1,4 +1,58 @@
-<div class="auth-container height-100" id="auth-container" ng-controller="AuthCtrl">
+<div class="auth-container height-100" id="auth-container" ng-controller="AuthCtrl" ng-init="timerFunction()" ng-class="{'show-topbar': showTopbar}">
+  <div class="topbar-container">
+    <div class="container">
+      <div ng-class="{'showMe': showTopbar, 'msg': true}">
+        <div class="nomob">
+          <div class='top-timer'>
+            <div id="top-timer">
+              <div class="col days">
+                <div class="number">0</div>
+                <div class="text">Days</div>
+              </div>
+              <div class="col">
+                <div class="colon">:</div>
+              </div>
+              <div class="col hours">
+                <div class="number">0</div>
+                <div class="text">Hours</div>
+              </div>
+              <div class="col">
+                <div class="colon">:</div>
+              </div>
+              <div class="col minutes">
+                <div class="number">0</div>
+                <div class="text">Minutes</div>
+              </div>
+              <div class="col">
+                <div class="colon">:</div>
+              </div>
+              <div class="col seconds">
+                <div class="number">0</div>
+                <div class="text">Seconds</div>
+              </div>
+            </div>
+              <div class="separator"></div>
+          </div>
+          <span>Celebrate our 5 year anniversary with 1.75% pricing</span>
+        </div>
+        <div class="mob">
+          <div class="shine-strip"></div>
+          <span>5th anniversary special: 1.75% pricing</span>
+        </div>
+      </div>
+      <div ng-class="{'showMe': !showTopbar, 'msg': true, 'no-timer': true}">
+        <div class="nomob">
+          <span>Now create & run offers for your business at the click of a button</span>
+          <a href='https://razorpay.com/blog/business-offers-types-create/' target='_blank' ng-click="trackBannerClick()">Learn more</a>
+        </div>
+        <div class="mob">
+          <div class="shine-strip"></div>
+          <span>Create offers for your customer</span>
+          <a href='https://razorpay.com/blog/business-offers-types-create/' target='_blank' ng-click="trackBannerClick()">Learn more</a>
+        </div>
+      </div>
+    </div>
+  </div>
   <div ng-if="lockme" class="auth-background-img" style="background-image: url('img/dashboard-image.png');"></div>
   <div class="auth-inner">
     <div class="auth-header">
