@@ -3366,8 +3366,6 @@ class Terminal extends Base
             'gateway'                   => 'wallet_paypal',
             'shared'                    => 0,
             'gateway_merchant_id'       => 'RazorpayPaypal',
-            'gateway_terminal_password' => 'terminal_password',
-            'gateway_terminal_password2'=> 'terminal_password2',
             'mode'                      => '1',
         ];
 
@@ -3386,8 +3384,6 @@ class Terminal extends Base
             'gateway'                    => 'wallet_paypal',
             'shared'                     => 1,
             'gateway_merchant_id'        => 'RazorpayPaypal2',
-            'gateway_terminal_password'  => 'terminal_password',
-            'gateway_terminal_password2' => 'terminal_password2',
             'mode'                       => '1',
             'currency'                   => 'USD'
         ];

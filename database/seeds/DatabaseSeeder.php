@@ -939,8 +939,6 @@ class DatabaseSeeder extends Seeder
                 'gateway'               => Gateway::WALLET_PAYPAL,
                 'card'                  => '0',
                 'gateway_merchant_id'   => 'SPSZR25DLBKN6',
-                'gateway_terminal_password2'=> Crypt::encrypt('ASRpJkZhu1smSXgJwfTbhLp2qwbW2bscsUpR0mnC3xgMoMiLsq8Urw2C3WAEM4HGdvXOS3GWzZ5rajyD'),
-                'gateway_terminal_password' => Crypt::encrypt('EHybzKmmxFOCLN3UdYt3b5TX5-jBNdDBnzXGMsjDplQI5E2vH59vzbcx3gP7AyEgw0gLwCECKIWBLsXk'),
                 'recurring'             => 0,
                 'created_at'            => time(),
                 'updated_at'            => time(),

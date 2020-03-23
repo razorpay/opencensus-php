@@ -553,9 +553,7 @@ class Validator extends Base\Validator
 
     protected static $walletPaypalTerminalRules = [
         Entity::GATEWAY                                 => 'required|in:wallet_paypal',
-        Entity::GATEWAY_TERMINAL_PASSWORD2              => 'required|string',
         Entity::GATEWAY_MERCHANT_ID                     => 'required|string',
-        Entity::GATEWAY_TERMINAL_PASSWORD               => 'required|string',
         Entity::CURRENCY                                => 'sometimes|array',
         Entity::INTERNATIONAL                           => 'sometimes|boolean',
         Entity::MODE                                    => 'sometimes',
@@ -564,9 +562,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $walletPaypalEditTerminalRules = [
-        Entity::GATEWAY_TERMINAL_PASSWORD2              => 'sometimes|string',
         Entity::GATEWAY_MERCHANT_ID                     => 'sometimes|string',
-        Entity::GATEWAY_TERMINAL_PASSWORD               => 'sometimes|string',
         Entity::CURRENCY                                => 'sometimes|array',
         Entity::INTERNATIONAL                           => 'sometimes|boolean',
         Entity::MODE                                    => 'sometimes',
