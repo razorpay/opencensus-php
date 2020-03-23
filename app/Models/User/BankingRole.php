@@ -25,7 +25,6 @@ class BankingRole
     // Dynamic Roles:
     // These roles are linked to workflows on the banking product, used by
     // heimdall workflows and are hence also persisted to the `roles` table.
-    //
     const FINANCE_L1 = 'finance_l1';
     const FINANCE_L2 = 'finance_l2';
     const FINANCE_L3 = 'finance_l3';
@@ -46,6 +45,10 @@ class BankingRole
         self::FINANCE_L1 => 'Finance L1',
         self::FINANCE_L2 => 'Finance L2',
         self::FINANCE_L3 => 'Finance L3',
+        // Owner and admin will also be possible workflow roles now,
+        // hence adding here.
+        self::OWNER      => 'Owner',
+        self::ADMIN      => 'Admin',
     ];
 
     public static function isWorkflowRole(string $role): bool

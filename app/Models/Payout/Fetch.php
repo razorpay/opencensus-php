@@ -42,7 +42,7 @@ class Fetch extends BaseFetch
             Entity::PAYOUT_MODE             => 'sometimes|string|custom',
             Entity::PENDING_ON_ME           => 'sometimes|boolean',
             Entity::PENDING_ON_ROLES        => 'sometimes|array',
-            Entity::PENDING_ON_ROLES . '.*' => 'filled|string|in:finance_l1,finance_l2,finance_l3',
+            Entity::PENDING_ON_ROLES . '.*' => 'filled|string|in:finance_l1,finance_l2,finance_l3,owner,admin',
         ],
         AuthType::PRIVILEGE_AUTH => [
             Entity::PRODUCT                 => 'sometimes|string',
