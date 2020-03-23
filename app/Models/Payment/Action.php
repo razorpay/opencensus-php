@@ -102,6 +102,6 @@ class Action
 
         unset($inputTrace['notes']);
 
-        $this->trace->debug(TraceCode::PAYMENT_NEW_REQUEST, $input);
+        $this->trace->debug(TraceCode::PAYMENT_NEW_REQUEST, $inputTrace);
     }
 }
