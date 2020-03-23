@@ -59,6 +59,30 @@ class PaymentCreateDCCTest extends TestCase
         $this->assertEquals($usdAmount, $paymentMeta['gateway_amount']);
     }
 
+    public function testPaymentCreateWithDCCINR()
+    {
+        $response = $this->sendRequest($this->getDefaultPaymentFlowsRequestData());
+        $responseContent = json_decode($response->getContent(), true);
+
+        $cardCurrency = $responseContent['card_currency'];
+        $currencyRequestId = $responseContent['currency_request_id'];
+
+        $this->assertEquals("USD", $cardCurrency);
+        $this->assertNotNull($responseContent['all_currencies']);
+        $this->assertNotNull($currencyRequestId);
+
+        $payment = $this->payment;
+        $payment['dcc_currency'] = 'INR';
+        $payment['currency_request_id'] = $currencyRequestId;
+
+        $this->doAuthAndCapturePayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+        $paymentMeta = $this->getLastEntity('payment_meta', true);
+
+        $this->assertEquals($payment['amount'], $paymentMeta['gateway_amount']);
+    }
+
     public function testDccForMccPayment()
     {
         $this->fixtures->merchant->edit('10000000000000', ['convert_currency' => 1]);

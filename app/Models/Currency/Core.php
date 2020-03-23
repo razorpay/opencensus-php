@@ -158,8 +158,13 @@ class Core extends Base\Core
         return $key;
     }
 
-    protected function getDCCMarkUpPercentage($rates)
+    protected function getDCCMarkUpPercentage($rates, $requestedCurrency)
     {
+        if ($requestedCurrency === Currency::INR)
+        {
+            return 0;
+        }
+
         return isset($rates[self::DCC_MARK_UP_PERCENTAGE_KEY]) === true ? $rates[self::DCC_MARK_UP_PERCENTAGE_KEY] : self::DCC_MARK_UP_PERCENTAGE;
     }
 
@@ -203,14 +208,14 @@ class Core extends Base\Core
 
         $rates = $this->getOrUpdateRates($baseCurrency, $roundedTime);
 
-        $markUpPercent = $this->getDCCMarkUpPercentage($rates);
-
         $supportedCurrencies = $this->getSupportedCurrenciesDetails();
 
         foreach (array_keys($supportedCurrencies) as $currency)
         {
             if(isset($rates[$currency]) === true)
             {
+                $markUpPercent = $this->getDCCMarkUpPercentage($rates, $currency);
+
                 $supportedCurrencies[$currency]['amount'] = $this->getConvertedAmount($baseAmount, $rates[$currency], $markUpPercent);
             }
             else
@@ -236,7 +241,7 @@ class Core extends Base\Core
             {
                 $forexRate = number_format($rates[$requestedCurrency], 2);
 
-                $markUpPercent = $this->getDCCMarkUpPercentage($rates);
+                $markUpPercent = $this->getDCCMarkUpPercentage($rates, $requestedCurrency);
 
                 $requestedCurrencyData['currency'] = $requestedCurrency;
 
