@@ -1458,7 +1458,8 @@ final class Route
         // Governor Proxy APIs New - Rule Chain
         'governor_list_rule_chains_v1'            => ['get',      'namespaces/{namespace_id}/rule_chains',                                                              'GovernorController@proxy'              ],
         'governor_create_rule_chain_v1'           => ['post',     'namespaces/{namespace_id}/rule_chains',                                                              'GovernorController@proxy'              ],
-        'governor_delete_rule_chain_v1'           => ['delete',   'namespaces/{namespace_id}/rule_chains/{rule_chain_id}',                                                              'GovernorController@proxy'              ],
+        'governor_update_rule_chain_v1'           => ['put',      'namespaces/{namespace_id}/rule_chains/{rule_chain_id}',                                              'GovernorController@proxy'              ],
+        'governor_delete_rule_chain_v1'           => ['delete',   'namespaces/{namespace_id}/rule_chains/{rule_chain_id}',                                              'GovernorController@proxy'              ],
 
         // Governor Proxy APIs New - Rule Groups
         'governor_list_rule_groups_v1'            => ['get',      'namespaces/{namespace_id}/rule_chains/{rule_chain_id}/rule_groups',                                  'GovernorController@proxy'              ],
@@ -2884,6 +2885,7 @@ final class Route
         'governor_delete_rule_v1',
         'governor_list_rule_chains_v1',
         'governor_create_rule_chain_v1',
+        'governor_update_rule_chain_v1',
         'governor_delete_rule_chain_v1',
         'governor_list_rule_groups_v1',
         'governor_create_rule_group_v1',
@@ -3492,6 +3494,7 @@ final class Route
         'governor_update_rule_v1'                  => Permission::EDIT_GATEWAY_RULE,
         'governor_list_rule_chains_v1'             => Permission::VIEW_GATEWAY_RULE,
         'governor_create_rule_chain_v1'            => Permission::CREATE_GATEWAY_RULE,
+        'governor_update_rule_chain_v1'            => Permission::EDIT_GATEWAY_RULE,
         'governor_delete_rule_chain_v1'            => Permission::DELETE_GATEWAY_RULE,
         'governor_list_rule_groups_v1'             => Permission::VIEW_GATEWAY_RULE,
         'governor_create_rule_group_v1'            => Permission::CREATE_GATEWAY_RULE,
