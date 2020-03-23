@@ -766,7 +766,6 @@ class Entity extends Base\PublicEntity
         return $array;
     }
 
-
     //----------------------END PUBLIC SETTERS----------------
 
     // ---------------------- ACCESSORS ----------------------
@@ -1409,7 +1408,7 @@ class Entity extends Base\PublicEntity
         return ($this->isCardEnabled() === true);
     }
 
-     public function isSyncStatusSuccess()
+    public function isSyncStatusSuccess()
     {
         return $this->getSyncStatus() === SyncStatus::SYNC_SUCCESS;
     }
