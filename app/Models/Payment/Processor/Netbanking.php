@@ -620,12 +620,6 @@ class Netbanking
     ];
 
     protected static $defaultDisabled = [
-        //
-        // Au revoir Yesbank
-        // Ref: https://razorpay.slack.com/archives/C659GARU3/p1583423704061600
-        //
-        IFSC::YESB,
-        self::YESB_C,
     ];
 
     const DEFAULT_DISABLED_BANKS = [

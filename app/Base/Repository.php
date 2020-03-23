@@ -6,19 +6,20 @@ use DB;
 use App;
 use Config;
 
+use Database\Connection;
 use Razorpay\Trace\Logger as Trace;
+
 use RZP\Models;
 use RZP\Exception;
 use RZP\Jobs\EsSync;
 use RZP\Constants\Mode;
-use Database\Connection;
 use RZP\Trace\TraceCode;
+use RZP\Http\RequestHeader;
 use RZP\Constants\Entity as E;
 use RZP\Constants\Environment;
 use RZP\Models\Base\Collection;
 use RZP\Models\Base\EsRepository;
 use RZP\Models\Base\PublicEntity;
-use RZP\Models\Base\UniqueIdEntity;
 
 class Repository extends \Razorpay\Spine\Repository
 {
@@ -85,6 +86,11 @@ class Repository extends \Razorpay\Spine\Repository
      */
     protected $esRepo = null;
 
+    /**
+     * @var RepositoryManager
+     */
+    public $repo;
+
     public function __construct()
     {
         parent::__construct();
@@ -96,6 +102,8 @@ class Repository extends \Razorpay\Spine\Repository
         $this->auth = $this->app['basicauth'];
 
         $this->repo = $this->app['repo'];
+
+        $this->route = $this->app['api.route'];
 
         $this->merchant = $this->app['basicauth']->getMerchant();
 
@@ -188,9 +196,99 @@ class Repository extends \Razorpay\Spine\Repository
 
         $action = $entity->exists ? EsRepository::UPDATE : EsRepository::CREATE;
 
+        $this->updateIdempotencyTableIfRequired($entity);
+
         $entity->saveOrFail($options);
 
         $this->syncToEs($entity, $action, $dirty);
+    }
+
+    protected function updateIdempotencyTableIfRequired(PublicEntity $entity)
+    {
+        // We create the idempotency entity if required and store
+        // it always in the basicauth in the middleware itself.
+        $idempotencyKeyId = $this->auth->getIdempotencyKeyId();
+
+        $applicableSourceTypes = $this->route->getEntitiesForIdempotencyRequest();
+
+        // Not checking for method_exists since `getMerchantId` is defined in `Base/PublicEntity`.
+        // Hence, every entity will have this defined by default.
+        $merchantId = $entity->getMerchantId();
+
+        $routeSourceType = $this->route->getEntityForIdempotencyRequest();
+
+        $this->trace->info(
+            TraceCode::IDEMPOTENCY_REQUEST_DATA,
+            [
+                'entity_name'               => $entity->getEntityName(),
+                'entity_id'                 => $entity->getId(),
+                'idempotency_key_id'        => $idempotencyKeyId,
+                'applicable_source_types'   => $applicableSourceTypes,
+                'merchant_id'               => $merchantId,
+                'route_source_type'         => $routeSourceType,
+            ]);
+
+        // This return statement has been added much later. Now, some of the following
+        // return statements will be void. Redundant. Will remove them later as required.
+        if ($routeSourceType !== $entity->getEntityName())
+        {
+            return;
+        }
+
+        // To avoid circular calls and we don't need to have idempotency on idempotency entity.
+        if ($entity->getEntityName() === E::IDEMPOTENCY_KEY)
+        {
+            return;
+        }
+
+        // If there's no idempotency key sent in the header, no need to go further.
+        if (empty($idempotencyKeyId) === true)
+        {
+            return;
+        }
+
+        if (in_array($entity->getEntityName(), $applicableSourceTypes, true) === false)
+        {
+            return;
+        }
+
+        // Idempotency flows are for entities with merchant IDs only since
+        // this is specifically being built for merchants only.
+        if (empty($merchantId) === true)
+        {
+            return;
+        }
+
+        $fetchInput = [
+            // This is very important. This is required since we are calling this
+            // function from `Base/Repository` and hence might end up saving the
+            // wrong entity in the table. This can happen since we could be saving
+            // multiple different types of entities in a single flow.
+            Models\IdempotencyKey\Entity::SOURCE_TYPE   => $entity->getEntityName(),
+            Models\IdempotencyKey\Entity::ID            => $idempotencyKeyId,
+        ];
+
+        /** @var Models\IdempotencyKey\Entity $idempotencyKeyEntity */
+        $idempotencyKeyEntity = $this->repo->idempotency_key->fetch($fetchInput, $merchantId)->first();
+
+        if (empty($idempotencyKeyEntity) === true)
+        {
+            return;
+        }
+
+        $idempotencyKeyEntity->source()->associate($entity);
+
+        $this->repo->saveOrFail($idempotencyKeyEntity);
+
+        $this->trace->info(
+            TraceCode::IDEM_KEY_UPDATE_DATA,
+            [
+                'entity_id'             => $entity->getId(),
+                'entity_type'           => $entity->getEntityName(),
+                'merchant_id'           => $merchantId,
+                'idempotency_key_id'    => $idempotencyKeyEntity->getId(),
+                'idempotency_key'       => $idempotencyKeyEntity->getIdempotencyKey(),
+            ]);
     }
 
     public function deleteOrFail($entity)

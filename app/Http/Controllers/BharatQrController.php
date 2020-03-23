@@ -11,10 +11,17 @@ class BharatQrController extends Controller
 {
     public function processBharatQrPayment(string $gateway)
     {
+        $inputTrace = Request::getContent();
+
+        if (is_array($inputTrace) === true)
+        {
+            unset($inputTrace['mpan'], $inputTrace['customer_name'], $inputTrace['MERCHANT_PAN']);
+        }
+
         $this->trace->info(
             TraceCode::BHARAT_QR_PAYMENT_PROCESS_REQUEST,
             [
-                'input'   => Request::getContent(),
+                'input'   => $inputTrace,
                 'gateway' => $gateway,
             ]);
 

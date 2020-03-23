@@ -55,6 +55,31 @@ class Core extends Base\Core
         return $rates;
     }
 
+    // `conversionRate` is the factor used to convert an amount in `fromCurrency`
+    // to the equivalent amount in `toCurrency`, i.e. we can multiply the amount
+    // in `fromCurrency` to this `conversionRate` to get the equivalent amount in
+    // `toCurrency`. Example:
+    //
+    // say 1 USD = 70 INR and 1 SGD = 50 INR, then
+    // conversionRate(USD, SGD) = 70/50 (and INR is irrelevant to the example)
+    //
+    // this means 20 USD is equivalent to 20*(70/50) SGD
+    //
+    public function getConversionRate($fromCurrency, $toCurrency)
+    {
+        $fromRates = $this->getOrUpdateRates($fromCurrency);
+
+        $denominationFactorToCurrency = Currency::DENOMINATION_FACTOR[$toCurrency];
+
+        $denominationFactorFromCurrency = Currency::DENOMINATION_FACTOR[$fromCurrency];
+
+        $denominationFactor = $denominationFactorToCurrency / $denominationFactorFromCurrency;
+
+        $conversionRate = $fromRates[$toCurrency] * $denominationFactor;
+
+        return $conversionRate;
+    }
+
     public function getBaseAmount($amount, $currency)
     {
         if ($currency === Currency::INR)
@@ -75,6 +100,21 @@ class Core extends Base\Core
         $baseAmount = (int) ceil($baseAmount);
 
         return $baseAmount;
+    }
+
+    public function convertAmount($amount, $fromCurrency, $toCurrency)
+    {
+        $fromRates = $this->getOrUpdateRates($fromCurrency);
+
+        $denominationFactorToCurrency = Currency::DENOMINATION_FACTOR[$toCurrency];
+
+        $denominationFactorFromCurrency = Currency::DENOMINATION_FACTOR[$fromCurrency];
+
+        $denominationFactor = $denominationFactorToCurrency / $denominationFactorFromCurrency;
+
+        $finalAmount = (int) ceil($amount * $fromRates[$toCurrency] * $denominationFactor);
+
+        return $finalAmount;
     }
 
     protected function getRedisKey($currency)

@@ -341,6 +341,7 @@ class Name
     const UPDATE_MERCHANT_FEATURE             = 'update_merchant_feature';
     const UPDATE_TEST_MERCHANT_BALANCE        = 'update_test_merchant_balance';
     const VIEW_VIRTUAL_ACCOUNT                = 'view_virtual_account';
+    const EDIT_MERCHANT_INTERNATIONAL         = 'edit_merchant_international';
 
     public static $actionMap = [
         Merchant\Action::ARCHIVE                            => self::EDIT_MERCHANT_ARCHIVE,

@@ -161,6 +161,31 @@ class Gateway extends Base\Gateway
         return $content;
     }
 
+    protected function isRefundSuccessful(array $content, array $input) : bool
+    {
+        if ((isset($content[ResponseFields::MERCHANT_REF_NO]) === true) and
+            ($input['refund']['id'] === $content[ResponseFields::MERCHANT_REF_NO]))
+        {
+            if (ResponseCode::$statusCodes[$content[ResponseFields::STATUS]] === 'Success')
+            {
+                return true;
+            }
+
+            if (ResponseCode::$statusCodes[$content[ResponseFields::STATUS]] === 'Failed')
+            {
+                $errorCode   = $content[ResponseFields::ERROR_CODE] ?? '';
+                $errorDetail = $content[ResponseFields::ERROR_DETAIL] ?? '';
+
+                if (($errorCode === '10024') and ($errorDetail === 'Void has already been done'))
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
     public function refund(array $input)
     {
         parent::refund($input);
@@ -193,16 +218,19 @@ class Gateway extends Base\Gateway
             PaymentGateway::GATEWAY_KEYS     => $this->getGatewayData($content),
         ];
 
-        if (((isset($content[ResponseFields::MERCHANT_REF_NO])) and
-             ($input['refund']['id'] !== $content[ResponseFields::MERCHANT_REF_NO])) or
-            (ResponseCode::$statusCodes[$content[ResponseFields::STATUS]] !== 'Success'))
+        if ($this->isRefundSuccessful($content, $input) === true)
         {
-            $this->trace->error(TraceCode::PAYMENT_REFUND_FAILURE, [$request, $content]);
-
-            throw new Exception\GatewayErrorException(ErrorCode::BAD_REQUEST_REFUND_FAILED, $gatewayDataArray);
+            return $gatewayDataArray;
         }
 
-        return $gatewayDataArray;
+        $this->trace->error(TraceCode::PAYMENT_REFUND_FAILURE, [$request, $content]);
+
+        throw new Exception\GatewayErrorException(
+            ErrorCode::BAD_REQUEST_REFUND_FAILED,
+            $content[ResponseFields::ERROR_CODE],
+            $content[ResponseFields::ERROR_DETAIL],
+            $gatewayDataArray
+        );
     }
 
     public function verify(array $input)

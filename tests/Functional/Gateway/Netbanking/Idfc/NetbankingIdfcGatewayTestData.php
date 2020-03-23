@@ -144,6 +144,23 @@ return [
         ],
     ],
 
+    'testPaymentCancelledByUserForResponse' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'   => PublicErrorDescription::BAD_REQUEST_PAYMENT_CANCELLED_BY_USER,
+                    'reason'        => 'customer-authentication-cancelled'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'                 => GatewayErrorException::class,
+            'internal_error_code'   => ErrorCode::BAD_REQUEST_PAYMENT_CANCELLED_BY_USER,
+        ],
+    ],
+
     'testPaymentFailedVerifySuccess' => [
         'response'  => [
             'content'     => [

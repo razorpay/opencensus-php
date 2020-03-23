@@ -307,7 +307,8 @@ class Validator extends Base\Validator
 
         $emailData['email'] = $input[Entity::EMAIL];
 
-        if($app->environment('production') === true)
+        if(($app->environment('production') === true) and
+            (in_array($emailData['email'], Constants::WHITELIST_CAPTCHA_EMAILS, true) === false))
         {
             $captchaResponse = $input[Entity::CAPTCHA] ?? null;
 
