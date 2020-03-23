@@ -687,6 +687,7 @@ class Gateway
         Payment\Gateway::EBS,
         Payment\Gateway::PAYTM,
         Payment\Gateway::MPGS,
+        Payment\Gateway::MOBIKWIK,
     ];
 
     public static $scroogeFileBasedRefundGatewaysWithTimestamps = [
