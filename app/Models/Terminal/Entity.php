@@ -50,6 +50,8 @@ class Entity extends Base\PublicEntity
     const RUPAY_MPAN                    = 'rupay_mpan';
     const VPA                           = 'vpa';
 
+    const ACCOUNT_TYPE                  = 'account_type';
+
     const CARD                          = 'card';
     const NETBANKING                    = 'netbanking';
     const EMI                           = 'emi';
@@ -76,6 +78,7 @@ class Entity extends Base\PublicEntity
     const DIRECT                        = 'direct';
     const STATUS                        = 'status';
     const NOTES                         = 'notes';
+    const SYNC_STATUS                   = 'sync_status';
     const MPAN                          = 'mpan';
 
     // Used for allowing gateway level changes for corporate netbanking payments.
@@ -181,6 +184,8 @@ class Entity extends Base\PublicEntity
         self::VIRTUAL_UPI_ROOT,
         self::VIRTUAL_UPI_MERCHANT_PREFIX,
         self::VIRTUAL_UPI_HANDLE,
+        self::SYNC_STATUS,
+        self::ACCOUNT_TYPE,
     ];
 
     protected $public = [
@@ -231,6 +236,7 @@ class Entity extends Base\PublicEntity
         self::MODE,
         self::STATUS,
         self::NOTES,
+        self::SYNC_STATUS,
         self::CORPORATE,
         self::CAPABILITY,
         self::EXPECTED,
@@ -248,6 +254,7 @@ class Entity extends Base\PublicEntity
         self::CARDLESS_EMI,
         self::PAYLATER,
         self::MPAN,
+        self::ACCOUNT_TYPE,
         self::CREATED_AT
     ];
 
@@ -315,6 +322,8 @@ class Entity extends Base\PublicEntity
         self::MC_MPAN                    => null,
         self::VISA_MPAN                  => null,
         self::RUPAY_MPAN                 => null,
+        self::SYNC_STATUS                => SyncStatus::NOT_SYNCED,
+        self::ACCOUNT_TYPE               => null,
     ];
 
     protected $casts = [
@@ -457,6 +466,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::NOTES);
     }
 
+    public function getSyncStatus()
+    {
+        return $this->getAttribute(self::SYNC_STATUS);
+    }
+
     public function getEmiDuration()
     {
         return $this->getAttribute(self::EMI_DURATION);
@@ -465,6 +479,11 @@ class Entity extends Base\PublicEntity
     public function getEmiSubvention()
     {
         return $this->getAttribute(self::EMI_SUBVENTION);
+    }
+
+    public function getAccountType()
+    {
+        return $this->getAttribute(self::ACCOUNT_TYPE);
     }
 
     /**
@@ -709,6 +728,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::STATUS, $status);
     }
 
+    public function setSyncStatus(string $status)
+    {
+        $this->setSyncStatusAttribute($status);
+    }
+
     // ---------------------- END SETTERS ----------------------
 
     // -----------------------PUBLIC SETTERS -------------------
@@ -829,6 +853,13 @@ class Entity extends Base\PublicEntity
         return BankingType::getBankingTypes($corporate);
     }
 
+    protected function getSyncStatusAttribute()
+    {
+        $attribute = $this->attributes[self::SYNC_STATUS];
+
+        return SyncStatus::getSyncStatusStringForValue($attribute);
+    }
+
     // ---------------------- END ACCESSORS ----------------------
 
     // ---------------------- MODIFIERS ----------------------
@@ -903,6 +934,11 @@ class Entity extends Base\PublicEntity
             $hex = $this->attributes[self::TYPE];
         }
         $this->attributes[self::TYPE] = Type::getHexValue($type, $hex);
+    }
+
+    protected function setSyncStatusAttribute(string $syncStatusString)
+    {
+        $this->attributes[self::SYNC_STATUS] = SyncStatus::getValueForSyncStatusString($syncStatusString);
     }
 
     protected function getTypeAttribute()
@@ -1229,9 +1265,14 @@ class Entity extends Base\PublicEntity
 
     public function isValidEmiTerminal($gateway, $emiDuration)
     {
+        $ignoreEmiDurationGateways = [
+            Gateway::BAJAJ,
+            Gateway::HDFC_DEBIT_EMI,
+        ];
+
         if (($this->isEmiEnabled()) and
             ($this->getGateway() === $gateway) and
-            (($this->getEmiDuration() === $emiDuration) or ($gateway === Gateway::BAJAJ)))
+            (($this->getEmiDuration() === $emiDuration) or (in_array($gateway, $ignoreEmiDurationGateways) === true)))
         {
             return true;
         }

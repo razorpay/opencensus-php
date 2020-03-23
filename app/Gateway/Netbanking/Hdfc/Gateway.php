@@ -73,7 +73,11 @@ class Gateway extends Base\Gateway
             'method' => 'post',
             'content' => $content);
 
-        $this->traceGatewayPaymentRequest($request, $input);
+        $traceRequest = $request;
+
+        unset($traceRequest['content'][Fields::REF3], $traceRequest['content'][Fields::CLIENT_ACCOUNT_NUMBER]);
+        
+        $this->traceGatewayPaymentRequest($traceRequest, $input);
 
         return $request;
     }

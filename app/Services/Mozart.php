@@ -76,7 +76,9 @@ class Mozart
         string $action,
         array $input,
         string $version = self::DEFAULT_MOZART_VERSION,
-        bool $useMozartMappedInternalErrorCode = false)
+        bool $useMozartMappedInternalErrorCode = false,
+        int $timeout = self::TIMEOUT,
+        int $connectTimeout = self::CONNECT_TIMEOUT)
     {
         $this->namespace = $namespace;
         $this->gateway   = $gateway;
@@ -87,7 +89,7 @@ class Mozart
 
         $authentication = $this->getAuthenticationDetails();
 
-        $request = $this->getRequest($url, $authentication, $input);
+        $request = $this->getRequest($url, $authentication, $input, $timeout, $connectTimeout);
 
         $this->traceMozartServiceRequest($request);
 
@@ -182,7 +184,8 @@ class Mozart
         return $authentication;
     }
 
-    protected function getRequest(string $url, array $authentication, array $input): array
+    protected function getRequest(string $url, array $authentication, array $input,
+                                  int $timeout = self::TIMEOUT, int $connectTimeout = self::CONNECT_TIMEOUT): array
     {
         $requestBody['entities'] = $input;
 
@@ -195,7 +198,9 @@ class Mozart
             ],
             'content' => json_encode($requestBody),
             'options' => [
-                'auth' => $authentication
+                'auth'            => $authentication,
+                'timeout'         => $timeout,
+                'connect_timeout' => $connectTimeout
             ]
         ];
 

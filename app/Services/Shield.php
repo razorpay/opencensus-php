@@ -247,11 +247,6 @@ class Shield
 
     protected function populateWhiteListedDomains(Merchant\Entity $merchant, array & $payloadDetails)
     {
-        if ($merchant->isFeatureEnabled(Feature::VALIDATE_MERCHANT_DOMAIN) === false)
-        {
-            return;
-        }
-
         $payloadDetails[ShieldConstants::MERCHANT_WHITELISTED_DOMAINS] = (array) $merchant->getWhitelistedDomains();
         /*
             Requirement:

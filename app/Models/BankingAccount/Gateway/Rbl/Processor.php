@@ -25,6 +25,10 @@ class Processor extends BankingAccount\Gateway\Processor
 
     const DATE_FORMAT = 'd-m-Y';
 
+    const FETCH_GATEWAY_BALANCE_TIMEOUT = 10;
+
+    const FETCH_GATEWAY_BALANCE_CONNECT_TIMEOUT = 5;
+
     const MAX_MOZART_RETRIES            = 1;
 
     const MAX_BANK_REFERENCE_NUMBER     = 100000;
@@ -48,7 +52,9 @@ class Processor extends BankingAccount\Gateway\Processor
 
     public function processActivation(Entity $bankingAccount, array $input): Entity
     {
-        $this->fetchAndVerifyBalance($bankingAccount);
+        $balance = $this->fetchGatewayBalance($bankingAccount);
+
+        $this->checkBalanceForActivation($balance);
 
         try
         {
@@ -177,20 +183,19 @@ class Processor extends BankingAccount\Gateway\Processor
     }
 
     /**
-     * @param BankingAccount\Entity $bankingAccount
+     * @param Entity $bankingAccount
      *
-     * @return void
+     * @return int
+     *
      * @throws BadRequestException
-     * @throws \Requests_Exception
-     * @throws \Throwable
      */
-    public function fetchAndVerifyBalance(BankingAccount\Entity $bankingAccount)
+    public function fetchGatewayBalance(BankingAccount\Entity $bankingAccount): int
     {
         $response = $this->verifyCredentials($bankingAccount);
 
         $balance = $this->fetchBalanceFromMozartResponse($response);
 
-        $this->checkBalanceForActivation($balance);
+        return $balance;
     }
 
     public function generateRequestForSourceAccount(BankingAccount\Entity $bankingAccount)
@@ -270,9 +275,14 @@ class Processor extends BankingAccount\Gateway\Processor
             try
             {
                 $response = $this->app->mozart->sendMozartRequest('razorpayx',
-                                                                   BankingAccount\Channel::RBL,
-                                                                   Action::ACCOUNT_BALANCE,
-                                                                   $request);
+                                                                  BankingAccount\Channel::RBL,
+                                                                  Action::ACCOUNT_BALANCE,
+                                                                  $request,
+                                                                  Mozart::DEFAULT_MOZART_VERSION,
+                                                                  false,
+                                                                  self::FETCH_GATEWAY_BALANCE_TIMEOUT,
+                                                                  self::FETCH_GATEWAY_BALANCE_CONNECT_TIMEOUT
+                );
 
                 return $response;
             }

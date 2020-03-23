@@ -87,6 +87,7 @@ class UserRolePermissionsMap
                  Permission::UPDATE_PAYOUT,
                  Permission::VIEW_WORKFLOW,
                  Permission::UPDATE_TEST_MERCHANT_BALANCE,
+                 Permission::VIEW_VIRTUAL_ACCOUNT,
              ],
 
              BankingRole::ADMIN => [
@@ -158,6 +159,7 @@ class UserRolePermissionsMap
                  Permission::VIEW_WORKFLOW,
                  Permission::UPDATE_TEST_MERCHANT_BALANCE,
                  Permission::UPDATE_MERCHANT_FEATURE,
+                 Permission::VIEW_VIRTUAL_ACCOUNT,
              ],
 
              BankingRole::FINANCE_L1 => [
@@ -223,6 +225,7 @@ class UserRolePermissionsMap
                  Permission::UPDATE_PAYOUT,
                  Permission::VIEW_WORKFLOW,
                  Permission::UPDATE_TEST_MERCHANT_BALANCE,
+                 Permission::VIEW_VIRTUAL_ACCOUNT,
              ],
 
              BankingRole::OPERATIONS => [
@@ -267,6 +270,9 @@ class UserRolePermissionsMap
                  Permission::VIEW_TRANSACTION_STATEMENT,
                  Permission::GET_SELF_SERVE_REPORT,
                  Permission::MERCHANT_PRODUCT_SWITCH,
+                 Permission::UPDATE_USER_PROFILE,
+                 Permission::ONBOARDING_PAYOUT_LINKS,
+                 Permission::SUMMARY_PAYOUT_LINKS,
              ],
         ];
 

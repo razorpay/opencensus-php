@@ -61,7 +61,7 @@ $view_preferences               = $data['view_preferences'];
 
         // Empty Interface for rzpQ
         window.rzpQ = {
-            component: noop, // Track components
+            interaction: noop, // Track components
             initiated: noop, // User starts an activity
             dropped: noop, // User drops an activity
             success: noop, // Successfully completes activity

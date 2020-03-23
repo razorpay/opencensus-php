@@ -1069,8 +1069,30 @@ return [
                 'gateway_merchant_id'       => 'MPGS0000000001202',
                 'card'                      => 1,
                 'gateway_terminal_password' => 'abcd',
-                'gateway_merchant_id2'      => 'rzp@apbl',
                 'gateway_acquirer'          => 'hdfc',
+                'type'                      => [
+                    'non_recurring' => '1',
+                ],
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content'  => [
+                'gateway_merchant_id'  => 'MPGS0000000001202',
+                'enabled'              => true,
+            ]
+        ]
+    ],
+
+    'testCreateMpgsPurchaseTerminal'  => [
+        'request' => [
+            'content' => [
+                'gateway'                   => 'mpgs',
+                'gateway_merchant_id'       => 'MPGS0000000001202',
+                'card'                      => 1,
+                'gateway_terminal_password' => 'abcd',
+                'gateway_acquirer'          => 'hdfc',
+                'mode'                      => Terminal\Mode::PURCHASE,
                 'type'                      => [
                     'non_recurring' => '1',
                 ],
@@ -2124,8 +2146,6 @@ return [
             'content' => [
                 'gateway'                   => 'wallet_paypal',
                 'gateway_merchant_id'       => 'merchant_id',
-                'gateway_terminal_password2'=> 'terminal_password2',
-                'gateway_terminal_password' => 'terminal_password',
                 'type'                      => [
                     'direct_settlement_with_refund' => '1'
                 ],
@@ -2807,5 +2827,54 @@ return [
                 'enabled'                   =>  true
             ]
         ]
-    ]
+    ],
+
+    'testAssignTerminalWithNoAccountTypeAttribute' => [
+        'request'   => [
+            'content'   => [
+                'gateway'                   => 'bt_icici',
+                'gateway_merchant_id'       => '2323',
+                'bank_transfer'             => '1',
+                'type'                      => [
+                    'business_banking'  => '1',
+                    'non_recurring'     => '1',
+                    'numeric_account'   => '1',
+                ],
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                ]
+            ],
+            'status_code'   => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_TERMINAL_WITH_SAME_FIELD_ALREADY_EXISTS,
+        ]
+    ],
+
+    'testAssignTerminalWithDifferentAccountTypeAttribute' => [
+        'request'   => [
+            'content'   => [
+                'gateway'                   => 'bt_icici',
+                'gateway_merchant_id'       => '2323',
+                'bank_transfer'             => '1',
+                'account_type'              => 'current',
+                'type'                      => [
+                    'business_banking'  => '1',
+                    'non_recurring'     => '1',
+                    'numeric_account'   => '1',
+                ],
+            ]
+        ],
+        'response'  => [
+            'content'  => [
+                'gateway_merchant_id'       => '2323',
+                'enabled'                   =>  true
+            ]
+        ]
+    ],
 ];

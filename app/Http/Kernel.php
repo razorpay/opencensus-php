@@ -57,6 +57,7 @@ class Kernel extends HttpKernel
         Middleware\EventTracker::class,
         Middleware\P2p::class,
         Middleware\IdempotentHandler::class,
+        Middleware\MerchantIdempotencyHandler::class,
         Middleware\RequestContextHandler::class,
 
         // Route group middleware
@@ -73,18 +74,19 @@ class Kernel extends HttpKernel
      * @var array
      */
     protected $routeMiddleware = [
-        'throttle'            => Middleware\Throttle::class,
-        'auth'                => Middleware\Authenticate::class,
-        'admin_access'        => Middleware\AdminAccess::class,
-        'user_access'         => Middleware\UserAccess::class,
-        'subscription_proxy'  => Middleware\SubscriptionProxy::class,
-        'excel_store_proxy'   => Middleware\ExcelStoreProxy::class,
-        'workflow'            => Middleware\Workflow::class,
-        'merchant_ip_filter'  => Middleware\MerchantIpFilter::class,
-        'event_tracker'       => Middleware\EventTracker::class,
-        'p2p'                 => Middleware\P2p::class,
-        'idempotent'          => Middleware\IdempotentHandler::class,
-        'failure_interceptor' => Middleware\FailureEventsInterceptor::class,
-        'request_context'     => Middleware\RequestContextHandler::class,
+        'throttle'                      => Middleware\Throttle::class,
+        'auth'                          => Middleware\Authenticate::class,
+        'admin_access'                  => Middleware\AdminAccess::class,
+        'user_access'                   => Middleware\UserAccess::class,
+        'subscription_proxy'            => Middleware\SubscriptionProxy::class,
+        'excel_store_proxy'             => Middleware\ExcelStoreProxy::class,
+        'workflow'                      => Middleware\Workflow::class,
+        'merchant_ip_filter'            => Middleware\MerchantIpFilter::class,
+        'event_tracker'                 => Middleware\EventTracker::class,
+        'p2p'                           => Middleware\P2p::class,
+        'idempotent'                    => Middleware\IdempotentHandler::class,
+        'merchant_idempotency_handler'  => Middleware\MerchantIdempotencyHandler::class,
+        'failure_interceptor'           => Middleware\FailureEventsInterceptor::class,
+        'request_context'               => Middleware\RequestContextHandler::class,
     ];
 }

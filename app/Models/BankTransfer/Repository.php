@@ -70,14 +70,47 @@ class Repository extends Base\Repository
         return $query->first();
     }
 
-    public function findByUtrAndPayeeAccount(string $utr, string $payeeAccount)
+    public function findByUtrAndPayeeAccount(string $utr, string $payeeAccount, bool $useWritePdo = false)
     {
         $payeeAccount = strtoupper(str_replace(' ', '', $payeeAccount));
 
-        return $this->newQuery()
-                    ->where(Entity::UTR, '=', $utr)
-                    ->where(Entity::PAYEE_ACCOUNT, '=', $payeeAccount)
-                    ->first();
+        $query =  $this->newQuery()
+                       ->where(Entity::UTR, '=', $utr)
+                       ->where(Entity::PAYEE_ACCOUNT, '=', $payeeAccount);
+
+        if ($useWritePdo === true)
+        {
+            $query->useWritePdo();
+        }
+
+        return $query->first();
+    }
+
+    public function findByNarration(string $narration, bool $useWritePdo = false)
+    {
+        $query = $this->newQuery()
+                      ->where(Entity::NARRATION, '=', $narration);
+
+        if ($useWritePdo === true)
+        {
+            $query->useWritePdo();
+        }
+
+        return $query->first();
+    }
+
+    public function findByNarrationAndIfsc(string $narration, string $payerIfsc, bool $useWritePdo = false)
+    {
+        $query = $this->newQuery()
+                      ->where(Entity::NARRATION, '=', $narration)
+                      ->where(Entity::PAYER_IFSC, '=', $payerIfsc);
+
+        if ($useWritePdo === true)
+        {
+            $query->useWritePdo();
+        }
+
+        return $query->first();
     }
 
     public function findByPayment(Payment\Entity $payment)

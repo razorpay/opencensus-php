@@ -97,13 +97,6 @@ class Repository extends Base\Repository
         return $query->get();
     }
 
-    public function getMerchantBankAccountsFromAccountNumber(string $accountNumber): Entity
-    {
-        return $this->newQuery()
-                    ->where(Entity::ACCOUNT_NUMBER, $accountNumber)
-                    ->first();
-    }
-
     public function findVirtualBankAccountByAccountNumberAndBankCode($accountNumber, $bankCode = null)
     {
         $virtualAccountId     = $this->repo->virtual_account->dbColumn(VirtualAccount\Entity::ID);
@@ -297,6 +290,17 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->where(Entity::ID, $bankAccountId)
                     ->first();
+    }
+
+    public function isBankAccountChanged(Entity $bankAccount): bool
+    {
+        return $this->newQuery()
+                    ->withTrashed()
+                    ->whereNotNull(Entity::DELETED_AT)
+                    ->where(Entity::ID, '<', $bankAccount->getId())
+                    ->where(Entity::ENTITY_ID, '=', $bankAccount->getEntityId())
+                    ->where(Entity::TYPE, '=', 'merchant')
+                    ->exists();
     }
 
     /**

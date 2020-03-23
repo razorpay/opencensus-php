@@ -38,6 +38,8 @@ class Validator extends Base\Validator
     // The max payout amount allowed for merchant payouts on demand is 2 Cr
     const MAX_LIMIT_MERCHANT_ON_DEMAND_PAYOUT_AMOUNT = 2000000000;
 
+    const APPROVE_PAYOUT_RULES = 'approve_payout';
+
     //
     // This is required for build. Currently, build does not
     // accept ruleName as a parameter. Hence, this list needs
@@ -146,12 +148,17 @@ class Validator extends Base\Validator
         Entity::CURRENCY => 'required|size:3|in:INR,',
     ];
 
+    protected static $approvePayoutRules = [
+        Entity::QUEUE_IF_LOW_BALANCE => 'sometimes|filled|boolean',
+    ];
+
     protected static $bulkApproveRules = [
-        Entity::PAYOUT_IDS          => 'required|array',
-        Entity::PAYOUT_IDS . '.*'   => 'required|public_id|size:19',
-        User\Entity::OTP            => 'required|filled|min:4',
-        User\Entity::TOKEN          => 'required|unsigned_id',
-        ActionChecker::USER_COMMENT => 'sometimes|string|max:255',
+        Entity::PAYOUT_IDS           => 'required|array',
+        Entity::PAYOUT_IDS . '.*'    => 'required|public_id|size:19',
+        User\Entity::OTP             => 'required|filled|min:4',
+        User\Entity::TOKEN           => 'required|unsigned_id',
+        ActionChecker::USER_COMMENT  => 'sometimes|string|max:255',
+        Entity::QUEUE_IF_LOW_BALANCE => 'sometimes|filled|boolean',
     ];
 
     protected static $bulkRejectRules = [

@@ -11,6 +11,11 @@ use RZP\Models\P2p\BankAccount\Credentials;
 
 class Validator extends Base\Validator
 {
+    // Incoming pay and collect, we are allowing @ and -, because of other PSPs
+    const GLOBAL_DESCRIPTION_REGEX  = '/^[a-zA-Z0-9\.\ \@\-]{1,}$/';
+    // We are still not allowing for any initiate call. For intent, it is still blocked.
+    const LIMITED_DESCRIPTION_REGEX = '/^[a-zA-Z0-9\.\ ]{1,}$/';
+
     protected static $initiatePayRules;
     protected static $initiatePaySuccessRules;
     protected static $initiateCollectRules;
@@ -50,7 +55,7 @@ class Validator extends Base\Validator
             Entity::MODE                 => 'string|' . $modes,
             Entity::AMOUNT               => 'integer|min:1|max:10000000',
             Entity::CURRENCY             => 'string|in:INR',
-            Entity::DESCRIPTION          => 'string|regex:/^[a-zA-Z0-9\.\ ]{1,}$/',
+            Entity::DESCRIPTION          => 'string|regex:' . self::GLOBAL_DESCRIPTION_REGEX,
             Entity::GATEWAY              => 'string',
             Entity::STATUS               => 'string',
             Entity::INTERNAL_STATUS      => 'string',
@@ -109,14 +114,16 @@ class Validator extends Base\Validator
         return $rules;
     }
 
-    public function makeInitiatePayRules()
+    public function makeInitiatePayRules(bool $global = false)
     {
+        $regex = $global ? self::GLOBAL_DESCRIPTION_REGEX : self::LIMITED_DESCRIPTION_REGEX;
+
         $rules = $this->makeRules([
             Entity::PAYER                => 'required',
             Entity::PAYEE                => 'required',
             Entity::AMOUNT               => 'required',
             Entity::CURRENCY             => 'required',
-            Entity::DESCRIPTION          => 'sometimes',
+            Entity::DESCRIPTION          => 'sometimes|regex:' . $regex,
             Entity::MODE                 => 'sometimes',
         ]);
 
@@ -134,14 +141,16 @@ class Validator extends Base\Validator
         return $rules;
     }
 
-    public function makeInitiateCollectRules()
+    public function makeInitiateCollectRules(bool $global = false)
     {
+        $regex = $global ? self::GLOBAL_DESCRIPTION_REGEX : self::LIMITED_DESCRIPTION_REGEX;
+
         $rules = $this->makeRules([
             Entity::PAYER                => 'required',
             Entity::PAYEE                => 'required',
             Entity::AMOUNT               => 'required',
             Entity::CURRENCY             => 'required',
-            Entity::DESCRIPTION          => 'sometimes',
+            Entity::DESCRIPTION          => 'sometimes|regex:' . $regex,
             Entity::EXPIRE_AT            => 'sometimes',
         ]);
 
@@ -216,7 +225,7 @@ class Validator extends Base\Validator
 
     public function makeIncomingCollectRules()
     {
-        $rules = $this->makeInitiateCollectRules()->wrapRules(Entity::TRANSACTION);
+        $rules = $this->makeInitiateCollectRules(true)->wrapRules(Entity::TRANSACTION);
 
         $rules->merge($this->makeUpiRules());
 
@@ -225,7 +234,7 @@ class Validator extends Base\Validator
 
     public function makeIncomingPayRules()
     {
-        $rules = $this->makeInitiatePayRules()->wrapRules(Entity::TRANSACTION);
+        $rules = $this->makeInitiatePayRules(true)->wrapRules(Entity::TRANSACTION);
 
         $rules->merge($this->makeUpiRules());
 

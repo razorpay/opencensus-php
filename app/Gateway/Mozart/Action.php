@@ -9,6 +9,8 @@ class Action
     const PAY_VERIFY            = 'pay_verify';
     const AUTH_INIT             = 'auth_init';
     const AUTH_VERIFY           = 'auth_verify';
+    const AUTHENTICATE_INIT     = 'authenticate_init';
+    const AUTHENTICATE_VERIFY   = 'authenticate_verify';
     const CHECK_BALANCE         = 'check_balance';
 
     const CAPTURE               = 'capture';

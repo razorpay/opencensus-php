@@ -1,56 +1,49 @@
 internal_error_code,error_description,reason,failure_type,point_of_failure,next_best_action,failure_stage,recoverable
-BAD_REQUEST_PAYMENT_TIMED_OUT,Payment was not completed on time.,payment_timed_out,Technical,Customer,,Payment_response,
-BAD_REQUEST_PAYMENT_CANCELLED_BY_USER,Payment processing cancelled by user,user_cancelled,Business,Customer,,Payment_response,N
-BAD_REQUEST_PAYMENT_FAILED,Payment failed,payment_failed,Technical,Gateway,,Authorization,D
-BAD_REQUEST_PAYMENT_NETBANKING_CANCELLED_BY_USER,Payment processing via netbanking cancelled by user by clicking cancel on bank transfer page,user_cancelled,Business,Customer,,Payment_response,N
-GATEWAY_ERROR_REQUEST_TIMEOUT,The gateway request to submit payment information timed out. Please submit your details again,request_timed_out,Technical,Gateway,,Payment_response,I
-GATEWAY_ERROR_UNKNOWN_ERROR,Payment processing failed due to error at bank or wallet gateway,payment_failed,Technical,Gateway,,Bank_URL_Generation,I
-BAD_REQUEST_PAYMENT_ACCOUNT_INSUFFICIENT_BALANCE,Account Balance is insufficient,insufficient_funds,Business,Customer,,Authorization,N
-GATEWAY_ERROR_HEADLESS_PARSING_FAILED,Payment processing failed due to error at bank or wallet gateway,payment_failed,Technical,Gateway,,Bank_URL_Generation,I
-BAD_REQUEST_NETBANKING_USER_NOT_REGISTERED,User is not registered for NetBanking payments.,invalid_user,Business,Customer,,Authorization,N
-GATEWAY_ERROR_CALLBACK_EMPTY_INPUT,Payment processing failed due to error at bank or wallet gateway,invalid_request,Technical,Gateway,,Authorization,D
-BAD_REQUEST_TRANSACTION_AMOUNT_LIMIT_EXCEEDED,Payment failed because Transaction amount limit has exceeded,limit_breach,Business,Customer,,Authorization,N
-BAD_REQUEST_PAYMENT_CANCELLED_AT_NETBANKING_PAYMENT_PAGE,Payment processing cancelled by customer at netbanking payment page,user_cancelled,Business,Customer,,Authorization,N
-GATEWAY_ERROR_PAYMENT_FAILED,Payment processing failed due to error at bank or wallet gateway,payment_failed,Technical,Gateway,,Authorization,I
-GATEWAY_ERROR_PAYMENT_VERIFICATION_ERROR,Payment processing failed due to error at bank or wallet gateway,verify_failed,Technical,Gateway,,Bank_URL_Generation,I
-GATEWAY_ERROR_CHECKSUM_MATCH_FAILED,Payment processing failed due to error at bank or wallet gateway,checksum_error,Technical,Gateway,,Bank_URL_Generation,D
-server_error_RUNTIME_ERROR,The server encountered an error. The incident has been reported to admins.,runtime_error,Technical,Internal,,Bank_URL_Generation,I
-GATEWAY_ERROR_FATAL_ERROR,Payment processing failed due to error at bank or wallet gateway,payment_failed,Technical,Gateway,,Bank_URL_Generation,I
-server_error_LOGICAL_ERROR,The server encountered an error. The incident has been reported to admins.,logical_error,Technical,Internal,,Bank_URL_Generation,I
-BAD_REQUEST_VALIDATION_FAILURE,Validation Failure,validation_failed,Technical,Gateway,,Authorization,I
-server_error,The server encountered an error. The incident has been reported to admins.,technical_error,Technical,Internal,,Bank_URL_Generation,I
-GATEWAY_ERROR_PAYMENT_DUPLICATE_REQUEST,Payment processing failed due to error at bank or wallet gateway,duplicate_request,Technical,Customer,,Bank_URL_Generation,D
-BAD_REQUEST_PAYMENT_INVALID_ACCOUNT,Payment failed because of invalid account,invalid_user,Business,Customer,,Authorization,N
-BAD_REQUEST_USER_ACCOUNT_LOCKED,Your account has been locked,invalid_user,Business,Customer,,Authorization,N
-BAD_REQUEST_PAYMENT_PENDING_AUTHORIZATION,Payment is pending authorization from approver.,authorization_pending,Business,Customer,,Payment_response,N
-server_error_MULTIPLE_SUCCESS_TRANSACTIONS_IN_VERIFY,The server encountered an error. The incident has been reported to admins.,multiple_transactions,Technical,Customer,,Verification,D
-BAD_REQUEST_USER_ACCOUNT_DISABLED,Your account has been disabled,invalid_user,Business,Customer,,Payment_response,N
-GATEWAY_ERROR_REQUEST_ERROR,Payment processing failed due to error at bank or wallet gateway,req_error,Technical,Gateway,,Verification,I
-BAD_REQUEST_VALIDATION_FAILURE,Failed checksum verification,checksum_error,Technical,Customer,,Bank_URL_Generation,D
-server_error_AMOUNT_TAMPERED,The server encountered an error. The incident has been reported to admins.,amount_tampered,Technical,Customer,,Bank_URL_Generation,D
-BAD_REQUEST_PAYMENT_BANK_SYSTEM_ERROR,Payment failed due to error in the bank system,bank_error,Technical,Bank,,Bank_URL_Generation,I
-server_error_NBPLUS_PAYMENT_SERVICE_FAILURE,The server encountered an error. The incident has been reported to admins.,service_failed,Technical,Internal,,Bank_URL_Generation,I
-BAD_REQUEST_PAYMENT_PENDING_AUTHORIZATION,Payment processing cancelled by user,user_cancelled,Business,Customer,,Payment_response,N
-BAD_REQUEST_PAYMENT_POSSIBLE_FRAUD,Payment declined because it didn't pass all risk checks,risk_decline,Business,Customer,,Authorization,N
-BAD_REQUEST_ERROR,Bad request,bad_request,Technical,Customer,,Payment_response,D
-BAD_REQUEST_PAYMENT_VERIFICATION_FAILED,Payment verification failed,verify_failed,Technical,Gateway,,Verification,
-GATEWAY_ERROR_INVALID_RESPONSE,Payment processing failed due to error at bank or wallet gateway,invalid_response,Technical,Gateway,,Payment_response,I
-BAD_REQUEST_PAYMENT_BANK_NOT_ENABLED_FOR_MERCHANT,Payment cannot be made using this bank,Validation_Error,Technical,Merchant,Non actionable,Payment_initiation,N
-BAD_REQUEST_INVALID_ID,Invalid order ID in payment request,Validation_Error,Technical,Merchant,Non actionable,Payment_initiation,N
-BAD_REQUEST_PAYMENT_FEES_GREATER_THAN_AMOUNT,Amount is lower than the minimum amount for NetBanking payments.,Validation_Error,Business,Merchant,Retry with another card,Payment_Initiation,D
-GATEWAY_ERROR_REQUEST_TIMEOUT,"The request was received, but a timeout occurred at the payment processor.",Timed_Out,Technical,Merchant,Non actionable,Payment_Initiation,N
-GATEWAY_ERROR_HEADLESS_PARSING_FAILED,"The request was received, but a timeout occurred at the payment processor.",Request_Invalid,Technical,Merchant,Non actionable,Payment_Initiation,N
-BAD_REQUEST_PAYMENT_ORDER_ALREADY_PAID,Duplicate order ID used for payment.,Duplicate_Transaction,Technical,Merchant,,Payment_Initiation,
-BAD_REQUEST_VALIDATION_FAILURE,Merchant validation failed,Validation_Error,Technical,Merchant,,Payment_Initiation,
-BAD_REQUEST_MERCHANT_NOT_LIVE_ACTION_DENIED,Merchant is not live with Razorpay,Validation_Error,Technical,Merchant,,Payment_Initiation,
-BAD_REQUEST_PAYMENT_ORDER_AMOUNT_MISMATCH,Order amount does not match the payment amount,Validation_Error,Technical,Merchant,,Payment_Initiation,
-BAD_REQUEST_PAYMENT_ORDER_ID_REQUIRED,Invalid order ID in payment request,Validation_Error,,Merchant,,Payment_Initiation,
-BAD_REQUEST_PAYMENT_METHOD_DOES_NOT_MATCH_ORDER_METHOD,Order method does not match the payment method,Validation_Error,,Merchant,,Payment_Initiation,
-BAD_REQUEST_PAYMENT_LINK_NOT_PAYABLE,Payment Link expired,Request_Invalid,,Merchant,,Payment_Initiation,
-SERVER_ERROR,Unknown error on payment processor,Request_Invalid,,Merchant,,Payment_Initiation,
-GATEWAY_ERROR_FATAL_ERROR,,Request_Invalid,,Merchant,,Payment_Initiation,
-SERVER_ERROR_PRICING_RULE_ABSENT,,Request_Invalid,,Merchant,,Payment_Initiation,
-BAD_REQUEST_PAYMENT_POSSIBLE_FRAUD,,Request_Invalid,,Merchant,,Payment_Initiation,
-SERVER_ERROR_NBPLUS_PAYMENT_SERVICE_FAILURE,,Request_Invalid,,Merchant,,Payment_Initiation,
-BAD_REQUEST_PAYMENT_AMOUNT_MORE_THAN_ORDER_AMOUNT_DUE,,Request_Invalid,,Merchant,,Payment_Initiation,
-BAD_REQUEST_PAYMENT_NETBANKING_NOT_ENABLED_FOR_MERCHANT,,Request_Invalid,,Merchant,,Payment_Initiation,
+BAD_REQUEST_PAYMENT_TIMED_OUT,Payment was not completed on time.,timed_out,Technical,customer,,authentication,
+BAD_REQUEST_PAYMENT_CANCELLED_BY_USER,Payment processing cancelled by user,cancelled,Business,customer,,authentication,N
+BAD_REQUEST_NETBANKING_USER_NOT_REGISTERED,User is not registered for NetBanking payments.,not_eligible_for_netbanking,Business,customer,,authentication,N
+BAD_REQUEST_PAYMENT_INVALID_ACCOUNT,Payment failed because of invalid account,netbanking_account_invalid,Business,customer,,authentication,N
+BAD_REQUEST_USER_ACCOUNT_LOCKED,Your account has been locked,netbanking_account_disabled,Business,customer,,authentication,N
+BAD_REQUEST_USER_ACCOUNT_DISABLED,Your account has been disabled,netbanking_account_disabled,Business,customer,,authentication,N
+BAD_REQUEST_PAYMENT_BANK_SYSTEM_ERROR,Payment failed due to error in the bank system,system_down,Technical,bank,,authentication,I
+BAD_REQUEST_PAYMENT_FAILED,Payment failed,declined,Technical,bank,,authorization,D
+BAD_REQUEST_PAYMENT_NETBANKING_CANCELLED_BY_USER,Payment processing via netbanking cancelled by user by clicking cancel on bank transfer page,cancelled,Business,customer,,authorization,N
+GATEWAY_ERROR_REQUEST_TIMEOUT,The gateway request to submit payment information timed out. Please submit your details again,timed_out,Technical,bank,,authorization,I
+BAD_REQUEST_PAYMENT_ACCOUNT_INSUFFICIENT_BALANCE,Account Balance is insufficient,insufficient_funds,Business,customer,,authorization,N
+GATEWAY_ERROR_CALLBACK_EMPTY_INPUT,Payment processing failed due to error at bank or wallet gateway,invalid_response,Technical,bank,,authorization,D
+BAD_REQUEST_TRANSACTION_AMOUNT_LIMIT_EXCEEDED,Payment failed because Transaction amount limit has exceeded,transaction_limit_exceeded,Business,customer,,authorization,N
+BAD_REQUEST_PAYMENT_CANCELLED_AT_NETBANKING_PAYMENT_PAGE,Payment processing cancelled by customer at netbanking payment page,cancelled,Business,customer,,authorization,N
+GATEWAY_ERROR_PAYMENT_FAILED,Payment processing failed due to error at bank or wallet gateway,declined,Technical,bank,,authorization,I
+BAD_REQUEST_VALIDATION_FAILURE,Validation Failure,tpv_validation_failed,Technical,customer,,authorization,I
+BAD_REQUEST_PAYMENT_PENDING_AUTHORIZATION,Payment is pending authorization from approver.,pending,Business,customer,,authorization,N
+server_error_MULTIPLE_SUCCESS_TRANSACTIONS_IN_VERIFY,The server encountered an error. The incident has been reported to admins.,technical_error,Technical,internal,,authorization,D
+GATEWAY_ERROR_REQUEST_ERROR,Payment processing failed due to error at bank or wallet gateway,technical_error,Technical,bank,,authorization,I
+BAD_REQUEST_PAYMENT_POSSIBLE_FRAUD,Payment declined because it didn't pass all risk checks,risk_decline,Business,bank,,authorization,N
+BAD_REQUEST_ERROR,Bad request,technical_error,Technical,bank,,authorization,D
+BAD_REQUEST_PAYMENT_VERIFICATION_FAILED,Payment verification failed,timed_out,Technical,bank,,authorization,
+GATEWAY_ERROR_INVALID_RESPONSE,Payment processing failed due to error at bank or wallet gateway,invalid_response,Technical,bank,,authorization,I
+GATEWAY_ERROR_UNKNOWN_ERROR,Payment processing failed due to error at bank or wallet gateway,technical_error,Technical,internal,,payment_initiation,I
+GATEWAY_ERROR_HEADLESS_PARSING_FAILED,Payment processing failed due to error at bank or wallet gateway,technical_error,Technical,internal,,payment_initiation,I
+GATEWAY_ERROR_PAYMENT_VERIFICATION_ERROR,Payment processing failed due to error at bank or wallet gateway,technical_error,Technical,internal,,payment_initiation,I
+GATEWAY_ERROR_CHECKSUM_MATCH_FAILED,Payment processing failed due to error at bank or wallet gateway,technical_error,Technical,bank,,payment_initiation,D
+server_error_RUNTIME_ERROR,The server encountered an error. The incident has been reported to admins.,technical_error,Technical,internal,,payment_initiation,I
+GATEWAY_ERROR_FATAL_ERROR,Payment processing failed due to error at bank or wallet gateway,technical_error,Technical,bank,,payment_initiation,I
+server_error_LOGICAL_ERROR,The server encountered an error. The incident has been reported to admins.,technical_error,Technical,internal,,payment_initiation,I
+server_error,The server encountered an error. The incident has been reported to admins.,technical_error,Technical,internal,,payment_initiation,I
+GATEWAY_ERROR_PAYMENT_DUPLICATE_REQUEST,Payment processing failed due to error at bank or wallet gateway,technical_error,Technical,internal,,payment_initiation,D
+server_error_AMOUNT_TAMPERED,The server encountered an error. The incident has been reported to admins.,technical_error,Technical,internal,,payment_initiation,D
+server_error_NBPLUS_PAYMENT_SERVICE_FAILURE,The server encountered an error. The incident has been reported to admins.,technical_error,Technical,internal,,payment_initiation,I
+BAD_REQUEST_PAYMENT_BANK_NOT_ENABLED_FOR_MERCHANT,Payment cannot be made using this bank,bank_not_enabled,Technical,business,Non actionable,payment_initiation,N
+BAD_REQUEST_INVALID_ID,Invalid order ID in payment request,invalid_order_id,Technical,business,Non actionable,payment_initiation,N
+BAD_REQUEST_PAYMENT_FEES_GREATER_THAN_AMOUNT,Amount is lower than the minimum amount for NetBanking payments.,amount_less_than_minimum_amount,Business,business,Retry with another card,payment_initiation,D
+GATEWAY_ERROR_REQUEST_TIMEOUT,"The request was received, but a timeout occurred at the payment processor.",timed_out,Technical,bank,Non actionable,payment_initiation,N
+BAD_REQUEST_PAYMENT_ORDER_ALREADY_PAID,Duplicate order ID used for payment.,duplicate_order_id,Technical,business,,payment_initiation,
+BAD_REQUEST_VALIDATION_FAILURE,Merchant validation failed,invalid_credentials,Technical,business,,payment_initiation,
+BAD_REQUEST_MERCHANT_NOT_LIVE_ACTION_DENIED,Merchant is not live with Razorpay,live_mode_not_enabled,Technical,business,,payment_initiation,
+BAD_REQUEST_PAYMENT_ORDER_AMOUNT_MISMATCH,Order amount does not match the payment amount,order_amount_mismatch,Technical,business,,payment_initiation,
+BAD_REQUEST_PAYMENT_ORDER_ID_REQUIRED,Invalid order ID in payment request,order_id_required,,business,,payment_initiation,
+BAD_REQUEST_PAYMENT_METHOD_DOES_NOT_MATCH_ORDER_METHOD,Order method does not match the payment method,method_mismatch,,business,,payment_initiation,
+SERVER_ERROR,Unknown error on payment processor,technical_error,,internal,,payment_initiation,
+SERVER_ERROR_PRICING_RULE_ABSENT,Pricing is not defined for your mode of payment. The incident has been reported to admins.,pricing_not_defined,,internal,,payment_initiation,
+BAD_REQUEST_PAYMENT_AMOUNT_MORE_THAN_ORDER_AMOUNT_DUE,Payment amount is more than order amount,order_amount_mismatch,,business,,payment_initiation,
+BAD_REQUEST_PAYMENT_NETBANKING_NOT_ENABLED_FOR_MERCHANT,Netbanking method is not enabled,netbanking_not_enabled,,business,,payment_initiation,

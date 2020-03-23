@@ -244,7 +244,7 @@ class NetbankingAirtelGatewayTest extends TestCase
         $refund = $this->getLastEntity('refund', true);
 
         $this->assertEquals(false, $refund['gateway_refunded']);
-        $this->assertEquals('failed', $refund['status']);
+        $this->assertEquals('created', $refund['status']);
     }
 
     public function testAuthResponseHashFailure()

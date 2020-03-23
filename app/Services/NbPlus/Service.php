@@ -7,11 +7,10 @@ use RZP\Exception;
 use Requests_Session;
 
 use RZP\Models\Payment;
-use RZP\Models\Terminal;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
-use RZP\Constants\Entity;
 use RZP\Error\ErrorClass;
+use Illuminate\Support\Arr;
 use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Base\VerifyResult;
 
@@ -187,14 +186,36 @@ class Service
 
     protected function traceRequest(array $request)
     {
-        unset($request['options']['auth']);
-        unset($request['content'][Request::INPUT]['gateway_config']);
-        unset($request['content'][Request::INPUT][Entity::TERMINAL][Terminal\Entity::GATEWAY_TERMINAL_PASSWORD]);
-        unset($request['content'][Request::INPUT][Entity::TERMINAL][Terminal\Entity::GATEWAY_TERMINAL_PASSWORD2]);
-        unset($request['content'][Request::INPUT][Entity::TERMINAL][Terminal\Entity::GATEWAY_SECURE_SECRET]);
-        unset($request['content'][Request::INPUT][Entity::TERMINAL][Terminal\Entity::GATEWAY_SECURE_SECRET2]);
+        $traceMap = [
+            'payment.id'                    => 'content.input.payment.id',
+            'payment.amount'                => 'content.input.payment.amount',
+            'payment.status'                => 'content.input.payment.status',
+            'payment.gateway'               => 'content.input.payment.gateway',
+            'merchant.id'                   => 'content.input.merchant.id',
+            'merchant.billing_label'        => 'content.input.merchant.billing_label',
+            'terminal.id'                   => 'content.input.terminal.id',
+            'terminal.merchant_id'          => 'content.input.terminal.merchant_id',
+            'terminal.gateway_merchant_id'  => 'content.input.terminal.gateway_merchant_id',
+            'terminal.gateway_merchant_id2' => 'content.input.terminal.gateway_merchant_id2',
+            'terminal.gateway_terminal_id'  => 'content.input.terminal.gateway_terminal_id',
+            'terminal.gateway_access_code'  => 'content.input.terminal.gateway_access_code',
+            'gateway.data'                  => 'content.input.gateway',
+            'gateway.callback_url'          => 'content.input.callbackUrl',
+        ];
 
-        $this->trace->info(TraceCode::NBPLUS_PAYMENT_SERVICE_REQUEST, $request);
+        $requestTrace = [];
+
+        foreach ($traceMap as $key => $srcPath)
+        {
+            $value = Arr::get($request, $srcPath);
+
+            if (is_null($value) === false)
+            {
+                Arr::set($requestTrace, $key, $value);
+            }
+        }
+
+        $this->trace->info(TraceCode::NBPLUS_PAYMENT_SERVICE_REQUEST, $requestTrace);
     }
 
     protected function traceResponse($response)

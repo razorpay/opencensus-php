@@ -82,6 +82,8 @@ return array(
                 'traffic_percentage'    => ConfigKey::HEARTBEAT_TRAFFIC_PERCENTAGE,
                 'log_verbose'           => ConfigKey::HEARTBEAT_LOG_VERBOSE,
             ],
+            'wait_timeout'              => env('DB_WAIT_TIMEOUT'),
+            'transaction_wait_timeout'  => env('DB_TRANSACTION_WAIT_TIMEOUT'),
         ],
 
         'live_migration' => [
@@ -132,6 +134,8 @@ return array(
                 'traffic_percentage'    => ConfigKey::HEARTBEAT_TRAFFIC_PERCENTAGE,
                 'log_verbose'           => ConfigKey::HEARTBEAT_LOG_VERBOSE,
             ],
+            'wait_timeout'              => env('DB_WAIT_TIMEOUT'),
+            'transaction_wait_timeout'  => env('DB_TRANSACTION_WAIT_TIMEOUT'),
         ],
 
         'master-replica-test' => [
@@ -144,7 +148,9 @@ return array(
             'charset'   => 'utf8',
             'collation' => 'utf8_bin',
             'prefix'    => '',
-            'strict'    => true
+            'strict'    => true,
+            'wait_timeout'              => env('DB_WAIT_TIMEOUT'),
+            'transaction_wait_timeout'  => env('DB_TRANSACTION_WAIT_TIMEOUT'),
         ],
 
         'master-replica-live' => [
@@ -157,7 +163,9 @@ return array(
             'charset'   => 'utf8',
             'collation' => 'utf8_bin',
             'prefix'    => '',
-            'strict'    => true
+            'strict'    => true,
+            'wait_timeout'              => env('DB_WAIT_TIMEOUT'),
+            'transaction_wait_timeout'  => env('DB_TRANSACTION_WAIT_TIMEOUT'),
         ],
 
         'test_migration' => [
@@ -184,7 +192,9 @@ return array(
             'charset'   => 'utf8',
             'collation' => 'utf8_bin',
             'prefix'    => '',
-            'strict'    => true
+            'strict'    => true,
+            'wait_timeout'              => env('DB_WAIT_TIMEOUT'),
+            'transaction_wait_timeout'  => env('DB_TRANSACTION_WAIT_TIMEOUT'),
         ],
 
         'slave-test' => [
@@ -197,7 +207,9 @@ return array(
             'charset'   => 'utf8',
             'collation' => 'utf8_bin',
             'prefix'    => '',
-            'strict'    => true
+            'strict'    => true,
+            'wait_timeout'              => env('DB_WAIT_TIMEOUT'),
+            'transaction_wait_timeout'  => env('DB_TRANSACTION_WAIT_TIMEOUT'),
         ],
 
         'auth' => [
@@ -210,7 +222,9 @@ return array(
             'charset'   => 'utf8',
             'collation' => 'utf8_bin',
             'prefix'    => '',
-            'strict'    => true
+            'strict'    => true,
+            'wait_timeout'              => env('DB_WAIT_TIMEOUT'),
+            'transaction_wait_timeout'  => env('DB_TRANSACTION_WAIT_TIMEOUT'),
         ],
 
         'payments_upi_live' => [
@@ -233,6 +247,8 @@ return array(
             'collation' => 'utf8_bin',
             'prefix'    => '',
             'strict'    => true,
+            'wait_timeout'              => env('DB_WAIT_TIMEOUT'),
+            'transaction_wait_timeout'  => env('DB_TRANSACTION_WAIT_TIMEOUT'),
         ],
 
         'payments_upi_test' => [
@@ -255,6 +271,8 @@ return array(
             'collation' => 'utf8_bin',
             'prefix'    => '',
             'strict'    => true,
+            'wait_timeout'              => env('DB_WAIT_TIMEOUT'),
+            'transaction_wait_timeout'  => env('DB_TRANSACTION_WAIT_TIMEOUT'),
         ],
     ],
 

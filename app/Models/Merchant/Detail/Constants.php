@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Merchant\Detail;
 
+use Razorpay\IFSC\Bank;
+
 class Constants
 {
     // input params for pan verifier
@@ -76,6 +78,11 @@ class Constants
         self::PASSPORT        => 'passport',
         self::VOTERS_ID       => 'voters_id',
         self::DRIVERS_LICENSE => 'drivers_license'
+    ];
+
+    // Using this blacked listed banks to block bank account details
+    // update in merchant details
+    const BLACKLISTED_BANKS = [
     ];
 
     const KYC_API_TYPES = ['AUTH' => 'auth', 'OCR' => 'ocr'];

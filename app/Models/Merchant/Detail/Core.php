@@ -116,11 +116,6 @@ class Core extends Base\Core
 
         $this->updateActivationSource($merchant, $originProduct);
 
-        //
-        // does penny testing for un-registered business type
-        //
-        $this->attemptPennyTesting($merchantDetails, $merchant);
-
         $statusToBeUpdated = $this->getApplicableActivationStatus($merchantDetails, $merchant);
 
         $activationStatusData = [
@@ -135,11 +130,18 @@ class Core extends Base\Core
 
         $response['auto_activated'] = $autoActivated;
 
-        $this->fireActivationTrigger($merchantDetails, $merchant);
-
         $eventAttributes = $merchant->toArrayEvent();
 
         $this->app['eventManager']->trackEvents($merchant, Merchant\Action::SUBMITTED, $eventAttributes);
+
+        //
+        // does penny testing for un-registered business type
+        //
+        $this->attemptPennyTesting($merchantDetails, $merchant); // async
+
+        $this->fireActivationTrigger($merchantDetails, $merchant);
+
+        $this->repo->saveOrFail($merchantDetails);
 
         return $response;
     }
@@ -1470,13 +1472,11 @@ class Core extends Base\Core
 
         if (empty($balance) === false)
         {
-            $bankAccount = $this->repo
-                                ->bank_account
-                                ->getMerchantBankAccountsFromAccountNumber($balance->getAccountNumber());
+            $bankingAccount = $this->repo
+                                   ->banking_account
+                                   ->getFromBalanceId($balance->getId());
 
-            $response[Merchant\Entity::BANKING_BALANCE] = $balance->only([Merchant\Balance\Entity::BALANCE,
-                                                                          Merchant\Balance\Entity::CURRENCY]);
-            $response[Merchant\Entity::BANKING_ACCOUNT] = $bankAccount->toArrayHosted();
+            $response[Merchant\Entity::BANKING_ACCOUNT] = $bankingAccount->toArrayPublic();
         }
 
         return $response;
@@ -1692,7 +1692,9 @@ class Core extends Base\Core
                                 Detail\Constants::BANK_DETAILS_VERIFICATION_STATUS => BankDetailsVerificationStatus::INITIATED
                             ]);
 
-        (new PennyTesting)->attempt($merchantDetails, $fromMerchant);
+        $fundAccountValidation = (new PennyTesting)->attempt($merchantDetails, $fromMerchant);
+
+        $merchantDetails->setFundAccountValidationId($fundAccountValidation->getId());
     }
 
     public function isAdditionalFieldRequired($field)

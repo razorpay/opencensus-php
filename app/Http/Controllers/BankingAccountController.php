@@ -45,6 +45,13 @@ class BankingAccountController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function processGatewayBalanceUpdate($channel)
+    {
+        $response = $this->service()->processGatewayBalanceUpdate($channel);
+
+        return ApiResponse::json($response);
+    }
+
     public function getActivationStatusChangeLog(string $id)
     {
         $response = $this->service()->getActivationStatusChangeLog($id);

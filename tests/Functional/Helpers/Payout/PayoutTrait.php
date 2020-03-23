@@ -28,23 +28,6 @@ trait PayoutTrait
         return json_decode($response->getContent(), true);
     }
 
-    protected function createBankingAccount(array $attributes = [], string $mode = 'test')
-    {
-        $bankingAccount = $this->fixtures->on($mode)->create('banking_account', [
-            'id'                    => $attributes["id"] ?? 'ABCde1234ABCde',
-            'account_number'        => $attributes["account_number"] ?? '2224440041626905',
-            'account_type'          => $attributes["account_type"] ?? 'current',
-            'merchant_id'           => $attributes["merchant_id"] ?? '10000000000000',
-            'channel'               => $attributes["channel"] ?? 'rbl',
-            'pincode'               => $attributes["pincode"] ?? '1',
-            'bank_reference_number' => $attributes["bank_reference_number"] ?? '',
-            'balance_id'            => $attributes["balance_id"] ?? '',
-            'status'                => 'activated',
-        ]);
-
-        return $bankingAccount;
-    }
-
     protected function dispatchQueuedPayouts()
     {
         $request = [
@@ -100,7 +83,7 @@ trait PayoutTrait
                 'currency'              => 'INR',
                 'purpose'               => 'refund',
                 'fund_account_id'       => 'fa_100000000000fa',
-                'mode'                  => 'NEFT',
+                'mode'                  => 'IMPS',
                 'queue_if_low_balance'  => $attributes["queue_if_low_balance"] ?? 0,
             ],
         ];

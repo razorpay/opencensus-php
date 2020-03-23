@@ -370,6 +370,15 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function updateLockedBalance(string $balanceId)
+    {
+        $input = Request::all();
+
+        $data = $this->service()->updateLockedBalance($input, $balanceId);
+
+        return ApiResponse::json($data);
+    }
+
     // This is on proxy Auth
     public function getAccountConfig()
     {
@@ -1530,11 +1539,11 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
-    public function enableBusinessBankingTestMode()
+    public function migrationBankingVAs()
     {
         $input = Request::all();
 
-        $response = $this->service()->enableBusinessBankingTestMode($input);
+        $response = $this->service()->migrationBankingVAs($input);
 
         return ApiResponse::json($response);
     }

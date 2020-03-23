@@ -1579,6 +1579,7 @@ class ActivationTest extends OAuthTestCase
         $merchantDetails = $this->getDbEntityById('merchant_detail', $merchantId);
 
         $this->assertEquals($merchantDetails->getBankDetailsVerificationStatus(), 'initiated');
+        $this->assertNotNull($merchantDetails->getFundAccountValidationId());
     }
 
     public function testSuccessBankDetailsVerification()

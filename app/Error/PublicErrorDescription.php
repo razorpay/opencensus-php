@@ -39,9 +39,14 @@ class PublicErrorDescription
     const GATEWAY_ERROR_CARD_NOT_ENROLLED                                       = 'Card is not enrolled for 3D Secure authentication';
     const GATEWAY_ERROR_AUTHENTICATION_STATUS_ATTEMPTED                         = '3D Secure authentication attempted';
     const GATEWAY_ERROR_AUTHENTICATION_STATUS_FAILED                            = '3D Secure authentication failed';
+    const BAD_REQUEST_SAME_IDEM_KEY_DIFFERENT_REQUEST                           = 'Different request body sent for the same Idempotency Header';
     const BAD_REQUEST_PAYMENT_CARDHOLDER_NOT_ENROLLED_IN_3DSECURE_AUTH          = 'Card is not enrolled for 3D Secure authentication';
+    const BAD_REQUEST_PAYMENT_CARD_NOT_LINKED_WITH_MOBILE                       = 'Card is not linked with mobile number';
     const BAD_REQUEST_ERROR                                                     = 'Bad request';
     const BAD_REQUEST_INVALID_PASSWORD_RESET_TOKEN                              = 'The reset link has expired or invalid';
+    const BAD_REQUEST_PAYOUTS_NOT_ALLOWED_CURRENTLY                             = 'Payouts are temporarily blocked. Please contact support.';
+    const BAD_REQUEST_BLOCKING_RX_ACTIVATIONS                                   = 'RazorpayX activations are currently blocked';
+    const BAD_REQUEST_FAV_NOT_ALLOWED_CURRENTLY                                 = 'Fund Account Validations are temporarily blocked. Please contact support.';
     const BAD_REQUEST_CHANGE_PASSWORD_NOT_ALLOWED                               = 'Password Change is not allowed for this Org';
     const BAD_REQUEST_URL_NOT_FOUND                                             = 'The requested URL was not found on the server.';
     const BAD_REQUEST_PAYMENT_NOT_FOUND                                         = 'The requested payment was not found on the server';
@@ -85,6 +90,7 @@ class PublicErrorDescription
     const BAD_REQUEST_TOKEN_NOT_ENABLED_FOR_RECURRING                           = 'Invalid token has been passed for recurring payment';
     const BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS                     = 'Request failed because another payment operation is in progress';
     const BAD_REQUEST_TOKEN_UPDATION_OPERATION_IN_PROGRESS                      = 'Request failed because token updation is in progress';
+    const BAD_REQUEST_ANOTHER_OPERATION_PROGRESS_SAME_IDEM_KEY                  = 'Request failed because another request is in progress with the same Idempotency Key';
     const BAD_REQUEST_UPDATE_EXPIRED_TOKEN                                      = 'Token updation failed because token is expired';
     const BAD_REQUEST_UPDATE_NOT_CONFIRMED_TOKEN                                = 'Token updation failed because token is not confirmed';
     const BAD_REQUEST_ANOTHER_FTA_RECONCILIATION_OPERATION_IN_PROGRESS          = 'Request failed because another operation is in progress';
@@ -212,6 +218,9 @@ class PublicErrorDescription
 
     const BAD_REQUEST_MANDATE_EXECUTION_ATTEMPT_BEFORE_START_TIME               = 'Mandate execution attempted before the start time';
 
+    const BAD_REQUEST_LOCKED_BALANCE_UPDATE_NON_BANKING                         = 'Locked Balance update is not allowed.';
+
+    const BAD_REQUEST_INSUFFICIENT_BALANCE_LOCKED                               = 'Insufficient available balance to make the transaction.';
     const BAD_REQUEST_PAYMENT_AMOUNT_LESS_THAN_MINIMUM_ALLOWED_AMOUNT           = 'Payment amount is lesser than the minimum amount allowed';
     const BAD_REQUEST_PAYMENT_ORDER_CURRENCY_MISMATCH                           = 'Payment currency provided does not match with the currency in order';
     const BAD_REQUEST_PAYMENT_LINK_CURRENCY_MISMATCH                            = 'Payment currency provided does not match with the currency in the payment page';
@@ -359,7 +368,11 @@ class PublicErrorDescription
     const BAD_REQUEST_INVALID_INTERNATIONAL_STATUS_CHANGE_REQUEST               = 'Merchant Can not Enable/Disable International';
     const INVALID_ARGUMENT_INVALID_INTERNATIONAL_ACTIVATION_FLOW                = 'Server error while performing operation';
     const BAD_REQUEST_NOT_SUPPORTED_FEATURE                                     = 'Server error while performing operation';
+    const BAD_REQUEST_PAYMENT_INVALID_MERCHANT_NAME                             = 'Invalid merchant name sent to the gateway';
 
+    // Debit EMI errors
+    const BAD_REQUEST_DEBIT_EMI_CUSTOMER_NOT_ELIGIBLE                           = 'Debit Card EMI offer is not available for the entered details';
+    const BAD_REQUEST_DEBIT_EMI_HDFC_MAXIMUM_AMOUNT_LIMIT                       = 'Transaction Value is greater than pre-approved limit. To check your Debit Card Pre approved limit send SMS, MYHDFC to 5676712';
 
     const BAD_REQUEST_DOCUMENT_TYPE_INVALID                                     = 'invalid document type';
     const INVALID_ARGUMENT_INVALID_FILE_HANDLER_SOURCE                          = 'Server error';
@@ -648,7 +661,7 @@ class PublicErrorDescription
 
     const BAD_REQUEST_USER_2FA_ALREADY_SETUP                                    = 'User already has a verified mobile number associated with the account';
     const BAD_REQUEST_LOCKED_USER_LOGIN                                         = 'User cannot login. User account is locked.';
-    const BAD_REQUEST_2FA_LOGIN_INCORRECT_OTP                                   = 'Login failed because of incorrect OTP';
+    const BAD_REQUEST_2FA_LOGIN_INCORRECT_OTP                                   = 'Verification failed because of incorrect OTP.';
     const BAD_REQUEST_2FA_SETUP_INCORRECT_OTP                                   = 'Second factor authentication setup failed because of incorrect OTP';
     const BAD_REQUEST_RESTRICTED_USER_CANNOT_SETUP_2FA                          = 'User is restricted by its associated merchant to perform the action';
     const BAD_REQUEST_USER_2FA_LOGIN_OTP_REQUIRED                               = 'Second factor authentication is enabled for user. OTP field is required';
@@ -969,6 +982,8 @@ class PublicErrorDescription
 
     const BAD_REQUEST_RECURRING_TOKEN_EXPIRED                                       = 'Token has expired and cannot be used for recurring payments';
 
+    const BAD_REQUEST_MERCHANT_ID_NOT_PRESENT                                       = 'Invalid Merchant Id';
+
     // Instant refunds
     const BAD_REQUEST_INSTANT_REFUND_NOT_SUPPORTED                                  = 'Instant refund not supported for the payment';
 
@@ -1003,6 +1018,9 @@ class PublicErrorDescription
     const BAD_REQUEST_D2C_NON_OWNER_USER_NOT_ALLOWED                                = 'Access denied.';
     const BAD_REQUEST_D2C_CREDIT_BUREAU_NO_RECORDS_FOUND                            = 'Sorry, we could not find a match for the given details. Please try again later with correct details. Please note that your phone number should be correct and name & date of birth should be as given in your PAN.';
     const BAD_REQUEST_D2C_CREDIT_BUREAU_INVALID_EMAIL_OR_CONTACT                    = 'Looks like your phone number could not be found in our existing database. Please check your phone number';
+
+    // Early Settlements and payouts
+    const BAD_REQUEST_ES_ON_DEMAND_IMPS_AMOUNT_LIMIT_EXCEEDED                       = 'Please provide an amount less than 2 Lacs to get a settlement at this point of time.';
 
     //FTS
     const BAD_REQUEST_ERROR_SOURCE_ACCOUNT_FUND_ACCOUNT_CREATION_FAILED             = 'Fund Account could not be created for source account';

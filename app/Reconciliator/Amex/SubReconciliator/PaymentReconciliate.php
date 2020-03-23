@@ -8,7 +8,7 @@ use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
 use RZP\Reconciliator\Base;
-use RZP\Gateway\Amex\Entity;
+use Razorpay\Spine\Exception\DbQueryException;
 
 class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 {
@@ -25,10 +25,25 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 
         if (isset($row[self::COLUMN_GATEWAY_PAYMENT_ID]) === true)
         {
-            $paymentId = $this->repo->amex
-                ->findPaymentForGateway($row[self::COLUMN_GATEWAY_PAYMENT_ID],
-                                        $row[self::COLUMN_MERCHANT_ACCOUNT_NUMBER])
-                ->getPaymentId();
+            try
+            {
+                $paymentId = $this->repo->amex
+                                        ->findPaymentForGateway($row[self::COLUMN_GATEWAY_PAYMENT_ID],
+                                                                $row[self::COLUMN_MERCHANT_ACCOUNT_NUMBER])
+                                        ->getPaymentId();
+
+            }
+            catch (DbQueryException $ex)
+            {
+                $this->trace->info(
+                    TraceCode::RECON_MISMATCH,
+                    [
+                        'info_code'             => Base\InfoCode::PAYMENT_ABSENT,
+                        'payment_reference_id'  => $row[self::COLUMN_GATEWAY_PAYMENT_ID],
+                        'gateway'               => $this->gateway,
+                        'batch_id'              => $this->batch->getId(),
+                    ]);
+            }
         }
 
         return $paymentId;

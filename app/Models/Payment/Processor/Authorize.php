@@ -64,6 +64,7 @@ use RZP\Models\SubscriptionRegistration;
 use RZP\Models\Payment\TerminalAnalytics;
 use RZP\Gateway\Mozart\GetSimpl\Constants;
 use RZP\Gateway\Base\Action as GatewayAction;
+use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Gateway\Enach\Npci\Netbanking\Gateway as enachNpciGateway;
 
 trait Authorize
@@ -262,6 +263,8 @@ trait Authorize
 
             $this->repo->saveOrFail($payment);
 
+            $this->eventPaymentCreated();
+
             $this->validateAndSaveBillingAddressIfApplicable($payment, $input);
 
             return null;
@@ -276,7 +279,6 @@ trait Authorize
 
         if ($this->canAuthorizeViaCps($payment) === true)
         {
-
             $request =  $this->authorizeViaCps($payment, $input, $gatewayInput);
 
             $this->trace->info(
@@ -386,6 +388,13 @@ trait Authorize
             $terminalGatewayInput = $gatewayInput;
 
             $this->runPostGatewaySelectionPreProcessing($payment, $terminalGatewayInput);
+
+            $return = $this->returnSpawnCoprotoIfContactRequired($payment, $input);
+
+            if ($return !== null)
+            {
+                return $return;
+            }
 
             $this->validateAndSaveBillingAddressIfApplicable($payment, $input);
 
@@ -553,6 +562,36 @@ trait Authorize
         }
 
         return $request;
+    }
+
+    protected function returnSpawnCoprotoIfContactRequired($payment, $input)
+    {
+        $coproto = null;
+
+        $gateway = $payment->getGateway();
+
+        if ((in_array($gateway, Payment\Gateway::$contactMandatoryGateways) === true) and
+            ($payment->merchant->isPhoneOptional() === true) and
+            ($payment->getContact() === Payment\Entity::DUMMY_PHONE))
+        {
+            $coproto = [
+                'type'    => 'respawn',
+                'request' => [
+                    'url'     => $this->route->getUrlWithPublicAuthInQueryParam('payment_create'),
+                    'method'  => 'POST',
+                    'content' => array_assoc_flatten($input, '%s[%s]'),
+                ],
+                'method' => 'emi',
+                'version' => '1',
+                'provider' => 'hdfc',
+            ];
+
+            $coproto['missing'][] = 'contact';
+
+            unset($coproto['request']['content']['contact']);
+        }
+
+        return $coproto;
     }
 
     protected function runOtpPaymentFlow(Payment\Entity $payment, array $gatewayInput)
@@ -728,6 +767,12 @@ trait Authorize
 
     protected function getOtpPaymentCreatedResponse($request, $payment)
     {
+        if ((isset($request['type']) === true) and
+            ($request['type'] === 'respawn'))
+        {
+            return $request;
+        }
+
         $payment->incrementOtpCount();
 
         $this->repo->save($payment);
@@ -753,7 +798,7 @@ trait Authorize
             $card = $payment->card;
             $redirectUrl = null;
 
-            if ($payment->getGateway() !== Payment\Gateway::BAJAJ)
+            if (in_array($payment->getGateway(), Payment\Gateway::$otpPostFormSubmitGateways, true) === false)
             {
                 $redirectUrl = $this->getPaymentRedirectTo3dsUrl();
             }
@@ -765,9 +810,28 @@ trait Authorize
                 'network'    => $card->getNetworkCode(),
                 'last4'      => $card->getLast4(),
                 'iin'        => $card->getIin(),
+                'gateway'    => $payment->getGateway(),
             ];
 
             $response['metadata'] = $metaData;
+
+            if ($payment->getGateway() === Payment\Gateway::HDFC_DEBIT_EMI)
+            {
+                $emiPlan = $payment->emiPlan()->first();
+
+                $response = array_merge(
+                    $response,
+                    [
+                        'terms' => [
+                            'tnc'      => 'https://cdn.razorpay.com/static/assets/hdfc/debitemi/tnc.json',
+                            'schedule' => 'https://cdn.razorpay.com/static/assets/hdfc/debitemi/schedule.json',
+                        ],
+                        'mode' => 'hdfc_debit_emi',
+                        'emi_duration' => $emiPlan->getDuration(),
+                        'emi_rate' => ($emiPlan->getRate() / 100),
+                    ]
+                );
+            }
 
             $templateData = [
                'data'       => $response,
@@ -2025,6 +2089,8 @@ trait Authorize
         );
 
         $this->repo->saveOrFail($payment);
+
+        $this->eventPaymentCreated();
 
         $this->tracePaymentInfo(TraceCode::PAYMENT_CREATED, Trace::DEBUG);
 
@@ -3634,9 +3700,7 @@ trait Authorize
                 'local'             => $customer->isLocal(),
                 'card_id'           => $savedCardId,
                 'auth_type'         => $payment->getAuthType(),
-                'account_number'    => $input[Payment\Entity::BANK_ACCOUNT][Payment\Entity::ACCOUNT_NUMBER] ?? null,
                 'account_type'      => $input[Payment\Entity::BANK_ACCOUNT][Token\Entity::ACCOUNT_TYPE] ?? null,
-                'beneficiary_name'  => $input[Payment\Entity::BANK_ACCOUNT][Payment\Entity::NAME] ?? null,
                 'ifsc'              => $input[Payment\Entity::BANK_ACCOUNT][Payment\Entity::IFSC] ?? null,
                 'max_amount'        => $input[Payment\Entity::RECURRING_TOKEN][Payment\Entity::MAX_AMOUNT] ?? null,
                 'expire_by'         => $input[Payment\Entity::RECURRING_TOKEN][Payment\Entity::EXPIRE_BY] ?? null
@@ -3884,8 +3948,10 @@ trait Authorize
 
         $payment->setBank($iinEntity->getIssuer());
 
+        $planType = $iinEntity->getType();
+
         // Set emi plan id
-        $emiPlan = $this->getMerchantEmiPlans($iinEntity, $emiDuration, $payment->merchant);
+        $emiPlan = $this->getMerchantEmiPlans($iinEntity, $emiDuration, $payment->merchant, $planType);
 
         $payment->setEmiSubvention(Emi\Subvention::CUSTOMER);
 
@@ -5295,7 +5361,7 @@ trait Authorize
                     }
                 }
 
-                if (($payment->getGateway() === Payment\Gateway::BAJAJ) and
+                if ((in_array($payment->getGateway(), Payment\Gateway::$otpPostFormSubmitGateways, true) === true) and
                     ($payment->isEmi() === true))
                 {
                     return true;
@@ -5678,6 +5744,8 @@ trait Authorize
         }
 
         $merchantBanks = ($merchantMethods === null) ? [] : $merchantMethods->getSupportedBanks();
+
+        $merchantBanks = Netbanking::removeDefaultDisableBanks($merchantBanks);
 
         $paymentBank = $payment->getBank();
 
@@ -6757,11 +6825,10 @@ trait Authorize
     }
 
     // returns the emi plan which belongs to merchant, in case not present it returns the plan mapped to shared merchant
-    protected function getMerchantEmiPlans($iinEntity, $emiDuration, $merchant)
+    protected function getMerchantEmiPlans($iinEntity, $emiDuration, $merchant, $type = null)
     {
-
         //fetches the emi plans for merchant as well as shared merchant
-        $emiPlans = $this->repo->emi_plan->fetchRelevantMerchantEmiPlan($iinEntity, $emiDuration, $merchant);
+        $emiPlans = $this->repo->emi_plan->fetchRelevantMerchantEmiPlan($iinEntity, $emiDuration, $merchant, $type);
 
         if ($emiPlans->count() == 0)
         {

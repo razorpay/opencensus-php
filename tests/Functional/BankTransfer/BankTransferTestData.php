@@ -147,6 +147,305 @@ return [
         ],
     ],
 
+    'testBankTransferRbl' => [
+        'request' => [
+            'url'     => '/ecollect/validate/rbl/test',
+            'method'  => 'post',
+            'server'  => [
+              'HTTP_XorgToken'   => 'RANDOM_RBL_SECRET',
+            ],
+            'content' => [
+                'ServiceName' => 'VirtualAccount',
+                'Action' => 'VirtualAccountTransaction',
+                'Data' =>  [
+                    [
+                        'messageType'               => 'ft',
+                        'amount'                    => '3439.46',
+                        'UTRNumber'                 => 'CMS480098890',
+                        'senderIFSC'                => 'ICIC0000104',
+                        'senderAccountNumber'       => '010405000010',
+                        'senderAccountType'         => 'Current Account',
+                        'senderName'                => 'CREDIT CARD OPERATIONS',
+                        'beneficiaryAccountType'    => 'Current Account',
+                        'beneficiaryAccountNumber'  => '00010469876543210',
+                        'creditDate'                => '13-10-2016 1929',
+                        'creditAccountNumber'       => '409000404030',
+                        'corporateCode'             => 'CAFLT',
+                        'clientCodeMaster'          => '02405',
+                        'senderInformation'         => 'MID 74256975 ICICI PYT 121016',
+                    ],
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'Status'    => 'Success',
+            ],
+            'status_code' => 200,
+        ]
+    ],
+
+    'testBankTransferRblImps' => [
+        'request' => [
+            'url'     => '/ecollect/validate/rbl/test',
+            'method'  => 'post',
+            'server'  => [
+                'HTTP_XorgToken'   => 'RANDOM_RBL_SECRET',
+            ],
+            'content' => [
+                'ServiceName' => 'VirtualAccount',
+                'Action' => 'VirtualAccountTransaction',
+                'Data' =>  [
+                    [
+                        'messageType'               => 'IMPS',
+                        'amount'                    => '3439.46',
+                        'UTRNumber'                 => 'IMPS 006713653919 FROM MR  AAGOSH',
+                        'senderIFSC'                => 'SBIN0000000',
+                        'senderAccountNumber'       => '00000033980059612',
+                        'senderAccountType'         => 'Current Account',
+                        'senderName'                => 'CREDIT CARD OPERATIONS',
+                        'beneficiaryAccountType'    => 'Current Account',
+                        'beneficiaryAccountNumber'  => '00010469876543210',
+                        'creditDate'                => '13-10-2016 1929',
+                        'creditAccountNumber'       => '409000404030',
+                        'corporateCode'             => 'CAFLT',
+                        'clientCodeMaster'          => '02405',
+                        'senderInformation'         => 'MID 74256975 ICICI PYT 121016',
+                    ],
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'Status'    => 'Success',
+            ],
+            'status_code' => 200,
+        ]
+    ],
+
+    'testBankTransferRblUpi' => [
+        'request' => [
+            'url'     => '/ecollect/validate/rbl/test',
+            'method'  => 'post',
+            'server'  => [
+                'HTTP_XorgToken'   => 'RANDOM_RBL_SECRET',
+            ],
+            'content' => [
+                'ServiceName' => 'VirtualAccount',
+                'Action' => 'VirtualAccountTransaction',
+                'Data' =>  [
+                    [
+                        'messageType'               => 'IMPS',
+                        'amount'                    => '3439.46',
+                        'UTRNumber'                 => 'UPI/006713070094/UPI/BALJEETKUMA@OKSBI',
+                        'senderIFSC'                => '',
+                        'senderAccountNumber'       => '',
+                        'senderAccountType'         => 'Current Account',
+                        'senderName'                => 'SBI294559d909324c4b9d29b930a39d27dd',
+                        'beneficiaryAccountType'    => 'Current Account',
+                        'beneficiaryAccountNumber'  => '00010469876543210',
+                        'creditDate'                => '13-10-2016 1929',
+                        'creditAccountNumber'       => '409000404030',
+                        'corporateCode'             => 'CAFLT',
+                        'clientCodeMaster'          => '02405',
+                        'senderInformation'         => 'MID 74256975 ICICI PYT 121016',
+                    ],
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'Status'    => 'Success',
+            ],
+            'status_code' => 200,
+        ]
+    ],
+
+    'testBankTransferRblWithDuplicateUtr' => [
+        'request' => [
+            'url'     => '/ecollect/validate/rbl/test',
+            'method'  => 'post',
+            'server'  => [
+                'HTTP_XorgToken'   => 'RANDOM_RBL_SECRET',
+            ],
+            'content' => [
+                'ServiceName' => 'VirtualAccount',
+                'Action' => 'VirtualAccountTransaction',
+                'Data' =>  [
+                    [
+                        'messageType'               => 'N',
+                        'amount'                    => '3439.46',
+                        'UTRNumber'                 => 'CMS480098890',
+                        'senderIFSC'                => 'ICIC0000104',
+                        'senderAccountNumber'       => '010405000010',
+                        'senderAccountType'         => 'Current Account',
+                        'senderName'                => 'CREDIT CARD OPERATIONS',
+                        'beneficiaryAccountType'    => 'Current Account',
+                        'beneficiaryAccountNumber'  => '00010469876543210',
+                        'creditDate'                => '13-10-2016 091929',
+                        'creditAccountNumber'       => '409000404030',
+                        'corporateCode'             => 'CAFLT',
+                        'clientCodeMaster'          => '02405',
+                        'senderInformation'         => 'MID 74256975 ICICI PYT 121016',
+                    ],
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'Status'    => 'Success',
+            ],
+            'status_code' => 200,
+        ]
+    ],
+
+    'testBankTransferRblWithInvalidData' => [
+        'request' => [
+            'url'     => '/ecollect/validate/rbl/test',
+            'method'  => 'post',
+            'server'  => [
+                'HTTP_XorgToken'   => 'RANDOM_RBL_SECRET',
+            ],
+            'content' => [
+                'ServiceName' => 'VirtualAccount',
+                'Action' => 'VirtualAccountTransaction',
+                'Data' =>  [
+                    [
+                        'messageType'               => 'N',
+                        'amount'                    => '3439.46',
+                        'UTRNumber'                 => '',
+                        'senderIFSC'                => 'ICIC0000104',
+                        'senderAccountNumber'       => '010405000010',
+                        'senderAccountType'         => 'Current Account',
+                        'senderName'                => 'CREDIT CARD OPERATIONS',
+                        'beneficiaryAccountType'    => 'Current Account',
+                        'beneficiaryAccountNumber'  => 'VACAFLT02405',
+                        'creditDate'                => '13-10-2016 091929',
+                        'creditAccountNumber'       => '',
+                        'corporateCode'             => 'CAFLT',
+                        'clientCodeMaster'          => '02405',
+                        'senderInformation'         => 'MID 74256975 ICICI PYT 121016',
+                    ],
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'Status'    => 'Failure.',
+            ],
+            'status_code' => 400,
+        ]
+    ],
+
+    'testBankTransferRblWithMissingHeader' => [
+        'request' => [
+            'url'     => '/ecollect/validate/rbl/test',
+            'method'  => 'post',
+            'content' => [
+                'ServiceName' => 'VirtualAccount',
+                'Action' => 'VirtualAccountTransaction',
+                'Data' =>  [
+                    [
+                        'messageType'               => 'N',
+                        'amount'                    => '3439.46',
+                        'UTRNumber'                 => 'CMS480098890',
+                        'senderIFSC'                => 'ICIC0000104',
+                        'senderAccountNumber'       => '010405000010',
+                        'senderAccountType'         => 'Current Account',
+                        'senderName'                => 'CREDIT CARD OPERATIONS',
+                        'beneficiaryAccountType'    => 'Current Account',
+                        'beneficiaryAccountNumber'  => '',
+                        'creditDate'                => '13-10-2016 091929',
+                        'creditAccountNumber'       => '409000404030',
+                        'corporateCode'             => 'CAFLT',
+                        'clientCodeMaster'          => '02405',
+                        'senderInformation'         => 'MID 74256975 ICICI PYT 121016',
+                    ],
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'Status'    => 'Failure Invalid token.',
+            ],
+            'status_code' => 400,
+        ]
+    ],
+
+    'testBankTransferRblWithInternalServerError' => [
+        'request' => [
+            'url'     => '/ecollect/validate/rbl/test',
+            'method'  => 'post',
+            'server'  => [
+                'HTTP_XorgToken'   => 'RANDOM_RBL_SECRET',
+            ],
+            'content' => [
+                'ServiceName' => 'VirtualAccount',
+                'Action' => 'VirtualAccountTransaction',
+                'Data' =>  [
+                    [
+                        'messageType'               => 'N',
+                        'amount'                    => '3439.46',
+                        'UTRNumber'                 => 'CMS480098890',
+                        'senderIFSC'                => 'ICIC0000104',
+                        'senderAccountNumber'       => '010405000010',
+                        'senderAccountType'         => 'Current Account',
+                        'senderName'                => 'CREDIT CARD OPERATIONS',
+                        'beneficiaryAccountType'    => 'Current Account',
+                        'beneficiaryAccountNumber'  => 'VACAFLT02405',
+                        'creditDate'                => '13-10-2016 091929',
+                        'creditAccountNumber'       => '',
+                        'corporateCode'             => 'CAFLT',
+                        'clientCodeMaster'          => '02405',
+                        'senderInformation'         => 'MID 74256975 ICICI PYT 121016',
+                    ],
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [],
+            'status_code' => 400,
+        ]
+    ],
+
+    'testBankTransferRblWithEmptyFields' => [
+        'request' => [
+            'url'     => '/ecollect/validate/rbl/test',
+            'method'  => 'post',
+            'server'  => [
+                'HTTP_XorgToken'   => 'RANDOM_RBL_SECRET',
+            ],
+            'content' => [
+                'ServiceName' => 'VirtualAccount',
+                'Action' => 'VirtualAccountTransaction',
+                'Data' =>  [
+                    [
+                        'messageType'               => 'imps',
+                        'amount'                    => '3439.46',
+                        'UTRNumber'                 => 'UPI/ /UPI/BALJEETKUMA@OKSBI',
+                        'senderIFSC'                => '',
+                        'senderAccountNumber'       => '',
+                        'senderAccountType'         => 'Current Account',
+                        'senderName'                => 'CREDIT CARD OPERATIONS',
+                        'beneficiaryAccountType'    => 'Current Account',
+                        'beneficiaryAccountNumber'  => '00010469876543210',
+                        'creditDate'                => '13-10-2016 1929',
+                        'creditAccountNumber'       => '409000404030',
+                        'corporateCode'             => 'CAFLT',
+                        'clientCodeMaster'          => '02405',
+                        'senderInformation'         => 'MID 74256975 ICICI PYT 121016',
+                    ],
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'Status'    => 'Failure.',
+            ],
+            'status_code' => 400,
+        ]
+    ],
+
     'testBankTransferSpecialCharsInAccNumber' => [
         'url'     => '/ecollect/validate',
         'method'  => 'post',
@@ -316,7 +615,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'valid' => true,
+                'valid' => null,
             ],
         ],
     ],
@@ -481,6 +780,74 @@ return [
             'time'           => 148415544000,
             'amount'         => 50000,
             'description'    => 'NEFT payment of 50,000 rupees',
+        ],
+    ],
+
+    'testBankTransferIcici' => [
+        'url'     => '/ecollect/validate/icici',
+        'method'  => 'post',
+        'content' => [
+            'payee_account'  => null,
+            'payee_ifsc'     => null,
+            'payer_name'     => 'Name of account holder',
+            'payer_account'  => '9876543210123456789',
+            'payer_ifsc'     => 'ICIC0000104',
+            'mode'           => 'imps',
+            'transaction_id' => strtoupper(random_alphanum_string(22)),
+            'time'           => 148415544000,
+            'amount'         => 50000,
+            'description'    => 'IMPS payment of 50,000 rupees',
+        ],
+    ],
+
+    'testBankTransferIciciWithIfscAsBankCode' => [
+        'url'     => '/ecollect/validate/icici',
+        'method'  => 'post',
+        'content' => [
+            'payee_account'  => null,
+            'payee_ifsc'     => null,
+            'payer_name'     => 'Name of account holder',
+            'payer_account'  => '9876543210123456789',
+            'payer_ifsc'     => 'SBIN',
+            'mode'           => 'imps',
+            'transaction_id' => strtoupper(random_alphanum_string(22)),
+            'time'           => 148415544000,
+            'amount'         => 100,
+            'description'    => 'IMPS payment of 50,000 rupees',
+        ],
+    ],
+
+    'testBankTransferIciciWithIfscAsInvalidBankCode' => [
+        'url'     => '/ecollect/validate/icici',
+        'method'  => 'post',
+        'content' => [
+            'payee_account'  => null,
+            'payee_ifsc'     => null,
+            'payer_name'     => 'Name of account holder',
+            'payer_account'  => '9876543210123456789',
+            'payer_ifsc'     => 'SBI',
+            'mode'           => 'imps',
+            'transaction_id' => strtoupper(random_alphanum_string(22)),
+            'time'           => 148415544000,
+            'amount'         => 100,
+            'description'    => 'IMPS payment of 50,000 rupees',
+        ],
+    ],
+
+    'testCheckEcollectIciciBatchCreate' => [
+        'request'  => [
+            'url'     => '/ecollect/validate/file',
+            'method'  => 'post',
+            'content' => [
+                'sender' => 'harshil@razorpay.com',
+                'subject' => 'This is a test',
+                'recipient' => 'shk@razorpay.com',
+                'timestamp' => '1583501748',
+                'stripped-html' => '',
+            ],
+        ],
+        'response' => [
+            'content' => [],
         ],
     ],
 ];

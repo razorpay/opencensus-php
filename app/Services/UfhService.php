@@ -117,7 +117,9 @@ class UfhService
                                         Entity $entity,
                                         array $metadata = []): array
     {
-        $ext = $file->getClientOriginalExtension();
+        $ext = strtolower($file->getClientOriginalExtension());
+
+        $storageFileName = strtolower($storageFileName);
 
         $movedFile = $file->move(storage_path('files/filestore'), $storageFileName . '.' . $ext);
 
