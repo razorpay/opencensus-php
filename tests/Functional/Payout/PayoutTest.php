@@ -10,14 +10,15 @@ use Config;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Artisan;
 
-use RZP\Constants\Entity;
-use RZP\Http\RequestHeader;
+use RZP\Constants;
 use RZP\Models\Admin;
 use RZP\Models\Payout;
+use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
+use RZP\Models\Merchant;
+use RZP\Http\RequestHeader;
 use RZP\Constants\Timezone;
 use RZP\Services\Mock\Mozart;
-use RZP\Models\Feature\Constants;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Mail\Banking\LowBalanceAlert;
@@ -150,7 +151,7 @@ class PayoutTest extends TestCase
 
         $payout = $this->startTest();
 
-        $ikey = $this->getDbLastEntity(Entity::IDEMPOTENCY_KEY);
+        $ikey = $this->getDbLastEntity(Constants\Entity::IDEMPOTENCY_KEY);
 
         $this->assertEquals($payout['id'], 'pout_' . $ikey->getSourceId());
         $this->assertEquals($ikeyValue, $ikey->getIdempotencyKey());
@@ -175,7 +176,7 @@ class PayoutTest extends TestCase
 
         $this->assertEquals($payout1['id'], $payout2['id']);
 
-        $ikeys = $this->getDbEntities(Entity::IDEMPOTENCY_KEY);
+        $ikeys = $this->getDbEntities(Constants\Entity::IDEMPOTENCY_KEY);
 
         $this->assertCount(1, $ikeys);
     }
@@ -188,7 +189,7 @@ class PayoutTest extends TestCase
 
         $this->assertNotEquals($payout1['id'], $payout2['id']);
 
-        $ikeys = $this->getDbEntities(Entity::IDEMPOTENCY_KEY);
+        $ikeys = $this->getDbEntities(Constants\Entity::IDEMPOTENCY_KEY);
 
         $this->assertCount(2, $ikeys);
     }
@@ -2390,7 +2391,7 @@ class PayoutTest extends TestCase
         // Here workflows are enabled for create payouts,
         // However user wants to disable the workflow for API request
         //
-        $this->fixtures->merchant->addFeatures([Constants::SKIP_WORKFLOWS_FOR_API]);
+        $this->fixtures->merchant->addFeatures([Feature\Constants::SKIP_WORKFLOWS_FOR_API]);
 
         $this->liveSetUp();
         $this->setupWorkflowForLiveMode();
@@ -2436,7 +2437,7 @@ class PayoutTest extends TestCase
 
     protected function createPayoutWithWorkflowHavingPayoutRules()
     {
-        $this->fixtures->merchant->addFeatures([Constants::PAYOUT_WORKFLOWS]);
+        $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_WORKFLOWS]);
 
         $workflow = $this->getDbLastEntity('workflow');
 
