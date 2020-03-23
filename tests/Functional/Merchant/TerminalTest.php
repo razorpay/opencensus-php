@@ -1387,4 +1387,35 @@ class TerminalTest extends TestCase
         // Adding below assert to check if the org is being associated to terminal (via merchant) properly
         $this->assertEquals('100000razorpay', $terminal['org_id']);
     }
+
+    public function testAssignTerminalWithNoAccountTypeAttribute()
+    {
+        $merchant = $this->testAssignTerminalWithDifferentAccountTypeAttribute();
+
+        $url = '/merchants/' . $merchant->getKey() . '/terminals';
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+        $this->testData[__FUNCTION__]['request']['content']['gateway_merchant_id'] = '9999';
+
+        $this->startTest();
+    }
+
+    public function testAssignTerminalWithDifferentAccountTypeAttribute()
+    {
+        $merchant = $this->fixtures->create('merchant');
+
+        $url = '/merchants/' . $merchant->getKey() . '/terminals';
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+
+        $url = '/merchants/' . $merchant->getKey() . '/terminals';
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+        $this->testData[__FUNCTION__]['request']['content']['gateway_merchant_id'] = '9999';
+        $this->testData[__FUNCTION__]['response']['content']['gateway_merchant_id'] = '9999';
+        $this->testData[__FUNCTION__]['request']['content']['account_type'] = 'nodal';
+
+        $this->startTest();
+
+        return $merchant;
+    }
 }

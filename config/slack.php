@@ -157,6 +157,7 @@ return array(
         // virtual_accounts
         'virtual_accounts'     => 'C44FHBKC1',
         'virtual_accounts_log' => 'C809AQYUC',
+        'upi_transfer_logs'    => 'CVA3MH8NT',
         // BharatQR
         'bharatqr_logs'        => 'CHYL0H2DR',
         // tech_logs_mail

@@ -8,7 +8,6 @@ use RZP\Constants\Timezone;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Feature;
-use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Customer;
 use RZP\Trace\TraceCode;
@@ -122,16 +121,54 @@ class Core extends Base\Core
         return $this->create($input, $merchant, null, null, $balance);
     }
 
-    public function createOrFetchBankingVirtualAccount(Merchant $merchant, Balance\Entity $balance): Entity
+    public function createOrFetchBankingVirtualAccount(Merchant $merchant,
+                                                       Balance\Entity $balance,
+                                                       string $seriesPrefix): Entity
     {
-        $virtualAccount = $this->repo->virtual_account->getActiveVirtualAccountFromBalanceId($balance->getId());
+        $virtualAccount = $this->fetchBankingVirtualAccounts($balance, $seriesPrefix);
 
         if ($virtualAccount === null)
         {
             $virtualAccount = $this->createForBankingBalance($merchant, $balance);
         }
 
+        $accountNumber = trim(optional($virtualAccount->bankAccount)->getAccountNumber());
+
+        // This happens when the terminal selection doesn't pick the
+        // terminal we're expecting, i.e.. with the seriesPrefix
+        // In this case, we should throw an exception
+        if (starts_with($accountNumber, $seriesPrefix) === false)
+        {
+            throw new Exception\LogicException(
+                'Virtual Account account number not be created for expected source account',
+                null,
+                [
+                    'account_number'    => $accountNumber,
+                    'source_prefix'     => $seriesPrefix,
+                ]);
+        }
+
         return $virtualAccount;
+    }
+
+    protected function fetchBankingVirtualAccounts(Balance\Entity $balance, string $seriesPrefix)
+    {
+        $virtualAccounts = $this->repo->virtual_account->getActiveVirtualAccountsFromBalanceId($balance->getId());
+
+        // Since multiple VA can be linked to a balance
+        // Therefore we want to figure out if a VA exists for the given seriesPrefix
+        // If exists return that, else return null
+        foreach ($virtualAccounts as $virtualAccount)
+        {
+            $accountNumber = trim(optional($virtualAccount->bankAccount)->getAccountNumber());
+
+            if (starts_with($accountNumber, $seriesPrefix) === true)
+            {
+                return $virtualAccount;
+            }
+        }
+
+        return null;
     }
 
     protected function buildVirtualAccountAndReceivers(
@@ -459,7 +496,12 @@ class Core extends Base\Core
         {
             $accountNumber = $virtualAccount->bankAccount->getAccountNumber();
 
-            (new Balance\Core)->updateBalanceAccountNumber($virtualAccount->balance, $accountNumber);
+            $balance = $virtualAccount->balance;
+
+            if (empty($balance->getAccountNumber()) === true)
+            {
+                (new Balance\Core)->updateBalanceAccountNumber($balance, $accountNumber);
+            }
         }
     }
 

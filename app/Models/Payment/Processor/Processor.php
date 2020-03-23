@@ -335,9 +335,7 @@ class Processor
             $payment = $this->payment;
 
             $this->preProcessDCCInputs($input, $payment);
-
-            $this->eventPaymentCreated();
-
+            
             // This flow is being used for only hosted (Shopify).
             $this->checkSignature($input, $payment);
 
@@ -472,11 +470,20 @@ class Processor
 
     protected function eventPaymentCreated()
     {
-        $eventPayload = [
-            ApiEventSubscriber::MAIN => $this->payment,
-        ];
+        // the scenario where same payment id gets generated in live and test mode is not handled currently.
+        $cacheKey = 'EVENT_PAYMENT_CREATED_FIRED_'.$this->payment->getPublicId();
 
-        $this->app['events']->fire('api.payment.created', $eventPayload);
+        if (($this->cache->get($cacheKey) === null) or
+            ($this->cache->get($cacheKey) === false))
+        {
+            $eventPayload = [
+                ApiEventSubscriber::MAIN => $this->payment,
+            ];
+
+            $this->app['events']->fire('api.payment.created', $eventPayload);
+
+            $this->cache->put($cacheKey, true, 1200);
+        }
     }
 
     protected function appendMetadataForPayment(array & $input)

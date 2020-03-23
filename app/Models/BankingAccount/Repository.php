@@ -126,6 +126,23 @@ class Repository extends Base\Repository
                     ->pluck($merchantIdColumn);
     }
 
+    public function fetchByMerchantIdAndAccountType(string $merchantId, string $accountType)
+    {
+        $bankingAccountBalanceIdColumn = $this->dbColumn(Entity::BALANCE_ID);
+        $merchantIdColumn              = $this->dbColumn(Entity::MERCHANT_ID);
+
+        $balanceIdColumn                = $this->repo->balance->dbColumn(Entity::ID);
+        $balanceAccountTypeColumn       = $this->repo->balance->dbColumn(Merchant\Balance\Entity::ACCOUNT_TYPE);
+        $balanceTypeColumn              = $this->repo->balance->dbColumn(Merchant\Balance\Entity::TYPE);
+
+        return $this->newQuery()
+                    ->join(Table::BALANCE, $bankingAccountBalanceIdColumn, '=', $balanceIdColumn)
+                    ->where($merchantIdColumn, '=', $merchantId)
+                    ->where($balanceTypeColumn, '=', Merchant\Balance\Type::BANKING)
+                    ->where($balanceAccountTypeColumn, '=', $accountType)
+                    ->get();
+    }
+
     // To be used for x test mode migration purpose only
     public function fetchBankingAccounts(array $merchantIds, int $skip, int $limit)
     {

@@ -50,6 +50,8 @@ class Entity extends Base\PublicEntity
     const RUPAY_MPAN                    = 'rupay_mpan';
     const VPA                           = 'vpa';
 
+    const ACCOUNT_TYPE                  = 'account_type';
+
     const CARD                          = 'card';
     const NETBANKING                    = 'netbanking';
     const EMI                           = 'emi';
@@ -181,6 +183,7 @@ class Entity extends Base\PublicEntity
         self::VIRTUAL_UPI_ROOT,
         self::VIRTUAL_UPI_MERCHANT_PREFIX,
         self::VIRTUAL_UPI_HANDLE,
+        self::ACCOUNT_TYPE,
     ];
 
     protected $public = [
@@ -248,6 +251,7 @@ class Entity extends Base\PublicEntity
         self::CARDLESS_EMI,
         self::PAYLATER,
         self::MPAN,
+        self::ACCOUNT_TYPE,
         self::CREATED_AT
     ];
 
@@ -315,6 +319,7 @@ class Entity extends Base\PublicEntity
         self::MC_MPAN                    => null,
         self::VISA_MPAN                  => null,
         self::RUPAY_MPAN                 => null,
+        self::ACCOUNT_TYPE               => null,
     ];
 
     protected $casts = [
@@ -465,6 +470,11 @@ class Entity extends Base\PublicEntity
     public function getEmiSubvention()
     {
         return $this->getAttribute(self::EMI_SUBVENTION);
+    }
+
+    public function getAccountType()
+    {
+        return $this->getAttribute(self::ACCOUNT_TYPE);
     }
 
     /**
@@ -1229,9 +1239,14 @@ class Entity extends Base\PublicEntity
 
     public function isValidEmiTerminal($gateway, $emiDuration)
     {
+        $ignoreEmiDurationGateways = [
+            Gateway::BAJAJ,
+            Gateway::HDFC_DEBIT_EMI,
+        ];
+
         if (($this->isEmiEnabled()) and
             ($this->getGateway() === $gateway) and
-            (($this->getEmiDuration() === $emiDuration) or ($gateway === Gateway::BAJAJ)))
+            (($this->getEmiDuration() === $emiDuration) or (in_array($gateway, $ignoreEmiDurationGateways) === true)))
         {
             return true;
         }

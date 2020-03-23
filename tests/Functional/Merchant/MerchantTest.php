@@ -19,6 +19,7 @@ use Illuminate\Foundation\Testing\Concerns\InteractsWithSession;
 
 use RZP\Models\Key;
 use RZP\Jobs\EsSync;
+use RZP\Models\Admin;
 use RZP\Constants\Mode;
 use RZP\Models\Feature;
 use RZP\Models\Merchant;
@@ -1599,6 +1600,11 @@ class MerchantTest extends TestCase
     {
         $documentType = 'address_proof_url';
 
+        $this->fixtures->create('merchant_detail',
+                                [
+                                    'merchant_id' => '10000000000000',
+                                ]);
+
         $this->ba->proxyAuth('rzp_test_10000000000000');
 
         $this->updateUploadDocumentData(__FUNCTION__, $documentType);
@@ -1621,7 +1627,6 @@ class MerchantTest extends TestCase
 
     public function testUpdateBankAccountWithAddressProofUsingUFH()
     {
-
         $this->mockRazorX('testUpdateBankAccountWithAddressProof', 'use_ufh_file_store', 'on', 10000000000000);
 
         $this->testUpdateBankAccountWithAddressProof();
@@ -2329,6 +2334,25 @@ class MerchantTest extends TestCase
         $this->assertEquals(1, count($response['methods']['cardless_emi']));
 
         $this->assertArrayHasKey('earlysalary', $response['methods']['cardless_emi']);
+    }
+
+    public function testGetCheckoutPreferencesForDebitEmi()
+    {
+        $this->fixtures->merchant->enableEmi();
+
+        $this->fixtures->emiPlan->create(
+            [
+                'merchant_id' => '10000000000000',
+                'bank'        => 'HDFC',
+                'type'        => 'debit',
+                'rate'        => 1200,
+                'min_amount'  => 300000,
+                'duration'    => 3,
+            ]);
+
+        $response = $this->getPreferences();
+
+        $this->assertArrayHasKey('HDFC_DC', $response['methods']['emi_options']);
     }
 
     public function testGetCheckoutPreferencesForPayLater()
@@ -6326,6 +6350,18 @@ class MerchantTest extends TestCase
 
     protected function enableRazorXTreatmentForXOnboarding($value = 'on')
     {
+        (new Admin\Service)->setConfigKeys(
+            [
+                Admin\ConfigKey::RX_ACCOUNT_NUMBER_SERIES_PREFIX => [
+                    Merchant\Account::SHARED_ACCOUNT => '222444',
+                ]
+            ]);
+
+        (new Admin\Service)->setConfigKeys(
+            [
+                Admin\ConfigKey::RX_SHARED_ACCOUNT_ALLOWED_CHANNELS => [Channel::YESBANK, Channel::ICICI]
+            ]);
+
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
             ->setConstructorArgs([$this->app])
             ->setMethods(['getTreatment'])
