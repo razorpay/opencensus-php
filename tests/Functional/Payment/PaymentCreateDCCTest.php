@@ -48,7 +48,7 @@ class PaymentCreateDCCTest extends TestCase
         $payment['dcc_currency'] = $cardCurrency;
         $payment['currency_request_id'] = $currencyRequestId;
 
-        $this->doAuthAndCapturePayment($payment, $usdAmount, $cardCurrency);
+        $this->doAuthAndCapturePayment($payment);
 
         $payment = $this->getLastEntity('payment', true);
         $paymentMeta = $this->getLastEntity('payment_meta', true);

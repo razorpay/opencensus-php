@@ -58,7 +58,7 @@ trait Capture
 
         $this->setPayment($payment);
 
-        $input['currency'] = $payment->getGatewayCurrency();
+        $input['currency'] = $payment->getCurrency();
 
         $payment->getValidator()->validateInput('capture', $input);
 
@@ -337,7 +337,7 @@ trait Capture
 
             $data = [
                 'payment' => $payment->toArrayGateway(),
-                'amount' => $captureAmount,
+                'amount' => $payment->getGatewayAmount(),
                 'currency' => $payment->getGatewayCurrency()
             ];
 
