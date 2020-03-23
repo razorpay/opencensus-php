@@ -41,8 +41,6 @@ import SettlementSchedule from 'merchant/views/Settlements/components/Settlement
 import SettlementDetail from 'merchant/views/Settlements/components/SettlementDetail';
 import Time from 'common/ui/Time';
 
-import YesBankAnnouncementSettlements from 'merchant/components/Announcements/YesBankAnnouncements/YesBankAnnouncementSettlements';
-
 @withRouter
 @connect(
   state => ({
@@ -247,8 +245,6 @@ export default class SettlementsListContainer extends ListContainer {
 
     return (
       <React.Fragment>
-        {user.isYesBankMerchant && <YesBankAnnouncementSettlements />}
-
         {/* instant settlements banner */}
         {user.isISBannerEnabled && (
           <EarlySettlementsAnnouncement userId={user.current} />
