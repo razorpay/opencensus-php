@@ -965,13 +965,17 @@ class Gateway extends Base\Gateway
     {
         $response = $this->parseGatewayResponse($body, true);
 
+        $traceResponse = $response;
+
+        unset($traceResponse[Fields::PAYER_VA]);
+
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_CALLBACK,
             [
                 'body'      => $body,
                 'headers'   => $this->app['request']->header(),
                 'gateway'   => $this->gateway,
-                'data'      => $response
+                'data'      => $traceResponse
             ]);
 
         if ($isBharatQr === true)
