@@ -258,7 +258,10 @@ class SmartRouting
 
         $traceResponse = $responseBody;
 
-        unset($traceResponse['mc_mpan'], $traceResponse['visa_mpan'], $traceResponse['rupay_mpan'], $traceResponse['network_mpan']);
+        foreach ($traceResponse as $terminal)
+        {
+            unset($terminal['mc_mpan'], $terminal['visa_mpan'], $terminal['rupay_mpan'], $terminal['network_mpan']);
+        }
 
         $this->trace->info(
             TraceCode::SMART_ROUTING_RESPONSE,
