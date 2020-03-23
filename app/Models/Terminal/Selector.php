@@ -210,10 +210,10 @@ class Selector extends Base\Core
 
                 if (count($newSelectedTerminals) > 0)
                 {
-//                    $sortedTerminals = $newSelectedTerminals;
-//                }
-//                else
-//                {
+                    $sortedTerminals = $newSelectedTerminals;
+                }
+                else
+                {
                     $sortedTerminals = $this->filterAndSortTerminals($allTerminals, $verbose);
 
                     if (empty($sortedTerminals) === false)
@@ -230,7 +230,6 @@ class Selector extends Base\Core
                             TraceCode::SMART_ROUTING_TERMINALS_MISMATCH,
                             [
                                 'terminals_from_api'            => $traceTerminals,
-                                'terminals_from_api_original'   => $sortedTerminals,
                                 'terminals_from_smart_routing'  => $newSelectedTerminals,
                                 'payment_id'                    => $payment->getId(),
                                 'method'                        => $payment->getMethod(),
