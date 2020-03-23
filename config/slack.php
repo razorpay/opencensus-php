@@ -185,10 +185,10 @@ return array(
 
         'payout_links_alerts'    => 'CT0D3HTBR',
 
-        'payments_cards'         => 'CNVG04YSZ',
-
         //rbl alerts
         'rbl_alerts'             => 'CUT37PDUY',
+        //ivr_alerts channel
+        'ivr_alerts'             => 'C010H5E2XCL'
 
     ],
 

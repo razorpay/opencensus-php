@@ -11,7 +11,7 @@ class Citi extends Base
     const FILE_TYPE             = FileStore\Type::CITI_EMI_FILE;
     const FILE_NAME             = 'Citi_Emi_File';
     const DATE_FORMAT           = 'n/j/Y';
-    const COMPRESSION_REQUIRED  = false;
+    const COMPRESSION_REQUIRED  = true;
 
     protected function formatDataForFile($data)
     {
@@ -33,12 +33,14 @@ class Citi extends Base
 
             $emiAmount = amount_format_IN($emiAmount);
 
+            $merchantName = $emiPayment->merchant->getDbaName();
+
             $formattedData[] = [
                 'LOYALTY_TRANSACTIONID'        => $emiPayment->getId(),
                 'ISSUER'                       => 'CITI BANK',
                 'ACQUIRER'                     => '',
                 'MANUFACTURER_NAME'            => '',
-                'MERCHANT_NAME'                => 'Razorpay Payments',
+                'MERCHANT_NAME'                => $merchantName,
                 'STORE_NAME'                   => '',
                 'STORE_CITY'                   => '',
                 'STORE_STATE'                  => '',

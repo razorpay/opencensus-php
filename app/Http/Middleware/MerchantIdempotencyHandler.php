@@ -141,7 +141,6 @@ class MerchantIdempotencyHandler
                                 'idempotency_key'   => $idempotencyKey,
                                 'idempotency_id'    => $idempotencyEntity->getId(),
                                 'merchant_id'       => $merchant->getId(),
-                                'request'           => $request->all(),
                                 'response'          => $response,
                             ]);
 
@@ -197,7 +196,6 @@ class MerchantIdempotencyHandler
         $this->trace->info(
             TraceCode::IDEM_KEY_ENTITY_CREATED,
             [
-                'request_body'          => $request->all(),
                 'idempotency_entity'    => $idempotencyEntity->toArray()
             ]);
 
@@ -216,7 +214,6 @@ class MerchantIdempotencyHandler
                 ErrorCode::BAD_REQUEST_SAME_IDEM_KEY_DIFFERENT_REQUEST,
                 null,
                 [
-                    'request_body'          => $request->all(),
                     'request_hash'          => $requestBodyHash,
                     'idem_key_request_hash' => $idempotencyEntity->getRequestHash(),
                     'idempotency_key'       => $idempotencyEntity->getId(),

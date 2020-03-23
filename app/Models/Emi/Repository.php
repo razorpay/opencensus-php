@@ -25,7 +25,7 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function fetchRelevantMerchantEmiPlan(IIN\Entity $iin, int $duration, $merchant)
+    public function fetchRelevantMerchantEmiPlan(IIN\Entity $iin, int $duration, $merchant, $type = null)
     {
         $bank = $iin->getIssuer();
 
@@ -40,6 +40,11 @@ class Repository extends Base\Repository
         else if (($network === Network::AMEX) or ($network === Network::BAJAJ))
         {
             $query->where(Entity::NETWORK, '=', $network);
+        }
+
+        if ($type !== null)
+        {
+            $query->where(Entity::TYPE, '=', $type);
         }
 
         $merchantIds = [$merchant->getId(), Account::SHARED_ACCOUNT];

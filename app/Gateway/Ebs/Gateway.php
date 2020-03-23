@@ -734,6 +734,8 @@ class Gateway extends Base\Gateway
                 Entity::IS_FLAGGED         => $response[Entity::IS_FLAGGED] ?? null,
             ];
         }
+
+        return [];
     }
 
     protected function getDefaultRequestContent()

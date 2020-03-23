@@ -189,11 +189,11 @@ class Base extends BaseCore
         return $payout;
     }
 
-    public function processPendingPayout(Payout\Entity $payout): Payout\Entity
+    public function processPendingPayout(Payout\Entity $payout, bool $queueFlag): Payout\Entity
     {
         /** @var Payout\Entity $payout */
         $payout = $this->repo->transaction(
-            function () use ($payout)
+            function () use ($payout, $queueFlag)
             {
                 //
                 // TODO: Later, we will have to handle active / inactive stuff also here.
@@ -203,12 +203,7 @@ class Base extends BaseCore
 
                 $payoutType = $this->getPayoutType();
 
-                //
-                // We're setting the queued flag to true since Queued Payouts is always enabled
-                // alongside Payout Workflows. Hence, we want to enabled the queued payout logic in
-                // DownstreamProcessor
-                //
-                $payout->setQueueFlag(true);
+                $payout->setQueueFlag($queueFlag);
 
                 $downstreamProcessor = new DownstreamProcessor($payoutType,
                                                                $payout,
