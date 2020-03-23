@@ -27,15 +27,26 @@ trait Migrate
         return self::getRazorxTreatment(self::getMigrateSubmerchantFeature());
     }
 
-    public static function getMigrateTerminalFeature(): string
+    public static function shouldRunComparison(): bool
+    {
+        return self::getRazorxTreatment(self::getShouldRunComparisonFeature());
+    }
+
+    protected static function getMigrateTerminalFeature(): string
     {
         return'TerminalsService_MigrateTerminal';
     }
 
-    public static function getMigrateSubmerchantFeature(): string
+    protected static function getMigrateSubmerchantFeature(): string
     {
         return 'TerminalsService_MigrateSubmerchant';
     }
+
+    protected static function getShouldRunComparisonFeature() : string
+    {
+        return 'TerminalsService_ShouldRunComparison';
+    }
+
 
     protected static function getRazorxTreatment(string $feature): bool
     {

@@ -1239,6 +1239,8 @@ class TerminalMigrationTest extends TestCase
 
         }, 1);
 
+        $this->razorxValue = 'migrate';
+
         $mock = $this->createMetricsMock();
 
         $expected = [
@@ -1261,6 +1263,8 @@ class TerminalMigrationTest extends TestCase
 
     public function testAdminFetchTerminalByIdTerminalServiceInvalidResponse()
     {
+        $this->razorxValue = 'migrate';
+
         $terminal = $this->fixtures->create(
             'terminal:shared_axis_terminal', [
             'used'        => true,
@@ -1308,6 +1312,8 @@ class TerminalMigrationTest extends TestCase
 
     public function testFetchTerminalsAdminAuth()
     {
+        $this->razorxValue = 'migrate';
+
         $terminal = $this->fixtures->create(
             'terminal', [
             'merchant_id' => '10000000000000',
@@ -1365,6 +1371,8 @@ class TerminalMigrationTest extends TestCase
 
     public function testFetchTerminalsAdminAuthTerminalIdMismatch()
     {
+        $this->razorxValue = 'migrate';
+
         $terminal = $this->fixtures->create(
             'terminal', [
             'merchant_id' => '10000000000000',
@@ -1411,6 +1419,8 @@ class TerminalMigrationTest extends TestCase
 
     public function testFetchTerminalsAdminAuthTerminalFieldMismatch()
     {
+        $this->razorxValue = 'migrate';
+
         $terminal = $this->fixtures->create(
             'terminal', [
             'merchant_id' => '10000000000000',

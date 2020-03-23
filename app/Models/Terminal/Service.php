@@ -47,7 +47,10 @@ class Service extends Base\Service
 
         $terminals = $this->repo->terminal->getByMerchantId($mid);
 
-        $this->runGetTerminalsForMerchantComparison($terminals, $merchant);
+        if (Migrate::shouldRunComparison() === true)
+        {
+            $this->runGetTerminalsForMerchantComparison($terminals, $merchant);
+        }
 
         return $terminals->toArrayAdmin($subMerchantFlag);
     }
