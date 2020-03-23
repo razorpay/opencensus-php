@@ -66,7 +66,7 @@
 
 /* topbar css */
 .topbar-container {
-    background-image: url("/assets/topbar/pattern.svg"), linear-gradient(91.71deg, #4332a3 0.03%, #286cd5 90.98%);
+    background-image: linear-gradient(91.71deg, #3980E2 0.03%, #03299C 90.98%);
     text-align: center;
     color: #fff;
     padding: 11px 0;
@@ -112,7 +112,7 @@
     font-weight: bold;
     font-size: 16px;
     line-height: 19px;
-    background: #39cea0;
+    background: #00BB55;
     border-radius: 2px;
     color: #fff;
     margin-left: 16px;
