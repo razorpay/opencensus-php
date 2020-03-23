@@ -1015,6 +1015,9 @@ class PublicErrorDescription
     const BAD_REQUEST_D2C_CREDIT_BUREAU_NO_RECORDS_FOUND                            = 'Sorry, we could not find a match for the given details. Please try again later with correct details. Please note that your phone number should be correct and name & date of birth should be as given in your PAN.';
     const BAD_REQUEST_D2C_CREDIT_BUREAU_INVALID_EMAIL_OR_CONTACT                    = 'Looks like your phone number could not be found in our existing database. Please check your phone number';
 
+    // Early Settlements and payouts
+    const BAD_REQUEST_ES_ON_DEMAND_IMPS_AMOUNT_LIMIT_EXCEEDED                       = 'Please provide an amount less than 2 Lacs to get a settlement at this point of time.';
+
     //FTS
     const BAD_REQUEST_ERROR_SOURCE_ACCOUNT_FUND_ACCOUNT_CREATION_FAILED             = 'Fund Account could not be created for source account';
 

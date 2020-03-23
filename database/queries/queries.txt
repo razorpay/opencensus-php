@@ -5682,3 +5682,9 @@ ALTER TABLE emi_plans
 
 ALTER TABLE merchant_details
     ADD COLUMN date_of_establishment date DEFAULT NULL;
+
+ALTER TABLE payment_configs
+    change `default` `is_default` tinyint(1) NOT NULL DEFAULT '0';
+
+ALTER TABLE disputes
+    ADD COLUMN conversion_rate BIGINT UNSIGNED DEFAULT NULL;

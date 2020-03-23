@@ -928,7 +928,6 @@ class Gateway extends Base\Gateway
             'action'            => $this->action,
             'payment_id'        => $input['refund']['id'],
             'terminal_id'       => $input['terminal']['id'],
-            'body'              => $responseBody,
         ];
 
         return $this->parseResponse($responseBody, $trace);
@@ -941,6 +940,8 @@ class Gateway extends Base\Gateway
             $content = $this->jsonToArray($responseBody);
 
             $trace['content'] = $content;
+
+            unset($trace['content'][Fields::CHECK_STATUS_DEBIT_VPA]);
 
             $this->trace->info(TraceCode::GATEWAY_RESPONSE, $trace);
 

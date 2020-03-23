@@ -31,7 +31,7 @@ class CreatePaymentConfig extends Migration
 
             $table->json(Config::CONFIG);
 
-            $table->boolean(Config::DEFAULT)
+            $table->boolean(Config::IS_DEFAULT)
                   ->default(false);
 
             $table->json(Config::RESTRICTIONS)

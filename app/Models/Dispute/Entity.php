@@ -47,6 +47,7 @@ class Entity extends Base\PublicEntity
     const BASE_CURRENCY           = 'base_currency';
     const GATEWAY_AMOUNT          = 'gateway_amount';
     const GATEWAY_CURRENCY        = 'gateway_currency';
+    const CONVERSION_RATE         = 'conversion_rate';
 
     /**
      *  Field for edit input, when accepted chargeback amount

@@ -8,7 +8,7 @@ return  [
         'request' => [
             'content' => [
                 'name'       => 'First',
-	            'default'    => true,
+	            'is_default' => true,
                 'type'       => 'checkout',
                 'config'     => [
                     'method' => 'card',
@@ -20,7 +20,7 @@ return  [
         'response' => [
             'content' => [
                 'name'       => 'First',
-                'default'    => true,
+                'is_default' => true,
                 'config'     => [
                     'method' => 'card',
                 ],
@@ -33,7 +33,7 @@ return  [
             'content' => [
                 'name'       => 'Test Config',
                 'type'       => 'checkout',
-                'default'    => '0',
+                'is_default' => '0',
                 'config'     => [
                     'issuer'   => 'sbi',
                     'network'  => 'visa',
@@ -45,7 +45,7 @@ return  [
         'response' => [
             'content' => [
                 'name'       => 'Test Config',
-                'default'    => false,
+                'is_default' => false,
                 'config'     => [
                     'issuer'   => 'sbi',
                     'network'  => 'visa',
@@ -59,7 +59,7 @@ return  [
             'content' => [
                 'name'       => 'First',
                 'type'       => 'checkout',
-                'default'    => true,
+                'is_default' => true,
             ],
             'method'    => 'POST',
             'url'       => '/payment/config',
@@ -82,7 +82,7 @@ return  [
     'testCreateCheckoutConfigWithoutName' => [
         'request' => [
             'content' => [
-                'default'    => true,
+                'is_default' => true,
                 'type'       => 'checkout',
                 'config'     => [
                     'method' => 'card',
@@ -111,7 +111,7 @@ return  [
             'content' => [
                 'name'       => 'First',
                 'type'       => 'checkout',
-                'default'    => true,
+                'is_default' => true,
                 'config'     => 'Wrong',
             ],
             'method'    => 'POST',
@@ -136,14 +136,14 @@ return  [
         'request' => [
             'content' => [
                 'type'      => 'checkout',
-                'default'    => '0',
+                'is_default'=> '0',
             ],
             'method'    => 'PATCH',
             'url'       => '',
         ],
         'response' => [
             'content' => [
-                'default'    => false,
+                'is_default' => false,
             ]
         ],
     ],
@@ -152,14 +152,14 @@ return  [
         'request' => [
             'content' => [
                 'type'      => 'checkout',
-                'default'    => true,
+                'is_default'=> true,
             ],
             'method'    => 'PATCH',
             'url'       => '',
         ],
         'response' => [
             'content' => [
-                'default'    => true,
+                'is_default' => true,
             ]
         ],
     ],
@@ -171,7 +171,7 @@ return  [
                 'config'     => [
                     'issuer' => 'sbi',
                 ],
-                'default' => true,
+                'is_default' => true,
             ],
             'method'    => 'PATCH',
             'url'       => '',
