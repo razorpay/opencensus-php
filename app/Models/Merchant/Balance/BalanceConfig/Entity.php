@@ -135,6 +135,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::NEGATIVE_TRANSACTION_FLOWS);
     }
 
+    public function getBalanceId()
+    {
+        return $this->getAttribute(self::BALANCE_ID);
+    }
+
     /**
      * Returns the balance type for this BalanceConfig Entity
      *
