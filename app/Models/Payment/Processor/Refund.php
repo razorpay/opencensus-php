@@ -108,7 +108,10 @@ trait Refund
     public function isInstantRefundSupportedOnPayment(Payment\Entity $payment)
     {
         // This will keep changing as we add more coverage
+
+        // Adding is DCC checks since Instant Refunds is not supported for DCC Payments
         if (($this->isCapturedPaymentAndFeatureEnabled($payment) === false) or
+            ($payment->isDCC() === true) or
             (in_array($payment->getMethod(), Payment\Method::INSTANT_REFUND_SUPPORTED_METHODS, true) === false))
         {
             return false;
@@ -2557,6 +2560,7 @@ trait Refund
     {
         return (($refund->isRefundRequestedSpeedInstant() === true) and
                 ($payment->hasBeenCaptured() === true) and
+                ($payment->isDCC() === false) and
                 (in_array($payment->getGateway(), Payment\Gateway::$scroogeGateways, true) === true) and
                 ((in_array($payment->getMethod(), [
                     Payment\Method::CARD,
