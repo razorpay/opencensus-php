@@ -85,23 +85,13 @@ class GatewayProcessor extends BaseGatewayProcessor
     {
         $terminal = (new Core)->create($terminalData, $merchant);
 
-        $this->assignRequisiteFeatures();
+        $this->assignRequisiteFeatures($merchant);
 
         (new TerminalOnboardingDetail\Core)->create([], $terminal);
 
         return $terminal;
     }
 
-    protected function assignRequisiteFeatures()
-    {
-        $featureParam = [
-            Feature\Entity::ENTITY_TYPE => $merchant->getEntityName(),
-            Feature\Entity::ENTITY_ID   => $merchant->getId(),
-            Feature\Entity::NAME        => Feature\Constants::BHARAT_QR,
-        ];
-
-        (new Feature\Core)->create($featureParam, true);
-    }
 
     public function validateGatewayInput($gatewayInput, $merchantDetail)
     {
@@ -480,6 +470,17 @@ class GatewayProcessor extends BaseGatewayProcessor
         }
 
         return true;
+    }
+
+    protected function assignRequisiteFeatures($merchant)
+    {
+        $featureParam = [
+            Feature\Entity::ENTITY_TYPE => $merchant->getEntityName(),
+            Feature\Entity::ENTITY_ID   => $merchant->getId(),
+            Feature\Entity::NAME        => Feature\Constants::BHARAT_QR,
+        ];
+
+        (new Feature\Core)->create($featureParam, true);
     }
 
 }
