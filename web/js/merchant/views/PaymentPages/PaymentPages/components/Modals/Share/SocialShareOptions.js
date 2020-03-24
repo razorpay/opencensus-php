@@ -1,14 +1,6 @@
-import { isMobileAndTablet } from 'common/utils/rzp-utils';
-
-let fbBase = 'https://www.facebook.com/sharer/sharer.php?u=',
+const fbBase = 'https://www.facebook.com/sharer/sharer.php?u=',
   twitterBase = 'https://twitter.com/share?url=',
-  whatsappBase;
-
-if (isMobileAndTablet()) {
-  whatsappBase = 'whatsapp://send?text=';
-} else {
-  whatsappBase = 'https://api.whatsapp.com//send?text='; // Shares on browser client / launches app on OSX / windows
-}
+  whatsappBase = 'https://api.whatsapp.com/send?text='; // Shares on browser client / launches app on OSX / windows
 
 function _shareMessage(title, description = '') {
   let msg = `"${title}"`;

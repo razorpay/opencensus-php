@@ -1,13 +1,6 @@
-import { isMobileAndTablet } from 'common/utils/rzp-utils';
 const fbBase = 'https://www.facebook.com/sharer/sharer.php?u=';
 const twitterBase = 'https://twitter.com/share?url=';
-let whatsappBase;
-
-if (isMobileAndTablet()) {
-  whatsappBase = 'whatsapp://send?text=';
-} else {
-  whatsappBase = 'https://api.whatsapp.com//send?text=';
-}
+const whatsappBase = 'https://api.whatsapp.com/send?text=';
 
 export const mediaWindowUrl = ({ type, title, url, description }) => {
   let mediaUrl;
