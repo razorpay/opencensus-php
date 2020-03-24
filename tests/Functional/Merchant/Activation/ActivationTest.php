@@ -24,7 +24,6 @@ use RZP\Tests\Functional\Helpers\EntityActionTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Models\Merchant\Constants as MerchantConstants;
 use RZP\Models\Merchant\Detail\Entity as MerchantDetails;
-use RZP\Models\Merchant\Detail\Constants as DetailConstants;
 use RZP\Models\FundAccount\Validation\Entity as ValidationEntity;
 use RZP\Models\Merchant\Detail\Constants as MerchantDetailsConstant;
 use RZP\Mail\Merchant\NeedsClarificationEmail as NeedsClarificationEmail;
@@ -813,8 +812,6 @@ class ActivationTest extends OAuthTestCase
 
         $this->getKycVerificationForPoaVerificationSetup($poaVerificationStatus, $bankDetailsVerificationStatus);
 
-        $this->createBalanceForSharedMerchant();
-
         $plan = $this->createZeroFundAccountValidationPricingPlan();
 
         $this->fixtures->merchant->editEntity('merchant',
@@ -1567,8 +1564,6 @@ class ActivationTest extends OAuthTestCase
 
         $plan = $this->createZeroFundAccountValidationPricingPlan();
 
-        $this->createBalanceForSharedMerchant();
-
         $this->fixtures->merchant->editEntity('merchant',
                                               '100000Razorpay',
                                               [
@@ -1674,75 +1669,6 @@ class ActivationTest extends OAuthTestCase
         $this->validateBankDetailFailureCase($attribute, $merchantDetail);
     }
 
-    public function testBankDetailsVerificationSuccessfulInRetry()
-    {
-        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields',
-                                                  ['business_type'           => 2,
-                                                   'promoter_pan_name'       => 'rishabh acharya',
-                                                   'bank_account_name'       => 'rishabh acharya',
-                                                   'poa_verification_status' => 'verified',
-                                                   'poi_verification_status' => 'verified',
-                                                   'submitted'               => 1,
-                                                   'submitted_at'            => now()->getTimestamp()]);
-
-        $attribute = [
-            ValidationEntity::REGISTERED_NAME => "UNREGISTERED",
-            ValidationEntity::ACCOUNT_STATUS  => "active",
-            ValidationEntity::NOTES           => [
-                ValidationEntity::MERCHANT_ID => $merchantDetail['merchant_id'],
-            ],
-        ];
-
-        $attribute1 = [
-            ValidationEntity::REGISTERED_NAME => "rishabh acharya",
-            ValidationEntity::ACCOUNT_STATUS  => "active",
-            ValidationEntity::NOTES           => [
-                ValidationEntity::MERCHANT_ID => $merchantDetail['merchant_id'],
-            ],
-        ];
-
-        $this->createBalanceForSharedMerchant();
-
-        $pennyTestingAttemptRedisKey = DetailConstants::PENNY_TESTING_ATTEMPT_COUNT_REDIS_KEY_PREFIX . $merchantDetail->getId();
-
-        $this->app['cache']->put($pennyTestingAttemptRedisKey, 1, DetailConstants::PENNY_TESTING_ATTEMPT_COUNT_TTL_IN_SEC);
-
-        $this->checkFirstPennyTestingTry($attribute, $merchantDetail, 'initiated');
-
-        $this->checkSecondPennyTestingTry($attribute1, $merchantDetail, 'activated', 'verified');
-    }
-
-    protected function checkFirstPennyTestingTry(array $attribute, &$merchantDetail, string $activationStatus)
-    {
-        $this->fixtures->create('fund_account_validation', $attribute);
-
-        $fav = $this->getLastEntity('fund_account_validation', true, 'test');
-
-        FundAccountValidation::dispatch('test', $fav['id']);
-
-        $merchantDetail = $this->getDbEntityById('merchant_detail', $merchantDetail['merchant_id']);
-
-        $this->assertEquals($merchantDetail->getBankDetailsVerificationStatus(), $activationStatus);
-    }
-
-    protected function checkSecondPennyTestingTry(array $favAttribute, &$merchantDetail, string $activationStatus, string $bankDetailsVerificationStatus)
-    {
-        //fund_account_validation_id after penny testing retry
-        $this->fixtures->edit('fund_account_validation', $merchantDetail['fund_account_validation_id'], $favAttribute);
-
-        $favRetry = $this->getLastEntity('fund_account_validation', true, 'test');
-
-        $this->assertEquals($favRetry['id'], 'fav_' . $merchantDetail['fund_account_validation_id']);
-
-        FundAccountValidation::dispatch('test', $favRetry['id']);
-
-        $merchantDetail = $this->getDbEntityById('merchant_detail', $merchantDetail['merchant_id']);
-
-        $this->assertEquals($bankDetailsVerificationStatus, $merchantDetail->getBankDetailsVerificationStatus());
-
-        $this->assertEquals($activationStatus, $merchantDetail->getActivationStatus());
-    }
-
     public function testFailureBankDetailsVerificationForNameMismatchCase()
     {
         $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields',
@@ -1789,18 +1715,6 @@ class ActivationTest extends OAuthTestCase
         $this->assertEquals($merchantDetail->getKycClarificationReasons(), $this->getClarificationReasonsForPennyTestingFailure());
 
         Mail::assertQueued(NeedsClarificationEmail::class);
-    }
-
-    protected function createBalanceForSharedMerchant()
-    {
-        $balanceData = [
-            'id'          => '100abc000abc00',
-            'merchant_id' => '100000Razorpay',
-            'type'        => 'primary',
-            'currency'    => 'INR',
-            'balance'     => 500,
-        ];
-        $this->fixtures->create('balance', $balanceData);
     }
 
     protected function getClarificationReasonsForPennyTestingFailure()

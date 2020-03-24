@@ -418,11 +418,11 @@ class Core extends Base\Core
 
         if (empty($balanceId) === true)
         {
-            $balance = $fundAccValidation->merchant->primaryBalance;
+            $balance = $this->merchant->primaryBalance;
         }
         else
         {
-            $balance = $this->repo->balance->findByIdAndMerchant($balanceId, $fundAccValidation->merchant);
+            $balance = $this->repo->balance->findByIdAndMerchant($balanceId, $this->merchant);
         }
 
         $this->blockFAVIfApplicable($balance);

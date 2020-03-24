@@ -39,7 +39,6 @@ use RZP\Mail\Merchant\Rejection as RejectionEmail;
 use RZP\Models\Merchant\Detail\Metric as DetailMetric;
 use RZP\Models\Merchant\Document\OcrVerificationStatus;
 use RZP\Models\Merchant\Detail\Constants as DEConstants;
-use RZP\Models\Merchant\Detail\Constants as DetailConstants;
 use RZP\Mail\Admin\NotifyActivationSubmission as NotifyAdmin;
 use RZP\Mail\Merchant\NotifyActivationSubmission as NotifyMerchant;
 use RZP\Mail\Merchant\NeedsClarificationEmail as ClarificationEmail;
@@ -1684,10 +1683,19 @@ class Core extends Base\Core
             return;
         }
 
-        (new PennyTesting())->triggerPennyTesting($merchantDetails);
+        $fromMerchant = $this->repo->merchant->findOrFailPublic(Merchant\Preferences::MID_ONBOARDING_PENNY_TESTING);
+
+        $merchantDetails->setBankDetailsVerificationStatus(BankDetailsVerificationStatus::INITIATED);
+
+        $this->trace->count(DetailMetric::UNREGISTERED_PENNY_TESTING_STATUS_TOTAL,
+                            [
+                                Detail\Constants::BANK_DETAILS_VERIFICATION_STATUS => BankDetailsVerificationStatus::INITIATED
+                            ]);
+
+        $fundAccountValidation = (new PennyTesting)->attempt($merchantDetails, $fromMerchant);
+
+        $merchantDetails->setFundAccountValidationId($fundAccountValidation->getId());
     }
-
-
 
     public function isAdditionalFieldRequired($field)
     {
