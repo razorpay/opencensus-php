@@ -447,17 +447,7 @@ class Core extends Base\Core
             return 0;
         }
 
-        try
-        {
-            $reserveBalance = $merchant->getBalanceByTypeOrFail($reserveType);
-        }
-        catch (\Exception $ex)
-        {
-            $this->trace->warn(TraceCode::RESERVE_BALANCE_NOT_FOUND,
-                [
-                    'merchant_id' => $merchant->getId(),
-                ]);
-        }
+        $reserveBalance = $merchant->getBalanceByType($reserveType);
 
         $reserveAmount = $reserveBalance !== null ? $reserveBalance->getBalance() : 0;
 
