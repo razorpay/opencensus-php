@@ -185,7 +185,7 @@ class Base extends Core
         self::GETSIMPL               => [],
         self::BAJAJFINSERV           => ['remiecftransactions@bizsupportc.com'],
         self::YES_BANK               => ['yesacquirer@insolutionsglobal.com'],
-        self::HDFC_DEBIT_EMI         => [],
+        self::HDFC_DEBIT_EMI         => ['emailintimation@hdfcbank.com'],
 
         // Used when someone from the team needs to send the
         // reconciliation file via mail for reconciliation.

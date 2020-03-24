@@ -94,7 +94,8 @@ class Validator extends Base\Core
         RequestProcessor\Base::PHONEPE            => [".*/Settlement Report/"],
         RequestProcessor\Base::NETBANKING_KVB     => ["/Recon file [0-9]{2}.[0-9]{2}.20[0-9]{2}/"],
         RequestProcessor\Base::BAJAJFINSERV       => ["/Payment MIS RAZORPAY SOFTWARE PRIVATE LIMITED_ [0-9]{1,2} (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) 20[0-9]{2}/"],
-        RequestProcessor\Base::YES_BANK           => ["/Yes Bank_ MPR [0-9]{2}-[0-9]{2}-20[0-9]{2}/"]
+        RequestProcessor\Base::YES_BANK           => ["/Yes Bank_ MPR [0-9]{2}-[0-9]{2}-20[0-9]{2}/"],
+        RequestProcessor\Base::HDFC_DEBIT_EMI     => ["/^DCEMI Reconciliation & Payment Summary Report/"],
     ];
 
     const GATEWAY_BODY_REGEX = [
@@ -161,6 +162,7 @@ class Validator extends Base\Core
         RequestProcessor\Base::NETBANKING_SCB           => 1,
         RequestProcessor\Base::CARDLESS_EMI_FLEXMONEY   => 2,
         RequestProcessor\Base::PHONEPE                  => 1,
+        RequestProcessor\Base::HDFC_DEBIT_EMI           => 1,
     ];
 
     // Add here too when being added in Validator::ACCEPTED_EXTENSIONS_MAP
@@ -608,6 +610,19 @@ class Validator extends Base\Core
             RequestProcessor\Base::BAJAJFINSERV);
 
         return ($validSubject);
+    }
+
+    public function validateHdfcDebitEmiEmail(array $emailDetails)
+    {
+        $validSubject = $this->validateEmailSubject(
+            $emailDetails[RequestProcessor\Mailgun::SUBJECT],
+            RequestProcessor\Base::HDFC_DEBIT_EMI);
+
+        $validAttachmentCount = $this->validateAttachmentCount(
+            $emailDetails[RequestProcessor\Base::ATTACHMENT_COUNT],
+            RequestProcessor\Base::HDFC_DEBIT_EMI);
+
+        return ($validSubject and $validAttachmentCount);
     }
 
     /**

@@ -49,7 +49,7 @@ class HdfcDebitEmiReconTest extends TestCase
 
         $fileContents = $this->generateReconFile(['gateway' => $this->gateway]);
 
-        $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
+        $uploadedFile = $this->createUploadedFile($fileContents['local_file_path'], 'merchantreconcilationreport.xlsx');
 
         $this->reconcile($uploadedFile, 'HdfcDebitEmi');
 
@@ -152,7 +152,7 @@ class HdfcDebitEmiReconTest extends TestCase
 
         $this->assertArraySelectiveEquals(
             [
-                'status' => 'failed',
+                'status'        => 'failed',
             ],
             $payment
         );
