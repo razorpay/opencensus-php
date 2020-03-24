@@ -1,6 +1,6 @@
 import ajax, { merchantFetch } from 'merchant/utils/ajax';
 
-import { set } from 'common/utils/immutable';
+import { set, merge } from 'common/utils/immutable';
 
 const BANK_ACCOUNT_FETCH = 'BANK_ACCOUNT_FETCH';
 const GST_FETCH = 'GST_FETCH';
@@ -8,6 +8,9 @@ const GST_SAVE = 'GST_SAVE';
 const BANK_ACCOUNT_CHANGE_STATUS_FETCH = 'BANK_ACCOUNT_CHANGE_STATUS_FETCH';
 const BANK_ACCOUNT_CHANGES_SAVE = 'BANK_ACCOUNT_CHANGES_SAVE';
 const ADD_WEBSITE_WORKFLOW_STATUS = 'ADD_WEBSITE_WORKFLOW_STATUS';
+const FETCH_RESERVE_BALANCE = 'FETCH_RESERVE_BALANCE';
+const STORE_TICKET_DETAILS = 'STORE_TICKET_DETAILS';
+const GET_TICKET_STATUS = 'GET_TICKET_STATUS';
 
 export const fetchBankAccount = () => {
   return {
@@ -130,12 +133,62 @@ export const saveBankAccountChanges = (merchantId, formdata) => {
   };
 };
 
+export const fetchReserveBalance = () => {
+  return {
+    type: FETCH_RESERVE_BALANCE,
+    payload: merchantFetch({
+      url: `balances`,
+      method: 'get',
+      data: {
+        type: 'reserve_primary',
+      },
+    }),
+  };
+};
+
+export const storeTicketDetails = ({ ticketNo, description }) => {
+  return {
+    type: STORE_TICKET_DETAILS,
+    payload: merchantFetch({
+      url: `fd/reserve_balance/tickets`,
+      method: 'post',
+      data: {
+        ticket_id: ticketNo,
+        ticket_details: description,
+        type: 'reserve_balance_activate',
+      },
+    }),
+  };
+};
+
+export const getTicketStatus = () => {
+  return {
+    type: GET_TICKET_STATUS,
+    payload: merchantFetch('fd/reserve_balance/tickets/status'),
+  };
+};
+
 let initialState = {
   invitations: [],
   rzp_gst: {
     gstin: '29AAGCR4375J1ZU',
   },
   merchant_gst: {},
+  reserve_balance: {
+    loading: true,
+    data: {},
+    error: null,
+  },
+  reserve_balance_activate: {
+    loading: true,
+    data: {},
+    error: null,
+  },
+  ticket_status: {
+    loading: true,
+    data: {},
+    error: null,
+  },
 };
 
 export default function(state = initialState, action) {
@@ -146,6 +199,54 @@ export default function(state = initialState, action) {
     case `${GST_FETCH}::SUCCESS`:
     case `${GST_SAVE}::SUCCESS`:
       return set(state, 'merchant_gst', action.payload.data);
+
+    case `${FETCH_RESERVE_BALANCE}::SUCCESS`:
+      return merge(state, {
+        reserve_balance: {
+          data: action.payload.data,
+          loading: false,
+          error: null,
+        },
+      });
+
+    case `${FETCH_RESERVE_BALANCE}::ERROR`:
+      return set(state, 'reserve_balance', {
+        loading: false,
+        error: action.payload.errors,
+        data: initialState.reserve_balance.data,
+      });
+
+    case `${STORE_TICKET_DETAILS}::SUCCESS`:
+      return merge(state, {
+        reserve_balance_activate: {
+          data: action.payload.data,
+          loading: false,
+          error: null,
+        },
+      });
+
+    case `${STORE_TICKET_DETAILS}::ERROR`:
+      return set(state, 'reserve_balance_activate', {
+        loading: false,
+        error: action.payload.errors,
+        data: initialState.reserve_balance_activate.data,
+      });
+
+    case `${GET_TICKET_STATUS}::SUCCESS`:
+      return merge(state, {
+        ticket_status: {
+          data: action.payload.data,
+          loading: false,
+          error: null,
+        },
+      });
+
+    case `${GET_TICKET_STATUS}::ERROR`:
+      return set(state, 'ticket_status', {
+        loading: false,
+        error: action.payload.errors,
+        data: initialState.ticket_status.data,
+      });
     default:
       return state;
   }

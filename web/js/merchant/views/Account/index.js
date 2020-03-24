@@ -2,7 +2,7 @@ import { Route, NavLink } from 'react-router-dom';
 import ShowWhen from 'merchant/components/ShowWhen';
 
 import Profile from 'merchant/views/Account/Profile';
-import AddFunds from 'merchant/views/Account/AddFunds';
+import Balances from 'merchant/views/Account/Balances';
 import Credits from 'merchant/views/Account/Credits/List';
 import ManageTeam from 'merchant/views/Account/ManageTeam';
 import Referrals from 'merchant/views/Account/Referrals/List';
@@ -23,7 +23,7 @@ export default function MyAccount() {
           <ShowWhen
             additionalCondition={user => user.isAllowedView('add_funds')}
           >
-            <NavLink to="/addfunds">Add Funds</NavLink>
+            <NavLink to="/addfunds">Balances</NavLink>
           </ShowWhen>
 
           <ShowWhen featureEnabled="Referral">
@@ -37,7 +37,7 @@ export default function MyAccount() {
         <content>
           <Route path="/profile" component={Profile} />
           <Route path="/credits" component={Credits} />
-          <Route path="/addfunds" component={AddFunds} />
+          <Route path="/addfunds" component={Balances} />
           <Route path="/referrals" component={Referrals} />
           <Route path="/team" component={ManageTeam} />
         </content>
