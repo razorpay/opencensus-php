@@ -5,7 +5,6 @@ namespace RZP\Models\Merchant\Balance;
 use App;
 use Mail;
 use Carbon\Carbon;
-use Razorpay\Trace\Logger;
 use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
