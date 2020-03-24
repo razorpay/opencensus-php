@@ -262,7 +262,11 @@ class Gateway extends Base\Gateway
 
         $request = $this->getCaptureRequestArray($input, $gatewayPayment);
 
-        $this->traceGatewayPaymentRequest($request, $input, TraceCode::PAYMENT_CAPTURE_REQUEST);
+        $inputTrace = $input;
+
+        unset($inputTrace['email'], $inputTrace['password']);
+
+        $this->traceGatewayPaymentRequest($request, $inputTrace, TraceCode::PAYMENT_CAPTURE_REQUEST);
 
         $captureEntity = $this->createGatewayPaymentEntity($input, [], Base\Action::CAPTURE);
 

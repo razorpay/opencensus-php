@@ -2872,7 +2872,11 @@ class Processor
     {
         $this->unsetSensitiveCardDetails($input);
 
-        $this->trace->debug(TraceCode::PAYMENT_NEW_REQUEST, $input);
+        $inputTrace = $input;
+
+        unset($inputTrace['notes']);
+
+        $this->trace->debug(TraceCode::PAYMENT_NEW_REQUEST, $inputTrace);
     }
 
     protected function unsetSensitiveCardDetails(array & $input)
