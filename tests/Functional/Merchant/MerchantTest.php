@@ -1844,7 +1844,7 @@ class MerchantTest extends TestCase
 
         $banks = $content['methods']['netbanking'];
 
-        $this->assertCount(36, $banks);
+        $this->assertCount(37, $banks);
 
         $this->fixtures->merchant->disableTPV();
     }
@@ -2334,25 +2334,6 @@ class MerchantTest extends TestCase
         $this->assertEquals(1, count($response['methods']['cardless_emi']));
 
         $this->assertArrayHasKey('earlysalary', $response['methods']['cardless_emi']);
-    }
-
-    public function testGetCheckoutPreferencesForDebitEmi()
-    {
-        $this->fixtures->merchant->enableEmi();
-
-        $this->fixtures->emiPlan->create(
-            [
-                'merchant_id' => '10000000000000',
-                'bank'        => 'HDFC',
-                'type'        => 'debit',
-                'rate'        => 1200,
-                'min_amount'  => 300000,
-                'duration'    => 3,
-            ]);
-
-        $response = $this->getPreferences();
-
-        $this->assertArrayHasKey('HDFC_DC', $response['methods']['emi_options']);
     }
 
     public function testGetCheckoutPreferencesForPayLater()
@@ -5240,6 +5221,48 @@ class MerchantTest extends TestCase
         $this->testMerchantSwitchProduct('on', null);
     }
 
+    public function testMerchantBankingVAMigration()
+    {
+        $this->testMerchantSwitchProduct('on', null);
+
+        (new Admin\Service)->setConfigKeys(
+            [
+                Admin\ConfigKey::RX_ACCOUNT_NUMBER_SERIES_PREFIX => [
+                    Merchant\Account::SHARED_ACCOUNT => '232323',
+                ]
+            ]);
+
+        $this->ba->cronAuth('live');
+
+        $this->startTest();
+
+        $balances = $this->getDbEntities('balance',
+            [
+                'merchant_id'   => '10000000000000',
+                'account_type'  => 'shared',
+
+            ], 'live');
+
+        $bankingAccounts = $this->getDbEntities('banking_account',
+            [
+                'merchant_id' => '10000000000000',
+
+            ], 'live');
+
+        $virtualAccounts = $this->getDbEntities('virtual_account',
+            [
+                'merchant_id' => '10000000000000',
+                'balance_id'  => $bankingAccounts->first()->getBalanceId(),
+            ], 'live');
+
+
+        $this->assertEquals($balances->count(), 1);
+
+        $this->assertEquals($virtualAccounts->count(), 2);
+
+        $this->assertEquals($bankingAccounts->count(), 1);
+    }
+
     /**
      * Switches product of merchant from PG to BB.
      */
@@ -6494,4 +6517,30 @@ class MerchantTest extends TestCase
 
         $this->assertContains('abc.com', $merchant->getWhitelistedDomains());
     }
+
+    public function testGetCheckoutRouteWithTokenForDCC()
+    {
+        $this->ba->publicAuth();
+        $this->fixtures->merchant->activate('10000000000000');
+
+        $request = [
+                'url' => '/preferences',
+                'method' => 'get',
+                'content' => [
+                    'contact' => '9988776655',
+                    'customer_id' => 'cust_100000customer',
+                    'currency' => 'INR',
+                ]
+        ];
+
+        $response = $this->sendRequest($request);
+        $responseContent = json_decode($response->getContent(), true);
+
+        $this->assertNotNull($responseContent['customer']['tokens']);
+
+        $tokens = $responseContent['customer']['tokens'];
+        $this->assertTrue($tokens['count'] > 0);
+        $this->assertTrue(array_key_exists('dcc_enabled', $tokens['items'][0]) === true);
+    }
 }
+

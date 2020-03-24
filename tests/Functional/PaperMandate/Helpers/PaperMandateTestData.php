@@ -255,7 +255,7 @@ return [
         'ifsc_code' => 'RZPB0000000',
         'reference_2' => '121211212112121121',
         'account_type' => 'savings',
-        'amount_in_number' => '10',
+        'amount_in_number' => '1000',
         'enhanced_image' => 'djdnj',
         'end_date' => '',
         'sponsor_code' => 'RATN0TREASU',

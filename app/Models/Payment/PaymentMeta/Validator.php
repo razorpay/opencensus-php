@@ -11,7 +11,7 @@ class Validator extends Base\Validator
     protected static $createRules = [
         Entity::GATEWAY_AMOUNT             => 'sometimes|integer|min:0',
         Entity::GATEWAY_CURRENCY           => 'sometimes|string|size:3|custom',
-        Entity::FOREX_RATE                 => 'sometimes|string|max:50',
+        Entity::FOREX_RATE                 => 'sometimes|numeric',
         Entity::DCC_OFFERED                => 'sometimes|boolean',
         Entity::DCC_MARK_UP_PERCENT        => 'sometimes|integer',
         Entity::PAYMENT_ID                 => 'required|string'

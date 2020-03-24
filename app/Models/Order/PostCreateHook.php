@@ -5,13 +5,15 @@ namespace RZP\Models\Order;
 use RZP\Constants;
 use RZP\Trace\TraceCode;
 use RZP\Models\Transfer;
+use RZP\Models\Merchant\Methods;
+use RZP\Models\UpiMandate\Core as UpiMandateCore;
 use RZP\Models\SubscriptionRegistration\Core as TokenRegistrationCore;
 
 class PostCreateHook extends Hook
 {
 
     protected $hooks = [
-        ExtraParams::TOKEN     => 'createTokenRegistration',
+        ExtraParams::TOKEN     => 'createRegistrationEntity',
         ExtraParams::TRANSFERS => 'createTransfers'
     ];
     /**
@@ -26,12 +28,30 @@ class PostCreateHook extends Hook
         $this->order = $order;
     }
 
-    public function createTokenRegistration(array $tokenParams)
+    public function createRegistrationEntity(array $tokenParams)
     {
         $customerId = $this->orderInput[Entity::CUSTOMER_ID];
 
         $customer = $this->repo->customer->findByPublicId($customerId);
 
+        if ((isset($this->orderInput[Entity::METHOD]) === true) and
+            ($this->orderInput[Entity::METHOD]) === Methods\Entity::UPI)
+        {
+            $this->createUpiMandateEntity($tokenParams, $customer);
+        }
+        else
+        {
+            $this->createSubscriptionRegistrationEntity($tokenParams, $customer);
+        }
+    }
+
+    protected function createUpiMandateEntity($tokenParams, $customer)
+    {
+        (new UpiMandateCore())->create($tokenParams, $this->order, $customer);
+    }
+
+    protected function createSubscriptionRegistrationEntity($tokenParams, $customer)
+    {
         $tokenRegistrationInput = [
             Constants\Entity::SUBSCRIPTION_REGISTRATION => $tokenParams
         ];

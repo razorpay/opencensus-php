@@ -381,7 +381,7 @@ class ErrorCodes extends Cards\ErrorCodes
         'GW00260' => ErrorCode::BAD_REQUEST_PAYMENT_CAPTURE_AMOUNT_NOT_EQUAL_TO_AUTH, //  Transaction denied: Credits exceed Captures.
         'GW00300' => ErrorCode::GATEWAY_ERROR_INSTITUTION_ID_MISMATCH, //Institution ID required.
         'GW00302' => ErrorCode::GATEWAY_ERROR_PAYMENT_INVALID_CURRENCY, //Currency code required.
-        'GW00350' => ErrorCode::BAD_REQUEST_MERCHANT_TERMINAL_EXISTS_FOR_GATEWAY, //  -> Merchant has terminals. GATEWAY_ERROR_TERMINAL_ERROR
+        'GW00350' => ErrorCode::BAD_REQUEST_MERCHANT_TERMINAL_EXISTS_FOR_GATEWAY, //  -> Merchant has terminals. GATEWAAY_ERROR_TERMINAL_ERROR
         'GW00351' => ErrorCode::GATEWAY_ERROR_INVALID_PARAMETERS, //Merchant ID required.
         'GW00352' => ErrorCode::GATEWAY_ERROR_INSTITUTION_ID_MISMATCH, // Institution ID required.
 
@@ -499,7 +499,7 @@ class ErrorCodes extends Cards\ErrorCodes
         'GW00464' => ErrorCode::GATEWAY_ERROR_INVALID_TERMINAL, //Invalid Terminal Merchant ID.
         'GW00750' => ErrorCode::BAD_REQUEST_PAYMENT_CARD_NUMBER_POSSIBLY_INVALID, //Error hashing card number.
         'GW00465' => ErrorCode::GATEWAY_ERROR_INVALID_TERMINAL, //Invalid Terminal Termainl ID.
-        'GW00466' => ErrorCode::GATEWAY_ERROR_INVALID_TERMINAL, //Invalid Terminal Description. or GATEWAY_ERROR_TERMINAL_ERROR
+        'GW00466' => ErrorCode::GATEWAY_ERROR_INVALID_TERMINAL, //Invalid Terminal Description. or GATEWAAY_ERROR_TERMINAL_ERROR
         'GW00851' => ErrorCode::BAD_REQUEST_ACTION_INVALID_TYPE, //Invalid Action Type.
         'GW00467' => ErrorCode::GATEWAY_ERROR_INVALID_TERMINAL, //Invalid Terminal External Connection ID.
         'GW00468' => ErrorCode::GATEWAY_ERROR_INVALID_TERMINAL, //Invalid Terminal Risk Profile.
@@ -612,7 +612,7 @@ class ErrorCodes extends Cards\ErrorCodes
         'PY20014' => ErrorCode::GATEWAY_ERROR_PAYMENT_INVALID_UDF, //Invalid User Defined Field.
 
         'GW01070' => ErrorCode::GATEWAY_ERROR_PAYMENT_INVALID_CURRENCY, //Invalid Currency Symbol Data.
-        'GW01071' => ErrorCode::GATEWAY_ERROR_TERMINAL_ERROR, //Terminal exists with this Currency Code.
+        'GW01071' => ErrorCode::GATEWAAY_ERROR_TERMINAL_ERROR, //Terminal exists with this Currency Code.
 
         'PY20015' => ErrorCode::GATEWAY_ERROR_CARD_INVALID_NAME, //Invalid Card Name.
         'PY20016' => ErrorCode::GATEWAY_ERROR_CARD_INVALID_ADDRESS, //Invalid Card Address.

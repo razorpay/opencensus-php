@@ -321,6 +321,13 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const HITACHI_ONBOARD_REQUEST_CREATION_ERROR                = 'HITACHI_ONBOARD_REQUEST_CREATION_ERROR';
     const SKIPPING_HITACHI_AUTOMATIC_ONBOARDING                 = 'SKIPPING_HITACHI_AUTOMATIC_ONBOARDING';
 
+    const DUPLICATE_IDEM_KEY_NO_ENTITY_ASSOC                    = 'DUPLICATE_IDEM_KEY_NO_ENTITY_ASSOC';
+    const IDEM_KEY_UPDATE_DATA                                  = 'IDEM_KEY_UPDATE_DATA';
+    const DUPLICATE_IDEM_KEY_RECEIVED                           = 'DUPLICATE_IDEM_KEY_RECEIVED';
+    const DUPLICATE_IDEM_KEY_RESPONSE                           = 'DUPLICATE_IDEM_KEY_RESPONSE';
+    const IDEM_KEY_ENTITY_CREATED                               = 'IDEM_KEY_ENTITY_CREATED';
+    const IDEMPOTENCY_REQUEST_DATA                              = 'IDEMPOTENCY_REQUEST_DATA';
+
     const FTA_MODE_SET                                          = 'FTA_MODE_SET';
     const FTA_SLA_EXPIRED                                       = 'FTA_SLA_EXPIRED';
     const FTA_MODE_NOT_FOUND                                    = 'FTA_MODE_NOT_FOUND';
@@ -515,6 +522,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const INVOICE_WITHOUT_GSTIN                                 = 'INVOICE_WITHOUT_GSTIN';
     const STOP_BATCH_PROCESS_NOT_REQUIRED                       = 'STOP_BATCH_PROCESS_NOT_REQUIRED';
     const BATCH_NOT_FOUND                                       = 'BATCH_NOT_FOUND';
+    const ADMIN_BATCH_UPDATE                                    = 'ADMIN_BATCH_UPDATE';
 
     const PAYMENT_LINK_CREATE_REQUEST                           = 'PAYMENT_LINK_CREATE_REQUEST';
     const PAYMENT_LINK_CREATED                                  = 'PAYMENT_LINK_CREATED';
@@ -1061,6 +1069,13 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const VIRTUAL_ACCOUNT_CLOSED_PAYMENT_REROUTED               = 'VIRTUAL_ACCOUNT_CLOSED_PAYMENT_REROUTED';
     const VIRTUAL_ACCOUNT_ADD_RECEIVER                          = 'VIRTUAL_ACCOUNT_ADD_RECEIVER';
     const VIRTUAL_ACCOUNT_GENERATE_VPA_TERMINAL                 = 'VIRTUAL_ACCOUNT_GENERATE_VPA_TERMINAL';
+    const VIRTUAL_ACCOUNT_BULK_CREATE_FOR_BANKING_REQUEST       = 'VIRTUAL_ACCOUNT_BULK_CREATE_FOR_BANKING_REQUEST';
+    const VIRTUAL_ACCOUNT_BULK_CREATE_FOR_BANKING_RESPONSE      = 'VIRTUAL_ACCOUNT_BULK_CREATE_FOR_BANKING_RESPONSE';
+    const VIRTUAL_ACCOUNT_BULK_CLOSE_FOR_BANKING_REQUEST        = 'VIRTUAL_ACCOUNT_BULK_CLOSE_FOR_BANKING_REQUEST';
+    const VIRTUAL_ACCOUNT_BULK_CLOSE_FOR_BANKING_RESPONSE       = 'VIRTUAL_ACCOUNT_BULK_CLOSE_FOR_BANKING_RESPONSE';
+    const VIRTUAL_ACCOUNT_CLOSE_FOR_BANKING_FAILED              = 'VIRTUAL_ACCOUNT_CLOSE_FOR_BANKING_FAILED';
+    const VIRTUAL_ACCOUNT_CREATE_FOR_BANKING_FAILED             = 'VIRTUAL_ACCOUNT_CREATE_FOR_BANKING_FAILED';
+    const VIRTUAL_ACCOUNT_CREATE_FOR_BANKING_REQUEST            = 'VIRTUAL_ACCOUNT_CREATE_FOR_BANKING_REQUEST';
 
     const BANK_TRANSFER_PROCESS_REQUEST                         = 'BANK_TRANSFER_PROCESS_REQUEST';
     const BANK_TRANSFER_PROCESSING                              = 'BANK_TRANSFER_PROCESSING';
@@ -1110,7 +1125,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const MERCHANT_BENEFICIARY_FILE_GENERATE                    = 'MERCHANT_BENEFICIARY_FILE_GENERATE';
     const MERCHANT_PARTNER_STATUS_RESPONSE                      = 'MERCHANT_PARTNER_STATUS_RESPONSE';
-    const MERCHANT_X_TEST_MODE_MIGRATION                        = 'MERCHANT_X_TEST_MODE_MIGRATION';
+    const MERCHANT_RAZORPAYX_VA_MIGRATION                       = 'MERCHANT_RAZORPAYX_VA_MIGRATION';
 
     const MERCHANT_INVOICE_CREATE_REQUEST                       = 'MERCHANT_INVOICE_CREATE_REQUEST';
     const MERCHANT_INVOICE_DISPATCH_COUNT                       = 'MERCHANT_INVOICE_DISPATCH_COUNT';
@@ -1233,6 +1248,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const WEBHOOK_DEACTIVATE                                    = 'WEBHOOK_DEACTIVATE';
     const WEBHOOK_RESPONSE_FAILURE                              = 'WEBHOOK_RESPONSE_FAILURE';
     const WEBHOOK_PRIVATE_IP_FOUND                              = 'WEBHOOK_PRIVATE_IP_FOUND';
+    const WEBHOOK_EVENT_JOB_RECEIVED                            = 'WEBHOOK_EVENT_JOB_RECEIVED';
 
     const AWS_INSTANCE_DATA_RECORD_FAILURE                      = 'AWS_INSTANCE_DATA_RECORD_FAILURE';
     const AWS_INSTANCE_DATA_WRITE_FAILURE                       = 'AWS_INSTANCE_DATA_WRITE_FAILURE';
@@ -1554,6 +1570,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PENDING_ORDER_TRANSFER_PROCESS                        = 'PENDING_ORDER_TRANSFER_PROCESS';
     const FAILED_ORDER_TRANSFER_PROCESS                         = 'FAILED_ORDER_TRANSFER_PROCESS';
     const ORDER_TRANSFER_PROCESS_RETRY                          = 'ORDER_TRANSFER_PROCESS_RETRY';
+    const TRANSFERS_SETTELEMENT_UPDATE                          = 'TRANSFERS_SETTELEMENT_UPDATE';
     const ORDER_TRANSFER_PROCESS_INITIATED                      = 'ORDER_TRANSFER_PROCESS_INITIATED';
     const ORDER_TRANSFER_PROCESS_PAYMENT_NOT_CAPTURED           = 'ORDER_TRANSFER_PROCESS_PAYMENT_NOT_CAPTURED';
     const ORDER_TRANSFER_PROCESS_ORDER_NOT_PAID                 = 'ORDER_TRANSFER_PROCESS_ORDER_NOT_PAID';
@@ -2664,6 +2681,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_RAZORPAYX_ACTIVATION_PRE_VALIDATION_FAILURE  = 'MERCHANT_RAZORPAYX_ACTIVATION_PRE_VALIDATION_FAILURE';
     const MERCHANT_RAZORPAYX_ACTIVATION_REQUEST                 = 'MERCHANT_RAZORPAYX_ACTIVATION_REQUEST';
     const MERCHANT_RAZORPAYX_ACTIVATION_FAILED                  = 'MERCHANT_RAZORPAYX_ACTIVATION_FAILED';
+    const MERCHANT_RAZORPAYX_VA_MIGRATION_FAILED                = 'MERCHANT_RAZORPAYX_VA_MIGRATION_FAILED';
     const MERCHANT_RAZORPAYX_ACTIVATION_UNKNOWN_SOURCE          = 'MERCHANT_RAZORPAYX_ACTIVATION_UNKNOWN_SOURCE';
 
     // Terminal service
@@ -2671,15 +2689,26 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const TERMINALS_SERVICE_RESPONSE                            = 'TERMINALS_SERVICE_RESPONSE';
     const TERMINALS_SERVICE_INTEGRATION_ERROR                   = 'TERMINALS_SERVICE_INTEGRATION_ERROR';
 
+    const UPI_MANDATE_CREATE_REQUEST                            = 'UPI_MANDATE_CREATE_REQUEST';
+    const UPI_MANDATE_CREATED                                   = 'UPI_MANDATE_CREATED';
+
+    //payment config
+    const CONFIG_CREATE_REQUEST                                 = 'CONFIG_CREATE_REQUEST';
+    const CONFIG_UPDATE_REQUEST                                 = 'CONFIG_UPDATE_REQUEST';
+
     // DB wait timeout
     const WAIT_TIMEOUT_EXCEPTION                                = 'WAIT_TIMEOUT_EXCEPTION';
 
     // DB wait timeout
     const DB_EXECUTING_WAIT_TIMEOUT                             = 'DB_EXECUTING_WAIT_TIMEOUT';
-  
+
     // RBL VA integration
     const RBL_VA_CALLBACK                                       = 'RBL_VA_CALLBACK';
     const RBL_VA_INVALID_CALLBACK_DATA                          = 'RBL_VA_INVALID_CALLBACK_DATA';
+
+    const TYPEFORM_PARSED_DATA                                  = 'TYPEFORM_PARSED_DATA';
+    const TYPEFORM_WORKFLOW_TRIGGERED                           = 'TYPEFORM_WORKFLOW_TRIGGERED';
+    const TYPEFORM_RAW_DATA                                     = 'TYPEFORM_RAW_DATA';
 
     // VA Migrate - Yesbank -> RBL
     const VA_MIGRATE_REQUEST            = 'VA_MIGRATE_REQUEST';
@@ -2847,6 +2876,16 @@ class TraceCode extends \Razorpay\Trace\TraceCode
         self::MERCHANT_REFUND_CREDITS_DEBIT_FAILURE                 => 'Not enough refund credits',
         self::NEGATIVE_BALANCE_BREACHED                             => 'Negative Balance has crossed the negative limit threshold',
         ];
+
+    public static $fileBasedReconTraceCodes = [
+        self::RECON_FILE_LINK_NOT_FOUND,
+        self::RECON_FILE_DELETE_FAILURE,
+        self::RECON_BATCH_CREATION_FAILED,
+        self::RECON_PARSE_ERROR,
+        self::RECON_FILE_SKIP,
+        self::RECON_FAILURE,
+        self::BATCH_PROCESSING_ERROR,
+    ];
 
     /**
      * Translate event code to message

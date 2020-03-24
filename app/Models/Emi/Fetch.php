@@ -13,7 +13,6 @@ class Fetch extends BaseFetch
             Entity::NETWORK         => 'sometimes|string|max:12',
             Entity::MERCHANT_ID     => 'sometimes|string|size:14',
             Entity::DURATION        => 'sometimes|integer',
-            Entity::TYPE            => 'sometimes',
         ],
     ];
 
@@ -23,7 +22,6 @@ class Fetch extends BaseFetch
             Entity::NETWORK,
             Entity::DURATION,
             Entity::MERCHANT_ID,
-            Entity::TYPE,
         ]
     ];
 }

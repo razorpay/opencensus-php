@@ -53,6 +53,29 @@ class ZestMoneyGatewayTest extends CardlessEmiGatewayTest
         $this->assertTestResponse($cardlessEmiEntity, 'testPaymentCardlessEmiEntity');
     }
 
+    public function testPaymentForSubMerchant()
+    {
+        $this->createSubMerchant();
+
+        $payment = $this->getDefaultCardlessEmiPaymentArray($this->provider);
+
+        $payment['contact'] = '+91' . $payment['contact'];
+
+        $this->checkAccount($payment);
+
+        $response = $this->doAuthPayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertTestResponse($payment, 'testPaymentZestMoneyForSubMerchant');
+
+        $cardlessEmiEntity = $this->getLastEntity('cardless_emi', true);
+
+        $this->assertTestResponse($cardlessEmiEntity, 'testPaymentCardlessEmiEntity');
+
+        $this->resetPublicAuthToTestAccount();
+    }
+
     public function testRefundPayment()
     {
         $payment = $this->getDefaultCardlessEmiPaymentArray($this->provider);

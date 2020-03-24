@@ -96,6 +96,8 @@ class Entity extends Base\PublicEntity
      */
     const DEFAULT_EXPIRY_YEARS  = 10;
 
+    const DCC_ENABLED           = 'dcc_enabled';
+
     protected static $sign      = 'token';
 
     protected $entity           = 'token';
@@ -729,5 +731,19 @@ class Entity extends Base\PublicEntity
         {
             $query->whereNull(self::VPA_ID);
         }
+    }
+
+    public function isDCCEnabled()
+    {
+        return $this->hasCard() and (new Payment\Service)->isDccEnabledIIN($this->card->iinRelation);
+    }
+
+    public function toArrayPublic()
+    {
+        $publicArray = parent::toArrayPublic();
+
+        $publicArray[self::DCC_ENABLED] = $this->isDCCEnabled();
+
+        return $publicArray;
     }
 }

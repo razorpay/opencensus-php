@@ -2,7 +2,10 @@
 
 namespace RZP\Tests\P2p\Service\UpiSharp\Device;
 
+use Carbon\Carbon;
+use phpseclib\Crypt\AES;
 use RZP\Models\P2p\Device;
+use RZP\Models\P2p\Device\DeviceToken;
 use RZP\Http\Controllers\P2p\Requests;
 use RZP\Tests\P2p\Service\Base\P2pRequest;
 use RZP\Tests\P2p\Service\Base\Scenario;
@@ -55,7 +58,32 @@ class DeviceTest extends TestCase
             'vpa'           => null,
         ], $response);
 
-        $this->assertArrayNotHasKey('npci_token', $deviceToken->getGatewayData());
+        // Gateway data should only have device_id and nothing else
+        $this->assertArraySubset([
+            'device_id' => 'GDID919999999999',
+            'cl_token'  => null,
+            'cl_expiry' => null,
+        ], $deviceToken->getGatewayData());
+    }
+
+    public function testVerificationOnSameDevice()
+    {
+        $device = $this->fixtures->device;
+
+        $helper = $this->getDeviceHelper();
+
+        $initiate = $helper->initiateVerification();
+
+        $authToken = $device->getAuthToken();
+
+        // This will not initiate any scenario but will force phone number same
+        $helper->setScenarioInContext(Scenario::N0000, '000', $device->getContact());
+
+        $helper->verification($initiate['callback']);
+
+        $device->reload();
+
+        $this->assertNotSame($authToken, $device->getAuthToken());
     }
 
     public function testScenarioVerificationSmsTimedOut()
@@ -77,8 +105,11 @@ class DeviceTest extends TestCase
 
         $registerToken = $this->getDbLastEntity('p2p_register_token');
 
-        $this->assertSame(route(Requests::P2P_CUSTOMER_VERIFICATION, [$registerToken->getToken()]) . '?',
-                          $initiate['callback']);
+        $expectedCallback = $this->expectedCallback(Requests::P2P_CUSTOMER_VERIFICATION, [
+            $registerToken->getToken()
+        ]);
+
+        $this->assertSame($expectedCallback, $initiate['callback']);
 
         $helper->setScenarioInContext(Scenario::DE102);
 
@@ -86,11 +117,11 @@ class DeviceTest extends TestCase
 
         $this->assertArraySubset([
             'version'   => 'v1',
-            'type'      => 'poll',
+            'type'      => 'redirect',
             'request'   => [
                 'time'  => ($registerToken->getCreatedAt() + 10),
             ],
-            'callback'  => route(Requests::P2P_CUSTOMER_VERIFICATION, [$registerToken->getToken()]) . '?',
+            'callback'  => $expectedCallback,
         ], $verification);
 
         $callback = [
@@ -137,42 +168,273 @@ class DeviceTest extends TestCase
         ], $response);
     }
 
-    public function testInitiateGetToken()
+    public function initiateGetToken()
+    {
+        $cases = $this->getCommonCases(Scenario::DE201, Scenario::DE202, Scenario::DE203);
+
+        return array_except($cases, []);
+    }
+
+    /**
+     * @dataProvider initiateGetToken
+     */
+    public function testInitiateGetToken($scenario, $gatewayData, $type, $message)
+    {
+        $helper = $this->getDeviceHelper();
+
+        // No problem to run schema validation, driver is caching the schema
+        $helper->withSchemaValidated();
+
+        $helper->setScenarioInContext($scenario[0]);
+
+        if (empty($gatewayData['cl_expiry']) === false)
+        {
+            // We can not use time based value in data provider, since there will always be unknown lag
+            $gatewayData['cl_expiry'] = Carbon::now()->addSeconds($gatewayData['cl_expiry'])->getTimestamp();
+        }
+
+        $this->fixtures->deviceToken(self::DEVICE_1)->setGatewayData($gatewayData)->saveOrFail();
+
+        $response = $helper->initiateGetToken();
+
+        if ($helper->getScenarioInContext()->isSuccess() === false)
+        {
+            // The validation for error is kept separately
+            return;
+        }
+
+        // If the
+        if (empty($type) === false)
+        {
+            $this->npciClAssertionMessage = $message;
+
+            $this->handleNpciClRequest(
+                $response,
+                'getChallenge',
+                $this->expectedCallback(Requests::P2P_CUSTOMER_GET_TOKEN, [], ['type' => $type]),
+                [
+                    $type,
+                    $this->fixtures->device->getUuid(),
+                ]);
+
+            return;
+        }
+
+        $token = $this->fixtures->deviceToken(self::DEVICE_1);
+
+        $this->assertArraySubset([
+            'version'   => 'v1',
+            'type'      => 'redirect',
+            'request'   => [
+                'time'  => $token->getCreatedAt(),
+            ],
+            'callback'  => route(Requests::P2P_CUSTOMER_GET_TOKEN),
+        ], $response);
+    }
+
+    public function getToken()
+    {
+        $cases = $this->getCommonCases(Scenario::DE301, Scenario::DE302, Scenario::DE303);
+
+        // Get Token specific cases where post action we send npci response
+        // Initial Register App with valid token
+        $cases['noClDataInGatewayData'][4]              = true;
+        $cases['noClDataInGatewayData'][0][1]           = Scenario::N0000;
+        $cases['noClDataInGatewayData'][0][2]           = Scenario::N0000;
+
+        // Case where Register app works with
+        $cases['normalRotateCall'][4]                   = true;
+        $cases['normalRotateCall'][0][1]                = Scenario::N0000;
+        $cases['normalRotateCall'][0][2]                = Scenario::N0000;
+
+        // Add new test where fetch token with initial
+        $cases['fetchTokenFailedOnInitial']             = $cases['noClDataInGatewayData'];
+        $cases['fetchTokenFailedOnInitial'][0][1]       = Scenario::DE304;
+        $cases['fetchTokenFailedOnInitial'][0][2]       = Scenario::N0000;
+
+        // Add new test where fetch token with rotate
+        $cases['fetchTokenFailedOnRotate']              = $cases['normalRotateCall'];
+        $cases['fetchTokenFailedOnRotate'][0][1]        = Scenario::DE304;
+        $cases['fetchTokenFailedOnRotate'][0][2]        = Scenario::N0000;
+
+        // Add new test where hmac is invalid
+        $cases['invalidHmacOnRegisterApp']              = $cases['noClDataInGatewayData'];
+        $cases['invalidHmacOnRegisterApp'][0][1]        = Scenario::DE305;
+        $cases['invalidHmacOnRegisterApp'][0][2]        = Scenario::N0000;
+
+        // Add new test where hmac is invalid
+        $cases['registerAppFailed']                     = $cases['noClDataInGatewayData'];
+        $cases['registerAppFailed'][0][1]               = Scenario::N0000;
+        $cases['registerAppFailed'][0][2]               = Scenario::DE306;
+
+        return array_except($cases, []);
+    }
+
+    /**
+     * @dataProvider getToken
+     */
+    public function testGetToken($scenario, $gatewayData, $type, $message, $token = false)
+    {
+        $helper = $this->getDeviceHelper();
+
+        // No problem to run schema validation, driver is caching the schema
+        $helper->withSchemaValidated();
+
+        $helper->setScenarioInContext($scenario[0]);
+
+        if (empty($gatewayData['cl_expiry']) === false)
+        {
+            // We can not use time based value in data provider, since there will always be unknown lag
+            $gatewayData['cl_expiry'] = Carbon::now()->addSeconds($gatewayData['cl_expiry'])->getTimestamp();
+        }
+
+        $this->fixtures->deviceToken(self::DEVICE_1)->setGatewayData($gatewayData)->saveOrFail();
+
+        // This is the callback which will be sent in initiateGetToken
+        $response = $helper->getToken($this->expectedCallback(Requests::P2P_CUSTOMER_GET_TOKEN));
+
+        if ($helper->getScenarioInContext()->isSuccess() === false)
+        {
+            // The validation for error is kept separately
+            return;
+        }
+
+        // If the actions not defined and
+        if (empty($type) === false)
+        {
+            $this->npciClAssertionMessage = $message;
+
+            $this->handleNpciClRequest(
+                $response,
+                'getChallenge',
+                $this->expectedCallback(Requests::P2P_CUSTOMER_GET_TOKEN, [], ['type' => $type]),
+                [
+                    $type,
+                    $this->fixtures->device->getUuid(),
+                ]);
+
+            // In these cases no additional calls are expected
+            if ($token === false)
+            {
+                return;
+            }
+
+            if ($token === true)
+            {
+                $token = 'Bu1DCDFS3udZuKyJosfi+yget5o/mfXrvlXKyn+arAw=';
+            }
+
+            $sdkData = $this->getMockedSdkData('getChallenge', [
+                'type'      => $type,
+                'token'     => $token,
+                'deviceId'  => $this->fixtures->device->getUuid(),
+            ]);
+
+            // This is important for test case, we are rewinding time to beginning of the minute
+            // Thus the api call time and current time are within that second itself
+            // If this does not work, we will take 10 sec window for Sharp
+            $this->now(Carbon::now()->second(0));
+
+            $current  = Carbon::now()->getTimestamp();
+            $expiry   = Carbon::now()->addDays(45)->getTimestamp();
+
+            $callbackParams = ['token' => $token, 'expiry' => $expiry];
+
+            $helper->setScenarioInContext($scenario[1]);
+
+            $response = $helper->getToken($response['callback'], ['sdk' => $sdkData]);
+
+            if ($helper->getScenarioInContext()->isSuccess() === false)
+            {
+                // The validation for error is kept separately
+                return;
+            }
+
+            $this->handleNpciClRequest(
+                $response,
+                'registerApp',
+                $this->expectedCallback(Requests::P2P_CUSTOMER_GET_TOKEN, [], $callbackParams),
+                [
+                    $this->fixtures->device->getAppName(),
+                    substr($this->fixtures->device->getContact(), -10),
+                    $this->fixtures->device->getUuid(),
+                    $this->calculateHmac($token),
+                ]);
+
+            $sdkData = $this->getMockedSdkData('registerApp', [
+                'appId'     => $this->fixtures->device->getAppName(),
+                'mobile'    => substr($this->fixtures->device->getContact(), -10),
+                'deviceId'  => $this->fixtures->device->getUuid(),
+                'hmac'      => $this->calculateHmac($token),
+            ]);
+
+            $helper->setScenarioInContext($scenario[2]);
+
+            $response = $helper->getToken($response['callback'], ['sdk' => $sdkData]);
+
+            $deviceToken = $this->fixtures->deviceToken(self::DEVICE_1)->refresh();
+
+            if ($helper->getScenarioInContext()->isSuccess() === false)
+            {
+                // The validation for error is kept separately
+                return;
+            }
+
+            // Check that the device token is updated properly in
+            $this->assertArraySubset([
+                'gateway_data' => [
+                    'cl_token'  => $token,
+                    'cl_expiry' => $expiry,
+                ],
+                'status'        => 'verified',
+                'refreshed_at'  => $current,
+            ], $deviceToken->toArray());
+        }
+
+        // Where token is sent to device
+        $this->assertArraySubset([
+            'id'                => $this->fixtures->device->getPublicId(),
+            'auth_token'        => 'ALC01device001',
+            'status'            => 'verified',
+//            'expire_at'         => '2324234',
+
+            'vpa'               => [
+                'entity'        => 'vpa',
+                'id'            => $this->fixtures->vpa->getPublicId(),
+                'handle'        => $this->fixtures->handle->getCode(),
+                'bank_account'  => [
+                    'entity'    => 'bank_account',
+                    'id'        => $this->fixtures->bank_account->getPublicId(),
+                ],
+                'default'       => true,
+            ],
+
+        ], $response);
+    }
+
+    public function deregister()
+    {
+        $cases = [];
+
+        $message = 'dergisterSuccessfully';
+        $cases[$message] = [[Scenario::N0000],];
+
+        $message = 'dergisterRequestTimedOut';
+        $cases[$message] = [[Scenario::DE401],];
+
+        return $cases;
+    }
+
+    /**
+     * @dataProvider deregister
+     */
+    public function testDeviceDeregister($scenarios)
     {
         $helper = $this->getDeviceHelper();
 
         $helper->withSchemaValidated();
 
-        $helper->initiateGetToken($this->getMockedSdkData());
-    }
-
-    public function testGetToken()
-    {
-        $helper = $this->getDeviceHelper();
-
-        $initiate = $helper->initiateGetToken();
-
-        $helper->withSchemaValidated();
-
-        $helper->getToken($initiate['callback'], $this->getMockedSdkData());
-    }
-
-    public function testScenarioGetTokenNotRegistered()
-    {
-        $helper = $this->getDeviceHelper();
-
-        $initiate = $helper->initiateGetToken();
-
-        $helper->setScenarioInContext(Scenario::DE201);
-
-        $helper->getToken($initiate['callback'], $this->getMockedSdkData());
-    }
-
-    public function testDeviceDeregister()
-    {
-        $helper = $this->getDeviceHelper();
-
-        $helper->withSchemaValidated();
+        $helper->setScenarioInContext($scenarios[0]);
 
         $deviceToken = $this->fixtures->deviceToken(self::DEVICE_1);
         $bankAccount = $this->fixtures->bankAccount(self::DEVICE_1);
@@ -180,37 +442,108 @@ class DeviceTest extends TestCase
 
         $helper->deregisterDevice();
 
-        $this->assertTrue($deviceToken->refresh()->trashed());
-        $this->assertFalse($bankAccount->refresh()->trashed());
-        $this->assertNull($vpa->refresh()->getBankAccountId());
+        if ($helper->getScenarioInContext()->isSuccess() === true)
+        {
+            $this->assertTrue($deviceToken->refresh()->trashed());
+            $this->assertFalse($bankAccount->refresh()->trashed());
+            $this->assertNull($vpa->refresh()->getBankAccountId());
+        }
+        else
+        {
+            $this->assertFalse($deviceToken->refresh()->trashed());
+            $this->assertFalse($bankAccount->refresh()->trashed());
+            $this->assertSame($bankAccount->getId(), $vpa->refresh()->getBankAccountId());
+        }
     }
 
-    public function testEditSameDevide()
+    private function getMockedSdkData(string $method, array $input)
     {
-        $device = $this->fixtures->device;
+        switch ($method)
+        {
+            case 'getChallenge':
+                $response = base64_encode(implode('|', [
+                    $input['token'],
+                    $input['type'],
+                    $input['deviceId'],
+                ]));
+                break;
 
-        $helper = $this->getDeviceHelper();
+            case 'registerApp':
+                $response = true;
+        }
 
-        $initiate = $helper->initiateVerification();
-
-        $authToken = $device->getAuthToken();
-
-        $helper->verification($initiate['callback'], $this->getMockedSdkData([
-            'contact' => $device->getContact(),
-        ]));
-
-        $device->reload();
-
-        $this->assertNotSame($authToken, $device->getAuthToken());
+        return [$method => $response];
     }
 
-    private function getMockedSdkData(array $override = [])
+    private function calculateHmac($token)
     {
-        return [
-            'sdk' => array_filter(array_merge([
-                'capability'       => '52000002000100040006',
-                'challenge'        => 'AUnhIkGYnGBK=='
-            ], $override))
+        $crypto = (new AES(AES::MODE_CTR, base64_decode($token)));
+
+        $string = $this->fixtures->device->getAppName() . '|' .
+                    substr($this->fixtures->device->getContact(), -10) . '|' .
+                    $this->fixtures->device->getUuid();
+
+        $hash = hash('sha256', $string);
+
+        return base64_encode($crypto->encrypt($hash));
+    }
+
+    private function getCommonCases($failure, $registration, $rotation)
+    {
+        // Cases-> Scenarios, gateway data ,token action, message
+        $cases = [];
+
+        $message = 'noClDataInGatewayData';
+        $gatewayData = [];
+        $cases[$message] = [[Scenario::N0000], $gatewayData, 'initial', $message,];
+
+        $message = 'clExpiryIsMissing';
+        $gatewayData = [
+            'cl_token'  => 'some_token',
         ];
+        $cases[$message] = [[Scenario::N0000], $gatewayData, 'initial', $message,];
+
+        $message = 'clExpiryIsNull';
+        $gatewayData = [
+            'cl_token'  => 'some_token',
+            'cl_expiry' => null,
+        ];
+        $cases[$message] = [[Scenario::N0000], $gatewayData, 'initial', $message,];
+
+        $message = 'normalRotateCall';
+        $gatewayData = [
+            'cl_token'  => 'some_token',
+            'cl_expiry' => 59, // Number of seconds adding to current time
+        ];
+        $cases[$message] = [[Scenario::N0000], $gatewayData, 'rotate', $message,];
+
+        // Final response
+        $message = 'noRegistrationOrRotationIsNeeded';
+        $gatewayData = [
+            'cl_token'  => 'some_token',
+            'cl_expiry' => 65, // Number of seconds adding to current time
+        ];
+        $cases[$message] = [[Scenario::N0000], $gatewayData, null, $message,];
+
+        // Scenarios
+        $message = 'scenario#ForcedError';
+        $gatewayData = [];
+        $cases[$message] = [[$failure], $gatewayData, null, $message,];
+
+        $message = 'scenario#ForcedRegistration';
+        $gatewayData = [
+            'cl_token'  => 'some_token',
+            'cl_expiry' => 61, // Number of seconds adding to current time
+        ];
+        $cases[$message] = [[$registration], $gatewayData, 'initial', $message,];
+
+        $message = 'scenario#ForcedRotation';
+        $gatewayData = [
+            'cl_token'  => 'some_token',
+            'cl_expiry' => 65, // Number of seconds adding to current time
+        ];
+        $cases[$message] = [[$rotation], $gatewayData, 'rotate', $message,];
+
+        return $cases;
     }
 }

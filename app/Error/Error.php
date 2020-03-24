@@ -5,6 +5,7 @@ namespace RZP\Error;
 use App;
 use RZP\Exception;
 use Illuminate\Support;
+use RZP\Models\Feature\Constants;
 use RZP\Trace\TraceCode;
 use RZP\Services\DowntimeMetric;
 
@@ -247,13 +248,12 @@ class Error extends Support\Fluent
         {
             if ($this->redis->get($cacheKey) !== null)
             {
-                $errorCodeMap = get_object_vars(json_decode($this->redis->get($cacheKey)));
+                $errorCodeMap = json_decode($this->redis->get($cacheKey), true);
             }
             else
             {
                 $this->readMappingFromFile($cacheKey, $method, $errorCodeMap);
             }
-
         }
         else
         {
@@ -517,26 +517,47 @@ class Error extends Support\Fluent
 
         $description = $isPublicRoute ? $this->getCustomerDescription() : $this->getDescription();
 
-        $publicReason   = null;
-
-        if($this->getAttribute(self::REASON) !== null)
-        {
-            $publicReason   = $this->getAttribute(self::POINT_OF_FAILURE)."-".
-                $this->getAttribute(self::FAILURE_STAGE)."-".$this->getAttribute(self::REASON);
-        }
-
         $error = array(
             self::PUBLIC_ERROR_CODE => $this->getPublicErrorCode(),
             self::DESCRIPTION       => $description,
-            self::REASON            => $publicReason,
             self::METADATA          => $this->getAttribute(self::METADATA)
         );
 
-        $this->trace->info(TraceCode::ERROR_RESPONSE_DATA,
-            [
+        $isReasonFeatureEnabled = false;
+
+        if (($this->app['basicauth'] !== null) and
+            ($this->app['basicauth']->getMerchant() !== null))
+        {
+            $merchant = $this->app['basicauth']->getMerchant();
+
+            $isReasonFeatureEnabled = $merchant->isFeatureEnabled(Constants::ERROR_REASON_RESPONSE);
+        }
+
+        if ($isReasonFeatureEnabled === true)
+        {
+            $publicReason   = null;
+
+            //New Error Detailed Field on feature basis will be shown to merchants
+            //This field is fetched from mapping file and concatanated here to
+            //Sample reason: Bank-Authorization-risk_decline
+            if($this->getAttribute(self::REASON) !== null)
+            {
+                $publicReason   = $this->getAttribute(self::POINT_OF_FAILURE)."-".
+                    $this->getAttribute(self::FAILURE_STAGE)."-".$this->getAttribute(self::REASON);
+            }
+
+            $reasonArr = array(
+                self::REASON            => $publicReason,
+            );
+
+            $error = array_merge($error, $reasonArr);
+
+            $this->trace->info(TraceCode::ERROR_RESPONSE_DATA,
+                [
                 'error_response' => $error
-            ]
-        );
+                ]
+            );
+        }
 
         $error = $this->checkAndAddDataToErrorResp($error);
 

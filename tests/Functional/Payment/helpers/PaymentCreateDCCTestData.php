@@ -9,6 +9,7 @@ return [
             'content' => [
                 'error' => [
                     'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Invalid currency_request_id',
                 ],
             ],
             'status_code' => 400,

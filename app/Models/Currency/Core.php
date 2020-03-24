@@ -77,6 +77,31 @@ class Core extends Base\Core
         return $rates;
     }
 
+    // `conversionRate` is the factor used to convert an amount in `fromCurrency`
+    // to the equivalent amount in `toCurrency`, i.e. we can multiply the amount
+    // in `fromCurrency` to this `conversionRate` to get the equivalent amount in
+    // `toCurrency`. Example:
+    //
+    // say 1 USD = 70 INR and 1 SGD = 50 INR, then
+    // conversionRate(USD, SGD) = 70/50 (and INR is irrelevant to the example)
+    //
+    // this means 20 USD is equivalent to 20*(70/50) SGD
+    //
+    public function getConversionRate($fromCurrency, $toCurrency)
+    {
+        $fromRates = $this->getOrUpdateRates($fromCurrency);
+
+        $denominationFactorToCurrency = Currency::DENOMINATION_FACTOR[$toCurrency];
+
+        $denominationFactorFromCurrency = Currency::DENOMINATION_FACTOR[$fromCurrency];
+
+        $denominationFactor = $denominationFactorToCurrency / $denominationFactorFromCurrency;
+
+        $conversionRate = $fromRates[$toCurrency] * $denominationFactor;
+
+        return $conversionRate;
+    }
+
     public function getBaseAmount($amount, $currency)
     {
         if ($currency === Currency::INR)
@@ -99,6 +124,21 @@ class Core extends Base\Core
         return $baseAmount;
     }
 
+    public function convertAmount($amount, $fromCurrency, $toCurrency)
+    {
+        $fromRates = $this->getOrUpdateRates($fromCurrency);
+
+        $denominationFactorToCurrency = Currency::DENOMINATION_FACTOR[$toCurrency];
+
+        $denominationFactorFromCurrency = Currency::DENOMINATION_FACTOR[$fromCurrency];
+
+        $denominationFactor = $denominationFactorToCurrency / $denominationFactorFromCurrency;
+
+        $finalAmount = (int) ceil($amount * $fromRates[$toCurrency] * $denominationFactor);
+
+        return $finalAmount;
+    }
+
     protected function getRedisKey($currency, $time = null)
     {
         $key = 'currency:' . self::EXCHANGE_RATE_KEY . strtoupper($currency);
@@ -118,8 +158,13 @@ class Core extends Base\Core
         return $key;
     }
 
-    protected function getDCCMarkUpPercentage($rates)
+    protected function getDCCMarkUpPercentage($rates, $requestedCurrency)
     {
+        if ($requestedCurrency === Currency::INR)
+        {
+            return 0;
+        }
+
         return isset($rates[self::DCC_MARK_UP_PERCENTAGE_KEY]) === true ? $rates[self::DCC_MARK_UP_PERCENTAGE_KEY] : self::DCC_MARK_UP_PERCENTAGE;
     }
 
@@ -142,6 +187,8 @@ class Core extends Base\Core
 
     public function getConvertedAmount($baseAmount, $rate, $markUpPercent)
     {
+        $rate = number_format($rate, 2);
+
         $convertedAmount = $baseAmount * $rate;
 
         return (int) ceil($convertedAmount + (($markUpPercent * $convertedAmount) / 100));
@@ -161,14 +208,14 @@ class Core extends Base\Core
 
         $rates = $this->getOrUpdateRates($baseCurrency, $roundedTime);
 
-        $markUpPercent = $this->getDCCMarkUpPercentage($rates);
-
         $supportedCurrencies = $this->getSupportedCurrenciesDetails();
 
         foreach (array_keys($supportedCurrencies) as $currency)
         {
             if(isset($rates[$currency]) === true)
             {
+                $markUpPercent = $this->getDCCMarkUpPercentage($rates, $currency);
+
                 $supportedCurrencies[$currency]['amount'] = $this->getConvertedAmount($baseAmount, $rates[$currency], $markUpPercent);
             }
             else
@@ -192,13 +239,15 @@ class Core extends Base\Core
 
             if((empty($rates) === false) and (isset($rates[$requestedCurrency]) === true))
             {
-                $markUpPercent = $this->getDCCMarkUpPercentage($rates);
+                $forexRate = number_format($rates[$requestedCurrency], 2);
+
+                $markUpPercent = $this->getDCCMarkUpPercentage($rates, $requestedCurrency);
 
                 $requestedCurrencyData['currency'] = $requestedCurrency;
 
-                $requestedCurrencyData['forex_rate'] = (string)$rates[$requestedCurrency];
+                $requestedCurrencyData['forex_rate'] = $forexRate;
 
-                $requestedCurrencyData['amount'] = (string)$this->getConvertedAmount($baseAmount,$rates[$requestedCurrency], $markUpPercent);
+                $requestedCurrencyData['amount'] = (string)$this->getConvertedAmount($baseAmount,$forexRate, $markUpPercent);
 
                 $requestedCurrencyData['dcc_mark_up_percent'] = $markUpPercent;
             }

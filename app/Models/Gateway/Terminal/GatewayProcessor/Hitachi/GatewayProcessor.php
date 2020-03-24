@@ -76,10 +76,6 @@ class GatewayProcessor extends BaseGatewayProcessor
 
             $merchantDetail[MerchantDetailConstants::BUSINESS_OPERATION_PIN] = TerminalConstants::DEFAULT_BUSINESS_OPERATION_PIN;
 
-            $merchantDetail[MerchantDetailConstants::BUSINESS_DBA] = TerminalConstants::DEFAULT_BUSINESS_DBA;
-
-            $merchantDetail[MerchantDetailConstants::BUSINESS_NAME] = TerminalConstants::DEFAULT_BUSINESS_NAME;
-
             $merchantDetail[MerchantDetailConstants::BUSINESS_OPERATION_CITY] = TerminalConstants::DEFAULT_BUSINESS_OPERATION_CITY;
         }
     }

@@ -229,7 +229,7 @@ return [
                 'error' => [
                     'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description'   => PublicErrorDescription::BAD_REQUEST_PAYMENT_FAILED,
-                    'reason'   => 'Gateway-Authorization-payment_failed'
+                    'reason'   => 'bank-authorization-declined'
                 ],
             ],
             'status_code' => 400,

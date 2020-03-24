@@ -171,6 +171,32 @@ class NetbankingIdfcGatewayTest extends TestCase
         $this->assertEquals($payment['status'], 'failed');
     }
 
+    public function testPaymentCancelledByUserForResponse()
+    {
+        $this->fixtures->merchant->addFeatures(['error_reason_response']);
+
+        $this->mockServerContentFunction(function (&$content, $action = null)
+        {
+            if([$action === 'authorize'])
+            {
+                $content[Fields::PAYMENT_STATUS]    = 'N';
+                $content[Fields::RESPONSE_CODE]     = 'CAN018';
+                $content[Fields::RESPONSE_MESSAGE]  = 'Transaction canceled by customer';
+            }
+        });
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($testData, function()
+        {
+            $this->doAuthPayment($this->payment);
+        });
+
+        $payment = $this->getDbLastEntityToArray('payment', 'test');
+
+        $this->assertEquals($payment['status'], 'failed');
+    }
+
     public function testPaymentFailedVerifyFailed()
     {
         $data = $this->testData['testPaymentFailed'];

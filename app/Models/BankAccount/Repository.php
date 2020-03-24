@@ -97,13 +97,6 @@ class Repository extends Base\Repository
         return $query->get();
     }
 
-    public function getMerchantBankAccountsFromAccountNumber(string $accountNumber): Entity
-    {
-        return $this->newQuery()
-                    ->where(Entity::ACCOUNT_NUMBER, $accountNumber)
-                    ->first();
-    }
-
     public function findVirtualBankAccountByAccountNumberAndBankCode($accountNumber, $bankCode = null)
     {
         $virtualAccountId     = $this->repo->virtual_account->dbColumn(VirtualAccount\Entity::ID);

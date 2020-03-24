@@ -336,6 +336,9 @@ class CreateMerchantDetailsTable extends Migration
             $table->string(MerchantDetail::FUND_ACCOUNT_VALIDATION_ID, 14)
                   ->nullable();
 
+            $table->date(MerchantDetail::DATE_OF_ESTABLISHMENT)
+                  ->nullable();
+
             $table->foreign(MerchantDetail::MERCHANT_ID)
                   ->references(Merchant\Entity::ID)
                   ->on(Table::MERCHANT)

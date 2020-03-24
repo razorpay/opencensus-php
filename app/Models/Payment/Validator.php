@@ -115,8 +115,8 @@ class Validator extends Base\Validator
         'payment_id'                    => 'sometimes_if:method,cardless_emi',
         'application'                   => 'sometimes|filled|string|in:google_pay',
         'device'                        => 'sometimes',
-        'dcc_currency'                  => 'sometimes|string|max:3',
-        'currency_request_id'           => 'sometimes|string'
+        'currency_request_id'           => 'required_with:dcc_currency|string',
+        'dcc_currency'                  => 'required_with:currency_request_id|string|max:3|custom',
     ];
 
     protected static $editAcquirerRules = [
@@ -195,14 +195,16 @@ class Validator extends Base\Validator
         '_'                         => 'sometimes|array',
         'order_id'                  => 'sometimes|filled',
         'currency'                  => 'sometimes|string|size:3',
-        'amount'                    => 'sometimes|integer'
+        'amount'                    => 'sometimes|integer',
+        'token'                     => 'sometimes|string|max:20'
     ];
 
     protected static $postFlowsRules = [
         'card_number'        => 'sometimes|numeric|luhn|digits_between:12,19',
         'iin'                => 'sometimes|numeric|digits:6',
         'currency'           => 'sometimes|string|size:3',
-        'amount'             => 'sometimes|integer'
+        'amount'             => 'sometimes|integer',
+        'token'              => 'sometimes|string|max:20'
     ];
 
     protected static $pspAmountLimit = [
@@ -480,16 +482,6 @@ class Validator extends Base\Validator
     {
         (new Vpa\Validator)->validateAddress($attribute, $vpa);
 
-        if (ProviderCode::isYesBankSpecificVpa($vpa) === true)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_YESBANK_PAYMENT_DISABLED,
-                $attribute,
-                [
-                    'vpa' => $vpa
-                ]);
-        }
-
         $vpaParts = explode('@', $vpa);
 
         if (ProviderCode::validate($vpaParts[1]) === false)
@@ -501,6 +493,34 @@ class Validator extends Base\Validator
                 [
                     'vpa' => $vpa
                 ]);
+        }
+
+        // First we remove all the non-numeric chars from the string
+        // +/- are considered numeric chars, we need to remove these separately
+        // Now, we are left we only numbers
+        $number = str_replace(['+', '-'], '', filter_var($vpaParts[0], FILTER_SANITIZE_NUMBER_INT));
+
+        // As per card validator the minimum length is 12
+        if (strlen($number) >= 12)
+        {
+            // This pattern is taken from \RZP\Trace\CardNumberScrubProcessor::CARD_REGEX
+            $pattern = \RZP\Trace\CardNumberScrubProcessor::CARD_REGEX;
+
+            $response = preg_match($pattern, $number, $matched, PREG_UNMATCHED_AS_NULL);
+
+            if (is_null($response) === false)
+            {
+                // If any number matches the pattern, We can run that by Luhn's algo to verify.
+                if (Base\Luhn::isValid($number) === true)
+                {
+                    throw new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_PAYMENT_UPI_INVALID_VPA,
+                        $attribute,
+                        [
+                            'reason' => 'card_number_detected_in_vpa',
+                        ]);
+                }
+            }
         }
     }
 
@@ -1020,7 +1040,7 @@ class Validator extends Base\Validator
 
     public function captureAmountValidate(Payment\Entity $payment, int $amount)
     {
-        if ($amount !== $payment->getGatewayAmount())
+        if ($amount !== $payment->getAmount())
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_CAPTURE_AMOUNT_NOT_EQUAL_TO_AUTH,
@@ -1035,14 +1055,14 @@ class Validator extends Base\Validator
 
     protected function captureCurrencyValidate($payment, $currency)
     {
-        if ($currency !== $payment->getGatewayCurrency())
+        if ($currency !== $payment->getCurrency())
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_CAPTURE_CURRENCY_MISMATCH,
                 Payment\Entity::CURRENCY,
                 [
                     'capture_currency' => $currency,
-                    'payment_currency' => $payment->getGatewayCurrency(),
+                    'payment_currency' => $payment->getCurrency(),
                     'payment_id'       => $payment->getId(),
                 ]);
         }
@@ -1133,6 +1153,15 @@ class Validator extends Base\Validator
                 'Cannot force authorize on this gateway',
                 'gateway',
                 $gateway);
+        }
+    }
+
+    protected function validateDccCurrency($attribute, $dccCurrency)
+    {
+        if (Currency::isSupportedCurrency($dccCurrency) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Invalid DCC Currency: ' . $dccCurrency);
         }
     }
 

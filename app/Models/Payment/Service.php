@@ -710,7 +710,7 @@ class Service extends Base\Service
 
         if ($this->app['basicauth']->isProxyAuth() === true)
         {
-            (new Payment\Refund\Service())->addModeAndPublicStatus($refundsArray, $refunds);
+            (new Payment\Refund\Service())->addModeAndPublicStatus($refundsArray);
         }
 
         return $refundsArray;
@@ -1155,7 +1155,7 @@ class Service extends Base\Service
     protected function addDashboardFlagInstantRefundSupport(array &$entity, $payment)
     {
         $entity[RefundConstants::INSTANT_REFUND_SUPPORT] = $this->getNewProcessor($this->merchant)
-                                                                ->isInstantRefundSupported($payment);
+                                                                ->isInstantRefundSupportedOnPayment($payment);
     }
 
     public function getPaymentFlows(array $input)
@@ -1220,7 +1220,8 @@ class Service extends Base\Service
 
     public function isDccEnabledIIN($iinEntity): bool
     {
-        if (($iinEntity->isInternational() === true) and
+        if (($iinEntity !== null) and
+            ($iinEntity->isInternational() === true) and
             (Card\Network::isDCCSupportedNetwork($iinEntity->getNetworkCode())) === true)
         {
             return true;
@@ -1257,6 +1258,17 @@ class Service extends Base\Service
         else if (isset($input['iin']) === true)
         {
             $iin = $input['iin'];
+        }
+        else if (isset($input['token']) === true)
+        {
+            $tokenId = $input['token'];
+
+            $token = $this->repo->token->findByPublicId($tokenId);
+
+            if ($token !== null and $token->hasCard() === true)
+            {
+                $iin = $token->card->getIin();
+            }
         }
         else
         {

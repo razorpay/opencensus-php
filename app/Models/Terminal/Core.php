@@ -510,7 +510,6 @@ class Core extends Base\Core
     }
 
     public static function getBankAccountSeriesPrefixForX(Merchant\Entity $merchant, string $mode): string
-
     {
         if ($mode === Mode::TEST)
         {

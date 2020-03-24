@@ -1840,7 +1840,7 @@ return [
                 'netbanking' => [
                     'UTIB' => 'Axis Bank',
 //                    'BARB' => 'Bank of Baroda',
-                    'HDFC' => 'HDFC Bank',
+                    'YESB' => 'Yes Bank',
                 ],
                 'wallet' => [
                     'paytm' => true,
@@ -5828,4 +5828,22 @@ return [
             ],
         ],
     ],
+
+    'testMerchantBankingVAMigration' => [
+        'request' => [
+            'url' => '/merchants/banking-va-migration',
+            'method' => 'post',
+            'content' => [
+                'merchant_ids' => ['10000000000000']
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'total'     => 1,
+                'processed' => 1,
+                'illegal'   => [],
+                'failed'    => []
+            ]
+        ]
+    ]
 ];

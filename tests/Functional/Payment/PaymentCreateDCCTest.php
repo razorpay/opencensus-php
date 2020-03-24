@@ -48,7 +48,7 @@ class PaymentCreateDCCTest extends TestCase
         $payment['dcc_currency'] = $cardCurrency;
         $payment['currency_request_id'] = $currencyRequestId;
 
-        $this->doAuthAndCapturePayment($payment, $usdAmount, $cardCurrency);
+        $this->doAuthAndCapturePayment($payment);
 
         $payment = $this->getLastEntity('payment', true);
         $paymentMeta = $this->getLastEntity('payment_meta', true);
@@ -57,6 +57,30 @@ class PaymentCreateDCCTest extends TestCase
         $this->assertEquals($payment['id'], 'pay_' . $paymentMeta['payment_id']);
         $this->assertEquals($cardCurrency, $paymentMeta['gateway_currency']);
         $this->assertEquals($usdAmount, $paymentMeta['gateway_amount']);
+    }
+
+    public function testPaymentCreateWithDCCINR()
+    {
+        $response = $this->sendRequest($this->getDefaultPaymentFlowsRequestData());
+        $responseContent = json_decode($response->getContent(), true);
+
+        $cardCurrency = $responseContent['card_currency'];
+        $currencyRequestId = $responseContent['currency_request_id'];
+
+        $this->assertEquals("USD", $cardCurrency);
+        $this->assertNotNull($responseContent['all_currencies']);
+        $this->assertNotNull($currencyRequestId);
+
+        $payment = $this->payment;
+        $payment['dcc_currency'] = 'INR';
+        $payment['currency_request_id'] = $currencyRequestId;
+
+        $this->doAuthAndCapturePayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+        $paymentMeta = $this->getLastEntity('payment_meta', true);
+
+        $this->assertEquals($payment['amount'], $paymentMeta['gateway_amount']);
     }
 
     public function testDccForMccPayment()
@@ -93,7 +117,6 @@ class PaymentCreateDCCTest extends TestCase
         $responseContent = json_decode($response->getContent(), true);
 
         $cardCurrency = $responseContent['card_currency'];
-        $usdAmount = $responseContent['all_currencies'][$cardCurrency]['amount'];
 
         $payment = $this->payment;
         $payment['dcc_currency'] = $cardCurrency;
@@ -140,6 +163,38 @@ class PaymentCreateDCCTest extends TestCase
 
         $this->assertTrue(array_key_exists('currency_request_id', $responseContent) === false);
         $this->assertTrue(array_key_exists('all_currencies', $responseContent) === false);
+    }
+
+    public function testPaymentFlowsCurrencyInfoWithToken()
+    {
+        $token = $this->fixtures->create('token', [
+            'method'  => 'card',
+            'card_id' => '100000001lcard',
+            'bank'    => null,
+            'wallet'  => null
+        ]);
+
+        $card = $this->getDbEntityById('card', $token['card_id']);
+
+        $this->fixtures->iin->edit($card['iin'], ['country' => 'US', 'network' => 'Visa']);
+
+        $tokenId = 'token_' . $token['id'];
+
+        $flowsData = [
+            'content' => ['amount' => 50000, 'currency' => 'INR', 'token' => $tokenId],
+            'method'  => 'POST',
+            'url'     => '/payment/flows',
+        ];
+
+        $response = $this->sendRequest($flowsData);
+        $responseContent = json_decode($response->getContent(), true);
+
+        $cardCurrency = $responseContent['card_currency'];
+        $currencyRequestId = $responseContent['currency_request_id'];
+
+        $this->assertEquals("USD", $cardCurrency);
+        $this->assertNotNull($responseContent['all_currencies']);
+        $this->assertNotNull($currencyRequestId);
     }
 
     private function getDefaultPaymentFlowsRequestData($iin = null)

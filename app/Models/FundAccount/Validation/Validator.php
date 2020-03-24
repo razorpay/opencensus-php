@@ -56,7 +56,7 @@ class Validator extends Base\Validator
 
         if ((empty($validation->balance) === true) or
             (($validation->balance->isTypeBanking() === true) and
-             ($validation->balance->getAccountType() !== Merchant\Balance\AccountType::SHARED)))
+             ($validation->balance->isAccountTypeShared() === false)))
         {
             throw new BadRequestException(
                 ErrorCode::BAD_REQUEST_FUND_ACCOUNT_VALIDATION_NOT_SUPPORTED_BALANCE,

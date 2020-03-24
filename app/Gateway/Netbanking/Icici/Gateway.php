@@ -529,7 +529,11 @@ class Gateway extends Base\Gateway
             unset($requestData['AMT']);
         }
 
-        $this->traceGatewayPaymentRequest($requestData, $input);
+        $traceRequestData = $requestData;
+
+        unset($traceRequestData[RequestFields::ACCOUNT_NO]);
+
+        $this->traceGatewayPaymentRequest($traceRequestData, $input);
 
         $encryptedString = $this->getEncryptedString($requestData);
 

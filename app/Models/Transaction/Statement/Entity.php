@@ -178,6 +178,7 @@ class Entity extends Transaction\Entity
                 BankTransfer\Entity::BANK_REFERENCE,
                 BankTransfer\Entity::AMOUNT,
                 BankTransfer\Entity::PAYER_BANK_ACCOUNT,
+                BankTransfer\Entity::PAYEE_ACCOUNT,
                 BankTransfer\Entity::CREATED_AT,
             ]);
 

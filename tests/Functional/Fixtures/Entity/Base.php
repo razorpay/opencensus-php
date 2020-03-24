@@ -74,6 +74,7 @@ class Base
         'billdesk'              => \RZP\Gateway\Billdesk\Entity::class,
         'cardless_emi'          => \RZP\Gateway\CardlessEmi\Entity::class,
         'options'               => \RZP\Models\Options\Entity::class,
+        'config'                => \RZP\Models\Payment\Config\Entity::class,
     ];
 
     protected static $liveAndTest = [

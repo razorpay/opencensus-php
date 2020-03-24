@@ -37,7 +37,7 @@ class FundAccountPayout extends Base
             //
 
             if (($payout->isStatusBeforeCreate() === false) and
-                ($payout->balance->getAccountType() !== AccountType::DIRECT))
+                ($payout->balance->isAccountTypeDirect() === false))
             {
                 (new Transaction\Core)->dispatchEventForTransactionCreated($payout->transaction);
             }

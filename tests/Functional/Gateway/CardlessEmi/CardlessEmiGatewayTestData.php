@@ -32,6 +32,32 @@ return [
         'otp_attempts'      => null
     ],
 
+    'testPaymentForSubMerchant' => [
+        'amount'            => 50000,
+        'method'            => 'cardless_emi',
+        'status'            => 'authorized',
+        'two_factor_auth'   => 'not_applicable',
+        'amount_authorized' => 50000,
+        'amount_refunded'   => 0,
+        'refund_status'     => null,
+        'currency'          => 'INR',
+        'description'       => 'random description',
+        'bank'              => null,
+        'error_code'        => null,
+        'error_description' => null,
+        'email'             => 'a@b.com',
+        'contact'           => '+919918899029',
+        'notes'             => [
+            'merchant_order_id' => 'random order id',
+        ],
+        'gateway'           => 'cardless_emi',
+        'terminal_id'       => '1CrdlesEmiTrml',
+        'signed'            => false,
+        'verified'          => null,
+        'entity'            => 'payment',
+        'otp_attempts'      => null
+    ],
+
     'testPaymentFlexMoney'  => [
         'merchant_id'       => '10000000000000',
         'amount'            => 50000,
@@ -59,8 +85,60 @@ return [
         'otp_attempts'      => null
     ],
 
+    'testPaymentFlexMoneyForSubMerchant' => [
+        'amount'            => 50000,
+        'method'            => 'cardless_emi',
+        'status'            => 'authorized',
+        'two_factor_auth'   => null,
+        'amount_authorized' => 50000,
+        'amount_refunded'   => 0,
+        'refund_status'     => null,
+        'currency'          => 'INR',
+        'description'       => 'random description',
+        'bank'              => null,
+        'error_code'        => null,
+        'error_description' => null,
+        'email'             => 'a@b.com',
+        'contact'           => '+919918899029',
+        'notes'             => [
+            'merchant_order_id' => 'random order id',
+        ],
+        'gateway'           => 'cardless_emi',
+        'terminal_id'       => '20CrdlesEmiTml',
+        'signed'            => false,
+        'verified'          => null,
+        'entity'            => 'payment',
+        'otp_attempts'      => null
+    ],
+
     'testPaymentZestMoney'  => [
         'merchant_id'       => '10000000000000',
+        'amount'            => 50000,
+        'method'            => 'cardless_emi',
+        'status'            => 'authorized',
+        'two_factor_auth'   => 'not_applicable',
+        'amount_authorized' => 50000,
+        'amount_refunded'   => 0,
+        'refund_status'     => null,
+        'currency'          => 'INR',
+        'description'       => 'random description',
+        'bank'              => null,
+        'error_code'        => null,
+        'error_description' => null,
+        'email'             => 'a@b.com',
+        'contact'           => '+919918899029',
+        'notes'             => [
+            'merchant_order_id' => 'random order id',
+        ],
+        'gateway'           => 'cardless_emi',
+        'terminal_id'       => '30CrdlesEmiTml',
+        'signed'            => false,
+        'verified'          => null,
+        'entity'            => 'payment',
+        'otp_attempts'      => null
+    ],
+
+    'testPaymentZestMoneyForSubMerchant'  => [
         'amount'            => 50000,
         'method'            => 'cardless_emi',
         'status'            => 'authorized',

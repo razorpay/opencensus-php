@@ -19,6 +19,7 @@ use RZP\Models\Base\PublicCollection;
 use RZP\Constants\Mode as ModeConstants;
 use RZP\Models\Card\Entity as CardVault;
 use RZP\Models\Settlement\SlackNotification;
+use RZP\Models\Payout\Entity as PayoutEntity;
 use RZP\Models\BankAccount\Core as BankAccountCore;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\FundTransfer\Holidays as TransferHoliday;
@@ -112,6 +113,8 @@ class FundTransfer extends Base
      */
     public function makeRequestUsingType(): array
     {
+        $source = $this->fta->source;
+
         $sourceType = $this->fta->getSourceType();
 
         $purpose    = $this->fta->getPurpose();
@@ -140,6 +143,11 @@ class FundTransfer extends Base
             if ($this->fta->isRefund() === true)
             {
                 $product = Constants::PAYOUT_REFUND;
+            }
+
+            if ($source->getPayoutType() === PayoutEntity::ON_DEMAND)
+            {
+                $product = Constants::ES_ON_DEMAND;
             }
         }
 

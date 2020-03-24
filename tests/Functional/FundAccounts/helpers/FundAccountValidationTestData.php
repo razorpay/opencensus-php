@@ -276,40 +276,6 @@ return [
         ],
     ],
 
-    'testFundAccValidationBlockedForYesbank' => [
-        'request' => [
-            'url'     => '/fund_accounts/validations',
-            'method'  => 'post',
-            'content' => [
-                Validation::FUND_ACCOUNT  => [
-                    FundAccount::ACCOUNT_TYPE => 'bank_account',
-                    FundAccount::DETAILS      => [
-                        BankAccount::ACCOUNT_NUMBER => '123456789',
-                        BankAccount::NAME           => 'Rohit Keshwani',
-                        BankAccount::IFSC           => 'YESB0000001',
-                    ],
-                ],
-                Validation::AMOUNT        => '100',
-                Validation::CURRENCY      => 'INR',
-                Validation::NOTES         => [],
-                Validation::RECEIPT       => '12345667',
-            ],
-        ],
-        'response' => [
-            'content' => [
-                'error' => [
-                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'We are unable to complete this transaction due to the restrictions on YES Bank\'s operations by RBI (Gazette notification (S.O. 993(E)) dated 5th March 2020',
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class' => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_YESBANK_PAYMENT_DISABLED,
-        ],
-    ],
-
     'testWebhookFundAccountValidationCompleted' => [
         'mode' => 'test',
         'event' => [

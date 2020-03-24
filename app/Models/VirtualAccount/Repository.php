@@ -84,6 +84,16 @@ class Repository extends Base\Repository
                     ->findOrFailPublic($id);
     }
 
+    public function findByPublicIdWithRelations(string $id, array $relations = [])
+    {
+        Entity::verifyIdAndStripSign($id);
+
+        return $this->newQuery()
+                    ->with($relations)
+                    ->findOrFailPublic($id);
+    }
+
+
     public function findActiveByDescriptorAndMerchant(
         string $descriptor,
         Merchant $merchant)

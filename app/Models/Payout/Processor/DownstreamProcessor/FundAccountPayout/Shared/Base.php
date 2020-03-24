@@ -180,8 +180,7 @@ class Base extends FundAccountPayout\Base
 
             $lowBalanceThreshold = $merchantConfig['low_balance_threshold'] ?? 0;
 
-            // TODO: Have to handle locked balance here
-            $balance = $payout->balance->getBalance();
+            $balance = $payout->balance->getBalanceWithLockedBalance();
 
             if ($balance > $lowBalanceThreshold)
             {

@@ -58,7 +58,7 @@ trait Capture
 
         $this->setPayment($payment);
 
-        $input['currency'] = $payment->getGatewayCurrency();
+        $input['currency'] = $payment->getCurrency();
 
         $payment->getValidator()->validateInput('capture', $input);
 
@@ -337,7 +337,7 @@ trait Capture
 
             $data = [
                 'payment' => $payment->toArrayGateway(),
-                'amount' => $captureAmount,
+                'amount' => $payment->getGatewayAmount(),
                 'currency' => $payment->getGatewayCurrency()
             ];
 
@@ -523,17 +523,10 @@ trait Capture
         // fix these later (by around 19th-20th Dec). We need to first check whether capture succeeded or not
         // and only then capture on Cybersource gateway if required. Otherwise, it'll capture multiple times.
         //
-        // For PaySecure, if we don't capture the payment, the amount would not be settled to NPCI and hence it would
-        // not be settled to us. So, for every exceptions, we should dispatch to capture job for PaySecure.
-        //
         switch ($payment->getGateway())
         {
             case Payment\Gateway::HDFC:
                 return (($ex instanceof Exception\GatewayTimeoutException) === true);
-            case Payment\Gateway::HITACHI:
-                return ($payment->card->getNetworkCode() === Card\Network::RUPAY);
-            case Payment\Gateway::PAYSECURE:
-                return true;
         }
 
         return false;

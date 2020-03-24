@@ -123,67 +123,72 @@ return array(
     // https://github.com/razorpay/api/wiki/Slack-Channel-IDs
     'channels' => [
         // transactions_high
-        'high'                 => 'C0KRNK0AF',
+        'high'                   => 'C0KRNK0AF',
         // transactions_risk_4
-        'high_4'               => 'C2CD9RXKR',
+        'high_4'                 => 'C2CD9RXKR',
         // transactions_highrisk
-        'highrisk'             => 'C1NBL61NE',
+        'highrisk'               => 'C1NBL61NE',
         // transactions
-        'low'                  => 'C04260LMZ',
+        'low'                    => 'C04260LMZ',
         // transactions_lt_10
-        'lt_10'                => 'C2R9JBVED',
+        'lt_10'                  => 'C2R9JBVED',
         // operations_log
-        'operations_log'       => 'C0KUX9WSE',
+        'operations_log'         => 'C0KUX9WSE',
         // reconciliation
-        'reconciliation'       => 'C1GNPHC07',
+        'reconciliation'         => 'C1GNPHC07',
         // reconciliation 2
-        'reconciliation2'      => 'C847BUR61',
+        'reconciliation2'        => 'C847BUR61',
         // reconciliation_info
-        'reconciliation_info'  => 'CAP0K6S5U',
+        'reconciliation_info'    => 'CAP0K6S5U',
         //recon_alerts
-        'recon_alerts'         => 'CGXKVCMAL',
+        'recon_alerts'           => 'CGXKVCMAL',
+        // metrics-payments-recon
+        'metrics-payments-recon' => 'CNKQG82K1',
         // transactions_risky
-        'risky'                => 'C0RL2C917',
+        'risky'                  => 'C0RL2C917',
         // settlements
-        'settlements'          => 'C02LBK2D7',
+        'settlements'            => 'C02LBK2D7',
         // settlement_logs
-        'settlement_logs'      => 'CCMFGFCG0',
+        'settlement_logs'        => 'CCMFGFCG0',
         // tech_logs
-        'tech_logs'            => 'C0E2Q6MJM',
+        'tech_logs'              => 'C0E2Q6MJM',
         // tech_logs_verify
-        'tech_logs_verify'     => 'C3AJ9V9EY',
+        'tech_logs_verify'       => 'C3AJ9V9EY',
         // subscriptions
-        'subscriptions'        => 'C77PAU3JM',
+        'subscriptions'          => 'C77PAU3JM',
         // virtual_accounts
-        'virtual_accounts'     => 'C44FHBKC1',
-        'virtual_accounts_log' => 'C809AQYUC',
-        'upi_transfer_logs'    => 'CVA3MH8NT',
+        'virtual_accounts'       => 'C44FHBKC1',
+        'virtual_accounts_log'   => 'C809AQYUC',
+        'upi_transfer_logs'      => 'CVA3MH8NT',
         // BharatQR
-        'bharatqr_logs'        => 'CHYL0H2DR',
+        'bharatqr_logs'          => 'CHYL0H2DR',
         // tech_logs_mail
-        'tech_logs_mail'       => 'C50JZ3S5T',
+        'tech_logs_mail'         => 'C50JZ3S5T',
         // risk
-        'risk'                 => 'C0SG9Q7TM',
+        'risk'                   => 'C0SG9Q7TM',
         // operations
-        'operations'           => 'C0KUX9WSE',
+        'operations'             => 'C0KUX9WSE',
         // Fund Account Validation logs
-        'fav_logs'             =>  'CFQFNH3S7',
+        'fav_logs'               =>  'CFQFNH3S7',
         //FTS logs
-        'fts_alerts'           => 'CGJA83JUW',
+        'fts_alerts'             => 'CGJA83JUW',
         // tech_alerts channel
-        'tech_alerts'          => 'C5FD7THSP',
+        'tech_alerts'            => 'C5FD7THSP',
         // pgob_alerts channel
-        'pgob_alerts'          => 'CL985FWUX',
+        'pgob_alerts'            => 'CL985FWUX',
         // fta alerts
-        'fta_alerts'           => 'CMLR1R6FJ',
+        'fta_alerts'             => 'CMLR1R6FJ',
         // irctc alerts
-        'ops_irctc'            => 'C971JT8JC',
+        'ops_irctc'              => 'C971JT8JC',
         // critical amount loading amount in Virtual account alert
-        'x_finops'             => 'CSR546JHW',
+        'x_finops'               => 'CSR546JHW',
 
-        'payout_links_alerts'  => 'CT0D3HTBR',
+        'payout_links_alerts'    => 'CT0D3HTBR',
+
+        'payments_cards'         => 'CNVG04YSZ',
+
         //rbl alerts
-        'rbl_alerts'           => 'CUT37PDUY',
+        'rbl_alerts'             => 'CUT37PDUY',
 
     ],
 
