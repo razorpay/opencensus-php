@@ -91,6 +91,10 @@ class ConfigKey
 
     const RX_SHARED_ACCOUNT_ALLOWED_CHANNELS    = self::PREFIX . 'rx_shared_account_allowed_channels';
 
+    // This regex is used to scrub credit card numbers from logs.
+    // Currently only banking specific routes will be affected by this
+    const CREDIT_CARD_REGEX_FOR_REDACTING       = self::PREFIX . 'credit_card_regex_for_redacting';
+
     const PUBLIC_KEYS = [
         self::TERMINAL_SELECTION_LOG_VERBOSE,
         self::PRICING_RULE_SELECTION_LOG_VERBOSE,
@@ -138,6 +142,7 @@ class ConfigKey
         self::BLOCK_YESBANK_WALLET_PAYOUTS,
         self::RX_ACCOUNT_NUMBER_SERIES_PREFIX,
         self::RX_SHARED_ACCOUNT_ALLOWED_CHANNELS,
+        self::CREDIT_CARD_REGEX_FOR_REDACTING,
     ];
 
     public static function isSensitive(string $key)

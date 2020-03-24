@@ -102,6 +102,8 @@ class Validator extends Base\Validator
         ConfigKey::BLOCK_YESBANK_WALLET_PAYOUTS       => 'filled|boolean',
         ConfigKey::RX_ACCOUNT_NUMBER_SERIES_PREFIX    => 'filled|array',
         ConfigKey::RX_SHARED_ACCOUNT_ALLOWED_CHANNELS => 'filled|array',
+
+        ConfigKey::CREDIT_CARD_REGEX_FOR_REDACTING    => 'filled|string',
     ];
 
     protected static $setRedisKeysRules = [

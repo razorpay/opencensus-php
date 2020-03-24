@@ -4544,6 +4544,84 @@ final class Route
         'consume_typeform_webhook',
     ];
 
+    //
+    // Banking specific routes for which credit card info will be scrubbed from logs
+    //
+    const BANKING_SPECIFIC_ROUTES = [
+        'payout_create',
+        'payout_create_with_otp',
+        'payout_bulk_create',
+        'payout_approve_bulk',
+        'payout_reject_bulk',
+        'payout_approve',
+        'payout_reject',
+        'payout_fetch_by_id',
+        'payout_fetch_multiple',
+        'payout_cancel',
+        'payout_update_status',
+        'payout_purpose_get',
+        'payout_purpose_post',
+        'payout_fetch_reversals',
+        'payouts_process_queued',
+        'payouts_summary',
+        'payouts_workflow_summary',
+
+        'payout_links_fetch_multiple',
+        'payout_links_fetch_by_id',
+        'payout_links_create',
+        'payout_links_generate_end_user_otp',
+        'payout_links_generate_end_user_otp_cors',
+        'payout_links_verify_customer_otp',
+        'payout_links_verify_customer_otp_cors',
+        'payout_links_cancel',
+        'payout_links_status',
+        'payout_links_status_cors',
+        'payout_update_pull_payout_status',
+        'payout_links_customer_hosted_page',
+
+        'payout_links_added_fund_accounts',
+        'payout_links_added_fund_accounts_cors',
+        'payout_links_initiate',
+        'payout_links_initiate_cors',
+        'payout_links_settings_post',
+        'payout_links_settings_get',
+        'payout_links_merchant_settings_get',
+        'payout_links_merchant_settings_post',
+        'payout_links_merchant_on_boarding_status',
+        'payout_links_merchant_summary',
+        'payout_links_resend_notification',
+
+        'contact_get',
+        'contact_list',
+        'contact_create',
+        'bulk_contact_create',
+        'contact_update',
+        'contact_delete',
+        'contact_types_get',
+        'contact_types_post',
+
+        'fund_account_validate',
+        'fund_account_validation_retry',
+        'fund_account_validate_fetch',
+        'fund_account_validate_fetch_by_id',
+        'fund_account_get',
+        'fund_account_list',
+        'fund_account_create',
+        'fund_account_update',
+        'fund_account_bulk_create',
+
+        'banking_account_statement_generate',
+
+        'bank_transfer_process',
+        'bank_transfer_process_icici',
+        'bank_transfer_process_file',
+        'bank_transfer_process_file_rbl',
+        'bank_transfer_process_rbl',
+        'bank_transfer_process_rbl_test',
+        'bank_transfer_process_rbl_internal',
+        'bank_transfer_process_test',
+    ];
+
     /**
      * @var Router
      */
@@ -4685,6 +4763,11 @@ final class Route
     public function getUrlWithAuth($relativeUrl, $key = '', $secret = '')
     {
         return $this->getSchemaHostAndAuth($key, $secret) . $relativeUrl;
+    }
+
+    public static function getBankingSpecificRoutes()
+    {
+        return self::BANKING_SPECIFIC_ROUTES;
     }
 
     protected function getSchemaHostAndAuth($key = '', $secret = '')
