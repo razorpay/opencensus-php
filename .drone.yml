@@ -307,6 +307,29 @@ pipeline:
     when:
       environment: prod
       event: deployment
+  deploy-s3-qa-automation:
+      image: node:9-alpine
+      environment:
+          - AWS_CDN_BUCKET=rzp-1018-nonprod-betacdn
+          - AWS_CLOUDFRONT_DISTRIBUTION_ID=E3RC1ED30HJGHJ
+          - CDN_PATH=dashboard/qa
+      secrets:
+          -   source: STAGE_S3_AWS_KEY
+              target: AWS_KEY
+          -   source: STAGE_S3_AWS_SECRET
+              target: AWS_SECRET
+      commands:
+          # Requirements for running s3sync.js
+          - npm install multi-glob aws-sdk
+          # Show what all will get synced
+          - ls -laR public/dist/
+          - ls -laR public/js/generated/
+          - ls -laR public/css/generated/
+          - ./s3sync.js
+      when:
+          event: deployment
+          environment: automation
+
 #      commenting out deploy steps as deployment is done via spinnaker
 #  deploy-beta:
 #    image: razorpay/drone-kubernetes
