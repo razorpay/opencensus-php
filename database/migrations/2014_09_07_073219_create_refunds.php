@@ -137,6 +137,13 @@ class CreateRefunds extends Migration
             $table->tinyInteger(Refund::IS_SCROOGE)
                   ->default(0);
 
+            $table->bigInteger(Refund::GATEWAY_AMOUNT)
+                ->unsigned()
+                ->nullable();
+
+            $table->char(Refund::GATEWAY_CURRENCY, 3)
+                ->nullable();
+
             $table->integer(Refund::CREATED_AT);
             $table->integer(Refund::UPDATED_AT);
 
