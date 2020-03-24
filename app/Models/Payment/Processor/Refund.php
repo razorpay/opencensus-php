@@ -2043,6 +2043,16 @@ trait Refund
             'payment_service_route'     => $payment->getCpsRoute(),
         ];
 
+        //
+        // Sending payment_gateway_amount in case of DCC as long as its greater than 0
+        //
+        if (($payment->isDCC() === true) and
+            ($payment->paymentMeta !== null) and
+            ($payment->paymentMeta->getGatewayAmount() > 0))
+        {
+            $extraData['payment_gateway_amount'] = $payment->paymentMeta->getGatewayAmount();
+        }
+
         $refundData[RefundEntity::SPEED_REQUESTED] = $refundData[RefundEntity::SPEED_DECISIONED];
 
         //
