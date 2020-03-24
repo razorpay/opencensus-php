@@ -25,9 +25,19 @@ class Repository extends Base\Repository
      */
     public function fetchWorkflowRulesForMerchant(string $merchantId)
     {
-        return $this->newQuery()
+        /**
+         * TODO: Keeping the "select for update" implementation commented, for review
+         */
+        /*
+         * return $this->newQuery()
+                    ->lockForUpdate()
                     ->merchantId($merchantId)
                     ->get();
+         */
+
+        return $this->newQuery()
+            ->merchantId($merchantId)
+            ->get();
     }
 
     /**
