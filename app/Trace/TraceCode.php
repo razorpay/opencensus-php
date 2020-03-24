@@ -2647,8 +2647,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     //Reserve Balance Trace Codes
     const RESERVE_BALANCE_CREATE_REQUEST                        = 'RESERVE_BALANCE_CREATE_REQUEST';
     const RESERVE_BALANCE_CREATE_SUCCESSFUL                     = 'RESERVE_BALANCE_CREATE_SUCCESSFUL';
-    const RESERVE_BALANCE_NOT_FOUND                             = 'RESERVE_BALANCE_NOT_FOUND';
-
+    
     //RazorX
     const NEGATIVE_BALANCE_RAZORX_REQUEST                       = 'NEGATIVE_BALANCE_RAZORX_REQUEST';
     const NEGATIVE_BALANCE_RAZORX_RESPONSE                      = 'NEGATIVE_BALANCE_RAZORX_RESPONSE';
