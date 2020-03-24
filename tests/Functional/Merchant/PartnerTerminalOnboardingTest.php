@@ -315,7 +315,7 @@ class PartnerTerminalOnboardingTest extends TestCase
 
         $subMerchant = (new Merchant\Repository)->find($subMerchantId);
 
-        $this->assertTrue($subMerchant->isFeatureEnabed('bharat_qr'));
+        $this->assertTrue($subMerchant->isFeatureEnabled('bharat_qr'));
 
         $this->testData[__FUNCTION__] = $this->testData['testTerminalOnboardingCreateTerminal2'];
 
