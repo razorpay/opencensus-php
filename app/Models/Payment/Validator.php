@@ -115,8 +115,8 @@ class Validator extends Base\Validator
         'payment_id'                    => 'sometimes_if:method,cardless_emi',
         'application'                   => 'sometimes|filled|string|in:google_pay',
         'device'                        => 'sometimes',
-        'dcc_currency'                  => 'sometimes|string|max:3',
-        'currency_request_id'           => 'sometimes|string'
+        'currency_request_id'           => 'required_with:dcc_currency|string',
+        'dcc_currency'                  => 'required_with:currency_request_id|string|max:3|custom',
     ];
 
     protected static $editAcquirerRules = [
@@ -1153,6 +1153,15 @@ class Validator extends Base\Validator
                 'Cannot force authorize on this gateway',
                 'gateway',
                 $gateway);
+        }
+    }
+
+    protected function validateDccCurrency($attribute, $dccCurrency)
+    {
+        if (Currency::isSupportedCurrency($dccCurrency) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Invalid DCC Currency: ' . $dccCurrency);
         }
     }
 

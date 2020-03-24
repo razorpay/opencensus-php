@@ -532,11 +532,11 @@ class Processor
 
             if (empty($requestedCurrencyData) === true)
             {
-                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_DCC_INVALID_REQUEST_ID, null,
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_DCC_INVALID_REQUEST_ID, 'currency_request_id',
                     [
                         'currency_request_id' => $dccCurrencyRequestId,
                         'dcc_currency'        => $dccCurrency,
-                    ]);
+                    ], 'Invalid currency_request_id');
             }
 
             $paymentMetaInput = [

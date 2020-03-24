@@ -117,7 +117,6 @@ class PaymentCreateDCCTest extends TestCase
         $responseContent = json_decode($response->getContent(), true);
 
         $cardCurrency = $responseContent['card_currency'];
-        $usdAmount = $responseContent['all_currencies'][$cardCurrency]['amount'];
 
         $payment = $this->payment;
         $payment['dcc_currency'] = $cardCurrency;
