@@ -254,7 +254,7 @@ class Core extends Base\Core
         $this->trace->info(
             TraceCode::BANKING_ACCOUNT_ENTITY_CREATED,
             [
-                $bankingAccount->toArray(),
+                $this->unsetPersonalIdentifiableInformation($bankingAccount->toArray()),
             ]);
 
         $this->repo->saveOrFail($bankingAccount);
@@ -334,7 +334,7 @@ class Core extends Base\Core
     {
         $channel = $bankingAccount->getChannel();
 
-        $traceRequest = $input;
+        $traceRequest = $this->unsetPersonalIdentifiableInformation($input);
 
         // details array may contain sensitive information
         // like merchant password and other gateway specific
@@ -715,11 +715,13 @@ class Core extends Base\Core
         Merchant\Entity $merchant,
         Merchant\Balance\Entity $balance): Entity
     {
+        $traceData = $this->unsetPersonalIdentifiableInformation($input);
+
         $this->trace->info(
             TraceCode::BANKING_ACCOUNT_CREATE,
             [
                 'channel' => $input[Entity::CHANNEL],
-                'input'   => $input,
+                'input'   => $traceData,
             ]);
 
         (new Validator)->validateInput(Validator::SHARED_CREATE, $input);
@@ -927,4 +929,55 @@ class Core extends Base\Core
                                                             Entity::MERCHANT_ID => $merchantId,
                                                         ]);
     }
+
+    public function unsetPersonalIdentifiableInformation(array $input): array
+    {
+        if (empty($input[Entity::ACCOUNT_IFSC]) === false)
+        {
+            $input[Entity::ACCOUNT_IFSC] = str_repeat('*', strlen($input[Entity::ACCOUNT_IFSC]));
+        }
+
+        if (empty($input[Entity::ACCOUNT_NUMBER]) === false)
+        {
+            $input[Entity::ACCOUNT_NUMBER] = str_repeat('*', strlen($input[Entity::ACCOUNT_NUMBER]));
+        }
+
+        if (empty($input[Entity::BENEFICIARY_EMAIL]) === false)
+        {
+            $input[Entity::BENEFICIARY_EMAIL] = str_repeat('*', strlen($input[Entity::BENEFICIARY_EMAIL]));
+        }
+
+        if (empty($input[Entity::BENEFICIARY_MOBILE]) === false)
+        {
+            $input[Entity::BENEFICIARY_MOBILE] = str_repeat('*', strlen($input[Entity::BENEFICIARY_MOBILE]));
+        }
+
+        if (empty($input[Entity::BENEFICIARY_NAME]) === false)
+        {
+            $input[Entity::BENEFICIARY_NAME] = str_repeat('*', strlen($input[Entity::BENEFICIARY_NAME]));
+        }
+
+        if (empty($input[Entity::BENEFICIARY_ADDRESS1]) === false)
+        {
+            $input[Entity::BENEFICIARY_ADDRESS1] = str_repeat('*', strlen($input[Entity::BENEFICIARY_ADDRESS1]));
+        }
+
+        if (empty($input[Entity::BENEFICIARY_ADDRESS2]) === false)
+        {
+            $input[Entity::BENEFICIARY_ADDRESS2] = str_repeat('*', strlen($input[Entity::BENEFICIARY_ADDRESS2]));
+        }
+
+        if (empty($input[Entity::BENEFICIARY_ADDRESS3]) === false)
+        {
+            $input[Entity::BENEFICIARY_ADDRESS3] = str_repeat('*', strlen($input[Entity::BENEFICIARY_ADDRESS3]));
+        }
+
+        if (empty($input[Entity::BENEFICIARY_PIN]) === false)
+        {
+            $input[Entity::BENEFICIARY_PIN] = str_repeat('*', strlen($input[Entity::BENEFICIARY_PIN]));
+        }
+
+        return $input;
+    }
+
 }
