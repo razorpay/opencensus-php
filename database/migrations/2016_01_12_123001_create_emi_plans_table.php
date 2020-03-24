@@ -36,6 +36,9 @@ class CreateEmiPlansTable extends Migration {
             $table->char(Emi\Entity::NETWORK, 5)
                   ->nullable();
 
+            $table->string(Emi\Entity::TYPE)
+                  ->default('credit');
+
             $table->integer(Emi\Entity::RATE);
 
             $table->tinyInteger(Emi\Entity::DURATION);

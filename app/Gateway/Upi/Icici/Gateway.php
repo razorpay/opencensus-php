@@ -965,13 +965,17 @@ class Gateway extends Base\Gateway
     {
         $response = $this->parseGatewayResponse($body, true);
 
+        $traceResponse = $response;
+
+        unset($traceResponse[Fields::PAYER_VA]);
+
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_CALLBACK,
             [
                 'body'      => $body,
                 'headers'   => $this->app['request']->header(),
                 'gateway'   => $this->gateway,
-                'data'      => $response
+                'data'      => $traceResponse
             ]);
 
         if ($isBharatQr === true)
@@ -1190,18 +1194,24 @@ class Gateway extends Base\Gateway
     }
 
     /**
-     * This is done in order to fix refund retry
-     * if refund fails after 2 retries,
-     * refund is retried with offline mode
+     * if refund attempt fails for 2 times,
+     * refund is retried with offline mode in the later attempts
      *
      * @return string
      */
     protected function isOnlineRefund(array $refund)
     {
+        /*
+         * Temporarily pushing all refunds in offline mode
+         * since online refunds were disabled from gateway side
+         * https://razorpay.slack.com/archives/CA66F3ACS/p1585032221066100?thread_ts=1585030653.063800&cid=CA66F3ACS
+
         if ($refund['attempts'] < 3)
         {
             return 'Y';
         }
+
+        */
 
         return 'N';
     }

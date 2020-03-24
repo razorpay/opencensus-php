@@ -467,4 +467,115 @@ return [
             ]
         ],
     ],
+
+    'testEditPayoutWorkflow' => [
+        'request' => [
+            'method'  => 'PUT',
+            'url'     => '/admin-workflows/rules/payout_amount',
+            'content' => [
+                "workflows" => [
+                    [
+                        "name" => "Payout-Workflow-EDnqetiSK0XR7R-3",
+                        "permissions" => [],
+                        "levels" => [
+                            [
+                                "op_type"   => "and",
+                                "steps"     => [
+                                    [
+                                        "role_id"        => null,
+                                        "reviewer_count" => 1,
+                                    ],
+                                ],
+                                "level" => 1,
+                            ],
+                        ],
+                        "payout_amount_rules" => [
+                            [
+                                "min_amount" => 0,
+                                "max_amount" => 10,
+                            ]
+                        ],
+                        "org_id" => "org_100000razorpay",
+                    ]
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'    => 'collection',
+                'count'     => 1,
+                'items'     => [
+                    [
+                        "min_amount" => 0,
+                        "max_amount" => 10,
+                        "workflow" => [
+                            "name" => "Payout-Workflow-EDnqetiSK0XR7R-3",
+                            "steps" => [
+                                [
+                                    "level" => 1,
+                                    "op_type" => "and",
+                                    "reviewer_count" => 1,
+                                ]
+                            ],
+                            "permissions" => [
+                                [
+                                    "name" => "create_payout",
+                                    "description" => "Merchant can create a new payout",
+                                    "category" => "payouts",
+                                    "assignable" => false,
+                                ]
+                            ]
+                        ]
+                    ]
+                ]
+            ]
+        ],
+    ],
+
+    'testEditActivePayoutWorkflow' => [
+        'request' => [
+            'method'  => 'PUT',
+            'url'     => '/admin-workflows/rules/payout_amount',
+            'content' => [
+                "workflows" => [
+                    [
+                        "name" => "Payout-Workflow-EDnqetiSK0XR7R-3",
+                        "permissions" => [],
+                        "levels" => [
+                            [
+                                "op_type"   => "and",
+                                "steps"     => [
+                                    [
+                                        "role_id"        => null,
+                                        "reviewer_count" => 1,
+                                    ],
+                                ],
+                                "level" => 1,
+                            ],
+                        ],
+                        "payout_amount_rules" => [
+                            [
+                                "min_amount" => 0,
+                                "max_amount" => 10,
+                            ]
+                        ],
+                        "org_id" => "org_100000razorpay",
+                    ]
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'=> PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'=> 'Updating or Deleting a workflow is not allowed when there are open actions'
+                ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_WORKFLOW_UPDATE_OR_DELETE_NOT_ALLOWED,
+        ],
+    ],
 ];

@@ -11,6 +11,7 @@ use RZP\Exception\LogicException;
 use RZP\Models\Merchant\Detail\Metric as DetailMetric;
 use RZP\Models\FundAccount\Entity as FundAccountEntity;
 use RZP\Models\BankAccount\Entity as BankAccountEntity;
+use RZP\Models\Merchant\Detail\Constants as DetailConstants;
 use RZP\Models\FundAccount\Validation\Entity as FundAccountValidation;
 use RZP\Models\FundAccount\Validation\Core as FundAccountValidationCore;
 use RZP\Models\FundAccount\Validation\Entity as FundAccountValidationEntity;
@@ -87,19 +88,26 @@ class PennyTesting extends Base\Core
             "data" => $input
         ]);
 
-        $merchant = $this->repo->merchant->findOrFailPublic($input[Constants::MERCHANT_ID]);
+        [$merchant, $merchantDetails] = $this->getMerchantAndSetBasicAuth($input[Constants::MERCHANT_ID]);
 
-        $merchantDetails = $merchant->merchantDetail;
+        $this->updateBankDetailVerificationStatus($input, $merchant, $merchantDetails);
 
-        $this->repo->transactionOnLiveAndTest(function() use ($merchant, $merchantDetails, $input) {
+        $isPennyTestingRetryRequired = $this->isPennyTestingRetryRequired($merchantDetails, $input);
 
-            $this->updateBankDetailVerificationStatus($input, $merchant, $merchantDetails);
+        $this->repo->transactionOnLiveAndTest(function() use ($merchant, $merchantDetails, $isPennyTestingRetryRequired) {
 
-            $this->updateMerchantContext($merchantDetails, $merchant);
+            if ( $isPennyTestingRetryRequired === true)
+            {
+                $this->retryPennyTesting($merchantDetails);
+            }
+            else
+            {
+                $this->updateMerchantContext($merchantDetails, $merchant);
+
+                $this->repo->merchant->saveOrFail($merchant);
+            }
 
             $this->repo->merchant_detail->saveOrFail($merchantDetails);
-
-            $this->repo->merchant->saveOrFail($merchant);
         });
     }
 
@@ -318,5 +326,103 @@ class PennyTesting extends Base\Core
         ];
 
         return $validationData;
+    }
+
+    /**
+     * @param Entity $merchantDetails
+     *
+     * @param array  $input
+     *
+     * @return bool
+     */
+    protected function isPennyTestingRetryRequired(Entity $merchantDetails, array $input): bool
+    {
+        if ((strtolower($input[DetailConstants::REGISTERED_NAME]) === DetailConstants::UNREGISTERED) or
+            ($input[DetailConstants::ACCOUNT_STATUS] === DetailConstants::FAILURE))
+        {
+            $attemptCount = $this->getPennyTestingAttempts($merchantDetails);
+
+            return $attemptCount < DetailConstants::PENNY_TESTING_MAX_ATTEMPT;
+        }
+
+        return false;
+    }
+
+    /**
+     * @param Entity $merchantDetails
+     *
+     * @throws \Throwable
+     */
+    protected function retryPennyTesting(Entity $merchantDetails)
+    {
+        $this->trace->count(DetailMetric::PENNY_TESTING_RETRY_COUNT,
+                            [
+                                Constants::BANK_DETAILS_VERIFICATION_STATUS => $merchantDetails->getBankDetailsVerificationStatus()
+                            ]);
+
+        $this->trace->info(TraceCode::MERCHANT_PENNY_TESTING_RETRY, [
+            Entity::MERCHANT_ID                         => $merchantDetails->getId(),
+            Constants::BANK_DETAILS_VERIFICATION_STATUS => $merchantDetails->getBankDetailsVerificationStatus()
+        ]);
+
+        $this->triggerPennyTesting($merchantDetails);
+    }
+
+    /**
+     * @param Entity $merchantDetails
+     *
+     * @throws \Throwable
+     */
+    public function triggerPennyTesting(Entity $merchantDetails)
+    {
+        $fromMerchant = $this->repo->merchant->findOrFailPublic(Merchant\Preferences::MID_ONBOARDING_PENNY_TESTING);
+
+        $merchantDetails->setBankDetailsVerificationStatus(BankDetailsVerificationStatus::INITIATED);
+
+        $this->trace->count(DetailMetric::UNREGISTERED_PENNY_TESTING_STATUS_TOTAL,
+                            [
+                                Constants::BANK_DETAILS_VERIFICATION_STATUS => BankDetailsVerificationStatus::INITIATED
+                            ]);
+
+        $this->increasePennyTestingAttempt($merchantDetails);
+
+        $fundAccountValidation = (new PennyTesting)->attempt($merchantDetails, $fromMerchant);
+
+        $merchantDetails->setFundAccountValidationId($fundAccountValidation->getId());
+    }
+
+    /**
+     * @param Entity $merchantDetails
+     */
+    protected function increasePennyTestingAttempt(Entity $merchantDetails)
+    {
+        $pennyTestingAttemptRedisKey = DetailConstants::PENNY_TESTING_ATTEMPT_COUNT_REDIS_KEY_PREFIX . $merchantDetails->getId();
+
+        $this->app['cache']->increment($pennyTestingAttemptRedisKey, 1);
+    }
+
+    /**
+     * @param Entity $merchantDetails
+     *
+     * @return int
+     */
+    public function getPennyTestingAttempts(Entity $merchantDetails)
+    {
+        $pennyTestingAttemptRedisKey = DetailConstants::PENNY_TESTING_ATTEMPT_COUNT_REDIS_KEY_PREFIX . $merchantDetails->getId();
+
+        $pennyTestingCount = $this->app['cache']->get($pennyTestingAttemptRedisKey) ?? 0;
+
+        return $pennyTestingCount;
+    }
+
+    protected function getMerchantAndSetBasicAuth(string $merchantId)
+    {
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        $this->app['basicauth']->setMerchant($merchant);
+
+        $merchantDetails = $merchant->merchantDetail;
+
+        return [$merchant, $merchantDetails];
     }
 }

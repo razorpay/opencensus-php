@@ -1185,6 +1185,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_PROCESS_GREYLIST_ACTIVATION                  = 'MERCHANT_PROCESS_GREYLIST_ACTIVATION';
     const MERCHANT_PENNY_TESTING_ATTEMPT                        = 'MERCHANT_PENNY_TESTING_ATTEMPT';
     const MERCHANT_PENNY_TESTING_EVENT_PAYLOAD                  = 'MERCHANT_PENNY_TESTING_EVENT_PAYLOAD';
+    const MERCHANT_PENNY_TESTING_RETRY                          = 'MERCHANT_PENNY_TESTING_RETRY';
     const MERCHANT_BANK_DETAIL_STATUS_AFTER_PENNY_TESTING       = 'MERCHANT_BANK_DETAIL_STATUS_AFTER_PENNY_TESTING';
     const MERCHANT_HOLD_FUNDS_POST_TRANSCACTION                 = 'MERCHANT_HOLD_FUNDS_POST_TRANSCACTION';
     const MERCHANT_HOLD_FUNDS_PRE_TRANSCACTION                  = 'MERCHANT_HOLD_FUNDS_PRE_TRANSCACTION';
@@ -2625,6 +2626,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     // Trace Code for Workflow Rules
     const WORKFLOW_PAYOUT_RULES_ATTACHMENT                      = 'WORKFLOW_PAYOUT_RULES_ATTACHMENT';
+    const WORKFLOW_PAYOUT_EDIT                                  = 'WORKFLOW_PAYOUT_EDIT';
 
     const ALREADY_ACTIVATED                                     = 'ALREADY_ACTIVATED';
     const NOT_ACTIVATED                                         = 'NOT_ACTIVATED';

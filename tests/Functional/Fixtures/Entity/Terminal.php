@@ -3366,8 +3366,6 @@ class Terminal extends Base
             'gateway'                   => 'wallet_paypal',
             'shared'                    => 0,
             'gateway_merchant_id'       => 'RazorpayPaypal',
-            'gateway_terminal_password' => 'terminal_password',
-            'gateway_terminal_password2'=> 'terminal_password2',
             'mode'                      => '1',
         ];
 
@@ -3386,8 +3384,6 @@ class Terminal extends Base
             'gateway'                    => 'wallet_paypal',
             'shared'                     => 1,
             'gateway_merchant_id'        => 'RazorpayPaypal2',
-            'gateway_terminal_password'  => 'terminal_password',
-            'gateway_terminal_password2' => 'terminal_password2',
             'mode'                       => '1',
             'currency'                   => 'USD'
         ];
@@ -3536,5 +3532,26 @@ class Terminal extends Base
         $attributes = array_merge($defaultValues, $attributes);
 
         return $this->create($attributes);
+    }
+
+    public function createHdfcDebitEmi(array $attributes = [])
+    {
+        $defaultValues = [
+            'id'                   => 'HdfcDebitEmiTl',
+            'merchant_id'          => '10000000000000',
+            'gateway'              => 'hdfc_debit_emi',
+            'card'                 => 0,
+            'netbanking'           => 0,
+            'cardless_emi'         => 0,
+            'emi'                  => 1,
+            'emi_duration'         => 3,
+            'gateway_merchant_id'  => 'debit_emi_merchant',
+            'gateway_merchant_id2' => 'debit_emi_merchant2',
+            'mode'                 => 1,
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 }
