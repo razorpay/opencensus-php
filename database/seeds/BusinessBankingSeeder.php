@@ -150,6 +150,7 @@ class BusinessBankingSeeder extends Seeder
                     'account_number'       => ($mode === Mode::LIVE) ? '2224440041626905' : '2323230041626905',
                     'status'               => 'activated',
                     'channel'              => 'yesbank',
+                    'account_type'         => 'nodal',
                     'balance_id'           => 'xbalance000000',
                     'beneficiary_name'     => 'random_name',
                     'account_currency'     => 'INR',
