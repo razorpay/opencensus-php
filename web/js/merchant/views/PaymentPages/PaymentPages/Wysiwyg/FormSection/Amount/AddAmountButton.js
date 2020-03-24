@@ -1,5 +1,3 @@
-import RTracking from 'react-tracking';
-
 import Button from 'common/new-ui/Button';
 import FieldsDropdown from '../FieldsDropdown';
 import {
@@ -8,7 +6,6 @@ import {
 } from '../Amount/helpers';
 import CreatorManager from './CreatorManager';
 
-@RTracking(() => window.rzpQ.component('AddAmountButton'))
 class AddAmountButton extends React.PureComponent {
   onSelectFieldType = fieldType => {
     const initWithField = {
@@ -20,10 +17,11 @@ class AddAmountButton extends React.PureComponent {
   };
 
   onClickPriceField = () => {
-    this.props.tracking.trackEvent(
-      window.rzpQ.paymentPages().interaction('pp.create.field', {
-        button_type: 'Price Field',
-      })
+    window.rzpQ.push(
+      window.rzpQ
+        .now()
+        .paymentPages()
+        .interaction('pp.create.field', { button_type: 'Price Field' })
     );
   };
 

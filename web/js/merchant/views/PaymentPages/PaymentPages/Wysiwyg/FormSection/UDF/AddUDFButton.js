@@ -12,10 +12,13 @@ class AddUDFButton extends React.PureComponent {
   };
 
   trackInputField = () => {
-    this.props.tracking.trackEvent(
-      window.rzpQ.paymentPages().interaction('pp.create.field', {
-        button_type: 'Input Field',
-      })
+    window.rzpQ.push(
+      window.rzpQ
+        .now()
+        .paymentPages()
+        .interaction('pp.create.field', {
+          button_type: 'Input Field',
+        })
     );
   };
 
