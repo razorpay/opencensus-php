@@ -35,7 +35,7 @@ class Entity extends Base\PublicEntity
 
     protected $defaults = [
         self::TYPE                     => Type::PRIMARY,
-        self::NEGATIVE_LIMIT_AUTO     => 0,
+        self::NEGATIVE_LIMIT_AUTO     => self::DEFAULT_MAX_NEGATIVE,
         self::NEGATIVE_LIMIT_MANUAL   => 0,
     ];
 
