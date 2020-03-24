@@ -30,6 +30,10 @@ class Org extends Base
     const CHECKER_ROLE_SIGNED       = 'role_RzpChekrRoleId';
     const CHECKER_ADMIN             = 'RzpChekrAdmnId';
     const CHECKER_ADMIN_SIGNED      = 'admin_RzpChekrAdmnId';
+    const OWNER_ROLE                = 'RzpOwnerRoleId';
+    const OWNER_ROLE_SIGNED         = 'role_RzpOwnerRoleId';
+    const FINANCE_L3_ROLE           = 'RzpFinL3RoleId';
+    const FINANCE_L3_ROLE_SIGNED    = 'role_RzpFinL3RoleId';
 
     const DEFAULT_TOKEN             = 'SuperSecretTokenForRazorpay';
     const DEFAULT_TOKEN_PRINCIPAL   = 'SuprAdminToken';

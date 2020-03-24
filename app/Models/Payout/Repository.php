@@ -139,9 +139,13 @@ class Repository extends Base\Repository
         /** @var BuilderEx $query */
         $query = $this->newQuery();
 
-        $userRoleIds = $user->roles()->allRelatedIds()->toArray();
+        // If the entity is a user(which implies the product is banking),
+        // then the role id for that user for the merchant in context
+        // will have to be fetched from the merchant_users table.
+        // This is because the role_map table doesn't have any merchant context.
+        $userRoleId = (new User\Core())->getUserRoleIdInMerchantForBanking($user->getId());
 
-        $this->filterByRoleIds($query, $userRoleIds, $user->getId());
+        $this->filterByRoleIds($query, $userRoleId, $user->getId());
 
         $query->merchantId($merchant->getId());
 
@@ -433,9 +437,13 @@ class Repository extends Base\Repository
             return;
         }
 
-        $userRoleIds = $this->auth->getUser()->roles()->allRelatedIds()->toArray();
+        // If the entity is a user(which implies the product is banking),
+        // then the role id for that user for the merchant in context
+        // will have to be fetched from the merchant_users table.
+        // This is because the role_map table doesn't have any merchant context.
+        $userRoleId = (new User\Core())->getUserRoleIdInMerchantForBanking($this->auth->getUser()->getId());
 
-        $this->filterByRoleIds($query, $userRoleIds);
+        $this->filterByRoleIds($query, $userRoleId);
     }
 
     protected function filterByRoleIds(BuilderEx $query, array $roleIds, string $userId = null)

@@ -21,6 +21,7 @@ use RZP\Constants\Timezone;
 use RZP\Services\Mock\Mozart;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\FundTransfer\Attempt;
+use RZP\Models\Workflow\Step\Entity;
 use RZP\Mail\Banking\LowBalanceAlert;
 use RZP\Exception\BadRequestException;
 use RZP\Models\BankingAccount\Gateway\Rbl;
@@ -48,6 +49,10 @@ class PayoutTest extends TestCase
     use MocksDnsTrait;
 
     private $checkerRoleUser;
+
+    private $ownerRoleUser;
+
+    private $finL3RoleUser;
 
     public function setUp()
     {
@@ -771,16 +776,86 @@ class PayoutTest extends TestCase
         $this->startTest();
     }
 
+    public function createPayoutWorkflowWithBankingUsersLiveMode()
+    {
+        (new Admin\Service)->setConfigKeys(
+            [
+                Admin\ConfigKey::RX_ACCOUNT_NUMBER_SERIES_PREFIX => [
+                    Merchant\Account::SHARED_ACCOUNT => '222444',
+                ]
+            ]);
+
+        $workflow = $this->setupWorkflowForLiveMode();
+
+        $steps = $workflow->steps()->get()->toArrayPublic();
+
+        // Creating Owner role corresponding to banking owner role
+        $this->fixtures->on('live')->create('role', [
+            'id'     => Org::OWNER_ROLE,
+            'org_id' => Org::RZP_ORG,
+            'name'   => 'Owner',
+        ]);
+
+        // Creating Finance L3 role corresponding to banking finance_l3 role
+        $this->fixtures->on('live')->create('role', [
+            'id'     => Org::FINANCE_L3_ROLE,
+            'org_id' => Org::RZP_ORG,
+            'name'   => 'Finance L3',
+        ]);
+
+        // Hardcoding here because default workflow array is known and fixed
+        $stepId = $steps['items'][1]['id'];
+
+        Entity::verifyIdAndStripSign($stepId);
+
+        // Changing Checker role to Owner role because only users with banking roles can approve payouts
+        $this->fixtures->on('live')->edit(
+            'workflow_step',
+            $stepId,
+            [
+                'role_id'      => 'RzpOwnerRoleId'
+            ]);
+
+        // Hardcoding here because default workflow array is known and fixed
+        $stepId = $steps['items'][2]['id'];
+
+        Entity::verifyIdAndStripSign($stepId);
+
+        // Changing Checker role to Owner role because only users with banking roles can approve payouts
+        $this->fixtures->on('live')->edit(
+            'workflow_step',
+            $stepId,
+            [
+                'role_id'      => 'RzpFinL3RoleId'
+            ]);
+
+        $this->ownerRoleUser = $this->fixtures->user->createBankingUserForMerchant('10000000000000', [], 'owner','live');
+
+        $this->finL3RoleUser = $this->fixtures->user->createBankingUserForMerchant('10000000000000', [], 'finance_l3','live');
+
+        // The default bank account getting created has ifsc code prefix 'RAZR' even in live mode, which is modified here
+        $this->fixtures->on('live')->edit(
+            'bank_account',
+            '1000000lcustba',
+            [
+                'ifsc_code'      => 'YESB0CMSNOC'
+            ]);
+
+        return $workflow;
+    }
+
     public function testApprovePayoutWithComment()
     {
         $this->markTestSkipped('Failing due to payouts blocked, to be fixed later');
 
         $this->liveSetUp();
-        $workflow = $this->setupWorkflowForLiveMode();
+
+        $workflow = $this->createPayoutWorkflowWithBankingUsersLiveMode();
+
         $payout = $this->createPayoutWithWorkflow($workflow, [], 'rzp_live_TheLiveAuthKey');
 
-        // Approve with Checker role user
-        $this->ba->proxyAuth('rzp_live_10000000000000', $this->checkerRoleUser->getId());
+        // Approve with Owner role user
+        $this->ba->proxyAuth('rzp_live_10000000000000', $this->ownerRoleUser->getId());
 
         $testData = & $this->testData[__FUNCTION__];
         $testData['request']['url'] = '/payouts/' . $payout['id'] . '/approve';
@@ -794,17 +869,10 @@ class PayoutTest extends TestCase
         $this->assertEquals('Approving', $firstActionChecker['user_comment']);
         $this->assertEquals(true, $firstActionChecker['approved']);
 
-        // Create Checker Role User for 2nd level of approval
-        $secondLevelRole = $this->getDbEntityById('role', Org::MAKER_ROLE, 'live');
-        $secondUser = $this->fixtures->on('live')
-                                     ->user->createUserForMerchant('10000000000000', [], Org::MAKER_ROLE);
-
         $this->app['config']->set('database.default', 'live');
 
-        $secondUser->roles()->attach($secondLevelRole);
-
-        // Make Request to Approve pending payout for second level
-        $this->ba->proxyAuth('rzp_live_10000000000000', $secondUser->getId());
+        // Make Request to Approve pending payout for second level from Finance L3 role
+        $this->ba->proxyAuth('rzp_live_10000000000000', $this->finL3RoleUser->getId());
         $secondApprovalResponse = $this->startTest();
 
         // Validating second approval response
@@ -818,11 +886,13 @@ class PayoutTest extends TestCase
     public function testApprovePayoutWithoutComment()
     {
         $this->liveSetUp();
-        $workflow = $this->setupWorkflowForLiveMode();
+
+        $workflow = $this->createPayoutWorkflowWithBankingUsersLiveMode();
+
         $payout = $this->createPayoutWithWorkflow($workflow, [], 'rzp_live_TheLiveAuthKey');
 
-        // Approve with Checker role user
-        $this->ba->proxyAuth('rzp_live_10000000000000', $this->checkerRoleUser->getId());
+        // Approve with Owner role user
+        $this->ba->proxyAuth('rzp_live_10000000000000', $this->ownerRoleUser->getId());
 
         $testData = & $this->testData[__FUNCTION__];
         $testData['request']['url'] = '/payouts/' . $payout['id'] . '/approve';
@@ -859,15 +929,17 @@ class PayoutTest extends TestCase
     public function testBulkApprovePayoutWithComment()
     {
         $this->liveSetUp();
-        $workflow = $this->setupWorkflowForLiveMode();
+
+        $workflow = $this->createPayoutWorkflowWithBankingUsersLiveMode();
+
         $payout1 = $this->createPayoutWithWorkflow($workflow, [], 'rzp_live_TheLiveAuthKey');
         $payout2 = $this->createPayoutWithWorkflow($workflow, [], 'rzp_live_TheLiveAuthKey');
 
         $testData = & $this->testData[__FUNCTION__];
         $testData['request']['content']['payout_ids'] = [$payout1['id'], $payout2['id']];
 
-        // Approve with Checker role user
-        $this->ba->proxyAuth('rzp_live_10000000000000', $this->checkerRoleUser->getId());
+        // Approve with Owner role user
+        $this->ba->proxyAuth('rzp_live_10000000000000', $this->ownerRoleUser->getId());
 
         $this->startTest();
 
@@ -879,15 +951,17 @@ class PayoutTest extends TestCase
     public function testBulkApprovePayoutWithoutComment()
     {
         $this->liveSetUp();
-        $workflow = $this->setupWorkflowForLiveMode();
+
+        $workflow = $this->createPayoutWorkflowWithBankingUsersLiveMode();
+
         $payout1 = $this->createPayoutWithWorkflow($workflow, [], 'rzp_live_TheLiveAuthKey');
         $payout2 = $this->createPayoutWithWorkflow($workflow, [], 'rzp_live_TheLiveAuthKey');
 
         $testData = & $this->testData[__FUNCTION__];
         $testData['request']['content']['payout_ids'] = [$payout1['id'], $payout2['id']];
 
-        // Approve with Checker role user
-        $this->ba->proxyAuth('rzp_live_10000000000000', $this->checkerRoleUser->getId());
+        // Approve with Owner role user
+        $this->ba->proxyAuth('rzp_live_10000000000000', $this->ownerRoleUser->getId());
 
         $this->startTest();
 
@@ -899,7 +973,9 @@ class PayoutTest extends TestCase
     public function testRejectPayoutWithComment()
     {
         $this->liveSetUp();
-        $workflow = $this->setupWorkflowForLiveMode();
+
+        $workflow = $this->createPayoutWorkflowWithBankingUsersLiveMode();
+
         $payout = $this->createPayoutWithWorkflow($workflow, [], 'rzp_live_TheLiveAuthKey');
 
         $testData = & $this->testData[__FUNCTION__];
@@ -913,8 +989,8 @@ class PayoutTest extends TestCase
 
         $this->setInfernoExpectations([$eventTestDataKey]);
 
-        // Approve with Checker role user
-        $this->ba->proxyAuth('rzp_live_10000000000000', $this->checkerRoleUser->getId());
+        // Approve with Owner role user
+        $this->ba->proxyAuth('rzp_live_10000000000000', $this->ownerRoleUser->getId());
 
         $this->startTest();
 
@@ -927,7 +1003,9 @@ class PayoutTest extends TestCase
     public function testRejectPayoutWithoutComment()
     {
         $this->liveSetUp();
-        $workflow = $this->setupWorkflowForLiveMode();
+
+        $workflow = $this->createPayoutWorkflowWithBankingUsersLiveMode();
+
         $payout = $this->createPayoutWithWorkflow($workflow, [], 'rzp_live_TheLiveAuthKey');
 
         $testData = & $this->testData[__FUNCTION__];
@@ -941,8 +1019,8 @@ class PayoutTest extends TestCase
 
         $this->setInfernoExpectations([$eventTestDataKey]);
 
-        // Approve with Checker role user
-        $this->ba->proxyAuth('rzp_live_10000000000000', $this->checkerRoleUser->getId());
+        // Approve with Owner role user
+        $this->ba->proxyAuth('rzp_live_10000000000000', $this->ownerRoleUser->getId());
 
         $this->startTest();
 
@@ -955,7 +1033,9 @@ class PayoutTest extends TestCase
     public function testBulkRejectPayoutsWithComment()
     {
         $this->liveSetUp();
-        $workflow = $this->setupWorkflowForLiveMode();
+
+        $workflow = $this->createPayoutWorkflowWithBankingUsersLiveMode();
+
         $payout1 = $this->createPayoutWithWorkflow($workflow, [], 'rzp_live_TheLiveAuthKey');
         $payout2 = $this->createPayoutWithWorkflow($workflow, [], 'rzp_live_TheLiveAuthKey');
 
@@ -971,8 +1051,8 @@ class PayoutTest extends TestCase
 
         $this->setInfernoExpectations([$eventTestDataKey, $eventTestDataKey]);
 
-        // Approve with Checker role user
-        $this->ba->proxyAuth('rzp_live_10000000000000', $this->checkerRoleUser->getId());
+        // Approve with Owner role user
+        $this->ba->proxyAuth('rzp_live_10000000000000', $this->ownerRoleUser->getId());
 
         $this->startTest();
 
@@ -984,7 +1064,9 @@ class PayoutTest extends TestCase
     public function testBulkRejectPayoutsWithoutComment()
     {
         $this->liveSetUp();
-        $workflow = $this->setupWorkflowForLiveMode();
+
+        $workflow = $this->createPayoutWorkflowWithBankingUsersLiveMode();
+
         $payout1 = $this->createPayoutWithWorkflow($workflow, [], 'rzp_live_TheLiveAuthKey');
         $payout2 = $this->createPayoutWithWorkflow($workflow, [], 'rzp_live_TheLiveAuthKey');
 
@@ -999,8 +1081,8 @@ class PayoutTest extends TestCase
 
         $this->setInfernoExpectations([$eventTestDataKey, $eventTestDataKey]);
 
-        // Approve with Checker role user
-        $this->ba->proxyAuth('rzp_live_10000000000000', $this->checkerRoleUser->getId());
+        // Approve with Owner role user
+        $this->ba->proxyAuth('rzp_live_10000000000000', $this->ownerRoleUser->getId());
 
         $this->startTest();
 
@@ -2351,10 +2433,12 @@ class PayoutTest extends TestCase
     public function testWorkflowTriggerForBankingRequest()
     {
         $this->liveSetUp();
-        $workflow = $this->setupWorkflowForLiveMode();
+
+        $workflow = $this->createPayoutWorkflowWithBankingUsersLiveMode();
+
         $this->createPayoutWithWorkflow($workflow, [], 'rzp_live_TheLiveAuthKey');
 
-        $this->ba->proxyAuth('rzp_live_10000000000000', $this->checkerRoleUser->getId());
+        $this->ba->proxyAuth('rzp_live_10000000000000', $this->ownerRoleUser->getId());
 
         $this->startTest();
     }
@@ -2708,5 +2792,22 @@ class PayoutTest extends TestCase
         $payout = $this->createPayoutWithWorkflow($workflow, [], 'rzp_live_TheLiveAuthKey');
 
         $this->assertEquals('pending', $payout['status']);
+    }
+
+    public function testApprovePayoutWithNonBankingRoleInWorkflow()
+    {
+        $this->liveSetUp();
+
+        $workflow = $this->createPayoutWorkflowWithBankingUsersLiveMode();
+
+        $payout = $this->createPayoutWithWorkflow($workflow, [], 'rzp_live_TheLiveAuthKey');
+
+        // Approve with Checker role user
+        $this->ba->proxyAuth('rzp_live_10000000000000', $this->checkerRoleUser->getId());
+
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/payouts/' . $payout['id'] . '/approve';
+
+        $this->startTest();
     }
 }
