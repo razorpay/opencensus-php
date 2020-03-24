@@ -5,6 +5,7 @@ namespace RZP\Models\Gateway\Terminal\GatewayProcessor\Worldline;
 use App;
 use Carbon\Carbon;
 use RZP\Exception;
+use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
 use RZP\Models\Terminal;
 use RZP\Models\Merchant;
@@ -68,7 +69,7 @@ class GatewayProcessor extends BaseGatewayProcessor
                                                         Terminal\Type::NON_RECURRING                 => '1',
                                                         Terminal\Type::BHARAT_QR                     => '1',
                                                         Terminal\Type::DIRECT_SETTLEMENT_WITH_REFUND => '1',
-                                                    ],            
+                                                    ],
         ];
 
         $terminalData[Terminal\Entity::MC_MPAN] = $gatewayInput[Constants::MPAN][Constants::MASTERCARD];
@@ -84,9 +85,22 @@ class GatewayProcessor extends BaseGatewayProcessor
     {
         $terminal = (new Core)->create($terminalData, $merchant);
 
+        $this->assignRequisiteFeatures();
+
         (new TerminalOnboardingDetail\Core)->create([], $terminal);
 
         return $terminal;
+    }
+
+    protected function assignRequisiteFeatures()
+    {
+        $featureParam = [
+            Feature\Entity::ENTITY_TYPE => $merchant->getEntityName(),
+            Feature\Entity::ENTITY_ID   => $merchant->getId(),
+            Feature\Entity::NAME        => Feature\Constants::BHARAT_QR,
+        ];
+
+        (new Feature\Core)->create($featureParam, true);
     }
 
     public function validateGatewayInput($gatewayInput, $merchantDetail)
@@ -171,7 +185,7 @@ class GatewayProcessor extends BaseGatewayProcessor
             'pricing_details'           => $this->getPricingDetails($terminal),
             'other_details'             => $this->getPartnerOtherDetails(),
         ];
-        
+
         return $gatewayRequestArray;
     }
 
@@ -192,7 +206,7 @@ class GatewayProcessor extends BaseGatewayProcessor
     public function getGatewayRequestArrayForEnableOrDisable($terminal)
     {
         $uniqueRrn = $terminal->getId() . Carbon::now()->timestamp;
-        
+
         $gatewayRequestArray = [
             'req_rrn'               =>  $uniqueRrn,
             'gateway'               =>  $terminal->gateway,
@@ -211,7 +225,7 @@ class GatewayProcessor extends BaseGatewayProcessor
         switch($action)
         {
             case Constants::ENABLE_TERMINAL:
-                if ((isset($response[Constants::DATA][Constants::STATUS]) === false) or 
+                if ((isset($response[Constants::DATA][Constants::STATUS]) === false) or
                     ($response[Constants::DATA][Constants::STATUS] !== Constants::TERMINAL_REACTIVATION_SUCCESSFUL))
                     {
                         throw new Exception\BadRequestException(
@@ -219,7 +233,7 @@ class GatewayProcessor extends BaseGatewayProcessor
                     }
                 break;
             case Constants::DISABLE_TERMINAL:
-                if ((isset($response[Constants::DATA][Constants::STATUS]) === false) or 
+                if ((isset($response[Constants::DATA][Constants::STATUS]) === false) or
                     ($response[Constants::DATA][Constants::STATUS] !== Constants::TERMINAL_DEACTIVATION_SUCCESSFUL))
                     {
                         throw new Exception\BadRequestException(
@@ -242,16 +256,16 @@ class GatewayProcessor extends BaseGatewayProcessor
 
         $merchantDetail[Merchant\Detail\Entity::BUSINESS_REGISTERED_STATE] =
             $merchantDetail->getBusinessRegisteredStateName();
-       
+
         $merchantDetail[Merchant\Detail\Entity::BUSINESS_OPERATION_STATE] =
             $merchantDetail->getBusinessRegisteredStateName();
-       
+
         $partnerMerchantDetail[Merchant\Detail\Entity::BUSINESS_REGISTERED_STATE] =
             $partnerMerchantDetail->getBusinessRegisteredStateName();
-       
+
         $partnerMerchantDetail[Merchant\Detail\Entity::BUSINESS_OPERATION_STATE] =
             $partnerMerchantDetail->getBusinessRegisteredStateName();
-        
+
         if (empty($merchantDetail->getContactName()) === true)
         {
             $contactName = (is_null($partnerMerchantDetail) === false) ?
@@ -301,7 +315,7 @@ class GatewayProcessor extends BaseGatewayProcessor
         // If error description is "Duplicate Merchant code, it means first type of request (onboard merchant was sent twice - maybe in race condition),
         // in this case, we should keep the status to created only, so that this terminal will get picked up again by next cron and will be sent
         // as additional tid request
-        else if ((isset($response[Constants::DATA][Constants::DESCRIPTION]) === true) and 
+        else if ((isset($response[Constants::DATA][Constants::DESCRIPTION]) === true) and
                   ($response[Constants::DATA][Constants::DESCRIPTION] === Constants::DUPLICATE_MERCHANT_CODE))
         {
 
@@ -314,7 +328,7 @@ class GatewayProcessor extends BaseGatewayProcessor
             $terminalOnboardingDetail->save();
         }
         else
-        {           
+        {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_ERROR, null, $response);
         }
@@ -429,14 +443,14 @@ class GatewayProcessor extends BaseGatewayProcessor
 
     protected function generateMid($subMerchant)
     {
-        $params = [ Terminal\Entity::MERCHANT_ID => $subMerchant->getId(), 
+        $params = [ Terminal\Entity::MERCHANT_ID => $subMerchant->getId(),
                     Terminal\Entity::GATEWAY     =>  Gateway::WORLDLINE ];
 
         // Existing terminals of this submerchant of this gateway
         $existingTerminals = $this->repo->terminal->getByParams($params);
 
         if (count($existingTerminals) > 0)
-        {  
+        {
             return $existingTerminals->first()->getGatewayMerchantId();
         }
 
@@ -447,7 +461,7 @@ class GatewayProcessor extends BaseGatewayProcessor
 
     protected function getPartnerOtherDetails()
     {
-        // TODO: Currently other details are hardcoded for freecharge, 
+        // TODO: Currently other details are hardcoded for freecharge,
         // need to make this generic
         return Merchant\Detail\FreechargeWorldlineOnboardingDetails::OTHER_DETAILS;
     }
@@ -464,7 +478,7 @@ class GatewayProcessor extends BaseGatewayProcessor
         {
             return false;
         }
-        
+
         return true;
     }
 
