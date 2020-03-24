@@ -363,13 +363,8 @@ export default class ActivationWizard extends React.Component {
     if (firstInValid === null) {
       firstInValid = FORM_TABS.length - 1; // In case all are filled then set last tab(which is actually filled)
 
-      if (!this.isLinkedAccountForm && this.isIndividualTypeLock) {
-        // For non-LA account
-        firstInValid = 1; // Business Overview tab
-      } else {
-        !isFormSubmitted &&
-          isL1Completed(this) &&
-          (this.state.showSubmitLayer = true); // Directly show submit form if it's NOT activated/locked/submitted
+      if (!isFormSubmitted && isL1Completed(this)) {
+        this.state.showSubmitLayer = true;
       }
     }
 
@@ -730,15 +725,6 @@ export default class ActivationWizard extends React.Component {
 
   get isLinkedAccountForm() {
     return !!this.props.accountId;
-  }
-
-  get isIndividualTypeLock() {
-    const { user } = this.props;
-    const businessType =
-      this.state.dirty.business_type || this.props.data.business_type;
-    return (
-      !!UNREGISTERED_TYPES[Number(businessType)] && !user.isUnregBizFlowEnabled
-    );
   }
 
   get isUnregBiz() {
@@ -1307,11 +1293,6 @@ export default class ActivationWizard extends React.Component {
       }
     }
 
-    if (!this.isLinkedAccountForm && isValid && this.isIndividualTypeLock) {
-      // For non-LA account
-      isValid = false;
-    }
-
     return isValid;
   };
 
@@ -1449,11 +1430,9 @@ export default class ActivationWizard extends React.Component {
       moreTabs.push(
         <li
           key="submit-tab"
-          onClick={
-            this.isIndividualTypeLock ? undefined : this.toggleSubmitLayer
-          }
+          onClick={this.toggleSubmitLayer}
           className={classList(
-            (!this.isAllTabsValid() || this.isIndividualTypeLock) && 'disabled',
+            !this.isAllTabsValid() && 'disabled',
             this.state.showSubmitLayer && 'active',
             'li--submit'
           )}
@@ -1480,13 +1459,6 @@ export default class ActivationWizard extends React.Component {
           tabClickHandler={this.changeTab}
           activeTab={activeTab}
           activeTabContdition={!this.state.showSubmitLayer}
-          disableTabCondition={tabId => {
-            return (
-              !this.isLinkedAccountForm &&
-              this.isIndividualTypeLock &&
-              [2, 3, 4].indexOf(tabId) > -1
-            );
-          }}
         />
 
         {/* Activation form Content */}
@@ -1625,7 +1597,6 @@ export default class ActivationWizard extends React.Component {
           <ShowWhen
             additionalCondition={user =>
               user.isOrgAllowedFunctionality('external_links') &&
-              user.isUnregBizFlowEnabled &&
               this.state.activeTab == 2 &&
               !this.props.user.instantActivation.isL1Submitted
             }

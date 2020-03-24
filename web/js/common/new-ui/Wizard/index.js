@@ -38,7 +38,10 @@ export const ModalAsideNav = _ => {
             isActiveClass = activeTabContdition && isActiveClass;
           }
 
-          const isDisabled = disableTabCondition(i);
+          const isDisabled =
+            typeof disableTabCondition === 'function'
+              ? disableTabCondition(i)
+              : false;
 
           return (
             <li

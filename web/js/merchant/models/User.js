@@ -457,11 +457,6 @@ export default class User {
     return this.getExpStatus('show_commission_balance');
   }
 
-  get isUnregBizFlowEnabled() {
-    // return true;
-    return this.getExpStatus('non_registered_onboarding');
-  }
-
   get isFirstAmountHidden() {
     return this.getExpStatus('hide_registration_link_first_amount');
   }

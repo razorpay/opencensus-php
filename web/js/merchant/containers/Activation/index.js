@@ -181,11 +181,7 @@ export default class ActivationContainer extends Component {
 
   get shouldShowL1Modal() {
     const { user, accountId } = this.props;
-    const {
-      instantActivation,
-      showInstantActivation,
-      isUnregBizFlowEnabled,
-    } = user;
+    const { instantActivation, showInstantActivation } = user;
     const {
       isL1Submitted,
       isWhitelistFlow,
@@ -203,11 +199,8 @@ export default class ActivationContainer extends Component {
       return showL1Modal;
     }
 
-    if (isUnregBizFlowEnabled) {
-      return false; // never show L1 Modal if unreg biz flow is enabled
-    }
-
-    return showL1Modal;
+    // show new activation flow for all other users
+    return false;
   }
 
   render() {

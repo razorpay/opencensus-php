@@ -952,7 +952,6 @@ class Service extends Base\Service
             'is_banner',
             'capital_announcement',
             'capital_banner',
-            'non_registered_onboarding',
             'international_currencies',
             'announcements_early_settlements_1',
             'checkout_survey',
