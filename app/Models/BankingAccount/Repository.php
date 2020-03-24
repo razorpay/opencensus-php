@@ -80,11 +80,20 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function fetchAccountNumberByChannel($channel, $limit)
+    public function fetchAccountNumbersByChannel(string $channel, $limit)
     {
+        $bankingAccountBalanceIdColumn = $this->dbColumn(Entity::BALANCE_ID);
+
+        $balanceIdColumn                = $this->repo->balance->dbColumn(Entity::ID);
+        $accountTypeColumn              = $this->repo->balance->dbColumn(Merchant\Balance\Entity::ACCOUNT_TYPE);
+        $balanceTypeColumn              = $this->repo->balance->dbColumn(Merchant\Balance\Entity::TYPE);
+
         return $this->newQuery()
                     ->where(Entity::CHANNEL, '=', $channel)
                     ->where(Entity::STATUS, '=', Status::ACTIVATED)
+                    ->join(Table::BALANCE, $bankingAccountBalanceIdColumn, '=', $balanceIdColumn)
+                    ->where($accountTypeColumn, '=', Merchant\Balance\AccountType::DIRECT)
+                    ->where($balanceTypeColumn, '=', Merchant\Balance\Type::BANKING)
                     ->orderBy(Entity::LAST_STATEMENT_ATTEMPT_AT, 'asc')
                     ->limit($limit)
                     ->pluck(Entity::ACCOUNT_NUMBER);
