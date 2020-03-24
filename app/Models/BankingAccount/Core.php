@@ -788,6 +788,84 @@ class Core extends Base\Core
         return $attributes;
     }
 
+    /**
+     * @param string $reviewerId
+     * @param array $bankingAccountIds
+     * @return array
+     */
+    public function bulkAssignReviewer(string $reviewerId, array $bankingAccountIds) : array
+    {
+        $success     = 0;
+        $failedItems = [];
+
+        try
+        {
+            $this->repo->admin->findByPublicId($reviewerId);
+        }
+        catch (\Throwable $e)
+        {
+            $response = [
+                'success' => 0,
+                'failed'  => count($bankingAccountIds),
+                'error'   => $e->getMessage(),
+            ];
+
+            return $response;
+        }
+
+        foreach ($bankingAccountIds as $bankingAccountId)
+        {
+            try
+            {
+                $bankingAccount = $this->repo->banking_account->findByPublicId($bankingAccountId);
+
+                $this->addReviewerToBankingAccount($bankingAccount, $reviewerId);
+
+                $success++;
+            }
+            catch (\Throwable $e)
+            {
+                $failedItems[] = [
+                    Entity::ID          => $bankingAccountId,
+                    'error'             => $e->getMessage()
+                ];
+            }
+        }
+
+        $response = [
+            'success'     => $success,
+            'failed'      => count($failedItems),
+            'failedItems' => $failedItems,
+        ];
+
+        return $response;
+    }
+
+    /**
+     * @param Entity $bankingAccount
+     * @param string $reviewerId
+     */
+    public function addReviewerToBankingAccount(Entity $bankingAccount, string $reviewerId)
+    {
+        $reviewer = $this->repo->admin->findByPublicId($reviewerId);
+
+        $existingReviewer = $bankingAccount->reviewers()->first();
+
+        // If banking account already has a reviewer, detach the reviewer from the banking account.
+        // The new reviewer will be attached to the banking account below,
+        // effectively assigning the banking account the new reviewer.
+        if (empty($existingReviewer) === false)
+        {
+            $reviewerId = $existingReviewer->pivot->admin_id;
+
+            $bankingAccount->reviewers()->detach($reviewerId);
+        }
+
+        $bankingAccount->reviewers()->attach($reviewer, [Entity::AUDITOR_TYPE => 'reviewer']);
+
+        $this->repo->saveOrFail($bankingAccount);
+    }
+
     protected function redactSecrets(array $input)
     {
         unset($input[Entity::PASSWORD]);
