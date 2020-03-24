@@ -122,6 +122,29 @@ class BalanceConfigTest extends TestCase
         $this->assertEquals(['transfer', 'refund', 'payment'], $balanceConfig['negative_transaction_flows']);
     }
 
+    public function testEditBalanceConfigForZeroAutoAndManualLimits()
+    {
+        $this->setUpEditRequestFixtures();
+
+        $this->fixtures->base->editEntity('balance_config', '100yz000yz00yz',
+            [
+                'negative_limit_manual'    => 0,
+                'negative_limit_auto'      => 0
+            ]
+        );
+
+        $this->startTest();
+
+        $balanceConfig = $this->getDbEntityById('balance_config', '100yz000yz00yz');
+
+        $this->assertEquals(0, $balanceConfig['negative_limit_auto']);
+
+        $this->assertEquals(6000000, $balanceConfig['negative_limit_manual']);
+
+        $this->assertEquals(['transfer', 'refund', 'payment'], $balanceConfig['negative_transaction_flows']);
+    }
+
+
     public function testEditBalanceConfigForDifferentBalanceType()
     {
         $this->setUpEditRequestFixtures();
