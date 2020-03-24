@@ -34,6 +34,34 @@ return [
         'entity'            => 'payment',
     ],
 
+    'testPaymentWithMerchantProcuredTerminal' => [
+        'merchant_id'       => '10000000000000',
+        'amount'            => 50000,
+        'method'            => 'netbanking',
+        'status'            => 'captured',
+        'two_factor_auth'   => TwoFactorAuth::UNAVAILABLE,
+        'amount_authorized' => 50000,
+        'amount_refunded'   => 0,
+        'refund_status'     => null,
+        'currency'          => 'INR',
+        'description'       => '1234',
+        'bank'              => 'IDIB',
+        'error_code'        => null,
+        'error_description' => null,
+        'email'             => 'a@b.com',
+        'contact'           => '+919918899029',
+        'notes'             => [
+            'merchant_order_id' => 'random order id',
+        ],
+        'gateway'           => 'billdesk',
+        'terminal_id'       => '1000BdeskTrmnl',
+        'signed'            => false,
+        'verified'          => null,
+        'fee'               => 1476,
+        'tax'               => 226,
+        'entity'            => 'payment',
+    ],
+
     'testAmountTampering' => [
         'response'  => [
             'content'     => [

@@ -9,8 +9,10 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Exception;
 use RZP\Services\Mozart;
 use RZP\Trace\TraceCode;
+use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Currency\Currency;
 use RZP\Models\BankingAccountStatement\Type;
+use RZP\Models\Admin\Service as AdminService;
 use RZP\Models\BankingAccountStatement\Entity;
 use RZP\Models\BankingAccountStatement\Category;
 use RZP\Models\BankingAccountStatement\Processor\Source;
@@ -25,12 +27,12 @@ class Gateway extends BaseProcessor
 
     const STATEMENT_START_TIME_DATE_FORMAT = 'Y-m-d';
 
-    const RBL_NO_NEW_DATA = '8504';
-
     /**
      * @var BankingAccountStatementCore
      */
     protected $basCore;
+
+    const DEFAULT_RBL_STATEMENT_FETCH_ATTEMPT_LIMIT = 3;
 
     public function __construct(string $channel, string $accountNumber)
     {
@@ -52,6 +54,13 @@ class Gateway extends BaseProcessor
         $finalFormattedResponse = [];
 
         // TODO: This whole thing needs to be re-looked at. How we fetch the details.
+
+        $attemptLimit = (int) (new AdminService)->getConfigKey(['key' => ConfigKey::RBL_STATEMENT_FETCH_ATTEMPT_LIMIT]);
+
+        if (empty($attemptLimit) === true)
+        {
+            $attemptLimit = self::DEFAULT_RBL_STATEMENT_FETCH_ATTEMPT_LIMIT;
+        }
 
         do
         {
@@ -107,7 +116,7 @@ class Gateway extends BaseProcessor
             $attemptCount++;
 
         } while (($this->hasMoreData($bankResponse) === true) and
-                 ($attemptCount < 3));
+                 ($attemptCount < $attemptLimit));
 
         // TODO: Thinking of moving the logic of dispatching job again in case of more data in job itself
         // But not sure if this logic is generic for all bank as of now
@@ -208,6 +217,7 @@ class Gateway extends BaseProcessor
         }
 
         return [
+            Fields::BALANCE => $this->getFormattedBalanceForRequest($lastTransaction),
             Fields::AMOUNT => $this->getFormattedAmountForRequest($lastTransaction),
             Fields::CURRENCY => $this->getFormattedCurrencyForRequest($lastTransaction),
             Fields::POSTED_DATE => $this->getFormattedPostedDateForRequest($lastTransaction),
@@ -215,6 +225,15 @@ class Gateway extends BaseProcessor
             Fields::TRANSACTION_ID => $this->getFormattedBankTransactionIdForRequest($lastTransaction),
             Fields::SERIAL_NUMBER => $this->getFormattedSerialNumberForRequest($lastTransaction),
         ];
+    }
+
+    protected function getFormattedBalanceForRequest(array $bankTxn)
+    {
+        $data = $bankTxn[Entity::BALANCE];
+
+        $formattedData = number_format($data / 100, 2, '.', '');
+
+        return (string) $formattedData;
     }
 
     protected function getFormattedAmountForRequest(array $bankTxn)

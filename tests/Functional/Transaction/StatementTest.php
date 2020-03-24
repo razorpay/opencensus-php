@@ -57,6 +57,7 @@ class StatementTest extends TestCase
         $this->assertNotEmpty($statement['created_at']);
         $this->assertNotEmpty($statement['source']['id']);
         $this->assertNotEmpty($statement['source']['bank_reference']);
+        $this->assertNotEmpty($statement['source']['payee_account']);
     }
 
     public function testFetchStatement()
@@ -74,6 +75,7 @@ class StatementTest extends TestCase
         $this->assertNotEmpty($response['created_at']);
         $this->assertNotEmpty($response['source']['id']);
         $this->assertNotEmpty($response['source']['bank_reference']);
+        $this->assertNotEmpty($response['source']['payee_account']);
     }
 
     public function testFetchMultipleStatementsWithIncorrectAccountNumberParameter()

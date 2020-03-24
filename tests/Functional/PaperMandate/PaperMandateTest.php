@@ -174,7 +174,7 @@ class PaperMandateTest extends TestCase
                 array_merge(
                     [
                         'id'              => '100000000order',
-                        'amount'          => 100000,
+                        'amount'          => 1000,
                     ],
                     $overrideWith
                 )

@@ -47,6 +47,9 @@ class CreateBankingAccountTable extends Migration
             $table->char(Entity::BALANCE_ID, Entity::ID_LENGTH)
                   ->nullable();
 
+            $table->bigInteger(Entity::GATEWAY_BALANCE)
+                  ->nullable();
+
             $table->string(Entity::BANK_INTERNAL_REFERENCE_NUMBER, 255)
                   ->nullable();
 
@@ -105,6 +108,9 @@ class CreateBankingAccountTable extends Migration
             $table->integer(Entity::UPDATED_AT);
 
             $table->integer(Entity::LAST_STATEMENT_ATTEMPT_AT)
+                  ->nullable();
+
+            $table->integer(Entity::BALANCE_LAST_FETCHED_AT)
                   ->nullable();
 
             $table->string(Entity::INTERNAL_COMMENT, 255)

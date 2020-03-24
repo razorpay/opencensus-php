@@ -207,6 +207,27 @@ class Core extends Base\Core
         return $fetchPublicStatusFromScrooge;
     }
 
+    /**
+     * This function checks if a given refund's public status is fetched from api
+     * checks if merchant id exists and is mapped to false in the $refundsPublicStatusMerchants
+     *
+     * @param $merchantId
+     * @return bool
+     *
+     */
+    public static function fetchPublicStatusFromApi(string $merchantId): bool
+    {
+        $fetchPublicStatusFromScrooge = false;
+
+        if ((self::isRefundsPublicStatusMerchant($merchantId) === true) and
+            (self::getRefundsPublicStatusMerchantsViaScrooge()[$merchantId] === false))
+        {
+            $fetchPublicStatusFromScrooge = true;
+        }
+
+        return $fetchPublicStatusFromScrooge;
+    }
+
     public function reconcileNetbankingRefunds(array $data)
     {
         $refundIds = [];

@@ -41,6 +41,78 @@ return [
     'testDebitFileGeneration' => [
         'request' => [
             'content' => [
+                'type'    => 'nach_debit',
+                'targets' => ['paper_nach_citi'],
+                'begin'   => Carbon::yesterday(Timezone::IST)->getTimestamp(),
+                'end'     => Carbon::today(Timezone::IST)->getTimestamp() - 1,
+            ],
+            'url' => '/gateway/files',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count' => 1,
+                'admin' => true,
+                'items' => [
+                    [
+                        'recipients'          => [
+                            ''
+                        ],
+                        'status'              => 'file_generated',
+                        'scheduled'           => true,
+                        'partially_processed' => false,
+                        'attempts'            => 1,
+                        'sender'              => 'emandate@razorpay.com',
+                        'type'                => 'nach_debit',
+                        'target'              => 'paper_nach_citi',
+                        'entity'              => 'gateway_file',
+                        'admin'               => true
+                    ],
+                ],
+            ]
+        ]
+    ],
+
+    'testDebitFileGenerationOnNonWorkingDay' => [
+        'request' => [
+            'content' => [
+                'type'    => 'nach_debit',
+                'targets' => ['paper_nach_citi'],
+                'begin'   => Carbon::yesterday(Timezone::IST)->getTimestamp(),
+                'end'     => Carbon::today(Timezone::IST)->getTimestamp() - 1,
+            ],
+            'url' => '/gateway/files',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count' => 1,
+                'admin' => true,
+                'items' => [
+                    [
+                        'recipients'          => [
+                            ''
+                        ],
+                        'status'              => 'acknowledged',
+                        'scheduled'           => true,
+                        'partially_processed' => false,
+                        'attempts'            => 1,
+                        'type'                => 'nach_debit',
+                        'target'              => 'paper_nach_citi',
+                        'entity'              => 'gateway_file',
+                        'admin'               => true,
+                        'comments'            => 'No data present for gateway file processing in the given time period'
+                    ],
+                ],
+            ]
+        ],
+    ],
+
+    'testDebitFileGenerationYesb' => [
+        'request' => [
+            'content' => [
                 'type'    => 'emandate_debit',
                 'targets' => ['enach_npci_netbanking'],
                 'begin'   => Carbon::yesterday(Timezone::IST)->getTimestamp(),

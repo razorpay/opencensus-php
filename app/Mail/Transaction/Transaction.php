@@ -9,7 +9,7 @@ use RZP\Mail\Base\Constants;
 class Transaction extends Mailable
 {
     /**
-     * @see \RZP\Models\Transaction\Notifier's $event
+     * @see \RZP\Models\Transaction\Notifier::$event
      * @var string
      */
     protected $event;

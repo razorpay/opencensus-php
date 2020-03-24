@@ -786,6 +786,8 @@ class PayoutLinkTest extends TestCase
 
     public function testInitiateApiSuccessWhenValidVpaPassed($payoutLink = null, $createFa = true)
     {
+        $this->markTestSkipped('Only IMPS on Yesbank');
+
         if ($payoutLink === null)
         {
             $payoutLink = $this->fixtures->create('payout_link',
@@ -815,6 +817,8 @@ class PayoutLinkTest extends TestCase
 
     public function testInitiateApiSuccessWhenValidBankAccountPassed()
     {
+        $this->markTestSkipped('Only IMPS on Yesbank');
+
         $payoutLink = $this->fixtures->create('payout_link',
                                               [
                                                   'balance_id' => $this->bankingBalance->getId()
@@ -1043,6 +1047,8 @@ class PayoutLinkTest extends TestCase
 
     public function testUpiPayoutModeWhenVpaFundAccountAdded()
     {
+        $this->markTestSkipped('Only IMPS on Yesbank');
+
         $payoutLink = $this->fixtures->create('payout_link',
                                               [
                                                   'balance_id' => $this->bankingBalance->getId()
@@ -1102,6 +1108,8 @@ class PayoutLinkTest extends TestCase
 
     public function testNeftPayoutModeWhenBankFundAccountAndAmountMoreThanTwoLacs()
     {
+        $this->markTestSkipped('Only IMPS on Yesbank');
+
         $this->bankingBalance->balance = '300000000';
 
         $this->bankingBalance->save();

@@ -3,14 +3,16 @@
 namespace RZP\Gateway\Mobikwik;
 
 use Lib\PhoneBook;
-use RZP\Constants\Mode;
+
 use RZP\Error;
-use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Gateway\Base;
-use RZP\Gateway\Base\VerifyResult;
-use RZP\Trace\TraceCode;
+use RZP\Constants\Mode;
+use RZP\Models\Payment;
 use RZP\Models\Feature;
+use RZP\Error\ErrorCode;
+use RZP\Trace\TraceCode;
+use RZP\Gateway\Base\VerifyResult;
 
 class Gateway extends Base\Gateway
 {
@@ -112,6 +114,7 @@ class Gateway extends Base\Gateway
         $request = $this->getVerifyRequestArray($input);
 
         $response = $this->sendGatewayRequest($request);
+
         $this->response = $response;
 
         $content = $this->xmlToArray($response->body);
@@ -201,39 +204,47 @@ class Gateway extends Base\Gateway
     {
         parent::verify($input);
 
+        $scroogeResponse = new Base\ScroogeResponse();
+
         if ($this->isUnprocessedRefund($input) === true)
         {
-            return false;
+            return $scroogeResponse->setSuccess(false)
+                                   ->setStatusCode(ErrorCode::REFUND_MANUALLY_CONFIRMED_UNPROCESSED)
+                                   ->toArray();
         }
 
         if ($this->isProcessedRefund($input) === true)
         {
-            return true;
+            return $scroogeResponse->setSuccess(true)
+                                   ->toArray();
         }
 
         // Mobikwik returns an error when refund amount exceeds the remaining amount
         // on Mobikwik's end. We take advantage of this error and initiate refunds
         // for all the pending refunds whose amount is either equal to payment, i.e,
-        // they are full refund or twice of refund amount is less than payment amount
-        if (($input['refund']['amount'] !== $input['payment']['amount']) and
-            ((2 * $input['refund']['amount']) <= $input['payment']['amount']))
+        // they are full refund or twice of refund amount is more than payment amount
+        if ((2 * $input['refund']['amount']) <= $input['payment']['amount'])
         {
-            throw new Exception\LogicException(
-                'Verify refund is only supported for full refunds and specific partial refunds');
+            return $scroogeResponse->setSuccess(false)
+                                   ->setStatusCode(ErrorCode::GATEWAY_ERROR_VERIFY_REFUND_NOT_SUPPORTED)
+                                   ->toArray();
         }
 
-        if ($input['refund']['amount'] === $input['payment']['amount'])
-        {
-            $content = $this->sendRefundVerifyRequest($input);
+        $content = $this->sendRefundVerifyRequest($input);
 
-            if (($content['statuscode'] === Status::SUCCESS) and
-                ($content['statusmessage'] === 'Refund'))
-            {
-                return true;
-            }
+        $scroogeResponse->setGatewayVerifyResponse($content)
+                        ->setGatewayKeys($this->getGatewayData($content));
+
+        if (($content[Entity::STATUSCODE] === Status::SUCCESS) and
+            ($content[Entity::STATUSMSG] === 'Refund'))
+        {
+            return $scroogeResponse->setSuccess(true)
+                                   ->toArray();
         }
 
-        return false;
+        return $scroogeResponse->setSuccess(false)
+                               ->setStatusCode(ErrorCode::GATEWAY_VERIFY_REFUND_ABSENT)
+                               ->toArray();
     }
 
     protected function saveVerifyContentIfNeeded($payment, $content)
@@ -266,25 +277,37 @@ class Gateway extends Base\Gateway
         $refund = $this->createGatewayRefundEntity($content, $input);
 
         $content = http_build_query($content);
+
         $request = $this->getStandardRequestArray($content);
 
         $this->trace->info(TraceCode::GATEWAY_REFUND_REQUEST, $request);
 
         $response = $this->sendGatewayRequest($request);
+
         $content = $this->xmlToArray($response->body);
 
         $this->trace->info(TraceCode::GATEWAY_REFUND_RESPONSE, $content);
 
         $content['received'] = 1;
+
         $refund->fill($content)->saveOrFail();
 
-        if ($content['statuscode'] !== '0')
+        $gatewayData = [
+            Payment\Gateway::GATEWAY_RESPONSE => json_encode($content),
+            Payment\Gateway::GATEWAY_KEYS     => $this->getGatewayData($content)
+        ];
+
+        if ($content[Entity::STATUSCODE] !== '0')
         {
             throw new Exception\GatewayErrorException(
                 ErrorCode::BAD_REQUEST_REFUND_FAILED,
-                $content['statuscode'],
-                $content['statusmessage']);
+                $content[Entity::STATUSCODE],
+                $content[Entity::STATUSMSG],
+                $gatewayData
+            );
         }
+
+        return $gatewayData;
     }
 
     public function topup($input)
@@ -895,5 +918,19 @@ class Gateway extends Base\Gateway
         $actualAmount   = number_format(floatval($response['amount']), 2, '.', '');
 
         $verify->amountMismatch = ($expectedAmount !== $actualAmount);
+    }
+
+    protected function getGatewayData(array $response = [])
+    {
+        if (empty($response) === false)
+        {
+            return [
+                Entity::REFID      => $response[Entity::REFID] ?? null,
+                Entity::STATUS     => $response[Entity::STATUS] ?? null,
+                Entity::STATUSCODE => $response[Entity::STATUSCODE] ?? null,
+            ];
+        }
+
+        return [];
     }
 }

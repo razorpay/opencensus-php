@@ -6,16 +6,20 @@ use Mail;
 use Carbon\Carbon;
 use RZP\Gateway\Enach;
 use RZP\Models\Payment;
+use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
 use RZP\Models\Customer\Token;
 use RZP\Models\Gateway\File\Status;
+use RZP\Models\FundTransfer\Holidays;
+use RZP\Models\Base\PublicCollection;
 use RZP\Exception\GatewayFileException;
 use RZP\Gateway\Enach\Citi\FieldsLength;
 use RZP\Gateway\Enach\Citi\HeadingsLength;
 use RZP\Mail\Gateway\Nach\Base as NachMail;
 use RZP\Gateway\Enach\Citi\Fields as Fields;
+use RZP\Gateway\Base\Action as GatewayAction;
 use RZP\Mail\Base\Constants as MailConstants;
 use RZP\Services\Beam\Service as BeamService;
 use RZP\Models\Gateway\File\Processor\Nach\Debit;
@@ -417,5 +421,127 @@ class PaperNachCiti extends Debit\Base
         }
 
         return $txt;
+    }
+
+    public function fetchEntities(): PublicCollection
+    {
+        if (Holidays::isWorkingDay(Carbon::now(Timezone::IST)) === false)
+        {
+            return new PublicCollection();
+        }
+
+        $begin = Carbon::createFromTimestamp($this->gatewayFile->getBegin(), Timezone::IST)
+                         ->addHours(9)
+                         ->getTimestamp();
+
+        $begin = $this->getLastWorkingDay($begin);
+
+        $end = Carbon::createFromTimestamp($this->gatewayFile->getEnd(), Timezone::IST)
+                      ->addHours(9)
+                      ->getTimestamp();
+
+        $tokens = $this->repo->token->fetchPendingNachOrMandateDebit(
+                                             [Payment\Gateway::ENACH_NPCI_NETBANKING, Payment\Gateway::NACH_CITI],
+                                             $begin,
+                                             $end,
+                                             Payment\Gateway::ACQUIRER_CITI
+                                            );
+
+        $paymentIds = $tokens->pluck('payment_id')->toArray();
+
+        $this->trace->info(
+            TraceCode::NACH_DEBIT_REQUEST,
+            [
+                'gateway_file_id' => $this->gatewayFile->getId(),
+                'entity_ids'      => $paymentIds,
+                'begin'           => $begin,
+                'end'             => $end,
+            ]);
+
+        return $tokens;
+    }
+
+
+    public function generateData(PublicCollection $tokens)
+    {
+        try
+        {
+            $data = $tokens;
+
+            // Create gateway entities
+            $this->createGatewayEntities($tokens);
+
+            return $data;
+        }
+        catch (\Throwable $e)
+        {
+            throw new GatewayFileException(
+                ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_GENERATING_DATA,
+                [
+                    'id' => $this->gatewayFile->getId(),
+                ],
+                $e);
+        }
+    }
+
+    protected function createGatewayEntities(PublicCollection $tokens)
+    {
+        foreach ($tokens as $token)
+        {
+            if ($token['terminal']->getGateway() === Payment\Gateway::ENACH_NPCI_NETBANKING)
+            {
+                $paymentId = $token['payment_id'];
+
+                $gatewayPayment = $this->repo->enach->findByPaymentIdAndAction(
+                    $paymentId, GatewayAction::AUTHORIZE);
+
+                //
+                // If gatewayPayment already exists then skip its creation.
+                // This case will arise when we retry sending some payments to the bank
+                //
+                if ($gatewayPayment !== null)
+                {
+                    continue;
+                }
+
+                $this->createGatewayEntity($token);
+            }
+        }
+    }
+
+    protected function createGatewayEntity($token)
+    {
+        $paymentId = $token['payment_id'];
+
+        $gatewayPayment = $this->getNewGatewayPaymentEntity();
+
+        $gatewayPayment->setPaymentId($paymentId);
+
+        $gatewayPayment->setAction(GatewayAction::AUTHORIZE);
+
+        $gatewayPayment->setBank($token['bank']);
+
+        $gatewayPayment->setAmount($token['payment_amount']);
+
+        $attributes = $this->getGatewayAttributes($token);
+
+        $gatewayPayment->fill($attributes);
+
+        $this->repo->saveOrFail($gatewayPayment);
+
+        return $gatewayPayment;
+    }
+
+    protected function getNewGatewayPaymentEntity()
+    {
+        return new Enach\Base\Entity;
+    }
+
+    protected function getGatewayAttributes($token): array
+    {
+        return [
+            Enach\Base\Entity::ACQUIRER => Payment\Gateway::ACQUIRER_CITI,
+            Enach\Base\Entity::UMRN     => $token['gateway_token'],
+        ];
     }
 }

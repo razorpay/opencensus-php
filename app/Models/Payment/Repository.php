@@ -171,8 +171,7 @@ class Repository extends Base\Repository
                     ->where(Entity::BANK, '=', $bank)
                     ->where(Entity::METHOD, '=', Method::EMI)
                     ->where($terminalEmi, '=', false)
-                    ->with('card.globalCard')
-                    ->with('emiPlan')
+                    ->with('card.globalCard', 'emiPlan', 'merchant')
                     ->select($paymentData)
                     ->get();
     }

@@ -663,70 +663,6 @@ class UserTest extends TestCase
         $this->startTest();
     }
 
-    public function testLogin2faCorrectOtp()
-    {
-        $this->enableRazorXTreatmentForRazorX();
-
-        $user = $this->fixtures->create('user', [
-            'password'                => 'hello123',
-            'second_factor_auth'      => true,
-            'contact_mobile'          => '9999999999',
-            'contact_mobile_verified' => true,
-            'wrong_2fa_attempts'      => 5,
-        ]);
-
-        $testData = & $this->testData[__FUNCTION__];
-
-        $content = [
-            'email'    => $user['email'],
-            'password' => 'hello123',
-            'otp'      => \RZP\Services\Raven::MOCK_VALID_OTP,
-            'captcha_disable'       => 'DISABLE_THE_CAPTCHA_YOU_SHALL',
-        ];
-
-        $testData['request']['content'] = $content;
-
-        $this->ba->appAuth();
-
-        $this->startTest();
-
-        $user = $this->getDbEntityById('user', $user['id']);
-
-        $this->assertEquals($user->getWrong2faAttempts(), 0);
-    }
-
-    public function testFailedLogin2faIncorrectOtp()
-    {
-        $this->enableRazorXTreatmentForRazorX();
-
-        $user = $this->fixtures->create('user', [
-            'password'                => 'hello123',
-            'second_factor_auth'      => true,
-            'contact_mobile'          => '9999999999',
-            'contact_mobile_verified' => true,
-            'wrong_2fa_attempts'      => 0,
-            ]);
-
-        $testData = & $this->testData[__FUNCTION__];
-
-        $content = [
-            'email'    => $user['email'],
-            'password' => 'hello123',
-            'otp'      => 'X' . \RZP\Services\Raven::MOCK_VALID_OTP,
-            'captcha_disable'       => 'DISABLE_THE_CAPTCHA_YOU_SHALL',
-        ];
-
-        $testData['request']['content'] = $content;
-
-        $this->ba->appAuth();
-
-        $this->startTest();
-
-        $user = $this->getDbEntityById('user', $user['id']);
-
-        $this->assertEquals($user->getWrong2faAttempts(), 1);
-    }
-
     public function testFailedLoginAccountLocked()
     {
         $this->enableRazorXTreatmentForRazorX();
@@ -775,180 +711,6 @@ class UserTest extends TestCase
         $this->ba->appAuth();
 
         $this->startTest();
-    }
-
-    public function testMaxWrongOtpLocksAccount()
-    {
-        $this->enableRazorXTreatmentForRazorX();
-
-        $user = $this->fixtures->create('user', [
-            'password'                => 'hello123',
-            'second_factor_auth'      => true,
-            'contact_mobile'          => '9999999999',
-            'contact_mobile_verified' => true,
-            'account_locked'          => false,
-            'wrong_2fa_attempts'      => ($this->app['config']
-                                                ->get('applications.user_2fa.max_incorrect_tries'))
-                                                 - 1,
-            ]);
-
-        $testData = & $this->testData[__FUNCTION__];
-
-        $content = [
-            'email'    => $user['email'],
-            'password' => 'hello123',
-            'otp'      => 'X' . \RZP\Services\Raven::MOCK_VALID_OTP,
-            'captcha_disable'       => 'DISABLE_THE_CAPTCHA_YOU_SHALL',
-        ];
-
-        $testData['request']['content'] = $content;
-
-        $this->ba->appAuth();
-
-        $this->startTest();
-
-        $user = $this->getDbEntityById('user', $user['id']);
-
-        $this->assertTrue($user->isAccountLocked());
-    }
-
-    public function testFailed2faSetupUser2faNotEnabled()
-    {
-        $user = $this->fixtures->create('user', [
-            'password'                => 'hello123',
-            'second_factor_auth'      => false,
-            'contact_mobile'          => '9012345678',
-            'contact_mobile_verified' => false,
-            'account_locked'          => false,
-        ]);
-
-        $testData = & $this->testData[__FUNCTION__];
-
-        $content = [
-            'email'               => $user['email'],
-            'password'            => 'hello123',
-            'contact_mobile'      => '9012345678',
-
-        ];
-
-        $testData['request']['content'] = $content;
-
-        $this->ba->appAuth();
-
-        $this->startTest();
-    }
-
-    public function testFailed2faSetupUserLocked()
-    {
-        $user = $this->fixtures->create('user', [
-            'password'                => 'hello123',
-            'second_factor_auth'      => true,
-            'contact_mobile_verified' => false,
-            'account_locked'          => true,
-        ]);
-
-        $testData = & $this->testData[__FUNCTION__];
-
-        $content = [
-            'email'               => $user['email'],
-            'password'            => 'hello123',
-            'contact_mobile'      => '9012345678',
-
-        ];
-
-        $testData['request']['content'] = $content;
-
-        $this->ba->appAuth();
-
-        $this->startTest();
-    }
-
-    public function testFailed2faSetupUserRestricted()
-    {
-        $user = $this->fixtures->create('user', [
-            'password'                => 'hello123',
-            'second_factor_auth'      => true,
-            'contact_mobile'          => '9012345678',
-            'contact_mobile_verified' => false,
-            'account_locked'          => false,
-        ]);
-
-        $merchantIds = $user->merchants()->distinct()->get()->pluck('id')->toArray();
-        $merchant    = $this->getDbEntityById('merchant', $merchantIds[0]);
-
-        $merchant->setRestricted(true);
-        $merchant->saveOrFail();
-
-        $testData = & $this->testData[__FUNCTION__];
-
-        $content = [
-            'email'               => $user['email'],
-            'password'            => 'hello123',
-            'contact_mobile'      => '9012345678',
-
-        ];
-
-        $testData['request']['content'] = $content;
-
-        $this->ba->appAuth();
-
-        $this->startTest();
-    }
-
-    public function testFailed2faSetupUserAlreadySetup()
-    {
-        $user = $this->fixtures->create('user', [
-            'password'                => 'hello123',
-            'second_factor_auth'      => true,
-            'contact_mobile'          => '9012345678',
-            'contact_mobile_verified' => true,
-            'account_locked'          => false,
-        ]);
-
-        $testData = & $this->testData[__FUNCTION__];
-
-        $content = [
-            'email'               => $user['email'],
-            'password'            => 'hello123',
-            'contact_mobile'      => '9012345678',
-
-        ];
-
-        $testData['request']['content'] = $content;
-
-        $this->ba->appAuth();
-
-        $this->startTest();
-    }
-
-    public function test2faSetupMobile()
-    {
-        $user = $this->fixtures->create('user', [
-            'password'                => 'hello123',
-            'second_factor_auth'      => true,
-            'contact_mobile'          => '9999999999',
-            'contact_mobile_verified' => false,
-            'account_locked'          => false,
-            ]);
-
-        $testData = & $this->testData[__FUNCTION__];
-
-        $content = [
-            'email'    => $user['email'],
-            'password' => 'hello123',
-            'contact_mobile'   => '8888888888',
-
-        ];
-
-        $testData['request']['content'] = $content;
-
-        $this->ba->appAuth();
-
-        $this->startTest();
-
-        $user = $this->getDbEntityById('user', $user['id']);
-
-        $this->assertTrue($user->getContactMobile() === '8888888888');
     }
 
     public function testFailed2faSetupVerifyMobileWrongOtp()
@@ -1994,28 +1756,16 @@ class UserTest extends TestCase
 
         Carbon::setTestNow($oldDateTime);
 
-        $this->fixtures->edit('merchant', '10000000000000', [
-            'activated'        => 1,
-            'activated_at'     => Carbon::now(Timezone::IST)->timestamp,
-            'invoice_code'     => 'hello1234567',
-            'business_banking' => 1,
-        ]);
+        $this->setUpMerchantForBusinessBanking(false, 10000000);
 
-        $this->fixtures->create('balance',
-                                [
-                                    'merchant_id'    => '10000000000000',
-                                    'type'           => 'banking',
-                                    'account_number' => '2224440041626905',
-                                    'balance'        => 100000,
-                                ]);
+        $bankingAccountAttributes = [
+            'id'                    =>  'ABCde1234ABCde',
+            'account_number'        =>  '2224440041626998',
+            'balance_id'            =>  $this->bankingBalance->getId(),
+            'account_type'          =>  'nodal',
+        ];
 
-        $this->fixtures->create('bank_account',
-                                [
-                                    'merchant_id'    => '10000000000000',
-                                    'type'           => 'virtual_account',
-                                    'ifsc_code'      => 'RAZRB000000',
-                                    'account_number' => '2224440041626905',
-                                ]);
+        $this->createBankingAccount($bankingAccountAttributes);
 
         $this->fixtures->user->createBankingUserForMerchant('10000000000000',
                                                             $attributes = ['id' => '30000000000000'],

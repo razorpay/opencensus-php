@@ -138,3 +138,15 @@ server_error_RUNTIME_ERROR,Unknown Error,technical_error,Technical,Gateway,Non a
 server_error,Unknown Error,technical_error,Technical,Gateway,Non actionable,Payment_Initiation,N
 server_error_ASSERTION_ERROR,Unknown Error,technical_error,Technical,Gateway,Non actionable,Payment_Initiation,N
 GATEWAY_ERROR_UNKNOWN_ERROR,Unknown Error,gateway_error,Technical,Gateway,Non actionable,Payment_Initiation,N
+GATEWAY_ERROR_AUTHENTICATION_STATUS_FAILED,,failed,,Customer,,Authentication,
+GATEWAY_ERROR_SYSTEM_UNAVAILABLE,,system_unavailable,,Gateway,,Authentication,
+BAD_REQUEST_PAYMENT_ALREADY_PROCESSED,,Duplicate_Transaction,,Merchant,,Payment_Initiation,
+BAD_REQUEST_PAYMENT_OTP_VALIDATION_ATTEMPT_LIMIT_EXCEEDED,,Max_OTP_Attempts,,Customer,,Authentication,
+BAD_REQUEST_PAYMENT_CARD_DAILY_WITHDRAWAL_FREQUENCY_LIMITS_EXCEEDED,,Limit_Exceeded,,Customer,,Authentication,
+BAD_REQUEST_PAYMENT_CARD_WITHDRAWAL_AMOUNT_LIMITS_EXCEEDED,,Limit_Exceeded,,Customer,,Authentication,
+BAD_REQUEST_PAYMENT_OTP_INCORRECT,,incorrect_otp,,Customer,,Authentication,
+SERVER_ERROR_INVALID_ARGUMENT,,invalid_request,,Merchant,,Payment_Initiation,
+GATEWAY_ERROR_CARD_ISSUING_BANK_SYSTEM_ERROR,,system_error,,Bank,,Authentication,
+BAD_REQUEST_PAYMENT_POSSIBLE_FRAUD_GATEWAY,,risk_decline,,Customer,,Authentication,
+SERVER_ERROR_INVALID_FORMAT,,invalid_request,,Merchant,,Payment_Initiation,
+BAD_REQUEST_PAYMENT_BANK_SYSTEM_ERROR,,system_error,,Bank,,Authentication,

@@ -1018,10 +1018,14 @@ class Repository extends Base\Repository
         if ($entityName === ConstantEntity::PAYMENT)
         {
             $timestampColumn = $this->dbColumn(Entity::CREATED_AT);
+
+            $settledByColumn = $this->repo->payment->dbColumn(Payment\Entity::SETTLED_BY);
         }
         else
         {
             $timestampColumn = $this->repo->refund->dbColumn(Refund\Entity::PROCESSED_AT);
+
+            $settledByColumn = $this->repo->refund->dbColumn(Payment\Entity::SETTLED_BY);
         }
 
         // To exclude e-mandate transactions and non-active gateways, we put 'where' clause here
@@ -1047,7 +1051,9 @@ class Repository extends Base\Repository
             }
         });
 
-        $query->whereNull($transactionReconciledAtColumn);
+        // Exclude reconciled and direct settlement txns
+        $query->whereNull($transactionReconciledAtColumn)
+              ->where($settledByColumn, '=', 'Razorpay');
 
         $query->groupBy('date', 'gateway', $paymentMethodColumn)
               ->orderBy('date', 'desc');
@@ -1569,14 +1575,19 @@ class Repository extends Base\Repository
         if ($entityName === ConstantEntity::PAYMENT)
         {
             $timestampColumn = $this->dbColumn(Entity::CREATED_AT);
+
+            $settledByColumn = $this->repo->payment->dbColumn(Payment\Entity::SETTLED_BY);
         }
         else
         {
             $timestampColumn = $this->repo->refund->dbColumn(Refund\Entity::PROCESSED_AT);
+
+            $settledByColumn = $this->repo->refund->dbColumn(Payment\Entity::SETTLED_BY);
         }
 
         // To exclude e-mandate transactions and non-active gateways, we put 'where' clause here
         $query->where($transactionAmountColumn, '>', 0)
+              ->where($settledByColumn, '=', 'Razorpay')
               ->whereBetween($timestampColumn, [$from, $to])
               ->groupBy('date', 'gateway', $paymentMethodColumn)
               ->orderBy('date', 'desc');

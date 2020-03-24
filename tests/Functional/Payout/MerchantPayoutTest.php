@@ -10,6 +10,7 @@ use Carbon\Carbon;
 use RZP\Models\Payout;
 use RZP\Models\Transaction;
 use RZP\Constants\Timezone;
+use RZP\Models\FundTransfer\Mode;
 use RZP\Models\Feature\Constants;
 use RZP\Models\Settlement\Channel;
 use RZP\Tests\Functional\TestCase;
@@ -64,7 +65,7 @@ class MerchantPayoutTest extends TestCase
     {
         $this->fixtures->merchant->addFeatures([Constants::ES_ON_DEMAND]);
 
-        $this->fixtures->merchant->edit('10000000000000', ['channel' => 'axis2']);
+        $this->fixtures->merchant->edit('10000000000000', ['channel' => Channel::ICICI]);
 
         $this->ba->proxyAuth();
 
@@ -77,11 +78,13 @@ class MerchantPayoutTest extends TestCase
 
         $payout = $this->getLastEntity('payout',true);
 
+        $this->assertEquals(Mode::NEFT, $payout['mode']);
+
         $txn = $this->getLastEntity('transaction',true);
 
         $this->assertEquals('payout', $txn['type']);
 
-        $this->assertEquals('axis2', $txn['channel']);
+        $this->assertEquals(Channel::ICICI, $txn['channel']);
 
         $this->assertEquals(398, $txn['amount']);
 
@@ -109,12 +112,12 @@ class MerchantPayoutTest extends TestCase
         $this->startTest();
     }
 
-    public function testCreateMerchantPayoutOnDemandNonBankingHours()
+    public function testCreateMerchantPayoutOnDemandNonBankingHoursWithLessThan2Lakhs()
     {
         // Es on demand should be given to merchants during non banking hours.
         $this->fixtures->merchant->addFeatures([Constants::ES_ON_DEMAND]);
 
-        $this->fixtures->merchant->edit('10000000000000', ['channel' => 'axis2']);
+        $this->fixtures->merchant->edit('10000000000000', ['channel' => Channel::AXIS2]);
 
         $this->fixtures->base->editEntity('balance', '10000000000000', ['balance' => 10000000000]);
 
@@ -129,11 +132,11 @@ class MerchantPayoutTest extends TestCase
 
         $txn = $this->getLastEntity('transaction', true);
 
-        $this->assertEquals(Channel::YESBANK, $txn[Transaction\Entity::CHANNEL]);
+        $this->assertEquals(Channel::ICICI, $txn[Transaction\Entity::CHANNEL]);
 
         $payout = $this->getLastEntity('payout', true);
 
-        $this->assertEquals(Channel::YESBANK, $payout[Payout\Entity::CHANNEL]);
+        $this->assertEquals(Channel::ICICI, $payout[Payout\Entity::CHANNEL]);
     }
 
     public function testCreateMerchantPayoutOnDemandHoliday()
@@ -141,7 +144,7 @@ class MerchantPayoutTest extends TestCase
         // Es on demand should be given to merchants during holidays.
         $this->fixtures->merchant->addFeatures([Constants::ES_ON_DEMAND]);
 
-        $this->fixtures->merchant->edit('10000000000000', ['channel' => 'axis2']);
+        $this->fixtures->merchant->edit('10000000000000', ['channel' => Channel::AXIS2]);
 
         $this->fixtures->base->editEntity('balance', '10000000000000', ['balance' => 10000000000]);
 
@@ -156,11 +159,11 @@ class MerchantPayoutTest extends TestCase
 
         $txn = $this->getLastEntity('transaction', true);
 
-        $this->assertEquals(Channel::YESBANK, $txn[Transaction\Entity::CHANNEL]);
+        $this->assertEquals(Channel::ICICI, $txn[Transaction\Entity::CHANNEL]);
 
         $payout = $this->getLastEntity('payout', true);
 
-        $this->assertEquals(Channel::YESBANK, $payout[Payout\Entity::CHANNEL]);
+        $this->assertEquals(Channel::ICICI, $payout[Payout\Entity::CHANNEL]);
     }
 
     public function testCreateMerchantPayoutOnDemandExceedAmountLimit()
@@ -345,7 +348,6 @@ class MerchantPayoutTest extends TestCase
 
         $this->startTest();
     }
-
 
     public function testCreateMerchantPayoutOnDemandWithFtsRampFailure()
     {

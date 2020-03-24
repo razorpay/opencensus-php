@@ -25,6 +25,7 @@ class RequestResponseFields
     const TRANSACTION_DATE                  = 'transaction_date';
     const TRANSACTION_ID                    = 'transaction_id';
     const SERIAL_NUMBER                     = 'serial_number';
+    const BALANCE                           = 'balance';
 
     const DATA                              = 'data';
     const HEADER                            = 'Header';

@@ -211,7 +211,9 @@ class Name
     const CREATE_SHIELD_RULES                 = 'create_shield_rules';
     const EDIT_SHIELD_RULES                   = 'edit_shield_rules';
     const DELETE_SHIELD_RULES                 = 'delete_shield_rules';
-    const EVALUATE_SHIELD_RULES               = 'evaluate_shield_rules';
+    const VIEW_SHIELD_LISTS                   = 'view_shield_lists';
+    const CREATE_SHIELD_LISTS                 = 'create_shield_lists';
+    const DELETE_SHIELD_LISTS                 = 'delete_shield_lists';
     const VIEW_MERCHANT_ANALYTICS             = 'view_merchant_analytics';
     const ASSIGN_MERCHANT_ACTIVATION_REVIEWER = 'assign_merchant_activation_reviewer';
     const DB_META_QUERY                       = 'db_meta_query';
@@ -226,6 +228,7 @@ class Name
     const RETRY_REFUND                        = 'retry_refund';
     const DOWNLOAD_NON_MERCHANT_REPORT        = 'download_non_merchant_report';
     const CREATE_VIRTUAL_ACCOUNTS             = 'create_virtual_accounts';
+    const CREATE_BANKING_VIRTUAL_ACCOUNTS     = 'create_banking_virtual_accounts';
     const BANK_TRANSFER_INSERT                = 'bank_transfer_insert';
     const GET_SELF_SERVE_REPORT               = 'get_self_serve_report';
     const CREATE_SELF_SERVE_REPORT            = 'create_self_serve_report';
@@ -255,6 +258,7 @@ class Name
     const UPDATE_DOWNTIME_CONFIG              = 'update_downtime_config';
     const LIST_DOWNTIME_CONFIG                = 'list_downtime_config';
     const ADJUSTMENT_BATCH_UPLOAD             = 'adjustment_batch_upload';
+    const REPORTING_BATCH_UPLOAD              = 'reporting_batch_upload';
     const DOWNLOAD_CREDIT_BUREAU_REPORTS      = 'download_credit_bureau_reports';
 
     // RazorpayX/Business banking permissions
@@ -338,6 +342,8 @@ class Name
     const MERCHANT_INSTANT_ACTIVATION         = 'merchant_instant_activation';
     const UPDATE_MERCHANT_FEATURE             = 'update_merchant_feature';
     const UPDATE_TEST_MERCHANT_BALANCE        = 'update_test_merchant_balance';
+    const VIEW_VIRTUAL_ACCOUNT                = 'view_virtual_account';
+    const EDIT_MERCHANT_INTERNATIONAL         = 'edit_merchant_international';
 
     public static $actionMap = [
         Merchant\Action::ARCHIVE                            => self::EDIT_MERCHANT_ARCHIVE,

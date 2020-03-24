@@ -3,13 +3,15 @@
 namespace RZP\Models\Payment\Processor;
 
 use App;
+use Razorpay\Trace\Logger as Trace;
+
 use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
 use RZP\Models\BharatQr;
 use RZP\Models\BankTransfer;
-use Razorpay\Trace\Logger as Trace;
+use RZP\Models\Merchant\Balance;
 use RZP\Models\Merchant\Account;
 use RZP\Exception\LogicException;
 use RZP\Models\VirtualAccount\Provider;
@@ -45,6 +47,13 @@ class TerminalProcessor extends Base\Core
         $terminalSelector = new Terminal\Selector($input, $options);
 
         $terminalsSelected = $terminalSelector->select();
+
+        // Filter terminals during X onboarding
+        if ((isset($payment->receiver->source->balance) === true) and
+            ($payment->receiver->source->balance->isTypeBanking() === true))
+        {
+            $terminalsSelected = $this->filterTerminalForRX($payment, $terminalsSelected);
+        }
 
         if ($options->getMultiple() === false)
         {
@@ -181,7 +190,9 @@ class TerminalProcessor extends Base\Core
 
     public function getTerminalForBankTransfer(BankTransfer\Entity $bankTransfer, bool $log = false): Terminal\Entity
     {
-        $terminals = $this->repo->terminal->getAllBankTransferTerminals();
+        $gateway = Payment\Gateway::$bankTransferProviderGateway[$bankTransfer->getGateway()];
+
+        $terminals = $this->repo->terminal->getAllBankTransferTerminals($gateway);
 
         return $this->selectTerminalForBankAccount($terminals, $bankTransfer->getPayeeAccount(), $log);
     }
@@ -330,5 +341,41 @@ class TerminalProcessor extends Base\Core
         }
 
         return array_values(array_unique($failedTerminalIds));
+    }
+
+    /**
+     * Filter terminal during RX onboarding
+     * This is used since we support multiple shared terminals on X now
+     *
+     * @param $payment
+     * @param $terminals
+     * @return array
+     */
+    protected function filterTerminalForRX($payment, $terminals)
+    {
+        // Get account number series prefix for merchant
+        $seriesPrefix = Terminal\Core::getBankAccountSeriesPrefixForX($payment->merchant, $this->mode);
+
+        $this->trace->info(
+            TraceCode::TERMINALS_FILTERED,
+            ['series_preifx' => $seriesPrefix]
+        );
+
+        foreach ($terminals as $terminal)
+        {
+            $gatewayMid = $terminal->getGatewayMerchantId();
+
+            if (starts_with($gatewayMid, $seriesPrefix) === true)
+            {
+                return array($terminal);
+            }
+        }
+
+        throw new LogicException(
+            'No terminal found for RX',
+            null,
+            [
+                'series_prefix' => $seriesPrefix,
+            ]);
     }
 }

@@ -9,6 +9,7 @@ use RZP\Constants\Procurer;
 use RZP\Models\Terminal\Entity as Terminal;
 use RZP\Models\Terminal\Mode;
 use RZP\Models\Terminal\Status;
+use RZP\Models\Terminal\SyncStatus;
 use RZP\Models\Admin\Org\Entity as Org;
 
 
@@ -189,6 +190,9 @@ class CreateTerminals extends Migration
             $table->string(Terminal::VIRTUAL_UPI_HANDLE, 10)
                   ->nullable();
 
+            $table->string(Terminal::ACCOUNT_TYPE, 255)
+                  ->nullable();
+
             $table->text(Terminal::NOTES)
                   ->nullable();
 
@@ -202,6 +206,10 @@ class CreateTerminals extends Migration
 
             $table->tinyInteger(Terminal::ENABLED)
                   ->default(1);
+
+            $table->tinyInteger(Terminal::SYNC_STATUS)
+                  ->default(SyncStatus::getValueForSyncStatusString(SyncStatus::NOT_SYNCED));
+
 
             $table->foreign(Terminal::MERCHANT_ID)
                   ->references(Merchant\Entity::ID)
@@ -227,6 +235,7 @@ class CreateTerminals extends Migration
             $table->index(Terminal::STATUS);
             $table->index(Terminal::ORG_ID);
             $table->index(Terminal::BANK_TRANSFER);
+            $table->index(Terminal::SYNC_STATUS);
         });
     }
 

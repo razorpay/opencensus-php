@@ -137,15 +137,28 @@ class Repository extends Base\Repository
 
     protected function addQueryParamPublicStatus($query, $params)
     {
+        // We are disabling filtering for merchants like flipkart for which we are
+        // modifying public status based on some buisness logics and is not stored in API DB
+        $disableStatusFilter = Refund\Core::fetchPublicStatusFromScrooge($this->merchant->getId());
+
+        if ($disableStatusFilter === true)
+        {
+            return;
+        }
+
+        $showApiRefundStatus = Refund\Core::fetchPublicStatusFromApi($this->merchant->getId());
+
         switch($params[Entity::PUBLIC_STATUS])
         {
-            case 'processed':
-                $query->whereNotNull(Entity::SPEED_PROCESSED);
+            case Status::PROCESSED:
+                ($showApiRefundStatus === true) ?
+                    $query->where(Entity::STATUS, '=', Status::PROCESSED) : $query->whereNotNull(Entity::SPEED_PROCESSED);
 
                 break;
 
-            case 'processing':
-                $query->whereNull(Entity::SPEED_PROCESSED);
+            case Status::PROCESSING:
+                ($showApiRefundStatus === true) ?
+                    $query->where(Entity::STATUS, '!=', Status::PROCESSED) : $query->whereNull(Entity::SPEED_PROCESSED);
 
                 break;
         }

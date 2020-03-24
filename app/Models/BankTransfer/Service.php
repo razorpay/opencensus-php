@@ -3,17 +3,22 @@
 namespace RZP\Models\BankTransfer;
 
 use Cache;
+use RZP\Models\Bank\BankCodes;
+use RZP\Models\Merchant\Account;
+use Symfony\Component\HttpFoundation\File\File;
 
 use RZP\Exception;
+use RZP\Models\Batch;
 use RZP\Models\Base;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
-use RZP\Models\Bank\BankCodes;
+use RZP\Models\BankAccount;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Exception\LogicException;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\VirtualAccount\Provider;
+use RZP\Reconciliator\RequestProcessor;
 
 class Service extends Base\Service
 {
@@ -51,18 +56,32 @@ class Service extends Base\Service
      *
      * @param array $input
      *
+     * @param string|null $provider
+     * @param bool $checkForIfsc
      * @return array
+     * @throws Exception\BadRequestException
+     * @throws LogicException
      */
-    public function process(array $input): array
+    public function process(array $input, string $provider = null, bool $checkForIfsc = false): array
     {
         $this->trace->info(
             TraceCode::BANK_TRANSFER_PROCESS_REQUEST,
             $input
         );
 
+        if (empty($provider) === false)
+        {
+            $this->provider = $provider;
+        }
+
         $this->validateProvider();
 
         $this->checkBlocks($input);
+
+        if ($checkForIfsc === true)
+        {
+            $this->checkAndReplaceForIfsc($input, $provider);
+        }
 
         $valid = $this->core->process($input, $this->provider);
 
@@ -71,6 +90,91 @@ class Service extends Base\Service
             'message'        => null,
             'transaction_id' => $input[Entity::REQ_UTR] ?? '',
         ];
+    }
+
+    public function processFile(array $input, $batchType): array
+    {
+        $this->trace->info(
+            TraceCode::BANK_TRANSFER_PROCESS_REQUEST,
+            [
+                'input'      => $input,
+                'batch_type' => $batchType,
+            ]
+        );
+
+        Batch\Type::validateType($batchType);
+
+        $batchCore = new Batch\Core;
+
+        $requestProcessor = new RequestProcessor\Mailgun;
+
+        $fileDetails = $requestProcessor->processForVa($input);
+
+        $this->trace->info(
+            TraceCode::BANK_TRANSFER_PROCESS_REQUEST,
+            [
+                'file details'    => $fileDetails,
+            ]
+        );
+
+        if (isset($fileDetails['file_details']) === true)
+        {
+            $file = new File($fileDetails['file_details'][0]['file_path']);
+
+            $params = [
+                Batch\Entity::TYPE          => $batchType,
+                Batch\Entity::FILE          => $file,
+            ];
+
+            $sharedMerchant = $this->repo
+                                   ->merchant
+                                   ->findOrFailPublic(Account::SHARED_ACCOUNT);
+
+            $batch = $batchCore->create($params, $sharedMerchant);
+
+            return $batch->toArrayPublic();
+        }
+
+        return [];
+    }
+
+    protected function checkAndReplaceForIfsc(array & $input, string $provider = null)
+    {
+        if ($provider === Provider::ICICI)
+        {
+            if ((isset($input[Entity::PAYER_IFSC]) === false) or
+                ($input[Entity::PAYER_IFSC] === ''))
+            {
+                $input[Entity::PAYER_IFSC] = BankCodes::IFSC_ICIC;
+            }
+        }
+
+        if (isset($input[Entity::PAYER_IFSC]) === false)
+        {
+            return;
+        }
+
+        $ifsc = $input[Entity::PAYER_IFSC];
+
+        $ifscValidator = new BankAccount\Validator;
+
+        try
+        {
+            $ifscValidator->validateIfscCode([BankAccount\Entity::IFSC_CODE => $ifsc]);
+        }
+        catch (Exception\BadRequestValidationFailureException $exception)
+        {
+            $defaultIfscCode = BankCodes::getIfscForBankCode($ifsc);
+
+            if ($defaultIfscCode === null)
+            {
+                $input[Entity::PAYER_IFSC] = '';
+
+                return;
+            }
+
+            $input[Entity::PAYER_IFSC] = $defaultIfscCode;
+        }
     }
 
     /**

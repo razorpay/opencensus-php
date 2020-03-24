@@ -21,11 +21,13 @@ class CombinedReconciliate extends Base\SubReconciliator\CombinedReconciliate
             return null;
         }
 
-        if ($row[self::COLUMN_ENTITY_TYPE] === 'Sale')
+        $txnType = strtolower($row[self::COLUMN_ENTITY_TYPE]);
+
+        if ($txnType === 'sale')
         {
             return BaseReconciliate::PAYMENT;
         }
-        else if ($row[self::COLUMN_ENTITY_TYPE] === 'Refund')
+        else if ($txnType === 'refund')
         {
             return BaseReconciliate::REFUND;
         }

@@ -34,6 +34,7 @@ class EmiTest extends TestCase
         [
             'bank'        => 'HDFC',
             'methods'     => 'card',
+            'type'        => 'credit',
             'merchant_id' => '100000Razorpay',
             'subvention'  => 'customer',
             'duration'    => 9,

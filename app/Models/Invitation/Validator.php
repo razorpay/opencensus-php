@@ -78,11 +78,11 @@ class Validator extends Base\Validator
         }
         else if ($product === Product::BANKING)
         {
-            $dashboardRoles = User\BankingRole::getAllRoles();
+            $dashboardRoles = array_values(array_diff(User\BankingRole::getAllRoles(), [User\Role::OWNER]));
         }
         else
         {
-            $dashboardRoles = User\Role::ALL_ROLES;
+            $dashboardRoles = array_values(array_diff(User\Role::ALL_ROLES, [User\Role::OWNER]));
         }
 
         if ($merchant->isTagAdded('enable_rbl_role') === true)

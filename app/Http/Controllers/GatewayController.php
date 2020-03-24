@@ -108,6 +108,8 @@ class GatewayController extends Controller
         }
         catch (Exception\GatewayErrorException $exception)
         {
+            $this->trace->traceException($exception, Logger::INFO, TraceCode::GATEWAY_DECRYPTION_FAILED);
+
             // As of now, we will consider two checks for gateway identification
             // and one check for method identification, this approach is only for UPI yet.
             // Note: Any other method would require to extend the function getTerminalDataFromCallback
@@ -270,10 +272,14 @@ class GatewayController extends Controller
 
         $trace = $this->app['trace'];
 
+        $traceInput = $input;
+
+        unset($traceInput['payeeVpa'], $traceInput['payerVpa']);
+
         $trace->info(
             TraceCode::GATEWAY_PAYMENT_S2S_CALLBACK,
             [
-                'input'     => $input,
+                'input'     => $traceInput,
                 'body'      => Request::getContent(),
                 'headers'   => Request::header(),
                 'gateway'   => $gateway,

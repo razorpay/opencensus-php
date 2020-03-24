@@ -18,8 +18,10 @@ use RZP\Constants\HashAlgo;
 use RZP\Gateway\Wallet\Base;
 use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Base\VerifyResult;
+use RZP\Gateway\Base\ScroogeResponse;
 use RZP\Gateway\Base\AuthorizeFailed;
 use RZP\Models\Payment\Processor\Wallet;
+use RZP\Models\Payment\Gateway as PaymentGateway;
 use RZP\Models\Payment\Verify\Action as VerifyAction;
 
 class Gateway extends Base\Gateway
@@ -148,34 +150,39 @@ class Gateway extends Base\Gateway
 
         $this->createGatewayRefundEntity($attributes);
 
+        $gatewayData = [
+            PaymentGateway::GATEWAY_RESPONSE => json_encode($response),
+            PaymentGateway::GATEWAY_KEYS     => $this->getGatewayData($content),
+        ];
+
         // response will contain status 100 or 101
-        $this->checkGatewayResponse($status);
+        $this->checkGatewayResponse($status, $gatewayData);
+
+        return $gatewayData;
     }
 
     public function verifyRefund(array $input)
     {
         parent::verify($input);
 
-        $unprocessedRefunds = $this->getUnprocessedRefunds();
+        $scroogeResponse = new ScroogeResponse();
 
-        $processedRefunds = $this->getProcessedRefunds();
-
-        if (in_array($input['refund']['id'], $unprocessedRefunds) === true)
+        if ($this->isUnprocessedRefund($input) === true)
         {
-            return false;
-        }
-        else if (in_array($input['refund']['id'], $processedRefunds) === true)
-        {
-            return true;
+            return $scroogeResponse->setSuccess(false)
+                                   ->setStatusCode(ErrorCode::REFUND_MANUALLY_CONFIRMED_UNPROCESSED)
+                                   ->toArray();
         }
 
-        throw new Exception\RuntimeException(
-            'This refund should not be processed by verify refund',
-            [
-                'refund_id'  => $input['refund']['id'],
-                'payment_id' => $input['payment']['id'],
-                'gateway'    => $this->gateway,
-            ]);
+        if ($this->isProcessedRefund($input) === true)
+        {
+            return $scroogeResponse->setSuccess(true)
+                                   ->toArray();
+        }
+
+        return $scroogeResponse->setSuccess(false)
+                               ->setStatusCode(ErrorCode::GATEWAY_ERROR_VERIFY_REFUND_NOT_SUPPORTED)
+                               ->toArray();
     }
 
     protected function sendPaymentVerifyRequest(Verify $verify)
@@ -525,14 +532,15 @@ class Gateway extends Base\Gateway
         return $headers;
     }
 
-    protected function checkGatewayResponse(string $status)
+    protected function checkGatewayResponse(string $status, array $gatewayData = [])
     {
         if (StatusCode::isStatusSuccess($status) === false)
         {
             throw new Exception\GatewayErrorException(
                 StatusCode::getErrorCode($status),
                 $status,
-                StatusCode::getErrorMessage($status)
+                StatusCode::getErrorMessage($status),
+                $gatewayData
             );
         }
     }
@@ -689,5 +697,20 @@ class Gateway extends Base\Gateway
     protected function getLiveSecret()
     {
         return $this->config['live_hash_secret'];
+    }
+
+    protected function getGatewayData(array $response = [])
+    {
+        if (empty($response) === false)
+        {
+            return [
+                ResponseFields::S2S_TRANS_ID    => $response[ResponseFields::S2S_TRANS_ID] ?? null,
+                ResponseFields::DESCRIPTION     => $response[ResponseFields::DESCRIPTION] ?? null,
+                ResponseFields::RESPONSE_ID     => $response[ResponseFields::RESPONSE_ID] ?? null,
+                ResponseFields::S2S_STATUS_CODE => $response[ResponseFields::S2S_STATUS_CODE] ?? null,
+            ];
+        }
+
+        return [];
     }
 }

@@ -366,12 +366,6 @@ class Core extends Base\Core
             Feature\Entity::ENTITY_ID       => $merchant->getId(),
             Feature\Entity::NAME            => Feature\Constants::OTP_AUTH_DEFAULT,
         ], $shouldSync = true);
-
-        (new Feature\Core)->create([
-            Feature\Entity::ENTITY_TYPE     => E::MERCHANT,
-            Feature\Entity::ENTITY_ID       => $merchant->getId(),
-            Feature\Entity::NAME            => Feature\Constants::VALIDATE_MERCHANT_DOMAIN,
-        ], $shouldSync = true);
     }
 
     /**
@@ -2581,7 +2575,7 @@ class Core extends Base\Core
             // Mcc can have values other then predefined values
             // for those cases we should return default values
             //
-            if (BusinessSubCategoryMetaData::isMccPresentInPredefinedList((int) $merchant->getCategory()) === false)
+            if (BusinessSubCategoryMetaData::isMccPresentInPredefinedList($merchant->getCategory()) === false)
             {
                 $this->trace->count(Metric::UNREGISTERED_BUSINESS_DEFAULT_LIMIT_USED_TOTAL);
 

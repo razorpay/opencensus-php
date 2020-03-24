@@ -171,6 +171,10 @@ return [
         'secret'    => env('YESBANK_SECRET'),
     ],
 
+    'rbl_va'    => [
+        'org_token' => env('RBL_VA_SECRET'),
+    ],
+
     'rbl' => [
         'secret' => env('BANKING_ACCOUNT_RBL_WEBHOOK_SECRET'),
     ],
@@ -297,8 +301,9 @@ return [
     ],
 
     'shield' => [
-        'mock'    => env('SHIELD_MOCK', false),
-        'url'     => env('SHIELD_BASE_URL'),
+        'mock'     => env('SHIELD_MOCK', false),
+        'url'      => env('SHIELD_BASE_URL'),
+        'mock_url' => env('SHIELD_BASE_MOCK_URL'),
         'auth' => [
             'username' => 'api',
             'password' => env('SHIELD_SECRET'),
@@ -485,6 +490,5 @@ return [
 
     'typeform' => [
         'typeform_webhook_secret'  => env('TYPEFORM_WEBHOOK_SECRET'),
-        'typeform_encryption_algo' => env('TYPEFORM_ENCRYPTION_ALGO'),
     ]
 ];

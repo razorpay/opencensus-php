@@ -76,11 +76,24 @@ class Core extends Base\Core
 
         $processor = new Processor();
 
+        $oldMutexKey = sprintf(self::MUTEX_KEY, $input[Entity::REQ_UTR], $input[Entity::PAYER_IFSC]);
+
+        $mutexKey = sprintf(self::MUTEX_KEY, $input[Entity::REQ_UTR], $input[Entity::PAYEE_ACCOUNT]);
+
         try
         {
             $bankTransfer = $this->create($input, $provider);
 
-            $mutexKey = sprintf(self::MUTEX_KEY, $input[Entity::REQ_UTR], $input[Entity::PAYER_IFSC]);
+            $oldMutexAcquired = $this->mutex->acquire($oldMutexKey, 60, 10, 200, 400);
+
+            if ($oldMutexAcquired === false)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_OPERATION_IN_PROGRESS,
+                    null,
+                    ['resource' => $oldMutexKey]
+                );
+            }
 
             $this->mutex->acquireAndRelease(
                 $mutexKey,
@@ -93,10 +106,14 @@ class Core extends Base\Core
                 10,
                 200,
                 400);
+
+            $this->mutex->release($oldMutexKey);
         }
         catch (\Throwable $ex)
         {
-            $this->alertException($ex, $input);
+            $this->mutex->release($oldMutexKey);
+
+            return $this->alertException($ex, $input);
         }
 
         return true;
@@ -180,6 +197,8 @@ class Core extends Base\Core
                 'icon'     => ':x:'
             ]
         );
+
+        return false;
     }
 
     /**
@@ -203,9 +222,9 @@ class Core extends Base\Core
 
             $bankTransfer = $this->repo
                                  ->bank_transfer
-                                 ->findByUtrAndPayerIfsc(
+                                 ->findByUtrAndPayeeAccount(
                                     $input[Entity::REQ_UTR],
-                                    $input[Entity::PAYER_IFSC]);
+                                    $input[Entity::PAYEE_ACCOUNT]);
 
             if ($bankTransfer !== null)
             {

@@ -3,18 +3,19 @@
 namespace RZP\Models\VirtualAccount;
 
 use Carbon\Carbon;
-use RZP\Constants\Timezone;
+use Razorpay\Trace\Logger as Trace;
+
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Order;
-use RZP\Models\Payment;
-use RZP\Models\BankTransfer;
 use RZP\Constants\Mode;
+use RZP\Models\Payment;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Customer;
-use RZP\Models\QrCode;
+use RZP\Constants\Timezone;
+use RZP\Models\BankTransfer;
 use RZP\Models\Currency\Currency;
 use RZP\Models\Offline\Device as OfflineDevice;
 
@@ -149,8 +150,10 @@ class Service extends Base\Service
 
     public function fetchMultiple(array $input)
     {
-        // Via http route virtual accounts of primary balance only are exposed.
-        $input[Entity::BALANCE_ID] = $this->merchant->primaryBalance->getId();
+        if (isset($input[Entity::BALANCE_ID]) === false)
+        {
+            $input[Entity::BALANCE_ID] = $this->merchant->primaryBalance->getId();
+        }
 
         $virtualAccounts = $this->repo
                                 ->virtual_account
@@ -430,6 +433,11 @@ class Service extends Base\Service
         return $va;
     }
 
+    public function bulkMigrateYesbank(array $input)
+    {
+        return (new Core)->bulkMigrateYesbank($input);
+    }
+
     protected function getDeviceForQr(array $input)
     {
         if (isset($input['notifications']['device_id']) === false)
@@ -500,5 +508,136 @@ class Service extends Base\Service
         $receivers[Entity::RECEIVER_TYPES] = [Receiver::BANK_ACCOUNT, Receiver::VPA];
 
         return $this->core->getConfigsForVirtualAccount($receivers);
+    }
+
+    public function createForBanking(array $input)
+    {
+        $this->trace->info(TraceCode::VIRTUAL_ACCOUNT_CREATE_FOR_BANKING_REQUEST, $input);
+
+        (new Validator)->validateInput('create_for_banking', $input);
+
+        /** @var \RZP\Models\Merchant\Validator $validator */
+        $validator = $this->merchant->getValidator();
+
+        $validator->validateBusinessBankingActivated();
+
+        if ($this->mode === Mode::LIVE)
+        {
+            $validator->validateIsActivated($this->merchant);
+        }
+
+        $virtualAccount = $this->core->createForBankingBalance($this->merchant,
+            $this->merchant->sharedBankingBalance,
+            $input);
+
+        return $virtualAccount->toArrayPublic();
+    }
+
+    public function bulkCreateForBanking(array $input)
+    {
+        $this->trace->info(TraceCode::VIRTUAL_ACCOUNT_BULK_CREATE_FOR_BANKING_REQUEST, $input);
+
+        $merchantIds = $input['merchant_ids'] ?? [];
+
+        $success = $failure = 0;
+
+        $failures = [];
+
+        foreach ($merchantIds as $merchantId)
+        {
+            try
+            {
+                /** @var Merchant\Entity $merchant */
+                $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+                if ($merchant->isBusinessBankingEnabled() === false)
+                {
+                    throw new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_FORBIDDEN_BUSINESS_BANKING_NOT_ENABLED,
+                        null,
+                        [
+                            'merchant_id' => $merchantId
+                        ]
+                    );
+                }
+
+                $this->app['basicauth']->setMerchant($merchant);
+
+                $this->core->createForBankingBalance($merchant, $merchant->sharedBankingBalance);
+
+                $success++;
+            }
+            catch (\Throwable $e)
+            {
+                $failure++;
+
+                $failures[] = $merchantId;
+
+                $this->trace->traceException($e,
+                    Trace::ERROR,
+                    TraceCode::VIRTUAL_ACCOUNT_CREATE_FOR_BANKING_FAILED,
+                    [
+                        'merchant_id' => $merchantId
+                    ]);
+            }
+        }
+
+        $response = [
+            'success'  => $success,
+            'failure'  => $failure,
+            'failures' => $failures,
+        ];
+
+        $this->trace->info(TraceCode::VIRTUAL_ACCOUNT_BULK_CREATE_FOR_BANKING_RESPONSE, $response);
+
+        return $response;
+    }
+
+    public function bulkCloseForBanking(array $input)
+    {
+        $this->trace->info(TraceCode::VIRTUAL_ACCOUNT_BULK_CLOSE_FOR_BANKING_REQUEST, $input);
+
+        $virtualAccountIds = $input['virtual_account_ids'] ?? [];
+
+        $success = $failure = 0;
+
+        $failures = [];
+
+        foreach ($virtualAccountIds as $virtualAccountId)
+        {
+            try
+            {
+                $virtualAccount = $this->repo
+                                       ->virtual_account
+                                       ->findByPublicIdWithRelations($virtualAccountId, ['bankAccount']);
+
+                $this->core->closeForBanking($virtualAccount);
+
+                $success++;
+            }
+            catch (\Throwable $e)
+            {
+                $failure++;
+
+                $failures[] = $virtualAccountId;
+
+                $this->trace->traceException($e,
+                    Trace::ERROR,
+                    TraceCode::VIRTUAL_ACCOUNT_CLOSE_FOR_BANKING_FAILED,
+                    [
+                        'id' => $virtualAccountId
+                    ]);
+            }
+        }
+
+        $response = [
+            'success'  => $success,
+            'failure'  => $failure,
+            'failures' => $failures,
+        ];
+
+        $this->trace->info(TraceCode::VIRTUAL_ACCOUNT_BULK_CLOSE_FOR_BANKING_RESPONSE, $response);
+
+        return $response;
     }
 }

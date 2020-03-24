@@ -7,6 +7,9 @@ use Carbon\Carbon;
 
 use RZP\Models\Event;
 use RZP\Models\Merchant;
+use RZP\Trace\TraceCode;
+use Razorpay\Trace\Logger;
+use RZP\Jobs\WebhookEvent;
 use RZP\Constants\Entity as E;
 use RZP\Constants\Timezone;
 
@@ -26,9 +29,15 @@ class Stork
      */
     protected $service;
 
+    /**
+     * @var Logger
+     */
+    protected $trace;
+
     public function __construct()
     {
         $this->service = new \RZP\Services\Stork;
+        $this->trace   = app('trace');
     }
 
     public function create(Entity $webhook)
@@ -62,8 +71,53 @@ class Stork
         return $this->update($webhook);
     }
 
+    /**
+     * # What?
+     * Calls processEvent() and if failure queues it for which worker exists in
+     * this service itself. The worker again just calls processEvent() for each
+     * queued messages.
+     *
+     * # Why?
+     * We are doing this to avoid event drops with network issues and/or
+     * timeouts between api<>stork communication. Note that there exists retry
+     * for http call and this is eventual fallback.
+     *
+     * Worker exists for now in api service itself to save development time and
+     * devops ask. Ideally there should be a shared queue and stork itself
+     * should drain that queue.
+     *
+     * @param  Event\Entity $event
+     * @param  string       $mode
+     * @return void
+     */
+    public function processEventSafe(Event\Entity $event, string $mode)
+    {
+        try
+        {
+            $this->processEvent($event, $mode);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e, Logger::ERROR, TraceCode::STORK_DISPATCH_EVENT_FAILED);
+
+            // Exception for this call i.e. dispatch() is suppressed and logged within by the dispatcher.
+            WebhookEvent::dispatch($mode, $event->merchant, $event->getAttributes());
+        }
+    }
+
+    /**
+     * Calls rzp.stork.webhook.v1.WebhookAPI/ProcessEvent endpoint of stork service.
+     * Also see processEventSafe().
+     *
+     * @param  Event\Entity $event
+     * @param  string       $mode
+     * @return void
+     * @throws \Throwable
+     */
     public function processEvent(Event\Entity $event, string $mode)
     {
+        $this->trace->info(TraceCode::STORK_DISPATCH_EVENT_REQUEST, $event->toArrayPublic());
+
         $this->service->init($mode);
 
         $merchant = $event->merchant;
@@ -112,7 +166,7 @@ class Stork
             }
             catch (\Throwable $e)
             {
-                app()->trace->traceException($e);
+                $this->trace->traceException($e);
             }
         }
     }

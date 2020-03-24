@@ -7,54 +7,21 @@ use ApiResponse;
 
 class ShieldController extends Controller
 {
-    public function list()
+    public function proxyRequest()
     {
-        $input = Request::all();
+        // v1/shield -> 9 chars
+        $requestUri = substr(Request::path(), 9);
 
-        $response = $this->app['shield']->getRules($input['merchant_id']);
+        $queryString = Request::getQueryString();
 
-        return ApiResponse::json($response);
-    }
+        if (is_null($queryString) === false)
+        {
+            $requestUri = $requestUri . '?' . $queryString;
+        }
 
-    public function get(string $id)
-    {
-        $input = Request::all();
+        $payload = Request::json()->all();
 
-        $response = $this->app['shield']->getRuleById($id, $input['merchant_id']);
-
-        return ApiResponse::json($response);
-    }
-
-    public function update(string $id)
-    {
-        $input = Request::all();
-
-        $response = $this->app['shield']->updateRuleById($id, $input);
-
-        return ApiResponse::json($response);
-    }
-
-    public function delete(string $id)
-    {
-        $response = $this->app['shield']->deleteRuleById($id);
-
-        return ApiResponse::json($response);
-    }
-
-    public function create()
-    {
-        $input = Request::all();
-
-        $response = $this->app['shield']->createRule($input);
-
-        return ApiResponse::json($response);
-    }
-
-    public function evaluate()
-    {
-        $input = Request::all();
-
-        $response = $this->app['shield']->evaluateRules($input);
+        $response = $this->app['shield']->sendRequestV2($requestUri, Request::method(), $payload);
 
         return ApiResponse::json($response);
     }

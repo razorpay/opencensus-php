@@ -1,4 +1,5 @@
 <?php
+
 namespace RZP\Tests\Functional\Typeform;
 
 use Request;
@@ -25,11 +26,23 @@ class TypeformTest extends TestCase
         $this->startTest();
     }
 
+    public function testInvalidDataTypeformWebhookConsumption()
+    {
+        $this->startTest();
+    }
+
     public function testSuccessTypeformWebhookConsumptionSecurity()
     {
         $this->ba->directAuth();
 
-        $this->startTest();
-    }
+        $this->fixtures->on('live')->create('merchant_detail', [
+            'merchant_id'                   => '100000Razorpay',
+            'international_activation_flow' => 'whitelist']);
 
+        $this->startTest();
+
+        $merchant = $this->getDbEntity('merchant', ['id' => '100000Razorpay'], 'live');
+
+        $this->assertTrue($merchant->getInternationalAttribute());
+    }
 }
