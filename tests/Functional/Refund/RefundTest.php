@@ -4156,7 +4156,7 @@ class RefundTest extends TestCase
         $payment['dcc_currency'] = $cardCurrency;
         $payment['currency_request_id'] = $currencyRequestId;
 
-        $this->doAuthAndCapturePayment($payment, $usdAmount, $cardCurrency);
+        $this->doAuthAndCapturePayment($payment);
 
         $payment = $this->getLastEntity('payment');
 
