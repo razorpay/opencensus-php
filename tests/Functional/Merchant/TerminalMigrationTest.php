@@ -1480,4 +1480,33 @@ class TerminalMigrationTest extends TestCase
 
         $this->startTest();
     }
+
+    /* this is to assert that terminal doesnt get synced in normal payment callback
+    * exceptions:
+     * 1) terminal is used for first time
+     * 2) terminal gets disabled
+     */
+    public function testPaymentCallbackNoSyncForUsedTerminal()
+    {
+        $this->fixtures->edit('terminal', '1n25f6uN5S1Z5a', [
+            'used' => true,
+        ]);
+
+        $this->razorxValue = 'migrate';
+
+        $this->mockTerminalsServiceSendRequest(null, 0);
+
+        $this->doAuthPayment();
+    }
+
+    public function testPaymentCallbackSyncForUnUsedTerminal()
+    {
+        $this->razorxValue = 'migrate';
+
+        $this->mockTerminalsServiceSendRequest(function () {
+            return $this->getDefaultTerminalServiceResponse();
+        }, 2);
+
+        $this->doAuthPayment();
+    }
 }
