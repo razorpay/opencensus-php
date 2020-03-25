@@ -51,33 +51,14 @@ class Processor extends VirtualAccount\Processor
      */
     protected function isDuplicate(Base\PublicEntity $bankTransfer): bool
     {
-        $payerIfsc = $bankTransfer->getPayerIfsc();
 
-        if ($bankTransfer->getGateway() === VirtualAccount\Provider::RBL)
-        {
-            $narration = $bankTransfer->getNarration();
+        $utr = $bankTransfer->getUtr();
 
-            if ($bankTransfer->getMode() === Mode::UPI)
-            {
-                $duplicateBankTransfer = $this->repo
-                                              ->bank_transfer
-                                              ->findByNarration($narration, $useWritePdo = true);
-            }
-            else
-            {
-                $duplicateBankTransfer = $this->repo
-                                              ->bank_transfer
-                                              ->findByNarrationAndIfsc($narration, $payerIfsc, $useWritePdo = true);
-            }
-        }
-        else
-        {
-            $utr = $bankTransfer->getUtr();
+        $payeeAccount = $bankTransfer->getPayeeAccount();
 
-            $duplicateBankTransfer = $this->repo
-                                          ->bank_transfer
-                                          ->findByUtrAndPayerIfsc($utr, $payerIfsc, $useWritePdo = true);
-        }
+        $duplicateBankTransfer = $this->repo
+                                    ->bank_transfer
+                                    ->findByUtrAndPayeeAccount($utr, $payeeAccount, $useWritePdo = true);
 
         if ($duplicateBankTransfer === null)
         {
@@ -89,7 +70,7 @@ class Processor extends VirtualAccount\Processor
             [
                 'message'           => 'Duplicate UTR received',
                 'existing_transfer' => $duplicateBankTransfer->toArray(),
-                'received_utr'      => $bankTransfer->getUtr(),
+                'received_utr'      => $utr,
             ]
         );
 

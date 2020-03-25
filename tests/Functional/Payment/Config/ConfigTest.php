@@ -53,9 +53,9 @@ class ConfigTest extends TestCase
 
         $firstConfig->reload();
 
-        $this->assertEquals(false, $firstConfig->default);
+        $this->assertEquals(false, $firstConfig->is_default);
 
-        $this->assertEquals(true, $secondConfig['default']);
+        $this->assertEquals(true, $secondConfig['is_default']);
     }
 
     public function testUpdateDefaultFieldForCheckoutConfig()
@@ -77,7 +77,7 @@ class ConfigTest extends TestCase
     {
         $firstConfig = $this->fixtures->create('config');
 
-        $secondConfig= $this->fixtures->create('config', ['default' => '0']);
+        $secondConfig= $this->fixtures->create('config', ['is_default' => '0']);
 
         $this->testData[__FUNCTION__]['request']['url'] = '/payment/config';
 
@@ -89,9 +89,9 @@ class ConfigTest extends TestCase
 
         $secondConfig->reload();
 
-        $this->assertEquals(false, $firstConfig->default);
+        $this->assertEquals(false, $firstConfig->is_default);
 
-        $this->assertEquals(true, $secondConfig->default);
+        $this->assertEquals(true, $secondConfig->is_default);
     }
 
     public function testUpdateConfigFieldForCheckoutConfig()

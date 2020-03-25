@@ -298,6 +298,7 @@ final class Route
         'terminal_check_encrypted_value'           => ['post',     'terminals/{id}/secret',                          'TerminalController@postCheckTerminalEncryptedValue'                ],
         'terminal_get_banks'                       => ['get',      'terminals/{id}/banks',                           'TerminalController@getBanks'                                       ],
         'terminal_set_banks'                       => ['patch',    'terminals/{id}/banks',                           'TerminalController@setBanks'                                       ],
+        'terminal_migrate_cron'                    => ['post',     'terminals/migrate_cron',                         'TerminalController@postTerminalsMigrateCron'                        ],
         'terminal_onboarding_update_status'        => ['put',      'terminal_onboarding_update_status',              'TerminalOnboardingController@putTerminalOnboardingStatus'    ],
         'terminal_enable'                          => ['put',      'terminals/{id}/enable',                          'TerminalOnboardingController@putTerminalEnable'                    ],
         'terminal_disable'                         => ['put',      'terminals/{id}/disable',                         'TerminalOnboardingController@putTerminalDisable'                   ],
@@ -1039,13 +1040,77 @@ final class Route
         'risk_fetch_multiple'                      => ['get',      'risk',                                           'RiskController@list'                                               ],
         'risk_get'                                 => ['get',      'risk/{id}',                                      'RiskController@get'                                                ],
 
-        // Shield Routes
-        'shield_rules_get_multiple'                => ['get',       'shield/rules',                                  'ShieldController@list'                                             ],
-        'shield_rules_get'                         => ['get',       'shield/rules/{id}',                             'ShieldController@get'                                              ],
-        'shield_rules_update'                      => ['put',       'shield/rules/{id}',                             'ShieldController@update'                                           ],
-        'shield_rules_delete'                      => ['delete',    'shield/rules/{id}',                             'ShieldController@delete'                                           ],
-        'shield_rules_create'                      => ['post',      'shield/rules',                                  'ShieldController@create'                                           ],
-        'shield_rules_evaluate'                    => ['post',      'shield/rules/evaluate',                         'ShieldController@evaluate'                                         ],
+        // Shield routes
+        'shield_rules_get_multiple' => [
+            'get',
+            'shield/merchants/{merchant_id}/rules',
+            'ShieldController@proxyRequest'
+        ],
+        'shield_rules_get'          => [
+            'get',
+            'shield/merchants/{merchant_id}/rules/{rule_id}',
+            'ShieldController@proxyRequest'
+        ],
+        'shield_rules_create'       => [
+            'post',
+            'shield/merchants/{merchant_id}/rules',
+            'ShieldController@proxyRequest'
+        ],
+        'shield_rules_update'       => [
+            'put',
+            'shield/merchants/{merchant_id}/rules/{rule_id}',
+            'ShieldController@proxyRequest'
+        ],
+        'shield_rules_delete'       => [
+            'delete',
+            'shield/merchants/{merchant_id}/rules/{rule_id}',
+            'ShieldController@proxyRequest'
+        ],
+        'shield_lists_get_multiple' => [
+            'get',
+            'shield/merchants/{merchant_id}/lists',
+            'ShieldController@proxyRequest'
+        ],
+        'shield_lists_get'          => [
+            'get',
+            'shield/merchants/{merchant_id}/lists/{list_id}',
+            'ShieldController@proxyRequest'
+        ],
+        'shield_lists_create'       => [
+            'post',
+            'shield/merchants/{merchant_id}/lists',
+            'ShieldController@proxyRequest'
+        ],
+        'shield_lists_delete'       => [
+            'delete',
+            'shield/merchants/{merchant_id}/lists/{list_id}',
+            'ShieldController@proxyRequest'
+        ],
+        'shield_list_items_get_multiple' => [
+            'get',
+            'shield/merchants/{merchant_id}/lists/{list_id}/list_items',
+            'ShieldController@proxyRequest'
+        ],
+        'shield_list_items_get'          => [
+            'get',
+            'shield/merchants/{merchant_id}/lists/{list_id}/list_items/{list_item_id}',
+            'ShieldController@proxyRequest'
+        ],
+        'shield_list_items_add_multiple' => [
+            'post',
+            'shield/merchants/{merchant_id}/lists/{list_id}/list_items',
+            'ShieldController@proxyRequest'
+        ],
+        'shield_list_items_purge'        => [
+            'delete',
+            'shield/merchants/{merchant_id}/lists/{list_id}/list_items',
+            'ShieldController@proxyRequest'
+        ],
+        'shield_list_items_delete'       => [
+            'delete',
+            'shield/merchants/{merchant_id}/lists/{list_id}/list_items/{list_item_id}',
+            'ShieldController@proxyRequest'
+        ],
 
         // Scrooge Routes
         'scrooge_dashboard_init'                   => ['get',      'scrooge/dashboard-init',                         'ScroogeController@dashboardInit'                                   ],
@@ -2046,6 +2111,7 @@ final class Route
         'banking_account_gateway_balance_fetch',
         'merchant_poc_update',
         'unclaimed_merchant_poc_update',
+        'terminal_migrate_cron',
         'virtual_account_batch_migrate_yesbank',
     ];
 
@@ -2692,7 +2758,15 @@ final class Route
         'shield_rules_create',
         'shield_rules_update',
         'shield_rules_delete',
-        'shield_rules_evaluate',
+        'shield_lists_get_multiple',
+        'shield_lists_get',
+        'shield_lists_create',
+        'shield_lists_delete',
+        'shield_list_items_get_multiple',
+        'shield_list_items_get',
+        'shield_list_items_add_multiple',
+        'shield_list_items_purge',
+        'shield_list_items_delete',
 
         'razorx_route',
         'user_fetch_admin',
@@ -3286,7 +3360,15 @@ final class Route
         'shield_rules_create'                      => Permission::CREATE_SHIELD_RULES,
         'shield_rules_update'                      => Permission::EDIT_SHIELD_RULES,
         'shield_rules_delete'                      => Permission::DELETE_SHIELD_RULES,
-        'shield_rules_evaluate'                    => Permission::EVALUATE_SHIELD_RULES,
+        'shield_lists_get_multiple'                => Permission::VIEW_SHIELD_LISTS,
+        'shield_lists_get'                         => Permission::VIEW_SHIELD_LISTS,
+        'shield_lists_create'                      => Permission::CREATE_SHIELD_LISTS,
+        'shield_lists_delete'                      => Permission::DELETE_SHIELD_LISTS,
+        'shield_list_items_get_multiple'           => Permission::VIEW_SHIELD_LISTS,
+        'shield_list_items_get'                    => Permission::VIEW_SHIELD_LISTS,
+        'shield_list_items_add_multiple'           => Permission::CREATE_SHIELD_LISTS,
+        'shield_list_items_purge'                  => Permission::DELETE_SHIELD_LISTS,
+        'shield_list_items_delete'                 => Permission::DELETE_SHIELD_LISTS,
         'user_fetch_admin'                         => '*',
         'refund_edit_status'                       => Permission::EDIT_REFUND,
         'refund_mark_processed_bulk'               => Permission::EDIT_REFUND,
@@ -3945,6 +4027,7 @@ final class Route
             'banking_account_gateway_balance_fetch',
             'merchant_poc_update',
             'unclaimed_merchant_poc_update',
+            'terminal_migrate_cron',
             'virtual_account_batch_migrate_yesbank',
             'transfer_settlements_update'
         ],

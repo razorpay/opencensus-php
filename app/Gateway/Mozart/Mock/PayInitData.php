@@ -8,6 +8,21 @@ class PayInitData extends Base\Mock\Server
 {
     use Base\Mock\GatewayTrait;
 
+    public function hdfc_debit_emi($entities)
+    {
+        return [
+            'data' =>
+                [
+                    'OrderConfirmationStatus' => 'Yes',
+                    '_raw'                    => '',
+                ],
+            'error'             => null,
+            'success'           => true,
+            'mozart_id'         => '',
+            'external_trace_id' => '',
+        ];
+    }
+
     public function bajajfinserv($entities)
     {
         $response = [

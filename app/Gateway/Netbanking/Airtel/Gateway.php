@@ -17,6 +17,7 @@ use RZP\Gateway\Netbanking\Base;
 use RZP\Models\Currency\Currency;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Base\AuthorizeFailed;
+use RZP\Gateway\Base\ScroogeResponse;
 
 class Gateway extends Base\Gateway
 {
@@ -116,7 +117,18 @@ class Gateway extends Base\Gateway
 
         $response = $this->sendGatewayRequest($request);
 
-        $this->processRefundResponse($response, $input);
+        $jsonContent = $response->body;
+
+        $content = $this->jsonToArray($jsonContent);
+
+        $this->trace->info(TraceCode::GATEWAY_REFUND_RESPONSE, ['response' => $content]);
+
+        $this->processRefundResponse($content, $input);
+
+        return [
+            Payment\Gateway::GATEWAY_RESPONSE => $jsonContent,
+            Payment\Gateway::GATEWAY_KEYS     => $this->getGatewayData($content),
+        ];
     }
 
     public function verify(array $input)
@@ -130,22 +142,24 @@ class Gateway extends Base\Gateway
 
     public function verifyRefund(array $input)
     {
-        $unprocessedRefunds = $this->getUnprocessedRefunds();
+        $scroogeResponse = new ScroogeResponse();
 
-        $processedRefunds = $this->getProcessedRefunds();
-
-        if (in_array($input['refund']['id'], $processedRefunds, true) === true)
+        if ($this->isUnprocessedRefund($input) === true)
         {
-            return true;
+            return $scroogeResponse->setSuccess(false)
+                                   ->setStatusCode(ErrorCode::REFUND_MANUALLY_CONFIRMED_UNPROCESSED)
+                                   ->toArray();
         }
 
-        if (in_array($input['refund']['id'], $unprocessedRefunds, true) === true)
+        if ($this->isProcessedRefund($input) === true)
         {
-            return false;
+            return $scroogeResponse->setSuccess(true)
+                                   ->toArray();
         }
 
-        throw new Exception\LogicException(
-            'Airtel NB verify refund not implemented.');
+        return $scroogeResponse->setSuccess(false)
+                               ->setStatusCode(ErrorCode::GATEWAY_ERROR_VERIFY_REFUND_NOT_SUPPORTED)
+                               ->toArray();
     }
 
     public function getMerchantId2()
@@ -427,23 +441,15 @@ class Gateway extends Base\Gateway
         return json_encode($request);
     }
 
-    protected function processRefundResponse($response, $input)
+    protected function processRefundResponse($content, $input)
     {
-        $content = $response->body;
+        $this->verifySecureHash($content);
 
-        $this->trace->info(
-            TraceCode::GATEWAY_REFUND_RESPONSE,
-            ['response' => $content]);
-
-        $responseArray = $this->jsonToArray($content);
-
-        $this->verifySecureHash($responseArray);
-
-        $attributes = $this->getRefundAttributes($responseArray, $input);
+        $attributes = $this->getRefundAttributes($content, $input);
 
         $this->createGatewayPaymentEntity($attributes);
 
-        $this->checkActionStatus($responseArray);
+        $this->checkActionStatus($content);
     }
 
     protected function getRefundAttributes($response, $input)
@@ -688,8 +694,18 @@ class Gateway extends Base\Gateway
         $errorCode = ErrorCodes::getErrorCodeMap(
             $content[$statusField]);
 
+        $gatewayData = [];
+
+        if ($this->action === Action::REFUND)
+        {
+            $gatewayData = [
+                Payment\Gateway::GATEWAY_RESPONSE => json_encode($content),
+                Payment\Gateway::GATEWAY_KEYS     => $this->getGatewayData($content),
+            ];
+        }
+
         // Payment fails, throw exception
-        throw new Exception\GatewayErrorException($errorCode, $statusField, $errorDescription);
+        throw new Exception\GatewayErrorException($errorCode, $statusField, $errorDescription, $gatewayData);
     }
 
     /*
@@ -747,5 +763,22 @@ class Gateway extends Base\Gateway
         $this->repo->saveOrFail($gatewayPayment);
 
         return true;
+    }
+
+    protected function getGatewayData(array $response = [])
+    {
+        if (empty($response) === false)
+        {
+            return [
+                RefundFields::CODE           => $response[RefundFields::CODE] ?? null,
+                RefundFields::STATUS         => $response[RefundFields::STATUS] ?? null,
+                RefundFields::SESSION_ID     => $response[RefundFields::SESSION_ID] ?? null,
+                RefundFields::ERROR_CODE     => $response[RefundFields::ERROR_CODE] ?? null,
+                RefundFields::MESSAGE_TEXT   => $response[RefundFields::MESSAGE_TEXT] ?? null,
+                RefundFields::TRANSACTION_ID => $response[RefundFields::TRANSACTION_ID] ?? null,
+            ];
+        }
+
+        return [];
     }
 }

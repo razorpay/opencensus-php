@@ -1104,12 +1104,12 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
-    'testCreateMerchantPayoutOnDemandNonBankingHours'=> [
+    'testCreateMerchantPayoutOnDemandExceedAmountLimitNonBankingHours'=> [
         'request' => [
             'method'  => 'POST',
             'url'     => '/merchant/payout/demand',
             'content' => [
-                'amount'   => 2000,
+                'amount'   => 20000100,
                 'currency' => 'INR'
             ],
         ],
@@ -1117,14 +1117,14 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Settlements cannot be created at this point of time.',
+                    'description' => PublicErrorDescription::BAD_REQUEST_ES_ON_DEMAND_IMPS_AMOUNT_LIMIT_EXCEEDED,
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
             'class' => RZP\Exception\BadRequestException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYOUT_AMOUNT_MODE_MISMATCH,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ES_ON_DEMAND_IMPS_AMOUNT_LIMIT_EXCEEDED,
         ],
     ],
     'testCreateMerchantPayoutExceedAmountLimit' => [

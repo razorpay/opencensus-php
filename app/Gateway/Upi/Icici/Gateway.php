@@ -457,11 +457,15 @@ class Gateway extends Base\Gateway
 
         $request = $this->getStandardRequestArray($content);
 
+        $traceData = $data;
+
+        unset($traceData[Fields::PAYER_ACCOUNT], $traceData[Fields::PAYER_VA]);
+
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_REQUEST,
             [
                 'request'           => $request,
-                'decrypted_content' => $data,
+                'decrypted_content' => $traceData,
                 'gateway'           => $this->gateway,
                 'payment_id'        => $input['payment']['id'],
             ]);
@@ -961,13 +965,17 @@ class Gateway extends Base\Gateway
     {
         $response = $this->parseGatewayResponse($body, true);
 
+        $traceResponse = $response;
+
+        unset($traceResponse[Fields::PAYER_VA]);
+
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_CALLBACK,
             [
                 'body'      => $body,
                 'headers'   => $this->app['request']->header(),
                 'gateway'   => $this->gateway,
-                'data'      => $response
+                'data'      => $traceResponse
             ]);
 
         if ($isBharatQr === true)

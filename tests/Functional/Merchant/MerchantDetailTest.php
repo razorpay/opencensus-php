@@ -388,7 +388,6 @@ class MerchantDetailTest extends OAuthTestCase
         $merchantDetails = $this->getDbEntityById('merchant_detail', $merchant->getId());
 
         $this->assertEquals($merchantDetails->getInternationalActivationFlow(), 'whitelist');
-
     }
 
     /**

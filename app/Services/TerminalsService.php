@@ -2,12 +2,12 @@
 
 namespace RZP\Services;
 
-use Requests;
 
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Terminal;
 use RZP\Models\Merchant;
+use RZP\Http\Request\Requests;
 use RZP\Exception\IntegrationException;
 
 class TerminalsService
@@ -20,6 +20,7 @@ class TerminalsService
 
     protected $baseUrl;
 
+    const TIMEOUT           = 0.1; // 100 milliseconds
 
     const URL               = 'url';
     const CONTENT           = 'content';
@@ -254,6 +255,7 @@ class TerminalsService
         return $responseArray;
     }
 
+
     protected function getBaseUrl()
     {
         $urlConfig = 'applications.terminals_service.' . $this->getMode() . '.url';
@@ -277,7 +279,10 @@ class TerminalsService
         ];
 
         return [
-            'auth' => $auth
+            'auth'            => $auth,
+            'timeout'         => self::TIMEOUT,
+            'connect_timeout' => self::TIMEOUT,
+            'show_trace'      => true,
         ];
     }
 

@@ -14,6 +14,7 @@ class Entity extends Base\Entity
     const MID           = 'mid';
     const MERCHANTNAME  = 'merchantname';
     const SHOWMOBILE    = 'showmobile';
+    const STATUS        = 'status';
     const STATUSCODE    = 'statuscode';
     const STATUSMSG     = 'statusmessage';
     const REFID         = 'refid';

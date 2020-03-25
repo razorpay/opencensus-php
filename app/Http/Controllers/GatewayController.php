@@ -272,10 +272,14 @@ class GatewayController extends Controller
 
         $trace = $this->app['trace'];
 
+        $traceInput = $input;
+
+        unset($traceInput['payeeVpa'], $traceInput['payerVpa']);
+
         $trace->info(
             TraceCode::GATEWAY_PAYMENT_S2S_CALLBACK,
             [
-                'input'     => $input,
+                'input'     => $traceInput,
                 'body'      => Request::getContent(),
                 'headers'   => Request::header(),
                 'gateway'   => $gateway,

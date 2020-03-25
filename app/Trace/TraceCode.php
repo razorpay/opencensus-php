@@ -2669,6 +2669,26 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SUPPORT_TICKET_STATUS_REQUEST                         = 'SUPPORT_TICKET_STATUS_REQUEST';
     const SUPPORT_TICKET_STATUS_RESPONSE                        = 'SUPPORT_TICKET_STATUS_RESPONSE';
 
+    //Terminals service
+    const TERMINALS_SERVICE_CREATE_MIGRATE_JOB_FAILURE          = 'TERMINALS_SERVICE_CREATE_MIGRATE_JOB_FAILURE';
+
+    const TERMINALS_SERVICE_MIGRATE_JOB_STARTED                 = 'TERMINALS_SERVICE_MIGRATE_JOB_STARTED';
+    const TERMINALS_SERVICE_MIGRATE_JOB_SUCCESS                 = 'TERMINALS_SERVICE_MIGRATE_JOB_SUCCESS';
+    const TERMINALS_SERVICE_MIGRATE_JOB_FAILED                  = 'TERMINALS_SERVICE_MIGRATE_JOB_FAILED';
+
+    const TERMINALS_SERVICE_REQUEST                             = 'TERMINALS_SERVICE_REQUEST';
+    const TERMINALS_SERVICE_RESPONSE                            = 'TERMINALS_SERVICE_RESPONSE';
+    const TERMINALS_SERVICE_INTEGRATION_ERROR                   = 'TERMINALS_SERVICE_INTEGRATION_ERROR';
+
+    const TERMINALS_SERVICE_TERMINAL_ALREADY_SYNCED             = 'TERMINALS_SERVICE_TERMINAL_ALREADY_SYNCED';
+
+
+    const TERMINALS_SERVICE_MIGRATE_FIELD_MISMATCH              = 'TERMINALS_SERVICE_MIGRATE_FIELD_MISMATCH';
+    const TERMINALS_SERVICE_MERCHANT_TERMINAL_MISMATCH          = 'TERMINALS_SERVICE_MERCHANT_TERMINAL_MISMATCH';
+    const TERMINALS_SERVICE_FETCH_BY_MERCHANT_ID_MISMATCH       = 'TERMINALS_SERVICE_FETCH_BY_MERCHANT_ID_MISMATCH';
+
+    const TERMINALS_SERVICE_RAZORX_RESPONSE                     = 'TERMINALS_SERVICE_RAZORX_RESPONSE';
+
     const DB_WAIT_TIMEOUT_FILE_READ_FAILED                      = 'DB_WAIT_TIMEOUT_FILE_READ_FAILED';
 
     //Error Response
@@ -2684,10 +2704,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_RAZORPAYX_VA_MIGRATION_FAILED                = 'MERCHANT_RAZORPAYX_VA_MIGRATION_FAILED';
     const MERCHANT_RAZORPAYX_ACTIVATION_UNKNOWN_SOURCE          = 'MERCHANT_RAZORPAYX_ACTIVATION_UNKNOWN_SOURCE';
 
-    // Terminal service
-    const TERMINALS_SERVICE_REQUEST                             = 'TERMINALS_SERVICE_REQUEST';
-    const TERMINALS_SERVICE_RESPONSE                            = 'TERMINALS_SERVICE_RESPONSE';
-    const TERMINALS_SERVICE_INTEGRATION_ERROR                   = 'TERMINALS_SERVICE_INTEGRATION_ERROR';
+
 
     const UPI_MANDATE_CREATE_REQUEST                            = 'UPI_MANDATE_CREATE_REQUEST';
     const UPI_MANDATE_CREATED                                   = 'UPI_MANDATE_CREATED';
@@ -2875,6 +2892,16 @@ class TraceCode extends \Razorpay\Trace\TraceCode
         self::MERCHANT_REFUND_CREDITS_DEBIT_FAILURE                 => 'Not enough refund credits',
         self::NEGATIVE_BALANCE_BREACHED                             => 'Negative Balance has crossed the negative limit threshold',
         ];
+
+    public static $fileBasedReconTraceCodes = [
+        self::RECON_FILE_LINK_NOT_FOUND,
+        self::RECON_FILE_DELETE_FAILURE,
+        self::RECON_BATCH_CREATION_FAILED,
+        self::RECON_PARSE_ERROR,
+        self::RECON_FILE_SKIP,
+        self::RECON_FAILURE,
+        self::BATCH_PROCESSING_ERROR,
+    ];
 
     /**
      * Translate event code to message

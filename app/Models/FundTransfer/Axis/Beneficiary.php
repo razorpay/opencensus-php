@@ -24,6 +24,8 @@ class Beneficiary extends FileProcessor
 {
     const BEAM_FILE_TYPE = 'Beneficiary';
 
+    const RZP_FILE_MIME_TYPE = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+
     protected $id;
 
     protected $channel = Channel::AXIS;
@@ -108,6 +110,7 @@ class Beneficiary extends FileProcessor
         $creator = new FileStore\Creator;
 
         $file = $creator->extension(FileStore\Format::XLSX)
+                        ->mime(self::RZP_FILE_MIME_TYPE)
                         ->content($data)
                         ->name($fileName)
                         ->store(FileStore\Store::S3)

@@ -438,8 +438,9 @@ trait HeadlessOtp
                     'payment_id' => $payment->getPublicId()
                 ],
                 [
-                    'channel'  => Config::get('slack.channels.payments_cards'),
-                    'icon'     => ':boom:'
+                    'channel'  => Config::get('slack.channels.ivr_alerts'),
+                    'username'              => 'alerts',
+                    'icon'                  => ':x:'
                 ]
             );
         }
