@@ -464,6 +464,9 @@ class TerminalMigrationTest extends TestCase
 
     public function testUpdateTerminalServiceSubmerchantMismatchResponseMigrateTerminalVariant()
     {
+        // skipping this as the functionality is not yet live
+        $this->markTestSkipped();
+
         //-- setup terminal + add merchant as submerchant to the terminal
         $terminal = $this->fixtures->create(
             'terminal:shared_axis_terminal', [
