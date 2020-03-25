@@ -775,8 +775,6 @@ class PayoutTest extends TestCase
 
     public function testApprovePayoutWithComment()
     {
-        $this->markTestSkipped('Failing due to payouts blocked, to be fixed later');
-
         $this->liveSetUp();
 
         $workflow = $this->createPayoutWorkflowWithBankingUsersLiveMode();
@@ -2398,8 +2396,6 @@ class PayoutTest extends TestCase
 
     public function testSkipWorkflowForAPIRequest()
     {
-//        $this->markTestSkipped('Failing due to payouts blocked, to be fixed later');
-
         //
         // Here workflows are enabled for create payouts,
         // However user wants to disable the workflow for API request
