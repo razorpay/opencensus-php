@@ -289,6 +289,7 @@ class Gateway
         self::NETBANKING_CORPORATION,
         self::HITACHI,
         self::NETBANKING_SBI,
+        self::HDFC_DEBIT_EMI,
 
         // UPI HULK is TEMPORARY, As payment are still failed on hulk and we can't do much there,
         //If you are seeing this after Sep'18, Please report to gateway payments team
@@ -1013,6 +1014,10 @@ class Gateway
     ];
 
     public static $s2sGateways = [
+        self::HDFC_DEBIT_EMI,
+    ];
+
+    public static $verifyMissingGateways = [
         self::HDFC_DEBIT_EMI,
     ];
 
