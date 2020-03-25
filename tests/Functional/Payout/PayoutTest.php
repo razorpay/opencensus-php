@@ -15,17 +15,14 @@ use RZP\Models\Admin;
 use RZP\Models\Payout;
 use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
-use RZP\Models\Merchant;
 use RZP\Http\RequestHeader;
 use RZP\Constants\Timezone;
 use RZP\Services\Mock\Mozart;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\FundTransfer\Attempt;
-use RZP\Models\Workflow\Step\Entity;
 use RZP\Mail\Banking\LowBalanceAlert;
 use RZP\Exception\BadRequestException;
 use RZP\Models\BankingAccount\Gateway\Rbl;
-use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Helpers\WebhookTrait;
 use RZP\Tests\Functional\Helpers\MocksDnsTrait;
 use RZP\Tests\Functional\Settlement\SettlementTrait;
@@ -774,74 +771,6 @@ class PayoutTest extends TestCase
         $this->expectExceptionCode(ErrorCode::BAD_REQUEST_INCORRECT_OTP);
 
         $this->startTest();
-    }
-
-    public function createPayoutWorkflowWithBankingUsersLiveMode()
-    {
-        (new Admin\Service)->setConfigKeys(
-            [
-                Admin\ConfigKey::RX_ACCOUNT_NUMBER_SERIES_PREFIX => [
-                    Merchant\Account::SHARED_ACCOUNT => '222444',
-                ]
-            ]);
-
-        $workflow = $this->setupWorkflowForLiveMode();
-
-        $steps = $workflow->steps()->get()->toArrayPublic();
-
-        // Creating Owner role corresponding to banking owner role
-        $this->fixtures->on('live')->create('role', [
-            'id'     => Org::OWNER_ROLE,
-            'org_id' => Org::RZP_ORG,
-            'name'   => 'Owner',
-        ]);
-
-        // Creating Finance L3 role corresponding to banking finance_l3 role
-        $this->fixtures->on('live')->create('role', [
-            'id'     => Org::FINANCE_L3_ROLE,
-            'org_id' => Org::RZP_ORG,
-            'name'   => 'Finance L3',
-        ]);
-
-        // Hardcoding here because default workflow array is known and fixed
-        $stepId = $steps['items'][1]['id'];
-
-        Entity::verifyIdAndStripSign($stepId);
-
-        // Changing Checker role to Owner role because only users with banking roles can approve payouts
-        $this->fixtures->on('live')->edit(
-            'workflow_step',
-            $stepId,
-            [
-                'role_id'      => 'RzpOwnerRoleId'
-            ]);
-
-        // Hardcoding here because default workflow array is known and fixed
-        $stepId = $steps['items'][2]['id'];
-
-        Entity::verifyIdAndStripSign($stepId);
-
-        // Changing Checker role to Owner role because only users with banking roles can approve payouts
-        $this->fixtures->on('live')->edit(
-            'workflow_step',
-            $stepId,
-            [
-                'role_id'      => 'RzpFinL3RoleId'
-            ]);
-
-        $this->ownerRoleUser = $this->fixtures->user->createBankingUserForMerchant('10000000000000', [], 'owner','live');
-
-        $this->finL3RoleUser = $this->fixtures->user->createBankingUserForMerchant('10000000000000', [], 'finance_l3','live');
-
-        // The default bank account getting created has ifsc code prefix 'RAZR' even in live mode, which is modified here
-        $this->fixtures->on('live')->edit(
-            'bank_account',
-            '1000000lcustba',
-            [
-                'ifsc_code'      => 'YESB0CMSNOC'
-            ]);
-
-        return $workflow;
     }
 
     public function testApprovePayoutWithComment()
@@ -1896,7 +1825,7 @@ class PayoutTest extends TestCase
 
         $this->assertEquals($payout['merchant_id'], $payoutAttempt['merchant_id']);
 
-        $this->assertEquals($payout['channel'], 'yesbank');
+        $this->assertEquals($payout['channel'], 'icici');
 
         $this->assertEquals('IMPS', $payoutAttempt['mode']);
 
@@ -2469,7 +2398,7 @@ class PayoutTest extends TestCase
 
     public function testSkipWorkflowForAPIRequest()
     {
-        $this->markTestSkipped('Failing due to payouts blocked, to be fixed later');
+//        $this->markTestSkipped('Failing due to payouts blocked, to be fixed later');
 
         //
         // Here workflows are enabled for create payouts,
