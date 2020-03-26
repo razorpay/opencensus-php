@@ -196,6 +196,16 @@ class Core extends Base\Core
 
     protected function unsetPersonalIdentifiableInformation(array $input): array
     {
+        if (empty($input[Entity::NAME]) === false)
+        {
+            // If the name is numeric and greater than 10 digit long
+            // it may be an account number or CC number. Don't log
+            if ((strlen($input[Entity::NAME]) > 10) and (is_numeric($input[Entity::NAME]) === true))
+            {
+                $input[Entity::NAME] = str_repeat('*', strlen($input[Entity::NAME]));
+            }
+        }
+
         if (empty($input[Entity::CONTACT]) === false)
         {
             $input[Entity::CONTACT] = str_repeat('*', strlen($input[Entity::CONTACT]));
