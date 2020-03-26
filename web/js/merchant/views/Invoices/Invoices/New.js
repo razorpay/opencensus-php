@@ -4,6 +4,7 @@ import { Field, FieldArray, reduxForm, formValueSelector } from 'redux-form';
 import { connect } from 'react-redux';
 import { NavLink, withRouter } from 'react-router-dom';
 import AsyncButton from 'react-async-button';
+import RTracking from 'react-tracking';
 import moment from 'moment';
 import Amount from 'common/ui/Amount';
 import Alert from 'common/ui/Forms/Alert';
@@ -150,6 +151,7 @@ const selector = formValueSelector('newInvoice');
     ],
   },
 })
+@RTracking(() => window.rzpQ.component('InvoicesNewContainer'))
 export default class InvoicesNewContainer extends Component {
   static contextTypes = {
     confirm: PropTypes.func,
@@ -170,6 +172,30 @@ export default class InvoicesNewContainer extends Component {
       invoiceCurrency: this.props.invoice.currency || 'INR',
     };
   }
+
+  trackCreateInvoice = (event, options) => {
+    if (!event) return;
+
+    this.props.tracking.trackEvent(
+      window.rzpQ.invoice().interaction(`invoice.create.${event}`, {
+        ...options,
+        status: this.props.invoice.status,
+        clone: this.isIntentDuplicate,
+      })
+    );
+  };
+
+  trackUpdateInvoice = (event, options) => {
+    if (!event) return;
+
+    this.props.tracking.trackEvent(
+      window.rzpQ.invoice().interaction(`invoice.update.${event}`, {
+        ...options,
+        status: this.props.invoice.status,
+        clone: this.isIntentDuplicate,
+      })
+    );
+  };
 
   fetchIfIntentDuplicate(invoiceId) {
     return this.props
@@ -543,6 +569,8 @@ export default class InvoicesNewContainer extends Component {
     track({
       eventAction: `Close Form - ${updateAddress ? 'Add' : 'Edit'} Customer`,
     });
+
+    this.trackCreateInvoice('newcustomer');
   };
 
   /**
@@ -651,6 +679,8 @@ export default class InvoicesNewContainer extends Component {
       invoiceCurrency: newCurrency,
     });
 
+    this.trackCreateInvoice('continue');
+
     // Show only for first time user
     if (
       !this.props.invoice.id &&
@@ -683,6 +713,12 @@ export default class InvoicesNewContainer extends Component {
           onSave={this.setInvoiceCurrency}
           closeModal={this.props.closeModal}
           showCross={showCross}
+          onOpen={() => {
+            this.trackCreateInvoice('currency_drop');
+          }}
+          onChange={() => {
+            this.trackCreateInvoice('currency_browse');
+          }}
         />
       ),
     });
@@ -699,6 +735,12 @@ export default class InvoicesNewContainer extends Component {
             name: searchTerm,
           }}
           showGSTN={this.state.invoiceCurrency === 'INR'}
+          onBlur={e => {
+            this.trackCreateInvoice(`newcustomer_${e.target.name}`);
+          }}
+          onCloseClick={() => {
+            this.trackCreateInvoice(`newcustomer_leave`);
+          }}
         />
       ),
     });
@@ -711,6 +753,8 @@ export default class InvoicesNewContainer extends Component {
   quickEditCustomer = e => {
     e && e.preventDefault();
 
+    this.trackCreateInvoice('edit_customer');
+
     this.props.openModal({
       size: 'small',
       component: (
@@ -719,6 +763,12 @@ export default class InvoicesNewContainer extends Component {
           onSave={this.selectCustomerAndCloseModal()}
           customer={this.props.customer}
           showGSTN={this.state.invoiceCurrency === 'INR'}
+          onBlur={e => {
+            this.trackCreateInvoice(`edit_customer_${e.target.name}`);
+          }}
+          onCloseClick={() => {
+            this.trackCreateInvoice(`edit_customer_leave`);
+          }}
         />
       ),
     });
@@ -817,8 +867,13 @@ export default class InvoicesNewContainer extends Component {
 
     const onSave = () => {
       this.props.closeModal();
+
+      this.trackInvoiceCreate('save_label');
+
       this.getMerchantInfo();
     };
+
+    this.trackInvoiceCreate('change_label');
 
     this.props.openModal({
       size: 'small',
@@ -863,9 +918,13 @@ export default class InvoicesNewContainer extends Component {
     const onSave = address => {
       // Select address.
       if (type === 'billing') {
+        this.trackInvoiceCreation('billing_save');
+
         this.selectBillingAddress(address);
       } else {
         this.selectShippingAddress(address);
+
+        this.trackInvoiceCreation('shipping_save');
       }
 
       // Add address to master list.
@@ -908,14 +967,37 @@ export default class InvoicesNewContainer extends Component {
           }
           onSave={onSave}
           addressType={type}
-          trackSelectCountry={
-            type === 'billing'
-              ? trackSelectBillingAddress
-              : trackSelectShippingAddress
-          }
+          trackSelectCountry={(...args) => {
+            if (type === 'billing') {
+              trackSelectBillingAddress(...args);
+            } else {
+              trackSelectShippingAddress(...args);
+            }
+
+            this.trackCreateInvoice(
+              `${type === 'billing' ? 'billing' : 'shipping'}_county`
+            );
+          }}
+          onBlur={e => {
+            this.trackCreateInvoice(
+              `${type === 'billing' ? 'billing' : 'shipping'}_${e.target.value}`
+            );
+          }}
+          onClickClose={() => {
+            this.trackCreateInvoice(
+              `${type === 'billing' ? 'billing' : 'shipping'}_leave`
+            );
+          }}
+          trackAddressSelection={() => {
+            this.trackCreateInvoice(
+              `${type === 'billing' ? 'billing' : 'shipping'}_leave`
+            );
+          }}
         />
       ),
     });
+
+    this.trackCreateInvoice('billing');
   };
 
   /**
@@ -985,6 +1067,8 @@ export default class InvoicesNewContainer extends Component {
           isSaving: false,
         });
         this.props.initialize(invoice);
+
+        this.trackCreateInvoice('save');
         return invoice;
       })
       .catch(error => {
@@ -1301,6 +1385,8 @@ export default class InvoicesNewContainer extends Component {
       issue_date: date,
       expiry_date,
     });
+
+    this.trackCreateInvoice('issue_date');
   };
 
   /**
@@ -1321,6 +1407,8 @@ export default class InvoicesNewContainer extends Component {
     this.setState({
       expiry_date: date,
     });
+
+    this.trackCreateInvoice('expire_date');
   };
 
   /**
@@ -1389,6 +1477,8 @@ export default class InvoicesNewContainer extends Component {
     if (invoice_label_field === null) {
       this.showInvoicesConfigurationModal();
     }
+
+    this.trackCreateInvoice('start');
   }
 
   /**
@@ -1483,6 +1573,8 @@ export default class InvoicesNewContainer extends Component {
       false,
       autoselectPlaceOfSupply
     );
+
+    this.trackCreateInvoice('existing_customer');
   };
 
   showGSTModal = () => {
@@ -1490,6 +1582,10 @@ export default class InvoicesNewContainer extends Component {
       size: 'small',
       component: <AddGST reloadAfterSave={true} />,
     });
+  };
+
+  onBlur = event => {
+    this.trackCreateInvoice(event.target.name);
   };
 
   render() {
@@ -1564,7 +1660,11 @@ export default class InvoicesNewContainer extends Component {
         <NavLink
           class="btn btn-default btn-block btn-lg"
           to={`/invoices/new?duplicate_id=${invoice.id}`}
-          onClick={trackClickDuplicateInvoice}
+          onClick={() => {
+            this.trackUpdateInvoice('invoice.update.clone');
+
+            trackClickDuplicateInvoice();
+          }}
         >
           <div class="row inv__optiongroupbutton">
             <div class="col-xs-4">
@@ -1635,6 +1735,7 @@ export default class InvoicesNewContainer extends Component {
                                 }Invoice Number`}
                                 disabled={locked}
                                 keepValueInBG={false}
+                                onBlur={this.onBlur}
                               />
                             )}
                           </div>
@@ -1652,6 +1753,7 @@ export default class InvoicesNewContainer extends Component {
                               rows="1"
                               keepValueInBG={false}
                               disabled={isDisabled}
+                              onBlur={this.onBlur}
                             />
                           </div>
                         </div>
@@ -1716,6 +1818,9 @@ export default class InvoicesNewContainer extends Component {
                                 maxSearchTermLength="12"
                                 keepValueInBG={false}
                                 onOptionChange={this.onSelectCustomer}
+                                onOpen={() => {
+                                  this.trackCreateInvoice('choose_customer');
+                                }}
                                 normalizeValue={value => {
                                   let selected = findBy(
                                     this.props.customers || [],
@@ -2124,6 +2229,7 @@ export default class InvoicesNewContainer extends Component {
                           this.props.state_of_supply &&
                           invoiceCurrency === 'INR'
                         }
+                        trackLineItem={this.trackCreateInvoice}
                       />
 
                       <div class="row" style={{ marginTop: '40px' }}>
@@ -2413,7 +2519,10 @@ export default class InvoicesNewContainer extends Component {
                       </div>
                     </ShowWhen>
 
-                    <InvoiceInfo invoice={invoice} />
+                    <InvoiceInfo
+                      invoice={invoice}
+                      trackUpdateInvoice={this.trackUpdateInvoice}
+                    />
                     <InvoiceNotes
                       invoice={invoice}
                       isSaving={this.state.isSaving}

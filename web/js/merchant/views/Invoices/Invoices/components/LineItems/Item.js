@@ -41,7 +41,7 @@ export default class InvoiceLineItem extends React.Component {
      * The size of the modal depends on whether or not taxes are to be shown.
      */
     let showTaxes = Boolean(this.gstin) && this.isCurrencyInr;
-
+    this.props.trackLineItem('item_new');
     this.props.openModal({
       size: showTaxes ? 'regular' : 'small',
       component: (
@@ -92,6 +92,8 @@ export default class InvoiceLineItem extends React.Component {
     const selectedOption = this.props.invoice_line_items[this.props.index];
     const item = selectedOption.selectedItem || {};
 
+    this.props.trackLineItem('item_edit');
+
     this.props.openModal({
       size: showTaxes ? 'regular' : 'small',
       component: (
@@ -112,10 +114,13 @@ export default class InvoiceLineItem extends React.Component {
    */
   updateItem = item => {
     this.updateLineItemRow(item);
+
+    this.props.trackLineItem('existing_item');
     this.props.closeModal();
   };
 
   selectItemAndCloseModal = item => {
+    this.props.trackLineItem('itemupdate');
     /**
      * Need to fetch the item again with tax expanded, if there's no `tax` key
      * but a `tax_id` key exists.
@@ -356,6 +361,8 @@ export default class InvoiceLineItem extends React.Component {
 
     const { confirm } = this.context;
 
+    this.props.trackLineItem('item_delete');
+
     confirm({
       header: 'Remove Item',
       message:
@@ -441,6 +448,7 @@ export default class InvoiceLineItem extends React.Component {
       disabled,
       items,
       invoiceCurrency,
+      trackLineItem,
     } = this.props;
     let selectedOption = this.props.invoice_line_items[index];
     let isEmptyRow = !(
@@ -524,6 +532,9 @@ export default class InvoiceLineItem extends React.Component {
                     return selected.name;
                   }
                   return value;
+                }}
+                onOpen={() => {
+                  this.props.trackLineItem('item');
                 }}
               />
             </div>

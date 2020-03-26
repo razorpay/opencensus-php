@@ -335,6 +335,12 @@ export default class AddCustomer extends Component {
     return () => this.changeScreen(screenNumber);
   };
 
+  closeModal = () => {
+    this.props.closeModal();
+
+    this.props.onCloseClick();
+  };
+
   render() {
     const {
       handleSubmit,
@@ -409,6 +415,7 @@ export default class AddCustomer extends Component {
                     component={InputField}
                     class="form-control"
                     autoFocus={true}
+                    onBlur={this.props.onBlur}
                   />
                 </div>
               </div>
@@ -422,6 +429,7 @@ export default class AddCustomer extends Component {
                     type="email"
                     class="form-control"
                     validate={email('Please provide a valid email')}
+                    onBlur={this.props.onBlur}
                   />
                 </div>
               </div>
@@ -435,6 +443,7 @@ export default class AddCustomer extends Component {
                     class="form-control"
                     type="tel"
                     validate={[phone('Invalid Contact')]}
+                    onBlur={this.props.onBlur}
                   />
                 </div>
               </div>
@@ -448,6 +457,7 @@ export default class AddCustomer extends Component {
                       component={InputField}
                       class="form-control"
                       validate={[validateGSTIN]}
+                      onBlur={this.props.onBlur}
                     />
                   </div>
                 </div>
@@ -650,7 +660,7 @@ export default class AddCustomer extends Component {
       <div id="create-customer-modal">
         <ModalHeader
           title={customer && customer.id ? 'Edit Customer' : 'Add Customer'}
-          onCloseClick={this.props.closeModal}
+          onCloseClick={this.closeModal}
         />
 
         {screens[screenIndex || 0]}

@@ -145,6 +145,7 @@ export default class AddressEntry extends React.Component {
     const { line1, line2, zipcode, city, state, country } = this.state;
 
     let {
+      onBlur,
       states,
       countries,
       hideLine2,
@@ -178,6 +179,7 @@ export default class AddressEntry extends React.Component {
             class="form-control"
             onChange={this.onFieldChangeClosure('line1')}
             autoComplete="address-line1"
+            onBlur={onBlur}
           />
         </div>
         {!hideLine2 && (
@@ -189,6 +191,7 @@ export default class AddressEntry extends React.Component {
               type="text"
               onChange={this.onFieldChangeClosure('line2')}
               autoComplete="address-line2"
+              onBlur={onBlur}
             />
           </div>
         )}
@@ -200,6 +203,7 @@ export default class AddressEntry extends React.Component {
               class="form-control input-number-no-arrows"
               onChange={this.onFieldChangeClosure('zipcode')}
               autoComplete="postal-code"
+              onBlur={onBlur}
             />
           </div>
           <div class="col col-md-6">
@@ -210,6 +214,7 @@ export default class AddressEntry extends React.Component {
               type="text"
               onChange={this.onFieldChangeClosure('city')}
               autoComplete="address-level2"
+              onBlur={onBlur}
             />
           </div>
         </div>

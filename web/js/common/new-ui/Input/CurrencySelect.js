@@ -100,6 +100,8 @@ export default class extends React.Component {
       window.hj('trigger', 'international_currency_select');
       window.hj('tagRecording', ['international_currency_select']);
     }
+
+    this.props.onOpen && this.props.onOpen();
   };
 
   getSelectedCurrencyOption = ({ option }) => {

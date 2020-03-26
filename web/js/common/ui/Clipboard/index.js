@@ -25,6 +25,8 @@ export default class Clipboard extends Component {
   copyToClipboard() {
     this.selectValue();
     document.execCommand('copy');
+
+    this.props.onCopyToClipboard && this.props.onCopyToClipboard();
   }
 
   render() {

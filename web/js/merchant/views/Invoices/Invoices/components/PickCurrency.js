@@ -18,6 +18,12 @@ export default class extends React.PureComponent {
 
   onChange = option => {
     this.setState({ currencySelected: option.name });
+
+    this.props.onChange && this.props.onChange(option);
+  };
+
+  onOpen = () => {
+    this.props.onOpen && this.props.onOpen();
   };
 
   render() {
@@ -47,6 +53,7 @@ export default class extends React.PureComponent {
               defaultValue={this.props.currency || 'INR'}
               fullDisplay
               onChange={this.onChange}
+              onOpen={this.onOpen}
             />
 
             <Alert.Warning>

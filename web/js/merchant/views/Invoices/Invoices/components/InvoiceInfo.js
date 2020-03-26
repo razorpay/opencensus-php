@@ -10,7 +10,7 @@ const notificationClassMap = {
   pending: 'text-warning',
 };
 
-export default ({ invoice }) => {
+export default ({ invoice, trackUpdateInvoice }) => {
   let status = invoice.status;
   let isNew = !invoice.id;
   let isDraft = status === 'draft';
@@ -43,7 +43,7 @@ export default ({ invoice }) => {
                   {
                     value: item => {
                       return (
-                        <div>
+                        <div onClick={() => trackUpdateInvoice('payment_id')}>
                           {paymentId.value(item)}
                           <div>{createdAt.value(item)}</div>
                         </div>
@@ -98,7 +98,10 @@ export default ({ invoice }) => {
           <div>
             <dt>Payment Link</dt>
             <dd>
-              <Clipboard value={invoice.short_url} />
+              <Clipboard
+                value={invoice.short_url}
+                onCopyToClipboard={() => trackUpdateInvoice('copylink')}
+              />
             </dd>
           </div>
         )}

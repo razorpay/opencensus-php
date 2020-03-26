@@ -165,6 +165,11 @@ export default class New extends Component {
       })
       .catch(err => {
         this.setState({ errors: err.errors });
+
+        this.props.trackAddressSelection({
+          response: err.errors[1],
+          status: 'new',
+        });
       });
   };
 
@@ -203,10 +208,16 @@ export default class New extends Component {
     });
   };
 
+  onClickClose = () => {
+    this.props.onClickClose();
+
+    this.props.closeModal();
+  };
+
   render() {
     const {
       header,
-      closeModal,
+      onClickClose,
       saveLabel,
       handleSubmit,
       change,
@@ -215,6 +226,7 @@ export default class New extends Component {
       hideBack,
       isInttCurrenciesEnabled,
       trackSelectCountry,
+      onBlur,
     } = this.props;
 
     const { states, editedAddress } = this.state;
@@ -232,7 +244,7 @@ export default class New extends Component {
 
     return (
       <div id="add-address-modal">
-        <ModalHeader title={header} onCloseClick={closeModal} />
+        <ModalHeader title={header} onCloseClick={onClickClose} />
 
         <div class="modal-body AddressSelectionModal">
           {!hideBack && (
@@ -265,6 +277,7 @@ export default class New extends Component {
               hideCountry={!isInttCurrenciesEnabled}
               trackSelectCountry={trackSelectCountry}
               {...extraProps}
+              onBlur={onBlur}
             />
 
             <div class="row">
