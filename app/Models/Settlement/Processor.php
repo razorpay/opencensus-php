@@ -134,9 +134,10 @@ class Processor extends Base\Core
         $merchantIds = $input['merchant_ids'] ?? [];
 
         $params =[
-          'created_at'   => $input['created_at'] ?? null,
-          'settled_at'   => $input['settled_at'] ?? null,
-          'initiate_at'  => $input['initiated_at'] ?? null
+            'created_at'          => $input['created_at'] ?? null,
+            'settled_at'          => $input['settled_at'] ?? null,
+            'initiate_at'         => $input['initiated_at'] ?? null,
+            'ignore_time_limit'   => $input['ignore_time_limit'] ?? null
         ];
 
         list($shouldProcess, $data) = $this->shouldProcessSettlements($input, $channel);
@@ -852,8 +853,9 @@ class Processor extends Base\Core
         MerchantModel\Entity $merchant, string $channel, string $balanceType, array $params = [])
     {
         $this->setlTime = Carbon::now(Timezone::IST)->getTimestamp();
+        $forceFlag = $params['ignore_time_limit'] === '1';
 
-        list ($status, $_) = $this->isMerchantSettlementAllowed($merchant);
+        list ($status, $_) = $this->isMerchantSettlementAllowed($merchant, $forceFlag);
 
         if ($status === false)
         {
