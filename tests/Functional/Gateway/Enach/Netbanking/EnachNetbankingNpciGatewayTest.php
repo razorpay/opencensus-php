@@ -37,8 +37,8 @@ class EnachNetbankingNpciGatewayTest extends TestCase
     // 1. Has to be a working day
     // 2. Payments selected in the file are created within the time interval of 9 AM of previous day to 9 AM today
 
-    const FIXED_WORKING_DAY_TIME     = 1583548200;  // 07-03-2020 8:00 AM
-    const FIXED_NON_WORKING_DAY_TIME = 1583634600;  // 08-03-2020 8:00 AM (sunday)
+    const FIXED_WORKING_DAY_TIME     = 1583539200;  // 07-03-2020 5:30 AM
+    const FIXED_NON_WORKING_DAY_TIME = 1583625600;  // 08-03-2020 5:30 AM (sunday)
 
     public function setUp()
     {

@@ -23,12 +23,12 @@ class NachGatewayTest extends TestCase
     use PartnerTrait;
     use FileHandlerTrait;
 
-    // 09-02-2020 Sunday
-    const FIXED_NON_WORKING_DAY_TIME = 1581223905;
-    // 10-02-2020 Monday
-    const FIXED_WORKING_DAY_AFTER_NON_WORKING_DAY_TIME = 1581313905;
-    // 10-02-2020 Tuesday
-    const FIXED_WORKING_DAY_AFTER_WORKING_DAY_TIME = 1581385905;
+    // 09-02-2020 Sunday 5:30 AM
+    const FIXED_NON_WORKING_DAY_TIME = 1581206400;
+    // 10-02-2020 Monday 5:30 AM
+    const FIXED_WORKING_DAY_AFTER_NON_WORKING_DAY_TIME = 1581292800;
+    // 10-02-2020 Tuesday 5:30 AM
+    const FIXED_WORKING_DAY_AFTER_WORKING_DAY_TIME = 1581379200;
 
     public function setUp()
     {
