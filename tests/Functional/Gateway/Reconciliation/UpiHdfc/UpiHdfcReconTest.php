@@ -30,6 +30,13 @@ class UpiHdfcReconTest extends TestCase
 
         $this->payment = $this->getDefaultUpiPaymentArray();
 
+        $payments = $this->getEntities('payment', [], true);
+
+        foreach ($payments['items'] as $payment)
+        {
+            $this->assertNull($payment['reference16']);
+        }
+
         $upiEntity1 = $this->getNewUpiEntity('10000000000000', 'upi_mindgate');
 
         $upiEntity2 = $this->getNewUpiEntity('10000000000000', 'upi_mindgate');
@@ -49,6 +56,15 @@ class UpiHdfcReconTest extends TestCase
         $uploadedFile = $this->createUploadedFile($file);
 
         $this->reconcile($uploadedFile, 'UpiHdfc');
+
+        $payments = $this->getEntities('payment', [], true);
+
+        foreach ($payments['items'] as $payment)
+        {
+            $this->assertNotNull($payment['reference16']);
+
+            $this->assertEquals($entries[1]['Txn ref no. (RRN)'], $payment['reference16']);
+        }
 
         $this->assertBatchStatus(Status::PROCESSED);
 
