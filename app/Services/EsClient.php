@@ -329,6 +329,12 @@ class EsClient
 
     public function indexHeimdall($params)
     {
+        $paramTrace = $params;
+
+        unset($paramTrace['body']['admin']['email'],
+            $paramTrace['body']['entity']['change']['old']['email'],
+            $paramTrace['body']['entity']['change']['old']['password']);
+
         $this->trace->info(TraceCode::ES_INDEX_REQUEST, ['params' => $params]);
 
         $this->heimdallClient->index($params);
