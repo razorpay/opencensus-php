@@ -29,14 +29,14 @@ class ApiTraceProcessor
     // This regex is used to scrub credit card numbers from logs.
     // Currently only banking specific routes will be affected by this
     //
-    const CARD_REGEX = "/^(?:4[0-9]{12}(?:[0-9]{3})?" .         # Visa
+    const CARD_REGEX = "/\b(?:4[0-9]{12}(?:[0-9]{3})?" .         # Visa
                        "|(?:5[1-5][0-9]{2}" .                # MasterCard
                        "|222[1-9]|22[3-9][0-9]|2[3-6][0-9]{2}|27[01][0-9]|2720)[0-9]{12}" .
                        "|3[47][0-9]{13}" .                   # Amex
                        "|3(?:0[0-5]|[68][0-9])[0-9]{11}" .   # Diners Club
                        "|6(?:011|5[0-9]{2})[0-9]{12}" .      # Discover
                        "|(?:2131|1800|35\d{3})\d{11}" .      # JCB
-                       ")$/";
+                       ")\b/";
 
     public function __construct($app)
     {
@@ -158,7 +158,7 @@ class ApiTraceProcessor
 
         $bankingRoutes = Route::getBankingSpecificRoutes();
 
-        if (in_array($route, $bankingRoutes) === false)
+        if (in_array($route, $bankingRoutes, true) === false)
         {
             return;
         }
@@ -183,9 +183,12 @@ class ApiTraceProcessor
         {
             if (is_string($item) === true)
             {
-                if (preg_match($cardRegex, $item) === 1)
+                if (preg_match($cardRegex, $item, $matches) === 1)
                 {
-                    $item = 'CARD_NUMBER_SCRUBBED' . '(' .strlen($item) . ')';
+                   foreach ($matches as $match)
+                   {
+                       $item = str_replace($match, 'CARD_NUMBER_SCRUBBED' . '(' . strlen($match) . ')', $item);;
+                   }
                 }
             }
         });
