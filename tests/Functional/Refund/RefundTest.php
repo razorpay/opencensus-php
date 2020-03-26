@@ -4209,4 +4209,81 @@ class RefundTest extends TestCase
 
         return $flowsData;
     }
+
+    public function testInstantRefundDecisionedToNormalForDccPayment()
+    {
+        $this->fixtures->create('terminal:shared_hitachi_terminal', [
+            'type' =>
+                [
+                    'non_recurring' => '1',
+                    'recurring_3ds' => '1',
+                    'recurring_non_3ds' => '1'
+                ]
+        ]);
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+        $this->fixtures->merchant->addFeatures(['dcc']);
+        $this->fixtures->merchant->addFeatures('void_refunds');
+        $this->gateway = 'hitachi';
+        $this->mockCardVault();
+
+        $response = $this->sendRequest($this->getDefaultPaymentFlowsRequestData());
+        $responseContent = json_decode($response->getContent(), true);
+
+        $cardCurrency = $responseContent['card_currency'];
+        $currencyRequestId = $responseContent['currency_request_id'];
+        $usdAmount = $responseContent['all_currencies'][$cardCurrency]['amount'];
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card'] = [
+            'number'       => CardNumber::VALID_ENROLL_NUMBER,
+            'expiry_month' => '02',
+            'expiry_year'  => '21',
+            'cvv'          => 123,
+            'name'         => 'Test Card'
+        ];
+        $payment['dcc_currency'] = $cardCurrency;
+        $payment['currency_request_id'] = $currencyRequestId;
+
+        $this->doAuthAndCapturePayment($payment);
+
+        $payment = $this->getLastEntity('payment');
+
+        $this->gateway = 'hdfc';
+
+        $this->mockServerContentFunction(function (& $content, $action = null) {
+            if ($action === 'verify') {
+                $content['result'] = 'FAILURE(SUSPECT)';
+                $content['authRespCode'] = 'J';
+                $content['udf2'] = '';
+                $content['udf5'] = 'TrackID';
+            }
+
+            if ($action === 'refund') {
+                $content['result'] = 'DENIED BY RISK';
+            }
+
+            return $content;
+        });
+
+        $this->fixtures->pricing->createInstantRefundsDefaultPricingplan();
+
+        $this->fixtures->pricing->createInstantRefundsPricingPlan();
+
+        // Adding IMPS pricing as well to assert that the extra pricing rule is not affecting those refunds
+        // without a mode decisioned
+        $this->fixtures->pricing->createInstantRefundsModeLevelPricingPlan();
+
+        // Adding specific amount to refund - this is meant to test successful instant refunds on scrooge -
+        $refund = $this->refundPayment($payment['id'], 3471, ['speed' => 'optimum', 'is_fta' => true]);
+
+        $this->assertEquals('rfnd_', substr($refund['id'], 0, 5));
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals(true, $refund['gateway_refunded']);
+        $this->assertEquals('optimum', $refund['speed_requested']);
+        $this->assertEquals(RefundStatus::PROCESSED, $refund['status']);
+        $this->assertEquals(RefundSpeed::NORMAL, $refund['speed_processed']);
+    }
 }
