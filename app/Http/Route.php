@@ -2920,9 +2920,6 @@ final class Route
         // Banking VA
         'virtual_account_bulk_create_for_banking',
         'virtual_account_bulk_close_for_banking',
-        'fetch_payment_config',
-        'create_payment_config',
-        'update_payment_config',
         ];
 
     public static $routePermission = [
