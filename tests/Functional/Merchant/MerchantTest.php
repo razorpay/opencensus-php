@@ -6259,11 +6259,7 @@ class MerchantTest extends TestCase
 
         $this->testData[__FUNCTION__]['request']['url'] = '/internal/merchants/100ghi000ghi00';
 
-        $response = $this->startTest();
-
-        $this->assertArrayHasKey('merchant', $response);
-
-        $this->assertArrayHasKey('merchant_detail', $response);
+        $this->startTest();
     }
 
     public function testGetBalances()
