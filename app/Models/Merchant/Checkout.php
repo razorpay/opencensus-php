@@ -570,6 +570,15 @@ class Checkout
         }
 
         //
+        // For the merchant which doesn't want retry option in checkout, sending retry false in preferences.
+        // Will be done for irctc
+        //
+        if ($merchant->isFeatureEnabled(Feature\Constants::CHECKOUT_DISABLE_RETRY) === true)
+        {
+            $data['options']['retry'] = false;
+        }
+
+        //
         // When using Keyless auth, checkout has no way to identify the request mode
         // Adding mode to the preferences response for this
         //

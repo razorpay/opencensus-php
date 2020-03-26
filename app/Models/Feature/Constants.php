@@ -145,6 +145,11 @@ class Constants
     const OFFLINE_PAYMENTS                = 'offline_payments';
 
     /**
+     * Disables retry option in checkout
+     */
+    const CHECKOUT_DISABLE_RETRY          = 'checkout_disable_retry';
+
+    /**
      * If applied on partner merchant then all sub merchant settlement will be settled to partner
      * this will be further aggregated and settled to partner merchant
      */
@@ -189,7 +194,7 @@ class Constants
      */
     const CUST_CONTACT_EMAIL_NULL         = 'cust_contact_email_null';
 
-  /**
+    /**
      * This will control if the bank details will be returned in the fetch token response.
      * Bank details will contain beneficiary_name, account_number, ifsc and account_type
      */
@@ -533,6 +538,7 @@ class Constants
         self::REDIRECTION_ONHOLD              => true,
         self::PAYMENT_CREATED_WEBHOOK         => true,
         self::CYBERSOURCE_VAS                 => true,
+        self::CHECKOUT_DISABLE_RETRY          => true,
     ];
 
     // Entity type constants
