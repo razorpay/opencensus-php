@@ -1,5 +1,7 @@
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
+import RTracking from 'react-tracking';
+
 import { updatePPInReduxList } from 'merchant/reducers/invoices/list';
 import { keysToSentence } from 'common/utils/rzp-utils';
 
@@ -34,6 +36,7 @@ import ActivateAgain from 'merchant/views/PaymentPages/PaymentPages/components/M
   closeModal,
   openModal,
 })
+@RTracking(() => window.rzpQ.component('PaymentPagesDetails'))
 export default class extends React.Component {
   static contextTypes = {
     confirm: PropTypes.func,
