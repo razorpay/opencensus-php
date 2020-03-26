@@ -53,7 +53,7 @@ export default class DefaultRefundSpeed extends Component {
     }
     this.context
       .confirm({
-        header: `Are your sure you want to enable ${
+        header: `Are you sure you want to enable ${
           speed === 'normal' ? 'normal' : 'instant'
         } refund?`,
         affirmativeLabel: 'Yes, Enable',
@@ -65,7 +65,7 @@ export default class DefaultRefundSpeed extends Component {
             >
               {speed == 'optimum' ? (
                 <div>
-                  You payment will be refunded instantly at a minimal fee.
+                  Your payment will be refunded instantly at a minimal fee.
                   &nbsp;
                   {!showWhenUtil({
                     featureEnabled: 'card_transfer_refund',

@@ -113,7 +113,7 @@ export default class EnableInstantRefundsModal extends Component {
                 class="change-default-refund-speed"
               >
                 <div>
-                  You payment will be refunded instantly at a minimal fee.
+                  Your payment will be refunded instantly at a minimal fee.
                   &nbsp;
                   {!showWhenUtil({
                     featureEnabled: 'card_transfer_refund',
