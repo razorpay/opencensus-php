@@ -329,6 +329,29 @@ return [
         ]
     ],
 
+    'testEditBalanceConfigForZeroAutoAndManualLimits' => [
+        'request'  => [
+            'url'       => '/balance_configs/100yz000yz00yz',
+            'method'    => 'PATCH',
+            'content'   => [
+                'negative_limit_manual'         => 6000000,
+                'type'                           => 'primary',
+                'negative_transaction_flows'    => ['transfer', 'refund'],
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'id'                            => '100yz000yz00yz',
+                'balance_id'                    => '100stu000stu00',
+                'type'                          => 'primary',
+                'negative_transaction_flows'   => ['transfer', 'refund', 'payment'],
+                'negative_limit_auto'          => 0,
+                'negative_limit_manual'        => 6000000
+            ],
+            'status_code' => 200
+        ]
+    ],
+
     'testEditBalanceConfigForDifferentBalanceType' => [
         'request'  => [
             'url'       => '/balance_configs/100ab000ab00ab',

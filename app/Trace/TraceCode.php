@@ -2626,6 +2626,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     // Trace Code for Workflow Rules
     const WORKFLOW_PAYOUT_RULES_ATTACHMENT                      = 'WORKFLOW_PAYOUT_RULES_ATTACHMENT';
+    const WORKFLOW_PAYOUT_EDIT                                  = 'WORKFLOW_PAYOUT_EDIT';
 
     const ALREADY_ACTIVATED                                     = 'ALREADY_ACTIVATED';
     const NOT_ACTIVATED                                         = 'NOT_ACTIVATED';

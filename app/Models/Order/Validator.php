@@ -46,7 +46,7 @@ class Validator extends Base\Validator
         Entity::BANK_ACCOUNT
         . '.' . BankAccount\Entity::IFSC           => 'required_with:bank_account|alpha_num|size:11',
         Entity::BANK_ACCOUNT
-        . '.' . BankAccount\Entity::ACCOUNT_NUMBER => 'required_with:bank_account|alpha_num|between:5,20',
+        . '.' . BankAccount\Entity::ACCOUNT_NUMBER => 'required_with:bank_account|alpha_num|between:5,35',
         Entity::OFFERS . '*'                       => 'filled|public_id|size:20',
         Entity::FORCE_OFFER                        => 'filled|boolean',
         Entity::PARTIAL_PAYMENT                    => 'sometimes|boolean',

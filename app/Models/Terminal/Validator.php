@@ -232,19 +232,24 @@ class Validator extends Base\Validator
     ];
 
     protected static $isgTerminalRules = [
+        Entity::CARD                       => 'sometimes|boolean|in:1',
         Entity::GATEWAY                    => 'required|in:isg',
         Entity::GATEWAY_MERCHANT_ID        => 'required|string|max:15',
         Entity::GATEWAY_TERMINAL_ID        => 'required|string|size:8',
         Entity::TYPE                       => 'required|array',
-        Entity::TYPE . '.bharat_qr'        => 'required|in:1',
+        Entity::TYPE . '.bharat_qr'        => 'sometimes|in:1',
         Entity::TYPE . '.non_recurring'    => 'required|in:1',
-        Entity::MC_MPAN                    => 'required|string|size:16',
-        Entity::VISA_MPAN                  => 'required|string|size:16',
-        Entity::RUPAY_MPAN                 => 'required|string|size:16',
+        Entity::MC_MPAN                    => 'sometimes_if:type.bharat_qr,1|string|size:16',
+        Entity::VISA_MPAN                  => 'sometimes_if:type.bharat_qr,1|string|size:16',
+        Entity::RUPAY_MPAN                 => 'sometimes_if:type.bharat_qr,1|string|size:16',
         Entity::EXPECTED                   => 'sometimes|boolean',
         Entity::ACCOUNT_NUMBER             => 'sometimes_if:type.bharat_qr,1|string|max:50',
-        Entity::IFSC_CODE                  => 'sometimes_if:type.bharat_qr,1|string|size:11'
+        Entity::IFSC_CODE                  => 'sometimes_if:type.bharat_qr,1|string|size:11',
+        Entity::GATEWAY_ACCESS_CODE        => 'required_without:mc_mpan|string',
+        Entity::GATEWAY_SECURE_SECRET      => 'required_without:mc_mpan|string',
+        Entity::GATEWAY_ACQUIRER           => 'sometimes|string|in:kotak'
     ];
+
 
     protected static $aepsIciciTerminalRules = [
         Entity::GATEWAY                    => 'required|in:aeps_icici',
@@ -352,18 +357,21 @@ class Validator extends Base\Validator
     ];
 
     protected static $isgEditTerminalRules = [
+        Entity::CARD                       => 'sometimes|boolean|in:1',
         Entity::GATEWAY                    => 'sometimes|in:isg',
         Entity::GATEWAY_MERCHANT_ID        => 'sometimes|string|max:15',
         Entity::GATEWAY_TERMINAL_ID        => 'somtimes|string|size:8',
         Entity::TYPE                       => 'sometimes|array',
         Entity::TYPE . '.bharat_qr'        => 'sometimes|in:1',
-        Entity::TYPE . '.non_recurring'    => 'sometimes|in:1',
-        Entity::MC_MPAN                    => 'sometimes|string|size:16',
-        Entity::VISA_MPAN                  => 'sometimes|string|size:16',
-        Entity::RUPAY_MPAN                 => 'sometimes|string|size:16',
+        Entity::TYPE . '.non_recurring'    => 'required|in:1',
+        Entity::MC_MPAN                    => 'sometimes_if:type.bharat_qr,1|string|size:16',
+        Entity::VISA_MPAN                  => 'sometimes_if:type.bharat_qr,1|string|size:16',
+        Entity::RUPAY_MPAN                 => 'sometimes_if:type.bharat_qr,1|string|size:16',
         Entity::EXPECTED                   => 'sometimes|boolean',
         Entity::ACCOUNT_NUMBER             => 'sometimes_if:type.bharat_qr,1|string|max:50',
-        Entity::IFSC_CODE                  => 'sometimes_if:type.bharat_qr,1|string|size:11'
+        Entity::IFSC_CODE                  => 'sometimes_if:type.bharat_qr,1|string|size:11',
+        Entity::GATEWAY_ACCESS_CODE        => 'required_without:mc_mpan|string',
+        Entity::GATEWAY_SECURE_SECRET      => 'required_without:mc_mpan|string',
     ];
 
     protected static $atomEditTerminalRules = [

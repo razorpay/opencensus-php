@@ -788,6 +788,12 @@ return [
                 'description' => 'Updating banking account details of the merchant',
                 'assignable'  => true,
             ],
+
+            Permission::ASSIGN_BANKING_ACCOUNT_REVIEWER => [
+                'description' => 'Adds reviewer to banking account',
+                'assignable'  => true,
+            ],
+
             Permission::CREATE_BANKING_VIRTUAL_ACCOUNTS => [
                 'description' => 'Create Banking VAs for a merchant',
                 'assignable'  => true,

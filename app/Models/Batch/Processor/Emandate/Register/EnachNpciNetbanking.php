@@ -145,4 +145,9 @@ class EnachNpciNetbanking extends Base
     {
         return true;
     }
+
+    protected function removeCriticalDataFromTracePayload(array & $payloadEntry)
+    {
+        unset($payloadEntry[Batch\Header::ENACH_NPCI_NETBANKING_REGISTER_AC_NO]);
+    }
 }

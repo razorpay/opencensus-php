@@ -744,6 +744,16 @@ class Gateway extends Base\Gateway
         return false;
     }
 
+    protected function isVerifyMissingGateway($input)
+    {
+        if (in_array($input['payment'][Payment\Entity::GATEWAY], Payment\Gateway::$verifyMissingGateways, true) === true)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
     protected function isContactMandatoryGateway($input)
     {
         if (in_array($input['payment'][Payment\Entity::GATEWAY], Payment\Gateway::$contactMandatoryGateways, true) === true)
@@ -958,6 +968,16 @@ class Gateway extends Base\Gateway
         //$this->disableVerifyCronForGateway($gatewayName, $verify);
 
         return $this->runPaymentVerifyFlow($verify);
+    }
+
+    public function forceAuthorizeFailed(array $input)
+    {
+        if ($this->isVerifyMissingGateway($input) === true)
+        {
+            return true;
+        }
+
+        return false;
     }
 
     protected function verifyCallback($input)

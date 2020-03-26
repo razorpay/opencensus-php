@@ -20,10 +20,12 @@ class Service extends Base\Service
 
     public function create(array $input): array
     {
+        $traceData = $this->core->unsetPersonalIdentifiableInformation($input);
+
         $this->trace->info(
             TraceCode::BANKING_ACCOUNT_CREATE,
             [
-                'input' => $input,
+                'input' => $traceData,
             ]);
 
         $account = $this->core->createBankingAccount($input, $this->merchant);
@@ -51,12 +53,14 @@ class Service extends Base\Service
 
         $channel = $bankingAccount->getChannel();
 
+        $traceData = $this->core->unsetPersonalIdentifiableInformation($input);
+
         $this->trace->info(
             TraceCode::BANKING_ACCOUNT_EDIT,
             [
                 'id'      => $bankingAccount->getId(),
                 'channel' => $channel,
-                'input'   => $input,
+                'input'   => $traceData,
             ]);
 
         (new Validator)->setStrictFalse()->validateInput(Validator::INTERNAL_EDIT, $input);
@@ -187,5 +191,16 @@ class Service extends Base\Service
                 ['id' => $bankingAccount->getId()]
             );
         }
+    }
+
+    public function bulkAssignReviewer(array $input)
+    {
+        (new Validator)->validateInput('bulk_assign_reviewer', $input);
+
+        $bankingAccountIds  = $input[Entity::BANKING_ACCOUNT_IDS];
+
+        $reviewerId = $input[Entity::REVIEWER_ID];
+
+        return (new Core)->bulkAssignReviewer($reviewerId, $bankingAccountIds);
     }
 }

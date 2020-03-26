@@ -32,7 +32,10 @@ class Entity extends Base\Entity
     const STEPS    = 'steps';
 
     // Input parameters
-    const RULES    = 'rules';
+    const RULES                 = 'rules';
+    const WORKFLOWS             = 'workflows';
+    const PAYOUTAMOUNTRULES     = 'payout_amount_rules';
+    const EXPAND                = 'expand';
 
     protected $generateIdOnCreate = false;
 
@@ -68,6 +71,7 @@ class Entity extends Base\Entity
         self::CREATED_AT,
         self::UPDATED_AT,
         self::STEPS,
+        self::WORKFLOW,
     ];
 
     protected $dates = [

@@ -324,6 +324,12 @@ class Constants
      */
     const PAYMENT_CREATED_WEBHOOK  = 'payment_created_webhook';
 
+    /*
+     * This feature will be used to pass order receipt in cybersource gateway requests
+     * for merchant that will have recon at their end.
+     */
+    const CYBERSOURCE_VAS = 'cybersource_vas';
+
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
         self::SUBSCRIPTIONS,
@@ -526,6 +532,7 @@ class Constants
         self::DISPLAY_LA_PARENT_PAYMENT_ID    => true,
         self::REDIRECTION_ONHOLD              => true,
         self::PAYMENT_CREATED_WEBHOOK         => true,
+        self::CYBERSOURCE_VAS                 => true,
     ];
 
     // Entity type constants

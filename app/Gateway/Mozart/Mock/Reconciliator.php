@@ -375,6 +375,38 @@ class Reconciliator extends Base\Mock\PaymentReconciliator
         return $data;
     }
 
+    protected function hdfc_debit_emi($input)
+    {
+        $this->fileToWriteName = 'Merchant Reconciliation Report';
+
+        $data = [];
+
+        $i = 1;
+
+        foreach ($input as $row)
+        {
+            $row = [
+                'Sr No'                   => $i++,
+                'BankReferenceNumber'     => 'abc123456',
+                'Amount'                  => ($row['payment']['amount'] / 100),
+                'CustomerName'            => 'John Doe',
+                'MerchantReferenceNumber' => $row['payment']['id'],
+                'Remarks'                 => 'Payout Done',
+            ];
+
+            $this->content($row, 'row_payment_hdfc_dc_emi_recon');
+
+            if (empty($row) === true)
+            {
+                continue;
+            }
+
+            $data[] = $row;
+        }
+
+        return $data;
+    }
+
     protected function wallet_phonepe($input)
     {
         $this->fileExtension = FileStore\Format::CSV;
