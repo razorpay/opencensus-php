@@ -11,7 +11,7 @@ import { openModal, closeModal } from 'merchant_common/reducers/modals';
 
 import PendingInvitationsList from './PendingInvitations/List';
 import TeamMembersList from './TeamMembers/List';
-import Toggle2FA from './components/Toggle2FA';
+import Merchant2FASettings from './components/Merchant2FASettings';
 import NewInvitation from './components/NewInvitation';
 
 import rolesList from 'merchant/helpers/permissions/roles-list';
@@ -70,7 +70,7 @@ export default class ManageTeamContainer extends React.Component {
           myRole="owner"
           additionalCondition={user => user.getExpStatus('second_factor_auth')}
         >
-          <Toggle2FA />
+          <Merchant2FASettings />
         </ShowWhen>
         <HeaderAction>
           <div class="btn-toolbar pull-right">

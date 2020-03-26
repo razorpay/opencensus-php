@@ -1,0 +1,68 @@
+import { connect } from 'react-redux';
+
+import { toggleMerchant2FaEnforcement } from 'merchant/reducers/team';
+import { updateSession } from 'merchant/reducers/session';
+
+import User from 'merchant/models/User';
+
+import Toggle2FA from '../../components/TwoFAVerification/Toggle2FA';
+
+@connect(state => ({ user: state.session.user }), {
+  toggleMerchant2FaEnforcement,
+  updateSession,
+})
+export default class Merchant2FASettings extends React.PureComponent {
+  onToggleComplete = twoFaEnabled => {
+    const { user: currentUser } = this.props.user;
+    const user = new User({
+      ...this.props.user,
+      user: {
+        ...currentUser,
+        second_factor_auth: twoFaEnabled,
+      },
+    });
+    this.props.updateSession({ user });
+  };
+
+  render() {
+    const { user } = this.props.user;
+    const { toggleMerchant2FaEnforcement } = this.props;
+    return (
+      <Toggle2FA
+        renderDescription={Merchant2FADescription}
+        renderTitle={Merchant2FATitle}
+        toggle2FaEnforcement={toggleMerchant2FaEnforcement}
+        twoFaEnabled={user.second_factor_auth_enforced}
+        onToggleComplete={this.onToggleComplete}
+        getToggle2FaSuccessMsg={getToggle2FaSuccessMsg}
+      />
+    );
+  }
+}
+
+function Merchant2FATitle() {
+  return (
+    <span class="title">
+      <i class="i i-phonelink-lock" /> 2-Step verification to the team
+    </span>
+  );
+}
+
+function Merchant2FADescription() {
+  return (
+    <>
+      <p>
+        2-step verification will be enforced to all the team members who have
+        access to this Dashboard.
+      </p>
+      <p>
+        <strong>Note:</strong> This setting requires 2-step verification set up
+        on your account
+      </p>
+    </>
+  );
+}
+
+function getToggle2FaSuccessMsg(twoFaStatus) {
+  return `2-step verification successfully turned ${twoFaStatus} for all your team members`;
+}

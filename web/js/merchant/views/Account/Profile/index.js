@@ -25,6 +25,8 @@ import { updateSession } from 'merchant/reducers/session';
 import rolesList from 'merchant/helpers/permissions/roles-list';
 import UpdateSelfContactMobile from 'merchant/views/Account/Profile/components/UpdateSelfContactMobile';
 
+import User2FASettings from './components/User2FASettings';
+
 @connect(
   state => {
     return {
@@ -304,6 +306,10 @@ export default class Profile extends Component {
       <div class="content-wrapper content-sm">
         <div class="profile-container">
           <Alert type="error" message={this.state.errors} showDismiss={false} />
+          <ShowWhen additionalCondition={user => user.isUser2FAEnabled}>
+            <User2FASettings />
+          </ShowWhen>
+
           <div class="panel panel-default">
             {user.current && (
               <div class="panel-heading">

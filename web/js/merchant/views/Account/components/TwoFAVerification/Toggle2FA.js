@@ -2,29 +2,23 @@ import { Component } from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import RTracking from 'react-tracking';
-import { classList } from 'common/utils/rzp-utils';
-import User from 'merchant/models/User';
 
-import {
-  toggle2FaEnforcement,
-  updateSelfContact,
-} from 'merchant/reducers/team';
+import { classList } from 'common/utils/rzp-utils';
+
+import { updateSelfContact } from 'merchant/reducers/team';
 import { updateSession } from 'merchant/reducers/session';
 
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import SwitchField from 'common/ui/Forms/SwitchField';
-import {
-  VerifyOtp,
-  AskMobileNumber,
-  PasswordVerification,
-} from 'merchant/views/Account/ManageTeam/components/TwoFaModals';
+
 import UpdateSelfContactMobile from 'merchant/views/Account/Profile/components/UpdateSelfContactMobile';
+import PasswordVerification from './PasswordVerification';
 
 @connect(state => ({ user: state.session.user }), {
   openModal,
   closeModal,
-  toggle2FaEnforcement,
+  // toggleMerchant2FaEnforcement,
   updateSelfContact,
   updateSession,
   showNotification,
@@ -41,16 +35,6 @@ class Toggle2FA extends Component {
     });
   };
 
-  //Set the sate in redux store to reflect the new changes
-  update2FAState = flag => {
-    const { user: currentUser } = this.props.user;
-    const user = new User({
-      ...this.props.user,
-      user: { ...currentUser, second_factor_auth_enforced: flag },
-    });
-    this.props.updateSession({ user });
-  };
-
   verifyPassword = flag => {
     this.showModal(
       <PasswordVerification
@@ -63,13 +47,12 @@ class Toggle2FA extends Component {
   };
 
   onPasswordSubmit = data => {
-    return this.props
-      .toggle2FaEnforcement(data)
+    const { toggle2FaEnforcement, getToggle2FaSuccessMsg } = this.props;
+    return toggle2FaEnforcement(data)
       .then(response => {
         const { second_factor_auth } = response.data;
-        const message = `2-step verification successfully turned ${
-          second_factor_auth ? 'on' : 'off'
-        } for all your team members`;
+        const twoFaStatus = second_factor_auth ? 'on' : 'off';
+        const message = getToggle2FaSuccessMsg(twoFaStatus);
 
         this.props.showNotification({
           type: 'success',
@@ -80,6 +63,8 @@ class Toggle2FA extends Component {
       .catch(({ errors }) => {
         const error = (errors || [])[0];
         if (error === 'User 2FA setup is required') {
+          // this is for restricted mode merchants
+          // when all team members don't have a verified mobile number
           this.props.closeModal();
           this.showAllUsers2faSetupRequired();
         } else {
@@ -165,78 +150,63 @@ class Toggle2FA extends Component {
     });
   };
 
+  onToggleChange = (flag, cb) =>
+    this.toggle2FA(flag).then(completed => {
+      //Set the sate in redux store to reflect the new changes
+      this.props.onToggleComplete(flag);
+      if (completed) {
+        this.trackEvent(flag);
+      }
+      cb(completed);
+    });
+
   render() {
-    const { user: { second_factor_auth_enforced } } = this.props.user;
+    const { twoFaEnabled } = this.props;
     return (
       <div class="panel panel-default">
         <div class="panel-heading">
-          <span class="title">
-            <i class="i i-phonelink-lock" /> 2-Step verification to the team
-          </span>
+          {this.props.renderTitle && this.props.renderTitle()}
+
           <span class="toggler-btn">
             <SwitchField
-              defaultChecked={second_factor_auth_enforced}
-              onChange={(flag, cb) =>
-                this.toggle2FA(flag).then(completed => {
-                  this.update2FAState(flag);
-                  if (completed) {
-                    if (second_factor_auth_enforced) {
-                      this.props.tracking.trackEvent(
-                        window.rzpQ
-                          .now()
-                          .onbr()
-                          .success('dash.2fa_disable', {
-                            source: 'Toggle2FA',
-                            sessionId: window.session_id,
-                          })
-                      );
-                    } else {
-                      this.props.tracking.trackEvent(
-                        window.rzpQ
-                          .now()
-                          .onbr()
-                          .success('dash.2fa_enable', {
-                            source: 'Toggle2FA',
-                            sessionId: window.session_id,
-                          })
-                      );
-                    }
-                  }
-                  cb(completed);
-                })
-              }
+              defaultChecked={twoFaEnabled}
+              onChange={this.onToggleChange}
               type="prime"
             />
             <strong
               class={classList(
                 'm-l',
-                second_factor_auth_enforced ? 'text-primary' : 'text-faded'
+                twoFaEnabled ? 'text-primary' : 'text-faded'
               )}
             >
-              {second_factor_auth_enforced ? 'Enabled' : 'Disabled'}
+              {twoFaEnabled ? 'Enabled' : 'Disabled'}
             </strong>
           </span>
         </div>
 
         <div class="panel-body">
           <form class="form-horizontal">
-            <div class="description">
-              <p>
-                2-step verification will be enforced to all the team members who
-                have access to this Dashboard.
-              </p>
-              <p>
-                <strong>Note:</strong> This setting requires 2-step verification
-                set up on your account
-              </p>
-            </div>
+            <div class="description">{this.props.renderDescription()}</div>
           </form>
         </div>
       </div>
     );
   }
+
+  trackEvent = twoFaEnabled => {
+    const event = twoFaEnabled ? 'enable' : 'disable';
+    this.props.tracking.trackEvent(
+      window.rzpQ
+        .now()
+        .onbr()
+        .success(`dash.2fa_${event}`, {
+          source: 'Toggle2FA',
+          sessionId: window.session_id,
+        })
+    );
+  };
 }
 
-export default RTracking((state, props, args) => {
+export default RTracking(() => {
   return window.rzpQ.component('Toggle2FA');
 })(Toggle2FA);

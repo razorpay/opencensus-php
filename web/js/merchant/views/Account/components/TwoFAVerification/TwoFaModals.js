@@ -10,6 +10,9 @@ import InputField from 'common/ui/Forms/InputField';
 import { required, phone, mobile } from 'common/utils/validators';
 import { OtpInput } from 'merchant/components/OtpInput';
 
+// This file has similar components to
+// Account/Profile/components/UpdateSelfContactMobile.js
+// refactor ASAP to remove redundancy
 @connect(null, { showNotification })
 class VerifyOtp extends Component {
   state = {};
@@ -163,60 +166,4 @@ class AskMobileNumber extends Component {
   }
 }
 
-@connect(
-  state => ({
-    email: state.session.user.user.email,
-  }),
-  { showNotification }
-)
-@reduxForm({
-  form: 'confirmPassword',
-})
-class PasswordVerification extends Component {
-  onSubmit = ({ password }) => {
-    return this.props.onSubmit({
-      ...this.props.dataSentWithPassword,
-      password,
-    });
-  };
-
-  render() {
-    const { email, enable, handleSubmit, closeModal } = this.props;
-    return (
-      <div class="2fa-modal">
-        <ModalHeader
-          title={(enable ? 'Enable' : 'Disable') + ' 2-step verification'}
-          onCloseClick={closeModal}
-        />
-        <div class="modal-body">
-          <p>
-            To confirm please enter the password for <strong>{email}</strong>
-          </p>
-          <form style={{ marginBottom: '35px' }}>
-            <div class="form-group">
-              <Field
-                type="password"
-                name="password"
-                component={InputField}
-                class="form-control m-t"
-                placeholder="Password"
-                validate={[required()]}
-                autoFocus
-              />
-            </div>
-            <div class="Modal__actions">
-              <AsyncButton
-                class="btn btn-primary btn-block"
-                text="Confirm"
-                pendingText="Please Wait..."
-                onClick={handleSubmit(this.onSubmit)}
-              />
-            </div>
-          </form>
-        </div>
-      </div>
-    );
-  }
-}
-
-export { AskMobileNumber, PasswordVerification, VerifyOtp };
+export { AskMobileNumber, VerifyOtp };

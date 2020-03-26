@@ -973,6 +973,7 @@ class Service extends Base\Service
             'rev_up_chennai_announcement',
             'disable_va_creation_bank_account',
             'rx_ssl_cert_renew',
+            'user-2fa',
         ];
 
         $experimentsResults = $merchantService->getBulkTreatment($features);

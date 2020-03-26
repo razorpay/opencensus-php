@@ -461,6 +461,10 @@ export default class User {
     return this.getExpStatus('hide_registration_link_first_amount');
   }
 
+  get isUser2FAEnabled() {
+    return this.getExpStatus('user-2fa');
+  }
+
   get paymentLinkCreationFormExtraFields() {
     return window.pl_extra_fields;
   }

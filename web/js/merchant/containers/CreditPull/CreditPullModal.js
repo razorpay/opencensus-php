@@ -23,7 +23,7 @@ import CheckBoxField from 'common/ui/Forms/CheckboxField';
 import {
   VerifyOtp,
   AskMobileNumber,
-} from 'merchant/views/Account/ManageTeam/components/TwoFaModals';
+} from 'merchant/views/Account/components/TwoFAVerification/TwoFaModals';
 import CreditPullClose from './CreditPullClose';
 import CreditPullSuccess from './CreditPullSuccess';
 import ajax from 'merchant/utils/ajax';

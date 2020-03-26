@@ -101,11 +101,11 @@ export const unlockMember = memberId => ({
   payload: new Team().unlock(memberId),
 });
 
-export const toggle2FaEnforcement = data => {
+const toggle2FaEnforcement = (data, url) => {
   return {
     type: UPDATE_SESSION,
     payload: merchantFetch({
-      url: `merchants/2fa`,
+      url,
       method: 'patch',
       data,
       headers: {
@@ -115,6 +115,12 @@ export const toggle2FaEnforcement = data => {
     }),
   };
 };
+
+export const toggleMerchant2FaEnforcement = data =>
+  toggle2FaEnforcement(data, 'merchants/2fa');
+
+export const toggleUser2FaEnforcement = data =>
+  toggle2FaEnforcement(data, 'users/2fa');
 
 let initialState = {
   loading: true,
