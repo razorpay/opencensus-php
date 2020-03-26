@@ -1185,6 +1185,10 @@ class Validator extends Base\Validator
         Entity::VPA                        => 'sometimes|string',
     ];
 
+    protected static $migrateTerminalsCronRules = [
+        Entity::SYNC_STATUS     => 'required|in:not_synced,sync_in_progress,sync_success,sync_failed',
+        'count'                 => 'required|min:1|max:100',
+];
     protected static $hdfcDebitEmiTerminalRules = [
         Entity::GATEWAY              => 'required|in:hdfc_debit_emi',
         Entity::GATEWAY_MERCHANT_ID  => 'required|string',

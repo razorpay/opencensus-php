@@ -2564,6 +2564,36 @@ trait PaymentTrait
                           ->willReturn('on');
     }
 
+    protected function assignSubMerchant(string $tid, string $mid)
+    {
+        $url = '/terminals/' . $tid . '/merchants/' . $mid;
+
+        $request = [
+            'url'    => $url,
+            'method' => 'PUT',
+        ];
+
+        $this->ba->adminAuth();
+
+        $content = $this->makeRequestAndGetContent($request);
+    }
+
+    protected function deleteSubmerchant(string $tid, string $mid)
+    {
+        $url = '/terminals/' . $tid . '/merchants/' . $mid;
+
+        $request = [
+            'url' => $url,
+            'method' => 'DELETE',
+        ];
+
+        $this->ba->adminAuth();
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        return $content;
+    }
+
     protected function mockRazorXTreatmentForEnableBankTransferRefunds()
     {
         // Sending FTA to FTS

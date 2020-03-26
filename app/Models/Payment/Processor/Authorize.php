@@ -6175,10 +6175,12 @@ trait Authorize
 
             if ($payment->terminal !== null)
             {
-                $payment->terminal->setUsed();
-
-                $this->repo->saveOrFail($payment->terminal);
-            }
+               if ($payment->terminal->isUsed() === false)
+                {
+                    $payment->terminal->setUsed();
+                    $this->repo->saveOrFail($payment->terminal);
+                }
+             }
 
             $this->updateAssociatedPaymentEntities($payment, $data);
 
