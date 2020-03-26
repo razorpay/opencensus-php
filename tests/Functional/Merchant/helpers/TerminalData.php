@@ -2380,8 +2380,26 @@ return [
         ],
     ],
 
+    'testCreatedTerminalsShouldNotBeDisabled' => [
+        'request' => [
+            'method' => 'PUT'
+        ],
+        'response' => [
+            'content'  => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Only pending or activated terminals can be disabled',
+                ],
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ONLY_PENDING_OR_ACTIVATED_TERMINALS_CAN_BE_DISABLED
+        ],
+    ],
 
-    'testOnlyActivatedTerminalShouldBeEnabled'  => [
+    'testOnlyDeactivatedTerminalsShouldBeEnabled'  => [
         'request' => [
             'method' => 'PUT'
         ],
