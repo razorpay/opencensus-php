@@ -12,7 +12,6 @@ use RZP\Services\Mock\Mozart;
 use RZP\Models\BankingAccount;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\BankingAccount\Gateway\Rbl;
-use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Fixtures\Entity\User;
 use RZP\Jobs\BankingAccountGatewayBalanceUpdate;
 use RZP\Tests\Functional\Helpers\Payout\PayoutTrait;
@@ -30,6 +29,10 @@ class RblPayoutTest extends TestCase
     use TestsBusinessBanking;
 
     private $checkerRoleUser;
+
+    private $ownerRoleUser;
+
+    private $finL3RoleUser;
 
     public function setUp()
     {
@@ -285,15 +288,23 @@ class RblPayoutTest extends TestCase
         $this->assertArraySelectiveEquals($dispatchResponse, $expectedResponse);
     }
 
+    protected function createPayoutWithWorkflow($workflow, $payoutAttributes = [], $authKey = null)
+    {
+        $this->disableWorkflowMocks();
+
+        return $this->createQueuedOrPendingPayout($payoutAttributes, $authKey);
+    }
+
     protected function createPendingPayoutAndApprovePayoutUptoSecondLevel(int $gatewayBalance, $queueFlag = 1)
     {
         $this->liveSetUp();
-        $this->setupWorkflowForLiveMode();
-        $this->disableWorkflowMocks();
 
-        $payout = $this->createPendingPayout([], 'rzp_live_TheLiveAuthKey');
+        $workflow = $this->createPayoutWorkflowWithBankingUsersLiveMode();
 
-        $this->ba->proxyAuth('rzp_live_10000000000000', $this->checkerRoleUser->getId());
+        $payout = $this->createPayoutWithWorkflow($workflow, [], 'rzp_live_TheLiveAuthKey');
+
+        // Approve with Owner role user
+        $this->ba->proxyAuth('rzp_live_10000000000000', $this->ownerRoleUser->getId());
 
         $request = [
             'method'  => 'POST',
@@ -307,16 +318,10 @@ class RblPayoutTest extends TestCase
 
         $this->makeRequestAndGetContent($request);
 
-        $secondLevelRole = $this->getDbEntityById('role', Org::MAKER_ROLE, 'live');
-        $secondUser      = $this->fixtures->on('live')
-                                ->user->createUserForMerchant('10000000000000', [], Org::MAKER_ROLE, 'live');
-
         $this->app['config']->set('database.default', 'live');
 
-        $secondUser->roles()->attach($secondLevelRole);
-
-        // Make Request to Approve pending payout for second level
-        $this->ba->proxyAuth('rzp_live_10000000000000', $secondUser->getId());
+        // Make Request to Approve pending payout for second level from Finance L3 role
+        $this->ba->proxyAuth('rzp_live_10000000000000', $this->finL3RoleUser->getId());
 
         $this->mockMozartResponseForFetchingBalanceFromRblGateway($gatewayBalance);
 
@@ -344,14 +349,15 @@ class RblPayoutTest extends TestCase
     protected function createBulkPendingPayoutAndApprovePayoutsUptoSecondLevel(int $gatewayBalance, $queueFlag = 1)
     {
         $this->liveSetUp();
-        $this->setupWorkflowForLiveMode();
-        $this->disableWorkflowMocks();
 
-        $payout1 = $this->createPendingPayout([], 'rzp_live_TheLiveAuthKey');
+        $workflow = $this->createPayoutWorkflowWithBankingUsersLiveMode();
 
-        $payout2 = $this->createPendingPayout([], 'rzp_live_TheLiveAuthKey');
+        $payout1 = $this->createPayoutWithWorkflow($workflow, [], 'rzp_live_TheLiveAuthKey');
 
-        $this->ba->proxyAuth('rzp_live_10000000000000', $this->checkerRoleUser->getId());
+        $payout2 = $this->createPayoutWithWorkflow($workflow, [], 'rzp_live_TheLiveAuthKey');
+
+        // Approve with Owner role user
+        $this->ba->proxyAuth('rzp_live_10000000000000', $this->ownerRoleUser->getId());
 
         $request = [
             'method'  => 'POST',
@@ -366,20 +372,14 @@ class RblPayoutTest extends TestCase
 
         $this->makeRequestAndGetContent($request);
 
-        $secondLevelRole = $this->getDbEntityById('role', Org::MAKER_ROLE, 'live');
-        $secondUser      = $this->fixtures->on('live')
-                                ->user->createUserForMerchant('10000000000000', [], Org::MAKER_ROLE, 'live');
-
         $this->app['config']->set('database.default', 'live');
 
-        $secondUser->roles()->attach($secondLevelRole);
-
-        // Make Request to Approve pending payout for second level
-        $this->ba->proxyAuth('rzp_live_10000000000000', $secondUser->getId());
+        // Make Request to Approve pending payout for second level from Finance L3 role
+        $this->ba->proxyAuth('rzp_live_10000000000000', $this->finL3RoleUser->getId());
 
         $this->mockMozartResponseForFetchingBalanceFromRblGateway($gatewayBalance);
 
-        $response = $this->makeRequestAndGetContent($request);
+        $this->makeRequestAndGetContent($request);
 
         return [$payout1['id'], $payout2['id']];
     }
