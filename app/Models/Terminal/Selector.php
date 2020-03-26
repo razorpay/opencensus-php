@@ -220,16 +220,20 @@ class Selector extends Base\Core
                     {
                         $traceTerminals = $sortedTerminals;
 
+                        $newTraceTerminals = [];
+
                         // remove sensitive data from logging
                         foreach ($traceTerminals as $traceTerminal)
                         {
                             unset($traceTerminal['mc_mpan'], $traceTerminal['visa_mpan'], $traceTerminal['rupay_mpan'], $traceTerminal['network_mpan']);
+
+                            array_push($newTraceTerminals, $traceTerminal);
                         };
 
                         $this->trace->error(
                             TraceCode::SMART_ROUTING_TERMINALS_MISMATCH,
                             [
-                                'terminals_from_api'            => $traceTerminals,
+                                'terminals_from_api'            => $newTraceTerminals,
                                 'terminals_from_smart_routing'  => $newSelectedTerminals,
                                 'payment_id'                    => $payment->getId(),
                                 'method'                        => $payment->getMethod(),
