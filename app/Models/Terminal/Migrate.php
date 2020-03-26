@@ -100,7 +100,6 @@ trait Migrate
         {
             $data['message'] = $exception->getMessage();
 
-            sd($exception->getMessage());
             $this->pushTerminalsServiceMetrics(Metric::TERMINAL_FETCH_FAILURE, $data);
 
         }
