@@ -34,6 +34,7 @@ class BankingRole
         self::OWNER,
         self::ADMIN,
         self::VIEW_ONLY,
+        self::OPERATIONS
     ];
 
     protected static $workflowRoles = [
