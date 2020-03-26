@@ -582,7 +582,7 @@ class Core extends Base\Core
     {
         $this->trace->info(
             TraceCode::FTA_SOURCE_PROCESSING_DATA,
-            $ftaData);
+            $this->redactDataForLogs($ftaData));
 
         try
         {
@@ -661,7 +661,7 @@ class Core extends Base\Core
     {
         $this->trace->info(
             TraceCode::FTA_SOURCE_PROCESSING_DATA,
-            $ftaData);
+            $this->redactDataForLogs($ftaData));
 
         try
         {
@@ -970,5 +970,21 @@ class Core extends Base\Core
     public function getAttemptsFromIds(array $ftaIds)
     {
         return $this->repo->fund_transfer_attempt->fetchFtsAttemptUsingId($ftaIds);
+    }
+
+    public function redactDataForLogs(array $input): array
+    {
+        if (array_key_exists("beneficiary_name", $input) === true)
+        {
+            $input["beneficiary_name"] = str_repeat('*', strlen($input["beneficiary_name"]));
+        }
+
+        if ((array_key_exists("extra_info", $input) === true) &&
+            (array_key_exists("beneficiary_name", $input["extra_info"]) === true))
+        {
+            $input["extra_info"]["beneficiary_name"] = str_repeat('*', strlen($input["extra_info"]["beneficiary_name"]));
+        }
+
+        return $input;
     }
 }
