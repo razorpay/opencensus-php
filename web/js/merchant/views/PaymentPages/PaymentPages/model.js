@@ -21,7 +21,7 @@ export function createPaymentPage(data) {
   pruneReqPayload(reqPayload);
 
   return merchantFetch({
-    url: 'payment_links',
+    url: 'payment_pages',
     method: 'post',
     data: reqPayload,
     headers: {
@@ -34,7 +34,7 @@ export function editPaymentPageItem(id, data) {
   const reqPayload = { ...data };
 
   return merchantFetch({
-    url: `payment_links/payment_page_item/${id}`,
+    url: `payment_pages/payment_page_item/${id}`,
     method: 'patch',
     data: reqPayload,
     headers: {
@@ -52,7 +52,7 @@ export function editPaymentPage(id, data) {
   delete reqPayload.currency;
 
   return merchantFetch({
-    url: `payment_links/${id}`,
+    url: `payment_pages/${id}`,
     method: 'patch',
     data: reqPayload,
     headers: {
@@ -66,7 +66,7 @@ export function uploadImageInDescription(file) {
   fd.append('images[0]', file);
 
   return merchantFetch({
-    url: `payment_links/images`,
+    url: `payment_pages/images`,
     method: 'post',
     data: fd,
   });
@@ -74,7 +74,7 @@ export function uploadImageInDescription(file) {
 
 export function fetchPaymentPageEntity(id) {
   return merchantFetch({
-    url: `payment_links/${id}/details`,
+    url: `payment_pages/${id}/details`,
     params: {
       expand: ['user'],
     },
@@ -83,7 +83,7 @@ export function fetchPaymentPageEntity(id) {
 
 export function fetchPaymentPagesList(data) {
   return merchantFetch({
-    url: 'payment_links',
+    url: 'payment_pages',
     data,
   });
 }
@@ -101,14 +101,14 @@ export function fetchPaymentsListForPaymentPage(id) {
 
 export function deactivatePaymentPage(id) {
   return merchantFetch({
-    url: `payment_links/${id}/deactivate`,
+    url: `payment_pages/${id}/deactivate`,
     method: 'patch',
   });
 }
 
 export function activatePaymentPage(id, data) {
   return merchantFetch({
-    url: `payment_links/${id}/activate`,
+    url: `payment_pages/${id}/activate`,
     method: 'patch',
     data,
     headers: {
@@ -124,7 +124,7 @@ export function sendLink(id, data) {
   data.contact && (reqPayload.contacts = [data.contact]);
 
   return merchantFetch({
-    url: `payment_links/${id}/notify`,
+    url: `payment_pages/${id}/notify`,
     method: 'post',
     data: reqPayload,
   });
