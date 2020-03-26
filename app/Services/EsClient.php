@@ -335,7 +335,7 @@ class EsClient
             $paramTrace['body']['entity']['change']['old']['email'],
             $paramTrace['body']['entity']['change']['old']['password']);
 
-        $this->trace->info(TraceCode::ES_INDEX_REQUEST, ['params' => $params]);
+        $this->trace->info(TraceCode::ES_INDEX_REQUEST, ['params' => $paramTrace]);
 
         $this->heimdallClient->index($params);
     }
