@@ -130,7 +130,8 @@ class Core extends Base\Core
             $config = $this->repo->config->findByPublicIdAndMerchant($configId, $this->merchant);
         }
 
-        if (isset($config) === true) {
+        if (isset($config) === true)
+        {
             $data['checkout_config'] = json_decode($config->config, true);
         }
     }

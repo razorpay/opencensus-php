@@ -337,6 +337,12 @@ class Core extends Base\Core
         }
     }
 
+    /**
+     * Method validates whether configid is valid or not for the merchant
+     *
+     * Throws BAD_REQUEST_ERROR error with description "The id provided does not exist"
+     */
+
     private function validateCheckoutConfigId($configId)
     {
         $this->repo->config->findByPublicIdAndMerchant($configId, $this->merchant);
