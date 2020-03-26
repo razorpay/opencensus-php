@@ -2751,8 +2751,7 @@ trait Refund
                 $this->mode
             );
 
-            if (($variant !== RefundConstants::RAZORX_VARIANT_ON) and
-                ((empty($this->refund->getAttempts())) === true))
+            if ($variant !== RefundConstants::RAZORX_VARIANT_ON)
             {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_PAYMENT_REFUND_NOT_SUPPORTED,

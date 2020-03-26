@@ -352,34 +352,6 @@ class BankTransferTest extends TestCase
         $this->assertNull($attempt);
     }
 
-    public function testBankTransferRefundFailedDueToBankTransferRefundDisabledAndRetrySuccessful()
-    {
-        $channel = Channel::AXIS;
-
-        $refund = $this->createRefundFailedDueToBankTransferRefundDisabled($channel);
-
-        $attempt = $this->getLastEntity('fund_transfer_attempt', true);
-        $this->assertNull($attempt);
-
-        $this->retryFailedRefund($refund['id'], $refund['payment_id']);
-
-        $content = $this->initiateTransferViaFileAndAssertSuccess(
-            $channel,
-            Attempt\Purpose::REFUND,
-            0,
-            Attempt\Type::REFUND);
-
-        $attempt = $this->getLastEntity('fund_transfer_attempt', true);
-        $this->assertEquals(Attempt\Status::CREATED, $attempt[Attempt\Entity::STATUS]);
-
-        $channel = Channel::YESBANK;
-        $content = $this->initiateTransferAndAssertSuccess(
-            $channel,
-            Attempt\Purpose::REFUND,
-            1,
-            Attempt\Type::REFUND);
-    }
-
     public function testBankTransferRefundIcici()
     {
         $channel = Channel::ICICI;
@@ -2544,8 +2516,6 @@ class BankTransferTest extends TestCase
 
         $attempt = $this->getLastEntity('fund_transfer_attempt', true);
         $this->assertNull($attempt);
-
-        return $refund;
     }
 
     protected function createTpvRefund()
