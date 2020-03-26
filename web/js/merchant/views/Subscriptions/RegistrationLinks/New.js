@@ -24,11 +24,10 @@ import CustomerDetailsForm from 'merchant/views/Subscriptions/RegistrationLinks/
 import {
   isEmail,
   isPhone,
+  isAmount,
   validateBeneficiaryName,
 } from 'common/utils/validators';
-import PaymentDetailsForm, {
-  checkIfAmount,
-} from 'merchant/views/Subscriptions/RegistrationLinks/components/RegistrationLinksForm/PaymentDetails';
+import PaymentDetailsForm from 'merchant/views/Subscriptions/RegistrationLinks/components/RegistrationLinksForm/PaymentDetails';
 import TokenDetailsForm from 'merchant/views/Subscriptions/RegistrationLinks/components/RegistrationLinksForm/TokenDetails';
 import {
   trackClickPaymentMethod,
@@ -76,7 +75,7 @@ const PAYMENT_METHODS = {
   CARD: 'card',
 };
 
-const CardMandatoryFields = [{ name: 'amount', validator: checkIfAmount }];
+const CardMandatoryFields = [{ name: 'amount', validator: isAmount }];
 
 let DEFAULT_MAX_AMOUNT = 99999;
 let DEFAULT_FIRST_CHARGE = 0;
