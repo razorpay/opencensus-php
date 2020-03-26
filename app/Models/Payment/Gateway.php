@@ -121,6 +121,7 @@ class Gateway
     const ACQUIRER_BARB         = 'barb';
     const ACQUIRER_SBIN         = 'sbin';
     const ACQUIRER_CITI         = 'citi';
+    const ACQUIRER_KOTAK        = 'kotak';
 
     const NOT_SUPPORTED      = 'not_supported';
     const SUPPORTED          = 'supported';
@@ -782,6 +783,7 @@ class Gateway
             self::HITACHI,
             self::CARD_FSS,
             self::MPGS,
+            self::ISG,
         ],
 
         Method::NETBANKING => [
@@ -937,6 +939,7 @@ class Gateway
         self::WALLET_OPENWALLET     => [],
         self::HITACHI               => [],
         self::MPGS                  => [],
+        self::ISG                   => [],
     ];
 
     /**
@@ -1149,6 +1152,11 @@ class Gateway
             Network::AMEX,
         ],
         self::PAYSECURE => [
+            Network::RUPAY,
+        ],
+        self::ISG => [
+            Network::MC,
+            Network::VISA,
             Network::RUPAY,
         ]
     ];
@@ -2434,6 +2442,7 @@ class Gateway
     {
         $gateways = [
             self::PAYTM,
+            self::ISG,
         ];
 
         return (in_array($gateway, $gateways, true));
@@ -2454,6 +2463,7 @@ class Gateway
             self::PAYSECURE,
             self::PAYTM,
             self::AMEX,
+            self::ISG,
         ];
 
         return (in_array($gateway, $gateways, true));

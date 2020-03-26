@@ -1107,6 +1107,30 @@ return [
         ]
     ],
 
+    'testCreateIsgCardTerminal'  => [
+        'request' => [
+            'content' => [
+                'gateway'                   => 'isg',
+                'gateway_merchant_id'       => 'some_random_val',
+                'gateway_access_code'       => 'oxymoron',
+                'card'                      => 1,
+                'gateway_secure_secret'     => 'hogwards',
+                'gateway_terminal_id'       => 'CG000001',
+                'gateway_acquirer'          => 'kotak',
+                'type'                      => [
+                    'non_recurring' => '1',
+                ],
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content'  => [
+                'gateway_merchant_id'  => 'some_random_val',
+                'enabled'              => true,
+            ]
+        ]
+    ],
+
     'testCreateDirectSettlemtTerminalFailure' => [
         'request' => [
             'content' => [
