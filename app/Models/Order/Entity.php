@@ -154,19 +154,19 @@ class Entity extends Base\PublicEntity
     protected $generateIdOnCreate = true;
 
     protected $defaults = [
-        self::DISCOUNT        => false,
-        self::PARTIAL_PAYMENT => false,
-        self::RECEIPT         => null,
-        self::ATTEMPTS        => 0,
-        self::STATUS          => Status::CREATED,
-        self::PAYMENT_CAPTURE => 0,
-        self::AMOUNT_PAID     => 0,
-        self::AUTHORIZED      => 0,
-        self::NOTES           => [],
-        self::METHOD          => null,
-        self::ACCOUNT_NUMBER  => null,
-        self::BANK            => null,
-        self::FORCE_OFFER     => null,
+        self::DISCOUNT                 => false,
+        self::PARTIAL_PAYMENT          => false,
+        self::RECEIPT                  => null,
+        self::ATTEMPTS                 => 0,
+        self::STATUS                   => Status::CREATED,
+        self::PAYMENT_CAPTURE          => 0,
+        self::AMOUNT_PAID              => 0,
+        self::AUTHORIZED               => 0,
+        self::NOTES                    => [],
+        self::METHOD                   => null,
+        self::ACCOUNT_NUMBER           => null,
+        self::BANK                     => null,
+        self::FORCE_OFFER              => null,
         self::CHECKOUT_CONFIG_ID       => null,
     ];
 
@@ -649,7 +649,7 @@ class Entity extends Base\PublicEntity
 
     public function setPublicCheckoutConfigIdAttribute(array & $array)
         {
-            if (isset($array[self::CHECKOUT_CONFIG_ID]))
+            if (isset($array[self::CHECKOUT_CONFIG_ID]) === true)
             {
                 $array[self::CHECKOUT_CONFIG_ID] = Config\Entity::getSignedId($array[self::CHECKOUT_CONFIG_ID]);
             }

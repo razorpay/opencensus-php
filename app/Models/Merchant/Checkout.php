@@ -111,7 +111,7 @@ class Checkout
         {
             $configId = (empty($input['checkout_config_id']) === false) ? $input['checkout_config_id'] : null;
 
-            $this->checkAndFillConfigDetails($configId, $merchant->getId(), $data);
+            (new Config\Core())->getFormattedConfigForCheckout($configId, $merchant->getId(), $data);
 
             return;
         }
@@ -124,7 +124,7 @@ class Checkout
 
         $configId = (isset($order->checkout_config_id) === true) ? Payment\Config\Entity::getSignedId($order->checkout_config_id) : null;
 
-        $this->checkAndFillConfigDetails($configId, $merchant->getId(), $data);
+        (new Config\Core())->getFormattedConfigForCheckout($configId, $merchant->getId(), $data);
 
         $this->resetMethodsIfValidBanksPresent($data, $order, $merchant);
     }
@@ -920,10 +920,5 @@ class Checkout
         $contact =  (new Contact\Core)->fetch($input['contact_id'], $merchant)->toArrayPublic();
 
         $data['contact'] = $contact;
-    }
-
-    private function checkAndFillConfigDetails($configId, $merchantId, & $data)
-    {
-        (new Config\Core())->getFormattedConfigForCheckout($configId, $merchantId, $data);
     }
 }
