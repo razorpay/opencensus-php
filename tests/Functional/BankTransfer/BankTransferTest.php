@@ -336,22 +336,6 @@ class BankTransferTest extends TestCase
             Attempt\Type::REFUND);
     }
 
-    public function testBankTransferRefundFailedDueToBankTransferRefundDisabled()
-    {
-        $channel = Channel::AXIS;
-
-        $this->createRefundFailedDueToBankTransferRefundDisabled($channel);
-
-        $content = $this->initiateTransferViaFileAndAssertSuccess(
-            $channel,
-            Attempt\Purpose::REFUND,
-            0,
-            Attempt\Type::REFUND);
-
-        $attempt = $this->getLastEntity('fund_transfer_attempt', true);
-        $this->assertNull($attempt);
-    }
-
     public function testBankTransferRefundIcici()
     {
         $channel = Channel::ICICI;
@@ -517,9 +501,6 @@ class BankTransferTest extends TestCase
 
         $payment =  $this->getLastEntity('payment', true);
 
-        // Bank Transfer refunds are behind a razorx experiment
-        $this->mockRazorXTreatmentForEnableBankTransferRefunds();
-
         // IMPS refunds are permitted
         $this->refundPayment($payment['id'], 4000000);
         $refund =  $this->getLastEntity('refund', true);
@@ -646,9 +627,6 @@ class BankTransferTest extends TestCase
 
         $payment =  $this->getLastEntity('payment', true);
 
-        // Bank Transfer refunds are behind a razorx experiment
-        $this->mockRazorXTreatmentForEnableBankTransferRefunds();
-
         // IMPS refunds are permitted now
         $this->refundPayment($payment['id'], 4000000);
         $refund =  $this->getLastEntity('refund', true);
@@ -707,9 +685,6 @@ class BankTransferTest extends TestCase
         $this->assertEquals('9876543210123456789', $bankAccount['account_number']);
 
         $payment =  $this->getLastEntity('payment', true);
-
-        // Bank Transfer refunds are behind a razorx experiment
-        $this->mockRazorXTreatmentForEnableBankTransferRefunds();
 
         // IMPS refunds are permitted...
         $this->refundPayment($payment['id'], 4000000);
@@ -772,9 +747,6 @@ class BankTransferTest extends TestCase
         $payment =  $this->getLastEntity('payment', true);
 
         $data = $this->testData['bankTransferImpsFailedRefund'];
-
-        // Bank Transfer refunds are behind a razorx experiment
-        $this->mockRazorXTreatmentForEnableBankTransferRefunds();
 
         // IMPS refunds are permitted...
         $this->refundPayment($payment['id'], 4000000);
@@ -857,9 +829,6 @@ class BankTransferTest extends TestCase
         $this->assertEquals('Name of account holder', $bankAccount['name']);
 
         $payment =  $this->getLastEntity('payment', true);
-
-        // Bank Transfer refunds are behind a razorx experiment
-        $this->mockRazorXTreatmentForEnableBankTransferRefunds();
 
         $this->refundPayment($payment['id'], 4000000);
 
@@ -966,9 +935,6 @@ class BankTransferTest extends TestCase
         $this->assertEquals('Name of account holder', $bankAccount['name']);
 
         $payment =  $this->getLastEntity('payment', true);
-
-        // Bank Transfer refunds are behind a razorx experiment
-        $this->mockRazorXTreatmentForEnableBankTransferRefunds();
 
         $this->refundPayment($payment['id'], 4000000);
 
@@ -1104,9 +1070,6 @@ class BankTransferTest extends TestCase
 
         $data = $this->testData['bankTransferImpsFailedRefund'];
 
-        // Bank Transfer refunds are behind a razorx experiment
-        $this->mockRazorXTreatmentForEnableBankTransferRefunds();
-
         // IMPS refunds are not permitted when we don't even have an account number
         $this->runRequestResponseFlow($data, function() use ($payment) {
             $this->refundPayment($payment['id'], 4000000);
@@ -1170,9 +1133,6 @@ class BankTransferTest extends TestCase
         $payment =  $this->getLastEntity('payment', true);
 
         $data = $this->testData['bankTransferImpsFailedRefund'];
-
-        // Bank Transfer refunds are behind a razorx experiment
-        $this->mockRazorXTreatmentForEnableBankTransferRefunds();
 
         // Refunds are not permitted when we haven't created a payer bank account
         $this->runRequestResponseFlow($data, function() use ($payment) {
@@ -1478,9 +1438,6 @@ class BankTransferTest extends TestCase
 
     public function testBankTransferProcessCryptoBlock()
     {
-        // Bank Transfer refunds are behind a razorx experiment
-        $this->mockRazorXTreatmentForEnableBankTransferRefunds();
-
         $accountNumber = $this->bankAccount['account_number'];
         $ifsc = $this->bankAccount['ifsc'];
 
@@ -1559,9 +1516,6 @@ class BankTransferTest extends TestCase
 
     public function testBankTransferProcessInvalidAccount()
     {
-        // Bank Transfer refunds are behind a razorx experiment
-        $this->mockRazorXTreatmentForEnableBankTransferRefunds();
-
         $accountNumber = 'RZRPYAINVALIDACCOUNT';
         $ifsc = $this->bankAccount['ifsc'];
 
@@ -1766,10 +1720,6 @@ class BankTransferTest extends TestCase
 
         $this->processBankTransfer($accountNumber, $ifsc);
         $payment =  $this->getLastEntity('payment', true);
-
-        // Bank Transfer refunds are behind a razorx experiment
-        $this->mockRazorXTreatmentForEnableBankTransferRefunds();
-
         $this->refundPayment($payment['id'], 4000000);
 
         $content = $this->initiateTransferViaFileAndAssertSuccess(
@@ -1830,9 +1780,6 @@ class BankTransferTest extends TestCase
         $this->assertEquals('Name of account holder', $bankAccount['name']);
 
         $payment =  $this->getLastEntity('payment', true);
-
-        // Bank Transfer refunds are behind a razorx experiment
-        $this->mockRazorXTreatmentForEnableBankTransferRefunds();
 
         $this->refundPayment($payment['id'], 4000000);
 
@@ -2380,9 +2327,6 @@ class BankTransferTest extends TestCase
 
         $payment =  $this->getLastEntity('payment', true);
 
-        // Bank Transfer refunds are behind a razorx experiment
-        $this->mockRazorXTreatmentForEnableBankTransferRefunds();
-
         $this->refundPayment($payment['id'], 4000000);
 
         // Payment is refunded
@@ -2431,9 +2375,6 @@ class BankTransferTest extends TestCase
 
         $payment =  $this->getLastEntity('payment', true);
 
-        // Bank Transfer refunds are behind a razorx experiment
-        $this->mockRazorXTreatmentForEnableBankTransferRefunds();
-
         $paymentEntity = $this->getDbEntityById('payment', $payment['id']);
 
         // Disable foreign key checks to allow testing buggy case
@@ -2473,49 +2414,6 @@ class BankTransferTest extends TestCase
         $this->assertEquals('10000000000000', $attempt['merchant_id']);
         $this->assertEquals($refund['bank_account_id'], $attempt['bank_account_id']);
         $this->assertStringEndsWith($utr, $attempt['narration']);
-    }
-
-    protected function createRefundFailedDueToBankTransferRefundDisabled($channel = null)
-    {
-        $accountNumber = $this->bankAccount['account_number'];
-        $ifsc = $this->bankAccount['ifsc'];
-
-        $this->fixtures->merchant->edit('10000000000000', ['channel' => $channel]);
-
-        $response = $this->processBankTransfer($accountNumber, $ifsc);
-
-        $utr = $response['transaction_id'];
-
-        // Customer bank account created
-        $bankAccount = $this->getDbLastEntity('bank_account');
-        $bankAccount = $bankAccount->toArray();
-        $this->assertEquals('HDFC0000001', $bankAccount['ifsc']);
-        $this->assertEquals('9876543210123456789', $bankAccount['account_number']);
-        $this->assertEquals('Name of account holder', $bankAccount['name']);
-
-        $payment =  $this->getLastEntity('payment', true);
-
-        $this->refundPayment($payment['id'], 4000000);
-
-        // Payment is refunded
-        $payment =  $this->getLastEntity('payment', true);
-        $this->assertEquals('bank_transfer', $payment['method']);
-        $this->assertEquals('captured', $payment['status']);
-        $this->assertEquals(4000000, $payment['amount_refunded']);
-
-        // Refund is created
-        $refund = $this->getLastEntity('refund', true);
-        $this->assertEquals($payment['id'], $refund['payment_id']);
-        $this->assertEquals('failed', $refund['status']);
-        $this->assertEquals(4000000, $refund['amount']);
-
-        // Transaction is created for refund
-        $transaction = $this->getLastEntity('transaction', true);
-        $this->assertEquals('refund', $transaction['type']);
-        $this->assertEquals($refund['id'], $transaction['entity_id']);
-
-        $attempt = $this->getLastEntity('fund_transfer_attempt', true);
-        $this->assertNull($attempt);
     }
 
     protected function createTpvRefund()
@@ -2563,9 +2461,6 @@ class BankTransferTest extends TestCase
         $this->assertArraySelectiveEquals($data['request']['content'], $order);
 
         $this->fixtures->merchant->addFeatures(['bank_transfer_refund']);
-
-        // Bank Transfer refunds are behind a razorx experiment
-        $this->mockRazorXTreatmentForEnableBankTransferRefunds();
 
         $response = $this->refundPayment($payment['id'], $payment['amount'], ['is_fta' => true]);
 
