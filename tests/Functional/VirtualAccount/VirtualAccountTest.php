@@ -1315,9 +1315,6 @@ class VirtualAccountTest extends TestCase
 
     public function testVirtualAccountForOrderPayAndRefund()
     {
-        // Bank Transfer refunds are behind a razorx experiment
-        $this->mockRazorXTreatmentForEnableBankTransferRefunds();
-
         $order = $this->fixtures->create('order');
 
         $virtualAccount = $this->createVirtualAccountForOrder($order);
