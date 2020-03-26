@@ -84,7 +84,6 @@ class Sbi extends Base
                 null,
                 [
                     'payment_id' => $payment->getId(),
-                    'account_number' => $fileAccountNumber,
                     'token_id' => $token->getId(),
                     'gateway' => 'netbanking_sbi'
                 ]);
