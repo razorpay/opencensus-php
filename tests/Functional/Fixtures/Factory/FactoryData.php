@@ -1393,5 +1393,11 @@ final class FactoryData
             'config'             => '{"method" : "card"}',
             'is_default'         => true,
         ]);
+
+        $factory(\RZP\Models\BankingAccountStatement\Entity::class, [
+            'id'                 => $faker->uniqueid,
+            'merchant_id'       => '10000000000000',
+        ]);
+
     }
 }
