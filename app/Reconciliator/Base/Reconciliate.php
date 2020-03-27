@@ -13,6 +13,7 @@ use RZP\Reconciliator\Service;
 use RZP\Reconciliator\Messenger;
 use RZP\Reconciliator\Orchestrator;
 use RZP\Reconciliator\FileProcessor;
+use RZP\Reconciliator\RequestProcessor;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 use RZP\Reconciliator\Base\Foundation\SubReconciliate;
 
@@ -49,6 +50,10 @@ class Reconciliate extends Base\Core
      * we keep the files under gateway/ folder itself.
      */
     const DEFAULT_S3_PATH_RECON_TYPE = [self::COMBINED];
+
+    // Output file path related constants
+    const RECONCILIATION_OUTPUT = 'reconciliation_output';
+    const TRANSACTION           = 'transaction';
 
     //
     // Used to define start_row for the MIS files.
@@ -93,8 +98,9 @@ class Reconciliate extends Base\Core
     const GATEWAY_ERROR_DESC     = 'gateway_error_desc';
     const GATEWAY_STATUS_CODE    = 'gateway_status_code';
 
-    const OUTPUT_FILE_SUFFIX     = '_recon_batch_output';
-    const DIRECTORY_PATH         = 'files/settlement';
+    const OUTPUT_FILE_SUFFIX        = '_analytics_recon_batch_output';
+    const TRANSACTIONS_FILE_SUFFIX  = '_transactions_file';
+    const DIRECTORY_PATH            = 'files/settlement';
 
     /*************************
      * Card types
@@ -187,6 +193,8 @@ class Reconciliate extends Base\Core
     public function startReconciliationV2(array $allFilesContents, Batch\Processor\Reconciliation $batchProcessor, string $source)
     {
         $batch = $batchProcessor->batch;
+
+        $this->messenger->batch = $batch;
 
         foreach ($allFilesContents as $fileContents)
         {
@@ -299,9 +307,12 @@ class Reconciliate extends Base\Core
             return;
         }
 
-        $outputFileDetails =  $this->getOutputFileNameAndFilePath($extraDetails, $batchId, $attempt, $data);
+        $fileDetails =  $this->getOutputFileNameAndFilePath($extraDetails, $batchId, $attempt, $data);
 
-        $this->createAnalyticsFile($batch, $outputFileDetails, count($data));
+        foreach ($fileDetails as $fileDetail)
+        {
+            $this->uploadReconOutputFiles($batch, $fileDetail);
+        }
     }
 
     /**
@@ -343,10 +354,10 @@ class Reconciliate extends Base\Core
      * @param array $extraDetails
      * @param $batchId
      * @param $attempt int
-     * @param $data array
+     * @param $outputData array
      * @return array
      */
-    protected function getOutputFileNameAndFilePath(array $extraDetails, $batchId, $attempt, $data)
+    protected function getOutputFileNameAndFilePath(array $extraDetails, $batchId, $attempt, $outputData)
     {
         $sheetName = null;
 
@@ -362,11 +373,15 @@ class Reconciliate extends Base\Core
             $sheetName = '_' . strtolower(str_replace(' ', '_', $sheetName));
         }
 
-        $analyticsOutputFileName = $batchId . $sheetName . '_analytics' . self::OUTPUT_FILE_SUFFIX;
+        $analyticsOutputFileName = $batchId . $sheetName . self::OUTPUT_FILE_SUFFIX;
 
-        $dirPath = 'reconciliation_output/' . $this->gateway;
+        $transactionsFileName = $batchId . $sheetName . self::TRANSACTIONS_FILE_SUFFIX;
+
+        $dirPath = self::RECONCILIATION_OUTPUT . DIRECTORY_SEPARATOR . $this->gateway;
 
         $reconciliationType = $this->getReconciliationType($extraDetails);
+
+        $dirPathForTransaction = self::RECONCILIATION_OUTPUT . DIRECTORY_SEPARATOR . self::TRANSACTION;
 
         if ((in_array($reconciliationType, self::DEFAULT_S3_PATH_RECON_TYPE, true) === false))
         {
@@ -374,7 +389,9 @@ class Reconciliate extends Base\Core
             $dirPath .= '_' . $reconciliationType;
         }
 
-        $fileName = $dirPath . '/' . $analyticsOutputFileName;
+        $outputFileName = $dirPath . DIRECTORY_SEPARATOR . $analyticsOutputFileName;
+
+        $txnFileName = $dirPathForTransaction . DIRECTORY_SEPARATOR . $transactionsFileName;
 
         if ($attempt > 1)
         {
@@ -382,34 +399,134 @@ class Reconciliate extends Base\Core
             // After each retry, the output file is generated again. Need to append
             // attempt count, so as to avoid file overwrite in s3 bucket.
             //
-            $fileName .= '_' . $attempt;
+            $outputFileName .= '_' . $attempt;
         }
 
-        $analyticsOutputFilePath = $this->createCsvFile($data, $analyticsOutputFileName, null, self::DIRECTORY_PATH);
+        $txnFileDetails = $this->createTransactionsOutputFile($outputData, $transactionsFileName);
+
+        $analyticsFileDetails = $this->createAnalyticsOutputFile($outputData, $analyticsOutputFileName);
 
         return [
-            'file_name' => $fileName,
-            'file_path' => $analyticsOutputFilePath,
+            [
+                'file_name' => $outputFileName,
+                'file_path' => $analyticsFileDetails['filepath'] ?? null,
+                'count'     => $analyticsFileDetails['count'] ?? null,
+                'suffix'    => self::OUTPUT_FILE_SUFFIX
+            ],
+            [
+                'file_name' => $txnFileName,
+                'file_path' => $txnFileDetails['filepath'] ?? null,
+                'count'     => $txnFileDetails['count'] ?? null,
+                'suffix'    => self::TRANSACTIONS_FILE_SUFFIX
+            ]
         ];
+    }
+
+    /**
+     * Takes out specific data from output row and creates the file locally
+     * @param array $outputData
+     * @param string $transactionsFileName
+     * @return array
+     */
+    protected function createTransactionsOutputFile(array &$outputData, string $transactionsFileName)
+    {
+        try
+        {
+            $txnData = $this->getTransactionData($outputData);
+
+            $filepath = $this->createCsvFile($txnData, $transactionsFileName, null, self::DIRECTORY_PATH);
+
+            return [
+                'filepath' => $filepath,
+                'count'    => count($txnData),
+            ];
+        }
+        catch (\Exception $ex)
+        {
+            $this->messenger->raiseReconAlert(
+                [
+                    'info_code' => InfoCode::RECON_FAILED_TO_CREATE_TXN_FILE,
+                    'message'   => $ex->getMessage(),
+                    'file_name' => $transactionsFileName,
+                    'gateway'   => $this->gateway,
+                ]
+            );
+
+            return [];
+        }
+    }
+
+    /**
+     * Creates analytics file locally and returns filepath and count
+     *
+     * @param array $outputData
+     * @param string $analyticsOutputFileName
+     * @return array
+     */
+    protected function createAnalyticsOutputFile(array $outputData, string $analyticsOutputFileName)
+    {
+        try
+        {
+            $filepath = $this->createCsvFile($outputData, $analyticsOutputFileName, null, self::DIRECTORY_PATH);
+
+            return [
+                'filepath' => $filepath,
+                'count'    => count($outputData),
+            ];
+        }
+        catch (\Exception $ex)
+        {
+            $this->messenger->raiseReconAlert(
+                [
+                    'info_code' => InfoCode::RECON_FAILED_TO_CREATE_ANALYTICS_FILE,
+                    'message'   => $ex->getMessage(),
+                    'file_name' => $analyticsOutputFileName,
+                    'gateway'   => $this->gateway,
+                ]
+            );
+
+            return [];
+        }
     }
 
     /**
      * Creates filestore entity for output file and uploads to S3
      *
      * @param Batch\Entity $batch
-     * @param array $outputFileDetails
-     * @param int $count
+     * @param array $fileDetails
+     * @throws \RZP\Exception\LogicException
      */
-    protected function createAnalyticsFile(Batch\Entity $batch, array $outputFileDetails, int $count)
+    protected function uploadReconOutputFiles(Batch\Entity $batch, array $fileDetails)
     {
-        $fileName = $outputFileDetails['file_name'];
+        $fileName = $fileDetails['file_name'];
 
-        $filePath = $outputFileDetails['file_path'];
+        $filePath = $fileDetails['file_path'];
+
+        if ($filePath === null)
+        {
+            return;
+        }
+
+        $count = $fileDetails['count'];
+
+        // Based on the file type, use the trace code and filestore type
+        if ($fileDetails['suffix'] === self::OUTPUT_FILE_SUFFIX)
+        {
+            $infoCode  =  InfoCode::RECON_ATTEMPT_TO_CREATE_OUTPUT_FILE;
+            $type      = FileStore\Type::RECONCILIATION_BATCH_ANALYTICS_OUTPUT;
+            $traceCode = TraceCode::RECON_BATCH_ANALYTICS_OUTPUT_FILE;
+        }
+        else
+        {
+            $infoCode  =  InfoCode::RECON_ATTEMPT_TO_CREATE_TXN_FILE;
+            $type      = FileStore\Type::RECONCILIATION_BATCH_TXN_FILE;
+            $traceCode = TraceCode::RECON_BATCH_TXN_FILE;
+        }
 
         $this->trace->info(
             TraceCode::RECON_INFO,
             [
-                'info_code' => InfoCode::RECON_ATTEMPT_TO_CREATE_OUTPUT_FILE,
+                'info_code' => $infoCode,
                 'batch_id'  => $batch->getId(),
                 'row_count' => $count,
                 'file_name' => $fileName,
@@ -424,7 +541,7 @@ class Reconciliate extends Base\Core
                 ->mime(FileStore\Format::VALID_EXTENSION_MIME_MAP[$extension][0])
                 ->name($fileName)
                 ->extension($extension)
-                ->type(FileStore\Type::RECONCILIATION_BATCH_ANALYTICS_OUTPUT)
+                ->type($type)
                 ->entity($batch)
                 ->additionalParameters(['ACL' => 'bucket-owner-full-control'])
                 ->save();
@@ -438,7 +555,7 @@ class Reconciliate extends Base\Core
             'gateway'   => $this->gateway,
         ];
 
-        $this->trace->info(TraceCode::RECON_BATCH_ANALYTICS_OUTPUT_FILE, $traceData);
+        $this->trace->info($traceCode, $traceData);
 
         // Delete local file, as it has been upload to filestore (s3) now.
         (new FileProcessor)->deleteFileLocally($filePath);
@@ -723,25 +840,7 @@ class Reconciliate extends Base\Core
     // Sends recon batch processing summary
     public function traceBatchProcessingSummary(Batch\Entity $batch)
     {
-        $outputFiles = $batch->filesByType(FileStore\Type::RECONCILIATION_BATCH_ANALYTICS_OUTPUT);
-
-        //
-        // In case of excel file having 2 or more sheets, those many batch output files
-        // get generated. So need to put all the output file_ids in the trace
-        //
-        $outputFileIds = [];
-
-        if (count($outputFiles) === 1)
-        {
-            $outputFileIds = $outputFiles->first()->id;
-        }
-        else if (count($outputFiles) > 1)
-        {
-            foreach ($outputFiles as $file)
-            {
-                $outputFileIds[] = $file->id;
-            }
-        }
+        $outputFileIds = $this->getReconOutputFileIds($batch);
 
         $fileName = basename($batch->latestFileByType(FileStore\Type::RECONCILIATION_BATCH_INPUT)->location);
 
@@ -750,7 +849,8 @@ class Reconciliate extends Base\Core
         $summary = [
             'info_code'         => InfoCode::RECON_PROCESSED_BATCH_SUMMARY,
             'file'              => $originalFileName,
-            'output_file_id'    => $outputFileIds,
+            'output_file_id'    => $outputFileIds['output_file_ids'],
+            'txn_file_id'       => $outputFileIds['txn_file_ids'],
             'total_count'       => $batch->getTotalCount(),
             'success_count'     => $batch->getSuccessCount(),
             'failure_count'     => $batch->getFailureCount(),
@@ -779,6 +879,136 @@ class Reconciliate extends Base\Core
             unset($summary['failure_reason']);
 
             $this->messenger->setSkipSlack($skipSlack)->raiseReconInfo($summary);
+        }
+    }
+
+    /**
+     * Get the corresponding output file IDs and
+     * transaction file IDs for this batch
+     *
+     * @param Batch\Entity $batch
+     * @return array
+     */
+    protected function getReconOutputFileIds(Batch\Entity $batch)
+    {
+        $outputFiles = $batch->filesByType(FileStore\Type::RECONCILIATION_BATCH_ANALYTICS_OUTPUT);
+        $txnFiles = $batch->filesByType(FileStore\Type::RECONCILIATION_BATCH_TXN_FILE);
+
+        //
+        // In case of excel file having 2 or more sheets, those many batch output files
+        // get generated. So need to put all the output file_ids in the trace
+        //
+        $outputFileIds = [];
+
+        if (count($outputFiles) === 1)
+        {
+            $outputFileIds = $outputFiles->first()->id;
+        }
+        else if (count($outputFiles) > 1)
+        {
+            foreach ($outputFiles as $file)
+            {
+                $outputFileIds[] = $file->id;
+            }
+        }
+
+        $txnFileIds = [];
+
+        if (count($txnFiles) === 1)
+        {
+            $txnFileIds = $txnFiles->first()->id;
+        }
+        else if (count($txnFiles) > 1)
+        {
+            foreach ($txnFiles as $file)
+            {
+                $txnFileIds[] = $file->id;
+            }
+        }
+
+        return [
+            'output_file_ids' => $outputFileIds,
+            'txn_file_ids'    => $txnFileIds
+        ];
+    }
+
+    /**
+     * Iterates over recon output data, and returns another array data, which
+     * contains transaction entity details corresponding to the recon entity i.e.
+     * payment or refund.
+     * Un-sets txn file related fields in output row
+     *
+     * This data will be used to create transaction data file to be pushed to s3 and
+     * further used to transaction unrecon ageing.
+     *
+     * @param array $outputData
+     * @return array
+     */
+    protected function getTransactionData(array &$outputData)
+    {
+        $transactionsData = [];
+
+        foreach ($outputData as &$row)
+        {
+            // Check recon status for "Already Reconciled" string
+            $alreadyReconciled = Constants::RECON_PUBLIC_DESCRIPTIONS[InfoCode::ALREADY_RECONCILED];
+
+            if ((empty($row[SubReconciliate::RZP_TXN_ID]) === true) or
+                ($row[SubReconciliate::RECON_STATUS] === $alreadyReconciled))
+            {
+                //
+                // txn_id not set for this row. Possible reason could be errors like
+                // 'Payment/Refund ID not found for this row', or the Payment/refund
+                // do not exist in our DB etc.
+                // We dont want to include such data in the output file
+                //
+                // We do not want to push already reconciled txn again, so excluded.
+                //
+                $this->unsetColumns($row);
+
+                continue;
+            }
+
+            $txn = [
+                SubReconciliate::RZP_TXN_ID             => $row[SubReconciliate::RZP_TXN_ID],
+                SubReconciliate::RECON_TYPE             => $row[SubReconciliate::RECON_TYPE],
+                SubReconciliate::RECON_ENTITY_ID        => $row[SubReconciliate::RECON_ENTITY_ID],
+                SubReconciliate::RZP_TXN_AMOUNT         => $row[SubReconciliate::RZP_TXN_AMOUNT],
+                SubReconciliate::RZP_TXN_CURRENCY       => $row[SubReconciliate::RZP_TXN_CURRENCY],
+                SubReconciliate::RZP_GATEWAY            => $row[SubReconciliate::RZP_GATEWAY],
+                SubReconciliate::RZP_GATEWAY_ACQUIRER   => $row[SubReconciliate::RZP_GATEWAY_ACQUIRER],
+                SubReconciliate::RZP_IS_RECONCILED      => $row[SubReconciliate::RZP_IS_RECONCILED],
+                SubReconciliate::RZP_RECONCILED_AT      => $row[SubReconciliate::RZP_RECONCILED_AT],
+                SubReconciliate::RZP_IS_RECONCILIABLE   => $row[SubReconciliate::RZP_IS_RECONCILIABLE],
+                SubReconciliate::RECON_ERROR_MSG        => $row[SubReconciliate::RECON_ERROR_MSG],
+                SubReconciliate::RZP_TXN_CREATED_AT     => $row[SubReconciliate::RZP_TXN_CREATED_AT],
+                SubReconciliate::BATCH_ID               => $row[SubReconciliate::BATCH_ID],
+                SubReconciliate::RZP_MERCHANT_ID        => $row[SubReconciliate::RZP_MERCHANT_ID],
+                SubReconciliate::RZP_TERMINAL_ID        => $row[SubReconciliate::RZP_TERMINAL_ID],
+                SubReconciliate::RZP_SETTLED_BY         => $row[SubReconciliate::RZP_SETTLED_BY],
+                SubReconciliate::RZP_METHOD             => $row[SubReconciliate::RZP_METHOD],
+                SubReconciliate::TAG_1                  => '',
+                SubReconciliate::TAG_2                  => '',
+                SubReconciliate::TAG_3                  => '',
+            ];
+
+            $transactionsData[] = $txn;
+
+            $this->unsetColumns($row);
+        }
+
+        return $transactionsData;
+    }
+
+    /**
+     * Unsets the transaction file related additional field
+     * @param array $outputRow
+     */
+    protected function unsetColumns(array &$outputRow)
+    {
+        foreach (SubReconciliate::TXN_FILE_ADDITIONAL_FIELDS as $field)
+        {
+            unset($outputRow[$field]);
         }
     }
 }

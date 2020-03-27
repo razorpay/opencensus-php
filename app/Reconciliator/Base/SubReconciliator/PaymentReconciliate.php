@@ -162,12 +162,9 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
 
         $paymentId = $rowDetails[BaseReconciliate::PAYMENT_ID];
 
-        if (static::SHOULD_ADD_ENTITY_ID_COLUMN === true)
-        {
-            $this->setReconEntityIdInOutput($paymentId);
-        }
+        $this->setMiscEntityDetailsInOutput($this->payment);
 
-        $this->setMerchantIdInOutput($this->payment->getMerchantId());
+        $this->setTerminalDetailsInOutput($this->payment->terminal);
 
         $this->calculateAndSetNetAmountInOutputFile($row, $rowDetails);
 
@@ -300,6 +297,8 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
             }
         }
 
+        $this->setTransactionDetailsInOutput($this->payment->transaction);
+
         //
         // Payment can be updated from setPaymentAcquirerData before validation or
         // from markGatewayCapturedAsTrue after validation, for both cases we are
@@ -307,7 +306,6 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         //
 
         $this->repo->saveOrFail($this->payment);
-
     }
 
     public function resetRowProcessingAttributes()

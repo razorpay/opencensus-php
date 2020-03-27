@@ -29,8 +29,6 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
     const COLUMN_PAYMENT_AMOUNT                 = 'transaction_amt';
     const COLUMN_INTERNATIONAL_PAYMENT_AMOUNT   = 'transaction_amt';
 
-    const SHOULD_ADD_ENTITY_ID_COLUMN = true;
-
     /**
      * The payment id in the file is under column 'SESSION ID ASPD'.
      * However, the id is sometimes capitalized, somethings not,

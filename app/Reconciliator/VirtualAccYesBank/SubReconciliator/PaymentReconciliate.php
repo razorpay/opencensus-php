@@ -24,8 +24,6 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 
     const RECON_STATUS_VALIDATED_OK = 'validated: ok';
 
-    const SHOULD_ADD_ENTITY_ID_COLUMN = true;
-
     const BLACKLISTED_COLUMNS = [
         self::COLUMN_PAYER_NAME,
     ];

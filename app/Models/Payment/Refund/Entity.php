@@ -541,6 +541,11 @@ class Entity extends Base\PublicEntity
         $this->getAttribute(self::GATEWAY_REFUNDED);
     }
 
+    public function getTerminalId()
+    {
+        return $this->payment->getTerminalId();
+    }
+
     protected function getAcquirerDataAttribute()
     {
         $acquirerData = [];

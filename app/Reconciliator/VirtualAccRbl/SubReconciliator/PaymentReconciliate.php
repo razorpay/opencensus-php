@@ -21,8 +21,6 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
     const COLUMN_PAYER_IFSC         = 'sender_ifsc';
     const COLUMN_TRANSACTION_TYPE   = 'transaction_type';
 
-    const SHOULD_ADD_ENTITY_ID_COLUMN = true;
-
     const BLACKLISTED_COLUMNS = [
         self::COLUMN_PAYER_NAME,
     ];

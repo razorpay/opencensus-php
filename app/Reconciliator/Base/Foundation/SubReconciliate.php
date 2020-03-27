@@ -7,6 +7,7 @@ use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Models\Batch;
 use RZP\Models\Payment;
+use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Entity;
 use RZP\Reconciliator\Core;
@@ -42,16 +43,45 @@ class SubReconciliate extends Base\Core
     const RECON_ENTITY_ID       = 'recon_entity_id';
     const RECON_NET_AMOUNT      = 'recon_net_amount';
 
-    /**
-     * For few gateways, we do not get the RZP  payment/refund ID
-     * in the MIS row. We want to add extra column recon_entity_id
-     * in the output file only for such gateways.
-     * This variable need to be overridden and set to 'true' in
-     * such gateways.
-     *
-     * @var bool
-     */
-    const SHOULD_ADD_ENTITY_ID_COLUMN = false;
+    // Txn file related fields
+    const RZP_TXN_ID            = 'rzp_txn_id';
+    const RZP_TXN_AMOUNT        = 'rzp_txn_amount';
+    const RZP_TXN_CURRENCY      = 'rzp_txn_currency';
+    const RZP_GATEWAY           = 'rzp_gateway';
+    const RZP_GATEWAY_ACQUIRER  = 'rzp_gateway_acquirer';
+    const RZP_IS_RECONCILED     = 'rzp_is_reconciled';
+    const RZP_RECONCILED_AT     = 'rzp_reconciled_at';
+    const RZP_IS_RECONCILIABLE  = 'rzp_is_reconciliable';
+    const RZP_TXN_CREATED_AT    = 'rzp_txn_created_at';
+    const RZP_TERMINAL_ID       = 'rzp_terminal_id';
+    const RZP_SETTLED_BY        = 'rzp_settled_by';
+    const RZP_METHOD            = 'rzp_method';
+    const TAG_1                 = 'tag_1';
+    const TAG_2                 = 'tag_2';
+    const TAG_3                 = 'tag_3';
+
+    const TXN_FILE_ADDITIONAL_FIELDS = [
+        self::RZP_TXN_ID,
+        self::RZP_TXN_AMOUNT,
+        self::RZP_TXN_CURRENCY,
+        self::RZP_GATEWAY,
+        self::RZP_GATEWAY_ACQUIRER,
+        self::RZP_IS_RECONCILED,
+        self::RZP_RECONCILED_AT,
+        self::RZP_IS_RECONCILIABLE,
+        self::RZP_TXN_CREATED_AT,
+        self::RZP_TERMINAL_ID,
+        self::RZP_SETTLED_BY,
+        self::RZP_METHOD,
+    ];
+
+    // For these methods, there can be multiple acquirers for the same gateway
+    const METHODS_WITH_MULTIPLE_ACQUIRERS = [
+        Payment\Method::CARD,
+        Payment\Method::EMI,
+        Payment\Method::PAYLATER,
+        Payment\Method::CARDLESS_EMI,
+    ];
 
     const THRESHOLD = [
         InfoCode::AMOUNT_MISMATCH   =>  10,
@@ -288,6 +318,20 @@ class SubReconciliate extends Base\Core
         $row[self::ATTEMPT_NUMBER]          = '';
         $row[self::RECON_ENTITY_ID]         = '';
         $row[self::RECON_NET_AMOUNT]        = '';
+
+        // Txn file related additional fields
+        $row[self::RZP_TXN_ID]              = '';
+        $row[self::RZP_TXN_AMOUNT]          = '';
+        $row[self::RZP_TXN_CURRENCY]        = '';
+        $row[self::RZP_GATEWAY]             = '';
+        $row[self::RZP_GATEWAY_ACQUIRER]    = '';
+        $row[self::RZP_IS_RECONCILED]       = '';
+        $row[self::RZP_RECONCILED_AT]       = '';
+        $row[self::RZP_IS_RECONCILIABLE]    = 1;
+        $row[self::RZP_TXN_CREATED_AT]      = '';
+        $row[self::RZP_TERMINAL_ID]         = '';
+        $row[self::RZP_SETTLED_BY]          = '';
+        $row[self::RZP_METHOD]              = '';
 
         static::$reconOutputData[] = $row;
 
@@ -621,20 +665,57 @@ class SubReconciliate extends Base\Core
         }
     }
 
-    /**
-     * sets Recon Entity ID (payment ID / Refund ID) for the
-     * current row in progress
-     *
-     * @param string $reconEntityId
-     */
-    protected function setReconEntityIdInOutput(string $reconEntityId)
+    protected function setTransactionDetailsInOutput($transaction)
     {
-        static::$reconOutputData[static::$currentRowNumber][self::RECON_ENTITY_ID] = $reconEntityId;
+        if ($transaction === null)
+        {
+            return;
+        }
+
+        $createdAt = Carbon::createFromTimestamp($transaction->getCreatedAt())->timezone(Timezone::IST)->toDateTimeString();
+
+        static::$reconOutputData[static::$currentRowNumber][self::RZP_TXN_ID]           = $transaction->getId();
+        static::$reconOutputData[static::$currentRowNumber][self::RZP_IS_RECONCILED]    = $this->getReconciledStatus();
+        static::$reconOutputData[static::$currentRowNumber][self::RZP_RECONCILED_AT]    = $this->getReconTimestamp();
+        static::$reconOutputData[static::$currentRowNumber][self::RZP_TXN_CREATED_AT]   = $createdAt;
     }
 
-    protected function setMerchantIdInOutput(string $merchantId)
+    // Sets terminal ID, settled by and Method for the entity (Payment/Refund)
+    protected function setMiscEntityDetailsInOutput(PublicEntity $entity)
     {
-        static::$reconOutputData[static::$currentRowNumber][self::RZP_MERCHANT_ID] = $merchantId;
+        static::$reconOutputData[static::$currentRowNumber][self::RECON_ENTITY_ID]      = $entity->getId();
+        static::$reconOutputData[static::$currentRowNumber][self::RZP_TXN_AMOUNT]       = ($entity->getAmount() / 100);
+        static::$reconOutputData[static::$currentRowNumber][self::RZP_TXN_CURRENCY]     = $entity->getCurrency();
+        static::$reconOutputData[static::$currentRowNumber][self::RZP_MERCHANT_ID]      = $entity->getMerchantId();
+        static::$reconOutputData[static::$currentRowNumber][self::RZP_GATEWAY]          = $entity->getGateway();
+        static::$reconOutputData[static::$currentRowNumber][self::RZP_SETTLED_BY]       = $entity->getSettledBy();
+        static::$reconOutputData[static::$currentRowNumber][self::RZP_METHOD]           = $entity->getMethod();
+    }
+
+    protected function setTerminalDetailsInOutput($terminal)
+    {
+        if ($terminal === null)
+        {
+            return;
+        }
+
+        // By this time, method and gateway is set in the output row, just use that
+        $method  = static::$reconOutputData[static::$currentRowNumber][self::RZP_METHOD];
+        $gateway = static::$reconOutputData[static::$currentRowNumber][self::RZP_GATEWAY];
+
+        // Check if we should use gateway or gateway acquirer
+        // e.g for card or emi methods, there can be many acquirers for the same gateway.
+        if (in_array($method, self::METHODS_WITH_MULTIPLE_ACQUIRERS, true) === true)
+        {
+            $gatewayAcquirer = $terminal->getGatewayAcquirer();
+        }
+        else
+        {
+            $gatewayAcquirer = $gateway;
+        }
+
+        static::$reconOutputData[static::$currentRowNumber][self::RZP_TERMINAL_ID]       = $terminal->getId();
+        static::$reconOutputData[static::$currentRowNumber][self::RZP_GATEWAY_ACQUIRER]  = $gatewayAcquirer;
     }
 
     protected function setBatchIdInOutput($batchId)
@@ -650,6 +731,45 @@ class SubReconciliate extends Base\Core
     protected function setReconNetAmountInOutput(float $reconNetAmount)
     {
         static::$reconOutputData[static::$currentRowNumber][self::RECON_NET_AMOUNT] = $reconNetAmount;
+    }
+
+    /**
+     * Returns 1 if the row has been reconciled, else return 0
+     *
+     * Since we can't use transactions->getReconciledAt() for refund entity,
+     * as refund's txn get marked reconciled after scrooge response.
+     * so we get reconciled status from the output array.
+     *
+     * @return int
+     */
+    protected function getReconciledStatus()
+    {
+        $reconStatus = static::$reconOutputData[static::$currentRowNumber][self::RECON_STATUS];
+
+        if (($reconStatus === InfoCode::RECONCILED) or
+            ($reconStatus === InfoCode::ALREADY_RECONCILED))
+        {
+            return 1;
+        }
+
+        return 0;
+    }
+
+    /**
+     * Returns processed_at time if the row has been reconciled.
+     *
+     * @return string
+     */
+    protected function getReconTimestamp()
+    {
+        if ($this->getReconciledStatus() === 0)
+        {
+            return null;
+        }
+        else
+        {
+            return static::$reconOutputData[static::$currentRowNumber][self::PROCESSED_AT];
+        }
     }
 
     /**

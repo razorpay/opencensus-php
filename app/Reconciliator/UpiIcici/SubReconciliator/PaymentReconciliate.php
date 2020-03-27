@@ -28,8 +28,6 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         self::PAYER_VPA,
     ];
 
-    const SHOULD_ADD_ENTITY_ID_COLUMN = true;
-
     protected function getPaymentId(array $row)
     {
         if (strpos($row[self::SUB_MERCHANT_NAME], 'BHARAT QR') !== false)
