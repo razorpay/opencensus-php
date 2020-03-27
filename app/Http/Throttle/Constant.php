@@ -17,6 +17,11 @@ final class Constant
     const ID_LEVEL                   = 'id_level';
 
     /**
+     * Throttle config prefix key
+     */
+    const THROTTLE_PREFIX            = 'throttle:';
+
+    /**
      * Redis key for global settings
      */
     const GLOBAL_SETTINGS_KEY        = 'throttle:t';
@@ -54,4 +59,16 @@ final class Constant
     const DEFAULT_MAX_BUCKET_SIZE     = 30;
     const DEFAULT_BLOCKED_IPS         = '';
     const DEFAULT_BLOCKED_USER_AGENTS = '';
+
+    const CONFIGURATION_TYPE          = 'type';
+    const CONFIGURATION_TYPE_MERCHANT = 'merchant';
+    const CONFIGURATION_TYPE_ROUTE    = 'route';
+
+    const THROTTLE_TYPE_ORG           = 'org';
+    const THROTTLE_TYPE_MERCHANT      = 'merchant';
+    const THROTTLE_TYPE_IP            = 'ip';
+    const THROTTLE_REQUEST_COUNT      = 'request_count';
+    const THROTTLE_REQUEST_WINDOW     = 'request_count_window';
+    const THROTTLE_TYPE               = 'throttle_type';
+
 }

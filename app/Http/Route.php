@@ -1509,6 +1509,12 @@ final class Route
         'fetch_throttle_settings'                 => ['get',      'throttle/settings',                                         'ThrottleController@list'                                   ],
         'edit_throttle_settings'                  => ['put',      'throttle/settings',                                         'ThrottleController@create'                                 ],
         'bootstrap_key_cache'                     => ['post',     'throttle/bootstrap_key_cache',                              'ThrottleController@bootstrapKeyCache'                      ],
+        'throttle_create_config'                  => ['post',     'throttle/config',                                           'ThrottleController@createConfig'                           ],
+        'throttle_get_config'                     => ['get',      'throttle/config',                                           'ThrottleController@fetchConfig'                            ],
+        'throttle_delete_config'                  => ['delete',   'throttle/config',                                           'ThrottleController@deleteConfig'                           ],
+
+
+
 
         //merchant document related routes
         'merchant_document_delete'                => ['delete',   'merchant/documents/{id}',                                   'DocumentController@delete'                                 ],
@@ -2935,6 +2941,10 @@ final class Route
         'fetch_throttle_settings',
         'edit_throttle_settings',
         'bootstrap_key_cache',
+        'throttle_create_config',
+        'throttle_delete_config',
+        'throttle_get_config',
+
 
         // Excel Store routes
         'excel_store_list_pages',
@@ -3556,6 +3566,9 @@ final class Route
         'fetch_throttle_settings'                  => Permission::EDIT_THROTTLE_SETTINGS,
         'edit_throttle_settings'                   => Permission::EDIT_THROTTLE_SETTINGS,
         'bootstrap_key_cache'                      => Permission::EDIT_THROTTLE_SETTINGS,
+        'throttle_create_config'                   => Permission::EDIT_THROTTLE_SETTINGS,
+        'throttle_delete_config'                   => Permission::EDIT_THROTTLE_SETTINGS,
+        'throttle_get_config'                      => Permission::EDIT_THROTTLE_SETTINGS,
 
         'excel_store_list_pages'                   => Permission::ACCESS_EXCEL_STORE,
         'excel_store_create_page'                  => Permission::ACCESS_EXCEL_STORE,

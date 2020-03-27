@@ -278,4 +278,145 @@ return [
             ],
         ],
     ],
+
+     'testThrottleConfigCreateMerchant1' => [
+        'request' => [
+            'method'  => 'post',
+            'url'     => '/throttle/config',
+            'content' => [
+                'type'   => 'merchant',
+                'merchant_id'           => '10000000000000',
+                'route'                 => 'order_create',
+                'request_count'         => 120,
+                'request_count_window'  => 60,
+
+            ],
+        ],
+    ],
+
+
+    'testThrottleConfigCreateMerchant2' => [
+        'request' => [
+            'method'  => 'post',
+            'url'     => '/throttle/config',
+            'content' => [
+                'type'   => 'merchant',
+                'merchant_id'           => '10000000000000',
+                'route'                 => 'payment_create',
+                'request_count'         => 100,
+                'request_count_window'  => 60,
+
+            ],
+        ],
+    ],
+
+
+    'testThrottleConfigCreateMerchant3' => [
+        'request' => [
+            'method'  => 'post',
+            'url'     => '/throttle/config',
+            'content' => [
+                'type'   => 'merchant',
+                'merchant_id'           => '10000000000000',
+                'route'                 => 'order_create',
+                'request_count'         => 180,
+                'request_count_window'  => 60,
+
+            ],
+        ],
+    ],
+
+    'testThrottleConfigCreateMerchantFetch' => [
+        'request' => [
+            'method'  => 'get',
+            'url'     => '/throttle/config?merchant_id=10000000000000',
+            'content' => [
+            ],
+        ],
+    ],
+
+
+    'testThrottleConfigCreateMerchantDelete1' => [
+        'request' => [
+            'method'  => 'delete',
+            'url'     => '/throttle/config?merchant_id=10000000000000&&route=order_create',
+            'content' => [
+            ],
+        ],
+    ],
+
+
+    'testThrottleConfigCreateRoute1' => [
+        'request' => [
+            'method'  => 'post',
+            'url'     => '/throttle/config',
+            'content' => [
+                'type'   => 'route',
+                'route'                 => 'order_create',
+                'request_count'         => 120,
+                'request_count_window'  => 60,
+                'throttle_type'       => 'merchant',
+            ],
+        ],
+    ],
+
+     'testThrottleConfigCreateRoute2' => [
+        'request' => [
+            'method'  => 'post',
+            'url'     => '/throttle/config',
+            'content' => [
+                'type'   => 'route',
+                'route'                 => 'order_create',
+                'request_count'         => 120,
+                'request_count_window'  => 60,
+                'throttle_type'       => 'org',
+            ],
+        ],
+    ],
+
+     'testThrottleConfigCreateRoute3' => [
+        'request' => [
+            'method'  => 'post',
+            'url'     => '/throttle/config',
+            'content' => [
+                'type'   => 'route',
+                'route'                 => 'order_create',
+                'request_count'         => 120,
+                'request_count_window'  => 60,
+                'throttle_type'       => 'ip',
+            ],
+        ],
+    ],
+
+    'testThrottleConfigCreateRoute4' => [
+        'request' => [
+            'method'  => 'post',
+            'url'     => '/throttle/config',
+            'content' => [
+                'type'   => 'route',
+                'route'                 => 'order_create',
+                'request_count'         => 180,
+                'request_count_window'  => 60,
+                'throttle_type'       => 'ip',
+            ],
+        ],
+    ],
+
+    'testThrottleConfigCreateRouteDelete1' => [
+        'request' => [
+            'method'  => 'delete',
+            'url'     => '/throttle/config?&route=order_create',
+            'content' => [
+            ],
+        ],
+    ],
+
+    'testThrottleConfigCreateRouteFetch' => [
+        'request' => [
+            'method'  => 'get',
+            'url'     => '/throttle/config?route=order_create',
+            'content' => [
+            ],
+        ],
+    ],
 ];
