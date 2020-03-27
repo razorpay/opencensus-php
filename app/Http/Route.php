@@ -990,7 +990,7 @@ final class Route
         'user_fetch'                               => ['get',      'users/{id}',                                     'UserController@getUser'                                            ],
         'user_access'                              => ['get',      'users/access',                                   'UserController@checkUserAccess'                                    ],
         'user_verify_second_factor_auth'           => ['post',     'users/2fa/verify',                               'UserController@verifyUserSecondFactorAuth'                         ],
-        'user_resend_otp_2fa'                      => ['post',     'users/2fa/otp_resend',                            'UserController@resendOtp'                                         ],
+        'user_resend_otp_2fa'                      => ['post',     'users/2fa/otp_resend',                           'UserController@resendOtp'                                          ],
 
         // mobile setup for 2fa
         'user_login_2fa_setup_mobile'              => ['patch',    'users/2fa_setup/contact_mobile',                 'UserController@setup2faContactMobile'                              ],

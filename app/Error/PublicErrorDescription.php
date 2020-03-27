@@ -536,6 +536,7 @@ class PublicErrorDescription
     const BAD_REQUEST_INCORRECT_OTP                                             = 'Verification failed because of incorrect OTP.';
     const BAD_REQUEST_SMS_FAILED                                                = 'SMS sending failed.';
 
+    const BAD_REQUEST_SMS_OTP_FAILED                                            = 'SMS delivery failed, please try after sometime';
     const BAD_REQUEST_LOGO_NOT_PRESENT                                          = 'The input does not contain a file named logo';
     const BAD_REQUEST_MERCHANT_LOGO_TOO_BIG                                     = 'Size of the logo is too big. Upload a smaller file size.';
     const BAD_REQUEST_MERCHANT_LOGO_NOT_SQUARE                                  = 'The height and width of the logo are not the same. Upload a square image.';

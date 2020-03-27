@@ -1084,6 +1084,7 @@ class ErrorCode
     const BAD_REQUEST_OTP_MAXIMUM_ATTEMPTS_REACHED                                  = 'BAD_REQUEST_OTP_MAXIMUM_ATTEMPTS_REACHED';
     const BAD_REQUEST_INCORRECT_OTP                                                 = 'BAD_REQUEST_INCORRECT_OTP';
     const BAD_REQUEST_SMS_FAILED                                                    = 'BAD_REQUEST_SMS_FAILED';
+    const BAD_REQUEST_SMS_OTP_FAILED                                                = 'BAD_REQUEST_SMS_OTP_FAILED';
     const BAD_REQUEST_INVALID_COUNTRY                                               = 'BAD_REQUEST_INVALID_COUNTRY';
 
     // Heimdall Error Codes
