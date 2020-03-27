@@ -59,6 +59,10 @@ class CreateDisputesTable extends Migration
             $table->char(Dispute::GATEWAY_CURRENCY, Payment::CURRENCY_LENGTH)
                   ->nullable();
 
+            $table->bigInteger(Dispute::CONVERSION_RATE)
+                  ->unsigned()
+                  ->nullable();
+
             $table->bigInteger(Dispute::AMOUNT_DEDUCTED)
                   ->unsigned()
                   ->default(0);

@@ -137,7 +137,6 @@ class NachCiti extends Base
                 null,
                 [
                     'payment_id' => $payment->getId(),
-                    'account_number' => $fileAccountNumber,
                     'token_id' => $token->getId(),
                     'gateway' => 'netbanking_sbi'
                 ]);
@@ -175,5 +174,10 @@ class NachCiti extends Base
             EnachEntity::STATUS        => $parsedData[self::GATEWAY_RESPONSE_CODE],
             EnachEntity::ERROR_MESSAGE => $parsedData[self::GATEWAY_ERROR_MESSAGE],
         ];
+    }
+
+    protected function removeCriticalDataFromTracePayload(array & $payloadEntry)
+    {
+        unset($payloadEntry[Headings::BENEFICIARY_BANK_ACCOUNT_NUMBER]);
     }
 }

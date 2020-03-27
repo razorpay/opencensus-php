@@ -50,6 +50,13 @@ class UpiSbiGatewayReconTest extends TestCase
 
         $this->makeUpiSbiPaymentsSince(3, $createdAt);
 
+        $payments = $this->getEntities('payment', [], true);
+
+        foreach ($payments['items'] as $payment)
+        {
+            $this->assertNull($payment['reference16']);
+        }
+
         $fileContents = $this->generateReconFile();
 
         $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
@@ -65,6 +72,12 @@ class UpiSbiGatewayReconTest extends TestCase
             $transaction = $this->getEntityById('transaction', $transactionId, true);
 
             $this->assertNotNull($transaction['reconciled_at']);
+
+            $upi = $this->getDbLastEntity('upi');
+
+            $this->assertNotNull($payment['reference16']);
+
+            $this->assertEquals($upi['npci_reference_id'], $payment['reference16']);
         }
 
         // We assert that the entity's values have changed since recon -

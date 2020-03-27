@@ -90,8 +90,11 @@ class Repository extends Base\Repository
         //
         $query = $this->newQuery()
                       ->where(Entity::ACTIVE, true)
-                      ->whereRaw(Entity::EVENTS . ' & ' . $bitComparator . ' = ' . $bitComparator)
-                      ->orWhereRaw(Entity::EVENTS2 . ' & ' . $bitComparator . ' = ' . $bitComparator);
+                      ->where(function ($q) use ($bitComparator)
+                        {
+                            $q->whereRaw(Entity::EVENTS . ' & ' . $bitComparator . ' = ' . $bitComparator)
+                              ->orWhereRaw(Entity::EVENTS2 . ' & ' . $bitComparator . ' = ' . $bitComparator);
+                        });
 
         return $query->get();
     }

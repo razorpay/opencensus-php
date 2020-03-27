@@ -292,4 +292,22 @@ trait TestsBusinessBanking
 
         return $this->fixtures->on($mode)->create('feature', $attributes);
     }
+
+    protected function createBankingAccount(array $attributes = [], string $mode = 'test')
+    {
+        $bankingAccount = $this->fixtures->on($mode)->create('banking_account', [
+            'id'                    => $attributes["id"] ?? 'ABCde1234ABCde',
+            'account_number'        => $attributes["account_number"] ?? '2224440041626905',
+            'account_ifsc'          => $attributes["account_ifsc"] ?? 'RATN0000088',
+            'account_type'          => $attributes["account_type"] ?? 'current',
+            'merchant_id'           => $attributes["merchant_id"] ?? '10000000000000',
+            'channel'               => $attributes["channel"] ?? 'rbl',
+            'pincode'               => $attributes["pincode"] ?? '1',
+            'bank_reference_number' => $attributes["bank_reference_number"] ?? '',
+            'balance_id'            => $attributes["balance_id"] ?? '',
+            'status'                => 'activated',
+        ]);
+
+        return $bankingAccount;
+    }
 }

@@ -360,7 +360,6 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::ENTITY,
         self::MPAN,
-        self::SYNC_STATUS,
     ];
 
     protected static function boot()
@@ -766,15 +765,6 @@ class Entity extends Base\PublicEntity
 
         return $array;
     }
-
-    protected function setPublicSyncStatusAttribute(array & $array)
-    {
-        if (isset($array[self::SYNC_STATUS]) === true)
-        {
-            unset($array[self::SYNC_STATUS]);
-        }
-    }
-
 
     //----------------------END PUBLIC SETTERS----------------
 
@@ -1275,9 +1265,14 @@ class Entity extends Base\PublicEntity
 
     public function isValidEmiTerminal($gateway, $emiDuration)
     {
+        $ignoreEmiDurationGateways = [
+            Gateway::BAJAJ,
+            Gateway::HDFC_DEBIT_EMI,
+        ];
+
         if (($this->isEmiEnabled()) and
             ($this->getGateway() === $gateway) and
-            (($this->getEmiDuration() === $emiDuration) or ($gateway === Gateway::BAJAJ)))
+            (($this->getEmiDuration() === $emiDuration) or (in_array($gateway, $ignoreEmiDurationGateways) === true)))
         {
             return true;
         }
@@ -1418,7 +1413,7 @@ class Entity extends Base\PublicEntity
         return ($this->isCardEnabled() === true);
     }
 
-     public function isSyncStatusSuccess()
+    public function isSyncStatusSuccess()
     {
         return $this->getSyncStatus() === SyncStatus::SYNC_SUCCESS;
     }

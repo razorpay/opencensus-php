@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\Merchant;
 use Mockery;
 use Carbon\Carbon;
 use RZP\Models\Terminal;
+use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Tests\Functional\TestCase;
 use Illuminate\Support\Facades\Redis;
@@ -311,6 +312,10 @@ class PartnerTerminalOnboardingTest extends TestCase
         $this->assertEquals($terminal1->getGatewayMerchantId(), 999000000000001);
 
         $this->assertEquals($terminal1->getGatewayTerminalId(), 12380001);
+
+        $subMerchant = (new Merchant\Repository)->find($subMerchantId);
+
+        $this->assertTrue($subMerchant->isFeatureEnabled('bharat_qr'));
 
         $this->testData[__FUNCTION__] = $this->testData['testTerminalOnboardingCreateTerminal2'];
 

@@ -320,6 +320,13 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const HITACHI_ONBOARD_REQUEST_CREATION_ERROR                = 'HITACHI_ONBOARD_REQUEST_CREATION_ERROR';
     const SKIPPING_HITACHI_AUTOMATIC_ONBOARDING                 = 'SKIPPING_HITACHI_AUTOMATIC_ONBOARDING';
 
+    const DUPLICATE_IDEM_KEY_NO_ENTITY_ASSOC                    = 'DUPLICATE_IDEM_KEY_NO_ENTITY_ASSOC';
+    const IDEM_KEY_UPDATE_DATA                                  = 'IDEM_KEY_UPDATE_DATA';
+    const DUPLICATE_IDEM_KEY_RECEIVED                           = 'DUPLICATE_IDEM_KEY_RECEIVED';
+    const DUPLICATE_IDEM_KEY_RESPONSE                           = 'DUPLICATE_IDEM_KEY_RESPONSE';
+    const IDEM_KEY_ENTITY_CREATED                               = 'IDEM_KEY_ENTITY_CREATED';
+    const IDEMPOTENCY_REQUEST_DATA                              = 'IDEMPOTENCY_REQUEST_DATA';
+
     const FTA_MODE_SET                                          = 'FTA_MODE_SET';
     const FTA_SLA_EXPIRED                                       = 'FTA_SLA_EXPIRED';
     const FTA_MODE_NOT_FOUND                                    = 'FTA_MODE_NOT_FOUND';
@@ -2618,6 +2625,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     // Trace Code for Workflow Rules
     const WORKFLOW_PAYOUT_RULES_ATTACHMENT                      = 'WORKFLOW_PAYOUT_RULES_ATTACHMENT';
+    const WORKFLOW_PAYOUT_EDIT                                  = 'WORKFLOW_PAYOUT_EDIT';
 
     const ALREADY_ACTIVATED                                     = 'ALREADY_ACTIVATED';
     const NOT_ACTIVATED                                         = 'NOT_ACTIVATED';
@@ -2698,6 +2706,13 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
 
 
+    const UPI_MANDATE_CREATE_REQUEST                            = 'UPI_MANDATE_CREATE_REQUEST';
+    const UPI_MANDATE_CREATED                                   = 'UPI_MANDATE_CREATED';
+
+    //payment config
+    const CONFIG_CREATE_REQUEST                                 = 'CONFIG_CREATE_REQUEST';
+    const CONFIG_UPDATE_REQUEST                                 = 'CONFIG_UPDATE_REQUEST';
+
     // DB wait timeout
     const WAIT_TIMEOUT_EXCEPTION                                = 'WAIT_TIMEOUT_EXCEPTION';
 
@@ -2707,6 +2722,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     // RBL VA integration
     const RBL_VA_CALLBACK                                       = 'RBL_VA_CALLBACK';
     const RBL_VA_INVALID_CALLBACK_DATA                          = 'RBL_VA_INVALID_CALLBACK_DATA';
+
+    const TYPEFORM_PARSED_DATA                                  = 'TYPEFORM_PARSED_DATA';
+    const TYPEFORM_WORKFLOW_TRIGGERED                           = 'TYPEFORM_WORKFLOW_TRIGGERED';
+    const TYPEFORM_RAW_DATA                                     = 'TYPEFORM_RAW_DATA';
 
     // VA Migrate - Yesbank -> RBL
     const VA_MIGRATE_REQUEST            = 'VA_MIGRATE_REQUEST';
@@ -2873,6 +2892,16 @@ class TraceCode extends \Razorpay\Trace\TraceCode
         self::MERCHANT_REFUND_CREDITS_DEBIT_FAILURE                 => 'Not enough refund credits',
         self::NEGATIVE_BALANCE_BREACHED                             => 'Negative Balance has crossed the negative limit threshold',
         ];
+
+    public static $fileBasedReconTraceCodes = [
+        self::RECON_FILE_LINK_NOT_FOUND,
+        self::RECON_FILE_DELETE_FAILURE,
+        self::RECON_BATCH_CREATION_FAILED,
+        self::RECON_PARSE_ERROR,
+        self::RECON_FILE_SKIP,
+        self::RECON_FAILURE,
+        self::BATCH_PROCESSING_ERROR,
+    ];
 
     /**
      * Translate event code to message

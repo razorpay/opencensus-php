@@ -427,7 +427,8 @@ class Response
 
         if ((in_array($route, $tempRoutes, true) === true) and
             ($merchant !== null) and
-            ($merchant->isFeatureEnabled(Feature\Constants::S2S)))
+            (($merchant->isFeatureEnabled(Feature\Constants::S2S)) or
+            ($merchant->isfeatureEnabled(Feature\Constants::ALLOW_S2S_APPS))))
         {
             $response->headers->set(Header::ACCESS_CONTROL_ALLOW_ORIGIN, '*');
         }

@@ -211,7 +211,9 @@ class Name
     const CREATE_SHIELD_RULES                 = 'create_shield_rules';
     const EDIT_SHIELD_RULES                   = 'edit_shield_rules';
     const DELETE_SHIELD_RULES                 = 'delete_shield_rules';
-    const EVALUATE_SHIELD_RULES               = 'evaluate_shield_rules';
+    const VIEW_SHIELD_LISTS                   = 'view_shield_lists';
+    const CREATE_SHIELD_LISTS                 = 'create_shield_lists';
+    const DELETE_SHIELD_LISTS                 = 'delete_shield_lists';
     const VIEW_MERCHANT_ANALYTICS             = 'view_merchant_analytics';
     const ASSIGN_MERCHANT_ACTIVATION_REVIEWER = 'assign_merchant_activation_reviewer';
     const DB_META_QUERY                       = 'db_meta_query';
@@ -261,6 +263,7 @@ class Name
 
     // RazorpayX/Business banking permissions
     const BANKING_UPDATE_ACCOUNT              = 'banking_update_account';
+    const ASSIGN_BANKING_ACCOUNT_REVIEWER     = 'assign_banking_account_reviewer';
 
     //Permissions for enabling maker/checker for payouts
     const CREATE_PAYOUT                       = 'create_payout';
@@ -341,6 +344,7 @@ class Name
     const UPDATE_MERCHANT_FEATURE             = 'update_merchant_feature';
     const UPDATE_TEST_MERCHANT_BALANCE        = 'update_test_merchant_balance';
     const VIEW_VIRTUAL_ACCOUNT                = 'view_virtual_account';
+    const EDIT_MERCHANT_INTERNATIONAL         = 'edit_merchant_international';
 
     public static $actionMap = [
         Merchant\Action::ARCHIVE                            => self::EDIT_MERCHANT_ARCHIVE,

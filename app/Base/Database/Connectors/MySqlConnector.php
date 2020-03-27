@@ -74,10 +74,6 @@ class MySqlConnector extends BaseMySqlConnector
 
     protected function execWaitTimeout($connection, $timeoutValue)
     {
-        $this->app['trace']->info(TraceCode::DB_EXECUTING_WAIT_TIMEOUT, [
-                'timeout_value' => $timeoutValue,
-             ]);
-
         $connection->exec("set session wait_timeout={$timeoutValue}");
     }
 

@@ -20,6 +20,7 @@ class Shared
     const LEGALDESK_RAZORPAY_TERMINAL        = '1000LegalDskTl';
     const ENACH_RBL_RAZORPAY_TERMINAL        = '1000EnachRblTl';
     const ENACH_NPCI_NETBANKING_TERMINAL     = '1EnachNbNpciTl';
+    const ENACH_NPCI_NETBANKING_YESB_TERMINAL= '1EnhNbNpcYesTl';
     const EBS_RAZORPAY_TERMINAL              = '100000EbsTrmnl';
     const HDFC_RAZORPAY_TERMINAL             = '1000HdfcShared';
     const MOBIKWIK_RAZORPAY_TERMINAL         = '1000MobiKwikTl';

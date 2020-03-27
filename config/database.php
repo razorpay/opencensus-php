@@ -321,7 +321,8 @@ return array(
             'read_write_timeout' => 1,
             'options'  => [
                 'parameters' => (empty(env('REDIS_LABS_PASSWORD')) === false) ? ['password' => env('REDIS_LABS_PASSWORD')] : [],
-            ]
+            ],
+            'persistent' => true,
         ],
 
         'default_with_high_timeout' => [
@@ -331,7 +332,8 @@ return array(
             'read_write_timeout' => 10,
             'options'  => [
                 'parameters' => (empty(env('REDIS_LABS_PASSWORD')) === false) ? ['password' => env('REDIS_LABS_PASSWORD')] : [],
-            ]
+            ],
+            'persistent' => true,
         ],
 
         'secure' => [
@@ -340,6 +342,7 @@ return array(
             'database' => env('SECURE_REDIS_DB'),
             'timeout'  => 5,
             'read_write_timeout' => 1,
+            'persistent' => true,
         ],
     ],
 

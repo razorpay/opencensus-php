@@ -76,7 +76,7 @@ app/Models/Settings/                                   malligairajan.g@razorpay.
 app/Models/Settlement/                                 @razorpay/TechSettlements
 app/Models/State/                                      praveen.patlola@razorpay.com
 app/Models/Tax/                                        praveen.patlola@razorpay.com
-app/Models/Terminal/                                   vivek.kumar@razorpay.com
+app/Models/Terminal/                                   vivek.kumar@razorpay.com                                @razorpay/TechOnlinePaymentsOnboarding
 app/Models/Transaction/                                prashanth.yv@razorpay.com                               sunny.aggrawal@razorpay.com
 app/Models/Transfer/                                   baljeet.kumar@razorpay.com
 app/Models/Upi/                                        nemo@razorpay.com                                       vivek.kumar@razorpay.com
@@ -85,13 +85,15 @@ app/Models/VirtualAccount/                             @razorpay/TechVirtualAcco
 app/Models/Vpa/                                        prashanth.yv@razorpay.com
 app/Models/Workflow/                                   pankaj.kumar@razorpay.com
 
+#
+# Database
+#
+database/migrations                                    @razorpay/DbOps_Team
 
 #
 # Tests
 #
-
 tests/                                                 vivek.kumar@razorpay.com
-
 tests/Functional/Admin/                                malligairajan.g@razorpay.com
 tests/Functional/BankTransfer/                         @razorpay/TechVirtualAccounts
 tests/Functional/BharatQrPayment/                      @razorpay/TechVirtualAccounts
@@ -121,7 +123,6 @@ tests/Functional/Transaction/                          sunny.aggrawal@razorpay.c
 tests/Functional/Transfer/                             baljeet.kumar@razorpay.com
 tests/Functional/User/                                 pankaj.kumar@razorpay.com
 tests/Functional/VirtualAccount/                       @razorpay/TechVirtualAccounts
-
 tests/Functional/Gateway/                              @razorpay/TechPgIntegrations
 
 

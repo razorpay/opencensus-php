@@ -22,6 +22,7 @@ use RZP\Models\Card\Issuer as CardIssuer;
 use RZP\Models\Transaction\ReconciledType;
 use RZP\Constants\Entity as EntityConstant;
 use RZP\Mail\Base\Constants as MailConstants;
+use RZP\Models\Payout\Entity as PayoutEntity;
 use RZP\Services\Beam\Constants as BeamConstants;
 use RZP\Models\Payment\Refund\Status as RefundStatus;
 use RZP\Models\BankAccount\Entity as BankAccountEntity;
@@ -581,7 +582,7 @@ class Core extends Base\Core
     {
         $this->trace->info(
             TraceCode::FTA_SOURCE_PROCESSING_DATA,
-            $ftaData);
+            $this->redactDataForLogs($ftaData));
 
         try
         {
@@ -660,7 +661,7 @@ class Core extends Base\Core
     {
         $this->trace->info(
             TraceCode::FTA_SOURCE_PROCESSING_DATA,
-            $ftaData);
+            $this->redactDataForLogs($ftaData));
 
         try
         {
@@ -829,12 +830,25 @@ class Core extends Base\Core
     {
         $source = $fta->source;
 
-        if (empty($source->getChannel()) === true)
+        $channel = $source->getChannel();
+
+        // Imps payout for channel ICICI go via FTS. Rest via API
+        if ($source->getPayoutType() === PayoutEntity::ON_DEMAND)
+        {
+            if (($channel === Settlement\Channel::ICICI) and ($source->getMode() === Mode::IMPS))
+            {
+                return [true, $channel];
+            }
+
+            return [false, $channel];
+        }
+
+        if (empty($channel) === true)
         {
             return [false, Settlement\Channel::YESBANK];
         }
 
-        if (($source->isBalanceTypeBanking() === true) or ($source->getChannel() === Settlement\Channel::YESBANK))
+        if ($source->isBalanceTypeBanking() === true)
         {
             return [true, $source->getChannel()];
         }
@@ -956,5 +970,21 @@ class Core extends Base\Core
     public function getAttemptsFromIds(array $ftaIds)
     {
         return $this->repo->fund_transfer_attempt->fetchFtsAttemptUsingId($ftaIds);
+    }
+
+    public function redactDataForLogs(array $input): array
+    {
+        if (array_key_exists("beneficiary_name", $input) === true)
+        {
+            $input["beneficiary_name"] = str_repeat('*', strlen($input["beneficiary_name"]));
+        }
+
+        if ((array_key_exists("extra_info", $input) === true) &&
+            (array_key_exists("beneficiary_name", $input["extra_info"]) === true))
+        {
+            $input["extra_info"]["beneficiary_name"] = str_repeat('*', strlen($input["extra_info"]["beneficiary_name"]));
+        }
+
+        return $input;
     }
 }

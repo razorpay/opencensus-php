@@ -408,7 +408,9 @@ return [
             Permission::DOWNLOAD_CREDIT_BUREAU_REPORTS => [
                 'description' => 'Allow downloads of credit bureau reports of merchants',
                 'assignable'  => true,
-            ]
+            ],
+            Permission::EDIT_MERCHANT_INTERNATIONAL  => '',
+
         ],
 
         PermissionCategory::SETTLEMENT => [
@@ -760,26 +762,12 @@ return [
         ],
 
         PermissionCategory::SHIELD => [
-            Permission::VIEW_SHIELD_RULES     => [
-                'description' => 'View shield rules',
-                'assignable'  => false
-            ],
-            Permission::CREATE_SHIELD_RULES   => [
-                'description' => 'Create shield rules',
-                'assignable'  => false
-            ],
-            Permission::EDIT_SHIELD_RULES     => [
-                'description' => 'Edit shield rules',
-                'assignable'  => false
-            ],
-            Permission::DELETE_SHIELD_RULES   => [
-                'description' => 'Delete shield rules',
-                'assignable'  => false
-            ],
-            Permission::EVALUATE_SHIELD_RULES => [
-                'description' => 'Evaluate shield rules',
-                'assignable'  => false,
-            ],
+            Permission::CREATE_SHIELD_RULES => 'Create shield rules',
+            Permission::EDIT_SHIELD_RULES   => 'Edit shield rules',
+            Permission::DELETE_SHIELD_RULES => 'Delete shield rules',
+            Permission::VIEW_SHIELD_LISTS   => 'View shield lists',
+            Permission::CREATE_SHIELD_LISTS => 'Create shield lists',
+            Permission::DELETE_SHIELD_LISTS => 'Delete shield lists',
         ],
 
         PermissionCategory::REPORTING => [
@@ -800,6 +788,12 @@ return [
                 'description' => 'Updating banking account details of the merchant',
                 'assignable'  => true,
             ],
+
+            Permission::ASSIGN_BANKING_ACCOUNT_REVIEWER => [
+                'description' => 'Adds reviewer to banking account',
+                'assignable'  => true,
+            ],
+
             Permission::CREATE_BANKING_VIRTUAL_ACCOUNTS => [
                 'description' => 'Create Banking VAs for a merchant',
                 'assignable'  => true,

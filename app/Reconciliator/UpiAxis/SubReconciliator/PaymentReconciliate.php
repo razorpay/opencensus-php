@@ -112,7 +112,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 
         $referenceNumber = $this->getReferenceNumber($row);
 
-        $upiEntity = $this->repo->upi->fetchByNpciReferenceId($referenceNumber);
+        $upiEntity = $this->repo->upi->fetchByNpciReferenceIdAndGateway($referenceNumber, $gateway = Gateway::UPI_AXIS);
 
         if (empty($upiEntity) === true)
         {

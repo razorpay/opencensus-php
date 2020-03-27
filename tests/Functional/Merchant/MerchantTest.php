@@ -1844,7 +1844,7 @@ class MerchantTest extends TestCase
 
         $banks = $content['methods']['netbanking'];
 
-        $this->assertCount(36, $banks);
+        $this->assertCount(37, $banks);
 
         $this->fixtures->merchant->disableTPV();
     }
@@ -2334,6 +2334,25 @@ class MerchantTest extends TestCase
         $this->assertEquals(1, count($response['methods']['cardless_emi']));
 
         $this->assertArrayHasKey('earlysalary', $response['methods']['cardless_emi']);
+    }
+
+    public function testGetCheckoutPreferencesForDebitEmi()
+    {
+        $this->fixtures->merchant->enableEmi();
+
+        $this->fixtures->emiPlan->create(
+            [
+                'merchant_id' => '10000000000000',
+                'bank'        => 'HDFC',
+                'type'        => 'debit',
+                'rate'        => 1200,
+                'min_amount'  => 300000,
+                'duration'    => 3,
+            ]);
+
+        $response = $this->getPreferences();
+
+        $this->assertArrayHasKey('HDFC_DC', $response['methods']['emi_options']);
     }
 
     public function testGetCheckoutPreferencesForPayLater()
@@ -6516,5 +6535,39 @@ class MerchantTest extends TestCase
         $merchant = $this->getDbEntityById('merchant', '10000000000000');
 
         $this->assertContains('abc.com', $merchant->getWhitelistedDomains());
+    }
+
+    public function testGetCheckoutPreferencesWithConfigIdInOrder()
+    {
+        $this->ba->publicAuth();
+
+        $config = $this->fixtures->create('config');
+
+        $order = $this->fixtures->create('order', ['checkout_config_id' => $config->getId()]);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['order_id'] = $order->getPublicId();
+
+        $response = $this->runRequestResponseFlow($testData);
+
+        $this->assertArrayHasKey('checkout_config', $response);
+    }
+
+    public function testGetCheckoutPreferencesWithDefaultConfig()
+    {
+        $this->ba->publicAuth();
+
+        $config = $this->fixtures->create('config');
+
+        $order = $this->fixtures->create('order');
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['order_id'] = $order->getPublicId();
+
+        $response = $this->runRequestResponseFlow($testData);
+
+        $this->assertArrayHasKey('checkout_config', $response);
     }
 }

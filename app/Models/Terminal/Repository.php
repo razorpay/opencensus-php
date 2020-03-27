@@ -274,10 +274,11 @@ class Repository extends Base\Repository
         return $query->get();
     }
 
-    public function getAllBankTransferTerminals(): PublicCollection
+    public function getAllBankTransferTerminals($gateway): PublicCollection
     {
         $query = $this->newQuery()
                       ->where(Entity::BANK_TRANSFER, true)
+                      ->where(Entity::GATEWAY, $gateway)
                       ->withTrashed();
 
         return $query->get();
@@ -475,7 +476,7 @@ class Repository extends Base\Repository
 
                 $entity->setSyncStatus(SyncStatus::SYNC_SUCCESS);
 
-                $this->repo->terminal->saveOrFail($entity, [], SyncStatus::SYNC_SUCCESS);
+                parent::saveOrFail($entity);
             }
 
             if ($count === 0)

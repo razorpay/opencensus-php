@@ -113,6 +113,7 @@ class Base extends Core
     const GETSIMPL               = 'Getsimpl';
     const VAS_AXIS               = 'VasAxis';
     const YES_BANK               = 'YesBank';
+    const HDFC_DEBIT_EMI         = 'HdfcDebitEmi';
 
     /**
      * The gateway names should be the same name as the directories present under 'reconciliator'
@@ -184,6 +185,7 @@ class Base extends Core
         self::GETSIMPL               => [],
         self::BAJAJFINSERV           => ['remiecftransactions@bizsupportc.com'],
         self::YES_BANK               => ['yesacquirer@insolutionsglobal.com'],
+        self::HDFC_DEBIT_EMI         => ['emailintimation@hdfcbank.com'],
 
         // Used when someone from the team needs to send the
         // reconciliation file via mail for reconciliation.
@@ -287,6 +289,7 @@ class Base extends Core
             CardlessEmi::FLEXMONEY   => self::CARDLESS_EMI_FLEXMONEY,
         ],
         Gateway::BAJAJFINSERV           => self::BAJAJFINSERV,
+        Gateway::HDFC_DEBIT_EMI         => self::HDFC_DEBIT_EMI,
     ];
 
     /**

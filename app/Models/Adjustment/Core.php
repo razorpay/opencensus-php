@@ -129,7 +129,7 @@ class Core extends Base\Core
 
         if (($adjustment->getAmount() > 0) and
             ($balance->isTypeBanking() === true) and
-            ($balance->getAccountType() === Balance\AccountType::SHARED))
+            ($balance->isAccountTypeShared() === true))
         {
             $this->sendYesbankBalanceLoadEmail($adjustment, $merchant);
         }

@@ -492,6 +492,9 @@ class TerminalMigrationTest extends TestCase
 
     public function testUpdateTerminalServiceSubmerchantMismatchResponseMigrateTerminalVariant()
     {
+        // skipping this as the functionality is not yet live
+        $this->markTestSkipped();
+
         //-- setup terminal + add merchant as submerchant to the terminal
         $terminal = $this->fixtures->create(
             'terminal:shared_axis_terminal', [
@@ -1267,6 +1270,8 @@ class TerminalMigrationTest extends TestCase
 
         }, 1);
 
+        $this->razorxValue = 'migrate';
+
         $mock = $this->createMetricsMock();
 
         $expected = [
@@ -1289,6 +1294,8 @@ class TerminalMigrationTest extends TestCase
 
     public function testAdminFetchTerminalByIdTerminalServiceInvalidResponse()
     {
+        $this->razorxValue = 'migrate';
+
         $terminal = $this->fixtures->create(
             'terminal:shared_axis_terminal', [
             'used'        => true,
@@ -1330,5 +1337,204 @@ class TerminalMigrationTest extends TestCase
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
         $this->startTest();
+    }
+
+    // tests for fetching all terminals of merchant in admin route
+
+    public function testFetchTerminalsAdminAuth()
+    {
+        $this->razorxValue = 'migrate';
+
+        $terminal = $this->fixtures->create(
+            'terminal', [
+            'merchant_id' => '10000000000000',
+            'used' => true,
+            'enabled' => '1',
+            'sync_status' => 'sync_success',
+        ]);
+
+        $this->mockTerminalsServiceSendRequest(function ($path, $content, $method) use ($terminal) {
+            $response = new \Requests_Response;
+
+            $this->assertEquals(Requests::GET, $method);
+
+            $this->assertEquals("v1/merchants/10000000000000/terminals", $path);
+
+            $this->assertEquals("", $content);
+
+            $data = $this->terminalRepository->getByMerchantId('10000000000000')->toArray();
+
+            $body = json_encode(['data' => $data]);
+
+            $response->body = $body;
+
+            return $response;
+        }, 1);
+
+        $this->ba->adminAuth();
+
+        $mock = $this->createMetricsMock();
+
+        $expectedSuccess1 = [
+            'route'       => 'merchant_get_terminals',
+            'message'     => null,
+            'terminal_id' => '1n25f6uN5S1Z5a',
+        ];
+
+        $expectedSuccess2 = [
+            'route'       => 'merchant_get_terminals',
+            'message'     => null,
+            'terminal_id' => $terminal['id'],
+        ];
+
+        $mock->expects($this->at(1))
+            ->method('count')
+            ->with(Terminal\Metric::TERMINAL_FETCH_BY_ID_COMPARISON_SUCCESS, 1, $expectedSuccess1);
+
+        $mock->expects($this->at(2))
+            ->method('count')
+            ->with(Terminal\Metric::TERMINAL_FETCH_BY_ID_COMPARISON_SUCCESS, 1, $expectedSuccess2);
+
+        $this->startTest();
+
+
+    }
+
+    public function testFetchTerminalsAdminAuthTerminalIdMismatch()
+    {
+        $this->razorxValue = 'migrate';
+
+        $terminal = $this->fixtures->create(
+            'terminal', [
+            'merchant_id' => '10000000000000',
+            'used'        => true,
+            'enabled'     => '1',
+            'sync_status' => 'sync_success',
+        ]);
+
+        $this->mockTerminalsServiceSendRequest(function ($path, $content, $method) {
+            $response = new \Requests_Response;
+
+            $this->assertEquals(Requests::GET, $method);
+
+            $this->assertEquals("v1/merchants/10000000000000/terminals", $path);
+
+            $this->assertEquals("", $content);
+
+            $data = ['data' => [
+                $this->terminalRepository->getByMerchantId('10000000000000')->first(),
+                ]];
+
+            $body = json_encode($data);
+
+            $response->body = $body;
+
+            return $response;
+        }, 1);
+
+        $this->ba->adminAuth();
+
+        $mock = $this->createMetricsMock();
+
+        $expected = [
+            'route'         => 'merchant_get_terminals',
+            'message'       => null,
+        ];
+
+        $mock->expects($this->at(1))
+            ->method('count')
+            ->with(Terminal\Metric::TERMINAL_FETCH_BY_MERCHANT_ID_TERMINAL_ID_MISMATCH, 1, $expected);
+
+        $this->startTest();
+    }
+
+    public function testFetchTerminalsAdminAuthTerminalFieldMismatch()
+    {
+        $this->razorxValue = 'migrate';
+
+        $terminal = $this->fixtures->create(
+            'terminal', [
+            'merchant_id' => '10000000000000',
+            'used' => true,
+            'enabled' => '1',
+            'sync_status' => 'sync_success',
+        ]);
+
+        $this->mockTerminalsServiceSendRequest(function ($path, $content, $method) use ($terminal) {
+            $response = new \Requests_Response;
+
+            $this->assertEquals(Requests::GET, $method);
+
+            $this->assertEquals("v1/merchants/10000000000000/terminals", $path);
+
+            $this->assertEquals("", $content);
+
+            $data = $this->terminalRepository->getByMerchantId('10000000000000')->toArray();
+
+            // simulating a bug on terminals service
+            $data['0']['gateway'] = 'hitachi';
+
+            $body = json_encode(['data' => $data]);
+
+            $response->body = $body;
+
+            return $response;
+        }, 1);
+
+        $this->ba->adminAuth();
+
+        $mock = $this->createMetricsMock();
+
+
+        $expectedFailure = [
+            'route'       => 'merchant_get_terminals',
+            'message'     => null,
+            'terminal_id' => '1n25f6uN5S1Z5a',
+        ];
+
+        $expectedSuccess = [
+            'route'       => 'merchant_get_terminals',
+            'message'     => null,
+            'terminal_id' => $terminal['id'],
+        ];
+
+        $mock->expects($this->at(1))
+            ->method('count')
+            ->with(Terminal\Metric::TERMINAL_FETCH_BY_ID_COMPARISON_FAILURE, 1, $expectedFailure);
+
+        $mock->expects($this->at(2))
+            ->method('count')
+            ->with(Terminal\Metric::TERMINAL_FETCH_BY_ID_COMPARISON_SUCCESS, 1, $expectedSuccess);
+
+        $this->startTest();
+    }
+
+    /* this is to assert that terminal doesnt get synced in normal payment callback
+    * exceptions:
+     * 1) terminal is used for first time
+     * 2) terminal gets disabled
+     */
+    public function testPaymentCallbackNoSyncForUsedTerminal()
+    {
+        $this->fixtures->edit('terminal', '1n25f6uN5S1Z5a', [
+            'used' => true,
+        ]);
+
+        $this->razorxValue = 'migrate';
+
+        $this->mockTerminalsServiceSendRequest(null, 0);
+
+        $this->doAuthPayment();
+    }
+
+    public function testPaymentCallbackSyncForUnUsedTerminal()
+    {
+        $this->razorxValue = 'migrate';
+
+        $this->mockTerminalsServiceSendRequest(function () {
+            return $this->getDefaultTerminalServiceResponse();
+        }, 2);
+
+        $this->doAuthPayment();
     }
 }

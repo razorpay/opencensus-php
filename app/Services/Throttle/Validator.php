@@ -17,6 +17,20 @@ class Validator extends Base\Validator
         'rules'  => 'required|associative_array',
     ];
 
+    protected static $createConfigRules = [
+        'type'                    => 'required|in:'. K::CONFIGURATION_TYPE_MERCHANT . ',' . K::CONFIGURATION_TYPE_ROUTE,
+        'merchant_id'             => 'required_if:type,'. K::CONFIGURATION_TYPE_MERCHANT .'|alpha_num|size:14',
+        'route'                   => 'required|string',
+        'throttle_type'           => 'required_if:type,' . K::CONFIGURATION_TYPE_ROUTE . '|string|in:' . K::THROTTLE_TYPE_ORG . ',' . K::THROTTLE_TYPE_MERCHANT . ',' . K::THROTTLE_TYPE_IP,
+        'request_count'           => 'required|integer',
+        'request_count_window'    => 'required|integer',
+    ];
+
+    protected static $deleteConfigRules = [
+        'merchant_id'             => 'sometimes|alpha_num|size:14',
+        'route'                   => 'sometimes|string',
+    ];
+
     protected static $rulesRules = [
         K::MOCK                => 'filled|boolean',
         K::SKIP                => 'filled|boolean',

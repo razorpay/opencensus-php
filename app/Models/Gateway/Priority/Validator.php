@@ -27,6 +27,7 @@ class Validator extends Base\Validator
         Gateway::CARD_FSS    => 'sometimes|numeric|min:0|max:100',
         Gateway::MPGS        => 'sometimes|numeric|min:0|max:100',
         Gateway::PAYTM       => 'sometimes|numeric|min:0|max:100',
+        Gateway::ISG         => 'sometimes|numeric|min:0|max:100',
     ];
 
     public function validateAddPriority(string $method, array $priorityData)

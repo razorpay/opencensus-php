@@ -54,7 +54,7 @@ trait SettlementTrait
      * @param Merchant\Entity $merchant
      * @return bool
      */
-    public function isMerchantSettlementAllowed(Merchant\Entity $merchant): array
+    public function isMerchantSettlementAllowed(Merchant\Entity $merchant, $forceFlag = false): array
     {
         // process settlement only for activated merchants
         if ($merchant->isSuspended() === true)
@@ -157,6 +157,11 @@ trait SettlementTrait
         //
         if (($this->env !== Environment::TESTING) and
             (in_array($channel, $allowedChannelFor24x7Settlement, true) === true))
+        {
+            return [true, []];
+        }
+
+        if($forceFlag === true)
         {
             return [true, []];
         }
@@ -1298,9 +1303,10 @@ trait SettlementTrait
      */
     protected function skipForScripBox($txn): bool
     {
-        $merchantId = $txn->getMerchantId();
+        $merchant = $this->merchants[$txn->getMerchantId()];
 
-        if ($merchantId === Preferences::MID_SCRIP_BOX)
+        if (($merchant->getId() === Preferences::MID_SCRIP_BOX) or
+            ($merchant->getParentId() === Preferences::MID_SCRIP_BOX))
         {
             $hour = Carbon::now(Timezone::IST)->hour;
 
@@ -1308,7 +1314,6 @@ trait SettlementTrait
             {
                 return true;
             }
-
         }
 
         return false;

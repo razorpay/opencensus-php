@@ -68,4 +68,9 @@ class EnachNpciNetbanking extends Base
     {
         return NetBanking\ErrorCodes\FileBasedErrorCodes::getDebitPublicErrorCode($content);
     }
+
+    protected function removeCriticalDataFromTracePayload(array & $payloadEntry)
+    {
+        unset($payloadEntry[Batch\Header::ENACH_NPCI_NETBANKING_DEBIT_BANK_ACC]);
+    }
 }

@@ -27,15 +27,26 @@ trait Migrate
         return self::getRazorxTreatment(self::getMigrateSubmerchantFeature());
     }
 
-    public static function getMigrateTerminalFeature(): string
+    public static function shouldRunComparison(): bool
+    {
+        return self::getRazorxTreatment(self::getShouldRunComparisonFeature());
+    }
+
+    protected static function getMigrateTerminalFeature(): string
     {
         return'TerminalsService_MigrateTerminal';
     }
 
-    public static function getMigrateSubmerchantFeature(): string
+    protected static function getMigrateSubmerchantFeature(): string
     {
         return 'TerminalsService_MigrateSubmerchant';
     }
+
+    protected static function getShouldRunComparisonFeature() : string
+    {
+        return 'TerminalsService_ShouldRunComparison';
+    }
+
 
     protected static function getRazorxTreatment(string $feature): bool
     {
@@ -89,7 +100,6 @@ trait Migrate
         {
             $data['message'] = $exception->getMessage();
 
-            sd($exception->getMessage());
             $this->pushTerminalsServiceMetrics(Metric::TERMINAL_FETCH_FAILURE, $data);
 
         }
@@ -137,14 +147,15 @@ trait Migrate
     {
         $isFetchTerminalSuccess = $this->isFetchTerminalFromTerminalsServiceSuccess($terminal, $fetchTerminalResponse, $ignoreSecrets);
 
-        $areFetchedSubmerchantsSame = $this->areFetchedSubmerchantsSameForTerminal($terminal, $fetchTerminalResponse);
+       // $areFetchedSubmerchantsSame = $this->areFetchedSubmerchantsSameForTerminal($terminal, $fetchTerminalResponse);
 
-        return (($isFetchTerminalSuccess === true) and
-            ($areFetchedSubmerchantsSame === true));
+        return $isFetchTerminalSuccess;
     }
 
     public function isFetchTerminalFromTerminalsServiceSuccess(Entity $terminal, $fetchTerminalResponse, $ignoreSecrets = False): bool
     {
+        $success = true;
+
         if ($ignoreSecrets === true)
         {
             $originalTerminalArray = $terminal->toArray();
@@ -154,7 +165,7 @@ trait Migrate
             $originalTerminalArray = $terminal->toArrayWithPassword();
         }
 
-        $ignoreAttributes = [Entity::CREATED_AT, Entity::UPDATED_AT, Entity::MPAN, Entity::SYNC_STATUS];
+        $ignoreAttributes = [Entity::CREATED_AT, Entity::UPDATED_AT, Entity::SYNC_STATUS];
 
         foreach (array_keys($originalTerminalArray) as $attribute)
         {
@@ -196,10 +207,10 @@ trait Migrate
 
                 $this->trace->debug(TraceCode::TERMINALS_SERVICE_MIGRATE_FIELD_MISMATCH, $data);
 
-                return false;
+                $success = false;
             }
         }
-        return true;
+        return $success;
     }
 
     protected function areFetchedSubmerchantsSameForTerminal(Entity $terminal, $fetchTerminalResponse): bool

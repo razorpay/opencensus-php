@@ -137,8 +137,6 @@ class ProviderCode
     const VIJAYABANK         = 'vijayabank';
     const VIJB               = 'vijb';
     const VJB                = 'vjb';
-
-    // Used for validator to blacklist YBL vpa explicitly
     const YBL                = 'ybl';
     const YESBANK            = 'yesbank';
     const YESBANKLTD         = 'yesbankltd';
@@ -272,10 +270,10 @@ class ProviderCode
         self::VIJB               => IFSC::VIJB,
         self::VJB                => IFSC::VIJB,
         self::YBL                => IFSC::YESB,
-        // self::YESBANK            => IFSC::YESB,
-        // self::YESBANKLTD         => IFSC::YESB,
+        self::YESBANK            => IFSC::YESB,
+        self::YESBANKLTD         => IFSC::YESB,
         self::RAZORPAY           => 'RZPY',
-        // self::YESB               => IFSC::YESB,
+        self::YESB               => IFSC::YESB,
     ];
 
     /**
@@ -291,12 +289,6 @@ class ProviderCode
         self::ICICI         => 'whatsapp',
         self::PAYTM         => 'paytm',
         self::YBL           => 'phonepe',
-    ];
-
-    protected static $yesBankSpecificProviders = [
-        self::YESB,
-        self::YESBANK,
-        self::YESBANKLTD,
     ];
 
     public static function getBankCode($provider)
@@ -317,21 +309,5 @@ class ProviderCode
     public static function validateBankCode(string $bankCode): bool
     {
         return (array_search($bankCode, self::$bankCodes) !== false);
-    }
-
-    public static function isYesBankSpecificVpa(string $vpa): bool
-    {
-        $exported = explode('@', $vpa);
-
-        // Invalid VPA will be caught later in validator
-        if (isset($exported[1]) === true)
-        {
-            if (in_array(strtolower($exported[1]), self::$yesBankSpecificProviders))
-            {
-                return true;
-            }
-        }
-
-        return false;
     }
 }

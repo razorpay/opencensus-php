@@ -151,6 +151,9 @@ class Table
     const PERMISSION_MAP        = 'permission_map';
     const LOGIN_ATTEMPT         = 'login_attempts';
 
+    // Mapping auditors to entities for a generic use case
+    const ADMIN_AUDIT_MAP       = 'admin_audit_map';
+
     // Workflows
     const WORKFLOW              = 'workflows';
     const ACTION_STATE          = 'action_state';
@@ -256,6 +259,8 @@ class Table
     const WORKFLOW_PAYOUT_AMOUNT_RULES = 'workflow_payout_amount_rules';
 
     const OPTIONS              = 'options';
+
+    const CONFIG               = 'payment_configs';
 
     const UPI_MANDATE          = 'upi_mandates';
 

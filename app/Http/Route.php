@@ -5,6 +5,9 @@ namespace RZP\Http;
 use ApiResponse;
 use Illuminate\Routing\Router;
 
+use RZP\Constants\Entity;
+use RZP\Models\IdempotencyKey;
+use RZP\Http\Request\Requests;
 use RZP\Foundation\Application;
 use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Models\Feature\Constants as Feature;
@@ -21,6 +24,9 @@ final class Route
         'checkout'                                 => ['get',      'checkout',                                       'MerchantController@getCheckout'                                    ],
         'checkout_public'                          => ['get',      'checkout/public',                                'MerchantController@getCheckoutPublic'                              ],
         'checkout_public_canary'                   => ['get',      'checkout/public/canary',                         'MerchantController@getCheckoutPublic'                              ],
+        'fetch_payment_config'                     => ['get',      'payment/config/{type}',                          'ConfigController@fetchPaymentConfig'                               ],
+        'create_payment_config'                    => ['post',     'payment/config',                                 'ConfigController@createPaymentConfig'                              ],
+        'update_payment_config'                    => ['patch',    'payment/config',                                 'ConfigController@updatePaymentConfig'                              ],
 
         // callback_url case handler for automatic checkout
         'checkout_onyx'                            => ['post',     'checkout/onyx',                                  'PublicController@postCallbackUrlWithParams'                        ],
@@ -654,8 +660,10 @@ final class Route
         'item_update'                              => ['patch',    'items/{id}',                                     'ItemController@updateItem'                                         ],
         'item_delete'                              => ['delete',   'items/{id}',                                     'ItemController@deleteItem'                                         ],
         'send_email_for_pl_service'                => ['post',     'payment_links/send_email',                       'InvoiceController@sendEmailForPaymentLinkService'                  ],
+        //payment page section
         'pages_view'                               => ['get,post', 'pages/{x_entity_id}/view',                       'PaymentLinkController@view'                                        ],
         'pages_view_by_slug'                       => ['get,post', 'pages/{slug}',                                   'PaymentLinkController@viewBySlug'                                  ],
+        // old set of urls to be changed to payment_pages
         'payment_link_view_get'                    => ['get,post', 'payment_links/{x_entity_id}/view',               'PaymentLinkController@view'                                        ],
         'payment_link_images'                      => ['post',     'payment_links/images',                           'PaymentLinkController@upload'                                      ],
         'payment_link_get'                         => ['get',      'payment_links/{id}',                             'PaymentLinkController@get'                                         ],
@@ -668,11 +676,26 @@ final class Route
         'payment_link_deactivate'                  => ['patch',    'payment_links/{id}/deactivate',                  'PaymentLinkController@deactivate'                                  ],
         'payment_link_activate'                    => ['patch',    'payment_links/{id}/activate',                    'PaymentLinkController@activate'                                    ],
         'payment_link_slug_exists'                 => ['get',      'payment_links/{slug}/exists',                    'PaymentLinkController@slugExists'                                  ],
-        'payment_page_item_update'                 => ['patch',    'payment_links/payment_page_item/{id}',           'PaymentLinkController@updatePaymentPageItem'                       ],
+        // once the below routes are stable, the above section will be removed and forwarded to pl service
+        'payment_page_view_get'                    => ['get,post', 'payment_pages/{x_entity_id}/view',               'PaymentLinkController@view'                                        ],
+        'payment_page_images'                      => ['post',     'payment_pages/images',                           'PaymentLinkController@upload'                                      ],
+        'payment_page_get'                         => ['get',      'payment_pages/{id}',                             'PaymentLinkController@get'                                         ],
+        'payment_page_get_details'                 => ['get',      'payment_pages/{id}/details',                     'PaymentLinkController@getWithDetailsForDashboard'                  ],
+        'payment_page_list'                        => ['get',      'payment_pages',                                  'PaymentLinkController@list'                                        ],
+        'payment_page_create'                      => ['post',     'payment_pages',                                  'PaymentLinkController@create'                                      ],
+        'payment_page_update'                      => ['patch',    'payment_pages/{id}',                             'PaymentLinkController@update'                                      ],
+        'payment_page_notify'                      => ['post',     'payment_pages/{id}/notify',                      'PaymentLinkController@sendNotification'                            ],
+        'payment_page_expire_cron'                 => ['post',     'payment_pages/expire',                           'PaymentLinkController@expirePaymentLinks'                          ],
+        'payment_page_deactivate'                  => ['patch',    'payment_pages/{id}/deactivate',                  'PaymentLinkController@deactivate'                                  ],
+        'payment_page_activate'                    => ['patch',    'payment_pages/{id}/activate',                    'PaymentLinkController@activate'                                    ],
+        'payment_page_slug_exists'                 => ['get',      'payment_pages/{slug}/exists',                    'PaymentLinkController@slugExists'                                  ],
+        // Already using payment page end point. No need to change anything
+        'payment_page_item_update'                 => ['patch',    'payment_pages/payment_page_item/{id}',           'PaymentLinkController@updatePaymentPageItem'                       ],
         'payment_page_items_migrate'               => ['post',     'payment_pages/migrate_payment_page_items',       'PaymentLinkController@migratePaymentPageItems'                     ],
         'payment_page_create_order'                => ['post',     'payment_pages/{id}/order',                       'PaymentLinkController@createOrder'                                 ],
         'payment_page_create_order_option'         => ['options',  'payment_pages/{id}/order',                       'PaymentLinkController@createOrderOptions'                          ],
         'payment_page_items_migrate_min_purchase'  => ['post',     'payment_pages/migrate_payment_page_purchase',    'PaymentLinkController@migratePaymentPageItemForMinPurchase'        ],
+        // end of payment page section
         'app_delete_token'                         => ['delete',   'apps/tokens/{token}',                            'CustomerController@deleteTokenForGlobalCustomer'                   ],
         'app_fetch_tokens'                         => ['get',      'apps/tokens',                                    'CustomerController@fetchTokensForGlobalCustomer'                   ],
         'app_fetch_payments'                       => ['get',      'apps/payments',                                  'CustomerController@fetchPaymentsForGlobalCustomer'                 ],
@@ -841,6 +864,7 @@ final class Route
         'action_comment_create'                    => ['post',     'w-actions/{id}/comments',                        'WorkflowController@postActionComment'                              ],
         'workflow_payout_amount_rules'             => ['get',      'workflows/rules/payout_amount',                  'WorkflowController@getWorkflowPayoutAmountRules'                   ],
         'workflow_payout_amount_rules_get_admin'   => ['get',      'admin-workflows/rules/payout_amount',            'WorkflowController@getWorkflowPayoutAmountRules'                   ],
+        'workflow_payout_amount_rules_edit'        => ['put',      'admin-workflows/rules/payout_amount',            'WorkflowController@editWorkflowPayoutAmountRules'                   ],
         'workflow_payout_amount_rules_create'      => ['post',     'workflows/rules/payout_amount',                  'WorkflowController@postWorkflowPayoutAmountRules'                  ],
         'workflow_merchants_create_payout_get'     => ['get',      'merchants/workflows/permissions/create_payout',  'WorkflowController@getMerchantIdsForCreatePayoutWorkflowPermission'],
 
@@ -1034,13 +1058,77 @@ final class Route
         'risk_fetch_multiple'                      => ['get',      'risk',                                           'RiskController@list'                                               ],
         'risk_get'                                 => ['get',      'risk/{id}',                                      'RiskController@get'                                                ],
 
-        // Shield Routes
-        'shield_rules_get_multiple'                => ['get',       'shield/rules',                                  'ShieldController@list'                                             ],
-        'shield_rules_get'                         => ['get',       'shield/rules/{id}',                             'ShieldController@get'                                              ],
-        'shield_rules_update'                      => ['put',       'shield/rules/{id}',                             'ShieldController@update'                                           ],
-        'shield_rules_delete'                      => ['delete',    'shield/rules/{id}',                             'ShieldController@delete'                                           ],
-        'shield_rules_create'                      => ['post',      'shield/rules',                                  'ShieldController@create'                                           ],
-        'shield_rules_evaluate'                    => ['post',      'shield/rules/evaluate',                         'ShieldController@evaluate'                                         ],
+        // Shield routes
+        'shield_rules_get_multiple' => [
+            'get',
+            'shield/merchants/{merchant_id}/rules',
+            'ShieldController@proxyRequest'
+        ],
+        'shield_rules_get'          => [
+            'get',
+            'shield/merchants/{merchant_id}/rules/{rule_id}',
+            'ShieldController@proxyRequest'
+        ],
+        'shield_rules_create'       => [
+            'post',
+            'shield/merchants/{merchant_id}/rules',
+            'ShieldController@proxyRequest'
+        ],
+        'shield_rules_update'       => [
+            'put',
+            'shield/merchants/{merchant_id}/rules/{rule_id}',
+            'ShieldController@proxyRequest'
+        ],
+        'shield_rules_delete'       => [
+            'delete',
+            'shield/merchants/{merchant_id}/rules/{rule_id}',
+            'ShieldController@proxyRequest'
+        ],
+        'shield_lists_get_multiple' => [
+            'get',
+            'shield/merchants/{merchant_id}/lists',
+            'ShieldController@proxyRequest'
+        ],
+        'shield_lists_get'          => [
+            'get',
+            'shield/merchants/{merchant_id}/lists/{list_id}',
+            'ShieldController@proxyRequest'
+        ],
+        'shield_lists_create'       => [
+            'post',
+            'shield/merchants/{merchant_id}/lists',
+            'ShieldController@proxyRequest'
+        ],
+        'shield_lists_delete'       => [
+            'delete',
+            'shield/merchants/{merchant_id}/lists/{list_id}',
+            'ShieldController@proxyRequest'
+        ],
+        'shield_list_items_get_multiple' => [
+            'get',
+            'shield/merchants/{merchant_id}/lists/{list_id}/list_items',
+            'ShieldController@proxyRequest'
+        ],
+        'shield_list_items_get'          => [
+            'get',
+            'shield/merchants/{merchant_id}/lists/{list_id}/list_items/{list_item_id}',
+            'ShieldController@proxyRequest'
+        ],
+        'shield_list_items_add_multiple' => [
+            'post',
+            'shield/merchants/{merchant_id}/lists/{list_id}/list_items',
+            'ShieldController@proxyRequest'
+        ],
+        'shield_list_items_purge'        => [
+            'delete',
+            'shield/merchants/{merchant_id}/lists/{list_id}/list_items',
+            'ShieldController@proxyRequest'
+        ],
+        'shield_list_items_delete'       => [
+            'delete',
+            'shield/merchants/{merchant_id}/lists/{list_id}/list_items/{list_item_id}',
+            'ShieldController@proxyRequest'
+        ],
 
         // Scrooge Routes
         'scrooge_dashboard_init'                   => ['get',      'scrooge/dashboard-init',                         'ScroogeController@dashboardInit'                                   ],
@@ -1390,7 +1478,8 @@ final class Route
         // Governor Proxy APIs New - Rule Chain
         'governor_list_rule_chains_v1'            => ['get',      'namespaces/{namespace_id}/rule_chains',                                                              'GovernorController@proxy'              ],
         'governor_create_rule_chain_v1'           => ['post',     'namespaces/{namespace_id}/rule_chains',                                                              'GovernorController@proxy'              ],
-        'governor_delete_rule_chain_v1'           => ['delete',   'namespaces/{namespace_id}/rule_chains/{rule_chain_id}',                                                              'GovernorController@proxy'              ],
+        'governor_update_rule_chain_v1'           => ['put',      'namespaces/{namespace_id}/rule_chains/{rule_chain_id}',                                              'GovernorController@proxy'              ],
+        'governor_delete_rule_chain_v1'           => ['delete',   'namespaces/{namespace_id}/rule_chains/{rule_chain_id}',                                              'GovernorController@proxy'              ],
 
         // Governor Proxy APIs New - Rule Groups
         'governor_list_rule_groups_v1'            => ['get',      'namespaces/{namespace_id}/rule_chains/{rule_chain_id}/rule_groups',                                  'GovernorController@proxy'              ],
@@ -1405,6 +1494,7 @@ final class Route
         'banking_serviceable_pincodes'            => ['post',     'banking_account/serviceability/{channel}/pincodes',         'BankingAccountController@postServiceablePincodes'          ],
         'banking_accounts_list'                   => ['get',      'banking_accounts',                                          'BankingAccountController@list'                             ],
         'banking_account_update'                  => ['patch',    'banking_accounts/{id}',                                     'BankingAccountController@update'                           ],
+        'banking_account_bulk_assign_reviewer'    => ['post',     'banking_accounts/reviewers',                                'BankingAccountController@bulkAssignReviewer'               ],
         'banking_account_gateway_balance_fetch'   => ['put',      'banking_accounts/gateway/{channel}/balance',                'BankingAccountController@processGatewayBalanceUpdate'      ],
         'banking_account_webhook_account_info'    => ['post',     'banking_accounts/webhooks/account_info/{channel}',          'BankingAccountController@processAccountInfoWebhook'        ],
         'banking_account_webhook_account_info'
@@ -1420,6 +1510,12 @@ final class Route
         'fetch_throttle_settings'                 => ['get',      'throttle/settings',                                         'ThrottleController@list'                                   ],
         'edit_throttle_settings'                  => ['put',      'throttle/settings',                                         'ThrottleController@create'                                 ],
         'bootstrap_key_cache'                     => ['post',     'throttle/bootstrap_key_cache',                              'ThrottleController@bootstrapKeyCache'                      ],
+        'throttle_create_config'                  => ['post',     'throttle/config',                                           'ThrottleController@createConfig'                           ],
+        'throttle_get_config'                     => ['get',      'throttle/config',                                           'ThrottleController@fetchConfig'                            ],
+        'throttle_delete_config'                  => ['delete',   'throttle/config',                                           'ThrottleController@deleteConfig'                           ],
+
+
+
 
         //merchant document related routes
         'merchant_document_delete'                => ['delete',   'merchant/documents/{id}',                                   'DocumentController@delete'                                 ],
@@ -1550,6 +1646,7 @@ final class Route
         'invoice_get_pdf',
         'pages_view',
         'payment_link_view_get',
+        'payment_page_view_get',
         'merchant_public_get_banks',
         'merchant_methods',
         'merchant_checkout_preferences',
@@ -1644,6 +1741,7 @@ final class Route
         'pages_view',
         'pages_view_by_slug',
         'payment_link_view_get',
+        'payment_page_view_get',
     ];
 
     public static $private = [
@@ -1902,6 +2000,7 @@ final class Route
         'invoice_delete_bulk',
         'invoice_send_notifications',
         'payment_link_expire_cron',
+        'payment_page_expire_cron',
         'merchant_activation_migrate',
         'merchant_admin_lead_put',
         'merchant_get_app_access_mapping',
@@ -2278,6 +2377,15 @@ final class Route
         'payment_link_deactivate',
         'payment_link_activate',
         'payment_link_slug_exists',
+        'payment_page_get',
+        'payment_page_get_details',
+        'payment_page_list',
+        'payment_page_create',
+        'payment_page_update',
+        'payment_page_notify',
+        'payment_page_deactivate',
+        'payment_page_activate',
+        'payment_page_slug_exists',
         'payment_page_item_update',
         'submerchants_fetch',
         'submerchants_fetch_multiple',
@@ -2321,6 +2429,7 @@ final class Route
         'payouts_summary',
         'payouts_workflow_summary',
         'payment_link_images',
+        'payment_page_images',
         'commissions_get_multiple',
         'subscription_payment_fetch_by_id',
         'commissions_get',
@@ -2370,6 +2479,9 @@ final class Route
         'payout_links_merchant_summary',
         'fts_get_source_account',
         'virtual_account_banking_fetch_multiple',
+        'fetch_payment_config',
+        'create_payment_config',
+        'update_payment_config',
     ];
 
     //
@@ -2460,6 +2572,7 @@ final class Route
         'workflow_update',
         'workflow_delete',
         'workflow_payout_amount_rules_get_admin',
+        'workflow_payout_amount_rules_edit',
         'workflow_merchants_create_payout_get',
         'workflow_payout_amount_rules_create',
         'action_checker_create',
@@ -2686,7 +2799,15 @@ final class Route
         'shield_rules_create',
         'shield_rules_update',
         'shield_rules_delete',
-        'shield_rules_evaluate',
+        'shield_lists_get_multiple',
+        'shield_lists_get',
+        'shield_lists_create',
+        'shield_lists_delete',
+        'shield_list_items_get_multiple',
+        'shield_list_items_get',
+        'shield_list_items_add_multiple',
+        'shield_list_items_purge',
+        'shield_list_items_delete',
 
         'razorx_route',
         'user_fetch_admin',
@@ -2791,6 +2912,7 @@ final class Route
         'banking_account_activate',
         'banking_account_webhook_account_info_internal',
         'banking_account_activation_status_change_log',
+        'banking_account_bulk_assign_reviewer',
 
         'governor_create_namespace_v1',
         'governor_get_client_v1',
@@ -2807,6 +2929,7 @@ final class Route
         'governor_delete_rule_v1',
         'governor_list_rule_chains_v1',
         'governor_create_rule_chain_v1',
+        'governor_update_rule_chain_v1',
         'governor_delete_rule_chain_v1',
         'governor_list_rule_groups_v1',
         'governor_create_rule_group_v1',
@@ -2820,6 +2943,10 @@ final class Route
         'fetch_throttle_settings',
         'edit_throttle_settings',
         'bootstrap_key_cache',
+        'throttle_create_config',
+        'throttle_delete_config',
+        'throttle_get_config',
+
 
         // Excel Store routes
         'excel_store_list_pages',
@@ -2988,6 +3115,7 @@ final class Route
         'workflow_payout_amount_rules_create'      => Permission::CREATE_WORKFLOW,
         'workflow_get'                             => Permission::VIEW_WORKFLOW,
         'workflow_payout_amount_rules_get_admin'   => Permission::VIEW_WORKFLOW,
+        'workflow_payout_amount_rules_edit'        => Permission::EDIT_WORKFLOW,
         'workflow_get_multiple'                    => Permission::VIEW_ALL_WORKFLOW,
         'workflow_merchants_create_payout_get'     => Permission::VIEW_ALL_WORKFLOW,
         'workflow_update'                          => Permission::EDIT_WORKFLOW,
@@ -3280,7 +3408,15 @@ final class Route
         'shield_rules_create'                      => Permission::CREATE_SHIELD_RULES,
         'shield_rules_update'                      => Permission::EDIT_SHIELD_RULES,
         'shield_rules_delete'                      => Permission::DELETE_SHIELD_RULES,
-        'shield_rules_evaluate'                    => Permission::EVALUATE_SHIELD_RULES,
+        'shield_lists_get_multiple'                => Permission::VIEW_SHIELD_LISTS,
+        'shield_lists_get'                         => Permission::VIEW_SHIELD_LISTS,
+        'shield_lists_create'                      => Permission::CREATE_SHIELD_LISTS,
+        'shield_lists_delete'                      => Permission::DELETE_SHIELD_LISTS,
+        'shield_list_items_get_multiple'           => Permission::VIEW_SHIELD_LISTS,
+        'shield_list_items_get'                    => Permission::VIEW_SHIELD_LISTS,
+        'shield_list_items_add_multiple'           => Permission::CREATE_SHIELD_LISTS,
+        'shield_list_items_purge'                  => Permission::DELETE_SHIELD_LISTS,
+        'shield_list_items_delete'                 => Permission::DELETE_SHIELD_LISTS,
         'user_fetch_admin'                         => '*',
         'refund_edit_status'                       => Permission::EDIT_REFUND,
         'refund_mark_processed_bulk'               => Permission::EDIT_REFUND,
@@ -3407,6 +3543,7 @@ final class Route
         'governor_update_rule_v1'                  => Permission::EDIT_GATEWAY_RULE,
         'governor_list_rule_chains_v1'             => Permission::VIEW_GATEWAY_RULE,
         'governor_create_rule_chain_v1'            => Permission::CREATE_GATEWAY_RULE,
+        'governor_update_rule_chain_v1'            => Permission::EDIT_GATEWAY_RULE,
         'governor_delete_rule_chain_v1'            => Permission::DELETE_GATEWAY_RULE,
         'governor_list_rule_groups_v1'             => Permission::VIEW_GATEWAY_RULE,
         'governor_create_rule_group_v1'            => Permission::CREATE_GATEWAY_RULE,
@@ -3431,6 +3568,9 @@ final class Route
         'fetch_throttle_settings'                  => Permission::EDIT_THROTTLE_SETTINGS,
         'edit_throttle_settings'                   => Permission::EDIT_THROTTLE_SETTINGS,
         'bootstrap_key_cache'                      => Permission::EDIT_THROTTLE_SETTINGS,
+        'throttle_create_config'                   => Permission::EDIT_THROTTLE_SETTINGS,
+        'throttle_delete_config'                   => Permission::EDIT_THROTTLE_SETTINGS,
+        'throttle_get_config'                      => Permission::EDIT_THROTTLE_SETTINGS,
 
         'excel_store_list_pages'                   => Permission::ACCESS_EXCEL_STORE,
         'excel_store_create_page'                  => Permission::ACCESS_EXCEL_STORE,
@@ -3444,6 +3584,7 @@ final class Route
         'banking_account_yesb_bulk_create'         => Permission::BANKING_UPDATE_ACCOUNT,
         'banking_account_activation_status_'
         . 'change_log'                             => '*',
+        'banking_account_bulk_assign_reviewer'     => Permission::ASSIGN_BANKING_ACCOUNT_REVIEWER,
         'set_channel_action'                       => Permission::SETTLEMENT_BULK_UPDATE,
         'get_channel_action'                       => Permission::SETTLEMENT_BULK_UPDATE,
 
@@ -3516,6 +3657,7 @@ final class Route
         'fetch_batch_actions'                       => Permission::ADMIN_BATCH_CREATE,
         'link_offline_device'                       => '*',
         'user_roles_mapping_bulk'                   => Permission::MAKE_API_CALL,
+        'consume_typeform_webhook'                  => Permission::EDIT_MERCHANT_INTERNATIONAL,
     ];
 
     public static $bankingRoutePermissions = [
@@ -3570,8 +3712,8 @@ final class Route
         'payout_links_fetch_by_id'                     => Permission::VIEW_PAYOUT_LINKS,
         'payout_links_create'                          => Permission::CREATE_PAYOUT_LINKS,
         'payout_links_cancel'                          => Permission::CANCEL_PAYOUT_LINKS,
-        'payout_links_merchant_on_boarding_status'     => Permission::SUMMARY_PAYOUT_LINKS,
-        'payout_links_merchant_summary'                => Permission::ONBOARDING_PAYOUT_LINKS,
+        'payout_links_merchant_on_boarding_status'     => Permission::VIEW_PAYOUT_LINKS,
+        'payout_links_merchant_summary'                => Permission::VIEW_PAYOUT_LINKS,
         'payout_links_settings_post'                   => Permission::SETTINGS_PAYOUT_LINKS,
         'payout_links_settings_get'                    => Permission::SETTINGS_PAYOUT_LINKS,
         'payout_links_merchant_settings_get'           => Permission::DASHBOARD_PAYOUT_LINKS,
@@ -3864,6 +4006,7 @@ final class Route
             'invoice_expire_bulk',
             'invoice_delete_bulk',
             'payment_link_expire_cron',
+            'payment_page_expire_cron',
             'batch_process_file',
             'order_refund_multiple_authorized',
             'subscriptions_charge_invoices',
@@ -4268,6 +4411,25 @@ final class Route
     ];
 
     /**
+     * Avoid having any kind of bulk routes here! The entity mapping
+     * should be done correctly if you are adding bulk routes.
+     *
+     * Strongly suggested to understand the flow before adding any new
+     * route to this array.
+     *
+     * NOTE: If you are adding any new source_type here, ensure it's
+     * present in the morph map in ApiServiceProvider class.
+     *
+     * @var array
+     */
+    public static $idempotentRoutesConfig = [
+        'payout_create' => [
+                IdempotencyKey\Entity::SOURCE_TYPE  => Entity::PAYOUT,
+                IdempotencyKey\Entity::HEADER_KEY   => RequestHeader::X_PAYOUT_IDEMPOTENCY,
+            ]
+    ];
+
+    /**
      * Routes with Wildcard permission allowed for restricted orgs
      * @var array
      */
@@ -4440,6 +4602,11 @@ final class Route
     public function getCurrentRouteName()
     {
         return $this->router->currentRouteName();
+    }
+
+    public function getCurrentRouteMethod()
+    {
+        return $this->router->getCurrentRequest()->getMethod();
     }
 
     /**
@@ -4648,6 +4815,48 @@ final class Route
         }
     }
 
+    public function isApplicableForMerchantIdempotency(): bool
+    {
+        $routeName = $this->getCurrentRouteName();
+        $routeMethod = $this->getCurrentRouteMethod();
+
+        // Currently allowing only for defined routes for idempotency and for POST routes.
+        // Keeping only for POST routes since we don't see a use case for other methods currently.
+        if ((array_key_exists($routeName, self::$idempotentRoutesConfig) === true) and
+            ($routeMethod === Requests::POST))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    public function getEntityForIdempotencyRequest()
+    {
+        $routeName = $this->getCurrentRouteName();
+
+        return self::$idempotentRoutesConfig[$routeName][IdempotencyKey\Entity::SOURCE_TYPE] ?? null;
+    }
+
+    public function getHeaderKeyForIdempotencyRequest()
+    {
+        $routeName = $this->getCurrentRouteName();
+
+        return self::$idempotentRoutesConfig[$routeName][IdempotencyKey\Entity::HEADER_KEY] ?? null;
+    }
+
+    public function getEntitiesForIdempotencyRequest()
+    {
+        $sourceTypes = [];
+
+        foreach (self::$idempotentRoutesConfig as $idempotentRouteConfig => $routeName)
+        {
+            $sourceTypes[] = $routeName[IdempotencyKey\Entity::SOURCE_TYPE] ?? null;
+        }
+
+        return array_unique(array_filter($sourceTypes));
+    }
+
     protected function addRoute($name)
     {
         $info = self::$apiRoutes[$name];
@@ -4706,6 +4915,11 @@ final class Route
         if (in_array($name, self::FAILURE_EVENTS_INTERCEPTOR_ROUTES, true) === true)
         {
             $route->middleware('failure_interceptor');
+        }
+
+        if (in_array($name, array_keys(self::$idempotentRoutesConfig, true), true) === true)
+        {
+            $route->middleware('merchant_idempotency_handler');
         }
     }
 
