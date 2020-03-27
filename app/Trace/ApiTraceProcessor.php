@@ -4,6 +4,7 @@ namespace RZP\Trace;
 
 use App;
 use Request;
+use RZP\Http\Route;
 
 class ApiTraceProcessor
 {
@@ -18,6 +19,12 @@ class ApiTraceProcessor
     const CCPAY_CARD_REGEX = "/CCPAY.(?:4[0-9]{12}(?:[0-9]{3})?|5[1-5][0-9]{14}|" .
                              "6(?:011|5[0-9][0-9])[0-9]{12}|3[47][0-9]{13}|3(?:0[0-5]|" .
                              "[68][0-9])[0-9]{11}|(?:2131|1800|35\d{3})\d{11})/";
+
+    const SENSITIVE_KEYS = [
+        'account_number',
+        'name',
+        'cvv',
+    ];
 
     public function __construct($app)
     {
@@ -43,6 +50,8 @@ class ApiTraceProcessor
         $this->scrubCardNumberViaCcPay($record);
 
         $this->overrideRequestAttributes($record);
+
+        $this->scrubSensitiveDetailsForBankingRoutes($record);
 
         return $record;
     }
@@ -129,6 +138,50 @@ class ApiTraceProcessor
         });
 
         $record['context'] = $context;
+    }
+
+    protected function scrubSensitiveDetailsForBankingRoutes(&$record)
+    {
+        $route = optional($this->app['router'])->currentRouteName();
+
+        $bankingRoutes = Route::getBankingSpecificRoutes();
+
+        try {
+            if (in_array($route, $bankingRoutes, true)) {
+                $record['context'] = $this->visitEachNode($record['context']);
+            }
+        } catch (\Exception $e) {
+            //add warning here
+        }
+
+    }
+
+    protected function visitEachNode(&$context)
+    {
+        if (!empty($context)) {
+            foreach ($context as $key => &$value) {
+                if (in_array($key, self::SENSITIVE_KEYS, true)) {
+                    $this->scrubData($value);
+                }
+                if (is_array($value)) {
+                    $this->visitEachNode($value);
+                }
+            }
+        }
+        return $context;
+    }
+
+    protected function scrubData(&$value)
+    {
+        if (is_array($value)) {
+            foreach ($value as &$val) {
+                if (strpos($val, 'CARD_NUMBER_SCRUBBED') === false) {
+                    $val = 'SCRUBBED' . '(' . strlen($val) . ')';
+                }
+            }
+        } else if (is_string($value) and strpos($value, 'CARD_NUMBER_SCRUBBED') === false) {
+            $value = 'SCRUBBED' . '(' . strlen($value) . ')';
+        }
     }
 
     /**
