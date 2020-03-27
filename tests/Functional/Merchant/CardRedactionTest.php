@@ -4,6 +4,7 @@ namespace Functional\Merchant;
 
 use Illuminate\Routing\Router;
 use RZP\Trace\ApiTraceProcessor;
+use RZP\Exception\LogicException;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -46,6 +47,8 @@ class CardRedactionTest extends TestCase
                    ->willReturn($route);
 
         $this->app->instance('router', $routerMock);
+
+        return $routerMock;
     }
 
     public function testVisaCardRedaction()
@@ -525,5 +528,37 @@ class CardRedactionTest extends TestCase
         ];
 
         $this->assertArraySelectiveEquals($expectedResponse1, $updatedRecord1);
+    }
+
+    public function testCardRedactionWhenExceptionComesWhileScrubbing()
+    {
+        /** @var ApiTraceProcessor $trace */
+        $trace = new ApiTraceProcessor($this->app);
+
+        $originalRouter = $this->app['router'];
+
+        $routerMock = $this->mockRouter('payout_create');
+
+        $routerMock->method('currentRouteName')
+                   ->willThrowException(new LogicException('some unhandled exceptions. maybe redis timeout.
+                   In case such exception comes up we dont wanna fail the whole request because of logging'));
+
+        $record = [
+            'context' => [
+                'account_number' => '4012888888881881',
+            ]
+        ];
+
+        $updatedRecord = $trace($record);
+
+        $expectedResponse = [
+            'context' => [
+                'account_number' => "4012888888881881"
+            ]
+        ];
+
+        $this->assertArraySelectiveEquals($expectedResponse, $updatedRecord);
+
+        $this->app->instance('router', $originalRouter);
     }
 }

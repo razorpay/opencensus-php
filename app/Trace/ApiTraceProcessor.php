@@ -162,53 +162,62 @@ class ApiTraceProcessor
 
     protected function scrubCardNumberForBankingRoutes(& $record)
     {
-        $route = optional($this->app['router'])->currentRouteName();
-
-        $bankingRoutes = Route::getBankingSpecificRoutes();
-
-        if (in_array($route, $bankingRoutes, true) === false)
+        // adding Try catch here. In case some unhandled exception comes up, we don't fail the whole
+        // request because of logging.
+        try
         {
-            return;
-        }
+            $route = optional($this->app['router'])->currentRouteName();
 
-        $context = $record['context'] ?? null;
+            $bankingRoutes = Route::getBankingSpecificRoutes();
 
-        if (empty($context) === true)
-        {
-            return;
-        }
-
-        $cardRegex = (new AdminService)->getConfigKey([
-                'key' => ConfigKey::CREDIT_CARD_REGEX_FOR_REDACTING
-            ]);
-
-        if (empty($cardRegex) === true)
-        {
-            $cardRegex = self::CARD_REGEX;
-        }
-
-        if (strtolower($cardRegex) === self::OFF)
-        {
-            return;
-        }
-
-        array_walk_recursive($context, function(& $item) use ($cardRegex)
-        {
-            if (is_string($item) === true)
+            if (in_array($route, $bankingRoutes, true) === false)
             {
-                if (preg_match_all($cardRegex, $item, $matches) !== false)
-                {
-                    $matches = $matches[0];
-
-                   foreach ($matches as $match)
-                   {
-                       $item = str_replace($match, 'CARD_NUMBER_SCRUBBED' . '(' . strlen($match) . ')', $item);;
-                   }
-                }
+                return;
             }
-        });
 
-        $record['context'] = $context;
+            $context = $record['context'] ?? null;
+
+            if (empty($context) === true)
+            {
+                return;
+            }
+
+            $cardRegex = (new AdminService)->getConfigKey([
+                                                              'key' => ConfigKey::CREDIT_CARD_REGEX_FOR_REDACTING
+                                                          ]);
+
+            if (empty($cardRegex) === true)
+            {
+                $cardRegex = self::CARD_REGEX;
+            }
+
+            if (strtolower($cardRegex) === self::OFF)
+            {
+                return;
+            }
+
+            array_walk_recursive($context, function(& $item) use ($cardRegex)
+            {
+                if (is_string($item) === true)
+                {
+                    if (preg_match_all($cardRegex, $item, $matches) !== false)
+                    {
+                        $matches = $matches[0];
+
+                        foreach ($matches as $match)
+                        {
+                            $item = str_replace($match, 'CARD_NUMBER_SCRUBBED' . '(' . strlen($match) . ')', $item);;
+                        }
+                    }
+                }
+            });
+
+            $record['context'] = $context;
+        }
+        catch (\Exception $e)
+        {
+            return;
+        }
     }
 
     /**
