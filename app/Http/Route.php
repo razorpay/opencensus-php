@@ -1491,6 +1491,7 @@ final class Route
         'governor_update_rule_group_v1'           => ['put',      'namespaces/{namespace_id}/rule_chains/{rule_chain_id}/rule_groups/{rule_group_id}',                  'GovernorController@proxy'              ],
 
         'banking_account_create'                  => ['post',     'banking_accounts',                                          'BankingAccountController@create'                           ],
+        'banking_account_create_admin'            => ['post',     'banking_accounts_admin',                                    'BankingAccountController@create'                           ],
         'banking_account_activate'                => ['post',     'banking_accounts/{id}/activate',                            'BankingAccountController@activate'                         ],
         'banking_serviceable_pincodes'            => ['post',     'banking_account/serviceability/{channel}/pincodes',         'BankingAccountController@postServiceablePincodes'          ],
         'banking_accounts_list'                   => ['get',      'banking_accounts',                                          'BankingAccountController@list'                             ],
@@ -2939,6 +2940,7 @@ final class Route
         'governor_delete_rule_group_v1',
         'governor_update_rule_group_v1',
         'governor_update_rule_v1',
+        'banking_account_create_admin',
 
         // throttle settings routes
         'fetch_throttle_settings',
@@ -3659,6 +3661,7 @@ final class Route
         'link_offline_device'                       => '*',
         'user_roles_mapping_bulk'                   => Permission::MAKE_API_CALL,
         'consume_typeform_webhook'                  => Permission::EDIT_MERCHANT_INTERNATIONAL,
+        'banking_account_create_admin'              => '*',
     ];
 
     public static $bankingRoutePermissions = [

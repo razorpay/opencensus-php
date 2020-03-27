@@ -1200,4 +1200,24 @@ class BankingAccountTest extends TestCase
 
         $this->assertEquals($randomAdmin->getId(), $auditorId1);
     }
+
+    public function testCreateBankingAccountAdmin()
+    {
+        // Turn on the 'allow_all_merchants' feature for admin
+        DB::table('admins')->update(['allow_all_merchants' => 1]);
+
+        $this->ba->adminAuth();
+
+        Mail::fake();
+
+        $this->startTest();
+
+        $bankingAccount = $this->getDbLastEntity('banking_account');
+
+        $this->assertEquals(AccountType::CURRENT, $bankingAccount->getAccountType());
+
+        Mail::assertQueued(XProActivation::class);
+
+    }
+
 }
