@@ -117,6 +117,10 @@ class CreateOrders extends Migration
                   ->nullable()
                   ->default(null);
 
+            $table->char(Order::CHECKOUT_CONFIG_ID, Order::ID_LENGTH)
+                  ->nullable()
+                  ->default(null);
+
             // Adds created_at and updated_at columns to the table
             $table->integer(Order::CREATED_AT);
             $table->integer(Order::UPDATED_AT);

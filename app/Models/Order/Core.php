@@ -34,6 +34,11 @@ class Core extends Base\Core
             $inputTrace
         );
 
+        if (isset($input[Entity::CHECKOUT_CONFIG_ID]) === true)
+        {
+            $this->validateCheckoutConfigId($input[Entity::CHECKOUT_CONFIG_ID]);
+        }
+
         $order = new Entity;
 
         // Needs to be associated first cause merchant entity is required
@@ -330,5 +335,16 @@ class Core extends Base\Core
                 PublicErrorDescription::BAD_REQUEST_ORDER_RECEIPT_NOT_UNIQUE,
                 ['order_ids' => $duplicateOrderIds]);
         }
+    }
+
+    /**
+     * Method validates whether configid is valid or not for the merchant
+     *
+     * Throws BAD_REQUEST_ERROR error with description "The id provided does not exist"
+     */
+
+    private function validateCheckoutConfigId($configId)
+    {
+        $this->repo->config->findByPublicIdAndMerchant($configId, $this->merchant);
     }
 }
