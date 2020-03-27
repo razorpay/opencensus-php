@@ -20,7 +20,6 @@ class TerminalsService
 
     protected $baseUrl;
 
-    const TIMEOUT           = 0.1; // 100 milliseconds
 
     const URL               = 'url';
     const CONTENT           = 'content';
@@ -31,6 +30,11 @@ class TerminalsService
     const METHOD            = 'method';
     const RESPONSE          = 'response';
     const DATA              = 'data';
+    const TIMEOUT           = 'timeout';
+    const CONNECT_TIMEOUT   = 'connect_timeout';
+    const OPTIONS           = 'options';
+
+    const DEFAULT_TIMEOUT   = 0.1;
 
 
     const CREATE_TERMINAL                      = 'create_terminal';
@@ -40,6 +44,7 @@ class TerminalsService
     const ADD_MERCHANT_TO_TERMINAL             = 'add_merchant_to_terminal';
     const REMOVE_MERCHANT_FROM_TERMINAL        = 'remove_merchant_from_terminal';
     const FETCH_MERCHANT_TERMINAL_BY_ID        = 'fetch_merchant_terminal_by_id';
+    const TERMINAL_ONBOARD_CALLBACK            = 'terminal_onboard_callback';
 
     const PARAMS = [
         self::CREATE_TERMINAL       =>   [
@@ -70,6 +75,14 @@ class TerminalsService
             self::PATH   => 'v2/terminal/submerchant',
             self::METHOD => Requests::GET,
         ],
+        self::TERMINAL_ONBOARD_CALLBACK => [
+            self::PATH   => 'v2/terminal/onboard/%s/callback',
+            self::METHOD => Requests::POST,
+            self::OPTIONS => [
+                self::TIMEOUT         => 5, // 5 seconds
+                self::CONNECT_TIMEOUT => 5, // 5 seconds
+            ],
+        ]
     ];
 
     public function __construct($app)
@@ -167,13 +180,24 @@ class TerminalsService
         return $this->parseAndReturnResponse($response)[self::DATA][0] ?? [];
     }
 
-    protected function sendRequest(string $path, $content = '', string $method = Requests::POST): \Requests_Response
+    public function terminalOnboardCallback(string $gateway, array $input)
+    {
+        $params = self::PARAMS[self::TERMINAL_ONBOARD_CALLBACK];
+
+        $path = sprintf($params[self::PATH], $gateway);
+
+        $response = $this->sendRequest($path, json_encode($input), $params[self::METHOD], $params[self::OPTIONS]);
+
+        return $this->parseAndReturnResponse($response)[self::DATA] ?? [];
+    }
+
+    protected function sendRequest(string $path, $content = '', string $method = Requests::POST, array $addditionalOptions = []): \Requests_Response
     {
         $url = $this->getBaseUrl() . $path;
 
         $headers = $this->getHeaders();
 
-        $options = $this->getOptions();
+        $options = $this->getOptions($addditionalOptions);
 
         $data = [
             self::URL       => $url,
@@ -254,7 +278,7 @@ class TerminalsService
         ];
     }
 
-    protected function getOptions()
+    protected function getOptions(array $additionalOptions = [])
     {
         $auth = [
             'api_user',
@@ -262,12 +286,16 @@ class TerminalsService
 
         ];
 
-        return [
+        $defaultOptions =  [
             'auth'            => $auth,
-            'timeout'         => self::TIMEOUT,
-            'connect_timeout' => self::TIMEOUT,
+            'timeout'         => self::DEFAULT_TIMEOUT, // 100 milliseconds
+            'connect_timeout' => self::DEFAULT_TIMEOUT, // 100 milliseconds
             'show_trace'      => true,
         ];
+
+        $options =  array_merge($defaultOptions, $additionalOptions);
+
+        return $options;
     }
 
     protected function getPassword()

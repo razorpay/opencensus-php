@@ -6,6 +6,7 @@ use Request;
 use ApiResponse;
 use RZP\Trace\TraceCode;
 use RZP\Models\Terminal\Onboarding;
+use Illuminate\Support\Facades\App;
 
 class TerminalOnboardingController extends Controller
 {
@@ -86,5 +87,18 @@ class TerminalOnboardingController extends Controller
         $response = $this->service()->updateTerminalOnboardingStatus($input);
 
         return ApiResponse::json($response);
+    }
+
+    public function postTerminalOnboardCallback(string $gateway, string $mode)
+    {
+        $input = Request::all();
+
+        $app = App::getFacadeRoot();
+
+        $app['basicauth']->setMode($mode);
+
+        $this->service()->processTerminalOnboardCallback($gateway, $input);
+
+        return ApiResponse::json(['success' => true]);
     }
 }
