@@ -13,8 +13,6 @@ return [
             'content' => [
                 'gateway'                    => 'wallet_paypal',
                 'gateway_merchant_id'        => 'gateway_merchant_id',
-                'gateway_terminal_password'  => 'gateway_terminal_password',
-                'gateway_terminal_password2' => 'gateway_terminal_password2',
                 'type'                       =>  [
                     'direct_settlement_with_refund' => '1',
                 ],
