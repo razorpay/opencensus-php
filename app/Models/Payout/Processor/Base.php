@@ -4,6 +4,7 @@ namespace RZP\Models\Payout\Processor;
 
 use RZP\Exception;
 
+use App;
 use RZP\Models\Vpa;
 use RZP\Models\Card;
 use RZP\Models\Batch;
@@ -20,6 +21,7 @@ use RZP\Models\Admin\Permission;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\Base\Core as BaseCore;
 use RZP\Exception\BadRequestException;
+use RZP\Models\Workflow\PayoutAmountRules;
 use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Models\Feature\Constants as Features;
 use RZP\Models\Merchant\Balance\Type as ProductType;
@@ -83,6 +85,10 @@ class Base extends BaseCore
      * @var BankAccount\Entity|Vpa\Entity|Card\Entity
      */
     protected $fundTransferDestination;
+
+    const KEY_SUFFIX = '_payout_workflow';
+
+    const PAYOUT_WORKFLOW_MUTEX_LOCK_TIMEOUT = 10;
 
     public function createPayout(array $input): Payout\Entity
     {
@@ -449,6 +455,15 @@ class Base extends BaseCore
      */
     protected function createPayoutEntity(array $input)
     {
+        $app = App::getFacadeRoot();
+
+        // The amount param will always exist here, Payout validators ensure this before reaching here.
+        $amount = $input[Payout\Entity::AMOUNT];
+
+        $payoutAmountRule = (new PayoutAmountRules\Core)->fetchPayoutAmountRuleForMerchantIfDefined($amount, $this->merchant);
+
+        $mutexResource = sprintf($payoutAmountRule['id'], self::KEY_SUFFIX);
+
         $payout = (new Payout\Entity);
 
         $this->runInputValidations($payout, $input);
@@ -470,7 +485,16 @@ class Base extends BaseCore
         // the modifiers and validators require payout
         // account and merchant to be associated.
         //
-        $payout = $payout->build($input);
+        $payout = $app['api.mutex']->acquireAndRelease(
+            $mutexResource,
+            function () use ($payout, $input, $amount)
+            {
+                $payout = $payout->build($input);
+
+                return $payout;
+            },
+            self::PAYOUT_WORKFLOW_MUTEX_LOCK_TIMEOUT,
+            ErrorCode::BAD_REQUEST_PAYOUT_OPERATION_FOR_MERCHANT_IN_PROGRESS);
 
         //
         // Doing only user and batch association after build because

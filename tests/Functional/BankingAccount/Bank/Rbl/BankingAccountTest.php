@@ -1109,4 +1109,115 @@ class BankingAccountTest extends TestCase
         $this->fixtures->create('banking_account_detail', $attributes[1]);
 
     }
+
+    public function testBulkAssignReviewersToBankingAccounts()
+    {
+        $bankingAccount1 = $this->fixtures->create('banking_account', [
+            'id'            => 'randomBaAccId1',
+            'account_type'  => 'current',
+        ]);
+
+        $bankingAccount2 = $this->fixtures->create('banking_account', [
+            'id'            => 'randomBaAccId2',
+            'account_type'  => 'current',
+        ]);
+
+        $randomAdmin = $this->fixtures->create('admin', [
+            'org_id' => '100000razorpay'
+        ]);
+
+        $this->ba->adminAuth();
+
+        $this->testData[__FUNCTION__]['request']['content']['reviewer_id']            = $randomAdmin->getPublicId();
+        $this->testData[__FUNCTION__]['request']['content']['banking_account_ids'][0] = $bankingAccount1->getPublicId();
+        $this->testData[__FUNCTION__]['request']['content']['banking_account_ids'][1] = $bankingAccount2->getPublicId();
+
+        $this->startTest();
+
+        $auditorId1 = $bankingAccount1->reviewers()->first()->pivot->admin_id;
+        $auditorId2 = $bankingAccount2->reviewers()->first()->pivot->admin_id;
+
+        $this->assertEquals($randomAdmin->getId(), $auditorId1);
+        $this->assertEquals($randomAdmin->getId(), $auditorId2);
+    }
+
+    public function testBulkAssignInvalidReviewersToBankingAccounts()
+    {
+        $bankingAccount1 = $this->fixtures->create('banking_account', [
+            'id'            => 'randomBaAccId1',
+            'account_type'  => 'current',
+        ]);
+
+        $bankingAccount2 = $this->fixtures->create('banking_account', [
+            'id'            => 'randomBaAccId2',
+            'account_type'  => 'current',
+        ]);
+
+        $this->ba->adminAuth();
+
+        $this->testData[__FUNCTION__]['request']['content']['reviewer_id']            = 'admin_wrongAdminId12';
+        $this->testData[__FUNCTION__]['request']['content']['banking_account_ids'][0] = $bankingAccount1->getPublicId();
+        $this->testData[__FUNCTION__]['request']['content']['banking_account_ids'][1] = $bankingAccount2->getPublicId();
+
+        $this->startTest();
+    }
+
+    public function testBulkAssignReviewersToInvalidBankingAccounts()
+    {
+        $randomAdmin = $this->fixtures->create('admin', [
+            'org_id' => '100000razorpay'
+        ]);
+
+        $this->ba->adminAuth();
+
+        $this->testData[__FUNCTION__]['request']['content']['reviewer_id']                = $randomAdmin->getPublicId();
+        $this->testData[__FUNCTION__]['request']['content']['banking_account_ids'][0]     = 'bacc_wrongCurAccId1';
+        $this->testData[__FUNCTION__]['request']['content']['banking_account_ids'][1]     = 'bacc_wrongCurAccId2';
+
+        $this->startTest();
+    }
+
+    public function testBulkAssignReviewersToPartiallyInvalidBankingAccountList()
+    {
+        $bankingAccount1 = $this->fixtures->create('banking_account', [
+            'id'            => 'randomBaAccId1',
+            'account_type'  => 'current',
+        ]);
+
+        $randomAdmin = $this->fixtures->create('admin', [
+            'org_id' => '100000razorpay'
+        ]);
+
+        $this->ba->adminAuth();
+
+        $this->testData[__FUNCTION__]['request']['content']['reviewer_id']            = $randomAdmin->getPublicId();
+        $this->testData[__FUNCTION__]['request']['content']['banking_account_ids'][0] = $bankingAccount1->getPublicId();
+        $this->testData[__FUNCTION__]['request']['content']['banking_account_ids'][1] = 'bacc_wrongCurAccId2';
+
+        $this->startTest();
+
+        $auditorId1 = $bankingAccount1->reviewers()->first()->pivot->admin_id;
+
+        $this->assertEquals($randomAdmin->getId(), $auditorId1);
+    }
+
+    public function testCreateBankingAccountAdmin()
+    {
+        // Turn on the 'allow_all_merchants' feature for admin
+        DB::table('admins')->update(['allow_all_merchants' => 1]);
+
+        $this->ba->adminAuth();
+
+        Mail::fake();
+
+        $this->startTest();
+
+        $bankingAccount = $this->getDbLastEntity('banking_account');
+
+        $this->assertEquals(AccountType::CURRENT, $bankingAccount->getAccountType());
+
+        Mail::assertQueued(XProActivation::class);
+
+    }
+
 }

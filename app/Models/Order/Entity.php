@@ -11,6 +11,7 @@ use RZP\Models\Invoice;
 use RZP\Models\Transfer;
 use RZP\Models\Merchant;
 use RZP\Constants\Table;
+use RZP\Models\Payment\Config;
 use RZP\Models\Currency\Currency;
 use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Models\SubscriptionRegistration;
@@ -131,6 +132,8 @@ class Entity extends Base\PublicEntity
 
     const AUTH_TYPE = 'auth_type';
 
+    const CHECKOUT_CONFIG_ID = 'checkout_config_id';
+
     protected $fillable = [
         self::DISCOUNT,
         self::AMOUNT,
@@ -145,24 +148,26 @@ class Entity extends Base\PublicEntity
         self::PARTIAL_PAYMENT,
         self::FIRST_PAYMENT_MIN_AMOUNT,
         self::PAYER_NAME,
+        self::CHECKOUT_CONFIG_ID,
     ];
 
     protected $generateIdOnCreate = true;
 
     protected $defaults = [
-        self::DISCOUNT        => false,
-        self::PARTIAL_PAYMENT => false,
-        self::RECEIPT         => null,
-        self::ATTEMPTS        => 0,
-        self::STATUS          => Status::CREATED,
-        self::PAYMENT_CAPTURE => 0,
-        self::AMOUNT_PAID     => 0,
-        self::AUTHORIZED      => 0,
-        self::NOTES           => [],
-        self::METHOD          => null,
-        self::ACCOUNT_NUMBER  => null,
-        self::BANK            => null,
-        self::FORCE_OFFER     => null,
+        self::DISCOUNT                 => false,
+        self::PARTIAL_PAYMENT          => false,
+        self::RECEIPT                  => null,
+        self::ATTEMPTS                 => 0,
+        self::STATUS                   => Status::CREATED,
+        self::PAYMENT_CAPTURE          => 0,
+        self::AMOUNT_PAID              => 0,
+        self::AUTHORIZED               => 0,
+        self::NOTES                    => [],
+        self::METHOD                   => null,
+        self::ACCOUNT_NUMBER           => null,
+        self::BANK                     => null,
+        self::FORCE_OFFER              => null,
+        self::CHECKOUT_CONFIG_ID       => null,
     ];
 
     protected $public = [
@@ -187,6 +192,7 @@ class Entity extends Base\PublicEntity
         self::CREATED_AT,
         self::TOKEN,
         self::TRANSFERS,
+        self::CHECKOUT_CONFIG_ID,
     ];
 
     protected $casts = [
@@ -217,6 +223,7 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::ENTITY,
         self::OFFERS,
+        self::CHECKOUT_CONFIG_ID,
         // This is likely needed for the merchant,
         // but still needs to be discussed.
         // self::DISCOUNT,
@@ -225,6 +232,10 @@ class Entity extends Base\PublicEntity
     protected $dates = [
         self::CREATED_AT,
         self::UPDATED_AT,
+    ];
+
+    protected static $modifiers = [
+        self::CHECKOUT_CONFIG_ID,
     ];
 
     protected static $sign = 'order';
@@ -259,6 +270,11 @@ class Entity extends Base\PublicEntity
     public function lineItems()
     {
         return $this->morphMany('RZP\Models\LineItem\Entity', 'entity');
+    }
+
+    public function checkoutConfig()
+    {
+        return $this->hasOne('RZP\Models\Payment\Config\Entity');
     }
 
     public function offers()
@@ -628,6 +644,22 @@ class Entity extends Base\PublicEntity
         else
         {
             unset($array[self::DISCOUNT]);
+        }
+    }
+
+    public function setPublicCheckoutConfigIdAttribute(array & $array)
+        {
+            if (isset($array[self::CHECKOUT_CONFIG_ID]) === true)
+            {
+                $array[self::CHECKOUT_CONFIG_ID] = Config\Entity::getSignedId($array[self::CHECKOUT_CONFIG_ID]);
+            }
+        }
+
+    protected function modifyCheckoutConfigId(& $input)
+    {
+        if (empty($input[self::CHECKOUT_CONFIG_ID]) === false)
+        {
+           $input[self::CHECKOUT_CONFIG_ID] =   Config\Entity::verifyIdAndStripSign($input[self::CHECKOUT_CONFIG_ID]);
         }
     }
 }

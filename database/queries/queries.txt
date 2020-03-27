@@ -5688,3 +5688,6 @@ ALTER TABLE payment_configs
 
 ALTER TABLE disputes
     ADD COLUMN conversion_rate BIGINT UNSIGNED DEFAULT NULL;
+
+ALTER TABLE orders
+    ADD COLUMN checkout_config_id CHAR(14) DEFAULT NULL;

@@ -109,7 +109,4 @@ final class RazorxTreatment
     const RAZORPAY_X_ALLOW_UPI_PAYOUTS_VIA_ICICI_TO_CARD = 'razorpay_x_allow_upi_payouts_via_icici_to_card';
 
     const RAZORPAY_X_ENABLE_YESBANK_PAYOUTS = 'razorpay_x_enable_yesbank_payouts';
-
-    // Disabling bank transfer refunds by default - this feature is to enable it
-    const ENABLE_BANK_TRANSFER_REFUNDS = 'enable_bank_transfer_refunds';
 }

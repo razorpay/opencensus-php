@@ -300,7 +300,7 @@ class Service extends Base\Service
         $this->trace->info(
             TraceCode::FTS_UPDATE_FUND_TRANSFER_ATTEMPT,
             [
-                'input'     => $input
+                'input'     => $this->core()->redactDataForLogs($input)
             ]);
 
         return $this->core()->updateFundTransfer($input);

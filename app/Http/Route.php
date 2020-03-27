@@ -228,6 +228,7 @@ final class Route
         'merchant_fetch_bank_account'              => ['get',      'merchants/{id}/bank_account',                    'MerchantController@getBankAccount'                                 ],
         'merchant_generate_test_bank_acnt'         => ['post',     'merchants/bank_account/generate/test',           'MerchantController@postGenerateTestBankAccounts'                   ],
         'merchant_create_terminal'                 => ['post',     'merchants/{id}/terminals',                       'MerchantController@postCreateTerminal'                             ],
+        'merchant_create_terminal_internal'        => ['post',     'merchants/{id}/terminals/internal',              'MerchantController@postCreateTerminal',                            ],
         'merchant_get_terminals'                   => ['get',      'merchants/{id}/terminals',                       'MerchantController@getTerminals'                                   ],
         'merchant_onboard_terminal'                => ['post',     'merchants/{id}/terminals/onboard',               'MerchantController@onboardMerchantOnGateway'                       ],
         'merchant_get_terminal'                    => ['get',      'merchants/{mid}/terminals/{tid}',                'MerchantController@getTerminal'                                    ],
@@ -299,6 +300,7 @@ final class Route
         'terminal_check_encrypted_value'           => ['post',     'terminals/{id}/secret',                          'TerminalController@postCheckTerminalEncryptedValue'                ],
         'terminal_get_banks'                       => ['get',      'terminals/{id}/banks',                           'TerminalController@getBanks'                                       ],
         'terminal_set_banks'                       => ['patch',    'terminals/{id}/banks',                           'TerminalController@setBanks'                                       ],
+        'terminal_migrate_cron'                    => ['post',     'terminals/migrate_cron',                         'TerminalController@postTerminalsMigrateCron'                        ],
         'terminal_onboarding_update_status'        => ['put',      'terminal_onboarding_update_status',              'TerminalOnboardingController@putTerminalOnboardingStatus'    ],
         'terminal_enable'                          => ['put',      'terminals/{id}/enable',                          'TerminalOnboardingController@putTerminalEnable'                    ],
         'terminal_disable'                         => ['put',      'terminals/{id}/disable',                         'TerminalOnboardingController@putTerminalDisable'                   ],
@@ -306,6 +308,7 @@ final class Route
         'terminal_onboard'                         => ['post',     'terminals',                                      'TerminalOnboardingController@postCreateTerminal'                   ],
         'terminal_onboarding_verification'         => ['post',     'terminals/onboard/verification',                 'TerminalOnboardingController@postOnboardTerminalVerification'      ],
         'terminal_onboarding_creation'             => ['post',     'terminals/onboard/creation',                     'TerminalOnboardingController@postOnboardTerminalCreation'          ],
+        'terminal_onboard_callback'                => ['post',     'terminals/onboard/{gateway}/callback/{mode}',    'TerminalOnboardingController@postTerminalOnboardCallback'          ],
         'bank_transfer_process'                    => ['post',     'ecollect/validate',                              'BankTransferController@processBankTransfer'                        ],
         'bank_transfer_process_icici'              => ['post',     'ecollect/validate/icici',                        'BankTransferController@processIciciBankTransfer'                   ],
         'bank_transfer_process_file'               => ['post',     'ecollect/validate/file',                         'BankTransferController@processBankTransferFile'                    ],
@@ -659,8 +662,10 @@ final class Route
         'item_update'                              => ['patch',    'items/{id}',                                     'ItemController@updateItem'                                         ],
         'item_delete'                              => ['delete',   'items/{id}',                                     'ItemController@deleteItem'                                         ],
         'send_email_for_pl_service'                => ['post',     'payment_links/send_email',                       'InvoiceController@sendEmailForPaymentLinkService'                  ],
+        //payment page section
         'pages_view'                               => ['get,post', 'pages/{x_entity_id}/view',                       'PaymentLinkController@view'                                        ],
         'pages_view_by_slug'                       => ['get,post', 'pages/{slug}',                                   'PaymentLinkController@viewBySlug'                                  ],
+        // old set of urls to be changed to payment_pages
         'payment_link_view_get'                    => ['get,post', 'payment_links/{x_entity_id}/view',               'PaymentLinkController@view'                                        ],
         'payment_link_images'                      => ['post',     'payment_links/images',                           'PaymentLinkController@upload'                                      ],
         'payment_link_get'                         => ['get',      'payment_links/{id}',                             'PaymentLinkController@get'                                         ],
@@ -673,11 +678,26 @@ final class Route
         'payment_link_deactivate'                  => ['patch',    'payment_links/{id}/deactivate',                  'PaymentLinkController@deactivate'                                  ],
         'payment_link_activate'                    => ['patch',    'payment_links/{id}/activate',                    'PaymentLinkController@activate'                                    ],
         'payment_link_slug_exists'                 => ['get',      'payment_links/{slug}/exists',                    'PaymentLinkController@slugExists'                                  ],
-        'payment_page_item_update'                 => ['patch',    'payment_links/payment_page_item/{id}',           'PaymentLinkController@updatePaymentPageItem'                       ],
+        // once the below routes are stable, the above section will be removed and forwarded to pl service
+        'payment_page_view_get'                    => ['get,post', 'payment_pages/{x_entity_id}/view',               'PaymentLinkController@view'                                        ],
+        'payment_page_images'                      => ['post',     'payment_pages/images',                           'PaymentLinkController@upload'                                      ],
+        'payment_page_get'                         => ['get',      'payment_pages/{id}',                             'PaymentLinkController@get'                                         ],
+        'payment_page_get_details'                 => ['get',      'payment_pages/{id}/details',                     'PaymentLinkController@getWithDetailsForDashboard'                  ],
+        'payment_page_list'                        => ['get',      'payment_pages',                                  'PaymentLinkController@list'                                        ],
+        'payment_page_create'                      => ['post',     'payment_pages',                                  'PaymentLinkController@create'                                      ],
+        'payment_page_update'                      => ['patch',    'payment_pages/{id}',                             'PaymentLinkController@update'                                      ],
+        'payment_page_notify'                      => ['post',     'payment_pages/{id}/notify',                      'PaymentLinkController@sendNotification'                            ],
+        'payment_page_expire_cron'                 => ['post',     'payment_pages/expire',                           'PaymentLinkController@expirePaymentLinks'                          ],
+        'payment_page_deactivate'                  => ['patch',    'payment_pages/{id}/deactivate',                  'PaymentLinkController@deactivate'                                  ],
+        'payment_page_activate'                    => ['patch',    'payment_pages/{id}/activate',                    'PaymentLinkController@activate'                                    ],
+        'payment_page_slug_exists'                 => ['get',      'payment_pages/{slug}/exists',                    'PaymentLinkController@slugExists'                                  ],
+        // Already using payment page end point. No need to change anything
+        'payment_page_item_update'                 => ['patch',    'payment_pages/payment_page_item/{id}',           'PaymentLinkController@updatePaymentPageItem'                       ],
         'payment_page_items_migrate'               => ['post',     'payment_pages/migrate_payment_page_items',       'PaymentLinkController@migratePaymentPageItems'                     ],
         'payment_page_create_order'                => ['post',     'payment_pages/{id}/order',                       'PaymentLinkController@createOrder'                                 ],
         'payment_page_create_order_option'         => ['options',  'payment_pages/{id}/order',                       'PaymentLinkController@createOrderOptions'                          ],
         'payment_page_items_migrate_min_purchase'  => ['post',     'payment_pages/migrate_payment_page_purchase',    'PaymentLinkController@migratePaymentPageItemForMinPurchase'        ],
+        // end of payment page section
         'app_delete_token'                         => ['delete',   'apps/tokens/{token}',                            'CustomerController@deleteTokenForGlobalCustomer'                   ],
         'app_fetch_tokens'                         => ['get',      'apps/tokens',                                    'CustomerController@fetchTokensForGlobalCustomer'                   ],
         'app_fetch_payments'                       => ['get',      'apps/payments',                                  'CustomerController@fetchPaymentsForGlobalCustomer'                 ],
@@ -846,6 +866,7 @@ final class Route
         'action_comment_create'                    => ['post',     'w-actions/{id}/comments',                        'WorkflowController@postActionComment'                              ],
         'workflow_payout_amount_rules'             => ['get',      'workflows/rules/payout_amount',                  'WorkflowController@getWorkflowPayoutAmountRules'                   ],
         'workflow_payout_amount_rules_get_admin'   => ['get',      'admin-workflows/rules/payout_amount',            'WorkflowController@getWorkflowPayoutAmountRules'                   ],
+        'workflow_payout_amount_rules_edit'        => ['put',      'admin-workflows/rules/payout_amount',            'WorkflowController@editWorkflowPayoutAmountRules'                   ],
         'workflow_payout_amount_rules_create'      => ['post',     'workflows/rules/payout_amount',                  'WorkflowController@postWorkflowPayoutAmountRules'                  ],
         'workflow_merchants_create_payout_get'     => ['get',      'merchants/workflows/permissions/create_payout',  'WorkflowController@getMerchantIdsForCreatePayoutWorkflowPermission'],
 
@@ -1459,7 +1480,8 @@ final class Route
         // Governor Proxy APIs New - Rule Chain
         'governor_list_rule_chains_v1'            => ['get',      'namespaces/{namespace_id}/rule_chains',                                                              'GovernorController@proxy'              ],
         'governor_create_rule_chain_v1'           => ['post',     'namespaces/{namespace_id}/rule_chains',                                                              'GovernorController@proxy'              ],
-        'governor_delete_rule_chain_v1'           => ['delete',   'namespaces/{namespace_id}/rule_chains/{rule_chain_id}',                                                              'GovernorController@proxy'              ],
+        'governor_update_rule_chain_v1'           => ['put',      'namespaces/{namespace_id}/rule_chains/{rule_chain_id}',                                              'GovernorController@proxy'              ],
+        'governor_delete_rule_chain_v1'           => ['delete',   'namespaces/{namespace_id}/rule_chains/{rule_chain_id}',                                              'GovernorController@proxy'              ],
 
         // Governor Proxy APIs New - Rule Groups
         'governor_list_rule_groups_v1'            => ['get',      'namespaces/{namespace_id}/rule_chains/{rule_chain_id}/rule_groups',                                  'GovernorController@proxy'              ],
@@ -1470,10 +1492,12 @@ final class Route
         'governor_update_rule_group_v1'           => ['put',      'namespaces/{namespace_id}/rule_chains/{rule_chain_id}/rule_groups/{rule_group_id}',                  'GovernorController@proxy'              ],
 
         'banking_account_create'                  => ['post',     'banking_accounts',                                          'BankingAccountController@create'                           ],
+        'banking_account_create_admin'            => ['post',     'banking_accounts_admin',                                    'BankingAccountController@create'                           ],
         'banking_account_activate'                => ['post',     'banking_accounts/{id}/activate',                            'BankingAccountController@activate'                         ],
         'banking_serviceable_pincodes'            => ['post',     'banking_account/serviceability/{channel}/pincodes',         'BankingAccountController@postServiceablePincodes'          ],
         'banking_accounts_list'                   => ['get',      'banking_accounts',                                          'BankingAccountController@list'                             ],
         'banking_account_update'                  => ['patch',    'banking_accounts/{id}',                                     'BankingAccountController@update'                           ],
+        'banking_account_bulk_assign_reviewer'    => ['post',     'banking_accounts/reviewers',                                'BankingAccountController@bulkAssignReviewer'               ],
         'banking_account_gateway_balance_fetch'   => ['put',      'banking_accounts/gateway/{channel}/balance',                'BankingAccountController@processGatewayBalanceUpdate'      ],
         'banking_account_webhook_account_info'    => ['post',     'banking_accounts/webhooks/account_info/{channel}',          'BankingAccountController@processAccountInfoWebhook'        ],
         'banking_account_webhook_account_info'
@@ -1489,6 +1513,12 @@ final class Route
         'fetch_throttle_settings'                 => ['get',      'throttle/settings',                                         'ThrottleController@list'                                   ],
         'edit_throttle_settings'                  => ['put',      'throttle/settings',                                         'ThrottleController@create'                                 ],
         'bootstrap_key_cache'                     => ['post',     'throttle/bootstrap_key_cache',                              'ThrottleController@bootstrapKeyCache'                      ],
+        'throttle_create_config'                  => ['post',     'throttle/config',                                           'ThrottleController@createConfig'                           ],
+        'throttle_get_config'                     => ['get',      'throttle/config',                                           'ThrottleController@fetchConfig'                            ],
+        'throttle_delete_config'                  => ['delete',   'throttle/config',                                           'ThrottleController@deleteConfig'                           ],
+
+
+
 
         //merchant document related routes
         'merchant_document_delete'                => ['delete',   'merchant/documents/{id}',                                   'DocumentController@delete'                                 ],
@@ -1619,6 +1649,7 @@ final class Route
         'invoice_get_pdf',
         'pages_view',
         'payment_link_view_get',
+        'payment_page_view_get',
         'merchant_public_get_banks',
         'merchant_methods',
         'merchant_checkout_preferences',
@@ -1713,6 +1744,7 @@ final class Route
         'pages_view',
         'pages_view_by_slug',
         'payment_link_view_get',
+        'payment_page_view_get',
     ];
 
     public static $private = [
@@ -1971,6 +2003,7 @@ final class Route
         'invoice_delete_bulk',
         'invoice_send_notifications',
         'payment_link_expire_cron',
+        'payment_page_expire_cron',
         'merchant_activation_migrate',
         'merchant_admin_lead_put',
         'merchant_get_app_access_mapping',
@@ -2111,7 +2144,9 @@ final class Route
         'merchant_poc_update',
         'unclaimed_merchant_poc_update',
         'internal_merchant_fetch',
+        'terminal_migrate_cron',
         'virtual_account_batch_migrate_yesbank',
+        'merchant_create_terminal_internal',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -2346,6 +2381,15 @@ final class Route
         'payment_link_deactivate',
         'payment_link_activate',
         'payment_link_slug_exists',
+        'payment_page_get',
+        'payment_page_get_details',
+        'payment_page_list',
+        'payment_page_create',
+        'payment_page_update',
+        'payment_page_notify',
+        'payment_page_deactivate',
+        'payment_page_activate',
+        'payment_page_slug_exists',
         'payment_page_item_update',
         'submerchants_fetch',
         'submerchants_fetch_multiple',
@@ -2389,6 +2433,7 @@ final class Route
         'payouts_summary',
         'payouts_workflow_summary',
         'payment_link_images',
+        'payment_page_images',
         'commissions_get_multiple',
         'subscription_payment_fetch_by_id',
         'commissions_get',
@@ -2531,6 +2576,7 @@ final class Route
         'workflow_update',
         'workflow_delete',
         'workflow_payout_amount_rules_get_admin',
+        'workflow_payout_amount_rules_edit',
         'workflow_merchants_create_payout_get',
         'workflow_payout_amount_rules_create',
         'action_checker_create',
@@ -2870,6 +2916,7 @@ final class Route
         'banking_account_activate',
         'banking_account_webhook_account_info_internal',
         'banking_account_activation_status_change_log',
+        'banking_account_bulk_assign_reviewer',
 
         'governor_create_namespace_v1',
         'governor_get_client_v1',
@@ -2886,6 +2933,7 @@ final class Route
         'governor_delete_rule_v1',
         'governor_list_rule_chains_v1',
         'governor_create_rule_chain_v1',
+        'governor_update_rule_chain_v1',
         'governor_delete_rule_chain_v1',
         'governor_list_rule_groups_v1',
         'governor_create_rule_group_v1',
@@ -2894,11 +2942,16 @@ final class Route
         'governor_delete_rule_group_v1',
         'governor_update_rule_group_v1',
         'governor_update_rule_v1',
+        'banking_account_create_admin',
 
         // throttle settings routes
         'fetch_throttle_settings',
         'edit_throttle_settings',
         'bootstrap_key_cache',
+        'throttle_create_config',
+        'throttle_delete_config',
+        'throttle_get_config',
+
 
         // Excel Store routes
         'excel_store_list_pages',
@@ -3067,6 +3120,7 @@ final class Route
         'workflow_payout_amount_rules_create'      => Permission::CREATE_WORKFLOW,
         'workflow_get'                             => Permission::VIEW_WORKFLOW,
         'workflow_payout_amount_rules_get_admin'   => Permission::VIEW_WORKFLOW,
+        'workflow_payout_amount_rules_edit'        => Permission::EDIT_WORKFLOW,
         'workflow_get_multiple'                    => Permission::VIEW_ALL_WORKFLOW,
         'workflow_merchants_create_payout_get'     => Permission::VIEW_ALL_WORKFLOW,
         'workflow_update'                          => Permission::EDIT_WORKFLOW,
@@ -3494,6 +3548,7 @@ final class Route
         'governor_update_rule_v1'                  => Permission::EDIT_GATEWAY_RULE,
         'governor_list_rule_chains_v1'             => Permission::VIEW_GATEWAY_RULE,
         'governor_create_rule_chain_v1'            => Permission::CREATE_GATEWAY_RULE,
+        'governor_update_rule_chain_v1'            => Permission::EDIT_GATEWAY_RULE,
         'governor_delete_rule_chain_v1'            => Permission::DELETE_GATEWAY_RULE,
         'governor_list_rule_groups_v1'             => Permission::VIEW_GATEWAY_RULE,
         'governor_create_rule_group_v1'            => Permission::CREATE_GATEWAY_RULE,
@@ -3518,6 +3573,9 @@ final class Route
         'fetch_throttle_settings'                  => Permission::EDIT_THROTTLE_SETTINGS,
         'edit_throttle_settings'                   => Permission::EDIT_THROTTLE_SETTINGS,
         'bootstrap_key_cache'                      => Permission::EDIT_THROTTLE_SETTINGS,
+        'throttle_create_config'                   => Permission::EDIT_THROTTLE_SETTINGS,
+        'throttle_delete_config'                   => Permission::EDIT_THROTTLE_SETTINGS,
+        'throttle_get_config'                      => Permission::EDIT_THROTTLE_SETTINGS,
 
         'excel_store_list_pages'                   => Permission::ACCESS_EXCEL_STORE,
         'excel_store_create_page'                  => Permission::ACCESS_EXCEL_STORE,
@@ -3531,6 +3589,7 @@ final class Route
         'banking_account_yesb_bulk_create'         => Permission::BANKING_UPDATE_ACCOUNT,
         'banking_account_activation_status_'
         . 'change_log'                             => '*',
+        'banking_account_bulk_assign_reviewer'     => Permission::ASSIGN_BANKING_ACCOUNT_REVIEWER,
         'set_channel_action'                       => Permission::SETTLEMENT_BULK_UPDATE,
         'get_channel_action'                       => Permission::SETTLEMENT_BULK_UPDATE,
 
@@ -3604,6 +3663,7 @@ final class Route
         'link_offline_device'                       => '*',
         'user_roles_mapping_bulk'                   => Permission::MAKE_API_CALL,
         'consume_typeform_webhook'                  => Permission::EDIT_MERCHANT_INTERNATIONAL,
+        'banking_account_create_admin'              => '*',
     ];
 
     public static $bankingRoutePermissions = [
@@ -3658,8 +3718,8 @@ final class Route
         'payout_links_fetch_by_id'                     => Permission::VIEW_PAYOUT_LINKS,
         'payout_links_create'                          => Permission::CREATE_PAYOUT_LINKS,
         'payout_links_cancel'                          => Permission::CANCEL_PAYOUT_LINKS,
-        'payout_links_merchant_on_boarding_status'     => Permission::SUMMARY_PAYOUT_LINKS,
-        'payout_links_merchant_summary'                => Permission::ONBOARDING_PAYOUT_LINKS,
+        'payout_links_merchant_on_boarding_status'     => Permission::VIEW_PAYOUT_LINKS,
+        'payout_links_merchant_summary'                => Permission::VIEW_PAYOUT_LINKS,
         'payout_links_settings_post'                   => Permission::SETTINGS_PAYOUT_LINKS,
         'payout_links_settings_get'                    => Permission::SETTINGS_PAYOUT_LINKS,
         'payout_links_merchant_settings_get'           => Permission::DASHBOARD_PAYOUT_LINKS,
@@ -3791,6 +3851,7 @@ final class Route
         'gateway_payment_callback_amazonpay_post',
         'gateway_payment_verify_get',
         'gateway_payment_verify_post',
+        'terminal_onboard_callback',
         'mailgun_webhook',
         'gateway_downtime_source_webhook',
         'checkout_onyx',
@@ -3952,6 +4013,7 @@ final class Route
             'invoice_expire_bulk',
             'invoice_delete_bulk',
             'payment_link_expire_cron',
+            'payment_page_expire_cron',
             'batch_process_file',
             'order_refund_multiple_authorized',
             'subscriptions_charge_invoices',
@@ -4025,6 +4087,7 @@ final class Route
             'banking_account_gateway_balance_fetch',
             'merchant_poc_update',
             'unclaimed_merchant_poc_update',
+            'terminal_migrate_cron',
             'virtual_account_batch_migrate_yesbank',
             'transfer_settlements_update'
         ],
@@ -4208,10 +4271,10 @@ final class Route
         ],
 
         'terminals_service' => [
-            'internal_merchant_fetch'  
+            'internal_merchant_fetch',
+            'merchant_create_terminal_internal'
         ],
-        
-      ];
+    ];
 
     //
     // Apps that receive a debug error response by default. We do

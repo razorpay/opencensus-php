@@ -1122,14 +1122,18 @@ class Entity extends Base\PublicEntity
 
         $user = $basicAuth->getUser();
 
-        $userRoleIds = $user->roles()->allRelatedIds()->toArray();
+        // If the entity is a user(which implies the product is banking),
+        // then the role id for that user for the merchant in context
+        // will have to be fetched from the merchant_users table.
+        // This is because the role_map table doesn't have any merchant context.
+        $userRoleId = (new User\Core())->getUserRoleIdInMerchantForBanking($user->getId());
 
         $permissionId = $repo->permission
                              ->retrieveIdsByNamesAndOrg(Permission\Name::CREATE_PAYOUT, Org\Entity::RAZORPAY_ORG_ID)
                              ->first();
 
         $pendingActions = $repo->workflow_action
-                               ->getPendingActionsOnRoleIds($user->getId(), $this, $permissionId, $userRoleIds);
+                               ->getPendingActionsOnRoleIds($user->getId(), $this, $permissionId, $userRoleId);
 
         $attributes[self::PENDING_ON_USER] = ($pendingActions->count() > 0);
     }

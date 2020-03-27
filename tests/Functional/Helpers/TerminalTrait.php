@@ -27,4 +27,9 @@ trait TerminalTrait
             ->times($times)
             ->andReturnUsing($closure);
     }
+
+    protected function throwTerminalsServiceIntegrationException()
+    {
+        throw new \Requests_Exception_Transport_cURL('curl timed out', []);
+    }
 }

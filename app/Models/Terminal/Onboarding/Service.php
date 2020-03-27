@@ -290,6 +290,15 @@ class Service extends Base\Service
         return $response;
     }
 
+    public function processTerminalOnboardCallback(string $gateway, array $input)
+    {
+        $this->app['trace']->info(TraceCode::TERMINAL_ONBOARDING_CALLBACK_RECEIVED, $input);
+
+        $response = $this->app['terminals_service']->terminalOnboardCallback($gateway, $input);
+
+        return $response;
+    }
+
     protected function verifyPartnerTerminalOnboardingAccess()
     {
         if ($this->isTerminalOnboardinglEnabled() === false)

@@ -33,6 +33,129 @@ class Service
         return $redis->hgetall($this->getKey($input));
     }
 
+    public function createConfig(array $input)
+    {
+        (new Validator)->validateInput('create_config', $input);
+
+        $redis = $this->initRedisConnection();
+
+        $key = $this->getRedisKey($input);
+
+        return $redis->hmset($key, $this->getConfigRules($input));
+    }
+
+    public function fetchConfig(array $input)
+    {
+       (new Validator)->validateInput('delete_config', $input);
+
+        $key = $this->getRedisKey($input);
+
+        $redis = $this->initRedisConnection();
+
+        $rules = $redis->hgetall($key);
+
+        if (empty($rules) === true)
+        {
+            return [];
+        }
+
+        $formattedRules = $this->formatRules($rules);
+
+        if ((empty($input['merchant_id']) === false) and
+            (empty($input['route']) === false) and
+            (array_key_exists($input['route'], $formattedRules)))
+        {
+            return $formattedRules[$input['route']];
+        }
+
+        return $formattedRules;
+    }
+
+    public function formatRules($rules)
+    {
+        $formatRules = [];
+
+        foreach ($rules as $key => $value)
+        {
+            $items = explode(":", $key);
+
+            $formattedRules[$items[0]][$items[1]] = $value;
+        }
+
+        return $formattedRules;
+    }
+
+    public function deleteConfig(array $input)
+    {
+      (new Validator)->validateInput('delete_config', $input);
+
+      $redis = $this->initRedisConnection();
+
+      $key = $this->getRedisKey($input);
+
+      if ((empty($input['merchant_id']) === false) and
+          (empty($input['route']) === false))
+      {
+        $keyPrefix = $input['route'] . ':';
+
+        $setKeys = [
+            $keyPrefix . K::THROTTLE_REQUEST_COUNT,
+            $keyPrefix . K::THROTTLE_REQUEST_WINDOW,
+        ];
+
+        return $redis->hdel($key, $setKeys);
+      }
+
+      // delete complete route config.
+      return $redis->del($key);
+    }
+
+    protected function deleteMerchantConfig($input, $key)
+    {
+        $redis = $this->initRedisConnection();
+
+        if (empty($input['route']) === true)
+        {
+            return $redis->del($key);
+        }
+
+
+
+        return $redis->hdel($key, $setKeys);
+    }
+
+    protected function getKeyPrefix(array $input)
+    {
+        $keyPrefix = $input['route'] . ':';
+    }
+
+    protected function getConfigRules(array $input): array
+    {
+        $formattedRules = [];
+
+        $keyPrefix = $input['route'] . ':';
+
+        if ($input[K::CONFIGURATION_TYPE] === K::CONFIGURATION_TYPE_ROUTE)
+        {
+            $formattedRules[$keyPrefix . K::CONFIGURATION_TYPE] = $input[K::THROTTLE_TYPE];
+        }
+
+        $formattedRules[$keyPrefix . K::THROTTLE_REQUEST_COUNT]  = (int)  $input[K::THROTTLE_REQUEST_COUNT];
+        $formattedRules[$keyPrefix . K::THROTTLE_REQUEST_WINDOW] = (int) $input[K::THROTTLE_REQUEST_WINDOW];
+
+        return $formattedRules;
+    }
+
+    protected function getRedisKey($input): string
+    {
+        if (empty($input['merchant_id']) === true)
+        {
+            return K::THROTTLE_PREFIX . K::CONFIGURATION_TYPE_ROUTE . ':' . $input['route'];
+        }
+
+        return K::THROTTLE_PREFIX . K::CONFIGURATION_TYPE_MERCHANT . ':' . $input['merchant_id'];
+    }
+
     /**
      * Get the global or id level settings key based on whether we are setting global or id level settings
      *
@@ -92,7 +215,7 @@ class Service
 
     /**
      * Get rule prefix based on level of overriding
-     * 
+     *
      * @param string $mode
      * @param string $auth
      * @param int    $proxy

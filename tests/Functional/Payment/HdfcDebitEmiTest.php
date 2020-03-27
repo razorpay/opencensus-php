@@ -86,7 +86,7 @@ class HdfcDebitEmiTest extends TestCase
                 'action'     => 'authorize',
                 'amount'     => 300000,
                 'gateway'    => 'hdfc_debit_emi',
-                'raw'        => '{"Token": "123456", "Status": "Success", "ErrorCode": "0000", "BankReferncNo": "abc123456", "EligibilityStatus": "Yes", "MerchantReferenceNo": "DoERhejxpA5CjO", "OrderConfirmationStatus": "Yes"}',
+                'raw'        => '{"Token": "123456", "Status": "Success", "ErrorCode": "0000", "BankReferenceNo": "abc123456", "EligibilityStatus": "Yes", "MerchantReferenceNo": "DoERhejxpA5CjO", "OrderConfirmationStatus": "Yes"}',
             ]);
 
         $this->refundPayment('pay_' . $payment->getId());

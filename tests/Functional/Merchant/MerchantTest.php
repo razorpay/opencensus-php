@@ -6550,4 +6550,38 @@ class MerchantTest extends TestCase
 
         $this->assertContains('abc.com', $merchant->getWhitelistedDomains());
     }
+
+    public function testGetCheckoutPreferencesWithConfigIdInOrder()
+    {
+        $this->ba->publicAuth();
+
+        $config = $this->fixtures->create('config');
+
+        $order = $this->fixtures->create('order', ['checkout_config_id' => $config->getId()]);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['order_id'] = $order->getPublicId();
+
+        $response = $this->runRequestResponseFlow($testData);
+
+        $this->assertArrayHasKey('checkout_config', $response);
+    }
+
+    public function testGetCheckoutPreferencesWithDefaultConfig()
+    {
+        $this->ba->publicAuth();
+
+        $config = $this->fixtures->create('config');
+
+        $order = $this->fixtures->create('order');
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['order_id'] = $order->getPublicId();
+
+        $response = $this->runRequestResponseFlow($testData);
+
+        $this->assertArrayHasKey('checkout_config', $response);
+    }
 }

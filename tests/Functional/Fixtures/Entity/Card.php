@@ -70,4 +70,23 @@ class Card extends Base
 
         return $cards;
     }
+
+    public function createHdfcDebitEmiCard()
+    {
+        return $this->fixtures->create(
+            'card',
+            [
+                'merchant_id'        => '10000000000000',
+                'name'               => 'Albin',
+                'iin'                => '485446',
+                'last4'              => '0607',
+                'network'            => 'Visa',
+                'type'               => 'debit',
+                'issuer'             => 'HDFC',
+                'vault'              => 'rzpvault',
+                'vault_token'        => 'NDg1NDQ2MDEwMDg0MDYwNw==',
+                'global_fingerprint' => '==wNwYDM0gDMwEDM2QDN1gDN',
+            ]
+        );
+    }
 }

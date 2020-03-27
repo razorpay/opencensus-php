@@ -6,8 +6,10 @@ use DB;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use RZP\Models\Admin\Role\Repository as RoleRepository;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 use RZP\Tests\Functional\Helpers\Workflow\WorkflowTrait;
+use RZP\Tests\Functional\Fixtures\Entity\Org;
 
 
 class WorkflowPayoutAmountRulesTest extends TestCase
@@ -21,6 +23,8 @@ class WorkflowPayoutAmountRulesTest extends TestCase
     protected $input = null;
     protected $workflowIds = [];
     protected $customMid = null;
+    protected $permissionId = null;
+    protected $makerRole = null;
 
     public function setUp()
     {
@@ -46,7 +50,7 @@ class WorkflowPayoutAmountRulesTest extends TestCase
 
         // Fetch permissionId for 'create_payout' permission which will be useful later
         // We pick the create_payout permission belonging to payouts category
-        $permissionId = DB::table('permissions')->where('name','=','create_payout')
+        $this->permissionId = DB::table('permissions')->where('name','=','create_payout')
                                                 ->where('category','=','payouts')
                                                 ->value('id');
 
@@ -69,7 +73,7 @@ class WorkflowPayoutAmountRulesTest extends TestCase
             DB::table('workflow_permissions')->insert(
                 [
                     'workflow_id'      => $this->workflowIds[$index],
-                    'permission_id'    => $permissionId
+                    'permission_id'    => $this->permissionId
                 ]
             );
         }
@@ -93,10 +97,12 @@ class WorkflowPayoutAmountRulesTest extends TestCase
             DB::table('workflow_permissions')->insert(
                 [
                     'workflow_id'      => $this->workflowIds[$index],
-                    'permission_id'    => $permissionId
+                    'permission_id'    => $this->permissionId
                 ]
             );
         }
+
+        $this->makerRole = (new RoleRepository())->findByIdAndOrgId(Org::MAKER_ROLE, Org::RZP_ORG);
 
         // Turn on the 'allow_all_merchants' feature for admin
         DB::table('admins')->update(['allow_all_merchants' => 1]);
@@ -150,6 +156,72 @@ class WorkflowPayoutAmountRulesTest extends TestCase
         $this->startTest();
     }
 
+    public function testEditPayoutWorkflow()
+    {
+        $this->ba->adminProxyAuth();
+
+        // Attach a rule to the first workflow which we have created
+        $payoutAmountRule = $this->fixtures->create('workflow_payout_amount_rules',[
+            'workflow_id' => $this->workflowIds[0],
+            'min_amount'  => 0,
+            'max_amount'  => 100
+        ]);
+
+        $this->fixtures->create('workflow_payout_amount_rules',[
+            'id'          => '123456',
+            'workflow_id' => $this->workflowIds[1],
+            'min_amount'  => 100,
+            'max_amount'  => null
+        ]);
+
+        $this->testData[__FUNCTION__]['request']['content']['workflows'][0]['permissions'][0] = "perm_" . $this->permissionId;
+        $this->testData[__FUNCTION__]['request']['content']['workflows'][0]['levels'][0]['steps'][0]['role_id'] = "role_" . $this->makerRole->getId();
+
+        $this->startTest();
+    }
+
+    public function testEditActivePayoutWorkflow()
+    {
+        $this->ba->adminProxyAuth();
+
+        // Attach a rule to the first workflow which we have created
+        $payoutAmountRule = $this->fixtures->create('workflow_payout_amount_rules',[
+            'workflow_id' => $this->workflowIds[0],
+            'min_amount'  => 0,
+            'max_amount'  => 100
+        ]);
+
+        $this->fixtures->create('workflow_payout_amount_rules',[
+            'id'          => '123456',
+            'workflow_id' => $this->workflowIds[1],
+            'min_amount'  => 100,
+            'max_amount'  => null
+        ]);
+
+        $this->testData[__FUNCTION__]['request']['content']['workflows'][0]['permissions'][0] = "perm_" . $this->permissionId;
+        $this->testData[__FUNCTION__]['request']['content']['workflows'][0]['levels'][0]['steps'][0]['role_id'] = "role_" . $this->makerRole->getId();
+
+        DB::table('workflow_actions')->insert(
+            [
+                'id'               => '123456',
+                'org_id'           => $this->org->getId(),
+                'entity_id'        => '12345',
+                'entity_name'      => 'payout',
+                'workflow_id'      => $this->workflowIds[0],
+                'permission_id'    => $this->permissionId,
+                'maker_id'         => $this->makerRole->getId(),
+                'maker_type'       => 'merchant',
+                'approved'         => 0,
+                'current_level'    => 1,
+                'state'            => 'open',
+                'created_at'       => 1571652998,
+                'updated_at'       => 1571652998,
+            ]
+        );
+
+        $this->startTest();
+    }
+
     public function testCreateRulesWithWrongWorkflowId()
     {
         $this->ba->adminProxyAuth();
@@ -184,8 +256,6 @@ class WorkflowPayoutAmountRulesTest extends TestCase
 
         // Place its workflow id in request body
         $this->testData[__FUNCTION__]['request']['content']['rules'][0]['workflow_id'] = 'workflow_'.$this->workflowIds[0];
-
-        $this->startTest();
     }
 
     public function testGetMerchantIdsForCreatePayoutWorkflowPermission()

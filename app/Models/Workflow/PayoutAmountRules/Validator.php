@@ -6,6 +6,7 @@ use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Models\Workflow\Base;
 use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Models\Workflow\Entity as WorkflowEntity;
 
 class Validator extends Base\Validator
 {
@@ -19,6 +20,18 @@ class Validator extends Base\Validator
         Entity::RULES . '.*.' . Entity::WORKFLOW_ID => 'present|string|nullable',
         Entity::RULES . '.*.' . Entity::MIN_AMOUNT  => 'required|integer|min:0',
         Entity::RULES . '.*.' . Entity::MAX_AMOUNT  => 'present|integer|nullable',
+    ];
+
+    protected static $editPayoutWorkflowRules = [
+        Entity::EXPAND                                                                      => 'sometimes|array',
+        Entity::WORKFLOWS                                                                   => 'required|array',
+        Entity::WORKFLOWS . '.*.' . WorkflowEntity::NAME                                    => 'sometimes|string|max:150',
+        Entity::WORKFLOWS . '.*.' . WorkflowEntity::PERMISSIONS                             => 'sometimes|array',
+        Entity::WORKFLOWS . '.*.' . WorkflowEntity::LEVELS                                  => 'sometimes|array',
+        Entity::WORKFLOWS . '.*.' . WorkflowEntity::ORG_ID                                  => 'sometimes|public_id|string|size:18',
+        Entity::WORKFLOWS . '.*.' . Entity::PAYOUTAMOUNTRULES                               => 'required|array',
+        Entity::WORKFLOWS . '.*.' . Entity::PAYOUTAMOUNTRULES . '.*.' . Entity::MIN_AMOUNT  => 'required|integer|min:0',
+        Entity::WORKFLOWS . '.*.' . Entity::PAYOUTAMOUNTRULES . '.*.' . Entity::MAX_AMOUNT  => 'present|integer|nullable',
     ];
 
     protected static $fetchMerchantIdRules = [
