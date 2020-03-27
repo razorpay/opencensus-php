@@ -520,8 +520,8 @@ class Processor
             return;
         }
 
-        if (isset($input['dcc_currency']) === true and
-            isset($input['currency_request_id']) === true)
+        if ((isset($input['dcc_currency']) === true) and
+            (isset($input['currency_request_id']) === true))
         {
             $dccCurrency = $input['dcc_currency'];
 
