@@ -8,11 +8,19 @@ export default ({ userId }) => {
   const raiseTicket = () => {
     if (window.rzpTicketSystem) {
       const rzpTicketSystem = window.rzpTicketSystem;
-      rzpTicketSystem.setPrefill('#request', ['merchant']);
+      rzpTicketSystem.setPrefill('#request', [
+        'merchant',
+        'covid-19-relief-query',
+      ]);
       rzpTicketSystem.openModal('#ticket');
       setTimeout(() => {
         rzpTicketSystem.modal.next();
       }, 0);
+      setTimeout(() => {
+        document.getElementsByName('request-description')[0].value =
+          'Hello Team,\n' +
+          'I’d like to know if I can avail the free credits and same day settlement for my account on Razorpay';
+      }, 1000);
     }
   };
 
