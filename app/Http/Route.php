@@ -264,6 +264,7 @@ final class Route
         'mailing_list_remove_suspended_merchant'   => ['post',     'merchant/remove/suspended',                      'MerchantController@deleteSuspendedMerchantsFromMailingList'        ],
         'merchant_details_fetch'                   => ['get',      'merchants/details',                              'MerchantController@getMerchantDetails'                             ],
         'merchant_details_patch'                   => ['patch',    'merchants/details',                              'MerchantController@patchMerchantDetails'                           ],
+        'internal_merchant_fetch'                  => ['get',      'internal/merchants/{id}',                        'MerchantController@internalGetMerchant'                            ],
         'merchant_invoice_add_bulk'                => ['post',     'merchants/invoice/bulk',                         'MerchantInvoiceController@postMultipleEntities'                    ],
         'merchant_get_app_access_mapping'          => ['get',      'merchants/{id}/applications',                    'MerchantController@getConnectedApplications'                       ],
         'merchant_create_app_access_mapping'       => ['post',     'merchants/{id}/applications',                    'MerchantController@postMapOAuthApplication'                        ],
@@ -2144,6 +2145,7 @@ final class Route
         'banking_account_gateway_balance_fetch',
         'merchant_poc_update',
         'unclaimed_merchant_poc_update',
+        'internal_merchant_fetch',
         'terminal_migrate_cron',
         'virtual_account_batch_migrate_yesbank',
         'merchant_create_terminal_internal',
@@ -4277,7 +4279,8 @@ final class Route
         ],
 
         'terminals_service' => [
-            'merchant_create_terminal_internal',
+            'internal_merchant_fetch',
+            'merchant_create_terminal_internal'
         ],
     ];
 

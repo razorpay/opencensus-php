@@ -476,6 +476,7 @@ return [
     ],
 
     'terminals_service' => [
+        'secret'        => env('TERMINALS_SERVICE_API_SECRET'),
         'mock'          => env('TERMINALS_SERVICE_MOCK', false),
         'secret'        => env('TERMINALS_SERVICE_API_SECRET'),
         'live'          => [
