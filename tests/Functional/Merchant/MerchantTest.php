@@ -6543,13 +6543,13 @@ class MerchantTest extends TestCase
         $this->fixtures->merchant->activate('10000000000000');
 
         $request = [
-                'url' => '/preferences',
-                'method' => 'get',
-                'content' => [
-                    'contact' => '9988776655',
-                    'customer_id' => 'cust_100000customer',
-                    'currency' => 'INR',
-                ]
+            'url' => '/preferences',
+            'method' => 'get',
+            'content' => [
+                'contact' => '9988776655',
+                'customer_id' => 'cust_100000customer',
+                'currency' => 'INR',
+            ]
         ];
 
         $response = $this->sendRequest($request);
@@ -6560,6 +6560,7 @@ class MerchantTest extends TestCase
         $tokens = $responseContent['customer']['tokens'];
         $this->assertTrue($tokens['count'] > 0);
         $this->assertTrue(array_key_exists('dcc_enabled', $tokens['items'][0]) === true);
+    }
 
     public function testGetCheckoutPreferencesWithConfigIdInOrder()
     {
