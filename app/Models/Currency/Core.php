@@ -16,9 +16,9 @@ class Core extends Base\Core
 
     const DCC_MARK_UP_PERCENTAGE_KEY = 'dcc_mark_up_percent';
 
-    const REQUEST_VS_TIME_TTL = 60 * 60 * 2; // 2 hours
+    const REQUEST_VS_TIME_TTL = 60 * 1; // 1 hours
 
-    const HISTORICAL_EXCHANGE_RATE_TTL = 60 * 60 * 3; // 3 hours
+    const HISTORICAL_EXCHANGE_RATE_TTL = 60 * 2; // 2 hours
 
     const TIME_INTERVAL_MINS = 60;
 
