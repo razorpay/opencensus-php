@@ -307,6 +307,7 @@ final class Route
         'terminal_onboard'                         => ['post',     'terminals',                                      'TerminalOnboardingController@postCreateTerminal'                   ],
         'terminal_onboarding_verification'         => ['post',     'terminals/onboard/verification',                 'TerminalOnboardingController@postOnboardTerminalVerification'      ],
         'terminal_onboarding_creation'             => ['post',     'terminals/onboard/creation',                     'TerminalOnboardingController@postOnboardTerminalCreation'          ],
+        'initiate_terminal_onboarding'             => ['post',     'terminals/onboard',                              'TerminalOnboardingController@postInitiateOnboarding'               ],
         'terminal_onboard_callback'                => ['post',     'terminals/onboard/{gateway}/callback/{mode}',    'TerminalOnboardingController@postTerminalOnboardCallback'          ],
         'bank_transfer_process'                    => ['post',     'ecollect/validate',                              'BankTransferController@processBankTransfer'                        ],
         'bank_transfer_process_icici'              => ['post',     'ecollect/validate/icici',                        'BankTransferController@processIciciBankTransfer'                   ],
@@ -2474,6 +2475,9 @@ final class Route
         'fd_reserve_balance_ticket_status',
 
         'entity_bulk_update',
+
+        'initiate_terminal_onboarding',
+        
         'payout_links_merchant_settings_post',
         'payout_links_merchant_settings_get',
         'payout_links_merchant_on_boarding_status',
@@ -3177,6 +3181,7 @@ final class Route
         'terminal_reassign_merchant'               => Permission::ASSIGN_MERCHANT_TERMINAL,
         'terminal_add_merchant'                    => Permission::TERMINAL_MANAGE_MERCHANT,
         'terminal_remove_merchant'                 => Permission::TERMINAL_MANAGE_MERCHANT,
+        'initiate_terminal_onboarding'             => '*',
         'emi_plan_delete'                          => Permission::DELETE_EMI_PLAN,
         'iin_edit'                                 => Permission::EDIT_IIN_RULE,
         'iin_edit_bulk'                            => Permission::EDIT_IIN_RULE_BULK,
