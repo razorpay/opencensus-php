@@ -143,6 +143,7 @@ class Constants
     const PARTNER_ACTIVATE_MERCHANT       = 'partner_activate_merchant';
 
     const OFFLINE_PAYMENTS                = 'offline_payments';
+    const COVID                           = 'covid';
 
     /**
      * Disables retry option in checkout
