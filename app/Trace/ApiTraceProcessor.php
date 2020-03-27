@@ -183,8 +183,10 @@ class ApiTraceProcessor
         {
             if (is_string($item) === true)
             {
-                if (preg_match($cardRegex, $item, $matches) === 1)
+                if (preg_match_all($cardRegex, $item, $matches) !== false)
                 {
+                    $matches = $matches[0];
+
                    foreach ($matches as $match)
                    {
                        $item = str_replace($match, 'CARD_NUMBER_SCRUBBED' . '(' . strlen($match) . ')', $item);;

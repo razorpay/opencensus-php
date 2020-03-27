@@ -351,4 +351,117 @@ class CardRedactionTest extends TestCase
 
         $this->assertArraySelectiveEquals($expectedResponse, $updatedRecord);
     }
+
+    public function testCardRedactionInExceptionData()
+    {
+        /** @var ApiTraceProcessor $trace */
+        $trace = new ApiTraceProcessor($this->app);
+
+        $this->mockRouter('payout_create');
+
+        $record = [
+            "timestamp" => "2020-03-27T07:08:13.893",
+            "code"      => "BANK_TRANSFER_PROCESSING_FAILED",
+            "message"   => "BANK_TRANSFER_PROCESSING_FAILED",
+            "context"   => [
+                "class"   => "RZP\\Exception\\GatewayErrorException",
+                "code"    => "BAD_REQUEST_PAYMENT_FAILED",
+                "message" => "Payment failed\nGateway Error Code=> \nGateway Error Desc=> ",
+                "data"    => [
+                    "payer_account"  => "4012888888881881",
+                    "payer_ifsc"     => "HDFC0000001",
+                    "mode"           => "neft",
+                    "transaction_id" => "AYDIC1O4JPXPLBPTTUOOQ9",
+                    "time"           => 1543052014,
+                    "amount"         => 10000,
+                    "description"    => "Test bank transfer",
+                    "payee_account"  => "371449635398431",
+                    "payee_ifsc"     => "RAZRB000000"
+                ],
+                "stack"   => [
+                    "#0 /app/app/Models/VirtualAccount/Processor.php(70)=>" .
+                     "RZP\\Models\\BankTransfer\\Processor->isDuplicate(Object(RZP\\Models\\BankTransfer\\Entity))",
+                    "#1 /app/app/Models/BankTransfer/Core.php(102)=> RZP\\Models\\VirtualAccount\\Processor->" .
+                    "process(Object(RZP\\Models\\BankTransfer\\Entity))",
+                ]
+            ]
+        ];
+
+        $updatedRecord =  $trace($record);
+
+        $expectedResponse = [
+            "context" => [
+                "class"   => "RZP\\Exception\\GatewayErrorException",
+                "code"    => "BAD_REQUEST_PAYMENT_FAILED",
+                "message" => "Payment failed\nGateway Error Code=> \nGateway Error Desc=> ",
+                "data"    => [
+                    "payer_account"  => "CARD_NUMBER_SCRUBBED(16)",
+                    "payer_ifsc"     => "HDFC0000001",
+                    "mode"           => "neft",
+                    "transaction_id" => "AYDIC1O4JPXPLBPTTUOOQ9",
+                    "time"           => 1543052014,
+                    "amount"         => 10000,
+                    "description"    => "Test bank transfer",
+                    "payee_account"  => "CARD_NUMBER_SCRUBBED(15)",
+                    "payee_ifsc"     => "RAZRB000000"
+                ],
+                "stack"   => [
+                    "#0 /app/app/Models/VirtualAccount/Processor.php(70)=>" .
+                    "RZP\\Models\\BankTransfer\\Processor->isDuplicate(Object(RZP\\Models\\BankTransfer\\Entity))",
+                    "#1 /app/app/Models/BankTransfer/Core.php(102)=> RZP\\Models\\VirtualAccount\\Processor->" .
+                    "process(Object(RZP\\Models\\BankTransfer\\Entity))",
+                ]
+            ]
+        ];
+
+        $this->assertArraySelectiveEquals($expectedResponse, $updatedRecord);
+    }
+
+    public function testCardRedactionInExceptionStackTrace()
+    {
+        /** @var ApiTraceProcessor $trace */
+        $trace = new ApiTraceProcessor($this->app);
+
+        $this->mockRouter('payout_create');
+
+        $record = [
+            "timestamp" => "2020-03-26T14:43:12.457",
+            "code"      => "ERROR_EXCEPTION",
+            "message"   => "Unhandled critical exception occured",
+            "context"   => [
+                "class"   => "RZP\\Exception\\GatewayErrorException",
+                "code"    => "GATEWAY_ERROR_UNKNOWN_ERROR",
+                "message" => "Payment processing failed due to error at bank or wallet gateway\nGateway Error Code=> \nGateway Error Desc: ",
+                "data"    => [],
+                "stack"   => [
+                    "#0 /app/app/Http/Controllers/BankTransferController.php(25): RZP\\Models\\BankTransfer\\Service" .
+                    "->process1(371449635398431, 4012888888881881, NormalText, 37144963539)",
+                    "#1 [internal function]: RZP\\Http\\Controllers\\BankTransferController->processBankTransfer()",
+                    "#2 /app/vendor/laravel/framework/src/Illuminate/Routing/Controller.php(54): call_user_func_array(Array, Array)",
+                ]
+            ]
+        ];
+
+        $updatedRecord =  $trace($record);
+
+        $expectedResponse = [
+            "timestamp" => "2020-03-26T14:43:12.457",
+            "code"      => "ERROR_EXCEPTION",
+            "message"   => "Unhandled critical exception occured",
+            "context"   => [
+                "class"   => "RZP\\Exception\\GatewayErrorException",
+                "code"    => "GATEWAY_ERROR_UNKNOWN_ERROR",
+                "message" => "Payment processing failed due to error at bank or wallet gateway\nGateway Error Code=> \nGateway Error Desc: ",
+                "data"    => [],
+                "stack"   => [
+                    "#0 /app/app/Http/Controllers/BankTransferController.php(25): RZP\\Models\\BankTransfer\\Service" .
+                    "->process1(CARD_NUMBER_SCRUBBED(15), CARD_NUMBER_SCRUBBED(16), NormalText, 37144963539)",
+                    "#1 [internal function]: RZP\\Http\\Controllers\\BankTransferController->processBankTransfer()",
+                    "#2 /app/vendor/laravel/framework/src/Illuminate/Routing/Controller.php(54): call_user_func_array(Array, Array)",
+                ]
+            ]
+        ];
+
+        $this->assertArraySelectiveEquals($expectedResponse, $updatedRecord);
+    }
 }
