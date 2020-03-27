@@ -230,6 +230,7 @@ final class Route
         'merchant_create_terminal'                 => ['post',     'merchants/{id}/terminals',                       'MerchantController@postCreateTerminal'                             ],
         'merchant_create_terminal_internal'        => ['post',     'merchants/{id}/terminals/internal',              'MerchantController@postCreateTerminal',                            ],
         'merchant_get_terminals'                   => ['get',      'merchants/{id}/terminals',                       'MerchantController@getTerminals'                                   ],
+        'proxy_merchant_get_terminals'             => ['get',      'proxy/merchant/terminals',                       'MerchantController@proxyGetTerminals'                              ],
         'merchant_onboard_terminal'                => ['post',     'merchants/{id}/terminals/onboard',               'MerchantController@onboardMerchantOnGateway'                       ],
         'merchant_get_terminal'                    => ['get',      'merchants/{mid}/terminals/{tid}',                'MerchantController@getTerminal'                                    ],
         'merchant_delete_terminal'                 => ['delete',   'merchants/{mid}/terminals/{tid}',                'MerchantController@deleteTerminal'                                 ],
@@ -2477,6 +2478,7 @@ final class Route
         'entity_bulk_update',
 
         'initiate_terminal_onboarding',
+        'proxy_merchant_get_terminals',
         
         'payout_links_merchant_settings_post',
         'payout_links_merchant_settings_get',
@@ -3182,6 +3184,7 @@ final class Route
         'terminal_add_merchant'                    => Permission::TERMINAL_MANAGE_MERCHANT,
         'terminal_remove_merchant'                 => Permission::TERMINAL_MANAGE_MERCHANT,
         'initiate_terminal_onboarding'             => '*',
+        'proxy_merchant_get_terminals'             => '*',
         'emi_plan_delete'                          => Permission::DELETE_EMI_PLAN,
         'iin_edit'                                 => Permission::EDIT_IIN_RULE,
         'iin_edit_bulk'                            => Permission::EDIT_IIN_RULE_BULK,

@@ -209,6 +209,18 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
+    // This is used when merchant dashboard fetches terminals via proxy auth
+    public function proxyGetTerminals()
+    {
+        $input = Request::all();
+
+        $mid =  $this->ba->getMerchant()->getId();
+
+        $data = $this->service(E::TERMINAL)->proxyGetTerminals($mid, $input);
+
+        return ApiResponse::json($data);
+    }
+
     public function deleteTerminal($mid, $tid)
     {
         $data = $this->service(E::TERMINAL)->deleteTerminal($mid, $tid);

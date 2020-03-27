@@ -38,7 +38,6 @@ class TerminalsService
 
     const DEFAULT_TIMEOUT   = 0.1;
 
-
     const INITIATE_ONBOARDING                  = 'initiate_onboarding';
     const CREATE_TERMINAL                      = 'create_terminal';
     const FETCH_TERMINAL_BY_ID                 = 'fetch_terminal_by_id';
@@ -47,6 +46,7 @@ class TerminalsService
     const ADD_MERCHANT_TO_TERMINAL             = 'add_merchant_to_terminal';
     const REMOVE_MERCHANT_FROM_TERMINAL        = 'remove_merchant_from_terminal';
     const FETCH_MERCHANT_TERMINAL_BY_ID        = 'fetch_merchant_terminal_by_id';
+    const FETCH_TERMINALS_FOR_MERCHANT_GATEWAY = 'fetch_terminals_for_merchant_gateway';
     const TERMINAL_ONBOARD_CALLBACK            = 'terminal_onboard_callback';
 
     // terminals service error descriptions
@@ -80,6 +80,10 @@ class TerminalsService
         ],
         self::FETCH_TERMINALS_FOR_MERCHANT  => [
             self::PATH   => 'v1/merchants/%s/terminals',
+            self::METHOD => Requests::GET,
+        ],
+        self::FETCH_TERMINALS_FOR_MERCHANT_GATEWAY  => [
+            self::PATH   => 'v1/merchants/%s/terminals?gateway=%s',
             self::METHOD => Requests::GET,
         ],
         self::ADD_MERCHANT_TO_TERMINAL => [
@@ -214,6 +218,17 @@ class TerminalsService
         $response = $this->sendRequest($path, $content, $params[self::METHOD], $params[self::OPTIONS]);
 
         return $this->parseAndReturnResponse($response)[self::DATA];
+    }
+
+    public function getTerminalsByMerchantIdAndGateway(string $merchantId, string $gateway)
+    {
+        $params = self::PARAMS[self::FETCH_TERMINALS_FOR_MERCHANT_GATEWAY];
+
+        $path = sprintf($params[self::PATH], $merchantId, $gateway);
+
+        $response = $this->sendRequest($path, '', $params[self::METHOD]);
+        
+        return $this->parseAndReturnResponse($response)[self::DATA] ?? [];
     }
 
     public function terminalOnboardCallback(string $gateway, array $input)
