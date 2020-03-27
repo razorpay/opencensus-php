@@ -421,6 +421,19 @@ class Core extends Base\Core
             $payout->setFailureReason($ftaFailureReason);
         }
 
+        // we want to override return UTR only if there is no value for UTR before
+        // since return_utr column has a unique constraint, so checking for empty
+        // value.
+        if (empty($payout->getReturnUtr()) === true)
+        {
+            if (empty($ftaData[Entity::RETURN_UTR]) === false)
+            {
+                $returnUtr = $ftaData[Attempt\Constants::RETURN_UTR];
+
+                $payout->setReturnUtr($returnUtr);
+            }
+        }
+
         $this->repo->saveOrFail($payout);
 
         if (($initialUtr === null) and
