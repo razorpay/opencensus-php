@@ -3291,7 +3291,7 @@ final class Route
         'coupon_update'                            => Permission::CREATE_PROMOTION_COUPON,
         'coupon_validate'                          => '*',
         'credits_edit'                             => Permission::EDIT_MERCHANT_CREDITS,
-        'credits_create_bulk'                      => '*',
+        'credits_create_bulk'                      => Permission::ADD_MERCHANT_CREDITS,
         'currency_fetch_rates'                     => '*',
         'dispute_migrate_adjustments'              => '*',
         'dummy_route'                              => '*',
