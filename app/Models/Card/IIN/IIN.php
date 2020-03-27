@@ -15,7 +15,6 @@ class IIN
     protected static $emiBanks = array(
         Bank\IFSC::UTIB,
         Bank\IFSC::INDB,
-        Bank\IFSC::CITI,
     );
 
     // List of the issuers/type of IIN for which the IIN check on EMI can be ignored
@@ -216,9 +215,6 @@ class IIN
             "53765210",
             "53765250",
             "53765275",
-        ],
-        Bank\IFSC::CITI => [
-            '55463700',
         ],
     );
 
