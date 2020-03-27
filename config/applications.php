@@ -477,6 +477,7 @@ return [
 
     'terminals_service' => [
         'mock'          => env('TERMINALS_SERVICE_MOCK', false),
+        'secret'        => env('TERMINALS_SERVICE_API_SECRET'),
         'live'          => [
             'password'      => env('TERMINALS_SERVICE_LIVE_PASSWORD'),
             'url'           => env('TERMINALS_SERVICE_LIVE_URL'),

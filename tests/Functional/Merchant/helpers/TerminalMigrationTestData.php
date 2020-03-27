@@ -8,6 +8,22 @@ use RZP\Error\PublicErrorDescription;
 
 
 return [
+    'testAssignTerminalInternalAuthMigrateVariant' => [
+        'request' => [
+            'content' => [
+                'gateway'                    => 'wallet_paypal',
+                'gateway_merchant_id'        => 'gateway_merchant_id',
+                'type'                       =>  [
+                    'direct_settlement_with_refund' => '1',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+
+            ],
+        ],
+    ],
     'testAssignTerminalTerminalServiceUpMigrateTerminalVariant' => [
         'request' => [
             'content' => [
