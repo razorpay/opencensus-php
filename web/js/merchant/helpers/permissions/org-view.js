@@ -8,7 +8,6 @@ const HDFC_restrictedModules = [
   'invoices',
   'virtual_accounts',
   'payment_pages',
-  'payment_links',
   'configuration',
   'add_funds',
   'profile_gst',
