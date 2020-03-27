@@ -1,19 +1,16 @@
 import { connect } from 'react-redux';
 import AsyncButton from 'react-async-button';
+import PropTypes from 'prop-types';
 
 import DataTable from 'common/ui/Table/DataTable';
 import { role } from 'common/ui/item/pair';
 import ListContainer from 'merchant/containers/ListContainer';
 
+import { showNotification } from 'merchant_common/reducers/notifications';
 import { fetchTeam as fetchAll } from 'merchant/reducers/team';
-import { unlockMember } from 'merchant/reducers/team';
+import { unlockMember, unverifyContact } from 'merchant/reducers/team';
 
 import Actions from './Actions';
-
-const contactPhone = {
-  title: 'Phone Number',
-  value: user => user.contact_mobile || '--',
-};
 
 const actions = {
   title: '',
@@ -21,8 +18,17 @@ const actions = {
   value: member => <Actions member={member} />,
 };
 
-@connect(state => ({ ...state.team }), { fetchAll, unlockMember })
+@connect(state => ({ ...state.team }), {
+  fetchAll,
+  unlockMember,
+  unverifyContact,
+  showNotification,
+})
 export default class MembersListContainer extends ListContainer {
+  static contextTypes = {
+    confirm: PropTypes.func,
+  };
+
   member = {
     title: 'Member',
     value: member => (
@@ -33,8 +39,28 @@ export default class MembersListContainer extends ListContainer {
           <AccountLocked
             unlockMember={this.props.unlockMember}
             memberId={member.id}
+            showNotification={this.props.showNotification}
           />
         )}
+      </>
+    ),
+  };
+
+  contactPhone = {
+    title: 'Phone Number',
+    value: member => (
+      <>
+        <p>{member.contact_mobile || '--'}</p>
+        {!!member.contact_mobile &&
+          member.contact_mobile_verified && (
+            <RaiseContactMobileLost
+              memberId={member.id}
+              memberEmail={member.email}
+              unverifyContact={this.props.unverifyContact}
+              showNotification={this.props.showNotification}
+              confirm={this.context.confirm}
+            />
+          )}
       </>
     ),
   };
@@ -53,16 +79,28 @@ export default class MembersListContainer extends ListContainer {
             ),
           }
         }
-        columns={[this.member, contactPhone, role, actions]}
+        columns={[this.member, this.contactPhone, role, actions]}
         {...this.props}
       />
     );
   }
 }
 
-function AccountLocked({ unlockMember, memberId }) {
+function AccountLocked({ unlockMember, memberId, showNotification }) {
   const unlock = () => {
-    return unlockMember(memberId);
+    return unlockMember(memberId)
+      .then(() => {
+        showNotification({
+          type: 'success',
+          message: 'Team member account is successfully unlocked',
+        });
+      })
+      .catch(({ errors }) => {
+        showNotification({
+          type: 'error',
+          message: (errors || [])[0],
+        });
+      });
   };
 
   return (
@@ -75,6 +113,56 @@ function AccountLocked({ unlockMember, memberId }) {
         onClick={unlock}
         class="btn-link text-warning"
       />
+    </span>
+  );
+}
+
+function RaiseContactMobileLost({
+  memberId,
+  memberEmail,
+  unverifyContact,
+  showNotification,
+  confirm,
+}) {
+  const unverify = () => {
+    return unverifyContact(memberId)
+      .then(() => {
+        showNotification({
+          type: 'success',
+          message: '2FA is successfully invalidated for user account',
+        });
+      })
+      .catch(({ errors }) => {
+        showNotification({
+          type: 'error',
+          message: (errors || [])[0],
+        });
+      });
+  };
+
+  const unverifyAfterConfirm = () => {
+    confirm({
+      header: 'Invalidate 2FA',
+      affirmativeLabel: 'Confirm',
+      message: (
+        <>
+          This will invalidate 2FA for the user {memberEmail}. Click confirm to
+          continue
+        </>
+      ),
+      action: unverify,
+    });
+  };
+
+  return (
+    <span class="small">
+      <AsyncButton
+        onClick={unverifyAfterConfirm}
+        class="btn-link no-padding"
+        pendingText="Invalidating..."
+      >
+        Invalidate 2FA
+      </AsyncButton>
     </span>
   );
 }

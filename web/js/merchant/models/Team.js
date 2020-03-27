@@ -21,11 +21,19 @@ export default class MerchantUser extends GenericEntity {
     });
   }
 
-  unlock(memberId) {
+  updateActionOnUserAccount(memberId, action) {
     return this.makeGenericAjaxCall({
-      url: `users/account/${memberId}/unlock`,
+      url: `users/account/${memberId}/${action}`,
       method: 'put',
     }).then(({ data }) => ({ ...data }));
+  }
+
+  unlock(memberId) {
+    return this.updateActionOnUserAccount(memberId, 'unlock');
+  }
+
+  unverifyContact(memberId) {
+    return this.updateActionOnUserAccount(memberId, 'un_verify');
   }
 
   deleteMember(memberId) {

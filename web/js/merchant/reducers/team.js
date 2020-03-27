@@ -1,5 +1,5 @@
-import { set, merge, unshift, remove } from 'common/utils/immutable';
-import defaultAjax, { merchantFetch } from 'merchant/utils/ajax';
+import { set, merge } from 'common/utils/immutable';
+import { merchantFetch } from 'merchant/utils/ajax';
 import {
   makeActionCollectionReducer,
   fetchAll,
@@ -19,6 +19,7 @@ export const UPDATE_SESSION = 'UPDATE_SESSION';
 const TEAM_MEMBER_DELETE = 'TEAM_MEMBER_DELETE';
 const TEAM_MEMBER_UNLOCK = 'TEAM_MEMBER_UNLOCK';
 const TEAM_MEMBER_EDIT = 'TEAM_MEMBER_EDIT';
+const TEAM_MEMBER_CONTACT_UNVERIFY = 'TEAM_MEMBER_CONTACT_UNVERIFY';
 
 const fetchInvitations = _ =>
   merchantFetch({
@@ -101,6 +102,11 @@ export const unlockMember = memberId => ({
   payload: new Team().unlock(memberId),
 });
 
+export const unverifyContact = memberId => ({
+  type: TEAM_MEMBER_CONTACT_UNVERIFY,
+  payload: new Team().unverifyContact(memberId),
+});
+
 const toggle2FaEnforcement = (data, url) => {
   return {
     type: UPDATE_SESSION,
@@ -130,18 +136,13 @@ let initialState = {
 };
 
 export const fetchTeam = params => fetchAll(params, Team, 'TEAM_MEMBERS');
+
 export const teamReducer = makeActionCollectionReducer('TEAM_MEMBERS', {
-  // since unlock api does not send all the details in the response
-  ['TEAM_MEMBER_UNLOCK::SUCCESS']: (state, action) => {
-    const itemIndex = state.items.findIndex(
-      item => item.id === action.payload.user_id
-    );
-    return set(
-      state,
-      `items.${itemIndex}.account_locked`,
-      action.payload.account_locked
-    );
-  },
+  // since update account api does not send all the details in the response
+  ['TEAM_MEMBER_CONTACT_UNVERIFY::SUCCESS']: (state, action) =>
+    updateTeamMember(state, action, '2fa_invalidate'),
+  ['TEAM_MEMBER_UNLOCK::SUCCESS']: (state, action) =>
+    updateTeamMember(state, action, 'account_unlock'),
 
   ['TEAM_MEMBER_EDIT::SUCCESS']: (state, action) => ({
     ...state,
@@ -156,6 +157,27 @@ export const teamReducer = makeActionCollectionReducer('TEAM_MEMBERS', {
     ),
   }),
 });
+
+function updateTeamMember(state, action, operation) {
+  const itemIndex = state.items.findIndex(
+    item => item.id === action.payload.user_id
+  );
+
+  let key = '',
+    value = '';
+  switch (operation) {
+    case '2fa_invalidate':
+      key = 'contact_mobile_verified';
+      value = false;
+      break;
+    case 'account_unlock':
+      key = 'account_locked';
+      value = false;
+      break;
+  }
+
+  return set(state, `items.${itemIndex}.${key}`, value);
+}
 
 export default function(state = initialState, action) {
   switch (action.type) {
