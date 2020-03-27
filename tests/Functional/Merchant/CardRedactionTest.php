@@ -464,4 +464,66 @@ class CardRedactionTest extends TestCase
 
         $this->assertArraySelectiveEquals($expectedResponse, $updatedRecord);
     }
+
+    // In this test first scrubbing is disabled and then enabled again
+    public function testCardRedactionWhenScrubbingIsDisabled()
+    {
+        /** @var ApiTraceProcessor $trace */
+        $trace = new ApiTraceProcessor($this->app);
+
+        $this->setRegexViaRedis('off');
+
+        $record = [
+            'context' => [
+                'account_number'  => '1234567891011',
+                'account_number2' => 'hehehehwwkwk',
+                'account_number3' => 'normalString',
+                'account_number4' => '9834728',
+                'visa card'       => '4012888888881881',
+            ]
+        ];
+
+        $originalRouter = $this->app['router'];
+
+        $this->mockRouter('payout_create');
+
+        $updatedRecord =  $trace($record);
+
+        $expectedResponse = [
+            'context' => [
+                'account_number'  => '1234567891011',
+                'account_number2' => 'hehehehwwkwk',
+                'account_number3' => 'normalString',
+                'account_number4' => '9834728',
+                'visa card'       => '4012888888881881',
+            ]
+        ];
+
+        $this->assertArraySelectiveEquals($expectedResponse, $updatedRecord);
+
+        // re-enabling scrubbing again
+        $regex = "/\\b(?:4[0-9]{12}(?:[0-9]{3})?|(?:5[1-5][0-9]{2}|222[1-9]|22[3-9][0-9]|2[3-6][0-9]{2}" .
+                 "|27[01][0-9]|2720)[0-9]{12}|3[47][0-9]{13}|3(?:0[0-5]|[68][0-9])[0-9]{11}|6(?:011|5[0-9]{2})[0-9]{12}|" .
+                 "(?:2131|1800|35\\d{3})\\d{11})\\b/";
+
+        $this->app->instance('router', $originalRouter);
+
+        $this->setRegexViaRedis($regex);
+
+        $this->mockRouter('payout_create');
+
+        $updatedRecord1 =  $trace($record);
+
+        $expectedResponse1 = [
+            'context' => [
+                'account_number'  => '1234567891011',
+                'account_number2' => 'hehehehwwkwk',
+                'account_number3' => 'normalString',
+                'account_number4' => '9834728',
+                'visa card'       => 'CARD_NUMBER_SCRUBBED(16)',
+            ]
+        ];
+
+        $this->assertArraySelectiveEquals($expectedResponse1, $updatedRecord1);
+    }
 }
