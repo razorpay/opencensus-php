@@ -352,17 +352,17 @@ class Entity extends Base\PublicEntity
 
     public function getGatewayAmount()
     {
-        $gateway_amount = $this->getAttribute(self::GATEWAY_AMOUNT);
+        $gatewayAmount = $this->getAttribute(self::GATEWAY_AMOUNT);
 
-        return (($gateway_amount !== null) and ($gateway_amount > 0)) ?
-            $gateway_amount : $this->getAmount();
+        return (($gatewayAmount !== null) and ($gatewayAmount > 0)) ?
+            $gatewayAmount : $this->getAmount();
     }
 
     public function getGatewayCurrency()
     {
-        $gateway_currency = $this->getAttribute(self::GATEWAY_CURRENCY);
+        $gatewayCurrency = $this->getAttribute(self::GATEWAY_CURRENCY);
 
-        return ($gateway_currency !== null) ? $gateway_currency : $this->getCurrency();
+        return ($gatewayCurrency !== null) ? $gatewayCurrency : $this->getCurrency();
     }
 
     /**
@@ -1289,7 +1289,7 @@ class Entity extends Base\PublicEntity
     public function toArrayPublic()
     {
         $response = parent::toArrayPublic();
-        
+
         $refundPublicStatusFeatureEnabled = $this->merchant->isFeatureEnabled(Feature::SHOW_REFUND_PUBLIC_STATUS);
 
         $data = [
