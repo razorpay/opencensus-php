@@ -19,6 +19,7 @@ import RecentActivity from 'merchant/containers/Home/RecentActivity';
 import Announcement from 'merchant/components/Announcements/Instant';
 import NPSAnnouncement from 'merchant/components/Announcements/NPSAnnouncement';
 import CapitalAnnouncement from 'merchant/components/Announcements/Capital';
+import CovidCampaignAnnouncement from 'merchant/components/Announcements/CovidCampaign';
 import PersonaliseBanner from 'merchant/components/Announcements/PersonaliseAccount';
 import Button from 'common/new-ui/Button';
 import OndemandModal from 'merchant/views/Settlements/components/Modals/OndemandModal';
@@ -183,6 +184,10 @@ class AnalyticsDesktop extends Component {
           {/* capital banner*/}
           {user.isCapitalBannerEnabled && (
             <CapitalAnnouncement userId={user.current} />
+          )}
+
+          {user.isCovidFeatureEnabled && (
+            <CovidCampaignAnnouncement userId={user.current} />
           )}
 
           <div

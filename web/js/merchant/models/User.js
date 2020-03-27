@@ -245,6 +245,10 @@ export default class User {
     return this.isFeatureEnabled('subscriptions');
   }
 
+  get isCovidFeatureEnabled() {
+    return this.isFeatureEnabled('covid');
+  }
+
   get isPaymentPagesEnabled() {
     const { isEnabled } = getOnBoardingDataFromLocalState('payment_pages');
 
