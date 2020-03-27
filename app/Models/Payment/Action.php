@@ -98,6 +98,10 @@ class Action
 
     protected function tracePaymentNewRequest($input)
     {
-        $this->trace->debug(TraceCode::PAYMENT_NEW_REQUEST, $input);
+        $inputTrace = $input;
+
+        unset($inputTrace['notes']);
+
+        $this->trace->debug(TraceCode::PAYMENT_NEW_REQUEST, $inputTrace);
     }
 }

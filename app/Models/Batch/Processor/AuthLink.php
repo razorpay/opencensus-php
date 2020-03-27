@@ -163,4 +163,9 @@ class AuthLink extends Base
             }
         }
     }
+
+    protected function removeCriticalDataFromTracePayload(array & $payloadEntry)
+    {
+        unset($payloadEntry[Header::AUTH_LINK_ACCOUNT_NUMBER]);
+    }
 }

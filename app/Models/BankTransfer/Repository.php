@@ -70,6 +70,22 @@ class Repository extends Base\Repository
         return $query->first();
     }
 
+    public function findByUtrAndPayeeAccount(string $utr, string $payeeAccount, bool $useWritePdo = false)
+    {
+        $payeeAccount = strtoupper(str_replace(' ', '', $payeeAccount));
+
+        $query =  $this->newQuery()
+                       ->where(Entity::UTR, '=', $utr)
+                       ->where(Entity::PAYEE_ACCOUNT, '=', $payeeAccount);
+
+        if ($useWritePdo === true)
+        {
+            $query->useWritePdo();
+        }
+
+        return $query->first();
+    }
+
     public function findByNarration(string $narration, bool $useWritePdo = false)
     {
         $query = $this->newQuery()
@@ -95,16 +111,6 @@ class Repository extends Base\Repository
         }
 
         return $query->first();
-    }
-
-    public function findByUtrAndPayeeAccount(string $utr, string $payeeAccount)
-    {
-        $payeeAccount = strtoupper(str_replace(' ', '', $payeeAccount));
-
-        return $this->newQuery()
-                    ->where(Entity::UTR, '=', $utr)
-                    ->where(Entity::PAYEE_ACCOUNT, '=', $payeeAccount)
-                    ->first();
     }
 
     public function findByPayment(Payment\Entity $payment)

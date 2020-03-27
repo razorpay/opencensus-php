@@ -2336,6 +2336,25 @@ class MerchantTest extends TestCase
         $this->assertArrayHasKey('earlysalary', $response['methods']['cardless_emi']);
     }
 
+    public function testGetCheckoutPreferencesForDebitEmi()
+    {
+        $this->fixtures->merchant->enableEmi();
+
+        $this->fixtures->emiPlan->create(
+            [
+                'merchant_id' => '10000000000000',
+                'bank'        => 'HDFC',
+                'type'        => 'debit',
+                'rate'        => 1200,
+                'min_amount'  => 300000,
+                'duration'    => 3,
+            ]);
+
+        $response = $this->getPreferences();
+
+        $this->assertArrayHasKey('HDFC_DC', $response['methods']['emi_options']);
+    }
+
     public function testGetCheckoutPreferencesForPayLater()
     {
         $this->fixtures->merchant->enablePayLater();
@@ -6541,6 +6560,39 @@ class MerchantTest extends TestCase
         $tokens = $responseContent['customer']['tokens'];
         $this->assertTrue($tokens['count'] > 0);
         $this->assertTrue(array_key_exists('dcc_enabled', $tokens['items'][0]) === true);
+
+    public function testGetCheckoutPreferencesWithConfigIdInOrder()
+    {
+        $this->ba->publicAuth();
+
+        $config = $this->fixtures->create('config');
+
+        $order = $this->fixtures->create('order', ['checkout_config_id' => $config->getId()]);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['order_id'] = $order->getPublicId();
+
+        $response = $this->runRequestResponseFlow($testData);
+
+        $this->assertArrayHasKey('checkout_config', $response);
+    }
+
+    public function testGetCheckoutPreferencesWithDefaultConfig()
+    {
+        $this->ba->publicAuth();
+
+        $config = $this->fixtures->create('config');
+
+        $order = $this->fixtures->create('order');
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['order_id'] = $order->getPublicId();
+
+        $response = $this->runRequestResponseFlow($testData);
+
+        $this->assertArrayHasKey('checkout_config', $response);
     }
 }
 

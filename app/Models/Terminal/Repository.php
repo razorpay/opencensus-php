@@ -53,6 +53,32 @@ class Repository extends Base\Repository
         }
     }
 
+    public function saveOrFail($entity, array $options = array(), string $syncStatus = SyncStatus::NOT_SYNCED)
+    {
+            $entity = $this->transaction(function () use (& $entity, $options, $syncStatus)
+            {
+                $entity->setSyncStatus($syncStatus);
+
+                // dont delete this line. this line is needed to generate id for a new terminal
+                // id gets created on save
+                parent::saveOrFail($entity, $options);
+
+                if (Terminal\Service::shouldMigrateTerminal($syncStatus) === true)
+                {
+                    $entity = (new Terminal\Service)->migrateTerminalCreateOrUpdate($entity->getId());
+
+                    $entity->setSyncStatus(SyncStatus::SYNC_SUCCESS);
+
+                    parent::saveOrFail($entity, $options);
+                }
+
+                return $entity;
+
+            });
+
+        return $entity;
+    }
+
     public function fetchForPayment(Payment\Entity $payment)
     {
         if ($payment->hasRelation('terminal'))
@@ -440,8 +466,19 @@ class Repository extends Base\Repository
         $count = $this->repo->payment->getTotalUsedCountForTerminal(
                     $entity->getId());
 
-        return $this->transaction(function() use ($entity, $count)
+        $syncStatus = SyncStatus::NOT_SYNCED;
+
+        return $this->transaction(function() use ($entity, $count, $syncStatus)
         {
+            if (Migrate::shouldMigrateTerminal($syncStatus) === true)
+            {
+                (new Terminal\Service)->migrateTerminalDelete($entity->getId());
+
+                $entity->setSyncStatus(SyncStatus::SYNC_SUCCESS);
+
+                parent::saveOrFail($entity);
+            }
+
             if ($count === 0)
             {
                 $entity->forceDelete();
@@ -472,12 +509,28 @@ class Repository extends Base\Repository
 
     public function addMerchantToTerminal(Entity $terminal, Merchant\Entity $merchant)
     {
-        $terminal->merchants()->attach($merchant);
+        $this->repo->transaction(function () use ($terminal, $merchant) {
+            $terminal->merchants()->attach($merchant);
+
+            if (Migrate::shouldMigrateSubmerchant() === true)
+            {
+                (new Terminal\Service)->migrateTerminalAddMerchant($terminal, $merchant);
+            }
+
+        });
     }
 
     public function removeMerchantFromTerminal(Entity $terminal, Merchant\Entity $merchant)
     {
-        $terminal->merchants()->detach($merchant);
+        $this->repo->transaction(function () use ($terminal, $merchant) {
+            $terminal->merchants()->detach($merchant);
+
+            if (Migrate::shouldMigrateSubmerchant() === true)
+            {
+                (new Terminal\Service)->migrateTerminalRemoveMerchant($terminal, $merchant);
+            }
+        });
+
     }
 
     public function getByMerchantProviderAndMethod(string $provider, string $merchantId, string $method)
@@ -508,6 +561,14 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->whereIn(Entity::ID, $ids)
                     ->enabled()
+                    ->get();
+    }
+
+    public function fetchForSyncToTerminalsService(array $input)
+    {
+        return $this->newQuery()
+                    ->where(Entity::SYNC_STATUS, '=', SyncStatus::getValueForSyncStatusString($input[Entity::SYNC_STATUS]))
+                    ->limit($input['count'])
                     ->get();
     }
 

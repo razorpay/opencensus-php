@@ -4,6 +4,7 @@ use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
+use RZP\Exception\BadRequestException;
 use RZP\Models\Payout\Status as PayoutStatus;
 use RZP\Models\FundTransfer\Attempt\Status as FundTransferAttemptStatus;
 
@@ -1104,12 +1105,12 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
-    'testCreateMerchantPayoutOnDemandNonBankingHours'=> [
+    'testCreateMerchantPayoutOnDemandExceedAmountLimitNonBankingHours'=> [
         'request' => [
             'method'  => 'POST',
             'url'     => '/merchant/payout/demand',
             'content' => [
-                'amount'   => 2000,
+                'amount'   => 20000100,
                 'currency' => 'INR'
             ],
         ],
@@ -1117,14 +1118,14 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Settlements cannot be created at this point of time.',
+                    'description' => PublicErrorDescription::BAD_REQUEST_ES_ON_DEMAND_IMPS_AMOUNT_LIMIT_EXCEEDED,
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
             'class' => RZP\Exception\BadRequestException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYOUT_AMOUNT_MODE_MISMATCH,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ES_ON_DEMAND_IMPS_AMOUNT_LIMIT_EXCEEDED,
         ],
     ],
     'testCreateMerchantPayoutExceedAmountLimit' => [
@@ -3402,6 +3403,32 @@ return [
                     'status'     => 'pending',
                 ],
             ],
+        ],
+    ],
+
+    'testApprovePayoutWithNonBankingRoleInWorkflow' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts/{id}/approve',
+            'content' => [
+                'token'        => 'BUIj3m2Nx2VvVj',
+                'otp'          => '0007',
+                'user_comment' => 'Approving',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_USER_DOES_NOT_BELONG_TO_MERCHANT,
+                ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'                     => RZP\Exception\BadRequestException::class,
+            'internal_error_code'       => ErrorCode::BAD_REQUEST_USER_DOES_NOT_BELONG_TO_MERCHANT,
+            'message'                   => PublicErrorDescription::BAD_REQUEST_USER_DOES_NOT_BELONG_TO_MERCHANT,
         ],
     ],
 ];

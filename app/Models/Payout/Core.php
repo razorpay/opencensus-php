@@ -653,7 +653,12 @@ class Core extends Base\Core
                 if (($approve === true) and
                     ($workflowAction->getApproved() === true))
                 {
-                    $payout = $this->processPendingPayout($payout);
+                    //setting default queue flag to be true since Queued Payouts is always enabled
+                    // alongside Payout Workflows till now
+                    $queueFlag = isset($input[Entity::QUEUE_IF_LOW_BALANCE]) ?
+                                 $input[Entity::QUEUE_IF_LOW_BALANCE] : true;
+
+                    $payout = $this->processPendingPayout($payout, $queueFlag);
                 }
                 else if (($approve === false) and
                         ($workflowAction->isRejected() === true))
@@ -1550,13 +1555,13 @@ class Core extends Base\Core
         }
     }
 
-    protected function processPendingPayout(Entity $payout): Entity
+    protected function processPendingPayout(Entity $payout, bool $queueFlag): Entity
     {
         $payoutId = $payout->getId();
 
         return $this->mutex->acquireAndRelease(
             $payoutId,
-            function() use ($payoutId)
+            function() use ($payoutId, $queueFlag)
             {
                 /** @var Entity $payout */
                 $payout = $this->repo->payout->findOrFail($payoutId);
@@ -1568,7 +1573,7 @@ class Core extends Base\Core
 
                 $payout = $this->getProcessor('fund_account_payout')
                                ->setMerchant($payout->merchant)
-                               ->processPendingPayout($payout);
+                               ->processPendingPayout($payout, $queueFlag);
 
                 $this->dispatchFtaInitiate($payout);
 

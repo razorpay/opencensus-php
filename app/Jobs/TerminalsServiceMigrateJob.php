@@ -1,0 +1,62 @@
+<?php
+
+namespace RZP\Jobs;
+
+use RZP\Trace\TraceCode;
+use RZP\Models\Terminal;
+
+class TerminalsServiceMigrateJob extends Job
+{
+    protected $terminalId;
+
+    protected $service;
+
+    const QueueConfigKey = 'terminals_service_migrate';
+
+    public function __construct(string $mode, string $terminalId)
+    {
+        parent::__construct($mode);
+
+        $this->terminalId = $terminalId;
+
+        $this->queueConfigKey = self::QueueConfigKey;
+    }
+
+    public function handle()
+    {
+        parent::handle();
+
+        $data = [
+            Terminal\Entity::ID => $this->terminalId,
+        ];
+
+        try
+        {
+            $this->trace->info(TraceCode::TERMINALS_SERVICE_MIGRATE_JOB_STARTED, $data);
+
+            (new Terminal\Service)->migrateTerminalCreateOrUpdate($this->terminalId);
+
+            $this->trace->info(TraceCode::TERMINALS_SERVICE_MIGRATE_JOB_SUCCESS, $data);
+
+        }
+        catch (\Exception $exception)
+        {
+            $data['code'] = $exception->getCode();
+
+            $data['message'] = $exception->getMessage();
+
+            $repo = new Terminal\Repository;
+
+            $terminal = $repo->findOrFail($this->terminalId);
+
+            $repo->saveOrFail($terminal, [], Terminal\SyncStatus::SYNC_FAILED);
+
+
+            $this->trace->error(TraceCode::TERMINALS_SERVICE_MIGRATE_JOB_FAILED, $data);
+        }
+        finally
+        {
+            $this->delete();
+        }
+    }
+}

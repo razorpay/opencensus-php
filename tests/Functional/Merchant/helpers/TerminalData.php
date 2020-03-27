@@ -1107,6 +1107,30 @@ return [
         ]
     ],
 
+    'testCreateIsgCardTerminal'  => [
+        'request' => [
+            'content' => [
+                'gateway'                   => 'isg',
+                'gateway_merchant_id'       => 'some_random_val',
+                'gateway_access_code'       => 'oxymoron',
+                'card'                      => 1,
+                'gateway_secure_secret'     => 'hogwards',
+                'gateway_terminal_id'       => 'CG000001',
+                'gateway_acquirer'          => 'kotak',
+                'type'                      => [
+                    'non_recurring' => '1',
+                ],
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content'  => [
+                'gateway_merchant_id'  => 'some_random_val',
+                'enabled'              => true,
+            ]
+        ]
+    ],
+
     'testCreateDirectSettlemtTerminalFailure' => [
         'request' => [
             'content' => [
@@ -2146,8 +2170,6 @@ return [
             'content' => [
                 'gateway'                   => 'wallet_paypal',
                 'gateway_merchant_id'       => 'merchant_id',
-                'gateway_terminal_password2'=> 'terminal_password2',
-                'gateway_terminal_password' => 'terminal_password',
                 'type'                      => [
                     'direct_settlement_with_refund' => '1'
                 ],

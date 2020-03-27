@@ -124,4 +124,27 @@ class Service extends Base\Service
 
         return $payoutAmountRules->toArrayPublic();
     }
+
+    /**
+     * Payout workflow edit
+     *
+     * @param array $input
+     * @return array
+     */
+    public function editWorkflowPayoutAmountRules(array $input): array
+    {
+        $this->trace->info(TraceCode::WORKFLOW_PAYOUT_EDIT, $input);
+
+        (new Validator())->validateInput('edit_payout_workflow', $input);
+
+        $editWorkflows = $input[Entity::WORKFLOWS] ?? [];
+
+        $orgId = $this->auth->getOrgId();
+
+        Org\Entity::verifyIdAndSilentlyStripSign($orgId);
+
+        $payoutAmountRules = $this->core()->edit($editWorkflows, $this->merchant);
+
+        return $payoutAmountRules->toArrayPublic();
+    }
 }

@@ -1265,9 +1265,14 @@ class Entity extends Base\PublicEntity
 
     public function isValidEmiTerminal($gateway, $emiDuration)
     {
+        $ignoreEmiDurationGateways = [
+            Gateway::BAJAJ,
+            Gateway::HDFC_DEBIT_EMI,
+        ];
+
         if (($this->isEmiEnabled()) and
             ($this->getGateway() === $gateway) and
-            (($this->getEmiDuration() === $emiDuration) or ($gateway === Gateway::BAJAJ)))
+            (($this->getEmiDuration() === $emiDuration) or (in_array($gateway, $ignoreEmiDurationGateways) === true)))
         {
             return true;
         }
@@ -1408,8 +1413,13 @@ class Entity extends Base\PublicEntity
         return ($this->isCardEnabled() === true);
     }
 
-    public function isValidVirtualVpaForTerminal(string $virtualVpa)
+    public function isSyncStatusSuccess()
     {
+        return $this->getSyncStatus() === SyncStatus::SYNC_SUCCESS;
+    }
+
+    public function isValidVirtualVpaForTerminal(string $virtualVpa)
+     {
         $prefix = $this->getAttribute(self::VIRTUAL_UPI_ROOT) . $this->getAttribute(self::VIRTUAL_UPI_MERCHANT_PREFIX);
 
         $handle = $this->getAttribute(self::VIRTUAL_UPI_HANDLE);

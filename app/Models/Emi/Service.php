@@ -40,6 +40,15 @@ class Service extends Base\Service
         {
             $issuer = $plan->getIssuer();
 
+            // This is a hack to differentiate the debit card emi plan
+            // vs the credit card emi plan. For example, for a merchant, there can be
+            // both debit and credit hdfc emi plan. Changing the key this way, should
+            // not break the current method implementation.
+            if ($plan->getType() === Type::DEBIT)
+            {
+                $issuer .= '_DC';
+            }
+
             $duration = $plan->getDuration();
 
             // min amount in paisa
@@ -321,6 +330,11 @@ class Service extends Base\Service
         foreach ($emiPlans as $plan)
         {
             $issuer = $plan->getIssuer();
+
+            if ($plan->getType() === Type::DEBIT)
+            {
+                $issuer .= '_DC';
+            }
 
             $duration = $plan->getDuration();
 

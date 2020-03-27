@@ -699,14 +699,17 @@ class Core extends Base\Core
             'merchant_logo_url'                 => $this->merchant->getFullLogoUrlWithSize(),
             'payout_link_description'           => $payoutLink->getDescription(),
             'primary_color'                     => $this->merchant->getBrandColorElseDefault(),
-            'merchant_name'                     => $this->merchant->getDisplayNameElseName(),
+            'merchant_name'                     => $this->merchant->getBillingLabel(),
             'allow_upi'                         => $this->allowUpi($payoutLink),
             'banking_url'                       => $this->config['applications.banking_service_url'],
             'is_production'                     => $isProduction,
             'fund_account_details'              => json_encode($fundAccountDetails),
             'purpose'                           => $payoutLink->getPurpose(),
             'payout_utr'                        => $payoutLink->getPayoutUtr(),
-            'payout_links_custom_message'       => $settings[Entity::CUSTOM_MESSAGE] ?? null
+            'payout_links_custom_message'       => $settings[Entity::CUSTOM_MESSAGE] ?? null,
+            'support_contact'                   => $settings[Entity::SUPPORT_CONTACT] ?? null,
+            'support_email'                     => $settings[Entity::SUPPORT_EMAIL] ?? null,
+            'support_url'                       => $settings[Entity::SUPPORT_URL] ?? null
         ];
 
         return $data;

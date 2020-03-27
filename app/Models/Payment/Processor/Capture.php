@@ -39,11 +39,15 @@ trait Capture
      */
     public function capture(Payment\Entity $payment, array $input = [])
     {
+        $inputTrace = $input;
+
+        unset($inputTrace['email'], $inputTrace['password']);
+
         $this->trace->info(
             TraceCode::PAYMENT_CAPTURE_REQUEST,
             [
                 'payment_id' => $payment->getPublicId(),
-                'input'      => $input,
+                'input'      => $inputTrace,
             ]
         );
 

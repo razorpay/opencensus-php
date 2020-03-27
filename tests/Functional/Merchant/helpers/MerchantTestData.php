@@ -5845,5 +5845,32 @@ return [
                 'failed'    => []
             ]
         ]
-    ]
+    ],
+    'testGetCheckoutPreferencesWithConfigIdInOrder' => [
+        'request' => [
+            'url' => '/preferences',
+            'method' => 'get',
+            'content' => [
+                'currency' => 'INR',
+            ]
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
+    'testGetCheckoutPreferencesWithDefaultConfig' => [
+        'request' => [
+            'url' => '/preferences',
+            'method' => 'get',
+            'content' => [
+                'currency' => 'INR',
+            ]
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
 ];

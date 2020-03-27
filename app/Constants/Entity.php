@@ -99,9 +99,9 @@ class Entity
     const BALANCE_CONFIG             = 'balance_config';
     const MERCHANT_EMAIL             = 'merchant_email';
     const PARTNER_CONFIG             = 'partner_config';
-    const IDEMPOTENCY_KEY           = 'idempotency_key';
     const OFFLINE_DEVICE             = 'offline_device';
     const DISPUTE_REASON             = 'dispute_reason';
+    const IDEMPOTENCY_KEY            = 'idempotency_key';
     const NODAL_STATEMENT            = 'nodal_statement';
     const VIRTUAL_ACCOUNT            = 'virtual_account';
     const MERCHANT_DETAIL            = 'merchant_detail';
@@ -595,6 +595,7 @@ class Entity
         self::WORLDLINE              => \RZP\Gateway\Worldline::class,
         self::GETSIMPL               => \RZP\Gateway\Mozart::class,
         self::PAYLATER_ICICI         => \RZP\Gateway\Mozart::class,
+        self::HDFC_DEBIT_EMI         => \RZP\Gateway\Mozart::class,
 
         // heimdall
         self::ORG                          => \RZP\Models\Admin\Org::class,

@@ -51,6 +51,7 @@ trait PaymentTrait
     use PaymentCybersourceTrait;
     use PaymentCardlessEmiTrait;
     use PaymentBajajFinservTrait;
+    use PaymentHdfcDebitEmiTrait;
     use PaymentWalletAmazonpayTrait;
     use PaymentWalletAirtelMoneyTrait;
 
@@ -2563,25 +2564,33 @@ trait PaymentTrait
                           ->willReturn('on');
     }
 
-    protected function mockRazorXTreatmentForEnableBankTransferRefunds()
+    protected function assignSubMerchant(string $tid, string $mid)
     {
-        // Sending FTA to FTS
-        $razorxMock = $this->getMockBuilder(RazorXClient::class)
-                           ->setConstructorArgs([$this->app])
-                           ->setMethods(['getTreatment'])
-                           ->getMock();
+        $url = '/terminals/' . $tid . '/merchants/' . $mid;
 
-        $this->app->instance('razorx', $razorxMock);
+        $request = [
+            'url'    => $url,
+            'method' => 'PUT',
+        ];
 
-        $this->app->razorx->method('getTreatment')
-                          ->will($this->returnCallback(
-                            function ($mid, $feature, $mode) {
-                                if ($feature === 'enable_bank_transfer_refunds')
-                                {
-                                    return 'on';
-                                }
+        $this->ba->adminAuth();
 
-                                return 'off';
-                            }));
+        $content = $this->makeRequestAndGetContent($request);
+    }
+
+    protected function deleteSubmerchant(string $tid, string $mid)
+    {
+        $url = '/terminals/' . $tid . '/merchants/' . $mid;
+
+        $request = [
+            'url' => $url,
+            'method' => 'DELETE',
+        ];
+
+        $this->ba->adminAuth();
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        return $content;
     }
 }
