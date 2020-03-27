@@ -131,11 +131,15 @@ class UserController extends Controller
             if (empty($error))
             {
                 $credentials = [
-                    'email'     => $input['email'],
-                    'password'  => $input['password']
+                    'email'             => $input['email'],
+                    'password'          => $input['password'],
+                    'captcha_disable'   => 'DISABLE_THE_CAPTCHA_YOU_SHALL',
                 ];
 
-                Auth::attempt($credentials, false, true);
+                if (Auth::attempt($credentials, false, true) === false)
+                {
+                    list($error, $data) = (new User\Service)->login($credentials);
+                }
             }
         }
         catch (User\RecoverableException $e)

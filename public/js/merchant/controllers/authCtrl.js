@@ -456,33 +456,43 @@ app
               id: 'SIGNUP_FAILED',
               value: data.errors[0],
             });
-
-            if (
-              data.errors &&
-              data.errors[0] &&
-              data.errors[0].indexOf('email has already been taken') !== -1
-            ) {
-              trackDrip('error_email_taken');
-              window.rzpQ.push(
-                window.rzpQ
-                  .now()
-                  .onbr()
-                  .failed('signup.submit_email', { mode: $scope.eventsMode })
-              );
+            let firstError = '';
+            if (data.errors && data.errors.length) {
+              firstError = data.errors[0];
             }
+            if (
+              typeof firstError === 'object' &&
+              !!firstError.internal_error_code
+            ) {
+              $scope.goToSigninLayout();
+              $scope.handleErrorsWithInternalCode(firstError);
+            } else {
+              if (
+                firstError &&
+                firstError.indexOf('email has already been taken') !== -1
+              ) {
+                trackDrip('error_email_taken');
+                window.rzpQ.push(
+                  window.rzpQ
+                    .now()
+                    .onbr()
+                    .failed('signup.submit_email', { mode: $scope.eventsMode })
+                );
+              }
 
-            window.ga &&
-              window.ga(
-                'send',
-                'event',
-                'Signup - Email Password',
-                'Click - Create Account (Error)',
-                JSON.stringify(data.errors)
-              );
+              window.ga &&
+                window.ga(
+                  'send',
+                  'event',
+                  'Signup - Email Password',
+                  'Click - Create Account (Error)',
+                  JSON.stringify(data.errors)
+                );
 
-            angular.forEach(data.errors, function(value) {
-              $scope.alerts.addAlert('danger', value);
-            });
+              angular.forEach(data.errors, function(value) {
+                $scope.alerts.addAlert('danger', value);
+              });
+            }
           }
         });
       };
