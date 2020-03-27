@@ -48,6 +48,7 @@ use RZP\Models\Admin\Org\Hostname;
 use RZP\Error\PublicErrorDescription;
 use RZP\Mail\Merchant\EsEnabledNotify;
 use RZP\Models\Merchant\Webhook\Stork;
+use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\Schedule\Task as ScheduleTask;
 use RZP\Mail\Merchant\CreateSubMerchantPartner;
 use RZP\Constants\{Mode, Entity as CE, Product};
@@ -2477,11 +2478,11 @@ class Service extends Base\Service
 
         $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
-        $data['merchant'] = $merchant->toArrayPublic();
+        $data[EntityConstants::MERCHANT] = $merchant->toArrayPublic();
 
         $merchantDetail = $merchant->merchantDetail;
         
-        $data['merchant_detail'] = isset($merchantDetail) === true ? $merchantDetail->toArrayPublic() : [];
+        $data[EntityConstants::MERCHANT_DETAIL] = isset($merchantDetail) === true ? $merchantDetail->toArrayPublic() : [];
 
         return $data;
     }
