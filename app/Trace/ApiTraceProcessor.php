@@ -38,6 +38,14 @@ class ApiTraceProcessor
                        "|(?:2131|1800|35\d{3})\d{11}" .      # JCB
                        ")\b/";
 
+    //
+    // This is added to disable scrubbing.let's say we decided to kill this feature for some reason , bad RegEx or
+    // what-ever. if we set it to "null" , we will expect it to not do RegEx.. however since there is a default regex,
+    // it will always run. only choice is to go into code / deploy again. In order to avoid that ,adding a magic string
+    // off. if redis value for key CREDIT_CARD_REGEX_FOR_REDACTING returns off , we will disable scrubbing
+    //
+    const OFF = 'off';
+
     public function __construct($app)
     {
         $this->app = $app;
@@ -177,6 +185,11 @@ class ApiTraceProcessor
         if (empty($cardRegex) === true)
         {
             $cardRegex = self::CARD_REGEX;
+        }
+
+        if (strtolower($cardRegex) === self::OFF)
+        {
+            return;
         }
 
         array_walk_recursive($context, function(& $item) use ($cardRegex)
