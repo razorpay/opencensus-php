@@ -911,8 +911,11 @@ class Core extends Base\Core
             // Fetch BAS for this payout
             if (empty($payout->getUtr()) === false)
             {
-                $bas = $this->repo->banking_account_statement->fetchByUtrForPayout($payout)->first() ??
-                       $this->repo->banking_account_statement->fetchByCmsRefNumForPayout($payout)->first();
+                $bas = $this->repo->banking_account_statement->fetchByUtrForPayout($payout)->first();
+            }
+            else
+            {
+                $bas = $this->repo->banking_account_statement->fetchByCmsRefNumForPayout($payout)->first();
             }
         }
         catch (\Throwable $e)
@@ -1320,8 +1323,11 @@ class Core extends Base\Core
 
         if (empty($payout->getUtr()) === false)
         {
-            $bas = $this->repo->banking_account_statement->fetchByUtrForPayout($payout)->first() ??
-                   $this->repo->banking_account_statement->fetchByCmsRefNumForPayout($payout)->first();
+            $bas = $this->repo->banking_account_statement->fetchByUtrForPayout($payout)->first();
+        }
+        else
+        {
+            $bas = $this->repo->banking_account_statement->fetchByCmsRefNumForPayout($payout)->first();
         }
 
         if (empty($bas) === false)
