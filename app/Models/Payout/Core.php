@@ -426,7 +426,7 @@ class Core extends Base\Core
         // value.
         if (empty($payout->getReturnUtr()) === true)
         {
-            if (empty($ftaData[Attempt\Constants::RETURN_UTR]) === false)
+            if (empty($ftaData[Entity::RETURN_UTR]) === false)
             {
                 $returnUtr = $ftaData[Attempt\Constants::RETURN_UTR];
 
