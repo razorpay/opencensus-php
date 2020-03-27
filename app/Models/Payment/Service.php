@@ -1190,12 +1190,8 @@ class Service extends Base\Service
     public function updateDccDataIfApplicable($input, $iinEntity, $merchant, & $data)
     {
         // get dcc options for customer if dcc is enabled for merchant
-        if ($merchant->isDCCEnabled() === false)
-        {
-            return;
-        }
-
-        if ($iinEntity === null)
+        if (($merchant->isDCCEnabled() === false) or
+            ($iinEntity === null))
         {
             return;
         }
