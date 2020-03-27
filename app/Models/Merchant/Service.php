@@ -2480,8 +2480,8 @@ class Service extends Base\Service
         $data['merchant'] = $merchant->toArrayPublic();
 
         $merchantDetail = $merchant->merchantDetail;
-
-        $data['merchant_detail'] = $merchantDetail->toArrayPublic();
+        
+        $data['merchant_detail'] = isset($merchantDetail) === true ? $merchantDetail->toArrayPublic() : [];
 
         return $data;
     }

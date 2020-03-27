@@ -6251,7 +6251,7 @@ class MerchantTest extends TestCase
     // Internal merchant_details route return merchant and merchant_details in response
     public function testInternalGetMerchant()
     {
-        $this->ba->proxyAuth();
+        $this->ba->appAuth();
 
         $this->fixtures->create('merchant', ['id'=>'100ghi000ghi00']);
 
