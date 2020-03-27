@@ -540,6 +540,7 @@ class Constants
         self::PAYMENT_CREATED_WEBHOOK         => true,
         self::CYBERSOURCE_VAS                 => true,
         self::CHECKOUT_DISABLE_RETRY          => true,
+        self::COVID                           => true,
     ];
 
     // Entity type constants
