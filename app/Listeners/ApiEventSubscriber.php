@@ -760,6 +760,13 @@ class ApiEventSubscriber extends Base\Core
         $this->prepareAndDispatchWebhook($payload);
     }
 
+    protected function onTerminalCreated(Terminal\Entity $terminal)
+    {        
+        $payload = $this->getTerminalCreatedPayload($terminal);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
     protected function onTerminalActivated(Terminal\Entity $terminal)
     {
         $payload = $this->getTerminalActivatedPayload($terminal);
@@ -1066,6 +1073,17 @@ class ApiEventSubscriber extends Base\Core
         $payload = [
             Constants\Entity::PAYMENT_DOWNTIME => [
                 'entity' => $downtime->toArrayPublic(),
+            ]
+        ];
+
+        return $payload;
+    }
+
+    protected function getTerminalCreatedPayload(Terminal\Entity $terminal): array
+    {
+        $payload = [
+            Constants\Entity::TERMINAL => [
+                'entity' => $terminal->toArrayPublic(),
             ]
         ];
 

@@ -300,6 +300,8 @@ class GatewayProcessor extends BaseGatewayProcessor
             $terminal->save();
 
             $terminalOnboardingDetail->save();
+
+            $this->app['events']->fire('api.terminal.created', ['main' => $terminal]);
         }
 
         // If error description is "Duplicate Merchant code, it means first type of request (onboard merchant was sent twice - maybe in race condition),
