@@ -700,6 +700,11 @@ class Constants
             'display_name'  => 'Card Transfer Refund',
             'documentation' => '',
         ],
+        self::COVID                       => [
+            'feature'       => self::COVID,
+            'display_name'  => 'Covid-19 relief campaign',
+            'documentation' => '',
+        ],
     ];
 
     /**
