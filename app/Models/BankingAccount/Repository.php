@@ -80,7 +80,7 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function fetchAccountNumbersByChannel(string $channel, $limit)
+    public function fetchAccountNumbersByChannel(string $channel, int $limit)
     {
         $bankingAccountBalanceIdColumn = $this->dbColumn(Entity::BALANCE_ID);
         $channelColumn                 = $this->dbColumn(Entity::CHANNEL);

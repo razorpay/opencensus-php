@@ -95,7 +95,7 @@ class BankingAccountStatement extends Job
             $operation = 'banking account statement fetch job failed';
 
             //TODO: Need to decide on channel name for slack alert and run book
-            (new SlackNotification)->send($operation, $this->params, null, 1, 'rbl_alerts');
+            (new SlackNotification)->send($operation, $this->params, null, 1, 'rx_ca_rbl_alerts');
         }
     }
 
