@@ -27,6 +27,10 @@ class Status
         Status::UNSERVICEABLE,
     ];
 
+    public static $activatedStatuses = [
+        self::ACTIVATED,
+    ];
+
     protected static $statuses = [
         self::CREATED,
         self::INITIATED,
@@ -147,5 +151,10 @@ class Status
                     Entity::STATUS               => $status
                 ]);
         }
+    }
+
+    public static function getActivatedStatuses(): array
+    {
+        return self::$activatedStatuses;
     }
 }

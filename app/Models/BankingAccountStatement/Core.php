@@ -626,7 +626,7 @@ class Core extends Base\Core
                 'channel'        => $channel,
             ]);
 
-        $accountNumbers = $this->repo->banking_account->fetchAccountNumbersByChannel($channel, $limit);
+        $accountNumbers = $this->repo->banking_account->fetchAccountNumbersByChannel($channel, $limit)->pluck(Entity::ACCOUNT_NUMBER);
 
         foreach ($accountNumbers as $accountNumber)
         {
