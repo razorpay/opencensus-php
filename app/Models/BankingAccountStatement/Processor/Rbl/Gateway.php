@@ -27,11 +27,6 @@ class Gateway extends BaseProcessor
 
     const STATEMENT_START_TIME_DATE_FORMAT = 'Y-m-d';
 
-    /**
-     * @var BankingAccountStatementCore
-     */
-    protected $basCore;
-
     const DEFAULT_RBL_STATEMENT_FETCH_ATTEMPT_LIMIT = 3;
 
     public function __construct(string $channel, string $accountNumber)
@@ -39,8 +34,6 @@ class Gateway extends BaseProcessor
         $this->setSource(Source::FETCH_API);
 
         parent::__construct($channel, $accountNumber);
-
-        $this->basCore = new BankingAccountStatementCore;
     }
 
     protected function sendRequestAndGetResponse(array $input)
@@ -122,7 +115,7 @@ class Gateway extends BaseProcessor
         // But not sure if this logic is generic for all bank as of now
         if (($this->hasMoreData($bankResponse) === true))
         {
-            $this->basCore->dispatchBankingAccountStatementJob($this->channel, $this->accountNumber);
+            (new BankingAccountStatementCore)->dispatchBankingAccountStatementJob($this->channel, $this->accountNumber);
         }
 
         return $finalFormattedResponse;

@@ -77,6 +77,9 @@ class Core extends Base\Core
 
                     $currentTime = Carbon::now()->getTimestamp();
 
+                    // updating LastStatementAttemptAt irrespective of success or fail so that new accounts are always fetched
+                    // using LastStatementAttemptAt and failed accounts can be manually tried by sre also We are handling failure
+                    // retry in job instead.
                     $bankingAccount->setLastStatementAttemptAt($currentTime);
 
                     $bankingAccount->saveOrFail();
