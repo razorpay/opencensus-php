@@ -2,8 +2,6 @@
 
 namespace RZP\Models\BankingAccount;
 
-use Carbon\Carbon;
-
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Balance;
