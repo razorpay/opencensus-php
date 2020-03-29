@@ -1900,6 +1900,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const REDIS_LAG_CHECK_FAILED                                = 'REDIS_LAG_CHECK_FAILED';
     const HEARTBEAT_CHECK_FAILED                                = 'HEARTBEAT_CHECK_FAILED';
+    const HEARTBEAT_CONFIG_FETCH_FAILED                         = 'HEARTBEAT_CONFIG_FETCH_FAILED';
     const HEARTBEAT_CHECK_COMPLETED                             = 'HEARTBEAT_CHECK_COMPLETED';
     const DATABASE_RECONNECT                                    = 'DATABASE_RECONNECT';
     const HEARTBEAT_CHECK_TIME_CONVERSION                       = 'HEARTBEAT_CHECK_TIME_CONVERSION';
