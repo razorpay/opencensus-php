@@ -82,7 +82,7 @@ class Core extends Base\Core
                     // retry in job instead.
                     $bankingAccount->setLastStatementAttemptAt($currentTime);
 
-                    $bankingAccount->saveOrFail();
+                    $this->repo->saveOrFail($bankingAccount);
 
                     $merchant = $bankingAccount->merchant;
 
@@ -100,6 +100,8 @@ class Core extends Base\Core
         }
         catch (Exception\BadRequestException $e)
         {
+            // catching only BadRequestException exception to log and have noop for duplicate statement fetch request
+            // Ignoring the duplicate exception and treating it success and delete account number from sqs.
             $this->trace->error(
                 TraceCode::BANKING_ACCOUNT_STATEMENT_FETCH_FAILED,
                 [
