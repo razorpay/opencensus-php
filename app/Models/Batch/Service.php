@@ -143,7 +143,7 @@ class Service extends Base\Service
     {
         try
         {
-            $signedUrl = $this->app->batchService->downloadS3UrlForBatchOrFileStore($id, 'batch');
+            $signedUrl = $this->app->batchService->downloadS3UrlForBatchOrFileStore($id, 'batch', $this->merchant->getId());
 
             return [Entity::URL => $signedUrl];
         }
@@ -151,6 +151,7 @@ class Service extends Base\Service
         {
             // Either Batch Microservice is down or not found
             // check in DB.
+
             $batch = $this->repo->batch->findByPublicIdAndMerchant($id, $this->merchant);
 
             $signedUrl = $this->core()->downloadBatch($batch);
