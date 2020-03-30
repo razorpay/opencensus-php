@@ -66,7 +66,8 @@ class CreateSubscriptionRegistrationTable extends Migration
             $table->string(Entity::AUTH_TYPE,255)
                   ->nullable();
 
-            $table->integer(Entity::EXPIRE_AT)
+            $table->bigInteger(Entity::EXPIRE_AT)
+                  ->unsigned()
                   ->nullable();
 
             $table->text(Entity::NOTES);

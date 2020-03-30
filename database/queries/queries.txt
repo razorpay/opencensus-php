@@ -5689,5 +5689,22 @@ ALTER TABLE payment_configs
 ALTER TABLE disputes
     ADD COLUMN conversion_rate BIGINT UNSIGNED DEFAULT NULL;
 
+// modify-expire-2038-bigint starts
+// Modifying expire columns from int to bigint to support epoch dates beyond 2038
+ALTER TABLE subscription_registrations
+    MODIFY COLUMN expire_at bigint(20) UNSIGNED DEFAULT NULL;
+
+// commenting this out as not executed
+-- ALTER TABLE invoices
+--    MODIFY COLUMN expire_by bigint(20) UNSIGNED DEFAULT NULL;
+
+ALTER TABLE paper_mandates
+    MODIFY COLUMN end_at bigint(20) UNSIGNED DEFAULT NULL;
+
+ALTER TABLE invoices
+    ADD COLUMN big_expire_by bigint(20) UNSIGNED DEFAULT NULL;
+// modify-expire-2038-bigint ends
+
 ALTER TABLE orders
     ADD COLUMN checkout_config_id CHAR(14) DEFAULT NULL;
+
