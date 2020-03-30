@@ -1029,4 +1029,9 @@ class PublicErrorDescription
 
     //Invalid Bank Account
     const BAD_REQUEST_INVALID_BANK_ACCOUNT                                          =  'The bank account entered is invalid';
+
+
+    // Upi Mandates
+    const BAD_REQUEST_UPI_MANDATE_END_TIME_INVALID                                  = 'Invalid end time for upi mandate payment, end time must be greater than start time and current time';
+    const BAD_REQUEST_UPI_MANDATE_TIME_RANGE_REQUIRED                               = 'Start time and end time is required in case of upi mandate payments';
 }

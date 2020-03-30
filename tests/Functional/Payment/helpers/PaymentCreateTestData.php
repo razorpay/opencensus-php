@@ -501,4 +501,60 @@ return [
             'status_code' => 200,
         ]
     ],
+
+    'testUpiOtmPaymentFail' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_UPI_MANDATE_END_TIME_INVALID,
+                ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => 'BAD_REQUEST_VALIDATION_FAILURE',
+        ],
+    ],
+
+    'testUpiBlockFail' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The vpa field is not required and not shouldn\'t be sent.'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => 'BAD_REQUEST_VALIDATION_FAILURE'
+        ],
+    ],
+
+    'testUpiInvalidProvider' => [
+        'response' => [
+            'content' => [
+                'type' => 'async'
+            ],
+        ],
+    ],
+
+    'testUpiOtmWithPastDates' => [
+       'response'  => [
+           'content' => [
+               'error' => [
+                   'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                   'description' => PublicErrorDescription::BAD_REQUEST_UPI_MANDATE_END_TIME_INVALID,
+               ],
+           ],
+           'status_code' => 400
+       ],
+       'exception' => [
+           'class'   => RZP\Exception\BadRequestValidationFailureException::class,
+           'internal_error_code' => 'BAD_REQUEST_VALIDATION_FAILURE',
+       ]
+    ],
 ];

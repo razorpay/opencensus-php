@@ -76,5 +76,15 @@ class Observer extends BaseObserver
 
             (new RiskCore)->logPaymentForSource($payment, $source, $riskData);
         }
+
+        if ($payment->isUpi() === true)
+        {
+            $upiMetadata = $payment->getMetadata(UpiMetadata\Entity::UPI_METADATA);
+
+            if ($upiMetadata instanceof UpiMetadata\Entity)
+            {
+                $this->app['repo']->saveOrFail($upiMetadata);
+            }
+        }
     }
 }

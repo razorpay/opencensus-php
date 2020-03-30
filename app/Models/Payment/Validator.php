@@ -20,6 +20,7 @@ use RZP\Models\Merchant;
 use RZP\Constants\Timezone;
 use RZP\Models\Customer\Token;
 use RZP\Models\Currency\Currency;
+use RZP\Error\PublicErrorDescription;
 use RZP\Gateway\Upi\Base\ProviderCode;
 use RZP\Models\VirtualAccount\Receiver;
 use RZP\Models\Payment\Processor\Wallet;
@@ -1154,25 +1155,35 @@ class Validator extends Base\Validator
         {
             $this->validateVpa('upi.vpa', $input['upi']['vpa']);
         }
-        if ((isset($input['upi']['type']) === true) and
-            ($input['upi']['type'] === 'otm'))
+        if ($this->isOtmPayment($input))
         {
             if ((isset($input['upi']['start_time']) === false) or
                 (isset($input['upi']['end_time']) === false))
             {
                 throw new Exception\BadRequestValidationFailureException(
-                    'UPI OTM payments require start_time and end_time',
+                    PublicErrorDescription::BAD_REQUEST_UPI_MANDATE_TIME_RANGE_REQUIRED,
                     'upi',
                     ['input'=> $input]
                     );
             }
 
-            if ($input['upi']['start_time'] > $input['upi']['end_time'])
+            if ($this->getUpiStartTime($input) > $this->getUpiEndTime($input))
             {
                 throw new Exception\BadRequestValidationFailureException(
-                    'Invalid start_time for UPI OTM Payment, start time cannot be greater than end time',
-                    'upi.start_time',
+                    PublicErrorDescription::BAD_REQUEST_UPI_MANDATE_END_TIME_INVALID,
+                    'upi.end_time',
                     ['input'=> $input]
+                );
+            }
+
+            $now = Carbon::now()->getTimestamp();
+
+            if ($this->getUpiEndTime($input) < $now)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    PublicErrorDescription::BAD_REQUEST_UPI_MANDATE_END_TIME_INVALID,
+                    'upi.end_time',
+                    ['input' => $input]
                 );
             }
         }
