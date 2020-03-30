@@ -6,6 +6,7 @@ use App;
 use Request;
 
 use RZP\Http\Route;
+use Razorpay\Trace\Logger;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Admin\Service as AdminService;
 
@@ -206,7 +207,7 @@ class ApiTraceProcessor
 
                         foreach ($matches as $match)
                         {
-                            $item = str_replace($match, 'CARD_NUMBER_SCRUBBED' . '(' . strlen($match) . ')', $item);;
+                            $item = str_replace($match, 'CARD_NUMBER_SCRUBBED' . '(' . strlen($match) . ')', $item);
                         }
                     }
                 }
@@ -216,6 +217,12 @@ class ApiTraceProcessor
         }
         catch (\Exception $e)
         {
+            $this->app['trace']->traceException(
+                $e,
+                Logger::ERROR,
+                TraceCode::CREDIT_CARD_REDACTION_FAILURE_EXCEPTION
+            );
+
             return;
         }
     }

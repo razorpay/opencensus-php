@@ -2717,6 +2717,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const VA_MIGRATE_JOB_FAILED         = 'VA_MIGRATE_JOB_FAILED';
     const VA_MIGRATE_TIME               = 'VA_MIGRATE_TIME';
 
+    // Exception while scrubbing Credit card details
+    const CREDIT_CARD_REDACTION_FAILURE_EXCEPTION                = 'CREDIT_CARD_REDACTION_FAILURE_EXCEPTION';
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
         self::PAYMENT_CREATED                                       => 'New payment created',
@@ -2873,6 +2876,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
         self::MERCHANT_BALANCE_DEBIT_FAILURE                        => 'Not enough balance',
         self::MERCHANT_REFUND_CREDITS_DEBIT_FAILURE                 => 'Not enough refund credits',
         self::NEGATIVE_BALANCE_BREACHED                             => 'Negative Balance has crossed the negative limit threshold',
+        self::CREDIT_CARD_REDACTION_FAILURE_EXCEPTION               => 'Exception occured while scurbbing credit card details',
         ];
 
     public static $fileBasedReconTraceCodes = [
