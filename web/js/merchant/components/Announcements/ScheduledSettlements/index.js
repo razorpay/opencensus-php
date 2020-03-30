@@ -3,7 +3,7 @@ import Button from 'common/new-ui/Button';
 import ScheduledModal from 'merchant/views/Settlements/components/Modals/ScheduledModal';
 import { connect } from 'react-redux';
 import * as ModalActions from 'merchant_common/reducers/modals';
-import Announcement from 'merchant/components/Announcement';
+import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBanner';
 
 @connect(state => ({}), {
   ...ModalActions,
@@ -11,20 +11,20 @@ import Announcement from 'merchant/components/Announcement';
 export default class EarlyScheduledAnnouncement extends Component {
   render() {
     return (
-      <Announcement
+      <AnnouncementBanner
         class="es-auto-banner"
         theme="primary"
         title="Introducing Early Settlements"
         canBeClosed={true}
       >
-        <span className="es-schedule-banner-text">
+        <span class="es-schedule-banner-text">
           Get your settlements on the same day automtically!{' '}
           <a href="http://razorpay.com/settlement" target="_blank">
             Learn More
           </a>
         </span>
         <Button.Secondary
-          className="pull-right"
+          class="pull-right"
           onClick={() => {
             this.props.openModal({
               component: (
@@ -37,7 +37,7 @@ export default class EarlyScheduledAnnouncement extends Component {
         >
           Enable Now
         </Button.Secondary>
-      </Announcement>
+      </AnnouncementBanner>
     );
   }
 }

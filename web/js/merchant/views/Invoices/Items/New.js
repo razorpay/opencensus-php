@@ -11,7 +11,6 @@ import { saveSubscriptionItem } from 'merchant/reducers/subscriptions';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
 import { PowerSelect } from 'react-power-select';
-import CheckableItem from 'merchant/components/CheckableItem';
 import { fetchTaxes, saveTax, fetchGSTTaxes } from 'merchant/reducers/taxes';
 import RadioButton from 'common/ui/Forms/RadioButton';
 import { deepCopy } from 'common/utils/immutable';
@@ -20,6 +19,7 @@ import { isTaxOfTypeCess } from 'common/utils/rzp-utils';
 import { AmountTooltip } from 'common/ui/Amount';
 import Input from 'common/new-ui/Input';
 import { classList } from 'common/utils/rzp-utils';
+import CheckableItem from './components/CheckableItem';
 
 const selector = formValueSelector('newItem');
 

@@ -1,5 +1,5 @@
 import React from 'react';
-import Announcement from 'merchant/components/Announcement';
+import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBanner';
 import { trackMarketingExperimentBanner } from '../ga';
 
 export default ({ userId }) => {
@@ -25,7 +25,7 @@ export default ({ userId }) => {
   };
 
   return (
-    <Announcement
+    <AnnouncementBanner
       theme="success"
       title="COVID 19 Relief Update"
       canBeClosed={true}
@@ -52,6 +52,6 @@ export default ({ userId }) => {
           <i className="i i-chevron-right" />
         </button>
       </div>
-    </Announcement>
+    </AnnouncementBanner>
   );
 };

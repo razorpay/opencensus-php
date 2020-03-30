@@ -1,8 +1,6 @@
-import RTracking from 'react-tracking';
-
 import Button from 'common/new-ui/Button';
-
-import DataList from 'merchant/components/DataList';
+import DataList from './DataList';
+import RTracking from 'react-tracking';
 
 @RTracking(props =>
   window.rzpQ.component(`${props.feature}_onboarding_landing_page`)

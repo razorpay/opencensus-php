@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 import RTracking from 'react-tracking';
 
-import Announcement from 'merchant/components/Announcement';
+import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBanner';
 
 import { activationDuration } from 'merchant/helpers/data';
 import { trackGoToActivationFromError } from '../../../containers/Home/ga';
@@ -32,7 +32,7 @@ export default class InstantActivationAnnouncements extends Component {
           <span>
             Your settlements are on hold. You will need to fill the KYC Form to
             receive your payments in your bank account.
-            <span className="big-dot-separator" />
+            <span class="big-dot-separator" />
             <Link to="/activation">Fill KYC Form</Link>
           </span>
         );
@@ -132,7 +132,7 @@ export default class InstantActivationAnnouncements extends Component {
       }
     }
     return (
-      <Announcement
+      <AnnouncementBanner
         title={title}
         theme={theme}
         bannerKey={`announcement-banner-${user.activation_status}-${
@@ -141,7 +141,7 @@ export default class InstantActivationAnnouncements extends Component {
         canBeClosed={user.isAccepted}
       >
         {content}
-      </Announcement>
+      </AnnouncementBanner>
     );
   }
 }

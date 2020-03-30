@@ -7,11 +7,11 @@ import ModalDialog from 'common/ui/ModalDialog';
 import Notifications from 'common/ui/Notifications';
 import LocalStorageService from 'common/utils/localStorage';
 import debounce from 'common/utils/debounce';
-import Sidebar from 'merchant/containers/Sidebar';
+import Sidebar from 'merchant/components/Sidebar';
 import HeaderNav from 'merchant/components/HeaderNav';
-import Content from 'merchant/components/Content';
+import Content from 'merchant/routes/Content';
 import Footer from 'merchant/components/Footer';
-import ActivationRequired from 'merchant/components/ActivationRequired';
+import ActivationRequiredModal from 'merchant/components/ActivationRequiredModal';
 import PasswordReLogin from 'merchant_common/components/PasswordReLogin';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import * as NotificationActions from 'merchant_common/reducers/notifications';
@@ -37,7 +37,7 @@ import { classList } from 'common/utils/rzp-utils';
 import { merchantFetch } from 'merchant/utils/ajax';
 import rolesList from 'merchant/helpers/permissions/roles-list';
 
-import initChat from 'merchant/chat';
+import initChat from 'merchant/components/Support/chat';
 import RTracking from 'react-tracking';
 
 @withRouter
@@ -384,7 +384,7 @@ export default class App extends Component {
       this.props.openModal({
         size: 'small',
         component: (
-          <ActivationRequired
+          <ActivationRequiredModal
             user={this.props.user}
             onCloseClick={this.props.closeModal}
           />

@@ -8,7 +8,7 @@ import {
   getCurrentProductOnBoardingDetails,
 } from 'merchant/reducers/onboarding';
 
-import TestModeBanner from 'merchant/containers/TestModeBanner';
+import TestModeBanner from 'merchant/components/TestModeBanner';
 
 import OnBoarding from './OnBoarding';
 import QuickGuide from './QuickGuide';

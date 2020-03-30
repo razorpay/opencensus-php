@@ -14,7 +14,7 @@ import Button from 'common/new-ui/Button';
 import ShowWhen from 'merchant/components/ShowWhen';
 import CopyLink from 'merchant/components/CopyLink';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
-import EntityDetailList from 'merchant/components/EntityDetailList/List';
+import EntityDetailList from 'merchant/views/Subscriptions/Subscriptions/components/EntityDetailList/List';
 import { SubscriptionStatusLabel } from 'merchant/components/StatusLabel';
 import NestedEntityDetailRow from 'merchant/components/NestedEntityDetailRow';
 import { changeData } from 'merchant/views/Subscriptions/SubscriptionLinks/Update/Review';

@@ -8,8 +8,8 @@ import Popover, { PopoverBody } from 'common/ui/Popover';
 import DetailRow from 'merchant/components/DetailRow';
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
 import { ActivationStatusLabel } from 'merchant/components/StatusLabel';
+import EditWebsiteDetailsModal from './EditWebsiteDetailsModal';
 import ShowWhen from 'merchant/components/ShowWhen';
-import EditWebsiteDetails from 'merchant/containers/EditWebsiteDetails';
 
 const businessTypeMap = {
   1: 'Proprietorship',
@@ -32,9 +32,9 @@ function renderWebsites(user, handleEditWebsite, isWebsiteInWorkflow) {
     </div>
   ) : null;
 
-  /* 
+  /*
     has_key_access determines if merchant can generate keys
-    Let User enter business_website if has_key_access = false & isWebsiteInWorkflow = false 
+    Let User enter business_website if has_key_access = false & isWebsiteInWorkflow = false
   */
   if (!user.has_key_access) {
     if (!user.business_website && !isWebsiteInWorkflow) {
@@ -94,7 +94,10 @@ const MerchantDetails = ({
     openModal({
       size: 'small',
       component: (
-        <EditWebsiteDetails onWebsiteAdd={onWebsiteAdd} onClose={closeModal} />
+        <EditWebsiteDetailsModal
+          onWebsiteAdd={props.onWebsiteAdd}
+          onClose={closeModal}
+        />
       ),
     });
   };

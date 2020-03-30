@@ -2,7 +2,7 @@ import { connect } from 'react-redux';
 import { NavLink } from 'react-router-dom';
 
 import Spinner from 'common/ui/Spinner';
-import TestModeBanner from 'merchant/containers/TestModeBanner';
+import TestModeBanner from 'merchant/components/TestModeBanner';
 import { showNotification } from 'merchant_common/reducers/notifications';
 
 import LogList from './Logs/List';

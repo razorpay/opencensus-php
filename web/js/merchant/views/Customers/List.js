@@ -11,7 +11,7 @@ import * as CustomerActions from 'merchant/reducers/customers';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import * as NotificationActions from 'merchant_common/reducers/notifications';
 import { luminateRow } from 'merchant/reducers/app';
-import TestModeBanner from 'merchant/containers/TestModeBanner';
+import TestModeBanner from 'merchant/components/TestModeBanner';
 
 @connect(state => ({ ...state.customers, mode: state.session.mode }), {
   ...CustomerActions,

@@ -10,7 +10,7 @@ import Group, { GroupItem } from 'common/ui/Group';
 import DateRangePicker from 'common/ui/DateRangePicker';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 import ShowWhen from 'merchant/components/ShowWhen';
-import NegativeBalanceBanner from 'merchant/components/Announcement';
+import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBanner';
 import NewUserOnboardingCard from 'merchant/containers/Home/OnboardingCard';
 import KeyMetrics from 'merchant/containers/Home/KeyMetrics';
 import PaymentMethods from 'merchant/containers/Home/PaymentMethods';
@@ -25,11 +25,12 @@ import Button from 'common/new-ui/Button';
 import OndemandModal from 'merchant/views/Settlements/components/Modals/OndemandModal';
 import { openModal } from 'merchant_common/reducers/modals';
 import { trackPersonaliseBanner } from 'merchant/containers/Home/OnboardingCard/Instant/ga';
-import CreditPullModal from 'merchant/containers/CreditPull/CreditPullModal';
+
+import CreditPullModal from 'merchant/containers/CreditPullModal';
+import { trackPresetChange, trackSettlementsClick, trackSettleNow } from './ga';
 import OnHoldBanner from 'common/ui/OnHoldBanner';
 import SettlementDetail from 'merchant/views/Settlements/components/SettlementDetail';
 import { handleNegativeBalanceLimit } from 'common/utils/rzp-utils';
-import { trackPresetChange, trackSettlementsClick, trackSettleNow } from './ga';
 import Time from 'common/ui/Time';
 
 @withRouter
@@ -148,7 +149,7 @@ class AnalyticsDesktop extends Component {
           )}
 
           {current_balance.data.balance < 0 && (
-            <NegativeBalanceBanner
+            <AnnouncementBanner
               title="Add Funds"
               theme="warning"
               canBeClosed={true}
@@ -159,14 +160,14 @@ class AnalyticsDesktop extends Component {
                 {' '}
                 Add Funds
               </Link>
-            </NegativeBalanceBanner>
+            </AnnouncementBanner>
           )}
 
           {handleNegativeBalanceLimit(
             merchantBalanceConfigs,
             current_balance.data.balance
           ) && (
-            <NegativeBalanceBanner
+            <AnnouncementBanner
               title="On Hold!"
               theme="danger"
               canBeClosed={true}
@@ -178,7 +179,7 @@ class AnalyticsDesktop extends Component {
                 {' '}
                 Add Funds
               </Link>
-            </NegativeBalanceBanner>
+            </AnnouncementBanner>
           )}
 
           {/* capital banner*/}

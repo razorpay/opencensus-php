@@ -16,7 +16,7 @@ import { InvoiceStatusLabel } from 'merchant/components/StatusLabel';
 import MandatePaymentMethod from 'merchant/views/Subscriptions/components/MandatePaymentMethod';
 import MandateCustomerDetails from 'merchant/views/Subscriptions/components/MandateCustomerDetails';
 import NACHDetails from 'merchant/views/Subscriptions/components/UploadNACHForm/Details';
-import SendLinkModal from 'merchant/components/Entity/SendLinkModal';
+import SendLinkModal from 'merchant/components/SendLinkModal';
 
 import {
   notifyCustomer,

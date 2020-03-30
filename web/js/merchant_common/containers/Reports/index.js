@@ -16,7 +16,7 @@ import { openModal, closeModal } from 'merchant_common/reducers/modals';
 import debounce from 'common/utils/debounce';
 
 import ModalHeader from 'common/ui/ModalHeader';
-import TestModeBanner from 'merchant/containers/TestModeBanner';
+import TestModeBanner from 'merchant/components/TestModeBanner';
 
 import SelectConfig from 'merchant_common/components/Reports/SelectConfig';
 import ReportLoader from 'merchant_common/components/Reports/ReportLoader';

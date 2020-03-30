@@ -4,7 +4,7 @@ import Button, { AsyncBtn } from 'common/new-ui/Button';
 import Input from 'common/new-ui/Input';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 import { lenientUrl, validateSlug } from 'common/utils/validators';
-import { DateField } from 'merchant/containers/PaymentLinks/Edit/EditExpiry';
+import { DateField } from 'merchant/views/PaymentLinks/PaymentLinks/components/Edit/EditExpiry';
 import { trackPageSettingsData } from '../../ga';
 
 import CreateEmbedButton from 'merchant/views/PaymentPages/PaymentPages/components/Modals/CreateEmbedButton';

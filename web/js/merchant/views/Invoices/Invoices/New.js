@@ -49,7 +49,7 @@ import { PowerSelect } from 'react-power-select';
 import { SingleDatePicker } from 'react-dates';
 import AddressSelectionModal from './components/AddressSelectionModal/index';
 import EditInvoiceLabelModal from './components/EditInvoiceLabel';
-import AddressDisplay from 'merchant/components/AddressDisplay';
+import AddressDisplay from 'merchant/views/Invoices/Invoices/components/AddressDisplay';
 import { states } from 'merchant/helpers/data';
 import InvoicesConfiguration from 'merchant/views/Invoices/Invoices/components/InvoicesConfiguration';
 import { luminateRow } from 'merchant/reducers/app';

@@ -1,6 +1,6 @@
 import React from 'react';
 
-import Announcement from 'merchant/components/Announcement';
+import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBanner';
 
 const getAnnouncement = user => {
   let title = 'Your Feedback Matters',
@@ -30,7 +30,7 @@ const getAnnouncement = user => {
 const NPSAnnouncement = ({ user }) => {
   const announcement = getAnnouncement(user);
   return (
-    <Announcement
+    <AnnouncementBanner
       title={announcement.title}
       theme={announcement.theme}
       bannerKey={`nps-announcement-banner-${user.activation_status}-${
@@ -39,7 +39,7 @@ const NPSAnnouncement = ({ user }) => {
       canBeClosed={user.isAccepted}
     >
       {announcement.content}
-    </Announcement>
+    </AnnouncementBanner>
   );
 };
 

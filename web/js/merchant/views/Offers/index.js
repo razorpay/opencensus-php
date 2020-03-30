@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import HeaderAction from 'common/ui/HeaderAction';
 import Alert from 'common/ui/Forms/Alert';
 import ShowWhen, { ShowWhenRoute } from 'merchant/components/ShowWhen';
-import TestModeBanner from 'merchant/containers/TestModeBanner';
+import TestModeBanner from 'merchant/components/TestModeBanner';
 import List from 'merchant/views/Offers/List';
 import { Route, Switch, NavLink } from 'react-router-dom';
 import RTracking from 'react-tracking';

@@ -11,7 +11,7 @@ import SettlementBreakupModal from 'merchant/views/Settlements/components/Modals
 import HeaderAction from 'common/ui/HeaderAction';
 import { fetchSettlements as fetchAll } from 'merchant/reducers/collection';
 import * as ModalActions from 'merchant_common/reducers/modals';
-import TestModeBanner from 'merchant/containers/TestModeBanner';
+import TestModeBanner from 'merchant/components/TestModeBanner';
 import EnableSettlementsBanner from 'merchant/components/EnableSettlementsBanner';
 import {
   getKeysSeparatedByPipe,
@@ -33,7 +33,7 @@ import {
   fetchHolidayList,
 } from 'merchant/reducers/settlements/details';
 import OndemandModal from 'merchant/views/Settlements/components/Modals/OndemandModal';
-import NegativeBalanceBanner from 'merchant/components/Announcement';
+import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBanner';
 import Amount from 'common/ui/Amount';
 import Button from 'common/new-ui/Button';
 import ScheduledBanner from 'merchant/views/Settlements/components/ScheduledBanner';
@@ -251,7 +251,7 @@ export default class SettlementsListContainer extends ListContainer {
         )}
 
         {current_balance.data.balance < 0 && (
-          <NegativeBalanceBanner
+          <AnnouncementBanner
             title="Add Funds"
             theme="warning"
             canBeClosed={true}
@@ -262,14 +262,14 @@ export default class SettlementsListContainer extends ListContainer {
               {' '}
               Add Funds
             </Link>
-          </NegativeBalanceBanner>
+          </AnnouncementBanner>
         )}
 
         {handleNegativeBalanceLimit(
           this.props.merchantBalanceConfigs,
           this.props.current_balance.data.balance
         ) && (
-          <NegativeBalanceBanner
+          <AnnouncementBanner
             title="On Hold!"
             theme="danger"
             canBeClosed={true}
@@ -281,7 +281,7 @@ export default class SettlementsListContainer extends ListContainer {
               {' '}
               Add Funds
             </Link>
-          </NegativeBalanceBanner>
+          </AnnouncementBanner>
         )}
 
         <tabbed-container

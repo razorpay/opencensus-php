@@ -8,7 +8,7 @@ import * as CustomerActions from 'merchant/reducers/customers';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
 import { fetchStates } from 'merchant/reducers/states';
-import AddressEntry from 'merchant/components/AddressEntry.js';
+import AddressEntry from 'merchant/views/Customers/components/AddressEntry';
 import PropTypes from 'prop-types';
 import { isAddressValid, capitalize } from 'common/utils/rzp-utils';
 import { track } from '../../../../ga';

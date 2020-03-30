@@ -2,13 +2,13 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { Link, withRouter } from 'react-router-dom';
 
-import ProfileDropdown from 'merchant/containers/Header/ProfileDropdown';
 import NotificationsDropdown from 'common/ui/NotificationsDropdown';
 import { toggleMobileMenu } from 'merchant/reducers/app';
 
 import ShowWhen from 'merchant/components/ShowWhen';
 import NavFragment from './NavFragment';
 import ModesDropdown from './SwitchMode';
+import ProfileDropdown from './ProfileDropdown';
 
 const analytics = action => {
   window.rzpAnalytics({

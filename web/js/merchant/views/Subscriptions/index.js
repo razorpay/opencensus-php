@@ -17,7 +17,7 @@ import {
 } from 'merchant/reducers/onboarding';
 
 import PlansList from 'merchant/views/Subscriptions/Plans/List';
-import TestModeBanner from 'merchant/containers/TestModeBanner';
+import TestModeBanner from 'merchant/components/TestModeBanner';
 import SubscriptionsList from 'merchant/views/Subscriptions/Subscriptions/List';
 
 import TokensList from 'merchant/views/Subscriptions/Tokens/List';

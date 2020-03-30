@@ -1,11 +1,11 @@
 import React from 'react';
-import Announcement from 'merchant/components/Announcement';
+import AnnouncementBanner from 'merchant/components/Announcement/AnnouncementBanner';
 import YesBankAnnouncement from './YesBankAnnouncement';
 
 export default function YesBankSmartCollect({ items }) {
   if (items && Array.isArray(items) && items.length > 0) {
     return (
-      <Announcement
+      <AnnouncementBanner
         class="settlement-anc"
         theme="danger"
         title="Important Announcement"
@@ -23,7 +23,7 @@ export default function YesBankSmartCollect({ items }) {
             if you have any concerns.
           </span>
         </div>
-      </Announcement>
+      </AnnouncementBanner>
     );
   }
 

@@ -1,10 +1,10 @@
 import React, { Component } from 'react';
-import Announcement from 'merchant/components/Announcement';
+import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBanner';
 
 export default class YesBankAnnouncement extends Component {
   render() {
     return (
-      <Announcement
+      <AnnouncementBanner
         class="settlement-anc"
         theme="danger"
         title="Important Announcement"
@@ -22,7 +22,7 @@ export default class YesBankAnnouncement extends Component {
             if you have any concerns.
           </span>
         </div>
-      </Announcement>
+      </AnnouncementBanner>
     );
   }
 }

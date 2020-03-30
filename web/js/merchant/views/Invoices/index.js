@@ -9,7 +9,7 @@ import {
 } from 'merchant/reducers/onboarding';
 import { fetchItems } from 'merchant/reducers/items';
 
-import TestModeBanner from 'merchant/containers/TestModeBanner';
+import TestModeBanner from 'merchant/components/TestModeBanner';
 import Invoices from 'merchant/views/Invoices/Invoices/List';
 import Items from 'merchant/views/Invoices/Items/List';
 

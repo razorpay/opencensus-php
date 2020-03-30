@@ -1,6 +1,5 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import { Link } from 'react-router-dom';
 
 import TableBody from 'common/ui/TableBody';
 import Time from 'common/ui/Time';
@@ -8,7 +7,7 @@ import Key from 'merchant/models/Key';
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
 // import RegenerateKey from 'merchant/models/Key'
 
-import EditWebsiteDetails from 'merchant/containers/EditWebsiteDetails';
+import EditWebsiteDetailsModal from 'merchant/views/Account/Profile/components/EditWebsiteDetailsModal';
 
 const KeysListItem = props => {
   let mode = props.mode;
@@ -113,7 +112,7 @@ export default connect(null, { openModal, closeModal })(props => {
                           props.openModal({
                             size: 'small',
                             component: (
-                              <EditWebsiteDetails
+                              <EditWebsiteDetailsModal
                                 onClose={props.closeModal}
                                 onWebsiteAdd={onWebsiteAdd}
                               />

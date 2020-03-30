@@ -1,11 +1,11 @@
-import Announcement from 'merchant/components/Announcement';
+import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBanner';
 import { trackMarketingExperimentBanner } from '../ga';
 
 export default ({ userId }) => {
   trackMarketingExperimentBanner('Capital', 'Appear');
 
   return (
-    <Announcement
+    <AnnouncementBanner
       class="settlement-anc"
       theme="primary"
       title="Razorpay Capital"
@@ -21,6 +21,6 @@ export default ({ userId }) => {
       >
         I'm Interested
       </a>
-    </Announcement>
+    </AnnouncementBanner>
   );
 };

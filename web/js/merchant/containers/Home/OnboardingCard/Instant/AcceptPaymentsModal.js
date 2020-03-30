@@ -2,8 +2,8 @@ import { Component } from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
 
-import ProductsModal from 'merchant/components/ProducsModal';
-import TransactionsModal from 'merchant/components/TransactionsHelperModal';
+import ProductsModal from 'merchant/components/Home/ProductsModal';
+import TransactionsModal from 'merchant/components/Home/TransactionsHelperModal';
 import { trackTransactionsHelper, trackProductsModal } from './ga';
 import { showProductsModal, hideProductsModal } from 'merchant/reducers/home';
 

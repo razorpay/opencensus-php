@@ -14,7 +14,7 @@ import { updateFeatures } from 'merchant/reducers/config';
 import { fetchTransfers } from 'merchant/reducers/collection';
 import { fetchAccounts } from 'merchant/reducers/marketplace/accounts';
 
-import TestModeBanner from 'merchant/containers/TestModeBanner';
+import TestModeBanner from 'merchant/components/TestModeBanner';
 
 import AccountsList from 'merchant/views/Marketplace/Accounts/List';
 import PaymentsList from 'merchant/views/Marketplace/Payments/List';

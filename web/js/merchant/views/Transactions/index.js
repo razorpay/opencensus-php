@@ -4,7 +4,7 @@ import { Route, Switch, NavLink } from 'react-router-dom';
 import { ShowWhenRoute } from 'merchant/components/ShowWhen';
 import { getURLQueryParams } from 'common/utils/rzp-utils';
 import ShowWhen from 'merchant/components/ShowWhen';
-import TestModeBanner from 'merchant/containers/TestModeBanner';
+import TestModeBanner from 'merchant/components/TestModeBanner';
 import PaymentsList from 'merchant/views/Transactions/Payments/List';
 import RefundsList from 'merchant/views/Transactions/Refunds/List';
 import OrdersList from 'merchant/views/Transactions/Orders/List';

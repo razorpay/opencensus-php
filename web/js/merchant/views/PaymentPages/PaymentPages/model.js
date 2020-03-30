@@ -150,7 +150,7 @@ export function exportReportCSV(
     template_overrides: _prepareTemplate(paymentPageEntity),
   };
 
-  // Similar as in merchant_common/containers/Reports/index.js
+  // Similar as in merchant_common/views/Reports/index.js
   return generateReportV2(reqPayload, true, null, saveLongPollInstances, false);
 }
 

@@ -1,5 +1,5 @@
 import { connect } from 'react-redux';
-import Announcement from 'merchant/components/Announcement';
+import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBanner';
 import { passLink, eventsLink, visitBanner } from './ga';
 
 @connect(state => ({ user: state.session.user }))
@@ -12,7 +12,7 @@ export default class FTXPassAnnouncement extends React.PureComponent {
     const user = this.props.user;
 
     return (
-      <Announcement
+      <AnnouncementBanner
         class="settlement-anc"
         theme="purply"
         title="Razorpay FTX"
@@ -34,7 +34,7 @@ export default class FTXPassAnnouncement extends React.PureComponent {
             Speakers & Agenda
           </a>
         </div>
-      </Announcement>
+      </AnnouncementBanner>
     );
   }
 }

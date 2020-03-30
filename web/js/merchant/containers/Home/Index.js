@@ -27,15 +27,16 @@ import {
   isMobileDevice,
 } from 'merchant/components/Home/data';
 import WelcomeModal from 'merchant/components/Home/WelcomeModal';
-import InstantActivationSuccess from 'merchant/components/InstantActivationSuccess';
-import PANVerficationStatusModal from 'merchant/components/PANVerficationStatusModal';
+
+import InstantActivationSuccess from 'merchant/components/Home/InstantActivationSuccess';
+import PANVerificationStatusModal from 'merchant/components/Home/PANVerificationStatusModal';
+import KYCStatusModal from 'merchant/components/Home/KYCStatusModal';
+import KycDetailsModal from 'merchant/components/Home/KycDetailsModal';
 import YesBankAnnouncementHome from 'merchant/components/Announcements/YesBankAnnouncements/YesBankAnnouncementHome';
 
-import KYCStatusModal from 'merchant/components/KYCStatusModal';
-import KycDetailsModal from 'merchant/components/KycDetailsModal';
 import { showWhenUtil } from 'merchant/components/ShowWhen';
 import { switchToMode } from 'merchant/containers/Home/OnboardingCard/SwitchToMode';
-import PartnerOnbr from 'merchant/containers/PartnerDashboard/Onboarding/partnerOnbr';
+import PartnerOnbr from 'merchant/views/PartnerDashboard/Onboarding/partnerOnbr';
 
 import {
   trackError,
@@ -874,7 +875,7 @@ export default class HomeContainer extends Component {
           />
         )}
         {showPANStatus && (
-          <PANVerficationStatusModal
+          <PANVerificationStatusModal
             onClose={() => {
               this.props.hidePANStatusModal();
             }}

@@ -20,8 +20,7 @@ import * as NotificationsActions from 'merchant_common/reducers/notifications';
 
 import { fetchStates } from 'merchant/reducers/states';
 
-import AddressEntry from 'merchant/components/AddressEntry.js';
-
+import AddressEntry from 'merchant/views/Customers/components/AddressEntry';
 import Countries from 'merchant/helpers/countries.json';
 
 @connect(

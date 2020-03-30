@@ -1,4 +1,4 @@
-import Announcement from 'merchant/components/Announcement';
+import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBanner';
 import { Link } from 'react-router-dom';
 import { trackInstantSettlementsBanner } from '../ga';
 
@@ -6,7 +6,7 @@ export default ({ userId }) => {
   trackInstantSettlementsBanner('Appear');
 
   return (
-    <Announcement
+    <AnnouncementBanner
       class="settlement-anc"
       theme="primary"
       title="Instant Settlements"
@@ -21,6 +21,6 @@ export default ({ userId }) => {
       >
         Request Access
       </Link>
-    </Announcement>
+    </AnnouncementBanner>
   );
 };

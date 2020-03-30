@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
 import Button from 'common/new-ui/Button';
-import CreditPullModal from 'merchant/containers/CreditPull/CreditPullModal';
+import CreditPullModal from 'merchant/containers/CreditPullModal';
 import { connect } from 'react-redux';
 import * as ModalActions from 'merchant_common/reducers/modals';
-import Announcement from 'merchant/components/Announcement';
+import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBanner';
 
 @connect(state => ({}), {
   ...ModalActions,
@@ -11,7 +11,7 @@ import Announcement from 'merchant/components/Announcement';
 export default class CreditPullAnnouncement extends Component {
   render() {
     return (
-      <Announcement
+      <AnnouncementBanner
         theme="primary"
         title="Free Credit Score!"
         canBeClosed={true}
@@ -31,7 +31,7 @@ export default class CreditPullAnnouncement extends Component {
             Check Credit Score
           </a>
         </span>
-      </Announcement>
+      </AnnouncementBanner>
     );
   }
 }

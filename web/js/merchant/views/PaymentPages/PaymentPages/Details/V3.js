@@ -4,7 +4,7 @@ import RTracking from 'react-tracking';
 
 import { updatePPInReduxList } from 'merchant/reducers/invoices/list';
 import { classList } from 'common/utils/rzp-utils';
-import TestModeBanner from 'merchant/containers/TestModeBanner';
+import TestModeBanner from 'merchant/components/TestModeBanner';
 
 import { PaymentPagesStatusLabel } from 'merchant/components/StatusLabel';
 import Definition from 'common/ui/Definition';
@@ -25,7 +25,7 @@ import EditStock from 'merchant/views/PaymentPages/PaymentPages/components/EditS
 import {
   EditExpiry,
   EditNotes,
-} from 'merchant/containers/PaymentLinks/Edit/index';
+} from 'merchant/views/PaymentLinks/PaymentLinks/components/Edit/index';
 import ShareView from 'merchant/views/PaymentPages/PaymentPages/components/Modals/Share';
 import CreateEmbedButton from 'merchant/views/PaymentPages/PaymentPages/components/Modals/CreateEmbedButton';
 

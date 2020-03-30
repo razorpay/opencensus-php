@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import Announcement from 'merchant/components/Announcement';
+import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBanner';
 
 export default class YesBankAnnouncementHome extends Component {
   getContent = () => {
@@ -83,14 +83,14 @@ export default class YesBankAnnouncementHome extends Component {
 
     if (content) {
       return (
-        <Announcement
+        <AnnouncementBanner
           class="settlement-anc"
           theme={content.theme}
           title={content.title}
           canBeClosed={false}
         >
           <div>{content.description}</div>
-        </Announcement>
+        </AnnouncementBanner>
       );
     }
 
