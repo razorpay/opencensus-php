@@ -113,8 +113,7 @@ class Toggle2FA extends Component {
   confirmEnable = ({ action, flag }) => {
     this.context.confirm({
       header: 'Enable 2-step verification',
-      message:
-        'Are you sure you want to enable 2-step verification to all your team members?',
+      message: this.props.confirmEnableMessage,
       affirmativeLabel: 'Yes, enable it',
       abort: this.abort,
       action: () => action(flag),
@@ -124,8 +123,7 @@ class Toggle2FA extends Component {
   confirmDisable({ action, flag }) {
     this.context.confirm({
       header: 'Disable 2-step verification',
-      message:
-        'Are you want to disable 2-step verification to all your team members?',
+      message: this.props.confirmDisableMessage,
       affirmativeLabel: 'Yes, disable it',
       abortLabel: "No, Don't!",
       abort: this.abort,
@@ -153,8 +151,8 @@ class Toggle2FA extends Component {
   onToggleChange = (flag, cb) =>
     this.toggle2FA(flag).then(completed => {
       //Set the sate in redux store to reflect the new changes
-      this.props.onToggleComplete(flag);
       if (completed) {
+        this.props.onToggleComplete(flag);
         this.trackEvent(flag);
       }
       cb(completed);

@@ -18,7 +18,7 @@ export default class Merchant2FASettings extends React.PureComponent {
       ...this.props.user,
       user: {
         ...currentUser,
-        second_factor_auth: twoFaEnabled,
+        second_factor_auth_enforced: twoFaEnabled,
       },
     });
     this.props.updateSession({ user });
@@ -35,6 +35,8 @@ export default class Merchant2FASettings extends React.PureComponent {
         twoFaEnabled={user.second_factor_auth_enforced}
         onToggleComplete={this.onToggleComplete}
         getToggle2FaSuccessMsg={getToggle2FaSuccessMsg}
+        confirmDisableMessage="Are you sure you want to disable 2-step verification to all your team members?"
+        confirmEnableMessage="Are you sure you want to enable 2-step verification to all your team members?"
       />
     );
   }

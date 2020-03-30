@@ -36,6 +36,8 @@ export default class User2FASettings extends React.PureComponent {
         twoFaEnabled={user.second_factor_auth}
         onToggleComplete={this.onToggleComplete}
         getToggle2FaSuccessMsg={getToggle2FaSuccessMsg}
+        confirmEnableMessage="Are you sure you want to enable 2-step verification for your user account?"
+        confirmDisableMessage="Are you sure you want to disable 2-step verification for your user account?"
       />
     );
   }
