@@ -151,7 +151,11 @@ class ApiTraceProcessor
                 $record['context'] = $this->visitEachNode($record['context']);
             }
         } catch (\Exception $e) {
-            //add warning here
+            $this->app['trace']->traceException(
+                $e,
+                Logger::ERROR,
+                TraceCode::SENSITIVE_DETAILS_FAILURE_EXCEPTION
+            );
         }
 
     }
