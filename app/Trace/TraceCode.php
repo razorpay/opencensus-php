@@ -1415,6 +1415,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const RECON_UNEXPECTED_PAYMENT_CREATION_FAILED              = 'RECON_UNEXPECTED_PAYMENT_CREATION_FAILED';
     const RECON_BATCH_ANALYTICS_OUTPUT_FILE                     = 'RECON_BATCH_ANALYTICS_OUTPUT_FILE';
     const RECON_BATCH_TXN_FILE                                  = 'RECON_BATCH_TXN_FILE';
+    const RECON_BATCH_TXN_FILE_DATA_EMPTY                       = 'RECON_BATCH_TXN_FILE_DATA_EMPTY';
 
     //Trace code for Transaction Migration
     const TRANSACTION_MIGRATION_TAX_MISTMATCH                   = 'TRANSACTION_MIGRATION_TAX_MISTMATCH';

@@ -434,6 +434,19 @@ class Reconciliate extends Base\Core
         {
             $txnData = $this->getTransactionData($outputData);
 
+            if (count($txnData) === 0)
+            {
+                $this->trace->info(TraceCode::RECON_BATCH_TXN_FILE_DATA_EMPTY,
+                    [
+                        'info_code' => InfoCode::RECON_TXN_FILE_GENERATION_SKIPPED,
+                        'file_name' => $transactionsFileName,
+                        'gateway'   => $this->gateway,
+                    ]
+                );
+
+                return [];
+            }
+
             $filepath = $this->createCsvFile($txnData, $transactionsFileName, null, self::DIRECTORY_PATH);
 
             return [
