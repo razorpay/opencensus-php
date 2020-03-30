@@ -882,6 +882,10 @@ class Validator extends Base\Validator
         Entity::GATEWAY_MERCHANT_ID         => 'required|string',
     ];
 
+    protected static $netbankingCorporationEditTerminalRules = [
+        Entity::TPV                         => 'sometimes|in:0,1,2',
+    ];
+
     protected static $netbankingCsbTerminalRules = [
         Entity::GATEWAY                     => 'required|in:' . Gateway::NETBANKING_CSB,
         Entity::GATEWAY_MERCHANT_ID         => 'required|string',

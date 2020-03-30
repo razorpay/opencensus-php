@@ -1676,6 +1676,7 @@ class Terminal extends Base
             'id'                        => Shared::NETBANKING_CORPORATION_TERMINAL,
             'card'                      => 0,
             'netbanking'                => 1,
+            'tpv'                       => 2,
             'merchant_id'               => '100000Razorpay',
             'gateway'                   => 'netbanking_corporation',
             'gateway_merchant_id'       => 'abcd',
