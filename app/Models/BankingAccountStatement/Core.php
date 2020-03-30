@@ -40,6 +40,15 @@ class Core extends Base\Core
      */
     protected $balance;
 
+    protected $mutex;
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->mutex = $this->app['api.mutex'];
+    }
+
     /**
      * NOTE: This function should be used for a specific account number only. We cannot
      * call this function for processing transactions of multiple account numbers.
@@ -66,9 +75,6 @@ class Core extends Base\Core
                     'accountNumber' => $accountNumber,
                 ]);
 
-            // Taking lock after taking trace info of request process
-            $this->mutex = $this->app['api.mutex'];
-
             $this->mutex->acquireAndRelease(
                 'banking_account_statement_' . $accountNumber,
                 function () use ($channel, $accountNumber, $input)
@@ -94,21 +100,30 @@ class Core extends Base\Core
 
                     $bankingAccount->balance->updateLastFetchedAt();
                 },
-                600,
-                ErrorCode::BAD_REQUEST_ANOTHER_OPERATION_IN_PROGRESS
+                1800,
+                ErrorCode::BAD_REQUEST_ANOTHER_BANKING_ACCOUNT_STATEMENT_FETCH_IN_PROGRESS
             );
         }
         catch (Exception\BadRequestException $e)
         {
             // catching only BadRequestException exception to log and have noop for duplicate statement fetch request
             // Ignoring the duplicate exception and treating it success and delete account number from sqs.
-            $this->trace->error(
-                TraceCode::BANKING_ACCOUNT_STATEMENT_FETCH_FAILED,
-                [
-                    'channel'       => $channel,
-                    'accountNumber' => $accountNumber,
-                    'message'       => $e->getMessage(),
-                ]);
+            if ($e->getCode() === ErrorCode::BAD_REQUEST_ANOTHER_BANKING_ACCOUNT_STATEMENT_FETCH_IN_PROGRESS)
+            {
+                $this->trace->traceException(
+                    $e,
+                    Trace::ERROR,
+                    TraceCode::BANKING_ACCOUNT_STATEMENT_FETCH_FAILED,
+                    [
+                        'channel'       => $channel,
+                        'accountNumber' => $accountNumber,
+                        'message'       => $e->getMessage(),
+                    ]);
+            }
+            else
+            {
+                throw $e;
+            }
         }
 
         return ['processed' => true];
