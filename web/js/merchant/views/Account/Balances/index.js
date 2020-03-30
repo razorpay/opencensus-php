@@ -227,6 +227,12 @@ export default class AddFundsContainer extends Component {
         class="content-wrapper content-sm"
         style={{ backgroundColor: '#f9fafb' }}
       >
+        {Object.keys(this.state.status).length > 0 && (
+          <Alert
+            type={this.state.status.type}
+            message={this.state.status.message}
+          />
+        )}
         <div class="balances-container">
           <div class="bal-cont-header">
             <div class="balances-lhs-container">
