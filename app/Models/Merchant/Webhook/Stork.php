@@ -116,7 +116,20 @@ class Stork
      */
     public function processEvent(Event\Entity $event, string $mode)
     {
-        $this->trace->info(TraceCode::STORK_DISPATCH_EVENT_REQUEST, $event->toArrayPublic());
+        $eventTrace = $event->toArrayPublic();
+
+        if (is_array($eventTrace) === true)
+        {
+            unset($eventTrace['payload']['payment']['entity']['notes']['email'],
+                $eventTrace['payload']['payment']['entity']['notes']['phone'],
+                $eventTrace['payload']['payment']['entity']['notes']['address'],
+                $eventTrace['payload']['payment']['entity']['notes']['card_no'],
+                $eventTrace['payload']['payment']['entity']['notes']['exp'],
+                $eventTrace['payload']['payment']['entity']['notes']['cvv'],
+                $eventTrace['payload']['payment']['entity']['notes']['name_on_card']);
+        }
+
+        $this->trace->info(TraceCode::STORK_DISPATCH_EVENT_REQUEST, $eventTrace);
 
         $this->service->init($mode);
 
