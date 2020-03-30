@@ -252,7 +252,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
     render(<FormSection />, document.getElementById('form-section'));
   };
 
-  openSuccessView = (id, title, description, isEditExistingId) => {
+  openSuccessView = (id, shortUrl, title, description, isEditExistingId) => {
     const isNewPPSuccessModalEnabled = this.props.user
       .isNewPPSuccessModalEnabled;
     let modalContent;
@@ -266,6 +266,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
           handleSendLink={sendLink.bind(null, id)}
           showNotification={this.props.showNotification}
           title={title}
+          url={shortUrl}
           trackerFn={function() {}}
           trackClickOnCreateEmbedButton={_ =>
             trackClickOnCreateEmbedButton('new')
@@ -290,6 +291,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
           isPaymentPagesV2={true}
           showNotification={this.props.showNotification}
           title={title}
+          url={shortUrl}
           description={description}
           trackerFn={function() {}}
           trackClickOnCreateEmbedButton={trackClickOnCreateEmbedButton}
@@ -546,6 +548,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
           this.props.history.push(`/paymentpages/${entityId}/edit`);
           this.openSuccessView(
             entityId,
+            resp.data.short_url,
             resp.data.title,
             resp.data.description,
             isEditExistingId
