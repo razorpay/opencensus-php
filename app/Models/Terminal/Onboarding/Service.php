@@ -127,10 +127,10 @@ class Service extends Base\Service
 
         $terminal = $this->repo->terminal->findByIdAndMerchantId($id, $merchantId);
 
-        if ($terminal->getStatus() !== Terminal\Status::ACTIVATED)
+        if (in_array($terminal->getStatus(), [Terminal\Status::PENDING, Terminal\Status::ACTIVATED]) === false)
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_ONLY_ACTIVATED_TERMINALS_CAN_BE_DISABLED);
+                ErrorCode::BAD_REQUEST_ONLY_PENDING_OR_ACTIVATED_TERMINALS_CAN_BE_DISABLED);
         }
 
         (new GatewayTerminalService)->callGatewayForTerminalEnableOrDisable($terminal, 'disable_terminal');
