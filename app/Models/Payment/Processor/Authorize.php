@@ -352,7 +352,7 @@ trait Authorize
         $retry = false;
 
         // Checking razorX flag for feedback loop here per paymentId
-        $razorXForDoppler = $this->app->doppler->checkRazorXForFeedbackLoop($payment->getId());
+        $razorXForDoppler = $this->app->doppler->checkRazorXForDoppler($payment->getId(), Doppler::RAZORX_DOPPLER);
         $this->trace->info(
             TraceCode::TRACE_FOR_INCREASED_RESPONSE_TIMES,
             [
@@ -512,7 +512,7 @@ trait Authorize
                     try
                     {
                         $this->app->doppler->sendFeedback($payment, Doppler::PAYMENT_AUTHORIZATION_FAILURE_EVENT,
-                            $errorCode, $internalErrorCode);
+                            $errorCode, $internalErrorCode, $retryAttempts);
                     }
                     catch (\Throwable $e)
                     {
