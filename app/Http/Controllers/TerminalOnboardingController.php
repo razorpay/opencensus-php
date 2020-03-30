@@ -4,6 +4,8 @@ namespace RZP\Http\Controllers;
 
 use Request;
 use ApiResponse;
+use RZP\Exception;
+use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Terminal\Onboarding;
 
@@ -45,6 +47,11 @@ class TerminalOnboardingController extends Controller
 
     public function postOnboardTerminalVerification()
     {
+        // We are currently disabling this route as we don't have any api to verify terminal onboarding on gateway,
+        // not removing the dead code as ATOS may provide us verification apis in future
+        throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_ACCESS_DENIED);
+
         $input = Request::all();
 
         $data = $this->service()->verifyTerminals($input);

@@ -1729,6 +1729,8 @@ class WebhookTest extends TestCase
 
     public function testTerminalOnboardingVerificationWebhook()
     {
+        $this->markTestSkipped();
+
         $this->app['config']->set('worldline_terminal_onboarding_verification.case', "1");
 
         $subMerchant = $this->fixtures->create('merchant');
