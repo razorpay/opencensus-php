@@ -3,6 +3,7 @@
 namespace App\User;
 
 use Session;
+use App\Http\ApiUrl;
 use App\RZP\PublicCollection;
 use App\Providers\GenericUser;
 use App\Merchant\GenericMerchant;
@@ -14,9 +15,29 @@ class Helper
         $sessionMerchantId = Session::get('current_merchant_id');
         $currentMerchant = null;
 
+        $isBankingRequest = ApiUrl::isBankingOriginRequest();
+
+        // Primary role
+        $productRole = 'role';
+        // Banking role
+        $switchProductRole = 'banking_role';
+
+        if ($isBankingRequest === true)
+        {
+            // Banking role
+            $productRole = 'banking_role';
+            // Primary role
+            $switchProductRole = 'role';
+        }
+
         if ($sessionMerchantId !== null)
         {
+            // Check if user is associated to a merchant on given product
             $currentMerchant = $user->merchants->where('id', $sessionMerchantId)
+                                               ->filter(function ($item) use ($productRole)
+                                                 {
+                                                     return ($item->$productRole !== null);
+                                                 })
                                                ->first();
 
             if ($currentMerchant === null)
@@ -26,18 +47,35 @@ class Helper
 
                 if (empty($error) === true)
                 {
-                    $currentMerchant = $updatedUser->merchants->where('id', $sessionMerchantId)->first();
-                }
-
-                if ($currentMerchant === null)
-                {
-                    $currentMerchant = $user->merchants->first();
+                    $currentMerchant = $updatedUser->merchants->where('id', $sessionMerchantId)
+                                                              ->filter(function ($item) use ($productRole)
+                                                                {
+                                                                    return ($item->$productRole !== null);
+                                                                })
+                                                              ->first();
                 }
             }
         }
-        else
+
+        if ($currentMerchant === null)
         {
-            $currentMerchant = $user->merchants->first();
+            // Check if user is associated to a merchant on given product
+            $currentMerchant = $user->merchants->filter(function ($item) use ($productRole)
+                                                 {
+                                                     return ($item->$productRole !== null);
+                                                 })
+                                               ->first();
+
+            // If current merchant is still null, that means that the user is not linked to a merchant on given product
+            // We'll allow only owner on switch product to login
+            if ($currentMerchant === null)
+            {
+                $currentMerchant = $user->merchants->filter(function ($item) use ($switchProductRole)
+                                                     {
+                                                         return ($item->$switchProductRole === 'owner');
+                                                     })
+                                                   ->first();
+            }
         }
 
         if ($currentMerchant !== null)

@@ -538,7 +538,15 @@ class Service extends Base\Service
 
                     $data['features'] = $merchantService->getMerchantFeatures();
 
-                    if ($data['role'] === null or $data['banking_role'] === null)
+                    $isBankingRequest = ApiUrl::isBankingOriginRequest();
+
+                    //
+                    // Make switch product call only if
+                    // 1. Request is banking request and banking_role is null
+                    // 2. Request is pg request and role is null
+                    //
+                    if ((($isBankingRequest === true) and ($data['banking_role'] === null)) or
+                        (($isBankingRequest === false) and ($data['role'] === null)))
                     {
                         $options = [
                             'client_type' => 'merchant',
@@ -553,8 +561,6 @@ class Service extends Base\Service
 
                         $data = $this->updateUserDetails($data, $user);
                     }
-
-                    $isBankingRequest = ApiUrl::isBankingOriginRequest();
 
                     // if the merchant is a partner
                     if (($isBankingRequest === false) and (empty($data['merchants'][$merchant['id']]['partner_type']) === false))
