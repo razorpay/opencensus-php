@@ -99,7 +99,7 @@ export default class InstantActivationAnnouncements extends Component {
       }
     } else {
       if (user.isAccepted) {
-        if (!user.isNPSSurveyBannerEnabled) {
+        if (!user.isNPSSurveyBannerEnabled && !user.isCovidFeatureEnabled) {
           theme = 'success';
           title = 'Settlements Enabled';
           content =
