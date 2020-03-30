@@ -142,6 +142,7 @@ class Type
     const RECONCILIATION_BATCH_INPUT            = 'reconciliation_batch_input';
     const BATCH_SERVICE                         = 'batch_service';
     const RECONCILIATION_BATCH_ANALYTICS_OUTPUT = 'reconciliation_batch_analytics_output';
+    const RECONCILIATION_BATCH_TXN_FILE         = 'reconciliation_batch_txn_file';
 
     const BLANK                             = 'blank';
 
@@ -291,6 +292,7 @@ class Type
             self::BATCH_VALIDATED,
             self::RECONCILIATION_BATCH_INPUT,
             self::RECONCILIATION_BATCH_ANALYTICS_OUTPUT,
+            self::RECONCILIATION_BATCH_TXN_FILE,
         ],
 
         Constants\Entity::MERCHANT_DETAIL => MerchantDocumentType::VALID_DOCUMENTS,
@@ -319,6 +321,7 @@ class Type
     const SHARED_ACCOUNT_ALLOWED_TYPES = [
         self::RECONCILIATION_BATCH_INPUT,
         self::RECONCILIATION_BATCH_ANALYTICS_OUTPUT,
+        self::RECONCILIATION_BATCH_TXN_FILE,
         self::BENEFICIARY_FILE,
         self::EMI_FILE,
         self::AXIS_EMI_FILE,
@@ -488,6 +491,7 @@ class Type
 
         self::ANALYTICS_BUCKET_CONFIG => [
             self::RECONCILIATION_BATCH_ANALYTICS_OUTPUT,
+            self::RECONCILIATION_BATCH_TXN_FILE,
         ],
 
         self::H2H_DEFAULT_BUCKET_CONFIG => [

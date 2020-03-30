@@ -1573,7 +1573,7 @@ class Service extends Base\Service
         $allMethods = Payment\Method::getAllPaymentMethods();
 
         // checking razorX flag for feedback loop here per cron
-        $this->razorXForDoppler = $this->app->doppler->checkRazorXForFeedbackLoop($this->app['request']->getId());
+        $this->razorXForDoppler = $this->app->doppler->checkRazorXForDoppler($this->app['request']->getId(), Doppler::RAZORX_DOPPLER);
 
         foreach ($allMethods as $method)
         {

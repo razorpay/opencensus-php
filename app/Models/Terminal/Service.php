@@ -5,6 +5,7 @@ namespace RZP\Models\Terminal;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
+use RZP\Models\Payment;
 use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
@@ -65,6 +66,29 @@ class Service extends Base\Service
 
         return $terminal->toArrayAdmin();
     }
+
+    // This is used when merchant dashboard fetches terminals via proxy auth
+    public function proxyGetTerminals(string $mid, array $input)
+    {        
+        $params = $input;
+
+        $params[Entity::MERCHANT_ID] = $mid;
+
+        $terminals = $this->repo->terminal->getByParams($params);
+
+        // If no terminal exist for wallet_paypal, fetch from terminals service
+        if ( ($terminals->count() === 0) and 
+            ( (isset($input['gateway']) === true))  and ($input['gateway'] === Payment\Gateway::WALLET_PAYPAL) )
+        {
+            $data =  $this ->app['terminals_service']->getTerminalsByMerchantIdAndGateway($mid, Payment\Gateway::WALLET_PAYPAL);
+
+            $arrayPublic = $this->terminalsServiceDataToArrayPublic($data);
+                        
+            return $arrayPublic;
+        }
+
+        return $terminals->toArrayPublic();
+    }    
 
     public function deleteTerminal($mid, $tid)
     {
@@ -618,4 +642,33 @@ class Service extends Base\Service
             $this->trace->error(TraceCode::TERMINALS_SERVICE_CREATE_MIGRATE_JOB_FAILURE, $data);
         }
     }
+
+    protected  function terminalsServiceDataToArrayPublic($terminalData)
+    {
+        $items = [];
+
+        foreach($terminalData as $terminal)
+        {
+            $item = [
+                Terminal\Entity::ID            => $terminal[Terminal\Entity::ID],
+                Terminal\Entity::ENTITY        => 'terminal',
+                Terminal\Entity::STATUS        => $terminal[Terminal\Entity::STATUS ],
+                Terminal\Entity::ENABLED       => $terminal[Terminal\Entity::ENABLED ],
+                Terminal\Entity::MPAN          => $terminal[Terminal\Entity::MPAN],
+                Terminal\Entity::NOTES         => $terminal[Terminal\Entity::NOTES],
+                Terminal\Entity::CREATED_AT    => $terminal[Terminal\Entity::CREATED_AT],
+            ];
+
+            array_push($items, $item);
+        }
+
+        $arrayPublic = [
+            Terminal\Entity::ENTITY => 'collection',
+            'count'      => sizeof($terminalData),
+            'items'      =>  $items
+        ];
+
+        return $arrayPublic;
+    }
+
 }

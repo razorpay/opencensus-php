@@ -421,6 +421,19 @@ class Core extends Base\Core
             $payout->setFailureReason($ftaFailureReason);
         }
 
+        // we want to override return UTR only if there is no value for UTR before
+        // since return_utr column has a unique constraint, so checking for empty
+        // value.
+        if (empty($payout->getReturnUtr()) === true)
+        {
+            if (empty($ftaData[Entity::RETURN_UTR]) === false)
+            {
+                $returnUtr = $ftaData[Attempt\Constants::RETURN_UTR];
+
+                $payout->setReturnUtr($returnUtr);
+            }
+        }
+
         $this->repo->saveOrFail($payout);
 
         if (($initialUtr === null) and
@@ -909,8 +922,14 @@ class Core extends Base\Core
         try
         {
             // Fetch BAS for this payout
-            $bas = $this->repo->banking_account_statement->fetchByUtrForPayout($payout)->first() ??
-                   $this->repo->banking_account_statement->fetchByCmsRefNumForPayout($payout)->first();
+            if (empty($payout->getUtr()) === false)
+            {
+                $bas = $this->repo->banking_account_statement->fetchByUtrForPayout($payout)->first();
+            }
+            else
+            {
+                $bas = $this->repo->banking_account_statement->fetchByCmsRefNumForPayout($payout)->first();
+            }
         }
         catch (\Throwable $e)
         {
@@ -1313,8 +1332,16 @@ class Core extends Base\Core
                 ]);
         }
 
-        $bas = $this->repo->banking_account_statement->fetchByUtrForPayout($payout)->first() ??
-               $this->repo->banking_account_statement->fetchByCmsRefNumForPayout($payout)->first();
+        $bas = null;
+
+        if (empty($payout->getUtr()) === false)
+        {
+            $bas = $this->repo->banking_account_statement->fetchByUtrForPayout($payout)->first();
+        }
+        else
+        {
+            $bas = $this->repo->banking_account_statement->fetchByCmsRefNumForPayout($payout)->first();
+        }
 
         if (empty($bas) === false)
         {

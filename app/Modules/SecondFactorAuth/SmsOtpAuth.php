@@ -113,14 +113,14 @@ class SmsOtpAuth implements BaseAuth
         }
         catch(BaseException $e)
         {
-            throw new BadRequestException(ErrorCode::BAD_REQUEST_SMS_FAILED, compact('input'));
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_SMS_OTP_FAILED, compact('input'));
         }
 
         if (isset($response['sms_id']) === false)
         {
             $this->app['trace']->info(TraceCode::SEND_2FA_OTP_SMS_FAILED, compact('input', 'response'));
 
-            throw new BadRequestException(ErrorCode::BAD_REQUEST_SMS_FAILED);
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_SMS_OTP_FAILED);
         }
     }
 

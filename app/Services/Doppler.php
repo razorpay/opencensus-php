@@ -8,10 +8,12 @@ use Carbon\Carbon;
 use Requests_Session;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
+use RZP\Gateway\Upi\Base;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Environment;
 use RZP\Models\Payment\Method;
+use RZP\Gateway\Upi\Base\Repository;
 use RZP\Gateway\Upi\Base\ProviderCode;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Terminal\Entity as TerminalEntity;
@@ -35,6 +37,10 @@ class Doppler
 
     const X_RAZORPAY_APP_HEADER    = 'X-Razorpay-App';
 
+    const RAZORX_NEW_MODEL         = 'doppler_traffic_new_upi_model';
+
+    const RAZORX_DOPPLER           = 'api_hitting_doppler_service';
+
     const CONNECT_TIMEOUT = 1;
 
     const REQUEST_TIMEOUT = 5;
@@ -47,6 +53,12 @@ class Doppler
 
     const ERROR_CODE = 'error_code';
 
+    const MODEL_0 = 0;
+
+    const NEW_MODEL = 2;
+
+    const OLD_MODEL = 1;
+
     protected $app;
 
     protected $mode;
@@ -54,6 +66,8 @@ class Doppler
     protected $sns;
 
     protected $trace;
+
+    protected $repo;
 
     protected $config;
 
@@ -72,6 +86,8 @@ class Doppler
         $this->mode = $this->app['rzp.mode'];
 
         $this->sns_topic = $dopplerTopic;
+
+        $this->repo = $app['repo'];
 
         $this->config = $app['config']->get('applications.doppler');
 
@@ -95,7 +111,7 @@ class Doppler
     }
 
     // sends event to doppler's topic
-    public function sendFeedback(Payment\Entity $payment, string $authorizeStatus, $errorCode = null, $internalErrorCode = null)
+    public function sendFeedback(Payment\Entity $payment, string $authorizeStatus, $errorCode = null, $internalErrorCode = null, $paymentRetryAttempt = null)
     {
         // We do not want to publish events in case for test mode payments
         if ($this->mode === Mode::TEST)
@@ -109,7 +125,7 @@ class Doppler
             ($payment->getMethod() === Method::NETBANKING))
         {
 
-            $eventData = $this->prepareEventForDoppler($payment, $authorizeStatus, $errorCode, $internalErrorCode);
+            $eventData = $this->prepareEventForDoppler($payment, $authorizeStatus, $errorCode, $internalErrorCode, $paymentRetryAttempt);
 
             $this->sendDopplerEventRequest($eventData);
         }
@@ -132,7 +148,7 @@ class Doppler
         }
     }
 
-    protected  function prepareEventForDoppler(Payment\Entity $payment, string $authorizeStatus, $errorCode = null, $internalErrorCode = null)
+    protected  function prepareEventForDoppler(Payment\Entity $payment, string $authorizeStatus, $errorCode = null, $internalErrorCode = null, $paymentRetryAttempt = null)
     {
 
         $card = [];
@@ -172,6 +188,17 @@ class Doppler
             $os = $paymentAnalytics->getOs();
         }
 
+        $dopplerModel = self::MODEL_0;
+
+        if (in_array($payment->getMethod(), [Payment\Method::CARD, Payment\Method::UPI]) === true )
+        {
+            $dopplerModel = self::OLD_MODEL;
+
+            if ($this->checkRazorXForDoppler($payment->getId(), self::RAZORX_NEW_MODEL) === true) {
+                $dopplerModel = self::NEW_MODEL;
+            }
+        }
+
         if($payment->hasCard() === true)
         {
             $card['card_iin'] = $payment->card->getIin();
@@ -183,11 +210,18 @@ class Doppler
             $upi['psp'] = null;
             $upi['bank'] = null;
             $upi['type'] = null;
+            $upi['tpv'] = null;
             $netbanking['bank'] = null;
         }
 
         if($payment->isUPI() === true)
         {
+            $upiEntity = $this->repo->upi->fetchByPaymentId($payment->getId());
+            $type = $upiEntity['type'];
+            if ($type === Base\Type::PAY)
+            {
+                $type = Base\Type::INTENT;
+            }
             $vpaHandle = $payment->getVpaHandleFromVpa();
             if (strlen($vpaHandle) == 0)
             {
@@ -201,7 +235,8 @@ class Doppler
             $upi['vpa_handle'] = $vpaHandle;
             $upi['psp'] = ProviderCode::getPsp($vpaHandle) ?? null;
             $upi['bank'] = $payment->getBankName() ?? null;
-            $upi['type'] = $payment->getMetadata('flow');
+            $upi['type'] = $type;
+            $upi['tpv'] = $payment->merchant->isTPVRequired();
             $netbanking['bank'] = null;
         }
 
@@ -216,6 +251,7 @@ class Doppler
             $upi['psp'] = null;
             $upi['bank'] = null;
             $upi['type'] = null;
+            $upi['tpv'] = null;
             $netbanking['bank'] = $payment->getBankName();
         }
 
@@ -229,7 +265,7 @@ class Doppler
             'netbanking'            => $netbanking,
             'terminal'              => $payment->getTerminalId(),
             'gateway'               => $gateway,
-            'terminalType'          => $terminalType,
+            'terminal_type'         => $terminalType,
             'device'                => $device,
             'os'                    => $os,
             'browser'               => $browser,
@@ -237,6 +273,8 @@ class Doppler
             'authorized_at'         => Carbon::now()->getTimestamp(),
             'error_code'            => $errorCode ?? null,
             'internal_error_code'   => $internalErrorCode ?? null,
+            'attempt'               => $paymentRetryAttempt ?? null,
+            'model'                 => $dopplerModel,
         ];
 
 
@@ -450,7 +488,7 @@ class Doppler
         throw new Exception\ServerErrorException($e->getMessage(), $errorCode);
     }
 
-    public function checkRazorXForFeedbackLoop($id)
+    public function checkRazorXForDoppler($id, $flag)
     {
         if (($this->app->environment() !== Environment::PRODUCTION) or
             ($this->mode !== Mode::LIVE))
@@ -458,7 +496,7 @@ class Doppler
             return false;
         }
 
-        $variant = $this->app->razorx->getTreatment($id, 'api_hitting_doppler_service', Mode::LIVE);
+        $variant = $this->app->razorx->getTreatment($id, $flag, Mode::LIVE);
 
         if (strtolower($variant) === 'on')
         {

@@ -168,6 +168,34 @@ class TerminalMigrationTest extends TestCase
                   ->where(Terminal\Entity::TERMINAL_ID,  $terminalId)
                   ->count();
     }
+    // the below cases are to ensure sanity when creating a terminal via internal auth
+    public function testAssignTerminalInternalAuthMigrateVariant()
+    {
+        $this->mockTerminalsServiceSendRequest(function($a, $b, $c) {
+            return $this->getDefaultTerminalServiceResponse();
+        });
+
+
+        $this->razorxValue = 'migrate';
+
+        $url = '/merchants/'. $this->merchant->getKey(). '/terminals/internal';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $beforeCount = DB::table('terminals')->count();
+
+        $this->ba->appAuth();
+
+        $response = $this->startTest();
+
+        $terminalEntity = $this->terminalRepository->findOrFail($response['id']);
+
+        $this->assertEquals(Terminal\SyncStatus::SYNC_SUCCESS, $terminalEntity->getSyncStatus());
+
+        $afterCount = Db::table('terminals')->count();
+
+        $this->assertEquals($beforeCount + 1, $afterCount);
+    }
 
     // the below cases tests migration functionality when a new terminal is created
     public function testAssignTerminalTerminalServiceUpMigrateTerminalVariant()

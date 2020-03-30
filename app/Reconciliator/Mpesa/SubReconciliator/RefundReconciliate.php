@@ -10,8 +10,6 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
     const COLUMN_GATEWAY_PAYMENT_ID = 'parent_m_pesa_txn_id';
     const COLUMN_REFUND_AMOUNT      = 'txn_amount_rs';
 
-    const SHOULD_ADD_ENTITY_ID_COLUMN = true;
-
     protected function getRefundId($row)
     {
         $gatewayPaymentId = $row[self::COLUMN_GATEWAY_PAYMENT_ID];

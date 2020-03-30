@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\Gateway\Hdfc;
 use RZP\Exception;
 use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
+use RZP\Models\Feature\Constants;
 use RZP\Services\RazorXClient;
 use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
@@ -60,7 +61,29 @@ class HdfcGatewayTest extends TestCase
 
     public function testPayment()
     {
-        $payment = $this->defaultAuthPayment();
+        $order = $this->fixtures->create('order', [
+            'amount' => '50000'
+        ]);
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['order_id'] = 'order_' . $order['id'];
+
+        $receipt = $order['receipt'];
+
+        $this->mockServerContentFunction(function (& $content, $action) use (& $receipt)
+        {
+            if ($action === 'enroll')
+            {
+                $this->assertEquals($receipt, $content['udf1']);
+            }
+            else if($action === 'authorize')
+            {
+                $this->assertEquals($receipt, $content['udf1']);
+            }
+        });
+
+        $this->doAuthPayment($payment);
 
         $txn = $this->getEntities('transaction', [], true);
         $this->assertEquals(0, $txn['count']);

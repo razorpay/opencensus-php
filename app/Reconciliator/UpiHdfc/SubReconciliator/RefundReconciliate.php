@@ -45,8 +45,6 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
     const DEBIT     = 'Debit';
     const APPROVED  = 'Approved';
 
-    const SHOULD_ADD_ENTITY_ID_COLUMN = true;
-
     protected function getRefundId(array $row)
     {
         $refundId = null;

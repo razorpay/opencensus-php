@@ -5661,6 +5661,25 @@ return [
         ],
     ],
 
+    'testInternalGetMerchant'    =>  [
+        'request'       =>  [
+            'method'    =>  'GET',
+            'url'       =>  '/internal/merchants/{id}'
+        ],
+        'response'      =>  [
+            'content'   => [
+                'merchant' => [
+                    'id'        => '100ghi000ghi00',
+                    'entity'    =>  'merchant',
+                ],
+                'merchant_detail' => [
+                    'contact_email' => 'test@gmail.com'
+                ]
+            ],
+            'status_code'   =>  200
+        ]
+    ],
+
     'testGetBalances' => [
         'request' => [
             'url' => '/balances',

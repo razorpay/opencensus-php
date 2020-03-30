@@ -97,7 +97,11 @@ class Core extends Base\Core
         string $batchId = null,
         Order\Entity $order = null): Entity
     {
-        $this->trace->info(TraceCode::INVOICE_CREATE_REQUEST, $input);
+        $inputTrace = $input;
+
+        $this->unsetPIIData($inputTrace);
+
+        $this->trace->info(TraceCode::INVOICE_CREATE_REQUEST, $inputTrace);
 
         //
         // check if idempotent Id exists in the payload entity
@@ -152,7 +156,11 @@ class Core extends Base\Core
                         ->setShouldFailOnDuplicateInternalRef($shouldFailOnDuplicateInternalRef)
                         ->generate($input);
 
-        $this->trace->info(TraceCode::INVOICE_CREATED, $invoice->toArrayPublic());
+        $invoiceCreatedTrace = $invoice->toArrayPublic();
+
+        $this->unsetPIIData($invoiceCreatedTrace);
+
+        $this->trace->info(TraceCode::INVOICE_CREATED, $invoiceCreatedTrace);
         $this->trace->count(Metric::INVOICE_CREATED_TOTAL, $invoice->getMetricDimensions());
 
         $this->repo->loadRelations($invoice);
@@ -181,6 +189,13 @@ class Core extends Base\Core
         }
 
         return $invoice;
+    }
+
+    public function unsetPIIData(array &$input)
+    {
+        unset($input[Entity::CUSTOMER]);
+        unset($input[Entity::CUSTOMER_DETAILS]);
+        unset($input['token']['bank_account']);
     }
 
     public function update(Entity $invoice, array $input, Merchant\Entity $merchant): Entity

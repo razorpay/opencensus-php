@@ -545,6 +545,8 @@ trait Authorize
         // Only visa/master are supported for recurring
         $this->populateRiskUdfIfApplicable($data, $input);
 
+        $this->populateUdf1IfApplicable($data, $input);
+
         $this->udfCheckAndMeetHdfcRequirements($data);
 
         $this->udfRemoveHackCharacters($data);
