@@ -32,6 +32,30 @@ class TerminalTest extends TestCase
         $this->ba->adminAuth();
     }
 
+    public function testProxyFetchMerchantTerminals()
+    {
+        $this->ba->proxyAuth();
+
+        $attributes = [
+            'merchant_id'   => '10000000000000',
+            'gateway'       => 'wallet_paypal',
+        ];
+
+        $terminal   = $this->fixtures->create(
+            'terminal', $attributes);
+
+        $resp = $this->startTest();
+
+        $this->assertEquals($resp['items'][0]['id'], $terminal->getPublicId());
+    }
+
+    public function testProxyFetchMerchantTerminalsWithNoTerminalInApi()
+    {
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
     public function testAssignTerminal()
     {
         $merchant = $this->fixtures->create('merchant');

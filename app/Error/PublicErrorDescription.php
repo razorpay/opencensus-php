@@ -536,6 +536,7 @@ class PublicErrorDescription
     const BAD_REQUEST_INCORRECT_OTP                                             = 'Verification failed because of incorrect OTP.';
     const BAD_REQUEST_SMS_FAILED                                                = 'SMS sending failed.';
 
+    const BAD_REQUEST_SMS_OTP_FAILED                                            = 'SMS delivery failed, please try after sometime';
     const BAD_REQUEST_LOGO_NOT_PRESENT                                          = 'The input does not contain a file named logo';
     const BAD_REQUEST_MERCHANT_LOGO_TOO_BIG                                     = 'Size of the logo is too big. Upload a smaller file size.';
     const BAD_REQUEST_MERCHANT_LOGO_NOT_SQUARE                                  = 'The height and width of the logo are not the same. Upload a square image.';
@@ -658,6 +659,7 @@ class PublicErrorDescription
     const BAD_REQUEST_OLD_PASSWORD_MISMATCH                                     = 'Old Password mismatch';
     const BAD_REQUEST_CAPTCHA_FAILED                                            = 'Captcha Failed';
     const BAD_REQUEST_TOKEN_ABSENT_FOR_RECURRING_PAYMENT                        = 'Token absent for recurring payment';
+    const BAD_REQUEST_TOKEN_NOT_FOUND                                           = 'Token not found.';
 
     const BAD_REQUEST_USER_2FA_ALREADY_SETUP                                    = 'User already has a verified mobile number associated with the account';
     const BAD_REQUEST_LOCKED_USER_LOGIN                                         = 'User cannot login. User account is locked.';

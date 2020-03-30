@@ -54,7 +54,7 @@ trait SettlementTrait
      * @param Merchant\Entity $merchant
      * @return bool
      */
-    public function isMerchantSettlementAllowed(Merchant\Entity $merchant): array
+    public function isMerchantSettlementAllowed(Merchant\Entity $merchant, $forceFlag = false): array
     {
         // process settlement only for activated merchants
         if ($merchant->isSuspended() === true)
@@ -157,6 +157,11 @@ trait SettlementTrait
         //
         if (($this->env !== Environment::TESTING) and
             (in_array($channel, $allowedChannelFor24x7Settlement, true) === true))
+        {
+            return [true, []];
+        }
+
+        if($forceFlag === true)
         {
             return [true, []];
         }

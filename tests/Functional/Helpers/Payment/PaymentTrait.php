@@ -2593,26 +2593,4 @@ trait PaymentTrait
 
         return $content;
     }
-
-    protected function mockRazorXTreatmentForEnableBankTransferRefunds()
-    {
-        // Sending FTA to FTS
-        $razorxMock = $this->getMockBuilder(RazorXClient::class)
-                           ->setConstructorArgs([$this->app])
-                           ->setMethods(['getTreatment'])
-                           ->getMock();
-
-        $this->app->instance('razorx', $razorxMock);
-
-        $this->app->razorx->method('getTreatment')
-                          ->will($this->returnCallback(
-                            function ($mid, $feature, $mode) {
-                                if ($feature === 'enable_bank_transfer_refunds')
-                                {
-                                    return 'on';
-                                }
-
-                                return 'off';
-                            }));
-    }
 }

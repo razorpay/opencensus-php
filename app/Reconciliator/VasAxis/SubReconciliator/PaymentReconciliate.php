@@ -55,8 +55,6 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         'R' => Constants::RUPAY,
     ];
 
-    const SHOULD_ADD_ENTITY_ID_COLUMN = true;
-
     protected function getPaymentId(array $row)
     {
         return $this->getPaymentIdByMethod($row);

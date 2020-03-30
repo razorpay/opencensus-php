@@ -17,6 +17,7 @@ use RZP\Constants\Timezone;
 use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Base\AESCrypto;
 use RZP\Gateway\Base\VerifyResult;
+use RZP\Gateway\Base\ScroogeResponse;
 use RZP\Constants\Entity as BaseEntity;
 use RZP\Models\Terminal\Entity as TerminalEntity;
 use ApiResponse;
@@ -72,6 +73,28 @@ class Gateway extends Base\Gateway
         return $this->runPaymentVerifyFlow($verify);
     }
 
+    public function verifyRefund(array $input)
+    {
+        $scroogeResponse = new ScroogeResponse();
+
+        if ($this->isUnprocessedRefund($input) === true)
+        {
+            return $scroogeResponse->setSuccess(false)
+                                   ->setStatusCode(ErrorCode::REFUND_MANUALLY_CONFIRMED_UNPROCESSED)
+                                   ->toArray();
+        }
+
+        if ($this->isProcessedRefund($input) === true)
+        {
+            return $scroogeResponse->setSuccess(true)
+                                   ->toArray();
+        }
+
+        return $scroogeResponse->setSuccess(false)
+                               ->setStatusCode(ErrorCode::GATEWAY_ERROR_VERIFY_REFUND_NOT_SUPPORTED)
+                               ->toArray();
+    }
+
     public function refund(array $input)
     {
         parent::refund($input);
@@ -103,7 +126,21 @@ class Gateway extends Base\Gateway
         $this->assertRefundId(self::REFUND_ID_PREFIX . $input['refund']['id'],
                                $responseContent[Field::RFD_TXN_ID]);
 
-        $this->checkRefundResponse($responseContent);
+        $gatewayData = [
+            Payment\Gateway::GATEWAY_RESPONSE => $response->body,
+            Payment\Gateway::GATEWAY_KEYS     => $this->getGatewayData($responseContent),
+        ];
+
+        if ($this->isRefundSuccessful($responseContent) === false)
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+                null,
+                $gatewayData
+            );
+        }
+
+        return $gatewayData;
     }
 
     protected function getRefundRequestData($gatewayEntity)
@@ -155,18 +192,11 @@ class Gateway extends Base\Gateway
         }
     }
 
-    protected function checkRefundResponse($response)
+    protected function isRefundSuccessful($response) : bool
     {
         // need to confirm with the bank once, what will the error codes. Till then throwing exception using the
         // exception returned by gateway
-        if ($response[Field::STATUS_CODE] !== Status::APPROVED)
-        {
-            throw new Exception\GatewayErrorException(
-              ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
-              null,
-              $response[Field::STATUS_DESC]
-            );
-        }
+        return ($response[Field::STATUS_CODE] !== Status::APPROVED) ? false : true;
     }
 
     protected function getVerifyCallbackRequestArray($input)
@@ -638,5 +668,19 @@ class Gateway extends Base\Gateway
         }
 
         return $attributes;
+    }
+
+    protected function getGatewayData(array $response = [])
+    {
+        if (empty($response) === false)
+        {
+            return [
+                Field::STATUS_CODE => $response[Field::STATUS_CODE] ?? null,
+                Field::STATUS_DESC => $response[Field::STATUS_DESC] ?? null,
+                Field::RFD_TXN_ID  => $response[Field::RFD_TXN_ID] ?? null,
+            ];
+        }
+
+        return [];
     }
 }

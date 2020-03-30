@@ -3,12 +3,12 @@
 namespace RZP\Services;
 
 
+use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Terminal;
 use RZP\Models\Merchant;
 use RZP\Http\Request\Requests;
-use RZP\Exception\IntegrationException;
 
 class TerminalsService
 {
@@ -20,8 +20,9 @@ class TerminalsService
 
     protected $baseUrl;
 
-    const TIMEOUT           = 0.1; // 100 milliseconds
 
+    const GATEWAY           = 'gateway';
+    const MERCHANT_ID       = 'merchant_id';
     const URL               = 'url';
     const CONTENT           = 'content';
     const CONTENT_TYPE      = 'content_type';
@@ -31,8 +32,13 @@ class TerminalsService
     const METHOD            = 'method';
     const RESPONSE          = 'response';
     const DATA              = 'data';
+    const TIMEOUT           = 'timeout';
+    const CONNECT_TIMEOUT   = 'connect_timeout';
+    const OPTIONS           = 'options';
 
+    const DEFAULT_TIMEOUT   = 0.1;
 
+    const INITIATE_ONBOARDING                  = 'initiate_onboarding';
     const CREATE_TERMINAL                      = 'create_terminal';
     const FETCH_TERMINAL_BY_ID                 = 'fetch_terminal_by_id';
     const DELETE_TERMINAL_BY_ID                = 'delete_terminal_by_id';
@@ -40,6 +46,16 @@ class TerminalsService
     const ADD_MERCHANT_TO_TERMINAL             = 'add_merchant_to_terminal';
     const REMOVE_MERCHANT_FROM_TERMINAL        = 'remove_merchant_from_terminal';
     const FETCH_MERCHANT_TERMINAL_BY_ID        = 'fetch_merchant_terminal_by_id';
+    const FETCH_TERMINALS_FOR_MERCHANT_GATEWAY = 'fetch_terminals_for_merchant_gateway';
+    const TERMINAL_ONBOARD_CALLBACK            = 'terminal_onboard_callback';
+
+    // terminals service error descriptions
+    const MERCHANT_HAS_ALREADY_COMPLETED_PAYPAL_ONBOARDING         = 'Merchant has already completed PayPal onboarding';
+
+    // terminals service error descriptions mapped with exception that needs to be raised by api
+    const TERMINALS_API_ERROR_CODE_MAPPING     =    [
+        self::MERCHANT_HAS_ALREADY_COMPLETED_PAYPAL_ONBOARDING   =>  ErrorCode::BAD_REQUEST_TERMINAL_ONBOARDING_ALREADY_REQUESTED
+    ];
 
     const PARAMS = [
         self::CREATE_TERMINAL       =>   [
@@ -54,8 +70,20 @@ class TerminalsService
             self::PATH   => 'v1/terminals/%s',
             self::METHOD => Requests::DELETE,
         ],
+        self::INITIATE_ONBOARDING      =>  [
+            self::PATH      =>  'v2/terminals',
+            self::METHOD    =>  Requests::POST,
+            self::OPTIONS => [
+                self::TIMEOUT         => 7, // 7 seconds
+                self::CONNECT_TIMEOUT => 7, // 7 seconds
+            ],
+        ],
         self::FETCH_TERMINALS_FOR_MERCHANT  => [
             self::PATH   => 'v1/merchants/%s/terminals',
+            self::METHOD => Requests::GET,
+        ],
+        self::FETCH_TERMINALS_FOR_MERCHANT_GATEWAY  => [
+            self::PATH   => 'v1/merchants/%s/terminals?gateway=%s',
             self::METHOD => Requests::GET,
         ],
         self::ADD_MERCHANT_TO_TERMINAL => [
@@ -70,6 +98,14 @@ class TerminalsService
             self::PATH   => 'v2/terminal/submerchant',
             self::METHOD => Requests::GET,
         ],
+        self::TERMINAL_ONBOARD_CALLBACK => [
+            self::PATH   => 'v2/terminal/onboard/%s/callback',
+            self::METHOD => Requests::POST,
+            self::OPTIONS => [
+                self::TIMEOUT         => 5, // 5 seconds
+                self::CONNECT_TIMEOUT => 5, // 5 seconds
+            ],
+        ]
     ];
 
     public function __construct($app)
@@ -167,13 +203,52 @@ class TerminalsService
         return $this->parseAndReturnResponse($response)[self::DATA][0] ?? [];
     }
 
-    protected function sendRequest(string $path, $content = '', string $method = Requests::POST): \Requests_Response
+    public function initiateOnboarding(string $merchantId, string $gateway): array
+    {
+        $params = self::PARAMS[self::INITIATE_ONBOARDING];
+
+        $path = $params[self::PATH];
+
+        $content = [
+            self::MERCHANT_ID   =>  $merchantId,
+            self::GATEWAY       =>  $gateway
+        ];
+        $content = json_encode($content);
+
+        $response = $this->sendRequest($path, $content, $params[self::METHOD], $params[self::OPTIONS]);
+
+        return $this->parseAndReturnResponse($response)[self::DATA];
+    }
+
+    public function getTerminalsByMerchantIdAndGateway(string $merchantId, string $gateway)
+    {
+        $params = self::PARAMS[self::FETCH_TERMINALS_FOR_MERCHANT_GATEWAY];
+
+        $path = sprintf($params[self::PATH], $merchantId, $gateway);
+
+        $response = $this->sendRequest($path, '', $params[self::METHOD]);
+        
+        return $this->parseAndReturnResponse($response)[self::DATA] ?? [];
+    }
+
+    public function terminalOnboardCallback(string $gateway, array $input)
+    {
+        $params = self::PARAMS[self::TERMINAL_ONBOARD_CALLBACK];
+
+        $path = sprintf($params[self::PATH], $gateway);
+
+        $response = $this->sendRequest($path, json_encode($input), $params[self::METHOD], $params[self::OPTIONS]);
+
+        return $this->parseAndReturnResponse($response)[self::DATA] ?? [];
+    }
+
+    protected function sendRequest(string $path, $content = '', string $method = Requests::POST, array $addditionalOptions = []): \Requests_Response
     {
         $url = $this->getBaseUrl() . $path;
 
         $headers = $this->getHeaders();
 
-        $options = $this->getOptions();
+        $options = $this->getOptions($addditionalOptions);
 
         $data = [
             self::URL       => $url,
@@ -204,11 +279,23 @@ class TerminalsService
 
             if ($response->status_code >= 400)
             {
-                throw new IntegrationException('Terminals service request failed with status code : ' . $response->status_code,
-                ErrorCode::SERVER_ERROR_TERMINALS_SERVICE_INTEGRATION_ERROR,
-                [
-                    self::RESPONSE => $this->parseAndReturnResponse($response)]
-                );
+                $body = $this->parseAndReturnResponse($response);
+
+                $errorDescription = isset($body['error']['description']) ? $body['error']['description'] : null;
+        
+                if (array_key_exists($errorDescription, self::TERMINALS_API_ERROR_CODE_MAPPING) === true)
+                {
+                    throw new Exception\BadRequestException(
+                        self::TERMINALS_API_ERROR_CODE_MAPPING[$errorDescription], null, null, $errorDescription);                
+                }
+                else
+                {
+                    throw new Exception\IntegrationException('Terminals service request failed with status code : ' . $response->status_code,
+                        ErrorCode::SERVER_ERROR_TERMINALS_SERVICE_INTEGRATION_ERROR,
+                        [
+                            self::RESPONSE => $this->parseAndReturnResponse($response)]
+                        );    
+                }
             }
 
             return $response;
@@ -239,7 +326,6 @@ class TerminalsService
         return $responseArray;
     }
 
-
     protected function getBaseUrl()
     {
         $urlConfig = 'applications.terminals_service.' . $this->getMode() . '.url';
@@ -254,7 +340,7 @@ class TerminalsService
         ];
     }
 
-    protected function getOptions()
+    protected function getOptions(array $additionalOptions = [])
     {
         $auth = [
             'api_user',
@@ -262,12 +348,16 @@ class TerminalsService
 
         ];
 
-        return [
+        $defaultOptions =  [
             'auth'            => $auth,
-            'timeout'         => self::TIMEOUT,
-            'connect_timeout' => self::TIMEOUT,
+            'timeout'         => self::DEFAULT_TIMEOUT, // 100 milliseconds
+            'connect_timeout' => self::DEFAULT_TIMEOUT, // 100 milliseconds
             'show_trace'      => true,
         ];
+
+        $options =  array_merge($defaultOptions, $additionalOptions);
+
+        return $options;
     }
 
     protected function getPassword()

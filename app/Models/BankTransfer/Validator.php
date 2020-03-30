@@ -68,6 +68,7 @@ class Validator extends Base\Validator
     const MODES_WITHOUT_IFSC = [
         Mode::IMPS,
         Mode::UPI,
+        Mode::IFT,
     ];
 
     protected function validatePayerIfsc($input)

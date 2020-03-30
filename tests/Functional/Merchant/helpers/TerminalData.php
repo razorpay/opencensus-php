@@ -7,6 +7,66 @@ use \RZP\Models\Payment\Gateway;
 use RZP\Error\PublicErrorDescription;
 
 return [
+
+    'testProxyFetchMerchantTerminals' => [
+        'request' => [
+            'method' => 'GET',
+            'url' => '/proxy/merchant/terminals',
+            'content' => ['gateway' => 'wallet_paypal']
+        ],
+        'response' => [
+            'content' => [
+                'entity' => "collection",
+                'count'  => 1,
+                'items'  => [
+                    [
+                    'entity'   => "terminal",
+                    'status'   => "activated",
+                    'enabled'  => true,
+                    'mpan'     => [
+                        'mc_mpan'    => NULL,
+                        'rupay_mpan' => NULL,
+                        'visa_mpan'  => NULL
+                     ],
+                    'notes' => NULL,
+                    ]
+                ]
+            ],
+            'status_code'   => 200,
+        ],
+    ],
+
+    'testProxyFetchMerchantTerminalsWithNoTerminalInApi' => [
+        'request' => [
+            'method' => 'GET',
+            'url' => '/proxy/merchant/terminals',
+            'content' => [
+                'gateway' => 'wallet_paypal'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'entity' => "collection",
+                'count'  => 1,
+                'items'  => [
+                    [
+                        'id'       => "ETbhgqkBRIiAkt",
+                        'entity'   => "terminal",
+                        'status'   => "requested",
+                        'enabled'  => false,
+                        'mpan'     => [
+                            'mc_mpan'    => '',
+                            'rupay_mpan' => '',
+                            'visa_mpan'  => ''
+                        ],
+                        'notes' => NULL,
+                    ]
+                ]
+            ],
+            'status_code'   => 200,
+        ],
+    ],
+
     'testAssignTerminal' => [
         'request' => [
             'content' => [

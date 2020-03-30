@@ -20,6 +20,8 @@ class ManualReconciliate extends CombinedReconciliate
     const RECON_ID      = 'recon_id';
     const AMOUNT        = 'amount';
 
+    const BLACKLISTED_COLUMNS = [];
+
     // Note : we take GATEWAY_FEE, GATEWAY_SERVICE_TAX
     // from Base/Reconciliate in the recon file, as the
     // same in being used in recordGatewayFeeAndServiceTax()
@@ -37,6 +39,7 @@ class ManualReconciliate extends CombinedReconciliate
     ];
 
     protected $payment;
+    protected $paymentTransaction;
 
     public function startReconciliationV2(array $fileContents, Batch\Processor\Base $batchProcessor)
     {
@@ -76,6 +79,8 @@ class ManualReconciliate extends CombinedReconciliate
                         $this->insertRowInOutputFile($row, Base\Reconciliate::PAYMENT);
 
                         $success = $this->processPaymentRecon($reconId, $row);
+
+                        $this->setTransactionDetailsInOutput($this->paymentTransaction);
 
                         //
                         // Here We just increment failure summary in case recon was unsuccessful.
@@ -123,6 +128,7 @@ class ManualReconciliate extends CombinedReconciliate
         try
         {
             $this->payment = $this->repo->payment->findOrFail($paymentId);
+            $this->paymentTransaction = $this->payment->transaction;
         }
         catch (\Exception $ex)
         {
@@ -140,7 +146,9 @@ class ManualReconciliate extends CombinedReconciliate
             throw $ex;
         }
 
-        $this->setMerchantIdInOutput($this->payment->getMerchantId());
+        $this->setMiscEntityDetailsInOutput($this->payment);
+
+        $this->setTerminalDetailsInOutput($this->payment->terminal);
 
         // check if already reconciled
         if ($this->payment->transaction->isReconciled() === true)

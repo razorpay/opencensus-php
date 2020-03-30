@@ -54,6 +54,7 @@ use RZP\Models\Merchant\Request as MerchantRequest;
 use RZP\Models\Partner\Constants as PartnerConstants;
 use RZP\Models\Merchant\Detail\BusinessSubCategoryMetaData;
 use RZP\Models\Merchant\Detail\InternationalActivationFlow;
+use RZP\Mail\Merchant\SecondFactorAuth as SecondFactorAuthMail;
 
 class Core extends Base\Core
 {
@@ -1749,16 +1750,6 @@ class Core extends Base\Core
     {
         $action = $input[Entity::SECOND_FACTOR_AUTH];
 
-        if ($input === false)
-        {
-            $merchant->setSecondFactorAuth($action);
-            $this->repo->saveOrFail($merchant);
-
-            return [
-                Entity::SECOND_FACTOR_AUTH => $merchant->isSecondFactorAuth(),
-            ];
-        }
-
         //owner should have their own 2fa setup done
         if ($user->isSecondFactorAuthSetup() === false)
         {
@@ -1795,6 +1786,22 @@ class Core extends Base\Core
 
         $merchant->setSecondFactorAuth($action);
         $this->repo->saveOrFail($merchant);
+
+        $mailData = [
+            'merchant' => [
+                Entity::ID                 => $merchant->getId(),
+                Entity::EMAIL              => $merchant->getEmail(),
+                Entity::NAME               => $merchant->getBillingLabel(),
+                Entity::SECOND_FACTOR_AUTH => $merchant->isSecondFactorAuth(),
+            ],
+            'user' => [
+                User\Entity::CONTACT_MOBILE => $user->getMaskedContactMobile()
+            ]
+        ];
+
+        $secondFactorMail = new SecondFactorAuthMail($mailData);
+
+//        Mail::send($secondFactorMail);
 
         return [
             Entity::SECOND_FACTOR_AUTH => $merchant->isSecondFactorAuth(),

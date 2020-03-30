@@ -437,7 +437,7 @@ class PaperNachCiti extends Debit\Base
         $begin = $this->getLastWorkingDay($begin);
 
         $end = Carbon::createFromTimestamp($this->gatewayFile->getEnd(), Timezone::IST)
-                      ->addHours(6)
+                      ->addHours(9)
                       ->getTimestamp();
 
         $tokens = $this->repo->token->fetchPendingNachOrMandateDebit(

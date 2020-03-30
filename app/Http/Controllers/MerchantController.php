@@ -209,6 +209,18 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
+    // This is used when merchant dashboard fetches terminals via proxy auth
+    public function proxyGetTerminals()
+    {
+        $input = Request::all();
+
+        $mid =  $this->ba->getMerchant()->getId();
+
+        $data = $this->service(E::TERMINAL)->proxyGetTerminals($mid, $input);
+
+        return ApiResponse::json($data);
+    }
+
     public function deleteTerminal($mid, $tid)
     {
         $data = $this->service(E::TERMINAL)->deleteTerminal($mid, $tid);
@@ -1061,6 +1073,15 @@ class MerchantController extends Controller
         $input = Request::all();
 
         $response = $this->service(E::MERCHANT_DETAIL)->patchMerchantDetails($input);
+
+        return ApiResponse::json($response);
+    }
+    /**
+     * returns merchant info along with merchant_details, to be used by internal apps
+     */
+    public function internalGetMerchant(string $merchantId)
+    {      
+        $response = $this->service()->internalGetMerchant($merchantId);
 
         return ApiResponse::json($response);
     }

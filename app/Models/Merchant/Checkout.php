@@ -25,6 +25,7 @@ use RZP\Models\Offer\Checker;
 use RZP\Base\RepositoryManager;
 use RZP\Models\Gateway\Downtime;
 use RZP\Models\Plan\Subscription;
+use RZP\Models\Payment\Config as Config;
 use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Models\Admin\Org\Entity as ORG_ENTITY;
 
@@ -108,6 +109,10 @@ class Checkout
     {
         if (empty($input[Payment\Entity::ORDER_ID]) === true)
         {
+            $configId = (empty($input['checkout_config_id']) === false) ? $input['checkout_config_id'] : null;
+
+            (new Config\Core())->getFormattedConfigForCheckout($configId, $merchant->getId(), $data);
+
             return;
         }
 
@@ -116,6 +121,10 @@ class Checkout
         $order = $this->setOrGetOrder($orderId, $merchant);
 
         $data['order'] = (new Order\Core)->getFormattedDataForCheckout($order, $merchant);
+
+        $configId = (isset($order->checkout_config_id) === true) ? Payment\Config\Entity::getSignedId($order->checkout_config_id) : null;
+
+        (new Config\Core())->getFormattedConfigForCheckout($configId, $merchant->getId(), $data);
 
         $this->resetMethodsIfValidBanksPresent($data, $order, $merchant);
     }
@@ -567,6 +576,15 @@ class Checkout
         if ($merchant->getOrgId() === ORG_ENTITY::HDFC_ORG_ID)
         {
             $data['options']['redirect'] = true;
+        }
+
+        //
+        // For the merchant which doesn't want retry option in checkout, sending retry false in preferences.
+        // Will be done for irctc
+        //
+        if ($merchant->isFeatureEnabled(Feature\Constants::CHECKOUT_DISABLE_RETRY) === true)
+        {
+            $data['options']['retry'] = false;
         }
 
         //
