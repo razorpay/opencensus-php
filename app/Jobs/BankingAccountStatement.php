@@ -47,12 +47,18 @@ class BankingAccountStatement extends Job
         {
             parent::handle();
 
-            $this->trace->info(TraceCode::BANKING_ACCOUNT_STATEMENT_FETCH_JOB_INIT, [
-                'channel'       => $this->params['channel'],
-                'accountNumber' => $this->params['account_number']
-            ]);
+            $this->trace->info(
+                TraceCode::BANKING_ACCOUNT_STATEMENT_FETCH_JOB_INIT,
+                [
+                    'channel'           => $this->params['channel'],
+                    'account_number'    => $this->params['account_number']
+                ]);
 
             $result = (new BAS\Core)->processStatementForAccount($this->params);
+
+            $this->trace->info(
+                TraceCode::BAS_FETCH_PROCESSED_BY_QUEUE,
+                $result);
 
             $this->delete();
         }
@@ -62,8 +68,8 @@ class BankingAccountStatement extends Job
                 $e,
                 Trace::ERROR,
                 TraceCode::BANKING_ACCOUNT_STATEMENT_FETCH_JOB_FAILED, [
-                'channel'       => $this->params['channel'],
-                'accountNumber' => $this->params['account_number']
+                'channel'           => $this->params['channel'],
+                'account_number'    => $this->params['account_number']
             ]);
 
             $this->checkRetry();
@@ -77,8 +83,8 @@ class BankingAccountStatement extends Job
             $this->release(self::MAX_RETRY_DELAY);
 
             $this->trace->info(TraceCode::BANKING_ACCOUNT_STATEMENT_FETCH_JOB_RELEASED, [
-                'channel'       => $this->params['channel'],
-                'accountNumber' => $this->params['account_number']
+                'channel'           => $this->params['channel'],
+                'account_number'    => $this->params['account_number']
             ]);
         }
         else
@@ -87,7 +93,7 @@ class BankingAccountStatement extends Job
 
             $this->trace->error(TraceCode::BANKING_ACCOUNT_STATEMENT_FETCH_JOB_DELETED, [
                 'channel'           => $this->params['channel'],
-                'accountNumber'     => $this->params['account_number'],
+                'account_number'    => $this->params['account_number'],
                 'job_attempts'      => $this->attempts(),
                 'message'           => 'Deleting the job after configured number of tries. Still unsuccessful.'
             ]);

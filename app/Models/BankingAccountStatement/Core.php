@@ -59,19 +59,20 @@ class Core extends Base\Core
      * @param array $input
      *
      * @return array
+     * @throws Exception\BadRequestException
      */
     public function processStatementForAccount(array $input)
     {
+        $channel = array_pull($input, Entity::CHANNEL);
+
+        $accountNumber = array_pull($input, Entity::ACCOUNT_NUMBER);
+
         try
         {
-            $channel = array_pull($input, Entity::CHANNEL);
-
-            $accountNumber = array_pull($input, Entity::ACCOUNT_NUMBER);
-
             $this->trace->info(
                 TraceCode::BANKING_ACCOUNT_STATEMENT_REMOTE_FETCH_REQUEST,
                 [
-                    'channel'        => $channel,
+                    'channel'       => $channel,
                     'accountNumber' => $accountNumber,
                 ]);
 
@@ -112,12 +113,12 @@ class Core extends Base\Core
             {
                 $this->trace->traceException(
                     $e,
-                    Trace::ERROR,
-                    TraceCode::BANKING_ACCOUNT_STATEMENT_FETCH_FAILED,
+                    null,
+                    TraceCode::ANOTHER_BANKING_ACCOUNT_STATEMENT_FETCH_IN_PROGRESS,
                     [
-                        'channel'       => $channel,
-                        'accountNumber' => $accountNumber,
-                        'message'       => $e->getMessage(),
+                        'channel'           => $channel,
+                        'account_number'    => $accountNumber,
+                        'message'           => $e->getMessage(),
                     ]);
             }
             else
@@ -126,7 +127,7 @@ class Core extends Base\Core
             }
         }
 
-        return ['processed' => true];
+        return ['channel' => $channel, 'account_number' => $accountNumber];
     }
 
     public function requestAccountStatement($input)
