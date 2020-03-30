@@ -1564,10 +1564,10 @@ app
         request.success(function(data) {
           hideSpinner();
           if (data.success) {
-            $scope.alerts.addAlert(
-              'success',
-              'Reset request sent. Please check your inbox for verification email from Razorpay.'
-            );
+            var message =
+              'We have sent a reset password link to your email. Didn’t receive the email? Check email address again or look in your spam folder.';
+
+            $scope.alerts.addAlert('success', message);
           } else {
             $scope.alerts.resetAlerts();
             angular.forEach(data.errors, function(value) {
