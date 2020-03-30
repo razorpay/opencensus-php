@@ -1232,7 +1232,7 @@ class Service extends Base\Service
 
         $currencyRequestId = UniqueIdEntity::generateUniqueId();
 
-        $dccInfo['all_currencies'] = (new Currency\Core)->getConvertedCurrencies($baseCurrency, $baseAmount, $currencyRequestId);
+        $dccInfo['all_currencies'] = (new Currency\DCC\Service)->getConvertedCurrencies($baseCurrency, $baseAmount, $currencyRequestId);
 
         $dccInfo['currency_request_id'] = $currencyRequestId;
 

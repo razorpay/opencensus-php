@@ -527,7 +527,7 @@ class Processor
 
             $dccCurrencyRequestId = $input['currency_request_id'];
 
-            $requestedCurrencyData = (new Currency\Core)->getRequestedCurrencyDetails($payment->getCurrency(), $payment->getAmount(),
+            $requestedCurrencyData = (new Currency\DCC\Service)->getRequestedCurrencyDetails($payment->getCurrency(), $payment->getAmount(),
                 $dccCurrency, $dccCurrencyRequestId);
 
             if (empty($requestedCurrencyData) === true)
