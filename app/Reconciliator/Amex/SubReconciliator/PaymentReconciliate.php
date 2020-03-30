@@ -23,25 +23,60 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 
         if (isset($row[self::COLUMN_GATEWAY_PAYMENT_ID]) === true)
         {
-            try
-            {
-                $paymentId = $this->repo->amex
-                                        ->findPaymentForGateway($row[self::COLUMN_GATEWAY_PAYMENT_ID],
-                                                                $row[self::COLUMN_MERCHANT_ACCOUNT_NUMBER])
-                                        ->getPaymentId();
+            $paymentId = $this->getPaymentIdV2($row);
 
-            }
-            catch (DbQueryException $ex)
+            if ($paymentId !== null)
             {
-                $this->trace->info(
-                    TraceCode::RECON_MISMATCH,
-                    [
-                        'info_code'             => Base\InfoCode::PAYMENT_ABSENT,
-                        'payment_reference_id'  => $row[self::COLUMN_GATEWAY_PAYMENT_ID],
-                        'gateway'               => $this->gateway,
-                        'batch_id'              => $this->batch->getId(),
-                    ]);
+                return $paymentId;
             }
+
+            $paymentId = $this->getPaymentIdV1($row);
+        }
+
+        return $paymentId;
+    }
+
+    private function getPaymentIdV2($row)
+    {
+        $paymentId = $row[self::COLUMN_GATEWAY_PAYMENT_ID];
+
+        $isValid = Payment\Entity::verifyUniqueId($paymentId, false);
+
+        if ($isValid === true)
+        {
+            return $paymentId;
+        }
+
+        return null;
+    }
+
+    private function getPaymentIdV1($row)
+    {
+        $paymentId = null;
+
+        try
+        {
+            $ref = $row[self::COLUMN_GATEWAY_PAYMENT_ID];
+
+            $accountNumber = $row[self::COLUMN_MERCHANT_ACCOUNT_NUMBER];
+
+            $paymentId = $this->repo->amex
+                                    ->findPaymentForGateway(
+                                        $ref,
+                                        $accountNumber)
+                                    ->getPaymentId();
+
+        }
+        catch (DbQueryException $ex)
+        {
+            $this->trace->info(
+                TraceCode::RECON_MISMATCH,
+                [
+                    'info_code'             => Base\InfoCode::PAYMENT_ABSENT,
+                    'payment_reference_id'  => $row[self::COLUMN_GATEWAY_PAYMENT_ID],
+                    'gateway'               => $this->gateway,
+                    'batch_id'              => $this->batch->getId(),
+                ]);
         }
 
         return $paymentId;
