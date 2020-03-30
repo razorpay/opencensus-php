@@ -1900,6 +1900,8 @@ class WebhookTest extends TestCase
 
     public function testTerminalOnboardingActivationFailedWebhook()
     {
+        $this->markTestSkipped();
+
         $this->app['config']->set('worldline_terminal_onboarding_verification.case', "2");
 
         $subMerchant = $this->fixtures->create('merchant');
