@@ -550,7 +550,7 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
     {
         $convertCurrency = $this->payment->getConvertCurrency();
 
-        return ($convertCurrency === true) ? $this->payment->getBaseAmount() : $this->payment->getAmount();
+        return ($convertCurrency === true) ? $this->payment->getBaseAmount() : $this->payment->getGatewayAmount();
     }
 
     /**

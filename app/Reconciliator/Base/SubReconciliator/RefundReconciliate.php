@@ -307,7 +307,7 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
             return $this->refund->getBaseAmount();
         }
 
-        return $this->refund->getAmount();
+        return $this->refund->getGatewayAmount();
     }
 
     /**
