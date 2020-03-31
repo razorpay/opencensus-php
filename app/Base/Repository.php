@@ -217,17 +217,6 @@ class Repository extends \Razorpay\Spine\Repository
 
         $routeSourceType = $this->route->getEntityForIdempotencyRequest();
 
-        $this->trace->info(
-            TraceCode::IDEMPOTENCY_REQUEST_DATA,
-            [
-                'entity_name'               => $entity->getEntityName(),
-                'entity_id'                 => $entity->getId(),
-                'idempotency_key_id'        => $idempotencyKeyId,
-                'applicable_source_types'   => $applicableSourceTypes,
-                'merchant_id'               => $merchantId,
-                'route_source_type'         => $routeSourceType,
-            ]);
-
         // This return statement has been added much later. Now, some of the following
         // return statements will be void. Redundant. Will remove them later as required.
         if ($routeSourceType !== $entity->getEntityName())
@@ -273,6 +262,19 @@ class Repository extends \Razorpay\Spine\Repository
 
         if (empty($idempotencyKeyEntity) === true)
         {
+            // Logging this as an error since this situation should never come up ideally.
+            // Not throwing an exception for now. Should throw an exception it in the future.
+            $this->trace->error(
+                TraceCode::IDEM_KEY_ENTITY_MISSING_FETCH,
+                [
+                    'entity_name'               => $entity->getEntityName(),
+                    'entity_id'                 => $entity->getId(),
+                    'idempotency_key_id'        => $idempotencyKeyId,
+                    'applicable_source_types'   => $applicableSourceTypes,
+                    'merchant_id'               => $merchantId,
+                    'route_source_type'         => $routeSourceType,
+                ]);
+
             return;
         }
 

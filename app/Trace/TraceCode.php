@@ -327,7 +327,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const DUPLICATE_IDEM_KEY_RECEIVED                           = 'DUPLICATE_IDEM_KEY_RECEIVED';
     const DUPLICATE_IDEM_KEY_RESPONSE                           = 'DUPLICATE_IDEM_KEY_RESPONSE';
     const IDEM_KEY_ENTITY_CREATED                               = 'IDEM_KEY_ENTITY_CREATED';
-    const IDEMPOTENCY_REQUEST_DATA                              = 'IDEMPOTENCY_REQUEST_DATA';
+    const IDEM_KEY_ENTITY_MISSING_FETCH                         = 'IDEM_KEY_ENTITY_MISSING_FETCH';
 
     const FTA_MODE_SET                                          = 'FTA_MODE_SET';
     const FTA_SLA_EXPIRED                                       = 'FTA_SLA_EXPIRED';
