@@ -2512,6 +2512,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     // Terminal Onboarding
     const TERMINAL_ENABLE_REQUEST                                  = 'TERMINAL_ENABLE_REQUEST';
     const TERMINAL_DISABLE_REQUEST                                 = 'TERMINAL_DISABLE_REQUEST';
+    const TERMINAL_DISABLE_EXCEPTION                               = 'TERMINAL_DISABLE_EXCEPTION';
     const TERMINAL_ONBOARDING_REQUEST                              = 'TERMINAL_ONBOARDING_REQUEST';
     const TERMINAL_ONBOARDING_JOB_REQUEST                          = 'TERMINAL_ONBOARDING_JOB_REQUEST';
     const TERMINAL_ONBOARDING_JOB_SUCCESS                          = 'TERMINAL_ONBOARDING_JOB_SUCCESS';

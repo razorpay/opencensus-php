@@ -13,7 +13,9 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Gateway;
 use RZP\Error\PublicErrorDescription;
+use RZP\Models\TerminalOnboardingDetail;
 use RZP\Models\Payment\Processor\Netbanking;
+use RZP\Models\Gateway\Terminal\Service as GatewayTerminalService;
 
 class Core extends Base\Core
 {
@@ -211,6 +213,34 @@ class Core extends Base\Core
         $terminal->setEnabled($toggle);
 
         $this->repo->saveOrFail($terminal);
+
+        return $terminal;
+    }
+
+    public function disableTerminal(Entity $terminal)
+    {
+        if (in_array($terminal->getStatus(), [Status::PENDING, Status::ACTIVATED]) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_ONLY_PENDING_OR_ACTIVATED_TERMINALS_CAN_BE_DISABLED);
+        }
+
+        (new GatewayTerminalService)->callGatewayForTerminalEnableOrDisable($terminal, 'disable_terminal');
+
+        $terminal = $this->toggle($terminal, false);
+
+        $terminal->setStatus(Status::DEACTIVATED);
+
+        $terminal->save();
+
+        $terminalOnboardingDetail = $terminal->terminalOnboardingDetail;
+
+        if (empty($terminalOnboardingDetail) === false)
+        {
+            $terminalOnboardingDetail->setStatus(TerminalOnboardingDetail\Status::DEACTIVATED);
+
+            $terminalOnboardingDetail->save();
+        }
 
         return $terminal;
     }

@@ -146,6 +146,21 @@ class Repository extends Base\Repository
         return $query->get();
     }
 
+    public function getActivatedDirectSettlementTerminalsByMerchant(string $mId)
+    {
+        $query = $this->newQuery();
+
+        $this->addMerchantWhereCondition($query, [$mId]);
+
+        $query->where(Entity::STATUS, Status::ACTIVATED);
+
+        $terminals = $query->get();
+
+        return $terminals->filter(function ($terminal) {
+            return (($terminal->isDirectSettlementWithoutRefund() === true) or ($terminal->isDirectSettlementWithRefund() === true));
+        });
+    }
+
     public function findByGatewayAndTerminalData(string $gateway, array $terminalData = [], bool $withTrashed = false)
     {
         $query =  $this->newQuery()

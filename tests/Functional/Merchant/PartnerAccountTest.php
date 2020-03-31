@@ -12,6 +12,7 @@ use Psr\Http\Message\ResponseInterface;
 
 use RZP\Constants\Mode;
 use RZP\Models\Merchant;
+use RZP\Models\Terminal;
 use RZP\Models\User\Role;
 use RZP\Models\Merchant\Webhook;
 use RZP\Models\Merchant\Account;
@@ -267,12 +268,44 @@ class PartnerAccountTest extends TestCase
 
         $result = $this->runRequestResponseFlow($testData);
 
+        // create terminal
+        $terminal = $this->fixtures->on('live')->create('terminal', [
+            'enabled'     => true,
+            'status'      => 'activated',
+            'merchant_id' => Account\Entity::stripDefaultSign($result['id']),
+            'gateway'     => 'worldline',
+            'mc_mpan'     => '1234567890123456',
+            'visa_mpan'   => '9876543210123456',
+            'rupay_mpan'  => '1234123412341234',
+            'notes'       => 'some notes',
+            'type'        => [
+                Terminal\Type::DIRECT_SETTLEMENT_WITHOUT_REFUND => '1',
+                Terminal\Type::NON_RECURRING                    => '1',
+            ],
+        ]);
+
+        $this->fixtures->on('live')->create('terminal_onboarding_detail', [
+            'terminal_id'       => $terminal->getId(),
+            'status'            => 'activated',
+            'verify_bucket'     => 0,
+        ]);
+
+        $this->app['config']->set('gateway.mock_mozart', true);
+
         // disable account
         $testData = $this->testData['testDisableAccountAction'];
 
         $testData['request']['url'] = '/accounts/'. $result['id'] . '/disable';
 
         $this->runRequestResponseFlow($testData);
+
+        $terminal->reload();
+
+        $this->assertEquals($terminal['enabled'], false);
+
+        $this->assertEquals($terminal['status'], 'deactivated');
+
+        $this->assertEquals($terminal->terminalOnboardingDetail['status'], 'deactivated');
 
         // enable account
         $testData = $this->testData[__FUNCTION__];
