@@ -7,7 +7,6 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 
 use Exception;
 use RZP\Events\P2p;
-use RZP\Trace\TraceCode;
 use RZP\Models\P2p\Transaction;
 
 class P2pNotificationListener extends P2pListener
@@ -34,8 +33,6 @@ class P2pNotificationListener extends P2pListener
         try
         {
             $raven->sendSms($payload, false);
-
-            $this->app['trace']->info(TraceCode::RAVEN_REQUEST, $payload);
         }
         catch (Exception $e)
         {

@@ -265,6 +265,10 @@ class Raven
     protected function traceRequest($request)
     {
         unset($request['options']['auth']);
+        if ($request['receiver'] !== null)
+        {
+            $request['receiver'] = mask_phone($request['receiver']);
+        }
 
         $this->trace->info(TraceCode::RAVEN_REQUEST, $request);
     }
