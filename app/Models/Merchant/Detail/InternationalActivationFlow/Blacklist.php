@@ -18,4 +18,9 @@ class Blacklist extends Base implements ActivationFlowInterface
     {
         return false;
     }
+
+    public function shouldActivateTypeformInternational(): bool
+    {
+        return false;
+    }
 }

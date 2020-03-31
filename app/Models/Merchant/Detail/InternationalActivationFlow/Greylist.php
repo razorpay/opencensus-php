@@ -2,8 +2,6 @@
 
 namespace RZP\Models\Merchant\Detail\InternationalActivationFlow;
 
-use App;
-
 use RZP\Models\Partner;
 use RZP\Models\Merchant\Detail;
 
@@ -28,14 +26,11 @@ class Greylist extends Base implements ActivationFlowInterface
             return true;
         }
 
-        $app = App::getFacadeRoot();
-
-        // If the route is for a workflow approval of international enablement
-        if ($app['api.route']->isWorkflowExecuteOrApproveCall() === true)
-        {
-            return true;
-        }
-
         return false;
+    }
+
+    public function shouldActivateTypeformInternational(): bool
+    {
+        return true;
     }
 }

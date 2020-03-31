@@ -2666,6 +2666,20 @@ class Core extends Base\Core
         }
     }
 
+    public function updateInternationalTypeform(Entity $merchant, Detail\Entity $merchantDetails)
+    {
+        //
+        // $activationFlowImpl will be an instance of the ActivationFlowInterface
+        //
+        $activationFlowImpl = InternationalActivationFlow\Factory::getActivationFlowImpl($merchant);
+
+        if (($activationFlowImpl->shouldActivateTypeformInternational() === true)
+            and ($this->checkInternationalEnablementPreconditions($merchant, $merchantDetails) === true))
+        {
+            (new Detail\InternationalCore())->activateInternational($merchant);
+        }
+    }
+
     /**
      * Here we are taking mode as input parameter instead of using $this->mode because
      * for webhook jobs we do not take mode as constructor argument and mode has to be passed for cases functionality depends on mode
@@ -2739,13 +2753,28 @@ class Core extends Base\Core
      */
     protected function shouldActivateInternational(Entity $merchant, Detail\Entity $merchantDetails): bool
     {
+        $generalInternationalEnablement = $this->checkInternationalEnablementPreconditions($merchant, $merchantDetails);
+
+        if ($generalInternationalEnablement === false)
+        {
+            return false;
+        }
+        //
+        // $activationFlowImpl will be an instance of the ActivationFlowInterface
+        //
+        $activationFlowImpl = InternationalActivationFlow\Factory::getActivationFlowImpl($merchant);
+
+        return $activationFlowImpl->shouldActivateInternational();
+    }
+
+    protected function checkInternationalEnablementPreconditions(Entity $merchant, Detail\Entity $merchantDetails): bool
+    {
         $autoEnableInternational = $this->autoEnableInternational($merchant, $merchantDetails);
 
         if ($autoEnableInternational === false)
         {
             return false;
         }
-
         //
         // Enable international for merchant if
         // 1) Merchant has a valid website
@@ -2757,13 +2786,9 @@ class Core extends Base\Core
             return false;
         }
 
-        //
-        // $activationFlowImpl will be an instance of the ActivationFlowInterface
-        //
-        $activationFlowImpl = InternationalActivationFlow\Factory::getActivationFlowImpl($merchant);
-
-        return $activationFlowImpl->shouldActivateInternational();
+        return true;
     }
+
 
     public function validateWebsiteCheckForInternationalActivation(Entity $merchant, Detail\Entity $merchantDetails): bool
     {
