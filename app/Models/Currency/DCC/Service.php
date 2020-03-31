@@ -96,7 +96,7 @@ class Service extends Base\Service
         return floor(time() / (self::TIME_INTERVAL_MINS * 60)) * (self::TIME_INTERVAL_MINS * 60);
     }
 
-    private function getConvertedAmount($baseAmount, $rate, $markUpPercent)
+    public function getConvertedAmount($baseAmount, $rate, $markUpPercent)
     {
         $rate = number_format($rate, 2);
 
