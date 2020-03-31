@@ -301,7 +301,6 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
         self::BUSINESS_MODEL,
         self::TRANSACTION_VOLUME,
         self::TRANSACTION_VALUE,
-        self::BUSINESS_WEBSITE,
         self::WEBSITE_ABOUT,
         self::WEBSITE_CONTACT,
         self::WEBSITE_PRIVACY,

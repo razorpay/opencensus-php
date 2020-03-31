@@ -2498,7 +2498,7 @@ class Core extends Base\Core
 
         $domain = (new TLDExtract)->getEffectiveTLDPlusOne($website);
 
-        $oldWebsite = $merchant->getWebsite();
+        $oldWebsite = $this->getOldWebsite($merchant, $website);
 
         if ($oldWebsite !== null)
         {
@@ -2508,6 +2508,34 @@ class Core extends Base\Core
         }
 
         $this->addDomainInWhitelistedDomain($merchant, $domain);
+    }
+
+    /**
+     * there are two flow where website can be updated
+     * 1) edit website in merchant entity and then sync with merchant_details
+     *    in this case $merchant->getWebsite() will be same as $newWebsite because we edited merchant entity with input.
+     *    so to find old website we need to pick business_website from merchant_details.
+     *
+     * 2) edit website in merchant_details entity and then sync with merchant
+     *    for old website we need to pick website from merchant entity.
+     *
+     * @param Entity $merchant
+     * @param string $newWebsite
+     *
+     * @return mixed
+     */
+    private function getOldWebsite(Entity $merchant, string $newWebsite)
+    {
+        $oldWebsite = $merchant->getWebsite();
+
+        if ($oldWebsite === $newWebsite)
+        {
+            $merchantDetails = $merchant->merchantDetail;
+
+            $oldWebsite = $merchantDetails->getWebsite();
+        }
+
+        return $oldWebsite;
     }
 
     /**
@@ -2526,10 +2554,7 @@ class Core extends Base\Core
         {
             array_push($whitelistedDomains, $domain);
 
-            $merchantInput[Entity::WHITELISTED_DOMAINS] = $whitelistedDomains;
-
-            $merchant->edit($merchantInput);
-
+            $merchant->setWhitelistedDomains($whitelistedDomains);
         }
     }
 
@@ -2549,9 +2574,7 @@ class Core extends Base\Core
         {
             unset($whitelistedDomains[$key]);
 
-            $merchantInput[Entity::WHITELISTED_DOMAINS] = $whitelistedDomains;
-
-            $merchant->edit($merchantInput);
+            $merchant->setWhitelistedDomains($whitelistedDomains);
         }
     }
 

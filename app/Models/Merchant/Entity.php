@@ -295,7 +295,6 @@ class Entity extends Base\PublicEntity
         self::NOTES,
         self::WHITELISTED_IPS_LIVE,
         self::WHITELISTED_IPS_TEST,
-        self::WHITELISTED_DOMAINS,
         self::FEE_CREDITS_THRESHOLD,
         self::DISPLAY_NAME,
         self::DASHBOARD_WHITELISTED_IPS_LIVE,
@@ -1531,6 +1530,11 @@ class Entity extends Base\PublicEntity
     public function getWhitelistedDomains()
     {
         return $this->getAttribute(self::WHITELISTED_DOMAINS);
+    }
+
+    public function setWhitelistedDomains(array $whitelistedDomains)
+    {
+        return $this->setAttribute(self::WHITELISTED_DOMAINS, $whitelistedDomains);
     }
 
     public function getOrgId()

@@ -919,15 +919,6 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
-    public function testEditMerchantWhitelistedDomains()
-    {
-        $this->createMerchant();
-
-        $this->ba->adminAuth();
-
-        $this->startTest();
-    }
-
     public function testEditMerchantInvalidWhitelistedIpsTest()
     {
         $this->createMerchant();
@@ -6533,14 +6524,18 @@ class MerchantTest extends TestCase
 
     public function testEditMerchantWebsite()
     {
-        $this->fixtures->edit('merchant', '10000000000000', [
-            'pricing_plan_id' => '1In3Yh5Mluj605',
-            'international'   => false]);
+        $merchant = $this->fixtures->edit('merchant', '10000000000000', [
+            'pricing_plan_id'     => '1In3Yh5Mluj605',
+            'international'       => false,
+            'website'             => 'http://example.com',
+            'whitelisted_domains' => ['example.com']
+        ]);
 
         $this->fixtures->pricing->createPromotionalPlan();
 
         $this->fixtures->create('merchant_detail', [
-            'merchant_id' => '10000000000000']);
+            'merchant_id'      => '10000000000000',
+            'business_website' => 'http://example.com']);
 
         $this->ba->adminAuth();
 
@@ -6548,7 +6543,7 @@ class MerchantTest extends TestCase
 
         $merchant = $this->getDbEntityById('merchant', '10000000000000');
 
-        $this->assertContains('abc.com', $merchant->getWhitelistedDomains());
+        $this->assertEquals(['abc.com'], $merchant->getWhitelistedDomains());
     }
 
     public function testGetCheckoutPreferencesWithConfigIdInOrder()

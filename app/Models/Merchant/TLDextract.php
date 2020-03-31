@@ -3,6 +3,7 @@
 namespace RZP\Models\Merchant;
 
 use RZP\Constants\TLD;
+use RZP\Error\P2p\ErrorCode;
 
 class TLDExtract
 {
@@ -20,6 +21,11 @@ class TLDExtract
         }
 
         $host = parse_url($url, PHP_URL_HOST);
+
+        if (empty($host) === true)
+        {
+            throw $this->badRequestException(ErrorCode::BAD_REQUEST_INVALID_WEBSITE);
+        }
 
         $host = strtolower($host);
 

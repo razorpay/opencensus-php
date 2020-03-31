@@ -1561,4 +1561,6 @@ class ErrorCode
     //typeform Error codes
 
     const BAD_REQUEST_MERCHANT_ID_NOT_PRESENT                                       = 'BAD_REQUEST_MERCHANT_ID_NOT_PRESENT';
+
+    const BAD_REQUEST_INVALID_WEBSITE                                               = 'BAD_REQUEST_INVALID_WEBSITE';
 }
