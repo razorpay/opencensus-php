@@ -28,7 +28,7 @@ class Service extends Base\Service
         $this->core = (new Currency\Core);
     }
 
-    public function updateRates($currency, $time)
+    private function updateRates($currency, $time)
     {
         $currency = strtoupper($currency);
 
@@ -44,7 +44,7 @@ class Service extends Base\Service
         return $rates;
     }
 
-    public function getRates($currency, $time)
+    private function getRates($currency, $time)
     {
         $key = $this->getRedisKey($currency, $time);
 
@@ -53,7 +53,7 @@ class Service extends Base\Service
         return $rates;
     }
 
-    public function getOrUpdateRates($currency, $time)
+    private function getOrUpdateRates($currency, $time)
     {
         $rates = $this->getRates($currency, $time);
 
@@ -65,21 +65,21 @@ class Service extends Base\Service
         return $rates;
     }
 
-    protected function getRedisKey($currency, $time)
+    private function getRedisKey($currency, $time)
     {
         $key = 'currency:' . $this->core::EXCHANGE_RATE_KEY . strtoupper($currency) . '_' . $time;
 
         return $key;
     }
 
-    protected function getCurrencyRequestDataRedisKey($currencyRequestId)
+    private function getCurrencyRequestDataRedisKey($currencyRequestId)
     {
         $key = 'currency:' . self::REQUEST_VS_TIME_KEY . $currencyRequestId;
 
         return $key;
     }
 
-    protected function getDCCMarkUpPercentage($rates, $requestedCurrency)
+    private function getDCCMarkUpPercentage($rates, $requestedCurrency)
     {
         if ($requestedCurrency === Currency\Currency::INR)
         {
@@ -91,12 +91,12 @@ class Service extends Base\Service
     }
 
     // Round current time to nearest hour.
-    public function getCurrentRoundedTime()
+    private function getCurrentRoundedTime()
     {
         return floor(time() / (self::TIME_INTERVAL_MINS * 60)) * (self::TIME_INTERVAL_MINS * 60);
     }
 
-    public function getConvertedAmount($baseAmount, $rate, $markUpPercent)
+    private function getConvertedAmount($baseAmount, $rate, $markUpPercent)
     {
         $rate = number_format($rate, 2);
 
