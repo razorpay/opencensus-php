@@ -25,4 +25,10 @@ class Reconciliate extends Base\Reconciliate
     {
         return self::ACCEPTED_SHEET_NAMES;
     }
+
+    // Used to unzip the MIS file
+    public function getReconPassword($fileDetails)
+    {
+        return '999000000000008';
+    }
 }
