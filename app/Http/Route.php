@@ -2483,7 +2483,7 @@ final class Route
 
         'initiate_terminal_onboarding',
         'proxy_merchant_get_terminals',
-
+        
         'payout_links_merchant_settings_post',
         'payout_links_merchant_settings_get',
         'payout_links_merchant_on_boarding_status',

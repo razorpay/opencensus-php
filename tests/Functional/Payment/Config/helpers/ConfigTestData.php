@@ -190,4 +190,30 @@ return  [
             'internal_error_code' => ErrorCode::BAD_REQUEST_EXTRA_FIELDS_PROVIDED
         ],
     ],
+    'testCreateCheckoutConfigFromAdminAuth' => [
+        'request' => [
+            'content' => [
+                'name'       => 'First',
+                'is_default' => true,
+                'type'       => 'checkout',
+                'config'     => [
+                    'method' => 'card',
+                ],
+            ],
+            'method'    => 'POST',
+            'url'       => '/admin/payment/config',
+            'server' => [
+                'HTTP_X_RAZORPAY_ACCOUNT' => '10000000000000',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'name'       => 'First',
+                'is_default' => true,
+                'config'     => [
+                    'method' => 'card',
+                ],
+            ]
+        ],
+    ],
 ];
