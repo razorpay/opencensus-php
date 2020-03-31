@@ -56,4 +56,13 @@ class OfferController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function validateCheckoutOffers()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->validateCheckoutOffers($input);
+
+        return ApiResponse::json($data);
+    }
 }

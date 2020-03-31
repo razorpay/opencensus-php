@@ -2150,7 +2150,7 @@ class Service extends Base\Service
         });
     }
 
-    private function getDummyPayment(Order\Entity $orderEntity, Card\IIN\Entity $iinEntity)
+    public function getDummyPayment(Order\Entity $orderEntity, Card\IIN\Entity $iinEntity)
     {
         $payment = new Payment\Entity;
 
@@ -2165,6 +2165,8 @@ class Service extends Base\Service
         $cardInput = $card->getDummyCardArray(null, $iinEntity);
 
         $card->fill($cardInput);
+
+        $card->setAttribute(Card\Entity::IIN, $iinEntity->getIin());
 
         $payment->card()->associate($card);
 

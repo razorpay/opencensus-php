@@ -69,6 +69,9 @@ class ConfigKey
 
     const LOW_BALANCE_RX_EMAIL                  = self::PREFIX . 'low_balance_rx_email';
 
+
+    const OFFER_LOG_VERBOSE                     = self::PREFIX . 'offer_log_verbose';
+
     //Banking account current accounts statement fetch for merchants limit on number of merchants for which to update in one run.
     const BANKING_ACCOUNT_STATEMENT_RATE_LIMIT  = self::PREFIX . 'banking_account_statement_rate_limit';
 
