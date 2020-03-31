@@ -1636,8 +1636,101 @@ class WebhookTest extends TestCase
         $this->refundPayment($payment['id'], $payment['amount']/2, [], [], false, ['key' => 'rzp_test_partner_' . $client->getId(), 'secret' => $client->getSecret()]);
     }
 
+    public function testTerminalOnboardingCreationWebhook()
+    {
+        $this->app['config']->set('gateway.mock_mozart', true);
+
+        $this->app['config']->set('worldline_terminal_onboarding_creation.case', "1");
+
+        $subMerchant = $this->fixtures->create('merchant');
+
+        $subMerchantId = $subMerchant->getId();
+
+        $this->fixtures->edit('merchant', '10000000000000', ['partner_type' => 'aggregator']);
+
+        // Assign submerchant to partner
+        $accessMapData = [
+            'entity_type'     => 'application',
+            'merchant_id'     => $subMerchantId,
+            'entity_owner_id' => '10000000000000',
+        ];
+
+        $this->fixtures->create('merchant_access_map', $accessMapData);
+
+        $subMerchant->setCategory("742");
+
+        $subMerchant->save();
+
+        $this->fixtures->create('merchant_detail',
+        [
+            'merchant_id' => $subMerchantId,
+            'submitted'   => true,
+            'business_registered_state' => 'MH',
+            'locked'      => true
+        ]);
+
+        (new BaseFixture)->createEntity('merchant_detail', [
+            'merchant_id' => '10000000000000',
+            'submitted'   => true,
+            'business_registered_state' => 'KA',
+            'locked'      => true
+        ]);
+
+
+        $this->fixtures->merchant->addFeatures(
+            [Feature\Constants::TERMINAL_ONBOARDING],
+            '10000000000000'
+        );
+
+        // created terminal to be picked up by cron
+        $terminal = $this->fixtures->create('terminal',
+        [
+            'merchant_id' => $subMerchantId,
+            'enabled'     => false,
+            'gateway'     => 'worldline',
+            'status'      => 'created'
+        ]);
+
+        $this->fixtures->create('terminal_onboarding_detail',
+            [
+                'terminal_id'       => $terminal->getId(),
+                'status'            => 'created',
+            ]);
+
+        // Adding merchant 10000000000000 's appId (10000000000App) in webhook entity_id
+        $this->fixtures->create('webhook',
+            [
+                'entity_type' => 'application',
+                'entity_id'   => '10000000000App',
+                'url'         => 'https://www.razorpay.co.in',
+                'events'      => [
+                    'payment.captured' => '1',
+                    'terminal.created'   => '1'
+                ]
+            ]);
+
+        $this->ba->cronAuth();
+
+        $testData = $this->testData[__FUNCTION__ . 'Data'];
+
+        $this->mockInfernoFire(function ($data) use ($testData)
+        {
+            $this->assertEquals('terminal.created', $data['event_name']);
+            $this->assertArrayHasKey('webhook_id', $data);
+
+            $data['event'] = json_decode($data['event'], true);
+            $this->assertArraySelectiveEquals($testData, $data);
+
+            return true;
+        });
+
+        $this->startTest();
+    }
+
     public function testTerminalOnboardingVerificationWebhook()
     {
+        $this->markTestSkipped();
+
         $this->app['config']->set('worldline_terminal_onboarding_verification.case', "1");
 
         $subMerchant = $this->fixtures->create('merchant');
@@ -1807,6 +1900,8 @@ class WebhookTest extends TestCase
 
     public function testTerminalOnboardingActivationFailedWebhook()
     {
+        $this->markTestSkipped();
+
         $this->app['config']->set('worldline_terminal_onboarding_verification.case', "2");
 
         $subMerchant = $this->fixtures->create('merchant');
