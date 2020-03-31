@@ -4,7 +4,11 @@ namespace RZP\Trace;
 
 use App;
 use Request;
+
 use RZP\Http\Route;
+use Razorpay\Trace\Logger;
+use RZP\Models\Admin\ConfigKey;
+use RZP\Models\Admin\Service as AdminService;
 
 class ApiTraceProcessor
 {
@@ -19,6 +23,29 @@ class ApiTraceProcessor
     const CCPAY_CARD_REGEX = "/CCPAY.(?:4[0-9]{12}(?:[0-9]{3})?|5[1-5][0-9]{14}|" .
                              "6(?:011|5[0-9][0-9])[0-9]{12}|3[47][0-9]{13}|3(?:0[0-5]|" .
                              "[68][0-9])[0-9]{11}|(?:2131|1800|35\d{3})\d{11})/";
+
+    //
+    // This regex is taken from https://www.regular-expressions.info/creditcard.html,
+    // https://service.in.sumologic.com/ui/#/search/qaUTvs26bqWnSxgNCOIXnMFOtjLjBCGxT2GYDywC
+    // This regex is used to scrub credit card numbers from logs.
+    // Currently only banking specific routes will be affected by this
+    //
+    const CARD_REGEX = "/\b(?:4[0-9]{12}(?:[0-9]{3})?" .         # Visa
+                       "|(?:5[1-5][0-9]{2}" .                # MasterCard
+                       "|222[1-9]|22[3-9][0-9]|2[3-6][0-9]{2}|27[01][0-9]|2720)[0-9]{12}" .
+                       "|3[47][0-9]{13}" .                   # Amex
+                       "|3(?:0[0-5]|[68][0-9])[0-9]{11}" .   # Diners Club
+                       "|6(?:011|5[0-9]{2})[0-9]{12}" .      # Discover
+                       "|(?:2131|1800|35\d{3})\d{11}" .      # JCB
+                       ")\b/";
+
+    //
+    // This is added to disable scrubbing.let's say we decided to kill this feature for some reason , bad RegEx or
+    // what-ever. if we set it to "null" , we will expect it to not do RegEx.. however since there is a default regex,
+    // it will always run. only choice is to go into code / deploy again. In order to avoid that ,adding a magic string
+    // off. if redis value for key CREDIT_CARD_REGEX_FOR_REDACTING returns off , we will disable scrubbing
+    //
+    const OFF = 'off';
 
     const SENSITIVE_KEYS = [
         'account_number',
@@ -48,6 +75,8 @@ class ApiTraceProcessor
         $this->addRouteNameForExceptions($record);
 
         $this->scrubCardNumberViaCcPay($record);
+
+        $this->scrubCardNumberForBankingRoutes($record);
 
         $this->overrideRequestAttributes($record);
 
@@ -140,13 +169,79 @@ class ApiTraceProcessor
         $record['context'] = $context;
     }
 
-    protected function scrubSensitiveDetailsForBankingRoutes(&$record)
+    protected function scrubCardNumberForBankingRoutes(& $record)
     {
-        $route = optional($this->app['router'])->currentRouteName();
+        // adding Try catch here. In case some unhandled exception comes up, we don't fail the whole
+        // request because of logging.
+        try
+        {
+            $route = optional($this->app['router'])->currentRouteName();
 
-        $bankingRoutes = Route::getBankingSpecificRoutes();
+            $bankingRoutes = Route::getBankingSpecificRoutes();
 
+            if (in_array($route, $bankingRoutes, true) === false)
+            {
+                return;
+            }
+
+            $context = $record['context'] ?? null;
+
+            if (empty($context) === true)
+            {
+                return;
+            }
+
+            $cardRegex = (new AdminService)->getConfigKey([
+                                                              'key' => ConfigKey::CREDIT_CARD_REGEX_FOR_REDACTING
+                                                          ]);
+
+            if (empty($cardRegex) === true)
+            {
+                $cardRegex = self::CARD_REGEX;
+            }
+
+            if (strtolower($cardRegex) === self::OFF)
+            {
+                return;
+            }
+
+            array_walk_recursive($context, function(& $item) use ($cardRegex)
+            {
+                if (is_string($item) === true)
+                {
+                    if (preg_match_all($cardRegex, $item, $matches) !== false)
+                    {
+                        $matches = $matches[0];
+
+                        foreach ($matches as $match)
+                        {
+                            $item = str_replace($match, 'CARD_NUMBER_SCRUBBED' . '(' . strlen($match) . ')', $item);
+                        }
+                    }
+                }
+            });
+
+            $record['context'] = $context;
+        }
+        catch (\Exception $e)
+        {
+            $this->app['trace']->traceException(
+                $e,
+                Logger::ERROR,
+                TraceCode::CREDIT_CARD_REDACTION_FAILURE_EXCEPTION
+            );
+
+            return;
+        }
+    }
+
+    protected function scrubSensitiveDetailsForBankingRoutes(& $record)
+    {
         try {
+            $route = optional($this->app['router'])->currentRouteName();
+
+            $bankingRoutes = Route::getBankingSpecificRoutes();
+
             if (in_array($route, $bankingRoutes, true)) {
                 $record['context'] = $this->visitEachNode($record['context']);
             }
@@ -154,7 +249,7 @@ class ApiTraceProcessor
             $this->app['trace']->traceException(
                 $e,
                 Logger::ERROR,
-                TraceCode::SENSITIVE_DETAILS_FAILURE_EXCEPTION
+                TraceCode::SENSITIVE_BANKING_DETAILS_SCRUBBING_FAILURE_EXCEPTION
             );
         }
 

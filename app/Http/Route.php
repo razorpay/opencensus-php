@@ -4602,7 +4602,9 @@ final class Route
         'consume_typeform_webhook',
     ];
 
-    //Banking specific routes for which sensitive data will be scrubbed from logs.
+    //
+    // Banking specific routes for which sensitive data will be scrubbed from logs.
+    //
     const BANKING_SPECIFIC_ROUTES = [
         'payout_create',
         'payout_create_with_otp',
@@ -4819,6 +4821,11 @@ final class Route
     public function getUrlWithAuth($relativeUrl, $key = '', $secret = '')
     {
         return $this->getSchemaHostAndAuth($key, $secret) . $relativeUrl;
+    }
+
+    public static function getBankingSpecificRoutes()
+    {
+        return self::BANKING_SPECIFIC_ROUTES;
     }
 
     protected function getSchemaHostAndAuth($key = '', $secret = '')
@@ -5153,10 +5160,5 @@ final class Route
         $routeName = $this->app['request.ctx']->getRoute();
 
         return (in_array($routeName, self::ROUTES_THROUGH_MASTER_REPLICA, true) === true);
-    }
-
-    public static function getBankingSpecificRoutes()
-    {
-        return self::BANKING_SPECIFIC_ROUTES;
     }
 }

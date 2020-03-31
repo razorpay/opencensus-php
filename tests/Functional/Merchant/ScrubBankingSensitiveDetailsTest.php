@@ -59,7 +59,7 @@ class ScrubBankingSensitiveDetailsTest extends TestCase
                 'bank_account' => [
                     'ifsc' => 'BKDN0611454',
                     'account_number' => 'SCRUBBED(12)',
-                    'name' => 'SCRUBBED(16)',
+                    'name' => 'CARD_NUMBER_SCRUBBED(16)',
                 ],
             ]
         ];
