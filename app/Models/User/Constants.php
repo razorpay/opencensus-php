@@ -37,6 +37,17 @@ class Constants
         self::TIMESTAMP,
     ];
 
+    const GC_LID   = 'gclid';
+    const FB_CLID  = 'fbclid';
+    const MS_CLKID = 'msclkid';
+
+    public static $clickIdentifier = [
+        self::WEBSITE,
+        self::GC_LID,
+        self::FB_CLID,
+        self::MS_CLKID
+    ];
+
     const PASSWORD_RESET_TOKEN_EXPIRY_TIME =  3600; //1 hour
 
     const LINKED_ACCOUNT_CREATE_PASSOWRD_TOKEN_EXPIRY_TIME =  86400; //24 hours
@@ -45,6 +56,7 @@ class Constants
 
     const LOCK   = 'lock';
     const UNLOCK = 'unlock';
+    const UN_VERIFY = 'un_verify';
 
     // This is a temporary hack to remove captcha on the below user emails.
     const WHITELIST_CAPTCHA_EMAILS = [

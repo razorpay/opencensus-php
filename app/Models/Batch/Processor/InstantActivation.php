@@ -49,7 +49,7 @@ class InstantActivation extends Base
 
         $additionalWebsites = $merchantDetails->getAdditionalWebsites() ?? [];
 
-        $this->removeDotFromWhitelistedDomain($merchant);
+        $merchant->setWhitelistedDomains([]);
 
         $websites = array_merge([$businessWebsite],$additionalWebsites);
 
@@ -59,22 +59,5 @@ class InstantActivation extends Base
 
             $this->merchantCore->addDomainInWhitelistedDomain($merchant, $domain);
         }
-    }
-
-    protected function removeDotFromWhitelistedDomain(Merchant\Entity $merchant)
-    {
-        $whitelistedDomains = $merchant->getWhitelistedDomains() ?? [];
-
-        $updatedWhitelistedDomains = [];
-
-        foreach ($whitelistedDomains as $whitelistedDomain)
-        {
-            if ($whitelistedDomain !== '.')
-            {
-                $updatedWhitelistedDomains[] = $whitelistedDomain;
-            }
-        }
-
-        $merchant->edit([Merchant\Entity::WHITELISTED_DOMAINS => $updatedWhitelistedDomains]);
     }
 }

@@ -58,6 +58,7 @@ use RZP\Models\Partner\Commission\CommissionSourceInterface;
  * @property Transaction\Entity     $transaction
  * @property Emi\Entity             $emiPlan
  * @property Customer\Entity        $customer
+ * @property PaymentMeta\Entity     $paymentMeta
  */
 class Entity extends Base\PublicEntity implements CommissionSourceInterface
 {
@@ -2999,7 +3000,13 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     {
         $data = $this->toArray();
 
-        if (($this->isCard()) and
+        if ($this->isCard() === true)
+        {
+            $data['amount'] = $this->getGatewayAmount();
+            $data['currency'] = $this->getGatewayCurrency();
+        }
+
+        if (($this->isCard() === true) and
             ($this->getConvertCurrency() === true))
         {
             $data['amount'] = $this->getBaseAmount();
@@ -3088,6 +3095,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     public function upiTransfer()
     {
         return $this->hasOne('RZP\Models\UpiTransfer\Entity');
+    }
+
+    public function paymentMeta()
+    {
+        return $this->hasOne('RZP\Models\Payment\PaymentMeta\Entity');
     }
 
     public function batch()
@@ -3730,5 +3742,40 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         }
 
         return $populatedMessage;
+    }
+
+    public function getGatewayAmount()
+    {
+        $paymentMetaEntity = $this->paymentMeta;
+
+        return (($paymentMetaEntity !== null) and ($paymentMetaEntity->getGatewayAmount() !== null)) ?
+                $paymentMetaEntity->getGatewayAmount() : $this->getAmount();
+    }
+
+    public function getGatewayCurrency()
+    {
+        $paymentMetaEntity = $this->paymentMeta;
+
+        return (($paymentMetaEntity !== null) and ($paymentMetaEntity->getGatewayCurrency() !== null)) ?
+                $paymentMetaEntity->getGatewayCurrency() : $this->getCurrency();
+    }
+
+    public function isDCC()
+    {
+        $paymentMetaEntity = $this->paymentMeta;
+
+        if ($paymentMetaEntity === null)
+        {
+            return false;
+        }
+
+        if (($paymentMetaEntity->getGatewayCurrency() === null) or
+            ($paymentMetaEntity->getGatewayAmount() === null))
+        {
+            return false;
+        }
+
+        return (($paymentMetaEntity->getGatewayCurrency() !== $this->getCurrency()) or
+            ($paymentMetaEntity->getGatewayAmount() !== $this->getAmount()));
     }
 }

@@ -6,6 +6,7 @@ use Requests;
 use RZP\Exception;
 use Requests_Response;
 use Requests_Exception;
+use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Http\RequestHeader;
 use Razorpay\Trace\Logger as Trace;
@@ -27,6 +28,8 @@ class SalesForceClient
     protected $config;
 
     protected $trace;
+
+    const JSON_METHOD = ['POST', 'PUT', 'PATCH'];
 
     public function __construct($app)
     {
@@ -75,6 +78,79 @@ class SalesForceClient
         return $accessToken;
     }
 
+    public function sendPreSignupDetails(array $input, Merchant\Entity $merchant)
+    {
+        $this->trace->info(TraceCode::SALESFORCE_PRE_SIGNUP_REQUEST, $input);
+
+        try
+        {
+            $response = $this->fetchAccessTokenAndSendPreSignupDetails($input, $merchant);
+        }
+        catch (\Throwable $e)
+        {
+
+            $this->trace->error(TraceCode::SALESFORCE_PRE_SIGNUP_EXCEPTION,
+                                [
+                                    'error' => $e->getMessage(),
+                                ]);
+        }
+    }
+
+    public function fetchAccessTokenAndSendPreSignupDetails(array $input, Merchant\Entity $merchant)
+    {
+        $accessToken = $this->fetchAccessToken();
+
+        $url = $this->generateUrlForMerchantUpsert();
+
+        $data = $this->payloadGenerationForPreSignupDetails($input, $merchant);
+
+        $request = [
+            'url'     => $url,
+            'method'  => 'POST',
+            'content' => $data,
+            'options' => ['timeout' => 20],
+            'headers' => [
+                RequestHeader::CONTENT_TYPE  => 'application/json',
+                RequestHeader::AUTHORIZATION => RequestHeader::BEARER . ' ' . $accessToken,
+            ]
+        ];
+
+        $this->trace->info(TraceCode::SALESFORCE_PRE_SIGNUP_REQUEST_PAYLOAD, $data);
+
+        return $this->createAndSendRequest($request);
+    }
+
+    public function payloadGenerationForPreSignupDetails(array $input, Merchant\Entity $merchant)
+    {
+        $data = ['merchant_id' => $merchant->getId(), 'email' => $merchant->getEmail(), 'name' => $merchant->getName()];
+
+        $keyMap = [
+            'business_name'      => 'business_name',
+            'business_type'      => 'business_type',
+            'contact_mobile'     => 'contact_mobile',
+            'transaction_volume' => 'transaction_volume',
+            'website'            => 'Ref_Website',
+            'first_utm_campaign' => 'Traffic_Campaign',
+            'first_utm_medium'   => 'Traffic_Medium',
+            'first_utm_source'   => 'Traffic_Source',
+        ];
+
+        foreach ($keyMap as $key => $value)
+        {
+            $this->checkAndInsert($input, $key, $data, $value);
+        }
+
+        return $data;
+    }
+
+    public function checkAndInsert($input,$key, & $output, $outputKey)
+    {
+        if ($input != null && isset($input[$key]))
+        {
+            $output[$outputKey] = $input[$key];
+        }
+    }
+
     public function fetchAccountDetails($nextUrl = '')
     {
         $accessToken = $this->fetchAccessToken();
@@ -105,6 +181,11 @@ class SalesForceClient
         }
 
         return null;
+    }
+
+    protected function generateUrlForMerchantUpsert()
+    {
+        return $this->baseUrl . '/services/apexrest/MerchantUpsert';
     }
 
     protected function generateUrlForAccountFetch(string $nextUrl)
@@ -205,10 +286,17 @@ class SalesForceClient
 
     protected function getResponse(array $request)
     {
+        $content = $request['content'];
+
+        if (in_array($request['method'], self::JSON_METHOD))
+        {
+            $content = json_encode($request['content']);
+        }
+
         $response = Requests::request(
             $request['url'],
             $request['headers'],
-            $request['content'],
+            $content,
             $request['method'],
             $request['options']);
 

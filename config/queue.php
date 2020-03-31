@@ -350,7 +350,7 @@ return [
         'test'       => env('AWS_CARDVAULT_MIGRATION_QUEUE'),
         'live'       => env('AWS_CARDVAULT_MIGRATION_QUEUE'),
      ],
-    'terminal_onboarding_creation'=> [
+    'terminal_onboarding_creation' => [
         'test'       => env('AWS_TERMINAL_ONBOARDING_CREATION_TEST_QUEUE'),
         'live'       => env('AWS_TERMINAL_ONBOARDING_CREATION_LIVE_QUEUE'),
     ],
@@ -391,8 +391,12 @@ return [
         'live'       => env('AWS_FA_VPA_VALIDATION_LIVE_QUEUE'),
     ],
     'payment_card_api_reconciliation' => [
-        'test'       =>  env('AWS_PAYMENT_CARD_API_RECONCILIATION_TEST_QUEUE'),
-        'live'       =>  env('AWS_PAYMENT_CARD_API_RECONCILIATION_LIVE_QUEUE'),
+        'test'       => env('AWS_PAYMENT_CARD_API_RECONCILIATION_TEST_QUEUE'),
+        'live'       => env('AWS_PAYMENT_CARD_API_RECONCILIATION_LIVE_QUEUE'),
+    ],
+    'rbl_banking_account_statement' => [
+        'test'       => env('AWS_RBL_BANKING_ACCOUNT_STATEMENT_TEST_QUEUE'),
+        'live'       => env('AWS_RBL_BANKING_ACCOUNT_STATEMENT_LIVE_QUEUE'),
     ],
     'payment_nbplus_api_reconciliation' => [
         'test'       =>  env('AWS_PAYMENT_NBPLUS_API_RECONCILIATION_TEST_QUEUE'),
@@ -413,6 +417,11 @@ return [
     'poc_update'=>[
         'test'       =>  env('AWS_POC_UPDATE_QUEUE'),
         'live'       =>  env('AWS_POC_UPDATE_QUEUE'),
+    ],
+
+    'terminals_service_migrate' => [
+        'test'      =>  env('TERMINALS_SERVICE_MIGRATE_QUEUE'),
+        'live'      =>  env('TERMINALS_SERVICE_MIGRATE_QUEUE'),
     ],
 
     /*

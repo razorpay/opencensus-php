@@ -121,6 +121,7 @@ class Gateway
     const ACQUIRER_BARB         = 'barb';
     const ACQUIRER_SBIN         = 'sbin';
     const ACQUIRER_CITI         = 'citi';
+    const ACQUIRER_KOTAK        = 'kotak';
 
     const NOT_SUPPORTED      = 'not_supported';
     const SUPPORTED          = 'supported';
@@ -289,6 +290,7 @@ class Gateway
         self::NETBANKING_CORPORATION,
         self::HITACHI,
         self::NETBANKING_SBI,
+        self::HDFC_DEBIT_EMI,
 
         // UPI HULK is TEMPORARY, As payment are still failed on hulk and we can't do much there,
         //If you are seeing this after Sep'18, Please report to gateway payments team
@@ -690,6 +692,7 @@ class Gateway
         Payment\Gateway::MOBIKWIK,
         Payment\Gateway::NETBANKING_AIRTEL,
         Payment\Gateway::WALLET_MPESA,
+        Payment\Gateway::ISG,
     ];
 
     public static $scroogeFileBasedRefundGatewaysWithTimestamps = [
@@ -781,6 +784,7 @@ class Gateway
             self::HITACHI,
             self::CARD_FSS,
             self::MPGS,
+            self::ISG,
         ],
 
         Method::NETBANKING => [
@@ -936,6 +940,7 @@ class Gateway
         self::WALLET_OPENWALLET     => [],
         self::HITACHI               => [],
         self::MPGS                  => [],
+        self::ISG                   => [],
     ];
 
     /**
@@ -1013,6 +1018,10 @@ class Gateway
     ];
 
     public static $s2sGateways = [
+        self::HDFC_DEBIT_EMI,
+    ];
+
+    public static $verifyMissingGateways = [
         self::HDFC_DEBIT_EMI,
     ];
 
@@ -1144,6 +1153,11 @@ class Gateway
             Network::AMEX,
         ],
         self::PAYSECURE => [
+            Network::RUPAY,
+        ],
+        self::ISG => [
+            Network::MC,
+            Network::VISA,
             Network::RUPAY,
         ]
     ];
@@ -2429,6 +2443,7 @@ class Gateway
     {
         $gateways = [
             self::PAYTM,
+            self::ISG,
         ];
 
         return (in_array($gateway, $gateways, true));
@@ -2449,6 +2464,7 @@ class Gateway
             self::PAYSECURE,
             self::PAYTM,
             self::AMEX,
+            self::ISG,
         ];
 
         return (in_array($gateway, $gateways, true));

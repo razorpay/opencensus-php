@@ -644,34 +644,6 @@ return [
         ]
     ],
 
-    'testEditMerchantWhitelistedDomains' => [
-        'request'  => [
-            'content' => [
-                'whitelisted_domains' => [
-                    'example.com',
-                    'razorpay.com'
-                ],
-            ],
-            'url'     => '/merchants/1X4hRFHFx4UiXt',
-            'method'  => 'put',
-            'server'  => [
-                // Case: In sign-up case we will not have any other headers
-                // (eg. X-Dashboard-User-Email etc) from dashboard.
-                'HTTP_X-Dashboard' => 'true',
-            ],
-        ],
-        'response' => [
-            'content' => [
-                'id'             => '1X4hRFHFx4UiXt',
-                'entity'         => 'merchant',
-                'whitelisted_domains' => [
-                    'example.com',
-                    'razorpay.com'
-                ],
-            ]
-        ]
-    ],
-
     'testEditMerchantWebsite' => [
         'request'  => [
             'content' => [
@@ -5661,6 +5633,25 @@ return [
         ],
     ],
 
+    'testInternalGetMerchant'    =>  [
+        'request'       =>  [
+            'method'    =>  'GET',
+            'url'       =>  '/internal/merchants/{id}'
+        ],
+        'response'      =>  [
+            'content'   => [
+                'merchant' => [
+                    'id'        => '100ghi000ghi00',
+                    'entity'    =>  'merchant',
+                ],
+                'merchant_detail' => [
+                    'contact_email' => 'test@gmail.com'
+                ]
+            ],
+            'status_code'   =>  200
+        ]
+    ],
+
     'testGetBalances' => [
         'request' => [
             'url' => '/balances',
@@ -5845,5 +5836,32 @@ return [
                 'failed'    => []
             ]
         ]
-    ]
+    ],
+    'testGetCheckoutPreferencesWithConfigIdInOrder' => [
+        'request' => [
+            'url' => '/preferences',
+            'method' => 'get',
+            'content' => [
+                'currency' => 'INR',
+            ]
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
+    'testGetCheckoutPreferencesWithDefaultConfig' => [
+        'request' => [
+            'url' => '/preferences',
+            'method' => 'get',
+            'content' => [
+                'currency' => 'INR',
+            ]
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
 ];

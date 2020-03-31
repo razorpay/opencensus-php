@@ -16,6 +16,9 @@ class Entity extends Base\PublicEntity
     const EXPIRY_TIME = 'expiry_time';
     const PROVIDER    = 'provider';
 
+    // Constants
+    const UPI_METADATA = 'upi_metadata';
+
     protected $entity = 'upi_metadata';
 
     protected $generateIdOnCreate = false;
@@ -163,5 +166,20 @@ class Entity extends Base\PublicEntity
     public function associatePayment(Payment\Entity $payment)
     {
         return $this->payment()->associate($payment);
+    }
+
+    // Helpers
+
+    /**
+     * @return int
+     */
+    public function getTimeRange()
+    {
+        return $this->getAttribute(self::END_TIME) - $this->getAttribute(self::START_TIME);
+    }
+
+    public static function isValidFlow($flow)
+    {
+        return in_array($flow, [Flow::INTENT, Flow::OMNICHANNEL, Flow::COLLECT]);
     }
 }

@@ -212,6 +212,19 @@ class BankTransferController extends Controller
                             $utr = $impsUtr;
                         }
                         break;
+                    default:
+                        $mode = \RZP\Models\BankTransfer\Mode::IFT;
+
+                        // for internal fund transfer they send 007618022529-ACCOUNT VALIDATION pattern
+                        // This is risky pattern to support but RBL sends the RRN like this
+                        $pieces = explode('-', $data['UTRNumber']);
+                        $iftUtr = $pieces[0];
+
+                        if (strlen($iftUtr) === 12)
+                        {
+                            $utr = $iftUtr;
+                        }
+                        break;
                 }
                 break;
 

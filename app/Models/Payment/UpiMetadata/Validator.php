@@ -16,5 +16,6 @@ class Validator extends Base\Validator
         Entity::END_TIME    => 'required_if:type,otm|epoch',
         Entity::VPA         => 'sometimes|string',
         Entity::EXPIRY_TIME => 'sometimes|integer|between:5,5760|filled',
+        Entity::PROVIDER    => 'sometimes|string',
     ];
 }

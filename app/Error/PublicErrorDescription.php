@@ -536,6 +536,7 @@ class PublicErrorDescription
     const BAD_REQUEST_INCORRECT_OTP                                             = 'Verification failed because of incorrect OTP.';
     const BAD_REQUEST_SMS_FAILED                                                = 'SMS sending failed.';
 
+    const BAD_REQUEST_SMS_OTP_FAILED                                            = 'SMS delivery failed, please try after sometime';
     const BAD_REQUEST_LOGO_NOT_PRESENT                                          = 'The input does not contain a file named logo';
     const BAD_REQUEST_MERCHANT_LOGO_TOO_BIG                                     = 'Size of the logo is too big. Upload a smaller file size.';
     const BAD_REQUEST_MERCHANT_LOGO_NOT_SQUARE                                  = 'The height and width of the logo are not the same. Upload a square image.';
@@ -658,6 +659,7 @@ class PublicErrorDescription
     const BAD_REQUEST_OLD_PASSWORD_MISMATCH                                     = 'Old Password mismatch';
     const BAD_REQUEST_CAPTCHA_FAILED                                            = 'Captcha Failed';
     const BAD_REQUEST_TOKEN_ABSENT_FOR_RECURRING_PAYMENT                        = 'Token absent for recurring payment';
+    const BAD_REQUEST_TOKEN_NOT_FOUND                                           = 'Token not found.';
 
     const BAD_REQUEST_USER_2FA_ALREADY_SETUP                                    = 'User already has a verified mobile number associated with the account';
     const BAD_REQUEST_LOCKED_USER_LOGIN                                         = 'User cannot login. User account is locked.';
@@ -867,7 +869,7 @@ class PublicErrorDescription
     // Terminal Onboarding
     const BAD_REQUEST_TERMINAL_ONBOARDING_DISABLED                              = 'Terminal onboarding feature is disabled';
     const BAD_REQUEST_ONLY_DEACTIVATED_TERMINALS_CAN_BE_ENABLED                 = 'Only deactivated terminals can be enabled';
-    const BAD_REQUEST_ONLY_ACTIVATED_TERMINALS_CAN_BE_DISABLED                  = 'Only activated terminals can be disabled';
+    const BAD_REQUEST_ONLY_PENDING_OR_ACTIVATED_TERMINALS_CAN_BE_DISABLED       = 'Only pending or activated terminals can be disabled';
 
 
     // Scrooge
@@ -1027,4 +1029,9 @@ class PublicErrorDescription
 
     //Invalid Bank Account
     const BAD_REQUEST_INVALID_BANK_ACCOUNT                                          =  'The bank account entered is invalid';
+
+
+    // Upi Mandates
+    const BAD_REQUEST_UPI_MANDATE_END_TIME_INVALID                                  = 'Invalid end time for upi mandate payment, end time must be greater than start time and current time';
+    const BAD_REQUEST_UPI_MANDATE_TIME_RANGE_REQUIRED                               = 'Start time and end time is required in case of upi mandate payments';
 }

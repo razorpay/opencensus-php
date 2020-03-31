@@ -2,6 +2,7 @@
 
 namespace RZP\Http\Controllers;
 
+use Request;
 use Illuminate\Support\Facades\Redis;
 
 use ApiResponse;
@@ -54,5 +55,32 @@ class ThrottleController extends Controller
         $this->trace->info(TraceCode::BOOTSTRAP_KEY_CACHE_SUMMARY, compact('totalIteration', 'failedIteration'));
 
         return ApiResponse::json([]);
+    }
+
+    public function createConfig()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->createConfig($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function deleteConfig()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->deleteConfig($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function fetchConfig()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->fetchConfig($input);
+
+        return ApiResponse::json($response);
     }
 }

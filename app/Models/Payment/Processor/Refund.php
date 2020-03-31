@@ -1467,6 +1467,8 @@ trait Refund
 
         $refund->setBaseAmount();
 
+        $refund->setGatewayAmountCurrency();
+
         if ($refund->isRefundSpeedInstant() === true)
         {
             $this->setRefundModeAndSpeed($payment, $refund);
@@ -2024,7 +2026,7 @@ trait Refund
         // Slack thread for reference:
         // https://razorpay.slack.com/archives/CA66F3ACS/p1584100168218900?thread_ts=1584090894.210900&cid=CA66F3ACS
         //
-        if ($this->payment->getTerminalId() !== 'B2K2t8JD9z98vh')
+        if ($payment->getTerminalId() !== 'B2K2t8JD9z98vh')
         {
             $gatewayAcquirer = $payment->terminal->getGatewayAcquirer() ?? $payment->getGateway();
         }
@@ -2743,22 +2745,6 @@ trait Refund
         }
         else if ($payment->isBankTransfer() === true)
         {
-            //
-            // Using razorx to ramp up instant refunds self serve
-            //
-            $variant = $this->app->razorx->getTreatment($payment->getMerchantId(),
-                Merchant\RazorxTreatment::ENABLE_BANK_TRANSFER_REFUNDS,
-                $this->mode
-            );
-
-            if (($variant !== RefundConstants::RAZORX_VARIANT_ON) and
-                ((empty($this->refund->getAttempts())) === true))
-            {
-                throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_PAYMENT_REFUND_NOT_SUPPORTED,
-                    $input);
-            }
-
             $paymentId = $payment->getId();
 
             // https://github.com/razorpay/api/pull/9612/files#diff-45d61a7b834fae07d62a86dd461e5940R1697

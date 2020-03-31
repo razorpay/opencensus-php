@@ -111,6 +111,7 @@ class ApiEventSubscriber extends Base\Core
         WebhookEvent::PAYOUT_REVERSED,
         WebhookEvent::ORDER_PAID,
         WebhookEvent::PAYMENT_CAPTURED,
+        WebhookEvent::ACCOUNT_SUSPENDED,
     ];
 
     /**
@@ -243,6 +244,30 @@ class ApiEventSubscriber extends Base\Core
         $payload = $this->getMerchantPayload($merchant);
 
         $this->prepareAndDispatchWebhook($payload);
+
+        // disable all direct settlement terminals of this merchant
+        $terminals = $this->repo->terminal->getActivatedDirectSettlementTerminalsByMerchant($merchant->getId());
+
+        $terminalCore = new Terminal\Core;
+
+        foreach ($terminals as $terminal)
+        {
+            try
+            {
+                $terminalCore->disableTerminal($terminal);
+            }
+            catch (\Throwable $ex)
+            {
+                $this->trace->traceException(
+                    $ex,
+                    Logger::ERROR,
+                    TraceCode::TERMINAL_DISABLE_EXCEPTION,
+                    [
+                        'merchant_id' => $merchant->getId(),
+                        'terminal_id' => $terminal->getId(),
+                    ]);
+            }
+        }
     }
 
     protected function onAccountInstantlyActivated($merchant)

@@ -42,6 +42,7 @@ use RZP\Models\EntityOrigin;
 use RZP\Constants\Entity as E;
 use RZP\Models\Admin as Admin;
 use RZP\Models\VirtualAccount;
+use RZP\Models\BankingAccount;
 use RZP\Gateway\GatewayManager;
 use RZP\Models\Workflow\Action;
 use RZP\Models\Plan\Subscription;
@@ -708,6 +709,8 @@ class ApiServiceProvider extends BaseServiceProvider
             'commission'                => Commission\Entity::class,
 
             'options'                   => Options\Entity::class,
+
+            'banking_account'           => BankingAccount\Entity::class,
         ]);
     }
 

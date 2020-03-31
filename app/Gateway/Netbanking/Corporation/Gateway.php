@@ -119,9 +119,18 @@ class Gateway extends Base\Gateway
             RequestFields::FUND_TRANSFER        => Constants::FUND_TRANSFER,
         ];
 
+        if ($input['merchant']->isTPVRequired())
+        {
+            $data[RequestFields::ACCOUNT_NUMBER] = $input['order']['account_number'];
+        }
+
+        $traceRequestData = $data;
+
+        unset($traceRequestData[RequestFields::ACCOUNT_NUMBER]);
+
         $this->traceGatewayPaymentRequest(
             [
-                'before_encryption' => $data,
+                'before_encryption' => $traceRequestData,
                 'payment_id'        => $input['payment']['id'],
                 'gateway'           => $this->gateway,
             ],

@@ -74,7 +74,8 @@ class CreatePaperMandatesTable extends Migration
 
             $table->integer(Entity::START_AT);
 
-            $table->integer(Entity::END_AT)
+            $table->bigInteger(Entity::END_AT)
+                  ->unsigned()
                   ->nullable();
 
             $table->integer(Entity::CREATED_AT);

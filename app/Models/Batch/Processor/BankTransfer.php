@@ -5,6 +5,7 @@ namespace RZP\Models\Batch\Processor;
 use RZP\Models\Batch\Entity;
 use RZP\Models\Batch\Header;
 use RZP\Models\Batch\Status;
+use RZP\Models\BankTransfer\Entity as E;
 use RZP\Models\Batch\Helpers\BankTransfer as Helper;
 use RZP\Models\BankTransfer\Core as BankTransferCore;
 
@@ -37,5 +38,11 @@ class BankTransfer extends Base
     {
         // Don't send an email
         return;
+    }
+
+    protected function removeCriticalDataFromTracePayload(array & $payloadEntry)
+    {
+        unset($payloadEntry[E::PAYEE_ACCOUNT]);
+        unset($payloadEntry[E::PAYER_ACCOUNT]);
     }
 }

@@ -232,7 +232,7 @@ class Core extends Base\Core
 
         $merchant = $input['merchant'];
 
-        $currency = ($payment->getConvertCurrency() === true) ? Currency::INR : $payment->getCurrency();
+        $currency = ($payment->getConvertCurrency() === true) ? Currency::INR : $payment->getGatewayCurrency();
 
         $params = [
             Entity::MERCHANT_ID   => $merchant->getId(),

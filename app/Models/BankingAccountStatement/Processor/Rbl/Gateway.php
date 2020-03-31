@@ -18,6 +18,7 @@ use RZP\Models\BankingAccountStatement\Category;
 use RZP\Models\BankingAccountStatement\Processor\Source;
 use RZP\Models\BankingAccount\Entity as BankingAccountEntity;
 use RZP\Models\BankingAccountStatement\Processor\Base as BaseProcessor;
+use RZP\Models\BankingAccountStatement\Core as BankingAccountStatementCore;
 use RZP\Models\BankingAccountStatement\Processor\Rbl\RequestResponseFields as Fields;
 
 class Gateway extends BaseProcessor
@@ -109,6 +110,13 @@ class Gateway extends BaseProcessor
 
         } while (($this->hasMoreData($bankResponse) === true) and
                  ($attemptCount < $attemptLimit));
+
+        // TODO: Thinking of moving the logic of dispatching job again in case of more data in job itself
+        // But not sure if this logic is generic for all bank as of now
+        if (($this->hasMoreData($bankResponse) === true))
+        {
+            (new BankingAccountStatementCore)->dispatchBankingAccountStatementJob($this->channel, $this->accountNumber);
+        }
 
         return $finalFormattedResponse;
     }

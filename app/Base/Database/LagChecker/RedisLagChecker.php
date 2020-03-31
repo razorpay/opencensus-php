@@ -16,9 +16,9 @@ class RedisLagChecker implements LagChecker
 {
     // connection identifiers
 
-    const MASTER      = 'master';
+    const MASTER = 'master';
 
-    const SLAVE       = 'slave';
+    const SLAVE = 'slave';
 
     /**
      * @var array
@@ -37,7 +37,7 @@ class RedisLagChecker implements LagChecker
 
     public function __construct(array $config)
     {
-        $this->trace  = TraceFacade::getFacadeRoot();
+        $this->trace = TraceFacade::getFacadeRoot();
 
         $this->config = $config;
 
@@ -51,7 +51,8 @@ class RedisLagChecker implements LagChecker
      * Queries the 'skip_slave' flag on redis. Establishes
      * the read connection only if the value is false.
      *
-     * @param  \PDO|Closure $readPdo
+     * @param \PDO|Closure $readPdo
+     *
      * @return \PDO|null
      */
     public function useReadPdoIfApplicable($readPdo)

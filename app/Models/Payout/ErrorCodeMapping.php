@@ -154,6 +154,7 @@ class ErrorCodeMapping
         'TXN_TIMEOUT_FAILURE'                   => 'Temporary Issue at Partner bank. Reinitiate transfer after 30 min.',
         'PBANK_GATEWAY_THROTTLED'               => 'Temporary Issue at Partner bank. Reinitiate transfer after 30 min.',
         'BATCH_LIMIT_EXHAUSTED'                 => 'Temporary Issue at Partner bank. Reinitiate transfer after 30 min.',
+        'BBANK_OFFLINE'                         => 'NPCI or Beneficiary bank systems are offline. Reinitiate transfer after 30 min.',
     ];
 
     public static function getErrorMessageFromBankResponseCode(Entity $payout, string $bankStatusCode = null)

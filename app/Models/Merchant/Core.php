@@ -54,6 +54,7 @@ use RZP\Models\Merchant\Request as MerchantRequest;
 use RZP\Models\Partner\Constants as PartnerConstants;
 use RZP\Models\Merchant\Detail\BusinessSubCategoryMetaData;
 use RZP\Models\Merchant\Detail\InternationalActivationFlow;
+use RZP\Mail\Merchant\SecondFactorAuth as SecondFactorAuthMail;
 
 class Core extends Base\Core
 {
@@ -1749,16 +1750,6 @@ class Core extends Base\Core
     {
         $action = $input[Entity::SECOND_FACTOR_AUTH];
 
-        if ($input === false)
-        {
-            $merchant->setSecondFactorAuth($action);
-            $this->repo->saveOrFail($merchant);
-
-            return [
-                Entity::SECOND_FACTOR_AUTH => $merchant->isSecondFactorAuth(),
-            ];
-        }
-
         //owner should have their own 2fa setup done
         if ($user->isSecondFactorAuthSetup() === false)
         {
@@ -1795,6 +1786,22 @@ class Core extends Base\Core
 
         $merchant->setSecondFactorAuth($action);
         $this->repo->saveOrFail($merchant);
+
+        $mailData = [
+            'merchant' => [
+                Entity::ID                 => $merchant->getId(),
+                Entity::EMAIL              => $merchant->getEmail(),
+                Entity::NAME               => $merchant->getBillingLabel(),
+                Entity::SECOND_FACTOR_AUTH => $merchant->isSecondFactorAuth(),
+            ],
+            'user' => [
+                User\Entity::CONTACT_MOBILE => $user->getMaskedContactMobile()
+            ]
+        ];
+
+        $secondFactorMail = new SecondFactorAuthMail($mailData);
+
+//        Mail::send($secondFactorMail);
 
         return [
             Entity::SECOND_FACTOR_AUTH => $merchant->isSecondFactorAuth(),
@@ -2491,7 +2498,7 @@ class Core extends Base\Core
 
         $domain = (new TLDExtract)->getEffectiveTLDPlusOne($website);
 
-        $oldWebsite = $merchant->getWebsite();
+        $oldWebsite = $this->getOldWebsite($merchant, $website);
 
         if ($oldWebsite !== null)
         {
@@ -2501,6 +2508,34 @@ class Core extends Base\Core
         }
 
         $this->addDomainInWhitelistedDomain($merchant, $domain);
+    }
+
+    /**
+     * there are two flow where website can be updated
+     * 1) edit website in merchant entity and then sync with merchant_details
+     *    in this case $merchant->getWebsite() will be same as $newWebsite because we edited merchant entity with input.
+     *    so to find old website we need to pick business_website from merchant_details.
+     *
+     * 2) edit website in merchant_details entity and then sync with merchant
+     *    for old website we need to pick website from merchant entity.
+     *
+     * @param Entity $merchant
+     * @param string $newWebsite
+     *
+     * @return mixed
+     */
+    private function getOldWebsite(Entity $merchant, string $newWebsite)
+    {
+        $oldWebsite = $merchant->getWebsite();
+
+        if ($oldWebsite === $newWebsite)
+        {
+            $merchantDetails = $merchant->merchantDetail;
+
+            $oldWebsite = $merchantDetails->getWebsite();
+        }
+
+        return $oldWebsite;
     }
 
     /**
@@ -2519,10 +2554,7 @@ class Core extends Base\Core
         {
             array_push($whitelistedDomains, $domain);
 
-            $merchantInput[Entity::WHITELISTED_DOMAINS] = $whitelistedDomains;
-
-            $merchant->edit($merchantInput);
-
+            $merchant->setWhitelistedDomains($whitelistedDomains);
         }
     }
 
@@ -2542,9 +2574,7 @@ class Core extends Base\Core
         {
             unset($whitelistedDomains[$key]);
 
-            $merchantInput[Entity::WHITELISTED_DOMAINS] = $whitelistedDomains;
-
-            $merchant->edit($merchantInput);
+            $merchant->setWhitelistedDomains($whitelistedDomains);
         }
     }
 

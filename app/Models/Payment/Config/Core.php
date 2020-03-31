@@ -118,6 +118,23 @@ class Core extends Base\Core
             });
     }
 
+    public function getFormattedConfigForCheckout($configId, $merchantId, & $data)
+    {
+        $config = null;
+
+        if (isset($configId) === false)
+        {
+            $config = $this->repo->config->fetchDefaultConfigByMerchantIdAndType($merchantId, 'checkout');
+        }
+        else {
+            $config = $this->repo->config->findByPublicIdAndMerchant($configId, $this->merchant);
+        }
+
+        if (isset($config) === true)
+        {
+            $data['checkout_config'] = json_decode($config->config, true);
+        }
+    }
     private function isDefaultConfig($input)
     {
         if (($input['is_default'] === true) or (strval($input['is_default']) === '1'))

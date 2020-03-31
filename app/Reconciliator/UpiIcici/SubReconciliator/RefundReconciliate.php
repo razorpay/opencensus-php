@@ -27,8 +27,6 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
 
     const SUCCESS = 'SUCCESS';
 
-    const SHOULD_ADD_ENTITY_ID_COLUMN = true;
-
     protected function getRefundId(array $row)
     {
         if (empty($row[self::REFUND_ID]) === false)

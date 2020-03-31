@@ -88,12 +88,9 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
 
         $refundId = $rowDetails[BaseReconciliate::REFUND_ID];
 
-        if (static::SHOULD_ADD_ENTITY_ID_COLUMN === true)
-        {
-            $this->setReconEntityIdInOutput($refundId);
-        }
+        $this->setMiscEntityDetailsInOutput($this->refund);
 
-        $this->setMerchantIdInOutput($this->refund->getMerchantId());
+        $this->setTerminalDetailsInOutput($this->payment->terminal);
 
         $this->calculateAndSetNetAmountInOutputFile($row);
 
@@ -109,25 +106,26 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
             if ($this->reconciled === true)
             {
                 $this->handleAlreadyReconciled($refundId, $this->refund->transaction->getReconciledAt());
-
-                return null;
-            }
-
-            $validate = $this->validateRefundDetails($row);
-
-            if ($validate === true)
-            {
-                $persistSuccess = $this->persistReconciliationData($rowDetails);
-
-                if ($persistSuccess === false)
-                {
-                    $this->handlePersistReconciliationDataFailure($refundId);
-                }
             }
             else
             {
-                $this->handleFailedValidation($refundId);
+                $validate = $this->validateRefundDetails($row);
+
+                if ($validate === true)
+                {
+                    $persistSuccess = $this->persistReconciliationData($rowDetails);
+
+                    if ($persistSuccess === false)
+                    {
+                        $this->handlePersistReconciliationDataFailure($refundId);
+                    }
+                } else
+                {
+                    $this->handleFailedValidation($refundId);
+                }
             }
+
+            $this->setTransactionDetailsInOutput($this->refund->transaction);
         }
         catch (\Exception $ex)
         {
@@ -309,7 +307,7 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
             return $this->refund->getBaseAmount();
         }
 
-        return $this->refund->getAmount();
+        return $this->refund->getGatewayAmount();
     }
 
     /**

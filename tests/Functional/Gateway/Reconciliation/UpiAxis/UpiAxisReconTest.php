@@ -114,6 +114,12 @@ class UpiAxisReconTest extends TestCase
     {
         $this->payment = $this->getDefaultPaymentArray();
 
+        $payments = $this->getEntities('payment', [], true);
+
+        foreach ($payments['items'] as $payment)
+        {
+            $this->assertNull($payment['reference16']);
+        }
         $upiEntity = $this->getNewAxisUpiEntity('10000000000000', 'upi_axis');
 
         $upiEntity['payment_id'] = 'BB31121900923519425756';
@@ -121,6 +127,15 @@ class UpiAxisReconTest extends TestCase
         $entries[] = $this->overrideUpiAxisPayment($upiEntity);
 
         $this->createFileAndReconcile('Razorpay Software Pvt Ltd.xlsx', $entries);
+
+        $payments = $this->getEntities('payment', [], true);
+
+        foreach ($payments['items'] as $payment)
+        {
+            $this->assertNotNull($payment['reference16']);
+
+            $this->assertEquals($entries[0]['RRN'], $payment['reference16']);
+        }
     }
 
     protected function createFileAndReconcile($fileName = '', $entries = [])

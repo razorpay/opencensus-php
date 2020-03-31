@@ -446,14 +446,7 @@ class Core extends Base\Core
             return 0;
         }
 
-        try
-        {
-            $reserveBalance = $merchant->getBalanceByTypeOrFail($reserveType);
-        }
-        catch (\Exception $ex)
-        {
-            $this->trace->traceException($ex, Trace::DEBUG);
-        }
+        $reserveBalance = $merchant->getBalanceByType($reserveType);
 
         $reserveAmount = $reserveBalance !== null ? $reserveBalance->getBalance() : 0;
 

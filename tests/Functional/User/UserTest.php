@@ -1157,6 +1157,15 @@ class UserTest extends TestCase
         });
     }
 
+    public function testPasswordResetMailForBadEmail()
+    {
+        Mail::fake();
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
     public function testPasswordResetByToken()
     {
         $resetAttributes = [

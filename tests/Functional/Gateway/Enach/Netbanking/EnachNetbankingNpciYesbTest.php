@@ -135,6 +135,8 @@ class EnachNetbankingNpciYesbTest extends EnachNetbankingNpciGatewayTest
     {
         $yesbTerminalPaymentResponse = $this->makeDebitPayment();
 
+        $this->updateCreatedAtOfPayment($yesbTerminalPaymentResponse['razorpay_payment_id']);
+
         $this->fixtures->stripSign($yesbTerminalPaymentResponse['razorpay_payment_id']);
 
         $this->fixtures->terminal->disableTerminal($this->sharedTerminal['id']);
@@ -568,8 +570,8 @@ class EnachNetbankingNpciYesbTest extends EnachNetbankingNpciGatewayTest
     {
         $this->fixtures->stripSign($paymentId);
 
-        // setting created at to 8am. Payments are picked from 9 to 9 cycle.
-        $createdAt = Carbon::today(Timezone::IST)->addHours(8)->getTimestamp();
+        // setting created at to 3am. Payments are picked from 9am to 6am cycle.
+        $createdAt = Carbon::today(Timezone::IST)->addHours(3)->getTimestamp();
 
         $this->fixtures->edit(
             'payment',

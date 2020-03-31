@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Tests\Unit\Fetch;
+namespace RZP\Tests\Unit\Mandate;
 
 use RZP\Models\UpiMandate;
 use RZP\Tests\Functional\TestCase;

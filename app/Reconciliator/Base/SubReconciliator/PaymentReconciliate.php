@@ -65,7 +65,8 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         RequestProcessor\Base::PAYPAL,
         RequestProcessor\Base::BAJAJFINSERV,
         RequestProcessor\Base::GETSIMPL,
-        RequestProcessor\Base::EMANDATE_AXIS
+        RequestProcessor\Base::EMANDATE_AXIS,
+        RequestProcessor\Base::HDFC_DEBIT_EMI,
     ];
 
     /**
@@ -161,12 +162,9 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
 
         $paymentId = $rowDetails[BaseReconciliate::PAYMENT_ID];
 
-        if (static::SHOULD_ADD_ENTITY_ID_COLUMN === true)
-        {
-            $this->setReconEntityIdInOutput($paymentId);
-        }
+        $this->setMiscEntityDetailsInOutput($this->payment);
 
-        $this->setMerchantIdInOutput($this->payment->getMerchantId());
+        $this->setTerminalDetailsInOutput($this->payment->terminal);
 
         $this->calculateAndSetNetAmountInOutputFile($row, $rowDetails);
 
@@ -299,6 +297,8 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
             }
         }
 
+        $this->setTransactionDetailsInOutput($this->payment->transaction);
+
         //
         // Payment can be updated from setPaymentAcquirerData before validation or
         // from markGatewayCapturedAsTrue after validation, for both cases we are
@@ -306,7 +306,6 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         //
 
         $this->repo->saveOrFail($this->payment);
-
     }
 
     public function resetRowProcessingAttributes()
@@ -551,7 +550,7 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
     {
         $convertCurrency = $this->payment->getConvertCurrency();
 
-        return ($convertCurrency === true) ? $this->payment->getBaseAmount() : $this->payment->getAmount();
+        return ($convertCurrency === true) ? $this->payment->getBaseAmount() : $this->payment->getGatewayAmount();
     }
 
     /**
@@ -1090,6 +1089,11 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         if (empty($rowDetails[BaseReconciliate::AUTH_CODE]) === false)
         {
             $this->setPaymentReference2($rowDetails[BaseReconciliate::AUTH_CODE]);
+        }
+
+        if ((empty($rowDetails[BaseReconciliate::REFERENCE_NUMBER]) === false) and ($this->payment->getMethod() === Payment\Method::UPI))
+        {
+            $this->setPaymentReference16($rowDetails[BaseReconciliate::REFERENCE_NUMBER]);
         }
     }
 
@@ -1685,6 +1689,32 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
 
         $this->payment->setReference2($reference2);
     }
+
+    protected function setPaymentReference16(string $reference16)
+    {
+        $dbReference16 = $this->payment->getReference16();
+
+        if ((empty($dbReference16) === false) and ($dbReference16 !== $reference16))
+        {
+            $infoCode = ($this->reconciled === true) ? Base\InfoCode::DUPLICATE_ROW : Base\InfoCode::DATA_MISMATCH;
+
+            $this->messenger->raiseReconAlert(
+                [
+                    'trace_code'                => TraceCode::RECON_MISMATCH,
+                    'info_code'                 => $infoCode,
+                    'message'                   => 'Reference16 is not null',
+                    'payment_id'                => $this->payment->getId(),
+                    'amount'                    => $this->payment->getAmount(),
+                    'db_reference_number'       => $dbReference16,
+                    'recon_reference_number'    => $reference16,
+                    'gateway'                   => $this->gateway
+                ]);
+            return;
+        }
+
+        $this->payment->setReference16($reference16);
+    }
+
 
     protected function markGatewayCapturedAsTrue()
     {

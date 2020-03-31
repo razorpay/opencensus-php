@@ -11,7 +11,7 @@ class Fetch extends BaseFetch
         self::DEFAULTS => [
         ],
         AuthType::ADMIN_AUTH => [
-            self::EXPAND_EACH    => 'filled|string|in:steps,steps.role',
+            self::EXPAND_EACH    => 'filled|string|in:steps,steps.role,workflow',
         ],
     ];
 

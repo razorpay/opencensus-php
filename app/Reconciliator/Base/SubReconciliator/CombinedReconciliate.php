@@ -62,7 +62,8 @@ class CombinedReconciliate extends Base\Foundation\SubReconciliate
                 continue;
             }
 
-            if ($entityType === null)
+            if (($entityType === null) and
+                ($this->ignoreReconParseError() === false))
             {
                 $message = 'Did not get the reconciliation type for the row in combined reconciliation.';
 
@@ -361,5 +362,16 @@ class CombinedReconciliate extends Base\Foundation\SubReconciliate
     protected function getParentNamespace()
     {
         return join('\\', explode('\\', get_called_class(), -1));
+    }
+
+    /**
+     * In some cases, we can't parse a few rows due to which the recon parse errors needs to be
+     * ignored.
+     *
+     * @return bool
+     */
+    protected function ignoreReconParseError(): bool
+    {
+        return false;
     }
 }

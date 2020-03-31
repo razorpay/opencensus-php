@@ -144,6 +144,15 @@ class Constants
 
     const OFFLINE_PAYMENTS                = 'offline_payments';
 
+    const DCC                             = 'dcc';
+
+    const COVID                           = 'covid';
+
+    /**
+     * Disables retry option in checkout
+     */
+    const CHECKOUT_DISABLE_RETRY          = 'checkout_disable_retry';
+
     /**
      * If applied on partner merchant then all sub merchant settlement will be settled to partner
      * this will be further aggregated and settled to partner merchant
@@ -189,7 +198,7 @@ class Constants
      */
     const CUST_CONTACT_EMAIL_NULL         = 'cust_contact_email_null';
 
-  /**
+    /**
      * This will control if the bank details will be returned in the fetch token response.
      * Bank details will contain beneficiary_name, account_number, ifsc and account_type
      */
@@ -324,6 +333,12 @@ class Constants
      */
     const PAYMENT_CREATED_WEBHOOK  = 'payment_created_webhook';
 
+    /*
+     * This feature will be used to pass order receipt in cybersource gateway requests
+     * for merchant that will have recon at their end.
+     */
+    const CYBERSOURCE_VAS = 'cybersource_vas';
+
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
         self::SUBSCRIPTIONS,
@@ -341,6 +356,7 @@ class Constants
         self::GOOGLE_PAY_OMNICHANNEL,
         self::PHONEPE_INTENT,
         self::SAVE_VPA,
+        self::DCC,
     ];
 
     // TODO: Use this instead of allFeatures once in final code change pr
@@ -525,7 +541,11 @@ class Constants
         self::SKIP_WORKFLOWS_FOR_API          => true,
         self::DISPLAY_LA_PARENT_PAYMENT_ID    => true,
         self::REDIRECTION_ONHOLD              => true,
+        self::DCC                             => true,
         self::PAYMENT_CREATED_WEBHOOK         => true,
+        self::CYBERSOURCE_VAS                 => true,
+        self::CHECKOUT_DISABLE_RETRY          => true,
+        self::COVID                           => true,
     ];
 
     // Entity type constants
@@ -683,6 +703,11 @@ class Constants
         self::CARD_TRANSFER_REFUND        => [
             'feature'       => self::CARD_TRANSFER_REFUND,
             'display_name'  => 'Card Transfer Refund',
+            'documentation' => '',
+        ],
+        self::COVID                       => [
+            'feature'       => self::COVID,
+            'display_name'  => 'Covid-19 relief campaign',
             'documentation' => '',
         ],
     ];

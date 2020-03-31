@@ -63,18 +63,19 @@ class EnachNetbankingNpciGatewayTest extends TestCase
 
     public function testPayment()
     {
-        $payment                 = $this->getEmandatePaymentArray('SBIN', 'netbanking', 0);
+        $paymentInput                 = $this->getEmandatePaymentArray('SBIN', 'netbanking', 0);
 
-        $payment['bank_account'] = [
+        $paymentInput['bank_account'] = [
             'account_number' => '1111111111111',
             'ifsc'           => 'sbin0000123',
             'name'           => 'Test account',
+            'account_type'   => 'current',
         ];
 
-        $order               = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
-        $payment['order_id'] = $order->getPublicId();
+        $order               = $this->fixtures->create('order:emandate_order', ['amount' => $paymentInput['amount']]);
+        $paymentInput['order_id'] = $order->getPublicId();
 
-        $this->doAuthPayment($payment);
+        $this->doAuthPayment($paymentInput);
 
         $payment = $this->getLastEntity('payment', true);
         $this->assertEquals(0, $payment['amount']);
@@ -93,6 +94,7 @@ class EnachNetbankingNpciGatewayTest extends TestCase
         $this->assertEquals('confirmed', $token['recurring_status']);
         $this->assertNotNull($token['gateway_token']);
         $this->assertEquals($token['gateway_token'], $enach['umrn']);
+        $this->assertEquals($token['account_type'], $paymentInput['bank_account']['account_type']);
     }
 
     public function testPaymentWithDisplayFeature()

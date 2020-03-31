@@ -66,7 +66,10 @@ class Entity extends Base\PublicEntity
     const PAID_AT                   = 'paid_at';
     const CANCELLED_AT              = 'cancelled_at';
     const EXPIRED_AT                = 'expired_at';
+
     const EXPIRE_BY                 = 'expire_by';
+    const BIG_EXPIRE_BY             = 'big_expire_by';
+
     const EMAIL_STATUS              = 'email_status';
     const SMS_STATUS                = 'sms_status';
     const DESCRIPTION               = 'description';
@@ -259,6 +262,7 @@ class Entity extends Base\PublicEntity
         self::CANCELLED_AT              => null,
         self::EXPIRED_AT                => null,
         self::EXPIRE_BY                 => null,
+        //self::BIG_EXPIRE_BY             => null,
         self::RECEIPT                   => null,
         self::MERCHANT_GSTIN            => null,
         self::MERCHANT_LABEL            => null,
@@ -554,6 +558,7 @@ class Entity extends Base\PublicEntity
         self::UPDATED_AT,
         self::DATE,
         self::EXPIRE_BY,
+        self::BIG_EXPIRE_BY,
         self::ISSUED_AT,
         self::PAID_AT,
         self::EXPIRED_AT,
@@ -587,7 +592,14 @@ class Entity extends Base\PublicEntity
             $expireBy = null;
         }
 
-        $this->attributes[self::EXPIRE_BY] = $expireBy;
+        // This hardcoded here until Invoice table is not partitioned,
+        // once it is partitioned, modify EXPIRE_BY to BIG_INT and
+        // move the BIG_EXPIRE_BY to EXPIRE_BY
+        if ($expireBy > 2147483647) {
+            $this->attributes[self::BIG_EXPIRE_BY] = $expireBy;
+        } else {
+            $this->attributes[self::EXPIRE_BY] = $expireBy;
+        }
     }
 
     // -------------------------------------- End Mutators -----------
@@ -613,6 +625,11 @@ class Entity extends Base\PublicEntity
     public function toArrayPublic()
     {
         $publicArray = parent::toArrayPublic();
+
+        // Until BIG_EXPIRE_BY and EXPIRE_BY columns are merged
+        if ( array_key_exists(self::EXPIRE_BY, $publicArray) === true ) {
+            $publicArray[self::EXPIRE_BY] = $this->getExpireBy();
+        }
 
         $order = $this->order;
 
@@ -842,7 +859,9 @@ class Entity extends Base\PublicEntity
 
     public function getExpireBy()
     {
-        return $this->getAttribute(self::EXPIRE_BY);
+        //$expireBy = $this->getAttribute(self::BIG_EXPIRE_BY) ?? $this->getAttribute(self::EXPIRE_BY) ;
+        $expireBy = $this->getAttribute(self::EXPIRE_BY);
+        return $expireBy === null ? $expireBy: intval( $expireBy );
     }
 
     public function isDraft(): bool

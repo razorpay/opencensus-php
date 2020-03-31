@@ -192,12 +192,20 @@ class UpiIciciGatewayReconTest extends TestCase
 
         $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
 
+        $payments = $this->getEntities('payment', [], true);
+
+        foreach ($payments['items'] as $payment)
+        {
+            $this->assertNull($payment['reference16']);
+        }
+
         $this->reconcile($uploadedFile, 'UpiIcici');
 
         $payments = $this->getEntities('payment', [], true);
 
         foreach ($payments['items'] as $payment)
         {
+
             $this->assertEquals(true, $payment['gateway_captured']);
 
             $transactionId = $payment['transaction_id'];
@@ -209,6 +217,11 @@ class UpiIciciGatewayReconTest extends TestCase
             $upi = $this->getDbLastEntity('upi');
 
             $this->assertEquals($upi['npci_reference_id'], '734122607521');
+
+            $this->assertNotNull($payment['reference16']);
+
+            $this->assertEquals($upi['npci_reference_id'], $payment['reference16']);
+
         }
 
         $this->assertBatchStatus(Status::PROCESSED);

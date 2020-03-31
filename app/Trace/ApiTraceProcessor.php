@@ -47,6 +47,12 @@ class ApiTraceProcessor
     //
     const OFF = 'off';
 
+    const SENSITIVE_KEYS = [
+        'account_number',
+        'name',
+        'cvv',
+    ];
+
     public function __construct($app)
     {
         $this->app = $app;
@@ -73,6 +79,8 @@ class ApiTraceProcessor
         $this->scrubCardNumberForBankingRoutes($record);
 
         $this->overrideRequestAttributes($record);
+
+        $this->scrubSensitiveDetailsForBankingRoutes($record);
 
         return $record;
     }
@@ -224,6 +232,54 @@ class ApiTraceProcessor
             );
 
             return;
+        }
+    }
+
+    protected function scrubSensitiveDetailsForBankingRoutes(& $record)
+    {
+        $route = optional($this->app['router'])->currentRouteName();
+
+        $bankingRoutes = Route::getBankingSpecificRoutes();
+
+        try {
+            if (in_array($route, $bankingRoutes, true)) {
+                $record['context'] = $this->visitEachNode($record['context']);
+            }
+        } catch (\Exception $e) {
+            $this->app['trace']->traceException(
+                $e,
+                Logger::ERROR,
+                TraceCode::SENSITIVE_DETAILS_FAILURE_EXCEPTION
+            );
+        }
+
+    }
+
+    protected function visitEachNode(&$context)
+    {
+        if (!empty($context)) {
+            foreach ($context as $key => &$value) {
+                if (in_array($key, self::SENSITIVE_KEYS, true)) {
+                    $this->scrubData($value);
+                }
+                if (is_array($value)) {
+                    $this->visitEachNode($value);
+                }
+            }
+        }
+        return $context;
+    }
+
+    protected function scrubData(&$value)
+    {
+        if (is_array($value)) {
+            foreach ($value as &$val) {
+                if (strpos($val, 'CARD_NUMBER_SCRUBBED') === false) {
+                    $val = 'SCRUBBED' . '(' . strlen($val) . ')';
+                }
+            }
+        } else if (is_string($value) and strpos($value, 'CARD_NUMBER_SCRUBBED') === false) {
+            $value = 'SCRUBBED' . '(' . strlen($value) . ')';
         }
     }
 

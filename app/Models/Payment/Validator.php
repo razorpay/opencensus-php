@@ -20,6 +20,7 @@ use RZP\Models\Merchant;
 use RZP\Constants\Timezone;
 use RZP\Models\Customer\Token;
 use RZP\Models\Currency\Currency;
+use RZP\Error\PublicErrorDescription;
 use RZP\Gateway\Upi\Base\ProviderCode;
 use RZP\Models\VirtualAccount\Receiver;
 use RZP\Models\Payment\Processor\Wallet;
@@ -115,6 +116,8 @@ class Validator extends Base\Validator
         'payment_id'                    => 'sometimes_if:method,cardless_emi',
         'application'                   => 'sometimes|filled|string|in:google_pay',
         'device'                        => 'sometimes',
+        'currency_request_id'           => 'required_with:dcc_currency|string',
+        'dcc_currency'                  => 'required_with:currency_request_id|string|max:3|custom',
     ];
 
     protected static $editAcquirerRules = [
@@ -192,11 +195,17 @@ class Validator extends Base\Validator
         'iin'                       => 'required|numeric|digits:6',
         '_'                         => 'sometimes|array',
         'order_id'                  => 'sometimes|filled',
+        'currency'                  => 'sometimes|string|size:3',
+        'amount'                    => 'sometimes|integer',
+        'token'                     => 'sometimes|string|max:20'
     ];
 
     protected static $postFlowsRules = [
         'card_number'        => 'sometimes|numeric|luhn|digits_between:12,19',
-        'iin'                => 'sometimes|numeric|digits:6'
+        'iin'                => 'sometimes|numeric|digits:6',
+        'currency'           => 'sometimes|string|size:3',
+        'amount'             => 'sometimes|integer',
+        'token'              => 'sometimes|string|max:20'
     ];
 
     protected static $pspAmountLimit = [
@@ -1148,31 +1157,50 @@ class Validator extends Base\Validator
         }
     }
 
+    protected function validateDccCurrency($attribute, $dccCurrency)
+    {
+        if (Currency::isSupportedCurrency($dccCurrency) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Invalid DCC Currency: ' . $dccCurrency);
+        }
+    }
+
     protected function validateUpiBlock($input)
     {
         if (isset($input['upi']['vpa']) === true)
         {
             $this->validateVpa('upi.vpa', $input['upi']['vpa']);
         }
-        if ((isset($input['upi']['type']) === true) and
-            ($input['upi']['type'] === 'otm'))
+        if ($this->isOtmPayment($input))
         {
             if ((isset($input['upi']['start_time']) === false) or
                 (isset($input['upi']['end_time']) === false))
             {
                 throw new Exception\BadRequestValidationFailureException(
-                    'UPI OTM payments require start_time and end_time',
+                    PublicErrorDescription::BAD_REQUEST_UPI_MANDATE_TIME_RANGE_REQUIRED,
                     'upi',
                     ['input'=> $input]
                     );
             }
 
-            if ($input['upi']['start_time'] > $input['upi']['end_time'])
+            if ($this->getUpiStartTime($input) > $this->getUpiEndTime($input))
             {
                 throw new Exception\BadRequestValidationFailureException(
-                    'Invalid start_time for UPI OTM Payment, start time cannot be greater than end time',
-                    'upi.start_time',
+                    PublicErrorDescription::BAD_REQUEST_UPI_MANDATE_END_TIME_INVALID,
+                    'upi.end_time',
                     ['input'=> $input]
+                );
+            }
+
+            $now = Carbon::now()->getTimestamp();
+
+            if ($this->getUpiEndTime($input) < $now)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    PublicErrorDescription::BAD_REQUEST_UPI_MANDATE_END_TIME_INVALID,
+                    'upi.end_time',
+                    ['input' => $input]
                 );
             }
         }

@@ -6,6 +6,7 @@ use Request;
 use ApiResponse;
 use RZP\Trace\TraceCode;
 use RZP\Models\Terminal\Onboarding;
+use Illuminate\Support\Facades\App;
 
 class TerminalOnboardingController extends Controller
 {
@@ -75,6 +76,15 @@ class TerminalOnboardingController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function postInitiateOnboarding()
+    {        
+        $input = Request::all();
+
+        $response = $this->service()->initiateOnboarding($input);
+
+        return $response;
+    }
+
     /**
      * This is a precautionary API, which will be used using adminAuth, in case we need to change status of a terminalonboarding manually
      * This will update status of input terminal_onboarding_details ids to created
@@ -86,5 +96,18 @@ class TerminalOnboardingController extends Controller
         $response = $this->service()->updateTerminalOnboardingStatus($input);
 
         return ApiResponse::json($response);
+    }
+
+    public function postTerminalOnboardCallback(string $gateway, string $mode)
+    {
+        $input = Request::all();
+
+        $app = App::getFacadeRoot();
+
+        $app['basicauth']->setMode($mode);
+
+        $this->service()->processTerminalOnboardCallback($gateway, $input);
+
+        return ApiResponse::json(['success' => true]);
     }
 }

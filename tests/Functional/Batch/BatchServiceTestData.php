@@ -1,5 +1,7 @@
 <?php
 
+use RZP\Error\ErrorCode;
+
 return [
 
     'testBatchServiceIsDown' => [
@@ -65,6 +67,26 @@ return [
             'content'     => [
                 'url'        => 'www.s3.download.com',
             ],
+        ],
+    ],
+
+    'testBatchServiceIllegalDownloadBatch' => [
+        'request'   => [
+            'url'    => '/batches/batch_C7e2YqUIpZ2KwZ/download',
+            'method' => 'get',
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The id provided does not exist',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_ID,
         ],
     ],
 

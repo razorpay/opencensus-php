@@ -23,6 +23,7 @@ use RZP\Models\Pricing;
 use RZP\Error\ErrorCode;
 use RZP\Models\Customer;
 use RZP\Models\Merchant;
+use RZP\Models\Currency;
 use RZP\Models\Terminal;
 use RZP\Services\Doppler;
 use RZP\Trace\TraceCode;
@@ -42,6 +43,7 @@ use RZP\Base\RepositoryManager;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Merchant\Methods;
 use RZP\Models\Plan\Subscription;
+use RZP\Models\Payment\UpiMetadata;
 use RZP\Models\Payment\Refund\Speed;
 use RZP\Gateway\Base\CardCacheTrait;
 use RZP\Listeners\ApiEventSubscriber;
@@ -331,6 +333,8 @@ class Processor
 
             $payment = $this->payment;
 
+            $this->preProcessDCCInputs($input, $payment);
+
             // This flow is being used for only hosted (Shopify).
             $this->checkSignature($input, $payment);
 
@@ -507,6 +511,49 @@ class Processor
         if ($this->subscription->hasCustomer() === true)
         {
             $input[Payment\Entity::CUSTOMER_ID] = Customer\Entity::getSignedId($this->subscription->getCustomerId());
+        }
+    }
+
+    protected function preProcessDCCInputs(array $input, Payment\Entity $payment)
+    {
+        if (($payment->isCard() === false) or ($payment->merchant->isDCCEnabled() === false))
+        {
+            return;
+        }
+
+        if ((isset($input['dcc_currency']) === true) and
+            (isset($input['currency_request_id']) === true))
+        {
+            $dccCurrency = $input['dcc_currency'];
+
+            $dccCurrencyRequestId = $input['currency_request_id'];
+
+            $requestedCurrencyData = (new Currency\DCC\Service)->getRequestedCurrencyDetails($payment->getCurrency(), $payment->getAmount(),
+                $dccCurrency, $dccCurrencyRequestId);
+
+            if (empty($requestedCurrencyData) === true)
+            {
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_DCC_INVALID_REQUEST_ID, 'currency_request_id',
+                    [
+                        'currency_request_id' => $dccCurrencyRequestId,
+                        'dcc_currency'        => $dccCurrency,
+                    ], 'Invalid currency_request_id');
+            }
+
+            $paymentMetaInput = [
+                'gateway_amount'            => $requestedCurrencyData['amount'],
+                'gateway_currency'          => $requestedCurrencyData['currency'],
+                'forex_rate'                => $requestedCurrencyData['forex_rate'],
+                'dcc_offered'               => true,
+                'payment_id'                => $payment->getId(),
+                'dcc_mark_up_percent'       => $requestedCurrencyData['dcc_mark_up_percent']
+            ];
+
+            $paymentMetaEntity = (new Payment\PaymentMeta\Core)->create($paymentMetaInput);
+
+            $paymentMetaEntity->payment()->associate($payment);
+
+            $this->trace->info(TraceCode::PAYMENT_DCC_PROCESSED, $paymentMetaInput);
         }
     }
 
@@ -942,41 +989,6 @@ class Processor
             'method' => 'wallet',
             'version' => '1',
         ];
-    }
-
-    protected function preProcessForUpiIfApplicable(array& $input)
-    {
-        if ($input['method'] !== Payment\Method::UPI)
-        {
-            return;
-        }
-
-        // New flow needs to use the UPI block, which was first utilising the `_`  meta block
-        // For backward compatibility, we still pick the values from the `_` block and set it
-        // on the `upi` block and Payments block has VPA which should be set in the `upi` block
-        // Priority is always UPI block
-        if (isset($input[Payment\Method::UPI][Payment\Entity::VPA]) === true)
-        {
-            $input[Payment\Entity::VPA] = $input[Payment\Method::UPI][Payment\Entity::VPA];
-        }
-        else if (isset($input[Payment\Entity::VPA]) === true)
-        {
-            $input[Payment\Method::UPI][Payment\Entity::VPA] =  $input[Payment\Entity::VPA];
-        }
-
-        if (isset($input[Payment\Method::UPI]['flow']) === true)
-        {
-            $input['_']['flow'] = $input[Payment\Method::UPI]['flow'];
-        }
-        else if (isset($input['_']['flow']) === true)
-        {
-            $input[Payment\Method::UPI]['flow'] = $input['_']['flow'];
-        }
-
-        if (isset($input[Payment\Method::UPI]['flow']) === false)
-        {
-            $input[Payment\Method::UPI]['flow'] = Flow::COLLECT;
-        }
     }
 
     protected function preProcessPaymentInputsForUpi(array $input, Payment\Entity $payment)
@@ -2872,7 +2884,11 @@ class Processor
     {
         $this->unsetSensitiveCardDetails($input);
 
-        $this->trace->debug(TraceCode::PAYMENT_NEW_REQUEST, $input);
+        $inputTrace = $input;
+
+        unset($inputTrace['notes']);
+
+        $this->trace->debug(TraceCode::PAYMENT_NEW_REQUEST, $inputTrace);
     }
 
     protected function unsetSensitiveCardDetails(array & $input)

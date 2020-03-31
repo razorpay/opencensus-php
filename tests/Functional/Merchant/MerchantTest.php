@@ -919,15 +919,6 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
-    public function testEditMerchantWhitelistedDomains()
-    {
-        $this->createMerchant();
-
-        $this->ba->adminAuth();
-
-        $this->startTest();
-    }
-
     public function testEditMerchantInvalidWhitelistedIpsTest()
     {
         $this->createMerchant();
@@ -6248,6 +6239,20 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
+    // Internal merchant_details route return merchant and merchant_details in response
+    public function testInternalGetMerchant()
+    {
+        $this->ba->appAuth();
+
+        $this->fixtures->create('merchant', ['id'=>'100ghi000ghi00']);
+
+        $this->fixtures->create('merchant_detail', ['merchant_id' => '100ghi000ghi00', 'contact_email' => 'test@gmail.com']);
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/internal/merchants/100ghi000ghi00';
+
+        $this->startTest();
+    }
+
     public function testGetBalances()
     {
         $this->fixtures->create('merchant', ['id'=>'100ghi000ghi00']);
@@ -6519,14 +6524,18 @@ class MerchantTest extends TestCase
 
     public function testEditMerchantWebsite()
     {
-        $this->fixtures->edit('merchant', '10000000000000', [
-            'pricing_plan_id' => '1In3Yh5Mluj605',
-            'international'   => false]);
+        $merchant = $this->fixtures->edit('merchant', '10000000000000', [
+            'pricing_plan_id'     => '1In3Yh5Mluj605',
+            'international'       => false,
+            'website'             => 'http://example.com',
+            'whitelisted_domains' => ['example.com']
+        ]);
 
         $this->fixtures->pricing->createPromotionalPlan();
 
         $this->fixtures->create('merchant_detail', [
-            'merchant_id' => '10000000000000']);
+            'merchant_id'      => '10000000000000',
+            'business_website' => 'http://example.com']);
 
         $this->ba->adminAuth();
 
@@ -6534,6 +6543,66 @@ class MerchantTest extends TestCase
 
         $merchant = $this->getDbEntityById('merchant', '10000000000000');
 
-        $this->assertContains('abc.com', $merchant->getWhitelistedDomains());
+        $this->assertEquals(['abc.com'], $merchant->getWhitelistedDomains());
+    }
+
+    public function testGetCheckoutRouteWithTokenForDCC()
+    {
+        $this->ba->publicAuth();
+        $this->fixtures->merchant->activate('10000000000000');
+
+        $request = [
+            'url' => '/preferences',
+            'method' => 'get',
+            'content' => [
+                'contact' => '9988776655',
+                'customer_id' => 'cust_100000customer',
+                'currency' => 'INR',
+            ]
+        ];
+
+        $response = $this->sendRequest($request);
+        $responseContent = json_decode($response->getContent(), true);
+
+        $this->assertNotNull($responseContent['customer']['tokens']);
+
+        $tokens = $responseContent['customer']['tokens'];
+        $this->assertTrue($tokens['count'] > 0);
+        $this->assertTrue(array_key_exists('dcc_enabled', $tokens['items'][0]) === true);
+    }
+
+    public function testGetCheckoutPreferencesWithConfigIdInOrder()
+    {
+        $this->ba->publicAuth();
+
+        $config = $this->fixtures->create('config');
+
+        $order = $this->fixtures->create('order', ['checkout_config_id' => $config->getId()]);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['order_id'] = $order->getPublicId();
+
+        $response = $this->runRequestResponseFlow($testData);
+
+        $this->assertArrayHasKey('checkout_config', $response);
+    }
+
+    public function testGetCheckoutPreferencesWithDefaultConfig()
+    {
+        $this->ba->publicAuth();
+
+        $config = $this->fixtures->create('config');
+
+        $order = $this->fixtures->create('order');
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['order_id'] = $order->getPublicId();
+
+        $response = $this->runRequestResponseFlow($testData);
+
+        $this->assertArrayHasKey('checkout_config', $response);
     }
 }
+

@@ -9,6 +9,7 @@ use RZP\Gateway\Base;
 use RZP\Gateway\Hdfc\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Models\Card;
+use RZP\Models\Order;
 use RZP\Models\Currency\Currency;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Feature\Constants as Feature;
@@ -150,6 +151,8 @@ trait Enroll
 
         $this->populateRiskUdfIfApplicable($data, $input);
 
+        $this->populateUdf1IfApplicable($data, $input);
+
         $this->udfCheckAndMeetHdfcRequirements($data);
 
         $this->udfRemoveHackCharacters($data);
@@ -263,6 +266,27 @@ trait Enroll
             $data['udf4'] = $input['payment']['description'] ?? $data['udf4'];
 
             $data['udf5'] = $this->request->ip();
+        }
+    }
+
+    protected function populateUdf1IfApplicable(array & $data, $input)
+    {
+        if ((isset($input['order']) === true) and
+            (isset($input['order']['receipt']) === true))
+        {
+            $data['udf1'] = $input['order']['receipt'];
+        }
+        else if ((isset($input['payment']) === true) and
+                (isset($input['payment']['order_id']) === true))
+        {
+            $orderId = $input['payment']['order_id'];
+
+            $order = (new Order\Repository)->find($orderId);
+
+            if (is_null($order) === false)
+            {
+                $data['udf1'] = $order->getReceipt();
+            }
         }
     }
 

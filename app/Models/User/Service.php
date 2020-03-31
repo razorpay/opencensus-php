@@ -471,22 +471,26 @@ class Service extends Base\Service
 
             if (empty($user) === true)
             {
-                throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_USER_NOT_FOUND);
+                $this->trace->info(TraceCode::USER_NOT_FOUND,
+                    [
+                        "email" => $email
+                    ]);
             }
+            else
+            {
+                $orgId = $this->auth->getOrgId();
 
-            $orgId = $this->auth->getOrgId();
+                //get Org and send it to mailer, deal with other orgs as well.
+                $org = $this->repo->org->findByPublicId($orgId)->toArrayPublic();
 
-            //get Org and send it to mailer, deal with other orgs as well.
-            $org = $this->repo->org->findByPublicId($orgId)->toArrayPublic();
+                $org['hostname'] = $this->auth->getOrgHostName();
 
-            $org['hostname'] = $this->auth->getOrgHostName();
+                $requestOriginProduct = $this->auth->getRequestOriginProduct();
 
-            $requestOriginProduct = $this->auth->getRequestOriginProduct();
+                $passwordResetMail = new UserMail\PasswordReset($user, $org, $requestOriginProduct);
 
-            $passwordResetMail = new UserMail\PasswordReset($user, $org, $requestOriginProduct);
-
-            Mail::queue($passwordResetMail);
+                Mail::queue($passwordResetMail);
+            }
         }
 
         return ['success' => true];
@@ -612,6 +616,12 @@ class Service extends Base\Service
             $data[Constants::WEBSITE]   = $utmParams[Constants::WEBSITE] ?? '';
             $data[Constants::FC_SOURCE] = $utmParams[Constants::FC_SOURCE] ?? '';
             $data[Constants::LC_SOURCE] = $utmParams[Constants::LC_SOURCE] ?? '';
+
+            foreach (Constants::$clickIdentifier as $clickId)
+            {
+                $data['first_' . $clickId] = $utmParams['first_' . $clickId] ?? '';
+                $data['final_' . $clickId] = $utmParams['final_' . $clickId] ?? '';
+            }
 
             if (empty($utmParams[Constants::ATTRIBUTIONS]) === false)
             {

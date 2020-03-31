@@ -24,6 +24,7 @@ use RZP\Jobs\MailChimpSubscribe;
 use RZP\Mail\User\Otp as OtpMail;
 use RZP\Models\Admin\Admin\Token;
 use RZP\Http\UserRolePermissionsMap;
+use RZP\Exception\BadRequestException;
 use RZP\Modules\SecondFactorAuth\Constants as AuthConstants;
 
 class Core extends Base\Core
@@ -131,8 +132,7 @@ class Core extends Base\Core
 
         $smsOtpAuthPayload = $this->getSmsOtpAuthBasePayload($user);
 
-        $this->app['module']->secondFactorAuth::make(AuthConstants::SMS_OTP_AUTH)
-             ->sendOtp($smsOtpAuthPayload);
+        $this->app['module']->secondFactorAuth::make(AuthConstants::SMS_OTP_AUTH)->sendOtp($smsOtpAuthPayload);
     }
 
     private function checkUserAccountNotLockedOrThrowException(Entity $user)
@@ -234,9 +234,7 @@ class Core extends Base\Core
             $traceInfo[Token\Entity::ADMIN_ID] = app('basicauth')->getAdmin()->getId();
         }
 
-        $this->trace->info(
-            TraceCode::USER_ACCOUNT_LOCK_UNLOCK_ACTION,
-            $traceInfo);
+        $this->trace->info(TraceCode::USER_ACCOUNT_LOCK_UNLOCK_ACTION, $traceInfo);
 
         switch ($action)
         {
@@ -251,6 +249,14 @@ class Core extends Base\Core
                 $user->setWrong2faAttempts(0);
 
                 $user->setAccountLocked(false);
+
+                break;
+
+            case Constants::UN_VERIFY:
+
+                $user->setContactMobileVerified(false);
+
+                $user->setWrong2faAttempts(0);
 
                 break;
         }
@@ -375,8 +381,12 @@ class Core extends Base\Core
         throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_USER_2FA_LOGIN_OTP_REQUIRED,
                     null,
                     [
-                    'internal_error_code'    => ErrorCode::BAD_REQUEST_USER_2FA_LOGIN_OTP_REQUIRED,
-                    'user_details'           => ['user_id' => $user->getId(), 'account_locked' => $user->isAccountLocked()],
+                    'internal_error_code' => ErrorCode::BAD_REQUEST_USER_2FA_LOGIN_OTP_REQUIRED,
+                    'user_details'        => [
+                            'user_id'        => $user->getId(),
+                            'account_locked' => $user->isAccountLocked(),
+                            'user_mobile'    => $user->getMaskedContactMobile(),
+                        ],
                     ]);
     }
 
@@ -1317,7 +1327,6 @@ class Core extends Base\Core
      *  This function checks if
      *  1) user is associated with merchant
      *  2) merchant whose updating user details should have owner/admin role
-     *  3) merchant should be restricted
      *
      * @param Merchant\Entity $merchant
      * @param Entity          $user
@@ -1337,12 +1346,6 @@ class Core extends Base\Core
 
         // check if the userRole is only admin/owner.
         (new Role())->validateMerchantUserRoleForUpdateUserDetails($this->userRole);
-
-        // check if merchant is restricted.
-        if ($merchant->getRestricted() === false)
-        {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_NOT_RESTRICTED_TO_PERFORM_ACTION);
-        }
     }
 
     /**
@@ -1465,5 +1468,39 @@ class Core extends Base\Core
         $token = $tokenService->generate($user->getId());
 
         return [Entity::OTP_AUTH_TOKEN => $token];
+    }
+
+    /**
+     * Fetch role id for a particular user by fetching through merchant_users table for the
+     * product banking. Note that only one id should and will be returned.
+     * This function fetches a user's role id through the merchant_users table,
+     * since the role_map table being used earlier didn't have merchant context.
+     *
+     * @param string $userId
+     * @return array
+     */
+    public function getUserRoleIdInMerchantForBanking(string $userId) : array
+    {
+        $mapping = $this->repo->merchant->getMerchantUserMapping($this->merchant->getId(),
+            $userId,
+            null,
+            'banking'
+        );
+
+        if (empty($mapping) === true)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_USER_DOES_NOT_BELONG_TO_MERCHANT);
+        }
+
+        $roleCode = $mapping->pivot->role;
+
+        $roleName = (new BankingRole())->getNameForWorkflowRole($roleCode);
+
+        $roleId = $this->repo->role->fetchIdsByOrgIdNames(Org\Entity::RAZORPAY_ORG_ID,
+                                                          [$roleName])
+                                                          ->pluck('id')
+                                                          ->toArray();
+
+        return $roleId;
     }
 }

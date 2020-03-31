@@ -4,6 +4,7 @@ namespace RZP\Models\Workflow\Action\Checker;
 
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\User;
 use RZP\Models\State;
 use RZP\Error\ErrorCode;
 use RZP\Models\Workflow;
@@ -64,7 +65,18 @@ class Core extends Base\Core
         //
 
         // Get checker roles
-        $checkerRoleIds = $checkerEntity->roles()->allRelatedIds()->toArray();
+        if ($checkerType === 'admin')
+        {
+            $checkerRoleIds = $checkerEntity->roles()->allRelatedIds()->toArray();
+        }
+        else
+        {
+            // If the entity is a user(which implies the product is banking),
+            // then the role id for that user for the merchant in context
+            // will have to be fetched from the merchant_users table.
+            // This is because the role_map table doesn't have any merchant context.
+            $checkerRoleIds = (new User\Core())->getUserRoleIdInMerchantForBanking($checkerEntity->getId());
+        }
 
         $currentLevel = $action->getCurrentLevel();
 

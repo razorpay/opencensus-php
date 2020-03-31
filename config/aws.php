@@ -37,7 +37,8 @@ return [
     // temporatily. Whenever a file is uploaded to this bucket, a request is
     // triggerred to API using a lambda function.
     //
-    'recon_input_bucket'    => env('AWS_S3_RECON_INPUT_BUCKET'),
+    'recon_input_bucket'         => env('AWS_S3_RECON_INPUT_BUCKET'),
+    'recon_sftp_input_bucket'    => env('AWS_S3_RECON_SFTP_INPUT_BUCKET'),
 
     'sns_target_arn'        => [
         'sms'               => env('AWS_RAVEN_TARGET_ARN'),

@@ -5556,6 +5556,9 @@ ALTER TABLE fund_transfer_attempts
     ADD COLUMN gateway_ref_no varchar(255) DEFAULT NULL,
     ADD UNIQUE INDEX fund_transfer_attempts_gateway_ref_no_unique (gateway_ref_no);
 
+ALTER TABLE banking_accounts
+    ADD COLUMN last_statement_attempt_at INT UNSIGNED DEFAULT NULL AFTER  `updated_at`;
+
 ALTER TABLE `transfers`
     ADD INDEX `transfers_source_id_index` (`source_id`),
     ADD INDEX `transfers_source_type_status_index` (`source_type`, `status`);
@@ -5671,8 +5674,18 @@ ALTER TABLE merchants MODIFY COLUMN whitelisted_domains text COLLATE utf8_bin DE
 ALTER TABLE webhooks
     ADD COLUMN events2 BIGINT DEFAULT 0 AFTER events;
 
+ALTER TABLE refunds
+    ADD COLUMN gateway_amount BIGINT UNSIGNED DEFAULT NULL,
+    ADD COLUMN gateway_currency CHAR(3) DEFAULT NULL;
+
 ALTER TABLE terminals
     ADD COLUMN account_type VARCHAR(255) DEFAULT NULL;
+
+ALTER TABLE merchant_details
+ADD INDEX `bank_details_verification_status_index` (`bank_details_verification_status`);
+
+ALTER TABLE merchant_details
+ADD COLUMN penny_testing_updated_at INT(11) DEFAULT NULL;
 
 // Since all the existing emi plans are credit, we need to add this.
 // If not, the duplicate emi plan checks will fail, since the ones existing in db has value null
@@ -5688,3 +5701,23 @@ ALTER TABLE payment_configs
 
 ALTER TABLE disputes
     ADD COLUMN conversion_rate BIGINT UNSIGNED DEFAULT NULL;
+
+// modify-expire-2038-bigint starts
+// Modifying expire columns from int to bigint to support epoch dates beyond 2038
+ALTER TABLE subscription_registrations
+    MODIFY COLUMN expire_at bigint(20) UNSIGNED DEFAULT NULL;
+
+// commenting this out as not executed
+-- ALTER TABLE invoices
+--    MODIFY COLUMN expire_by bigint(20) UNSIGNED DEFAULT NULL;
+
+ALTER TABLE paper_mandates
+    MODIFY COLUMN end_at bigint(20) UNSIGNED DEFAULT NULL;
+
+ALTER TABLE invoices
+    ADD COLUMN big_expire_by bigint(20) UNSIGNED DEFAULT NULL;
+// modify-expire-2038-bigint ends
+
+ALTER TABLE orders
+    ADD COLUMN checkout_config_id CHAR(14) DEFAULT NULL;
+

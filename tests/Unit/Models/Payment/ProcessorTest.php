@@ -90,47 +90,39 @@ class ProcessorTest extends TestCase
 
     public function testUpiBlockForDefaultValuesOTM()
     {
-        $this->markTestSkipped();
-
         $this->input['upi']['type'] = 'otm';
 
         $this->processorMock->processInputForUpi($this->input);
 
-        $this->assertNotNull($this->input['upi']['start_date']);
+        $this->assertNotNull($this->input['upi']['start_time']);
 
-        $this->assertNotNull($this->input['upi']['end_date']);
+        $this->assertNotNull($this->input['upi']['end_time']);
     }
 
     public function testUpiBlockForDefaultValuesOTMGivenEndDate()
     {
-        $this->markTestSkipped();
-
         $this->input['upi']['type'] = 'otm';
 
-        $this->input['upi']['end_date'] = Carbon::now()->addDay(1)->getTimestamp();
+        $this->input['upi']['end_time'] = Carbon::now()->addDay(1)->getTimestamp();
 
         $this->processorMock->processInputForUpi($this->input);
 
-        $this->assertNotNull($this->input['upi']['start_date']);
+        $this->assertNotNull($this->input['upi']['start_time']);
     }
 
     public function testUpiBlockForDefaultValuesOTMGivenStartDate()
     {
-        $this->markTestSkipped();
-
         $this->input['upi']['type'] = 'otm';
 
-        $this->input['upi']['start_date'] = Carbon::now()->addDay(1)->getTimestamp();
+        $this->input['upi']['start_time'] = Carbon::now()->addDay(1)->getTimestamp();
 
         $this->processorMock->processInputForUpi($this->input);
 
-        $this->assertNotNull($this->input['upi']['end_date']);
+        $this->assertNotNull($this->input['upi']['end_time']);
     }
 
     public function testUpiBlockForOTMGivenDatesUnchanged()
     {
-        $this->markTestSkipped();
-
         $this->input['upi']['type'] = 'otm';
 
         $now = Carbon::now();
@@ -139,14 +131,14 @@ class ProcessorTest extends TestCase
 
         $endDate = $now->addDays(3)->getTimestamp();
 
-        $this->input['upi']['start_date'] = $startDate;
+        $this->input['upi']['start_time'] = $startDate;
 
-        $this->input['upi']['end_date'] = $endDate;
+        $this->input['upi']['end_time'] = $endDate;
 
         $this->processorMock->processInputForUpi($this->input);
 
-        $this->assertSame($startDate, $this->input['upi']['start_date']);
+        $this->assertSame($startDate, $this->input['upi']['start_time']);
 
-        $this->assertSame($endDate, $this->input['upi']['end_date']);
+        $this->assertSame($endDate, $this->input['upi']['end_time']);
     }
 }

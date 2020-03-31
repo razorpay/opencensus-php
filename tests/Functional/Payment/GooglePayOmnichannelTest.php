@@ -5,11 +5,15 @@ namespace RZP\Tests\Functional\Payment;
 use Mockery;
 use RZP\Models\Terminal;
 use RZP\Tests\Functional\TestCase;
+use RZP\Models\Payment\UpiMetadata;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class GooglePayOmnichannelTest extends TestCase
 {
     use PaymentTrait;
+
+    use DbEntityFetchTrait;
 
     public function setUp()
     {
@@ -80,6 +84,13 @@ class GooglePayOmnichannelTest extends TestCase
         $this->assertEquals($payment['status'], 'created');
 
         $this->assertNull($payment['vpa']);
-    }
 
+        $upiMetadata = $this->getDbLastEntity('upi_metadata');
+
+        $this->assertArraySubset([
+            UpiMetadata\Entity::FLOW     => 'intent',
+            UpiMetadata\Entity::PROVIDER => 'google_pay',
+            UpiMetadata\Entity::TYPE     => 'default'
+        ], $upiMetadata->toArray());
+    }
 }

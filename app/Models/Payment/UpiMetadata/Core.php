@@ -13,8 +13,6 @@ class Core extends Base\Core
 
         $upiMetadata->associatePayment($payment);
 
-        $this->repo->saveOrFail($upiMetadata);
-
         return $upiMetadata;
     }
 }

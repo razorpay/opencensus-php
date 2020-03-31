@@ -139,6 +139,45 @@ class NetbankingCorporationGatewayTest extends TestCase
         $this->assertTestResponse($gatewayPayment, 'testAuthFailedVerifySuccessEntity');
     }
 
+    public function testTpvPayment()
+    {
+        $this->ba->privateAuth();
+
+        $this->fixtures->merchant->enableTPV();
+
+        $data = $this->testData[__FUNCTION__];
+
+        $order = $this->startTest();
+
+        $this->payment['amount'] = $order['amount'];
+
+        $this->payment['order_id'] = $order['id'];
+
+        $this->doAuthPayment($this->payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment[Payment\Entity::STATUS], Payment\Status::AUTHORIZED);
+
+        $this->assertEquals($payment['terminal_id'], '100NbCorpTrmnl');
+
+        $this->fixtures->merchant->disableTPV();
+
+        $gatewayEntity = $this->getLastEntity('netbanking', true);
+
+        $this->assertArraySelectiveEquals(
+            $this->testData['testPaymentNetbankingEntity'], $gatewayEntity);
+
+        $this->assertEquals($gatewayEntity['account_number'],
+                            $data['request']['content']['account_number']);
+
+        $this->assertEquals('S', $gatewayEntity['status']);
+
+        $order = $this->getLastEntity('order', true);
+
+        $this->assertArraySelectiveEquals($data['request']['content'], $order);
+    }
+
     public function testPaymentVerify()
     {
         $payment = $this->doNetbankingCorporationAuthAndCapturePayment();

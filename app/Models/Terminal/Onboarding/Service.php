@@ -33,6 +33,8 @@ class Service extends Base\Service
 
     const TERMINAL_ONBOARDING_CREATION_MUTEX_LOCK    = 'terminal_onboarding_creation_mutex_lock';
 
+    const ONBOARDING_INPUT                           = 'onboarding_input';
+
     public function __construct()
     {
         parent::__construct();
@@ -125,25 +127,7 @@ class Service extends Base\Service
 
         $terminal = $this->repo->terminal->findByIdAndMerchantId($id, $merchantId);
 
-        if ($terminal->getStatus() !== Terminal\Status::ACTIVATED)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_ONLY_ACTIVATED_TERMINALS_CAN_BE_DISABLED);
-        }
-
-        (new GatewayTerminalService)->callGatewayForTerminalEnableOrDisable($terminal, 'disable_terminal');
-
-        $terminal = (new Terminal\Core)->toggle($terminal, false);
-
-        $terminalOnboardingDetail = $terminal->terminalOnboardingDetail;
-
-        $terminal->setStatus(Terminal\Status::DEACTIVATED);
-
-        $terminalOnboardingDetail->setStatus(TerminalOnboardingDetail\Status::DEACTIVATED);
-
-        $terminal->save();
-
-        $terminalOnboardingDetail->save();
+        $terminal = (new Terminal\Core)->disableTerminal($terminal);
 
         return $terminal->toArrayPublic();
     }
@@ -286,6 +270,33 @@ class Service extends Base\Service
                 array_push($response['not_applicable_terminal_onboarding_ids'], $terminalOnboardingDetailId);
             }
         }
+
+        return $response;
+    }
+
+    public function initiateOnboarding($input)
+    {
+        $merchant = $this->merchant;
+
+        $this->trace->info(
+            TraceCode::INITIATE_TERMINAL_ONBOARDING_REQUEST,
+            [
+                'merchant_id'    => $merchant->getId(),
+                'input'          => $input,
+            ]);
+
+        (new Validator)->validateInput(self::ONBOARDING_INPUT, $input);
+        
+        $response = $this->app['terminals_service']->initiateOnboarding($merchant->getId(), $input['gateway']);
+
+        return $response;
+    }
+
+    public function processTerminalOnboardCallback(string $gateway, array $input)
+    {
+        $this->app['trace']->info(TraceCode::TERMINAL_ONBOARDING_CALLBACK_RECEIVED, $input);
+
+        $response = $this->app['terminals_service']->terminalOnboardCallback($gateway, $input);
 
         return $response;
     }

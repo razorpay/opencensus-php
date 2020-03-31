@@ -3,8 +3,9 @@
 namespace RZP\Models\BankingAccount;
 
 use RZP\Base;
-use RZP\Models\Merchant;
 use RZP\Constants\Table;
+use RZP\Models\Merchant;
+use RZP\Models\Admin\Admin\Entity as AdminEntity;
 
 class Repository extends Base\Repository
 {
@@ -80,6 +81,29 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function fetchAccountNumbersByChannel(string $channel, int $limit)
+    {
+        $bankingAccountBalanceIdColumn = $this->dbColumn(Entity::BALANCE_ID);
+        $channelColumn                 = $this->dbColumn(Entity::CHANNEL);
+
+        $balanceIdColumn                = $this->repo->balance->dbColumn(Entity::ID);
+        $accountTypeColumn              = $this->repo->balance->dbColumn(Merchant\Balance\Entity::ACCOUNT_TYPE);
+        $balanceTypeColumn              = $this->repo->balance->dbColumn(Merchant\Balance\Entity::TYPE);
+
+        $bankingAccountAttrs = $this->dbColumn('*');
+
+        return $this->newQuery()
+                    ->select($bankingAccountAttrs)
+                    ->where($channelColumn, '=', $channel)
+                    ->whereIn(Entity::STATUS, Status::getActivatedStatuses())
+                    ->join(Table::BALANCE, $bankingAccountBalanceIdColumn, '=', $balanceIdColumn)
+                    ->where($accountTypeColumn, '=', Merchant\Balance\AccountType::DIRECT)
+                    ->where($balanceTypeColumn, '=', Merchant\Balance\Type::BANKING)
+                    ->oldest(Entity::LAST_STATEMENT_ATTEMPT_AT)
+                    ->limit($limit)
+                    ->get();
+    }
+
     public function getBankingAccountByMerchantIdAndChannel($merchantId, string $channel)
     {
         $bankingAccountBalanceIdColumn = $this->dbColumn(Entity::BALANCE_ID);
@@ -141,5 +165,19 @@ class Repository extends Base\Repository
                     ->where($balanceTypeColumn, '=', Merchant\Balance\Type::BANKING)
                     ->where($balanceAccountTypeColumn, '=', $accountType)
                     ->get();
+    }
+
+    public function addQueryParamReviewerId($query, $params)
+    {
+        AdminEntity::verifyIdAndStripSign($params[Entity::REVIEWER_ID]);
+
+        return $query->whereExists(function ($q) use ($params) {
+            $q->select('admin_id')
+                ->from(Table::ADMIN_AUDIT_MAP)
+                ->where('admin_id', '=', $params[Entity::REVIEWER_ID])
+                ->where(Entity::AUDITOR_TYPE,'=','reviewer')
+                ->where('entity_type','=','banking_account')
+                ->whereRaw(Table::BANKING_ACCOUNT.'.'.Entity::ID.' = '.Table::ADMIN_AUDIT_MAP.'.'.Entity::ENTITY_ID);
+        });
     }
 }

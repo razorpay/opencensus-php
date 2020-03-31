@@ -142,7 +142,7 @@ class Validator extends Base\Validator
 
     protected static $userAccountLockUnlockRules = [
         Entity::USER_ID => 'required|alpha_num|size:14',
-        Entity::ACTION  => 'required|string|filled|in:lock,unlock',
+        Entity::ACTION  => 'required|string|filled|in:lock,unlock,un_verify',
     ];
 
     protected static $createOtpRules = [

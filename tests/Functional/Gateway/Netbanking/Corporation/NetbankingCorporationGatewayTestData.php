@@ -66,6 +66,28 @@ return [
         ],
     ],
 
+    'testTpvPayment' => [
+        'request' => [
+            'content' => [
+                'amount'         => 50000,
+                'currency'       => 'INR',
+                'receipt'        => 'rcptid42',
+                'method'         => 'netbanking',
+                'bank'           => 'CORP',
+                'account_number' => '040304030403040',
+            ],
+            'method'    => 'POST',
+            'url'       => '/orders',
+        ],
+        'response' => [
+            'content' => [
+                'amount'         => 50000,
+                'currency'       => 'INR',
+                'receipt'        => 'rcptid42',
+            ],
+        ],
+    ],
+
     'testPaymentFailedNetbankingEntity' => [
         'bank_payment_id' => null,
         'received'        => false,

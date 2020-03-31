@@ -36,7 +36,7 @@ class PaymentReconciliate extends SubReconciliator\PaymentReconciliate
     {
         $convertCurrency = $this->payment->getConvertCurrency();
 
-        $paymentAmount = ($convertCurrency === true) ? $this->payment->getBaseAmount() : $this->payment->getAmount();
+        $paymentAmount = ($convertCurrency === true) ? $this->payment->getBaseAmount() : $this->payment->getGatewayAmount();
 
         if ($paymentAmount !== $this->getReconPaymentAmount($row))
         {
@@ -47,7 +47,7 @@ class PaymentReconciliate extends SubReconciliator\PaymentReconciliate
                     'payment_id'        => $this->payment->getId(),
                     'expected_amount'   => $paymentAmount,
                     'recon_amount'      => $this->getReconPaymentAmount($row),
-                    'currency'          => $this->payment->getCurrency(),
+                    'currency'          => $this->payment->getGatewayCurrency(),
                     'gateway'           => $this->gateway
                 ]);
 
@@ -71,7 +71,7 @@ class PaymentReconciliate extends SubReconciliator\PaymentReconciliate
     {
         $convertCurrency = $this->payment->getConvertCurrency();
 
-        $expectedCurrency = ($convertCurrency === true) ? Currency::INR : $this->payment->getCurrency();
+        $expectedCurrency = ($convertCurrency === true) ? Currency::INR : $this->payment->getGatewayCurrency();
 
         $reconCurrency = $this->getReconCurrency($row);
 

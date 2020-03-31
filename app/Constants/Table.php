@@ -128,6 +128,7 @@ class Table
 
     const D2C_BUREAU_DETAIL         = 'd2c_bureau_details';
     const D2C_BUREAU_REPORT         = 'd2c_bureau_reports';
+    const PAYMENT_META              = 'payment_meta';
 
     // This table does not belong to api service but is stored in api db.
     // API Service should be owner of its DB and all the migrations for other
@@ -150,6 +151,9 @@ class Table
     const ORG_FIELD_MAP         = 'org_field_map';
     const PERMISSION_MAP        = 'permission_map';
     const LOGIN_ATTEMPT         = 'login_attempts';
+
+    // Mapping auditors to entities for a generic use case
+    const ADMIN_AUDIT_MAP       = 'admin_audit_map';
 
     // Workflows
     const WORKFLOW              = 'workflows';
