@@ -2240,40 +2240,6 @@ class Processor
 
             throw $ex;
         }
-        finally
-        {
-            $variant  = $this->app->razorx->getTreatment(
-                $this->merchant->getId(),
-                'gateway_downtime_detection',
-                $this->mode
-            );
-
-            // Gateway Downtime Detection only works on few actions.
-            // Right now failure percentage is not considered on each
-            // action individually, which we might do at later point of time.
-            // For Example: Action AUTH and CALLBACK both need to succeed
-            // for the payment to be successful. If one is working fine, then
-            // Downtime configuration might not work properly.
-
-            // Also, though we are putting the check here that
-            // we only want these actions to succeed but inside
-            // $this->app['gateway']->call(), we might call other actions.
-            // Example: In case of international payments we call capture immediately.
-            if ((strtolower($variant) === 'on') and
-                ($this->isGatewayDowntimeAction($action) == true))
-            {
-                try
-                {
-                    (new Gateway\Downtime\Core)->createDowntimeIfApplicable($gatewayData);
-                }
-                catch (\Throwable $e)
-                {
-                    // This can be removed later.
-                    // This is added for some time to test this feature.
-                    $this->trace->traceException($e);
-                }
-            }
-        }
     }
 
     public function isGatewayDowntimeAction(string $action)
