@@ -513,6 +513,7 @@ app
             .success('login.login', {
               source: 'sign_in',
               sessionId: window.session_id,
+              emailId: $scope.login.data.email,
               mode: $scope.eventsMode,
             })
         );
@@ -1132,6 +1133,7 @@ app
             .initiated('login.forgot_password', {
               source: 'sign_in',
               sessionId: window.session_id,
+              emailId: $scope.login.data.email,
               mode: $scope.eventsMode,
             })
         );
@@ -1181,6 +1183,7 @@ app
                   .success('login.2fa_otp', {
                     source: 'sign_in',
                     sessionId: window.session_id,
+                    emailId: $scope.login.data.email,
                     mode: $scope.eventsMode,
                   })
               );
@@ -1195,6 +1198,7 @@ app
                   .failed('login.2fa_otp', {
                     source: 'sign_in',
                     sessionId: window.session_id,
+                    emailId: $scope.login.data.email,
                     mode: $scope.eventsMode,
                     error: data.errors[0],
                   })
@@ -1332,6 +1336,7 @@ app
             .initiated('login.2fa_change_mobile_number', {
               source: 'sign_in',
               sessionId: window.session_id,
+              emailId: $scope.login.data.email,
               mode: $scope.eventsMode,
             })
         );
@@ -1383,6 +1388,7 @@ app
                 .success('login.2fa_otp', {
                   source: 'sign_in',
                   sessionId: window.session_id,
+                  emailId: $scope.login.data.email,
                   mode: $scope.eventsMode,
                 })
             );
@@ -1396,6 +1402,7 @@ app
                 .failed('login.2fa_otp', {
                   source: 'sign_in',
                   sessionId: window.session_id,
+                  emailId: $scope.login.data.email,
                   mode: $scope.eventsMode,
                   error: data.errors[0],
                 })
@@ -1427,6 +1434,7 @@ app
                 .success('login.2fa_otp', {
                   source: 'sign_in',
                   sessionId: window.session_id,
+                  emailId: $scope.login.data.email,
                   mode: $scope.eventsMode,
                 })
             );
@@ -1439,6 +1447,7 @@ app
                 .failed('login.2fa_otp', {
                   source: 'sign_in',
                   sessionId: window.session_id,
+                  emailId: $scope.login.data.email,
                   mode: $scope.eventsMode,
                   error: data.errors[0],
                 })
@@ -1470,6 +1479,7 @@ app
             .initiated('login.2fa_resend_otp', {
               source: 'sign_in',
               sessionId: window.session_id,
+              emailId: $scope.login.data.email,
               mode: $scope.eventsMode,
             })
         );
@@ -1487,6 +1497,7 @@ app
                 .success('login.2fa_resend_otp', {
                   source: 'sign_in',
                   sessionId: window.session_id,
+                  emailId: $scope.login.data.email,
                   mode: $scope.eventsMode,
                 })
             );
@@ -1499,6 +1510,7 @@ app
                 .initiated('login.2fa_resend_otp', {
                   source: 'sign_in',
                   sessionId: window.session_id,
+                  emailId: $scope.login.data.email,
                   mode: $scope.eventsMode,
                   error: data.errors[0],
                 })
