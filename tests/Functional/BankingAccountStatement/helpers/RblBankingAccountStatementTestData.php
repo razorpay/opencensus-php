@@ -35,7 +35,8 @@ return [
         ],
         'response' => [
             'content' => [
-                'processed' => true
+                'account_number' => '2224440041626905',
+                'channel'        => 'rbl'
             ],
         ],
     ],
@@ -51,7 +52,8 @@ return [
         ],
         'response' => [
             'content' => [
-                'processed' => true
+                'account_number' => '2224440041626905',
+                'channel'        => 'rbl'
             ],
         ],
     ],
