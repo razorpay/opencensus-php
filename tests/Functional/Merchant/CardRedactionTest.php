@@ -60,7 +60,7 @@ class CardRedactionTest extends TestCase
 
         $record = [
             'context' => [
-                'account_number' => '4012888888881881',
+                'cc_number' => '4012888888881881',
             ]
         ];
 
@@ -68,7 +68,7 @@ class CardRedactionTest extends TestCase
 
         $expectedResponse = [
             'context' => [
-                'account_number' => "CARD_NUMBER_SCRUBBED(16)"
+                'cc_number' => "CARD_NUMBER_SCRUBBED(16)"
             ]
         ];
 
@@ -84,13 +84,13 @@ class CardRedactionTest extends TestCase
 
         $record = [
             'context' => [
-                'account_number'  => '5105105105105100',
-                'account_number2' => '2224184047998409',
-                'account_number3' => '2238741973989812',
-                'account_number4' => '2700612396041683',
-                'account_number5' => '2720650392744411',
-                'account_number6' => '2719705517784880',
-                'account_number7' => '271970551778',
+                'cc_number'  => '5105105105105100',
+                'cc_number2' => '2224184047998409',
+                'cc_number3' => '2238741973989812',
+                'cc_number4' => '2700612396041683',
+                'cc_number5' => '2720650392744411',
+                'cc_number6' => '2719705517784880',
+                'cc_number7' => '271970551778',
             ]
         ];
 
@@ -98,13 +98,13 @@ class CardRedactionTest extends TestCase
 
         $expectedResponse = [
             'context' => [
-                'account_number'  => "CARD_NUMBER_SCRUBBED(16)",
-                'account_number2' => "CARD_NUMBER_SCRUBBED(16)",
-                'account_number3' => "CARD_NUMBER_SCRUBBED(16)",
-                'account_number4' => "CARD_NUMBER_SCRUBBED(16)",
-                'account_number5' => "CARD_NUMBER_SCRUBBED(16)",
-                'account_number6' => "CARD_NUMBER_SCRUBBED(16)",
-                'account_number7' => "271970551778",
+                'cc_number'  => "CARD_NUMBER_SCRUBBED(16)",
+                'cc_number2' => "CARD_NUMBER_SCRUBBED(16)",
+                'cc_number3' => "CARD_NUMBER_SCRUBBED(16)",
+                'cc_number4' => "CARD_NUMBER_SCRUBBED(16)",
+                'cc_number5' => "CARD_NUMBER_SCRUBBED(16)",
+                'cc_number6' => "CARD_NUMBER_SCRUBBED(16)",
+                'cc_number7' => "271970551778",
             ]
         ];
 
@@ -120,8 +120,8 @@ class CardRedactionTest extends TestCase
 
         $record = [
             'context' => [
-                'account_number'  => '6011111111111117',
-                'account_number2' => '6543096311433360',
+                'cc_number'  => '6011111111111117',
+                'cc_number2' => '6543096311433360',
             ]
         ];
 
@@ -129,8 +129,8 @@ class CardRedactionTest extends TestCase
 
         $expectedResponse = [
             'context' => [
-                'account_number'  => "CARD_NUMBER_SCRUBBED(16)",
-                'account_number2' => "CARD_NUMBER_SCRUBBED(16)",
+                'cc_number'  => "CARD_NUMBER_SCRUBBED(16)",
+                'cc_number2' => "CARD_NUMBER_SCRUBBED(16)",
             ]
         ];
 
@@ -146,7 +146,7 @@ class CardRedactionTest extends TestCase
 
         $record = [
             'context' => [
-                'account_number' => '371449635398431',
+                'cc_number' => '371449635398431',
             ]
         ];
 
@@ -154,7 +154,7 @@ class CardRedactionTest extends TestCase
 
         $expectedResponse = [
             'context' => [
-                'account_number' => "CARD_NUMBER_SCRUBBED(15)"
+                'cc_number' => "CARD_NUMBER_SCRUBBED(15)"
             ]
         ];
 
@@ -170,7 +170,7 @@ class CardRedactionTest extends TestCase
 
         $record = [
             'context' => [
-                'account_number' => '341111111111111',
+                'cc_number' => '341111111111111',
             ]
         ];
 
@@ -178,7 +178,7 @@ class CardRedactionTest extends TestCase
 
         $expectedResponse = [
             'context' => [
-                'account_number' => "CARD_NUMBER_SCRUBBED(15)"
+                'cc_number' => "CARD_NUMBER_SCRUBBED(15)"
             ]
         ];
 
@@ -194,9 +194,9 @@ class CardRedactionTest extends TestCase
 
         $record = [
             'context' => [
-                'account_number'  => '38520000023237',
-                'account_number2' => '30569309025904',
-                'account_number3' => '36776789121015',
+                'cc_number'  => '38520000023237',
+                'cc_number2' => '30569309025904',
+                'cc_number3' => '36776789121015',
             ]
         ];
 
@@ -204,9 +204,9 @@ class CardRedactionTest extends TestCase
 
         $expectedResponse = [
             'context' => [
-                'account_number'  => "CARD_NUMBER_SCRUBBED(14)",
-                'account_number2' => "CARD_NUMBER_SCRUBBED(14)",
-                'account_number3' => "CARD_NUMBER_SCRUBBED(14)",
+                'cc_number'  => "CARD_NUMBER_SCRUBBED(14)",
+                'cc_number2' => "CARD_NUMBER_SCRUBBED(14)",
+                'cc_number3' => "CARD_NUMBER_SCRUBBED(14)",
             ]
         ];
 
@@ -222,9 +222,9 @@ class CardRedactionTest extends TestCase
 
         $record = [
             'context' => [
-                'account_number'  => '213153807879568',
-                'account_number2' => '180046392961848',
-                'account_number3' => '3551175593815246',
+                'cc_number'  => '213153807879568',
+                'cc_number2' => '180046392961848',
+                'cc_number3' => '3551175593815246',
             ]
         ];
 
@@ -232,9 +232,9 @@ class CardRedactionTest extends TestCase
 
         $expectedResponse = [
             'context' => [
-                'account_number'  => "CARD_NUMBER_SCRUBBED(15)",
-                'account_number2' => "CARD_NUMBER_SCRUBBED(15)",
-                'account_number3' => "CARD_NUMBER_SCRUBBED(16)",
+                'cc_number'  => "CARD_NUMBER_SCRUBBED(15)",
+                'cc_number2' => "CARD_NUMBER_SCRUBBED(15)",
+                'cc_number3' => "CARD_NUMBER_SCRUBBED(16)",
             ]
         ];
 
@@ -250,7 +250,7 @@ class CardRedactionTest extends TestCase
 
         $record = [
             'context' => [
-                'account_number' => '4012888888881881',
+                'cc_number' => '4012888888881881',
             ]
         ];
 
@@ -258,7 +258,7 @@ class CardRedactionTest extends TestCase
 
         $expectedResponse = [
             'context' => [
-                'account_number' => "4012888888881881"
+                'cc_number' => "4012888888881881"
             ]
         ];
 
@@ -277,7 +277,7 @@ class CardRedactionTest extends TestCase
 
         $record = [
             'context' => [
-                'account_number' => '4012888888881881',  // visa card
+                'cc_number' => '4012888888881881',  // visa card
             ]
         ];
 
@@ -287,7 +287,7 @@ class CardRedactionTest extends TestCase
 
         $expectedResponse = [
             'context' => [
-                'account_number' => "4012888888881881"
+                'cc_number' => "4012888888881881"
             ]
         ];
 
@@ -306,7 +306,7 @@ class CardRedactionTest extends TestCase
 
         $record = [
             'context' => [
-                'account_number' => '371449635398431',  // amex card
+                'cc_number' => '371449635398431',  // amex card
             ]
         ];
 
@@ -316,7 +316,7 @@ class CardRedactionTest extends TestCase
 
         $expectedResponse = [
             'context' => [
-                'account_number' => "CARD_NUMBER_SCRUBBED(15)"
+                'cc_number' => "CARD_NUMBER_SCRUBBED(15)"
             ]
         ];
 
@@ -330,10 +330,10 @@ class CardRedactionTest extends TestCase
 
         $record = [
             'context' => [
-                'account_number'  => '1234567891011',
-                'account_number2' => 'hehehehwwkwk',
-                'account_number3' => 'normalString',
-                'account_number4' => '9834728',
+                'cc_number'  => '1234567891011',
+                'cc_number2' => 'hehehehwwkwk',
+                'cc_number3' => 'normalString',
+                'cc_number4' => '9834728',
                 'visa card'       => '4012888888881881',
             ]
         ];
@@ -344,10 +344,10 @@ class CardRedactionTest extends TestCase
 
         $expectedResponse = [
             'context' => [
-                'account_number'  => '1234567891011',
-                'account_number2' => 'hehehehwwkwk',
-                'account_number3' => 'normalString',
-                'account_number4' => '9834728',
+                'cc_number'  => '1234567891011',
+                'cc_number2' => 'hehehehwwkwk',
+                'cc_number3' => 'normalString',
+                'cc_number4' => '9834728',
                 'visa card'       => 'CARD_NUMBER_SCRUBBED(16)',
             ]
         ];
@@ -478,10 +478,10 @@ class CardRedactionTest extends TestCase
 
         $record = [
             'context' => [
-                'account_number'  => '1234567891011',
-                'account_number2' => 'hehehehwwkwk',
-                'account_number3' => 'normalString',
-                'account_number4' => '9834728',
+                'cc_number'  => '1234567891011',
+                'cc_number2' => 'hehehehwwkwk',
+                'cc_number3' => 'normalString',
+                'cc_number4' => '9834728',
                 'visa card'       => '4012888888881881',
             ]
         ];
@@ -494,10 +494,10 @@ class CardRedactionTest extends TestCase
 
         $expectedResponse = [
             'context' => [
-                'account_number'  => '1234567891011',
-                'account_number2' => 'hehehehwwkwk',
-                'account_number3' => 'normalString',
-                'account_number4' => '9834728',
+                'cc_number'  => '1234567891011',
+                'cc_number2' => 'hehehehwwkwk',
+                'cc_number3' => 'normalString',
+                'cc_number4' => '9834728',
                 'visa card'       => '4012888888881881',
             ]
         ];
@@ -519,10 +519,10 @@ class CardRedactionTest extends TestCase
 
         $expectedResponse1 = [
             'context' => [
-                'account_number'  => '1234567891011',
-                'account_number2' => 'hehehehwwkwk',
-                'account_number3' => 'normalString',
-                'account_number4' => '9834728',
+                'cc_number'  => '1234567891011',
+                'cc_number2' => 'hehehehwwkwk',
+                'cc_number3' => 'normalString',
+                'cc_number4' => '9834728',
                 'visa card'       => 'CARD_NUMBER_SCRUBBED(16)',
             ]
         ];
@@ -537,15 +537,34 @@ class CardRedactionTest extends TestCase
 
         $originalRouter = $this->app['router'];
 
-        $routerMock = $this->mockRouter('payout_create');
+        $routerMock = $this->getMockBuilder(Router::class)
+                           ->setConstructorArgs([$this->app['events'],$this->app])
+                           ->setMethods(['currentRouteName'])
+                           ->getMock();
 
         $routerMock->method('currentRouteName')
-                   ->willThrowException(new LogicException('some unhandled exceptions. maybe redis timeout.
-                   In case such exception comes up we dont wanna fail the whole request because of logging'));
+                   ->willReturn(function () {
+                       static $counter = 0;
+
+                       switch ($counter++) {
+                           case 0:
+                               return 'payout_create';
+                               break;
+                           case 1:
+                               throw new \Exception();
+                               break;
+                           default:
+                               return 'payout_create';
+                               break;
+                       }
+                   }
+         );
+
+        $this->app->instance('router', $routerMock);
 
         $record = [
             'context' => [
-                'account_number' => '4012888888881881',
+                'cc_number' => '4012888888881881',
             ]
         ];
 
@@ -553,7 +572,7 @@ class CardRedactionTest extends TestCase
 
         $expectedResponse = [
             'context' => [
-                'account_number' => "4012888888881881"
+                'cc_number' => "4012888888881881"
             ]
         ];
 

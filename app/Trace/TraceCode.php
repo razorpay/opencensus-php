@@ -2763,7 +2763,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const CREDIT_CARD_REDACTION_FAILURE_EXCEPTION                = 'CREDIT_CARD_REDACTION_FAILURE_EXCEPTION';
 
     //Exception message while scrubbing user sensitive details in banking routes.
-    const SENSITIVE_DETAILS_FAILURE_EXCEPTION                    = 'SENSITIVE_BANKING_DETAILS_SCRUBBING_FAILURE_EXCEPTION';
+    const SENSITIVE_BANKING_DETAILS_SCRUBBING_FAILURE_EXCEPTION  = 'SENSITIVE_BANKING_DETAILS_SCRUBBING_FAILURE_EXCEPTION';
 
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',

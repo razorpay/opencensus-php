@@ -237,11 +237,11 @@ class ApiTraceProcessor
 
     protected function scrubSensitiveDetailsForBankingRoutes(& $record)
     {
-        $route = optional($this->app['router'])->currentRouteName();
-
-        $bankingRoutes = Route::getBankingSpecificRoutes();
-
         try {
+            $route = optional($this->app['router'])->currentRouteName();
+
+            $bankingRoutes = Route::getBankingSpecificRoutes();
+
             if (in_array($route, $bankingRoutes, true)) {
                 $record['context'] = $this->visitEachNode($record['context']);
             }
@@ -249,7 +249,7 @@ class ApiTraceProcessor
             $this->app['trace']->traceException(
                 $e,
                 Logger::ERROR,
-                TraceCode::SENSITIVE_DETAILS_FAILURE_EXCEPTION
+                TraceCode::SENSITIVE_BANKING_DETAILS_SCRUBBING_FAILURE_EXCEPTION
             );
         }
 
