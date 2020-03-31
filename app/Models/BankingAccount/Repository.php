@@ -81,6 +81,29 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function fetchAccountNumbersByChannel(string $channel, int $limit)
+    {
+        $bankingAccountBalanceIdColumn = $this->dbColumn(Entity::BALANCE_ID);
+        $channelColumn                 = $this->dbColumn(Entity::CHANNEL);
+
+        $balanceIdColumn                = $this->repo->balance->dbColumn(Entity::ID);
+        $accountTypeColumn              = $this->repo->balance->dbColumn(Merchant\Balance\Entity::ACCOUNT_TYPE);
+        $balanceTypeColumn              = $this->repo->balance->dbColumn(Merchant\Balance\Entity::TYPE);
+
+        $bankingAccountAttrs = $this->dbColumn('*');
+
+        return $this->newQuery()
+                    ->select($bankingAccountAttrs)
+                    ->where($channelColumn, '=', $channel)
+                    ->whereIn(Entity::STATUS, Status::getActivatedStatuses())
+                    ->join(Table::BALANCE, $bankingAccountBalanceIdColumn, '=', $balanceIdColumn)
+                    ->where($accountTypeColumn, '=', Merchant\Balance\AccountType::DIRECT)
+                    ->where($balanceTypeColumn, '=', Merchant\Balance\Type::BANKING)
+                    ->oldest(Entity::LAST_STATEMENT_ATTEMPT_AT)
+                    ->limit($limit)
+                    ->get();
+    }
+
     public function getBankingAccountByMerchantIdAndChannel($merchantId, string $channel)
     {
         $bankingAccountBalanceIdColumn = $this->dbColumn(Entity::BALANCE_ID);

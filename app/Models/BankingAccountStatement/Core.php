@@ -4,6 +4,7 @@ namespace RZP\Models\BankingAccountStatement;
 
 use Mail;
 use File;
+use Carbon\Carbon;
 
 use RZP\Exception;
 use RZP\Models\Base;
@@ -13,8 +14,11 @@ use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Models\Reversal;
 use RZP\Models\BankingAccount;
+use RZP\Models\Admin\ConfigKey;
 use RZP\Mail\BankingAccount\StatementMail;
+use RZP\Models\Admin\Service as AdminService;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
+use RZP\Jobs\BankingAccountStatement as BankingAccountStatementJob;
 use RZP\Models\Payout\Processor\DownstreamProcessor\DownstreamProcessor;
 
 class Core extends Base\Core
@@ -25,6 +29,8 @@ class Core extends Base\Core
 
     const DASHBOARD_FILE_URL = '%sufh/file/%s';
 
+    const DEFAULT_BANKING_ACCOUNT_STATEMENT_RATE_LIMIT = 2;
+
     /**
      * Temporary hack. Should not set balance at a class level.
      * This restricts us from processing transactions from
@@ -33,6 +39,15 @@ class Core extends Base\Core
      * @var Merchant\Balance\Entity
      */
     protected $balance;
+
+    protected $mutex;
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->mutex = $this->app['api.mutex'];
+    }
 
     /**
      * NOTE: This function should be used for a specific account number only. We cannot
@@ -44,6 +59,7 @@ class Core extends Base\Core
      * @param array $input
      *
      * @return array
+     * @throws Exception\BadRequestException
      */
     public function processStatementForAccount(array $input)
     {
@@ -51,26 +67,67 @@ class Core extends Base\Core
 
         $accountNumber = array_pull($input, Entity::ACCOUNT_NUMBER);
 
-        $this->trace->info(
-            TraceCode::BANKING_ACCOUNT_STATEMENT_REMOTE_FETCH_REQUEST,
-            [
-                'channel'        => $channel,
-                'account_number' => $accountNumber,
-            ]);
+        try
+        {
+            $this->trace->info(
+                TraceCode::BANKING_ACCOUNT_STATEMENT_REMOTE_FETCH_REQUEST,
+                [
+                    'channel'       => $channel,
+                    'accountNumber' => $accountNumber,
+                ]);
 
-        $bankingAccount = (new BankingAccount\Repository)->findByAccountNumberAndChannel($accountNumber, $channel);
+            $this->mutex->acquireAndRelease(
+                'banking_account_statement_' . $accountNumber,
+                function () use ($channel, $accountNumber, $input)
+                {
+                    $bankingAccount = (new BankingAccount\Repository)->findByAccountNumberAndChannel($accountNumber, $channel);
 
-        $merchant = $bankingAccount->merchant;
+                    $currentTime = Carbon::now()->getTimestamp();
 
-        $processor = $this->getProcessor($channel, $accountNumber);
+                    // updating LastStatementAttemptAt irrespective of success or fail so that new accounts are always fetched
+                    // using LastStatementAttemptAt and failed accounts can be manually tried by sre also We are handling failure
+                    // retry in job instead.
+                    $bankingAccount->setLastStatementAttemptAt($currentTime);
 
-        $accountStatementDetails = $processor->fetchAccountStatementDetails($input);
+                    $this->repo->saveOrFail($bankingAccount);
 
-        $this->processAccountStatement($accountStatementDetails, $accountNumber, $merchant);
+                    $merchant = $bankingAccount->merchant;
 
-        $bankingAccount->balance->updateLastFetchedAt();
+                    $processor = $this->getProcessor($channel, $accountNumber);
 
-        return ['processed' => true];
+                    $accountStatementDetails = $processor->fetchAccountStatementDetails($input);
+
+                    $this->processAccountStatement($accountStatementDetails, $accountNumber, $merchant);
+
+                    $bankingAccount->balance->updateLastFetchedAt();
+                },
+                1800,
+                ErrorCode::BAD_REQUEST_ANOTHER_BANKING_ACCOUNT_STATEMENT_FETCH_IN_PROGRESS
+            );
+        }
+        catch (Exception\BadRequestException $e)
+        {
+            // catching only BadRequestException exception to log and have noop for duplicate statement fetch request
+            // Ignoring the duplicate exception and treating it success and delete account number from sqs.
+            if ($e->getCode() === ErrorCode::BAD_REQUEST_ANOTHER_BANKING_ACCOUNT_STATEMENT_FETCH_IN_PROGRESS)
+            {
+                $this->trace->traceException(
+                    $e,
+                    null,
+                    TraceCode::ANOTHER_BANKING_ACCOUNT_STATEMENT_FETCH_IN_PROGRESS,
+                    [
+                        'channel'           => $channel,
+                        'account_number'    => $accountNumber,
+                        'message'           => $e->getMessage(),
+                    ]);
+            }
+            else
+            {
+                throw $e;
+            }
+        }
+
+        return ['channel' => $channel, 'account_number' => $accountNumber];
     }
 
     public function requestAccountStatement($input)
@@ -559,5 +616,55 @@ class Core extends Base\Core
                     'processed'         => $processedCount,
                 ]);
         }
+    }
+
+    //
+    // 0. Trace the request here.
+    //
+    // 1. Fetch accountNumbers to process for that channel
+    // We will fetch accountNumbers per channel ascending order by last_statement_fetch_at
+    //
+    // Create and dispatch jobs to pull data for those MIDs
+    // Return accountNumbers dispatched for processing for the route response
+    //
+    public function dispatchAccountNumberForChannel(string $channel, array $input)
+    {
+        $limit = (int) (new AdminService)->getConfigKey(['key' => ConfigKey::BANKING_ACCOUNT_STATEMENT_RATE_LIMIT]);
+
+        if (empty($limit) === true)
+        {
+            $limit = self::DEFAULT_BANKING_ACCOUNT_STATEMENT_RATE_LIMIT;
+        }
+
+        $this->trace->info(
+            TraceCode::BANKING_ACCOUNT_STATEMENT_DISPATCH_JOB_CRON,
+            [
+                'channel'        => $channel,
+            ]);
+
+        $accountNumbers = $this->repo->banking_account->fetchAccountNumbersByChannel($channel, $limit)->pluck(Entity::ACCOUNT_NUMBER);
+
+        foreach ($accountNumbers as $accountNumber)
+        {
+            $this->dispatchBankingAccountStatementJob($channel, $accountNumber);
+        }
+
+        return ['account_processed' => $accountNumbers];
+    }
+
+    public function dispatchBankingAccountStatementJob(string $channel, string $accountNumber)
+    {
+        $this->trace->info(
+            TraceCode::BANKING_ACCOUNT_STATEMENT_DISPATCH_JOB_REQUEST,
+            [
+                'channel'        => $channel,
+                'accountNumber'  => $accountNumber,
+            ]);
+
+        BankingAccountStatementJob::dispatch($this->mode,
+                                             [
+                                                 'channel'       => $channel,
+                                                 'account_number' => $accountNumber
+                                             ]);
     }
 }

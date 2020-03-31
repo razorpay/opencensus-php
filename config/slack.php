@@ -188,8 +188,10 @@ return array(
         //rbl alerts
         'rbl_alerts'             => 'CUT37PDUY',
         //ivr_alerts channel
-        'ivr_alerts'             => 'C010H5E2XCL'
+        'ivr_alerts'             => 'C010H5E2XCL',
 
+        //rbl_ca_alerts
+        'rx_ca_rbl_alerts'       => 'C010ZL4J9V3'
     ],
 
     'is_slack_enabled' => env('SLACK_MOCK') === true ? false : true,

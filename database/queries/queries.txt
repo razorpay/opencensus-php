@@ -5556,6 +5556,9 @@ ALTER TABLE fund_transfer_attempts
     ADD COLUMN gateway_ref_no varchar(255) DEFAULT NULL,
     ADD UNIQUE INDEX fund_transfer_attempts_gateway_ref_no_unique (gateway_ref_no);
 
+ALTER TABLE banking_accounts
+    ADD COLUMN last_statement_attempt_at INT UNSIGNED DEFAULT NULL AFTER  `updated_at`;
+
 ALTER TABLE `transfers`
     ADD INDEX `transfers_source_id_index` (`source_id`),
     ADD INDEX `transfers_source_type_status_index` (`source_type`, `status`);

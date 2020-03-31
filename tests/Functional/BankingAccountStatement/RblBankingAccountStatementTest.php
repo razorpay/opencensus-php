@@ -11,6 +11,8 @@ use Carbon\Carbon;
 use RZP\Models\Payout;
 use RZP\Services\Mozart;
 use RZP\Models\FundTransfer;
+use RZP\Models\Admin\ConfigKey;
+use RZP\Models\FundTransfer\Mode;
 use RZP\Constants\Mode as EnvMode;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\FundTransfer\Attempt;
@@ -19,6 +21,8 @@ use PhpOffice\PhpSpreadsheet\IOFactory;
 use RZP\Mail\BankingAccount\StatementMail;
 use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Constants\Entity as EntityConstants;
+use RZP\Models\Admin\Service as AdminService;
+use RZP\Models\BankingAccount\Entity as BaEntity;
 use RZP\Jobs\FTS\FundTransfer as FtsFundTransfer;
 use RZP\Models\External\Entity as ExternalEntity;
 use RZP\Tests\Functional\FundTransfer\AttemptTrait;
@@ -26,6 +30,8 @@ use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 use RZP\Models\Transaction\Entity as TransactionEntity;
 use RZP\Models\BankingAccountStatement\Entity as BasEntity;
+use RZP\Jobs\BankingAccountStatement as BankingAccountStatementJob;
+
 
 class RblBankingAccountStatementTest extends TestCase
 {
@@ -67,6 +73,7 @@ class RblBankingAccountStatementTest extends TestCase
             'bank_reference_number' => '',
             'account_ifsc'          => 'RATN0000156',
             'balance_id'            => $balanceId,
+            'status'                => 'activated'
         ]);
 
         $this->balance = $this->getDbEntity('balance', ['merchant_id' => '10000000000000', 'type' => 'banking']);
@@ -99,6 +106,26 @@ class RblBankingAccountStatementTest extends TestCase
         Mail::assertQueued(StatementMail::class);
     }
 
+    protected function setupForRblAccountStatement($channel = Channel::RBL)
+    {
+        $this->ba->cronAuth();
+
+        $request = [
+            'url'       => '/banking_account_statement/process/rbl',
+            'method'    => 'POST'
+        ];
+
+        $this->app['cache']->flush();
+
+        (new AdminService)->setConfigKeys([ConfigKey::BANKING_ACCOUNT_STATEMENT_RATE_LIMIT => 1]);
+
+        Queue::fake();
+
+        $this->makeRequestAndGetContent($request);
+
+        Queue::assertPushed(BankingAccountStatementJob::class, 1);
+    }
+
     /**
      * Case where the response from RBL is success
      */
@@ -108,7 +135,13 @@ class RblBankingAccountStatementTest extends TestCase
 
         $this->setMozartMockResponse($mockedResponse);
 
+        $baBeforeTest = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT, true);
+
+        $this->assertNull($baBeforeTest[BaEntity::LAST_STATEMENT_ATTEMPT_AT]);
+
         $this->ba->cronAuth();
+
+        $this->setupForRblAccountStatement();
 
         $this->startTest();
 
@@ -127,6 +160,10 @@ class RblBankingAccountStatementTest extends TestCase
         $txnEntity = $this->getDbEntityById(EntityConstants::TRANSACTION, $externalTxnId);
 
         $txnActual = $txnEntity->toArray();
+
+        $baAfterTest = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT, true);
+
+        $this->assertNotNull($baAfterTest[BaEntity::LAST_STATEMENT_ATTEMPT_AT]);
 
         $basExpected = [
             BasEntity::MERCHANT_ID           => $txnActual[TransactionEntity::MERCHANT_ID],
@@ -187,6 +224,10 @@ class RblBankingAccountStatementTest extends TestCase
 
         $basBeforeTest = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT_STATEMENT, true);
 
+        $baBeforeTest = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT, true);
+
+        $this->assertNull($baBeforeTest[BaEntity::LAST_STATEMENT_ATTEMPT_AT]);
+
         $this->ba->cronAuth();
 
         $this->startTest();
@@ -194,6 +235,10 @@ class RblBankingAccountStatementTest extends TestCase
         $basAfterTest = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT_STATEMENT, true);
 
         $this->assertEquals($basBeforeTest[BasEntity::ID], $basAfterTest[BasEntity::ID]);
+
+        $baAfterTest = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT, true);
+
+        $this->assertNotNull($baAfterTest[BaEntity::LAST_STATEMENT_ATTEMPT_AT]);
     }
 
     /**
@@ -205,9 +250,17 @@ class RblBankingAccountStatementTest extends TestCase
 
         $this->setMozartMockResponse($mockedResponse);
 
+        $baBeforeTest = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT, true);
+
+        $this->assertNull($baBeforeTest[BaEntity::LAST_STATEMENT_ATTEMPT_AT]);
+
         $this->ba->cronAuth();
 
         $this->startTest();
+
+        $baAfterTest = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT, true);
+
+        $this->assertNotNull($baAfterTest[BaEntity::LAST_STATEMENT_ATTEMPT_AT]);
     }
 
     /**

@@ -107,6 +107,10 @@ class CreateBankingAccountTable extends Migration
 
             $table->integer(Entity::UPDATED_AT);
 
+            $table->integer(Entity::LAST_STATEMENT_ATTEMPT_AT)
+                  ->unsigned()
+                  ->nullable();
+
             $table->integer(Entity::BALANCE_LAST_FETCHED_AT)
                   ->nullable();
 
