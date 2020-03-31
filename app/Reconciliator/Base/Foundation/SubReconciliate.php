@@ -43,7 +43,7 @@ class SubReconciliate extends Base\Core
     const RECON_ENTITY_ID       = 'recon_entity_id';
     const RECON_NET_AMOUNT      = 'recon_net_amount';
 
-    // Txn file related fields
+    // Txn file related specific fields
     const RZP_TXN_ID            = 'rzp_txn_id';
     const RZP_TXN_AMOUNT        = 'rzp_txn_amount';
     const RZP_TXN_CURRENCY      = 'rzp_txn_currency';

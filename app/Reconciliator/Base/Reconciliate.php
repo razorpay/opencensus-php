@@ -4,6 +4,9 @@ namespace RZP\Reconciliator\Base;
 
 use App;
 
+use Carbon\Carbon;
+use RZP\Constants\Timezone;
+
 use RZP\Models\Base;
 use RZP\Models\Batch;
 use RZP\Trace\TraceCode;
@@ -1000,6 +1003,7 @@ class Reconciliate extends Base\Core
                 SubReconciliate::RZP_TERMINAL_ID        => $row[SubReconciliate::RZP_TERMINAL_ID],
                 SubReconciliate::RZP_SETTLED_BY         => $row[SubReconciliate::RZP_SETTLED_BY],
                 SubReconciliate::RZP_METHOD             => $row[SubReconciliate::RZP_METHOD],
+                SubReconciliate::PROCESSED_AT           => $this->getTimeInEpochFormat($row[SubReconciliate::PROCESSED_AT]),
                 SubReconciliate::TAG_1                  => '',
                 SubReconciliate::TAG_2                  => '',
                 SubReconciliate::TAG_3                  => '',
@@ -1023,5 +1027,10 @@ class Reconciliate extends Base\Core
         {
             unset($outputRow[$field]);
         }
+    }
+
+    protected function getTimeInEpochFormat(string $time, $format = 'Y-m-d H:i:s')
+    {
+        return Carbon::createFromFormat($format, $time, Timezone::IST)->timestamp;
     }
 }
