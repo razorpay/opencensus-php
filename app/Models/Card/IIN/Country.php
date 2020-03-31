@@ -765,9 +765,9 @@ class Country
         self::ZW,
         self::AX,
     ];
+
     public static function isValid(string $type):bool
     {
         return (in_array($type, self::COUNTRY_LIST, true) === true);
     }
-
 }

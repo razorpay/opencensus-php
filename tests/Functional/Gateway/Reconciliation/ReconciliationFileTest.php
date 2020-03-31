@@ -5,6 +5,7 @@ use Queue;
 use RZP\Jobs;
 use Carbon\Carbon;
 use RZP\Models\Batch;
+use RZP\Models\Currency\Currency;
 use RZP\Models\Payment;
 use RZP\Constants\Timezone;
 use RZP\Models\Batch\Status;
@@ -3307,6 +3308,60 @@ class ReconciliationFileTest extends TestCase
         $this->assertFalse($updatedPayment->getOnHold());
 
         $this->assertFalse($updatedPayment->transaction->getOnHold());
+
+        $this->assertBatchStatus(Status::PROCESSED);
+    }
+
+    // Tests Hitachi DCC payment recon
+    public function testHitachiReconDCCPaymentFile()
+    {
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+        $this->fixtures->create('terminal:shared_hitachi_terminal');
+        $this->fixtures->merchant->addFeatures('charge_at_will');
+        $this->fixtures->merchant->addFeatures(['dcc']);
+
+        $this->payment['card']['number'] = CardNumber::VALID_ENROLL_NUMBER;
+
+        $iin = $this->fixtures->iin->create(['iin' => '414366', 'country' => 'US', 'issuer' => 'UTIB', 'network' => 'Visa',
+            'flows'   => ['3ds' => '1', 'pin' => '1', 'otp' => '1',]]);
+
+        $flowsData = [
+            'content' => ['amount' => 50000, 'currency' => 'INR', 'iin' => $iin->getIin()],
+            'method'  => 'POST',
+            'url'     => '/payment/flows',
+        ];
+
+        $this->ba->privateAuth();
+        $response = $this->sendRequest($flowsData);
+        $responseContent = json_decode($response->getContent(), true);
+        $cardCurrency = $responseContent['card_currency'];
+        $currencyRequestId = $responseContent['currency_request_id'];
+
+        // Payment with DCC Currency - USD
+        $this->payment['dcc_currency'] = $cardCurrency;
+        $this->payment['currency_request_id'] = $currencyRequestId;
+
+        $payment = $this->getNewPaymentEntity(false,true);
+        $gatewayPayment = $this->getLastEntity('hitachi', true);
+
+        $this->assertNull($payment['reference1']);
+        $row = $this->overrideHitachiPayment($gatewayPayment,
+                                [
+                                    'auth_id' => $payment['reference2'],
+                                    HitachiPaymentRecon::COLUMN_CURRENCY_CODE => Currency::ISO_NUMERIC_CODES[$gatewayPayment['currency']]
+                                ]);
+        $entries[] = $row;
+
+        $file = $this->writeToExcelFile($entries, 'hitachi');
+
+        $this->runForFiles([$file], 'Hitachi');
+
+        $updatedPayment = $this->getEntityById('payment', $payment['id'], true);
+
+        $this->assertEquals($entries[0][HitachiPaymentRecon::COLUMN_ARN], $updatedPayment['reference1']);
+        $this->assertEquals($entries[0][HitachiPaymentRecon::COLUMN_AUTH_CODE], $updatedPayment['reference2']);
+
+        $this->assertTrue($updatedPayment['gateway_captured']);
 
         $this->assertBatchStatus(Status::PROCESSED);
     }

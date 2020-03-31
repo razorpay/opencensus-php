@@ -48,6 +48,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYMENT_CAPTURE_BULK_RESPONSE                         = 'PAYMENT_CAPTURE_BULK_RESPONSE';
     const PAYMENT_CAPTURE_BULK_FAILURE                          = 'PAYMENT_CAPTURE_BULK_FAILURE';
     const PAYMENT_ALREADY_CAPTURED                              = 'PAYMENT_ALREADY_CAPTURED';
+    const PAYMENT_DCC_PROCESSED                                 = 'PAYMENT_DCC_PROCESSED';
 
     // Activation Emails
     const INSTANT_ACTIVATION_NOTIFICATION                      =  'INSTANT_ACTIVATION_NOTIFICATION';
@@ -2791,6 +2792,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
         self::PAYMENT_CAPTURE_UPDATE_TRANSACTION                    => 'Update existing transaction on payment capture',
         self::PAYMENT_CAPTURE_ORDER_UPDATE                          => 'Update corresponding order on payment capture',
         self::PAYMENT_TRANSACTION_OLD                               => 'Updating/Creating transaction of an old payment',
+        self::PAYMENT_DCC_PROCESSED                                 => 'Payment DCC input is processed successfully',
         self::TRANSACTION_AMOUNT_CREDITS                            => 'Using amount credits for the payment',
         self::PAYMENT_HOLD_TOGGLE_UPDATE_TRANSACTION                => 'Updating transaction after the payment hold was toggled',
         self::PAYMENT_VERIFY_CAPTURE_FAILURE                        => 'Issue while performing verify for capture',

@@ -6546,6 +6546,31 @@ class MerchantTest extends TestCase
         $this->assertEquals(['abc.com'], $merchant->getWhitelistedDomains());
     }
 
+    public function testGetCheckoutRouteWithTokenForDCC()
+    {
+        $this->ba->publicAuth();
+        $this->fixtures->merchant->activate('10000000000000');
+
+        $request = [
+            'url' => '/preferences',
+            'method' => 'get',
+            'content' => [
+                'contact' => '9988776655',
+                'customer_id' => 'cust_100000customer',
+                'currency' => 'INR',
+            ]
+        ];
+
+        $response = $this->sendRequest($request);
+        $responseContent = json_decode($response->getContent(), true);
+
+        $this->assertNotNull($responseContent['customer']['tokens']);
+
+        $tokens = $responseContent['customer']['tokens'];
+        $this->assertTrue($tokens['count'] > 0);
+        $this->assertTrue(array_key_exists('dcc_enabled', $tokens['items'][0]) === true);
+    }
+
     public function testGetCheckoutPreferencesWithConfigIdInOrder()
     {
         $this->ba->publicAuth();
@@ -6580,3 +6605,4 @@ class MerchantTest extends TestCase
         $this->assertArrayHasKey('checkout_config', $response);
     }
 }
+

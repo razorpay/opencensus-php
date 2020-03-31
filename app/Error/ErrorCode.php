@@ -1543,6 +1543,9 @@ class ErrorCode
     //IRCTC Error codes
     const BAD_REQUEST_INCORRECT_AMOUNT_SENT_FOR_FULL_REFUND                         = 'BAD_REQUEST_INCORRECT_AMOUNT_SENT_FOR_FULL_REFUND';
 
+    //DCC Error Codes
+    const BAD_REQUEST_PAYMENT_DCC_INVALID_REQUEST_ID                                = 'BAD_REQUEST_PAYMENT_DCC_INVALID_REQUEST_ID';
+
     const BAD_REQUEST_ERROR_BANKING_ACCOUNT_NOT_FOUND                               = 'BAD_REQUEST_ERROR_BANKING_ACCOUNT_NOT_FOUND';
 
     //FuzzyMatcher Error Codes

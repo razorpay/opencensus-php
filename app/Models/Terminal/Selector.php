@@ -133,7 +133,7 @@ class Selector extends Base\Core
 
         $payment = $this->input['payment'];
 
-        $currency = ($payment->getConvertCurrency() === true) ? Currency::INR : $payment->getCurrency();
+        $currency = ($payment->getConvertCurrency() === true) ? Currency::INR : $payment->getGatewayCurrency();
 
         $gatewayInput = [
             'currency_code'  => $currency,
@@ -644,7 +644,7 @@ class Selector extends Base\Core
             {
                 $payment = $this->input['payment'];
 
-                $currency = ($payment->getConvertCurrency() === true) ? Currency::INR : $payment->getCurrency();
+                $currency = ($payment->getConvertCurrency() === true) ? Currency::INR : $payment->getGatewayCurrency();
 
                 $hasHitachiDirectTerminal = (new TerminalService)->checkDirectTerminalForGateway(
                     $allTerminals,
@@ -676,7 +676,7 @@ class Selector extends Base\Core
         {
             $response = null;
 
-            $paymentData = $payment->toArray();
+            $paymentData = $payment->toArrayGateway();
 
             if ($payment->hasCard() === true)
             {

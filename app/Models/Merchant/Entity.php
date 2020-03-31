@@ -812,6 +812,11 @@ class Entity extends Base\PublicEntity
        return ($this->isFeatureEnabled(Feature\Constants::EXPOSE_CARD_EXPIRY) === true);
     }
 
+    public function isDCCEnabled(): bool
+    {
+        return ($this->isFeatureEnabled(Feature\Constants::DCC) === true);
+    }
+
     /**
      * Get the non-pureplatform partner if it exists
      *

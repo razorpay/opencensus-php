@@ -4141,4 +4141,72 @@ class RefundTest extends TestCase
 
         $this->startTest($payment['id'], (string) $payment['amount']);
     }
+
+    public function testRefundOnCapturedDCCPaymentWithVoidRefund()
+    {
+        Mail::fake();
+        $this->fixtures->create('terminal:shared_hitachi_terminal', [
+            'type' =>
+                [
+                    'non_recurring' => '1',
+                    'recurring_3ds' => '1',
+                    'recurring_non_3ds' => '1'
+                ]
+        ]);
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+        $this->fixtures->merchant->addFeatures(['dcc']);
+        $this->fixtures->merchant->addFeatures('void_refunds');
+        $this->gateway = 'hitachi';
+        $this->mockCardVault();
+
+        $response = $this->sendRequest($this->getDefaultPaymentFlowsRequestData());
+        $responseContent = json_decode($response->getContent(), true);
+
+        $cardCurrency = $responseContent['card_currency'];
+        $currencyRequestId = $responseContent['currency_request_id'];
+        $usdAmount = $responseContent['all_currencies'][$cardCurrency]['amount'];
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card'] = [
+            'number'       => CardNumber::VALID_ENROLL_NUMBER,
+            'expiry_month' => '02',
+            'expiry_year'  => '21',
+            'cvv'          => 123,
+            'name'         => 'Test Card'
+        ];
+        $payment['dcc_currency'] = $cardCurrency;
+        $payment['currency_request_id'] = $currencyRequestId;
+
+        $this->doAuthAndCapturePayment($payment);
+
+        $payment = $this->getLastEntity('payment');
+
+        $refund = $this->refundPayment($payment['id']);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals(true, $refund['gateway_refunded']);
+        $this->assertEquals($usdAmount, $refund['gateway_amount']);
+        $this->assertEquals($cardCurrency, $refund['gateway_currency']);
+
+        Mail::assertQueued(RefundedMail::class);
+    }
+
+    private function getDefaultPaymentFlowsRequestData($iin = null)
+    {
+        if ($iin === null)
+        {
+            $iin = $this->fixtures->iin->create(['iin' => '414366', 'country' => 'US', 'issuer' => 'UTIB', 'network' => 'Visa',
+                'flows'   => ['3ds' => '1', 'pin' => '1', 'otp' => '1',]]);
+        }
+
+        $flowsData = [
+            'content' => ['amount' => 50000, 'currency' => 'INR', 'iin' => $iin->getIin()],
+            'method'  => 'POST',
+            'url'     => '/payment/flows',
+        ];
+
+        return $flowsData;
+    }
 }

@@ -38,6 +38,8 @@ class Entity extends Base\PublicEntity
     const AMOUNT                 = 'amount';
     const CURRENCY               = 'currency';
     const BASE_AMOUNT            = 'base_amount';
+    const GATEWAY_AMOUNT         = 'gateway_amount';
+    const GATEWAY_CURRENCY       = 'gateway_currency';
     const STATUS                 = 'status';
     const ERROR_CODE             = 'error_code';
     const INTERNAL_ERROR_CODE    = 'internal_error_code';
@@ -134,6 +136,8 @@ class Entity extends Base\PublicEntity
         self::AMOUNT,
         self::CURRENCY,
         self::BASE_AMOUNT,
+        self::GATEWAY_AMOUNT,
+        self::GATEWAY_CURRENCY,
         self::STATUS,
         self::ERROR_CODE,
         self::INTERNAL_ERROR_CODE,
@@ -226,6 +230,7 @@ class Entity extends Base\PublicEntity
         self::BASE_AMOUNT,
         self::FEE,
         self::TAX,
+        self::GATEWAY_AMOUNT,
     ];
 
     protected $dates = [
@@ -343,6 +348,21 @@ class Entity extends Base\PublicEntity
     public function getBaseAmount()
     {
         return $this->getAttribute(self::BASE_AMOUNT);
+    }
+
+    public function getGatewayAmount()
+    {
+        $gatewayAmount = $this->getAttribute(self::GATEWAY_AMOUNT);
+
+        return (($gatewayAmount !== null) and ($gatewayAmount > 0)) ?
+            $gatewayAmount : $this->getAmount();
+    }
+
+    public function getGatewayCurrency()
+    {
+        $gatewayCurrency = $this->getAttribute(self::GATEWAY_CURRENCY);
+
+        return ($gatewayCurrency !== null) ? $gatewayCurrency : $this->getCurrency();
     }
 
     /**
@@ -767,6 +787,43 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::TAX, $tax);
     }
 
+    public function setGatewayAmountCurrency()
+    {
+        $this->setGatewayAmount();
+
+        $this->setGatewayCurrency();
+    }
+
+    private function setGatewayAmount()
+    {
+        $gatewayAmount = null;
+
+        if ($this->payment->isDCC() === true)
+        {
+            $paymentMeta = $this->payment->paymentMeta;
+
+            $forexRate = $paymentMeta->getForexRate();
+
+            $markUpPercent = $paymentMeta->getDccMarkUpPercent();
+
+            $gatewayAmount = (new Currency\DCC\Service)->getConvertedAmount($this->getAmount(), $forexRate, $markUpPercent);
+        }
+
+        $this->setAttribute(self::GATEWAY_AMOUNT, $gatewayAmount);
+    }
+
+    private function setGatewayCurrency()
+    {
+        $gatewayCurrency = null;
+
+        if ($this->payment->isDCC() === true)
+        {
+            $gatewayCurrency =  $this->payment->paymentMeta->getGatewayCurrency();
+        }
+
+        $this->setAttribute(self::GATEWAY_CURRENCY, $gatewayCurrency);
+    }
+
     public function setBaseAmount()
     {
         $amount = $this->getAttribute(self::AMOUNT);
@@ -1021,6 +1078,12 @@ class Entity extends Base\PublicEntity
     {
         $data = $this->toArray();
 
+        if ($this->payment->isCard() === true)
+        {
+            $data[self::AMOUNT]   = $this->getGatewayAmount();
+            $data[self::CURRENCY] = $this->getGatewayCurrency();
+        }
+
         if (($this->payment->isCard() === true) and
             ($this->payment->getConvertCurrency() === true))
         {
@@ -1231,7 +1294,7 @@ class Entity extends Base\PublicEntity
     public function toArrayPublic()
     {
         $response = parent::toArrayPublic();
-        
+
         $refundPublicStatusFeatureEnabled = $this->merchant->isFeatureEnabled(Feature::SHOW_REFUND_PUBLIC_STATUS);
 
         $data = [

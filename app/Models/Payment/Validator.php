@@ -116,6 +116,8 @@ class Validator extends Base\Validator
         'payment_id'                    => 'sometimes_if:method,cardless_emi',
         'application'                   => 'sometimes|filled|string|in:google_pay',
         'device'                        => 'sometimes',
+        'currency_request_id'           => 'required_with:dcc_currency|string',
+        'dcc_currency'                  => 'required_with:currency_request_id|string|max:3|custom',
     ];
 
     protected static $editAcquirerRules = [
@@ -193,11 +195,17 @@ class Validator extends Base\Validator
         'iin'                       => 'required|numeric|digits:6',
         '_'                         => 'sometimes|array',
         'order_id'                  => 'sometimes|filled',
+        'currency'                  => 'sometimes|string|size:3',
+        'amount'                    => 'sometimes|integer',
+        'token'                     => 'sometimes|string|max:20'
     ];
 
     protected static $postFlowsRules = [
         'card_number'        => 'sometimes|numeric|luhn|digits_between:12,19',
-        'iin'                => 'sometimes|numeric|digits:6'
+        'iin'                => 'sometimes|numeric|digits:6',
+        'currency'           => 'sometimes|string|size:3',
+        'amount'             => 'sometimes|integer',
+        'token'              => 'sometimes|string|max:20'
     ];
 
     protected static $pspAmountLimit = [
@@ -1146,6 +1154,15 @@ class Validator extends Base\Validator
                 'Cannot force authorize on this gateway',
                 'gateway',
                 $gateway);
+        }
+    }
+
+    protected function validateDccCurrency($attribute, $dccCurrency)
+    {
+        if (Currency::isSupportedCurrency($dccCurrency) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Invalid DCC Currency: ' . $dccCurrency);
         }
     }
 

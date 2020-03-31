@@ -1467,6 +1467,8 @@ trait Refund
 
         $refund->setBaseAmount();
 
+        $refund->setGatewayAmountCurrency();
+
         if ($refund->isRefundSpeedInstant() === true)
         {
             $this->setRefundModeAndSpeed($payment, $refund);

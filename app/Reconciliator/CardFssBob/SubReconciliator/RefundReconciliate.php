@@ -144,7 +144,7 @@ class RefundReconciliate extends SubReconciliator\RefundReconciliate
     {
         $convertCurrency = $this->payment->getConvertCurrency();
 
-        $refundAmount = ($convertCurrency === true) ? $this->refund->getBaseAmount() : $this->refund->getAmount();
+        $refundAmount = ($convertCurrency === true) ? $this->refund->getBaseAmount() : $this->refund->getGatewayAmount();
 
         if ($refundAmount !== $this->getReconRefundAmount($row))
         {
@@ -191,7 +191,7 @@ class RefundReconciliate extends SubReconciliator\RefundReconciliate
     {
         $convertCurrency = $this->payment->getConvertCurrency();
 
-        $expectedCurrency = ($convertCurrency === true) ? Currency::INR : $this->payment->getCurrency();
+        $expectedCurrency = ($convertCurrency === true) ? Currency::INR : $this->payment->getGatewayCurrency();
 
         $reconCurrency = $this->getReconCurrencyCode($row);
 
