@@ -144,7 +144,10 @@ export default class ActivationWizard extends React.Component {
       // recording new activation form in hotjar for New accounts (non-LA account)
       if (typeof window.hj === 'function') {
         window.hj('trigger', 'activation_form_open');
-        window.hj('tagRecording', ['activation_form_open']);
+        window.hj('tagRecording', [
+          'activation_form_open',
+          this.props.user.current,
+        ]);
       }
     }
 
