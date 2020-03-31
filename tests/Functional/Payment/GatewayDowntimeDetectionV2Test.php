@@ -2,10 +2,15 @@
 
 namespace RZP\Tests\Functional\Payment;
 
+use Illuminate\Redis\RedisManager;
 use Illuminate\Support\Facades\Redis;
 
+use App;
+use Mockery;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Error;
 use RZP\Models\Admin\ConfigKey;
+use RZP\Models\Gateway\Downtime\DowntimeDetection;
 use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\TestCase;
@@ -134,6 +139,10 @@ class GatewayDowntimeDetectionV2Test extends TestCase
 
         $this->ba->cronAuth();
 
+        $externalMock = Mockery::mock('alias:RZP\Models\Gateway\Downtime\Constants', ConstantsStub::class);
+
+        $externalMock->shouldReceive('getMaxSingleMerchantContribution')->andReturn(1);
+
         $this->startTest();
 
         $this->assertNotNull($this->redis->get('DOWNTIME_CREATED_success_rate_issuer_HDFC'));
@@ -157,4 +166,14 @@ class GatewayDowntimeDetectionV2Test extends TestCase
 
         $this->assertNull($this->redis->get('DOWNTIME_CREATED_success_rate_issuer_HDFC'));
     }
+}
+
+class ConstantsStub
+{
+    const SETTINGS_KEY  = ConfigKey::DOWNTIME_DETECTION_CONFIGURATION_V2;
+
+    const DOWNTIME_KEY  = 'DOWNTIME_CREATED';
+
+    // In ratio to total payments
+    const MAX_SINGLE_MERCHANT_CONTRIBUTION = 0.5;
 }

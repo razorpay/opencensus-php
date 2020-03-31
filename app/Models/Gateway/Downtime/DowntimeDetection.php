@@ -14,7 +14,6 @@ use RZP\Exception;
 use RZP\Trace\TraceCode;
 use RZP\Models\Payment\Status;
 use RZP\Foundation\Application;
-use RZP\Models\Admin\ConfigKey;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Base\PublicCollection;
 
@@ -29,10 +28,6 @@ class DowntimeDetection
      * @var RedisManager
      */
     protected $redis;
-
-    const SETTINGS_KEY  = ConfigKey::DOWNTIME_DETECTION_CONFIGURATION_V2;
-
-    const DOWNTIME_KEY  = 'DOWNTIME_CREATED';
 
     const ISSUER = 'issuer';
 
@@ -81,7 +76,7 @@ class DowntimeDetection
     {
         $arrayKey = $type . '_' . $key . '_' . $value . '_' . $settingType;
 
-        $allSettings = $this->redis->hget(self::SETTINGS_KEY, $arrayKey);
+        $allSettings = $this->redis->hget(Constants::SETTINGS_KEY, $arrayKey);
 
         return json_decode($allSettings);
     }
@@ -101,11 +96,29 @@ class DowntimeDetection
         // will be used if downtime is resolved
         $downtimeMetric->downtime_recover_time = null;
 
+        $merchantTotalPaymentsMap = [];
+
+        $downtimeMetric->top_merchant_count = 0;
+
         foreach ($payments as $index => $payment)
         {
             if ($payment->getStatus() != Status::CREATED)
             {
                 $downtimeMetric->total_payments = $downtimeMetric->total_payments + 1;
+
+                if (array_key_exists($payment->getMerchantId(), $merchantTotalPaymentsMap) == true)
+                {
+                    $merchantTotalPaymentsMap[$payment->getMerchantId()]++;
+                }
+                else
+                {
+                    $merchantTotalPaymentsMap[$payment->getMerchantId()] = 1;
+                }
+
+                if ($merchantTotalPaymentsMap[$payment->getMerchantId()] > $downtimeMetric->top_merchant_count)
+                {
+                    $downtimeMetric->top_merchant_count += 1;
+                }
             }
 
             if ($payment->hasBeenAuthorized())
@@ -129,7 +142,7 @@ class DowntimeDetection
 
     public function createDowntimeIfNecessary($type, $key, $value)
     {
-        $redisKeyForDowntime = self::DOWNTIME_KEY . '_' . $type . '_' . $key .'_' . $value;
+        $redisKeyForDowntime = Constants::DOWNTIME_KEY . '_' . $type . '_' . $key .'_' . $value;
 
         // check if downtime is already there for this issuer
         $downtimeCreatedSince = $this->redis->get($redisKeyForDowntime);
@@ -183,7 +196,12 @@ class DowntimeDetection
 
                 if ($successRate <= $successRateForDowntime)
                 {
-                    //todo: check if more than 50% of the payments are not of single merchant
+                    //check if more than 50% of the payments are not of single merchant
+                    $a = Constants::getMaxSingleMerchantContribution();
+                    if ($metric->top_merchant_count > (Constants::getMaxSingleMerchantContribution() * $minimumPayments))
+                    {
+                        continue;
+                    }
 
                     //todo: more than 50% of the payments are not of error cancelled_by_user
 
@@ -254,7 +272,11 @@ class DowntimeDetection
 
             if ($successRate > $successRateToResolve)
             {
-                //TODO: check if more than 50% of the payments are not of single merchant
+                //check if more than 50% of the payments are not of single merchant
+                if ($metric->top_merchant_count > (Constants::getMaxSingleMerchantContribution() * $minimumPayments))
+                {
+                    return;
+                }
 
                 $this->trace->info(TraceCode::GATEWAY_DOWNTIME_CONFIGURATION_V2_DOWNTIME_RESOLVED,
                     [

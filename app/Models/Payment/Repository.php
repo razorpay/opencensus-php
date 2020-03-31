@@ -1844,9 +1844,10 @@ class Repository extends Base\Repository
     public function fetchLastNPaymentsForDowntime($from, $to, $key, $value, $limit)
     {
         $paymentCreatedAtCol = $this->repo->payment->dbColumn(Payment\Entity::CREATED_AT);
+        $paymentMerchantIdCol = $this->repo->payment->dbColumn(Payment\Entity::MERCHANT_ID);
 
         $query = $this->newQueryWithConnection($this->getSlaveConnection())
-                      ->select($paymentCreatedAtCol, Payment\Entity::AUTHORIZED_AT, Payment\Entity::STATUS);
+                      ->select($paymentCreatedAtCol, Payment\Entity::AUTHORIZED_AT, Payment\Entity::STATUS, $paymentMerchantIdCol);
 
         $paymentCardIdCol = $this->dbColumn(Payment\Entity::CARD_ID);
         $cardIdCol = $this->repo->card->dbColumn(Card\Entity::ID);
