@@ -31,6 +31,7 @@ use RZP\Models\Offer\EntityOffer;
 use RZP\Models\Pricing\Calculator;
 use RZP\Error\PublicErrorDescription;
 use RZP\Constants\Entity as EntityName;
+use RZP\Models\Gateway\Downtime\DowntimeDetection;
 use RZP\Models\Merchant\Invoice\Type as InvoiceType;
 
 class Repository extends Base\Repository
@@ -1838,6 +1839,51 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->where(Entity::SUBSCRIPTION_ID, $subscriptionId)
                     ->findOrFailPublic($paymentId);
+    }
+
+    public function fetchLastNPaymentsForDowntime($from, $to, $key, $value, $limit)
+    {
+        $paymentCreatedAtCol = $this->repo->payment->dbColumn(Payment\Entity::CREATED_AT);
+
+        $query = $this->newQueryWithConnection($this->getSlaveConnection())
+                      ->select($paymentCreatedAtCol, Payment\Entity::AUTHORIZED_AT, Payment\Entity::STATUS);
+
+        $paymentCardIdCol = $this->dbColumn(Payment\Entity::CARD_ID);
+        $cardIdCol = $this->repo->card->dbColumn(Card\Entity::ID);
+        $query = $query->join(TABLE::CARD, $paymentCardIdCol, '=', $cardIdCol);
+
+        if ($key == DowntimeDetection::ISSUER)
+        {
+            $query = $query->where(Card\Entity::ISSUER, $value);
+        }
+        else if ($key == DowntimeDetection::NETWORK)
+        {
+            $query = $query->where(Card\Entity::NETWORK, $value);
+        }
+        else
+        {
+            throw new Exception\LogicException(
+                'key should be either issuer or network');
+        }
+
+        $paymentInternationalCol = $this->dbColumn(Payment\Entity::INTERNATIONAL);
+        $query = $query->where(Payment\Entity::RECURRING, false)
+                       ->where(function($query)
+                                {
+                                    $query->where(Payment\Entity::TWO_FACTOR_AUTH, '<>' , 'skipped')
+                                          ->orWhereNull(Payment\Entity::TWO_FACTOR_AUTH);
+                                })
+                       ->where($paymentInternationalCol, false);
+
+        if ((empty($from) == false) and
+            (empty($to) == false))
+        {
+            $query = $query->whereBetween($paymentCreatedAtCol, array($from->timestamp, $to->timestamp));
+        }
+
+        return $query->orderBy($paymentCreatedAtCol, 'desc')
+                     ->limit($limit)
+                     ->get();
     }
 
     /**

@@ -1234,6 +1234,17 @@ class GatewayController extends Controller
         ]);
     }
 
+    protected function gatewayDowntimeCron(Downtime\Service $service)
+    {
+        $input = Request::all();
+
+        $service->createDowntimeIfNecessary($input);
+
+        return ApiResponse::json([
+            'success' => true
+        ]);
+    }
+
     protected function statsGatewayDowntimeDetection(Downtime\Service $service)
     {
         $data = $service->stats();

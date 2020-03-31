@@ -53,6 +53,7 @@ class ConfigKey
     const DOWNTIME_DETECTION                    = self::PREFIX . '{downtime:detection}';
     const RX_SLA_FOR_IMPS_PAYOUT                = self::PREFIX . 'rx_sla_for_imps_payout';
     const DOWNTIME_DETECTION_CONFIGURATION      = self::PREFIX . 'downtime:detection:configuration';
+    const DOWNTIME_DETECTION_CONFIGURATION_V2   = self::PREFIX . 'downtime:detection:configuration_v2';
     const BENEFICIARY_REGISTRATION              = self::PREFIX . 'beneficiary_registration:';
     const BENEFICIARY_VERIFICATION              = self::PREFIX . 'beneficiary_verification:';
     const FTS_BENEFICIARY                       = self::PREFIX . 'fts_beneficiary';

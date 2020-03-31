@@ -107,7 +107,7 @@ class Validator extends Base\Validator
     protected static $setRedisKeysRules = [
         ConfigKey::HEARTBEAT_ROUTES                 => 'filled|array',
         ConfigKey::DOWNTIME_THROTTLE                => 'filled|array',
-        ConfigKey::DOWNTIME_DETECTION_CONFIGURATION => 'filled|array',
+        ConfigKey::DOWNTIME_DETECTION_CONFIGURATION_V2 => 'filled|array',
         ConfigKey::FTS_BENEFICIARY                  => 'filled|array',
     ];
 

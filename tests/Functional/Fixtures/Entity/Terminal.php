@@ -266,6 +266,11 @@ class Terminal extends Base
         return $this->disableTerminal('1n25f6uN5S1Z5a');
     }
 
+    public function createEnableDefaultHdfcTerminal()
+    {
+        return $this->enableTerminal('1n25f6uN5S1Z5a');
+    }
+
     public function disableTerminal($id = '1RecurringTerm')
     {
         return $this->fixtures->edit('terminal', $id, ['enabled' => false]);

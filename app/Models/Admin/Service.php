@@ -806,14 +806,14 @@ class Service extends Base\Service
 
         $redis = $this->app['redis']->connection();
 
-        foreach ($input[ConfigKey::DOWNTIME_DETECTION_CONFIGURATION] as $value)
+        foreach ($input[ConfigKey::DOWNTIME_DETECTION_CONFIGURATION_V2] as $value)
         {
             $values[$value['key']] = json_encode($value['value']);
         }
 
         $values = array_change_key_case($values, CASE_LOWER);
 
-        $this->setRedisKey($redis, ConfigKey::DOWNTIME_DETECTION_CONFIGURATION, $values);
+        $this->setRedisKey($redis, ConfigKey::DOWNTIME_DETECTION_CONFIGURATION_V2, $values);
 
         // Now get configuration for all the gateways and return
         return $this->getGatewayDowntimeConf();
@@ -825,7 +825,7 @@ class Service extends Base\Service
 
         $result = [];
 
-        $conf = $redis->HGETALL(ConfigKey::DOWNTIME_DETECTION_CONFIGURATION);
+        $conf = $redis->HGETALL(ConfigKey::DOWNTIME_DETECTION_CONFIGURATION_V2);
 
         foreach ($conf as $key => $value)
         {
@@ -837,7 +837,7 @@ class Service extends Base\Service
         }
 
         return [
-            ConfigKey::DOWNTIME_DETECTION_CONFIGURATION => $result,
+            ConfigKey::DOWNTIME_DETECTION_CONFIGURATION_V2 => $result,
         ];
     }
 
