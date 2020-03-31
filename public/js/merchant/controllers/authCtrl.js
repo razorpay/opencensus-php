@@ -1206,7 +1206,11 @@ app
             }
             hideSpinner();
             var firstError = data.errors[0];
-            window.grecaptcha.reset();
+
+            if (window.grecaptcha) {
+              window.grecaptcha.reset();
+            }
+
             if (typeof firstError === 'string') {
               // errors to be displayed directly
               if (firstError.includes('email not confirmed')) {
