@@ -32,7 +32,6 @@ import InstantActivationSuccess from 'merchant/components/Home/InstantActivation
 import PANVerificationStatusModal from 'merchant/components/Home/PANVerificationStatusModal';
 import KYCStatusModal from 'merchant/components/Home/KYCStatusModal';
 import KycDetailsModal from 'merchant/components/Home/KycDetailsModal';
-import YesBankAnnouncementHome from 'merchant/components/Announcements/YesBankAnnouncements/YesBankAnnouncementHome';
 
 import { showWhenUtil } from 'merchant/components/ShowWhen';
 import { switchToMode } from 'merchant/containers/Home/OnboardingCard/SwitchToMode';
@@ -754,11 +753,6 @@ export default class HomeContainer extends Component {
 
     return (
       <div class="react-root dashboard-home">
-        {/* <YesBankAnnouncementHome
-          virtualAccounts={this.props.virtualAccounts}
-          user={this.props.user}
-        /> */}
-
         {/* Show Diwali Promotional Banner */}
         {this.props.user.isDiwaliPromoEnabled &&
           !hideDiwaliPromotion && (
