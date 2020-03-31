@@ -51,8 +51,6 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
     const UPI_MERCHANT_ID           = 'upi_merchant_id';
     const UPI_MERCHANT_CHANNEL_ID   = 'upi_merchant_channel_id';
 
-    const SHOULD_ADD_ENTITY_ID_COLUMN = true;
-
     const BLACKLISTED_COLUMNS = [
         self::ACCOUNT_CUST_NAME,
         self::VPA,

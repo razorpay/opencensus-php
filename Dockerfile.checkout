@@ -5,6 +5,7 @@ ENV GIT_COMMIT_HASH=${GIT_COMMIT_HASH}
 
 COPY resources/views/checkout/checkout.prod.html /app/
 COPY resources/views/checkout/checkout.stage.html /app/
+COPY resources/views/checkout/checkout.dark.html /app/
 COPY --chown=nginx:nginx dockerconf/nginx-checkout.conf /etc/nginx/conf.d/default.conf
 
 WORKDIR /app

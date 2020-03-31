@@ -2845,4 +2845,17 @@ return [
         ],
         'status_code' => 200,
     ],
+
+    'testPennyTestingRetryCron' => [
+        'request'     => [
+            'method'  => 'POST',
+            'url'     => '/merchants/retry_penny_testing',
+            'content' => [
+            ],
+        ],
+        'response'    => [
+            'content' => [],
+        ],
+        'status_code' => 200,
+    ],
 ];

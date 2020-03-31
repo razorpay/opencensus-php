@@ -216,6 +216,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYMENT_NOT_CAPTURED_CREATE_TRANSACTION               = 'PAYMENT_NOT_CAPTURED_CREATE_TRANSACTION';
     const VERIFY_CAPTURE_RESPONSE                               = 'VERIFY_CAPTURE_RESPONSE';
     const PAYMENT_ANALYTICS_SAVE_FAILED                         = 'PAYMENT_ANALYTICS_SAVE_FAILED';
+    const PAYMENT_UPI_METADATA_SAVE_FAILED                      = 'PAYMENT_UPI_METADATA_SAVE_FAILED';
     const PAYMENT_ANALYTICS_UNRECOGNIZED_DATA                   = 'PAYMENT_ANALYTICS_UNRECOGNIZED_DATA';
     const PAYMENT_ANALYTICS_INCORRECT_DATA                      = 'PAYMENT_ANALYTICS_INCORRECT_DATA';
     const TERMINAL_ANALYTICS_SAVE_FAILED                        = 'TERMINAL_ANALYTICS_SAVE_FAILED';
@@ -1185,6 +1186,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_PROCESS_GREYLIST_ACTIVATION                  = 'MERCHANT_PROCESS_GREYLIST_ACTIVATION';
     const MERCHANT_PENNY_TESTING_ATTEMPT                        = 'MERCHANT_PENNY_TESTING_ATTEMPT';
     const MERCHANT_PENNY_TESTING_EVENT_PAYLOAD                  = 'MERCHANT_PENNY_TESTING_EVENT_PAYLOAD';
+    const MERCHANT_PENNY_TESTING_RETRY                          = 'MERCHANT_PENNY_TESTING_RETRY';
     const MERCHANT_BANK_DETAIL_STATUS_AFTER_PENNY_TESTING       = 'MERCHANT_BANK_DETAIL_STATUS_AFTER_PENNY_TESTING';
     const MERCHANT_HOLD_FUNDS_POST_TRANSCACTION                 = 'MERCHANT_HOLD_FUNDS_POST_TRANSCACTION';
     const MERCHANT_HOLD_FUNDS_PRE_TRANSCACTION                  = 'MERCHANT_HOLD_FUNDS_PRE_TRANSCACTION';
@@ -1414,6 +1416,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const RECON_UNPROCESSED_ROW                                 = 'RECON_UNPROCESSED_ROW';
     const RECON_UNEXPECTED_PAYMENT_CREATION_FAILED              = 'RECON_UNEXPECTED_PAYMENT_CREATION_FAILED';
     const RECON_BATCH_ANALYTICS_OUTPUT_FILE                     = 'RECON_BATCH_ANALYTICS_OUTPUT_FILE';
+    const RECON_BATCH_TXN_FILE                                  = 'RECON_BATCH_TXN_FILE';
+    const RECON_BATCH_TXN_FILE_DATA_EMPTY                       = 'RECON_BATCH_TXN_FILE_DATA_EMPTY';
 
     //Trace code for Transaction Migration
     const TRANSACTION_MIGRATION_TAX_MISTMATCH                   = 'TRANSACTION_MIGRATION_TAX_MISTMATCH';
@@ -1676,6 +1680,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const USERS_VERIFY_OTP_FOR_ACTION                           = 'USERS_VERIFY_OTP_FOR_ACTION';
     const USERS_SEND_SMS_OTP_FAILED                             = 'USERS_SEND_SMS_OTP_FAILED';
     const USERS_SEND_EMAIL_OTP_FAILED                           = 'USERS_SEND_EMAIL_OTP_FAILED';
+    const USER_NOT_FOUND                                        = 'USER_NOT_FOUND';
 
     //Trace codes for users 2fa factory
     const SEND_2FA_OTP_SMS_FOR_ACTION                           = 'SEND_2FA_OTP_SMS_FOR_ACTION';
@@ -1899,6 +1904,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const REDIS_LAG_CHECK_FAILED                                = 'REDIS_LAG_CHECK_FAILED';
     const HEARTBEAT_CHECK_FAILED                                = 'HEARTBEAT_CHECK_FAILED';
+    const HEARTBEAT_CONFIG_FETCH_FAILED                         = 'HEARTBEAT_CONFIG_FETCH_FAILED';
     const HEARTBEAT_CHECK_COMPLETED                             = 'HEARTBEAT_CHECK_COMPLETED';
     const DATABASE_RECONNECT                                    = 'DATABASE_RECONNECT';
     const HEARTBEAT_CHECK_TIME_CONVERSION                       = 'HEARTBEAT_CHECK_TIME_CONVERSION';
@@ -2383,6 +2389,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SALESFORCE_INTEGRATION_API_RESPONSE                   = 'SALESFORCE_INTEGRATION_API_RESPONSE';
     const SALESFORCE_DATA_VALIDATION_FAILURES                   = 'SALESFORCE_DATA_VALIDATION_FAILURES';
     const SALESFORCE_RECORD_VALIDATION_FAILURES                 = 'SALESFORCE_RECORD_VALIDATION_FAILURES';
+    const SALESFORCE_PRE_SIGNUP_REQUEST                         = 'SALESFORCE_PRE_SIGNUP_REQUEST';
+    const SALESFORCE_PRE_SIGNUP_REQUEST_PAYLOAD                 = 'SALESFORCE_PRE_SIGNUP_REQUEST_PAYLOAD';
+    const SALESFORCE_PRE_SIGNUP_EXCEPTION                       = 'SALESFORCE_PRE_SIGNUP_EXCEPTION';
+
 
     // Banking account
     const BANKING_ACCOUNT_USER_PERMISSION_ERROR                = 'BANKING_ACCOUNT_USER_PERMISSION_ERROR';
@@ -2517,7 +2527,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const TERMINAL_ONBOARDING_DISPATCHING_TO_QUEUE                 = 'TERMINAL_ONBOARDING_DISPATCHING_TO_QUEUE';
     const TERMINAL_ONBOARDING_VERIFICATION_CRON_RESPONSE           = 'TERMINAL_ONBOARDING_VERIFICATION_CRON_RESPONSE';
     const TERMINAL_ONBOARDING_CREATION_CRON_RESPONSE               = 'TERMINAL_ONBOARDING_CREATION_CRON_RESPONSE';
+    const TERMINAL_ONBOARDING_CALLBACK_RECEIVED                    = 'TERMINAL_ONBOARDING_CALLBACK_RECEIVED';
     const TERMINAL_SELECTION_LOGIC_FOR_RX                          = 'TERMINAL_SELECTION_LOGIC_FOR_RX';
+
+    const INITIATE_TERMINAL_ONBOARDING_REQUEST                     = 'INITIATE_TERMINAL_ONBOARDING_REQUEST';
 
     const SET_MERCHANT_INHERITANCE_PARENT_FAILED                   = 'SET_MERCHANT_INHERITANCE_PARENT_FAILED';
 
@@ -2634,6 +2647,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     // Trace Code for Workflow Rules
     const WORKFLOW_PAYOUT_RULES_ATTACHMENT                      = 'WORKFLOW_PAYOUT_RULES_ATTACHMENT';
+    const WORKFLOW_PAYOUT_EDIT                                  = 'WORKFLOW_PAYOUT_EDIT';
 
     const ALREADY_ACTIVATED                                     = 'ALREADY_ACTIVATED';
     const NOT_ACTIVATED                                         = 'NOT_ACTIVATED';
@@ -2677,6 +2691,26 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SUPPORT_TICKET_STATUS_REQUEST                         = 'SUPPORT_TICKET_STATUS_REQUEST';
     const SUPPORT_TICKET_STATUS_RESPONSE                        = 'SUPPORT_TICKET_STATUS_RESPONSE';
 
+    //Terminals service
+    const TERMINALS_SERVICE_CREATE_MIGRATE_JOB_FAILURE          = 'TERMINALS_SERVICE_CREATE_MIGRATE_JOB_FAILURE';
+
+    const TERMINALS_SERVICE_MIGRATE_JOB_STARTED                 = 'TERMINALS_SERVICE_MIGRATE_JOB_STARTED';
+    const TERMINALS_SERVICE_MIGRATE_JOB_SUCCESS                 = 'TERMINALS_SERVICE_MIGRATE_JOB_SUCCESS';
+    const TERMINALS_SERVICE_MIGRATE_JOB_FAILED                  = 'TERMINALS_SERVICE_MIGRATE_JOB_FAILED';
+
+    const TERMINALS_SERVICE_REQUEST                             = 'TERMINALS_SERVICE_REQUEST';
+    const TERMINALS_SERVICE_RESPONSE                            = 'TERMINALS_SERVICE_RESPONSE';
+    const TERMINALS_SERVICE_INTEGRATION_ERROR                   = 'TERMINALS_SERVICE_INTEGRATION_ERROR';
+
+    const TERMINALS_SERVICE_TERMINAL_ALREADY_SYNCED             = 'TERMINALS_SERVICE_TERMINAL_ALREADY_SYNCED';
+
+
+    const TERMINALS_SERVICE_MIGRATE_FIELD_MISMATCH              = 'TERMINALS_SERVICE_MIGRATE_FIELD_MISMATCH';
+    const TERMINALS_SERVICE_MERCHANT_TERMINAL_MISMATCH          = 'TERMINALS_SERVICE_MERCHANT_TERMINAL_MISMATCH';
+    const TERMINALS_SERVICE_FETCH_BY_MERCHANT_ID_MISMATCH       = 'TERMINALS_SERVICE_FETCH_BY_MERCHANT_ID_MISMATCH';
+
+    const TERMINALS_SERVICE_RAZORX_RESPONSE                     = 'TERMINALS_SERVICE_RAZORX_RESPONSE';
+
     const DB_WAIT_TIMEOUT_FILE_READ_FAILED                      = 'DB_WAIT_TIMEOUT_FILE_READ_FAILED';
 
     //Error Response
@@ -2692,10 +2726,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_RAZORPAYX_VA_MIGRATION_FAILED                = 'MERCHANT_RAZORPAYX_VA_MIGRATION_FAILED';
     const MERCHANT_RAZORPAYX_ACTIVATION_UNKNOWN_SOURCE          = 'MERCHANT_RAZORPAYX_ACTIVATION_UNKNOWN_SOURCE';
 
-    // Terminal service
-    const TERMINALS_SERVICE_REQUEST                             = 'TERMINALS_SERVICE_REQUEST';
-    const TERMINALS_SERVICE_RESPONSE                            = 'TERMINALS_SERVICE_RESPONSE';
-    const TERMINALS_SERVICE_INTEGRATION_ERROR                   = 'TERMINALS_SERVICE_INTEGRATION_ERROR';
+
 
     const UPI_MANDATE_CREATE_REQUEST                            = 'UPI_MANDATE_CREATE_REQUEST';
     const UPI_MANDATE_CREATED                                   = 'UPI_MANDATE_CREATED';
@@ -2725,6 +2756,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const VA_MIGRATE_AFTER_ID_RETRIEVED = 'VA_MIGRATE_AFTER_ID_RETRIEVED';
     const VA_MIGRATE_JOB_FAILED         = 'VA_MIGRATE_JOB_FAILED';
     const VA_MIGRATE_TIME               = 'VA_MIGRATE_TIME';
+
+    //Exception message while scrubbing user sensitive details in banking routes.
+    const SENSITIVE_DETAILS_FAILURE_EXCEPTION = 'SENSITIVE_BANKING_DETAILS_SCRUBBING_FAILURE_EXCEPTION';
 
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',

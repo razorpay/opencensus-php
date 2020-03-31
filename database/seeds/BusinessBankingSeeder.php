@@ -138,6 +138,35 @@ class BusinessBankingSeeder extends Seeder
                     'deleted_at'      => null,
                 ],
             ]);
+
+        DB::table(Table::BANKING_ACCOUNT)->insert(
+            [
+                [
+                    'id'                   => 'xbacc000000000',
+                    'merchant_id'          => '10000000000000',
+                    // The account numbers and ifsc are different in case of live and test mode
+                    // check terminal entity below
+                    'account_ifsc'         => ($mode === Mode::LIVE) ? 'YESB0000000' : 'RAZRB000000',
+                    'account_number'       => ($mode === Mode::LIVE) ? '2224440041626905' : '2323230041626905',
+                    'status'               => 'activated',
+                    'channel'              => 'yesbank',
+                    'account_type'         => 'nodal',
+                    'balance_id'           => 'xbalance000000',
+                    'beneficiary_name'     => 'random_name',
+                    'account_currency'     => 'INR',
+                    'beneficiary_address1' => 'address1',
+                    'beneficiary_address2' => 'address2',
+                    'beneficiary_address3' => 'address3',
+                    'beneficiary_city'     => 'new delhi',
+                    'beneficiary_state'    => 'DE',
+                    'beneficiary_country'  => 'IN',
+                    'beneficiary_email'    => 'random@email.com',
+                    'beneficiary_mobile'   => '9988776655',
+                    'beneficiary_pin'      => '100000',
+                    'created_at'           => time(),
+                    'updated_at'           => time(),
+                ],
+            ]);
     }
 
     private function seedBankingVATerminal($mode)
@@ -147,10 +176,10 @@ class BusinessBankingSeeder extends Seeder
                 [
                     'id'                   => 'xterminal00000',
                     'merchant_id'          => '100000Razorpay',
-                    // IN test mode we select the terminal as bt_dashboard and in live mode as bt_yesbank
-                    'gateway'              => ($mode === Mode::LIVE) ? 'bt_yesbank' : 'bt_dashboard',
+                    // IN test mode we select the terminal as bt_dashboard and in live mode as bt_icici
+                    'gateway'              => ($mode === Mode::LIVE) ? 'bt_icici' : 'bt_dashboard',
                     // For live and test mode the account numbers should be different due to different terminals
-                    'gateway_merchant_id'  => ($mode === Mode::LIVE) ? '222444' : '232323',
+                    'gateway_merchant_id'  => ($mode === Mode::LIVE) ? '3434' : '232323',
                     'gateway_merchant_id2' => '00',
                     'card'                 => 0,
                     'recurring'            => 0,

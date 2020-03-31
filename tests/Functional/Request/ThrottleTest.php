@@ -146,4 +146,143 @@ class ThrottleTest extends TestCase
         $this->startTest($this->testData['testGetOrderWhenIPBlockedSuccess']);
         $this->startTest($this->testData['testGetOrderWhenBlockedForTestMerchant1']);
     }
+
+    public function testThrottleConfigCreateMerchant()
+    {
+        $this->ba->adminAuth();
+
+        // create config for order create
+        $this->makeRequestAndGetContent($this->testData[__FUNCTION__.'1']['request']);
+
+        $expected = [
+            'order_create' => [
+                'request_count' => '120',
+                'request_count_window' => '60',
+            ]
+        ];
+
+        // fetch all config for merchant
+        $this->assertArraySelectiveEquals(
+            $expected,
+            $this->makeRequestAndGetContent($this->testData[__FUNCTION__.'Fetch']['request'])
+        );
+
+        // create config for payment_create
+        $this->makeRequestAndGetContent($this->testData[__FUNCTION__.'2']['request']);
+
+        $expected['payment_create'] = [
+            'request_count' => '100',
+            'request_count_window' => '60',
+        ];
+
+        // fetch all config for merchant
+        $this->assertArraySelectiveEquals(
+            $expected,
+            $this->makeRequestAndGetContent($this->testData[__FUNCTION__.'Fetch']['request'])
+        );
+
+        // update order create request window
+        $this->makeRequestAndGetContent($this->testData[__FUNCTION__.'3']['request']);
+
+        // fetch only order create config
+        $request = $this->testData[__FUNCTION__.'Fetch']['request'];
+        $request['url'] = '/throttle/config?merchant_id=10000000000000&&route=order_create';
+
+         $this->assertArraySelectiveEquals(
+            ['request_count' => '180',
+            'request_count_window' => '60'],
+            $this->makeRequestAndGetContent($request)
+        );
+
+         // delete order create config
+        $this->makeRequestAndGetContent($this->testData[__FUNCTION__.'Delete1']['request']);
+
+        $expected = [
+            'payment_create' => [
+                'request_count' => '100',
+                'request_count_window' => '60',
+            ]
+        ];
+
+        // fetch all config
+        $this->assertArraySelectiveEquals(
+            $expected,
+            $this->makeRequestAndGetContent($this->testData[__FUNCTION__.'Fetch']['request'])
+        );
+
+        // delete all config for the merchant
+        $request = $this->testData[__FUNCTION__.'Delete1']['request'];
+
+        $request['url'] = '/throttle/config?merchant_id=10000000000000';
+
+        $this->makeRequestAndGetContent($request);
+
+        // fetch all config for the merchant
+        $this->assertArraySelectiveEquals(
+            [],
+            $this->makeRequestAndGetContent($this->testData[__FUNCTION__.'Fetch']['request'])
+        );
+    }
+
+     public function testThrottleConfigCreateRoute()
+    {
+        $this->ba->adminAuth();
+
+        // create config order create type merchant
+        $this->makeRequestAndGetContent($this->testData[__FUNCTION__.'1']['request']);
+         $expected = [
+            'order_create' => [
+                'type'          => 'merchant',
+                'request_count' => '120',
+                'request_count_window' => '60',
+            ]
+        ];
+
+        // fetch route config for order create
+        $this->assertArraySelectiveEquals(
+            $expected,
+            $this->makeRequestAndGetContent($this->testData[__FUNCTION__.'Fetch']['request'])
+        );
+
+        // create config order create type org
+        $this->makeRequestAndGetContent($this->testData[__FUNCTION__.'2']['request']);
+
+        $expected['order_create']['type'] = 'org';
+
+        // fetch route config for order create
+        $this->assertArraySelectiveEquals(
+            $expected,
+            $this->makeRequestAndGetContent($this->testData[__FUNCTION__.'Fetch']['request'])
+        );
+
+        $this->makeRequestAndGetContent($this->testData[__FUNCTION__.'3']['request']);
+
+
+        $expected['order_create']['type'] = 'ip';
+
+        // fetch route config for order create
+        $this->assertArraySelectiveEquals(
+            $expected,
+            $this->makeRequestAndGetContent($this->testData[__FUNCTION__.'Fetch']['request'])
+        );
+
+        $this->makeRequestAndGetContent($this->testData[__FUNCTION__.'4']['request']);
+
+        $expected['order_create']['request_count'] = '180';
+
+        // fetch route config for order create
+        $this->assertArraySelectiveEquals(
+            $expected,
+            $this->makeRequestAndGetContent($this->testData[__FUNCTION__.'Fetch']['request'])
+        );
+
+        // delete order create config
+        $this->makeRequestAndGetContent($this->testData[__FUNCTION__.'Delete1']['request']);
+
+        // fetch route config for order create
+        $this->assertArraySelectiveEquals(
+            [],
+            $this->makeRequestAndGetContent($this->testData[__FUNCTION__.'Fetch']['request'])
+        );
+    }
 }

@@ -634,6 +634,156 @@ class RblBankingAccountStatementTest extends TestCase
         $this->assertEquals(EntityConstants::TAX, $feeBreakup[1]['name']);
     }
 
+    public function testRblAccountStatementTxnMappingCase4()
+    {
+        $channel = Channel::RBL;
+
+        $this->setupForRblPayout($channel);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->assertEquals(590, $payout['fees']);
+        $this->assertEquals(90, $payout['tax']);
+        $this->assertEquals('Bbg7cl6t6I3XA6', $payout['pricing_rule_id']);
+
+        $attempt = $this->getDbLastEntity('fund_transfer_attempt');
+
+        $this->fixtures->edit('payout', $payout['id'], ['status' => 'initiated', 'amount' => '104']);
+
+        $this->fixtures->edit('fund_transfer_attempt', $attempt['id'], ['cms_ref_no' => 'S55959']);
+
+        $this->fixtures->edit('balance', $payout['balance_id'], ['balance' => 30019995]);
+
+        $ftsCreateTransfer = new FtsFundTransfer(
+            EnvMode::TEST,
+            $attempt['id']);
+
+        $ftsCreateTransfer->handle();
+
+        $attempt = $this->getDbLastEntity('fund_transfer_attempt');
+
+        $this->assertEquals(Attempt\Status::INITIATED, $attempt['status']);
+
+        $this->updateFta(
+            $attempt['fts_transfer_id'],
+            $attempt['source'],
+            Attempt\Type::PAYOUT,
+            Attempt\Status::PROCESSED);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $attempt = $this->getDbLastEntity('fund_transfer_attempt');
+
+        $this->assertEquals(Payout\Status::PROCESSED, $payout['status']);
+
+        // Fetch account statement from RBL
+        $mockedResponse = $this->getRblPayoutMappingResponse();
+
+        $this->setMozartMockResponse($mockedResponse);
+
+        $testData = $this->testData['testRblAccountStatementTxnMappingCase1'];
+
+        $this->testData[__FUNCTION__] = $testData;
+        $this->ba->cronAuth();
+        $this->startTest();
+
+        // create mapping for 2nd payout
+        $content = [
+            'account_number'  => '2224440041626905',
+            'amount'          => 10095,
+            'currency'        => 'INR',
+            'purpose'         => 'payout',
+            'narration'       => 'Rbl account payout',
+            'fund_account_id' => 'fa_' . $this->fundAccount->getId(),
+            'mode'            => 'IMPS',
+            'notes'           => [
+                'abc' => 'xyz',
+            ],
+        ];
+
+        $request = [
+            'url'       => '/payouts',
+            'method'    => 'POST',
+            'content'   => $content
+        ];
+
+        $this->ba->privateAuth();
+
+        $this->makeRequestAndGetContent($request);
+
+        $transaction = $this->fixtures->create('transaction', ['merchant_id'       => '10000000000000']);
+
+        $this->fixtures->create('banking_account_statement',
+            [
+                'type'                      => 'debit',
+                'amount'                    => '104',
+                'channel'                   => 'rbl',
+                'account_number'            => 2224440041626905,
+                'transaction_id'            => $transaction['id'],
+                'entity_id'                 => $payout['id'],
+                'entity_type'               =>  'payout',
+                'bank_transaction_id'       => 'SDHDH',
+                'balance'                   => 30019891,
+                'transaction_date'          => 1584987183
+            ]);
+        // creating third payout in failed status
+
+        $content = [
+            'account_number'  => '2224440041626905',
+            'amount'          => 10095,
+            'currency'        => 'INR',
+            'purpose'         => 'payout',
+            'narration'       => 'Rbl account payout',
+            'fund_account_id' => 'fa_' . $this->fundAccount->getId(),
+            'mode'            => 'IMPS',
+            'notes'           => [
+                'abc' => 'xyz',
+            ],
+        ];
+
+        $request = [
+            'url'       => '/payouts',
+            'method'    => 'POST',
+            'content'   => $content
+        ];
+
+        $this->ba->privateAuth();
+
+        $this->makeRequestAndGetContent($request);
+
+        $payout2 = $this->getDbLastEntity('payout');
+
+        $attempt2 = $this->getDbLastEntity('fund_transfer_attempt');
+
+        $this->fixtures->edit('payout', $payout2['id'], ['status' => 'initiated', 'amount' => '104']);
+
+        $this->fixtures->edit('balance', $payout2['balance_id'], ['balance' => 30019995]);
+
+        $ftsCreateTransfer = new FtsFundTransfer(
+            EnvMode::TEST,
+            $attempt2['id']);
+
+        $ftsCreateTransfer->handle();
+
+        $attempt2 = $this->getDbLastEntity('fund_transfer_attempt');
+
+        $this->assertEquals(Attempt\Status::INITIATED, $attempt2['status']);
+
+        $this->updateFta(
+            $attempt2['fts_transfer_id'],
+            $attempt2['source'],
+            Attempt\Type::PAYOUT,
+            Attempt\Status::FAILED);
+
+        $payout2 = $this->getDbLastEntity('payout');
+
+        $attempt2 = $this->getDbLastEntity('fund_transfer_attempt');
+
+        $this->assertEquals(Payout\Status::FAILED, $payout2['status']);
+        $this->assertEquals(FundTransfer\Mode::IMPS, $payout2['mode']);
+        $this->assertEquals(Attempt\Status::FAILED, $attempt2['status']);
+        $this->assertEquals(FundTransfer\Mode::IMPS, $attempt2['mode']);
+    }
     protected function setupForRblPayout($channel = Channel::RBL)
     {
         $this->ba->privateAuth();

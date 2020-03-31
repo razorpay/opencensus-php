@@ -242,6 +242,11 @@ class BatchMicroService
             ],
         ];
 
+        if(isset($options['X-Entity-Id']) == true)
+        {
+            $requestOptions['headers']['X-Entity-Id'] = $options['X-Entity-Id'];
+        }
+
         if ($input != null)
         {
             if ($method === Requests::GET)
@@ -514,11 +519,12 @@ class BatchMicroService
     /**
      * @param string $id
      * @param string $batchOrFileStore
+     * @param string $merchantId
      *
      * @return mixed
      * @throws Exception\ServerNotFoundException
      */
-    public function downloadS3UrlForBatchOrFileStore(string $id, string $batchOrFileStore)
+    public function downloadS3UrlForBatchOrFileStore(string $id, string $batchOrFileStore, string $merchantId = null)
     {
         if ($batchOrFileStore === 'batch')
         {
@@ -534,6 +540,11 @@ class BatchMicroService
         try
         {
             $options['mode'] = $this->mode;
+
+            if ($merchantId !== null)
+            {
+                $options['X-Entity-Id'] = $merchantId;
+            }
 
             $response = $this->getResponseFromBatchService($relativeUrl, Requests::GET, $options);
         }

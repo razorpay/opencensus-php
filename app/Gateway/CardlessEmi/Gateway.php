@@ -308,6 +308,8 @@ class Gateway extends Base\Gateway
 
         $traceRequest = $this->stripSensitiveHeader($request);
 
+        unset($traceRequest['email'], $traceRequest['password']);
+
         $this->trace->info(
             TraceCode::PAYMENT_CAPTURE_REQUEST,
             [

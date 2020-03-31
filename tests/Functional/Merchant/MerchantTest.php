@@ -6248,6 +6248,20 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
+    // Internal merchant_details route return merchant and merchant_details in response
+    public function testInternalGetMerchant()
+    {
+        $this->ba->appAuth();
+
+        $this->fixtures->create('merchant', ['id'=>'100ghi000ghi00']);
+
+        $this->fixtures->create('merchant_detail', ['merchant_id' => '100ghi000ghi00', 'contact_email' => 'test@gmail.com']);
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/internal/merchants/100ghi000ghi00';
+
+        $this->startTest();
+    }
+
     public function testGetBalances()
     {
         $this->fixtures->create('merchant', ['id'=>'100ghi000ghi00']);
@@ -6535,5 +6549,39 @@ class MerchantTest extends TestCase
         $merchant = $this->getDbEntityById('merchant', '10000000000000');
 
         $this->assertContains('abc.com', $merchant->getWhitelistedDomains());
+    }
+
+    public function testGetCheckoutPreferencesWithConfigIdInOrder()
+    {
+        $this->ba->publicAuth();
+
+        $config = $this->fixtures->create('config');
+
+        $order = $this->fixtures->create('order', ['checkout_config_id' => $config->getId()]);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['order_id'] = $order->getPublicId();
+
+        $response = $this->runRequestResponseFlow($testData);
+
+        $this->assertArrayHasKey('checkout_config', $response);
+    }
+
+    public function testGetCheckoutPreferencesWithDefaultConfig()
+    {
+        $this->ba->publicAuth();
+
+        $config = $this->fixtures->create('config');
+
+        $order = $this->fixtures->create('order');
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['order_id'] = $order->getPublicId();
+
+        $response = $this->runRequestResponseFlow($testData);
+
+        $this->assertArrayHasKey('checkout_config', $response);
     }
 }

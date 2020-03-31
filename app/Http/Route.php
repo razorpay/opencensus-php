@@ -228,7 +228,9 @@ final class Route
         'merchant_fetch_bank_account'              => ['get',      'merchants/{id}/bank_account',                    'MerchantController@getBankAccount'                                 ],
         'merchant_generate_test_bank_acnt'         => ['post',     'merchants/bank_account/generate/test',           'MerchantController@postGenerateTestBankAccounts'                   ],
         'merchant_create_terminal'                 => ['post',     'merchants/{id}/terminals',                       'MerchantController@postCreateTerminal'                             ],
+        'merchant_create_terminal_internal'        => ['post',     'merchants/{id}/terminals/internal',              'MerchantController@postCreateTerminal',                            ],
         'merchant_get_terminals'                   => ['get',      'merchants/{id}/terminals',                       'MerchantController@getTerminals'                                   ],
+        'proxy_merchant_get_terminals'             => ['get',      'proxy/merchant/terminals',                       'MerchantController@proxyGetTerminals'                              ],
         'merchant_onboard_terminal'                => ['post',     'merchants/{id}/terminals/onboard',               'MerchantController@onboardMerchantOnGateway'                       ],
         'merchant_get_terminal'                    => ['get',      'merchants/{mid}/terminals/{tid}',                'MerchantController@getTerminal'                                    ],
         'merchant_delete_terminal'                 => ['delete',   'merchants/{mid}/terminals/{tid}',                'MerchantController@deleteTerminal'                                 ],
@@ -262,6 +264,7 @@ final class Route
         'mailing_list_remove_suspended_merchant'   => ['post',     'merchant/remove/suspended',                      'MerchantController@deleteSuspendedMerchantsFromMailingList'        ],
         'merchant_details_fetch'                   => ['get',      'merchants/details',                              'MerchantController@getMerchantDetails'                             ],
         'merchant_details_patch'                   => ['patch',    'merchants/details',                              'MerchantController@patchMerchantDetails'                           ],
+        'internal_merchant_fetch'                  => ['get',      'internal/merchants/{id}',                        'MerchantController@internalGetMerchant'                            ],
         'merchant_invoice_add_bulk'                => ['post',     'merchants/invoice/bulk',                         'MerchantInvoiceController@postMultipleEntities'                    ],
         'merchant_get_app_access_mapping'          => ['get',      'merchants/{id}/applications',                    'MerchantController@getConnectedApplications'                       ],
         'merchant_create_app_access_mapping'       => ['post',     'merchants/{id}/applications',                    'MerchantController@postMapOAuthApplication'                        ],
@@ -298,6 +301,7 @@ final class Route
         'terminal_check_encrypted_value'           => ['post',     'terminals/{id}/secret',                          'TerminalController@postCheckTerminalEncryptedValue'                ],
         'terminal_get_banks'                       => ['get',      'terminals/{id}/banks',                           'TerminalController@getBanks'                                       ],
         'terminal_set_banks'                       => ['patch',    'terminals/{id}/banks',                           'TerminalController@setBanks'                                       ],
+        'terminal_migrate_cron'                    => ['post',     'terminals/migrate_cron',                         'TerminalController@postTerminalsMigrateCron'                        ],
         'terminal_onboarding_update_status'        => ['put',      'terminal_onboarding_update_status',              'TerminalOnboardingController@putTerminalOnboardingStatus'    ],
         'terminal_enable'                          => ['put',      'terminals/{id}/enable',                          'TerminalOnboardingController@putTerminalEnable'                    ],
         'terminal_disable'                         => ['put',      'terminals/{id}/disable',                         'TerminalOnboardingController@putTerminalDisable'                   ],
@@ -305,6 +309,8 @@ final class Route
         'terminal_onboard'                         => ['post',     'terminals',                                      'TerminalOnboardingController@postCreateTerminal'                   ],
         'terminal_onboarding_verification'         => ['post',     'terminals/onboard/verification',                 'TerminalOnboardingController@postOnboardTerminalVerification'      ],
         'terminal_onboarding_creation'             => ['post',     'terminals/onboard/creation',                     'TerminalOnboardingController@postOnboardTerminalCreation'          ],
+        'initiate_terminal_onboarding'             => ['post',     'terminals/onboard',                              'TerminalOnboardingController@postInitiateOnboarding'               ],
+        'terminal_onboard_callback'                => ['post',     'terminals/onboard/{gateway}/callback/{mode}',    'TerminalOnboardingController@postTerminalOnboardCallback'          ],
         'bank_transfer_process'                    => ['post',     'ecollect/validate',                              'BankTransferController@processBankTransfer'                        ],
         'bank_transfer_process_icici'              => ['post',     'ecollect/validate/icici',                        'BankTransferController@processIciciBankTransfer'                   ],
         'bank_transfer_process_file'               => ['post',     'ecollect/validate/file',                         'BankTransferController@processBankTransferFile'                    ],
@@ -862,6 +868,7 @@ final class Route
         'action_comment_create'                    => ['post',     'w-actions/{id}/comments',                        'WorkflowController@postActionComment'                              ],
         'workflow_payout_amount_rules'             => ['get',      'workflows/rules/payout_amount',                  'WorkflowController@getWorkflowPayoutAmountRules'                   ],
         'workflow_payout_amount_rules_get_admin'   => ['get',      'admin-workflows/rules/payout_amount',            'WorkflowController@getWorkflowPayoutAmountRules'                   ],
+        'workflow_payout_amount_rules_edit'        => ['put',      'admin-workflows/rules/payout_amount',            'WorkflowController@editWorkflowPayoutAmountRules'                   ],
         'workflow_payout_amount_rules_create'      => ['post',     'workflows/rules/payout_amount',                  'WorkflowController@postWorkflowPayoutAmountRules'                  ],
         'workflow_merchants_create_payout_get'     => ['get',      'merchants/workflows/permissions/create_payout',  'WorkflowController@getMerchantIdsForCreatePayoutWorkflowPermission'],
 
@@ -986,7 +993,7 @@ final class Route
         'user_fetch'                               => ['get',      'users/{id}',                                     'UserController@getUser'                                            ],
         'user_access'                              => ['get',      'users/access',                                   'UserController@checkUserAccess'                                    ],
         'user_verify_second_factor_auth'           => ['post',     'users/2fa/verify',                               'UserController@verifyUserSecondFactorAuth'                         ],
-        'user_resend_otp_2fa'                      => ['post',     'users/2fa/otp_resend',                            'UserController@resendOtp'                                         ],
+        'user_resend_otp_2fa'                      => ['post',     'users/2fa/otp_resend',                           'UserController@resendOtp'                                          ],
 
         // mobile setup for 2fa
         'user_login_2fa_setup_mobile'              => ['patch',    'users/2fa_setup/contact_mobile',                 'UserController@setup2faContactMobile'                              ],
@@ -1487,10 +1494,12 @@ final class Route
         'governor_update_rule_group_v1'           => ['put',      'namespaces/{namespace_id}/rule_chains/{rule_chain_id}/rule_groups/{rule_group_id}',                  'GovernorController@proxy'              ],
 
         'banking_account_create'                  => ['post',     'banking_accounts',                                          'BankingAccountController@create'                           ],
+        'banking_account_create_admin'            => ['post',     'banking_accounts_admin',                                    'BankingAccountController@create'                           ],
         'banking_account_activate'                => ['post',     'banking_accounts/{id}/activate',                            'BankingAccountController@activate'                         ],
         'banking_serviceable_pincodes'            => ['post',     'banking_account/serviceability/{channel}/pincodes',         'BankingAccountController@postServiceablePincodes'          ],
         'banking_accounts_list'                   => ['get',      'banking_accounts',                                          'BankingAccountController@list'                             ],
         'banking_account_update'                  => ['patch',    'banking_accounts/{id}',                                     'BankingAccountController@update'                           ],
+        'banking_account_bulk_assign_reviewer'    => ['post',     'banking_accounts/reviewers',                                'BankingAccountController@bulkAssignReviewer'               ],
         'banking_account_gateway_balance_fetch'   => ['put',      'banking_accounts/gateway/{channel}/balance',                'BankingAccountController@processGatewayBalanceUpdate'      ],
         'banking_account_webhook_account_info'    => ['post',     'banking_accounts/webhooks/account_info/{channel}',          'BankingAccountController@processAccountInfoWebhook'        ],
         'banking_account_webhook_account_info'
@@ -1507,6 +1516,12 @@ final class Route
         'fetch_throttle_settings'                 => ['get',      'throttle/settings',                                         'ThrottleController@list'                                   ],
         'edit_throttle_settings'                  => ['put',      'throttle/settings',                                         'ThrottleController@create'                                 ],
         'bootstrap_key_cache'                     => ['post',     'throttle/bootstrap_key_cache',                              'ThrottleController@bootstrapKeyCache'                      ],
+        'throttle_create_config'                  => ['post',     'throttle/config',                                           'ThrottleController@createConfig'                           ],
+        'throttle_get_config'                     => ['get',      'throttle/config',                                           'ThrottleController@fetchConfig'                            ],
+        'throttle_delete_config'                  => ['delete',   'throttle/config',                                           'ThrottleController@deleteConfig'                           ],
+
+
+
 
         //merchant document related routes
         'merchant_document_delete'                => ['delete',   'merchant/documents/{id}',                                   'DocumentController@delete'                                 ],
@@ -1608,6 +1623,9 @@ final class Route
         'fetch_batch_action_entities'             => ['get',       'batch_action_entities',                                  'MerchantController@getBatchActionEntities'                 ],
         'update_wait_timeout'                     => ['post',      'db/wait_timeout',                                        'AdminController@setWaitTimeout'                 ],
         'consume_typeform_webhook'                => ['post',      'typeform/webhook_consumption',                                  'TypeformController@webhookConsumption'          ],
+
+        //cron job to retry penny testing for initiated case
+        'retry_penny_testing_cron'                => ['post',      'merchants/retry_penny_testing',                           'merchantController@retryPennyTestingCron'                 ],
     ];
 
     public static $public = [
@@ -2132,7 +2150,11 @@ final class Route
         'banking_account_gateway_balance_fetch',
         'merchant_poc_update',
         'unclaimed_merchant_poc_update',
+        'internal_merchant_fetch',
+        'terminal_migrate_cron',
         'virtual_account_batch_migrate_yesbank',
+        'merchant_create_terminal_internal',
+        'retry_penny_testing_cron',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -2462,6 +2484,10 @@ final class Route
         'fd_reserve_balance_ticket_status',
 
         'entity_bulk_update',
+
+        'initiate_terminal_onboarding',
+        'proxy_merchant_get_terminals',
+
         'payout_links_merchant_settings_post',
         'payout_links_merchant_settings_get',
         'payout_links_merchant_on_boarding_status',
@@ -2562,6 +2588,7 @@ final class Route
         'workflow_update',
         'workflow_delete',
         'workflow_payout_amount_rules_get_admin',
+        'workflow_payout_amount_rules_edit',
         'workflow_merchants_create_payout_get',
         'workflow_payout_amount_rules_create',
         'action_checker_create',
@@ -2901,6 +2928,7 @@ final class Route
         'banking_account_activate',
         'banking_account_webhook_account_info_internal',
         'banking_account_activation_status_change_log',
+        'banking_account_bulk_assign_reviewer',
 
         'governor_create_namespace_v1',
         'governor_get_client_v1',
@@ -2926,11 +2954,16 @@ final class Route
         'governor_delete_rule_group_v1',
         'governor_update_rule_group_v1',
         'governor_update_rule_v1',
+        'banking_account_create_admin',
 
         // throttle settings routes
         'fetch_throttle_settings',
         'edit_throttle_settings',
         'bootstrap_key_cache',
+        'throttle_create_config',
+        'throttle_delete_config',
+        'throttle_get_config',
+
 
         // Excel Store routes
         'excel_store_list_pages',
@@ -3099,6 +3132,7 @@ final class Route
         'workflow_payout_amount_rules_create'      => Permission::CREATE_WORKFLOW,
         'workflow_get'                             => Permission::VIEW_WORKFLOW,
         'workflow_payout_amount_rules_get_admin'   => Permission::VIEW_WORKFLOW,
+        'workflow_payout_amount_rules_edit'        => Permission::EDIT_WORKFLOW,
         'workflow_get_multiple'                    => Permission::VIEW_ALL_WORKFLOW,
         'workflow_merchants_create_payout_get'     => Permission::VIEW_ALL_WORKFLOW,
         'workflow_update'                          => Permission::EDIT_WORKFLOW,
@@ -3157,6 +3191,8 @@ final class Route
         'terminal_reassign_merchant'               => Permission::ASSIGN_MERCHANT_TERMINAL,
         'terminal_add_merchant'                    => Permission::TERMINAL_MANAGE_MERCHANT,
         'terminal_remove_merchant'                 => Permission::TERMINAL_MANAGE_MERCHANT,
+        'initiate_terminal_onboarding'             => '*',
+        'proxy_merchant_get_terminals'             => '*',
         'emi_plan_delete'                          => Permission::DELETE_EMI_PLAN,
         'iin_edit'                                 => Permission::EDIT_IIN_RULE,
         'iin_edit_bulk'                            => Permission::EDIT_IIN_RULE_BULK,
@@ -3271,7 +3307,7 @@ final class Route
         'coupon_update'                            => Permission::CREATE_PROMOTION_COUPON,
         'coupon_validate'                          => '*',
         'credits_edit'                             => Permission::EDIT_MERCHANT_CREDITS,
-        'credits_create_bulk'                      => '*',
+        'credits_create_bulk'                      => Permission::ADD_MERCHANT_CREDITS,
         'currency_fetch_rates'                     => '*',
         'dispute_migrate_adjustments'              => '*',
         'dummy_route'                              => '*',
@@ -3551,6 +3587,9 @@ final class Route
         'fetch_throttle_settings'                  => Permission::EDIT_THROTTLE_SETTINGS,
         'edit_throttle_settings'                   => Permission::EDIT_THROTTLE_SETTINGS,
         'bootstrap_key_cache'                      => Permission::EDIT_THROTTLE_SETTINGS,
+        'throttle_create_config'                   => Permission::EDIT_THROTTLE_SETTINGS,
+        'throttle_delete_config'                   => Permission::EDIT_THROTTLE_SETTINGS,
+        'throttle_get_config'                      => Permission::EDIT_THROTTLE_SETTINGS,
 
         'excel_store_list_pages'                   => Permission::ACCESS_EXCEL_STORE,
         'excel_store_create_page'                  => Permission::ACCESS_EXCEL_STORE,
@@ -3564,6 +3603,7 @@ final class Route
         'banking_account_yesb_bulk_create'         => Permission::BANKING_UPDATE_ACCOUNT,
         'banking_account_activation_status_'
         . 'change_log'                             => '*',
+        'banking_account_bulk_assign_reviewer'     => Permission::ASSIGN_BANKING_ACCOUNT_REVIEWER,
         'set_channel_action'                       => Permission::SETTLEMENT_BULK_UPDATE,
         'get_channel_action'                       => Permission::SETTLEMENT_BULK_UPDATE,
 
@@ -3637,6 +3677,7 @@ final class Route
         'link_offline_device'                       => '*',
         'user_roles_mapping_bulk'                   => Permission::MAKE_API_CALL,
         'consume_typeform_webhook'                  => Permission::EDIT_MERCHANT_INTERNATIONAL,
+        'banking_account_create_admin'              => '*',
     ];
 
     public static $bankingRoutePermissions = [
@@ -3691,8 +3732,8 @@ final class Route
         'payout_links_fetch_by_id'                     => Permission::VIEW_PAYOUT_LINKS,
         'payout_links_create'                          => Permission::CREATE_PAYOUT_LINKS,
         'payout_links_cancel'                          => Permission::CANCEL_PAYOUT_LINKS,
-        'payout_links_merchant_on_boarding_status'     => Permission::SUMMARY_PAYOUT_LINKS,
-        'payout_links_merchant_summary'                => Permission::ONBOARDING_PAYOUT_LINKS,
+        'payout_links_merchant_on_boarding_status'     => Permission::VIEW_PAYOUT_LINKS,
+        'payout_links_merchant_summary'                => Permission::VIEW_PAYOUT_LINKS,
         'payout_links_settings_post'                   => Permission::SETTINGS_PAYOUT_LINKS,
         'payout_links_settings_get'                    => Permission::SETTINGS_PAYOUT_LINKS,
         'payout_links_merchant_settings_get'           => Permission::DASHBOARD_PAYOUT_LINKS,
@@ -3824,6 +3865,7 @@ final class Route
         'gateway_payment_callback_amazonpay_post',
         'gateway_payment_verify_get',
         'gateway_payment_verify_post',
+        'terminal_onboard_callback',
         'mailgun_webhook',
         'gateway_downtime_source_webhook',
         'checkout_onyx',
@@ -4060,8 +4102,10 @@ final class Route
             'banking_account_gateway_balance_fetch',
             'merchant_poc_update',
             'unclaimed_merchant_poc_update',
+            'terminal_migrate_cron',
             'virtual_account_batch_migrate_yesbank',
-            'transfer_settlements_update'
+            'transfer_settlements_update',
+            'retry_penny_testing_cron',
         ],
 
         'subscriptions' => [
@@ -4240,6 +4284,11 @@ final class Route
         //
         'automation' => [
             '*'
+        ],
+
+        'terminals_service' => [
+            'internal_merchant_fetch',
+            'merchant_create_terminal_internal'
         ],
     ];
 
@@ -4548,6 +4597,82 @@ final class Route
 
     const TYPEFORM_SECURITY = [
         'consume_typeform_webhook',
+    ];
+
+    //Banking specific routes for which sensitive data will be scrubbed from logs.
+    const BANKING_SPECIFIC_ROUTES = [
+        'payout_create',
+        'payout_create_with_otp',
+        'payout_bulk_create',
+        'payout_approve_bulk',
+        'payout_reject_bulk',
+        'payout_approve',
+        'payout_reject',
+        'payout_fetch_by_id',
+        'payout_fetch_multiple',
+        'payout_cancel',
+        'payout_update_status',
+        'payout_purpose_get',
+        'payout_purpose_post',
+        'payout_fetch_reversals',
+        'payouts_process_queued',
+        'payouts_summary',
+        'payouts_workflow_summary',
+
+        'payout_links_fetch_multiple',
+        'payout_links_fetch_by_id',
+        'payout_links_create',
+        'payout_links_generate_end_user_otp',
+        'payout_links_generate_end_user_otp_cors',
+        'payout_links_verify_customer_otp',
+        'payout_links_verify_customer_otp_cors',
+        'payout_links_cancel',
+        'payout_links_status',
+        'payout_links_status_cors',
+        'payout_update_pull_payout_status',
+        'payout_links_customer_hosted_page',
+
+        'payout_links_added_fund_accounts',
+        'payout_links_added_fund_accounts_cors',
+        'payout_links_initiate',
+        'payout_links_initiate_cors',
+        'payout_links_settings_post',
+        'payout_links_settings_get',
+        'payout_links_merchant_settings_get',
+        'payout_links_merchant_settings_post',
+        'payout_links_merchant_on_boarding_status',
+        'payout_links_merchant_summary',
+        'payout_links_resend_notification',
+
+        'contact_get',
+        'contact_list',
+        'contact_create',
+        'bulk_contact_create',
+        'contact_update',
+        'contact_delete',
+        'contact_types_get',
+        'contact_types_post',
+
+        'fund_account_validate',
+        'fund_account_validation_retry',
+        'fund_account_validate_fetch',
+        'fund_account_validate_fetch_by_id',
+        'fund_account_get',
+        'fund_account_list',
+        'fund_account_create',
+        'fund_account_update',
+        'fund_account_bulk_create',
+
+        'banking_account_statement_generate',
+
+        'bank_transfer_process',
+        'bank_transfer_process_icici',
+        'bank_transfer_process_file',
+        'bank_transfer_process_file_rbl',
+        'bank_transfer_process_rbl',
+        'bank_transfer_process_rbl_test',
+        'bank_transfer_process_rbl_internal',
+        'bank_transfer_process_test',
     ];
 
     /**
@@ -5025,5 +5150,10 @@ final class Route
         $routeName = $this->app['request.ctx']->getRoute();
 
         return (in_array($routeName, self::ROUTES_THROUGH_MASTER_REPLICA, true) === true);
+    }
+
+    public static function getBankingSpecificRoutes()
+    {
+        return self::BANKING_SPECIFIC_ROUTES;
     }
 }

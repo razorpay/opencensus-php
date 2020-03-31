@@ -7,6 +7,66 @@ use \RZP\Models\Payment\Gateway;
 use RZP\Error\PublicErrorDescription;
 
 return [
+
+    'testProxyFetchMerchantTerminals' => [
+        'request' => [
+            'method' => 'GET',
+            'url' => '/proxy/merchant/terminals',
+            'content' => ['gateway' => 'wallet_paypal']
+        ],
+        'response' => [
+            'content' => [
+                'entity' => "collection",
+                'count'  => 1,
+                'items'  => [
+                    [
+                    'entity'   => "terminal",
+                    'status'   => "activated",
+                    'enabled'  => true,
+                    'mpan'     => [
+                        'mc_mpan'    => NULL,
+                        'rupay_mpan' => NULL,
+                        'visa_mpan'  => NULL
+                     ],
+                    'notes' => NULL,
+                    ]
+                ]
+            ],
+            'status_code'   => 200,
+        ],
+    ],
+
+    'testProxyFetchMerchantTerminalsWithNoTerminalInApi' => [
+        'request' => [
+            'method' => 'GET',
+            'url' => '/proxy/merchant/terminals',
+            'content' => [
+                'gateway' => 'wallet_paypal'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'entity' => "collection",
+                'count'  => 1,
+                'items'  => [
+                    [
+                        'id'       => "ETbhgqkBRIiAkt",
+                        'entity'   => "terminal",
+                        'status'   => "requested",
+                        'enabled'  => false,
+                        'mpan'     => [
+                            'mc_mpan'    => '',
+                            'rupay_mpan' => '',
+                            'visa_mpan'  => ''
+                        ],
+                        'notes' => NULL,
+                    ]
+                ]
+            ],
+            'status_code'   => 200,
+        ],
+    ],
+
     'testAssignTerminal' => [
         'request' => [
             'content' => [
@@ -1102,6 +1162,30 @@ return [
         'response' => [
             'content'  => [
                 'gateway_merchant_id'  => 'MPGS0000000001202',
+                'enabled'              => true,
+            ]
+        ]
+    ],
+
+    'testCreateIsgCardTerminal'  => [
+        'request' => [
+            'content' => [
+                'gateway'                   => 'isg',
+                'gateway_merchant_id'       => 'some_random_val',
+                'gateway_access_code'       => 'oxymoron',
+                'card'                      => 1,
+                'gateway_secure_secret'     => 'hogwards',
+                'gateway_terminal_id'       => 'CG000001',
+                'gateway_acquirer'          => 'kotak',
+                'type'                      => [
+                    'non_recurring' => '1',
+                ],
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content'  => [
+                'gateway_merchant_id'  => 'some_random_val',
                 'enabled'              => true,
             ]
         ]
@@ -2356,8 +2440,26 @@ return [
         ],
     ],
 
+    'testCreatedTerminalsShouldNotBeDisabled' => [
+        'request' => [
+            'method' => 'PUT'
+        ],
+        'response' => [
+            'content'  => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Only pending or activated terminals can be disabled',
+                ],
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ONLY_PENDING_OR_ACTIVATED_TERMINALS_CAN_BE_DISABLED
+        ],
+    ],
 
-    'testOnlyActivatedTerminalShouldBeEnabled'  => [
+    'testOnlyDeactivatedTerminalsShouldBeEnabled'  => [
         'request' => [
             'method' => 'PUT'
         ],

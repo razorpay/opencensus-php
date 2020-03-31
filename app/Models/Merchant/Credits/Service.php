@@ -70,7 +70,10 @@ class Service extends Base\Service
         {
             try
             {
-                $this->grantCreditsForMerchant($merchantId, $creditInput);
+                $this->app['workflow']->skipWorkflows(function() use ($merchantId, $creditInput)
+                {
+                    $this->grantCreditsForMerchant($merchantId, $creditInput);
+                });
             }
             catch (\Throwable $t)
             {

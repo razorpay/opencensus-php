@@ -5,6 +5,7 @@ namespace RZP\Services;
 use App;
 use RZP\Exception;
 use Requests_Session;
+use RZP\Models\Order;
 use RZP\Error\ErrorCode;
 use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Base\VerifyResult;
@@ -221,6 +222,8 @@ class CardPaymentService
 
     public function sendRequest(string $method, string $url, array $data = [])
     {
+        $this->addOrderDetailsIfNotPresent($data);
+
         $request = [
             'url'     => $url,
             'method'  => $method,
@@ -251,6 +254,24 @@ class CardPaymentService
         $this->traceResponse($response);
 
         return $response;
+    }
+
+    protected function addOrderDetailsIfNotPresent(array & $data)
+    {
+        $input = $data['input'];
+
+        if ((isset($input['payment']) === true) and
+            (isset($input['payment']['order_id']) === true))
+        {
+            $orderId = $input['payment']['order_id'];
+
+            $order = (new Order\Repository())->find($orderId);
+
+            if (is_null($order) === false)
+            {
+                $data['input']['order'] = $order->toArrayPublic();
+            }
+        }
     }
 
     protected function traceRequest(array $request)
@@ -290,6 +311,7 @@ class CardPaymentService
                 'token.id'                 => 'content.input.token.id',
                 'analytics.risk_engine'    => 'content.input.payment_analytics.risk_engine',
                 'analytics.risk_score'     => 'content.input.payment_analytics.risk_score',
+                'order.receipt'            => 'content.input.order.receipt',
             ];
 
             $requestTrace = [];

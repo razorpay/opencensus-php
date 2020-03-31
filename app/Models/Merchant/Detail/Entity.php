@@ -139,6 +139,7 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
     const AUTHORIZED_SIGNATORY_RESIDENTIAL_ADDRESS = 'authorized_signatory_residential_address';
     const AUTHORIZED_SIGNATORY_DOB                 = 'authorized_signatory_dob';
     const PLATFORM                                 = 'platform';
+    const PENNY_TESTING_UPDATED_AT                 = 'penny_testing_updated_at';
 
     // fields_pending field is used in new Account APIs.
     const FIELDS_PENDING = 'fields_pending';
@@ -1065,5 +1066,15 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
     public function getFundAccountValidationId()
     {
         return $this->getAttribute(self::FUND_ACCOUNT_VALIDATION_ID);
+    }
+
+    public function getPennyTestingUpdatedAt()
+    {
+        $this->getAttribute(self::PENNY_TESTING_UPDATED_AT);
+    }
+
+    public function setPennyTestingUpdatedAt(string $pennyTestingUpdatedAt)
+    {
+        $this->setAttribute(self::PENNY_TESTING_UPDATED_AT, $pennyTestingUpdatedAt);
     }
 }

@@ -246,4 +246,18 @@ class Repository extends Base\Repository
 
         return $status;
     }
+
+    /**
+     * @param $status
+     * @param $pennyTestingUpdatedAt
+     *
+     * @return mixed
+     */
+    public function fetchMerchantDetailsByBankDetailVerificationStatusAndUpdatedAt($status, $pennyTestingUpdatedAt)
+    {
+        return $this->newQuery()
+                ->where(Entity::BANK_DETAILS_VERIFICATION_STATUS,'=',$status)
+                ->where(Entity::PENNY_TESTING_UPDATED_AT,'<',$pennyTestingUpdatedAt)
+                ->get();
+    }
 }

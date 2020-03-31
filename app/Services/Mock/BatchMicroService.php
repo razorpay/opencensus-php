@@ -60,9 +60,10 @@ class BatchMicroService extends BaseBatchMicroService
         return $fetchResult;
     }
 
-    public function downloadS3UrlForBatchOrFileStore(string $id, string $batchOrFileStore)
+    public function downloadS3UrlForBatchOrFileStore(string $id, string $batchOrFileStore, string $merchantId = null)
     {
-        if ($id === 'batch_C7e2YqUIpZ2KwZ')
+        if ($id === 'batch_C7e2YqUIpZ2KwZ' and
+            $merchantId ==='10000000000000')
         {
             return 'www.s3.download.com';
         }

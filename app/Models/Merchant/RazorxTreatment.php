@@ -43,8 +43,6 @@ final class RazorxTreatment
 
     const SELLER_APP_PL_BATCH_UPLOAD_EXPERIMENT = 'sellerapp_PL_batch_upload';
 
-    const TRANSFERS_VIA_ORDER = 'transfers_via_order';
-
     const RENDERING_PREFERENCES_PAYMENT_LINKS = 'rendering_preferences_payment_links';
 
     // Decides if fund account and contact creation should have duplicate checks
@@ -110,6 +108,6 @@ final class RazorxTreatment
 
     const RAZORPAY_X_ENABLE_YESBANK_PAYOUTS = 'razorpay_x_enable_yesbank_payouts';
 
-    // Disabling bank transfer refunds by default - this feature is to enable it
-    const ENABLE_BANK_TRANSFER_REFUNDS = 'enable_bank_transfer_refunds';
+    // allow pre_signup data to send to salesforce
+    const PRE_SIGNUP_DETAILS_TO_SALESFORCE = 'pre_signup_details_to_salesforce';
 }

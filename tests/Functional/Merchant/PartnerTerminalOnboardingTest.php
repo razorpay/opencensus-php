@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\Merchant;
 use Mockery;
 use Carbon\Carbon;
 use RZP\Models\Terminal;
+use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Tests\Functional\TestCase;
 use Illuminate\Support\Facades\Redis;
@@ -186,7 +187,39 @@ class PartnerTerminalOnboardingTest extends TestCase
         $this->assertEquals($terminal['enabled'], true);
     }
 
-    public function testOnlyActivatedTerminalShouldBeEnabled()
+    public function testCreatedTerminalsShouldNotBeDisabled()
+    {
+        $this->app['config']->set('gateway.mock_mozart', true);
+
+        $subMerchantId = $this->setUpPartnerAuthAndGetSubMerchantId();
+
+        $this->fixtures->merchant->addFeatures(FeatureConstants::TERMINAL_ONBOARDING);
+
+        $terminal = $this->fixtures->create('terminal', [
+            'enabled'     => true,
+            'status'      => 'created',
+            'merchant_id' => $subMerchantId,
+            'gateway'     => 'worldline',
+            'mc_mpan'     => '1234567890123456',
+            'visa_mpan'   => '9876543210123456',
+            'rupay_mpan'  => '1234123412341234',
+            'notes'       => 'some notes'
+        ]);
+
+        $this->fixtures->create('terminal_onboarding_detail', [
+            'terminal_id'       => $terminal->getId(),
+            'status'            => 'activated',
+            'verify_bucket'     => 0,
+        ]);
+        
+        $url = '/terminals/' . $terminal->getSignedId($terminal['id']) . '/disable';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
+    public function testOnlyDeactivatedTerminalsShouldBeEnabled()
     {
         $this->app['config']->set('gateway.mock_mozart', true);
 
@@ -311,6 +344,10 @@ class PartnerTerminalOnboardingTest extends TestCase
         $this->assertEquals($terminal1->getGatewayMerchantId(), 999000000000001);
 
         $this->assertEquals($terminal1->getGatewayTerminalId(), 12380001);
+
+        $subMerchant = (new Merchant\Repository)->find($subMerchantId);
+
+        $this->assertTrue($subMerchant->isFeatureEnabled('bharat_qr'));
 
         $this->testData[__FUNCTION__] = $this->testData['testTerminalOnboardingCreateTerminal2'];
 

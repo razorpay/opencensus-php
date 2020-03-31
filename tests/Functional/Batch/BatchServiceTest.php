@@ -79,6 +79,20 @@ class BatchServiceTest extends TestCase
         $this->startTest();
     }
 
+    public function testBatchServiceIllegalDownloadBatch()
+    {
+        $merchant = $this->fixtures->create('merchant',
+            [
+                'id'          => '10000000000001',
+            ]);
+
+        $user = $this->fixtures->user->createUserForMerchant($merchant['id']);
+
+        $this->ba->proxyAuth('rzp_test_10000000000001', $user->getId());
+
+        $this->startTest();
+    }
+
     public function testBatchCreateToNewBatchService()
     {
         $entries = $this->getDefaultFileEntries();

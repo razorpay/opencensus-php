@@ -21,8 +21,6 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
     const COLUMN_REFUND_AMOUNT   = 'transaction_amt';
     const COLUMN_ARN             = 'arn_no';
 
-    const SHOULD_ADD_ENTITY_ID_COLUMN = true;
-
     /**
      * Gets refund Id from gateway entity
      * using helper function.

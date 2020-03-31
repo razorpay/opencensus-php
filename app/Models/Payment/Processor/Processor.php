@@ -42,6 +42,7 @@ use RZP\Base\RepositoryManager;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Merchant\Methods;
 use RZP\Models\Plan\Subscription;
+use RZP\Models\Payment\UpiMetadata;
 use RZP\Models\Payment\Refund\Speed;
 use RZP\Gateway\Base\CardCacheTrait;
 use RZP\Listeners\ApiEventSubscriber;
@@ -942,41 +943,6 @@ class Processor
             'method' => 'wallet',
             'version' => '1',
         ];
-    }
-
-    protected function preProcessForUpiIfApplicable(array& $input)
-    {
-        if ($input['method'] !== Payment\Method::UPI)
-        {
-            return;
-        }
-
-        // New flow needs to use the UPI block, which was first utilising the `_`  meta block
-        // For backward compatibility, we still pick the values from the `_` block and set it
-        // on the `upi` block and Payments block has VPA which should be set in the `upi` block
-        // Priority is always UPI block
-        if (isset($input[Payment\Method::UPI][Payment\Entity::VPA]) === true)
-        {
-            $input[Payment\Entity::VPA] = $input[Payment\Method::UPI][Payment\Entity::VPA];
-        }
-        else if (isset($input[Payment\Entity::VPA]) === true)
-        {
-            $input[Payment\Method::UPI][Payment\Entity::VPA] =  $input[Payment\Entity::VPA];
-        }
-
-        if (isset($input[Payment\Method::UPI]['flow']) === true)
-        {
-            $input['_']['flow'] = $input[Payment\Method::UPI]['flow'];
-        }
-        else if (isset($input['_']['flow']) === true)
-        {
-            $input[Payment\Method::UPI]['flow'] = $input['_']['flow'];
-        }
-
-        if (isset($input[Payment\Method::UPI]['flow']) === false)
-        {
-            $input[Payment\Method::UPI]['flow'] = Flow::COLLECT;
-        }
     }
 
     protected function preProcessPaymentInputsForUpi(array $input, Payment\Entity $payment)
@@ -2872,7 +2838,11 @@ class Processor
     {
         $this->unsetSensitiveCardDetails($input);
 
-        $this->trace->debug(TraceCode::PAYMENT_NEW_REQUEST, $input);
+        $inputTrace = $input;
+
+        unset($inputTrace['notes']);
+
+        $this->trace->debug(TraceCode::PAYMENT_NEW_REQUEST, $inputTrace);
     }
 
     protected function unsetSensitiveCardDetails(array & $input)

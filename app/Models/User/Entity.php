@@ -354,6 +354,18 @@ class Entity extends Base\PublicEntity
                 ($this->isContactMobileVerified() === true));
     }
 
+    public function getMaskedContactMobile()
+    {
+        $mobile = $this->getContactMobile();
+
+        if (empty($mobile) === false)
+        {
+            return mask_except_last4($mobile);
+        }
+
+        return $mobile;
+    }
+
     protected function getRestrictedAttribute(): bool
     {
         $merchantIds = (new MerchantUser\Repository)->returnMerchantIdsForUserId($this->getAttribute(self::ID), 2);

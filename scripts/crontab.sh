@@ -152,6 +152,9 @@ add_cron "*/15 * * * *"      "merchant_es_sync_live"         POST "$BASE_URL/mer
 # Merchant Salesforce Poc Update
 add_cron "0 9,13,17 * * *"      "merchant_salesforce_poc"       POST "$BASE_URL/admin/poc_update"                              ""                           $LIVE_AUTH
 
+#penny testing retry for every 2 hour
+add_cron "0 */2 * * *"      "retry_penny_testing_cron"       POST "$BASE_URL/merchants/retry_penny_testing"                 ""                           $LIVE_AUTH
+
 # Daily: Dynamic netbanking URL update in status cake
 # add_cron "0 0 * * *"        "dynamic_netbanking_url_update"  POST "$BASE_URL/payment/netbanking/statuscake/urlsync"      "driver=statuscake"             $LIVE_AUTH
 
