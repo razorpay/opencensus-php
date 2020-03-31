@@ -48,6 +48,7 @@ class Constants
     const PENNY_TESTING_ATTEMPT_COUNT_REDIS_KEY_PREFIX  = 'penny_testing_attempt_count';
     const PENNY_TESTING_ATTEMPT_COUNT_TTL_IN_SEC        = 120;
     const PENNY_TESTING_MAX_ATTEMPT                     = 2;
+    const PENNY_TESTING_RETRY_PERIOD_IN_SEC             = 7200;
     const UNREGISTERED                                  = 'unregistered';
 
     // merchant verification

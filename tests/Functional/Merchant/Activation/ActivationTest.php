@@ -1663,13 +1663,7 @@ class ActivationTest extends OAuthTestCase
                                                    'kyc_clarification_reasons' => $this->getClarificationReason(),
                                                   ]);
 
-        $attribute = [
-            ValidationEntity::REGISTERED_NAME => "pankaj kumar",
-            ValidationEntity::ACCOUNT_STATUS  => "invalid",
-            ValidationEntity::NOTES           => [
-                ValidationEntity::MERCHANT_ID => $merchantDetail['merchant_id'],
-            ],
-        ];
+        $attribute = $this->getFavAttributes($merchantDetail, "pankaj kumar", "invalid");
 
         $this->validateBankDetailFailureCase($attribute, $merchantDetail);
     }
@@ -1685,31 +1679,95 @@ class ActivationTest extends OAuthTestCase
                                                    'submitted'               => 1,
                                                    'submitted_at'            => now()->getTimestamp()]);
 
-        $attribute = [
-            ValidationEntity::REGISTERED_NAME => "UNREGISTERED",
-            ValidationEntity::ACCOUNT_STATUS  => "active",
-            ValidationEntity::NOTES           => [
-                ValidationEntity::MERCHANT_ID => $merchantDetail['merchant_id'],
-            ],
-        ];
+        $attribute = $this->getFavAttributes($merchantDetail, "UNREGISTERED", "active");
 
-        $attribute1 = [
-            ValidationEntity::REGISTERED_NAME => "rishabh acharya",
-            ValidationEntity::ACCOUNT_STATUS  => "active",
-            ValidationEntity::NOTES           => [
-                ValidationEntity::MERCHANT_ID => $merchantDetail['merchant_id'],
-            ],
-        ];
+        $attribute1 = $this->getFavAttributes($merchantDetail, "rishabh acharya", "active");
 
         $this->createBalanceForSharedMerchant();
 
-        $pennyTestingAttemptRedisKey = DetailConstants::PENNY_TESTING_ATTEMPT_COUNT_REDIS_KEY_PREFIX . $merchantDetail->getId();
-
-        $this->app['cache']->put($pennyTestingAttemptRedisKey, 1, DetailConstants::PENNY_TESTING_ATTEMPT_COUNT_TTL_IN_SEC);
+        $this->updateRetryCountInRedis($merchantDetail);
 
         $this->checkFirstPennyTestingTry($attribute, $merchantDetail, 'initiated');
 
         $this->checkSecondPennyTestingTry($attribute1, $merchantDetail, 'activated', 'verified');
+    }
+
+    public function testPennyTestingCronSuccessful()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields',
+                                                  ['business_type'                    => 2,
+                                                   'promoter_pan_name'                => 'rishabh acharya',
+                                                   'bank_account_name'                => 'rishabh acharya',
+                                                   'poa_verification_status'          => 'verified',
+                                                   'poi_verification_status'          => 'verified',
+                                                   'bank_details_verification_status' => 'initiated',
+                                                   'penny_testing_updated_at'         => time() - 7300,
+                                                   'submitted'                        => 1,
+                                                   'submitted_at'                     => now()->getTimestamp()]);
+
+        $this->ba->appAuthTest();
+
+        $attribute = $this->getFavAttributes($merchantDetail, "rishabh acharya", "active");
+
+        $this->createBalanceForSharedMerchant();
+
+        $this->updateRetryCountInRedis($merchantDetail);
+
+        $testData = $this->testData['testPennyTestingRetryCron'];
+
+        $this->runRequestResponseFlow($testData);
+
+        $merchantDetail = $this->getDbEntityById('merchant_detail', $merchantDetail['merchant_id']);
+
+        $this->checkSecondPennyTestingTry($attribute, $merchantDetail, 'activated', 'verified');
+    }
+
+    public function testPennyTestingCronFailure()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields',
+                                                  ['business_type'                    => 2,
+                                                   'promoter_pan_name'                => 'rishabh acharya',
+                                                   'bank_account_name'                => 'rishabh acharya',
+                                                   'poa_verification_status'          => 'verified',
+                                                   'poi_verification_status'          => 'verified',
+                                                   'bank_details_verification_status' => 'initiated',
+                                                   'penny_testing_updated_at'         => time() - 7300,
+                                                   'kyc_clarification_reasons'        => $this->getClarificationReason(),
+                                                   'submitted'                        => 1,
+                                                   'submitted_at'                     => now()->getTimestamp()]);
+
+        $this->ba->appAuthTest();
+
+        Mail::fake();
+
+        $attribute = $this->getFavAttributes($merchantDetail, "random name", "active");
+
+        $this->createBalanceForSharedMerchant();
+
+        $this->updateRetryCountInRedis($merchantDetail);
+
+        $testData = $this->testData['testPennyTestingRetryCron'];
+
+        $this->runRequestResponseFlow($testData);
+
+        $merchantDetail = $this->getDbEntityById('merchant_detail', $merchantDetail['merchant_id']);
+
+        $this->checkSecondPennyTestingTry($attribute, $merchantDetail, 'needs_clarification', 'failed');
+
+        $this->assertEquals($merchantDetail->getKycClarificationReasons(), $this->getClarificationReasonsForPennyTestingFailure());
+
+        Mail::assertQueued(NeedsClarificationEmail::class);
+    }
+
+    protected function getFavAttributes($merchantDetail, string $registeredName, string $accountStatus)
+    {
+        return [
+            ValidationEntity::REGISTERED_NAME => $registeredName,
+            ValidationEntity::ACCOUNT_STATUS  => $accountStatus,
+            ValidationEntity::NOTES           => [
+                ValidationEntity::MERCHANT_ID => $merchantDetail['merchant_id'],
+            ],
+        ];
     }
 
     protected function checkFirstPennyTestingTry(array $attribute, &$merchantDetail, string $activationStatus)
@@ -1728,7 +1786,7 @@ class ActivationTest extends OAuthTestCase
     protected function checkSecondPennyTestingTry(array $favAttribute, &$merchantDetail, string $activationStatus, string $bankDetailsVerificationStatus)
     {
         //fund_account_validation_id after penny testing retry
-        $this->fixtures->edit('fund_account_validation', $merchantDetail['fund_account_validation_id'], $favAttribute);
+        $this->fixtures->on('test')->edit('fund_account_validation', $merchantDetail['fund_account_validation_id'], $favAttribute);
 
         $favRetry = $this->getLastEntity('fund_account_validation', true, 'test');
 
@@ -1753,13 +1811,7 @@ class ActivationTest extends OAuthTestCase
                                                    'kyc_clarification_reasons' => $this->getClarificationReason(),
                                                    'submitted_at'              => now()->getTimestamp()]);
 
-        $attribute = [
-            ValidationEntity::REGISTERED_NAME => "random name",
-            ValidationEntity::ACCOUNT_STATUS  => "active",
-            ValidationEntity::NOTES           => [
-                ValidationEntity::MERCHANT_ID => $merchantDetail['merchant_id'],
-            ],
-        ];
+        $attribute = $this->getFavAttributes($merchantDetail, "random name", "active");
 
         $this->validateBankDetailFailureCase($attribute, $merchantDetail);
     }
@@ -1884,5 +1936,16 @@ class ActivationTest extends OAuthTestCase
         ];
 
         return $this->fixtures->create('pricing', $pricingPlan);
+    }
+
+    /**
+     * @param     $merchantDetail
+     * @param int $count
+     */
+    private function updateRetryCountInRedis($merchantDetail, int $count = 1): void
+    {
+        $pennyTestingAttemptRedisKey = DetailConstants::PENNY_TESTING_ATTEMPT_COUNT_REDIS_KEY_PREFIX . $merchantDetail->getId();
+
+        $this->app['cache']->put($pennyTestingAttemptRedisKey, $count, DetailConstants::PENNY_TESTING_ATTEMPT_COUNT_TTL_IN_SEC);
     }
 }

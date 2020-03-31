@@ -1622,6 +1622,9 @@ final class Route
         'fetch_batch_action_entities'             => ['get',       'batch_action_entities',                                  'MerchantController@getBatchActionEntities'                 ],
         'update_wait_timeout'                     => ['post',      'db/wait_timeout',                                        'AdminController@setWaitTimeout'                 ],
         'consume_typeform_webhook'                => ['post',      'typeform/webhook_consumption',                                  'TypeformController@webhookConsumption'          ],
+
+        //cron job to retry penny testing for initiated case
+        'retry_penny_testing_cron'                => ['post',      'merchants/retry_penny_testing',                           'merchantController@retryPennyTestingCron'                 ],
     ];
 
     public static $public = [
@@ -2149,6 +2152,7 @@ final class Route
         'terminal_migrate_cron',
         'virtual_account_batch_migrate_yesbank',
         'merchant_create_terminal_internal',
+        'retry_penny_testing_cron',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -4097,7 +4101,8 @@ final class Route
             'unclaimed_merchant_poc_update',
             'terminal_migrate_cron',
             'virtual_account_batch_migrate_yesbank',
-            'transfer_settlements_update'
+            'transfer_settlements_update',
+            'retry_penny_testing_cron',
         ],
 
         'subscriptions' => [

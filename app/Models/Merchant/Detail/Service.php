@@ -1103,4 +1103,11 @@ class Service extends Base\Service
 
         return $fileName;
     }
+
+    public function retryPennyTestingCron()
+    {
+        (new Core())->retryPennyTestingCron();
+
+        return ['success' => true];
+    }
 }

@@ -126,7 +126,7 @@ class PennyTesting extends Base\Core
 
             $bankAccountValidationStatus = $this->getBankDetailVerificationStatus($input, $nameValidationData);
 
-            $merchantDetails->setBankDetailsVerificationStatus($bankAccountValidationStatus);
+            $this->setBankDetailsVerificationStatusAndUpdatedAt($merchantDetails, $bankAccountValidationStatus);
 
             $this->sendPennyTestingAndPushEvent($merchant,
                                                 $merchantDetails,
@@ -154,7 +154,7 @@ class PennyTesting extends Base\Core
      * @throws LogicException
      * @throws \Throwable
      */
-    protected function updateMerchantContext(Entity $merchantDetails, Merchant\Entity $merchant)
+    public function updateMerchantContext(Entity $merchantDetails, Merchant\Entity $merchant)
     {
         $detailCore = new Core();
 
@@ -340,12 +340,22 @@ class PennyTesting extends Base\Core
         if ((strtolower($input[DetailConstants::REGISTERED_NAME]) === DetailConstants::UNREGISTERED) or
             ($input[DetailConstants::ACCOUNT_STATUS] === DetailConstants::FAILURE))
         {
-            $attemptCount = $this->getPennyTestingAttempts($merchantDetails);
-
-            return $attemptCount < DetailConstants::PENNY_TESTING_MAX_ATTEMPT;
+            return $this->isPennyTestingAttemptLessThenMaxAttempt($merchantDetails);
         }
 
         return false;
+    }
+
+    /**
+     * @param Entity $merchantDetails
+     *
+     * @return bool
+     */
+    public function isPennyTestingAttemptLessThenMaxAttempt(Entity $merchantDetails)
+    {
+        $attemptCount = $this->getPennyTestingAttempts($merchantDetails);
+
+        return $attemptCount < DetailConstants::PENNY_TESTING_MAX_ATTEMPT;
     }
 
     /**
@@ -377,7 +387,7 @@ class PennyTesting extends Base\Core
     {
         $fromMerchant = $this->repo->merchant->findOrFailPublic(Merchant\Preferences::MID_ONBOARDING_PENNY_TESTING);
 
-        $merchantDetails->setBankDetailsVerificationStatus(BankDetailsVerificationStatus::INITIATED);
+        $this->setBankDetailsVerificationStatusAndUpdatedAt($merchantDetails, BankDetailsVerificationStatus::INITIATED);
 
         $this->trace->count(DetailMetric::UNREGISTERED_PENNY_TESTING_STATUS_TOTAL,
                             [
@@ -389,6 +399,17 @@ class PennyTesting extends Base\Core
         $fundAccountValidation = (new PennyTesting)->attempt($merchantDetails, $fromMerchant);
 
         $merchantDetails->setFundAccountValidationId($fundAccountValidation->getId());
+    }
+
+    /**
+     * @param Entity $merchantDetails
+     * @param        $bankDetailsVerificationStatus
+     */
+    protected function setBankDetailsVerificationStatusAndUpdatedAt(Entity $merchantDetails, $bankDetailsVerificationStatus)
+    {
+        $merchantDetails->setBankDetailsVerificationStatus($bankDetailsVerificationStatus);
+
+        $merchantDetails->setPennyTestingUpdatedAt(time());
     }
 
     /**

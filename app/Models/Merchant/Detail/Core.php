@@ -1687,8 +1687,6 @@ class Core extends Base\Core
         (new PennyTesting())->triggerPennyTesting($merchantDetails);
     }
 
-
-
     public function isAdditionalFieldRequired($field)
     {
         $merchantDetail = $this->getMerchantDetails($this->merchant);
@@ -1961,7 +1959,7 @@ class Core extends Base\Core
     }
 
     /**
-     * this function is called dynemically to update merchant details through batch action.
+     * this function is called dynamically to update merchant details through batch action.
      * This unction name is derived from action name.
      *
      * @param string $merchantId
@@ -1974,5 +1972,66 @@ class Core extends Base\Core
         (new Validator())->validateInput('update_entity_batch_action', $input);
 
         $this->editMerchantDetailFields($merchant, $input);
+    }
+
+    /**
+     * @throws \Throwable
+     */
+    public function retryPennyTestingCron()
+    {
+        $merchantDetails = $this->getMerchantDetailsWithBankDetailsVerificationStatus(BankDetailsVerificationStatus::INITIATED);
+
+        $pennyTesting = new PennyTesting();
+
+        foreach ($merchantDetails as $merchantDetail)
+        {
+            $isPennyTestingAttemptLessThenMaxAttempt = $pennyTesting->isPennyTestingAttemptLessThenMaxAttempt($merchantDetail);
+
+            $this->repo->transactionOnLiveAndTest(function() use ($merchantDetail, $pennyTesting, $isPennyTestingAttemptLessThenMaxAttempt) {
+
+                $merchant = $merchantDetail->merchant;
+
+                if ($isPennyTestingAttemptLessThenMaxAttempt === true)
+                {
+                    $pennyTesting->triggerPennyTesting($merchantDetail);
+                }
+                else
+                {
+                    $this->markBankDetailsVerificationStatusFailed($merchant, $merchantDetail);
+                }
+
+                $this->repo->saveOrFail($merchantDetail);
+                $this->repo->saveOrFail($merchant);
+            });
+        }
+    }
+
+    protected function markBankDetailsVerificationStatusFailed(Merchant\Entity $merchant, Entity $merchantDetail)
+    {
+        $merchantDetail->setBankDetailsVerificationStatus(BankDetailsVerificationStatus::FAILED);
+
+        (new PennyTesting())->updateMerchantContext($merchantDetail, $merchant);
+    }
+
+    /**
+     * eg. if cron job run for each 2 hour then
+     * only those merchant_details will be returned for which penny testing updated before 2 or more hours
+     *
+     * @param string $status Bank Details Verification Status
+     *
+     * @return mixed
+     */
+    protected function getMerchantDetailsWithBankDetailsVerificationStatus(string $status)
+    {
+        $currentTime = time();
+
+        $lastCronJobTime = $currentTime - DetailConstants::PENNY_TESTING_RETRY_PERIOD_IN_SEC;
+
+        $merchantDetails = $this->repo->useSlave(function() use ($lastCronJobTime, $status) {
+
+            return (new Repository())->fetchMerchantDetailsByBankDetailVerificationStatusAndUpdatedAt($status, $lastCronJobTime);
+        });
+
+        return $merchantDetails;
     }
 }

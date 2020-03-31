@@ -5674,6 +5674,12 @@ ALTER TABLE webhooks
 ALTER TABLE terminals
     ADD COLUMN account_type VARCHAR(255) DEFAULT NULL;
 
+ALTER TABLE merchant_details
+ADD INDEX `bank_details_verification_status_index` (`bank_details_verification_status`);
+
+ALTER TABLE merchant_details
+ADD COLUMN penny_testing_updated_at INT(11) DEFAULT NULL;
+
 // Since all the existing emi plans are credit, we need to add this.
 // If not, the duplicate emi plan checks will fail, since the ones existing in db has value null
 // and the new requests have value 'credit'.
