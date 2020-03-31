@@ -258,19 +258,19 @@ class SmartRouting
 
         $traceResponse = $responseBody;
 
-        $newTraceResponse = [];
-
-        foreach ($traceResponse as $terminal)
-        {
-            unset($terminal['mc_mpan'], $terminal['visa_mpan'], $terminal['rupay_mpan'], $terminal['network_mpan']);
-
-            array_push($newTraceResponse, $terminal);
-        }
+//        $newTraceResponse = [];
+//
+//        foreach ($traceResponse as $terminal)
+//        {
+//            unset($terminal['mc_mpan'], $terminal['visa_mpan'], $terminal['rupay_mpan'], $terminal['network_mpan']);
+//
+//            array_push($newTraceResponse, $terminal);
+//        }
 
         $this->trace->info(
             TraceCode::SMART_ROUTING_RESPONSE,
             [
-                'response' => $newTraceResponse
+                'response' => $traceResponse
             ]);
 
         if ($response->status_code >= 400)
