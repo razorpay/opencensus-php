@@ -224,7 +224,12 @@ class Name
     const EDIT_PARTNERS                       = 'edit_partners';
     const VIEW_PARTNERS                       = 'view_partners';
     const EDIT_REFUND                         = 'edit_refund';
+    const UPDATE_REFUND_REFERENCE1            = 'update_refund_reference1';
     const UPDATE_SCROOGE_REFUND_REFERENCE1    = 'update_scrooge_refund_reference1';
+    const UPDATE_PROCESSED_REFUNDS_STATUS     = 'update_processed_refunds_status';
+    const REFRESH_SCROOGE_FTA_MODES_CACHE     = 'refresh_scrooge_fta_modes_cache';
+    const BULK_RETRY_REFUNDS_VIA_FTA          = 'bulk_retry_refunds_via_fta';
+    const EDIT_INSTANT_REFUNDS_MODE_CONFIG    = 'edit_instant_refunds_mode_config';
     const RETRY_REFUND                        = 'retry_refund';
     const DOWNLOAD_NON_MERCHANT_REPORT        = 'download_non_merchant_report';
     const CREATE_VIRTUAL_ACCOUNTS             = 'create_virtual_accounts';
