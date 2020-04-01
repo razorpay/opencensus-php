@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Gateway\Downtime;
 
+use RZP\Models\Admin\Query\Validator;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Models\Payment\Method;
@@ -92,6 +93,23 @@ class Service extends Base\Service
     public function purgeKeys()
     {
         (new GatewayDowntimeDetection())->purgeKeys();
+    }
+
+    public function createDowntimeIfNecessary(array $input)
+    {
+        // TODO: validate
+        #(new \RZP\Models\Admin\Validator)->validateInput('check_api_downtime_cron', $input);
+
+        // Example: success_rate, payment_interval
+        $type = $input['type'];
+
+        // Example: issuer, network
+        $key = $input['key'];
+
+        // Example: SBIN, Visa (case same as in DB query)
+        $value = $input['value'];
+
+        (new DowntimeDetection())->createDowntimeIfNecessary($type, $key, $value);
     }
 
     public function stats()
