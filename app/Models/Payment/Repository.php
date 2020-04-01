@@ -1886,6 +1886,8 @@ class Repository extends Base\Repository
             $query = $query->where($paymentCreatedAtCol, '>' ,$from);
         }
 
+        $query = $query->where( Payment\Entity::STATUS, '<>', Status::CREATED);
+
         return $query->orderBy($paymentCreatedAtCol, 'desc')
                      ->limit($limit)
                      ->get();
