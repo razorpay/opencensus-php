@@ -25,9 +25,13 @@ class Core extends Base\Core
     {
         $upiTransferInput = $gatewayResponse['upi_transfer_data'];
 
+        $upiTransferTraceInput = $upiTransferInput;
+
+        unset($upiTransferTraceInput['payer_account']);
+
         $this->trace->info(
             TraceCode::UPI_TRANSFER_PAYMENT_PROCESS_REQUEST,
-            $upiTransferInput
+            $upiTransferTraceInput
         );
 
         $this->convertPayeeVpaToLower($upiTransferInput);

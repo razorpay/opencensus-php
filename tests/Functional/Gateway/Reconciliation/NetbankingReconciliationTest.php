@@ -85,15 +85,15 @@ class NetbankingReconciliationTest extends TestCase
 
         $batch = $this->getDbLastEntity('batch');
 
-        $this->assertEquals(0, $batch['total_count']);
+        $this->assertEquals(1, $batch['total_count']);
 
-        $this->assertEquals(0, $batch['success_count']);
+        $this->assertEquals(1, $batch['success_count']);
 
         $this->assertEquals(0, $batch['failure_count']);
 
         $transactionEntity = $this->getDbLastEntityPublic('transaction');
 
-        $this->assertNull($transactionEntity['reconciled_at']);
+        $this->assertNotNull($transactionEntity['reconciled_at']);
     }
 
     public function testRblFailedPaymentReconciliation()

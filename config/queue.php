@@ -301,7 +301,11 @@ return [
         'test'       => env('AWS_BEAM_TEST_QUEUE'),
         'live'       => env('AWS_BEAM_LIVE_QUEUE'),
     ],
-
+    //transfers queue
+    'transfer_settlement' => [
+        'test'       => env('AWS_TRANSFER_SETTLEMENT_TEST_QUEUE'),
+        'live'       => env('AWS_TRANSFER_SETTLEMENT_LIVE_QUEUE'),
+    ],
     // settlement related QUEUES
     'settlement_create' => [
         'test'       => env('AWS_SETTLEMENT_CREATE_TEST_QUEUE'),

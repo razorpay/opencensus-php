@@ -11,6 +11,7 @@ use RZP\Models\Reversal;
 use RZP\Models\Transfer;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Constants\Entity as EntityConstant;
 use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
 
@@ -37,6 +38,97 @@ class Service extends Base\Service
         }
 
         return $transfer->toArrayPublic();
+    }
+
+    public function UpdateTransfersWithSettlementId($settlementIds)
+    {
+        $this->trace->info(
+            TraceCode::TRANSFER_SETTLEMENT_INITIATED,
+            [
+                'settlementIds' => $settlementIds
+            ]);
+
+        foreach ($settlementIds as $settlementId)
+        {
+            try
+            {
+                $setl = $this->repo->settlement->findOrFail($settlementId);
+
+                $merchantId = $setl->getMerchantId();
+
+                $merchant = $this->repo->merchant->find($merchantId);
+
+                if ($merchant->isLinkedAccount() === true)
+                {
+                    $transactions = $this->repo->transaction->fetchTransactionsForSettlementId($settlementId);
+
+                    if ($transactions->isEmpty() === false)
+                    {
+                        $this->updateSettlementIdInTransfer($transactions, $settlementId);
+                    }
+                    else
+                    {
+                        if ($this->isDebugEnabled() === true)
+                        {
+                            $this->trace->info(TraceCode::RECIPIENT_SETTLEMENT_NO_TXNS_TO_UPDATE);
+                        }
+                        return;
+                    }
+                }
+            }
+            catch (\Exception $ex)
+            {
+                $this->trace->traceException(
+                    $ex,
+                    Trace::CRITICAL,
+                    TraceCode::SETTLEMENT_ID_NOT_FOUND_TRANSFERS,
+                    [
+                        'settlementId' => $settlementId,
+                    ]);
+            }
+        }
+    }
+
+    protected function updateSettlementIdInTransfer(\Illuminate\Support\Collection $transactions, $settlementId)
+    {
+        $startTime = microtime(true);
+
+        try
+        {
+            $this->repo->transaction(function () use($transactions)
+            {
+                foreach ($transactions as $txn)
+                {
+                    $settlementId = $txn->getSettlementId();
+
+                    $transfer = $txn->source->transfer;
+
+                    $transfer->setRecipientSettlementId($settlementId);
+
+                    $this->repo->saveOrFail($transfer);
+                }
+            });
+
+            $timeTaken = microtime(true) - $startTime;
+
+            $this->trace->info(
+                TraceCode::RECIPIENT_SETTLEMENT_UPDATE_TIME_TAKEN,
+                [
+                    'time_taken' => $timeTaken,
+                ]);
+
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->traceException(
+                $ex,
+                Trace::CRITICAL,
+                TraceCode::TRANSFER_UPDATE_SETTLEMENT_ID_FAILED,
+                [
+                    'transactions' => $transactions,
+                    'settlementId' => $settlementId,
+                ]);
+        }
     }
 
     public function fetchMultiple(array $input)
