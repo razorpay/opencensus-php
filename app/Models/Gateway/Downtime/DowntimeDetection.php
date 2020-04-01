@@ -88,7 +88,8 @@ class DowntimeDetection
         $downtimeMetric->total_payments = 0;
 
         // will only be used if downtime is detected
-        if (empty($payments) == false)
+        $downtimeMetric->downtime_start_time = null;
+        if ($payments->isEmpty() == false)
         {
             $downtimeMetric->downtime_start_time = $payments->get(0)->getCreatedAt();
         }
@@ -182,7 +183,7 @@ class DowntimeDetection
                         'key' => $key,
                         'value' => $value,
                         'setting_type' => 'create',
-                        'downtime_start_time' => $metric->downtime_start_time + 30,
+                        'downtime_start_time' => $metric->downtime_start_time,
                         'top_merchant_count' => $metric->top_merchant_count,
                         'maxWindowSizeInSeconds' => $maxWindowSizeInSeconds,
                         'minimumPayments' => $minimumPayments,
@@ -222,7 +223,7 @@ class DowntimeDetection
                             'type' => $type,
                             'key' => $key,
                             'value' => $value,
-                            'downtime_start_time' => $metric->downtime_start_time + 30,
+                            'downtime_start_time' => $metric->downtime_start_time,
                             'maxWindowSizeInSeconds' => $maxWindowSizeInSeconds,
                             'minimumPayments' => $minimumPayments,
                             'successRateForDowntime' => $successRateForDowntime,
@@ -266,7 +267,7 @@ class DowntimeDetection
                     'value' => $value,
                     'setting_type' => 'resolve',
                     'downtime_start_time' => $downtimeCreatedSince,
-                    'downtime_recover_time' => $metric->downtime_recover_time + 30,
+                    'downtime_recover_time' => $metric->downtime_recover_time,
                     'top_merchant_count' => $metric->top_merchant_count,
                     'minimumPayments' => $minimumPayments,
                     'successRateToResolve' => $successRateToResolve,
@@ -295,7 +296,7 @@ class DowntimeDetection
                         'key' => $key,
                         'value' => $value,
                         'downtime_start_time' => $downtimeCreatedSince,
-                        'downtime_recover_time' => $metric->downtime_recover_time + 30,
+                        'downtime_recover_time' => $metric->downtime_recover_time,
                         'minimumPayments' => $minimumPayments,
                         'successRateToResolve' => $successRateToResolve,
                     ]);
