@@ -1879,7 +1879,11 @@ class Repository extends Base\Repository
         if ((empty($from) == false) and
             (empty($to) == false))
         {
-            $query = $query->whereBetween($paymentCreatedAtCol, array($from->timestamp, $to->timestamp));
+            $query = $query->whereBetween($paymentCreatedAtCol, array($from, $to));
+        }
+        else if (empty($from) == false)
+        {
+            $query = $query->where($paymentCreatedAtCol, '>' ,$from);
         }
 
         return $query->orderBy($paymentCreatedAtCol, 'desc')

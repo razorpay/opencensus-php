@@ -168,7 +168,7 @@ class DowntimeDetection
 
                 $from = Carbon::now()->subSeconds($maxWindowSizeInSeconds);
 
-                $payments = (new \RZP\Models\Payment\Repository())->fetchLastNPaymentsForDowntime($from, $to, $key, $value, $minimumPayments);
+                $payments = (new \RZP\Models\Payment\Repository())->fetchLastNPaymentsForDowntime($from->timestamp, $to->timestamp, $key, $value, $minimumPayments);
 
                 $metric = $this->calculateDowntimeMetric($payments);
 
@@ -182,7 +182,8 @@ class DowntimeDetection
                         'key' => $key,
                         'value' => $value,
                         'setting_type' => 'create',
-                        'downtime_start_time' => $metric->downtime_start_time,
+                        'downtime_start_time' => $metric->downtime_start_time + 30,
+                        'top_merchant_count' => $metric->top_merchant_count,
                         'maxWindowSizeInSeconds' => $maxWindowSizeInSeconds,
                         'minimumPayments' => $minimumPayments,
                         'successRateForDowntime' => $successRateForDowntime,
@@ -201,7 +202,6 @@ class DowntimeDetection
                 if ($successRate <= $successRateForDowntime)
                 {
                     //check if more than 50% of the payments are not of single merchant
-                    $a = Constants::getMaxSingleMerchantContribution();
                     if ($metric->top_merchant_count > (Constants::getMaxSingleMerchantContribution() * $minimumPayments))
                     {
                         continue;
@@ -222,7 +222,7 @@ class DowntimeDetection
                             'type' => $type,
                             'key' => $key,
                             'value' => $value,
-                            'downtime_start_time' => $metric->downtime_start_time,
+                            'downtime_start_time' => $metric->downtime_start_time + 30,
                             'maxWindowSizeInSeconds' => $maxWindowSizeInSeconds,
                             'minimumPayments' => $minimumPayments,
                             'successRateForDowntime' => $successRateForDowntime,
@@ -251,7 +251,7 @@ class DowntimeDetection
             $successRateToResolve = $resolveSetting[1];
 
             // from and to are not needed here.
-            $payments = (new \RZP\Models\Payment\Repository())->fetchLastNPaymentsForDowntime(null, null, $key, $value, $minimumPayments);
+            $payments = (new \RZP\Models\Payment\Repository())->fetchLastNPaymentsForDowntime(($downtimeCreatedSince-30), null, $key, $value, $minimumPayments);
 
             $metric = $this->calculateDowntimeMetric($payments);
 
@@ -265,12 +265,19 @@ class DowntimeDetection
                     'key' => $key,
                     'value' => $value,
                     'setting_type' => 'resolve',
-                    'downtime_start_time' => $metric->downtime_start_time,
+                    'downtime_start_time' => $downtimeCreatedSince,
+                    'downtime_recover_time' => $metric->downtime_recover_time + 30,
+                    'top_merchant_count' => $metric->top_merchant_count,
                     'minimumPayments' => $minimumPayments,
                     'successRateToResolve' => $successRateToResolve,
                     'totalAuthorized' => $totalAuthorized,
                     'totalPayments' => $totalPayments,
                 ]);
+
+            if ($totalPayments < $minimumPayments)
+            {
+                return;
+            }
 
             $successRate = $this->checkPercentage($totalAuthorized, $totalPayments);
 

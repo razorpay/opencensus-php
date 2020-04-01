@@ -2,15 +2,13 @@
 
 namespace RZP\Tests\Functional\Payment;
 
-use Illuminate\Redis\RedisManager;
 use Illuminate\Support\Facades\Redis;
 
 use App;
 use Mockery;
-use Razorpay\Trace\Logger as Trace;
+use Carbon\Carbon;
 use RZP\Error;
 use RZP\Models\Admin\ConfigKey;
-use RZP\Models\Gateway\Downtime\DowntimeDetection;
 use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\TestCase;
@@ -150,6 +148,8 @@ class GatewayDowntimeDetectionV2Test extends TestCase
         $this->ba->adminAuth();
 
         $this->fixtures->create('terminal:enable_default_hdfc_terminal');
+
+        Carbon::setTestNow(Carbon::now()->addSeconds(100));
 
         $this->doAuthPayment();
 
