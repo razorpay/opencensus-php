@@ -39,6 +39,16 @@ class HdfcDebitEmiReconTest extends TestCase
 
         $payment_failed = $this->createDependentEntities(550000, 'failed');
 
+        $refund = $this->fixtures->create(
+            'refund',
+            [
+                'payment_id'  => $payment_success['id'],
+                'merchant_id' => '10000000000000',
+                'amount'      => $payment_success['amount'],
+                'status'      => 'processed',
+                'gateway'     => 'hdfc_debit_emi',
+            ]);
+
         $this->mockReconContentFunction(function (& $content) use ($payment_failed)
         {
             if ($content['MerchantReferenceNumber'] === $payment_failed['id'])
@@ -60,9 +70,9 @@ class HdfcDebitEmiReconTest extends TestCase
                 'type'            => 'reconciliation',
                 'gateway'         => 'HdfcDebitEmi',
                 'status'          => Status::PROCESSED,
-                'total_count'     => 2,
-                'success_count'   => 2,
-                'processed_count' => 2,
+                'total_count'     => 3,
+                'success_count'   => 3,
+                'processed_count' => 3,
                 'failure_count'   => 0,
             ],
             $batch
