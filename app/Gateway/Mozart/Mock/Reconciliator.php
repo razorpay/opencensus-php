@@ -404,6 +404,24 @@ class Reconciliator extends Base\Mock\PaymentReconciliator
             $data[] = $row;
         }
 
+        $refunds = $this->repo->refund->fetch([
+            'gateway' => 'hdfc_debit_emi',
+        ]);
+
+        foreach ($refunds as $row)
+        {
+            $row = [
+                'Sr No'                   => $i++,
+                'BankReferenceNumber'     => 'abc123456',
+                'Amount'                  => ($row['amount'] / 100),
+                'CustomerName'            => 'John Doe',
+                'MerchantReferenceNumber' => $row['payment_id'],
+                'Remarks'                 => 'Cancellation',
+            ];
+
+            $data[] = $row;
+        }
+
         return $data;
     }
 
