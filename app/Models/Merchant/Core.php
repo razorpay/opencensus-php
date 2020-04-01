@@ -1801,7 +1801,7 @@ class Core extends Base\Core
 
         $secondFactorMail = new SecondFactorAuthMail($mailData);
 
-//        Mail::send($secondFactorMail);
+       Mail::send($secondFactorMail);
 
         return [
             Entity::SECOND_FACTOR_AUTH => $merchant->isSecondFactorAuth(),

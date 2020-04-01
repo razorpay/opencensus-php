@@ -191,6 +191,10 @@ class MailTags
     const BALANCE_POSITIVE_ALERT                        = 'balance_positve_alert';
     const RESERVE_BALANCE_ACTIVATED                     = 'reserve_balance_activated';
 
+    // User Eamils
+    const USER_ACCOUNT_LOCKED                           = 'user_account_locked';
+    const USER_CONTACT_MOBILE_UPDATED                   = 'user_contact_mobile_updated';
+
 
     //Merchant Invoice tags
     const MERCHANT_INVOICE_EXECUTION_SUMMARY            = 'merchant_invoice_execution_summary';

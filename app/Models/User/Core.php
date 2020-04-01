@@ -26,6 +26,8 @@ use RZP\Models\Admin\Admin\Token;
 use RZP\Http\UserRolePermissionsMap;
 use RZP\Exception\BadRequestException;
 use RZP\Modules\SecondFactorAuth\Constants as AuthConstants;
+use RZP\Mail\User\AccountLockedWrongAttempt as AccountLockedWrongAttemptMail;
+use RZP\Mail\User\ContactMobileUpdated as ContactMobileUpdatedMail;
 
 class Core extends Base\Core
 {
@@ -421,6 +423,10 @@ class Core extends Base\Core
         }
 
         $this->repo->saveOrFail($user);
+
+        if ($user->isAccountLocked() === true) {
+            $this->notifyUserAboutAccountLocked($user);
+        }
     }
 
     /**
@@ -1248,6 +1254,8 @@ class Core extends Base\Core
 
                 $this->repo->saveOrFail($user);
 
+                $this->notifyUserAboutContactMobileUpdate($user, $this->merchant);
+
                 return $user;
             }
             else
@@ -1468,6 +1476,47 @@ class Core extends Base\Core
         $token = $tokenService->generate($user->getId());
 
         return [Entity::OTP_AUTH_TOKEN => $token];
+    }
+
+    private function notifyUserAboutContactMobileUpdate(Entity $user, Merchant\Entity $merchant)
+    {
+        $userUpdatedAt = $user->getUpdatedAt();
+
+        $data = [
+            'user'          => [
+                Entity::EMAIL               => $user->getEmail(),
+                Entity::NAME                => $user->getName(),
+                Entity::CONTACT_MOBILE      => $user->getMaskedContactMobile(),
+                'updated_on'                => Base\Utility::getTimestampFormatted(
+                                                    $userUpdatedAt, 'jS M, Y'),
+                Entity::UPDATED_AT          => Base\Utility::getTimestampFormatted(
+                                                    $userUpdatedAt, 'g:i A'),
+            ],
+
+            'merchant'      => [
+                Entity::ID                  => $merchant->getId(),
+                Entity::NAME                => $merchant->getName(),
+            ],
+        ];
+
+        $email = new ContactMobileUpdatedMail($data);
+
+        Mail::send($email);
+    }
+
+    private function notifyUserAboutAccountLocked(Entity $user)
+    {
+        $data = [
+            'user'  => [
+                Entity::ID              => $user->getId(),
+                Entity::EMAIL           => $user->getEmail(),
+                Entity::NAME            => $user->getName(),
+            ],
+        ];
+
+        $email = new AccountLockedWrongAttemptMail($data);
+
+        Mail::send($email);
     }
 
     /**

@@ -60,7 +60,16 @@ class SecondFactorAuth extends Mailable
 
     protected function addHtmlView()
     {
-        $this->view('emails.mjml.merchant.2fa_notification');
+        $merchant = $this->data['merchant'];
+
+        if ($merchant[Merchant\Entity::SECOND_FACTOR_AUTH] === true)
+        {
+            $this->view('emails.mjml.merchant.user.2FA.enabled');
+        }
+        else
+        {
+            $this->view('emails.mjml.merchant.user.2FA.disabled');
+        }
 
         return $this;
     }
