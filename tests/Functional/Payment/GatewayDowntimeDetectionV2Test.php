@@ -4,6 +4,9 @@ namespace RZP\Tests\Functional\Payment;
 
 use Illuminate\Support\Facades\Redis;
 
+use App;
+use Mockery;
+use Carbon\Carbon;
 use RZP\Error;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Services\RazorXClient;
@@ -13,7 +16,7 @@ use RZP\Tests\Functional\TestCase;
 /**
  * A few end to end functional test to
  */
-class GatewayDowntimeDetectionTest extends TestCase
+class GatewayDowntimeDetectionV2Test extends TestCase
 {
     use PaymentTrait;
 
@@ -21,7 +24,7 @@ class GatewayDowntimeDetectionTest extends TestCase
 
     public function setUp()
     {
-        $this->testDataFilePath = __DIR__.'/helpers/GatewayDowntimeDetectionTestData.php';
+        $this->testDataFilePath = __DIR__.'/helpers/GatewayDowntimeDetectionV2TestData.php';
 
         parent::setUp();
 
@@ -59,15 +62,17 @@ class GatewayDowntimeDetectionTest extends TestCase
 
         $settings = array_merge($defaultRedisSettings, $settings);
 
-        $this->redis->hmset(ConfigKey::DOWNTIME_DETECTION_CONFIGURATION, ...seq_array($settings));
+        $this->redis->hmset(ConfigKey::DOWNTIME_DETECTION_CONFIGURATION_V2, ...seq_array($settings));
     }
 
     protected function getDefaultRedisSettings()
     {
         return [
-            'sharp' => json_encode(
-                [['300', '50' , '2', '600'],
-                ['3000', '60' , '2', '6000']]),
+            'success_rate_issuer_hdfc_create' => json_encode(
+                [['30', '2' , '0.05'],
+                 ['300', '2' , '0.05']]),
+            'success_rate_issuer_hdfc_resolve' => json_encode(
+                [['2' , '0.40']]),
         ];
     }
 
@@ -91,10 +96,30 @@ class GatewayDowntimeDetectionTest extends TestCase
     }
 
     // ------------------------- Tests -----------------------------------------
+    public function testPutGatewayDowntimeRedisConf()
+    {
+        $this->ba->adminAuth();
+
+        $response = $this->startTest();
+
+        $sbiExpected = $this->testData['redisConfDowntimeResponse'];
+
+        $sbiActual = array_filter($response['config:downtime:detection:configuration_v2'], function($arr) {
+            return $arr['key'] === 'success_rate_issuer_sbin_create';
+        });
+
+        $this->assertEquals(current($sbiActual), $sbiExpected);
+    }
+
+    public function testGetGatewayDowntimeRedisConf()
+    {
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
     public function testGatewayFailureDowntimeCreate()
     {
-        $this->markTestSkipped();
-
         $data = $this->getErrorTestData();
 
         $this->gatewayDown = true;
@@ -110,27 +135,45 @@ class GatewayDowntimeDetectionTest extends TestCase
             $this->doAuthPayment();
         });
 
-        $downtime = $this->getLastEntity('gateway_downtime', true);
-        $this->assertEquals('sharp', $downtime['gateway']);
-        $this->assertEquals(600, $downtime['end'] - $downtime['begin']);
-    }
-
-    public function testPurge()
-    {
         $this->ba->cronAuth();
 
-        $request = [
-            'method'  => 'POST',
-            'url'     => '/gateway/downtimes/detection/keys/purge',
-        ];
+        $externalMock = Mockery::mock('alias:RZP\Models\Gateway\Downtime\Constants', ConstantsStub::class);
 
-        $response = $this->makeRequestAndGetContent($request);
-    }
-
-    public function testStats()
-    {
-        $this->ba->adminAuth();
+        $externalMock->shouldReceive('getMaxSingleMerchantContribution')->andReturn(1);
 
         $this->startTest();
+
+        $this->assertNotNull($this->redis->get('DOWNTIME_CREATED_success_rate_issuer_HDFC'));
+
+        $this->ba->adminAuth();
+
+        $this->fixtures->create('terminal:enable_default_hdfc_terminal');
+
+        Carbon::setTestNow(Carbon::now()->addSeconds(100));
+
+        $this->doAuthPayment();
+
+        $this->doAuthPayment();
+
+        $request = [
+            'method'  => 'GET',
+            'url'     => '/gateway/downtimes/detection/cron?type=success_rate&key=issuer&value=HDFC',
+        ];
+
+        $this->ba->cronAuth();
+
+        $this->makeRequestAndGetContent($request);
+
+        $this->assertNull($this->redis->get('DOWNTIME_CREATED_success_rate_issuer_HDFC'));
     }
+}
+
+class ConstantsStub
+{
+    const SETTINGS_KEY  = ConfigKey::DOWNTIME_DETECTION_CONFIGURATION_V2;
+
+    const DOWNTIME_KEY  = 'DOWNTIME_CREATED';
+
+    // In ratio to total payments
+    const MAX_SINGLE_MERCHANT_CONTRIBUTION = 0.5;
 }
