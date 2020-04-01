@@ -246,4 +246,5 @@ class Repository extends Base\Repository
                     ->with($relations)
                     ->get();
     }
+
 }

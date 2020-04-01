@@ -11,6 +11,7 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Base\BuilderEx;
 use RZP\Models\Payment;
+use RZP\Models\Merchant;
 use RZP\Constants\Table;
 use RZP\Trace\TraceCode;
 use RZP\Models\Terminal;
@@ -1808,6 +1809,22 @@ class Repository extends Base\Repository
                     ->select(Entity::ID)
                     ->where(Transaction\Entity::SETTLEMENT_ID, $setlId)
                     ->count();
+    }
+
+    public function fetchTransactionsForSettlementId(string $setlId)
+    {
+        $paymentIdColumn      = $this->repo->payment->dbColumn(Entity::ID);
+        $transferIdColumn     = $this->repo->payment->dbColumn(Payment\Entity::TRANSFER_ID);
+        $settlementIdColumn   = $this->dbColumn(Entity::SETTLEMENT_ID);
+        $type                 = $this->dbColumn(Entity::TYPE);
+        $entityIdColumn       = $this->dbColumn(Entity::ENTITY_ID);
+
+        return $this->newQuery()
+                    ->join(Table::PAYMENT, $entityIdColumn, '=', $paymentIdColumn)
+                    ->where($settlementIdColumn, $setlId)
+                    ->where($type, 'payment')
+                    ->whereNotNull($transferIdColumn)
+                    ->get();
     }
 
     public function getTransactionBalanceType(string $transactionId)
