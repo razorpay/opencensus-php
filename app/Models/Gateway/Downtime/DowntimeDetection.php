@@ -29,9 +29,9 @@ class DowntimeDetection
      */
     protected $redis;
 
-    const ISSUER = 'issuer';
+    const ISSUER = 'ISSUER';
 
-    const NETWORK = 'network';
+    const NETWORK = 'NETWORK';
 
     const SUCCESS_RATE = 'success_rate';
 
@@ -76,7 +76,7 @@ class DowntimeDetection
     {
         $arrayKey = $type . '_' . $key . '_' . $value . '_' . $settingType;
 
-        $allSettings = $this->redis->hget(Constants::SETTINGS_KEY, $arrayKey);
+        $allSettings = $this->redis->hget(Constants::SETTINGS_KEY, strtolower($arrayKey));
 
         return json_decode($allSettings);
     }
@@ -143,6 +143,10 @@ class DowntimeDetection
     public function createDowntimeIfNecessary($type, $key, $value)
     {
         $redisKeyForDowntime = Constants::DOWNTIME_KEY . '_' . $type . '_' . $key .'_' . $value;
+
+        $key = strtoupper($key);
+
+        $value = strtoupper($value);
 
         // check if downtime is already there for this issuer
         $downtimeCreatedSince = $this->redis->get($redisKeyForDowntime);

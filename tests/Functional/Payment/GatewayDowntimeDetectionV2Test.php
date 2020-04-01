@@ -70,10 +70,10 @@ class GatewayDowntimeDetectionV2Test extends TestCase
     protected function getDefaultRedisSettings()
     {
         return [
-            'success_rate_issuer_HDFC_create' => json_encode(
+            'success_rate_issuer_hdfc_create' => json_encode(
                 [['30', '2' , '0.05'],
                  ['300', '2' , '0.05']]),
-            'success_rate_issuer_HDFC_resolve' => json_encode(
+            'success_rate_issuer_hdfc_resolve' => json_encode(
                 [['2' , '0.40']]),
         ];
     }
@@ -104,13 +104,13 @@ class GatewayDowntimeDetectionV2Test extends TestCase
 
         $response = $this->startTest();
 
-        $upiMindgateExpected = $this->testData['upiMindGateDowntimeResponse'];
+        $sbiExpected = $this->testData['redisConfDowntimeResponse'];
 
-        $upiMindgateActual = array_filter($response['config:downtime:detection:configuration'], function($arr) {
-            return $arr['key'] === 'upi_mindgate';
+        $sbiActual = array_filter($response['config:downtime:detection:configuration_v2'], function($arr) {
+            return $arr['key'] === 'success_rate_issuer_sbin_create';
         });
 
-        $this->assertEquals(current($upiMindgateActual), $upiMindgateExpected);
+        $this->assertEquals(current($sbiActual), $sbiExpected);
     }
 
     public function testGetGatewayDowntimeRedisConf()
