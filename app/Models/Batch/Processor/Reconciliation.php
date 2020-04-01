@@ -41,7 +41,7 @@ class Reconciliation extends Base
     {
         parent::__construct($batch);
 
-        $this->converter = new Converter;
+        $this->converter = new Converter($batch->getGateway());
 
         $this->registerMimeTypeGuesser();
     }

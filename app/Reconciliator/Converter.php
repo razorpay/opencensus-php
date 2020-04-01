@@ -50,7 +50,18 @@ class Converter extends Base\Core
     const MAX_SHEETS_ALLOWED = 3;
     const ROW_CHUNK_SIZE = 3000;
 
+    const THRESHOLD_FOR_COLUMN_HEADER_MISMATCH = 8;
+
     protected $dataArray;
+
+    protected $gateway;
+
+    public function __construct(string $gateway = null)
+    {
+        parent::__construct();
+
+        $this->gateway = $gateway;
+    }
 
     /**
      * @param array $fileDetails The excel file details
@@ -254,7 +265,7 @@ class Converter extends Base\Core
                 }
                 else
                 {
-                    if ($columnHeadersCount > count($row))
+                    if (abs($columnHeadersCount - count($row)) > self::THRESHOLD_FOR_COLUMN_HEADER_MISMATCH)
                     {
                         //
                         // This can happen if any row in the file has dummy data.
@@ -264,6 +275,7 @@ class Converter extends Base\Core
                             TraceCode::RECON_ALERT,
                             [
                                 'info_code'     => InfoCode::COLUMN_HEADER_MISMATCH,
+                                'gateway'       => $this->gateway,
                                 'header_count'  => $columnHeadersCount,
                                 'row_count'     => count($row),
                                 'file_details'  => [
@@ -284,8 +296,9 @@ class Converter extends Base\Core
                     }
 
                     // Combines the columnHeaders(keys) with the row(values)
-                    $data[] = array_combine_pad_headers($columnHeaders, $row);
-
+                    // We pad which ever among header or row column count is
+                    // lower and then do array combine
+                    $data[] = array_combine_pad($columnHeaders, $row);
                 }
 
                 $currentLineNumber++;
@@ -543,17 +556,18 @@ class Converter extends Base\Core
             }
             else
             {
-                if (count($sheetHeaders) === count($row))
+                if (abs(count($sheetHeaders) - count($row)) <= self::THRESHOLD_FOR_COLUMN_HEADER_MISMATCH)
                 {
-                    $allSheetsContent[$sheetName][] = array_combine($sheetHeaders, $row);
+                    $allSheetsContent[$sheetName][] = array_combine_pad($sheetHeaders, $row);
                 }
-                // breaking case when header count is not same as row.
+                // breaking case when count difference is greater than the threshold
                 else
                 {
                     $this->trace->debug(
                         TraceCode::RECON_ALERT,
                             [
                                 'info_code'     => InfoCode::COLUMN_HEADER_MISMATCH,
+                                'gateway'       => $this->gateway,
                                 'header_count'  => count($sheetHeaders),
                                 'row_count'     => count($row),
                                 'file_details'  => [
@@ -612,18 +626,18 @@ class Converter extends Base\Core
                 continue;
             }
 
-            // if headers are set, count of row must be same
-            if (count($sheetHeaders) === count($row))
+            if (abs(count($sheetHeaders) - count($row)) <= self::THRESHOLD_FOR_COLUMN_HEADER_MISMATCH)
             {
                 $allSheetsContent[$sheetName][] = array_combine($sheetHeaders, $row);
             }
-            // breaking case when header count is not same as row.
+            // breaking case when count difference is greater than the threshold
             else
             {
                 $this->trace->debug(
                     TraceCode::RECON_ALERT,
                     [
                         'info_code'     => InfoCode::COLUMN_HEADER_MISMATCH,
+                        'gateway'       => $this->gateway,
                         'header_count'  => count($sheetHeaders),
                         'row_count'     => count($row),
                         'file_details'  => [
