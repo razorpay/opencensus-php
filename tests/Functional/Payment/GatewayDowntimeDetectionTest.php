@@ -93,6 +93,8 @@ class GatewayDowntimeDetectionTest extends TestCase
     // ------------------------- Tests -----------------------------------------
     public function testGatewayFailureDowntimeCreate()
     {
+        $this->markTestSkipped();
+
         $data = $this->getErrorTestData();
 
         $this->gatewayDown = true;
