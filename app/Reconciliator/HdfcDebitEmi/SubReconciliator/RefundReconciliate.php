@@ -10,8 +10,13 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
 
     public function getRefundId(array $row)
     {
-        $refundId = $row[ReconciliationFields::MERCHANT_REFERENCE_NUMBER] ?? null;
+        $paymentId = $row[ReconciliationFields::MERCHANT_REFERENCE_NUMBER] ?? null;
 
-        return trim(str_replace("'", '', $refundId));
+        $paymentId = trim(str_replace("'", '', $paymentId));
+
+        // This gateway does not support partial refund and hence can have only max 1 refund per payment
+        $refund = $this->repo->refund->fetchFirstForPaymentId($paymentId);
+
+        return $refund ? $refund->getId() : $refund;
     }
 }

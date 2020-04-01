@@ -218,6 +218,13 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function fetchFirstForPaymentId(string $paymentId)
+    {
+        return $this->newQuery()
+                    ->where(Refund\Entity::PAYMENT_ID, '=', $paymentId)
+                    ->first();
+    }
+
     public function findBetweenTimestamps($from, $to)
     {
         return $this->newQuery()
