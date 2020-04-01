@@ -1082,7 +1082,10 @@ class Core extends Base\Core
 
         // TODO: check if dispatchEventForTransactionUpdated can be used
         // JIRA: https://razorpay.atlassian.net/browse/RX-697
-        (new Transaction\Core)->dispatchEventForTransactionCreated($payout->transaction);
+        // skipping this code as there is no templatef for transaction.created and this
+        // method will throw an exception in Mail/Transaction/Payout as there is not handling
+        // for event transaction.created
+        //  (new Transaction\Core)->dispatchEventForTransactionCreated($payout->transaction);
     }
 
     protected function updateTransactionAndSourceToReversal(Reversal\Entity $reversal, Transaction\Entity $transaction)
