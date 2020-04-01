@@ -84,8 +84,13 @@ class Repository extends Base\Repository
 
     protected function fetchForReversal($query, Reversal\Entity $reversal)
     {
+        $payout = $reversal->entity;
+
+        // reversal amount contains fee and tax but txn will
+        // contain only absolute amount which will match with
+        // payout amount
         $basEntities = $query->where(Entity::TYPE, Type::CREDIT)
-                             ->where(Entity::AMOUNT, $reversal->getAmount())
+                             ->where(Entity::AMOUNT, $payout->getAmount())
                              ->where(Entity::ACCOUNT_NUMBER, $reversal->balance->getAccountNumber())
                              ->where(Entity::CHANNEL, $reversal->getChannel())
                              ->get();

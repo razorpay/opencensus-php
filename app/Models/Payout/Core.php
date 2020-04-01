@@ -1120,7 +1120,10 @@ class Core extends Base\Core
                 $this->updateBankingAccountStatementLinkedEntity($transaction->bankingAccountStatement, $reversal);
             });
 
-        (new Transaction\Core)->dispatchEventForTransactionCreated($reversal->transaction);
+        // skipping this code as there is no templatef for transaction.created and this
+        // method will throw an exception in Mail/Transaction/Payout as there is not handling
+        // for event transaction.created
+        //(new Transaction\Core)->dispatchEventForTransactionCreated($reversal->transaction);
     }
 
     protected function getDummyTransactionAndFeesBreakupForPayout(Entity $payout)
