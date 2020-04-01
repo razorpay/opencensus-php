@@ -254,7 +254,13 @@ class SubReconciliate extends Base\Core
                 }
                 catch (\Exception $ex)
                 {
-                    $this->setSummaryCount(self::FAILURES_SUMMARY, head($row));
+                    //
+                    // Making identifier as empty string if it is null as
+                    // setSummaryCount expects string identifier.
+                    //
+                    $identifier = head($row) ?? '';
+
+                    $this->setSummaryCount(self::FAILURES_SUMMARY, $identifier);
 
                     throw $ex;
                 }
@@ -799,14 +805,14 @@ class SubReconciliate extends Base\Core
 
         if ($this->failUnprocessedRow === true)
         {
-            $this->setSummaryCount(self::FAILURES_SUMMARY, head($row));
+            $this->setSummaryCount(self::FAILURES_SUMMARY, $identifier);
         }
         else
         {
             // update the recon status in the output file
             $this->setRowReconStatusAndError(InfoCode::RECON_UNPROCESSED_SUCCESS);
 
-            $this->setSummaryCount(self::SUCCESSES_SUMMARY, head($row));
+            $this->setSummaryCount(self::SUCCESSES_SUMMARY, $identifier);
         }
     }
 

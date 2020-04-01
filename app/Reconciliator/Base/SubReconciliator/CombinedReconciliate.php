@@ -218,7 +218,12 @@ class CombinedReconciliate extends Base\Foundation\SubReconciliate
                     // count was 0 at this time, then the batch status is set to 'processed',
                     // which should not happen in such failure cases.
                     //
-                    $this->setSummaryCount(self::FAILURES_SUMMARY, head($row));
+                    // Note : Making identifier as empty string if it is null as
+                    // setSummaryCount expects string identifier.
+                    //
+                    $identifier = head($row) ?? '';
+
+                    $this->setSummaryCount(self::FAILURES_SUMMARY, $identifier);
 
                     //
                     // Throw the exception because we do not want to process the
