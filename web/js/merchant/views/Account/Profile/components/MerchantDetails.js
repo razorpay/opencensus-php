@@ -95,7 +95,7 @@ const MerchantDetails = ({
       size: 'small',
       component: (
         <EditWebsiteDetailsModal
-          onWebsiteAdd={props.onWebsiteAdd}
+          onWebsiteAdd={onWebsiteAdd}
           onClose={closeModal}
         />
       ),
