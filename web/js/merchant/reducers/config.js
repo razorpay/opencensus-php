@@ -6,6 +6,7 @@ const FEATURES_FETCH = 'FEATURES_FETCH';
 const MERCHANT_LOGO_UPLOADED = 'MERCHANT_LOGO_UPLOADED';
 const CONFIG_SAVE = 'CONFIG_SAVE';
 const FEATURES_SAVE = 'FEATURES_SAVE';
+const GET_ONBOARDING_STATUS = 'GET_ONBOARDING_STATUS';
 
 export const fetchConfigAjax = () => {
   return merchantFetch('account/config');
@@ -22,13 +23,33 @@ export const fetchFeaturesAjax = (currentUserId, mode) => {
   return merchantFetch(params);
 };
 
+export const onboardTerminal = gateway => {
+  let params = {
+    url: `terminals/onboard`,
+    method: 'post',
+    data: {
+      gateway: gateway,
+    },
+  };
+
+  return merchantFetch(params);
+};
+
 export const fetchConfig = () => {
   return {
     type: CONFIG_FETCH,
     payload: fetchConfigAjax(),
   };
 };
-
+export const fetchOnboardingStatus = gateway => {
+  let params = {
+    url: `proxy/merchant/terminals?gateway=${gateway}`,
+  };
+  if (gateway) {
+    params.gateway = gateway;
+  }
+  return merchantFetch(params);
+};
 /*
  * Fetches merchant's config and features
  */
@@ -58,6 +79,13 @@ export const updateConfig = data => {
       method: 'put',
       data,
     }),
+  };
+};
+
+export const getOnboardingStatus = gateway => {
+  return {
+    type: GET_ONBOARDING_STATUS,
+    payload: fetchOnboardingStatus(gateway),
   };
 };
 
@@ -105,6 +133,7 @@ let initialState = {
   error: null,
   config: {},
   features: [],
+  paypal_terminals: [],
 };
 
 export default function(state = initialState, action) {
@@ -133,6 +162,9 @@ export default function(state = initialState, action) {
 
     case `${FEATURES_SAVE}::SUCCESS`:
       return set(state, 'features', action.payload.data.features);
+
+    case `${GET_ONBOARDING_STATUS}::SUCCESS`:
+      return set(state, 'paypal_terminals', action.payload.data.items);
 
     default:
       return state;

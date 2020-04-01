@@ -28,6 +28,7 @@ import VirtualAccounts from 'merchant/views/SmartCollect/VirtualAccounts/List';
 import Support from 'merchant/components/Support';
 import Offers from 'merchant/views/Offers';
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
+import PaypalOnboardRedirect from 'merchant/views/Settings/Configuration/PaypalOnboardRedirect';
 
 import {
   setBaseLocation,
@@ -337,6 +338,10 @@ export default class Content extends Component {
             path="/offers"
             component={Offers}
             additionalCondition={user => user.isAllowedView('offers')}
+          />
+          <ShowWhenRoute
+            path="/paypal_onboard_redirect"
+            component={PaypalOnboardRedirect}
           />
           <Redirect to="/dashboard" />
         </Switch>

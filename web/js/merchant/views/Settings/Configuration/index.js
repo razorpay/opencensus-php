@@ -9,6 +9,8 @@ import Internationalization from './Internationalization';
 import CheckoutTheme from './CheckoutTheme';
 import EmailNotifications from './EmailNotifications';
 import InternationalConfig from './InternationalConfig';
+import PaypalOnboarding from './PaypalOnboarding';
+import { showWhenUtil } from 'merchant/components/ShowWhen';
 
 @connect(
   state => {
@@ -70,6 +72,10 @@ export default class CongfigurationContainer extends Component {
             {this.props.user.isOrgAllowedFunctionality('flashcheckout') && (
               <FlashCheckout />
             )}
+            {this.props.user.isActivated &&
+            showWhenUtil({ featureEnabled: 'offers' }) ? (
+              <PaypalOnboarding />
+            ) : null}
             <DefaultRefundSpeed />
             {/* Hiding old International Flow. TODO: Remove permanently */}
             {/* temporarily hide internationalization for test mode due to inconsistency in db */}
