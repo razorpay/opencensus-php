@@ -51,11 +51,14 @@ return [
                 "config:downtime:detection:configuration_v2" =>
                     [
                         [
-                            'success_rate_issuer_HDFC_create' => json_encode(
-                                [['30', '2' , '5'],
-                                    ['300', '2' , '5']]),
-                            'success_rate_issuer_HDFC_resolve' => json_encode(
-                                [['2' , '40']]),
+                            "key" => "success_rate_issuer_HDFC_create",
+                            "value" =>  [['30', '2' , '0.05'],
+                                ['300', '2' , '0.05']],
+                        ],
+                        [
+                            "key" => "success_rate_issuer_HDFC_resolve",
+                            "value" =>
+                                [['2' , '0.40']],
                         ],
                     ]
             ]
