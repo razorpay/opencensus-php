@@ -46,6 +46,10 @@ class Gateway extends BaseProcessor
 
         $finalFormattedResponse = [];
 
+        // get last bank transaction from banking account statement and set lastFormattedResponse
+        // this is being used for pagination on RBL side.
+        $lastBankTransaction = $this->getLastBankTransaction() ? $this->getLastBankTransaction()->toArray() : [];
+
         // TODO: This whole thing needs to be re-looked at. How we fetch the details.
 
         $attemptLimit = (int) (new AdminService)->getConfigKey(['key' => ConfigKey::RBL_STATEMENT_FETCH_ATTEMPT_LIMIT]);
@@ -58,7 +62,7 @@ class Gateway extends BaseProcessor
         do
         {
             // We don't have any bank response for the first request.
-            $lastFormattedResponse = last($finalFormattedResponse) ?: [];
+            $lastFormattedResponse = last($finalFormattedResponse) ?: $lastBankTransaction;
 
             $requestData = $this->getRequestDataForMozart($input, $lastFormattedResponse);
 
