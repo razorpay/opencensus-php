@@ -653,6 +653,10 @@ class Entity extends Base\PublicEntity
             {
                 $array[self::CHECKOUT_CONFIG_ID] = Config\Entity::getSignedId($array[self::CHECKOUT_CONFIG_ID]);
             }
+            else
+            {
+                unset($array[self::CHECKOUT_CONFIG_ID]);
+            }
         }
 
     protected function modifyCheckoutConfigId(& $input)
