@@ -456,7 +456,7 @@ class MerchantCreateTest extends TestCase
 
         $submerchant = $this->getLastEntity('merchant', true);
 
-        $this->assertEquals(DefaultPlan::SUBMERCHANT_PROMOTIONAL_PRICING_PLAN, $submerchant['pricing_plan_id']);
+        $this->assertEquals(DefaultPlan::SUBMERCHANT_PRICING_OF_ONBOARDED_PARTNERS, $submerchant['pricing_plan_id']);
     }
 
     public function testCreateSubMerchantByFullyManagedWOEmail()
