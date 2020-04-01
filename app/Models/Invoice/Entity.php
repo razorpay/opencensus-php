@@ -262,7 +262,7 @@ class Entity extends Base\PublicEntity
         self::CANCELLED_AT              => null,
         self::EXPIRED_AT                => null,
         self::EXPIRE_BY                 => null,
-        //self::BIG_EXPIRE_BY             => null,
+        self::BIG_EXPIRE_BY             => null,
         self::RECEIPT                   => null,
         self::MERCHANT_GSTIN            => null,
         self::MERCHANT_LABEL            => null,
@@ -859,8 +859,9 @@ class Entity extends Base\PublicEntity
 
     public function getExpireBy()
     {
-        //$expireBy = $this->getAttribute(self::BIG_EXPIRE_BY) ?? $this->getAttribute(self::EXPIRE_BY) ;
-        $expireBy = $this->getAttribute(self::EXPIRE_BY);
+        $expireBy = $this->getAttribute(self::BIG_EXPIRE_BY) ?? $this->getAttribute(self::EXPIRE_BY) ;
+        //$expireBy = $this->getAttribute(self::EXPIRE_BY);
+
         return $expireBy === null ? $expireBy: intval( $expireBy );
     }
 
