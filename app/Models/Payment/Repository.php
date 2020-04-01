@@ -1859,7 +1859,7 @@ class Repository extends Base\Repository
         }
         else if ($key == DowntimeDetection::NETWORK)
         {
-            $query = $query->where(Card\Entity::NETWORK_CODE, $value);
+            $query = $query->where(Card\Entity::NETWORK, $value);
         }
         else
         {
