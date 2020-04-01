@@ -25,9 +25,11 @@ final class Route
         'checkout_public'                          => ['get',      'checkout/public',                                'MerchantController@getCheckoutPublic'                              ],
         'checkout_public_canary'                   => ['get',      'checkout/public/canary',                         'MerchantController@getCheckoutPublic'                              ],
         'fetch_payment_config'                     => ['get',      'payment/config/{type}',                          'ConfigController@fetchPaymentConfig'                               ],
+        'fetch_payment_config_admin'               => ['get',      'admin/payment/config/{type}',                    'ConfigController@fetchPaymentConfig'                               ],
         'create_payment_config'                    => ['post',     'payment/config',                                 'ConfigController@createPaymentConfig'                              ],
+        'create_payment_config_admin'              => ['post',     'admin/payment/config',                           'ConfigController@createPaymentConfig'                              ],
         'update_payment_config'                    => ['patch',    'payment/config',                                 'ConfigController@updatePaymentConfig'                              ],
-
+        'update_payment_config_admin'              => ['patch',    'admin/payment/config',                           'ConfigController@updatePaymentConfig'                              ],
         // callback_url case handler for automatic checkout
         'checkout_onyx'                            => ['post',     'checkout/onyx',                                  'PublicController@postCallbackUrlWithParams'                        ],
 
@@ -3061,6 +3063,9 @@ final class Route
         // Banking VA
         'virtual_account_bulk_create_for_banking',
         'virtual_account_bulk_close_for_banking',
+        'fetch_payment_config_admin',
+        'create_payment_config_admin',
+        'update_payment_config_admin',
         ];
 
     public static $routePermission = [
@@ -3680,6 +3685,9 @@ final class Route
         'user_roles_mapping_bulk'                   => Permission::MAKE_API_CALL,
         'consume_typeform_webhook'                  => Permission::EDIT_MERCHANT_INTERNATIONAL,
         'banking_account_create_admin'              => '*',
+        'fetch_payment_config_admin'                => '*',
+        'create_payment_config_admin'               => '*',
+        'update_payment_config_admin'               => '*',
     ];
 
     public static $bankingRoutePermissions = [
