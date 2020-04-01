@@ -448,7 +448,7 @@ class MerchantCreateTest extends TestCase
 
         $this->mockRazorxTreatment();
 
-        $testTime = Carbon::create(2020, 4, 1, 8, 1, 0, Timezone::IST);
+        $testTime = Carbon::create(2021, 4, 1, 8, 1, 0, Timezone::IST);
 
         Carbon::setTestNow($testTime);
 
