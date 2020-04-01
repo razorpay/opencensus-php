@@ -105,6 +105,8 @@ trait Reversal
 
         $refund->setBaseAmount();
 
+        $refund->setGatewayAmountCurrency();
+
         $refund->balance()->associate($refund->merchant->primaryBalance);
 
         $this->validateMerchantBalance($refund, 'reversal');
@@ -226,15 +228,10 @@ trait Reversal
 
         if ($reverseAll === true)
         {
-            $variant = $this->app->razorx->getTreatment($this->merchant->getId(),
-                                                        Merchant\RazorxTreatment::TRANSFERS_VIA_ORDER,
-                                                        $this->mode
-            );
+
             $transfers = new Base\PublicCollection();
 
-            if (strtolower($variant) === 'on')
-            {
-                $transfersFromPayment = (new Transfer\Core())->getForPayment($payment->getId());
+            $transfersFromPayment = (new Transfer\Core())->getForPayment($payment->getId());
 
                 foreach ($transfersFromPayment as $transfer)
                 {
@@ -264,13 +261,6 @@ trait Reversal
                         $transfers->push($transfer);
                     }
                 }
-            }
-            else
-            {
-                $transfers = $this->repo
-                                  ->transfer
-                                  ->fetchBySourceTypeAndIdAndMerchant($payment->getEntity(), $payment->getId(), $this->merchant);
-            }
 
             $refundType = $this->getPaymentRefundType($input, $payment);
 

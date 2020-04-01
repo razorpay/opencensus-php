@@ -118,11 +118,13 @@ class UpiMindgateGatewayTest extends TestCase
                 Metric::DIMENSION_ACTION            => 'authorize',
                 Metric::DIMENSION_STATUS            => 'success',
                 Metric::DIMENSION_INSTRUMENT_TYPE   => 'collect',
+                Metric::DIMENSION_UPI_PSP           => 'none',
             ],
             [
                 Metric::DIMENSION_ACTION            => 'callback',
                 Metric::DIMENSION_STATUS            => 'success',
                 Metric::DIMENSION_INSTRUMENT_TYPE   => 'collect',
+                Metric::DIMENSION_UPI_PSP           => 'none',
             ],
         ], $metricDriver->metric(Metric::GATEWAY_REQUEST_COUNT_V3));
 
@@ -185,12 +187,14 @@ class UpiMindgateGatewayTest extends TestCase
                 Metric::DIMENSION_ACTION            => 'authorize',
                 Metric::DIMENSION_STATUS            => 'success',
                 Metric::DIMENSION_INSTRUMENT_TYPE   => 'pay',
+                Metric::DIMENSION_UPI_PSP           => 'none',
             ],
             [
                 Metric::DIMENSION_ACTION            => 'callback',
                 Metric::DIMENSION_STATUS            => 'success',
                 //TODO: This should be intent, fix this.
                 Metric::DIMENSION_INSTRUMENT_TYPE   => 'pay',
+                Metric::DIMENSION_UPI_PSP           => 'none',
             ],
         ], $metricDriver->metric(Metric::GATEWAY_REQUEST_COUNT_V3));
     }

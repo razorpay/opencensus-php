@@ -222,6 +222,43 @@ return [
             'status_code' => 200,
         ]
     ],
+    'testBankTransferRblIft' => [
+        'request' => [
+            'url'     => '/ecollect/validate/rbl/test',
+            'method'  => 'post',
+            'server'  => [
+                'HTTP_XorgToken'   => 'RANDOM_RBL_SECRET',
+            ],
+            'content' => [
+                'ServiceName' => 'VirtualAccount',
+                'Action' => 'VirtualAccountTransaction',
+                'Data' =>  [
+                    [
+                        'messageType'               => 'IMPS',
+                        'amount'                    => '3439.46',
+                        'UTRNumber'                 => '006713070094-IFT Payment',
+                        'senderIFSC'                => '',
+                        'senderAccountNumber'       => '',
+                        'senderAccountType'         => 'Current Account',
+                        'senderName'                => 'SBI294559d909324c4b9d29b930a39d27dd',
+                        'beneficiaryAccountType'    => 'Current Account',
+                        'beneficiaryAccountNumber'  => '00010469876543210',
+                        'creditDate'                => '13-10-2016 1929',
+                        'creditAccountNumber'       => '409000404030',
+                        'corporateCode'             => 'CAFLT',
+                        'clientCodeMaster'          => '02405',
+                        'senderInformation'         => 'MID 74256975 ICICI PYT 121016',
+                    ],
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'Status'    => 'Success',
+            ],
+            'status_code' => 200,
+        ]
+    ],
 
     'testBankTransferRblUpi' => [
         'request' => [

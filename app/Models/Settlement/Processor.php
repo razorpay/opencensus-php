@@ -12,7 +12,6 @@ use RZP\Models\Feature;
 use RZP\Diag\EventCode;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
-use RZP\Models\Settlement;
 use RZP\Constants\Timezone;
 use RZP\Models\Transaction;
 use RZP\Base\RuntimeManager;
@@ -477,6 +476,7 @@ class Processor extends Base\Core
         $settlements        = new Base\PublicCollection;
         $setlAttempts       = new Base\PublicCollection;
         $txnsSettledCount   = 0;
+        $settlementIds      = [];
 
         foreach ($groupedTxns as $key => $txns)
         {
@@ -511,6 +511,8 @@ class Processor extends Base\Core
             {
                 $settlements->push($setl);
 
+                array_push($settlementIds, $setl->getId());
+
                 if ($setlAttempt !== null)
                 {
                     $setlAttempts->push($setlAttempt);
@@ -518,7 +520,10 @@ class Processor extends Base\Core
                     $txnsSettledCount += $txns->count();
                 }
 
-                $this->updateSettlementIdInTransfer($txns);
+               if($this->checkIsTransferSettlementQueueEnabled($merchantId) === false)
+               {
+                   $this->updateSettlementIdInTransfer($txns);
+               }
             }
 
             $this->traceMemoryUsage(TraceCode::MEMORY_USAGE_SETTLEMENT_ENTITIES_CREATE_END);
@@ -528,6 +533,7 @@ class Processor extends Base\Core
             'settlement_count'  => $settlements->count(),
             'attempt_count'     => $setlAttempts->count(),
             'txn_count'         => $txnsSettledCount,
+            'settlement_ids'    => $settlementIds
         ];
 
         $this->trace->count(
@@ -551,6 +557,23 @@ class Processor extends Base\Core
         );
 
         return $response;
+    }
+
+    public function checkIsTransferSettlementQueueEnabled($merchantId) : bool
+    {
+        $variant = $this->app['razorx']->getTreatment($merchantId,
+            MerchantModel\RazorxTreatment::TRANSFERS_SETTLEMENTS_QUEUE,
+            $this->mode
+        );
+
+        $this->trace->info(
+            TraceCode::TRANSFER_SETTLEMENT_RAZORX,
+            [
+                'merchantId'     => $merchantId,
+                'variant'        => $variant,
+            ]);
+
+        return strtolower($variant) === 'on';
     }
 
     protected function groupTransactionsByDay($txns): array

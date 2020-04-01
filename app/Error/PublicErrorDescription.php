@@ -659,6 +659,7 @@ class PublicErrorDescription
     const BAD_REQUEST_OLD_PASSWORD_MISMATCH                                     = 'Old Password mismatch';
     const BAD_REQUEST_CAPTCHA_FAILED                                            = 'Captcha Failed';
     const BAD_REQUEST_TOKEN_ABSENT_FOR_RECURRING_PAYMENT                        = 'Token absent for recurring payment';
+    const BAD_REQUEST_TOKEN_NOT_FOUND                                           = 'Token not found.';
 
     const BAD_REQUEST_USER_2FA_ALREADY_SETUP                                    = 'User already has a verified mobile number associated with the account';
     const BAD_REQUEST_LOCKED_USER_LOGIN                                         = 'User cannot login. User account is locked.';
@@ -868,7 +869,7 @@ class PublicErrorDescription
     // Terminal Onboarding
     const BAD_REQUEST_TERMINAL_ONBOARDING_DISABLED                              = 'Terminal onboarding feature is disabled';
     const BAD_REQUEST_ONLY_DEACTIVATED_TERMINALS_CAN_BE_ENABLED                 = 'Only deactivated terminals can be enabled';
-    const BAD_REQUEST_ONLY_ACTIVATED_TERMINALS_CAN_BE_DISABLED                  = 'Only activated terminals can be disabled';
+    const BAD_REQUEST_ONLY_PENDING_OR_ACTIVATED_TERMINALS_CAN_BE_DISABLED       = 'Only pending or activated terminals can be disabled';
 
 
     // Scrooge
@@ -1028,4 +1029,9 @@ class PublicErrorDescription
 
     //Invalid Bank Account
     const BAD_REQUEST_INVALID_BANK_ACCOUNT                                          =  'The bank account entered is invalid';
+
+
+    // Upi Mandates
+    const BAD_REQUEST_UPI_MANDATE_END_TIME_INVALID                                  = 'Invalid end time for upi mandate payment, end time must be greater than start time and current time';
+    const BAD_REQUEST_UPI_MANDATE_TIME_RANGE_REQUIRED                               = 'Start time and end time is required in case of upi mandate payments';
 }

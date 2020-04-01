@@ -341,8 +341,8 @@ trait Capture
 
             $data = [
                 'payment' => $payment->toArrayGateway(),
-                'amount' => $captureAmount,
-                'currency' => $payment->getCurrency()
+                'amount' => $payment->getGatewayAmount(),
+                'currency' => $payment->getGatewayCurrency()
             ];
 
             if ($payment->isMethodCardOrEmi())

@@ -187,9 +187,13 @@ class Service extends Base\Service
      */
     public function notify(array $input): array
     {
+        $inputTrace = $input;
+
+        $this->unsetPIIData($inputTrace);
+
         $this->trace->info(
             TraceCode::BANK_TRANSFER_NOTIFY_REQUEST,
-            $input
+            $inputTrace
         );
 
         $this->validateProvider();
@@ -201,6 +205,12 @@ class Service extends Base\Service
             'message'        => null,
             'transaction_id' => $input[Entity::REQ_UTR] ?? '',
         ];
+    }
+
+    public function unsetPIIData(array &$input)
+    {
+        unset($input[Entity::PAYER_NAME]);
+        unset($input[Entity::PAYER_ACCOUNT]);
     }
 
     /**

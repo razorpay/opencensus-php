@@ -128,6 +128,7 @@ class Table
 
     const D2C_BUREAU_DETAIL         = 'd2c_bureau_details';
     const D2C_BUREAU_REPORT         = 'd2c_bureau_reports';
+    const PAYMENT_META              = 'payment_meta';
 
     // This table does not belong to api service but is stored in api db.
     // API Service should be owner of its DB and all the migrations for other

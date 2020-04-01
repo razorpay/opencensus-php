@@ -190,7 +190,14 @@ class Core extends Base\Core
         {
             $token = $this->repo->token->findByPublicIdAndMerchant($id, $customer->merchant);
 
-            assertTrue($token->getCustomerId() === $customer->getId());
+            if ($token->getCustomerId() !== $customer->getId())
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_TOKEN_NOT_FOUND,
+                    Entity::ID,
+                    $id,
+                    'Token not found for id: ' . $id . ' customer id: ' . $customer->getId());
+            }
         }
 
         return $token;

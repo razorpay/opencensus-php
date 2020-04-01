@@ -4,6 +4,9 @@ namespace RZP\Reconciliator\Base;
 
 use App;
 
+use Carbon\Carbon;
+use RZP\Constants\Timezone;
+
 use RZP\Models\Base;
 use RZP\Models\Batch;
 use RZP\Trace\TraceCode;
@@ -433,6 +436,19 @@ class Reconciliate extends Base\Core
         try
         {
             $txnData = $this->getTransactionData($outputData);
+
+            if (count($txnData) === 0)
+            {
+                $this->trace->info(TraceCode::RECON_BATCH_TXN_FILE_DATA_EMPTY,
+                    [
+                        'info_code' => InfoCode::RECON_TXN_FILE_GENERATION_SKIPPED,
+                        'file_name' => $transactionsFileName,
+                        'gateway'   => $this->gateway,
+                    ]
+                );
+
+                return [];
+            }
 
             $filepath = $this->createCsvFile($txnData, $transactionsFileName, null, self::DIRECTORY_PATH);
 
@@ -987,6 +1003,7 @@ class Reconciliate extends Base\Core
                 SubReconciliate::RZP_TERMINAL_ID        => $row[SubReconciliate::RZP_TERMINAL_ID],
                 SubReconciliate::RZP_SETTLED_BY         => $row[SubReconciliate::RZP_SETTLED_BY],
                 SubReconciliate::RZP_METHOD             => $row[SubReconciliate::RZP_METHOD],
+                SubReconciliate::PROCESSED_AT           => $this->getTimeInEpochFormat($row[SubReconciliate::PROCESSED_AT]),
                 SubReconciliate::TAG_1                  => '',
                 SubReconciliate::TAG_2                  => '',
                 SubReconciliate::TAG_3                  => '',
@@ -1010,5 +1027,10 @@ class Reconciliate extends Base\Core
         {
             unset($outputRow[$field]);
         }
+    }
+
+    protected function getTimeInEpochFormat(string $time, $format = 'Y-m-d H:i:s')
+    {
+        return Carbon::createFromFormat($format, $time, Timezone::IST)->timestamp;
     }
 }

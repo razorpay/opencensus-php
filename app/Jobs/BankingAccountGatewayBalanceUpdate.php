@@ -86,7 +86,7 @@ class BankingAccountGatewayBalanceUpdate extends Job
 
             $operation = 'banking account gateway balance update job failed';
 
-            (new SlackNotification)->send($operation, $this->params, null, 1, 'rbl_alerts');
+            (new SlackNotification)->send($operation, $this->params, null, 1, 'rx_ca_rbl_alerts');
 
             $this->delete();
         }

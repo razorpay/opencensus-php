@@ -90,6 +90,9 @@ trait BankingRoleTrait
                 'reporting_log_create',
                 'reporting_log_update',
                 'bank_transfer_process_test',
+                'merchant_document_upload',
+                'merchant_document_delete',
+                'merchant_bank_account_change_status',
             ],
             BankingRole::ADMIN => [
                 'payout_bulk_create',

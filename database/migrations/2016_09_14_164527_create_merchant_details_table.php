@@ -336,6 +336,9 @@ class CreateMerchantDetailsTable extends Migration
             $table->string(MerchantDetail::FUND_ACCOUNT_VALIDATION_ID, 14)
                   ->nullable();
 
+            $table->string(MerchantDetail::PENNY_TESTING_UPDATED_AT, 11)
+                  ->nullable();
+
             $table->date(MerchantDetail::DATE_OF_ESTABLISHMENT)
                   ->nullable();
 
@@ -349,6 +352,7 @@ class CreateMerchantDetailsTable extends Migration
             $table->index(MerchantDetail::ARCHIVED_AT);
             $table->index(MerchantDetail::CREATED_AT);
             $table->index(MerchantDetail::UPDATED_AT);
+            $table->index(MerchantDetail::BANK_DETAILS_VERIFICATION_STATUS);
         });
     }
 

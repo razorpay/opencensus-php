@@ -60,7 +60,7 @@ class Orchestrator extends Base\Core
         $this->messenger     = new Messenger;
         $this->validator     = new Validator;
         $this->fileProcessor = new FileProcessor;
-        $this->converter     = new Converter;
+        $this->converter     = new Converter($gateway);
 
         $this->sharedMerchant = $this->repo
                                      ->merchant

@@ -14,9 +14,20 @@ class Lambda extends Base
 {
     use FileHandlerTrait;
 
-    const KEY               = 'key';
-    const BUCKET_CONFIG_KEY = 'recon_input_bucket';
-    const REGION            = 'us-east-1';
+    const KEY                       = 'key';
+    const BUCKET_CONFIG_KEY         = 'bucket_config_key';
+    const REGION                    = 'region';
+
+    const RECON_INPUT_BUCKET        = 'recon_input_bucket';
+    const RECON_SFTP_INPUT_BUCKET   = 'recon_sftp_input_bucket';
+    const DEFAULT_REGION            = 'us-east-1';
+    const SFTP_BUCKET_REGION        = 'ap-south-1';
+
+    // Since March 2020, we are pulling sftp files to another
+    // bucket for newly added gateways under sftp automation.
+    const SFTP_BUCKET_GATEWAYS = [
+        Base::VAS_AXIS,
+    ];
 
     public function process(array $input): array
     {
@@ -60,6 +71,28 @@ class Lambda extends Base
     }
 
     /**
+     * Based on gateway, returns bucket config key and region
+     * @param string $gateway
+     * @return array
+     */
+    protected function getBucketConfigDetails(string $gateway)
+    {
+        $bucketConfigKey = self::RECON_INPUT_BUCKET;
+        $region = self::DEFAULT_REGION;
+
+        if (in_array($gateway, self::SFTP_BUCKET_GATEWAYS, true) === true)
+        {
+            $bucketConfigKey = self::RECON_SFTP_INPUT_BUCKET;
+            $region = self::SFTP_BUCKET_REGION;
+        }
+
+        return [
+            self::BUCKET_CONFIG_KEY => $bucketConfigKey,
+            self::REGION            => $region,
+        ];
+    }
+
+    /**
      * Parses the key to get the gateway. The top directory name in the path denotes
      * the gateway. For e.g the key will be like below
      * key => FirstData/some_file.xls
@@ -82,15 +115,7 @@ class Lambda extends Base
         }
         else
         {
-            //
-            // key will be something like : 'icici/recon/NetbankingIcici/Abc.txt'
-            // for stage env              : 'icici/recon/stage/NetbankingIcici/Abc.txt'
-            //
-            $directoryPath = pathinfo($key, PATHINFO_DIRNAME);
-
-            $explodedArray = explode('/', $directoryPath);
-
-            $this->gateway = end($explodedArray);
+            $this->gateway = $this->getGatewayFromKey($key);
         }
 
         if (array_key_exists($this->gateway, self::GATEWAY_SENDER_MAPPING) === false)
@@ -105,15 +130,37 @@ class Lambda extends Base
     }
 
     /**
+     * Fetches and return Gateway from key
+     *
+     * @param string $key
+     * @return mixed
+     */
+    protected function getGatewayFromKey(string $key)
+    {
+        //
+        // key will be something like : 'icici/recon/NetbankingIcici/Abc.txt'
+        // for stage env              : 'icici/recon/stage/NetbankingIcici/Abc.txt'
+        //
+        $directoryPath = pathinfo($key, PATHINFO_DIRNAME);
+
+        $explodedArray = explode('/', $directoryPath);
+
+        return end($explodedArray);
+    }
+
+    /**
      * Downloads the file from s3 to a local file
      * path and converts that to a File object
      *
-     * @param  string $key s3 key
+     * @param string $key s3 key
      *
      * @return File
+     * @throws \Throwable
      */
     protected function downloadFileFromAws(string $key): File
     {
+        $bucketConfig = $this->getBucketConfigDetails($this->gateway);
+
         $filePath = storage_path('files/filestore') . '/' . $key;
 
         $dir = dirname($filePath);
@@ -144,8 +191,8 @@ class Lambda extends Base
             $filePath = $this->getFileFromAws(
                                             $key,
                                             $filePath,
-                                            self::BUCKET_CONFIG_KEY,
-                                            self::REGION);
+                                            $bucketConfig[self::BUCKET_CONFIG_KEY],
+                                            $bucketConfig[self::REGION]);
 
         }
 
@@ -161,9 +208,15 @@ class Lambda extends Base
      */
     public function deleteFromAws(string $key)
     {
+        $gateway = $this->getGatewayFromKey($key);
+
+        $bucketConfig = $this->getBucketConfigDetails($gateway);
+
         try
         {
-            $this->deleteFileFromAws($key, self::BUCKET_CONFIG_KEY, self::REGION);
+            $this->deleteFileFromAws($key,
+                                     $bucketConfig[self::BUCKET_CONFIG_KEY],
+                                     $bucketConfig[self::REGION]);
         }
         catch(\Throwable $e)
         {

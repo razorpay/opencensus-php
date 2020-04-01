@@ -112,13 +112,27 @@ trait SettlementTrait
         return $content;
     }
 
-    protected function initiateSettlements($channel, $testTimeStamp = null)
+    protected function initiateSettlements($channel, $testTimeStamp = null, $useQueue = false, $merchantIds = [])
     {
         $content = ['all' => 1];
 
         if ($testTimeStamp !== null)
         {
             $content['testSettleTimeStamp'] = $testTimeStamp;
+        }
+
+        if ($useQueue === true)
+        {
+            $content['use_queue'] = '1';
+        }
+
+        if (empty($merchantIds) === false)
+        {
+            $content['merchant_ids'] = $merchantIds;
+
+            $content['settled_at'] = 1534648600;
+
+            $content['initiated_at'] = 1534658600;
         }
 
         $request = [
@@ -215,5 +229,18 @@ trait SettlementTrait
          $this->assertTrue(
             unlink($file),
             'Could not delete file generated during testing. Filename: ' . $file);
+    }
+
+    protected function getTransfer(string $id)
+    {
+
+        $request = [
+            'method'        => 'get',
+            'url'           => '/transfers/' . $id,
+        ];
+
+        $this->ba->privateAuth();
+
+        return $this->makeRequestAndGetContent($request);
     }
 }

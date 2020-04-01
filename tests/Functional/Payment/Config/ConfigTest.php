@@ -104,4 +104,15 @@ class ConfigTest extends TestCase
 
         $this->startTest();
     }
+
+    public function testCreateCheckoutConfigFromAdminAuth()
+    {
+        $this->ba->adminAuth();
+
+        $admin = $this->ba->getAdmin();
+
+        $this->fixtures->admin->edit($admin["id"], ['allow_all_merchants' => true]);
+
+        return $this->startTest();
+    }
 }

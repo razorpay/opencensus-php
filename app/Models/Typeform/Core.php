@@ -90,7 +90,7 @@ class Core extends Base\Core
 
         $merchantCore = new MerchantCore();
 
-        $merchantCore->updateInternationalIfApplicable($merchant, $merchant->merchantDetail);
+        $merchantCore->updateInternationalTypeform($merchant, $merchant->merchantDetail);
 
         $this->repo->saveOrFail($merchant);
     }

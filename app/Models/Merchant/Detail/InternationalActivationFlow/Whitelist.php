@@ -18,5 +18,10 @@ class Whitelist extends Base implements ActivationFlowInterface
     {
         return true;
     }
+
+    public function shouldActivateTypeformInternational(): bool
+    {
+        return true;
+    }
 }
 

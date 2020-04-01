@@ -2,10 +2,15 @@
 
 namespace RZP\Models\Offer;
 
+use Razorpay\Trace\Logger as Trace;
 use RZP\Exception;
+use Cache;
+use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Base;
+use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
+use RZP\Models\Card as Card;
 use RZP\Models\Feature\Constants as Feature;
 
 class Service extends Base\Service
@@ -137,5 +142,78 @@ class Service extends Base\Service
         }
 
         throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
+    }
+
+    public function validateCheckoutOffers($input)
+    {
+        (new Validator())->validateInput('validate_checkout_offers', $input);
+
+        $applicableOffers = [];
+
+        $orderEntity = $this->repo->order->findByPublicIdAndMerchant($input['order_id'], $this->merchant);
+
+        if (isset($input["card"]["number"]) === false and isset($input["card"]["token"]) === false)
+        {
+            return $applicableOffers;
+        }
+        $cardNumber = null;
+
+        if (isset($input["card"]["token"]) === true)
+        {
+            $cardNumber = (new Card\CardVault)->getCardNumber($input["card"]["token"]);
+        }
+
+        else
+        {
+            $cardNumber = $input["card"]["number"];
+        }
+
+        $iin = substr($cardNumber, 0, 6);
+
+        $iinEntity = $this->repo->iin->find($iin);
+
+        if (isset($iinEntity) === false)
+        {
+            throw new Exception\BadRequestException('BAD_REQUEST_ERROR', 'iin', null, 'iin not found');
+        }
+
+        $payment = Payment\Service::getNewInstance()->getDummyPayment($orderEntity, $iinEntity);
+
+        $verbose = $this->isVerboseLogEnabled();
+
+        $offerIds = $input['offers'];
+
+        Entity::verifyIdAndStripSignMultiple($offerIds);
+
+        $offers = $this->repo->offer->findMany($offerIds);
+        //iterating over all offers
+        foreach ($offers as $offer)
+        {
+            $checker = new Checker($offer, $verbose);
+            //validating whether offer is applicable for payment or not
+            if ($checker->checkApplicabilityForPaymentBeforeCheckout($payment, $orderEntity) === true)
+            {
+                //adding the offer public id to return list
+                $applicableOffers[] = $offer->getPublicId();
+            }
+        }
+
+        return $applicableOffers;
+    }
+
+    protected function isVerboseLogEnabled(): bool
+    {
+        try
+        {
+            $verbose = (bool) Cache::get(ConfigKey::OFFER_LOG_VERBOSE);
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->traceException($ex, Trace::ERROR);
+
+            $verbose = false;
+        }
+
+        return $verbose;
     }
 }

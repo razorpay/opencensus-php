@@ -1565,6 +1565,21 @@ trait PaymentTrait
         return $payment;
     }
 
+    protected function getDefaultUpiOtmPayment()
+    {
+        $payment = $this->getDefaultUpiBlockPaymentArray();
+
+        $payment['upi']['type'] = 'otm';
+
+        $payment['upi']['flow'] = 'collect';
+
+        $payment['upi']['start_time'] = Carbon::now(Timezone::IST)->getTimestamp();
+
+        $payment['upi']['end_time'] = Carbon::now(Timezone::IST)->addDays(1)->getTimestamp();
+
+        return $payment;
+    }
+
     protected function getDefaultAepsPaymentArray()
     {
         $payment = $this->getDefaultPaymentArrayNeutral();

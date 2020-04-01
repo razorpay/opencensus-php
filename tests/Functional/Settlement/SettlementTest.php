@@ -8,6 +8,7 @@ use RZP\Models\Merchant;
 use RZP\Constants\Entity;
 use RZP\Constants\Timezone;
 
+use RZP\Services\RazorXClient;
 use Razorpay\OAuth\Application;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Feature\Constants;
@@ -40,6 +41,8 @@ class SettlementTest extends TestCase
     use ScheduleTrait;
     use DbEntityFetchTrait;
     use TestsBusinessBanking;
+
+    const STANDARD_PRICING_PLAN_ID  = '1A0Fkd38fGZPVC';
 
     public function setUp()
     {
@@ -379,6 +382,79 @@ class SettlementTest extends TestCase
         $this->initiateAndverifySettlementEntitiesForChannel($channel);
     }
 
+
+    public function testMerchantSettlementTransfer()
+    {
+        $channel = Channel::AXIS;
+
+        $this->ba->adminAuth();
+
+        $this->fixtures->create('balance_config',
+            [
+                'id'                            => '100yz000yz00yz',
+                'balance_id'                    => '10000000000000',
+                'type'                          => 'primary',
+                'negative_transaction_flows'    => ['transfer'],
+                'negative_limit_auto'           => 500000,
+                'negative_limit_manual'         => 500000
+
+            ]
+        );
+
+        $this->fixtures->create('pricing:standard_plan');
+
+        $this->fixtures->merchant->editPricingPlanId(self::STANDARD_PRICING_PLAN_ID);
+
+        $this->fixtures->merchant->editBalance(1000);
+
+        $this->fixtures->merchant->addFeatures(['marketplace']);
+
+        $account = $this->fixtures->create('merchant:marketplace_account', ['id' => '10000000000002']);
+
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                           ->setConstructorArgs([$this->app])
+                           ->setMethods(['getTreatment'])
+                           ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx
+                  ->method('getTreatment')
+                  ->willReturn('on');
+
+        $dt = Carbon::create(2018, 8, 14, 6, 1, 0, Timezone::IST);
+
+        Carbon::setTestNow($dt);
+
+        $attrs = [
+            'captured_at' => $dt->getTimestamp() + 1,
+            'method' => 'card',
+            'created_at' => $dt->getTimestamp(),
+            'amount' => 2000,
+        ];
+
+        $payment = $this->fixtures->create('payment:captured', $attrs);
+
+        $transfers[0] = [
+            'account'  => 'acc_' . $account->getId(),
+            'amount'   => 2000,
+            'currency' => 'INR',
+        ];
+
+       $this->transferPayment('pay_'.$payment['id'], $transfers);
+
+       $this->initiateSettlements($channel, null, true, [$account->getId()]);
+
+       $transfer = $this->getLastEntity('transfer');
+
+       $transferIds = $transfer['id'];
+
+       $transferResponse = $this->getTransfer($transferIds);
+
+       $this->assertNotNull($transferResponse['recipient_settlement_id']);
+
+    }
+
     public function testMerchantEarlySettlement()
     {
         $channel = Channel::AXIS;
@@ -414,6 +490,7 @@ class SettlementTest extends TestCase
         $setlResponse = $this->initiateSettlements($channel);
 
         $this->assertNotNull($setlResponse[$channel]);
+
         $this->assertEquals(0, $setlResponse[$channel]['count']);
 
         $dt = Carbon::create(2018, 8, 14, 9, 1, 0, Timezone::IST);
@@ -1588,6 +1665,112 @@ class SettlementTest extends TestCase
 
         $this->assertArraySelectiveEquals($response, $transferResponse);
     }
+
+    public function testSettlementWithAccountTransferWithRazorx()
+    {
+
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                           ->setConstructorArgs([$this->app])
+                           ->setMethods(['getTreatment'])
+                           ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx
+                  ->method('getTreatment')
+                  ->willReturn('off');
+
+        $now = Carbon::create(2018, 8, 14, 10, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($now);
+
+        $payment = $this->createPaymentEntities(1);
+
+        $createdAt = Carbon::today(Timezone::IST)->subDays(10)->timestamp + 5;
+
+        $transfer = $this->fixtures->create(
+            'transfer:to_account',
+            [
+                'source_id'   => $payment->getId(),
+                'source_type' => 'payment',
+                'amount'      => 5000,
+                'currency'    => 'INR',
+                'created_at'  => $createdAt,
+                'updated_at'  => $createdAt + 10
+            ]);
+
+        // Check if the recipient_settlement_id for the transfer entity created is null
+        $defaultSettlementId1 = $transfer->getRecipientSettlementId();
+
+        $this->assertEquals($defaultSettlementId1, null);
+
+        $channel = Channel::AXIS;
+
+        // Generate settlements
+        $content = $this->initiateSettlements($channel);
+
+        // Assert linked account settlement
+        $lastSetl = $this->getLastEntity('settlement', true);
+
+        $this->assertEquals($transfer['to_id'], $lastSetl['merchant_id']);
+        $this->assertEquals(5000, $lastSetl['amount']);
+
+        // (1 payment txn + 1 transfer txn + 1 transfer payment txn)
+        $this->assertEquals(3, $content[$channel]['txnCount']);
+
+        // Reload the entities so that the cached values are not returned
+        $transfer->reload();
+
+        $updatedSettlementId1 = $transfer->getRecipientSettlementId();
+
+        $this->assertNotEquals($updatedSettlementId1, null);
+
+        $this->fixtures->merchant->addFeatures(['marketplace']);
+
+        $this->ba->privateAuth();
+
+        // The response should not contain details of the Settlement entity
+        $request = [
+            'url'     => '/transfers',
+            'method'  => 'GET'
+        ];
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $transferResponse = $content['items'][0];
+
+        $this->assertArrayNotHasKey('recipient_settlement', $transferResponse);
+
+        // The response should contain details of the Settlement entity,
+        // since expand[]=recipient_settlement flag is being passed.
+        $request = [
+            'url'     => '/transfers',
+            'method'  => 'GET',
+            'content' => [
+                'expand'    => [
+                    'recipient_settlement'
+                ]
+            ]
+        ];
+
+        $response = [
+            'recipient_settlement'  => [
+                'entity'        => 'settlement',
+                'amount'        => 5000,
+                'status'        => 'created',
+                'fees'          => 0,
+                'tax'           => 0,
+                'utr'           => null,
+            ]
+        ];
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $transferResponse = $content['items'][0];
+
+        $this->assertArraySelectiveEquals($response, $transferResponse);
+    }
+
 
     public function testSettlementAccountTransferOnHold()
     {

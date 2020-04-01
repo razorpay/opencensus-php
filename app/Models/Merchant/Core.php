@@ -2498,7 +2498,7 @@ class Core extends Base\Core
 
         $domain = (new TLDExtract)->getEffectiveTLDPlusOne($website);
 
-        $oldWebsite = $merchant->getWebsite();
+        $oldWebsite = $this->getOldWebsite($merchant, $website);
 
         if ($oldWebsite !== null)
         {
@@ -2508,6 +2508,34 @@ class Core extends Base\Core
         }
 
         $this->addDomainInWhitelistedDomain($merchant, $domain);
+    }
+
+    /**
+     * there are two flow where website can be updated
+     * 1) edit website in merchant entity and then sync with merchant_details
+     *    in this case $merchant->getWebsite() will be same as $newWebsite because we edited merchant entity with input.
+     *    so to find old website we need to pick business_website from merchant_details.
+     *
+     * 2) edit website in merchant_details entity and then sync with merchant
+     *    for old website we need to pick website from merchant entity.
+     *
+     * @param Entity $merchant
+     * @param string $newWebsite
+     *
+     * @return mixed
+     */
+    private function getOldWebsite(Entity $merchant, string $newWebsite)
+    {
+        $oldWebsite = $merchant->getWebsite();
+
+        if ($oldWebsite === $newWebsite)
+        {
+            $merchantDetails = $merchant->merchantDetail;
+
+            $oldWebsite = $merchantDetails->getWebsite();
+        }
+
+        return $oldWebsite;
     }
 
     /**
@@ -2526,10 +2554,7 @@ class Core extends Base\Core
         {
             array_push($whitelistedDomains, $domain);
 
-            $merchantInput[Entity::WHITELISTED_DOMAINS] = $whitelistedDomains;
-
-            $merchant->edit($merchantInput);
-
+            $merchant->setWhitelistedDomains($whitelistedDomains);
         }
     }
 
@@ -2549,9 +2574,7 @@ class Core extends Base\Core
         {
             unset($whitelistedDomains[$key]);
 
-            $merchantInput[Entity::WHITELISTED_DOMAINS] = $whitelistedDomains;
-
-            $merchant->edit($merchantInput);
+            $merchant->setWhitelistedDomains($whitelistedDomains);
         }
     }
 
@@ -2643,6 +2666,20 @@ class Core extends Base\Core
         }
     }
 
+    public function updateInternationalTypeform(Entity $merchant, Detail\Entity $merchantDetails)
+    {
+        //
+        // $activationFlowImpl will be an instance of the ActivationFlowInterface
+        //
+        $activationFlowImpl = InternationalActivationFlow\Factory::getActivationFlowImpl($merchant);
+
+        if (($activationFlowImpl->shouldActivateTypeformInternational() === true)
+            and ($this->checkInternationalEnablementPreconditions($merchant, $merchantDetails) === true))
+        {
+            (new Detail\InternationalCore())->activateInternational($merchant);
+        }
+    }
+
     /**
      * Here we are taking mode as input parameter instead of using $this->mode because
      * for webhook jobs we do not take mode as constructor argument and mode has to be passed for cases functionality depends on mode
@@ -2716,13 +2753,28 @@ class Core extends Base\Core
      */
     protected function shouldActivateInternational(Entity $merchant, Detail\Entity $merchantDetails): bool
     {
+        $generalInternationalEnablement = $this->checkInternationalEnablementPreconditions($merchant, $merchantDetails);
+
+        if ($generalInternationalEnablement === false)
+        {
+            return false;
+        }
+        //
+        // $activationFlowImpl will be an instance of the ActivationFlowInterface
+        //
+        $activationFlowImpl = InternationalActivationFlow\Factory::getActivationFlowImpl($merchant);
+
+        return $activationFlowImpl->shouldActivateInternational();
+    }
+
+    protected function checkInternationalEnablementPreconditions(Entity $merchant, Detail\Entity $merchantDetails): bool
+    {
         $autoEnableInternational = $this->autoEnableInternational($merchant, $merchantDetails);
 
         if ($autoEnableInternational === false)
         {
             return false;
         }
-
         //
         // Enable international for merchant if
         // 1) Merchant has a valid website
@@ -2734,13 +2786,9 @@ class Core extends Base\Core
             return false;
         }
 
-        //
-        // $activationFlowImpl will be an instance of the ActivationFlowInterface
-        //
-        $activationFlowImpl = InternationalActivationFlow\Factory::getActivationFlowImpl($merchant);
-
-        return $activationFlowImpl->shouldActivateInternational();
+        return true;
     }
+
 
     public function validateWebsiteCheckForInternationalActivation(Entity $merchant, Detail\Entity $merchantDetails): bool
     {

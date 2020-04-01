@@ -3,14 +3,17 @@
 namespace RZP\Jobs\Settlement;
 
 use Cache;
+use Illuminate\Support\Facades\App;
 use Razorpay\Trace\Logger as Trace;
 
 use RZP\Jobs\Job;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
+use RZP\Models\Merchant;
 use RZP\Models\Settlement;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\Settlement\Metric;
+use RZP\Jobs\Transfers\TransferRecon;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\FundTransfer\Attempt\Initiator;
@@ -118,7 +121,9 @@ class Create extends Job
 
             $startTime = microtime(true);
 
-            $setlResponse = (new SettlementProcessor)->fetchAndProcessTransactionsForSettlement(
+            $processor = (new SettlementProcessor);
+
+            $setlResponse = $processor->fetchAndProcessTransactionsForSettlement(
                 $merchant, $channel, $this->balanceType, $this->params);
 
             $response = [
@@ -131,7 +136,29 @@ class Create extends Job
 
             $this->trace->info(
                 TraceCode::SETTLEMENT_ATTEMPT_ENTITIES_CREATED_FOR_MERCHANT,
-                $response);
+                         $response);
+
+            $isExperimentEnabled = $processor->checkIsTransferSettlementQueueEnabled($this->merchantId);
+
+            if (($isExperimentEnabled === true) and
+                (empty($setlResponse['settlement_ids']) === false))
+            {
+                $settlementIds =  $setlResponse['settlement_ids'];
+
+                $this->trace->info(
+                    TraceCode::TRANSFER_SETTLEMENT_PROCESS_SQS_PUSH_INIT,
+                    [
+                        'settlementIds' => $settlementIds
+                    ]);
+
+                TransferRecon::dispatch($settlementIds, $this->mode);
+            }
+
+            $this->trace->info(
+                TraceCode::TRANSFER_SETTLEMENT_NO_SETTLEMENTS_FOUND,
+                [
+                    '$setlResponse' => $setlResponse
+                ]);
         }
         catch (BadRequestException $e)
         {

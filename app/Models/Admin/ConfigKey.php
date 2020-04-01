@@ -70,6 +70,12 @@ class ConfigKey
 
     const LOW_BALANCE_RX_EMAIL                  = self::PREFIX . 'low_balance_rx_email';
 
+
+    const OFFER_LOG_VERBOSE                     = self::PREFIX . 'offer_log_verbose';
+
+    //Banking account current accounts statement fetch for merchants limit on number of merchants for which to update in one run.
+    const BANKING_ACCOUNT_STATEMENT_RATE_LIMIT  = self::PREFIX . 'banking_account_statement_rate_limit';
+
     const GATEWAY_BALANCE_LAST_FETCHED_AT_RATE_LIMITING = self::PREFIX . 'gateway_balance_last_fetched_at_rate_limiting';
 
     //Banking account current accounts balance update for merchants .limit on number of merchants for which to update in one run
@@ -91,6 +97,10 @@ class ConfigKey
     const RX_ACCOUNT_NUMBER_SERIES_PREFIX       = self::PREFIX . 'rx_account_number_series_prefix';
 
     const RX_SHARED_ACCOUNT_ALLOWED_CHANNELS    = self::PREFIX . 'rx_shared_account_allowed_channels';
+
+    // This regex is used to scrub credit card numbers from logs.
+    // Currently only banking specific routes will be affected by this
+    const CREDIT_CARD_REGEX_FOR_REDACTING       = self::PREFIX . 'credit_card_regex_for_redacting';
 
     const PUBLIC_KEYS = [
         self::TERMINAL_SELECTION_LOG_VERBOSE,
@@ -129,6 +139,7 @@ class ConfigKey
         self::FTS_PAYOUT_BANK_ACCOUNT,
         self::CARD_PAYMENT_SERVICE_ENABLED,
         self::NB_PLUS_SERVICE_ENABLED,
+        self::BANKING_ACCOUNT_STATEMENT_RATE_LIMIT,
         self::LOW_BALANCE_RX_EMAIL,
         self::GATEWAY_BALANCE_LAST_FETCHED_AT_RATE_LIMITING,
         self::BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_RATE_LIMIT,
@@ -139,6 +150,7 @@ class ConfigKey
         self::BLOCK_YESBANK_WALLET_PAYOUTS,
         self::RX_ACCOUNT_NUMBER_SERIES_PREFIX,
         self::RX_SHARED_ACCOUNT_ALLOWED_CHANNELS,
+        self::CREDIT_CARD_REGEX_FOR_REDACTING,
     ];
 
     public static function isSensitive(string $key)

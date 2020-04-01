@@ -91,6 +91,8 @@ class Validator extends Base\Validator
         ConfigKey::WORLDLINE_TID_RANGE_LIST.'.*'      => 'filled|array',
 
         ConfigKey::LOW_BALANCE_RX_EMAIL               => 'filled|array',
+      
+        ConfigKey::BANKING_ACCOUNT_STATEMENT_RATE_LIMIT   => 'filled|integer',
 
         ConfigKey::GATEWAY_BALANCE_LAST_FETCHED_AT_RATE_LIMITING     => 'filled|integer',
         ConfigKey::BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_RATE_LIMIT => 'filled|integer',
@@ -102,6 +104,8 @@ class Validator extends Base\Validator
         ConfigKey::BLOCK_YESBANK_WALLET_PAYOUTS       => 'filled|boolean',
         ConfigKey::RX_ACCOUNT_NUMBER_SERIES_PREFIX    => 'filled|array',
         ConfigKey::RX_SHARED_ACCOUNT_ALLOWED_CHANNELS => 'filled|array',
+
+        ConfigKey::CREDIT_CARD_REGEX_FOR_REDACTING    => 'filled|string',
     ];
 
     protected static $setRedisKeysRules = [

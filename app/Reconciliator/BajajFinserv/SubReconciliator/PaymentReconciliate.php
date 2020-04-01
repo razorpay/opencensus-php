@@ -67,7 +67,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
     {
         $convertCurrency = $this->payment->getConvertCurrency();
 
-        $paymentAmount = ($convertCurrency === true) ? $this->payment->getBaseAmount() : $this->payment->getAmount();
+        $paymentAmount = ($convertCurrency === true) ? $this->payment->getBaseAmount() : $this->payment->getGatewayAmount();
 
         // Ceil the amount
         // BFL sends us the amount in Rs always.

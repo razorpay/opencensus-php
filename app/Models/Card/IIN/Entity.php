@@ -7,6 +7,7 @@ use RZP\Models\Card;
 use RZP\Models\Bank\Name;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\Card\Type;
+use RZP\Models\Currency\Currency;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Base\QueryCache\Cacheable;
 
@@ -398,5 +399,10 @@ class Entity extends Base\PublicEntity
         }
 
         return false;
+    }
+
+    public function getIinCurrency()
+    {
+        return Currency::getCurrencyForCountry($this->getCountry());
     }
 }

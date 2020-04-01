@@ -39,6 +39,7 @@ use RZP\Mail\Merchant\Rejection as RejectionEmail;
 use RZP\Models\Merchant\Detail\Metric as DetailMetric;
 use RZP\Models\Merchant\Document\OcrVerificationStatus;
 use RZP\Models\Merchant\Detail\Constants as DEConstants;
+use RZP\Models\Merchant\Detail\Constants as DetailConstants;
 use RZP\Mail\Admin\NotifyActivationSubmission as NotifyAdmin;
 use RZP\Mail\Merchant\NotifyActivationSubmission as NotifyMerchant;
 use RZP\Mail\Merchant\NeedsClarificationEmail as ClarificationEmail;
@@ -1683,18 +1684,7 @@ class Core extends Base\Core
             return;
         }
 
-        $fromMerchant = $this->repo->merchant->findOrFailPublic(Merchant\Preferences::MID_ONBOARDING_PENNY_TESTING);
-
-        $merchantDetails->setBankDetailsVerificationStatus(BankDetailsVerificationStatus::INITIATED);
-
-        $this->trace->count(DetailMetric::UNREGISTERED_PENNY_TESTING_STATUS_TOTAL,
-                            [
-                                Detail\Constants::BANK_DETAILS_VERIFICATION_STATUS => BankDetailsVerificationStatus::INITIATED
-                            ]);
-
-        $fundAccountValidation = (new PennyTesting)->attempt($merchantDetails, $fromMerchant);
-
-        $merchantDetails->setFundAccountValidationId($fundAccountValidation->getId());
+        (new PennyTesting())->triggerPennyTesting($merchantDetails);
     }
 
     public function isAdditionalFieldRequired($field)
@@ -1969,7 +1959,7 @@ class Core extends Base\Core
     }
 
     /**
-     * this function is called dynemically to update merchant details through batch action.
+     * this function is called dynamically to update merchant details through batch action.
      * This unction name is derived from action name.
      *
      * @param string $merchantId
@@ -1982,5 +1972,66 @@ class Core extends Base\Core
         (new Validator())->validateInput('update_entity_batch_action', $input);
 
         $this->editMerchantDetailFields($merchant, $input);
+    }
+
+    /**
+     * @throws \Throwable
+     */
+    public function retryPennyTestingCron()
+    {
+        $merchantDetails = $this->getMerchantDetailsWithBankDetailsVerificationStatus(BankDetailsVerificationStatus::INITIATED);
+
+        $pennyTesting = new PennyTesting();
+
+        foreach ($merchantDetails as $merchantDetail)
+        {
+            $isPennyTestingAttemptLessThenMaxAttempt = $pennyTesting->isPennyTestingAttemptLessThenMaxAttempt($merchantDetail);
+
+            $this->repo->transactionOnLiveAndTest(function() use ($merchantDetail, $pennyTesting, $isPennyTestingAttemptLessThenMaxAttempt) {
+
+                $merchant = $merchantDetail->merchant;
+
+                if ($isPennyTestingAttemptLessThenMaxAttempt === true)
+                {
+                    $pennyTesting->triggerPennyTesting($merchantDetail);
+                }
+                else
+                {
+                    $this->markBankDetailsVerificationStatusFailed($merchant, $merchantDetail);
+                }
+
+                $this->repo->saveOrFail($merchantDetail);
+                $this->repo->saveOrFail($merchant);
+            });
+        }
+    }
+
+    protected function markBankDetailsVerificationStatusFailed(Merchant\Entity $merchant, Entity $merchantDetail)
+    {
+        $merchantDetail->setBankDetailsVerificationStatus(BankDetailsVerificationStatus::FAILED);
+
+        (new PennyTesting())->updateMerchantContext($merchantDetail, $merchant);
+    }
+
+    /**
+     * eg. if cron job run for each 2 hour then
+     * only those merchant_details will be returned for which penny testing updated before 2 or more hours
+     *
+     * @param string $status Bank Details Verification Status
+     *
+     * @return mixed
+     */
+    protected function getMerchantDetailsWithBankDetailsVerificationStatus(string $status)
+    {
+        $currentTime = time();
+
+        $lastCronJobTime = $currentTime - DetailConstants::PENNY_TESTING_RETRY_PERIOD_IN_SEC;
+
+        $merchantDetails = $this->repo->useSlave(function() use ($lastCronJobTime, $status) {
+
+            return (new Repository())->fetchMerchantDetailsByBankDetailVerificationStatusAndUpdatedAt($status, $lastCronJobTime);
+        });
+
+        return $merchantDetails;
     }
 }

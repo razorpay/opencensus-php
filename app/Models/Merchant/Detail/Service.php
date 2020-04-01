@@ -67,6 +67,14 @@ class Service extends Base\Service
 
         $this->app['diag']->trackOnboardingEvent(EventCode::SIGNUP_FINISH_SIGNUP_SUCCESS, $this->merchant, null, $input);
 
+        $variant = $this->app->razorx->getTreatment($this->merchant->getId(),
+                                                    Merchant\RazorxTreatment::PRE_SIGNUP_DETAILS_TO_SALESFORCE,
+                                                    $this->mode);
+        if ($variant === 'on')
+        {
+            $this->app->salesforce->sendPreSignupDetails($input, $this->merchant);
+        }
+
         return $response;
     }
 
@@ -1094,5 +1102,12 @@ class Service extends Base\Service
         $fileName = 'api/' . $merchantId . '/' . $partial . '/' . $fileIdentifier;
 
         return $fileName;
+    }
+
+    public function retryPennyTestingCron()
+    {
+        (new Core())->retryPennyTestingCron();
+
+        return ['success' => true];
     }
 }

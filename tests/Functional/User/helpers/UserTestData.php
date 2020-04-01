@@ -666,6 +666,21 @@ return [
         ],
     ],
 
+    'testPasswordResetMailForBadEmail' => [
+        'request' => [
+            'url'     => '/users/reset-password',
+            'method'  => 'post',
+            'content' => [
+                'email' => 'abc@abc.com',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                "success" => true,
+            ],
+        ],
+    ],
+
     'testPasswordResetByToken' => [
         'request'  => [
             'url'     => '/users/reset-password-token',

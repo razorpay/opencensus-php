@@ -644,34 +644,6 @@ return [
         ]
     ],
 
-    'testEditMerchantWhitelistedDomains' => [
-        'request'  => [
-            'content' => [
-                'whitelisted_domains' => [
-                    'example.com',
-                    'razorpay.com'
-                ],
-            ],
-            'url'     => '/merchants/1X4hRFHFx4UiXt',
-            'method'  => 'put',
-            'server'  => [
-                // Case: In sign-up case we will not have any other headers
-                // (eg. X-Dashboard-User-Email etc) from dashboard.
-                'HTTP_X-Dashboard' => 'true',
-            ],
-        ],
-        'response' => [
-            'content' => [
-                'id'             => '1X4hRFHFx4UiXt',
-                'entity'         => 'merchant',
-                'whitelisted_domains' => [
-                    'example.com',
-                    'razorpay.com'
-                ],
-            ]
-        ]
-    ],
-
     'testEditMerchantWebsite' => [
         'request'  => [
             'content' => [

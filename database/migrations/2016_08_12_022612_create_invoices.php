@@ -82,6 +82,10 @@ class CreateInvoices extends Migration
             $table->integer(Entity::EXPIRE_BY)
                   ->nullable();
 
+            $table->bigInteger(Entity::BIG_EXPIRE_BY)
+                  ->unsigned()
+                  ->nullable();
+
             $table->string(Entity::STATUS, 32);
 
             $table->string(Entity::SUBSCRIPTION_STATUS, 32)

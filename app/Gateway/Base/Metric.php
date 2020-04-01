@@ -105,6 +105,8 @@ class Metric
 
         $issuer = $this->getIssuer($method, $input);
 
+        $upiPsp = $this->getUpiPsp($input);
+
         $isBharatQr = $this->isBharatQrPayment($input);
 
         $gateway_acquirer = $input[Entity::TERMINAL][\RZP\Models\Terminal\Entity::GATEWAY_ACQUIRER];
@@ -120,7 +122,7 @@ class Metric
             Metric::DIMENSION_INSTRUMENT_TYPE      => $instrumentType,
             Metric::DIMENSION_TPV                  => $tpv,
             Metric::DIMENSION_ISSUER               => $issuer,
-            Metric::DIMENSION_UPI_PSP              => 'none',
+            Metric::DIMENSION_UPI_PSP              => $upiPsp,
             Metric::DIMENSION_CARD_INTERNATIONAL   => $isInternationalPayment,
             Metric::DIMENSION_BHARAT_QR            => $isBharatQr,
             Metric::DIMENSION_AUTH_TYPE            => $authType,
@@ -264,22 +266,27 @@ class Metric
 
     protected function getUpiPsp($input)
     {
-        $upiPsp = 'none';
+        // For Payments
+        $vpa = $input[Entity::PAYMENT][Entity::VPA] ?? null;
 
-        $method = $this->getMethod($input);
-
-        if (($method === Payment\Method::UPI) and
-            (isset($input[Entity::PAYMENT][Upi\Base\Entity::VPA]) === true))
+        if (empty($vpa))
         {
-            $array = explode('@', $input[Entity::PAYMENT][Upi\Base\Entity::VPA]);
-
-            if (count($array) > 1)
-            {
-                $upiPsp = $array[1];
-            }
+            // For Validate VPA
+            $vpa = $input[Entity::VPA] ?? null;
         }
 
-        return $upiPsp;
+        $upiPsp = Upi\Base\ProviderCode::getPspForVpa($vpa);
+
+        switch ($upiPsp)
+        {
+            case Upi\Base\ProviderPsp::GOOGLE_PAY:
+            case Upi\Base\ProviderPsp::PHONEPE:
+            case Upi\Base\ProviderPsp::PAYTM:
+            case Upi\Base\ProviderPsp::BHIM:
+                return $upiPsp;
+        }
+
+        return 'none';
     }
 
     public function pushGatewayDimensions($action, $input, $status, $gateway = null, $excData = null)
@@ -314,15 +321,7 @@ class Metric
 
     public function getValidateVpaDimensions($action, $input, $gateway)
     {
-        if (isset($input[Upi\Base\Entity::VPA]) === true)
-        {
-            $array = explode('@', $input[Upi\Base\Entity::VPA]);
-
-            if (count($array) > 1)
-            {
-                $upiPsp = $array[1];
-            }
-        }
+        $upiPsp = $this->getUpiPsp($input);
 
         return [
             Metric::DIMENSION_GATEWAY              => $gateway,

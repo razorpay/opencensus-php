@@ -62,6 +62,7 @@ class Event
     const TRANSACTION_UPDATED               = 'transaction.updated';
     const REFUND_CREATED                    = 'refund.created';
     const TRANSFER_PROCESSED                = 'transfer.processed';
+    const TERMINAL_CREATED                  = 'terminal.created';
     const TERMINAL_ACTIVATED                = 'terminal.activated';
     const TERMINAL_FAILED                   = 'terminal.failed'; // Terminal Creation failed on gateway
     const ACCOUNT_SUSPENDED                 = 'account.suspended';
@@ -131,6 +132,7 @@ class Event
         self::TRANSACTION_UPDATED,
         self::REFUND_CREATED,
         self::TRANSFER_PROCESSED,
+        self::TERMINAL_CREATED,
         self::TERMINAL_ACTIVATED,
         self::TERMINAL_FAILED,
         self::ACCOUNT_SUSPENDED,
@@ -206,6 +208,7 @@ class Event
         self::TRANSACTION_UPDATED,
         self::REFUND_CREATED,
         self::TRANSFER_PROCESSED,
+        self::TERMINAL_CREATED,
         self::TERMINAL_ACTIVATED,
         self::TERMINAL_FAILED,
         self::ACCOUNT_SUSPENDED,
@@ -229,6 +232,7 @@ class Event
         self::PAYMENT_CREATED
     ];
 
+    // We have exhausted all the below bits for webhook events, add in $bitPosition2 for any new events
     public static $bitPosition = [
         self::PAYMENT_AUTHORIZED                => 1,
         self::PAYMENT_FAILED                    => 2,
@@ -295,12 +299,14 @@ class Event
         self::PAYOUT_PENDING                    => 63,
     ];
 
+    // Add new webhook events in this array. 
     public static $bitPosition2 = [
         self::PAYOUT_LINK_ISSUED     => 1,
         self::PAYOUT_LINK_PROCESSING => 2,
         self::PAYOUT_LINK_CANCELLED  => 3,
         self::PAYOUT_LINK_ATTEMPTED  => 4,
         self::PAYOUT_LINK_PROCESSED  => 5,
+        self::TERMINAL_CREATED       => 6,
     ];
 
     /**
@@ -350,6 +356,7 @@ class Event
         self::TRANSACTION_UPDATED               => [Product::BANKING],
         self::REFUND_CREATED                    => [Product::PRIMARY],
         self::TRANSFER_PROCESSED                => [Product::PRIMARY],
+        self::TERMINAL_CREATED                  => [Product::PRIMARY],
         self::TERMINAL_ACTIVATED                => [Product::PRIMARY],
         self::TERMINAL_FAILED                   => [Product::PRIMARY],
         self::ACCOUNT_SUSPENDED                 => [Product::PRIMARY],
@@ -422,6 +429,7 @@ class Event
         self::TRANSACTION_UPDATED               => Entity::TRANSACTION,
         self::REFUND_CREATED                    => Entity::REFUND,
         self::TRANSFER_PROCESSED                => Entity::TRANSFER,
+        self::TERMINAL_CREATED                  => Entity::TERMINAL,
         self::TERMINAL_ACTIVATED                => Entity::TERMINAL,
         self::TERMINAL_FAILED                   => Entity::TERMINAL,
         self::ACCOUNT_SUSPENDED                 => Entity::MERCHANT,
@@ -472,6 +480,7 @@ class Event
         self::PAYMENT_DOWNTIME_RESOLVED         => Feature\Constants::EXPOSE_DOWNTIMES,
         self::REFUND_FAILED                     => Feature\Constants::SHOW_REFUND_PUBLIC_STATUS,
         self::TRANSFER_PROCESSED                => Feature\Constants::MARKETPLACE,
+        self::TERMINAL_CREATED                  => Feature\Constants::TERMINAL_ONBOARDING,
         self::TERMINAL_ACTIVATED                => Feature\Constants::TERMINAL_ONBOARDING,
         self::TERMINAL_FAILED                   => Feature\Constants::TERMINAL_ONBOARDING,
         self::PAYOUT_UPDATED                    => Feature\Constants::PAYOUT,

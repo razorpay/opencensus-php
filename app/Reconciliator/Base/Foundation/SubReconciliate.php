@@ -43,7 +43,7 @@ class SubReconciliate extends Base\Core
     const RECON_ENTITY_ID       = 'recon_entity_id';
     const RECON_NET_AMOUNT      = 'recon_net_amount';
 
-    // Txn file related fields
+    // Txn file related specific fields
     const RZP_TXN_ID            = 'rzp_txn_id';
     const RZP_TXN_AMOUNT        = 'rzp_txn_amount';
     const RZP_TXN_CURRENCY      = 'rzp_txn_currency';
@@ -672,19 +672,17 @@ class SubReconciliate extends Base\Core
             return;
         }
 
-        $createdAt = Carbon::createFromTimestamp($transaction->getCreatedAt())->timezone(Timezone::IST)->toDateTimeString();
-
         static::$reconOutputData[static::$currentRowNumber][self::RZP_TXN_ID]           = $transaction->getId();
         static::$reconOutputData[static::$currentRowNumber][self::RZP_IS_RECONCILED]    = $this->getReconciledStatus();
         static::$reconOutputData[static::$currentRowNumber][self::RZP_RECONCILED_AT]    = $this->getReconTimestamp();
-        static::$reconOutputData[static::$currentRowNumber][self::RZP_TXN_CREATED_AT]   = $createdAt;
+        static::$reconOutputData[static::$currentRowNumber][self::RZP_TXN_CREATED_AT]   = $transaction->getCreatedAt();
     }
 
     // Sets terminal ID, settled by and Method for the entity (Payment/Refund)
     protected function setMiscEntityDetailsInOutput(PublicEntity $entity)
     {
         static::$reconOutputData[static::$currentRowNumber][self::RECON_ENTITY_ID]      = $entity->getId();
-        static::$reconOutputData[static::$currentRowNumber][self::RZP_TXN_AMOUNT]       = ($entity->getAmount() / 100);
+        static::$reconOutputData[static::$currentRowNumber][self::RZP_TXN_AMOUNT]       = $entity->getAmount();
         static::$reconOutputData[static::$currentRowNumber][self::RZP_TXN_CURRENCY]     = $entity->getCurrency();
         static::$reconOutputData[static::$currentRowNumber][self::RZP_MERCHANT_ID]      = $entity->getMerchantId();
         static::$reconOutputData[static::$currentRowNumber][self::RZP_GATEWAY]          = $entity->getGateway();
@@ -768,7 +766,9 @@ class SubReconciliate extends Base\Core
         }
         else
         {
-            return static::$reconOutputData[static::$currentRowNumber][self::PROCESSED_AT];
+            $processedAt = static::$reconOutputData[static::$currentRowNumber][self::PROCESSED_AT];
+
+            return Carbon::createFromFormat('Y-m-d H:i:s', $processedAt, Timezone::IST)->timestamp;
         }
     }
 

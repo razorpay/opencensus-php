@@ -2,8 +2,14 @@
 
 namespace RZP\Models\Payment\Processor;
 
-use RZP\Models\Payment\Flow;
-use function GuzzleHttp\Psr7\uri_for;
+use RZP\Exception;
+use Carbon\Carbon;
+use Razorpay\Trace\Logger as Trace;
+use RZP\Models\Payment;
+use RZP\Models\Payment\Method;
+use RZP\Models\Payment\UpiMetadata\Type;
+use RZP\Models\Payment\UpiMetadata\Entity;
+use RZP\Trace\TraceCode;
 
 trait UpiTrait
 {
@@ -15,7 +21,7 @@ trait UpiTrait
     public function isFlowCollect($input): bool
     {
         if ((isset($input['upi']['flow']) === false) or
-            ($input['upi']['flow'] === Flow::COLLECT))
+            ($input['upi']['flow'] === Payment\Flow::COLLECT))
         {
             return true;
         }
@@ -26,7 +32,18 @@ trait UpiTrait
     public function isFlowIntent($input): bool
     {
         if ((isset($input['upi']['flow']) === true) and
-            ($input['upi']['flow'] === Flow::INTENT))
+            ($input['upi']['flow'] === Payment\Flow::INTENT))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    public function isOtmPayment($input): bool
+    {
+        if ((isset($input[Method::UPI][Entity::TYPE]) === true) and
+            ($input[Method::UPI][Entity::TYPE] === Type::OTM))
         {
             return true;
         }
@@ -37,5 +54,132 @@ trait UpiTrait
     public function getUpiExpiryTime($input)
     {
         return $input['upi']['expiry_time'] ?? null;
+    }
+
+    public function getUpiStartTime($input)
+    {
+        return array_get($input, 'upi.start_time');
+    }
+
+    public function getUpiEndTime($input)
+    {
+        return array_get($input, 'upi.end_time');
+    }
+
+    public function getUpiType($input)
+    {
+        return array_get($input, 'upi.type');
+    }
+
+    /**
+     * Sets defaults for OTM payments
+     * @param array $input
+     */
+    protected function preProcessForUpiOtmIfApplicable(array &$input)
+    {
+        if ($this->isOtmPayment($input) === false)
+        {
+            return;
+        }
+
+        if (isset($input[Payment\Method::UPI][Entity::START_TIME]) === false)
+        {
+            $input[Payment\Method::UPI][Entity::START_TIME] = Carbon::now()->getTimestamp();
+        }
+
+        if (isset($input[Payment\Method::UPI][Entity::END_TIME]) === false)
+        {
+            $startDate = Carbon::createFromTimestamp($input[Payment\Method::UPI][Entity::START_TIME]);
+
+            $input[Payment\Method::UPI][Entity::END_TIME] = $startDate->addDays(90)->getTimestamp();
+        }
+    }
+
+    /**
+     * Pre Process the input for UPI and set the defaults.
+     * @param array $input
+     */
+    protected function preProcessForUpiIfApplicable(array &$input)
+    {
+        if ($input['method'] !== Payment\Method::UPI)
+        {
+            return;
+        }
+
+        // New flow needs to use the UPI block, which was first utilising the `_`  meta block
+        // For backward compatibility, we still pick the values from the `_` block and set it
+        // on the `upi` block and Payments block has VPA which should be set in the `upi` block
+        // Priority is always UPI block
+        if (isset($input[Payment\Method::UPI][Payment\Entity::VPA]) === true)
+        {
+            $input[Payment\Entity::VPA] = $input[Payment\Method::UPI][Payment\Entity::VPA];
+        }
+        else if (isset($input[Payment\Entity::VPA]) === true)
+        {
+            $input[Payment\Method::UPI][Payment\Entity::VPA] =  $input[Payment\Entity::VPA];
+        }
+
+        if (isset($input[Payment\Method::UPI]['flow']) === true)
+        {
+            $input['_']['flow'] = $input[Payment\Method::UPI]['flow'];
+        }
+        else if ((isset($input['_']['flow']) === true) and (Entity::isValidFlow($input['_']['flow'])))
+        {
+            $input[Payment\Method::UPI]['flow'] = $input['_']['flow'];
+        }
+
+        if (isset($input[Payment\Method::UPI]['flow']) === false)
+        {
+            $input[Payment\Method::UPI]['flow'] = Payment\Flow::COLLECT;
+        }
+
+        if ($this->isOtmPayment($input) === true)
+        {
+            $this->preProcessForUpiOtmIfApplicable($input);
+        }
+
+        if (empty($input[Payment\Method::UPI][Entity::TYPE]) === true)
+        {
+            $input[Payment\Method::UPI][Entity::TYPE] = Type::DEFAULT;
+        }
+
+        // Add provider if it is available
+        if (empty($input[Payment\Entity::UPI_PROVIDER]) === false)
+        {
+            $input[Payment\Method::UPI][Entity::PROVIDER] = $input[Payment\Entity::UPI_PROVIDER];
+        }
+    }
+
+    /**
+     * Sets the metadata for upi in the payment entity.
+     * @param Payment\Entity $payment
+     * @param $input
+     */
+    protected function setUpiMetadataIfApplicable(Payment\Entity $payment, $input)
+    {
+        if ($payment->isUpi() === true)
+        {
+            try
+            {
+                $upiMetadata = (new Payment\UpiMetadata\Core)->create($input[Payment\Method::UPI], $payment);
+
+                /**
+                 * We are setting the upi_metadata here. For persisting the upi metadata,
+                 * we are using the Payment Observer where we listen to the created hook of
+                 * the payment entity, and persist the upi metadata pulling it out from the payment
+                 * entity's metadata.
+                 */
+                $payment->setMetadataKey(Payment\UpiMetadata\Entity::UPI_METADATA, $upiMetadata);
+            }
+            catch (Exception\BaseException $e)
+            {
+                $this->trace->traceException(
+                    $e,
+                    Trace::CRITICAL,
+                    TraceCode::PAYMENT_UPI_METADATA_SAVE_FAILED,
+                    $input[Payment\Method::UPI] ?? null
+                );
+            }
+        }
     }
 }

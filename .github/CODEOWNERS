@@ -62,6 +62,7 @@ app/Models/LineItem/                                   praveen.patlola@razorpay.
 app/Models/Merchant/                                   vivek.kumar@razorpay.com
 app/Models/Merchant/Credits/                           sunny.aggrawal@razorpay.com
 app/Models/Merchant/Invoice/                           sunny.aggrawal@razorpay.com
+app/Models/Merchant/Webhook/                           @razorpay/tools_team
 app/Models/Order/                                      sunny.aggrawal@razorpay.com
 app/Models/P2p/                                        nemo@razorpay.com
 app/Models/Payment/                                    vivek.kumar@razorpay.com

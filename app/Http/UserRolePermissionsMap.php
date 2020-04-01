@@ -88,6 +88,9 @@ class UserRolePermissionsMap
                  Permission::VIEW_WORKFLOW,
                  Permission::UPDATE_TEST_MERCHANT_BALANCE,
                  Permission::VIEW_VIRTUAL_ACCOUNT,
+                 Permission::UPLOAD_MERCHANT_DOCUMENT,
+                 Permission::DELETE_MERCHANT_DOCUMENT,
+                 Permission::UPDATE_MERCHANT_BANK_ACCOUNT_STATUS,
              ],
 
              BankingRole::ADMIN => [
@@ -160,6 +163,9 @@ class UserRolePermissionsMap
                  Permission::UPDATE_TEST_MERCHANT_BALANCE,
                  Permission::UPDATE_MERCHANT_FEATURE,
                  Permission::VIEW_VIRTUAL_ACCOUNT,
+                 Permission::UPLOAD_MERCHANT_DOCUMENT,
+                 Permission::DELETE_MERCHANT_DOCUMENT,
+                 Permission::UPDATE_MERCHANT_BANK_ACCOUNT_STATUS,
              ],
 
              BankingRole::FINANCE_L1 => [

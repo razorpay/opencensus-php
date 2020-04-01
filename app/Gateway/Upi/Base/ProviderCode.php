@@ -281,14 +281,14 @@ class ProviderCode
      */
 
     protected static $psp = [
-        self::OKAXIS        => 'google_pay',
-        self::OKHDFCBANK    => 'google_pay',
-        self::OKICICI       => 'google_pay',
-        self::OKSBI         => 'google_pay',
-        self::UPI           => 'bhim',
-        self::ICICI         => 'whatsapp',
-        self::PAYTM         => 'paytm',
-        self::YBL           => 'phonepe',
+        self::OKAXIS        => ProviderPsp::GOOGLE_PAY,
+        self::OKHDFCBANK    => ProviderPsp::GOOGLE_PAY,
+        self::OKICICI       => ProviderPsp::GOOGLE_PAY,
+        self::OKSBI         => ProviderPsp::GOOGLE_PAY,
+        self::UPI           => ProviderPsp::BHIM,
+        self::ICICI         => ProviderPsp::WHATSAPP,
+        self::PAYTM         => ProviderPsp::PAYTM,
+        self::YBL           => ProviderPsp::PHONEPE,
     ];
 
     public static function getBankCode($provider)
@@ -299,6 +299,14 @@ class ProviderCode
     public static function getPsp($vpaHandle)
     {
         return self::$psp[$vpaHandle] ?? null;
+    }
+
+    public static function getPspForVpa($vpa)
+    {
+        // Anything after @ is handle
+        $code = substr($vpa, (strpos($vpa, '@') + 1));
+
+        return self::getPsp(strtolower($code));
     }
 
     public static function validate(string $provider)

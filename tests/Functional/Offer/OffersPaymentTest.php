@@ -937,4 +937,66 @@ class OffersPaymentTest extends TestCase
 
         return $payment;
     }
+
+    public function testValidateOffersBeforeCheckout()
+    {
+        $order = $this->fixtures->create('order');
+
+        $firstOffer = $this->fixtures->create('offer', ['type' => 'instant', 'current_offer_usage' => 2, 'max_offer_usage' => 5]);
+
+        $secondOffer = $this->fixtures->create('offer', ['type' => 'instant', 'active' => 0]);
+
+        $input['order_id'] = 'order_' . $order->getId();
+
+        $input['amount'] = '6000';
+
+        $input['method'] = 'card';
+
+        $card = [];
+
+        $card['number'] = '411111';
+
+        $input['card'] = $card;
+
+        $this->fixtures->create('entity_offer', [
+            'entity_id' => $order->getId(),
+            'entity_type' => 'order',
+            'offer_id' => $firstOffer->getId(),
+        ]);
+
+        $this->fixtures->create('entity_offer', [
+            'entity_id' => $order->getId(),
+            'entity_type' => 'order',
+            'offer_id' => $secondOffer->getId(),
+        ]);
+
+        $offers = [];
+
+        $offers[0] = $firstOffer->getPublicId();
+
+        $offers[1] = $secondOffer->getPublicId();
+
+        $input['offers'] = $offers;
+
+        $callback = null;
+
+        $content = [];
+
+        $content = array_merge($content, $input);
+
+        $request = [
+            'method' => 'POST',
+            'url' => '/validate/checkout/offers',
+            'content' => $content
+        ];
+
+        $this->ba->publicAuth();
+
+        $response = $this->makeRequestAndGetContent($request, $callback);
+
+        $this->assertContains($firstOffer->getPublicId(), $response);
+
+        $this->assertNotContains($secondOffer->getPublicId(), $response);
+    }
+
 }

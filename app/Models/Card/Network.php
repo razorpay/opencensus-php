@@ -111,6 +111,11 @@ class Network
         self::AMEX => 4
     ];
 
+    public static $dccSupportedNetworks = [
+        self::MC,
+        self::VISA,
+    ];
+
     private static function detectNetworkFromDatabase($iin)
     {
         $iinDetails = (new Card\Repository)->retrieveIinDetails($iin);
@@ -301,5 +306,10 @@ class Network
     public static function getAllNetworkCodes():array
     {
         return self::$networks;
+    }
+
+    public static function isDCCSupportedNetwork($networkCode)
+    {
+        return in_array($networkCode, self::$dccSupportedNetworks, true);
     }
 }

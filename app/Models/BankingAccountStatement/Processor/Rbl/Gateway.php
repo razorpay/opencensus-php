@@ -18,6 +18,7 @@ use RZP\Models\BankingAccountStatement\Category;
 use RZP\Models\BankingAccountStatement\Processor\Source;
 use RZP\Models\BankingAccount\Entity as BankingAccountEntity;
 use RZP\Models\BankingAccountStatement\Processor\Base as BaseProcessor;
+use RZP\Models\BankingAccountStatement\Core as BankingAccountStatementCore;
 use RZP\Models\BankingAccountStatement\Processor\Rbl\RequestResponseFields as Fields;
 
 class Gateway extends BaseProcessor
@@ -45,6 +46,10 @@ class Gateway extends BaseProcessor
 
         $finalFormattedResponse = [];
 
+        // get last bank transaction from banking account statement and set lastFormattedResponse
+        // this is being used for pagination on RBL side.
+        $lastBankTransaction = $this->getLastBankTransaction() ? $this->getLastBankTransaction()->toArray() : [];
+
         // TODO: This whole thing needs to be re-looked at. How we fetch the details.
 
         $attemptLimit = (int) (new AdminService)->getConfigKey(['key' => ConfigKey::RBL_STATEMENT_FETCH_ATTEMPT_LIMIT]);
@@ -57,7 +62,7 @@ class Gateway extends BaseProcessor
         do
         {
             // We don't have any bank response for the first request.
-            $lastFormattedResponse = last($finalFormattedResponse) ?: [];
+            $lastFormattedResponse = last($finalFormattedResponse) ?: $lastBankTransaction;
 
             $requestData = $this->getRequestDataForMozart($input, $lastFormattedResponse);
 
@@ -109,6 +114,13 @@ class Gateway extends BaseProcessor
 
         } while (($this->hasMoreData($bankResponse) === true) and
                  ($attemptCount < $attemptLimit));
+
+        // TODO: Thinking of moving the logic of dispatching job again in case of more data in job itself
+        // But not sure if this logic is generic for all bank as of now
+        if (($this->hasMoreData($bankResponse) === true))
+        {
+            (new BankingAccountStatementCore)->dispatchBankingAccountStatementJob($this->channel, $this->accountNumber);
+        }
 
         return $finalFormattedResponse;
     }

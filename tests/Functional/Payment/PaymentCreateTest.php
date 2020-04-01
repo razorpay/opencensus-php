@@ -19,6 +19,7 @@ use RZP\Models\Payment\Entity;
 use RZP\Services\RazorXClient;
 use RZP\Models\Currency\Currency;
 use RZP\Tests\Functional\TestCase;
+use RZP\Models\Payment\UpiMetadata;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Tests\Functional\OAuth\OAuthTrait;
 use RZP\Models\Merchant\Entity as Merchant;
@@ -2312,6 +2313,17 @@ class PaymentCreateTest extends TestCase
         $payment = $this->getLastEntity('payment', true);
 
         $this->assertEquals($payment['id'], $content['razorpay_payment_id']);
+
+        $upiMetadata = $this->getDbLastEntity('upi_metadata');
+
+        $this->assertNotNull($upiMetadata);
+
+        $this->assertArraySubset([
+            UpiMetadata\Entity::TYPE       => 'default',
+            UpiMetadata\Entity::FLOW       => 'intent',
+        ], $upiMetadata->toArray());
+
+        $this->assertSame($payment['id'],'pay_'.$upiMetadata->getPaymentId());
     }
 
     public function testPaymentS2SJsonPrivateAuthUPIVpa()
@@ -2750,20 +2762,147 @@ class PaymentCreateTest extends TestCase
         $lastPayment = $this->getLastEntity('payment');
 
         $this->assertSame('authorized', $lastPayment['status']);
+
+        $upiMetadata = $this->getDbLastEntity('upi_metadata');
+
+        $this->assertNotNull($upiMetadata);
+
+        $this->assertArraySubset([
+            UpiMetadata\Entity::TYPE => 'default',
+            UpiMetadata\Entity::FLOW => 'collect',
+        ], $upiMetadata->toArray());
+
+        $this->assertNotNull($upiMetadata->getExpiryTime());
     }
 
     public function testUpiBlockFail()
     {
-        $this->expectException(Exception\BadRequestValidationFailureException::class);
-
-        $this->expectExceptionMessage('The vpa field is not required and not shouldn\'t be sent.');
-
         $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
 
         $payment = $this->getDefaultUpiBlockPaymentArray();
 
         $payment['upi']['flow'] = 'intent';
 
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($testData, function () use ($payment)
+        {
+            $this->doAuthPaymentViaAjaxRoute($payment);
+        });
+    }
+
+    public function testUpiOtmPayment()
+    {
+        $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
+
+        $payment = $this->getDefaultUpiOtmPayment();
+
         $this->doAuthPaymentViaAjaxRoute($payment);
+
+        $upiMetadata = $this->getDbLastEntity('upi_metadata');
+
+        $this->assertNotNull($upiMetadata);
+
+        $this->assertArraySubset([
+            UpiMetadata\Entity::TYPE       => 'otm',
+            UpiMetadata\Entity::FLOW       => 'collect',
+            UpiMetadata\Entity::START_TIME => $payment['upi']['start_time'],
+            UpiMetadata\Entity::END_TIME   => $payment['upi']['end_time']
+        ], $upiMetadata->toArray());
+
+        $this->assertNotNull($upiMetadata->getExpiryTime());
+    }
+
+    public function testUpiOtmPaymentFail()
+    {
+        $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
+
+        $payment =  $this->getDefaultUpiOtmPayment();
+
+        $payment['upi']['end_time'] = Carbon::now()->subDays(3)->getTimestamp();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($testData, function () use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+
+        $payment = $this->getDbLastEntity('payment');
+        $upiMetadata = $this->getDbLastEntity('upi_metadata');
+
+        $this->assertNull($payment);
+        $this->assertNull($upiMetadata);
+    }
+
+    public function testUpiInvalidProvider()
+    {
+        $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
+
+        $payment = $this->getDefaultUpiBlockPaymentArray();
+
+        $payment['upi']['provider'] = 454584;
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->doAuthPayment($payment);
+
+        $payment = $this->getDbLastEntity('payment');
+        $upiMetadata = $this->getDbLastEntity('upi_metadata');
+
+        $this->assertNotNull($payment);
+        $this->assertSame('authorized', $payment->getStatus());
+
+        $this->assertNull($upiMetadata);
+    }
+
+    public function testUpiOtmWithNoDates()
+    {
+        $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
+
+        $payment = $this->getDefaultUpiOtmPayment();
+
+        unset($payment['upi']['start_time']);
+        unset($payment['upi']['end_time']);
+
+        $this->doAuthPayment($payment);
+
+        $upiMetadata = $this->getDbLastEntity('upi_metadata');
+
+        $this->assertArraySubset([
+            UpiMetadata\Entity::FLOW => 'collect',
+            UpiMetadata\Entity::TYPE => 'otm'
+        ], $upiMetadata->toArray());
+
+        $this->assertNotNull($upiMetadata->getStartTime());
+        $this->assertNotNull($upiMetadata->getEndTime());
+
+        $diffInDays = $upiMetadata->getTimeRange() / (60 * 60 * 24);
+
+        $this->assertSame(90, $diffInDays);
+    }
+
+    public function testUpiOtmWithPastDates()
+    {
+        $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
+
+        $payment = $this->getDefaultUpiOtmPayment();
+
+        $payment['upi']['start_time'] = Carbon::now()->subDays(4)->getTimestamp();
+
+        $payment['upi']['end_time'] = Carbon::now()->subDays(2)->getTimestamp();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($testData, function () use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+
+        $payment = $this->getDbLastEntity('payment');
+        $upiMetadata = $this->getDbLastEntity('upi_metadata');
+
+        $this->assertNull($payment);
+        $this->assertNull($upiMetadata);
     }
 }

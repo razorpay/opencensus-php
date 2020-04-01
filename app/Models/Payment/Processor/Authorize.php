@@ -55,6 +55,7 @@ use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Merchant\Methods;
 use RZP\Models\Plan\Subscription;
 use RZP\Models\Payment\Analytics;
+use RZP\Models\Payment\UpiMetadata;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Services\CardPaymentService;
 use RZP\Models\Payment\TwoFactorAuth;
@@ -352,7 +353,7 @@ trait Authorize
         $retry = false;
 
         // Checking razorX flag for feedback loop here per paymentId
-        $razorXForDoppler = $this->app->doppler->checkRazorXForFeedbackLoop($payment->getId());
+        $razorXForDoppler = $this->app->doppler->checkRazorXForDoppler($payment->getId(), Doppler::RAZORX_DOPPLER);
         $this->trace->info(
             TraceCode::TRACE_FOR_INCREASED_RESPONSE_TIMES,
             [
@@ -512,7 +513,7 @@ trait Authorize
                     try
                     {
                         $this->app->doppler->sendFeedback($payment, Doppler::PAYMENT_AUTHORIZATION_FAILURE_EVENT,
-                            $errorCode, $internalErrorCode);
+                            $errorCode, $internalErrorCode, $retryAttempts);
                     }
                     catch (\Throwable $e)
                     {
@@ -3000,7 +3001,13 @@ trait Authorize
 
         if ($payment->isUpi() === true)
         {
-            $gatewayInput['upi']['flow'] = $this->getUpiFlow($input) ?? null;
+            $this->setGatewayInputForUpi($input, $gatewayInput);
+
+            // Set the upi expiry time if it is set, will be persisted in the upi metadata.
+            if (isset($gatewayInput[Payment\Method::UPI][UpiMetadata\Entity::EXPIRY_TIME]) === true)
+            {
+                $input[Method::UPI][UpiMetadata\Entity::EXPIRY_TIME] = $gatewayInput[Method::UPI][UpiMetadata\Entity::EXPIRY_TIME];
+            }
 
             if ($this->isFlowIntent($input) === false)
             {
@@ -3009,8 +3016,6 @@ trait Authorize
                     throw new Exception\BadRequestValidationFailureException(
                         'The vpa field is required when method is upi.');
                 }
-
-                $this->setGatewayInputForUpi($input, $gatewayInput);
 
                 $this->validateUpiPspIsAllowed($payment);
             }
@@ -3032,6 +3037,10 @@ trait Authorize
                     $this->validateIfOmnipayEnabled($payment);
                 }
             }
+
+            // Setting the upi metadata here, as it is required for settings multiple
+            // payment params later
+            $this->setUpiMetadataIfApplicable($payment, $input);
         }
 
         if ($payment->isWallet() === true)
@@ -3335,9 +3344,20 @@ trait Authorize
 
     protected function setGatewayInputForUpi($input, & $gatewayInput)
     {
-        // Key may not be present. Hence `??` and not `?:`
-        $gatewayInput['upi']['expiry_time'] = $this->getUpiExpiryTime($input) ??
-                                              Processor::UPI_COLLECT_EXPIRY;
+        $gatewayInput['upi']['flow'] = $this->getUpiFlow($input) ?? null;
+
+        if ($this->isFlowIntent($input) === false)
+        {
+            $gatewayInput['upi']['expiry_time'] = $this->getUpiExpiryTime($input) ?? Processor::UPI_COLLECT_EXPIRY;
+        }
+
+        $gatewayInput['upi'][UpiMetadata\Entity::TYPE] = $this->getUpiType($input);
+
+        if ($this->isOtmPayment($input) === true)
+        {
+            $gatewayInput['upi'][UpiMetadata\Entity::START_TIME] = $this->getUpiStartTime($input);
+            $gatewayInput['upi'][UpiMetadata\Entity::END_TIME]   = $this->getUpiEndTime($input);
+        }
     }
 
     protected function setGatewayInputForAeps($input, & $gatewayInput)

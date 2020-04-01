@@ -1592,4 +1592,14 @@ class MerchantController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    /**
+     * @return mixed
+     */
+    public function retryPennyTestingCron()
+    {
+        $response = $this->service(E::MERCHANT_DETAIL)->retryPennyTestingCron();
+
+        return ApiResponse::json($response);
+    }
 }

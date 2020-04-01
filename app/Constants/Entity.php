@@ -142,7 +142,7 @@ class Entity
     const BANKING_ACCOUNT_STATEMENT  = 'banking_account_statement';
     const MERCHANT_FRESHDESK_TICKETS = 'merchant_freshdesk_tickets';
     const TERMINAL_ONBOARDING_DETAIL = 'terminal_onboarding_detail';
-
+    const PAYMENT_META               = 'payment_meta';
 
     // heimdall
     const ORG                   = 'org';
@@ -502,6 +502,7 @@ class Entity
         self::ADDON                     => \RZP\Models\Plan\Subscription\Addon::class,
         self::BANKING_ACCOUNT_DETAIL    => \RZP\Models\BankingAccount\Detail::class,
         self::OFFLINE_DEVICE            => \RZP\Models\Offline\Device::class,
+        self::PAYMENT_META              => \RZP\Models\Payment\PaymentMeta::class,
         self::UPI_METADATA              => \RZP\Models\Payment\UpiMetadata::class,
 
         // gateways

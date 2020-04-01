@@ -268,7 +268,7 @@ class Gateway extends Base\Gateway
 
         $catCode = Base\CategoryCode::getCategoryCodeFromMcc($mcc);
 
-        $accountType = $input['bank_account']['account_type'] ?? "SAVINGS";
+        $accountType = isset($input['token']['account_type']) ? strtoupper($input['token']['account_type']) : 'SAVINGS';
 
         $createdDate = Carbon::createFromTimestamp($input['payment']['created_at'], Timezone::IST)
                               ->format('Y-m-d\TH:i:s');

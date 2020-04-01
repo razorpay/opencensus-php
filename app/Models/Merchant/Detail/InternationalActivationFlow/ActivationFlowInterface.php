@@ -12,4 +12,6 @@ namespace RZP\Models\Merchant\Detail\InternationalActivationFlow;
 interface ActivationFlowInterface
 {
     public function shouldActivateInternational() : bool;
+
+    public function shouldActivateTypeformInternational() : bool;
 }

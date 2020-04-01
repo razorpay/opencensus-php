@@ -27,6 +27,7 @@ configure(){
   $ALOHOMORA_BIN cast --region ap-south-1 --env "$APP_MODE" --app api "environment/.env.vault.j2" "environment/env.php.j2" "dockerconf/api.apache.conf.j2"
   echo "copying apache config"
   cp dockerconf/api.apache.conf /etc/apache2/conf.d/api.conf
+  sed -i 's/^#ExtendedStatus\ On/ExtendedStatus\ On/g' /etc/apache2/conf.d/info.conf
   ## Enable newrelic only for prod and perf
   if [[ "${APP_MODE}" == "prod" ]] || [[ "${APP_MODE}" == "perf" ]]; then
     $ALOHOMORA_BIN cast --region ap-south-1 --env "$APP_MODE" --app api "dockerconf/newrelic.ini.j2"

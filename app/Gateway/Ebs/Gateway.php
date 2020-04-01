@@ -210,7 +210,7 @@ class Gateway extends Base\Gateway
                 $desc = ResponseCode::$codes[$responseCode];
             }
 
-            throw new Exception\GatewayErrorException(ErrorCode::BAD_REQUEST_REFUND_FAILED, $gatewayDataArray);
+            throw new Exception\GatewayErrorException(ErrorCode::BAD_REQUEST_REFUND_FAILED, null, null, $gatewayDataArray);
         }
 
         return $gatewayDataArray;

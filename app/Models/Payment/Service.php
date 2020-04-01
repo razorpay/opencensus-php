@@ -15,6 +15,8 @@ use RZP\Exception;
 use RZP\Error;
 use RZP\Mail\Merchant\AuthorizedPaymentsReminder as AuthorizedPaymentsReminderMail;
 use RZP\Models\Base;
+use RZP\Models\Base\UniqueIdEntity;
+use RZP\Models\Currency;
 use RZP\Models\Merchant;
 use RZP\Models\Order;
 use RZP\Models\Offer;
@@ -22,6 +24,7 @@ use RZP\Models\Invoice;
 use RZP\Models\Payment;
 use RZP\Models\Feature;
 use RZP\Models\Card;
+use RZP\Models\Card\IIN;
 use RZP\Models\Transfer;
 use RZP\Models\Transaction;
 use RZP\Models\Admin\Org;
@@ -1165,6 +1168,8 @@ class Service extends Base\Service
 
         $data = $merchant->getPaymentFlows($iinEntity);
 
+        $this->updateDccDataIfApplicable($input, $iinEntity, $merchant,$data);
+
         if (isset($input['order_id']) === true)
         {
             $order = $this->repo->order->findByPublicIdAndMerchant($input['order_id'], $this->merchant);
@@ -1182,6 +1187,58 @@ class Service extends Base\Service
         return $data;
     }
 
+    public function updateDccDataIfApplicable($input, $iinEntity, $merchant, & $data)
+    {
+        // get dcc options for customer if dcc is enabled for merchant
+        if (($merchant->isDCCEnabled() === false) or
+            ($iinEntity === null))
+        {
+            return;
+        }
+
+        if ((isset($input['currency']) === true) and
+            (isset($input['amount']) === true))
+        {
+            $amount = $input['amount'];
+            $currency = $input['currency'];
+
+            if (($this->isDccEnabledIIN($iinEntity) === true) and
+                ($currency === Currency\Currency::INR))
+            {
+                $dccInfo = $this->getDCCInfo($amount, $currency);
+
+                $dccInfo['card_currency'] = $iinEntity->getIinCurrency() ?? $currency;
+
+                $data = array_merge($data, $dccInfo);
+            }
+        }
+    }
+
+    public function isDccEnabledIIN($iinEntity): bool
+    {
+        if (($iinEntity !== null) and
+            ($iinEntity->isInternational() === true) and
+            (Card\Network::isDCCSupportedNetwork($iinEntity->getNetworkCode())) === true)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    private function getDCCInfo($baseAmount, $baseCurrency)
+    {
+        $dccInfo = [];
+
+        $currencyRequestId = UniqueIdEntity::generateUniqueId();
+
+        $dccInfo['all_currencies'] = (new Currency\DCC\Service)->getConvertedCurrencies($baseCurrency, $baseAmount, $currencyRequestId);
+
+        $dccInfo['currency_request_id'] = $currencyRequestId;
+
+        return $dccInfo;
+    }
+
     public function getPaymentFlowsPrivate(array $input)
     {
         (new Payment\Validator)->validateInput('post_flows', $input);
@@ -1191,17 +1248,30 @@ class Service extends Base\Service
         if (isset($input['card_number']) === true)
         {
             $iin = substr($input['card_number'], 0, 6);
+
+            unset($input['card_number']);
         }
         else if (isset($input['iin']) === true)
         {
             $iin = $input['iin'];
+        }
+        else if (isset($input['token']) === true)
+        {
+            $tokenId = $input['token'];
+
+            $token = $this->repo->token->findByPublicId($tokenId);
+
+            if ($token !== null and $token->hasCard() === true)
+            {
+                $iin = $token->card->getIin();
+            }
         }
         else
         {
             throw new Exception\BadRequestValidationFailureException('invalid input');
         }
 
-        $input = ['iin' => $iin];
+        $input['iin'] = $iin;
 
         return $this->getPaymentFlows($input);
     }
@@ -1503,7 +1573,7 @@ class Service extends Base\Service
         $allMethods = Payment\Method::getAllPaymentMethods();
 
         // checking razorX flag for feedback loop here per cron
-        $this->razorXForDoppler = $this->app->doppler->checkRazorXForFeedbackLoop($this->app['request']->getId());
+        $this->razorXForDoppler = $this->app->doppler->checkRazorXForDoppler($this->app['request']->getId(), Doppler::RAZORX_DOPPLER);
 
         foreach ($allMethods as $method)
         {
@@ -2080,7 +2150,7 @@ class Service extends Base\Service
         });
     }
 
-    private function getDummyPayment(Order\Entity $orderEntity, Card\IIN\Entity $iinEntity)
+    public function getDummyPayment(Order\Entity $orderEntity, Card\IIN\Entity $iinEntity)
     {
         $payment = new Payment\Entity;
 
@@ -2095,6 +2165,8 @@ class Service extends Base\Service
         $cardInput = $card->getDummyCardArray(null, $iinEntity);
 
         $card->fill($cardInput);
+
+        $card->setAttribute(Card\Entity::IIN, $iinEntity->getIin());
 
         $payment->card()->associate($card);
 

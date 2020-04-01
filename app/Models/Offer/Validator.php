@@ -124,6 +124,16 @@ class Validator extends Base\Validator
         Entity::LINKED_OFFER_IDS,
     ];
 
+    protected static $validateCheckoutOffersRules = [
+        'amount'                        => 'required|integer',
+        'method'                        => 'required|string|in:card',
+        'card'                          => 'required_if:method,card|array',
+        'card.number'                   => 'sometimes|min:6',
+        'card.token'                    => 'sometimes',
+        'offers'                        => 'required|array',
+        'order_id'                      => 'required|string',
+    ];
+
     protected function validatePaymentNetwork(array $input)
     {
         $networkCode = $input[Entity::PAYMENT_NETWORK] ?? null;
@@ -386,7 +396,7 @@ class Validator extends Base\Validator
         {
             return;
         }
-        
+
         $emiRepo = new Emi\Repository();
 
         $validDurations = [];

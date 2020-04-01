@@ -109,10 +109,52 @@ class Checker extends Base\Core
 
         $isCurrentOfferUsageAvailable = $this->checkMaxOfferUsage();
 
+        if($isCurrentOfferUsageAvailable === false)
+        {
+            return false;
+        }
+
+        return $this->checkOfferIsValidOrNot();
+    }
+
+    public function checkApplicabilityForPaymentBeforeCheckout(Payment\Entity $payment, Order\Entity $order): bool
+    {
+        $this->payment = $payment;
+
+        $this->order = $order;
+
+        if(($this->offer->getMaxOfferUsage() !== NULL) and
+            ($this->offer->getCurrentOfferUsage() >= $this->offer->getMaxOfferUsage()))
+        {
+            $this->traceCheckResult(
+                TraceCode::OFFER_USAGE_CHECK,
+                [
+                    'result' => 'false',
+                    'max_count_for_offer' => $this->offer->getMaxOfferUsage(),
+                    'current_offer_usage' => $this->offer->getCurrentOfferUsage(),
+                ]);
+
+            return false;
+        }
+
+        return $this->checkOfferIsValidOrNot();
+    }
+
+    private function checkOfferIsValidOrNot()
+    {
         $offerActive = $this->checkOfferActive();
+
+        if ($offerActive === false)
+        {
+            return false;
+        }
 
         $validOfferPeriod = $this->checkOfferPeriod();
 
+        if($validOfferPeriod === false)
+        {
+            return false;
+        }
         $checkResult = false;
 
         foreach (self::PROPERTIES_TO_CHECK as $property)
@@ -127,11 +169,9 @@ class Checker extends Base\Core
             }
         }
 
-        return (($isCurrentOfferUsageAvailable === true) and
-                ($offerActive === true) and
-                ($validOfferPeriod === true) and
-                ($checkResult === true));
+        return $checkResult;
     }
+
 
     protected function checkOfferActive(): bool
     {

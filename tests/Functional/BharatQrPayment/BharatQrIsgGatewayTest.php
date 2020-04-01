@@ -281,7 +281,7 @@ class BharatQrIsgGatewayTest extends TestCase
 
         $refund = $this->getLastEntity('refund', true);
 
-        $this->assertEquals('failed', $refund['status']);
+        $this->assertEquals('created', $refund['status']);
 
         $gatewayEntity = $this->getLastEntity('isg', true);
 

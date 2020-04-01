@@ -254,6 +254,26 @@ return [
                 'description' => 'update_scrooge_refund_reference1_permission',
                 'assignable'  => true,
             ],
+            Permission::BULK_RETRY_REFUNDS_VIA_FTA    => [
+                'description' => 'bulk_retry_refunds_via_fta_permission',
+                'assignable'  => true,
+            ],
+            Permission::REFRESH_SCROOGE_FTA_MODES_CACHE    => [
+                'description' => 'refresh_scrooge_fta_modes_cache_permission',
+                'assignable'  => true,
+            ],
+            Permission::UPDATE_REFUND_REFERENCE1    => [
+                'description' => 'update_refund_reference1_permission',
+                'assignable'  => true,
+            ],
+            Permission::UPDATE_PROCESSED_REFUNDS_STATUS    => [
+                'description' => 'update_processed_refunds_status_permission',
+                'assignable'  => true,
+            ],
+            Permission::EDIT_INSTANT_REFUNDS_MODE_CONFIG    => [
+                'description' => 'edit_instant_refunds_mode_config_permission',
+                'assignable'  => true,
+            ],
             Permission::EDIT_SCROOGE_REDIS_CONFIG                         => [
                 'description' => 'edit_scrooge_redis_config_permission',
                 'assignable'  => true,

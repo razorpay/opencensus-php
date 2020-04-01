@@ -43,8 +43,6 @@ final class RazorxTreatment
 
     const SELLER_APP_PL_BATCH_UPLOAD_EXPERIMENT = 'sellerapp_PL_batch_upload';
 
-    const TRANSFERS_VIA_ORDER = 'transfers_via_order';
-
     const RENDERING_PREFERENCES_PAYMENT_LINKS = 'rendering_preferences_payment_links';
 
     // Decides if fund account and contact creation should have duplicate checks
@@ -92,10 +90,10 @@ final class RazorxTreatment
 
     // promotional pricing plan for onboarding submerchants
     const SUBMERCHANT_PROMOTIONAL_PRICING_PLAN = 'submerchant_promotional_pricing_plan';
-    
+
     // restrict user to one role per merchant and product
     const RESTRICT_USER_TO_ONE_ROLE_PER_MERCHANT_AND_PRODUCT = 'restrict_user_to_one_role_per_merchant_and_product';
-  
+
     // Forces ICICI channel when we get channel as yesbank
     const FORCE_ICICI_OVER_YESBANK_FOR_PAYOUTS = 'force_icici_over_yesbank_for_payouts';
 
@@ -109,4 +107,10 @@ final class RazorxTreatment
     const RAZORPAY_X_ALLOW_UPI_PAYOUTS_VIA_ICICI_TO_CARD = 'razorpay_x_allow_upi_payouts_via_icici_to_card';
 
     const RAZORPAY_X_ENABLE_YESBANK_PAYOUTS = 'razorpay_x_enable_yesbank_payouts';
+
+    //process updating the settlements for transfer asycn
+    const TRANSFERS_SETTLEMENTS_QUEUE = 'transfer_settlements_queue';
+    
+    // allow pre_signup data to send to salesforce
+    const PRE_SIGNUP_DETAILS_TO_SALESFORCE = 'pre_signup_details_to_salesforce';
 }
