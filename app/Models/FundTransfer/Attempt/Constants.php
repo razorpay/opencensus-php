@@ -53,6 +53,8 @@ final class Constants
 
     const DEFAULT_STATUS_CHECK_DISPATCH_TIME = 180;
 
+    const DEFAULT_ISSUER = 'default_issuer';
+
     //Card Issuer bank IFSC Code mapping
     const BANK_IFSC = [
         Issuer::UTIB => [

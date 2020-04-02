@@ -3431,4 +3431,175 @@ return [
             'message'                   => PublicErrorDescription::BAD_REQUEST_USER_DOES_NOT_BELONG_TO_MERCHANT,
         ],
     ],
+
+    'testPayoutToAmexCardWithNullIssuerSupportedMode' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'fund_account_id' => 'fa_EIXgVWknyiroq6',
+                'amount'          => 100,
+                'mode'            => 'NEFT',
+                'currency'        => 'INR',
+                'account_number'  => '2224440041626905',
+                'purpose'         => 'refund'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'fund_account_id' => 'fa_EIXgVWknyiroq6',
+                'amount'          => 100,
+                'currency'        => 'INR',
+                'status'          => 'processing',
+                'purpose'         => 'refund',
+                'mode'            => 'NEFT',
+            ],
+        ],
+    ],
+
+    'testPayoutToAmexCardWithNullIssuerSupportedModeButFeatureDisabledOrRazorxTimeout' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/fund_accounts',
+            'content' => [
+                "account_type" => "card",
+                "contact_id"   => "cont_1000001contact",
+                "card"         => [
+                    "name"         => "Prashanth YV",
+                    "number"       => "340169570990137",
+                    "cvv"          => "2126",
+                    "expiry_month" => 10,
+                    "expiry_year"  => 21,
+                ],
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Card not supported for fund account creation',
+                ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_CARD_NOT_SUPPORTED_FOR_FUND_ACCOUNT,
+        ],
+    ],
+
+    'testPayoutToAmexCardWithNullIssuerNotSupportedMode' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'fund_account_id' => 'fa_EIXgVWknyiroq6',
+                'amount'          => 100,
+                'mode'            => 'UPI',
+                'currency'        => 'INR',
+                'account_number'  => '2224440041626905',
+                'purpose'         => 'refund'
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'UPI is not a valid mode for issuer default_issuer',
+                ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testPayoutToAmexCardWithSupportedIssuerSupportedMode' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'fund_account_id' => 'fa_EIXgVWknyiroq6',
+                'amount'          => 100,
+                'mode'            => 'NEFT',
+                'currency'        => 'INR',
+                'account_number'  => '2224440041626905',
+                'purpose'         => 'refund'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'fund_account_id' => 'fa_EIXgVWknyiroq6',
+                'amount'          => 100,
+                'currency'        => 'INR',
+                'status'          => 'processing',
+                'purpose'         => 'refund',
+                'mode'            => 'NEFT',
+            ],
+        ],
+    ],
+
+    'testPayoutToAmexCardWithSupportedIssuerNotSupportedMode' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'fund_account_id' => 'fa_EIXgVWknyiroq6',
+                'amount'          => 100,
+                'mode'            => 'UPI',
+                'currency'        => 'INR',
+                'account_number'  => '2224440041626905',
+                'purpose'         => 'refund'
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'UPI is not a valid mode for issuer SCBL',
+                ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+
+    'testPayoutToAmexCardWithNotSupportedIssuer' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/fund_accounts',
+            'content' => [
+                "account_type" => "card",
+                "contact_id"   => "cont_1000001contact",
+                "card"         => [
+                    "name"         => "Prashanth YV",
+                    "number"       => "340169570990137",
+                    "cvv"          => "2126",
+                    "expiry_month" => 10,
+                    "expiry_year"  => 21,
+                ],
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Card not supported for fund account creation',
+                ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_CARD_NOT_SUPPORTED_FOR_FUND_ACCOUNT,
+        ],
+    ],
 ];

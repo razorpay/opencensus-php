@@ -235,11 +235,13 @@ trait TestsBusinessBanking
         $this->fixtures->create('pricing', $pricingPlan);
     }
 
+    // TODO: Remove all the params and take an array of key value pair of features and their expected values instead
     protected function mockRazorxTreatment(string $channel = 'yesbank',
                                            string $ftsEnabled = 'off',
                                            string $webhookViaStork = 'off',
                                            string $webhookArrayPublicPayload = 'on',
-                                           string $defaultBehaviour = 'off')
+                                           string $defaultBehaviour = 'off',
+                                           string $payoutToAmexCards = 'on')
     {
         // Mock Razorx
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
@@ -255,7 +257,8 @@ trait TestsBusinessBanking
                     $channel,
                     $ftsEnabled,
                     $webhookArrayPublicPayload,
-                    $defaultBehaviour
+                    $defaultBehaviour,
+                    $payoutToAmexCards
                 )
                 {
                     if (ends_with($feature, 'mode_payout_filter'))
@@ -271,6 +274,11 @@ trait TestsBusinessBanking
                     if ($feature === 'payouts_webhook_filter')
                     {
                         return strtolower($webhookArrayPublicPayload);
+                    }
+
+                    if ($feature === 'payout_to_amex_cards')
+                    {
+                        return strtolower($payoutToAmexCards);
                     }
 
                     return strtolower($defaultBehaviour);

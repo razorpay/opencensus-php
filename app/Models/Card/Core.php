@@ -58,6 +58,19 @@ class Core extends Base\Core
                     ($cardType !== Type::CREDIT) or
                     (in_array($cardIssuer, FundTransfer\Mode::getSupportedIssuers(), true) === false))
                 {
+                    $variant = $this->app->razorx->getTreatment(
+                        $merchant->getId(),
+                        Merchant\RazorxTreatment::PAYOUT_TO_AMEX_CARDS,
+                        $this->mode
+                    );
+
+                    if (($card->isAmex() === true) and
+                        ($cardIssuer === null) and
+                        ($variant === 'on'))
+                    {
+                        return $card;
+                    }
+
                     throw new Exception\BadRequestException(
                         ErrorCode::BAD_REQUEST_CARD_NOT_SUPPORTED_FOR_FUND_ACCOUNT,
                         null,

@@ -15,9 +15,13 @@ use RZP\Models\Admin;
 use RZP\Models\Payout;
 use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
+use RZP\Models\Card\Type;
 use RZP\Http\RequestHeader;
 use RZP\Constants\Timezone;
+use RZP\Models\Card\Issuer;
+use RZP\Models\Card\Network;
 use RZP\Services\Mock\Mozart;
+use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Mail\Banking\LowBalanceAlert;
@@ -2732,6 +2736,257 @@ class PayoutTest extends TestCase
 
         $testData = & $this->testData[__FUNCTION__];
         $testData['request']['url'] = '/payouts/' . $payout['id'] . '/approve';
+
+        $this->startTest();
+    }
+
+    public function testPayoutToAmexCardWithNullIssuerSupportedMode()
+    {
+        $fundAccountRequest = [
+            'method'  => 'POST',
+            'url'     => '/fund_accounts',
+            'content' => [
+                "account_type" => "card",
+                "contact_id"   => "cont_1000001contact",
+                "card"         => [
+                    "name"         => "Prashanth YV",
+                    "number"       => "340169570990137",
+                    "cvv"          => "2126",
+                    "expiry_month" => 10,
+                    "expiry_year"  => 21,
+                ]
+            ]
+        ];
+
+        $this->fixtures->create('feature', [
+            'name'        => Feature\Constants::S2S,
+            'entity_id'   => 10000000000000,
+            'entity_type' => 'merchant',
+        ]);
+
+        $this->fixtures->create('feature', [
+            'name'        => Feature\Constants::PAYOUT_TO_CARDS,
+            'entity_id'   => 10000000000000,
+            'entity_type' => 'merchant',
+        ]);
+
+        $this->mockRazorxTreatment('yesbank', 'on' , 'off' , 'off', 'off', 'on');
+
+        $this->ba->privateAuth();
+
+        $fundAccount = $this->makeRequestAndGetContent($fundAccountRequest);
+
+        $this->assertEquals(null, $fundAccount['card']['issuer']);
+        $this->assertEquals(Network::$fullName[Network::AMEX], $fundAccount['card']['network']);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['fund_account_id']  = $fundAccount['id'];
+        $testData['response']['content']['fund_account_id'] = $fundAccount['id'];
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->startTest();
+    }
+
+    public function testPayoutToAmexCardWithNullIssuerSupportedModeButFeatureDisabledOrRazorxTimeout()
+    {
+        $this->fixtures->create('feature', [
+            'name'        => Feature\Constants::S2S,
+            'entity_id'   => 10000000000000,
+            'entity_type' => 'merchant',
+        ]);
+
+        $this->fixtures->create('feature', [
+            'name'        => Feature\Constants::PAYOUT_TO_CARDS,
+            'entity_id'   => 10000000000000,
+            'entity_type' => 'merchant',
+        ]);
+
+        $this->mockRazorxTreatment('yesbank', 'on' , 'off' , 'off', 'off', 'control');
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
+    public function testPayoutToAmexCardWithNullIssuerNotSupportedMode()
+    {
+        $fundAccountRequest = [
+            'method'  => 'POST',
+            'url'     => '/fund_accounts',
+            'content' => [
+                "account_type" => "card",
+                "contact_id"   => "cont_1000001contact",
+                "card"         => [
+                    "name"         => "Prashanth YV",
+                    "number"       => "340169570990137",
+                    "cvv"          => "2126",
+                    "expiry_month" => 10,
+                    "expiry_year"  => 21,
+                ]
+            ]
+        ];
+
+        $this->fixtures->create('feature', [
+            'name'        => Feature\Constants::S2S,
+            'entity_id'   => 10000000000000,
+            'entity_type' => 'merchant',
+        ]);
+
+        $this->fixtures->create('feature', [
+            'name'        => Feature\Constants::PAYOUT_TO_CARDS,
+            'entity_id'   => 10000000000000,
+            'entity_type' => 'merchant',
+        ]);
+
+        $this->mockRazorxTreatment('yesbank', 'on' , 'off' , 'off', 'off', 'on');
+
+        $this->ba->privateAuth();
+
+        $fundAccount = $this->makeRequestAndGetContent($fundAccountRequest);
+
+        $this->assertEquals(null, $fundAccount['card']['issuer']);
+        $this->assertEquals(Network::$fullName[Network::AMEX], $fundAccount['card']['network']);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['fund_account_id'] = $fundAccount['id'];
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->startTest();
+    }
+
+    public function testPayoutToAmexCardWithSupportedIssuerSupportedMode()
+    {
+        $this->fixtures->create('iin', [
+            'iin'     => 340169,
+            'network' => Network::$fullName[Network::AMEX],
+            'type'    => Type::CREDIT,
+            'issuer'  => Issuer::SCBL
+        ]);
+
+        $fundAccountRequest = [
+            'method'  => 'POST',
+            'url'     => '/fund_accounts',
+            'content' => [
+                "account_type" => "card",
+                "contact_id"   => "cont_1000001contact",
+                "card"         => [
+                    "name"         => "Prashanth YV",
+                    "number"       => "340169570990137",
+                    "cvv"          => "2126",
+                    "expiry_month" => 10,
+                    "expiry_year"  => 21,
+                ]
+            ]
+        ];
+
+        $this->fixtures->create('feature', [
+            'name'        => Feature\Constants::S2S,
+            'entity_id'   => 10000000000000,
+            'entity_type' => 'merchant',
+        ]);
+
+        $this->fixtures->create('feature', [
+            'name'        => Feature\Constants::PAYOUT_TO_CARDS,
+            'entity_id'   => 10000000000000,
+            'entity_type' => 'merchant',
+        ]);
+
+        $this->ba->privateAuth();
+
+        $fundAccount = $this->makeRequestAndGetContent($fundAccountRequest);
+
+        $this->assertEquals(Issuer::SCBL, $fundAccount['card']['issuer']);
+        $this->assertEquals(Network::$fullName[Network::AMEX], $fundAccount['card']['network']);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['fund_account_id']  = $fundAccount['id'];
+        $testData['response']['content']['fund_account_id'] = $fundAccount['id'];
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->startTest();
+    }
+
+    public function testPayoutToAmexCardWithSupportedIssuerNotSupportedMode()
+    {
+        $this->fixtures->create('iin', [
+            'iin'     => 340169,
+            'network' => Network::$fullName[Network::AMEX],
+            'type'    => Type::CREDIT,
+            'issuer'  => Issuer::SCBL
+        ]);
+
+        $fundAccountRequest = [
+            'method'  => 'POST',
+            'url'     => '/fund_accounts',
+            'content' => [
+                "account_type" => "card",
+                "contact_id"   => "cont_1000001contact",
+                "card"         => [
+                    "name"         => "Prashanth YV",
+                    "number"       => "340169570990137",
+                    "cvv"          => "2126",
+                    "expiry_month" => 10,
+                    "expiry_year"  => 21,
+                ]
+            ]
+        ];
+
+        $this->fixtures->create('feature', [
+            'name'        => Feature\Constants::S2S,
+            'entity_id'   => 10000000000000,
+            'entity_type' => 'merchant',
+        ]);
+
+        $this->fixtures->create('feature', [
+            'name'        => Feature\Constants::PAYOUT_TO_CARDS,
+            'entity_id'   => 10000000000000,
+            'entity_type' => 'merchant',
+        ]);
+
+        $this->ba->privateAuth();
+
+        $fundAccount = $this->makeRequestAndGetContent($fundAccountRequest);
+
+        $this->assertEquals(Issuer::SCBL, $fundAccount['card']['issuer']);
+        $this->assertEquals(Network::$fullName[Network::AMEX], $fundAccount['card']['network']);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['fund_account_id'] = $fundAccount['id'];
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->startTest();
+    }
+
+    public function testPayoutToAmexCardWithNotSupportedIssuer()
+    {
+        $this->fixtures->create('iin', [
+            'iin'     => 340169,
+            'network' => Network::$fullName[Network::AMEX],
+            'type'    => Type::CREDIT,
+            'issuer'  => 'ABCD',
+        ]);
+
+        $this->fixtures->create('feature', [
+            'name'        => Feature\Constants::S2S,
+            'entity_id'   => 10000000000000,
+            'entity_type' => 'merchant',
+        ]);
+
+        $this->fixtures->create('feature', [
+            'name'        => Feature\Constants::PAYOUT_TO_CARDS,
+            'entity_id'   => 10000000000000,
+            'entity_type' => 'merchant',
+        ]);
+
+        $this->ba->privateAuth();
 
         $this->startTest();
     }

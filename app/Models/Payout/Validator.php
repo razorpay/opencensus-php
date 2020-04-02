@@ -2,17 +2,21 @@
 
 namespace RZP\Models\Payout;
 
+use App;
+
 use RZP\Base;
 use RZP\Exception;
 use RZP\Models\User;
 use RZP\Models\Card;
 use RZP\Models\Batch;
 use RZP\Models\Payment;
+use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Models\FundAccount;
 use RZP\Models\FundTransfer\Mode;
 use RZP\Exception\ExtraFieldsException;
 use RZP\Models\Payout\Mode as PayoutMode;
+use RZP\Models\FundTransfer\Attempt\Constants;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\FundTransfer\Base\Initiator\NodalAccount;
 use RZP\Models\Workflow\Action\Checker\Entity as ActionChecker;
@@ -253,6 +257,21 @@ class Validator extends Base\Validator
         if ($accountType === FundAccount\Type::CARD)
         {
             $cardIssuer = $fundAccount->account->getIssuer();
+
+            $app = App::getFacadeRoot();
+
+            $variant = $app->razorx->getTreatment(
+                $payout->getMerchantId(),
+                Merchant\RazorxTreatment::PAYOUT_TO_AMEX_CARDS,
+                $this->getMode()
+            );
+
+            if (($fundAccount->account->isAmex() === true) and
+                ($cardIssuer === null) and
+                ($variant === 'on'))
+            {
+                $cardIssuer = Constants::DEFAULT_ISSUER;
+            }
 
             $networkCode = $fundAccount->account->getNetworkCode();
 

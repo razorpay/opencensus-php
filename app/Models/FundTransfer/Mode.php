@@ -9,6 +9,7 @@ use RZP\Exception\BadRequestValidationFailureException;
 
 /**
  * Class Mode
+ *
  * @package RZP\Models\FundTransfer
  */
 class Mode
@@ -21,11 +22,11 @@ class Mode
     const UPI = 'UPI';
 
     protected static $modeMap = [
-        self::RTGS  => self::RTGS,
-        self::IMPS  => self::IMPS,
-        self::NEFT  => self::NEFT,
-        self::IFT   => self::IFT,
-        self::UPI   => self::UPI,
+        self::RTGS => self::RTGS,
+        self::IMPS => self::IMPS,
+        self::NEFT => self::NEFT,
+        self::IFT  => self::IFT,
+        self::UPI  => self::UPI,
     ];
 
     protected static $modeAccountTypeMap = [
@@ -175,6 +176,18 @@ class Mode
                 self::NEFT
             ]
         ],
+
+        /*
+        This is declared as a default issuer for those Amex network cards that don't have any issuer in order to check
+        which payout modes are supported for such cards. Their issuer remains null only, we just validate mode based on
+        the mapping defined here.
+        */
+        Attempt\Constants::DEFAULT_ISSUER => [
+            Network::AMEX => [
+                self::IMPS,
+                self::NEFT
+            ],
+        ],
     ];
 
     protected static $allTimeTransferModes = [
@@ -205,7 +218,7 @@ class Mode
      */
     public static function getSupportedModes($issuer, $networkCode): array
     {
-        if(array_key_exists($issuer, self::$issuerModeMap) === true)
+        if (array_key_exists($issuer, self::$issuerModeMap) === true)
         {
             return array_key_exists($networkCode, self::$issuerModeMap[$issuer]) === true ?
                 self::$issuerModeMap[$issuer][$networkCode] : self::$issuerModeMap[$issuer][Attempt\Constants::DEFAULT_NETWORK];
@@ -227,9 +240,10 @@ class Mode
      * @param string $mode
      * @param string $issuer
      * @param string $networkCode
+     *
      * @throws BadRequestValidationFailureException
      */
-    public static function validateModeOfIssuer(string $mode , string $issuer, string $networkCode)
+    public static function validateModeOfIssuer(string $mode, string $issuer, string $networkCode)
     {
         $supportedModes = self::getSupportedModes($issuer, $networkCode);
 
@@ -245,7 +259,8 @@ class Mode
      *
      * @return array
      */
-    public static function get24x7TransferModes(): array {
+    public static function get24x7TransferModes(): array
+    {
         return self::$allTimeTransferModes;
     }
 

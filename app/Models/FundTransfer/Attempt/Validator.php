@@ -2,9 +2,12 @@
 
 namespace RZP\Models\FundTransfer\Attempt;
 
+use App;
+
 use RZP\Base;
 use RZP\Constants;
 use RZP\Error\ErrorCode;
+use RZP\Models\Merchant;
 use RZP\Models\FundAccount;
 use RZP\Exception\LogicException;
 use RZP\Models\FundTransfer\Mode;
@@ -13,6 +16,7 @@ use RZP\Exception\BadRequestException;
 use RZP\Services\FTS\Base as FtsService;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\FundTransfer\Base\Initiator\NodalAccount;
+use RZP\Models\FundTransfer\Attempt\Constants as FundTransferAttemptConstants;
 
 class Validator extends Base\Validator
 {
@@ -143,6 +147,21 @@ class Validator extends Base\Validator
         if ($destinationType === Constants\Entity::CARD)
         {
             $cardIssuer = $attempt->card->getIssuer();
+
+            $app = App::getFacadeRoot();
+
+            $variant = $app->razorx->getTreatment(
+                $attempt->getMerchantId(),
+                Merchant\RazorxTreatment::PAYOUT_TO_AMEX_CARDS,
+                $this->getMode()
+            );
+
+            if (($attempt->card->isAmex() === true) and
+                ($cardIssuer === null) and
+                ($variant === 'on'))
+            {
+                $cardIssuer = FundTransferAttemptConstants::DEFAULT_ISSUER;
+            }
 
             $networkCode = $attempt->card->getNetworkCode();
 
