@@ -41,11 +41,90 @@ class FundTransfer extends Base
 
     protected $accountType;
 
-    protected $bankingStartTime;
+    protected $bankingStartTimeRtgs;
 
     protected $bankingEndTimeRtgs;
 
+    protected $bankingStartTimeNeft;
+
     protected $bankingEndTimeNeft;
+
+    protected $startTimeHourNeft;
+
+    protected $startTimeHourRtgs;
+
+    /**
+     * Array to keep working hours of NEFT/RTGS for various channels
+     * @var Array
+     */
+    protected $workingHours = [
+        Channel::YESBANK => [
+            Mode::RTGS => [
+                self::START_TIME => [
+                    self::HOURS => Constants::RTGS_CUTOFF_HOUR_MIN,
+                    self::MINUTES => 0,
+                ],
+                self::END_TIME => [
+                    self::HOURS => Constants::RTGS_REVISED_CUTOFF_HOUR_MAX,
+                    self::MINUTES => Constants::RTGS_REVISED_CUTOFF_MINUTE_MAX,
+                ],
+            ],
+            Mode::NEFT => [
+                self::START_TIME => [
+                    self::HOURS => 1,
+                    self::MINUTES => 0,
+                ],
+                self::END_TIME => [
+                    self::HOURS => 18,
+                    self::MINUTES => 45,
+                ],
+            ],
+        ],
+        Channel::ICICI => [
+            Mode::RTGS => [
+                self::START_TIME => [
+                    self::HOURS => Constants::RTGS_CUTOFF_HOUR_MIN,
+                    self::MINUTES => 0,
+                ],
+                self::END_TIME => [
+                    self::HOURS => Constants::RTGS_REVISED_CUTOFF_HOUR_MAX,
+                    self::MINUTES => Constants::RTGS_REVISED_CUTOFF_MINUTE_MAX,
+                ],
+            ],
+            Mode::NEFT => [
+                self::START_TIME => [
+                    self::HOURS => 1,
+                    self::MINUTES => 0,
+                ],
+                self::END_TIME => [
+                    self::HOURS => 18,
+                    self::MINUTES => 45,
+                ],
+            ],
+        ],
+        self::DEFAULT => [
+            Mode::RTGS => [
+                self::START_TIME => [
+                    self::HOURS => Constants::RTGS_CUTOFF_HOUR_MIN,
+                    self::MINUTES => 0,
+                ],
+                self::END_TIME => [
+                    self::HOURS => Constants::RTGS_REVISED_CUTOFF_HOUR_MAX,
+                    self::MINUTES => Constants::RTGS_REVISED_CUTOFF_MINUTE_MAX,
+                ],
+            ],
+            Mode::NEFT => [
+                self::START_TIME => [
+                    self::HOURS => Constants::RTGS_CUTOFF_HOUR_MIN,
+                    self::MINUTES => 0,
+                ],
+                self::END_TIME => [
+                    self::HOURS => 18,
+                    self::MINUTES => 15,
+                ],
+            ],
+        ],
+    ];
 
     const SOURCE_TYPES = [
         Constants::REFUND,
@@ -53,6 +132,11 @@ class FundTransfer extends Base
         Constants::SETTLEMENT,
         Constants::FUND_ACCOUNT_VALIDATION,
     ];
+    const DEFAULT = 'default';
+    const HOURS = 'hours';
+    const MINUTES = 'minutes';
+    const END_TIME = 'end_time';
+    const START_TIME = 'start_time';
 
     public function __construct($app)
     {
@@ -532,7 +616,7 @@ class FundTransfer extends Base
 
             $now = Carbon::now(Timezone::IST)->getTimestamp();
 
-            if ((($now >= $this->bankingStartTime) and
+            if ((($now >= $this->bankingStartTimeRtgs) and
                     ($now <= $this->bankingEndTimeRtgs)) and
                 ($this->amount >= Constants::IMPS_CUTOFF_AMOUNT))
             {
@@ -595,7 +679,7 @@ class FundTransfer extends Base
 
         $now = Carbon::now(Timezone::IST)->getTimestamp();
 
-        if ((($now >= $this->bankingStartTime) and ($now <= $this->bankingEndTimeRtgs)) and
+        if ((($now >= $this->bankingStartTimeRtgs) and ($now <= $this->bankingEndTimeRtgs)) and
             ($this->amount >= Constants::IMPS_CUTOFF_AMOUNT))
         {
             return Mode::RTGS;
@@ -687,6 +771,21 @@ class FundTransfer extends Base
 
         $minuteOffset = random_int(15, 59);
 
+        $channel = $this->fta->getChannel();
+
+        $mode = $this->fta->getMode();
+
+        $bankingStartTimeByMode = $this->bankingStartTimeNeft;
+
+        $startTimeHour = $this->startTimeHourNeft;
+
+        if ($mode === Mode::RTGS)
+        {
+            $bankingStartTimeByMode = $this->bankingStartTimeRtgs;
+
+            $startTimeHour = $this->startTimeHourRtgs;
+        }
+
         if ($this->fta->source->isBalanceTypeBanking() === true)
         {
             // We don't want to sent requests for FTS for test mode
@@ -696,30 +795,36 @@ class FundTransfer extends Base
                 return false;
             }
 
-            if (($currentTime < $this->bankingStartTime) &&
+            if (($currentTime < $bankingStartTimeByMode) &&
                 (TransferHoliday::isWorkingDay(Carbon::now(Timezone::IST)) === true))
             {
-                $this->fta->setInitiateAt(Carbon::createFromTime(Constants::RTGS_CUTOFF_HOUR_MIN, $minuteOffset, 0, Timezone::IST)
+                $this->fta->setInitiateAt(Carbon::createFromTime($startTimeHour,
+                                                                 $minuteOffset,
+                                                                0,
+                                                                Timezone::IST)
                           ->getTimestamp());
             }
             else
             {
                 $this->fta->setInitiateAt(TransferHoliday::getNextWorkingDay(Carbon::now(Timezone::IST))
-                          ->addHours(Constants::RTGS_CUTOFF_HOUR_MIN)->addMinutes($minuteOffset)->getTimestamp());
+                          ->addHours($startTimeHour)->addMinutes($minuteOffset)->getTimestamp());
             }
         }
         else
         {
-            if (($currentTime < $this->bankingStartTime) &&
+            if (($currentTime < $bankingStartTimeByMode) &&
                 (SettlementHoliday::isWorkingDay(Carbon::now(Timezone::IST)) === true))
             {
-                $this->fta->setInitiateAt(Carbon::createFromTime(Constants::RTGS_CUTOFF_HOUR_MIN, $minuteOffset, 0, Timezone::IST)
+                $this->fta->setInitiateAt(Carbon::createFromTime($startTimeHour,
+                                                                 $minuteOffset,
+                                                               0,
+                                                               Timezone::IST)
                           ->getTimestamp());
             }
             else
             {
                 $this->fta->setInitiateAt(SettlementHoliday::getNextWorkingDay(Carbon::now(Timezone::IST))
-                          ->addHours(Constants::RTGS_CUTOFF_HOUR_MIN)->addMinutes($minuteOffset)->getTimestamp());
+                          ->addHours($startTimeHour)->addMinutes($minuteOffset)->getTimestamp());
             }
         }
 
@@ -730,16 +835,55 @@ class FundTransfer extends Base
     {
         $this->fta = $this->FTACore->getFTAEntity($ftaId);
 
-        $this->bankingStartTime = Carbon::createFromTime(Constants::RTGS_CUTOFF_HOUR_MIN, 15, 0, Timezone::IST)
-                                        ->getTimestamp();
+        $channel = $this->fta->getChannel();
 
-        $this->bankingEndTimeRtgs = Carbon::createFromTime(Constants::RTGS_REVISED_CUTOFF_HOUR_MAX,
-                                                           Constants::RTGS_REVISED_CUTOFF_MINUTE_MAX,
-                                                           0,
-                                                           Timezone::IST)
-                                           ->getTimestamp();
+        $startTimeNeft = $this->workingHours[self::DEFAULT][Mode::NEFT][self::START_TIME];
 
-        $this->bankingEndTimeNeft = Carbon::today(Timezone::IST)->hour(18)->minute(15)->getTimestamp();
+        $startTimeRtgs = $this->workingHours[self::DEFAULT][Mode::RTGS][self::START_TIME];
+
+        $endTimeRtgs = $this->workingHours[self::DEFAULT][Mode::RTGS][self::END_TIME];
+
+        $endTimeNeft = $this->workingHours[self::DEFAULT][Mode::NEFT][self::END_TIME];
+
+        $this->startTimeHourNeft = $startTimeNeft[self::HOURS];
+
+        $this->startTimeHourRtgs = $startTimeRtgs[self::HOURS];
+
+        if (isset($this->workingHours[$channel]) === true)
+        {
+            $startTimeRtgs = $this->workingHours[$channel][Mode::RTGS][self::START_TIME];
+
+            $endTimeRtgs = $this->workingHours[$channel][Mode::RTGS][self::END_TIME];
+
+            $startTimeNeft = $this->workingHours[$channel][Mode::NEFT][self::START_TIME];
+
+            $endTimeNeft = $this->workingHours[$channel][Mode::NEFT][self::END_TIME];
+
+            $this->startTimeHourNeft = $startTimeNeft[self::HOURS];
+
+            $this->startTimeHourRtgs = $startTimeRtgs[self::HOURS];
+        }
+
+        $this->bankingStartTimeRtgs = Carbon::createFromTime($startTimeRtgs[self::HOURS],
+                                                             $startTimeRtgs[self::MINUTES],
+                                                            0,
+                                                            Timezone::IST)
+                                            ->getTimestamp();
+
+        $this->bankingEndTimeRtgs = Carbon::createFromTime($endTimeRtgs[self::HOURS],
+                                                           $endTimeRtgs[self::MINUTES],
+                                                          0,
+                                                          Timezone::IST)
+                                            ->getTimestamp();
+
+        $this->bankingStartTimeNeft = Carbon::createFromTime($startTimeNeft[self::HOURS],
+                                                             $startTimeNeft[self::MINUTES],
+                                                             0,
+                                                             Timezone::IST)
+                                            ->getTimestamp();
+
+        $this->bankingEndTimeNeft = Carbon::today(Timezone::IST)->hour($endTimeNeft[self::HOURS])
+                                            ->minute($endTimeNeft[self::MINUTES])->getTimestamp();
 
         $this->accountType = $this->getAccountType();
 
@@ -758,7 +902,7 @@ class FundTransfer extends Base
 
         if ($mode === Mode::RTGS)
         {
-            if (($currentTime >= $this->bankingStartTime) and
+            if (($currentTime >= $this->bankingStartTimeRtgs) and
                 ($currentTime <= $this->bankingEndTimeRtgs))
             {
                 return [true, 'Rtgs transfer check passed'];
@@ -766,7 +910,7 @@ class FundTransfer extends Base
         }
         else
         {
-            if (($currentTime >= $this->bankingStartTime) and
+            if (($currentTime >= $this->bankingStartTimeNeft) and
                 ($currentTime <= $this->bankingEndTimeNeft))
             {
                 return [true, 'NEFT transfer check passed'];
