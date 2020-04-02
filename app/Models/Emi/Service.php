@@ -360,16 +360,17 @@ class Service extends Base\Service
         foreach ($merchantEmiPlans as $plan)
         {
             $issuer = $plan->getIssuer();
+            $type = $plan->getType();
 
-            if (in_array($issuer, $issuers, true) === false)
-            {
-                array_push($issuers, $issuer);
-            }
+            $issuers[$issuer][$type] = 1;
         }
 
         $sharedEmiPlans = $sharedEmiPlans->reject(function ($sharedPlan) use ($issuers)
         {
-            return in_array($sharedPlan->getIssuer(), $issuers, true) === true;
+            $issuer = $sharedPlan->getIssuer();
+            $type   = $sharedPlan->getType();
+
+            return (isset($issuers[$issuer][$type]) === true);
         });
 
         $emiPlans = $merchantEmiPlans->merge($sharedEmiPlans);

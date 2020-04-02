@@ -2346,6 +2346,38 @@ class MerchantTest extends TestCase
         $this->assertArrayHasKey('HDFC_DC', $response['methods']['emi_options']);
     }
 
+    public function testGetCheckoutPreferencesForDebitEmiWithExistingCreditEmi()
+    {
+        $this->fixtures->merchant->enableEmi();
+
+        $this->fixtures->emiPlan->create(
+            [
+                'id'          => '10101010101310',
+                'merchant_id' => '100000Razorpay',
+                'bank'        => 'HDFC',
+                'type'        => 'credit',
+                'rate'        => 1200,
+                'min_amount'  => 300000,
+                'duration'    => 3,
+            ]);
+
+        $this->fixtures->emiPlan->create(
+            [
+                'id'          => '10101010101312',
+                'merchant_id' => '10000000000000',
+                'bank'        => 'HDFC',
+                'type'        => 'debit',
+                'rate'        => 1200,
+                'min_amount'  => 300000,
+                'duration'    => 3,
+            ]);
+
+        $response = $this->getPreferences();
+
+        $this->assertArrayHasKey('HDFC_DC', $response['methods']['emi_options']);
+        $this->assertArrayHasKey('HDFC', $response['methods']['emi_options']);
+    }
+
     public function testGetCheckoutPreferencesForPayLater()
     {
         $this->fixtures->merchant->enablePayLater();
