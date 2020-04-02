@@ -1630,7 +1630,7 @@ final class Route
         'consume_typeform_webhook'                => ['post',      'typeform/webhook_consumption',                                  'TypeformController@webhookConsumption'          ],
 
         //cron job to retry penny testing for initiated case
-        'retry_penny_testing_cron'                => ['post',      'merchants/retry_penny_testing',                           'merchantController@retryPennyTestingCron'                 ],
+        'retry_penny_testing_cron'                => ['post',      'merchants/retry_penny_testing',                           'MerchantController@retryPennyTestingCron'                 ],
     ];
 
     public static $public = [
