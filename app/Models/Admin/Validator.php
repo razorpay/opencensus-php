@@ -3,9 +3,10 @@
 namespace RZP\Models\Admin;
 
 use RZP\Base;
+use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Models\Payment\Gateway;
-use RZP\Exception;
+use RZP\Models\Admin\Admin\Entity;
 
 class Validator extends Base\Validator
 {
@@ -91,7 +92,7 @@ class Validator extends Base\Validator
         ConfigKey::WORLDLINE_TID_RANGE_LIST.'.*'      => 'filled|array',
 
         ConfigKey::LOW_BALANCE_RX_EMAIL               => 'filled|array',
-      
+
         ConfigKey::BANKING_ACCOUNT_STATEMENT_RATE_LIMIT   => 'filled|integer',
 
         ConfigKey::GATEWAY_BALANCE_LAST_FETCHED_AT_RATE_LIMITING     => 'filled|integer',
@@ -156,6 +157,11 @@ class Validator extends Base\Validator
 
     protected static $emailRules = [
         'email' => 'required|email',
+    ];
+
+    protected static $batchAdminUpdateRules = [
+        Entity::ID                  => 'required|string|max:20',
+        Entity::ALLOW_ALL_MERCHANTS => 'sometimes|in:0,1',
     ];
 
     /**

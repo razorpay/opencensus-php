@@ -245,6 +245,15 @@ class AdminController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function updateAdminThroughBatch()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->updateFromBatchService($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function uploadFileAdmin(string $type)
     {
         $input = Request::all();

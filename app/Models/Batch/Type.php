@@ -278,6 +278,8 @@ class Type
         self::ECOLLECT_ICICI,
         self::ECOLLECT_RBL,
         self::REPORT,
+        self::ADMIN_BATCH,
+
     ];
 
     /**
@@ -297,6 +299,7 @@ class Type
         self::ECOLLECT_ICICI,
         self::ECOLLECT_RBL,
         self::REPORT,
+        self::ADMIN_BATCH,
     ];
 
     public static $batchToAdminPermissionMapping = [

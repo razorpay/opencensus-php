@@ -89,6 +89,7 @@ final class Route
         'payments_downtime_trigger_cron'           => ['post',     'payments/downtimes/trigger/{status}',            'DowntimeController@triggerDowntimes'                               ],
         'batch_create'                             => ['post',     'batches',                                        'BatchController@createBatch'                                       ],
         'batch_create_admin'                       => ['post',     'admin/batches',                                  'AdminController@createAdminBatch'                                  ],
+        'update_admin_through_batch'               => ['post',     'admin/update_admin_through_batch',               'AdminController@updateAdminThroughBatch'                           ],
         'batch_validate_file'                      => ['post',     'batches/validate',                               'BatchController@validateFile'                                      ],
         'batch_send_mail'                          => ['post',     'batch/sendmail',                                 'BatchController@sendMail'                                          ],
         'batch_upload_form_get'                    => ['get',      'batches/upload',                                 'BatchController@renderBatchUploadForm'                             ],
@@ -2160,6 +2161,7 @@ final class Route
         'internal_merchant_fetch',
         'terminal_migrate_cron',
         'virtual_account_batch_migrate_yesbank',
+        'update_admin_through_batch',
         'merchant_create_terminal_internal',
         'retry_penny_testing_cron',
     ];
@@ -4283,6 +4285,7 @@ final class Route
             'bank_transfer_process_icici',
             'reporting_log_create',
             'bank_transfer_process_rbl_internal',
+            'update_admin_through_batch',
         ],
 
         'stork' => [

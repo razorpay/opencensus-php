@@ -3,30 +3,29 @@
 namespace RZP\Models\Admin\Admin;
 
 use App;
+use Str;
 use Cache;
-use Carbon\Carbon;
 use Hash;
 use Mail;
 use Event;
-use Str;
 use Request;
+use Carbon\Carbon;
 
-use RZP\Constants\HashAlgo;
 use RZP\Error;
-use RZP\Error\ErrorCode;
-use RZP\Events\AuditLogEntry;
 use RZP\Exception;
-use RZP\Mail\Admin\Account as AdminMail;
-use RZP\Models\Admin\Action;
-use RZP\Models\Admin\Group;
-use RZP\Models\Admin\Role;
-use RZP\Models\Admin\Org;
-use RZP\Models\Admin\Org\AuthPolicy;
 use RZP\Models\Base;
-use RZP\Models\Base\EsDao;
-use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
-use RZP\Constants\MailTags;
+use RZP\Models\Merchant;
+use RZP\Error\ErrorCode;
+use RZP\Models\Admin\Org;
+use RZP\Models\Base\EsDao;
+use RZP\Models\Admin\Role;
+use RZP\Models\Admin\Group;
+use RZP\Constants\HashAlgo;
+use RZP\Models\Admin\Action;
+use RZP\Events\AuditLogEntry;
+use RZP\Models\Admin\Org\AuthPolicy;
+use RZP\Mail\Admin\Account as AdminMail;
 
 class Service extends Base\Service
 {
@@ -408,12 +407,17 @@ class Service extends Base\Service
     }
 
     /**
+     * In case of Batch we are using batchID to update the admin,
+     * as Batch process do not have orgId and it's using internal auth
+     * so it's picking up orgID from the updating admin itself
+     *
      * @param string $adminId
      * @param array  $input
+     * @param string $batchId
      *
      * @return mixed
      */
-    public function validateAndEditAdmin(string $adminId, array $input)
+    public function validateAndEditAdmin(string $adminId, array $input, string $batchId = '')
     {
         if (empty($this->adminOrgId) === true)
         {
@@ -422,6 +426,13 @@ class Service extends Base\Service
         else
         {
             $orgId = $this->adminOrgId;
+        }
+
+        if ((empty($orgId) === true) and (empty($batchId) === false))
+        {
+            $admin = $this->repo->admin->findByPublicId($adminId);
+
+            $orgId = $admin[Entity::ORG_ID];
         }
 
         $admin = $this->repo->admin->findByPublicIdAndOrgId($adminId, $orgId);

@@ -17,6 +17,7 @@ use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Entity;
+use RZP\Http\RequestHeader;
 use RZP\Constants\Timezone;
 use RZP\Base\RuntimeManager;
 use RZP\Constants\AdminFetch;
@@ -25,6 +26,7 @@ use RZP\Jobs\SFMerchantPocUpdate;
 use RZP\Jobs\SFMerchantPocRemoval;
 use RZP\Services\Mozart as MozartBase;
 use RZP\Models\GeoIP\Service as GeoIP;
+use RZP\Models\Admin\Admin as AdminModel;
 use RZP\Jobs\SFAllMerchantToUnclaimedGroup;
 use RZP\Models\{Base, Base\EsRepository, Batch, Admin\Org};
 use RZP\Reconciliator\ReconSummary\DailyReconStatusSummary;
@@ -616,6 +618,31 @@ class Service extends Base\Service
         $batch = $batchCore->create($input, $sharedMerchant);
 
         return $batch->toArrayPublic();
+    }
+
+    /**
+     * @param array $input
+     *
+     * @return array
+     */
+    public function updateFromBatchService(array $input): array
+    {
+        $batchId = '';
+
+        if ($this->app['basicauth']->isBatchApp() === true)
+        {
+            $batchId = $this->app['request']->header(RequestHeader::X_Batch_Id) ?? null;
+        }
+
+        (new Validator)->validateInput('batch_admin_update', $input);
+
+        $adminEntity = $this->repo->admin->findByPublicId($input[Batch\Header::ID]);
+
+        unset($input[Batch\Header::ID]);
+
+        $updatedAdmin = (new AdminModel\Service)->validateAndEditAdmin("admin_" . $adminEntity->getId(), $input, $batchId);
+
+        return $updatedAdmin->toArrayPublic();
     }
 
     public function uploadFile(string $type, array $input)

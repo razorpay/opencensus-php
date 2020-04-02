@@ -527,7 +527,7 @@ class Header
 
 
     // Admin Entity Headers
-    const ADMIN_ID            = 'admin_id';
+    const ADMIN_ID            = 'id';
     const EMAIL               = 'email';
     const NAME                = 'name';
     const USERNAME            = 'username';
@@ -539,7 +539,7 @@ class Header
     const SUPERVISOR_CODE     = 'supervisor_code';
     const LOCATION_CODE       = 'location_code';
     const GROUPS              = 'groups';
-    const ROLES              = 'roles';
+    const ROLES               = 'roles';
     const DISABLED            = 'disabled';
     const LOCKED              = 'locked';
     const ALLOW_ALL_MERCHANTS = 'allow_all_merchants';
