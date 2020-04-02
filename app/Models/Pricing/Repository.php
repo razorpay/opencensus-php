@@ -389,6 +389,17 @@ class Repository extends Base\Repository
         return $rule;
     }
 
+    public function getPricingRulesByPlanIdProductFeaturePaymentMethod($planId, $product, $feature, $method)
+    {
+        $rule = $this->newQueryWithOrgIdParam()
+                     ->where(Entity::PLAN_ID, '=',$planId)
+                     ->where(Entity::PRODUCT, '=', $product)
+                     ->where(Entity::FEATURE, '=', $feature)
+                     ->where(Entity::PAYMENT_METHOD, '=', $method);
+
+        return $rule;
+    }
+
     // In case of Current Account Payouts, fees is deducted at a later stage. There is a chance that a Pricing Rule
     // might have been deleted sometime between payout creation and transaction creation (which happens much later).
     // We use withTrashed to get pricingRules if they have been soft deleted so that feesBreakup remains consistent.

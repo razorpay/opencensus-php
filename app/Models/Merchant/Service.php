@@ -21,6 +21,7 @@ use RZP\Models\Base;
 use RZP\Error\Error;
 use RZP\Models\User;
 use RZP\Models\Offer;
+use RZP\Models\Payout;
 use RZP\Models\Coupon;
 use RZP\Models\Feature;
 use RZP\Models\Payment;
@@ -1812,10 +1813,9 @@ class Service extends Base\Service
         $pricingPlanId = $this->merchant->getPricingPlanId();
 
         $scheduledPricings = $this->repo->pricing
-                                  ->getPricingRulesByPlanIdFeatureAndInternationalWithoutOrgId(
-                                   $pricingPlanId,
-                                   PricingFeature::ESAUTOMATIC,
-                                   false);
+                              ->getPricingRulesByPlanIdFeatureAndInternationalWithoutOrgId($pricingPlanId,
+                                                                                           PricingFeature::ESAUTOMATIC,
+                                                                                           false);
 
         if ($scheduledPricings->isEmpty() === true)
         {
@@ -1853,6 +1853,76 @@ class Service extends Base\Service
         );
 
         return $finalSchedulePricing->toArrayPublic();
+    }
+
+    public function getOnDemandEarlySettlementPricingForMerchant()
+    {
+        // This is a wrapper over getPricingPlans to fetch payout pricing for given
+        // pricingPlanId along with corresponding rules
+        $pricingPlanId = $this->merchant->getPricingPlanId();
+
+        $onDemandPricing = $this->repo->pricing
+                                    ->getPricingRulesByPlanIdProductFeaturePaymentMethod($pricingPlanId,
+                                                                                         Product::PRIMARY,
+                                                                                         PricingFeature::PAYOUT,
+                                                                                         Payout\Method::FUND_TRANSFER);
+
+        // Restrict flow if on demand pricing is not found
+        if ($onDemandPricing->count() < 1)
+        {
+            throw new Exception\LogicException(
+                'ES On Demand Pricing has not been assigned to the merchant.',
+                ErrorCode::SERVER_ERROR_ES_ON_DEMAND_PRICING_NOT_FOUND);
+        }
+
+        // We do not expect multiple rows of primary-payout-fund_transfer for a given planId
+        return $onDemandPricing->first();
+    }
+
+    public function updateOnDemandPricingForMerchantBeforeEnableSchedule()
+    {
+        //
+        // W.e.f March 2020 Product wants to provide es on demand with under 20 bps if scheduled is enabled too.
+        // In case the bps value is already less than 20 then don't change
+        // In case it's greater than 20 then
+            // Check if the pricing plan is used by more than 1 merchant
+                // If yes than replicate plan and assign new plan for the merchant
+            // Update pricing plan for the merchant payout (could be old or new duplicated)
+            // and update payout pricing to 15bps
+        // For merchants who have payout pricing percent rate lesser than 20 already won't get the change
+        //
+        $onDemandPricing = $this->getOnDemandEarlySettlementPricingForMerchant();
+
+        $onDemandPricingRuleId = $onDemandPricing->getId();
+
+        if ($onDemandPricing->getPercentRate() < 20)
+        {
+            return $onDemandPricing->toArrayPublic()['percent_rate'];
+        }
+
+        $planId = $this->merchant->getPricingPlanId();
+
+        $plan = $this->repo->pricing->getPlanByIdOrFailPublic($planId);
+
+        // Replicates plan for this merchant if it was shared
+        if ($this->repo->merchant->fetchMerchantsCountWithPricingPlanId($planId) !== 1)
+        {
+            // Replicate also takes care of assigning the plan to the merchant
+            $newPlan = (new Pricing\Service())->replicatePlanAndAssign($this->merchant, $plan);
+
+            $this->merchant->refresh();
+
+            $plan = $newPlan;
+
+            // Currently we have just one rule id for on demand
+            $onDemandPricingRuleId = $this->getOnDemandEarlySettlementPricingForMerchant()->getId();
+        }
+
+        $updatedPlanRule = (new Pricing\Service())->updatePlanRule($plan->getId(),
+                                                $onDemandPricingRuleId,
+                                                ['percent_rate' => 15]);
+
+        return $updatedPlanRule['percent_rate'];
     }
 
     public function enableScheduledEs(): array
@@ -1894,7 +1964,7 @@ class Service extends Base\Service
 
         $scheduledTasks = (new ScheduleTask\Core)->getMerchantSettlementScheduleTasks($this->merchant, false);
 
-        $this->repo->transactionOnLiveAndTest(function () use($schedule, $scheduledTasks)
+        $this->repo->transactionOnLiveAndTest(function () use($schedule, $scheduledTasks, &$pricingForMerchant)
         {
             foreach ($scheduledTasks as $scheduledTask)
             {
@@ -1910,7 +1980,13 @@ class Service extends Base\Service
                 });
             }
 
-            $this->deleteTag($this->merchant->getId(), self::ES_ON_DEMAND_ANNOUNCEMENT_TAG);
+            // Pricing plan updates, if required, need not be blocked by workflows.
+            $this->app['workflow']->skipWorkflows(function() use(&$pricingForMerchant)
+            {
+                $onDemandPricing = $this->updateOnDemandPricingForMerchantBeforeEnableSchedule();
+
+                $pricingForMerchant['on_demand_percent_rate'] = $onDemandPricing;
+            });
 
             $this->addOrRemoveMerchantFeatures([
                                                     Entity::FEATURES => [
@@ -1919,8 +1995,8 @@ class Service extends Base\Service
                                                     Feature\Entity::SHOULD_SYNC => 1]);
         });
 
-
-        // All the mail sending steps are taken out of the transactionOnLiveAndTest. We want the flow to not get disturbed or reverted for any issues that may happen with mailer.
+        // All the mail sending steps are taken out of the transactionOnLiveAndTest.
+        // We want the flow to not get disturbed or reverted for any issues that may happen with mailer.
         try
         {
             $this->sendMailsPostEnableScheduledEs($pricingForMerchant);
@@ -2029,9 +2105,9 @@ class Service extends Base\Service
 
         $featuresToAdd = $this->getFeatureNamesToAdd($input['features']);
 
-        $featuresToRemove = $this->getFeatureNamesToRemove($input['features']);
-
         $this->addFeatures($featuresToAdd, $shouldSync);
+
+        $featuresToRemove = $this->getFeatureNamesToRemove($input['features']);
 
         $this->removeFeatures($featuresToRemove, $shouldSync);
 

@@ -3413,6 +3413,30 @@ return [
         ]
     ],
 
+    'testEnableEsScheduledSuccessUpdatesOnDemandPricing' => [
+        'request' => [
+            'url' => '/es/scheduled',
+            'method' => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                'success' => true
+            ]
+        ]
+    ],
+
+    'testEnableEsScheduledSuccessUpdatesOnDemandPricingReplicatesPlan' => [
+        'request' => [
+            'url' => '/es/scheduled',
+            'method' => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                'success' => true
+            ]
+        ]
+    ],
+
     'testEnableEsScheduledSuccessWithKAMMail' => [
         'request' => [
             'url' => '/es/scheduled',

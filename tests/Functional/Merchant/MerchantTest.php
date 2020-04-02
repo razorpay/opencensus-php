@@ -3092,9 +3092,15 @@ class MerchantTest extends TestCase
 
         $features = $this->getEntities('feature', [], true);
 
-        $this->assertCount(1, $features['items']);
+        $this->assertCount(2, $features['items']);
 
         $this->assertEquals('es_automatic', $features['items'][0]['name']);
+
+        $this->assertEquals('es_on_demand', $features['items'][1]['name']);
+
+        $pricingRule = $this->getDbEntityById('pricing', '1zE31zbyeGCTd9');
+
+        $this->assertEquals('18', $pricingRule['percent_rate']);
 
         $scheduleTaskUpi['schedule_id'] = '100001schedule';
 
@@ -3132,7 +3138,6 @@ class MerchantTest extends TestCase
                     ($mail->hasTo(self::CAPITAL_SUPPORT_EMAIL));
         });
     }
-
 
     public function testEnableEsScheduledSuccessWithKAMMail()
     {
@@ -3205,6 +3210,174 @@ class MerchantTest extends TestCase
                 default:
                     return false;
             }
+        });
+    }
+
+    public function testEnableEsScheduledSuccessUpdatesOnDemandPricing()
+    {
+        // We expect a mail to be shot to merchant every time Es schedule enable succeeds
+        Mail::fake();
+
+        $this->fixtures->create('pricing:standard_plan');
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1A0Fkd38fGZPVC']);
+
+        // Update pricing rule percent rate to 23 and later test it to have 15
+        $this->fixtures->pricing->edit('1zE31zbyeGCTd9', ['percent_rate' => 23]);
+
+        $this->fixtures->create(
+            'schedule',
+            [
+                'id'       => '100001schedule',
+                'period'   => 'hourly',
+                'interval' => 1,
+                'anchor'   => null,
+                'delay'    => 0,
+                'hour'     => 0,
+                'name'     => 'demo',
+            ]);
+
+        $scheduleTaskCard = [
+            'method'        => 'card',
+            'international' => 1,
+            'entity_type'   =>'merchant'
+        ];
+
+        $scheduleTaskUpi = [
+            'method'        => 'upi',
+            'international' => 0,
+            'entity_type'   =>'merchant'
+        ];
+
+        $this->fixtures->create(
+            'schedule_task',
+            $scheduleTaskCard);
+
+        $this->fixtures->create(
+            'schedule_task',
+            $scheduleTaskUpi);
+
+        $this->fixtures->merchant->addFeatures(['es_on_demand']);
+
+        $this->ba->proxyAuthTest();
+
+        $this->startTest();
+
+        $features = $this->getEntities('feature', [], true);
+
+        $this->assertCount(2, $features['items']);
+
+        $this->assertEquals('es_automatic', $features['items'][0]['name']);
+
+        $this->assertEquals('es_on_demand', $features['items'][1]['name']);
+
+        $pricingRule = $this->getDbLastEntity('pricing');
+
+        $this->assertEquals('15', $pricingRule['percent_rate']);
+
+        $this->assertEquals('1A0Fkd38fGZPVC', $pricingRule['plan_id']);
+
+        // In this case we expect only one mail is queued
+        Mail::assertQueued(EsEnabledNotify::class, 1);
+
+        Mail::assertQueued(EsEnabledNotify::class, function ($mail)
+        {
+            $this->assertEquals(EsEnabledNotify::MERCHANT_MAILER_VIEW,$mail->view);
+
+            $this->assertEquals(EsEnabledNotify::MERCHANT_MAILER_SUBJECT, $mail->subject);
+
+            $this->assertArrayKeysExist($mail->viewData,
+                [EsEnabledNotify::TO_EMAIL, EsEnabledNotify::TO_NAME, EsEnabledNotify::SUBJECT, EsEnabledNotify::VIEW, Pricing\Entity::PERCENT_RATE]);
+
+            return ($mail->hasFrom(self::CAPITAL_SUPPORT_EMAIL)) and
+                ($mail->hasTo(self::CAPITAL_SUPPORT_EMAIL));
+        });
+    }
+
+    public function testEnableEsScheduledSuccessUpdatesOnDemandPricingReplicatesPlan()
+    {
+        // We expect a mail to be shot to merchant every time Es schedule enable succeeds
+        Mail::fake();
+
+        $this->fixtures->create('pricing:standard_plan');
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1A0Fkd38fGZPVC', 'international' => 0]);
+
+        $merchant2 = $this->fixtures->create('merchant');
+
+        $merchant2Id = $merchant2['id'];
+
+        $this->fixtures->merchant->edit($merchant2Id, ['pricing_plan_id' => '1A0Fkd38fGZPVC', 'international' => 0]);
+
+        // Update pricing rule percent rate to 23 and later test it to have 15
+        $this->fixtures->pricing->edit('1zE31zbyeGCTd9', ['percent_rate' => 23]);
+
+        $this->fixtures->create(
+            'schedule',
+            [
+                'id'       => '100001schedule',
+                'period'   => 'hourly',
+                'interval' => 1,
+                'anchor'   => null,
+                'delay'    => 0,
+                'hour'     => 0,
+                'name'     => 'demo',
+            ]);
+
+        $scheduleTaskCard = [
+            'method'        => 'card',
+            'international' => 0,
+            'entity_type'   =>'merchant'
+        ];
+
+        $scheduleTaskUpi = [
+            'method'        => 'upi',
+            'international' => 0,
+            'entity_type'   =>'merchant'
+        ];
+
+        $this->fixtures->create(
+            'schedule_task',
+            $scheduleTaskCard);
+
+        $this->fixtures->create(
+            'schedule_task',
+            $scheduleTaskUpi);
+
+        $this->fixtures->merchant->addFeatures(['es_on_demand']);
+
+        $this->ba->proxyAuthTest();
+
+        $this->startTest();
+
+        $features = $this->getEntities('feature', [], true);
+
+        $this->assertCount(2, $features['items']);
+
+        $this->assertEquals('es_automatic', $features['items'][0]['name']);
+
+        $this->assertEquals('es_on_demand', $features['items'][1]['name']);
+
+        $pricingRule = $this->getDbLastEntity('pricing');
+
+        $this->assertEquals('15', $pricingRule['percent_rate']);
+
+        $this->assertNotEquals('1A0Fkd38fGZPVC', $pricingRule['plan_id']);
+
+        // In this case we expect only one mail is queued
+        Mail::assertQueued(EsEnabledNotify::class, 1);
+
+        Mail::assertQueued(EsEnabledNotify::class, function ($mail)
+        {
+            $this->assertEquals(EsEnabledNotify::MERCHANT_MAILER_VIEW,$mail->view);
+
+            $this->assertEquals(EsEnabledNotify::MERCHANT_MAILER_SUBJECT, $mail->subject);
+
+            $this->assertArrayKeysExist($mail->viewData,
+                [EsEnabledNotify::TO_EMAIL, EsEnabledNotify::TO_NAME, EsEnabledNotify::SUBJECT, EsEnabledNotify::VIEW, Pricing\Entity::PERCENT_RATE]);
+
+            return ($mail->hasFrom(self::CAPITAL_SUPPORT_EMAIL)) and
+                ($mail->hasTo(self::CAPITAL_SUPPORT_EMAIL));
         });
     }
 

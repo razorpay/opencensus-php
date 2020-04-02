@@ -95,7 +95,7 @@ class Service extends Base\Service
                     {
                         if (($this->repo->merchant->fetchMerchantsCountWithPricingPlanId($planId)) !== 1)
                         {
-                            $plan = $this->replicatePLan($merchant, $plan);
+                            $plan = $this->replicatePlanAndAssign($merchant, $plan);
 
                             $planId = $plan->getId();
                         }
@@ -131,10 +131,12 @@ class Service extends Base\Service
         return $pricingRulesCollection->toArrayWithItems();
     }
 
-    public function replicatePLan($merchant, $plan)
+    public function replicatePlanAndAssign($merchant, $plan)
     {
+        // Get merchants existig plan ID
         $planId = $merchant->getPricingPlanId();
 
+        // Get intended pricing plans org id
         $ruleOrgId = $plan->getOrgId();
 
         $this->trace->info(TraceCode::BATCH_PRICING_PLAN_REPLICATE_REQUEST,
@@ -142,12 +144,16 @@ class Service extends Base\Service
                                 Entity::PLAN_ID => $planId
                             ]);
 
+        // make an array copy out of plan into array rules
         $rules = $plan->toArray();
 
+        // Generate a new plan id
         $planName = UniqueIdEntity::generateUniqueId();
 
+        // Make array consumable for create plan
         for ($i = 0; $i < count($rules); $i++)
         {
+            // For each rule remove generated and conflict-ible values
             $rules[$i] = array_except(
                               $rules[$i],
                               [Entity::ID,
@@ -172,11 +178,14 @@ class Service extends Base\Service
             }
         }
 
+        // Create new plan with copied rules
         $newplan = (new Pricing\Core)->create([Entity::PLAN_NAME => $planName, Entity::RULES => $rules], $ruleOrgId);
 
+        // Assign plan to merchant
         (new Merchant\Service)->assignPricingPlan($merchant->getId(),
                                                  [Merchant\Entity::PRICING_PLAN_ID => $newplan->getId()]);
 
+        // Return the new plan
         return $newplan;
     }
 

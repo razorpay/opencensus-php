@@ -641,7 +641,7 @@ return [
                     ],
                     [
                         'feature'      => 'es_on_demand',
-                        'value'        => false,
+                        'value'        => true,
                         'display_name' => 'On demand Payout'
                     ],
                     [
