@@ -14,4 +14,8 @@ class Constants
 
     const MPAN_ISSUE_MUTEX_TTL        = 60;
 
+    const MASTERCARD                  = 'MasterCard';
+    const VISA                        = 'Visa';
+    const RUPAY                       = 'RuPay';
+
 }

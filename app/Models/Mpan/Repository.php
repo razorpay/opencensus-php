@@ -24,6 +24,16 @@ class Repository extends Base\Repository
         Entity::NETWORK       => 'required|in:Visa,RuPay,MasterCard',
     ];
 
+    public function findByMerchantIdMpans(string $merchantId, array $mpanValues)
+    {        
+        $mpan = $this->newQuery()
+                      ->where(Entity::MERCHANT_ID, $merchantId)
+                      ->whereIn(Entity::MPAN, $mpanValues)
+                      ->get();
+
+        return $mpan;
+    }
+
     public function fetchUnassignedMpansForNetwork(string $network, int $count)
     {
        $mpans = $this->newQuery()

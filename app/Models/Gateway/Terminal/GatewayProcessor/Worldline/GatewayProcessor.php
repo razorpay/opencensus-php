@@ -484,5 +484,4 @@ class GatewayProcessor extends BaseGatewayProcessor
 
         (new Feature\Core)->create($featureParam, true);
     }
-
 }

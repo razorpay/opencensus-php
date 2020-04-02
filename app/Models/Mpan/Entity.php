@@ -62,6 +62,11 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('RZP\Models\Merchant\Entity');
     }
 
+    public function getMpan()
+    {
+        return $this->getAttribute(self::MPAN);
+    }
+
     public function setPublicMpanAttribute(array &$array)
     {
 

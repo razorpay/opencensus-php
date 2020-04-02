@@ -13,6 +13,7 @@ use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Models\Gateway\Terminal\GatewayProcessor\Worldline;
 use RZP\Tests\Functional\Fixtures\Entity\Base as BaseFixture;
 use RZP\Tests\Functional\Fixtures\Entity\Terminal as TerminalFixture;
+use RZP\Tests\Functional\Mpan\MpanTrait;
 use RZP\Tests\Functional\Partner\PartnerTrait;
 use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Exception\BadRequestException;
@@ -21,14 +22,13 @@ class PartnerTerminalOnboardingTest extends TestCase
 {
     use PaymentTrait;
     use PartnerTrait;
+    use MpanTrait;
 
     public function setUp()
     {
         $this->testDataFilePath = __DIR__ . '/helpers/TerminalData.php';
 
         parent::setUp();
-
-        $this->ba->adminAuth();
     }
 
     public function testEnableTerminal()
@@ -312,18 +312,11 @@ class PartnerTerminalOnboardingTest extends TestCase
 
     public function testTerminalOnboardingCreateTerminal()
     {
+        $this->setUpMpans('10000000000000');   
+
         $this->app['config']->set('gateway.mock_mozart', true);
 
-        $this->ba->adminAuth();
-
-        $request = [
-            'method'  => 'put',
-            'url'     => '/config/keys',
-            'content' => [
-                'config:atos_tid_range_list' => [ [12380001, 123899999], [13380001, 13389999]]
-            ]
-        ];
-        $this->makeRequestAndGetContent($request);
+        $this->setUpTidConfigs();
 
         $subMerchantId = $this->setUpPartnerAuthAndGetSubMerchantId();
 
@@ -394,18 +387,11 @@ class PartnerTerminalOnboardingTest extends TestCase
     // We should be able to create terminal with same fields if existing terminal is failed
     public function testTerminalOnboardingCreateTerminalWithSameFields()
     {
+        $this->setUpMpans('10000000000000');
+
         $this->app['config']->set('gateway.mock_mozart', true);
 
-        $this->ba->adminAuth();
-
-        $request = [
-            'method'  => 'put',
-            'url'     => '/config/keys',
-            'content' => [
-                'config:atos_tid_range_list' => [ [12380001, 123899999], [13380001, 13389999]]
-            ]
-        ];
-        $this->makeRequestAndGetContent($request);
+        $this->setUpTidConfigs();
 
         $subMerchantId = $this->setUpPartnerAuthAndGetSubMerchantId();
 
@@ -428,6 +414,44 @@ class PartnerTerminalOnboardingTest extends TestCase
 
         $this->expectExceptionMessage(
             $description);
+
+        $this->startTest();
+    }
+
+    public function testTerminalOnboardingCreateTerminalWithMpansNotIssued()
+    {
+        $this->setUpTidConfigs();
+
+        $subMerchantId = $this->setUpPartnerAuthAndGetSubMerchantId();
+
+        $this->fixtures->merchant->addFeatures(FeatureConstants::TERMINAL_ONBOARDING);
+
+        $this->startTest();
+    }
+
+    public function testTerminalOnboardingCreateTerminalWithSwappedNetworks()
+    {
+        $this->setUpMpans('10000000000000');
+
+        $this->setUpTidConfigs();
+
+        $subMerchantId = $this->setUpPartnerAuthAndGetSubMerchantId();
+
+        $this->fixtures->merchant->addFeatures(FeatureConstants::TERMINAL_ONBOARDING);
+
+        $this->startTest();
+    }
+
+    // Same network having more than one used network
+    public function testTerminalOnboardingCreateTerminalWithSwappedNetworks2()
+    {
+        $this->setUpMpans('10000000000000');
+
+        $this->setUpTidConfigs();
+
+        $subMerchantId = $this->setUpPartnerAuthAndGetSubMerchantId();
+
+        $this->fixtures->merchant->addFeatures(FeatureConstants::TERMINAL_ONBOARDING);
 
         $this->startTest();
     }
@@ -1105,4 +1129,32 @@ class PartnerTerminalOnboardingTest extends TestCase
 
         $this->app->instance('gateway', $gateway);
     }
+
+    protected function setUpTidConfigs()
+    {
+        $this->ba->adminAuth();
+
+        $request = [
+            'method'  => 'put',
+            'url'     => '/config/keys',
+            'content' => [
+                'config:atos_tid_range_list' => [ [12380001, 123899999], [13380001, 13389999]]
+            ]
+        ];
+
+        $this->makeRequestAndGetContent($request);
+    }
+    
+    private function setUpMpans($merchantId)
+    {
+        $mpanData = $this->getMpanData();
+
+        foreach ($mpanData as $mpan)
+        {
+            $mpan['merchant_id'] = $merchantId;
+
+            $this->fixtures->create('mpan', $mpan);
+        }
+    }
+
 }

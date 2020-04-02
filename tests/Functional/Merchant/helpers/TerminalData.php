@@ -2598,9 +2598,9 @@ return [
         'request' => [
             'content' => [
                 'mpan' => [
-                  'mastercard'  => '1234567880123456',
-                  'visa'        => '1234567890123456',
-                  'rupay'       => '1234567890123457'
+                  'mastercard'  => '5122600005005789',
+                  'visa'        => '4604901005005799',
+                  'rupay'       => '6100020005005792'
                 ]
             ],
             'method' => 'POST'
@@ -2611,9 +2611,9 @@ return [
                 'enabled'  => false,
                 'status'   => 'created',
                 'mpan'     => [
-                    'mc_mpan'       =>  '1234567880123456',
-                    'rupay_mpan'    =>  '1234567890123457',
-                    'visa_mpan'     =>  '1234567890123456'
+                    'mc_mpan'       =>  '5122600005005789',
+                    'rupay_mpan'    =>  '6100020005005792',
+                    'visa_mpan'     =>  '4604901005005799'
                 ],
             ]
         ]
@@ -2650,10 +2650,10 @@ return [
         'request' => [
             'content' => [
                 'mpan' => [
-                  'mastercard'  => '1234567880123456',
-                  'visa'        => '1234567890123456',
-                  'rupay'       => '1234567890123457'
-                ]
+                    'mastercard'  => '5122600005005789',
+                    'visa'        => '4604901005005799',
+                    'rupay'       => '6100020005005792'
+                  ]
             ],
             'method' => 'POST'
         ],
@@ -2663,15 +2663,96 @@ return [
                 'enabled'  => false,
                 'status'   => 'created',
                 'mpan'     => [
-                    'mc_mpan'       =>  '1234567880123456',
-                    'rupay_mpan'    =>  '1234567890123457',
-                    'visa_mpan'     =>  '1234567890123456'
+                    'mc_mpan'       =>  '5122600005005789',
+                    'rupay_mpan'    =>  '6100020005005792',
+                    'visa_mpan'     =>  '4604901005005799'
                 ]
 
             ]
         ]
     ],
 
+    'testTerminalOnboardingCreateTerminalWithMpansNotIssued'    =>  [
+        'request' => [
+            'url'     => '/terminals',
+            'content' => [
+                'mpan' => [
+                    'mastercard'  => '1234567890123456',
+                    'visa'        => '2234567890123456',
+                    'rupay'       => '3234567890123456'
+                  ]
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content'  => [
+                'error' => [
+                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'   => 'The MPAN used is not issued to your account.',
+                ],
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_MPAN
+        ],
+    ],
+
+    'testTerminalOnboardingCreateTerminalWithSwappedNetworks'    =>  [
+        'request' => [
+            'url'     => '/terminals',
+            'content' => [
+                'mpan' => [
+                    'mastercard'  => '5122600005005789',
+                    'visa'        => '5122600005005961',
+                    'rupay'       => '6100020005005792'
+                  ]
+              ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content'  => [
+                'error' => [
+                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'   => 'The MPAN used does not belong to the network.',
+                ],
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_MPAN_FOR_NETWORK
+        ],
+    ],
+
+    'testTerminalOnboardingCreateTerminalWithSwappedNetworks2' => [
+        'request' => [
+            'url'     => '/terminals',
+            'content' => [
+                'mpan' => [
+                    'mastercard'  => '4604901005005799',
+                    'visa'        => '5122600005005995',
+                    'rupay'       => '6100020005005792'
+                  ]
+              ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content'  => [
+                'error' => [
+                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'   => 'The MPAN used does not belong to the network.',
+                ],
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_MPAN_FOR_NETWORK
+        ],
+    ],
+    
     // Used in all cases
     'testTerminalOnboardingCreationCron'    =>  [
         'request' => [
@@ -2687,9 +2768,9 @@ return [
         'request' => [
             'content' => [
                 'mpan' => [
-                  'mastercard'  => '1234567880123458',
-                  'visa'        => '1234567890123458',
-                  'rupay'       => '1234567890123458'
+                  'mastercard'  => '5122600005005813',
+                  'visa'        => '4604901005005823',
+                  'rupay'       => '6100020005005826'
                 ]
             ],
             'url'    => '/terminals',
@@ -2701,9 +2782,9 @@ return [
                 'enabled'  => false,
                 'status'   => 'created',
                 'mpan'     => [
-                    'mc_mpan'       =>  '1234567880123458',
-                    'rupay_mpan'    =>  '1234567890123458',
-                    'visa_mpan'     =>  '1234567890123458'
+                    'mc_mpan'       =>  '5122600005005813',
+                    'rupay_mpan'    =>  '6100020005005826',
+                    'visa_mpan'     =>  '4604901005005823'
                 ]
 
             ]

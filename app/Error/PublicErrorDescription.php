@@ -870,6 +870,8 @@ class PublicErrorDescription
     const BAD_REQUEST_TERMINAL_ONBOARDING_DISABLED                              = 'Terminal onboarding feature is disabled';
     const BAD_REQUEST_ONLY_DEACTIVATED_TERMINALS_CAN_BE_ENABLED                 = 'Only deactivated terminals can be enabled';
     const BAD_REQUEST_ONLY_PENDING_OR_ACTIVATED_TERMINALS_CAN_BE_DISABLED       = 'Only pending or activated terminals can be disabled';
+    const BAD_REQUEST_INVALID_MPAN                                              = 'The MPAN used is not issued to your account.';
+    const BAD_REQUEST_INVALID_MPAN_FOR_NETWORK                                  = 'The MPAN used does not belong to the network.';
 
 
     // Scrooge
