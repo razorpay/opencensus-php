@@ -74,6 +74,8 @@ class Netbanking
         self::SVCB_C => 'Shamrao Vithal Bank - Corporate Banking',
         self::UTIB_C => 'Axis Bank - Corporate Banking',
         self::YESB_C => 'Yes Bank - Corporate Banking',
+        IFSC::ORBC   => 'PNB (Erstwhile-Oriental Bank of Commerce)',
+        IFSC::UTBI   => 'PNB (Erstwhile-United Bank of India)'
     ];
 
     const ACCOUNT_NUMBER_LENGTHS = [

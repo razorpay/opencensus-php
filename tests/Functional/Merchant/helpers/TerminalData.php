@@ -1711,7 +1711,7 @@ return [
                     'TMBL'   => 'Tamilnadu Mercantile Bank',
                     'UCBA'   => 'UCO Bank',
                     'UBIN'   => 'Union Bank of India',
-                    'UTBI'   => 'United Bank of India',
+                    'UTBI'   => 'PNB (Erstwhile-United Bank of India)',
                     'VIJB'   => 'Vijaya Bank',
                 ],
                 'disabled' => [
@@ -1757,7 +1757,7 @@ return [
                     'TMBL'   => 'Tamilnadu Mercantile Bank',
                     'UCBA'   => 'UCO Bank',
                     'UBIN'   => 'Union Bank of India',
-                    'UTBI'   => 'United Bank of India',
+                    'UTBI'   => 'PNB (Erstwhile-United Bank of India)',
                     'VIJB'   => 'Vijaya Bank',
                 ],
                 'disabled' => [
@@ -1873,7 +1873,7 @@ return [
                     'TMBL'   => 'Tamilnadu Mercantile Bank',
                     'UCBA'   => 'UCO Bank',
                     'UBIN'   => 'Union Bank of India',
-                    'UTBI'   => 'United Bank of India',
+                    'UTBI'   => 'PNB (Erstwhile-United Bank of India)',
                     'VIJB'   => 'Vijaya Bank',
                 ],
             ],
@@ -2083,7 +2083,7 @@ return [
                     'SRCB'   => 'Saraswat Co-operative Bank',
                     'UCBA'   => 'UCO Bank',
                     'UBIN'   => 'Union Bank of India',
-                    'UTBI'   => 'United Bank of India',
+                    'UTBI'   => 'PNB (Erstwhile-United Bank of India)',
                     'VIJB'   => 'Vijaya Bank',
                     'YESB'   => 'Yes Bank'
                 ],
@@ -2118,7 +2118,7 @@ return [
                     'TMBL'   => 'Tamilnadu Mercantile Bank',
                     'UCBA'   => 'UCO Bank',
                     'UBIN'   => 'Union Bank of India',
-                    'UTBI'   => 'United Bank of India',
+                    'UTBI'   => 'PNB (Erstwhile-United Bank of India)',
                     'VIJB'   => 'Vijaya Bank',
                 ],
                 'success'             => true
