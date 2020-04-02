@@ -20,6 +20,9 @@ class TerminalsService
 
     protected $baseUrl;
 
+    protected $request;
+
+    const X_RAZORPAY_TASKID = 'X-Razorpay-TaskId';
 
     const GATEWAY           = 'gateway';
     const MERCHANT_ID       = 'merchant_id';
@@ -113,6 +116,8 @@ class TerminalsService
         $this->app = $app;
 
         $this->trace = $this->app['trace'];
+
+        $this->request = $app['request'];
     }
 
     public function migrateTerminal(Terminal\Entity $terminal): array
@@ -337,6 +342,7 @@ class TerminalsService
     {
         return [
             self::CONTENT_TYPE      => 'application/json',
+            self::X_RAZORPAY_TASKID => $this->request->getTaskId()
         ];
     }
 
