@@ -14,6 +14,7 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Payment;
 use RZP\Constants\Entity as BaseEntity;
 use RZP\Gateway\Base\VerifyResult;
+use RZP\Models\Base\UniqueIdEntity;
 
 class Gateway extends Base\Gateway
 {
@@ -35,6 +36,8 @@ class Gateway extends Base\Gateway
 
     public function preProcessServerCallback($input, $isBharatQr = false): array
     {
+        $this->addDefaultInputsIfRequired($input);
+
         if ($isBharatQr === true)
         {
             $qrData = $this->getQrData($input);
@@ -666,6 +669,18 @@ class Gateway extends Base\Gateway
     public function enableTerminal(array $input)
     {
         return $this->app['gateway']->call(BaseEntity::MOZART, Mozart\Action::ENABLE_TERMINAL, $input, $this->getMode());
+    }
+
+    /**
+     * We are generating and adding primary_id in callback becuase we cannot remove validtion on merchant reference 
+     * and we need qrcode in BQR payments flow
+     */
+    protected function addDefaultInputsIfRequired(& $input) 
+    {
+        if (empty($input[Fields::PRIMARY_ID]) === true)
+        {
+            $input[Fields::PRIMARY_ID] = UniqueIdEntity::generateUniqueId();
+        }
     }
 
 }
