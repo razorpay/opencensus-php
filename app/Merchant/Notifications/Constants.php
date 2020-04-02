@@ -262,6 +262,25 @@ class Constants
                 'activated' => 1,
             ]
         ],
+        [
+            'title'       => 'Instant Settlement!',
+            'description' => 'Now get your settlements instantly 24x7 - even on
+            holidays! Avoid cash-flow issues and to boost your working capital!',
+            'start_ts'    => 1585548503,
+            'end_ts'      => 1596175703,
+            'icon'        => 'settlements',
+            'buttons'     => [
+                [
+                    'type'  => 'button',
+                    'label' => 'Go to Settlements',
+                    'url'   => '/settlements',
+                ],
+            ],
+            'filters'     => [
+                'features' => ['es_on_demand'],
+                'role'  => ['owner'],
+            ]
+        ],
     ];
 
     public static function getNotifications(): array

@@ -321,7 +321,7 @@ export default class SettlementsListContainer extends ListContainer {
           <content>
             <div class="content-wrapper">
               <HeaderAction>
-                <React.Fragment>
+                <div class="settlement-actions-wrapper">
                   {
                     <div
                       class="btn btn-link settlement-doc-btn"
@@ -354,7 +354,7 @@ export default class SettlementsListContainer extends ListContainer {
                         />
                       </div>
                     )}
-                </React.Fragment>
+                </div>
               </HeaderAction>
               <SettlementsListFilter
                 form="settlementsListFilter"
@@ -427,13 +427,7 @@ export default class SettlementsListContainer extends ListContainer {
                           <span style={{ fontSize: '13px' }}>
                             <span>&nbsp;</span>
                             <strong>
-                              <Amount
-                                value={
-                                  this.props.settlement_amount.data
-                                    .settlement_amount
-                                }
-                                currency="INR"
-                              />
+                              <Amount value={balance} currency="INR" />
                             </strong>{' '}
                             will be settled on{' '}
                             <Time

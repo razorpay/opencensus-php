@@ -45,6 +45,8 @@ export default class ScheduledBanner extends Component {
   }
 
   render() {
+    if (this.props.user.isAutomaticSettlementEnabled) return null;
+
     return (
       <div class="pull-right schedule-enable-container">
         <i class="i i-early-settlement scheduled-enable" />

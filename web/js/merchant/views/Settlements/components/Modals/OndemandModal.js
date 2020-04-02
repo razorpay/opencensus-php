@@ -456,9 +456,9 @@ export default class OndemandModal extends Component {
           onCloseClick={() => this.handleCloseModal('Close Modal Screen 1')}
         />
         <div class="modal-body">
-          <p>Settle to your bank account instantly.</p>
-          <br />
           <p>
+            Settle to your bank account instantly 24x7,{' '}
+            <strong>even on Holidays!&nbsp;</strong>
             Upcoming Settlements follow the existing schedule.
             <a
               class="btn-link"
