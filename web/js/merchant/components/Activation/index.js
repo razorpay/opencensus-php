@@ -1760,10 +1760,12 @@ function ActivationField(field) {
      * */
     if (this.isOnKYCTab()) {
       defaultValue = this.state.dirty[key] || null;
-    } else {
-      let docDefaultValue = documents && documents[key] && documents[key][0].id;
+    } else if (Component === Input.File) {
       defaultValue =
-        this.state.dirty[key] || this.props.data[key] || docDefaultValue;
+        this.state.dirty[key] ||
+        (documents && documents[key] && documents[key][0].id);
+    } else {
+      defaultValue = this.state.dirty[key] || this.props.data[key];
     }
   } else if (_name) {
     defaultValue = this.state[_name];

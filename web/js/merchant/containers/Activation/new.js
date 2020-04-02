@@ -303,7 +303,7 @@ export default class ActivationContainer extends React.Component {
   deleteFile = (name, cb) => {
     const { showNotification, data } = this.props;
     const documents = data.documents;
-    if (documents && Object.keys(documents).length && documents[name].length) {
+    if (documents && documents[name] && documents[name].length) {
       const curDoc = documents[name][0];
       return merchantFetch({
         url: `merchant/documents/doc_${curDoc.id}`,
