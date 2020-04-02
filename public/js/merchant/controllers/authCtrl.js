@@ -1587,9 +1587,10 @@ app
             $scope.alerts.addAlert('success', message);
           } else {
             $scope.alerts.resetAlerts();
-            angular.forEach(data.errors, function(value) {
-              $scope.alerts.addAlert('danger', value);
-            });
+            $scope.alerts.addAlert(
+              'danger',
+              'Something went wrong, please try again after sometime.'
+            );
           }
         });
       };
