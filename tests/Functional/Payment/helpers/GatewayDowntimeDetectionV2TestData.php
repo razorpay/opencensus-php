@@ -84,7 +84,7 @@ return [
             'content' => [
             ],
             'method'  => 'GET',
-            'url'     => '/gateway/downtimes/detection/cron?type=success_rate&key=issuer&value=HDFC',
+            'url'     => '/gateway/downtimes/detection/cron',
         ],
         'response' => [
             'content' => [

@@ -143,7 +143,7 @@ class GatewayDowntimeDetectionV2Test extends TestCase
 
         $this->startTest();
 
-        $this->assertNotNull($this->redis->get('DOWNTIME_CREATED_success_rate_issuer_HDFC'));
+        $this->assertNotNull($this->redis->get('DOWNTIME_CREATED_success_rate_ISSUER_HDFC'));
 
         $this->ba->adminAuth();
 
@@ -157,14 +157,14 @@ class GatewayDowntimeDetectionV2Test extends TestCase
 
         $request = [
             'method'  => 'GET',
-            'url'     => '/gateway/downtimes/detection/cron?type=success_rate&key=issuer&value=HDFC',
+            'url'     => '/gateway/downtimes/detection/cron',
         ];
 
         $this->ba->cronAuth();
 
         $this->makeRequestAndGetContent($request);
 
-        $this->assertNull($this->redis->get('DOWNTIME_CREATED_success_rate_issuer_HDFC'));
+        $this->assertNull($this->redis->get('DOWNTIME_CREATED_success_rate_ISSUER_HDFC'));
     }
 }
 

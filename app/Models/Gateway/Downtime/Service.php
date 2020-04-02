@@ -97,19 +97,7 @@ class Service extends Base\Service
 
     public function createDowntimeIfNecessary(array $input)
     {
-        // TODO: validate
-        #(new \RZP\Models\Admin\Validator)->validateInput('check_api_downtime_cron', $input);
-
-        // Example: success_rate, payment_interval
-        $type = $input['type'];
-
-        // Example: issuer, network
-        $key = $input['key'];
-
-        // Example: SBIN, Visa (case same as in DB query)
-        $value = $input['value'];
-
-        (new DowntimeDetection())->createDowntimeIfNecessary($type, $key, $value);
+        (new DowntimeDetection())->createDowntimeDetectionJobs();
     }
 
     public function stats()

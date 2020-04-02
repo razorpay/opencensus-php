@@ -5,6 +5,8 @@ namespace RZP\Models\Gateway\Downtime;
 
 
 use App;
+use RZP\Models\Card\Issuer;
+use RZP\Models\Card\Network;
 use \stdClass;
 use Carbon\Carbon;
 use Illuminate\Redis\RedisManager;
@@ -37,6 +39,84 @@ class DowntimeDetection
 
     const PAYMENT_INTERVAL = 'payment_interval';
 
+    protected $allJobTypes = [
+        [
+            'type' => self::SUCCESS_RATE,
+            'key' => self::ISSUER,
+            'value' => Issuer::SBIN,
+        ],
+        [
+            'type' => self::SUCCESS_RATE,
+            'key' => self::ISSUER,
+            'value' => Issuer::HDFC,
+        ],
+        [
+            'type' => self::SUCCESS_RATE,
+            'key' => self::ISSUER,
+            'value' => Issuer::ICIC,
+        ],
+        [
+            'type' => self::SUCCESS_RATE,
+            'key' => self::ISSUER,
+            'value' => Issuer::UTIB,
+        ],
+        [
+            'type' => self::SUCCESS_RATE,
+            'key' => self::ISSUER,
+            'value' => Issuer::CITI,
+        ],
+        [
+            'type' => self::SUCCESS_RATE,
+            'key' => self::ISSUER,
+            'value' => Issuer::PUNB,
+        ],
+        [
+            'type' => self::SUCCESS_RATE,
+            'key' => self::ISSUER,
+            'value' => Issuer::KKBK,
+        ],
+        [
+            'type' => self::SUCCESS_RATE,
+            'key' => self::ISSUER,
+            'value' => Issuer::CNRB,
+        ],
+        [
+            'type' => self::SUCCESS_RATE,
+            'key' => self::ISSUER,
+            'value' => Issuer::BKID,
+        ],
+        [
+            'type' => self::SUCCESS_RATE,
+            'key' => self::ISSUER,
+            'value' => Issuer::BARB,
+        ],
+        [
+            'type' => self::SUCCESS_RATE,
+            'key' => self::NETWORK,
+            'value' => Network::AMEX,
+        ],
+        [
+            'type' => self::SUCCESS_RATE,
+            'key' => self::NETWORK,
+            'value' => Network::VISA,
+        ],
+        [
+            'type' => self::SUCCESS_RATE,
+            'key' => self::NETWORK,
+            'value' => Network::MC,
+        ],
+        [
+            'type' => self::SUCCESS_RATE,
+            'key' => self::NETWORK,
+            'value' => Network::DICL,
+        ],
+        [
+            'type' => self::SUCCESS_RATE,
+            'key' => self::NETWORK,
+            'value' => Network::RUPAY,
+        ],
+    ];
+
     public function __construct()
     {
         /**
@@ -45,6 +125,8 @@ class DowntimeDetection
         $app = App::getFacadeRoot();
 
         $this->trace   = $app['trace'];
+
+        $this->mode    = $app['rzp.mode'];
 
         $this->redis   = Redis::connection()->client();
     }
@@ -141,13 +223,25 @@ class DowntimeDetection
         return $downtimeMetric;
     }
 
-    public function createDowntimeIfNecessary($type, $key, $value)
+    public function createDowntimeDetectionJobs()
+    {
+        $to = Carbon::now();
+
+        foreach ($this->allJobTypes as $job)
+        {
+            \RZP\Jobs\DowntimeDetection::dispatch(
+                $this->mode,
+                $job['type'],
+                $job['key'],
+                $job['value'],
+                $to
+            );
+        }
+    }
+
+    public function createDowntimeIfNecessary($type, $key, $value, $to)
     {
         $redisKeyForDowntime = Constants::DOWNTIME_KEY . '_' . $type . '_' . $key .'_' . $value;
-
-        $key = strtoupper($key);
-
-        $value = strtoupper($value);
 
         // check if downtime is already there for this issuer
         $downtimeCreatedSince = $this->redis->get($redisKeyForDowntime);
@@ -165,9 +259,7 @@ class DowntimeDetection
 
                 $successRateForDowntime = $setting[2];
 
-                $to = Carbon::now();
-
-                $from = Carbon::now()->subSeconds($maxWindowSizeInSeconds);
+                $from = $to->copy()->subSeconds($maxWindowSizeInSeconds);
 
                 $payments = (new \RZP\Models\Payment\Repository())->fetchLastNPaymentsForDowntime($from->timestamp, $to->timestamp, $key, $value, $minimumPayments);
 
