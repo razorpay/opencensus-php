@@ -1221,6 +1221,79 @@ class TerminalTest extends TestCase
         $this->startTest();
     }
 
+    public function testUpdateTerminalsBulk()
+    {
+        $this->ba->adminAuth();
+
+        $terminal = $this->fixtures->create('terminal', [
+            'status'    =>  'pending',
+            'gateway'   =>  'worldline',
+            'enabled'   =>  false,
+        ]);
+
+        $terminalOnboardingDetail = $this->fixtures->create('terminal_onboarding_detail', [
+            'terminal_id'       => $terminal->getId(),
+            'status'            => 'pending',
+            'attempts'          => 0,
+            'verify_bucket'     => 0,
+        ]);
+
+        $terminal2 = $this->fixtures->create('terminal', [
+            'status'    =>  'pending',
+            'gateway'   =>  'worldline',
+        ]);
+
+        $terminalOnboardingDetail2 = $this->fixtures->create('terminal_onboarding_detail', [
+            'terminal_id'       => $terminal2->getId(),
+            'status'            => 'pending',
+            'attempts'          => 0,
+            'verify_bucket'     => 0,
+        ]);
+        
+        $this->testData[__FUNCTION__]['request']['content'] = [
+            'terminal_ids'  =>  [
+                $terminal['id'], $terminal2['id'], 'notexisttermid'
+            ],
+            'attributes'    =>  [
+                'status'    =>  'activated',
+                'enabled'   =>  true
+            ]
+        ];
+
+        $response = $this->startTest();
+
+        $updatedTerminal = $this->getEntityById(
+            'terminal',
+            $terminal->getId(),
+            true
+        );
+
+        $updatedTerminalOnboardingDetail = $this->getEntityById(
+            'terminal_onboarding_detail',
+            $terminalOnboardingDetail->getId(),
+            true
+        );
+
+        $updatedTerminal2 = $this->getEntityById(
+            'terminal',
+            $terminal2->getId(),
+            true
+        );
+
+        $updatedTerminalOnboardingDetail2 = $this->getEntityById(
+            'terminal_onboarding_detail',
+            $terminalOnboardingDetail2->getId(),
+            true
+        );
+
+        $this->assertEquals($updatedTerminal['status'], 'activated');
+        $this->assertEquals($updatedTerminal['enabled'], true);
+        $this->assertEquals($updatedTerminalOnboardingDetail['status'], 'activated');
+        $this->assertEquals($updatedTerminal2['status'], 'activated');
+        $this->assertEquals($updatedTerminalOnboardingDetail2['status'], 'activated');
+    } 
+
+
     public function testQueryCacheforTerminals()
     {
         config(['app.query_cache.mock' => false]);

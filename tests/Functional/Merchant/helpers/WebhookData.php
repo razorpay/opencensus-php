@@ -1431,6 +1431,35 @@ return [
         ],
     ],
 
+    'testTerminalOnboardingStatusActivatedWebhook'  =>  [
+        'request' => [
+            'url'     => '/terminals/bulk',
+            'method'  => 'PATCH',
+        ],
+        'response'  => [
+            'content'      => [],
+            'status_code'  => 200,
+        ],
+    ],
+
+    'testTerminalOnboardingStatusActivatedWebhookData'  =>  [
+        'mode' => 'test',
+        'event' => [
+            'entity' => 'event',
+            'event' => 'terminal.activated',
+            'contains' => ['terminal'],
+            'payload' => [
+                'terminal' => [
+                    'entity' => [
+                        'entity'            => 'terminal',
+                        'status'            => 'activated',
+                        'enabled'           =>  true,
+                    ],
+                ],
+            ],
+        ],
+    ],
+
     'testPaymentWebhookShouldNotHaveTerminalIdData' =>  [
         'mode' => 'test',
         'event' => [

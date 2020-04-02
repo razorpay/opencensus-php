@@ -2185,6 +2185,29 @@ return [
         ]
     ],
 
+    'testUpdateTerminalsBulk'    =>  [
+        'request' => [
+            'method'  => 'PATCH',
+            'url'     => '/terminals/bulk',
+            'content' => [
+                'terminal_ids' => [
+
+                ],
+                'attributes'  =>  [
+                    'status'  => 'activated'
+                ]
+            ],
+        ],
+        'response' => [
+            'content'   =>  [
+                'total'     => 3,
+                'success'   => 2,
+                'failed'    => 1,
+                'failedIds' =>  ['notexisttermid']
+            ]
+        ]
+    ],
+
     'testQueryCacheforTerminals' => [
         'request' => [
             'content' => [

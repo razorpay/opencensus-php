@@ -104,4 +104,13 @@ class TerminalController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function updateTerminalsBulk()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->updateTerminalsBulk($input);
+
+        return $response;
+    }
 }

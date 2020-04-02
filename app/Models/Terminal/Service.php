@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Terminal;
 
+use App;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
@@ -9,7 +10,10 @@ use RZP\Models\Payment;
 use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Jobs\TerminalsServiceMigrateJob;
+use RZP\Models\TerminalOnboardingDetail;
+
 
 class Service extends Base\Service
 {
@@ -379,6 +383,108 @@ class Service extends Base\Service
             throw $e;
         }
     }
+
+    public function updateTerminalsBulk(array $input)
+    {
+        $app = App::getFacadeRoot();
+
+        $this->trace->info(
+            TraceCode::TERMINAL_BULK_UPDATE_REQUEST,
+            $input
+        );
+
+        $validator = (new Validator());
+
+        $validator->validateInput('updateTerminalsBulk', $input);
+
+        // Although core will run individual validations for gateway, the terminal belongs to, currently we want to allow only, tatus update using bulkupdate api
+        // so adding this custom validation to allow only status update, this can be updated to allow more attributes to be updated
+        $validator->validateInput('updateTerminalsBulkAttributes', $input['attributes']);
+        
+        $enabled = $input['attributes']['enabled'];
+
+        unset($input['attributes']['enabled']);
+
+        if (($input['attributes']['status'] !== Terminal\Status::ACTIVATED) and ($enabled === true))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_TERMINAL_STATUS_SHOULD_BE_ACTIVATED_TO_ENABLE);
+        }
+
+        $terminalIds = $input['terminal_ids'];
+
+        $successCount = $failedCount = 0;
+
+        $failedIds = [];
+
+        foreach ($terminalIds as $terminalId)
+        {
+            try
+            {
+                $terminal = $this->repo->terminal->findOrFailPublic($terminalId);
+
+                // We are not allowing created terminals to be updated because created terminal is yet to be sent to gateway
+                if ($terminal->getStatus() === Terminal\Status::CREATED)
+                {
+                    throw new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_CREATED_TERMINAL_CANNOT_BE_BULK_UPDATED);
+                }
+
+                $this->core()->edit($terminal, $input['attributes']);
+
+                $this->core()->toggle($terminal, $enabled);
+
+                $terminalOnboardingDetail = $terminal->terminalOnboardingDetail;
+
+                if ( ($terminalOnboardingDetail !== null) and isset($input['attributes'][Entity::STATUS]) )
+                {
+                    if ($input['attributes'][Entity::STATUS] === Status::FAILED)
+                    {
+                        $terminalOnboardingDetail->setStatus(TerminalOnboardingDetail\Status::FAILED);
+
+                        $app['events']->fire('api.terminal.failed', ['main' => $terminal]);
+                    }
+                    else if ($input['attributes'][Entity::STATUS] === Status::ACTIVATED)
+                    {
+                        $terminalOnboardingDetail->setStatus(TerminalOnboardingDetail\Status::ACTIVATED);
+                        
+                        $app['events']->fire('api.terminal.activated', ['main' => $terminal]);
+                    }
+                    
+                    $terminalOnboardingDetail->save();    
+                }
+
+                $successCount++;
+            }
+            catch (\Exception $ex)
+            {
+                $this->trace->traceException($ex,
+                Trace::ERROR,
+                TraceCode::TERMINAL_BULK_UPDATE_FAILED,
+                [
+                    'terminal_id'   =>  $terminal->getId()
+                ]);
+
+                $failedCount++;
+
+                $failedIds[] = $terminalId;
+            }
+        }
+
+        $response = [
+            'total'     => count($terminalIds),
+            'success'   => $successCount,
+            'failed'    => $failedCount,
+            'failedIds' => $failedIds,
+        ];
+
+        $this->trace->info(
+            TraceCode::TERMINAL_BULK_UPDATE_RESPONSE,
+            $response
+        );
+
+        return $response;
+    } 
 
     public function terminalsMigrateCron(array $input)
     {

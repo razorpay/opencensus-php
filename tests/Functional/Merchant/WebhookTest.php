@@ -1983,6 +1983,80 @@ class WebhookTest extends TestCase
         $this->startTest();
     }
 
+    public function testTerminalOnboardingStatusActivatedWebhook()
+    {
+        $subMerchant = $this->fixtures->create('merchant');
+
+        $subMerchantId = $subMerchant->getId();
+
+        $this->fixtures->edit('merchant', '10000000000000', ['partner_type' => 'aggregator']);
+
+        // Assign submerchant to partner
+        $accessMapData = [
+            'entity_type'     => 'application',
+            'merchant_id'     => $subMerchantId,
+            'entity_owner_id' => '10000000000000',
+        ];
+
+        $this->fixtures->create('merchant_access_map', $accessMapData);
+
+        $subMerchant->setCategory("742");
+
+        $subMerchant->save();
+
+        $this->fixtures->merchant->addFeatures(
+            [Feature\Constants::TERMINAL_ONBOARDING],
+            '10000000000000'
+        );
+
+        // Adding merchant 10000000000000 's appId (10000000000App) in webhook entity_id
+        $this->fixtures->create('webhook',
+            [
+                'entity_type' => 'application',
+                'entity_id'   => '10000000000App',
+                'url'         => 'https://www.razorpay.co.in',
+                'events'      => [
+                    'terminal.activated' => '1'
+                ]
+            ]);
+
+        $terminal = $this->fixtures->create('terminal',
+            [
+                'merchant_id' => $subMerchantId,
+                'enabled'     => false,
+                'gateway'     => 'worldline',
+                'status'      => 'pending'
+            ]);
+
+        $this->fixtures->create('terminal_onboarding_detail',
+            [
+                'terminal_id'       => $terminal->getId(),
+                'status'            => 'pending',
+            ]);
+
+        $this->ba->adminAuth();
+
+        $testData = $this->testData[__FUNCTION__ . 'Data'];
+
+        $this->mockInfernoFire(function ($data) use ($testData)
+        {
+            $this->assertEquals('terminal.activated', $data['event_name']);
+            $this->assertArrayHasKey('webhook_id', $data);
+
+            $data['event'] = json_decode($data['event'], true);
+            $this->assertArraySelectiveEquals($testData, $data);
+
+            return true;
+        });
+
+        $this->testData[__FUNCTION__]['request']['content'] = [
+            'terminal_ids' => [$terminal->getId()] ,
+            'attributes'   => ['status' => 'activated', 'enabled' => true]
+        ];
+
+        $this->startTest(); 
+    }
+
     public function testWebhookDeactivate()
     {
         Mail::fake();

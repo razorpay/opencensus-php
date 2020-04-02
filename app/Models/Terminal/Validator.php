@@ -117,6 +117,7 @@ class Validator extends Base\Validator
         Payment\Gateway::NACH_CITI,
         Payment\Gateway::HDFC_DEBIT_EMI,
         Payment\Gateway::BT_RBL,
+        Payment\Gateway::WORLDLINE,
     ];
 
     protected static $createValidators = [
@@ -1183,6 +1184,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $worldlineEditTerminalRules = [
+        Entity::STATUS                     => 'sometimes|string|in:failed,activated',
         Entity::MC_MPAN                    => 'sometimes|string',
         Entity::VISA_MPAN                  => 'sometimes|string',
         Entity::RUPAY_MPAN                 => 'sometimes|string',
@@ -1208,6 +1210,16 @@ class Validator extends Base\Validator
         Entity::EMI_SUBVENTION       => 'sometimes|in:customer,merchant',
     ];
 
+    protected static $updateTerminalsBulkRules = [
+        'terminal_ids' => 'required|sequential_array',
+        'attributes'   => 'sometimes|associative_array',
+    ];
+    
+    protected static $updateTerminalsBulkAttributesRules = [
+        Entity::STATUS               => 'sometimes',
+        Entity::ENABLED              => 'required_with:status',
+    ];
+    
     protected static $matchAttributes = [
         Entity::GATEWAY,
         Entity::GATEWAY_ACQUIRER,
