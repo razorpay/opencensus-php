@@ -1157,8 +1157,9 @@ app
         }
 
         if (
-          window.location.hostname !== 'dashboard.razorpay.com' &&
-          !$scope.login.data.captcha
+          !$scope.login.isCaptchaLoaded ||
+          (window.location.hostname !== 'dashboard.razorpay.com' &&
+            !$scope.login.data.captcha)
         ) {
           $scope.login.data.captcha = 'Faked';
         }
