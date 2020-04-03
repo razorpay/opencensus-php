@@ -273,19 +273,6 @@ class SettlementController extends Controller
     }
 
     /**
-     * @return mixed
-     * Gets the amount to be gone for next settlement
-     * which is then sent to the settlements slack channel
-     * for the clarity of FinOps people
-     */
-    public function getSettlementAmount()
-    {
-        $data = $this->service()->nextSettlementAmount();
-
-        return ApiResponse::json($data);
-    }
-
-    /**
      * gets the settlement process details
      * contains intermediate cached data of settlement
      */

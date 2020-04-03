@@ -430,13 +430,6 @@ class Service extends Base\Service
         return $data;
     }
 
-    public function nextSettlementAmount()
-    {
-        $data = (new Settlement\Processor)->settlementAmount();
-
-        return $data;
-    }
-
     public function getProcessDetails(): array
     {
         $redis = $this->app['redis']->connection();
