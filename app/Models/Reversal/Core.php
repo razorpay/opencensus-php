@@ -356,8 +356,27 @@ class Core extends Base\Core
      */
     private function reverseMerchantPayout(Payout\Entity $payout): Entity
     {
+        // fees and tax recovery for direct type of accounts is
+        // handled by fee recovery module. So while creating
+        // debit and credit txn, the balance debited and credited
+        // will be equal to payout amount excluding fees and tax.
+        // Since reversal txn takes amount value from source.
+        // i:e reversal in this case. We are modifying reversal amount
+        // and making it equal to payout amount.
+        // This will also ensure that double credits to the merchant
+        // do not happen as we will just return the payout amount
+        // while marking payout to reverse.
+        if ($payout->balance->isAccountTypeDirect() === true)
+        {
+            $amount = $payout->getAmount();
+        }
+        else
+        {
+            $amount = $payout->getAmount() + $payout->getFees();
+        }
+
         $reversalInput = [
-            Entity::AMOUNT   => $payout->getAmount() + $payout->getFees(),
+            Entity::AMOUNT   => $amount,
             Entity::CURRENCY => $payout->getCurrency(),
             Entity::UTR      => ($payout->getReturnUtr() ?? $payout->getUtr()),
         ];

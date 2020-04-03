@@ -8,6 +8,7 @@ use Carbon\Carbon;
 
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\Payout;
 use RZP\Trace\TraceCode;
 use RZP\Models\External;
 use RZP\Models\Merchant;
@@ -380,6 +381,8 @@ class Core extends Base\Core
 
             $sourceEntity = $this->processSourceEntity($basEntity);
 
+            $this->trace->info(TraceCode::BANKING_ACCOUNT_STATEMENT_SOURCE_CREATION, $sourceEntity->toArray());
+
             $basEntity->source()->associate($sourceEntity);
 
             $basEntity->transaction()->associate($sourceEntity->transaction);
@@ -431,24 +434,50 @@ class Core extends Base\Core
 
         if ($reversal === null)
         {
-            return null;
+            // There can be a possibilty that a payout is not marked reversed due
+            // to some code-or-mapping miss at Mozart layer or if the webhook from
+            // FTS to API is missed. In that case, we will not be able to
+            // find any reversal for the credit row. So we will check if there
+            // is a payout in the system for which this is the credit row.
+            // If a payout is found, then we will also check if it has is marked
+            // reversed, if not we will update the payout as reversed
+            //
+            $existingPayout = $this->fetchExistingPayoutIfPresent($basEntity);
+
+            if ($existingPayout === null)
+            {
+                return null;
+            }
+
+            $this->trace->info(TraceCode::MANUAL_PAYOUT_REVERSAL_CREATE_REQUEST,
+                            [
+                                'payout_id' => $existingPayout->getId()
+                            ]);
+
+            (new Payout\Core)->reversePayout($existingPayout,
+                "Manually marking as reversed");
+
+            $reversal = $existingPayout->reversal;
+
+            $this->trace->info(TraceCode::MANUAL_PAYOUT_REVERSAL_CREATED,
+                [
+                    'payout_id'     => $existingPayout->getId(),
+                    'reversal_id'   => $reversal->getId(),
+                ]);
         }
 
-        //
-        // TODO: Explore creating a reversal entity and its transaction here
-        // if we are able to map the reversal BAS to a payout entity in the system.
-        // Earlier, we had decided that we will not make any changes to any entity
-        // as part of transaction flow. Also, this should be an edge case where we
-        // haven't fetched the status yet, but we fetched the account statement.
-        // But, this can also happen: when we fetched the status, it wasn't
-        // reversed yet, but when we fetched the transaction, it was reversed.
-        // But, for this reason, we decided to run the status check for 7 days
-        // for processed payouts.
-        // We can probably optimize for this later.
-        //
+        if (($reversal !== null) and
+            ($reversal->transaction === null))
+        {
+            $reversal = (new Reversal\Core)->createTransactionFromPayoutReversal($reversal);
 
-        // TODO: Add a test case for this.
-        $reversal = (new Reversal\Core)->createTransactionFromPayoutReversal($reversal);
+            $this->trace->info(TraceCode::REVERSAL_TRANSACTION_CREATED,
+                [
+                    'payout_id'         => $existingPayout->getId(),
+                    'reversal_id'       => $reversal->getId(),
+                    'transaction_id'    => $reversal->transaction->getId(),
+                ]);
+        }
 
         return $reversal;
     }
@@ -540,6 +569,13 @@ class Core extends Base\Core
         //
         if (empty($utr) === false)
         {
+            $payout = $this->repo->payout->fetchFromReturnUtr($utr, $basEntity->getAmount(), $balance->getId());
+
+            if ($payout != null)
+            {
+               return $payout;
+            }
+
             $payouts = $this->repo->payout->fetchFromUtr($utr, $basEntity->getAmount(), $balance->getId());
         }
 

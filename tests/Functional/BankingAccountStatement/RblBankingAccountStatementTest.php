@@ -784,6 +784,192 @@ class RblBankingAccountStatementTest extends TestCase
         $this->assertEquals(Attempt\Status::FAILED, $attempt2['status']);
         $this->assertEquals(FundTransfer\Mode::IMPS, $attempt2['mode']);
     }
+
+    public function testRblReversalFailureMapping()
+    {
+        $channel = Channel::RBL;
+
+        $this->setupForRblPayout($channel);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->assertEquals(590, $payout['fees']);
+        $this->assertEquals(90, $payout['tax']);
+        $this->assertEquals('Bbg7cl6t6I3XA6', $payout['pricing_rule_id']);
+
+        $attempt = $this->getDbLastEntity('fund_transfer_attempt');
+
+        $this->fixtures->edit('payout', $payout['id'], ['status' => 'initiated']);
+
+        $this->fixtures->edit('fund_transfer_attempt', $attempt['id'], ['utr' => '123456']);
+
+        $ftsCreateTransfer = new FtsFundTransfer(
+            EnvMode::TEST,
+            $attempt['id']);
+
+        $ftsCreateTransfer->handle();
+
+        $attempt = $this->getDbLastEntity('fund_transfer_attempt');
+
+        $this->assertEquals(Attempt\Status::INITIATED, $attempt['status']);
+
+        $this->updateFta(
+            $attempt['fts_transfer_id'],
+            $attempt['source'],
+            Attempt\Type::PAYOUT,
+            Attempt\Status::FAILED);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $attempt = $this->getDbLastEntity('fund_transfer_attempt');
+
+        $this->assertEquals(Payout\Status::FAILED, $payout['status']);
+        $this->assertEquals(FundTransfer\Mode::IMPS, $payout['mode']);
+        $this->assertEquals(Attempt\Status::FAILED, $attempt['status']);
+        $this->assertEquals(FundTransfer\Mode::IMPS, $attempt['mode']);
+
+        $mockedResponse = $this->getRblDataResponseForFailureMapping();
+
+        $this->setMozartMockResponse($mockedResponse);
+
+        $this->ba->cronAuth();
+
+        $testData = $this->testData['testRblAccountStatementTxnMappingCase1'];
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->startTest();
+
+        $reversal = $this->getDbLastEntity('reversal');
+
+        $external = $this->getDbLastEntity('external');
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $balance = $this->getDbLastEntity('balance');
+
+        $basEntries = $this->getDbEntities('banking_account_statement', ['account_number' => '2224440041626905']);
+
+        $transactionEntries = $this->getDbEntities('transaction');
+
+        $this->assertEquals(EntityConstants::EXTERNAL, $basEntries[0]['entity_type']);
+        $this->assertEquals($external['id'], $basEntries[0]['entity_id']);
+        $this->assertEquals($external['transaction_id'], $basEntries[0]['transaction_id']);
+        $this->assertEquals($external['banking_account_statement_id'], $basEntries[0]['id']);
+        $this->assertEquals($external['transaction_id'], $transactionEntries[0]['id']);
+
+        $this->assertEquals(EntityConstants::PAYOUT, $basEntries[1]['entity_type']);
+        $this->assertEquals($payout['id'], $basEntries[1]['entity_id']);
+        $this->assertEquals($payout['transaction_id'], $basEntries[1]['transaction_id']);
+        $this->assertEquals($payout['transaction_id'], $transactionEntries[1]['id']);
+
+        $this->assertEquals(EntityConstants::REVERSAL, $basEntries[2]['entity_type']);
+        $this->assertEquals($reversal['id'], $basEntries[2]['entity_id']);
+        $this->assertEquals($reversal['transaction_id'], $basEntries[2]['transaction_id']);
+        $this->assertEquals($reversal['transaction_id'], $transactionEntries[2]['id']);
+        $this->assertEquals('reversed', $payout['status']);
+        $this->assertNotNull($payout['processed_at']);
+
+        // asserting the balance of merchant is credited back
+        $this->assertEquals(21450, $balance['balance']);
+    }
+
+    protected function getRblDataResponseForFailureMapping()
+    {
+        $response = [
+            'data' => [
+                'PayGenRes' => [
+                    'Body' => [
+                        'hasMoreData' => 'N',
+                        'transactionDetails' => [
+                            [
+                                'pstdDate' => '2015-12-29T15:58:12.000',
+                                'transactionSummary' => [
+                                    'instrumentId' => '',
+                                    'txnAmt' => [
+                                        'amountValue' => '114.50',
+                                        'currencyCode' => 'INR'
+                                    ],
+                                    'txnDate' => '2015-12-29T00:00:00.000',
+                                    'txnDesc' => 'DEBIT CARD ANNUAL FEE 2635',
+                                    'txnType' => 'C'
+                                ],
+                                'txnBalance' => [
+                                    'currencyCode' => 'INR',
+                                    'amountValue' => '214.50'
+                                ],
+                                'txnCat' => 'TBI',
+                                'txnId' => '  S429655',
+                                'txnSrlNo' => ' 498',
+                                'valueDate' => '2015-12-29T00:00:00.000'
+                            ],
+                            [
+                                'pstdDate' => '2016-01-05T01:36:33.000',
+                                'transactionSummary' => [
+                                    'instrumentId' => '',
+                                    'txnAmt' => [
+                                        'amountValue' => '100.95',
+                                        'currencyCode' => 'INR'
+                                    ],
+                                    'txnDate' => '2016-01-05T00:00:00.000',
+                                    'txnDesc' => '123456-Z',
+                                    'txnType' => 'D'
+                                ],
+                                'txnBalance' => [
+                                    'currencyCode' => 'INR',
+                                    'amountValue' => '113.55'
+                                ],
+                                'txnCat' => 'TCI',
+                                'txnId' => '  S807068',
+                                'txnSrlNo' => '  49',
+                                'valueDate' => '2016-01-05T00:00:00.000'
+                            ],
+                            [
+                                'pstdDate' => '2016-01-05T01:36:33.000',
+                                'transactionSummary' => [
+                                    'instrumentId' => '',
+                                    'txnAmt' => [
+                                        'amountValue' => '100.95',
+                                        'currencyCode' => 'INR'
+                                    ],
+                                    'txnDate' => '2016-01-05T00:00:00.000',
+                                    'txnDesc' => 'R-123456-Z',
+                                    'txnType' => 'C'
+                                ],
+                                'txnBalance' => [
+                                    'currencyCode' => 'INR',
+                                    'amountValue' => '214.50'
+                                ],
+                                'txnCat' => 'TCI',
+                                'txnId' => '  S807068',
+                                'txnSrlNo' => '  50',
+                                'valueDate' => '2016-01-05T00:00:00.000'
+                            ],
+                        ]
+                    ],
+                    'Header' => [
+                        'Approver_ID' => '',
+                        'Corp_ID' => 'RAZORPAY',
+                        'Error_Cde' => '',
+                        'Error_Desc' => '',
+                        'Status' => 'SUCCESS',
+                        'TranID' => '1'
+                    ],
+                    'Signature' => [
+                        'Signature' => 'Signature'
+                    ]
+                ],
+            ],
+            'error' => null,
+            'external_trace_id' => '',
+            'mozart_id' => 'bjt1l8jc1osqk0jtadrg',
+            'next' => [],
+            'success' => true
+        ];
+
+        return $response;
+    }
+
     protected function setupForRblPayout($channel = Channel::RBL)
     {
         $this->ba->privateAuth();

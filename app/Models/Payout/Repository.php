@@ -61,6 +61,15 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function fetchFromReturnUtr($utr, $amount, $balanceId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::BALANCE_ID, $balanceId)
+                    ->where(Entity::AMOUNT, $amount)
+                    ->where(Entity::RETURN_UTR, $utr)
+                    ->first();
+    }
+
     public function fetchFromCmsRefNumber($cmsRefNumber, $amount, $balanceId)
     {
         $ftaTable = $this->repo->fund_transfer_attempt->getTableName();

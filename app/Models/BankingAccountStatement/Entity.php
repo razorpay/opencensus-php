@@ -323,18 +323,13 @@ class Entity extends Base\PublicEntity
     {
         $description = $this->getDescription();
 
-        $regex = self::DEBIT_REGEX;
-
-        if ($this->isTypeCredit() === true)
-        {
-            $regex = self::CREDIT_REGEX;
-        }
+        $regex = ($this->isTypeCredit() === true) ? self::CREDIT_REGEX : self::DEBIT_REGEX;
 
         $match = preg_match($regex, $description, $matches);
 
         if ($match === 1)
         {
-            $match = $matches[1];
+            $match = ($regex === self::CREDIT_REGEX) ? $matches[2] : $matches[1];
         }
 
         // Could be an empty string match

@@ -94,7 +94,6 @@ class Status
         ],
         self::FAILED => [
             // this is empty because it's the final status
-            // need this to check state transitions
         ],
     ];
 

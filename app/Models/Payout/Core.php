@@ -1362,7 +1362,7 @@ class Core extends Base\Core
         }
     }
 
-    protected function reversePayout(Entity $payout, string $reverseReason = null)
+    public function reversePayout(Entity $payout, string $reverseReason = null)
     {
         $this->trace->info(
             TraceCode::PAYOUT_REVERSAL_INITIATED,
@@ -1405,15 +1405,22 @@ class Core extends Base\Core
 
                         $payout->setFailureReason($reverseReason);
 
-                        // To be set after failure_reason for metrics purpose
-                        $payout->setStatus(Status::REVERSED);
-
-                        $this->repo->saveOrFail($payout);
-
                         if ($payout->isBalanceAccountTypeDirect() === true)
                         {
                             $this->handleReversalTransactionForDirectBanking($reversal);
                         }
+                        // For certain cases like  where a payout is being makred
+                        // as reversed  through recon flows(as in RBL), the above
+                        // method handleReversalTransactionForDirectBanking updates
+                        // the payout status to processed (to indicate the payout
+                        // got processed at sometime by setting processed_at,
+                        // so when the call returns from above method, we end up
+                        // override payout status. In order to ensure status of
+                        // payout is reversed in the system, we are setting the
+                        // status at the end
+                        $payout->setStatus(Status::REVERSED);
+
+                        $this->repo->saveOrFail($payout);
                     });
             },
             self::PAYOUT_REVERSAL_MUTEX_LOCK_TIMEOUT,
