@@ -1,0 +1,61 @@
+<?php
+namespace RZP\Reconciliator\Isg\SubReconciliator;
+
+use RZP\Reconciliator\Base\SubReconciliator;
+use RZP\Reconciliator\Base;
+
+class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
+{
+    const BLACKLISTED_COLUMNS = [];
+
+    const COLUMN_PAYMENT_AMOUNT = ReconciliationFields::FINAL_AMOUNT;
+
+    public function getPaymentId(array $row)
+    {
+        return $row[ReconciliationFields::ORDER_ID] ?? null;
+    }
+
+    public function getReferenceNumber($row)
+    {
+        return $row[ReconciliationFields::RRN] ?? null;
+    }
+
+    public function getArn($row)
+    {
+        return $this->getReferenceNumber($row);
+    }
+
+    protected function getGatewayServiceTax($row)
+    {
+        if (isset($row[ReconciliationFields::GST]) === false)
+        {
+            $this->reportMissingColumn($row, ReconciliationFields::GST);
+        }
+
+            return SubReconciliator\Helper::getIntegerFormattedAmount($row[ReconciliationFields::GST]);
+    }
+
+    protected function getAuthCode($row)
+    {
+        $authCode = $row[ReconciliationFields::APP_CODE] ?? null;
+
+        if ($authCode === null)
+        {
+            $this->reportMissingColumn($row, ReconciliationFields::APP_CODE);
+
+            return null;
+        }
+
+        // If the value is 088232 in sheet, the parsed value would be 88232. This prepends the required 0s
+        return sprintf("%06d", $authCode);
+    }
+
+    protected function getGatewayFee($row)
+    {
+        if (isset($row[ReconciliationFields::MDR]) === false)
+        {
+            $this->reportMissingColumn($row, ReconciliationFields::MDR);
+        }
+        return SubReconciliator\Helper::getIntegerFormattedAmount($row[ReconciliationFields::MDR]);
+    }
+}

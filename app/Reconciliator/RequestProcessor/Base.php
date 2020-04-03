@@ -101,7 +101,7 @@ class Base extends Core
     const CARD_FSS_BOB           = 'CardFssBob';
     const CARD_FSS_SBI           = 'CardFssSbi';
     const ATOM                   = 'Atom';
-    const ISG                    = 'isg';
+    const ISG                    = 'Isg';
     const UPI_HDFC               = 'UpiHdfc';
     const UPI_HULK               = 'UpiHulk';
     const UPI_AXIS               = 'UpiAxis';
@@ -176,7 +176,7 @@ class Base extends Core
         self::UPI_HDFC               => ['upi@hdfcbank.net'],
         self::UPI_HULK               => [],
         self::AMEX                   => [],
-        self::ISG                    => [],
+        self::ISG                    => ['Helpdesk.Upiacquiring@kotak.com'],
         self::PHONEPE                => [],
         self::PAYLATER_ICICI         => [],
         self::CARDLESS_EMI_FLEXMONEY => ['tejal.gangadhar@flexmoney.in', 'prahalad.rao@flexmoney.in'],

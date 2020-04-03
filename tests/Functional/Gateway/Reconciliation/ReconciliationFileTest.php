@@ -3064,6 +3064,76 @@ class ReconciliationFileTest extends TestCase
         $this->assertBatchStatus(Status::PROCESSED);
     }
 
+    public function testIsgCpsReconPaymentFile()
+    {
+        $this->fixtures->create('terminal:shared_fss_terminal');
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $payment = $this->getNewPaymentEntity(false, true);
+
+        $this->assertNull($payment['reference1']);
+
+        $gatewayPayment = $this->getDbLastEntityToArray('card_fss');
+
+        // Make cps route = 2
+        $this->fixtures->payment->edit($payment['id'], ['cps_route' => 2]);
+        $this->fixtures->edit('card_fss', $gatewayPayment['id'], ['ref' => null]);
+        $this->gateway = 'isg';
+
+        $entries[] = $this->overrideIsgRecon($gatewayPayment);
+
+        $file = $this->writeToExcelFile($entries, 'Purchase_MPR');
+
+        $response = $this->runForFiles([$file], 'Isg');
+        $transactionEntity = $this->getDbLastEntity('transaction');
+
+        $this->assertNotNull($transactionEntity['reconciled_at']);
+        $this->assertNotNull($transactionEntity['reconciled_type']);
+
+        $this->assertNotNull($transactionEntity['settled_at']);
+        $this->assertNotNull($transactionEntity['gateway_fee']);
+        $this->assertNotNull($transactionEntity['gateway_service_tax']);
+
+        $this->assertBatchStatus(Status::PROCESSED);
+    }
+
+    public function testIsgCpsRefundReconFile()
+    {
+        $this->fixtures->create('terminal:shared_fss_terminal');
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $this->doAuthAndCapturePayment($payment);
+
+        $payment = $this->getDbLastEntity('payment');
+
+        $this->refundPayment($payment->getPublicId());
+
+        $refund = $this->getDbLastEntity('refund');
+
+        $gatewayRefund = $this->getDbLastEntityToArray('card_fss');
+
+        $this->fixtures->payment->edit($payment['id'], ['cps_route' => 2]);
+        $this->gateway = 'isg';
+
+        $entries[] = $this->overrideIsgRecon($gatewayRefund, 'refund', $refund['id']);
+
+        $file = $this->writeToExcelFile($entries, 'Refund_MPR');
+
+        $response = $this->runForFiles([$file], 'Isg');
+        $transactionEntity = $this->getDbLastEntity('transaction');
+
+        $this->assertNotNull($transactionEntity['reconciled_at']);
+        $this->assertNotNull($transactionEntity['reconciled_type']);
+
+        $this->assertNotNull($transactionEntity['settled_at']);
+
+        $this->assertBatchStatus(Status::PROCESSED);
+    }
+
     public function testHdfcIsgBharatQrReconRefund()
     {
         $this->fixtures->create('terminal:bharat_qr_isg_terminal');
@@ -3364,6 +3434,33 @@ class ReconciliationFileTest extends TestCase
         $this->assertTrue($updatedPayment['gateway_captured']);
 
         $this->assertBatchStatus(Status::PROCESSED);
+    }
+
+    private function overrideIsgRecon($gatewayInput, $reconType = 'payment', $refundId = '')
+    {
+        if ($reconType === 'payment') {
+            $entries = $this->testData['facades']['testIsgPaymentRecon'];
+        }
+        else {
+            $entries = $this->testData['facades']['testIsgRefundRecon'];
+        }
+
+        $entries['ORDER_ID'] = $gatewayInput['payment_id'];
+        $entries['APP_CODE'] = $gatewayInput['auth'];
+
+
+        if ($reconType === 'payment') {
+
+            $entries['FINAL_AMOUNT'] = number_format($gatewayInput['amount'] / 100, 2);
+
+        }
+        else {
+            $entries['REFUND_CANCEL_ID'] = $refundId;
+
+            $entries['AMOUNT'] = number_format($gatewayInput['amount'] / 100, 2);
+
+        }
+        return $entries;
     }
 
     private function overrideFssBobRecon(array $gatewayPayment, string $entityId, $transactionType = 'Purchase')
