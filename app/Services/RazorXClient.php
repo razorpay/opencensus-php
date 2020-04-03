@@ -55,6 +55,14 @@ class RazorXClient
 
     protected $env;
 
+    public static $whiteListedCardPs = [
+        'card_payments_gateway_routing_hdfc',
+        'card_payments_gateway_routing_hitachi',
+        'card_payments_gateway_routing_paysecure',
+        'card_payments_gateway_routing_card_fss',
+        'card_payments_gateway_routing_hitachi_mpi_blade',
+    ];
+
     /**
      * @var string
      * localUniqueId will be a combination of the id, feature_flag and the mode.
@@ -116,6 +124,13 @@ class RazorXClient
 
     public function getTreatment(string $id, string $featureFlag, string $mode): string
     {
+        $variant = $this->checkWhitelistedExperimentsForCardPs($featureFlag);
+
+        if ($variant !== null)
+        {
+            return $variant;
+        }
+
         $this->localUniqueId = self::getLocalUniqueId($id, $featureFlag, $mode);
 
         $storedVariant = $this->getStoredVariant();
@@ -135,6 +150,22 @@ class RazorXClient
         }
 
         return $this->getVariantFromRazorXService($id, $featureFlag, $mode);
+    }
+
+    protected function checkWhitelistedExperimentsForCardPs($feature)
+    {
+        if (($this->env !== 'func') and
+            ($this->env !== 'automation'))
+        {
+            return null;
+        }
+
+        if (in_array($feature, self::$whiteListedCardPs, false) === false)
+        {
+            return null;
+        }
+
+        return 'cardps';
     }
 
     /**
