@@ -30,8 +30,6 @@ class Raven extends Base\Core
 
         try
         {
-            $this->trace->info(TraceCode::RAVEN_REQUEST, $request);
-
             $this->sns->publish(json_encode($request));
         }
         catch (\Throwable $e)
