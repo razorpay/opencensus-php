@@ -79,6 +79,7 @@ class Table
     const SETTLEMENT_BUCKET         = 'settlement_bucket';
     const SETTLEMENT_TRANSFER       = 'settlement_transfer';
     const SETTLEMENT_DESTINATION    = 'settlement_destination';
+    const BANK_TRANSFER_HISTORY     = 'bank_transfer_history';
 
     // Subscriptions Tables
     const SUBSCRIPTION                   = 'subscriptions';

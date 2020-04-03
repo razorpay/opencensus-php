@@ -134,6 +134,7 @@ class Entity
     const CUSTOMER_TRANSACTION       = 'customer_transaction';
     const BANKING_ACCOUNT_STATE      = 'banking_account_state';
     const FUND_TRANSFER_ATTEMPT      = 'fund_transfer_attempt';
+    const BANK_TRANSFER_HISTORY      = 'bank_transfer_history';
     const SETTLEMENT_DESTINATION     = 'settlement_destination';
     const BANKING_ACCOUNT_DETAIL     = 'banking_account_detail';
     const FUND_ACCOUNT_VALIDATION    = 'fund_account_validation';
