@@ -167,21 +167,8 @@ class PaymentCreateDCCTest extends TestCase
 
     public function testPaymentFlowsCurrencyInfoWithToken()
     {
-        $token = $this->fixtures->create('token', [
-            'method'  => 'card',
-            'card_id' => '100000001lcard',
-            'bank'    => null,
-            'wallet'  => null
-        ]);
-
-        $card = $this->getDbEntityById('card', $token['card_id']);
-
-        $this->fixtures->iin->edit($card['iin'], ['country' => 'US', 'network' => 'Visa']);
-
-        $tokenId = 'token_' . $token['id'];
-
         $flowsData = [
-            'content' => ['amount' => 50000, 'currency' => 'INR', 'token' => $tokenId],
+            'content' => ['amount' => 50000, 'currency' => 'INR', 'token' => $this->getTokenIdForDCC()],
             'method'  => 'POST',
             'url'     => '/payment/flows',
         ];
@@ -195,6 +182,43 @@ class PaymentCreateDCCTest extends TestCase
         $this->assertEquals("USD", $cardCurrency);
         $this->assertNotNull($responseContent['all_currencies']);
         $this->assertNotNull($currencyRequestId);
+    }
+
+    public function testGetPaymentFlowsCurrencyInfoWithToken()
+    {
+        $flowsData = [
+            'content' => ['amount' => 50000, 'currency' => 'INR', 'token' => $this->getTokenIdForDCC()],
+            'method'  => 'GET',
+            'url'     => '/payment/flows',
+        ];
+
+        $this->ba->publicAuth();
+
+        $response = $this->sendRequest($flowsData);
+        $responseContent = json_decode($response->getContent(), true);
+
+        $cardCurrency = $responseContent['card_currency'];
+        $currencyRequestId = $responseContent['currency_request_id'];
+
+        $this->assertEquals("USD", $cardCurrency);
+        $this->assertNotNull($responseContent['all_currencies']);
+        $this->assertNotNull($currencyRequestId);
+    }
+
+    private function getTokenIdForDCC()
+    {
+        $token = $this->fixtures->create('token', [
+            'method'  => 'card',
+            'card_id' => '100000001lcard',
+            'bank'    => null,
+            'wallet'  => null
+        ]);
+
+        $card = $this->getDbEntityById('card', $token['card_id']);
+
+        $this->fixtures->iin->edit($card['iin'], ['country' => 'US', 'network' => 'Visa']);
+
+        return 'token_' . $token['id'];
     }
 
     private function getDefaultPaymentFlowsRequestData($iin = null)

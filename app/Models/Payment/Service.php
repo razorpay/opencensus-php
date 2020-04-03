@@ -1162,6 +1162,19 @@ class Service extends Base\Service
     {
         $merchant = $this->merchant;
 
+        if (isset($input['token']) === true)
+        {
+            $tokenId = $input['token'];
+
+            $token = $this->repo->token->findByPublicId($tokenId);
+
+            if (($token !== null) and
+                ($token->hasCard() === true))
+            {
+                $input['iin'] = $token->card->getIin();
+            }
+        }
+
         (new Payment\Validator)->validateInput('get_flows', $input);
 
         $iinEntity = $this->repo->iin->find($input['iin']);
@@ -1254,21 +1267,6 @@ class Service extends Base\Service
         else if (isset($input['iin']) === true)
         {
             $iin = $input['iin'];
-        }
-        else if (isset($input['token']) === true)
-        {
-            $tokenId = $input['token'];
-
-            $token = $this->repo->token->findByPublicId($tokenId);
-
-            if ($token !== null and $token->hasCard() === true)
-            {
-                $iin = $token->card->getIin();
-            }
-        }
-        else
-        {
-            throw new Exception\BadRequestValidationFailureException('invalid input');
         }
 
         $input['iin'] = $iin;
