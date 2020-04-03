@@ -317,7 +317,7 @@ class SubReconciliate extends Base\Core
         $row[self::RECON_TYPE]              = $reconType;
         $row[self::RECON_STATUS]            = '';
         $row[self::ALREADY_RECONCILED_AT]   = '';
-        $row[self::RECON_ERROR_MSG]         = '';
+        $row[self::RECON_ERROR_MSG]         = null;
         $row[self::RZP_MERCHANT_ID]         = '';
         $row[self::PROCESSED_AT]            = $processed_at;
         $row[self::BATCH_ID]                = '';
