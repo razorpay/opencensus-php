@@ -1486,6 +1486,24 @@ class MerchantTest extends TestCase
         });
     }
 
+    public function testAddBankAccountWithInvalidBeneficiaryNameInjection()
+    {
+        Mail::fake();
+
+        $this->ba->proxyAuth('rzp_test_10000000000000');
+
+        $this->startTest();
+    }
+
+    public function testAddBankAccountWithInvalidBeneficiaryName()
+    {
+        Mail::fake();
+
+        $this->ba->proxyAuth('rzp_test_10000000000000');
+
+        $this->startTest();
+    }
+
     public function testAddBankAccountWithAccountType()
     {
         Mail::fake();

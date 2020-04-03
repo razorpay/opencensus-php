@@ -27,7 +27,7 @@ class Validator extends Base\Validator
         Detail\Entity::ADDRESS_PROOF_URL        => 'sometimes',
         Entity::IFSC_CODE                       => 'required|alpha_num|size:11',
         Entity::ACCOUNT_NUMBER                  => 'required|regex:/^[a-zA-Z0-9-]+$/|between:5,35|custom',
-        Entity::BENEFICIARY_NAME                => 'required|between:4,120|string',
+        Entity::BENEFICIARY_NAME                => 'required|regex:/^[a-zA-Z0-9][a-zA-Z0-9-&\'._()\s–\/]+/|between:4,120|string',
         Entity::ACCOUNT_TYPE                    => 'sometimes|nullable|string|custom',
         Entity::BENEFICIARY_ADDRESS1            => 'sometimes|max:30',
         Entity::BENEFICIARY_ADDRESS2            => 'sometimes|max:30',
@@ -52,37 +52,37 @@ class Validator extends Base\Validator
     protected static $addVirtualBankAccountRules = [
         Entity::IFSC_CODE             => 'sometimes|alpha_num|nullable|max:13',
         Entity::ACCOUNT_NUMBER        => 'required|regex:/^[a-zA-Z0-9-]+$/|between:4,20',
-        Entity::BENEFICIARY_NAME      => 'required|max:40|string',
+        Entity::BENEFICIARY_NAME      => 'required|regex:/^[a-zA-Z0-9][a-zA-Z0-9-&\'._()\s–\/]+/|max:40|string',
     ];
 
     protected static $editVirtualBankAccountRules = [
         Entity::IFSC_CODE             => 'sometimes|alpha_num|nullable|max:13',
         Entity::ACCOUNT_NUMBER        => 'sometimes|regex:/^[a-zA-Z0-9-]+$/|between:5,20',
-        Entity::BENEFICIARY_NAME      => 'sometimes|max:40|string',
+        Entity::BENEFICIARY_NAME      => 'sometimes|regex:/^[a-zA-Z0-9][a-zA-Z0-9-&\'._()\s–\/]+/|max:40|string',
     ];
 
     protected static $addPayoutDestinationRules = [
         Entity::IFSC_CODE             => 'required|alpha_num|size:11',
         Entity::ACCOUNT_NUMBER        => 'required|regex:/^[a-zA-Z0-9-]+$/|between:5,35',
-        Entity::BENEFICIARY_NAME      => 'required|max:40|string',
+        Entity::BENEFICIARY_NAME      => 'required|regex:/^[a-zA-Z0-9][a-zA-Z0-9-&\'._()\s–\/]+/|max:40|string',
     ];
 
     protected static $addBankTransferRules = [
         Entity::IFSC_CODE             => 'required|alpha_num|size:11',
         Entity::ACCOUNT_NUMBER        => 'required|regex:/^[a-zA-Z0-9-]+$/|between:5,35',
-        Entity::BENEFICIARY_NAME      => 'sometimes|max:40|string',
+        Entity::BENEFICIARY_NAME      => 'sometimes|regex:/^[a-zA-Z0-9][a-zA-Z0-9-&\'._()\s–\/]+/|max:40|string',
     ];
 
     protected static $addFundAccountBankAccountRules = [
         Entity::IFSC           => 'required|alpha_num|size:11',
         Entity::ACCOUNT_NUMBER => 'required|regex:/^[a-zA-Z0-9-]+$/|between:5,35',
-        Entity::NAME           => 'required|between:4,120|string',
+        Entity::NAME           => 'required|regex:/^[a-zA-Z0-9][a-zA-Z0-9-&\'._()\s–\/]+/|between:4,120|string',
     ];
 
     protected static $addTpvBankAccountRules = [
         Entity::IFSC            => 'required|alpha_num|size:11',
         Entity::ACCOUNT_NUMBER  => 'required|regex:/^[a-zA-Z0-9-]+$/|between:5,35',
-        Entity::NAME            => 'sometimes|max:60|string',
+        Entity::NAME            => 'sometimes|regex:/^[a-zA-Z0-9][a-zA-Z0-9-&\'._()\s–\/]+/|max:60|string',
     ];
 
     protected static $addBankAccountValidators = [

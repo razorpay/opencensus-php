@@ -19,6 +19,14 @@ class Validator extends Base\Validator
     const FETCH_GATEWAY_BALANCE    = 'fetch_gateway_balance';
     const DISPATCH_GATEWAY_BALANCE = 'dispatch_gateway_balance';
 
+    /**
+     * Regular expression for valid names:
+     * - Must start with a-z/A-Z/0-9
+     * - Must end with a-z/A-Z/0-9/./)
+     * - Can have anything from a-z/A-Z/0-9/'/-/&/–/./_/(/)/\/space in between
+     */
+    const NAME_REGEX = '/(^[a-zA-Z0-9][a-zA-Z0-9-&\'._()\s–\/]+[a-zA-Z0-9.)]$)/';
+
     protected static $preProcessRules = [
         Entity::CHANNEL => 'required|string|custom',
     ];
@@ -39,7 +47,7 @@ class Validator extends Base\Validator
         Entity::BENEFICIARY_ADDRESS3            => 'sometimes|nullable|max:60',
         Entity::BENEFICIARY_MOBILE              => 'sometimes|nullable|numeric|digits_between:10,12',
         Entity::BENEFICIARY_EMAIL               => 'sometimes|nullable|email',
-        Entity::BENEFICIARY_NAME                => 'sometimes|nullable|between:1,120|string',
+        Entity::BENEFICIARY_NAME                => 'sometimes|nullable|between:1,120|custom',
     ];
 
     protected static $createRules = [
@@ -61,7 +69,7 @@ class Validator extends Base\Validator
         Entity::BENEFICIARY_ADDRESS3            => 'sometimes|nullable|string',
         Entity::BENEFICIARY_MOBILE              => 'sometimes|nullable|string',
         Entity::BENEFICIARY_EMAIL               => 'sometimes|nullable|string',
-        Entity::BENEFICIARY_NAME                => 'sometimes|nullable|string',
+        Entity::BENEFICIARY_NAME                => 'sometimes|nullable|custom',
     ];
 
     protected static $rblCreateRules = [
@@ -87,7 +95,7 @@ class Validator extends Base\Validator
         Entity::BENEFICIARY_ADDRESS3            => 'filled|string',
         Entity::BENEFICIARY_MOBILE              => 'filled|string',
         Entity::BENEFICIARY_EMAIL               => 'filled|string',
-        Entity::BENEFICIARY_NAME                => 'filled|string',
+        Entity::BENEFICIARY_NAME                => 'filled|custom',
         Entity::USERNAME                        => 'filled|string',
         Entity::PASSWORD                        => 'filled|string',
         Entity::REFERENCE1                      => 'filled|string',
@@ -109,7 +117,7 @@ class Validator extends Base\Validator
         Entity::BENEFICIARY_ADDRESS3            => 'filled|string',
         Entity::BENEFICIARY_MOBILE              => 'filled|string',
         Entity::BENEFICIARY_EMAIL               => 'filled|string',
-        Entity::BENEFICIARY_NAME                => 'filled|string',
+        Entity::BENEFICIARY_NAME                => 'filled|custom',
         Entity::INTERNAL_COMMENT                => 'sometimes|max:255',
         Entity::DETAILS                         => 'sometimes|array',
     ];
@@ -266,6 +274,21 @@ class Validator extends Base\Validator
                 [
                     Entity::CHANNEL => $channel,
                 ]);
+        }
+    }
+
+    protected function validateBeneficiaryName($attribute, $value)
+    {
+        if (empty($value) === false)
+        {
+            $match = preg_match(self::NAME_REGEX, trim($value));
+
+            if ($match !== 1)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'The beneficiary name field is invalid.',
+                    Entity::BENEFICIARY_NAME);
+            }
         }
     }
 }
