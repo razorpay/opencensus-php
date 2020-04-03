@@ -403,7 +403,7 @@ class InvoiceTest extends TestCase
         $this->startTest();
         $invoice = $this->getLastEntity('invoice');
 
-        $this->assertEquals('cust_100022customer', $invoice['customer_id']);
+        $this->assertNotEquals('cust_100022customer', $invoice['customer_id']);
     }
 
     public function testCreateLinkCustomerContactEmailNullOldMerchantFlagEnabled()

@@ -585,8 +585,7 @@ class Core extends Base\Core
                 $customer->merchant);
         }
         else if(($customer->getEmail() !== null) or
-            ($customer->getContact() !== null) or
-            ($customer->merchant->createCustomerOnContactEmailNull() === true))
+            ($customer->getContact() !== null) )
         {
             $existingCustomer = $this->repo->customer->findByContactEmailAndMerchant(
                 $customer->getContact(),
