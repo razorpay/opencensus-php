@@ -1680,6 +1680,7 @@ class TLD
         'con',
         'org.',
         'nj',
+        'azurewebsites.net',
     ];
 
     public static function isValid($tld)
