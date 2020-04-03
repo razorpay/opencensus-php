@@ -31,7 +31,7 @@ class CreateBankTransferHistory extends Migration
             $table->string(Entity::PAYER_ACCOUNT, 255)
                   ->nullable();
 
-            $table->char(Entity::PAYER_IFSC, 255)
+            $table->string(Entity::PAYER_IFSC, 255)
                   ->nullable();
 
             $table->char(Entity::PAYER_BANK_ACCOUNT_ID, Entity::ID_LENGTH)
