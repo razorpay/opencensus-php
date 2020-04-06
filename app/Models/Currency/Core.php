@@ -2,7 +2,6 @@
 
 namespace RZP\Models\Currency;
 
-use RZP\Exception;
 use RZP\Models\Base;
 
 class Core extends Base\Core

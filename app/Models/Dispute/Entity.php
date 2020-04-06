@@ -6,6 +6,7 @@ use App;
 
 use RZP\Models\Base;
 use RZP\Models\Payment;
+use RZP\Models\Currency;
 use RZP\Models\Merchant;
 use RZP\Models\Adjustment;
 use RZP\Models\Transaction;
@@ -69,6 +70,8 @@ class Entity extends Base\PublicEntity
     const SKIP_DEDUCTION          = 'skip_deduction';
     const CONTACT                 = 'contact';
 
+    const DISPUTE_PRECISION_FACTOR = 1000000;
+
     protected static $sign = 'disp';
 
     protected $entity = 'dispute';
@@ -82,7 +85,8 @@ class Entity extends Base\PublicEntity
     protected $fillable = [
         self::ID,
         self::AMOUNT,
-        self::CURRENCY,
+        self::GATEWAY_AMOUNT,
+        self::GATEWAY_CURRENCY,
         self::GATEWAY_DISPUTE_ID,
         self::GATEWAY_DISPUTE_STATUS,
         self::DEDUCT_AT_ONSET,
@@ -107,6 +111,11 @@ class Entity extends Base\PublicEntity
         self::TRANSACTION_ID,
         self::AMOUNT,
         self::CURRENCY,
+        self::BASE_AMOUNT,
+        self::BASE_CURRENCY,
+        self::GATEWAY_AMOUNT,
+        self::GATEWAY_CURRENCY,
+        self::CONVERSION_RATE,
         self::AMOUNT_DEDUCTED,
         self::AMOUNT_REVERSED,
         self::DEDUCT_AT_ONSET,
@@ -151,6 +160,8 @@ class Entity extends Base\PublicEntity
 
     protected $casts = [
         self::AMOUNT              => 'int',
+        self::BASE_AMOUNT         => 'int',
+        self::GATEWAY_AMOUNT      => 'int',
         self::AMOUNT_DEDUCTED     => 'int',
         self::AMOUNT_REVERSED     => 'int',
         self::DEDUCT_AT_ONSET     => 'bool',
@@ -169,9 +180,16 @@ class Entity extends Base\PublicEntity
 
     protected $defaults = [
         self::STATUS          => Status::OPEN,
+        self::BASE_CURRENCY   => Currency\Currency::INR,
         self::DEDUCT_AT_ONSET => false,
         self::AMOUNT_DEDUCTED => 0,
-        self::AMOUNT_REVERSED => 0
+        self::AMOUNT_REVERSED => 0,
+    ];
+
+    protected static $generators = [
+        self::BASE_AMOUNT,
+        self::AMOUNT,
+        self::CURRENCY,
     ];
 
     protected $amounts = [
@@ -179,6 +197,77 @@ class Entity extends Base\PublicEntity
         self::AMOUNT_REVERSED,
         self::AMOUNT_DEDUCTED,
     ];
+
+    // ----------------------- Generators --------------------------------------
+
+    public function generateBaseAmount($input)
+    {
+        if (isset($input['gateway_amount']) === false)
+        {
+            return;
+        }
+
+        $baseAmount = (new Currency\Core)->getBaseAmount(
+                                $input[self::GATEWAY_AMOUNT],
+                                $input[self::GATEWAY_CURRENCY]);
+
+        // 1% markup charged only when currency conversion happens.
+        if ($input[self::GATEWAY_CURRENCY] !== Currency\Currency::INR)
+        {
+            $baseAmount = $baseAmount * (1.01);
+        }
+
+        if (($this->payment->getCurrency() === Currency\Currency::INR) and
+            ($baseAmount > $this->payment->getAmount()))
+        {
+            $baseAmount = $this->payment->getAmount();
+        }
+
+        $this->setAttribute(self::BASE_AMOUNT, $baseAmount);
+    }
+
+    public function generateAmount($input)
+    {
+        if (isset($input['gateway_amount']) === false)
+        {
+            return;
+        }
+
+        $gatewayCurrency = $input[self::GATEWAY_CURRENCY];
+        $paymentCurrency = $this->payment->getCurrency();
+
+        $disputeAmount = $input[self::GATEWAY_AMOUNT];
+        $conversionRate = null;
+
+        if ($gatewayCurrency !== $paymentCurrency)
+        {
+            $conversionRate = (new Currency\Core)->getConversionRate($gatewayCurrency, $paymentCurrency);
+
+            $conversionRate = (int) ceil($conversionRate * self::DISPUTE_PRECISION_FACTOR);
+
+            $disputeAmount = (new Currency\Core)->convertAmount(
+                            $input[self::GATEWAY_AMOUNT],
+                            $gatewayCurrency,
+                            $paymentCurrency);
+
+            $disputeAmount = $disputeAmount * (1.01);
+        }
+
+        if ($disputeAmount > $this->payment->getAmount())
+        {
+            $disputeAmount = $this->payment->getAmount();
+        }
+
+        $this->setAttribute(self::AMOUNT, $disputeAmount);
+        $this->setAttribute(self::CONVERSION_RATE, $conversionRate);
+    }
+
+    public function generateCurrency($input)
+    {
+        $this->setAttribute(self::CURRENCY, $this->payment->getCurrency());
+    }
+
+    // ----------------------- Generators Ends----------------------------------
 
     // ----------------------- Setters -----------------------------------------
 
@@ -192,9 +281,34 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::AMOUNT_REVERSED, $amount);
     }
 
+    public function setAmount(int $amount)
+    {
+        $this->setAttribute(self::AMOUNT, $amount);
+    }
+
     public function setCurrency(string $currency)
     {
         $this->setAttribute(self::CURRENCY, $currency);
+    }
+
+    public function setGatewayAmount(int $amount)
+    {
+        $this->setAttribute(self::GATEWAY_AMOUNT, $amount);
+    }
+
+    public function setGatewayCurrency(string $currency)
+    {
+        $this->setAttribute(self::GATEWAY_CURRENCY, $currency);
+    }
+
+    public function setBaseAmount(int $amount)
+    {
+        $this->setAttribute(self::BASE_AMOUNT, $amount);
+    }
+
+    public function setBaseCurrency(int $currency)
+    {
+        $this->setAttribute(self::BASE_CURRENCY, $currency);
     }
 
     public function setReasonDescription(string $description)
@@ -217,20 +331,20 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::EXPIRES_ON, $time);
     }
 
-    public function setPublicPaymentIdAttribute(array & $attributes)
+    public function setPublicPaymentIdAttribute(array &$attributes)
     {
         $attributes[self::PAYMENT_ID] =
             Payment\Entity::getSignedId($this->getAttribute(self::PAYMENT_ID));
     }
 
-    public function setPublicAmountDeductedAttribute(array & $attributes)
+    public function setPublicAmountDeductedAttribute(array &$attributes)
     {
         $netAmount = abs($this->getAmountDeducted() - $this->getAmountReversed());
 
         $attributes[self::AMOUNT_DEDUCTED] = $netAmount;
     }
 
-    public function setPublicRespondByAttribute(array & $attributes)
+    public function setPublicRespondByAttribute(array &$attributes)
     {
         $attributes[self::RESPOND_BY] = (int) $this->getExpiresOn();
     }
@@ -240,7 +354,7 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::COMMENTS, $comments);
     }
 
-    public function setPublicReasonDescriptionAttribute(array & $attributes)
+    public function setPublicReasonDescriptionAttribute(array &$attributes)
     {
         $app = App::getFacadeRoot();
 
@@ -279,11 +393,6 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::PAYMENT_ID);
     }
 
-    public function getAmount()
-    {
-        return $this->getAttribute(self::AMOUNT);
-    }
-
     public function getAmountDeducted()
     {
         return $this->getAttribute(self::AMOUNT_DEDUCTED);
@@ -294,9 +403,39 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::AMOUNT_REVERSED);
     }
 
+    public function getAmount()
+    {
+        return $this->getAttribute(self::AMOUNT);
+    }
+
     public function getCurrency()
     {
         return $this->getAttribute(self::CURRENCY);
+    }
+
+    public function getGatewayAmount()
+    {
+        return $this->getAttribute(self::GATEWAY_AMOUNT);
+    }
+
+    public function getGatewayCurrency()
+    {
+        return $this->getAttribute(self::GATEWAY_CURRENCY);
+    }
+
+    public function getBaseAmount()
+    {
+        return $this->getAttribute(self::BASE_AMOUNT);
+    }
+
+    public function getBaseCurrency()
+    {
+        return $this->getAttribute(self::BASE_CURRENCY);
+    }
+
+    public function getConversionRate()
+    {
+        return $this->getAttribute(self::CONVERSION_RATE);
     }
 
     public function getStatus()
@@ -379,6 +518,15 @@ class Entity extends Base\PublicEntity
     }
 
     // --------------- Relation to other entity section ends --------------------
+
+    public function associateReason($reason)
+    {
+        $this->reason()->associate($reason);
+
+        $this->setReasonCode($reason->getCode());
+
+        $this->setReasonDescription($reason->getDescription());
+    }
 
     public function isClosed(): bool
     {

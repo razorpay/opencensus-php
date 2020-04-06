@@ -35,7 +35,7 @@ class Service extends Base\Service
     // This can be removed once we handle files in Async batches
     const MAX_DISPUTE_ENTRIES = 5000;
 
-    const BULK_CREATE_DISPUTE_COLUMNS = [
+    const BULK_CREATE_DISPUTES_COLUMNS = [
         Entity::PAYMENT_ID,
         Entity::GATEWAY_DISPUTE_ID,
         Entity::GATEWAY_DISPUTE_STATUS,
@@ -329,7 +329,7 @@ class Service extends Base\Service
         switch ($action)
         {
             case self::BULK_CREATE_ACTION :
-                $headers = self::BULK_CREATE_DISPUTE_COLUMNS;
+                $headers = self::BULK_CREATE_DISPUTES_COLUMNS;
                 break;
 
             case self::BULK_EDIT_ACTION :
@@ -397,7 +397,7 @@ class Service extends Base\Service
     {
         unset($input[Entity::ID]);
 
-        $status = $input[Entity::STATUS] ?? NULL;
+        $status = $input[Entity::STATUS] ?? null;
 
         if ($status !== Status::LOST)
         {
@@ -434,8 +434,8 @@ class Service extends Base\Service
         {
             $res = $row[$key];
 
-            // To handle variations in csv and excel files, empty is converted to NULL
-            $res = (empty($res) === false) ? trim(stringify($res)) : NULL;
+            // To handle variations in csv and excel files, empty is converted to null
+            $res = (empty($res) === false) ? trim(stringify($res)) : null;
 
             $func = 'formatValue' . studly_case($value);
 
@@ -451,7 +451,7 @@ class Service extends Base\Service
                 }
             }
 
-            if ($res !== NULL)
+            if ($res !== null)
             {
                 $input[$value] = $res;
             }

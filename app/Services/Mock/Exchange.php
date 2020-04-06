@@ -6,6 +6,11 @@ use RZP\Services\Exchange as BaseExchange;
 
 class Exchange extends BaseExchange
 {
+    public function __construct($app)
+    {
+
+    }
+
     public function latest($base)
     {
         $response = [

@@ -71,10 +71,15 @@ class Dispute extends Base
         Reason $reason): array
     {
         return [
-           'amount'          => $payment->getAmount(),
-           'payment_id'      => $payment->getId(),
-           'merchant_id'     => $payment->getMerchantId(),
-           'reason_id'       => $reason->getId(),
+            'amount'           => $payment->getAmount(),
+            'currency'         => $payment->getCurrency(),
+            'base_amount'      => $payment->getAmount(),
+            'base_currency'    => $payment->getCurrency(),
+            'gateway_amount'   => $payment->getAmount(),
+            'gateway_currency' => $payment->getCurrency(),
+            'payment_id'       => $payment->getId(),
+            'merchant_id'      => $payment->getMerchantId(),
+            'reason_id'        => $reason->getId(),
         ];
     }
 }

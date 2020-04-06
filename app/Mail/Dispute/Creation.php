@@ -6,7 +6,6 @@ use RZP\Constants\MailTags;
 
 class Creation extends Base
 {
-
     protected function addSubject()
     {
         $merchantName = $this->data['merchant']['name'];

@@ -74,11 +74,13 @@ class Core extends Base\Core
 
                 $parent = $this->checkAndGetParent($input);
 
-                $dispute = (new Entity)->build($input);
+                $dispute = new Entity;
 
                 $merchant = $payment->merchant;
 
                 $this->setRelationsAndDerivedAttributes($dispute, $parent, $payment, $reason);
+
+                $dispute->build($input);
 
                 // entity id is required to create associated transaction
                 $dispute->generateId();
@@ -330,17 +332,11 @@ class Core extends Base\Core
     {
         $merchant = $payment->merchant;
 
-        $dispute->setCurrency($payment->getCurrency());
-
-        $dispute->setReasonCode($reason->getCode());
-
-        $dispute->setReasonDescription($reason->getDescription());
+        $dispute->associateReason($reason);
 
         $dispute->payment()->associate($payment);
 
         $dispute->merchant()->associate($merchant);
-
-        $dispute->reason()->associate($reason);
 
         $dispute->parent()->associate($parent);
     }
@@ -360,7 +356,7 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($payment);
 
-        $skipDeduct = (isset($input[Entity::SKIP_DEDUCTION]))? boolval($input[Entity::SKIP_DEDUCTION]) : false;
+        $skipDeduct = (isset($input[Entity::SKIP_DEDUCTION])) ? boolval($input[Entity::SKIP_DEDUCTION]) : false;
 
         if (($skipDeduct === false) and ($dispute->isLost() === true))
         {

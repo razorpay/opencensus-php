@@ -5,6 +5,7 @@ namespace RZP\Models\Dispute;
 use RZP\Base;
 use RZP\Exception;
 use RZP\Models\Payment;
+use RZP\Models\Currency;
 use RZP\Error\ErrorCode;
 use RZP\Models\FileStore;
 use RZP\Models\Admin\File;
@@ -30,7 +31,9 @@ class Validator extends Base\Validator
         Entity::RAISED_ON              => 'required|epoch',
         Entity::EXPIRES_ON             => 'required|epoch',
         Entity::REASON_ID              => 'required|alpha_num|size:14',
-        Entity::AMOUNT                 => 'required|integer|min:100',
+        Entity::AMOUNT                 => 'required_without:gateway_amount|integer|min:100',
+        Entity::GATEWAY_AMOUNT         => 'required_without:amount|integer',
+        Entity::GATEWAY_CURRENCY       => 'required_with:gateway_amount|string|size:3',
         Entity::DEDUCT_AT_ONSET        => 'sometimes|boolean',
         Entity::PARENT_ID              => 'sometimes|alpha_num|size:14',
         Entity::MERCHANT_EMAILS        => 'sometimes|array',
@@ -97,20 +100,18 @@ class Validator extends Base\Validator
 
         //
         // This function is called before the build validator
-        // Hence, if amount is not set, return from here and let
+        // Hence, if amount is set then we validate else we let
         // the build validator take care of it
         //
-        if (isset($input[Entity::AMOUNT]) === false)
+        if (isset($input[Entity::AMOUNT]) === true)
         {
-            return;
-        }
-
-        if ($payment->getAmount() < $input[Entity::AMOUNT])
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_DISPUTE_AMOUNT_GREATER_THAN_PAYMENT_AMOUNT,
-                Entity::AMOUNT,
-                ['input' => $input, 'payment_id' => $payment->getId()]);
+            if ($payment->getAmount() < $input[Entity::AMOUNT])
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_DISPUTE_AMOUNT_GREATER_THAN_PAYMENT_AMOUNT,
+                    Entity::AMOUNT,
+                    ['input' => $input, 'payment_id' => $payment->getId()]);
+            }
         }
     }
 
@@ -122,6 +123,12 @@ class Validator extends Base\Validator
                 'reason_id should be sent in the request to create a dispute.',
                 Entity::REASON_ID,
                 $input);
+        }
+
+        if (isset($input[Entity::GATEWAY_AMOUNT]) === true)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'gateway_amount field is not required and shouldn\'t be sent');
         }
     }
 
@@ -273,7 +280,7 @@ class Validator extends Base\Validator
         if (in_array($extension, self::ACCEPTED_EXTENSIONS, true) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
-                'Invalid File extension. Only '. implode(", ", self::ACCEPTED_EXTENSIONS) . ' file formats are allowed'
+                'Invalid File extension. Only ' . implode(', ', self::ACCEPTED_EXTENSIONS) . ' file formats are allowed'
             );
         }
     }
