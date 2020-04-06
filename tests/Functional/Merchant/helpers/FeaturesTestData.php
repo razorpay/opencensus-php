@@ -800,6 +800,7 @@ return [
                     'otp_auth_default',
                     'edit_methods',
                     'capture_queue',
+                    'async_capture',
                     'transaction_v2',
                     'es_on_demand',
                     'es_automatic',

@@ -95,6 +95,7 @@ class Constants
     const OFFERS                          = 'offers';
     const OTP_AUTH_DEFAULT                = 'otp_auth_default';
     const CAPTURE_QUEUE                   = 'capture_queue';
+    const ASYNC_CAPTURE                   = 'async_capture';
     const TRANSACTION_V2                  = 'transaction_v2';
     const ES_ON_DEMAND                    = 'es_on_demand';
     const ES_AUTOMATIC                    = 'es_automatic';
@@ -459,6 +460,7 @@ class Constants
         self::OTP_AUTH_DEFAULT                => true,
         self::EDIT_METHODS                    => true,
         self::CAPTURE_QUEUE                   => true,
+        self::ASYNC_CAPTURE                   => true,
         self::TRANSACTION_V2                  => true,
         self::ES_ON_DEMAND                    => true,
         self::ES_AUTOMATIC                    => true,

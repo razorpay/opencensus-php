@@ -466,13 +466,20 @@ trait Capture
         {
             if ($this->payment->isGatewayCaptured() === false)
             {
-                $this->callGatewayFunction(Payment\Action::CAPTURE, $data);
+                if ($this->merchant->isFeatureEnabled(Feature\Constants::ASYNC_CAPTURE) === true)
+                {
+                    $this->dispatchAsyncCapture($data);
+                }
+                else
+                {
+                    $this->callGatewayFunction(Payment\Action::CAPTURE, $data);
 
-                $this->payment->setGatewayCaptured(true);
+                    $this->payment->setGatewayCaptured(true);
 
-                // Saving this here itself because recordCapture will perform other actions too,
-                // in a transaction, which could fail and end up rolling back.
-                $this->repo->saveOrFail($this->payment);
+                    // Saving this here itself because recordCapture will perform other actions too,
+                    // in a transaction, which could fail and end up rolling back.
+                    $this->repo->saveOrFail($this->payment);
+                }
             }
         }
         catch (\Throwable $ex)
@@ -502,13 +509,13 @@ trait Capture
     {
         if ($this->merchant->isFeatureEnabled(Feature\Constants::CAPTURE_QUEUE) === true)
         {
-            $this->dispatchCaptureFailure($ex, $data);
+            $this->dispatchAsyncCapture($data);
         }
         else
         {
             if ($this->shouldDispatchCaptureOnFailure($ex) === true)
             {
-                $this->dispatchCaptureFailure($ex, $data);
+                $this->dispatchAsyncCapture($data);
             }
             else
             {
@@ -536,10 +543,9 @@ trait Capture
         return false;
     }
 
-    protected function dispatchCaptureFailure(\Throwable $ex, array $data)
+    // Initiate Capture Asynchronously
+    protected function dispatchAsyncCapture(array $data)
     {
-        $this->trace->traceException($ex);
-
         $data['mode'] = $this->mode;
 
         $this->trace->info(

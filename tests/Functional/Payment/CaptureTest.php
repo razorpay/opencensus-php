@@ -118,6 +118,38 @@ class CaptureTest extends TestCase
         Mail::assertQueued(CapturedMail::class);
     }
 
+    public function testAsyncCaptureWithQueue()
+    {
+        Mail::fake();
+        Queue::fake();
+
+        $this->fixtures->merchant->addFeatures(['async_capture']);
+
+        $payment = $this->defaultAuthPayment();
+
+        $this->gateway = 'hdfc';
+
+        $this->ba->privateAuth();
+
+        $this->capturePayment($payment['id'], $payment['amount']);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals(null, $payment['gateway_captured']);
+        $this->assertEquals('captured', $payment['status']);
+
+        Queue::assertPushed(CaptureJob::class, function ($job) use ($payment)
+        {
+            $data = $job->getData();
+
+            return $payment['id'] === $data['payment']['public_id'];
+        });
+
+        Queue::assertPushedOn('capture_test', CaptureJob::class);
+
+        Mail::assertQueued(CapturedMail::class);
+    }
+
     public function testCaptureFailedWithoutQueue()
     {
         $payment = $this->defaultAuthPayment();
