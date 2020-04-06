@@ -1634,6 +1634,9 @@ return [
                 'entity' => 'collection',
                 'items' => [
                     [
+                        'name' => 'Zero banking default plan',
+                    ],
+                    [
                         'name' => 'testDefaultVpaPlan',
                     ],
                     [
@@ -1644,9 +1647,6 @@ return [
                     ],
                     [
                         'name' => 'DefaultSubMerchant',
-                    ],
-                    [
-                        'name' => 'Zero banking default plan',
                     ],
                     [
                         'name' => 'Banking default plan',
@@ -1782,6 +1782,9 @@ return [
                 'entity' => 'collection',
                 'items'  => [
                     [
+                        'name' => 'Zero banking default plan',
+                    ],
+                    [
                         'name' => 'testDefaultVpaPlan',
                     ],
                     [
@@ -1792,9 +1795,6 @@ return [
                     ],
                     [
                         'name' => 'DefaultSubMerchant',
-                    ],
-                    [
-                        'name' => 'Zero banking default plan',
                     ],
                     [
                         'name' => 'Banking default plan',
@@ -1966,6 +1966,11 @@ return [
         'response' => [
             'content' => [
                 [
+                    'plan_name'   => 'Zero banking default plan',
+                    'rules_count' => 2,
+                    'type'        => 'pricing',
+                ],
+                [
                     'plan_name'   => 'testDefaultVpaPlan',
                     'rules_count' => 1,
                     'type'        => 'pricing',
@@ -1983,11 +1988,6 @@ return [
                 [
                     'plan_name'   => 'DefaultSubMerchant',
                     'rules_count' => 16,
-                    'type'        => 'pricing',
-                ],
-                [
-                    'plan_name'   => 'Zero banking default plan',
-                    'rules_count' => 2,
                     'type'        => 'pricing',
                 ],
                 [
@@ -2056,6 +2056,11 @@ return [
         'response' => [
             'content' => [
                 [
+                    'plan_name'   => 'Zero banking default plan',
+                    'rules_count' => 2,
+                    'type'        => 'pricing',
+                ],
+                [
                     'plan_name'   => 'testDefaultVpaPlan',
                     'rules_count' => 1,
                     'type'        => 'pricing',
@@ -2073,11 +2078,6 @@ return [
                 [
                     'plan_name'   => 'DefaultSubMerchant',
                     'rules_count' => 16,
-                    'type'        => 'pricing',
-                ],
-                [
-                    'plan_name'   => 'Zero banking default plan',
-                    'rules_count' => 2,
                     'type'        => 'pricing',
                 ],
                 [

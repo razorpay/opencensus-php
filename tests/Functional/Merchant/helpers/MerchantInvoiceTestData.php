@@ -205,7 +205,7 @@ return [
         ],
     ],
 
-    'testInstantRefundsInvoiceEntityCreateForGivenMerchant' => [
+   'testInstantRefundsInvoiceEntityCreateForGivenMerchant' => [
         'others'      => [
             'amount'    => 1510,
             'tax'       => 272,

@@ -273,6 +273,9 @@ class Name
     //Permissions for enabling maker/checker for payouts
     const CREATE_PAYOUT                       = 'create_payout';
 
+    //Permission to allow fee recovery attempt
+    const PROCESS_FEE_RECOVERY                = 'process_fee_recovery';
+
     // Perform write operations around stork integration e.g. webhook migrations etc
     const STORK_WRITE_OPERATION               = 'stork_write_operation';
 

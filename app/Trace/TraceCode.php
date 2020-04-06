@@ -1780,6 +1780,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const DUPLICATE_CONTACT_FOUND                               = 'DUPLICATE_CONTACT_FOUND';
     const CONTACT_ALREADY_EXISTS_WITH_SAME_IDEMPOTENCY_KEY      = 'CONTACT_ALREADY_EXISTS_WITH_SAME_IDEMPOTENCY_KEY';
     const RZP_FEES_CONTACT_CREATE_REQUEST                       = 'RZP_FEES_CONTACT_CREATE_REQUEST';
+    const RZP_FEES_CONTACT_FUND_ACCOUNT_DOES_NOT_EXIST          = 'RZP_FEES_CONTACT_FUND_ACCOUNT_DOES_NOT_EXIST';
 
     //trace codes for merchant document CRUD
     const DOCUMENT_CREATE_REQUEST                               = 'DOCUMENT_CREATE_REQUEST';
@@ -2148,6 +2149,13 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MANUAL_PAYOUT_REVERSAL_CREATED                        = 'MANUAL_PAYOUT_REVERSAL_CREATED';
     const REVERSAL_TRANSACTION_CREATED                          = 'REVERSAL_TRANSACTION_CREATED';
     const PAYOUT_UPDATE_BEFORE_FTA_RECON                        = 'PAYOUT_UPDATE_BEFORE_FTA_RECON';
+
+    const FEE_RECOVERY_PAYOUT_CREATE_REQUEST                        = 'FEE_RECOVERY_PAYOUT_CREATE_REQUEST';
+    const FEE_RECOVERY_PAYOUT_CREATED                               = 'FEE_RECOVERY_PAYOUT_CREATED';
+    const FEE_RECOVERY_STATUS_UPDATE                                = 'FEE_RECOVERY_STATUS_UPDATE';
+    const FEE_RECOVERY_INITIATED                                    = 'FEE_RECOVERY_INITIATED';
+    const FEE_RECOVERY_ENTITY_CREATED                               = 'FEE_RECOVERY_ENTITY_CREATED';
+    const FEE_RECOVERY_UPDATE_AFTER_RZP_FEES_PAYOUT_STATUS_UPDATE   = 'FEE_RECOVERY_UPDATE_AFTER_RZP_FEES_PAYOUT_STATUS_UPDATE';
 
     const REFUND_REVERSAL_CREATED                               = 'REFUND_REVERSAL_CREATED';
     const REFUND_REVERSAL_INITIATED                             = 'REFUND_REVERSAL_INITIATED';

@@ -51,32 +51,25 @@ class Purpose
         return (in_array($purpose, array_keys(self::$internalPurposeTypeMap), true) === true);
     }
 
-    public function setPurposeAndTypeForInternalPayout(Entity $payout, string $purpose)
-    {
-        if (self::isInInternal($purpose) === true)
-        {
-            $payout->setPurpose($purpose);
-            $payout->setPurposeType(self::$internalPurposeTypeMap[$purpose]);
-
-            return;
-        }
-
-        throw new BadRequestValidationFailureException(
-            'Invalid purpose: ' . $purpose,
-            Entity::PURPOSE,
-            [
-                'payout_id' => $payout->getId(),
-                'purpose'   => $purpose
-            ]);
-    }
-
-    public function setPurposeAndTypeForPayout(Entity $payout, string $purpose)
+    public function setPurposeAndTypeForPayout(Entity $payout,
+                                               string $purpose,
+                                               bool $isInternal = false)
     {
         // If $purpose is one of the defaults, set and return
         if (self::isInDefaults($purpose) === true)
         {
             $payout->setPurpose($purpose);
             $payout->setPurposeType(self::$defaultPurposeTypeMap[$purpose]);
+
+            return;
+        }
+
+        // If payout is an internally generated payout and purpose is part of internal purpose, set and return
+        if (($isInternal === true) and
+            (self::isInInternal($purpose) === true))
+        {
+            $payout->setPurpose($purpose);
+            $payout->setPurposeType(self::$internalPurposeTypeMap[$purpose]);
 
             return;
         }

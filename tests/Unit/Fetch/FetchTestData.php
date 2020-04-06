@@ -526,5 +526,7 @@ return [
                 'type'        => str_random(),
             ],
         ],
-    ]
+    ],
+
+    E::FEE_RECOVERY => [],
 ];

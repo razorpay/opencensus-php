@@ -837,6 +837,9 @@ return [
                 'assignable'  => false,
                 'workflow'    => true,
             ],
+            Permission::PROCESS_FEE_RECOVERY => [
+                'assignable' => true,
+            ]
         ],
 
         PermissionCategory::P2P => [

@@ -936,7 +936,7 @@ class DefaultPlan
             // Rs 0 for rbl current account payouts
             [
                 'id'                  => 'Bbg7fgaDwax04u',
-                'plan_id'             => 'BTo98voDY06ueB',
+                'plan_id'             => 'EDoLfqMMBHVYGR',
                 'plan_name'           => 'Zero banking default plan',
                 'product'             => 'banking',
                 'feature'             => 'payout',
@@ -953,7 +953,7 @@ class DefaultPlan
             // Rs 0 for rbl current account payouts
             [
                 'id'                  => 'Bbg7fgaDwax05u',
-                'plan_id'             => 'BTo98voDY06ueB',
+                'plan_id'             => 'EDoLfqMMBHVYGR',
                 'plan_name'           => 'Zero banking default plan',
                 'product'             => 'banking',
                 'feature'             => 'payout',

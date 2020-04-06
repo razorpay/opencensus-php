@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Tests\Functional\Contacts;
+namespace RZP\Tests\Functional\FundAccount;
 
 use Queue;
 

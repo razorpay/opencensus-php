@@ -2,24 +2,16 @@
 
 namespace RZP\Models\Payout\Processor\DownstreamProcessor\FundAccountPayout\Direct;
 
-use Carbon\Carbon;
-
 use RZP\Models\Pricing;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
-use RZP\Models\Merchant;
 use RZP\Models\Payout\Mode;
 use RZP\Models\Payout\Core;
-use RZP\Constants\Timezone;
 use RZP\Models\Payout\Entity;
 use RZP\Models\Payout\Status;
-use RZP\Models\BankingAccount;
-use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Base\PublicEntity;
 use RZP\Exception\LogicException;
-use RZP\Models\Settlement\Channel;
 use RZP\Exception\BadRequestException;
-use RZP\Models\Admin\Service as AdminService;
 use RZP\Models\Payout\Processor\DownstreamProcessor\FundAccountPayout;
 
 class Base extends FundAccountPayout\Base
@@ -36,12 +28,14 @@ class Base extends FundAccountPayout\Base
 
         $queued = $this->queueIfLowBalance($payout);
 
-        if ($queued === false)
+        if ($queued === true)
         {
-            $this->setFeeAndTaxForPayout($payout);
-
-            $this->createFundTransferAttempt($payout, $ftaAccount);
+            return;
         }
+
+        $this->setFeeAndTaxForPayout($payout);
+
+        $this->createFundTransferAttempt($payout, $ftaAccount);
     }
 
     protected function queueIfLowBalance(Entity $payout) : bool

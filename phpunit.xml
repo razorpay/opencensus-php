@@ -55,6 +55,7 @@
           <exclude>./tests/Functional/Gateway/</exclude>
           <exclude>./tests/Functional/Admin/GroupEsTest.php</exclude>
           <exclude>./tests/Functional/PaymentsUpi</exclude>
+          <exclude>./tests/Functional/FeeRecovery/</exclude>
       </testsuite>
       <testsuite name="Features-1 Test Suite">
           <directory>./tests/Functional/Currency/</directory>
@@ -84,6 +85,7 @@
           <directory>./tests/Functional/PaymentLink/</directory>
           <directory>./tests/Functional/Payout/</directory>
           <directory>./tests/Functional/PayoutLink/</directory>
+          <directory>./tests/Functional/FeeRecovery/</directory>
           <directory>./tests/Functional/Pricing/</directory>
           <directory>./tests/Functional/Promotion/</directory>
           <directory>./tests/Functional/RazorX/</directory>

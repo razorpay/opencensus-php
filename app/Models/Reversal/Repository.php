@@ -162,4 +162,25 @@ class Repository extends Base\Repository
                     ->first();
     }
 
+    public function fetchFeesAndIdOfReversalsForGivenBalanceIdForPeriod($merchantId, $balanceId, $from, $to)
+    {
+        $payoutsTable         = Table::PAYOUT;
+        $reversalsIdColumn    = $this->dbColumn(Entity::ID);
+        $balanceIdColumn      = $this->dbColumn(Entity::BALANCE_ID);
+        $payoutsIdColumn      = $this->repo->payout->dbColumn(PayoutEntity::ID);
+        $payoutsFeesColumn    = $this->repo->payout->dbColumn(PayoutEntity::FEES);
+        $entityTypeColumn     = $this->dbColumn(Entity::ENTITY_TYPE);
+
+        $reversalsCreatedAtColumn   = $this->repo->reversal->dbColumn(Entity::CREATED_AT);
+        $reversalsEntityIdColumn    = $this->dbColumn(Entity::ENTITY_ID);
+
+        return $this->newQuery()
+                    ->select($reversalsIdColumn, $payoutsFeesColumn)
+                    ->join($payoutsTable, $reversalsEntityIdColumn, '=', $payoutsIdColumn)
+                    ->merchantID($merchantId)
+                    ->where($entityTypeColumn, Type::PAYOUT)
+                    ->whereBetween($reversalsCreatedAtColumn, [$from, $to])
+                    ->where($balanceIdColumn, $balanceId)
+                    ->get();
+    }
 }

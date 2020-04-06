@@ -41,11 +41,12 @@ class Table
     const MERCHANT              = 'merchants';
     const COMMISSION            = 'commissions';
     const PAYOUT_LINK           = 'payout_links';
+    const FEE_RECOVERY          = 'fee_recovery';
     const LEGAL_ENTITY          = 'legal_entity';
     const FUND_ACCOUNT          = 'fund_accounts';
     const PAYMENT_LINK          = 'payment_links';
-    const BALANCE_CONFIG        = 'balance_config';
     const ENTITY_ORIGIN         = 'entity_origins';
+    const BALANCE_CONFIG        = 'balance_config';
     const OFFLINE_DEVICE        = 'offline_devices';
     const IDEMPOTENCY_KEY       = 'idempotency_keys';
     const PAYMENT_PAGE_ITEM     = 'payment_page_items';

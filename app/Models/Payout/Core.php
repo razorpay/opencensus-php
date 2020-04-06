@@ -25,6 +25,7 @@ use RZP\Models\Settlement;
 use RZP\Models\FundAccount;
 use RZP\Jobs\QueuedPayouts;
 use RZP\Models\Transaction;
+use RZP\Models\FeeRecovery;
 use RZP\Constants\Timezone;
 use RZP\Models\BankingAccount;
 use RZP\Models\Admin\ConfigKey;
@@ -151,15 +152,18 @@ class Core extends Base\Core
      * SOURCE: Merchant Balance (PG/Banking)
      * TO: Fund Account (BankAccount/VPA/Card etc) (fund_account_id)
      *
-     * @param array $input
+     * @param array           $input
      * @param Merchant\Entity $merchant
-     * @param string|null $batchId
+     * @param string|null     $batchId
+     * @param bool            $isInternal
      *
      * @return Entity
+     * @throws BadRequestException
      */
     public function createPayoutToFundAccount(array $input,
                                               Merchant\Entity $merchant,
-                                              string $batchId = null): Entity
+                                              string $batchId = null,
+                                              bool $isInternal = false): Entity
     {
         $this->trace->info(
             TraceCode::PAYOUT_TO_FUND_ACCOUNT_CREATE_REQUEST,
@@ -170,6 +174,7 @@ class Core extends Base\Core
         $payout = $this->getProcessor('fund_account_payout')
                        ->setMerchant($merchant)
                        ->setBatch($batchId)
+                       ->setInternal($isInternal)
                        ->createPayout($input);
 
         $this->dispatchFtaInitiate($payout);
@@ -901,6 +906,8 @@ class Core extends Base\Core
                 if ($payout->isBalanceAccountTypeDirect() === true)
                 {
                     $this->handlePayoutTransactionForDirectBanking($payout);
+
+                    (new FeeRecovery\Core)->handlePayoutStatusUpdate($payout);
                 }
             });
 
@@ -1316,11 +1323,19 @@ class Core extends Base\Core
         //
         Status::validateStatusUpdate(Status::FAILED, $currentStatus);
 
-        $payout->setStatus(Status::FAILED);
+        $this->repo->transaction(
+            function() use ($payout, $ftaFailureReason) {
+                $payout->setStatus(Status::FAILED);
 
-        $payout->setFailureReason($ftaFailureReason);
+                $payout->setFailureReason($ftaFailureReason);
 
-        $this->repo->saveOrFail($payout);
+                $this->repo->saveOrFail($payout);
+
+                if ($payout->isBalanceAccountTypeDirect() === true)
+                {
+                    (new FeeRecovery\Core)->handlePayoutStatusUpdate($payout);
+                }
+            });
 
         $this->app->events->fire('api.payout.failed', [$payout]);
     }
@@ -1409,7 +1424,8 @@ class Core extends Base\Core
                         {
                             $this->handleReversalTransactionForDirectBanking($reversal);
                         }
-                        // For certain cases like  where a payout is being makred
+
+                        // For certain cases like  where a payout is being marked
                         // as reversed  through recon flows(as in RBL), the above
                         // method handleReversalTransactionForDirectBanking updates
                         // the payout status to processed (to indicate the payout
@@ -1419,6 +1435,12 @@ class Core extends Base\Core
                         // payout is reversed in the system, we are setting the
                         // status at the end
                         $payout->setStatus(Status::REVERSED);
+
+                        // Need to keep this here because handlePayoutStatusUpdate needs the correct payout status
+                        if ($payout->isBalanceAccountTypeDirect() === true)
+                        {
+                            (new FeeRecovery\Core)->handlePayoutStatusUpdate($payout, $reversal);
+                        }
 
                         $this->repo->saveOrFail($payout);
                     });

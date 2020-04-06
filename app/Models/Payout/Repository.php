@@ -318,6 +318,69 @@ class Repository extends Base\Repository
     }
 
     /**
+     * Returns all payouts that have initiated_at between the two timestamps provided
+     *
+     * @param string $merchantId
+     * @param string $balanceId
+     * @param int $start
+     * @param int $end
+     *
+     * @return mixed
+     */
+    public function fetchFeesAndIdOfPayoutsForGivenBalanceIdForPeriod(
+        string $merchantId,
+        string $balanceId,
+        int $start,
+        int $end)
+    {
+        $payoutsIdColumn            = $this->dbColumn(Entity::ID);
+        $payoutsFeesColumn          = $this->dbColumn(Entity::FEES);
+        $payoutsBalanceIdColumn     = $this->dbColumn(Entity::BALANCE_ID);
+        $payoutsInitiatedAtColumn   = $this->dbColumn(Entity::INITIATED_AT);
+
+        return $this->newQuery()
+                    ->select($payoutsIdColumn, $payoutsFeesColumn)
+                    ->merchantId($merchantId)
+                    ->where($payoutsBalanceIdColumn, $balanceId)
+                    ->whereNotNull($payoutsInitiatedAtColumn)
+                    ->whereBetween($payoutsInitiatedAtColumn, [$start, $end])
+                    ->get();
+    }
+
+    /**
+     * Returns all payouts that have failed_at between the two timestamps provided and where initiated_at is not null
+     *
+     * @param string $merchantId
+     * @param string $balanceId
+     * @param int    $start
+     * @param int    $end
+     *
+     * @return mixed
+     */
+    public function fetchFeesAndIdOfFailedPayoutsForGivenBalanceIdForPeriod(
+        string $merchantId,
+        string $balanceId,
+        int $start,
+        int $end)
+    {
+        $payoutsIdColumn            = $this->dbColumn(Entity::ID);
+        $payoutsFeesColumn          = $this->dbColumn(Entity::FEES);
+        $payoutsStatusColumn        = $this->dbColumn(Entity::STATUS);
+        $payoutsFailedAtColumn      = $this->dbColumn(Entity::FAILED_AT);
+        $payoutsBalanceIdColumn     = $this->dbColumn(Entity::BALANCE_ID);
+        $payoutsInitiatedAtColumn   = $this->dbColumn(Entity::INITIATED_AT);
+
+        return $this->newQuery()
+                    ->select($payoutsIdColumn, $payoutsFeesColumn)
+                    ->merchantId($merchantId)
+                    ->where($payoutsBalanceIdColumn, $balanceId)
+                    ->whereNotNull($payoutsInitiatedAtColumn)
+                    ->whereBetween($payoutsFailedAtColumn, [$start, $end])
+                    ->where($payoutsStatusColumn, '=', Status::FAILED)
+                    ->get();
+    }
+
+    /**
      * SELECT payouts.*
      * FROM   payouts
      *        INNER JOIN fund_accounts

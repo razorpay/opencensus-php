@@ -8,8 +8,12 @@ use Config;
 use RZP\Models\Admin;
 use RZP\Models\Merchant;
 use RZP\Models\Pricing\Fee;
+use RZP\Services\Mock\Mozart;
 use RZP\Models\Feature\Constants;
 use RZP\Models\Workflow\Step\Entity;
+use RZP\Models\Merchant\Balance\Channel;
+use RZP\Models\BankingAccount\Gateway\Rbl;
+use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Fixtures\Entity\User;
 use RZP\Models\Admin\Org\Repository as OrgRepository;
@@ -42,6 +46,32 @@ trait PayoutTrait
         $response = $this->sendRequest($request);
 
         return json_decode($response->getContent(), true);
+    }
+
+    protected function mockMozartResponseForFetchingBalanceFromRblGateway($amount): void
+    {
+        $this->app->forgetInstance('mozart');
+
+        $mozartServiceMock = $this->getMockBuilder(Mozart::class)
+                                  ->setConstructorArgs([$this->app])
+                                  ->setMethods(['sendMozartRequest'])
+                                  ->getMock();
+
+        $mozartServiceMock->method('sendMozartRequest')
+                          ->willReturn([
+                                           'data' => [
+                                               'success' => true,
+                                               Rbl\Fields::GET_ACCOUNT_BALANCE => [
+                                                   Rbl\Fields::BODY => [
+                                                       Rbl\Fields::BAL_AMOUNT => [
+                                                           Rbl\Fields::AMOUNT_VALUE => $amount
+                                                       ]
+                                                   ]
+                                               ]
+                                           ]
+                                       ]);
+
+        $this->app->instance('mozart', $mozartServiceMock);
     }
 
     protected function retryPayout($id)
@@ -128,20 +158,11 @@ trait PayoutTrait
         return $workflow;
     }
 
-
-
-    protected function createPayoutWithWorkflow($workflow, $payoutAttributes = [])
+    protected function createPayoutWithWorkflow($workflow, $payoutAttributes = [], $authKey = null)
     {
-        $this->app['config']->set('heimdall.workflows.mock', false);
-        $this->app['config']->set('heimdall.permissions.payouts.create_payout.assignable', true);
+        $this->disableWorkflowMocks();
 
-        $workflowDefaultPermissions = (new Admin\Permission\Repository())
-                                       ->retrieveIdsByNames([Admin\Permission\Name::CREATE_PAYOUT]);
-
-        // Attach permissions to the default workflow
-        $workflow->permissions()->sync($workflowDefaultPermissions);
-
-        return $this->createQueuedOrPendingPayout($payoutAttributes);
+        return $this->createQueuedOrPendingPayout($payoutAttributes, $authKey);
     }
 
     protected function createQueuedOrPendingPayout(array $attributes = [], string $authKey = null)
@@ -150,13 +171,13 @@ trait PayoutTrait
             'method'  => 'POST',
             'url'     => '/payouts',
             'content' => [
-                'account_number'        => $attributes["account_number"] ?? '2224440041626905',
-                'amount'                => $attributes["amount"] ?? 10000,
+                'account_number'        => $attributes['account_number'] ?? '2224440041626905',
+                'amount'                => $attributes['amount'] ?? 10000,
                 'currency'              => 'INR',
                 'purpose'               => 'refund',
-                'fund_account_id'       => 'fa_100000000000fa',
-                'mode'                  => 'IMPS',
-                'queue_if_low_balance'  => $attributes["queue_if_low_balance"] ?? 0,
+                'fund_account_id'       => $attributes['fund_account_id'] ?? 'fa_100000000000fa',
+                'mode'                  => 'NEFT',
+                'queue_if_low_balance'  => $attributes['queue_if_low_balance'] ?? 0,
             ],
         ];
 
@@ -268,5 +289,43 @@ trait PayoutTrait
             'product'     => 'primary',
             'role'        => 'owner',
         ], 'live');
+    }
+
+    public function liveSetUpForRbl()
+    {
+        $this->testDataFilePath = __DIR__ . '/helpers/PayoutTestData.php';
+
+        $this->fixtures->on('live')->create('contact', ['id' => '1000001contact', 'active' => 1]);
+
+        $this->fixtures->on('live')->create(
+            'fund_account',
+            [
+                'id'           => '100000000000fa',
+                'source_id'    => '1000001contact',
+                'source_type'  => 'contact',
+                'account_type' => 'bank_account',
+                'account_id'   => '1000000lcustba'
+            ]);
+
+        $this->setUpMerchantForBusinessBankingLive(true,
+                                                   10000000,
+                                                   AccountType::DIRECT,
+                                                   Channel::RBL);
+
+        $this->fixtures->on('live')->merchant->edit('10000000000000',
+                                                    [
+                                                        'pricing_plan_id' => Fee::DEFAULT_PRICING_PLAN_ID
+                                                    ]);
+
+        // Merchant needs to be activated to make live requests
+        $this->fixtures->on('live')->merchant->edit('10000000000000', ['activated' => 1]);
+
+        // Create merchant user mapping
+        $this->fixtures->on('live')->user->createUserMerchantMapping([
+                                                                         'merchant_id' => '10000000000000',
+                                                                         'user_id'     => User::MERCHANT_USER_ID,
+                                                                         'product'     => 'primary',
+                                                                         'role'        => 'owner',
+                                                                     ], 'live');
     }
 }

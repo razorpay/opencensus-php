@@ -7,6 +7,7 @@ use RZP\Models\Payout;
 use RZP\Models\Dispute;
 use RZP\Models\External;
 use RZP\Models\Emi\Type;
+use RZP\Models\FeeRecovery;
 use RZP\Models\FundTransfer;
 use RZP\Models\BankingAccount;
 use RZP\Models\Partner\Config;
@@ -2518,6 +2519,26 @@ class AdminFetch
                     Fetch::LABEL => 'NPCI Reference Id',
                     Fetch::TYPE  => Fetch::TYPE_STRING,
                 ],
+            ],
+
+            Entity::FEE_RECOVERY => [
+                'entity_id' => [
+                    Fetch::LABEL    => 'Source Id',
+                    Fetch::TYPE     => Fetch::TYPE_STRING
+                ],
+                'type'      => [
+                    Fetch::LABEL    => 'Type',
+                    Fetch::TYPE     => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES   => FeeRecovery\Type::getAll(),
+                ],
+                'status'    => [
+                    Fetch::LABEL    => 'Status',
+                    Fetch::TYPE     => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES   => FeeRecovery\Status::getAll(),
+                ],
+                'recovery_payout_id'    => [],
+                'attempt_number'        => [],
+                'reference_number'      => [],
             ]
         ];
 

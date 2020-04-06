@@ -78,6 +78,7 @@ class Entity
     const FEE_BREAKUP                = 'fee_breakup';
     const UPI_MANDATE                = 'upi_mandate';
     const PAYOUT_LINK                = 'payout_link';
+    const FEE_RECOVERY               = 'fee_recovery';
     const LEGAL_ENTITY               = 'legal_entity';
     const PAYMENT_LINK               = 'payment_link';
     const GATEWAY_RULE               = 'gateway_rule';
@@ -502,6 +503,7 @@ class Entity
         self::D2C_BUREAU_REPORT         => \RZP\Models\D2cBureauReport::class,
         self::ADDON                     => \RZP\Models\Plan\Subscription\Addon::class,
         self::BANKING_ACCOUNT_DETAIL    => \RZP\Models\BankingAccount\Detail::class,
+        self::FEE_RECOVERY              => \RZP\Models\FeeRecovery::class,
         self::OFFLINE_DEVICE            => \RZP\Models\Offline\Device::class,
         self::PAYMENT_META              => \RZP\Models\Payment\PaymentMeta::class,
         self::UPI_METADATA              => \RZP\Models\Payment\UpiMetadata::class,

@@ -73,6 +73,7 @@ use RZP\Base\Database\Connectors\MySqlConnector;
  * @property Models\Payment\PaymentMeta\Repository              $payment_meta
  * @property Models\Payment\Config\Repository                   $config
  * @property Models\IdempotencyKey\Repository                   $idempotency_key
+ * @property Models\FeeRecovery\Repository                      $fee_recovery
  */
 class RepositoryManager extends Illuminate\Support\Manager
 {

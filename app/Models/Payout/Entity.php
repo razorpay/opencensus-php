@@ -19,6 +19,7 @@ use RZP\Models\Workflow;
 use RZP\Models\Admin\Org;
 use RZP\Models\PayoutLink;
 use RZP\Models\Transaction;
+use RZP\Models\FeeRecovery;
 use RZP\Models\FundAccount;
 use RZP\Constants\Timezone;
 use RZP\Models\FundTransfer;
@@ -898,6 +899,16 @@ class Entity extends Base\PublicEntity
         if ($currentStatus === $status)
         {
             return;
+        }
+
+        // We need to create a fee_recovery entity for every payout when it goes from created to initiated state.
+        // Keeping this code here because this status change is allowed only once and there is no chance of this
+        // getting triggered twice
+        if (($currentStatus === Status::CREATED) and
+            ($status === Status::INITIATED) and
+            ($this->isBalanceAccountTypeDirect() === true))
+        {
+            (new FeeRecovery\Core)->createFeeRecoveryEntityForSource($this);
         }
 
         $this->setAttribute(self::STATUS, $status);

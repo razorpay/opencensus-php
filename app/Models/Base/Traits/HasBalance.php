@@ -45,7 +45,8 @@ trait HasBalance
         return optional($this->balance)->getType() ?: Balance\Type::PRIMARY;
     }
 
-    public function getBalanceAccountType(): string
+    // Removed return type 'string' because this function returns null for primary balance
+    public function getBalanceAccountType()
     {
         return optional($this->balance)->getAccountType();
     }

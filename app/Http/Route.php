@@ -436,7 +436,7 @@ final class Route
         'mark_transactions_postpaid'               => ['post',     'transactions/postpaid',                          'TransactionController@markTransactionPostpaid'                     ],
         'toggle_transaction_hold'                  => ['patch',    'transactions/hold',                              'TransactionController@toggleTransactionHold'                       ],
         'toggle_transaction_release'               => ['patch',    'transactions/release',                           'TransactionController@toggleTransactionRelease'                    ],
-        'mdr_adjustment'                          => ['post',      'transactions/mdr_adjustment_calculation',        'TransactionController@mdrAdjustmentCalculation'                    ],
+        'mdr_adjustment'                           => ['post',      'transactions/mdr_adjustment_calculation',        'TransactionController@mdrAdjustmentCalculation'                    ],
         'setl_fetch_schedule'                      => ['get',      'settlements/schedules',                          'ScheduleController@getSettlementSchedules'                         ],
         'setl_fetch_by_id'                         => ['get',      'settlements/{id}',                               'SettlementController@getSettlement'                                ],
         'setl_fetch_multiple'                      => ['get',      'settlements',                                    'SettlementController@getSettlements'                               ],
@@ -955,6 +955,7 @@ final class Route
 
         'payout_cancel'                            => ['post',     'payouts/{id}/cancel',                            'PayoutController@cancelPayout'                                     ],
         'payout_update_status'                     => ['patch',    'payouts/{id}/status',                            'PayoutController@updateTestPayoutStatus'                           ],
+        'fee_recovery_payout_create'               => ['post',     'payouts/fee_recovery',                           'FeeRecoveryController@createRecoveryPayout'                        ],
         'transfer_fetch'                           => ['get',      'transfers/{id}',                                 'TransferController@getTransfer'                                    ],
         'transfer_fetch_multiple'                  => ['get',      'transfers/',                                     'TransferController@getTransfers'                                   ],
 
@@ -3065,6 +3066,7 @@ final class Route
         'merchant_locked_balance_update',
 
         'merchant_balance_fetch_admin',
+        'fee_recovery_payout_create',
 
         // Banking VA
         'virtual_account_bulk_create_for_banking',
@@ -3695,6 +3697,8 @@ final class Route
         'fetch_payment_config_admin'                => '*',
         'create_payment_config_admin'               => '*',
         'update_payment_config_admin'               => '*',
+
+        'fee_recovery_payout_create'                => Permission::PROCESS_FEE_RECOVERY,
     ];
 
     public static $bankingRoutePermissions = [

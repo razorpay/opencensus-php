@@ -159,4 +159,14 @@ class Repository extends Base\Repository
                     ->latest($vpaCreatedAtColumn)
                     ->first();
     }
+
+    public function fetchRzpFeesFundAccount($merchantId, $contactId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::SOURCE_TYPE, Entity::CONTACT)
+                    ->where(Entity::SOURCE_ID, $contactId)
+                    ->merchantId($merchantId)
+                    ->orderBy(Entity::CREATED_AT, 'desc')
+                    ->first();
+    }
 }

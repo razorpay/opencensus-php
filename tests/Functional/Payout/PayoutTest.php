@@ -26,7 +26,6 @@ use RZP\Tests\Functional\TestCase;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Mail\Banking\LowBalanceAlert;
 use RZP\Exception\BadRequestException;
-use RZP\Models\BankingAccount\Gateway\Rbl;
 use RZP\Tests\Functional\Helpers\WebhookTrait;
 use RZP\Tests\Functional\Helpers\MocksDnsTrait;
 use RZP\Tests\Functional\Settlement\SettlementTrait;
@@ -475,40 +474,7 @@ class PayoutTest extends TestCase
 
         $this->liveSetUp();
 
-        $this->fixtures->pricing->createRBLDirectPayoutPricingPlan();
-
-        // Create second Balance
-        $balanceAttributes = [
-            'balance' => 10000000,
-            'balanceType' => 'direct',
-            'channel' => 'rbl',
-        ];
-
-        $secondBankingBalance = $this->fixtures->on('live')->merchant->createBalanceOfBankingType(
-            $balanceAttributes["balance"],
-            '10000000000000',
-            $balanceAttributes["balanceType"] ,
-            $balanceAttributes["channel"]
-        );
-
-        // Create Second Bank Account
-
-        $virtualAccount = $this->fixtures->on('live')->create('virtual_account');
-        $secondBankAccount = $this->fixtures->on('live')->create(
-            'bank_account',
-            [
-                'type'           => 'virtual_account',
-                'entity_id'      => $virtualAccount->getId(),
-                'account_number' => '2224440041626906',
-                'ifsc_code'      => 'RAZRB000000',
-            ]);
-
-        $virtualAccount->bankAccount()->associate($secondBankAccount);
-        $virtualAccount->balance()->associate($secondBankingBalance);
-        $virtualAccount->save();
-
-        $secondBankingBalance->setAccountNumber($virtualAccount->bankAccount->getAccountNumber());
-        $secondBankingBalance->save();
+        $secondBankingBalance = $this->createDirectBankingBalance();
 
         // Creating 2 banking accounts. First for the existing bankingBalance and second for the secondBankingBalance
 
@@ -2360,7 +2326,6 @@ class PayoutTest extends TestCase
         $this->assertNotNull($updatedPayout[Payout\Entity::FAILURE_REASON]);
     }
 
-
     public function testWorkflowTriggerForBankingRequest()
     {
         $this->liveSetUp();
@@ -2448,6 +2413,21 @@ class PayoutTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreatePayoutToRzpFeesContact()
+    {
+        $this->createContact();
+
+        $this->fixtures->edit('contact', $this->contact->getId(), ['type' => 'rzp_fees']);
+
+        $this->createFundAccount();
+
+        $data = $this->testData[__FUNCTION__];
+
+        $data['request']['content']['fund_account_id'] = $this->fundAccount->getPublicId();
+
+        $this->startTest($data);
+    }
+
     protected function createPayoutWithWorkflowHavingPayoutRules()
     {
         $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_WORKFLOWS]);
@@ -2458,37 +2438,6 @@ class PayoutTest extends TestCase
             'min_amount' => '0', 'max_amount' => '5000000']);
 
         $this->createPayoutWithWorkflow($workflow);
-    }
-
-    protected function createPayoutWithWorkflow($workflow, $payoutAttributes = [], $authKey = null)
-    {
-        $this->disableWorkflowMocks();
-
-        return $this->createQueuedOrPendingPayout($payoutAttributes, $authKey);
-    }
-
-    protected function mockMozartResponseForFetchingBalanceFromRblGateway($amount): void
-    {
-        $mozartServiceMock = $this->getMockBuilder(Mozart::class)
-                                  ->setConstructorArgs([$this->app])
-                                  ->setMethods(['sendMozartRequest'])
-                                  ->getMock();
-
-        $mozartServiceMock->method('sendMozartRequest')
-                          ->willReturn([
-                                           'data' => [
-                                               'success' => true,
-                                               Rbl\Fields::GET_ACCOUNT_BALANCE => [
-                                                   Rbl\Fields::BODY => [
-                                                       Rbl\Fields::BAL_AMOUNT => [
-                                                           Rbl\Fields::AMOUNT_VALUE => $amount
-                                                       ]
-                                                   ]
-                                               ]
-                                           ]
-                                       ]);
-
-        $this->app->instance('mozart', $mozartServiceMock);
     }
 
     // rzp_fees payout should get processed before others. Create 3 Queued payouts, have enough balance for only
@@ -2546,7 +2495,9 @@ class PayoutTest extends TestCase
         $oldDateTime = Carbon::create(2019, 07, 21, 12, 23, 41, Timezone::IST);
 
         $this->fixtures->edit('banking_account', $bankingAccount->getId(),
-                              ['balance_last_fetched_at' => $oldDateTime->getTimestamp()]);
+                              [
+                                  'balance_last_fetched_at' => $oldDateTime->getTimestamp()
+                              ]);
 
         $this->mockMozartResponseForFetchingBalanceFromRblGateway(150);
 

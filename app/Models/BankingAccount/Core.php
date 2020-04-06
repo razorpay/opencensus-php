@@ -517,8 +517,22 @@ class Core extends Base\Core
         return $bankingAccount;
     }
 
-    protected function createRZPFeesContactAndFundAccount(Merchant\Entity $merchant)
+    public function createRZPFeesContactAndFundAccount(Merchant\Entity $merchant)
     {
+        $rzpFeesContacts = $this->repo->contact->fetch([
+                                                           Contact\Entity::TYPE => Contact\Type::RZP_FEES
+                                                       ],
+                                                       $merchant->getId());
+
+        if ($rzpFeesContacts->count() > 0)
+        {
+            throw new LogicException('Merchant has an existing rzp_fees type contact',
+                                               ErrorCode::BAD_REQUEST_LOGIC_ERROR_MULTIPLE_RZP_FEES_CONTACT,
+                                               [
+                                                   'merchant_id' => $merchant->getId()
+                                               ]);
+        }
+
         $contact = (new Contact\Core)->createRZPFeesContact($merchant);
 
         (new FundAccount\Core)->createRZPFeesFundAccount($merchant, $contact);

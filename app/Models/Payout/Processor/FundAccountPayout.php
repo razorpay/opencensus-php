@@ -25,7 +25,7 @@ class FundAccountPayout extends Base
         $payout = parent::createPayout($input);
 
         //
-        // In case of payouts with status=(queued, payouts), we don't create the transaction yet.
+        // In case of payouts with status=(queued, pending), we don't create the transaction yet.
         // This event will be dispatched later when we are actually processing the payout.
         //
         if ($payout->isStatusBeforeCreate() === false)
@@ -34,10 +34,11 @@ class FundAccountPayout extends Base
             // Ideally, this should be done as part of downstream processor,
             // but we do it here since, we do not want to dispatch this even if
             // payout creation flow fails for any reason after downstream processor runs.
+            // Only doing this for type shared because transaction isn't created during payout flow for direct payouts.
             //
 
             if (($payout->isStatusBeforeCreate() === false) and
-                ($payout->balance->isAccountTypeDirect() === false))
+                ($payout->getBalanceAccountType() === AccountType::SHARED))
             {
                 (new Transaction\Core)->dispatchEventForTransactionCreated($payout->transaction);
             }
@@ -49,6 +50,7 @@ class FundAccountPayout extends Base
     /**
      * @param FundAccount\Entity $fundAccount
      *
+     * @throws BadRequestException
      * @throws BadRequestValidationFailureException
      */
     public function validateFundAccountContact(FundAccount\Entity $fundAccount)
@@ -61,6 +63,22 @@ class FundAccountPayout extends Base
                 [
                     'fund_account_id' => $fundAccount->getId()
                 ]);
+        }
+
+        if ($this->isInternal === false)
+        {
+            $contactType = $fundAccount->source->getType();
+
+            if (Contact\Type::isInInternal($contactType) === true)
+            {
+                throw new BadRequestException(
+                    ErrorCode::BAD_REQUEST_PAYOUT_TO_INTERNAL_FUND_ACCOUNT_NOT_PERMITTED,
+                    null,
+                    [
+                        'contact_id'        => $fundAccount->source->getId(),
+                        'fund_account_id'   => $fundAccount->getId(),
+                    ]);
+            }
         }
     }
 
@@ -124,9 +142,8 @@ class FundAccountPayout extends Base
      * TODO: Currently there is no proper way to decide the channel through
      * which the payout should be routed in case of shared accounts.
      * Till the time we achieve this by Dynamic routing, we are doing
-     * a hack of using config key to store the MIDs for which
-     * channel for processing the payout should be CITI and ICICI.
-     * The precedence between ICICI and CITI is ICICI.
+     * a hack of using RazorX experiments to route certain merchants via a certain
+     * channel (ICICI, CITI or YESBANK) based on mode of payout
      *
      * @param $accountType
      * @return string

@@ -600,6 +600,7 @@ class PublicErrorDescription
 
     const BAD_REQUEST_FUND_TRANSFER_ANOTHER_OPERATION_IN_PROGRESS               = 'Request failed because another fund transfer operation in progress';
     const BAD_REQUEST_FUND_TRANSFER_FTS_ANOTHER_OPERATION_IN_PROGRESS           = 'Request failed because another fund transfer operation via fts in progress';
+    const BAD_REQUEST_FEE_RECOVERY_ANOTHER_OPERATION_IN_PROGRESS                = 'Request failed because another operation is in progress';
 
     const BAD_REQUEST_PERMISSION_ERROR                                          = 'Permissions not found for this request/route';
     const BAD_REQUEST_INVALID_MAILGUN_WEBHOOK_TYPE                              = 'Invalid type specified for callback';
@@ -836,10 +837,24 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYOUT_MODE_REQUIRED                                      = 'Mode is required for payout';
     const BAD_REQUEST_PAYOUT_INVALID_MODE                                       = 'Payout mode is invalid';
     const BAD_REQUEST_PAYOUT_MODE_NOT_SUPPORTED                                 = 'Mode is unsupported';
+
+    // Fee Recovery
     const BAD_REQUEST_INTERNAL_CONTACT_CREATE_UPDATE_NOT_PERMITTED              = 'Creating/Updating an internal Razorpay Contact is not permitted';
     const BAD_REQUEST_FEE_RECOVERY_PAYOUT_CANCEL_NOT_PERMITTED                  = 'Cancelling a Fee Recovery Payout is not permitted';
     const BAD_REQUEST_INTERNAL_FUND_ACCOUNT_UPDATE_NOT_PERMITTED                = 'Updating an internal Razorpay Fund Account is not permitted';
     const BAD_REQUEST_INTERNAL_FUND_ACCOUNT_CREATION_NOT_PERMITTED              = 'Creating a fund account for an Internal Razopay contact is not permitted';
+    const BAD_REQUEST_PAYOUT_TO_INTERNAL_FUND_ACCOUNT_NOT_PERMITTED             = 'Creating a payout to an internal Razorpay Fund Account is not permitted';
+    const BAD_REQUEST_FEE_RECOVERY_INVALID_STATUS                               = 'Invalid status for fee recovery';
+    const BAD_REQUEST_FEE_RECOVERY_INVALID_STATUS_TRANSITION                    = 'Invalid status transition for fee recovery';
+    const BAD_REQUEST_FEE_RECOVERY_INCORRECT_BALANCE                            = 'Fee Recovery can only be done for banking balance of type direct';
+    const BAD_REQUEST_FEE_RECOVERY_ALREADY_INITIATED                            = 'Fee Recovery already initiated for one or more payouts/reversals';
+    const BAD_REQUEST_FEE_RECOVERY_AMOUNT_INSUFFICIENT                          = 'Amount is insufficient to make a fee recovery payout';
+    const BAD_REQUEST_FEE_RECOVERY_CREATE_ATTEMPT_INVALID_SOURCE_ENTITY         = 'Attempting to create a fee recovery for an unsupported source entity';
+    const BAD_REQUEST_FEE_RECOVERY_INVALID_TYPE                                 = 'Invalid type for fee recovery';
+    const BAD_REQUEST_FEE_RECOVERY_BULK_UPDATE_ERROR                            = 'Error while updating status of existing payout\'s/reversal\'s fee_recovery entity';
+    const BAD_REQUEST_FEE_RECOVERY_FOR_GIVEN_ENTITY_ALREADY_EXISTS              = 'Entry for given source entity already exists';
+    const BAD_REQUEST_FEE_RECOVERY_FAILED_PAYOUT_TO_REVERSAL                    = 'Credit entry corresponding to reversal\'s payout already exists';
+    const BAD_REQUEST_FEE_RECOVERY_INCORRECT_TIMESTAMPS                         = 'Start timestamp cannot be greater than end timestamp';
 
     // payout links
     const BAD_REQUEST_CANNOT_GENERATE_OTP_WITHOUT_PHONE_AND_EMAIL              = 'Provided contact neither has email nor phone number';
