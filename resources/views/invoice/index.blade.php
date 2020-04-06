@@ -112,19 +112,7 @@
         }
     </style>
 
-    <script src="https://cdn.razorpay.com/static/analytics/bundle.js" onload="initAnalytics()" async></script>
-
-    <script>
-        function initAnalytics() {
-            analytics.init(['ga', 'hotjar'], window.location.hostname.indexOf('razorpay.com') < 0);
-            analytics.track('ga', 'pageview');
-
-
-            if (typeof window.hj === 'function') {
-                window.hj('tagRecording', ['invoice_hosted']);
-            }
-        }
-    </script>
+    <script src="https://cdn.razorpay.com/static/analytics/bundle.js"></script>
 </head>
 <body>
 
