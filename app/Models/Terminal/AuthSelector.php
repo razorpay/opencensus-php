@@ -95,6 +95,10 @@ class AuthSelector extends Base\Core
         // filtered list of terminals is used to further filter upon using the other
         // filter classes.
         //
+
+        // Temporary changes to be removed
+        $verbose = true;
+
         $filteredTerminals = $terminals;
 
         $filterRules = $this->getRulesForFiltering($rules);
@@ -114,6 +118,9 @@ class AuthSelector extends Base\Core
     // $shouldHitRoutingService is not being used. add to make this func signature compatible with RZP\Models\Terminal\Selector::sortTerminals()
     protected function sortTerminals(array $terminals, Base\PublicCollection $rules, bool $verbose = false, bool $shouldHitRoutingService = false): array
     {
+        // Temporary changes to be removed
+        $verbose = true;
+
         $sortedTerminals = $terminals;
 
         $sorterRules = $this->getRulesForSorting($rules);
