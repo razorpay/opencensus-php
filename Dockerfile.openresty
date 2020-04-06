@@ -15,9 +15,11 @@ RUN set -eu && \
     composer config -g "github-oauth.github.com" ${GIT_TOKEN} && \
     composer config -g repos.packagist composer "https://packagist.in" && \
     composer global require hirak/prestissimo && \
-    composer install --no-dev --no-interaction && \
+    composer install --no-dev --no-interaction --no-autoloader --no-scripts && \
     rm -rf /root/.composer && \
     composer clear-cache && \
+    composer dump-autoload -o && \
+    php artisan optimize && \
     php artisan rzp:write_routes_meta
 
 
