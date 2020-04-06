@@ -548,6 +548,17 @@ class FeaturesTest extends TestCase
         Mail::assertQueued(EsEligibleMail::class);
     }
 
+    public function testEsEligibleEmailShouldNotNotify()
+    {
+        Mail::fake();
+
+        $this->addFeatures(Mode::LIVE, true, [Constants::ES_AUTOMATIC]);
+
+        $this->addFeatures(Mode::LIVE, true, [Constants::ES_ON_DEMAND]);
+
+        Mail::assertNotQueued(EsEligibleMail::class);
+    }
+
     /*
      * Test cases for feature routes accessible from the merchant
      * dashboard begin from here.

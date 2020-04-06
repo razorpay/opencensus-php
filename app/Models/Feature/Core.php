@@ -154,11 +154,11 @@ class Core extends Base\Core
 
         $isLiveMode = $this->isLiveMode();
 
+        $merchant = $this->repo->merchant->findOrFailPublic($entityId);
+
         if (($feature->isProductFeature() === true) and
             (($shouldSync === true) or ($isLiveMode === true)))
         {
-            $merchant = $this->repo->merchant->findOrFailPublic($entityId);
-
             $visibleFeatures = Constants::$visibleFeaturesMap;
             $featureName     = $feature->getName();
             $merchantEmail   = $merchant->getEmail();
@@ -184,12 +184,11 @@ class Core extends Base\Core
         }
 
         else if(($feature->getName() === Constants::ES_ON_DEMAND) and
+                (in_array(Constants::ES_AUTOMATIC, $merchant->getEnabledFeatures()) === false) and
                 ($isLiveMode === true) and
                 ($shouldSync === true))
         {
-            $merchant = $this->repo->merchant->findOrFailPublic($entityId);
-
-            $merchantEmail   = $merchant->getEmail();
+            $merchantEmail = $merchant->getEmail();
 
             $data['contact_name']  = $merchant->getName();
             $data['contact_email'] = $merchantEmail;
