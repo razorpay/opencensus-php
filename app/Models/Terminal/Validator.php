@@ -103,6 +103,7 @@ class Validator extends Base\Validator
         Payment\Gateway::NETBANKING_FEDERAL,
         Payment\Gateway::NETBANKING_CUB,
         Payment\Gateway::NETBANKING_SBI,
+        Payment\Gateway::NETBANKING_KOTAK,
         Payment\Gateway::ENACH_NPCI_NETBANKING,
         Payment\Gateway::EMI_SBI,
         Payment\Gateway::WALLET_OLAMONEY,
@@ -925,6 +926,15 @@ class Validator extends Base\Validator
         Entity::TYPE                        => 'sometimes|array',
     ];
 
+    protected static $netbankingKotakEditTerminalRules = [
+        Entity::GATEWAY_MERCHANT_ID     => 'sometimes|string',
+        Entity::GATEWAY_MERCHANT_ID2    => 'sometimes|string',
+        Entity::GATEWAY_SECURE_SECRET   => 'sometimes|alpha_num|size:16',
+        Entity::NETWORK_CATEGORY        => 'sometimes|string|max:30',
+        Entity::TPV                     => 'sometimes|in:0,1,2',
+        Entity::TYPE                    => 'sometimes|array',
+    ];
+
     protected static $netbankingSbiEditTerminalRules = [
         Entity::GATEWAY_MERCHANT_ID         => 'sometimes|string',
         Entity::GATEWAY_MERCHANT_ID2        => 'sometimes|string',
@@ -1214,12 +1224,12 @@ class Validator extends Base\Validator
         'terminal_ids' => 'required|sequential_array',
         'attributes'   => 'sometimes|associative_array',
     ];
-    
+
     protected static $updateTerminalsBulkAttributesRules = [
         Entity::STATUS               => 'sometimes',
         Entity::ENABLED              => 'required_with:status',
     ];
-    
+
     protected static $matchAttributes = [
         Entity::GATEWAY,
         Entity::GATEWAY_ACQUIRER,
