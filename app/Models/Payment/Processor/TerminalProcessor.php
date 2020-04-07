@@ -106,7 +106,9 @@ class TerminalProcessor extends Base\Core
                 'merchant' => $this->payment->merchant,
             ];
 
-            $terminalSelector = new Terminal\Selector($input);
+            $options = $this->getTerminalSelectionOptions();
+
+            $terminalSelector = new Terminal\Selector($input, $options);
 
             $terminalAuthZ = $this->payment->terminal->toArray();
 

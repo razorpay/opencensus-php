@@ -398,6 +398,7 @@ class Selector extends Base\Core
                 'authentication_terminals'          => array_values($authNTerminals),
                 'valid_auths'                       => $validAuth,
                 'selected_authentication_terminals' => array_values($selectedAuthN),
+                'chance'                            => $this->options->getChance(),
                 //'max_terminals'                   => $payment->getMaxRetryAttempt(),
             ];
 
