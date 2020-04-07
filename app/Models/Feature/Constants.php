@@ -148,6 +148,7 @@ class Constants
     const DCC                             = 'dcc';
 
     const COVID                           = 'covid';
+    const SR_SENSITIVE                    = 'sr_sensitive';
 
     /**
      * Disables retry option in checkout
@@ -548,6 +549,7 @@ class Constants
         self::CYBERSOURCE_VAS                 => true,
         self::CHECKOUT_DISABLE_RETRY          => true,
         self::COVID                           => true,
+        self::SR_SENSITIVE                    => true,
     ];
 
     // Entity type constants
