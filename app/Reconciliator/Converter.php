@@ -50,7 +50,8 @@ class Converter extends Base\Core
     const MAX_SHEETS_ALLOWED = 3;
     const ROW_CHUNK_SIZE = 3000;
 
-    const THRESHOLD_FOR_COLUMN_HEADER_MISMATCH = 8;
+    const THRESHOLD_FOR_COLUMN_HEADER_MISMATCH = 15;
+    const THRESHOLD_FOR_METADATA_ROW_COUNT     = 1;
 
     protected $dataArray;
 
@@ -265,7 +266,7 @@ class Converter extends Base\Core
                 }
                 else
                 {
-                    if (abs($columnHeadersCount - count($row)) > self::THRESHOLD_FOR_COLUMN_HEADER_MISMATCH)
+                    if ($this->isValidRow($columnHeadersCount, count($row)) === false)
                     {
                         //
                         // This can happen if any row in the file has dummy data.
@@ -556,7 +557,7 @@ class Converter extends Base\Core
             }
             else
             {
-                if (abs(count($sheetHeaders) - count($row)) <= self::THRESHOLD_FOR_COLUMN_HEADER_MISMATCH)
+                if ($this->isValidRow(count($sheetHeaders), count($row)) === true)
                 {
                     $allSheetsContent[$sheetName][] = array_combine_pad($sheetHeaders, $row);
                 }
@@ -626,7 +627,7 @@ class Converter extends Base\Core
                 continue;
             }
 
-            if (abs(count($sheetHeaders) - count($row)) <= self::THRESHOLD_FOR_COLUMN_HEADER_MISMATCH)
+            if ($this->isValidRow(count($sheetHeaders), count($row)) === true)
             {
                 $allSheetsContent[$sheetName][] = array_combine($sheetHeaders, $row);
             }
@@ -740,6 +741,28 @@ class Converter extends Base\Core
         {
             return false;
         }
+    }
+
+    /**
+     * Returns true if this is a valid row.
+     * If the header column and row count mismatch is beyond the
+     * threshold defined, we consider it as invalid row (i.e. metadata)
+     *
+     * If the diff in count <= threshold, but the row count is 1 then
+     * also we return false, as it is a metadata row.
+     * @param $headerCount
+     * @param $rowCount
+     * @return bool
+     */
+    protected function isValidRow($headerCount, $rowCount)
+    {
+        if ((abs($headerCount - $rowCount) > self::THRESHOLD_FOR_COLUMN_HEADER_MISMATCH) or
+            ($rowCount <= self::THRESHOLD_FOR_METADATA_ROW_COUNT))
+        {
+            return false;
+        }
+
+        return true;
     }
 
     protected function getTotalLinesToRead(string $filePath, array $linesToSkip)
