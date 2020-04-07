@@ -1014,9 +1014,6 @@ class PublicErrorDescription
     const BAD_REQUEST_BANKING_ACCOUNT_ALREADY_ACTIVATED                             = 'Operation failed, your account is already activated';
     const BAD_REQUEST_BANKING_ACCOUNT_ACTIVATION_PERMITTED_ONLY_ON_ADMIN_AUTH       = 'Access forbidden for requested resource';
 
-    // stork
-    const BAD_REQUEST_STORK_WEBHOOK_ALREADY_CREATED                                 = 'Webhook setting already exists';
-
     // Excel Store
     const BAD_REQUEST_EXCEL_STORE_FILE_PARAM                                        = 'File field should of type file';
 

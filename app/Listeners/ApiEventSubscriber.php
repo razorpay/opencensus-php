@@ -92,12 +92,6 @@ class ApiEventSubscriber extends Base\Core
      */
     protected $activeAppsWebhooks     = [];
 
-    /**
-     * Webhook\Stork is initialized with a product(i.e. banking, primary).
-     * @var string|null
-     */
-    protected $storkProduct = Merchant\Product::PRIMARY;
-
     const MAIN        = 'main';
     const WITH        = 'with';
     const MERCHANT_ID = 'merchant_id';
@@ -792,7 +786,7 @@ class ApiEventSubscriber extends Base\Core
     }
 
     protected function onTerminalCreated(Terminal\Entity $terminal)
-    {
+    {        
         $payload = $this->getTerminalCreatedPayload($terminal);
 
         $this->prepareAndDispatchWebhook($payload);
@@ -962,9 +956,6 @@ class ApiEventSubscriber extends Base\Core
             'entity' => $fundAccountValidation->toArrayPublic()
         ];
 
-        $this->setMerchantProductForStork($fundAccountValidation->merchant,
-                                          optional($fundAccountValidation->balance)->getType());
-
         return $partialPayload;
     }
 
@@ -1054,8 +1045,6 @@ class ApiEventSubscriber extends Base\Core
             ],
         ];
 
-        $this->setMerchantProductForStork($txn->merchant, optional($txn->accountBalance())->getType());
-
         return $payload;
     }
 
@@ -1070,8 +1059,6 @@ class ApiEventSubscriber extends Base\Core
 
     protected function getPayoutPayload(Payout\Entity $payout): array
     {
-        $this->setMerchantProductForStork($payout->merchant, $payout->balance->getType());
-
         $merchantId = $this->getMerchantFromEntity($this->mainEntity)->getId();
 
         $variant = $this->app->razorx->getTreatment(
@@ -1082,18 +1069,18 @@ class ApiEventSubscriber extends Base\Core
 
         if (strtolower($variant) === 'on')
         {
-            $payload[Constants\Entity::PAYOUT] = [
-                'entity' => $payout->toArrayPublic(),
-            ];
-        }
-        else
-        {
-            $payload[Constants\Entity::PAYOUT] = [
-                'entity' => $payout->toArrayWebhook(),
+            return [
+                Constants\Entity::PAYOUT => [
+                    'entity' => $payout->toArrayPublic(),
+                ],
             ];
         }
 
-        return $payload;
+        return [
+            Constants\Entity::PAYOUT => [
+                'entity' => $payout->toArrayWebhook(),
+            ],
+        ];
     }
 
     protected function getPaymentPayloadWithDispute($payment)
@@ -1458,9 +1445,7 @@ class ApiEventSubscriber extends Base\Core
      * Dispatches event to stork where dispatch-able webhooks are resolved and
      * events are fired to all of them. It returns true on success.
      *
-     * @param array  $payload
-     * @param string $product
-     *
+     * @param  array   $payload
      * @return boolean
      */
     protected function dispatchEventToStork(array $payload): bool
@@ -1469,7 +1454,7 @@ class ApiEventSubscriber extends Base\Core
 
         try
         {
-            (new Stork($this->storkProduct))->processEventSafe($event, $this->getMode());
+            (new Stork)->processEventSafe($event, $this->getMode());
         }
         catch (Throwable $e)
         {
@@ -1480,32 +1465,5 @@ class ApiEventSubscriber extends Base\Core
         }
 
         return true;
-    }
-
-    /**
-     * Sets storkProduct attribute to banking if balanceType is such but temporarily
-     * controlled via a feature. This should be removed later.
-     *
-     * @param Merchant\Entity $merchant
-     * @param string|null     $balanceType
-     *
-     * @return void
-     */
-    protected function setMerchantProductForStork(Merchant\Entity $merchant, $balanceType)
-    {
-        // feature flag check is for stork migration
-        if (($balanceType === Merchant\Balance\Type::BANKING) and
-            $merchant->isFeatureEnabled(Feature\Constants::BANKING_STORK_MIGRATION))
-        {
-            $this->trace->info(TraceCode::STORK_DISPATCH_EVENT_REQUEST_PRODUCT_BANKING,
-                               ['merchant_id' => $merchant->getId()]);
-
-            $this->storkProduct = Merchant\Product::BANKING;
-
-            return;
-        }
-
-        // default value
-        $this->storkProduct = Merchant\Product::PRIMARY;
     }
 }

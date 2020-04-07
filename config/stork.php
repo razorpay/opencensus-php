@@ -20,25 +20,13 @@ return [
     // Authentication for api calls to stork for each mode.
     // Each mode's username acts as owning service name as well.
     'auth' => [
-        'primary' => [
-            'live' => [
-                'user' => 'api-live',
-                'pass' => env('STORK_AUTH_USER_LIVE'),
-            ],
-            'test' => [
-                'user' => 'api-test',
-                'pass' => env('STORK_AUTH_USER_TEST'),
-            ],
+        'live' => [
+            'user' => 'api-live',
+            'pass' => env('STORK_AUTH_USER_LIVE'),
         ],
-        'banking' => [
-            'live' => [
-                'user' => 'rx-live',
-                'pass' => env('STORK_AUTH_USER_LIVE'),
-            ],
-            'test' => [
-                'user' => 'rx-test',
-                'pass' => env('STORK_AUTH_USER_TEST'),
-            ],
+        'test' => [
+            'user' => 'api-test',
+            'pass' => env('STORK_AUTH_USER_TEST'),
         ],
     ],
 ];

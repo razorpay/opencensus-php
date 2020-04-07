@@ -151,11 +151,6 @@ class Repository extends Base\Repository
             try
             {
                 (new Stork)->upsert($entity);
-                // Additionally if it is banking ensure a copy(and dual write on that) into stork.
-                if ($this->auth->isProductBanking())
-                {
-                    (new Stork(Merchant\Product::BANKING))->upsert($entity);
-                }
             }
             catch (\Throwable $e)
             {
