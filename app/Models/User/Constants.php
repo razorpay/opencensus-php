@@ -163,6 +163,7 @@ class Constants
         "coegcwkum@gmail.com",
         "alumni@srmist.edu.in",
         "jayaganp@srmist.edu.in",
+        "satyen.doshi@hdfcsec.com",
         "test@razorpay.com"
     ];
 }
