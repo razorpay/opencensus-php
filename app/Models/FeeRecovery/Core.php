@@ -13,6 +13,7 @@ use RZP\Models\Reversal;
 use RZP\Models\BankingAccount;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\Currency\Currency;
+use Razorpay\Trace\Logger as Trace;
 
 class Core extends Base\Core
 {
@@ -85,7 +86,12 @@ class Core extends Base\Core
 
             $feeRecoveryEntity->entity()->associate($entity);
 
-            $this->validateNoExistingFeeRecoveryDataExists($feeRecoveryEntity);
+            $skipCreation = $this->skipIfExistingFeeRecoveryDataExists($feeRecoveryEntity);
+
+            if ($skipCreation === true)
+            {
+                return;
+            }
 
             $this->repo->saveOrFail($feeRecoveryEntity);
 
@@ -99,7 +105,6 @@ class Core extends Base\Core
         },
         60,
         ErrorCode::BAD_REQUEST_FEE_RECOVERY_ANOTHER_OPERATION_IN_PROGRESS);
-
     }
 
     /**
@@ -138,7 +143,7 @@ class Core extends Base\Core
         return $feeRecoveryPayout;
     }
 
-    protected function validateNoExistingFeeRecoveryDataExists(Entity $feeRecovery)
+    protected function skipIfExistingFeeRecoveryDataExists(Entity $feeRecovery): bool
     {
         /** @var Base\PublicEntity $source */
         $source = $feeRecovery->entity;
@@ -165,14 +170,42 @@ class Core extends Base\Core
 
         if ($existingData->count() === 1)
         {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_FEE_RECOVERY_FOR_GIVEN_ENTITY_ALREADY_EXISTS,
-                null,
+            $this->trace->info(
+                TraceCode::FEE_RECOVERY_FOR_GIVEN_ENTITY_ALREADY_EXISTS,
                 [
                     'source_id'                 => $feeRecovery->getEntityId(),
                     'existing_fee_recovery_id'  => $existingData->first->getEntityId()
                 ]);
+
+            return true;
         }
+
+        // In case of reversals, we also need to check for existing credit entry for a payout.
+        // This is because we are now allowing transition of payout status from FAILED -> REVERSED
+        // In case of failed payouts, we already have a credit entry corresponding to this failed payout
+        // When the payout gets reversed, we shall not create another credit entry and will simply skip it
+        if ($feeRecovery->getEntityType() === Entity::REVERSAL)
+        {
+            $fetchParams = [
+                Entity::ENTITY_ID => $feeRecovery->reversal->getEntityId(),
+                Entity::TYPE      => Type::CREDIT
+            ];
+
+            $existingEntry = $this->repo->fee_recovery->fetch($fetchParams);
+
+            if($existingEntry->count() > 0)
+            {
+                $this->trace->info(
+                    TraceCode::FEE_RECOVERY_FAILED_PAYOUT_TO_REVERSAL,
+                    [
+                        'reversal_id' => $feeRecovery->getEntityId()
+                    ]);
+
+                return true;
+            }
+        }
+
+        return false;
     }
 
     protected function processFeeRecovery(Balance\Entity $balance,
