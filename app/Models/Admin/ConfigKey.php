@@ -102,6 +102,11 @@ class ConfigKey
     // Currently only banking specific routes will be affected by this
     const CREDIT_CARD_REGEX_FOR_REDACTING       = self::PREFIX . 'credit_card_regex_for_redacting';
 
+    //Following regex is used to scrub credit card numbers from logs only for banking specific routes.
+    const EMAIL_REGEX_FOR_REDACTING             = self::PREFIX . 'email_regex_for_redacting';
+    const PHONE_NUMBER_REGEX_FOR_REDACTING      = self::PREFIX . 'phone_number_regex_for_redacting';
+    const CVV_REGEX_FOR_REDACTING               = self::PREFIX . 'cvv_regex_for_redacting';
+
     const PUBLIC_KEYS = [
         self::TERMINAL_SELECTION_LOG_VERBOSE,
         self::PRICING_RULE_SELECTION_LOG_VERBOSE,
@@ -151,6 +156,9 @@ class ConfigKey
         self::RX_ACCOUNT_NUMBER_SERIES_PREFIX,
         self::RX_SHARED_ACCOUNT_ALLOWED_CHANNELS,
         self::CREDIT_CARD_REGEX_FOR_REDACTING,
+        self::EMAIL_REGEX_FOR_REDACTING,
+        self::PHONE_NUMBER_REGEX_FOR_REDACTING,
+        self::CVV_REGEX_FOR_REDACTING,
     ];
 
     public static function isSensitive(string $key)

@@ -39,6 +39,30 @@ class ApiTraceProcessor
                        "|(?:2131|1800|35\d{3})\d{11}" .      # JCB
                        ")\b/";
 
+    //This regex is taken from https://emailregex.com/
+    //This regex is used to scrub sensitive banking details from logs and stack trace too.
+    //Current enabled only for banking routes.
+    const EMAIL_REGEX = "/(?:[A-Za-z0-9!#$%&'*+\/=?^_`{|}~-]+(?:\.[A-Za-z0-9!#$%&'*+\/=?" .
+                        "^_`{|}~-]+)*|\"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-" .
+                        "\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*\")@(?:(?:[A-Za-" .
+                        "z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?\.)+[A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-" .
+                        "9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}" .
+                        "(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[A-Za-z0-9-]*[A-Za-z0-9]:" .
+                        "(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-" .
+                        "\x09\x0b\x0c\x0e-\x7f])+)\])/";
+
+    //This regex will check for 3 or 4 digits and will scrub only if before the digits .php( is not present.
+    //This has done to avoid scrubbing stack trace line numbers.
+    const CVV_REGEX = "/\b(?<!\.php\()\d{3,4}\b/";
+
+    const PHONE_NUMBER_REGEX = "/(\b|\+91)\d{10}\b/";
+
+    const EMAIL_SCRUBBED = "EMAIL_SCRUBBED";
+
+    const CVV_SCRUBBED = "CVV_SCRUBBED";
+
+    const PHONE_NUMBER_SCRUBBED = "PHONE_NUMBER_SCRUBBED";
+
     //
     // This is added to disable scrubbing.let's say we decided to kill this feature for some reason , bad RegEx or
     // what-ever. if we set it to "null" , we will expect it to not do RegEx.. however since there is a default regex,
@@ -50,7 +74,6 @@ class ApiTraceProcessor
     const SENSITIVE_KEYS = [
         'account_number',
         'name',
-        'cvv',
     ];
 
     public function __construct($app)
@@ -76,11 +99,11 @@ class ApiTraceProcessor
 
         $this->scrubCardNumberViaCcPay($record);
 
-        $this->scrubCardNumberForBankingRoutes($record);
+        $this->scrubSensitiveInfoForBankingRoutes($record);
 
         $this->overrideRequestAttributes($record);
 
-        $this->scrubSensitiveDetailsForBankingRoutes($record);
+        $this->keysBasedScrubbingForBankingRoutes($record);
 
         return $record;
     }
@@ -169,7 +192,7 @@ class ApiTraceProcessor
         $record['context'] = $context;
     }
 
-    protected function scrubCardNumberForBankingRoutes(& $record)
+    protected function scrubSensitiveInfoForBankingRoutes(& $record)
     {
         // adding Try catch here. In case some unhandled exception comes up, we don't fail the whole
         // request because of logging.
@@ -191,25 +214,49 @@ class ApiTraceProcessor
                 return;
             }
 
-            $cardRegex = (new AdminService)->getConfigKey([
-                                                              'key' => ConfigKey::CREDIT_CARD_REGEX_FOR_REDACTING
-                                                          ]);
+            $adminService = new AdminService();
+
+            $cardRegex = $adminService->getConfigKey([
+                                                         'key' => ConfigKey::CREDIT_CARD_REGEX_FOR_REDACTING
+                                                     ]);
 
             if (empty($cardRegex) === true)
             {
                 $cardRegex = self::CARD_REGEX;
             }
 
-            if (strtolower($cardRegex) === self::OFF)
+            $emailRegex = $adminService->getConfigKey([
+                                                          'key' => ConfigKey::EMAIL_REGEX_FOR_REDACTING
+                                                      ]);
+
+            if (empty($emailRegex) === true)
             {
-                return;
+                $emailRegex = self::EMAIL_REGEX;
             }
 
-            array_walk_recursive($context, function(& $item) use ($cardRegex)
+            $cvvRegex = $adminService->getConfigKey([
+                                                        'key' => ConfigKey::CVV_REGEX_FOR_REDACTING
+                                                    ]);
+
+            if (empty($cvvRegex) === true)
             {
+                $cvvRegex = self::CVV_REGEX;
+            }
+
+            $phoneNumberRegex = $adminService->getConfigKey([
+                                                                'key' => ConfigKey::PHONE_NUMBER_REGEX_FOR_REDACTING
+                                                            ]);
+
+            if (empty($phoneNumberRegex) === true)
+            {
+                $phoneNumberRegex = self::PHONE_NUMBER_REGEX;
+            }
+
+            array_walk_recursive($context, function(& $item) use ($cardRegex, $emailRegex, $cvvRegex, $phoneNumberRegex) {
                 if (is_string($item) === true)
                 {
-                    if (preg_match_all($cardRegex, $item, $matches) !== false)
+                    if ((strtolower($cardRegex) !== self::OFF) and
+                        (preg_match_all($cardRegex, $item, $matches) !== false))
                     {
                         $matches = $matches[0];
 
@@ -218,9 +265,38 @@ class ApiTraceProcessor
                             $item = str_replace($match, 'CARD_NUMBER_SCRUBBED' . '(' . strlen($match) . ')', $item);
                         }
                     }
+                    if ((strtolower($emailRegex) !== self::OFF) and
+                        (preg_match_all($emailRegex, $item, $matches) !== false))
+                    {
+                        $matches = $matches[0];
+
+                        foreach ($matches as $match)
+                        {
+                            $item = str_replace($match, self::EMAIL_SCRUBBED . '(' . strlen($match) . ')', $item);
+                        }
+                    }
+                    if ((strtolower($cvvRegex) !== self::OFF) and
+                        (preg_match_all($cvvRegex, $item, $matches) !== false))
+                    {
+                        $matches = $matches[0];
+
+                        foreach ($matches as $match)
+                        {
+                            $item = str_replace($match, self::CVV_SCRUBBED . '(' . strlen($match) . ')', $item);
+                        }
+                    }
+                    if ((strtolower($phoneNumberRegex) !== self::OFF) and
+                        (preg_match_all($phoneNumberRegex, $item, $matches) !== false))
+                    {
+                        $matches = $matches[0];
+
+                        foreach ($matches as $match)
+                        {
+                            $item = str_replace($match, self::PHONE_NUMBER_SCRUBBED . '(' . strlen($match) . ')', $item);
+                        }
+                    }
                 }
             });
-
             $record['context'] = $context;
         }
         catch (\Exception $e)
@@ -228,58 +304,70 @@ class ApiTraceProcessor
             $this->app['trace']->traceException(
                 $e,
                 Logger::ERROR,
-                TraceCode::CREDIT_CARD_REDACTION_FAILURE_EXCEPTION
+                TraceCode::SENSITIVE_BANKING_DETAILS_REDACTION_FAILURE_EXCEPTION
             );
-
-            return;
         }
     }
 
-    protected function scrubSensitiveDetailsForBankingRoutes(& $record)
+    protected function keysBasedScrubbingForBankingRoutes(& $record)
     {
-        try {
+        try
+        {
             $route = optional($this->app['router'])->currentRouteName();
 
             $bankingRoutes = Route::getBankingSpecificRoutes();
 
-            if (in_array($route, $bankingRoutes, true)) {
+            if (in_array($route, $bankingRoutes, true) === true)
+            {
                 $record['context'] = $this->visitEachNode($record['context']);
             }
-        } catch (\Exception $e) {
+        }
+        catch (\Exception $e)
+        {
             $this->app['trace']->traceException(
                 $e,
                 Logger::ERROR,
-                TraceCode::SENSITIVE_BANKING_DETAILS_SCRUBBING_FAILURE_EXCEPTION
+                TraceCode::KEYS_BASED_SCRUBBING_BANKING_INFO_FAILURE_EXCEPTION
             );
         }
 
     }
 
-    protected function visitEachNode(&$context)
+    protected function visitEachNode(& $context)
     {
-        if (!empty($context)) {
-            foreach ($context as $key => &$value) {
-                if (in_array($key, self::SENSITIVE_KEYS, true)) {
+        if (!empty($context))
+        {
+            foreach ($context as $key => &$value)
+            {
+                if (in_array($key, self::SENSITIVE_KEYS, true) === true)
+                {
                     $this->scrubData($value);
                 }
-                if (is_array($value)) {
+                if (is_array($value) === true)
+                {
                     $this->visitEachNode($value);
                 }
             }
         }
+
         return $context;
     }
 
-    protected function scrubData(&$value)
+    protected function scrubData(& $value)
     {
-        if (is_array($value)) {
-            foreach ($value as &$val) {
-                if (strpos($val, 'CARD_NUMBER_SCRUBBED') === false) {
-                    $val = 'SCRUBBED' . '(' . strlen($val) . ')';
-                }
+        if (is_array($value) === true)
+        {
+            foreach ($value as & $val)
+            {
+                $val = 'SCRUBBED' . '(' . strlen($val) . ')';
             }
-        } else if (is_string($value) and strpos($value, 'CARD_NUMBER_SCRUBBED') === false) {
-            $value = 'SCRUBBED' . '(' . strlen($value) . ')';
+        }
+        else
+        {
+            if (is_string($value) === true)
+            {
+                $value = 'SCRUBBED' . '(' . strlen($value) . ')';
+            }
         }
     }
 
@@ -292,7 +380,8 @@ class ApiTraceProcessor
      *
      * Refer: Razorpay\Trace\Processor\WebProcessor@getServerData.
      *
-     * @param  array &$record
+     * @param array &$record
+     *
      * @return void
      */
     protected function overrideRequestAttributes(array &$record)

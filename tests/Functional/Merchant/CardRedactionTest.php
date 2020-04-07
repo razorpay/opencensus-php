@@ -36,6 +36,26 @@ class CardRedactionTest extends TestCase
         return $response;
     }
 
+    protected function setEmailPhoneNumberCVVRegexViaRedis($email, $phone, $cvv)
+    {
+        $this->ba->adminAuth();
+
+        $request = [
+            'method'  => 'PUT',
+            'url'     => '/config/keys',
+            'content' => [
+                "config:email_regex_for_redacting" => $email,
+                "config:phone_number_regex_for_redacting" => $phone,
+                "config:cvv_regex_for_redacting" => $cvv
+
+            ]
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        return $response;
+    }
+
     protected function mockRouter($route)
     {
         $routerMock = $this->getMockBuilder(Router::class)
@@ -384,7 +404,7 @@ class CardRedactionTest extends TestCase
                 "stack"   => [
                     "#0 /app/app/Models/VirtualAccount/Processor.php(70)=>" .
                      "RZP\\Models\\BankTransfer\\Processor->isDuplicate(Object(RZP\\Models\\BankTransfer\\Entity))",
-                    "#1 /app/app/Models/BankTransfer/Core.php(102)=> RZP\\Models\\VirtualAccount\\Processor->" .
+                    "#1 /app/app/Models/BankTransfer/Core.php(02)=> RZP\\Models\\VirtualAccount\\Processor->" .
                     "process(Object(RZP\\Models\\BankTransfer\\Entity))",
                 ]
             ]
@@ -411,7 +431,7 @@ class CardRedactionTest extends TestCase
                 "stack"   => [
                     "#0 /app/app/Models/VirtualAccount/Processor.php(70)=>" .
                     "RZP\\Models\\BankTransfer\\Processor->isDuplicate(Object(RZP\\Models\\BankTransfer\\Entity))",
-                    "#1 /app/app/Models/BankTransfer/Core.php(102)=> RZP\\Models\\VirtualAccount\\Processor->" .
+                    "#1 /app/app/Models/BankTransfer/Core.php(02)=> RZP\\Models\\VirtualAccount\\Processor->" .
                     "process(Object(RZP\\Models\\BankTransfer\\Entity))",
                 ]
             ]
@@ -579,5 +599,355 @@ class CardRedactionTest extends TestCase
         $this->assertArraySelectiveEquals($expectedResponse, $updatedRecord);
 
         $this->app->instance('router', $originalRouter);
+    }
+
+    public function testEmailCvvMobile()
+    {
+        /** @var ApiTraceProcessor $trace */
+        $trace = new ApiTraceProcessor($this->app);
+
+        $this->mockRouter('payout_create');
+
+        $record = [
+            'context' => [
+                'email' => 'xyz@razorpay.com',
+                'mobile' => '6302839647',
+                'cvv' => '921',
+                'cc_number' => "4012888888881881",
+            ]
+        ];
+
+        $updatedRecord =  $trace($record);
+
+        $expectedResponse = [
+            'context' => [
+                'email' => 'EMAIL_SCRUBBED(16)',
+                'mobile' => 'PHONE_NUMBER_SCRUBBED(10)',
+                'cvv' => 'CVV_SCRUBBED(3)',
+                'cc_number' => 'CARD_NUMBER_SCRUBBED(16)',
+            ]
+        ];
+
+        $this->assertArraySelectiveEquals($expectedResponse, $updatedRecord);
+    }
+
+    public function testEmailCvvMobileForNonBankingRoute()
+    {
+        /** @var ApiTraceProcessor $trace */
+        $trace = new ApiTraceProcessor($this->app);
+
+        $this->mockRouter('checkout');
+
+        $record = [
+            'context' => [
+                'email' => 'xyz@razorpay.com',
+                'mobile' => '6302839647',
+                'cvv' => '921',
+                'cc_number' => "4012888888881881",
+            ]
+        ];
+
+        $updatedRecord =  $trace($record);
+
+        $expectedResponse = [
+            'context' => [
+                'email' => 'xyz@razorpay.com',
+                'mobile' => '6302839647',
+                'cvv' => '921',
+                'cc_number' => "4012888888881881",
+            ]
+        ];
+
+        $this->assertArraySelectiveEquals($expectedResponse, $updatedRecord);
+    }
+
+    public function testInvalidEmailCvvMobile()
+    {
+        /** @var ApiTraceProcessor $trace */
+        $trace = new ApiTraceProcessor($this->app);
+
+        $this->mockRouter('payout_create');
+
+        $record = [
+            'context' => [
+                'email' => 'xyzrazorpay.com',
+                'mobile' => '6302839647123',
+                'cvv' => '92155',
+            ]
+        ];
+
+        $updatedRecord =  $trace($record);
+
+        $expectedResponse = [
+            'context' => [
+                'email' => 'xyzrazorpay.com',
+                'mobile' => '6302839647123',
+                'cvv' => '92155',
+            ]
+        ];
+
+        $this->assertArraySelectiveEquals($expectedResponse, $updatedRecord);
+    }
+
+    public function testEmailCVVNumberForExceptionData()
+    {
+        /** @var ApiTraceProcessor $trace */
+        $trace = new ApiTraceProcessor($this->app);
+
+        $this->mockRouter('payout_create');
+
+        $record = [
+            "timestamp" => "2020-03-27T07:08:13.893",
+            "code"      => "BANK_TRANSFER_PROCESSING_FAILED",
+            "message"   => "BANK_TRANSFER_PROCESSING_FAILED",
+            "context"   => [
+                "class"   => "RZP\\Exception\\GatewayErrorException",
+                "code"    => "BAD_REQUEST_PAYMENT_FAILED",
+                "message" => "Payment failed\nGateway Error Code=> \nGateway Error Desc=> ",
+                "data"    => [
+                    "payer_account"  => "4012888888881881",
+                    "payer_ifsc"     => "HDFC0000001",
+                    "mode"           => "neft",
+                    "transaction_id" => "AYDIC1O4JPXPLBPTTUOOQ9",
+                    "time"           => 1543052014,
+                    "amount"         => 10000,
+                    "description"    => "Test bank transfer",
+                    "payee_account"  => "371449635398431",
+                    "payee_ifsc"     => "RAZRB000000",
+                    "payee_email"    => "xyz@razorpay.com",
+                    "payee_phone"    => "6302839641",
+                    "payee_cvv"      => "564",
+                ],
+                "stack"   => [
+                    "#0 /app/app/Models/VirtualAccount/Processor.php(170)=>" .
+                    "RZP\\Models\\BankTransfer\\Processor->isDuplicate(Object(RZP\\Models\\BankTransfer\\Entity))",
+                    "#1 /app/app/Models/BankTransfer/Core.php(10)=> RZP\\Models\\VirtualAccount\\Processor->" .
+                    "process(Object(RZP\\Models\\BankTransfer\\Entity))",
+                ]
+            ]
+        ];
+
+        $updatedRecord =  $trace($record);
+
+        $expectedResponse = [
+            "context" => [
+                "class"   => "RZP\\Exception\\GatewayErrorException",
+                "code"    => "BAD_REQUEST_PAYMENT_FAILED",
+                "message" => "Payment failed\nGateway Error Code=> \nGateway Error Desc=> ",
+                "data"    => [
+                    "payer_account"  => "CARD_NUMBER_SCRUBBED(16)",
+                    "payer_ifsc"     => "HDFC0000001",
+                    "mode"           => "neft",
+                    "transaction_id" => "AYDIC1O4JPXPLBPTTUOOQ9",
+                    "time"           => 1543052014,
+                    "amount"         => 10000,
+                    "description"    => "Test bank transfer",
+                    "payee_account"  => "CARD_NUMBER_SCRUBBED(15)",
+                    "payee_ifsc"     => "RAZRB000000",
+                    "payee_email"    => "EMAIL_SCRUBBED(16)",
+                    "payee_phone"    => "PHONE_NUMBER_SCRUBBED(10)",
+                    "payee_cvv"      => "CVV_SCRUBBED(3)",
+                ],
+                "stack"   => [
+                    "#0 /app/app/Models/VirtualAccount/Processor.php(170)=>" .
+                    "RZP\\Models\\BankTransfer\\Processor->isDuplicate(Object(RZP\\Models\\BankTransfer\\Entity))",
+                    "#1 /app/app/Models/BankTransfer/Core.php(10)=> RZP\\Models\\VirtualAccount\\Processor->" .
+                    "process(Object(RZP\\Models\\BankTransfer\\Entity))",
+                ]
+            ]
+        ];
+
+        $this->assertArraySelectiveEquals($expectedResponse, $updatedRecord);
+    }
+
+    public function testEmailCVVPhoneInfoInExceptionStackTrace()
+    {
+        /** @var ApiTraceProcessor $trace */
+        $trace = new ApiTraceProcessor($this->app);
+
+        $this->mockRouter('payout_create');
+
+        $record = [
+            "timestamp" => "2020-03-26T14:43:12.457",
+            "code"      => "ERROR_EXCEPTION",
+            "message"   => "Unhandled critical exception occured",
+            "context"   => [
+                "class"   => "RZP\\Exception\\GatewayErrorException",
+                "code"    => "GATEWAY_ERROR_UNKNOWN_ERROR",
+                "message" => "Payment processing failed due to error at bank or wallet gateway\nGateway Error Code=> \nGateway Error Desc: ",
+                "data"    => [],
+                "stack"   => [
+                    "#0 /app/app/Http/Controllers/BankTransferController.php(125): RZP\\Models\\BankTransfer\\Service" .
+                    "->process1(371449635398431, 4012888888881881, NormalText, 37144963539, xyz@razorpay.com, Random, 6302839641, 567, abcd123@razorpay.com)",
+                    "#1 [internal function]: RZP\\Http\\Controllers\\BankTransferController->processBankTransfer()",
+                    "#2 /app/vendor/laravel/framework/src/Illuminate/Routing/Controller.php(54): call_user_func_array(Array, Array)",
+                ]
+            ]
+        ];
+
+        $updatedRecord =  $trace($record);
+
+        $expectedResponse = [
+            "timestamp" => "2020-03-26T14:43:12.457",
+            "code"      => "ERROR_EXCEPTION",
+            "message"   => "Unhandled critical exception occured",
+            "context"   => [
+                "class"   => "RZP\\Exception\\GatewayErrorException",
+                "code"    => "GATEWAY_ERROR_UNKNOWN_ERROR",
+                "message" => "Payment processing failed due to error at bank or wallet gateway\nGateway Error Code=> \nGateway Error Desc: ",
+                "data"    => [],
+                "stack"   => [
+                    "#0 /app/app/Http/Controllers/BankTransferController.php(125): RZP\\Models\\BankTransfer\\Service" .
+                    "->process1(CARD_NUMBER_SCRUBBED(15), CARD_NUMBER_SCRUBBED(16), NormalText, 37144963539, EMAIL_SCRUBBED(16), Random, PHONE_NUMBER_SCRUBBED(10), CVV_SCRUBBED(3), EMAIL_SCRUBBED(20))",
+                    "#1 [internal function]: RZP\\Http\\Controllers\\BankTransferController->processBankTransfer()",
+                    "#2 /app/vendor/laravel/framework/src/Illuminate/Routing/Controller.php(54): call_user_func_array(Array, Array)",
+                ]
+            ]
+        ];
+
+        $this->assertArraySelectiveEquals($expectedResponse, $updatedRecord);
+    }
+
+    public function testRedactionViaRegexFromRedisWithInvalidRegex()
+    {
+        /** @var ApiTraceProcessor $trace */
+        $trace = new ApiTraceProcessor($this->app);
+
+        $emailRegex = "/^3[47][0-9]{13}$/";
+        $cvvRegex   = "/^3[4][0-9]/";
+        $phoneRegex   = "/^\d{1-9}/";
+
+        $this->setEmailPhoneNumberCVVRegexViaRedis($emailRegex, $phoneRegex, $cvvRegex);
+
+        $record = [
+            'context' => [
+                'email' => 'xyz@razorpay.com',
+                'cvv'   => '567',
+                'phone' => '9177278066',
+            ]
+        ];
+
+        $this->mockRouter('payout_create');
+
+        $updatedRecord =  $trace($record);
+
+        $expectedResponse = [
+            'context' => [
+                'email' => 'xyz@razorpay.com',
+                'cvv'   => '567',
+                'phone' => '9177278066',
+            ]
+        ];
+
+        $this->assertArraySelectiveEquals($expectedResponse, $updatedRecord);
+    }
+
+    // In this test first scrubbing is disabled and then enabled again
+    public function disablingAndEnablingRegex()
+    {
+        /** @var ApiTraceProcessor $trace */
+        $trace = new ApiTraceProcessor($this->app);
+
+        $this->setEmailPhoneNumberCVVRegexViaRedis('off', 'off', 'off');
+
+        $record = [
+            'context' => [
+                'email' => 'xyz@razorpay.com',
+                'cvv'   => '567',
+                'phone' => '9177278066',
+            ]
+        ];
+
+        $originalRouter = $this->app['router'];
+
+        $this->mockRouter('payout_create');
+
+        $updatedRecord =  $trace($record);
+
+        $expectedResponse = [
+            'context' => [
+                'email' => 'xyz@razorpay.com',
+                'cvv'   => '567',
+                'phone' => '9177278066',
+            ]
+        ];
+
+        $this->assertArraySelectiveEquals($expectedResponse, $updatedRecord);
+
+        $this->app->instance('router', $originalRouter);
+
+        $this->setEmailPhoneNumberCVVRegexViaRedis('/([a-z0-9_\.\-])+\@(([a-z0-9\-])+\.)+([a-z0-9]{2,4})+/', '/(\b|\+91)\d{10}\b/', '/\b(?<!\.php\()\d{3,4}\b/');
+
+        $this->mockRouter('payout_create');
+
+        $updatedRecord1 =  $trace($record);
+
+        $expectedResponse1 = [
+            'context' => [
+                'email' => 'EMAIL_SCRUBBED(16)',
+                'cvv'   => 'CVV_SCRUBBED(3)',
+                'phone' => 'PHONE_NUMBER_SCRUBBED(10)',
+            ]
+        ];
+
+        $this->assertArraySelectiveEquals($expectedResponse1, $updatedRecord1);
+    }
+
+    public function testMultipleEmailCvvMobile()
+    {
+        /** @var ApiTraceProcessor $trace */
+        $trace = new ApiTraceProcessor($this->app);
+
+        $this->mockRouter('payout_create');
+
+        $record = [
+            'context' => [
+                'email' => 'xyz@razorpay.com',
+                'mobile' => '6302839647',
+                'mobile1' => '6302839647739191',
+                'mobile2' => '+916302839647',
+                'cvv' => '921',
+                'cc_number' => "4012888888881881",
+                'email2' => 'xyzrazorpay.com',
+                'email3' => 'x\"y\"z@razorpay.com',
+                'email4' => 'x  y "z@razorpay.com',
+                'email5' => 'xyz@razorpay.com   ',
+                'email6' => 'ABC@razorpay.com',
+                'email7' => 'test.email.with+!$symbol@domain.com',
+                'email8' => 'id-with-dash@domain.com',
+                'email10' => 'example-abc@abc-domain.com',
+                'email11' => 'admin@mailserver1',
+                'email13' => 'admin@domain.org',
+                'email15' => '0123456789xyz@example.com',
+                'email16' => 'ks@subdomain.domain.com',
+            ]
+        ];
+
+        $updatedRecord =  $trace($record);
+
+        $expectedResponse = [
+            'context' => [
+                'email' => 'EMAIL_SCRUBBED(16)',
+                'mobile' => 'PHONE_NUMBER_SCRUBBED(10)',
+                'mobile1' => '6302839647739191',
+                'mobile2' => 'PHONE_NUMBER_SCRUBBED(13)',
+                'cvv' => 'CVV_SCRUBBED(3)',
+                'cc_number' => 'CARD_NUMBER_SCRUBBED(16)',
+                'email2' => 'xyzrazorpay.com',
+                'email3' => 'x\"y\"EMAIL_SCRUBBED(14)',
+                'email4' => 'x  y "EMAIL_SCRUBBED(14)',
+                'email5' => 'EMAIL_SCRUBBED(16)   ',
+                'email6' => 'EMAIL_SCRUBBED(16)',
+                'email7' => 'EMAIL_SCRUBBED(35)',
+                'email8' => 'EMAIL_SCRUBBED(23)',
+                'email10' => 'EMAIL_SCRUBBED(26)',
+                'email11' => 'admin@mailserver1',
+                'email13' => 'EMAIL_SCRUBBED(16)',
+                'email15' => 'EMAIL_SCRUBBED(25)',
+                'email16' => 'EMAIL_SCRUBBED(23)',
+            ]
+        ];
+
+        $this->assertArraySelectiveEquals($expectedResponse, $updatedRecord);
     }
 }

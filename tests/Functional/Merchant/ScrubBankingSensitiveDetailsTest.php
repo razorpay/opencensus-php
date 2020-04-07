@@ -59,7 +59,7 @@ class ScrubBankingSensitiveDetailsTest extends TestCase
                 'bank_account' => [
                     'ifsc' => 'BKDN0611454',
                     'account_number' => 'SCRUBBED(12)',
-                    'name' => 'CARD_NUMBER_SCRUBBED(16)',
+                    'name' => 'SCRUBBED(24)',
                 ],
             ]
         ];
@@ -81,7 +81,7 @@ class ScrubBankingSensitiveDetailsTest extends TestCase
                     'ifsc' => 'BKDN0611454',
                     'bank_name' => 'YESBank',
                 ],
-                'merchantId' => '657',
+                'merchantId' => '10000000000000',
             ]
         ];
 
@@ -95,7 +95,7 @@ class ScrubBankingSensitiveDetailsTest extends TestCase
                     'ifsc' => 'BKDN0611454',
                     'bank_name' => 'YESBank',
                 ],
-                'merchantId' => '657',
+                'merchantId' => '10000000000000',
             ]
         ];
         $this->assertArraySelectiveEquals($expectedResponse, $updatedRecord);

@@ -107,6 +107,9 @@ class Validator extends Base\Validator
         ConfigKey::RX_SHARED_ACCOUNT_ALLOWED_CHANNELS => 'filled|array',
 
         ConfigKey::CREDIT_CARD_REGEX_FOR_REDACTING    => 'filled|string',
+        ConfigKey::EMAIL_REGEX_FOR_REDACTING          => 'filled|string',
+        ConfigKey::PHONE_NUMBER_REGEX_FOR_REDACTING   => 'filled|string',
+        ConfigKey::CVV_REGEX_FOR_REDACTING            => 'filled|string',
     ];
 
     protected static $setRedisKeysRules = [
