@@ -365,7 +365,7 @@ abstract class Base extends BaseCore
         assertTrue($this->txn->isGratis() === true);
         assertTrue($this->txn->getFee() === 0);
         assertTrue(
-            (($this->txn->isTypePayment() === true) and ($this->txn->getCredit() === $this->txn->getAmount())) or
+            ($this->isValidPaymentToUseAmountCredit() === true) or
             (($this->txn->isTypeTransfer() === true) and ($this->txn->getDebit() === $this->txn->getAmount())));
         assertTrue($this->txn->isTypeFundAccountValidation() === false);
 
@@ -400,6 +400,30 @@ abstract class Base extends BaseCore
 
         // Nodal balance needs to be saved because of amount credit update
         // $this->repo->balance->updateBalance($nodalBalance);
+    }
+
+    /**
+     * checks if payment data matches the required condition to use amount credit
+     * 1. If the payment is made via direct settlement terminal
+     *    then can use the amount credit
+     * 2. If the payment is not made via direct settlement terminal
+     *    then amount should match the credit field of transaction
+     *
+     * @return bool
+     */
+    private function isValidPaymentToUseAmountCredit(): bool
+    {
+        if ($this->txn->isTypePayment() === false)
+        {
+            return false;
+        }
+
+        if ($this->source->terminal->isDirectSettlement() === true)
+        {
+            return true;
+        }
+
+        return ($this->txn->getCredit() === $this->txn->getAmount());
     }
 
     protected function getMerchantCreditsOfType(string $type)

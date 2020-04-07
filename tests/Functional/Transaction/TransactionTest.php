@@ -44,7 +44,7 @@ class TransactionTest extends TestCase
         $testData = $this->testData['txnDataAfterAddingAdjustment'];
         $testData['entity_id'] = $adj['id'];
         $testData['balance_id'] = '10000000000000';
-        
+
         $this->assertArraySelectiveEquals($testData, $txn);
 
         $adjustment = $this->getDbLastEntity('adjustment');
@@ -263,6 +263,33 @@ class TransactionTest extends TestCase
         $this->assertEquals('postpaid', $txn2['fee_model']);
     }
 
+    public function testDirectSettlementAmountCredits()
+    {
+        $this->fixtures->create('credits', [
+            'type'        => 'amount',
+            'value'       => 10000,
+            'merchant_id' => '10000000000000',
+        ]);
+
+        $this->fixtures->merchant->editCredits('10000', '10000000000000');
+
+        $oldBalance = $this->getEntityById('balance', '10000000000000', true);
+
+        $payment = $this->createDirectSettlementPayment();
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $balance = $this->getEntityById('balance', '10000000000000', true);
+
+        $this->assertEquals($payment['id'], $transaction['entity_id']);
+        $this->assertEquals(0, $transaction['credit']);
+        $this->assertEquals(0, $transaction['debit']);
+        $this->assertEquals('10000000000000', $transaction['balance_id']);
+        $this->assertEquals('prepaid', $transaction['fee_model']);
+        $this->assertEquals('amount', $transaction['credit_type']);
+        $this->assertEquals($payment['fee'], $transaction['fee_credits']);
+        $this->assertEquals($oldBalance['fee_credits'] - $payment['fee'], $balance['credits']);
+    }
 
     public function testDirectSettlementFeeCredits()
     {
