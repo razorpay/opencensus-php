@@ -16,7 +16,6 @@ use Razorpay\OAuth\Client as OAuthClient;
 use Razorpay\OAuth\Application as OAuthApplication;
 
 use RZP\Exception;
-use RZP\Mail\Base\Constants as MailConstants;
 use RZP\Models\Base;
 use RZP\Error\Error;
 use RZP\Models\User;
@@ -50,6 +49,7 @@ use RZP\Error\PublicErrorDescription;
 use RZP\Mail\Merchant\EsEnabledNotify;
 use RZP\Models\Merchant\Webhook\Stork;
 use RZP\Constants\Entity as EntityConstants;
+use RZP\Mail\Base\Constants as MailConstants;
 use RZP\Models\Schedule\Task as ScheduleTask;
 use RZP\Mail\Merchant\CreateSubMerchantPartner;
 use RZP\Constants\{Mode, Entity as CE, Product};
@@ -1378,7 +1378,7 @@ class Service extends Base\Service
 
     public function createWebhook($input)
     {
-        $webhook = (new Webhook\Core)->createWebhook($this->merchant, $input);
+        $webhook = (new Merchant\Webhook\Service())->createWebhook($this->merchant, $input);
 
         return $webhook->toArrayPublic();
     }
@@ -1392,7 +1392,7 @@ class Service extends Base\Service
                 'input'      => array_except($input, [Webhook\Entity::SECRET]),
             ]);
 
-        $webhook = (new Webhook\Core)->editWebhook($this->merchant, $webhookId, $input);
+        $webhook = (new Merchant\Webhook\Service())->editWebhook($this->merchant, $webhookId, $input);
 
         return $webhook->toArrayPublic();
     }
@@ -1418,14 +1418,7 @@ class Service extends Base\Service
 
     public function getWebhooks(array $params)
     {
-        $webhooks = $this->repo->webhook->fetch($params, $this->merchant->getId());
-
-        if ($this->app['basicauth']->isHosted() === true)
-        {
-            return $webhooks->toArrayHosted();
-        }
-
-        return $webhooks->toArrayPublic();
+        return (new Merchant\Webhook\Service)->fetchWebhooks($params);
     }
 
     public function createOAuthAppWebhook(string $appId, array $input): array

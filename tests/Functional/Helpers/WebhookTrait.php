@@ -96,4 +96,145 @@ trait WebhookTrait
             $this->assertArraySelectiveEquals($expectedData['content'], $decodedBody);
         }
     }
+
+    protected function mockStorkService()
+    {
+        $this->storkMock = \Mockery::mock('RZP\Services\Stork')->makePartial();
+
+        $this->app->instance('stork_service', $this->storkMock);
+    }
+
+    protected function mockServiceStorkRequest($closure)
+    {
+        $this->storkMock->shouldReceive('request')->andReturnUsing($closure);
+    }
+
+    protected function getStorkListResponseEmpty()
+    {
+        $res = new \Requests_Response();
+        $res->body = json_encode([]);
+
+        return $res;
+    }
+
+    protected function getStorkListResponse()
+    {
+        $res = new \Requests_Response();
+
+        $body =  [
+            'webhooks' => [
+                [
+                    'id'            => 'EZ4ezgl4124qKu',
+                    'created_at'    => '2020-04-01T03:32:10Z',
+                    'service'       => 'rx-live',
+                    'owner_id'      => '10000000000000',
+                    'owner_type'    => 'merchant',
+                    'context'       => '{"mode":"test"}',
+                    'disabled_at'   => '1970-01-01T00:00:00Z',
+                    'url'           => 'http://webhook.com/v1/dummy/route',
+                    'subscriptions' => [
+                        [
+                            'id'         => 'EZ4ezhzqgKNjxI',
+                            'created_at' => '2020-04-01T03:32:10Z',
+                            'eventmeta'  => ['name' => 'payout.created',],
+                        ],
+                    ],
+                ],
+            ]
+        ];
+
+        $res->body = json_encode($body);
+
+        return $res;
+    }
+
+    protected function getStorkGetResponse()
+    {
+        $res = new \Requests_Response();
+
+        $body =  [
+            'webhook' => [
+                'id'            => 'EZ4ezgl4124qKu',
+                'created_at'    => '2020-04-01T03:32:10Z',
+                'service'       => 'rx-live',
+                'owner_id'      => '10000000000000',
+                'owner_type'    => 'merchant',
+                'context'       => '{"mode":"test"}',
+                'disabled_at'   => '1970-01-01T00:00:00Z',
+                'url'           => 'http://webhook.com/v1/dummy/route',
+                'subscriptions' => [
+                    [
+                        'id'         => 'EZ4ezhzqgKNjxI',
+                        'created_at' => '2020-04-01T03:32:10Z',
+                        'eventmeta'  => ['name' => 'payout.created',],
+                    ],
+                ],
+            ],
+        ];
+
+        $res->body = json_encode($body);
+
+        return $res;
+    }
+
+    protected function getStorkCreateResponse()
+    {
+        $res = new \Requests_Response();
+        $body =  [
+            'webhook' => [
+                'id'            => 'EZ4ezgl4124qKu',
+                'created_at'    => '2020-04-01T03:32:10Z',
+                'service'       => 'rx-live',
+                'owner_id'      => '10000000000000',
+                'owner_type'    => 'merchant',
+                'context'       => '{"mode":"test"}',
+                'disabled_at'   => '1970-01-01T00:00:00Z',
+                'url'           => 'http://webhook.com/v1/dummy/route'  ,
+                'subscriptions' => [
+                    [
+                        'id'         => 'EZ4ezhzqgKNjxI',
+                        'created_at' => '2020-04-01T03:32:10Z',
+                        'eventmeta'  => ['name' => 'payout.created',],
+                    ],
+                ],
+            ]
+        ];
+
+        $res->body = json_encode($body);
+
+        return $res;
+    }
+
+    protected function getStorkUpdateResponse()
+    {
+        $res = new \Requests_Response();
+        $body =  [
+            'webhook' => [
+                'id'            => 'EZ4ezgl4124qKu',
+                'created_at'    => '2020-04-01T03:32:10Z',
+                'service'       => 'rx-live',
+                'owner_id'      => '10000000000000',
+                'owner_type'    => 'merchant',
+                'context'       => '{"mode":"test"}',
+                'disabled_at'   => '1970-01-01T00:00:00Z',
+                'url'           => 'http://webhook.com/v1/dummy/route'  ,
+                'subscriptions' => [
+                    [
+                        'id'         => 'EZ4ezhzqgKNjxI',
+                        'created_at' => '2020-04-01T03:32:10Z',
+                        'eventmeta'  => ['name' => 'payout.initiated',],
+                    ],
+                    [
+                        'id'         => 'EZ4ezhzqgKNjxI',
+                        'created_at' => '2020-04-01T03:32:10Z',
+                        'eventmeta'  => ['name' => 'payout.reversed',],
+                    ],
+                ],
+            ]
+        ];
+
+        $res->body = json_encode($body);
+
+        return $res;
+    }
 }

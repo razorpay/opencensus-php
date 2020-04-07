@@ -9,6 +9,7 @@ use Requests_Session;
 use Requests_Response;
 use RZP\Error\ErrorCode;
 use RZP\Http\Request\Hooks;
+use RZP\Models\Merchant\Product;
 use RZP\Exception\ServerErrorException;
 use RZP\Exception\BadRequestValidationFailureException;
 
@@ -22,6 +23,8 @@ class Stork
     const REQUEST_CONNECT_TIMEOUT = 350;
 
     const WEBHOOK = 'webhook';
+
+    const SERVICE = 'service';
 
     /**
      * If actual http requests should be made.
@@ -54,9 +57,13 @@ class Stork
     /**
      * This method is implements supporting listing requests for admin
      * dashboard via stork external service.
-     * @param  string $entity - Name of entity e.g. webhooks, messages.
-     * @param  array  $input  - Request query/input.
+     *
+     * @param string $entity - Name of entity e.g. webhooks, messages.
+     * @param array  $input  - Request query/input.
+     *
      * @return array
+     * @throws BadRequestValidationFailureException
+     * @throws ServerErrorException
      */
     public function fetchMultiple(string $entity, array $input): array
     {
@@ -66,7 +73,7 @@ class Stork
         {
             case self::WEBHOOK:
                 $path ='/twirp/rzp.stork.webhook.v1.WebhookAPI/List';
-                $input['service'] = $this->service;
+                $input[self::SERVICE] = $this->service;
                 break;
             default:
                 throw new BadRequestValidationFailureException('Invalid entity name');
@@ -81,10 +88,14 @@ class Stork
     /**
      * This method is implements supporting get requests for admin
      * dashboard via stork external service.
-     * @param  string $entity - Name of entity e.g. webhooks, messages.
-     * @param  string $id     - Entity id.
-     * @param  array  $input  - Request query/input.
+     *
+     * @param string $entity - Name of entity e.g. webhooks, messages.
+     * @param string $id     - Entity id.
+     * @param array  $input  - Request query/input.
+     *
      * @return array
+     * @throws BadRequestValidationFailureException
+     * @throws ServerErrorException
      */
     public function fetch(string $entity, string $id, array $input): array
     {
@@ -95,7 +106,7 @@ class Stork
             case self::WEBHOOK:
                 $path ='/twirp/rzp.stork.webhook.v1.WebhookAPI/Get';
                 $input['webhook_id'] = $id;
-                $input['service'] = $this->service;
+                $input[self::SERVICE] = $this->service;
                 break;
             default:
                 throw new BadRequestValidationFailureException('Invalid entity name');
@@ -107,18 +118,24 @@ class Stork
         return $this->formatGetResponse($entity, $res);
     }
 
-    public function init(string $mode)
+    public function init(string $mode, string $product = Product::PRIMARY)
     {
         $config = config('stork');
 
         $this->mock = $config['mock'];
-        $this->service = $config['service_prefix'] . $config['auth'][$mode]['user'];
+        $this->service = $config['service_prefix'] . $config['auth'][$product][$mode]['user'];
+
+        // Using primary service for auth
+        $defaultAuthService = Product::PRIMARY;
 
         // Options and authentication for requests.
         $options = [
             'timeout'         => self::REQUEST_TIMEOUT,
             'connect_timeout' => self::REQUEST_CONNECT_TIMEOUT,
-            'auth'            => [$config['auth'][$mode]['user'], $config['auth'][$mode]['pass']],
+            'auth'            => [
+                                    $config['auth'][$defaultAuthService][$mode]['user'],
+                                    $config['auth'][$defaultAuthService][$mode]['pass']
+                                 ],
             'hooks'           => new Requests_Hooks(),
         ];
 

@@ -311,7 +311,7 @@ return [
                 'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
             ],
             'content'   => [
-                'url'       => 'http://webhook.com',
+                'url'       => 'http://webhook.com/v1/dummy/route',
                 'events'    => [
                     'transaction.created' => '1',
                 ],
@@ -320,7 +320,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'url'       => 'http://webhook.com',
+                'url'       => 'http://webhook.com/v1/dummy/route',
                 'events'    => [
                     'transaction.created'   => true,
                     'payout.created'        => false,
@@ -332,7 +332,117 @@ return [
         ],
     ],
 
+    'testCreateWebhookForProductBankingWithStork' => [
+        'request' => [
+            'url'       => '/webhooks',
+            'server' => [
+                'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
+            ],
+            'content'   => [
+                'url'       => 'http://webhook.com/v1/dummy/route',
+                'events'    => [
+                    'payout.created' => '1',
+                ],
+            ],
+            'method'    => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                'url'       => 'http://webhook.com/v1/dummy/route',
+                'events'    => [
+                    'payout.created'        => true,
+                    'payout.processed'      => false,
+                    'payout.reversed'       => false,
+                ],
+                'active'    => true,
+            ],
+        ],
+    ],
+
+    'testEditWebhookForProductBankingWithStork' => [
+        'request' => [
+            'url'       => '/webhooks/EZ4ezgl4124qKu',
+            'server' => [
+                'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
+            ],
+            'content'   => [
+                'url'       => 'http://webhook.com/v1/dummy/route',
+                "active"    => 1,
+                'events'    => [
+                    'payout.initiated' => '1',
+                    'payout.reversed' => '1',
+                ],
+            ],
+            'method'    => 'PUT',
+        ],
+        'response' => [
+            'content' => [
+                'url'       => 'http://webhook.com/v1/dummy/route',
+                'events'    => [
+                    'payout.initiated' => true,
+                    'payout.created'   => false,
+                    'payout.reversed'  => true,
+                ],
+                'active'    => true,
+            ],
+        ],
+    ],
+
+    'testGetWebhooksProductBankingWithStork' => [
+        'request' => [
+            'url' => '/webhooks',
+            'server'    => [
+                'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
+            ],
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count' => 1,
+                'items' => [
+                    [
+                        'url' => 'http://webhook.com/v1/dummy/route',
+                        'events' => [
+                            'payout.created' => true
+                        ],
+                        'active' => true
+                    ]
+                ]
+            ]
+        ]
+    ],
+
     'testCreateWebhookForProductBankingWithInvalidEvents' => [
+        'request' => [
+            'url'       => '/webhooks',
+            'server' => [
+                'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
+            ],
+            'content'   => [
+                'url'       => 'http://webhook.com',
+                'events'    => [
+                    'payment.authorized' => '1',
+                ],
+            ],
+            'method'    => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Invalid event name/names: payment.authorized'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testCreateWebhookForProductBankingWithInvalidEventsWithStork' => [
         'request' => [
             'url'       => '/webhooks',
             'server' => [
