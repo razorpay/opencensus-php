@@ -1406,6 +1406,9 @@ final class Route
         'fund_account_validate_fetch_by_id'        => ['get',      'fund_accounts/validations/{id}',                 'FundAccountValidationController@get'                               ],
         'fund_account_validate_retry_all'          => ['post',     'fund_accounts/validations/retry/all',            'FundAccountValidationController@retryAllFundAccountValidations'    ],
 
+        //admin dashboard access
+        'admin_fetch_fund_account_validate'        => ['get',      'fund_accounts/validations/{merchantId}/{favId}', 'FundAccountValidationController@getFavByMerchantIdAndFavId'        ],
+
         'fund_account_get'                         => ['get',      'fund_accounts/{id}',                             'FundAccountController@get'                                         ],
         'fund_account_list'                        => ['get',      'fund_accounts',                                  'FundAccountController@list'                                        ],
         'fund_account_create'                      => ['post',     'fund_accounts',                                  'FundAccountController@create'                                      ],
@@ -3074,6 +3077,7 @@ final class Route
         'fetch_payment_config_admin',
         'create_payment_config_admin',
         'update_payment_config_admin',
+        'admin_fetch_fund_account_validate',
         ];
 
     public static $routePermission = [
@@ -3697,6 +3701,7 @@ final class Route
         'fetch_payment_config_admin'                => '*',
         'create_payment_config_admin'               => '*',
         'update_payment_config_admin'               => '*',
+        'admin_fetch_fund_account_validate'         => '*',
 
         'fee_recovery_payout_create'                => Permission::PROCESS_FEE_RECOVERY,
     ];

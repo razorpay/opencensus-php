@@ -26,4 +26,11 @@ class FundAccountValidationController extends Controller
 
         return ApiResponse::json($entities);
     }
+
+    public function getFavByMerchantIdAndFavId($merchantId, $favId)
+    {
+        $entity = $this->service()->getFavByMerchantIdAndFavId($favId, $merchantId);
+
+        return ApiResponse::json($entity);
+    }
 }

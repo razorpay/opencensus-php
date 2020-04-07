@@ -80,4 +80,15 @@ class Service extends Base\Service
 
         return $response;
     }
+
+    /**
+     * @param string $favId
+     * @param string $merchantId
+     *
+     * @return array
+     */
+    public function getFavByMerchantIdAndFavId(string $favId,string $merchantId)
+    {
+        return $this->core->getFavByMerchantIdAndFavId($favId, $merchantId);
+    }
 }

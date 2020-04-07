@@ -453,4 +453,14 @@ class Core extends Base\Core
                 ]);
         }
     }
+
+    public function getFavByMerchantIdAndFavId(string $favId, string $merchantId)
+    {
+        $merchant = $this->repo->merchant->findByPublicId($merchantId);
+
+        $entity = $this->repo->fund_account_validation
+            ->findByPublicIdAndMerchant($favId, $merchant);
+
+        return $entity->toArrayPublic();
+    }
 }

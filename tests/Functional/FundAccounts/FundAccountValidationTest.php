@@ -643,4 +643,28 @@ class FundAccountValidationTest extends TestCase
 
         $this->startTest();
     }
+
+    public function testGetFavByIdAndMerchantId()
+    {
+        $attribute = [
+            Entity::MERCHANT_ID     => '100000Razorpay',
+            Entity::REGISTERED_NAME => "random name",
+            Entity::ACCOUNT_STATUS  => "active",
+            Entity::NOTES           => [
+                Entity::MERCHANT_ID => '10000000000000',
+            ],
+        ];
+
+        $this->fixtures->on('live')->create('fund_account_validation', $attribute);
+
+        $fav = $this->getLastEntity('fund_account_validation', true, 'live');
+
+        $request = &$this->testData[__FUNCTION__]['request'];
+
+        $request['url'] = sprintf($request['url'], $fav['id']);
+
+        $this->ba->adminAuth('live');
+
+        $this->startTest();
+    }
 }

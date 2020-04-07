@@ -695,4 +695,23 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
+
+    'testGetFavByIdAndMerchantId' => [
+        'request'  => [
+            'url'    => '/fund_accounts/validations/100000Razorpay/%s',
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                'entity'  => 'fund_account.validation',
+                'notes'   => [
+                    'merchant_id' => '10000000000000'
+                ],
+                'results' => [
+                    'account_status'  => "active",
+                    'registered_name' => "random name",
+                ]
+            ],
+        ],
+    ],
 ];
