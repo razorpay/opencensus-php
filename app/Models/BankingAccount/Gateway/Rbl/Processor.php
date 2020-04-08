@@ -156,12 +156,10 @@ class Processor extends BankingAccount\Gateway\Processor
 
     public function validateAccountBeforeUpdating(array $input)
     {
-        $traceData = (new BankingAccount\Core())->unsetPersonalIdentifiableInformation($input);
-
         $this->trace->info(
             TraceCode::BANKING_ACCOUNT_STATUS_TO_INTERNAL_STATUS_CHECK,
             [
-                'input'     => $traceData,
+                'input'     => $input,
                 'channel'   => BankingAccount\Channel::RBL,
             ]);
 

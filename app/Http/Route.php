@@ -4678,6 +4678,8 @@ final class Route
         'bank_transfer_process_rbl_test',
         'bank_transfer_process_rbl_internal',
         'bank_transfer_process_test',
+        'banking_account_create',
+        'banking_account_create_admin',
     ];
 
     /**

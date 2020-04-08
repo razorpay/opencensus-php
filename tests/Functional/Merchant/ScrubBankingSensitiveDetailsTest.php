@@ -31,7 +31,7 @@ class ScrubBankingSensitiveDetailsTest extends TestCase
         $this->app->instance('router', $routerMock);
     }
 
-    public function testSensitiveData()
+    public function testSensitiveDataFundAccountCreate()
     {
         /** @var ApiTraceProcessor $trace */
         $trace = new ApiTraceProcessor($this->app);
@@ -66,7 +66,73 @@ class ScrubBankingSensitiveDetailsTest extends TestCase
         $this->assertArraySelectiveEquals($expectedResponse, $updatedRecord);
     }
 
-    public function testUnSensitiveData()
+    public function testSensitiveDataContactCreate()
+    {
+        /** @var ApiTraceProcessor $trace */
+        $trace = new ApiTraceProcessor($this->app);
+
+        $this->mockRouter('contact_create');
+
+        $record = [
+            'context' => [
+                'name' => '51037205',
+                'contact' => '8979253299',
+                'email' => 'sachingangwarbly123@gmail.com',
+                'type' => 'customer',
+            ]
+        ];
+
+        $updatedRecord = $trace($record);
+
+        $expectedResponse = [
+            'context' => [
+                'name' => 'SCRUBBED(8)',
+                'contact' => 'PHONE_NUMBER_SCRUBBED(10)',
+                'email' => 'EMAIL_SCRUBBED(29)',
+                'type' => 'customer',
+            ]
+        ];
+        $this->assertArraySelectiveEquals($expectedResponse, $updatedRecord);
+    }
+
+    public function testSensitiveDataBankingAccountCreate()
+    {
+        /** @var ApiTraceProcessor $trace */
+        $trace = new ApiTraceProcessor($this->app);
+
+        $this->mockRouter('banking_account_create');
+
+        $record = [
+            'context' => [
+                'pincode' => '51037205',
+                'channel' => 'rbl',
+                'account_ifsc' => 'IFSC2345',
+                'beneficiary_email' => 'raj@gmail.com',
+                'beneficiary_mobile' => '9177278077',
+                'beneficiary_name' => 'raj',
+                'beneficiary_address1' => 'Koramangala',
+                'bank_reference_number' => 'YesBank123',
+            ]
+        ];
+
+        $updatedRecord = $trace($record);
+
+        $expectedResponse = [
+            'context' => [
+                'pincode' => '51037205',
+                'channel' => 'rbl',
+                'account_ifsc' => 'SCRUBBED(8)',
+                'beneficiary_email' => 'EMAIL_SCRUBBED(13)',
+                'beneficiary_mobile' => 'PHONE_NUMBER_SCRUBBED(10)',
+                'beneficiary_name' => 'SCRUBBED(3)',
+                'beneficiary_address1' => 'SCRUBBED(11)',
+                'bank_reference_number' => 'YesBank123'
+            ]
+        ];
+        $this->assertArraySelectiveEquals($expectedResponse, $updatedRecord);
+    }
+
+    public function testUnSensitiveDataFundAccountCreate()
     {
         /** @var ApiTraceProcessor $trace */
         $trace = new ApiTraceProcessor($this->app);
@@ -101,7 +167,7 @@ class ScrubBankingSensitiveDetailsTest extends TestCase
         $this->assertArraySelectiveEquals($expectedResponse, $updatedRecord);
     }
 
-    public function testMultipleAccountsScrubbing()
+    public function testMultipleAccountsScrubbingFundAccountCreate()
     {
         /** @var ApiTraceProcessor $trace */
         $trace = new ApiTraceProcessor($this->app);
@@ -138,7 +204,7 @@ class ScrubBankingSensitiveDetailsTest extends TestCase
         $this->assertArraySelectiveEquals($expectedResponse, $updatedRecord);
     }
 
-    public function testingForNonBankingRoute()
+    public function testingForNonBankingRouteCheckout()
     {
         /** @var ApiTraceProcessor $trace */
         $trace = new ApiTraceProcessor($this->app);

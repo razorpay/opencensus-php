@@ -24,9 +24,7 @@ class Core extends Base\Core
         bool $createDuplicate = false,
         bool $allowRZPFeesContactCreation = false): Entity
     {
-        $traceData = $this->unsetPersonalIdentifiableInformation($input);
-
-        $this->trace->info(TraceCode::CONTACT_CREATE_REQUEST, ['input' => $traceData]);
+        $this->trace->info(TraceCode::CONTACT_CREATE_REQUEST, ['input' => $input]);
 
         (new Validator)->validateInput('create', $input);
 
@@ -95,13 +93,11 @@ class Core extends Base\Core
 
     public function update(Entity $contact, array $input): Entity
     {
-        $traceData = $this->unsetPersonalIdentifiableInformation($input);
-
         $this->trace->info(
             TraceCode::CONTACT_UPDATE_REQUEST,
             [
                 'id'    => $contact->getId(),
-                'input' => $traceData,
+                'input' => $input,
             ]);
 
         (new Validator)->validateInput('edit', $input);
@@ -192,30 +188,5 @@ class Core extends Base\Core
         $contact = $this->create($contactData, $merchant, null, true, true);
 
         return $contact;
-    }
-
-    protected function unsetPersonalIdentifiableInformation(array $input): array
-    {
-        if (empty($input[Entity::NAME]) === false)
-        {
-            // If the name is numeric and greater than 10 digit long
-            // it may be an account number or CC number. Don't log
-            if ((strlen($input[Entity::NAME]) > 10) and (is_numeric($input[Entity::NAME]) === true))
-            {
-                $input[Entity::NAME] = str_repeat('*', strlen($input[Entity::NAME]));
-            }
-        }
-
-        if (empty($input[Entity::CONTACT]) === false)
-        {
-            $input[Entity::CONTACT] = str_repeat('*', strlen($input[Entity::CONTACT]));
-        }
-
-        if (empty($input[Entity::EMAIL]) === false)
-        {
-            $input[Entity::EMAIL] = str_repeat('*', strlen($input[Entity::EMAIL]));
-        }
-
-        return $input;
     }
 }

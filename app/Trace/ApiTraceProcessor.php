@@ -74,6 +74,11 @@ class ApiTraceProcessor
     const SENSITIVE_KEYS = [
         'account_number',
         'name',
+        'account_ifsc',
+        'beneficiary_name',
+        'beneficiary_address1',
+        'beneficiary_address2',
+        'beneficiary_address3',
     ];
 
     public function __construct($app)

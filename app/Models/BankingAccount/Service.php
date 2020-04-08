@@ -20,12 +20,10 @@ class Service extends Base\Service
 
     public function create(array $input): array
     {
-        $traceData = $this->core->unsetPersonalIdentifiableInformation($input);
-
         $this->trace->info(
             TraceCode::BANKING_ACCOUNT_CREATE,
             [
-                'input' => $traceData,
+                'input' => $input,
             ]);
 
         $account = $this->core->createBankingAccount($input, $this->merchant);
@@ -53,14 +51,12 @@ class Service extends Base\Service
 
         $channel = $bankingAccount->getChannel();
 
-        $traceData = $this->core->unsetPersonalIdentifiableInformation($input);
-
         $this->trace->info(
             TraceCode::BANKING_ACCOUNT_EDIT,
             [
                 'id'      => $bankingAccount->getId(),
                 'channel' => $channel,
-                'input'   => $traceData,
+                'input'   => $input,
             ]);
 
         (new Validator)->setStrictFalse()->validateInput(Validator::INTERNAL_EDIT, $input);

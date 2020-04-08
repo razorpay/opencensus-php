@@ -254,7 +254,7 @@ class Core extends Base\Core
         $this->trace->info(
             TraceCode::BANKING_ACCOUNT_ENTITY_CREATED,
             [
-                $this->unsetPersonalIdentifiableInformation($bankingAccount->toArray()),
+                $bankingAccount->toArray(),
             ]);
 
         $this->repo->saveOrFail($bankingAccount);
@@ -334,7 +334,7 @@ class Core extends Base\Core
     {
         $channel = $bankingAccount->getChannel();
 
-        $traceRequest = $this->unsetPersonalIdentifiableInformation($input);
+        $traceRequest = $input;
 
         // details array may contain sensitive information
         // like merchant password and other gateway specific
@@ -729,13 +729,11 @@ class Core extends Base\Core
         Merchant\Entity $merchant,
         Merchant\Balance\Entity $balance): Entity
     {
-        $traceData = $this->unsetPersonalIdentifiableInformation($input);
-
         $this->trace->info(
             TraceCode::BANKING_ACCOUNT_CREATE,
             [
                 'channel' => $input[Entity::CHANNEL],
-                'input'   => $traceData,
+                'input'   => $input,
             ]);
 
         (new Validator)->validateInput(Validator::SHARED_CREATE, $input);
