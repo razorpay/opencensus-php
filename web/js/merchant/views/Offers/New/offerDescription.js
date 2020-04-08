@@ -54,6 +54,10 @@ export default ({
           'discount_type',
           'min_amount',
         ])}
+        description={
+          type === 'deferred' &&
+          'Cashbacks need to be processed by the provider (Wallet providers, Banks etc). Please create Cashback Offers only if you have an agreement in place with them'
+        }
       />
     </React.Fragment>
   );

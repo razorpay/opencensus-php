@@ -17,8 +17,10 @@ export default ({
 
   return (
     <React.Fragment>
-      <strong>Instant Discount</strong>
-      <p>The customer will pay the discounted price for the product</p>
+      {type === 'instant' && <strong>Instant Discount</strong>}
+      {type === 'instant' && (
+        <p>The customer will pay the discounted price for the product</p>
+      )}
       <div>
         <Input.Select
           name="discount_type"
@@ -109,12 +111,18 @@ export default ({
                 onChange={getFormOnChangeHandler()}
               />
               <Input
-                label="Maximum Cashback"
+                label={
+                  type === 'instant' ? 'Maximum Discount' : 'Maximum Cashback'
+                }
                 placeholder="0.00"
                 name="max_cashback"
                 defaultValue={maxCashback}
                 class="Input--half"
-                description="Maximum cashback for this offer"
+                description={
+                  type === 'instant'
+                    ? 'Maximum discount for this offer'
+                    : 'Maximum cashback for this offer'
+                }
                 addonBefore={
                   <span>{window.currencyList[currency].symbol}</span>
                 }
