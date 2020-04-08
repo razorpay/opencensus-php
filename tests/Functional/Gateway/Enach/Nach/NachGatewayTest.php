@@ -174,7 +174,7 @@ class NachGatewayTest extends TestCase
     {
         $payment = $this->createRecurringNachPayment();
 
-        $batchFile = $this->getBatchFileToUploadForBankDebitResponse($payment, "0");
+        $batchFile = $this->getBatchFileToUploadForBankDebitResponse($payment, "0", "04");
 
         $url = '/admin/batches';
 
@@ -187,6 +187,7 @@ class NachGatewayTest extends TestCase
 
         $payment = $this->getEntityById('payment', $payment['razorpay_payment_id'], true);
 
+        $this->assertEquals('BAD_REQUEST_PAYMENT_ACCOUNT_INSUFFICIENT_BALANCE', $payment['internal_error_code']);
         $this->assertEquals('failed', $payment['status']);
     }
 
@@ -413,13 +414,13 @@ class NachGatewayTest extends TestCase
         return $this->makeRequestAndGetContent($request);
     }
 
-    protected function getBatchFileToUploadForBankDebitResponse($payment, $status = '1')
+    protected function getBatchFileToUploadForBankDebitResponse($payment, $status = '1', $errorCode = '00')
     {
         $paymentId = $payment['razorpay_payment_id'];
         $this->fixtures->stripSign($paymentId);
 
         $data = '56       RAZORPAY SOFTWARE PVT LTD                             000000000                           000005000000000000000020001701202047642224498136619848   NACH00000000013149000000000000000000CITI000PIGW000018003                          00000000227
-67         10                  ABIJITO GUHA                            17012020        RAZORPAY SOFTWARE PV             000000030000047642224504081750481'. $status .'00HDFC00024971111111111111                      CITI000PIGWNACH00000000013149CTTATAAIAA' . $paymentId . '      10 000000000000000HDFC0000000010936518
+67         10                  ABIJITO GUHA                            17012020        RAZORPAY SOFTWARE PV             000000030000047642224504081750481'. $status . $errorCode . 'HDFC00024971111111111111                      CITI000PIGWNACH00000000013149CTTATAAIAA' . $paymentId . '      10 000000000000000HDFC0000000010936518
 ';
 
         $name = 'temp.txt';

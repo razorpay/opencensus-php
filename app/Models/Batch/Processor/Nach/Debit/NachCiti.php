@@ -8,6 +8,7 @@ use RZP\Models\Payment\Gateway;
 use RZP\Gateway\Enach\Citi\Status;
 use RZP\Models\Payment\RecurringType;
 use RZP\Gateway\Enach\Base\Entity as EnachEntity;
+use RZP\Gateway\Enach\Citi\ErrorCodes as ErrorCode;
 use RZP\Gateway\Enach\Citi\NachDebitFileHeadings as Headings;
 
 class NachCiti extends Base
@@ -179,5 +180,10 @@ class NachCiti extends Base
     protected function removeCriticalDataFromTracePayload(array & $payloadEntry)
     {
         unset($payloadEntry[Headings::BENEFICIARY_BANK_ACCOUNT_NUMBER]);
+    }
+
+    protected function getApiErrorCode(array $content): string
+    {
+        return ErrorCode::getDebitPublicErrorCode($content);
     }
 }
