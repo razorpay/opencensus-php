@@ -2792,6 +2792,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const VA_MIGRATE_JOB_FAILED         = 'VA_MIGRATE_JOB_FAILED';
     const VA_MIGRATE_TIME               = 'VA_MIGRATE_TIME';
 
+    const PAYMENT_LINK_SERVICE_REQUEST = 'PAYMENT_LINK_SERVICE_REQUEST';
     // Exception while scrubbing Credit card details
     const SENSITIVE_BANKING_DETAILS_REDACTION_FAILURE_EXCEPTION = 'SENSITIVE_BANKING_DETAILS_REDACTION_FAILURE_EXCEPTION';
 

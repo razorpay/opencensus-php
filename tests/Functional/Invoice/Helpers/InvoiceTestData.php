@@ -5306,7 +5306,7 @@ return [
 
     'testCreateSendEmailForPaymentLinkService' => [
         'request'  => [
-            'url'     => '/payment_links/send_email',
+            'url'     => '/invoices/send_email',
             'method'  => 'post',
             'content' => [
                 'invoice' => [

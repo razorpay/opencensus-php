@@ -667,7 +667,7 @@ final class Route
         'item_fetch_multiple'                      => ['get',      'items',                                          'ItemController@getItems'                                           ],
         'item_update'                              => ['patch',    'items/{id}',                                     'ItemController@updateItem'                                         ],
         'item_delete'                              => ['delete',   'items/{id}',                                     'ItemController@deleteItem'                                         ],
-        'send_email_for_pl_service'                => ['post',     'payment_links/send_email',                       'InvoiceController@sendEmailForPaymentLinkService'                  ],
+        'send_email_for_pl_service'                => ['post',     'invoices/send_email',                            'InvoiceController@sendEmailForPaymentLinkService'                  ],
         //payment page section
         'pages_view'                               => ['get,post', 'pages/{x_entity_id}/view',                       'PaymentLinkController@view'                                        ],
         'pages_view_by_slug'                       => ['get,post', 'pages/{slug}',                                   'PaymentLinkController@viewBySlug'                                  ],
@@ -683,13 +683,17 @@ final class Route
         'payment_page_deactivate'                  => ['patch',    'payment_pages/{id}/deactivate',                  'PaymentLinkController@deactivate'                                  ],
         'payment_page_activate'                    => ['patch',    'payment_pages/{id}/activate',                    'PaymentLinkController@activate'                                    ],
         'payment_page_slug_exists'                 => ['get',      'payment_pages/{slug}/exists',                    'PaymentLinkController@slugExists'                                  ],
-        // Already using payment page end point. No need to change anything
         'payment_page_item_update'                 => ['patch',    'payment_pages/payment_page_item/{id}',           'PaymentLinkController@updatePaymentPageItem'                       ],
         'payment_page_items_migrate'               => ['post',     'payment_pages/migrate_payment_page_items',       'PaymentLinkController@migratePaymentPageItems'                     ],
         'payment_page_create_order'                => ['post',     'payment_pages/{id}/order',                       'PaymentLinkController@createOrder'                                 ],
         'payment_page_create_order_option'         => ['options',  'payment_pages/{id}/order',                       'PaymentLinkController@createOrderOptions'                          ],
         'payment_page_items_migrate_min_purchase'  => ['post',     'payment_pages/migrate_payment_page_purchase',    'PaymentLinkController@migratePaymentPageItemForMinPurchase'        ],
-        // end of payment page section
+        // payment link service end points
+        'payment_links_service_hosted_page'        => ['get,post', 'payment_links/{id}/view/{mode}',                 'PlinkController@sendRequest'                                       ],
+        'payment_links_service_main_route'         => ['any',      'payment_links',                                  'PlinkController@sendRequest'                                       ],
+        'payment_links_service_sub_route'          => ['any',      'payment_links/{path?}',                          'PlinkController@sendRequest'                                       ],
+        'payment_links_service_count_route'        => ['any',      'payment_links_count',                            'PlinkController@sendRequest'                                       ],
+
         'app_delete_token'                         => ['delete',   'apps/tokens/{token}',                            'CustomerController@deleteTokenForGlobalCustomer'                   ],
         'app_fetch_tokens'                         => ['get',      'apps/tokens',                                    'CustomerController@fetchTokensForGlobalCustomer'                   ],
         'app_fetch_payments'                       => ['get',      'apps/payments',                                  'CustomerController@fetchPaymentsForGlobalCustomer'                 ],
@@ -1750,6 +1754,9 @@ final class Route
     ];
 
     public static $private = [
+        'payment_links_service_main_route',
+        'payment_links_service_sub_route',
+        'payment_links_service_count_route',
         'payout_links_fetch_multiple',
         'payout_links_fetch_by_id',
         'payout_links_create',
@@ -2474,7 +2481,6 @@ final class Route
 
         'initiate_terminal_onboarding',
         'proxy_merchant_get_terminals',
-
         'payout_links_merchant_settings_post',
         'payout_links_merchant_settings_get',
         'payout_links_merchant_on_boarding_status',
@@ -3821,6 +3827,7 @@ final class Route
     ];
 
     public static $direct = [
+        'payment_links_service_hosted_page',
         'third_party_health_check',
         'channel_health_check',
         'inspector_view_get',
