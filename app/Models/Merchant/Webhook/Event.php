@@ -83,6 +83,10 @@ class Event
     const PAYOUT_LINK_CANCELLED             = 'payout_link.cancelled';
     const PAYOUT_LINK_PROCESSED             = 'payout_link.processed';
     const PAYMENT_CREATED                   = 'payment.created';
+    const PAYMENT_LINK_PAID                 = 'payment_link.paid';
+    const PAYMENT_LINK_PARTIALLY_PAID       = 'payment_link.partially_paid';
+    const PAYMENT_LINK_EXPIRED              = 'payment_link.expired';
+    const PAYMENT_LINK_CANCELLED            = 'payment_link.cancelled';
 
     protected static $events = [
         self::PAYMENT_AUTHORIZED,
@@ -153,6 +157,10 @@ class Event
         self::PAYOUT_LINK_ATTEMPTED,
         self::PAYOUT_LINK_CANCELLED,
         self::PAYOUT_LINK_PROCESSED,
+        self::PAYMENT_LINK_PAID,
+        self::PAYMENT_LINK_PARTIALLY_PAID,
+        self::PAYMENT_LINK_EXPIRED,
+        self::PAYMENT_LINK_CANCELLED,
     ];
 
     /**
@@ -229,7 +237,11 @@ class Event
         self::PAYOUT_LINK_ATTEMPTED,
         self::PAYOUT_LINK_CANCELLED,
         self::PAYOUT_LINK_PROCESSED,
-        self::PAYMENT_CREATED
+        self::PAYMENT_CREATED,
+        self::PAYMENT_LINK_PAID,
+        self::PAYMENT_LINK_PARTIALLY_PAID,
+        self::PAYMENT_LINK_EXPIRED,
+        self::PAYMENT_LINK_CANCELLED,
     ];
 
     // We have exhausted all the below bits for webhook events, add in $bitPosition2 for any new events
@@ -299,14 +311,18 @@ class Event
         self::PAYOUT_PENDING                    => 63,
     ];
 
-    // Add new webhook events in this array. 
+    // Add new webhook events in this array.
     public static $bitPosition2 = [
-        self::PAYOUT_LINK_ISSUED     => 1,
-        self::PAYOUT_LINK_PROCESSING => 2,
-        self::PAYOUT_LINK_CANCELLED  => 3,
-        self::PAYOUT_LINK_ATTEMPTED  => 4,
-        self::PAYOUT_LINK_PROCESSED  => 5,
-        self::TERMINAL_CREATED       => 6,
+        self::PAYOUT_LINK_ISSUED                => 1,
+        self::PAYOUT_LINK_PROCESSING            => 2,
+        self::PAYOUT_LINK_CANCELLED             => 3,
+        self::PAYOUT_LINK_ATTEMPTED             => 4,
+        self::PAYOUT_LINK_PROCESSED             => 5,
+        self::TERMINAL_CREATED                  => 6,
+        self::PAYMENT_LINK_PAID                 => 7,
+        self::PAYMENT_LINK_PARTIALLY_PAID       => 8,
+        self::PAYMENT_LINK_EXPIRED              => 9,
+        self::PAYMENT_LINK_CANCELLED            => 10,
     ];
 
     /**
@@ -380,6 +396,10 @@ class Event
         self::PAYOUT_LINK_PROCESSED             => [Product::BANKING],
         self::PAYOUT_LINK_ATTEMPTED             => [Product::BANKING],
         self::PAYOUT_LINK_CANCELLED             => [Product::BANKING],
+        self::PAYMENT_LINK_PAID                 => [Product::PRIMARY],
+        self::PAYMENT_LINK_PARTIALLY_PAID       => [Product::PRIMARY],
+        self::PAYMENT_LINK_EXPIRED              => [Product::PRIMARY],
+        self::PAYMENT_LINK_CANCELLED            => [Product::PRIMARY],
     ];
 
     /**
