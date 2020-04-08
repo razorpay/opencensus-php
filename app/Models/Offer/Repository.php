@@ -33,6 +33,7 @@ class Repository extends Base\Repository
         Entity::FLAT_CASHBACK,
         Entity::INTERNATIONAL,
         Entity::EMI_SUBVENTION,
+        Entity::IINS,
     ];
 
     public function fetchExistingOffers(Entity $newOffer, string $merchantId)
@@ -96,7 +97,14 @@ class Repository extends Base\Repository
         {
             if ($newOffer->getAttribute($attribute) !== null)
             {
-                $query->where($attribute, '=', $newOffer->getAttribute($attribute));
+                if ($attribute === Entity::IINS)
+                {
+                    $query->where($attribute, '=', json_encode($newOffer->getAttribute($attribute)));
+                }
+                else
+                {
+                    $query->where($attribute, '=', $newOffer->getAttribute($attribute));
+                }
             }
         }
 

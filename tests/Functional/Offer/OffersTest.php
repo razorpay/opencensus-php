@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\Offer;
 
 use Carbon\Carbon;
 use RZP\Tests\Functional\TestCase;
+use RZP\Exception\BadRequestException;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 
@@ -403,6 +404,19 @@ class OffersTest extends TestCase
 
     public function testCreateOfferMinAmount()
     {
+        $this->startTest();
+    }
+
+    public function testCreateOfferWithSameIIN()
+    {
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($testData);
+
+        $this->expectException(BadRequestException::class);
+
+        $this->expectExceptionMessage('Offer already exists. Please check the values and try again');
+
         $this->startTest();
     }
 }
