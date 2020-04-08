@@ -64,6 +64,8 @@ class Entity extends Base\PublicEntity
 
     const DEFAULT_AMOUNT              = 10000000;
 
+    const IS_NACH_FORM_UPLOADED       = 'is_nach_uploaded';
+
     protected $entity                 = 'paper_mandate';
 
     protected static $sign            = 'ppm';

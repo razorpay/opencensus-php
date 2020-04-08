@@ -565,6 +565,11 @@ class ViewDataSerializer extends Base\Core
                 [E::SUBSCRIPTION_REGISTRATION]
                 [SubscriptionRegistration\Entity::NACH]
                 [PaperMandate\Entity::START_AT . '_formatted'] = $this->formatTime($startAt);
+
+                $serialized
+                [E::SUBSCRIPTION_REGISTRATION]
+                [SubscriptionRegistration\Entity::NACH]
+                [PaperMandate\Entity::IS_NACH_FORM_UPLOADED] = empty($paperMandate->getUploadedFileID()) === false;
             }
         }
         else
