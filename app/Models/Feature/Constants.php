@@ -341,6 +341,12 @@ class Constants
      */
     const CYBERSOURCE_VAS = 'cybersource_vas';
 
+    /*
+     * This flag when enabled, will enable payment link dashboard to hit new set of
+     * payment link service endpoints
+     */
+    const PAYMENTLINKS_V2                = 'paymentlinks_v2';
+
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
         self::SUBSCRIPTIONS,
@@ -550,6 +556,7 @@ class Constants
         self::CHECKOUT_DISABLE_RETRY          => true,
         self::COVID                           => true,
         self::SR_SENSITIVE                    => true,
+        self::PAYMENTLINKS_V2                 => true,
     ];
 
     // Entity type constants
