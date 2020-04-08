@@ -2422,4 +2422,68 @@ class Service extends Base\Service
             throw $e;
         }
     }
+
+    public function updateRefundAtForPayments($input)
+    {
+        (new Payment\Validator)->validateInput('bulk_update_refund_at', $input);
+
+        $payments = $input['payments'];
+
+        $count = count($payments);
+
+        $this->trace->info(
+          TraceCode::PAYMENTS_UPDATE_REFUND_AT,
+          [
+              'type'  => 'request',
+              'count' => $count,
+              'input' => $input,
+          ]);
+
+        $success = 0;
+        $successful = [];
+        $failed  = [];
+
+        foreach ($payments as $item)
+        {
+            try
+            {
+                $this->core->updateRefundAt($item['id'], $item['refund_at']);
+
+                $successful[] = $item;
+
+                $success++;
+            }
+            catch (\Exception $ex)
+            {
+                $this->trace->traceException(
+                  $ex,
+                  // Not need to raise it as critical, because this is manual operation
+                  Trace::WARNING,
+                  TraceCode::PAYMENTS_UPDATE_REFUND_AT,
+                  [
+                      'type'    => 'failure',
+                      'item'    => $item,
+                  ]);
+
+                $failed[] = $item;
+            }
+        }
+
+        $response = [
+            'count'         => $count,
+            'success'       => $success,
+            'failure'       => $count - $success,
+            'failed'        => $failed,
+            'successful'    => $successful,
+        ];
+
+        $this->trace->info(
+          TraceCode::PAYMENTS_UPDATE_REFUND_AT,
+          [
+              'type'        => 'response',
+              'response'    => $response,
+          ]);
+
+        return $response;
+    }
 }

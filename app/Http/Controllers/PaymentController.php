@@ -468,4 +468,13 @@ class PaymentController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function postUpdateRefundAtForPayments()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->updateRefundAtForPayments($input);
+
+        return ApiResponse::json($data);
+    }
 }

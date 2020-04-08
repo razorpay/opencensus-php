@@ -169,4 +169,18 @@ class Core extends Base\Core
                     });
             });
     }
+
+    public function updateRefundAt($paymentId, $refundAt)
+    {
+        /**
+         * @var $payment Payment\Entity
+         */
+        $payment = $this->repo->payment->findByPublicId($paymentId);
+
+        $payment->setRefundAt($refundAt);
+
+        $this->repo->payment->saveOrFail($payment);
+
+        return $payment;
+    }
 }

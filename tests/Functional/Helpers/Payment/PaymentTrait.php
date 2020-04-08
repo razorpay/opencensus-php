@@ -2608,4 +2608,22 @@ trait PaymentTrait
 
         return $content;
     }
+
+    protected function updateRefundAtForPayments($content)
+    {
+        $this->ba->adminAuth();
+
+        $request = array(
+            'method'  => 'POST',
+            'url'     => '/payments/update_refund_at/bulk',
+            'server'  => [
+                'CONTENT_TYPE' => 'application/json',
+            ],
+            'raw' => json_encode(['payments' => $content])
+        );
+
+        $data = $this->makeRequestAndGetContent($request);
+
+        return $data;
+    }
 }

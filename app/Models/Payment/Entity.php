@@ -2172,6 +2172,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         return $this->getAttribute(self::AUTHORIZED_AT);
     }
 
+    public function getRefundAt()
+    {
+        return $this->getAttribute(self::REFUND_AT);
+    }
+
     public function getUpdatedAt()
     {
         return $this->getAttribute(self::UPDATED_AT);

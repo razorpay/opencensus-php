@@ -25,6 +25,7 @@ use RZP\Mail\Merchant\NegativeBalanceThresholdAlert;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Models\Payment\Refund\Status as RefundStatus;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Exception\BadRequestValidationFailureException;
 
 /**
  * Tests for refund payments
@@ -4191,6 +4192,134 @@ class RefundTest extends TestCase
         $this->assertEquals($cardCurrency, $refund['gateway_currency']);
 
         Mail::assertQueued(RefundedMail::class);
+    }
+
+    public function testUpdateRefundAtForPaymentsWithNull()
+    {
+        $refundAt = Carbon::today(Timezone::IST)->subDays(6)->getTimestamp();
+
+        $payments = $this->fixtures->times(2)->create(
+            'payment:authorized',
+            [
+                'refund_at'  => $refundAt
+            ]);
+
+        $response = $this->updateRefundAtForPayments([
+           [ 'id' => $payments[0]->getPublicId(), 'refund_at' => null ],
+           [ 'id' => $payments[1]->getPublicId(), 'refund_at' => null ],
+        ]);
+
+        $this->assertSame(2, $response['success']);
+
+        $payments[0]->refresh();
+        $this->assertNull($payments[0]->getRefundAt());
+
+        $payments[1]->refresh();
+        $this->assertNull($payments[1]->getRefundAt());
+    }
+
+    public function testUpdateRefundAtForPaymentsWithTimestamp()
+    {
+        $refundAt = Carbon::today(Timezone::IST)->subDays(6)->getTimestamp();
+
+        $newRefundAt = Carbon::today(Timezone::IST)->subDays(3)->getTimestamp();
+
+        $payments = $this->fixtures->times(2)->create(
+            'payment:authorized',
+            [
+                'refund_at'  => $refundAt
+            ]);
+
+        $response = $this->updateRefundAtForPayments([
+            [ 'id' => $payments[0]->getPublicId(), 'refund_at' => $newRefundAt ],
+            [ 'id' => $payments[1]->getPublicId(), 'refund_at' => null         ],
+        ]);
+
+        $this->assertSame(2, $response['success']);
+
+        $payments[0]->refresh();
+        $this->assertSame($newRefundAt, $payments[0]->getRefundAt());
+
+        $payments[1]->refresh();
+        $this->assertNull($payments[1]->getRefundAt());
+    }
+
+    public function testUpdateRefundAtForPaymentsValidationFail()
+    {
+        $refundAt = Carbon::today(Timezone::IST)->subDays(6)->getTimestamp();
+
+        $payments = $this->fixtures->times(2)->create(
+            'payment:authorized',
+            [
+                'refund_at'  => $refundAt
+            ]);
+
+        $this->makeRequestAndCatchException(
+            function () use ($payments)
+            {
+                $this->updateRefundAtForPayments([
+                    [ 'id' => $payments[0]->getPublicId(), 'refund_at' => null      ],
+                    [ 'id' => $payments[1]->getPublicId(), 'refund_at' => 'invalid' ],
+                ]);
+            },
+            BadRequestValidationFailureException::class
+        );
+
+        $payments[0]->refresh();
+        $payments[1]->refresh();
+
+        $this->assertSame($refundAt, $payments[0]->getRefundAt());
+        $this->assertSame($refundAt, $payments[1]->getRefundAt());
+    }
+
+    public function testUpdateRefundAtForPaymentsWithNoRefundAt()
+    {
+        $refundAt = Carbon::today(Timezone::IST)->subDays(6)->getTimestamp();
+
+        $payments = $this->fixtures->times(2)->create(
+            'payment:authorized',
+            [
+                'refund_at'  => $refundAt
+            ]);
+
+        $this->makeRequestAndCatchException(
+            function () use ($payments)
+            {
+                $this->updateRefundAtForPayments([
+                    [ 'id' => $payments[0]->getPublicId()                      ],
+                    [ 'id' => $payments[1]->getPublicId(), 'refund_at' => null ],
+                ]);
+            },
+            BadRequestValidationFailureException::class
+        );
+    }
+
+    public function testUpdateRefundAtForPaymentsWithWrongPaymentId()
+    {
+        $refundAt = Carbon::today(Timezone::IST)->subDays(6)->getTimestamp();
+
+        $payments = $this->fixtures->times(2)->create(
+            'payment:authorized',
+            [
+                'refund_at'  => $refundAt
+            ]);
+
+        $oldRefundAt1 = $payments[1]->getRefundAt();
+
+        $response = $this->updateRefundAtForPayments([
+            [ 'id' => $payments[0]->getPublicId(), 'refund_at' => null ],
+            [ 'id' => 'pay_wrongPaymentId', 'refund_at' => null ],
+        ]);
+
+        $this->assertSame(1, $response['success']);
+        $this->assertSame(1, $response['failure']);
+
+        $payments[0]->refresh();
+        $this->assertNull($payments[0]->getRefundAt());
+
+        $payments[1]->refresh();
+        // This will not change
+        $this->assertSame($oldRefundAt1, $payments[1]->getRefundAt());
     }
 
     private function getDefaultPaymentFlowsRequestData($iin = null)

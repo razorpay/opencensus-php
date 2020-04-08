@@ -236,6 +236,7 @@ return [
             Permission::EDIT_AUTHORIZED_FAILED_PAYMENT      => '',
             Permission::VIEW_REFUND_PAYMENTS                => '',
             Permission::EDIT_AUTHORIZED_REFUND_PAYMENT      => '',
+            Permission::PAYMENTS_UPDATE_REFUND_AT           => '',
             Permission::AUTHORIZE_PAYMENT                   => [
                 'assignable'  => true,
             ],

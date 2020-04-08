@@ -168,6 +168,12 @@ class Validator extends Base\Validator
         'payment_ids.*'              => 'required|public_id',
     ];
 
+    protected static $bulkUpdateRefundAtRules = [
+        'payments'                   => 'required|sequential_array',
+        'payments.*.id'              => 'required|public_id',
+        'payments.*.refund_at'       => 'present|epoch|nullable',
+    ];
+
     protected static $refundRules = [
         'amount'                     => 'sometimes|integer',
         'notes'                      => 'sometimes|notes',
