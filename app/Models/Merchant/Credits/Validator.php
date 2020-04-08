@@ -9,15 +9,15 @@ use RZP\Models\Merchant\Credits;
 
 class Validator extends Base\Validator
 {
-    const MAX_AMOUNT_CREDITS = 100000000;
-    const MAX_FEE_CREDITS    = 50000000;
+    const MAX_AMOUNT_CREDITS = 500000000;
+    const MAX_FEE_CREDITS    = 500000000;
     const MIN_CREDITS        = -1000000;
-    const MAX_REFUND_CREDITS = 100000000;
+    const MAX_REFUND_CREDITS = 500000000;
 
     protected static $createRules = [
         Entity::CAMPAIGN     => 'required|alpha_dash|max:255',
         # Value is in paise
-        Entity::VALUE        => 'required|integer|between:-100000000,100000000',
+        Entity::VALUE        => 'required|integer|between:-100000000,500000000',
         Entity::TYPE         => 'sometimes|filled|string|max:20|in:amount,fee,refund',
         Entity::EXPIRED_AT   => 'sometimes|integer',
         Entity::PROMOTION_ID => 'sometimes|alpha_num|max:14',
