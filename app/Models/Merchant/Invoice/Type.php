@@ -86,6 +86,15 @@ class Type
         self::REFUND_GT_10K          => self::REFUND_GT_10K_DESCRIPTION,
     ];
 
+    // This are the row items for which we are charging tax from the merchant
+    // For CARD_LTE_2K we do not charge from the merchant
+    public static $taxablePrimaryCommissionTypes = [
+        self::CARD_GT_2K,
+        self::INSTANT_REFUNDS,
+        self::OTHERS,
+        self::VALIDATION,
+    ];
+
     public static function getAllPrimaryBalanceTypes(): array
     {
         return [

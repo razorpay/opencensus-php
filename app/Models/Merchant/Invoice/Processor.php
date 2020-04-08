@@ -313,15 +313,27 @@ class Processor extends Base\Core
 
         $refundReversalFeeAmounts = $this->formatFeesForInvoice($refundReversalFeeAmount);
 
-        return [
-            Entity::TAX     => $paymentAmounts[Entity::TAX] + $transactionAmounts[Entity::TAX]
-                                + $validationAmounts[Entity::TAX] + $refundFeeAmounts[Entity::TAX]
-                                - $refundReversalFeeAmounts[Entity::TAX],
+        $amount  = $paymentAmounts[Entity::AMOUNT] + $transactionAmounts[Entity::AMOUNT]
+                    + $validationAmounts[Entity::AMOUNT] + $refundFeeAmounts[Entity::AMOUNT]
+                    - $refundReversalFeeAmounts[Entity::AMOUNT];
 
-            Entity::AMOUNT  => $paymentAmounts[Entity::AMOUNT] + $transactionAmounts[Entity::AMOUNT]
-                                + $validationAmounts[Entity::AMOUNT] + $refundFeeAmounts[Entity::AMOUNT]
-                                - $refundReversalFeeAmounts[Entity::AMOUNT],
-        ];
+        // The Finance come up with the requirement that we should have the merchant Invoice to be GST compliant
+        // That mean they want the Tax should always be equal to 18% of the fees(amount) that we charge from the Merchant
+        if(in_array($type, Type::$taxablePrimaryCommissionTypes, true) === true)
+        {
+            return [
+                // This is to round the TAX as per the GST Compliance i.e Normal rounding (PHP_ROUND_HALF_UP)
+                Entity::TAX     => (int) round($amount * Constants::GST_PERCENTAGE),
+                Entity::AMOUNT  => $amount,
+            ];
+        }
+        else
+        {
+            return [
+                Entity::TAX    => 0,
+                Entity::AMOUNT => $amount,
+            ];
+        }
     }
 
     protected function isInvoiceTypeOfPayment(string $type)
