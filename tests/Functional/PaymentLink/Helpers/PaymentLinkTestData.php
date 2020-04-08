@@ -9,7 +9,7 @@ use RZP\Tests\Functional\Fixtures\Entity\User;
 return [
     'testCreatePaymentLinkWithSinglePaymentPageItem' => [
         'request'  => [
-            'url'     => '/payment_links',
+            'url'     => '/payment_pages',
             'method'  => 'post',
             'content' => [
                 'receipt'       => '00000000000001',
@@ -74,7 +74,7 @@ return [
 
     'testCreatePaymentLinkWithMinPurchaseGreaterThanMaxPurchase' => [
         'request'  => [
-            'url'     => '/payment_links',
+            'url'     => '/payment_pages',
             'method'  => 'post',
             'content' => [
                 'receipt'       => '00000000000001',
@@ -119,7 +119,7 @@ return [
 
     'testCreatePaymentLinkWithMinAmountGreaterThanMaxAmount' => [
         'request'  => [
-            'url'     => '/payment_links',
+            'url'     => '/payment_pages',
             'method'  => 'post',
             'content' => [
                 'receipt'       => '00000000000001',
@@ -164,7 +164,7 @@ return [
 
     'testCreatePaymentLinkByPassingAmountWhenAmountPassed' => [
         'request'  => [
-            'url'     => '/payment_links',
+            'url'     => '/payment_pages',
             'method'  => 'post',
             'content' => [
                 'receipt'       => '00000000000001',
@@ -209,7 +209,7 @@ return [
 
     'testCreatePaymentLinkWithMultiplePaymentPageItem' => [
         'request'  => [
-            'url'     => '/payment_links',
+            'url'     => '/payment_pages',
             'method'  => 'post',
             'content' => [
                 'receipt'       => '00000000000001',
@@ -307,7 +307,7 @@ return [
 
     'testCreatePaymentLinkWithDifferentCurrency' => [
         'request'  => [
-            'url'     => '/payment_links',
+            'url'     => '/payment_pages',
             'method'  => 'post',
             'content' => [
                 'receipt'       => '00000000000001',
@@ -367,7 +367,7 @@ return [
 
     'testCreatePaymentLinkWithoutItem' => [
         'request'  => [
-            'url'     => '/payment_links',
+            'url'     => '/payment_pages',
             'method'  => 'post',
             'content' => [
                 'receipt'       => '00000000000001',
@@ -396,7 +396,7 @@ return [
 
     'testCreatePaymentLinkWithMoreThanLimitedItem' => [
         'request'  => [
-            'url'     => '/payment_links',
+            'url'     => '/payment_pages',
             'method'  => 'post',
             'content' => [
                 'receipt'       => '00000000000001',
@@ -594,7 +594,7 @@ return [
 
     'testCreatePaymentLinkWithoutAmountOrCurrency' => [
         'request'  => [
-            'url'     => '/payment_links',
+            'url'     => '/payment_pages',
             'method'  => 'post',
             'content' => [
                 'receipt'       => '00000000000001',
@@ -653,7 +653,7 @@ return [
 
     'testCreatePaymentLinkWithBadExpireBy' => [
         'request'  => [
-            'url'     => '/payment_links',
+            'url'     => '/payment_pages',
             'method'  => 'post',
             'content' => [
                 'receipt'       => '00000000000001',
@@ -700,7 +700,7 @@ return [
 
     'testFetchPaymentLink' => [
         'request'  => [
-            'url'     => '/payment_links/pl_100000000000pl',
+            'url'     => '/payment_pages/pl_100000000000pl',
             'method'  => 'get',
             'content' => [],
         ],
@@ -720,7 +720,7 @@ return [
 
     'testFetchPaymentLinks' => [
         'request'  => [
-            'url'     => '/payment_links',
+            'url'     => '/payment_pages',
             'method'  => 'get',
             'content' => [],
         ],
@@ -745,7 +745,7 @@ return [
 
     'testUpdatePaymentLinkWithBadExpireBy' => [
         'request' => [
-            'url'     => '/payment_links/pl_100000000000pl',
+            'url'     => '/payment_pages/pl_100000000000pl',
             'method'  => 'patch',
             'content' => [
                 'receipt'       => '00000000000002',
@@ -774,7 +774,7 @@ return [
 
     'testUpdatePaymentLinkDeletingItem' => [
         'request' => [
-            'url'     => '/payment_links/pl_100000000000pl',
+            'url'     => '/payment_pages/pl_100000000000pl',
             'method'  => 'patch',
             'content' => [
                 'payment_page_items'         => [
@@ -798,7 +798,7 @@ return [
 
     'testUpdatePaymentLinkAddingItem' => [
         'request' => [
-            'url'     => '/payment_links/pl_100000000000pl',
+            'url'     => '/payment_pages/pl_100000000000pl',
             'method'  => 'patch',
             'content' => [
                 'payment_page_items'         => [
@@ -846,7 +846,7 @@ return [
 
     'testUpdatePaymentLinkRemoveAllItem' => [
         'request' => [
-            'url'     => '/payment_links/pl_100000000000pl',
+            'url'     => '/payment_pages/pl_100000000000pl',
             'method'  => 'patch',
             'content' => [
                 'payment_page_items'         => [
@@ -870,7 +870,7 @@ return [
 
     'testPaymentLinkSendNotification' => [
         'request'  => [
-            'url'     => '/payment_links/pl_100000000000pl/notify',
+            'url'     => '/payment_pages/pl_100000000000pl/notify',
             'method'  => 'post',
             'content' => [
                 'emails'   => ['test@rzp.com'],
@@ -884,7 +884,7 @@ return [
 
     'testInactivePaymentLinkSendNotification' => [
         'request'  => [
-            'url'     => '/payment_links/pl_100000000000pl/notify',
+            'url'     => '/payment_pages/pl_100000000000pl/notify',
             'method'  => 'post',
             'content' => [
                 'emails'   => ['test@rzp.com'],
@@ -908,7 +908,7 @@ return [
 
     'testExpirePaymentLinks' => [
         'request'  => [
-            'url'     => '/payment_links/expire',
+            'url'     => '/payment_pages/expire',
             'method'  => 'post',
             'content' => [],
         ],
@@ -941,7 +941,7 @@ return [
 
     'testDeactivatePaymentLink' => [
         'request' => [
-            'url'    => '/payment_links/pl_100000000000pl/deactivate',
+            'url'    => '/payment_pages/pl_100000000000pl/deactivate',
             'method' => 'patch',
         ],
         'response' => [
@@ -955,7 +955,7 @@ return [
 
     'testDeactivateAlreadyDeactivatedPaymentLink' => [
         'request' => [
-            'url'    => '/payment_links/pl_100000000000pl/deactivate',
+            'url'    => '/payment_pages/pl_100000000000pl/deactivate',
             'method' => 'patch',
         ],
         'response' => [
@@ -975,7 +975,7 @@ return [
 
     'testActivatePaymentLink' => [
         'request' => [
-            'url'    => '/payment_links/pl_100000000000pl/activate',
+            'url'    => '/payment_pages/pl_100000000000pl/activate',
             'method' => 'patch',
         ],
         'response' => [
@@ -989,7 +989,7 @@ return [
 
     'testActivateLinkAlreadyActivated' => [
         'request' => [
-            'url'    => '/payment_links/pl_100000000000pl/activate',
+            'url'    => '/payment_pages/pl_100000000000pl/activate',
             'method' => 'patch',
         ],
         'response' => [
@@ -1009,7 +1009,7 @@ return [
 
     'testActivateWithTimesPayableLessThanTimesPaid' => [
         'request' => [
-            'url'     => '/payment_links/pl_100000000000pl/activate',
+            'url'     => '/payment_pages/pl_100000000000pl/activate',
             'method'  => 'patch',
             'content' => [
                 'times_payable' => 1,
@@ -1032,7 +1032,7 @@ return [
 
     'testMinExpiryTimeForActivation' => [
         'request' => [
-            'url'     => '/payment_links/pl_100000000000pl/activate',
+            'url'     => '/payment_pages/pl_100000000000pl/activate',
             'method'  => 'patch',
             'content' => [
             ],
@@ -1054,7 +1054,7 @@ return [
 
     'testEditPaymentLinkToCompleteAndExcessPaymentRefunded' => [
         'request' => [
-            'url'     => '/payment_links/pl_100000000000pl',
+            'url'     => '/payment_pages/pl_100000000000pl',
             'method'  => 'patch',
             'content' => [
                 'times_payable' => 1,
@@ -1073,7 +1073,7 @@ return [
 
     'testGetSlugExistsApi' => [
         'request' => [
-            'url'    => '/payment_links/sampleslug/exists',
+            'url'    => '/payment_pages/sampleslug/exists',
             'method' => 'get',
         ],
         'response' => [

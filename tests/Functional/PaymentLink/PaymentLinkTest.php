@@ -956,7 +956,7 @@ class PaymentLinkTest extends TestCase
         int $code = 200,
         string $message = null)
     {
-        $response = $this->call('GET', "/v1/payment_links/pl_{$id}/view");
+        $response = $this->call('GET', "/v1/payment_pages/pl_{$id}/view");
 
         $response->assertStatus($code);
 
