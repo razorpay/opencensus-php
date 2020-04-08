@@ -7,13 +7,14 @@
 <body style="width: 100% !important; min-width: 100%; -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; color: #222222; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; padding: 0; margin: 0; text-align: left; font-size: 14px; line-height: 19px;">
 <p style="color: #222222; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; padding: 0; margin: 0; text-align: left; font-size: 14px; line-height: 19px; margin-bottom: 10px;">
     @php
+        use RZP\Models\Currency\Currency;
+
         $brand_color = '#6A75ED';
         $brand_text_color = '#FFFFFF';
 
         $expiryDate = date('jS F Y', $dispute['respond_by']);
 
-        $amount = sprintf('%0.2f', ($dispute['amount'] / 100));
-        $amount = floatval($amount);
+        $amount = Currency::getSymbol($dispute['currency']) . ' ' . ((float) ($dispute['amount'] / Currency::getDenomination($dispute['currency'])));
 
         $paymentLink = 'https://dashboard.razorpay.com/#/app/payments/' . $dispute['payment_id'];
 
@@ -32,7 +33,7 @@
         <div style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; text-align: center; background-color: {{ $brand_color }}; color: {{ $brand_text_color }}; padding: 30px 0 135px !important;">
 
             <h2 style="font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; padding: 0; word-break: normal; margin: 0; font-size: 20px; line-height: 24px; text-align: center; color: {{ $brand_text_color }};">
-                  Dispute raised for Rs. {{ $amount }}
+                  Dispute raised for {{ $amount }}
               </h2>
 
             <div style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; margin-top: 12px; color: {{ $brand_text_color }};">
@@ -84,7 +85,7 @@
                         <br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;">
                         Hi,
                         <br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;"><br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;">
-                        We have received a dispute for Rs. {{ $amount }} on {{ $dispute['payment_id'] }} against {{ $merchant['name'] }}. Please share all proofs like invoices, proof of delivery of product/service and any relevant screenshots pertaining to the transaction in a consolidated ZIP archive named as the Payment ID.
+                        We have received a dispute for {{ $amount }} on {{ $dispute['payment_id'] }} against {{ $merchant['name'] }}. Please share all proofs like invoices, proof of delivery of product/service and any relevant screenshots pertaining to the transaction in a consolidated ZIP archive named as the Payment ID.
                         <br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;"><br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;">
                         Note: Kindly <b style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;"> reply to this email </b> with the requested documents in the required format by the deadline, {{ $noteResult }}
                         <br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;"><br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;">

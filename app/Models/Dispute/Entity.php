@@ -180,7 +180,6 @@ class Entity extends Base\PublicEntity
 
     protected $defaults = [
         self::STATUS          => Status::OPEN,
-        self::BASE_CURRENCY   => Currency\Currency::INR,
         self::DEDUCT_AT_ONSET => false,
         self::AMOUNT_DEDUCTED => 0,
         self::AMOUNT_REVERSED => 0,
@@ -224,6 +223,7 @@ class Entity extends Base\PublicEntity
         }
 
         $this->setAttribute(self::BASE_AMOUNT, $baseAmount);
+        $this->setAttribute(self::BASE_CURRENCY, Currency\Currency::INR);
     }
 
     public function generateAmount($input)

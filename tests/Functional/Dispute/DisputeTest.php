@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Dispute;
 
 use Mail;
+use Cache;
 use Illuminate\Http\UploadedFile;
 
 use RZP\Models\Dispute\Phase;
@@ -60,6 +61,102 @@ class DisputeTest extends TestCase
         $txn = $this->getLastEntity('transaction', true);
 
         $this->assertEquals('payment', $txn['type']);
+    }
+
+    public function testInternationalDisputeCreateAudInr()
+    {
+        $payment = $this->fixtures->create('payment:captured', ['amount' => 1000, 'currency' => 'AUD', 'base_amount' => 10000]);
+
+        $testData = $this->updateCreateTestData($payment->getPublicId());
+
+        $testData['response']['content']['payment_id'] = $payment->getPublicId();
+
+        $store = Cache::store();
+
+        Cache::shouldReceive('driver')
+            ->andReturnUsing(function() use ($store)
+            {
+                return $store;
+            });
+
+        Cache::shouldReceive('store')
+            ->withAnyArgs()
+            ->andReturn($store);
+
+        Cache::shouldReceive('get')
+            ->times(2)
+            ->with('currency:exchange_rates_INR')
+            ->andReturnUsing(function ()
+                {
+                    return ['AUD' => 0.09];
+                });
+
+        $this->startTest($testData);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals(true, $payment['disputed']);
+
+        $dispute = $this->getLastEntity('dispute', true);
+
+        $this->assertEquals(0, $dispute['amount_deducted']);
+        $this->assertEquals(10000, $dispute['base_amount']);
+        $this->assertEquals('INR', $dispute['base_currency']);
+
+        $txn = $this->getLastEntity('transaction', true);
+
+        $this->assertEquals('payment', $txn['type']);
+    }
+
+    public function testDisputeCreateWAmountAndGatewayAmount()
+    {
+        $testData = $this->updateCreateTestData();
+
+        $this->startTest($testData);
+    }
+
+    public function testLostInternationalDispute()
+    {
+        $payment = $this->fixtures->create('payment:captured', ['amount' => 1000, 'currency' => 'AUD', 'base_amount' => 10000, 'disputed' => 1]);
+
+        $reason = $this->fixtures->create('dispute_reason');
+
+        $attributes = [
+            'amount'      => 1000,
+            'currency'    => 'AUD',
+            'base_amount' => 10000,
+            'base_currency' => 'INR',
+            'gateway_amount' => 10000,
+            'gateway_currency' => 'INR',
+            'merchant_id' => $payment->getMerchantId(),
+            'payment_id' => $payment->getId(),
+            'reason_id' => $reason['id'],
+            'conversion_rate' => 100000,
+        ];
+
+        $dispute = $this->fixtures->dispute->create($attributes);
+
+        $testData = $this->testData[__FUNCTION__];
+        $testData['request']['url'] ='/disputes/' . $dispute->getPublicId();
+
+        $this->ba->adminProxyAuth();
+
+        $this->fixtures->edit(AdminEntity::ADMIN, Org::SUPER_ADMIN, [AdminEntity::ALLOW_ALL_MERCHANTS => 1]);
+
+        $content = $this->runRequestResponseFlow($testData);
+
+        $dispute = $this->getLastEntity('dispute', true);
+
+        $adjustment = $this->getLastEntity('adjustment', true);
+
+        $this->assertEquals($dispute['id'], $content['id']);
+        $this->assertEquals($testData['request']['content']['status'], $content['status']);
+        $this->assertEquals(1000, $dispute['amount']);
+        $this->assertEquals($dispute['base_amount'], $dispute['amount_deducted']);
+        $this->assertEquals(0,
+            $dispute['amount_reversed']);
+        $this->assertEquals(Entity::stripDefaultSign($dispute['id']), $adjustment['entity_id']);
+        $this->assertEquals(-10000, $adjustment['amount']);
     }
 
     public function testDisputeCreateMerchantMail()
@@ -573,6 +670,8 @@ class DisputeTest extends TestCase
 
     public function testDisputeLostPartiallyAccepted()
     {
+        $this->markTestSkipped('Partial dispute are not supported');
+
         $input = [
             'amount'                => 10000,
             'deduct_at_onset'       => 1,
@@ -605,6 +704,8 @@ class DisputeTest extends TestCase
 
     public function testDisputeLostPartiallyAcceptedForNoOnsetDeduct()
     {
+        $this->markTestSkipped('Partial dispute are not supported');
+
         $input = [
             'amount'                => 10000,
             'deduct_at_onset'       => 0,
@@ -636,6 +737,8 @@ class DisputeTest extends TestCase
 
     public function testDisputeLostPartiallyAcceptedWithInvalidAcceptedAmount()
     {
+        $this->markTestSkipped('Partial dispute are not supported');
+
         $input = [
             'amount'                => 10000,
             'deduct_at_onset'       => 0,
@@ -649,6 +752,8 @@ class DisputeTest extends TestCase
 
     public function testDisputeLostPartiallyAcceptedWithZeroAcceptedAmount()
     {
+        $this->markTestSkipped('Partial dispute are not supported');
+
         $input = [
             'amount'                => 10000,
             'deduct_at_onset'       => 0,

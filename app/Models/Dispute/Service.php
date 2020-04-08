@@ -331,7 +331,6 @@ class Service extends Base\Service
             case self::BULK_CREATE_ACTION :
                 $headers = self::BULK_CREATE_DISPUTES_COLUMNS;
                 break;
-
             case self::BULK_EDIT_ACTION :
                 $headers = self::BULK_EDIT_DISPUTES_COLUMNS;
                 break;

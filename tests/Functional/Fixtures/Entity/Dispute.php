@@ -73,10 +73,6 @@ class Dispute extends Base
         return [
             'amount'           => $payment->getAmount(),
             'currency'         => $payment->getCurrency(),
-            'base_amount'      => $payment->getAmount(),
-            'base_currency'    => $payment->getCurrency(),
-            'gateway_amount'   => $payment->getAmount(),
-            'gateway_currency' => $payment->getCurrency(),
             'payment_id'       => $payment->getId(),
             'merchant_id'      => $payment->getMerchantId(),
             'reason_id'        => $reason->getId(),

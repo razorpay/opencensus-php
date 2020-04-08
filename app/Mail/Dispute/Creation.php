@@ -3,6 +3,7 @@
 namespace RZP\Mail\Dispute;
 
 use RZP\Constants\MailTags;
+use RZP\Models\Currency\Currency;
 
 class Creation extends Base
 {
@@ -10,9 +11,9 @@ class Creation extends Base
     {
         $merchantName = $this->data['merchant']['name'];
 
-        $amount = (float) ($this->data['dispute']['amount'] / 100);
+        $formattedAmount = $this->getFormattedAmount();
 
-        $subject = 'Dispute raised for Rs. ' . $amount . ' on '
+        $subject = 'Dispute raised for ' . $formattedAmount . ' on '
             . $this->data['dispute']['payment_id']
             . ' against ' . $merchantName;
 
@@ -26,6 +27,14 @@ class Creation extends Base
         $this->view('emails.dispute.creation');
 
         return $this;
+    }
+
+    protected function getFormattedAmount()
+    {
+        $amount = $this->data['dispute']['amount'];
+        $currency = $this->data['dispute']['currency'];
+
+        return Currency::getSymbol($currency) . ' ' . ((float) ($amount / Currency::getDenomination($currency)));
     }
 
     protected function addHeaders()

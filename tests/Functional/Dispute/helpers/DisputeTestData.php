@@ -29,6 +29,72 @@ return [
         ],
     ],
 
+    'testInternationalDisputeCreateAudInr' => [
+        'request' => [
+            'method'  => 'post',
+            'content' => [
+                'gateway_dispute_id'   => '4342frf34r',
+                'raised_on'            => '946684800',
+                'expires_on'           => '1912162918',
+                'gateway_amount'       => 10000,
+                'gateway_currency'     => 'INR',
+                'deduct_at_onset'      => 0,
+                'phase'                => 'chargeback',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'amount'             => 909,
+                'amount_deducted'    => 0,
+                'currency'           => 'AUD',
+                'phase'              => 'chargeback',
+                'status'             => 'open',
+                'reason_code'        => 'KFRER_R',
+            ],
+        ],
+    ],
+
+    'testLostInternationalDispute' => [
+        'request' => [
+            'method'  => 'post',
+            'content' => [
+                'status' => 'lost',
+            ],
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
+    'testDisputeCreateWAmountAndGatewayAmount' => [
+        'request' => [
+            'method'  => 'post',
+            'content' => [
+                'gateway_dispute_id'   => '4342frf34r',
+                'raised_on'            => '946684800',
+                'expires_on'           => '1912162918',
+                'amount'               => 100,
+                'gateway_amount'       => 100,
+                'gateway_currency'     => 'INR',
+                'deduct_at_onset'      => 0,
+                'phase'                => 'chargeback',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'amount and gateway_amount cannot be sent together',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testDisputeCreateMerchantMail' => [
         'request' => [
             'method'  => 'post',

@@ -31,8 +31,8 @@ class Validator extends Base\Validator
         Entity::RAISED_ON              => 'required|epoch',
         Entity::EXPIRES_ON             => 'required|epoch',
         Entity::REASON_ID              => 'required|alpha_num|size:14',
-        Entity::AMOUNT                 => 'required_without:gateway_amount|integer|min:100',
-        Entity::GATEWAY_AMOUNT         => 'required_without:amount|integer',
+        Entity::AMOUNT                 => 'sometimes|integer|min:100',
+        Entity::GATEWAY_AMOUNT         => 'sometimes|integer',
         Entity::GATEWAY_CURRENCY       => 'required_with:gateway_amount|string|size:3',
         Entity::DEDUCT_AT_ONSET        => 'sometimes|boolean',
         Entity::PARENT_ID              => 'sometimes|alpha_num|size:14',
@@ -44,7 +44,6 @@ class Validator extends Base\Validator
     protected static $editRules = [
         Entity::GATEWAY_DISPUTE_STATUS => 'sometimes|string',
         Entity::STATUS                 => 'sometimes|string|custom',
-        Entity::ACCEPTED_AMOUNT        => 'sometimes|integer|min:100',
         Entity::EXPIRES_ON             => 'sometimes|epoch',
         Entity::PARENT_ID              => 'sometimes|alpha_num|size:14',
         Entity::SKIP_DEDUCTION         => 'sometimes|boolean',
@@ -53,6 +52,7 @@ class Validator extends Base\Validator
 
     protected static $createValidators = [
         'deduct_onset_for_non_transactional_phases',
+        'amount'
     ];
 
     protected static $editValidators = [
@@ -123,12 +123,6 @@ class Validator extends Base\Validator
                 'reason_id should be sent in the request to create a dispute.',
                 Entity::REASON_ID,
                 $input);
-        }
-
-        if (isset($input[Entity::GATEWAY_AMOUNT]) === true)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'gateway_amount field is not required and shouldn\'t be sent');
         }
     }
 
@@ -224,6 +218,23 @@ class Validator extends Base\Validator
                 'Deduct at onset cannot be done for disputes in phase ' . $input[Entity::PHASE],
                 Entity::DEDUCT_AT_ONSET,
                 $input);
+        }
+    }
+
+    public function validateAmount(array $input)
+    {
+        if ((isset($input['amount']) === true) and
+            (isset($input['gateway_amount']) === true))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'amount and gateway_amount cannot be sent together');
+        }
+
+        if ((isset($input['amount']) === false) and
+            (isset($input['gateway_amount']) === false))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Either amount or gateway_amount is required');
         }
     }
 

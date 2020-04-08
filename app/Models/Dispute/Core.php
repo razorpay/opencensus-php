@@ -400,11 +400,11 @@ class Core extends Base\Core
     {
         if ($amount === 0)
         {
-            $amount = $dispute->getAmount();
+            $amount = $dispute->getBaseAmount() ?: $dispute->getAmount();
         }
 
         $input = [
-            Adjustment\Entity::CURRENCY    => $dispute->getCurrency(),
+            Adjustment\Entity::CURRENCY    => $dispute->getBaseCurrency() ?: $dispute->getCurrency(),
             Adjustment\Entity::AMOUNT      => 0 - $amount,
             Adjustment\Entity::DESCRIPTION => self::DEBIT_ADJUSTMENT_DESCRIPTION,
         ];
@@ -422,7 +422,7 @@ class Core extends Base\Core
         }
 
         $input = [
-            Adjustment\Entity::CURRENCY    => $dispute->getCurrency(),
+            Adjustment\Entity::CURRENCY    => $dispute->getBaseCurrency() ?: $dispute->getCurrency(),
             Adjustment\Entity::AMOUNT      => $amount,
             Adjustment\Entity::DESCRIPTION => self::CREDIT_ADJUSTMENT_DESCRIPTION,
         ];
@@ -434,12 +434,14 @@ class Core extends Base\Core
 
     protected function getAcceptedDisputeAmount(Entity $dispute, array $input)
     {
+        $disputeBaseAmount = $dispute->getBaseAmount() ?: $dispute->getAmount();
+
         if (isset($input[Entity::ACCEPTED_AMOUNT]) === false)
         {
-            return $dispute->getAmount();
+            return $disputeBaseAmount;
         }
 
-        $dispute->getValidator()->validateAcceptedDisputeAmount($dispute->getAmount(), $input);
+        $dispute->getValidator()->validateAcceptedDisputeAmount($disputeBaseAmount, $input);
 
         return $input[Entity::ACCEPTED_AMOUNT];
     }

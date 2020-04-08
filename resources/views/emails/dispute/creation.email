@@ -4,13 +4,14 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <meta name="viewport" content="width=device-width"/>
     @php
+        use RZP\Models\Currency\Currency;
+
         $brand_color = '#6A75ED';
         $brand_text_color = '#FFFFFF';
 
         $expiryDate = date('jS F Y', $dispute['respond_by']);
 
-        $amount = sprintf('%0.2f', ($dispute['amount'] / 100));
-        $amount = floatval($amount);
+        $amount = Currency::getSymbol($dispute['currency']) . ' ' . ((float) ($dispute['amount'] / Currency::getDenomination($dispute['currency'])));
 
         $paymentLink = 'https://dashboard.razorpay.com/#/app/payments/' . $dispute['payment_id'];
 
@@ -34,7 +35,7 @@
             ">
 
             <h2 style="color: {{ $brand_text_color }}">
-                  Dispute raised for Rs. {{ $amount }}
+                  Dispute raised for {{ $amount }}
               </h2>
 
             <div style="margin-top: 12px; color: {{ $brand_text_color }}">
@@ -98,7 +99,7 @@
                         <br>
                         Hi,
                         <br><br>
-                        We have received a dispute for Rs. {{ $amount }} on {{ $dispute['payment_id'] }} against {{ $merchant['name'] }}. Please share all proofs like invoices, proof of delivery of product/service and any relevant screenshots pertaining to the transaction in a consolidated ZIP archive named as the Payment ID.
+                        We have received a dispute for {{ $amount }} on {{ $dispute['payment_id'] }} against {{ $merchant['name'] }}. Please share all proofs like invoices, proof of delivery of product/service and any relevant screenshots pertaining to the transaction in a consolidated ZIP archive named as the Payment ID.
                         <br><br>
                         Note: Kindly <b> reply to this email </b> with the requested documents in the required format by the deadline, {{ $noteResult }}
                         <br><br>
