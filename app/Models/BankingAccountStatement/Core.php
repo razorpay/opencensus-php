@@ -473,7 +473,6 @@ class Core extends Base\Core
 
             $this->trace->info(TraceCode::REVERSAL_TRANSACTION_CREATED,
                 [
-                    'payout_id'         => $existingPayout->getId(),
                     'reversal_id'       => $reversal->getId(),
                     'transaction_id'    => $reversal->transaction->getId(),
                 ]);

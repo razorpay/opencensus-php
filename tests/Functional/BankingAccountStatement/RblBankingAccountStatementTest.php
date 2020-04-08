@@ -874,6 +874,92 @@ class RblBankingAccountStatementTest extends TestCase
         $this->assertEquals(21450, $balance['balance']);
     }
 
+    public function testRblReversalTxnCreation()
+    {
+        $channel = Channel::RBL;
+
+        $this->setupForRblPayout($channel);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->assertEquals(590, $payout['fees']);
+        $this->assertEquals(90, $payout['tax']);
+        $this->assertEquals('Bbg7cl6t6I3XA6', $payout['pricing_rule_id']);
+
+        $attempt = $this->getDbLastEntity('fund_transfer_attempt');
+
+        $this->fixtures->edit('payout', $payout['id'], ['status' => 'initiated']);
+
+        $this->fixtures->edit('fund_transfer_attempt', $attempt['id'], ['utr' => '123456']);
+
+        // Fetch account statement from RBL
+
+        // Update status
+        $ftsCreateTransfer = new FtsFundTransfer(
+            EnvMode::TEST,
+            $attempt['id']);
+
+        $ftsCreateTransfer->handle();
+
+        $attempt = $this->getDbLastEntity('fund_transfer_attempt');
+
+        $this->assertEquals(Attempt\Status::INITIATED, $attempt['status']);
+
+        $this->updateFta(
+            $attempt['fts_transfer_id'],
+            $attempt['source'],
+            Attempt\Type::PAYOUT,
+            Attempt\Status::PROCESSED);
+
+        $payout = $this->getDbLastEntity('payout');
+        $this->assertEquals('processed', $payout['status']);
+
+        $mockedResponse = $this->getRblTxnCreation();
+
+        $this->setMozartMockResponse($mockedResponse);
+
+        $testData = $this->testData['testRblAccountStatementTxnMappingCase1'];
+
+        $this->testData[__FUNCTION__] = $testData;
+        $this->ba->cronAuth();
+        $this->startTest();
+
+        $basEntries = $this->getDbEntities('banking_account_statement', ['account_number' => '2224440041626905']);
+        $transactions = $this->getDbEntities('transaction');
+        $externalEntries = $this->getDbEntities('external', ['balance_id' => $payout['balance_id']]);
+
+        $this->assertEquals(EntityConstants::EXTERNAL, $basEntries[0]['entity_type']);
+        $this->assertEquals($externalEntries[0]['id'], $basEntries[0]['entity_id']);
+        $this->assertEquals($externalEntries[0]['transaction_id'], $basEntries[0]['transaction_id']);
+        $this->assertEquals($externalEntries[0]['banking_account_statement_id'], $basEntries[0]['id']);
+        $this->assertEquals($transactions[0]['entity_id'],$externalEntries[0]['id']);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->assertEquals(EntityConstants::PAYOUT, $basEntries[1]['entity_type']);
+        $this->assertEquals($payout['id'], $basEntries[1]['entity_id']);
+        $this->assertEquals($payout['transaction_id'], $basEntries[1]['transaction_id']);
+        $this->assertEquals($transactions[1]['entity_id'],$payout['id']);
+
+
+        $this->assertEquals(EntityConstants::EXTERNAL, $basEntries[2]['entity_type']);
+        $this->assertEquals($externalEntries[1]['id'], $basEntries[2]['entity_id']);
+        $this->assertEquals($externalEntries[1]['transaction_id'], $basEntries[2]['transaction_id']);
+        $this->assertEquals($externalEntries[1]['banking_account_statement_id'], $basEntries[2]['id']);
+
+        $this->fixtures->edit('banking_account_statement', $basEntries[2]['id'], ['utr' => '123456']);
+
+        $this->updateFta(
+            $attempt['fts_transfer_id'],
+            $attempt['source'],
+            Attempt\Type::PAYOUT,
+            Attempt\Status::REVERSED);
+
+        $reversal = $this->getDbLastEntity('reversal');
+
+        $this->assertEquals($transactions[2]['id'], $reversal['transaction_id']);
+    }
+
     protected function getRblDataResponseForFailureMapping()
     {
         $response = [
@@ -941,7 +1027,104 @@ class RblBankingAccountStatementTest extends TestCase
                                     'amountValue' => '214.50'
                                 ],
                                 'txnCat' => 'TCI',
+                                'txnId' => '  S807069',
+                                'txnSrlNo' => '  50',
+                                'valueDate' => '2016-01-05T00:00:00.000'
+                            ],
+                        ]
+                    ],
+                    'Header' => [
+                        'Approver_ID' => '',
+                        'Corp_ID' => 'RAZORPAY',
+                        'Error_Cde' => '',
+                        'Error_Desc' => '',
+                        'Status' => 'SUCCESS',
+                        'TranID' => '1'
+                    ],
+                    'Signature' => [
+                        'Signature' => 'Signature'
+                    ]
+                ],
+            ],
+            'error' => null,
+            'external_trace_id' => '',
+            'mozart_id' => 'bjt1l8jc1osqk0jtadrg',
+            'next' => [],
+            'success' => true
+        ];
+
+        return $response;
+    }
+
+
+    protected function getRblTxnCreation()
+    {
+        $response = [
+            'data' => [
+                'PayGenRes' => [
+                    'Body' => [
+                        'hasMoreData' => 'N',
+                        'transactionDetails' => [
+                            [
+                                'pstdDate' => '2015-12-29T15:58:12.000',
+                                'transactionSummary' => [
+                                    'instrumentId' => '',
+                                    'txnAmt' => [
+                                        'amountValue' => '114.50',
+                                        'currencyCode' => 'INR'
+                                    ],
+                                    'txnDate' => '2015-12-29T00:00:00.000',
+                                    'txnDesc' => 'DEBIT CARD ANNUAL FEE 2635',
+                                    'txnType' => 'C'
+                                ],
+                                'txnBalance' => [
+                                    'currencyCode' => 'INR',
+                                    'amountValue' => '214.50'
+                                ],
+                                'txnCat' => 'TBI',
+                                'txnId' => '  S429655',
+                                'txnSrlNo' => ' 498',
+                                'valueDate' => '2015-12-29T00:00:00.000'
+                            ],
+                            [
+                                'pstdDate' => '2016-01-05T01:36:33.000',
+                                'transactionSummary' => [
+                                    'instrumentId' => '',
+                                    'txnAmt' => [
+                                        'amountValue' => '100.95',
+                                        'currencyCode' => 'INR'
+                                    ],
+                                    'txnDate' => '2016-01-05T00:00:00.000',
+                                    'txnDesc' => '123456-Z',
+                                    'txnType' => 'D'
+                                ],
+                                'txnBalance' => [
+                                    'currencyCode' => 'INR',
+                                    'amountValue' => '113.55'
+                                ],
+                                'txnCat' => 'TCI',
                                 'txnId' => '  S807068',
+                                'txnSrlNo' => '  49',
+                                'valueDate' => '2016-01-05T00:00:00.000'
+                            ],
+                            [
+                                'pstdDate' => '2016-01-05T01:36:33.000',
+                                'transactionSummary' => [
+                                    'instrumentId' => '',
+                                    'txnAmt' => [
+                                        'amountValue' => '100.95',
+                                        'currencyCode' => 'INR'
+                                    ],
+                                    'txnDate' => '2016-01-05T00:00:00.000',
+                                    'txnDesc' => 'R-143535-Z',
+                                    'txnType' => 'C'
+                                ],
+                                'txnBalance' => [
+                                    'currencyCode' => 'INR',
+                                    'amountValue' => '214.50'
+                                ],
+                                'txnCat' => 'TCI',
+                                'txnId' => '  S807069',
                                 'txnSrlNo' => '  50',
                                 'valueDate' => '2016-01-05T00:00:00.000'
                             ],
