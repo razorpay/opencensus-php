@@ -14,6 +14,7 @@ export const AppStore = observable
         'dev',
         'perf',
         'func',
+        'automation',
         'testing',
         'stage',
         'production',
