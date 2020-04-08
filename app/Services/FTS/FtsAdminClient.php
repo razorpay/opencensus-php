@@ -16,6 +16,8 @@ class FtsAdminClient extends Base
 
     const ATTEMPTS           = 'attempts';
 
+    const CHANNEL_HEALTH_EVENTS = "channel_health_events";
+
     public function __construct()
     {
         $app = App::getFacadeRoot();
@@ -40,6 +42,9 @@ class FtsAdminClient extends Base
 
             case self::BENEFICIARY_STATUS:
                 return $this->getBeneficiaryStatus($input);
+
+            case self::CHANNEL_HEALTH_EVENTS:
+                return $this->getChannelHealthEvents($input);
         }
     }
 
@@ -75,6 +80,14 @@ class FtsAdminClient extends Base
             $input)['body'][self::ATTEMPTS];
     }
 
+    public function getChannelHealthEvents(array $input)
+    {
+        return $this->createAndSendRequest(
+            parent::FTS_ALERT_URI,
+            Requests::GET,
+            $input)['body'][self::CHANNEL_HEALTH_EVENTS];
+    }
+
     public function fetch(string $entity, string $id, array $input)
     {
         $input += [ 'id' => $id ];
@@ -92,6 +105,9 @@ class FtsAdminClient extends Base
 
             case self::BENEFICIARY_STATUS:
                 return $this->getBeneficiaryStatus($input)[0];
+
+            case self::CHANNEL_HEALTH_EVENTS:
+                return $this->getChannelHealthEvents($input)[0];
         }
     }
 }

@@ -443,7 +443,27 @@ class AdminFetch
                     Fetch::LABEL => 'Gateway Ref No',
                     Fetch::TYPE  => Fetch::TYPE_STRING,
                 ],
-            ]
+            ],
+            Entity::FTS_CHANNEL_HEALTH_EVENTS => [
+                'operation' => [
+                    Fetch::LABEL => 'Operation',
+                    Fetch::TYPE  => Fetch::TYPE_STRING,
+                ],
+                'channel' => [
+                    Fetch::LABEL  => 'Channel',
+                    Fetch::TYPE   => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => Channel::getFtsSupportedChannels(),
+                ],
+                'mozart_identifier' => [
+                    Fetch::LABEL =>'Mozart Identifier',
+                    Fetch::TYPE  => Fetch::TYPE_STRING,
+                ],
+                'mode' => [
+                    Fetch::LABEL => 'Transfer Mode',
+                    Fetch::TYPE  => Fetch::TYPE_STRING,
+                ],
+            ],
+
         ];
     }
 
