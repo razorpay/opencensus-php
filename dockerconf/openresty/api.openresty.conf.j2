@@ -31,6 +31,10 @@ server {
         server_name api.razorpay.com invoices.razorpay.com;
     {% endif %}
 
+    location /server-status {
+       return 404;
+    }
+
     location / {
         access_by_lua_block {
             local lib = require 'rate_limit'
