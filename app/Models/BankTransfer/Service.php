@@ -16,6 +16,7 @@ use RZP\Trace\TraceCode;
 use RZP\Models\BankAccount;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Exception\LogicException;
+use RZP\Models\BankTransferHistory;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\VirtualAccount\Provider;
 use RZP\Reconciliator\RequestProcessor;
@@ -348,6 +349,8 @@ class Service extends Base\Service
     public function editPayerBankAccount(string $id, array $input)
     {
         $bankTransfer = $this->repo->bank_transfer->findByPublicId($id);
+
+        (new BankTransferHistory\Service())->backupPayerBankAccount($bankTransfer, $input);
 
         $bankTransfer = $this->core->editPayerBankAccount($bankTransfer, $input);
 

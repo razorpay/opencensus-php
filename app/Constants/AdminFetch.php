@@ -2559,7 +2559,18 @@ class AdminFetch
                 'recovery_payout_id'    => [],
                 'attempt_number'        => [],
                 'reference_number'      => [],
-            ]
+            ],
+            
+            Entity::BANK_TRANSFER_HISTORY => [
+                'bank_transfer_id' => [
+                    Fetch::LABEL => 'Bank Transfer ID',
+                    Fetch::TYPE => Fetch::TYPE_STRING,
+                ],
+                'created_by' => [
+                    Fetch::LABEL => 'Admin Email',
+                    Fetch::TYPE => Fetch::TYPE_STRING
+                ],
+            ],
         ];
 
         //

@@ -50,6 +50,13 @@ class Validator extends Base\Validator
         'Data.0.creditAccountNumber'    => 'required|string',
     ];
 
+    protected static $editBankTransferRules = [
+        Entity::PAYER_NAME              => 'sometimes|string|max:100',
+        Entity::PAYER_ACCOUNT           => 'sometimes|string|max:20',
+        Entity::PAYER_IFSC              => 'sometimes|alpha_num|size:'.self::IFSC_LENGTH,
+        Entity::PAYER_BANK_ACCOUNT_ID   => 'sometimes|integer|size:14',
+    ];
+
     protected static $createValidators = [
         Entity::PAYER_IFSC,
     ];

@@ -848,6 +848,12 @@ class Header
     const  RBL_ECOLLECT_CORPORATE_CODE              = 'CORPORATE_CODE';
     const  RBL_ECOLLECT_SENDER_INFORMATION          = 'SENDER_INFORMATION';
 
+    // Bank Transfer Edit Payer Bank Account Headers
+    const BANK_TRANSFER_EDIT_BANK_TRANSFER_ID       = 'BANK_TRANSFER_ID';
+    const BANK_TRANSFER_EDIT_BENEFICIARY_NAME       = 'BENEFICIARY_NAME';
+    const BANK_TRANSFER_EDIT_ACCOUNT_NUMBER         = 'ACCOUNT_NUMBER';
+    const BANK_TRANSFER_EDIT_IFSC_CODE              = 'IFSC_CODE';
+    const BANK_TRANSFER_EDIT_PAYER_BANK_ACCOUNT_ID  = 'PAYER_BANK_ACCOUNT_ID';
 
     /**
      * Input and output file headers
@@ -2648,7 +2654,25 @@ class Header
                 self::RBL_ECOLLECT_SENDER_INFORMATION,
                 self::STATUS,
             ],
-        ]
+        ],
+
+        Type::BANK_TRANSFER_EDIT => [
+            self::INPUT => [
+                self::BANK_TRANSFER_EDIT_BANK_TRANSFER_ID,
+                self::BANK_TRANSFER_EDIT_BENEFICIARY_NAME,
+                self::BANK_TRANSFER_EDIT_ACCOUNT_NUMBER,
+                self::BANK_TRANSFER_EDIT_IFSC_CODE,
+            ],
+            self::OUTPUT => [
+                self::BANK_TRANSFER_EDIT_BANK_TRANSFER_ID,
+                self::BANK_TRANSFER_EDIT_PAYER_BANK_ACCOUNT_ID,
+                self::BANK_TRANSFER_EDIT_BENEFICIARY_NAME,
+                self::BANK_TRANSFER_EDIT_ACCOUNT_NUMBER,
+                self::BANK_TRANSFER_EDIT_IFSC_CODE,
+                self::ERROR_CODE,
+                self::ERROR_DESCRIPTION,
+            ],
+        ],
     ];
 
     /**

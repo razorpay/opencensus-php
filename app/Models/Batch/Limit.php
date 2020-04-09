@@ -49,6 +49,7 @@ class Limit
         Type::ECOLLECT_ICICI                        => 100000,
         'nach_debit_nach_citi'                      => 50000,
         Type::ECOLLECT_RBL                          => 100000,
+        Type::BANK_TRANSFER_EDIT                    => 10000,
     ];
 
     /**

@@ -327,6 +327,7 @@ final class Route
         'bank_transfer_notify'                     => ['post',     'ecollect/pay',                                   'BankTransferController@notifyBankTransfer'                         ],
         'bank_transfer_refund_retry'               => ['post',     'bank_transfers/refunds/retry',                   'BankTransferController@retryBankTransferRefund'                    ],
         'bank_transfer_edit_payer_account'         => ['put',      'bank_transfers/{id}/payer_bank_account',         'BankTransferController@editPayerBankAccount'                       ],
+        'bank_transfer_edit_payer_account_internal'=> ['post',     'bank_transfers/{id}/payer_bank_account/internal','BankTransferController@editPayerBankAccount'                       ],
         'bank_transfer_strip_payer_accounts'       => ['put',      'bank_transfers/payer_bank_account/strip',        'BankTransferController@stripPayerBankAccounts'                     ],
         'bank_transfer_insert'                     => ['post',     'bank_transfers/{provider}',                      'BankTransferController@insertBankTransfer'                         ],
         'bank_transfer_payment_receiver_backfill'  => ['post',     'payment/bank_transfer_backfill',                 'PaymentController@updateReceiverData'                              ],
@@ -1993,6 +1994,7 @@ final class Route
         'bank_transfer_process_rbl_internal',
         'bank_transfer_process_icici',
         'bank_transfer_refund_retry',
+        'bank_transfer_edit_payer_account_internal',
         'batch_process_file',
         'billdesk_create_cancelled_refunds',
         'card_update_saved',
@@ -4277,6 +4279,7 @@ final class Route
             'reporting_log_create',
             'bank_transfer_process_rbl_internal',
             'update_admin_through_batch',
+            'bank_transfer_edit_payer_account_internal',
         ],
 
         'stork' => [

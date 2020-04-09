@@ -102,6 +102,8 @@ class Type
 
     const REPORT                = 'report';
 
+    const BANK_TRANSFER_EDIT    = 'bank_transfer_edit';
+
     public static $disabledTypes = [
         //
         // Removing till auth for this is figured out. Other parts of the code aren't
@@ -135,6 +137,7 @@ class Type
         self::ADJUSTMENT,
         self::ECOLLECT_ICICI,
         self::ECOLLECT_RBL,
+        self::BANK_TRANSFER_EDIT,
     ];
 
     /**
@@ -279,7 +282,7 @@ class Type
         self::ECOLLECT_RBL,
         self::REPORT,
         self::ADMIN_BATCH,
-
+        self::BANK_TRANSFER_EDIT,
     ];
 
     /**
@@ -300,6 +303,7 @@ class Type
         self::ECOLLECT_RBL,
         self::REPORT,
         self::ADMIN_BATCH,
+        self::BANK_TRANSFER_EDIT,
     ];
 
     public static $batchToAdminPermissionMapping = [

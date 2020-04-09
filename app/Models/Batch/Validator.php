@@ -387,6 +387,13 @@ class Validator extends Base\Validator
         Entity::FILE                 => 'required|file|max:102400' . self::DEFAULT_MIME_RULE,
         Entity::FILE_ID              => 'required_without:file|public_id',
     ];
+
+    protected static $bankTransferEditCreateRules = [
+        Entity::TYPE                 => 'required|in:bank_transfer_edit',
+        Entity::NAME                 => 'filled|string|max:255',
+        Entity::FILE                 => 'required|file|max:10240' . self::DEFAULT_MIME_RULE,
+        Entity::FILE_ID              => 'required_without:file|public_id',
+    ];
     
     public function validateConfig($attribute, $value)
     {

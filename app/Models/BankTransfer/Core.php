@@ -425,6 +425,8 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($payerBankAccount);
 
+        $this->editBankTransfer($bankTransfer, $input);
+
         $this->repo->saveOrFail($bankTransfer);
 
         $this->trace->info(
@@ -495,5 +497,24 @@ class Core extends Base\Core
         $data = $paymentProcessor->processAndReturnFees($request);
 
         return $data['fees'];
+    }
+
+    protected function editBankTransfer(Entity $bankTransfer, array $input)
+    {
+        $mapping = [
+            BankAccount\Entity::BENEFICIARY_NAME        => Entity::PAYER_NAME,
+            BankAccount\Entity::ACCOUNT_NUMBER          => Entity::PAYER_ACCOUNT,
+            BankAccount\Entity::IFSC_CODE               => Entity::PAYER_IFSC,
+            'bank_account_id'                           => Entity::PAYER_BANK_ACCOUNT_ID,
+        ];
+
+        $data = [];
+
+        foreach ($input as $key => $value)
+        {
+            $data[$mapping[$key]] = $value;
+        }
+
+        $bankTransfer->edit($data, 'editBankTransfer');
     }
 }
