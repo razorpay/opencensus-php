@@ -5,6 +5,7 @@ namespace RZP\Models\Invoice;
 use Lib\Gstin;
 use Carbon\Carbon;
 
+use App;
 use RZP\Base;
 use RZP\Models\Batch;
 use RZP\Constants\Mode;
@@ -75,6 +76,8 @@ class Validator extends Base\Validator
      * Rate limit on items sending for bulk invoice create.
      */
     const MAX_BULK_INVOICES_LIMIT = 15;
+
+    const RECEIPT_MUTEX_TIMEOUT  = 5; // 5 seconds timeout
 
     protected static $createRules = [
         Entity::SMS_NOTIFY               => 'sometimes|boolean',
@@ -570,13 +573,26 @@ class Validator extends Base\Validator
                 return;
             }
 
-            $isDuplicateReceipt = app('repo')->invoice->isDuplicateReceipt($this->entity, $receipt);
+            $invoice  = $this->entity;
 
-            if ($isDuplicateReceipt === true)
-            {
-                throw new BadRequestValidationFailureException(
-                    "receipt must be unique for each item : {$receipt}");
-            }
+            $merchant = $invoice->merchant;
+
+            $mutex =  App::getFacadeRoot()['api.mutex'];
+
+            $mutex->acquireAndRelease(
+                $merchant->getId()."-".$receipt,
+                function () use ($receipt)
+                {
+                    $isDuplicateReceipt = app('repo')->invoice->isDuplicateReceipt($this->entity, $receipt);
+
+                    if ($isDuplicateReceipt === true)
+                    {
+                        throw new BadRequestValidationFailureException(
+                            "receipt must be unique for each item : {$receipt}");
+                    }
+                },
+                self::RECEIPT_MUTEX_TIMEOUT,
+                ErrorCode::BAD_REQUEST_INVOICE_RECEIPT_ANOTHER_OPERATION_IN_PROGRESS);
         }
     }
 
