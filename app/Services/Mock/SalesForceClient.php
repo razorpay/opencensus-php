@@ -17,4 +17,14 @@ class SalesForceClient extends BaseSalesForceClient
     {
         return;
     }
+
+    public function captureInterestOfPrimaryMerchantInBanking(Merchant\Entity $merchant)
+    {
+        return;
+    }
+
+    public function fetchAccessToken()
+    {
+        return '123';
+    }
 }

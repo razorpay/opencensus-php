@@ -1596,4 +1596,7 @@ class ErrorCode
 
     const SERVER_ERROR_PAYMENT_LINK_SERVICE_FAILURE                                 = 'SERVER_ERROR_PAYMENT_LINK_SERVICE_FAILURE';
     const BAD_REQUEST_INVALID_WEBSITE                                               = 'BAD_REQUEST_INVALID_WEBSITE';
+
+    // Salesforce Service
+    const SERVER_ERROR_SALESFORCE_SERVICE_ERROR                                     = 'SERVER_ERROR_SALESFORCE_SERVICE_ERROR';
 }

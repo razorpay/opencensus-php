@@ -5,7 +5,6 @@ namespace RZP\Jobs;
 use Requests;
 use Razorpay\Trace\Logger as Trace;
 
-use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 
 class RequestJob extends Job
@@ -16,8 +15,21 @@ class RequestJob extends Job
     const JOB_DELETED          = 'job_deleted';
     const JOB_RELEASED         = 'job_released';
 
+    // Constants for request
+    const STATUS_CODE          = 'status_code';
+    const BODY                 = 'body';
+
     protected $trace;
+
     protected $request;
+
+    protected $response;
+
+    protected $traceCodeRequest = TraceCode::REQUESTS_JOB_REQUEST;
+
+    protected $traceCodeResponse = TraceCode::REQUESTS_JOB_RESPONSE;
+
+    protected $traceCodeError = TraceCode::REQUESTS_JOB_ERROR;
 
     /**
      * Create a new job instance.
@@ -55,7 +67,7 @@ class RequestJob extends Job
     protected function traceRequest()
     {
         $this->trace->info(
-            TraceCode::REQUESTS_JOB_REQUEST,
+            $this->traceCodeRequest,
             [
                 'request' => [
                     'url'     => $this->request['url'],
@@ -65,7 +77,7 @@ class RequestJob extends Job
             ]);
     }
 
-    private function handleRequest()
+    protected function handleRequest()
     {
         $this->traceRequest();
 
@@ -73,7 +85,7 @@ class RequestJob extends Job
 
         $method = $this->request['method'];
 
-        $response = Requests::$method(
+        $this->response = Requests::$method(
             $this->request['url'],
             $this->request['headers'],
             $this->request['content'],
@@ -82,12 +94,17 @@ class RequestJob extends Job
         $timeTaken = microtime(true) - $timeStarted;
 
         $this->trace->info(
-            TraceCode::REQUESTS_JOB_RESPONSE,
+            $this->traceCodeResponse,
             [
                 'time_taken' => $timeTaken,
                 'attempts'   => $this->attempts(),
-                'response'   => $response->body
+                'response'   => $this->response->body
             ]);
+
+        return [
+            self::STATUS_CODE => $this->response->status_code,
+            self::BODY        => json_decode($this->response->body, true),
+        ];
     }
 
     /**
@@ -95,7 +112,7 @@ class RequestJob extends Job
      * exceeded the maximum attempts. Otherwise it is released back
      * into the queue after the set release wait time
      *
-     * @param Throwable $e
+     * @param \Throwable $e
      */
     protected function handleException(\Throwable $e)
     {
@@ -115,7 +132,7 @@ class RequestJob extends Job
         $this->trace->traceException(
             $e,
             Trace::ERROR,
-            TraceCode::REQUESTS_JOB_ERROR,
+            $this->traceCodeError,
             ['job_action' => $jobAction]);
     }
 }

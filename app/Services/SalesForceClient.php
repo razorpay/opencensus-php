@@ -3,13 +3,16 @@
 namespace RZP\Services;
 
 use Requests;
-use RZP\Exception;
 use Requests_Response;
 use Requests_Exception;
+use Razorpay\Trace\Logger as Trace;
+
+use RZP\Exception;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Http\RequestHeader;
-use Razorpay\Trace\Logger as Trace;
+use RZP\Jobs\SalesforceRequestJob;
+
 
 class SalesForceClient
 {
@@ -29,7 +32,25 @@ class SalesForceClient
 
     protected $trace;
 
-    const JSON_METHOD = ['POST', 'PUT', 'PATCH'];
+    // Constants
+
+    const ACCESS_TOKEN    = 'access_token';
+    const PRODUCT_BANKING = 'Razorpay X';
+
+    const JSON_METHOD     = [self::POST, self::PUT, self::PATCH];
+
+    // Request Constants
+    const HEADERS               = 'headers';
+    const CONTENT               = 'content';
+    const OPTIONS               = 'options';
+    const STATUS_CODE           = 'status_code';
+    const URL                   = 'url';
+    const METHOD                = 'method';
+    const APPLICATION_JSON      = 'application/json';
+    const TIMEOUT               = 'timeout';
+    const POST                  = 'POST';
+    const PUT                   = 'PUT';
+    const PATCH                 = 'PATCH';
 
     public function __construct($app)
     {
@@ -50,7 +71,7 @@ class SalesForceClient
         $this->grant_type = 'password';
     }
 
-    protected function fetchAccessToken()
+    protected function getAccessTokenRequest()
     {
         $url = $this->generateUrl();
 
@@ -63,6 +84,13 @@ class SalesForceClient
                 RequestHeader::CONTENT_TYPE => 'application/json',
             ]
         ];
+
+        return $request;
+    }
+
+    public function fetchAccessToken()
+    {
+        $request = $this->getAccessTokenRequest();
 
         $response = $this->createAndSendRequest($request);
 
@@ -80,44 +108,16 @@ class SalesForceClient
 
     public function sendPreSignupDetails(array $input, Merchant\Entity $merchant)
     {
-        $this->trace->info(TraceCode::SALESFORCE_PRE_SIGNUP_REQUEST, $input);
-
-        try
-        {
-            $response = $this->fetchAccessTokenAndSendPreSignupDetails($input, $merchant);
-        }
-        catch (\Throwable $e)
-        {
-
-            $this->trace->error(TraceCode::SALESFORCE_PRE_SIGNUP_EXCEPTION,
-                                [
-                                    'error' => $e->getMessage(),
-                                ]);
-        }
-    }
-
-    public function fetchAccessTokenAndSendPreSignupDetails(array $input, Merchant\Entity $merchant)
-    {
-        $accessToken = $this->fetchAccessToken();
-
         $url = $this->generateUrlForMerchantUpsert();
 
         $data = $this->payloadGenerationForPreSignupDetails($input, $merchant);
 
-        $request = [
-            'url'     => $url,
-            'method'  => 'POST',
-            'content' => $data,
-            'options' => ['timeout' => 20],
-            'headers' => [
-                RequestHeader::CONTENT_TYPE  => 'application/json',
-                RequestHeader::AUTHORIZATION => RequestHeader::BEARER . ' ' . $accessToken,
-            ]
-        ];
-
-        $this->trace->info(TraceCode::SALESFORCE_PRE_SIGNUP_REQUEST_PAYLOAD, $data);
-
-        return $this->createAndSendRequest($request);
+        $this->dispatchRequestJob($url,
+                                  $data,
+                                  TraceCode::SALESFORCE_PRE_SIGNUP_REQUEST,
+                                  TraceCode::SALESFORCE_PRE_SIGNUP_RESPONSE,
+                                  TraceCode::SALESFORCE_PRE_SIGNUP_EXCEPTION
+        );
     }
 
     public function payloadGenerationForPreSignupDetails(array $input, Merchant\Entity $merchant)
@@ -173,11 +173,30 @@ class SalesForceClient
         return $response;
     }
 
+    public function captureInterestOfPrimaryMerchantInBanking(Merchant\Entity $merchant)
+    {
+        $url = $this->baseUrl . '/services/apexrest/DashboardOpportunityUpsert';
+
+        $payload = [
+            [
+                "merchant_id"       => $merchant->id,
+                "submission_date"   => date("Y-m-d"),
+                "product_name"      => self::PRODUCT_BANKING
+            ]
+        ];
+
+        $this->dispatchRequestJob($url,
+                                  $payload,
+                                  TraceCode::SALESFORCE_INTEREST_IN_X_REQUEST,
+                                  TraceCode::SALESFORCE_INTEREST_IN_X_RESPONSE,
+                                  TraceCode::SALESFORCE_INTEREST_IN_X_ERROR);
+    }
+
     protected function parseAccessToken($response)
     {
-        if (isset($response['access_token']) === true)
+        if (isset($response[self::ACCESS_TOKEN]) === true)
         {
-            return $response['access_token'];
+            return $response[self::ACCESS_TOKEN];
         }
 
         return null;
@@ -248,11 +267,16 @@ class SalesForceClient
 
     protected function traceResponse(Requests_Response $response)
     {
+        $responseArr = json_decode($response->body, true);
+
+        $responseBody = array_except($responseArr, self::ACCESS_TOKEN);
+
         $payload = [
             'status_code' => $response->status_code,
             'success'     => $response->success,
-
+            'response'    => $responseBody,
         ];
+
         $this->trace->info(TraceCode::SALESFORCE_INTEGRATION_API_RESPONSE, $payload);
     }
 
@@ -263,7 +287,7 @@ class SalesForceClient
      *
      * @return array
      */
-    protected function getTraceableRequest(array $request): array
+    public function getTraceableRequest(array $request): array
     {
         $request = $this->removeQueryParamsFromUrl($request);
 
@@ -301,5 +325,34 @@ class SalesForceClient
             $request['options']);
 
         return $response;
+    }
+
+    /**
+     * Dispatches a request job to queue
+     *
+     * @param $url
+     * @param $payload
+     * @param $traceCodeRequest
+     * @param $traceCodeResponse
+     * @param $traceCodeError
+     */
+    protected function dispatchRequestJob($url, $payload, $traceCodeRequest, $traceCodeResponse, $traceCodeError)
+    {
+        $request = [
+            self::URL     => $url,
+            self::METHOD  => self::POST,
+            self::CONTENT => json_encode($payload),
+            self::OPTIONS => [
+                self::TIMEOUT => 20
+            ],
+            self::HEADERS => [
+                RequestHeader::CONTENT_TYPE  => self::APPLICATION_JSON,
+            ],
+        ];
+
+        SalesforceRequestJob::dispatch($request,
+                                       $traceCodeRequest,
+                                       $traceCodeResponse,
+                                       $traceCodeError);
     }
 }

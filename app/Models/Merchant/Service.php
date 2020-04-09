@@ -46,6 +46,7 @@ use RZP\Models\Workflow\Action;
 use RZP\Models\Merchant\Methods;
 use RZP\Models\Admin as MainAdmin;
 use RZP\Models\Admin\Org\Hostname;
+use RZP\Services\SalesForceClient;
 use RZP\Error\PublicErrorDescription;
 use RZP\Mail\Merchant\EsEnabledNotify;
 use RZP\Models\Merchant\Webhook\Stork;
@@ -2557,7 +2558,7 @@ class Service extends Base\Service
         $data[EntityConstants::MERCHANT] = $merchant->toArrayPublic();
 
         $merchantDetail = $merchant->merchantDetail;
-        
+
         $data[EntityConstants::MERCHANT_DETAIL] = isset($merchantDetail) === true ? $merchantDetail->toArrayPublic() : [];
 
         return $data;
@@ -3645,9 +3646,13 @@ class Service extends Base\Service
         // TODO: remove this once Yesbank issue is resolved
         $merchant = $this->auth->getMerchant();
 
-        if (($merchant->isBusinessBankingEnabled() === false) and
-            (($product === Product::BANKING) or
-             ($this->auth->getRequestOriginProduct() === Product::BANKING)))
+        $isProductBanking = (($product === Product::BANKING) or
+                             ($this->auth->getRequestOriginProduct() === Product::BANKING));
+
+        $isMerchantBankingEnabled = $merchant->isBusinessBankingEnabled();
+
+        if (($isMerchantBankingEnabled === false) and
+            ($isProductBanking === true))
         {
             $config = (new MainAdmin\Service)->getConfigKey(['key' => MainAdmin\ConfigKey::BLOCK_X_REGISTRATION]) ?? false;
 
@@ -3674,7 +3679,7 @@ class Service extends Base\Service
 
             $currentlyEnabled = $merchant->isBusinessBankingEnabled();
 
-            $this->enableBusinessBankingIfApplicable($merchant);
+            $this->enableBusinessBankingIfApplicable($merchant, true);
 
             $this->repo->saveOrFail($merchant);
 
@@ -3796,11 +3801,12 @@ class Service extends Base\Service
         return $result;
     }
 
-    protected function enableBusinessBankingIfApplicable(Entity $merchant)
+    protected function enableBusinessBankingIfApplicable(Entity $merchant, bool $captureEvent = false)
     {
         $isBanking = $this->auth->isProductBanking();
 
-        if (($isBanking === true) and ($merchant->isBusinessBankingEnabled() === false))
+        if (($isBanking === true) and
+            ($merchant->isBusinessBankingEnabled() === false))
         {
             $this->trace->info(
                 TraceCode::MERCHANT_EDIT,
@@ -3810,6 +3816,17 @@ class Service extends Base\Service
             );
 
             $merchant->setBusinessBanking(true);
+
+            if ($captureEvent === true)
+            {
+                // Merchant has switched from primary product to banking product for the first time,
+                // so, sending details to salesforce.
+
+                /** @var  $salesforceClient SalesForceClient */
+                $salesforceClient = $this->app->salesforce;
+
+                $salesforceClient->captureInterestOfPrimaryMerchantInBanking($merchant);
+            }
         }
     }
 

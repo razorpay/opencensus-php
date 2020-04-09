@@ -786,7 +786,7 @@ class ApiEventSubscriber extends Base\Core
     }
 
     protected function onTerminalCreated(Terminal\Entity $terminal)
-    {        
+    {
         $payload = $this->getTerminalCreatedPayload($terminal);
 
         $this->prepareAndDispatchWebhook($payload);

@@ -34,6 +34,7 @@ use RZP\Models\Merchant\Webhook;
 use RZP\Mail\User\MappedToAccount;
 use RZP\Mail\Merchant\EsEnabledNotify;
 use RZP\Models\Settlement\Channel;
+use RZP\Services\SalesForceClient;
 use RZP\Tests\Functional\TestCase;
 use Illuminate\Support\Facades\Queue;
 use RZP\Exception\BadRequestException;
@@ -5604,7 +5605,9 @@ class MerchantTest extends TestCase
     /**
      * Switches product of merchant from PG to BB.
      */
-    public function testMerchantSwitchProductWhenMerchantNotActivatedAndXOnboardingExperimentOff($expVal = 'off', $category2 = 'school')
+    public function testMerchantSwitchProductWhenMerchantNotActivatedAndXOnboardingExperimentOff($expVal = 'off',
+                                                                                                 $category2 = 'school',
+                                                                                                 $banking = true)
     {
         $this->enableRazorXTreatmentForXOnboarding($expVal);
 
@@ -5612,7 +5615,7 @@ class MerchantTest extends TestCase
 
         $this->fixtures->edit('merchant',
             '10000000000000',
-            ['activated' => false, 'business_banking' => true, 'category2' => $category2]);
+            ['activated' => false, 'business_banking' => $banking, 'category2' => $category2]);
 
         $this->fixtures->create('merchant_detail',
             [
@@ -5686,6 +5689,32 @@ class MerchantTest extends TestCase
     public function testMerchantSwitchProductWhenMerchantNotActivatedAndL1Incomplete()
     {
         $this->testMerchantSwitchProductWhenMerchantNotActivatedAndXOnboardingExperimentOff('on', null);
+    }
+
+    public function testMerchantSwitchProductSendsInterestDetailsToSalesforce($timesMethodCalled = 1, $banking = false)
+    {
+        // if merchant is not on x,
+        // information should be sent to Salesforce.
+        $salesforceClientMethodName = 'captureInterestOfPrimaryMerchantInBanking';
+
+        $salesforceClientMock = $this->getMockBuilder(SalesForceClient::class)
+                                     ->setConstructorArgs([$this->app])
+                                     ->setMethods([$salesforceClientMethodName])
+                                     ->getMock();
+
+        $this->app->instance('salesforce', $salesforceClientMock);
+
+        $salesforceClientMock->expects($this->exactly($timesMethodCalled))
+                             ->method($salesforceClientMethodName);
+
+        $this->testMerchantSwitchProductWhenMerchantNotActivatedAndXOnboardingExperimentOff('off', 'school', $banking);
+    }
+
+    public function testMerchantSwitchProductNotSendsInterestDetailsToSalesforce()
+    {
+        // if business_banking is already true for merchant,
+        // information should not be sent to Salesforce.
+        $this->testMerchantSwitchProductSendsInterestDetailsToSalesforce(0, true);
     }
 
     public function testBulkAssignPricing()
