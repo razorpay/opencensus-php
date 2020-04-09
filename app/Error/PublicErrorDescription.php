@@ -443,6 +443,7 @@ class PublicErrorDescription
     const BAD_REQUEST_UNCONFIRMED_TOKEN_PASSED_IN_SECOND_RECURRING              = 'Token is not confirmed for recurring payments';
     const BAD_REQUEST_TOKEN_STATUS_ALREADY_PAID                                 = 'Payment has already been done for this token';
     const BAD_REQUEST_VALIDATION_FAILURE                                        = 'Validation Failure';
+    const BAD_REQUEST_SIGNATURE_ERROR                                           = 'There is something wrong with the signatures in the request';
     const BAD_REQUEST_PAYMENT_ACCOUNT_WITHDRAWAL_FROZEN                         = 'Payment failed because account withdrawal are frozen';
     const BAD_REQUEST_PAYMENT_INVALID_ACCOUNT                                   = 'Payment failed because of invalid account';
     const BAD_REQUEST_PAYMENT_CANCELLED_AT_EMANDATE_REGISTRATION                = 'E-Mandate registration cancelled by the customer';
