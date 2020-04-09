@@ -3,9 +3,18 @@ const ExtractTextPlugin = require('extract-text-webpack-plugin');
 const isProd = require('process').env.NODE_ENV === 'production';
 
 const babelPlugins = [
+  ['@babel/plugin-proposal-decorators', { legacy: true }],
+  [
+    '@babel/plugin-proposal-class-properties',
+    {
+      loose: true,
+    },
+  ],
+  '@babel/plugin-proposal-export-default-from',
+  '@babel/plugin-proposal-do-expressions',
+  '@babel/plugin-proposal-function-bind',
   '@babel/plugin-transform-react-display-name',
   '@babel/plugin-transform-react-jsx',
-  ['@babel/plugin-proposal-decorators', { legacy: true }],
   './babel-plugin-react-html-attrs',
 ];
 
@@ -68,11 +77,19 @@ module.exports = {
           options: {
             babelrc: false,
             presets: [
-              ['@babel/preset-env', { loose: true }],
               [
-                '@babel/preset-stage-0',
-                { loose: true, decoratorsLegacy: true },
+                '@babel/preset-env',
+                {
+                  loose: true,
+                  modules: false,
+                  useBuiltIns: 'entry',
+                  corejs: 3,
+                  targets: {
+                    browsers: ['> .25%', 'ie >= 11'],
+                  },
+                },
               ],
+              '@babel/preset-react',
             ],
             plugins: babelPlugins,
           },

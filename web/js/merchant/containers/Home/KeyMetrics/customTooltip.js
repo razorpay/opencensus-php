@@ -172,7 +172,7 @@ const customToolTip = function(tooltipModel) {
     if (!noGrouping) {
       tooltipDOM.className = '';
 
-      var dataPoints = tooltipModel.dataPoints.sort((item1, item2) => {
+      let dataPoints = tooltipModel.dataPoints.sort((item1, item2) => {
         return item1.datasetIndex - item2.datasetIndex;
       });
 

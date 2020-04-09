@@ -21,7 +21,7 @@ import {
   validateAlphanumericWithMaxLength,
   validateAlphanumericWithStrictLength,
 } from 'common/utils/validators';
-import { closeModal } from 'merchant_common/reducers/notifications';
+import { closeModal } from 'merchant_common/reducers/modals';
 
 import {
   DESCRIPTOR_LENGTH_BANK_ACCOUNT,

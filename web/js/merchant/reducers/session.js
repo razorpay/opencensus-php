@@ -54,6 +54,13 @@ export const logout = () => {
   };
 };
 
+export const showOrHideTour = toShowTour => {
+  return {
+    type: SHOW_HIDE_TOUR,
+    toShowTour,
+  };
+};
+
 let initialState = {
   user: new User(),
   org: {},

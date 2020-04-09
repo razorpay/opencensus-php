@@ -21,10 +21,11 @@ function handleError(err) {
   isProd && process.exit(1);
 }
 
-function compileCss(o) {
+function compileCss(o, cb) {
   if (o && o.path) {
     console.log(path.basename(o.path));
   }
+
   return gulp
     .src('css/*.styl')
     .pipe(
@@ -39,11 +40,14 @@ function compileCss(o) {
       })
     )
     .on('error', handleError)
-    .pipe(gulp.dest('../public/dist/css'));
+    .pipe(gulp.dest('../public/dist/css'))
+    .on('end', function() {
+      cb();
+    });
 }
 
 function iconFont(cb) {
-  Promise.all(
+  return Promise.all(
     glob('icons/*').map(
       folderName =>
         new Promise((resolve, reject) =>
@@ -65,14 +69,15 @@ function iconFont(cb) {
   ).then(cb);
 }
 
-gulp.task('watch', () => {
+function createDir(cb) {
   createBaseDir();
   execSync('rm -rf ../public/dist/css/assets');
   execSync('ln -s ../../../web/css/assets ../public/dist/css/assets');
-  iconFont(compileCss);
-  gulp.watch('css/**/*.styl', compileCss);
-  gulp.watch('icons/*.svg', _ => iconFont(compileCss));
 
+  cb();
+}
+
+function watchPlaygroundServer(cb) {
   require('livereload')
     .createServer()
     .watch([
@@ -82,14 +87,39 @@ gulp.task('watch', () => {
     ]);
 
   playgroundServer();
-});
 
-gulp.task('default', () => {
+  cb();
+}
+
+function watchCss(cb) {
+  return gulp.watch('css/**/*.styl', { ignoreInitial: false }, () =>
+    compileCss(null, cb)
+  );
+}
+
+function watchIcons(cb) {
+  return gulp.watch('icons/**/*.svg', { ignoreInitial: false }, () =>
+    iconFont(o => compileCss(o, cb))
+  );
+}
+
+function buildConfig(cb) {
   execSync('rm -rf ../public/dist');
   createBaseDir();
   execSync('cp -r css/assets ../public/dist/css');
-  iconFont(compileCss);
-});
+
+  iconFont(o => compileCss(o, cb));
+}
+
+const watch = gulp.series(
+  createDir,
+  gulp.parallel(watchCss, watchIcons),
+  watchPlaygroundServer
+);
+const build = gulp.series(buildConfig);
+
+exports.watch = watch;
+exports.default = build;
 
 const { readFile } = require('fs');
 const webpackConfig = require('./webpack.config');

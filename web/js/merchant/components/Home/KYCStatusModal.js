@@ -1,6 +1,6 @@
 import React from 'react';
 import { ModalMask, Modal } from 'common/new-ui/Modal';
-import { activationDuration } from 'merchant_common/helpers/data';
+import { activationDuration } from 'merchant/helpers/data';
 
 const MODAL_CONTENT = {
   KYC_ACTIVATION_SUBMIT_MODAL: {
