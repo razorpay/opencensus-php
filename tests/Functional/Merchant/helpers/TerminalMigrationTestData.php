@@ -11,6 +11,7 @@ return [
     'testAssignTerminalInternalAuthMigrateVariant' => [
         'request' => [
             'content' => [
+                'id'                         => "EAswe1856fg349",
                 'gateway'                    => 'wallet_paypal',
                 'gateway_merchant_id'        => 'gateway_merchant_id',
                 'type'                       =>  [
@@ -23,6 +24,41 @@ return [
 
             ],
         ],
+    ],
+    'testAssignTerminalInternalAuthMissingId' => [
+        'request' => [
+            'content' => [
+                'gateway'                    => 'wallet_paypal',
+                'gateway_merchant_id'        => 'gateway_merchant_id',
+                'type'                       =>  [
+                    'direct_settlement_with_refund' => '1',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The id must be of length 14',
+                ]
+            ],
+            'status_code'   => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_TERMINAL_ID,
+        ]
+    ],
+    'testAssignTerminalInternalAuthExistingId' => [
+        'request' => [
+            'content' => [
+                'gateway'                    => 'wallet_paypal',
+                'gateway_merchant_id'        => 'gateway_merchant_id',
+                'type'                       =>  [
+                    'direct_settlement_with_refund' => '1',
+                ],
+            ],
+        ]
     ],
     'testAssignTerminalTerminalServiceUpMigrateTerminalVariant' => [
         'request' => [

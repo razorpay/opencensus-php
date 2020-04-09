@@ -55,6 +55,7 @@ class PublicErrorDescription
     const BAD_REQUEST_FORBIDDEN                                                 = 'Access forbidden for requested resource';
     const BAD_REQUEST_HTTP_METHOD_NOT_ALLOWED                                   = 'The current http method is not supported';
     const BAD_REQUEST_INVALID_ID                                                = 'The id provided does not exist';
+    const BAD_REQUEST_INVALID_TERMINAL_ID                                       = 'The id must be of length 14';
     const BAD_REQUEST_INVALID_IDS                                               = 'One or more of the ids provided does not exist';
     const BAD_REQUEST_INVALID_QUERY                                             = 'The query is invalid or is not allowed';
     const BAD_REQUEST_NO_RECORDS_FOUND                                          = 'No db records found.';

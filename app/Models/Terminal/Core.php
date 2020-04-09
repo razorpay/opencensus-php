@@ -47,6 +47,44 @@ class Core extends Base\Core
         return $terminal;
     }
 
+    public function createWithId($input, $merchant)
+    {
+        $this->trace->info(
+            TraceCode::TERMINAL_CREATE_REQUEST,
+            [
+                'input'         => $this->removeSecretFieldsForTrace($input),
+                'merchant_id'   => $merchant->getId(),
+            ]);
+
+        $input[Entity::MERCHANT_ID] = $merchant->getKey();
+
+        if ((isset($input['id']) === false) or (strlen($input['id']) !== 14))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_TERMINAL_ID);
+        }
+
+        $id = $input["id"];
+
+        unset($input["id"]);
+
+        $terminal = (new Entity)->build($input);
+
+        $terminal->merchant()->associate($merchant);
+
+        $terminal->org()->associate($merchant->org);
+
+        $this->validateExistingTerminal($terminal);
+
+        $this->validateDirectSettlementMapping($terminal);
+
+        $terminal->setId($id);
+
+        $this->repo->saveOrFail($terminal);
+
+        return $terminal;
+    }
+
     protected function validateDirectSettlementMapping($terminal)
     {
         if ($terminal->isDirectSettlement() === false)

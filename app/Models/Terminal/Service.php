@@ -28,6 +28,15 @@ class Service extends Base\Service
         return $terminal;
     }
 
+    public function createTerminalWithId($merchantId, $input)
+    {
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        $terminal = (new Terminal\Core)->createWithId($input, $merchant);
+
+        return $terminal;
+    }
+
     public function copyTerminal($mid, $tid, $input)
     {
         Entity::verifyIdAndSilentlyStripSign($tid);

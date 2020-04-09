@@ -168,6 +168,7 @@ class TerminalMigrationTest extends TestCase
                   ->where(Terminal\Entity::TERMINAL_ID,  $terminalId)
                   ->count();
     }
+
     // the below cases are to ensure sanity when creating a terminal via internal auth
     public function testAssignTerminalInternalAuthMigrateVariant()
     {
@@ -195,6 +196,34 @@ class TerminalMigrationTest extends TestCase
         $afterCount = Db::table('terminals')->count();
 
         $this->assertEquals($beforeCount + 1, $afterCount);
+    }
+
+    public function testAssignTerminalInternalAuthMissingId()
+    {
+        $url = '/merchants/'. $this->merchant->getKey(). '/terminals/internal';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
+    public function testAssignTerminalInternalAuthExistingId()
+    {
+        $terminal = $this->fixtures->create('terminal:shared_netbanking_bob_terminal');
+
+        $url = '/merchants/'. $this->merchant->getKey(). '/terminals/internal';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->testData[__FUNCTION__]['request']['content']['id'] = $terminal['id'];
+
+        $this->ba->appAuth();
+
+        $this->expectException('Illuminate\Database\QueryException');
+
+        $this->startTest();
     }
 
     // the below cases tests migration functionality when a new terminal is created

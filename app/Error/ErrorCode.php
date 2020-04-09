@@ -367,6 +367,7 @@ class ErrorCode
 
     // Generic bad requests
     const BAD_REQUEST_INVALID_ID                                                    = 'BAD_REQUEST_INVALID_ID';
+    const BAD_REQUEST_INVALID_TERMINAL_ID                                           = 'BAD_REQUEST_INVALID_TERMINAL_ID';
     const BAD_REQUEST_INVALID_IDS                                                   = 'BAD_REQUEST_INVALID_IDS';
     const BAD_REQUEST_INVALID_QUERY                                                 = 'BAD_REQUEST_INVALID_QUERY';
     const BAD_REQUEST_INVALID_PASSWORD_RESET_TOKEN                                  = 'BAD_REQUEST_INVALID_PASSWORD_RESET_TOKEN';
