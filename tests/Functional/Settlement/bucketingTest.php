@@ -151,7 +151,7 @@ class BucketingTest extends TestCase
 
         $this->setTestTime($timestamp);
 
-        $this->initializeMutualFundMerchants(Preferences::MID_WEALTHY, 10000000000000);
+        $this->initializeMutualFundMerchants(Preferences::MID_PAISABAZAAR, 10000000000000);
 
         $this->createPaymentAndAssert(10000000000000, 1568871000, 1568878200);
 

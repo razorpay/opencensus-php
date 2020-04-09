@@ -610,10 +610,28 @@ trait SettlementTrait
 
             $twoThirtyPm = Carbon::today(Timezone::IST)->hour(14)->minute(30)->getTimestamp();
 
+            $twelvePm = Carbon::today(Timezone::IST)->hour(12)->getTimestamp();
+
             // If settlement was delayed for some reason, beyond our control, settle ASAP
             if ($this->isDelayedSettlement($txn) === true)
             {
                 return false;
+            }
+
+            if (($parentId === Preferences::MID_WEALTHY) and
+                (($now < $twelvePm) or
+                    ($now >= $onePm)))
+            {
+                $this->trace->info(
+                    TraceCode::SETTLEMENT_SKIPPED,
+                    [
+                        'merchant_id'       => $txn->getMerchantId(),
+                        'transaction_id'    => $txn->getId(),
+                        'source_id'         => $txn->getEntityId(),
+                        'reason'            => Metric::BLOCK_MF_OUTSIDE_TIME_PERIOD
+                    ]);
+
+                return true;
             }
 
             //
@@ -621,7 +639,6 @@ trait SettlementTrait
             // They need all transactions till 1 pm to be settled in the 1 pm cycle.
             //
             $oneSetlAt1PmMids = [
-                Preferences::MID_WEALTHY,
                 Preferences::MID_PAISABAZAAR,
             ];
 

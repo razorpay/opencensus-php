@@ -667,7 +667,7 @@ class SettlementTest extends TestCase
 
         $this->ba->adminAuth();
 
-        $parentId = Preferences::MID_WEALTHY;
+        $parentId = Preferences::MID_PAISABAZAAR;
 
         $subMid = '8lv4idBRY4C9c1';
 

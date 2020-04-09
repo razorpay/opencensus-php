@@ -15,6 +15,8 @@ final class Constants
 
     const ONE_PM    = 13;
 
+    const TWELVE_PM = 12;
+
     const TWO_PM    = 14;
 
     const THREE_PM  = 15;

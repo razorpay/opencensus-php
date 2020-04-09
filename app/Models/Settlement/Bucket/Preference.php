@@ -287,8 +287,12 @@ class Preference extends Base\Core
             Merchant\Preferences::MID_PAISABAZAAR,
         ];
 
+        if ($parentMerchantId === Merchant\Preferences::MID_WEALTHY)
+        {
+            $hour = Constants::TWELVE_PM;
+        }
         // matched merchant will have only one settlement per day (@ 1 PM)
-        if (in_array($parentMerchantId, $oneSetlAt1PmMids, true) === true)
+        else if ($parentMerchantId === Merchant\Preferences::MID_PAISABAZAAR)
         {
             $hour = Constants::ONE_PM;
         }
