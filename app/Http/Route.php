@@ -1556,9 +1556,10 @@ final class Route
 
         //route for testing raven sms gateways
         'send_test_sms'                           => ['post',      'admin/test-sms',                                           'AdminController@sendTestSms'                              ],
-        'd2c_create_csv_report'                   => ['get',      'd2c_bureau_details/d2c_create_csv_report',                  'D2cController@fetchD2cCSVReport'                          ],
+        'd2c_create_csv_report'                   => ['get',       'd2c_bureau_details/d2c_create_csv_report',                 'D2cController@fetchD2cCSVReport'                          ],
         'd2c_bureau_details_fetch'                => ['post',      'd2c_bureau_details',                                       'D2cController@getOrCreate'                                ],
         'd2c_bureau_details_patch'                => ['patch',     'd2c_bureau_details/{id}',                                  'D2cController@patchDetails'                               ],
+        'd2c_bureau_report_fetch'                 => ['get',       'd2c_bureau_details/{id}/fetch_report',                     'D2cController@fetchReport'                                ],
         'd2c_bureau_details_otp_submit'           => ['post',      'd2c_bureau_details/{id}/otp_submit',                       'D2cController@getReportWithOtp'                           ],
         'd2c_bureau_reports_patch'                => ['patch',     'd2c_bureau_reports/{id}',                                  'D2cController@patchReport'                                ],
         'd2c_bureau_reports_download'             => ['get',       'd2c_bureau_reports/{id}/download_url',                     'D2cController@getReportDownloadUrl'                       ],
@@ -1974,6 +1975,7 @@ final class Route
     // If a route needs access from the Dashboard
     // Put it in the Admin Array instead
     public static $internal = [
+        'd2c_bureau_report_fetch',
         'offline_verification_webhook',
         'user_verify_second_factor_auth',
         'user_resend_otp_2fa',
@@ -4176,6 +4178,10 @@ final class Route
 
         'ecom' => [
             'offline_verification_webhook',
+        ],
+
+        'los'  => [
+            'd2c_bureau_report_fetch',
         ],
 
         // BharatQR routes are not authenticated

@@ -90,6 +90,17 @@ class Service extends Base\Service
         return $bureauDetail->toArrayPublic();
     }
 
+    public function fetchReport($id): array
+    {
+        $this->trace->info(TraceCode::D2C_BUREAU_REPORT_FETCH, [
+            'id'    => $id,
+        ]);
+
+        $bureauDetail = $this->repo->d2c_bureau_detail->findByPublicId($id);
+
+        return $this->bureauReport->fetchReport($bureauDetail);
+    }
+
     public function getReportWithOtp($id, array $input): array
     {
         $this->trace->info(TraceCode::D2C_BUREAU_OTP_SUBMIT_REQUEST, [

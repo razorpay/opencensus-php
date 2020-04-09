@@ -17,6 +17,15 @@ class Repository extends Base\Repository
                     ->first();
     }
 
+    public function findByProviderAndDetailId(string $provider, string $detailId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::D2C_BUREAU_DETAIL_ID, $detailId)
+                    ->where(Entity::PROVIDER, $provider)
+                    ->get()
+                    ->last();
+    }
+
     public function getReportsForCsvCreation($provider)
     {
         return $this->newQuery()

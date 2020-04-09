@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\D2cBureauDetails;
 
 use Mail;
 use Queue;
+use Config;
 
 use RZP\Models\Base\Entity;
 use RZP\Services\UfhService;
@@ -107,6 +108,25 @@ class D2cBureauDetailsTest extends TestCase
         $response = $this->makeRequestAndGetContent($this->testData['testPostCreate']['request']);
 
         $this->testData[__FUNCTION__]['request']['url'] .= $response['id'];
+
+        $this->startTest();
+    }
+
+    public function testFetchBureauReport()
+    {
+        $this->ba->proxyAuth('rzp_test_' . $this->merchantDetail['merchant_id'], $this->user->getId());
+
+        $response = $this->makeRequestAndGetContent($this->testData['testPostCreate']['request']);
+
+        $bureauDetailsId = $response['id'];
+
+        $this->testData['testSubmitOtp']['request']['url'] = strtr($this->testData['testSubmitOtp']['request']['url'], ['{id}' => $bureauDetailsId,]);
+
+        $response = $this->makeRequestAndGetContent($this->testData['testSubmitOtp']['request']);
+
+        $this->ba->appAuth('rzp_test', Config::get('applications.los')['secret']);
+
+        $this->testData[__FUNCTION__]['request']['url'] = strtr($this->testData[__FUNCTION__]['request']['url'], ['{id}' => $bureauDetailsId,]);
 
         $this->startTest();
     }

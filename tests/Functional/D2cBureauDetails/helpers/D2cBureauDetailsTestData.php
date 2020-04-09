@@ -52,6 +52,23 @@ return [
         ],
     ],
 
+    'testFetchBureauReport' => [
+        'request' => [
+            'url' => '/d2c_bureau_details/{id}/fetch_report',
+            'method'    => 'get'
+        ],
+        'response' => [
+            'content' => [
+//                'id'                => 'd2c_Dg8DrxoP8KXelQ',
+                'provider'          => 'experian',
+                'score'             => 752,
+                'report'            => '{"active_accounts": "1", "closed_accounts": "1", "count_of_accounts": "2", "total_outstanding_balance": "152000", "secured_account_outstanding_balance": "152000", "un_secured_account_outstanding_balance": "0"}',
+                'interested'        => null,
+//                'created_at'        => 1571374473
+            ],
+        ],
+    ],
+
     'testSubmitOtp' => [
         'request' => [
             'url' => '/d2c_bureau_details/{id}/otp_submit',

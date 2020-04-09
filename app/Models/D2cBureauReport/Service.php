@@ -28,6 +28,13 @@ class Service extends Base\Service
         return $report;
     }
 
+    public function fetchReport(D2cBureauDetail\Entity $bureauDetail): array
+    {
+        $report = $this->repo->d2c_bureau_report->findByProviderAndDetailId(Provider::EXPERIAN, $bureauDetail->getId());
+
+        return $report->toArrayForDashboard();
+    }
+
     public function update($id, array $input): array
     {
         $this->trace->info(TraceCode::D2C_BUREAU_REPORT_UPDATE, [

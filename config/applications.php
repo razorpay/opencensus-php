@@ -183,6 +183,10 @@ return [
         'secret' => env('ECOM_WEBHOOK_SECRET'),
     ],
 
+    'los' => [
+        'secret' => env('LOS_SECRET'),
+    ],
+
     'bharatqr' => [
         'secret' => env('BHARAT_QR_SECRET'),
     ],

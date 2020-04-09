@@ -31,6 +31,13 @@ class D2cController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function fetchReport(string $id)
+    {
+        $response = $this->service(Entity::D2C_BUREAU_DETAIL)->fetchReport($id);
+
+        return ApiResponse::json($response);
+    }
+
     public function getReportWithOtp(string $id)
     {
         $input = Request::all();

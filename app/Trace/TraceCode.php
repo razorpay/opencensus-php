@@ -2626,6 +2626,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const D2C_BUREAU_DETAILS_CREATE                             = 'D2C_BUREAU_DETAILS_CREATE';
     const D2C_BUREAU_OTP_SUBMIT_REQUEST                         = 'D2C_BUREAU_OTP_SUBMIT_REQUEST';
     const D2C_BUREAU_DETAILS_UPDATE                             = 'D2C_BUREAU_DETAILS_UPDATE';
+    const D2C_BUREAU_REPORT_FETCH                               = 'D2C_BUREAU_REPORT_FETCH';
     const D2C_BUREAU_REPORT_UPDATE                              = 'D2C_BUREAU_REPORT_UPDATE';
     const D2C_BUREAU_REPORT_DOWNLOAD_REQUEST                    = 'D2C_BUREAU_REPORT_DOWNLOAD_REQUEST';
     const D2C_BUREAU_CREATE_CSV_REPORT                          = 'D2C_BUREAU_CREATE_CSV_REPORT';
