@@ -110,6 +110,10 @@ class PlinkController extends Controller
 
         $body = $request->post();
 
+        if ((empty($body) === false) && ($request->method() !== Request::METHOD_GET))
+        {
+            $body = json_encode($body);
+        }
 
         $options = [
             'timeout' => $this->timeOut,
@@ -133,6 +137,7 @@ class PlinkController extends Controller
     {
         $headers = [
             'Accept'            => self::CONTENT_TYPE_JSON,
+            'Content-Type'      => self::CONTENT_TYPE_JSON,
             'X-Razorpay-TaskId' => $this->app['request']->getTaskId(),
         ];
 
