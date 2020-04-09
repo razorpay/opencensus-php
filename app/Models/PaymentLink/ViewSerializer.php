@@ -37,6 +37,10 @@ class ViewSerializer extends Base\Core
      */
     protected $merchant;
 
+    const RAZORX_BRANDING_EXPERIMENT = 'pp_hostedpage_minimalbranding';
+
+    const RAZORX_ASTERIX_EXPERIMENT = 'pp_hostedpage_asterisk';
+
     public function __construct(Entity $paymentLink)
     {
         parent::__construct();
@@ -104,12 +108,28 @@ class ViewSerializer extends Base\Core
 
     protected function serializeMerchantForHosted(): array
     {
+        $mode = $this->mode ?? Mode::LIVE;
+
+        $brandingVariant = $this->app->razorx->getTreatment(
+            $this->merchant->getId(),
+            self::RAZORX_BRANDING_EXPERIMENT,
+            $mode
+        );
+
+        $asterixVariant = $this->app->razorx->getTreatment(
+            $this->merchant->getId(),
+            self::RAZORX_ASTERIX_EXPERIMENT,
+            $mode
+        );
+
         return [
             'id'               => $this->merchant->getId(),
             'name'             => $this->merchant->getBillingLabel(),
             'image'            => $this->merchant->getFullLogoUrlWithSize(Merchant\Logo::LARGE_SIZE),
             'brand_color'      => get_rgb_value($this->merchant->getBrandColorOrDefault()),
             'brand_text_color' => get_brand_text_color($this->merchant->getBrandColorOrDefault()),
+            'branding_variant' => $brandingVariant,
+            'asterix_variant'  => $asterixVariant,
         ];
     }
 
