@@ -32,6 +32,90 @@ return [
         ],
     ],
 
+    'testMerchantPricingPaypalPlanRule' => [
+        'request' => [
+            'url'       => '/pricing/rules/bulk',
+            'method'    => 'POST',
+            'content'   =>  [
+                [
+                    'merchant_id'           => '10000000000000',
+                    'product'               => 'primary',
+                    'feature'               => 'payment',
+                    'payment_method'        => 'wallet',
+                    'payment_method_type'   => '',
+                    'payment_network'       => 'paypal',
+                    'percent_rate'          => '0',
+                    'international'         => '0',
+                    'idempotency_key'       => 'random123'
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
+                    [
+                        'plan_id'   =>  '1A0Fkd38fGZPVC',
+                        'success'   =>   true,
+                        'idempotency_key'   =>  'random123'
+                    ]
+                ]
+            ],
+        ],
+    ],
+
+    'testMerchantPricingPaypalPlanRuleAlreadyExist' => [
+        'request' => [
+            'url'       => '/pricing/rules/bulk',
+            'method'    => 'POST',
+            'content'   =>  [
+                [
+                    'merchant_id'           => '10000000000000',
+                    'product'               => 'primary',
+                    'feature'               => 'payment',
+                    'payment_method'        => 'wallet',
+                    'payment_method_type'   => '',
+                    'payment_network'       => 'paypal',
+                    'percent_rate'          => '0',
+                    'international'         => '0',
+                    'idempotency_key'       => 'random123'
+                ],
+                [
+                    'merchant_id'           => '10000000000000',
+                    'product'               => 'primary',
+                    'feature'               => 'payment',
+                    'payment_method'        => 'wallet',
+                    'payment_method_type'   => '',
+                    'payment_network'       => 'paypal',
+                    'percent_rate'          => '0',
+                    'international'         => '0',
+                    'idempotency_key'       => 'random223'
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 2,
+                'items'  => [
+                    [
+                        'plan_id'   =>  '1A0Fkd38fGZPVC',
+                        'success'   =>   true,
+                        'idempotency_key'   =>  'random123'
+                    ],
+                    [
+                        'success'   =>   false,
+                        'idempotency_key'   =>  'random223',
+                        'error' =>  [
+                            'description' => 'The new rule matches with an active existing rule',
+                            'code' => 'BAD_REQUEST_PRICING_RULE_ALREADY_DEFINED'
+                        ],
+                    ],
+                ]
+            ],
+        ],
+    ],
     'testEnablePaypalMethodInternal'  =>  [
         'request' => [
             'method' => 'PATCH',

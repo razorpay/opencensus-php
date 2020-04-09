@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\Merchant;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Tests\Functional\TestCase;
+use RZP\Models\Pricing\Repository as PricingRepo;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Fixtures\Entity\Base as BaseFixture;
@@ -46,6 +47,54 @@ class TerminalOnboardingTest extends TestCase
             'The gateway field is required.');
 
         $this->startTest();
+    }
+
+    /**
+     * In PayPal onboarding, terminals service calls api to add default paypal rule in merchant's pricing
+     */
+    public function testMerchantPricingPaypalPlanRule()
+    {
+        $this->ba->appAuth();
+
+        $this->fixtures->create('pricing:standard_plan');
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1A0Fkd38fGZPVC']);
+        
+        $merchant = $this->getDbLastEntity('merchant' );
+
+        $pricingRules = (new PricingRepo)->getPlanByIdOrFailPublic('1A0Fkd38fGZPVC');
+
+        $ruleCount = $pricingRules->count();
+
+        $this->startTest();
+
+        $pricingRules = (new PricingRepo)->getPlanByIdOrFailPublic('1A0Fkd38fGZPVC');
+        $this->assertEquals($ruleCount+1, $pricingRules->count());
+
+        $pricingRule = $this->getDbLastEntity('pricing');
+        $this->assertEquals('1A0Fkd38fGZPVC', $pricingRule->getPlanId());
+        $this->assertEquals('wallet', $pricingRule->getPaymentMethod());
+        $this->assertEquals('paypal', $pricingRule->getPaymentNetwork());
+        $this->assertEquals('org_100000razorpay', $pricingRule->getOrgId());
+
+
+    }
+
+    public function testMerchantPricingPaypalPlanRuleAlreadyExist()
+    {
+        $this->ba->appAuth();
+
+        $this->fixtures->create('pricing:standard_plan');
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1A0Fkd38fGZPVC']);
+        
+        $pricingRules = (new PricingRepo)->getPlanByIdOrFailPublic('1A0Fkd38fGZPVC');
+        $ruleCount = $pricingRules->count();
+
+        $this->startTest();
+
+        $pricingRules = (new PricingRepo)->getPlanByIdOrFailPublic('1A0Fkd38fGZPVC');
+        $this->assertEquals($ruleCount + 1, $pricingRules->count());
     }
 
     // Terminals Service call api to enable PayPal on activation of PayPal onboarding terminal
