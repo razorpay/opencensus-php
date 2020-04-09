@@ -291,6 +291,7 @@ class CardPaymentService
             }
 
             $traceMap = [
+                'action'                   => 'content.action',
                 'payment.id'               => 'content.input.payment.id',
                 'payment.auth_type'        => 'content.input.payment.auth_type',
                 'merchant.id'              => 'content.input.merchant.id',
@@ -301,6 +302,17 @@ class CardPaymentService
                 'card.network'             => 'content.input.card.network',
                 'card.issuer'              => 'content.input.card.issuer',
                 'card.country'             => 'content.input.card.country',
+                'iin.iin'                  => 'content.input.iin.iin',
+                'iin.network'              => 'content.input.iin.network',
+                'iin.country'              => 'content.input.iin.country',
+                'iin.emi'                  => 'content.input.iin.emi',
+                'iin.flows'                => 'content.input.iin.flows',
+                'iin.enabled'              => 'content.input.iin.enabled',
+                'emi_plan.id'              => 'content.input.emi_plan.id',
+                'emi_plan.duration'        => 'content.input.emi_plan.duration',
+                'emi_plan.type'            => 'content.input.emi_plan.type',
+                'emi_plan.rate'            => 'content.input.emi_plan.rate',
+                'emi_plan.subvention'      => 'content.input.emi_plan.subvention',
                 'card.is_international'    => 'content.input.card.international',
                 'authentication.auth'      => 'content.input.authenticate',
                 'authentication.auth_type' => 'content.input.auth_type',

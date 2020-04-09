@@ -3053,6 +3053,11 @@ trait Authorize
             $this->setGatewayInputForAeps($input, $gatewayInput);
         }
 
+        if ($payment->isMethodCardOrEmi() === true)
+        {
+            $gatewayInput['iin'] = $this->getIinDetails($payment);
+        }
+
         $this->validateRecurringAndPreferredRecurring($payment, $input);
 
         $payment->setInternational();
@@ -3978,6 +3983,19 @@ trait Authorize
         $payment->emiPlan()->associate($emiPlan);
 
         return $emiPlan->toArray();
+    }
+
+    protected function getIinDetails(Payment\Entity $payment)
+    {
+        if (isset($payment->card) === true)
+        {
+            $iinEntity = $payment->card->iinRelation;
+
+            if (is_null($iinEntity) === false)
+            {
+                return $iinEntity->toArray();
+            }
+        }
     }
 
     protected function fillReturnRequestDataForMerchant(Payment\Entity $payment, array & $returnData)
