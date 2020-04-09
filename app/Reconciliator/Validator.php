@@ -96,6 +96,7 @@ class Validator extends Base\Core
         RequestProcessor\Base::BAJAJFINSERV       => ["/Payment MIS RAZORPAY SOFTWARE PRIVATE LIMITED_ [0-9]{1,2} (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) 20[0-9]{2}/"],
         RequestProcessor\Base::YES_BANK           => ["/Yes Bank_ MPR [0-9]{2}-[0-9]{2}-20[0-9]{2}/"],
         RequestProcessor\Base::HDFC_DEBIT_EMI     => ["/^DCEMI Reconciliation & Payment Summary Report/"],
+        RequestProcessor\Base::UPI_JUSPAY         => ["/^BAJAJ TXN DETAILS FOR \d{2}-\d{2}-TO \d{2}-\d{2}-\d{4}/"],
     ];
 
     const GATEWAY_BODY_REGEX = [
@@ -144,6 +145,7 @@ class Validator extends Base\Core
                                                             . "of  [0-9]{2}-(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)-20[0-9]{2}/"],
         RequestProcessor\Base::CARDLESS_EMI_FLEXMONEY  => ["/Attached are the recon and refund files for [0-9]{2}\/[0-9]{2}\/[0-9]{2}/"],
         RequestProcessor\Base::PHONEPE                 => [".*/PFA the Settlement Report for transactions made through PhonePe/.*"],
+        RequestProcessor\Base::UPI_JUSPAY              => ["/The summary of transaction initiated from \d{2}-\d{2}-\d{4} To \d{2}-\d{2}-\d{4}/"],
     ];
 
     const GATEWAY_ATTACHMENT_COUNT = [
@@ -623,6 +625,19 @@ class Validator extends Base\Core
             RequestProcessor\Base::HDFC_DEBIT_EMI);
 
         return ($validSubject and $validAttachmentCount);
+    }
+
+    public function validateUpiJuspayEmail(array $emailDetails)
+    {
+        $validSubject = $this->validateEmailSubject(
+            $emailDetails[RequestProcessor\Mailgun::SUBJECT],
+            RequestProcessor\Base::UPI_JUSPAY);
+
+        $validBody = $this->validateEmailBody(
+            $emailDetails[RequestProcessor\Mailgun::BODY_HTML_TEXT],
+            RequestProcessor\Base::UPI_JUSPAY);
+
+        return ($validSubject and $validBody);
     }
 
     /**

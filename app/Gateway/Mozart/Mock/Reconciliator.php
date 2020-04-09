@@ -425,6 +425,93 @@ class Reconciliator extends Base\Mock\PaymentReconciliator
         return $data;
     }
 
+    protected function upi_juspay($input)
+    {
+        $this->fileToWriteName = 'upi_juspay_mis';
+
+        $data = [];
+
+        // Check refunds first
+        $refunds = $this->repo->refund->fetch([
+            'gateway' => 'upi_juspay',
+        ]);
+
+        foreach ($refunds as $row)
+        {
+            $row = [
+                'RRN'                   => '007516641634',
+                'REFUNDID'              => $row['id'],
+                'TXNID'                 => 'BJJdcf478fff4b9a8ae78fb40b3384c2d01',
+                'ORDER_ID'              => $row['payment_id'],
+                'AMOUNT'                => ($row['amount'] / 100),
+                'MOBILE_NO'             => '',
+                'VPA'                   => 'xyz@abfspay',
+                'BANKNAME'              => '',
+                'FLAG'                  => '',
+                'ACCOUNTNUMBER'         => '',
+                'IFSC'                  => '',
+                'ACNT_CUSTNAME'         => 'ROSS GELLER',
+                'RESPCODE'              => '00',
+                'RESPONSE'              => 'Refund accepted successfully',
+                'TRANSACTION_DATE'      => '15-03-20 16=>27',
+                'REFUND_AMOUNT'         => ($row['amount'] / 100),
+                'TXN_REF_DATE'          => '30-03-20 11=>12',
+                'MERCHANT_ID'           => 'BAJAJBILLPAYMENTS',
+                'CREDITVPA'             => 'billpayments@abfspay',
+                'REFUND_TYPE'           => '',
+                'UNQ_CUST_ID'           => '',
+                'ONLINE_REFUND_REFID'   => ''
+            ];
+
+            $data[] = $row;
+        }
+
+        // Put payment rows only if refunds are not there.
+        // so make it Refund MIS file. Just return the data.
+        if (empty($data) === false)
+        {
+            return $data;
+        }
+
+        // If no refunds, then it is payment MIS file
+        // put payment rows in data
+        foreach ($input as $row)
+        {
+            $row = [
+                'RRN'                   => '009007125383',
+                'TXNID'                 => 'BJJ08df8cc33c68435988aafa54de908913',
+                'ORDERID'               => $row['payment']['id'],
+                'AMOUNT'                => ($row['payment']['amount'] / 100),
+                'MOBILE_NO'             => '',
+                'BANKNAME'              => '',
+                'MASKEDACCOUNTNUMBER'   => '',
+                'IFSC'                  => '',
+                'VPA'                   => 'john.miller@ybl',
+                'ACCOUNT_CUST_NAME'     => 'JOHN MILLER',
+                'RESPCODE'              => '0',
+                'RESPONSE'              => 'SUCCESS',
+                'TXN_DATE'              => '30-03-2020 07=>45',
+                'CREDITVPA'             => 'xyz@random',
+                'REMARKS'               => 'Collect Request from Bajaj UPI',
+                'SURCHARGE'             => 0,
+                'TAX'                   => 0,
+                'DEBIT_AMOUNT'          => 2711,
+                'MDR_TAX'               => '0',
+                'MERCHANT_ID'           => 'BAJAJALLIANZ',
+                'UNQ_CUST_ID'           => ''
+            ];
+
+            if (empty($row) === true)
+            {
+                continue;
+            }
+
+            $data[] = $row;
+        }
+
+        return $data;
+    }
+
     protected function wallet_phonepe($input)
     {
         $this->fileExtension = FileStore\Format::CSV;

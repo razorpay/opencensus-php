@@ -433,6 +433,7 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
                         'trace_code'    => TraceCode::RECON_MISMATCH,
                         'info_code'     => Base\InfoCode::REFUND_TRANSACTION_ABSENT,
                         'refund_id'     => $this->refund->getId(),
+                        'payment_id'    => $this->refund->payment->getId(),
                         'amount'        => $this->refund->getAmount(),
                         'gateway'       => $this->gateway
                     ]);

@@ -114,6 +114,7 @@ class Base extends Core
     const VAS_AXIS               = 'VasAxis';
     const YES_BANK               = 'YesBank';
     const HDFC_DEBIT_EMI         = 'HdfcDebitEmi';
+    const UPI_JUSPAY             = 'UpiJuspay';
 
     /**
      * The gateway names should be the same name as the directories present under 'reconciliator'
@@ -186,6 +187,7 @@ class Base extends Core
         self::BAJAJFINSERV           => ['remiecftransactions@bizsupportc.com'],
         self::YES_BANK               => ['yesacquirer@insolutionsglobal.com'],
         self::HDFC_DEBIT_EMI         => ['emailintimation@hdfcbank.com'],
+        self::UPI_JUSPAY             => ['upisupport@axisbank.com'],
 
         // Used when someone from the team needs to send the
         // reconciliation file via mail for reconciliation.
@@ -245,6 +247,7 @@ class Base extends Core
         Gateway::UPI_SBI                => self::UPI_SBI,
         Gateway::UPI_AXIS               => self::UPI_AXIS,
         Gateway::UPI_ICICI              => self::UPI_ICICI,
+        Gateway::UPI_JUSPAY             => self::UPI_JUSPAY,
         Gateway::UPI_HULK               => self::UPI_HULK,
         Gateway::ISG                    => self::ISG,
         Gateway::EBS                    => self::EBS,
