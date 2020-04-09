@@ -56,19 +56,19 @@ class Core extends Base\Core
         return $methods->toArray();
     }
 
-    //
-    // this always need to called from
-    // proxy auth so merchant object is not
-    // passed
-    //
-    public function editMethods(array $input)
+    public function editMethods(array $input, Merchant\Entity $merchant = null)
     {
-        $methods = $this->getPaymentMethods($this->merchant);
+        if ($merchant === null)
+        {
+            $merchant = $this->merchant;
+        }
+
+        $methods = $this->getPaymentMethods($merchant);
 
         $this->trace->info(
             TraceCode::MERCHANT_EDIT,
             [
-                'merchant_id' => $this->merchant->getId(),
+                'merchant_id' => $merchant->getId(),
                 'input' => $input,
                 'current_methods' => $methods->toArrayAdmin(),
             ]);

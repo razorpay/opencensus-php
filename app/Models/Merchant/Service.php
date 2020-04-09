@@ -1368,6 +1368,22 @@ class Service extends Base\Service
         return (new Methods\Core)->editMethods($input);
     }
 
+    public function editMerchantMethods($mid, $input)
+    {
+        $this->trace->info(
+            TraceCode::MERCHANT_EDIT,
+            [
+                'input'         => $input,
+                'merchant_id'   => $mid
+            ]);
+
+        (new Validator)->validateInput('edit_merchant_methods', $input);
+
+        $merchant =  $this->repo->merchant->findOrFailPublic($mid);
+
+        return (new Methods\Core)->editMethods($input, $merchant);
+    }
+
     public function getMerchantWebhooks($id)
     {
         $merchant = $this->repo->merchant->findOrFailPublic($id);

@@ -241,6 +241,7 @@ final class Route
         'merchant_modify_terminal'                 => ['put',      'merchants/{mid}/terminals/{tid}',                'MerchantController@putTerminal'                                    ],
         'merchant_put_payment_methods'             => ['put',      'merchants/{mid}/methods',                        'MerchantController@putMethods'                                     ],
         'merchant_methods_edit'                    => ['put',      'merchant/methods',                               'MerchantController@editMethods'                                    ],
+        'merchant_methods_edit_internal'           => ['patch',    'merchants/{mid}/methods',                        'MerchantController@editMerchantMethods'                            ],
         'merchant_fetch_methods'                   => ['get',      'merchant/methods',                               'MerchantController@getPaymentMethods'                              ],
         'merchant_send_activation_mail'            => ['post',     'merchants/activation_mail',                      'MerchantController@postSendActivationMail'                         ],
         'merchant_live_enable'                     => ['post',     'merchants/{id}/live/enable',                     'MerchantController@postLiveEnable'                                 ],
@@ -2162,6 +2163,7 @@ final class Route
         'update_admin_through_batch',
         'merchant_create_terminal_internal',
         'retry_penny_testing_cron',
+        'merchant_methods_edit_internal',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -4307,7 +4309,8 @@ final class Route
 
         'terminals_service' => [
             'internal_merchant_fetch',
-            'merchant_create_terminal_internal'
+            'merchant_create_terminal_internal',
+            'merchant_methods_edit_internal',
         ],
     ];
 

@@ -219,6 +219,11 @@ class Validator extends Base\Validator
         Methods\Entity::EMI => 'required|bool',
     ];
 
+    //only paypal method is allowed for now, change validation to allow more methods
+    protected static $editMerchantMethodsRules = [
+        Methods\Entity::PAYPAL  => 'required|bool',
+    ];
+
     protected static $resetSettlementScheduleRules = [
         'merchant_ids'   => 'required|sequential_array',
         'merchant_ids.*' => 'required|alpha_num|size:14',

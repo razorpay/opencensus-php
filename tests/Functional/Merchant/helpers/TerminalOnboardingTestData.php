@@ -32,4 +32,20 @@ return [
         ],
     ],
 
+    'testEnablePaypalMethodInternal'  =>  [
+        'request' => [
+            'method' => 'PATCH',
+            'url' => '/merchants/10000000000000/methods',
+            'content' => [
+                'paypal'      => true
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'paypal'      => true
+            ],
+            'status_code'   => 200,
+        ],
+    ],
+
 ];
