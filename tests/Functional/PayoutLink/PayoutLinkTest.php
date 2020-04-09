@@ -105,6 +105,21 @@ class PayoutLinkTest extends TestCase
         $this->startTest();
     }
 
+    public function testPayoutLinkFetchExpandsByUser()
+    {
+        $this->testPostRequestForCreatingPayoutLinkOnProxyAuth();
+
+        $this->ba->proxyAuth();
+
+        $resp = $this->startTest();
+
+        $this->assertNotEmpty($resp['items']);
+
+        $this->assertTrue(in_array('user' , $resp['items'][0]));
+
+        $this->assertNotEmpty($resp['items'][0]['user']);
+    }
+
     public function testExceptionOnCreatePayoutLinkWithInvalidOtpOnProxyAuth()
     {
         $this->ba->proxyAuth('rzp_test_10000000000000' ,  'MerchantUser01');
@@ -191,6 +206,15 @@ class PayoutLinkTest extends TestCase
     public function testPostRequestForCreatingPayoutLink()
     {
         $this->ba->privateAuth();
+
+        $this->addAccountNumberParameter(__FUNCTION__);
+
+        $this->startTest();
+    }
+
+    public function testPostRequestForCreatingPayoutLinkOnProxyAuth()
+    {
+        $this->ba->proxyAuth();
 
         $this->addAccountNumberParameter(__FUNCTION__);
 

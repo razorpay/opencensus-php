@@ -10,6 +10,7 @@ use RZP\Models\Contact;
 use RZP\Models\Merchant;
 use RZP\Constants\Table;
 use RZP\Models\FundAccount;
+use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Models\Currency\Currency;
 use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Models\Base\Traits\HasBalance;
@@ -95,6 +96,8 @@ class Entity extends Base\PublicEntity
     const SEND_SMS             = 'send_sms';
     const SEND_EMAIL           = 'send_email';
 
+    const USER                 = 'user';
+
     const MAX_PAYOUT_LIMIT     = Payout\Entity::MAX_PAYOUT_LIMIT;
     const MERCHANT_NAME        = 'merchant_name';
     const PAYOUT_PURPOSE       = 'payout_purpose';
@@ -141,6 +144,7 @@ class Entity extends Base\PublicEntity
         self::SHORT_URL,
         self::SEND_SMS,
         self::SEND_EMAIL,
+        self::USER,
         self::CANCELLED_AT,
         self::CREATED_AT,
         self::UPDATED_AT
@@ -156,11 +160,13 @@ class Entity extends Base\PublicEntity
         self::PURPOSE,
         self::STATUS,
         self::AMOUNT,
+        self::USER,
         self::CURRENCY,
         self::DESCRIPTION,
         self::ATTEMPT_COUNT,
         self::RECEIPT,
         self::NOTES,
+        self::USER_ID,
         self::SHORT_URL,
         self::SEND_SMS,
         self::SEND_EMAIL,
@@ -174,6 +180,8 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::CONTACT_ID,
         self::FUND_ACCOUNT_ID,
+        self::USER_ID,
+        self::USER,
         self::PAYOUTS,
         self::CONTACT,
         self::ATTEMPT_COUNT
@@ -456,6 +464,35 @@ class Entity extends Base\PublicEntity
             array_forget($attributes, self::PAYOUTS);
 
             return;
+        }
+    }
+
+    public function setPublicUserAttribute(array & $attributes)
+    {
+        //
+        // We never want to expose User on private.
+        // The correct way to do this would be to not add it in $public array.
+        // But, we want to expose it in proxy auth (via expands). Hence, we
+        // cannot remove it from $public array.
+        // It's possible that the user is loaded in some flow. This check
+        // ensures that it's always removed before sending out the response.
+        //
+        if (app('basicauth')->isStrictPrivateAuth() === true)
+        {
+            array_forget($attributes, self::USER);
+
+            return;
+        }
+    }
+
+    public function setPublicUserIdAttribute(array & $attributes)
+    {
+        /** @var BasicAuth $basicAuth */
+        $basicAuth = app('basicauth');
+
+        if ($basicAuth->isStrictPrivateAuth() === true)
+        {
+            unset($attributes[self::USER_ID]);
         }
     }
 

@@ -17,7 +17,7 @@ class Fetch extends BaseFetch
             Entity::RECEIPT         => 'sometimes|string|max:40',
         ],
         AuthType::PROXY_AUTH => [
-            self::EXPAND_EACH => 'filled|string|in:payouts,payouts.fund_account',
+            self::EXPAND_EACH => 'filled|string|in:payouts,payouts.fund_account,user',
         ]
     ];
 

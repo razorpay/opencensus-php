@@ -6,6 +6,19 @@ use RZP\Error\PublicErrorDescription;
 use RZP\Exception\BadRequestException;
 
 return [
+    'testPayoutLinkFetchExpandsByUser' => [
+        'request'  => [
+            'method'  => 'GET',
+            'url'     => '/payout-links?expand[]=user',
+            'content' => [
+            ]
+        ],
+        'response' => [
+            'content' => [
+            ]
+        ]
+    ],
+
     'testPostRequestForCreatingPayoutLink' => [
         'request'  => [
             'method'  => 'POST',
@@ -147,6 +160,40 @@ return [
         'exception' => [
             'class'               => 'RZP\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_INCORRECT_OTP,
+        ]
+    ],
+
+    'testPostRequestForCreatingPayoutLinkOnProxyAuth' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payout-links',
+            'content' => [
+                'amount'      => 1000,
+                'currency'    => 'INR',
+                'description' => 'This is a test payout',
+                'purpose'     => 'refund',
+                'contact'     => [
+                    'name'       => 'cskdsds',
+                    'email'      => 'dsknlds@gmail.com',
+                    'contact'    => '1231231231'
+                ],
+                'notes'       => ['hi' => 'hello'],
+                'receipt'     => 'Test Payout Receipt',
+                'otp'         => '0007',
+                'token'       => 'EFMCRjw1Dq8oHn'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'amount'      => 1000,
+                'currency'    => 'INR',
+                'description' => 'This is a test payout',
+                'receipt'     => 'Test Payout Receipt',
+                'notes'       => [
+                    'hi' => 'hello'
+                ],
+                'status'      => 'issued',
+            ]
         ]
     ],
 
