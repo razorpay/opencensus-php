@@ -132,7 +132,7 @@
                 "s3",
                 "sdk"
             ],
-            "time": "2017-07-26T22:05:53+00:00"
+            "time": "2017-08-11T21:16:28+00:00"
         },
         {
             "name": "aws/aws-sdk-php-laravel",
@@ -2299,7 +2299,7 @@
             "time": "2017-06-27T06:30:13+00:00"
         },
         {
-            "name": "jeremeamia/SuperClosure",
+            "name": "jeremeamia/superclosure",
             "version": "2.3.0",
             "source": {
                 "type": "git",
@@ -3694,7 +3694,7 @@
             "time": "2017-07-22T07:25:06+00:00"
         },
         {
-            "name": "mikey179/vfsStream",
+            "name": "mikey179/vfsstream",
             "version": "v1.3.0",
             "source": {
                 "type": "git",
@@ -4199,7 +4199,7 @@
                 "parser",
                 "php"
             ],
-            "time": "2017-06-28T20:53:48+00:00"
+            "time": "2017-07-28T14:45:09+00:00"
         },
         {
             "name": "nojacko/email-data-disposable",
@@ -5692,7 +5692,7 @@
                 "interactive",
                 "shell"
             ],
-            "time": "2017-07-22T15:14:19+00:00"
+            "time": "2017-07-29T19:30:02+00:00"
         },
         {
             "name": "ramsey/uuid",
@@ -5754,17 +5754,17 @@
             ],
             "authors": [
                 {
+                    "name": "Ben Ramsey",
+                    "email": "ben@benramsey.com",
+                    "homepage": "https://benramsey.com"
+                },
+                {
                     "name": "Marijn Huizendveld",
                     "email": "marijn.huizendveld@gmail.com"
                 },
                 {
                     "name": "Thibaud Fabre",
                     "email": "thibaud@aztech.io"
-                },
-                {
-                    "name": "Ben Ramsey",
-                    "email": "ben@benramsey.com",
-                    "homepage": "https://benramsey.com"
                 }
             ],
             "description": "Formerly rhumsaa/uuid. A PHP 5.4+ library for generating RFC 4122 version 1, 3, 4, and 5 universally unique identifiers (UUID).",
@@ -5855,16 +5855,16 @@
         },
         {
             "name": "razorpay/ifsc",
-            "version": "1.5.1",
+            "version": "1.5.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/razorpay/ifsc.git",
-                "reference": "2f3a4eb7819ee328a5e0d106f38c76d586ab9ea0"
+                "reference": "063b363734665b9f9993536f9f3951d4fb7152bd"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/ifsc/zipball/2f3a4eb7819ee328a5e0d106f38c76d586ab9ea0",
-                "reference": "2f3a4eb7819ee328a5e0d106f38c76d586ab9ea0",
+                "url": "https://api.github.com/repos/razorpay/ifsc/zipball/063b363734665b9f9993536f9f3951d4fb7152bd",
+                "reference": "063b363734665b9f9993536f9f3951d4fb7152bd",
                 "shasum": ""
             },
             "require": {
@@ -5898,7 +5898,7 @@
                 }
             ],
             "description": "Razorpay IFSC Codes Library",
-            "time": "2020-03-13T08:42:20+00:00"
+            "time": "2020-04-08T10:02:52+00:00"
         },
         {
             "name": "razorpay/laravel-excel",
@@ -5976,7 +5976,7 @@
                 "import",
                 "laravel"
             ],
-            "time": "2017-08-10T18:30:30+00:00"
+            "time": "2020-04-04T18:44:38+00:00"
         },
         {
             "name": "razorpay/lqext",
@@ -6457,10 +6457,10 @@
                 "trace"
             ],
             "support": {
-                "source": "https://github.com/razorpay/trace/tree/2.3.0",
+                "source": "https://github.com/razorpay/trace/tree/2.4",
                 "issues": "https://github.com/razorpay/trace/issues"
             },
-            "time": "2019-08-23T08:33:50+00:00"
+            "time": "2019-11-22T04:28:28+00:00"
         },
         {
             "name": "razorpay/ufh-sdk-php",
