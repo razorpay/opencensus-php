@@ -430,11 +430,18 @@ class Processor extends Base\Core
         $reversalFees = $bankingReversalsFeeAmount['fee'];
         $reversalTax  = $bankingReversalsFeeAmount['tax'];
 
+        // The Finance come up with the requirement that we should have the merchant Invoice to be GST compliant
+        // That mean they want the Tax should always be equal to 18% of the fees(amount) that we
+        // charge from the Merchant
+
+        $amount = ($bankingPayoutsFees + $bankingFAVsFees - $bankingPayoutsTax - $bankingFAVsTax)
+                  - ($reversalFees - $reversalTax)
+                  - ($bankingFailedPayoutsFees - $bankingFailedPayoutsTax);
+
         return [
-            Entity::TAX     => $bankingPayoutsTax + $bankingFAVsTax - $bankingFailedPayoutsTax  - $reversalTax,
-            Entity::AMOUNT  => ($bankingPayoutsFees + $bankingFAVsFees - $bankingPayoutsTax - $bankingFAVsTax )
-                               - ($reversalFees - $reversalTax)
-                               - ($bankingFailedPayoutsFees - $bankingFailedPayoutsTax)
+            // This is to round the TAX as per the GST Compliance i.e Normal rounding (PHP_ROUND_HALF_UP)
+            Entity::TAX     => (int) round($amount * Constants::GST_PERCENTAGE),
+            Entity::AMOUNT  => $amount
         ];
     }
 
