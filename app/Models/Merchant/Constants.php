@@ -34,6 +34,8 @@ final class Constants
     const PARTNER_INTENT                          = 'partner_intent';
     const TRANSLATE_WEBHOOK_GATEWAY               = 'translate_webhook_gateway';
 
+    const PENNY_TESTING_COUNT                     = 'penny_testing_count';
+
     const DOCUMENT_TYPE                           = 'document_type';
     const ENTITY                                  = 'entity';
     const IDEMPOTENT_ID                           = 'idempotent_id';

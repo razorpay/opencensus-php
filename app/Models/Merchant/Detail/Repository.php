@@ -247,17 +247,18 @@ class Repository extends Base\Repository
         return $status;
     }
 
+
     /**
-     * @param $status
-     * @param $pennyTestingUpdatedAt
+     * @param string $status
+     * @param int    $pennyTestingUpdatedAt
      *
      * @return mixed
      */
-    public function fetchMerchantDetailsByBankDetailVerificationStatusAndUpdatedAt($status, $pennyTestingUpdatedAt)
+    public function fetchMerchantDetailsForPennyTestingRetry(string $status, int $pennyTestingUpdatedAt)
     {
         return $this->newQuery()
-                ->where(Entity::BANK_DETAILS_VERIFICATION_STATUS,'=',$status)
-                ->where(Entity::PENNY_TESTING_UPDATED_AT,'<',$pennyTestingUpdatedAt)
-                ->get();
+                    ->where(Entity::BANK_DETAILS_VERIFICATION_STATUS, '=', $status)
+                    ->where(Entity::PENNY_TESTING_UPDATED_AT, '<', $pennyTestingUpdatedAt)
+                    ->get();
     }
 }

@@ -1987,6 +1987,11 @@ class Core extends Base\Core
         {
             $isPennyTestingAttemptLessThenMaxAttempt = $pennyTesting->isPennyTestingAttemptLessThenMaxAttempt($merchantDetail);
 
+            $this->trace->info(TraceCode::MERCHANT_PENNY_TESTING_CRON_RETRY, [
+                Entity::MERCHANT_ID            => $merchantDetail->getId(),
+                Constants::PENNY_TESTING_COUNT => $pennyTesting->getPennyTestingAttempts($merchantDetail),
+            ]);
+
             $this->repo->transactionOnLiveAndTest(function() use ($merchantDetail, $pennyTesting, $isPennyTestingAttemptLessThenMaxAttempt) {
 
                 $merchant = $merchantDetail->merchant;
@@ -2029,7 +2034,7 @@ class Core extends Base\Core
 
         $merchantDetails = $this->repo->useSlave(function() use ($lastCronJobTime, $status) {
 
-            return (new Repository())->fetchMerchantDetailsByBankDetailVerificationStatusAndUpdatedAt($status, $lastCronJobTime);
+            return (new Repository())->fetchMerchantDetailsForPennyTestingRetry($status, $lastCronJobTime);
         });
 
         return $merchantDetails;
