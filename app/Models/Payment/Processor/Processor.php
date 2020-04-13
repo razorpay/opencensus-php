@@ -2138,6 +2138,9 @@ class Processor
 
         $gatewayData['merchant'] = $this->payment->merchant;
 
+        //This is a temporary change till this is not migrated to claims service for handling gateway files.
+        $this->processFirstDataCallback($action, $gatewayData);
+
         if ($this->isRoutedThroughCps($action, $gatewayData) === true)
         {
             // If CPS service is enabled then route this payment via CPS
@@ -2251,6 +2254,39 @@ class Processor
             $this->changeTerminalCapabilityIfApplicable($terminal, $error);
 
             throw $ex;
+        }
+    }
+
+    protected function processFirstDataCallback($action, $input)
+    {
+        if (($action === Action::CALLBACK) and
+            (isset($input['payment']) === true) and
+            ($input['payment'][Payment\Entity::GATEWAY] === Payment\Gateway::FIRST_DATA) and
+            ($input['payment'][Payment\Entity::AUTHENTICATION_GATEWAY] === Payment\Gateway::MPI_BLADE))
+        {
+
+            $str = $input['terminal'][Terminal\Entity::GATEWAY_MERCHANT_ID] . '|' . $input['payment']['id'] . '|' .
+                $input['gateway'][\RZP\Gateway\Mpi\Blade\PARes::GATEWAY_PARES];
+
+            $key = \RZP\Gateway\FirstData\Gateway::PARES_DATA_CACHE_KEY . $input['payment']['id'];
+
+            try
+            {
+                $this->app['cache']->put($key, $str, 60 * 25); // 1 day 1 hour
+            }
+            catch (\Throwable $e)
+            {
+                $this->trace->traceException(
+                    $e,
+                    Trace::CRITICAL,
+                    TraceCode::GATEWAY_RAW_PARES_RESPONSE_REDIS_FAILURE,
+                    ['key' => $key]);
+            }
+
+            $this->trace->info(TraceCode::GATEWAY_RAW_PARES_RESPONSE, [
+                'pares' => $input['gateway'][\RZP\Gateway\Mpi\Blade\PARes::GATEWAY_PARES],
+                'store_id' => $input['terminal'][Terminal\Entity::GATEWAY_MERCHANT_ID],
+            ]);
         }
     }
 

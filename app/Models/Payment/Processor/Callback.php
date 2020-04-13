@@ -13,6 +13,7 @@ use RZP\Models\Emi;
 use RZP\Models\Card;
 use RZP\Models\Order;
 use RZP\Models\Payment;
+use RZP\Models\Terminal;
 use RZP\Models\Customer;
 use RZP\Error\ErrorCode;
 use RZP\Models\Card\IIN;

@@ -1934,4 +1934,13 @@ class Repository extends Base\Repository
                         ->where(Entity::METHOD, Method::NETBANKING)
                         ->where(Entity::BANK, $org->getCustomCode());
     }
+
+    public function findFirstDataAuthSeparatedPaymentIdsBetween(int $start, int $end)
+    {
+        return $this->newQuery()
+                    ->whereBetween(Entity::CREATED_AT, [$start, $end])
+                    ->where(Entity::GATEWAY, '=', Gateway::FIRST_DATA)
+                    ->where(Entity::AUTHENTICATION_GATEWAY, '=', Gateway::MPI_BLADE)
+                    ->pluck(Entity::ID);
+    }
 }

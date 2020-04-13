@@ -1871,6 +1871,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const VERIFY_ENROLLMENT_RESPONSE                            = 'VERIFY_ENROLLMENT_RESPONSE';
     const GATEWAY_PARES_RESPONSE                                = 'GATEWAY_PARES_RESPONSE';
     const GATEWAY_RAW_PARES_RESPONSE                            = 'GATEWAY_RAW_PARES_RESPONSE';
+    const GATEWAY_RAW_PARES_RESPONSE_REDIS_FAILURE              = 'GATEWAY_RAW_PARES_RESPONSE_REDIS_FAILURE';
 
     // Trace code for \Models\Settings
     const SETTINGS_UPSERT_REQUEST                               = 'SETTINGS_UPSERT_REQUEST';

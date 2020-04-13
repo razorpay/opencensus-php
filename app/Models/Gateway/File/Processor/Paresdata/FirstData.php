@@ -74,7 +74,7 @@ class FirstData extends Base
 
         $end = Carbon::createFromTimestamp($this->gatewayFile->getCreatedAt(), Timezone::IST)->getTimestamp();
 
-        $paymentIds = $this->repo->first_data->findPaymentIdsBetween($begin, $end);
+        $paymentIds = $this->repo->payment->findFirstDataAuthSeparatedPaymentIdsBetween($begin, $end);
 
         $this->trace->info(
             TraceCode::PAYMENTS_SELECTED,
