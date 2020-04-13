@@ -16,8 +16,6 @@ class IrctcRefundReport extends BasicEntityReport
 {
     const BATCH_LIMIT = 100000;
 
-    const AUTO_REFUND_DELAY = 5;
-
     // Maps the transaction source to the entities to be fetched for it
     protected $entityToRelationFetchMap = [
         E::REFUND => [
@@ -48,7 +46,10 @@ class IrctcRefundReport extends BasicEntityReport
     {
         $this->setDefaults();
 
-        $timestamp = Carbon::yesterday(Timezone::IST)->subDays(self::AUTO_REFUND_DELAY)->timestamp;
+        // Take auto refund delay (seconds) from merchant config
+        $autoRefundDelay = $this->merchant->getAutoRefundDelay();
+
+        $timestamp = Carbon::yesterday(Timezone::IST)->subSeconds($autoRefundDelay)->timestamp;
 
         if (isset($input['on']) === true)
         {
@@ -190,9 +191,13 @@ class IrctcRefundReport extends BasicEntityReport
 
     protected function getTimestamps($input): array
     {
-        $from = Carbon::yesterday(Timezone::IST)->subDay(self::AUTO_REFUND_DELAY)->timestamp;
+        // Take auto refund delay (seconds) from merchant config
+        $autoRefundDelay = $this->merchant->getAutoRefundDelay();
 
-        $to = Carbon::yesterday(Timezone::IST)->subDays(self::AUTO_REFUND_DELAY - 1)->timestamp;
+        $from = Carbon::yesterday(Timezone::IST)->subSeconds($autoRefundDelay)->timestamp;
+
+        // 1 day = 24*60*60 = 86400 seconds
+        $to = Carbon::yesterday(Timezone::IST)->subSeconds($autoRefundDelay - 86400)->timestamp;
 
         if (isset($input['on']) === true)
         {
