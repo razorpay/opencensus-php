@@ -177,8 +177,21 @@ class SmartRouting
         {
             $traceData = $data;
 
+            if (array_key_exists('terminals',$traceData) === true)
+            {
+                $terminalIds = array_pluck($traceData['terminals'],'id');
+
+                unset($traceData['terminals']);
+
+                unset($traceData['gateway_config']);
+
+                $traceData['terminals'] = $terminalIds;
+            }
+
+
             // remove sensitive data from logging
             unset($traceData['payment']['email'], $traceData['payment']['contact'], $traceData['payment']['notes']);
+
 
             // checking card key exist or not in array
             if (isset($traceData['payment']['card']) === true)

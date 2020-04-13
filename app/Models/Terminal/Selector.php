@@ -751,6 +751,7 @@ class Selector extends Base\Core
                 [
                     'payment'             => $tracePayment,
                     'merchant'            => $data['merchant'],
+                    'terminal_count'      => count($data['terminals']),
                     'filtered_terminals'  => $data['filtered_terminals'],
                     'gateway_downtime'    => $data['gateway_downtime'],
                     'failed_terminals'    => $data['failed_terminals'],
