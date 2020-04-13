@@ -17,6 +17,7 @@ use RZP\Models\Partner\Commission;
 use RZP\Models\Merchant\MerchantUser;
 use RZP\Reconciliator\RequestProcessor;
 use RZP\Models\BankingAccountStatement as BAS;
+use RZP\Services\FTS\Constants as FtsConstants;
 
 /**
  * Class AdminFetch
@@ -444,6 +445,26 @@ class AdminFetch
                     Fetch::TYPE  => Fetch::TYPE_STRING,
                 ],
             ],
+            Entity::FTS_SOURCE_ACCOUNT => [
+                'fund_account_id' => [
+                    Fetch::LABEL    => 'Fund Account Id',
+                    Fetch::TYPE     => Fetch::TYPE_STRING,
+                ],
+                'channel' => [
+                    Fetch::LABEL    => 'Channel',
+                    Fetch::TYPE     => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES   => Channel::getFtsSupportedChannels(),
+                ],
+                'product' => [
+                    Fetch::LABEL    => 'Product',
+                    Fetch::TYPE     => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES   => FtsConstants::getProducts(),
+                ],
+                'is_deleted' => [
+                    Fetch::LABEL => 'Deleted',
+                    Fetch::TYPE  => Fetch::TYPE_BOOLEAN
+                ],
+            ],
             Entity::FTS_CHANNEL_HEALTH_EVENTS => [
                 'operation' => [
                     Fetch::LABEL => 'Operation',
@@ -463,7 +484,6 @@ class AdminFetch
                     Fetch::TYPE  => Fetch::TYPE_STRING,
                 ],
             ],
-
         ];
     }
 

@@ -16,6 +16,8 @@ class FtsAdminClient extends Base
 
     const ATTEMPTS           = 'attempts';
 
+    const SOURCE_ACCOUNTS    = 'source_accounts';
+
     const CHANNEL_HEALTH_EVENTS = "channel_health_events";
 
     public function __construct()
@@ -29,23 +31,7 @@ class FtsAdminClient extends Base
 
     public function fetchMultiple(string $entity, array $input)
     {
-        switch ($entity)
-        {
-            case self::TRANSFERS:
-                return $this->getTransfers($input);
-
-            case self::ATTEMPTS:
-                return $this->getAttempts($input);
-
-            case self::FUND_ACCOUNTS:
-                return $this->getFundAccounts($input);
-
-            case self::BENEFICIARY_STATUS:
-                return $this->getBeneficiaryStatus($input);
-
-            case self::CHANNEL_HEALTH_EVENTS:
-                return $this->getChannelHealthEvents($input);
-        }
+        return $this->getEntity($entity, $input);
     }
 
     public function getTransfers(array $input)
@@ -80,6 +66,14 @@ class FtsAdminClient extends Base
             $input)['body'][self::ATTEMPTS];
     }
 
+    public function getSourceAccounts(array $input)
+    {
+        return $this->createAndSendRequest(
+            parent::SOURCE_ACCOUNT,
+            Requests::GET,
+            $input)['body'][self::SOURCE_ACCOUNTS];
+    }
+
     public function getChannelHealthEvents(array $input)
     {
         return $this->createAndSendRequest(
@@ -92,22 +86,16 @@ class FtsAdminClient extends Base
     {
         $input += [ 'id' => $id ];
 
-        switch ($entity)
+        return $this->getEntity($entity, $input)[0];
+    }
+
+    protected function getEntity(string $entity, array $input)
+    {
+        $methodName = 'get' . studly_case($entity);
+
+        if (method_exists($this, $methodName) === true)
         {
-            case self::TRANSFERS:
-                return $this->getTransfers($input)[0];
-
-            case self::ATTEMPTS:
-                return $this->getAttempts($input)[0];
-
-            case self::FUND_ACCOUNTS:
-                return $this->getFundAccounts($input)[0];
-
-            case self::BENEFICIARY_STATUS:
-                return $this->getBeneficiaryStatus($input)[0];
-
-            case self::CHANNEL_HEALTH_EVENTS:
-                return $this->getChannelHealthEvents($input)[0];
+            return $this->$methodName($input);
         }
     }
 }

@@ -157,4 +157,19 @@ final class Constants
     const STATUS_FAILED                  = 'failed';
 
     const ES_ON_DEMAND                   = 'ES_ON_DEMAND';
+
+    const CA_PAYOUT                      = 'CA_PAYOUT';
+
+    public static function getProducts(): array
+    {
+        return [
+            Constants::PAYOUT,
+            Constants::SETTLEMENT,
+            Constants::REFUND,
+            Constants::PAYOUT_REFUND,
+            Constants::PENNY_TESTING,
+            Constants::ES_ON_DEMAND,
+            Constants::CA_PAYOUT,
+        ];
+    }
 }
