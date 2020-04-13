@@ -78,6 +78,24 @@ class Validator extends Base\Validator
         Entity::FILE                 => 'required|file|max:1024' . self::DEFAULT_MIME_RULE,
     ];
 
+    protected static $irctcSettlementCreateRules = [
+        Entity::TYPE                 => 'required|in:irctc_settlement',
+        Entity::NAME                 => 'filled|string|max:255',
+        Entity::FILE                 => 'required|file|max:5120' . self::DEFAULT_MIME_RULE,
+    ];
+
+    protected static $irctcRefundCreateRules = [
+        Entity::TYPE                 => 'required|in:irctc_refund',
+        Entity::NAME                 => 'filled|string|max:255',
+        Entity::FILE                 => 'required|file|max:5120' . self::DEFAULT_MIME_RULE,
+    ];
+
+    protected static $irctcDeltaRefundCreateRules = [
+        Entity::TYPE                 => 'required|in:irctc_delta_refund',
+        Entity::NAME                 => 'filled|string|max:255',
+        Entity::FILE                 => 'required|file|max:5120' . self::DEFAULT_MIME_RULE,
+    ];
+
     protected static $paymentLinkCreateRules = [
         Entity::TYPE                    => 'required|in:payment_link',
         Entity::NAME                    => 'filled|string|max:255',
