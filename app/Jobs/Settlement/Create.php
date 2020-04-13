@@ -138,10 +138,7 @@ class Create extends Job
                 TraceCode::SETTLEMENT_ATTEMPT_ENTITIES_CREATED_FOR_MERCHANT,
                          $response);
 
-            $isExperimentEnabled = $processor->checkIsTransferSettlementQueueEnabled($this->merchantId);
-
-            if (($isExperimentEnabled === true) and
-                (empty($setlResponse['settlement_ids']) === false))
+            if (empty($setlResponse['settlement_ids']) === false)
             {
                 $settlementIds =  $setlResponse['settlement_ids'];
 
@@ -153,12 +150,6 @@ class Create extends Job
 
                 TransferRecon::dispatch($settlementIds, $this->mode);
             }
-
-            $this->trace->info(
-                TraceCode::TRANSFER_SETTLEMENT_NO_SETTLEMENTS_FOUND,
-                [
-                    '$setlResponse' => $setlResponse
-                ]);
         }
         catch (BadRequestException $e)
         {

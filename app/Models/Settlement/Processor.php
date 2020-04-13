@@ -519,11 +519,6 @@ class Processor extends Base\Core
 
                     $txnsSettledCount += $txns->count();
                 }
-
-               if($this->checkIsTransferSettlementQueueEnabled($merchantId) === false)
-               {
-                   $this->updateSettlementIdInTransfer($txns);
-               }
             }
 
             $this->traceMemoryUsage(TraceCode::MEMORY_USAGE_SETTLEMENT_ENTITIES_CREATE_END);
@@ -557,23 +552,6 @@ class Processor extends Base\Core
         );
 
         return $response;
-    }
-
-    public function checkIsTransferSettlementQueueEnabled($merchantId) : bool
-    {
-        $variant = $this->app['razorx']->getTreatment($merchantId,
-            MerchantModel\RazorxTreatment::TRANSFERS_SETTLEMENTS_QUEUE,
-            $this->mode
-        );
-
-        $this->trace->info(
-            TraceCode::TRANSFER_SETTLEMENT_RAZORX,
-            [
-                'merchantId'     => $merchantId,
-                'variant'        => $variant,
-            ]);
-
-        return strtolower($variant) === 'on';
     }
 
     protected function groupTransactionsByDay($txns): array

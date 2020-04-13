@@ -108,9 +108,6 @@ final class RazorxTreatment
 
     const RAZORPAY_X_ENABLE_YESBANK_PAYOUTS = 'razorpay_x_enable_yesbank_payouts';
 
-    //process updating the settlements for transfer asycn
-    const TRANSFERS_SETTLEMENTS_QUEUE = 'transfer_settlements_queue';
-
     // allow pre_signup data to send to salesforce
     const PRE_SIGNUP_DETAILS_TO_SALESFORCE = 'pre_signup_details_to_salesforce';
 
