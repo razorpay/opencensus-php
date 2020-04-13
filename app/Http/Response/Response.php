@@ -380,6 +380,7 @@ class Response
             'payment_create_jsonp',
             'payment_get_status',
             'payment_get_flows',
+            'payment_get_iin_details',
         ];
 
         return (in_array($route, $jsonpRoutes));
