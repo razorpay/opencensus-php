@@ -499,5 +499,9 @@ return [
 
     'typeform' => [
         'typeform_webhook_secret'  => env('TYPEFORM_WEBHOOK_SECRET'),
+    ],
+
+    'worker' => [
+        'is_worker_pod'  => env('IS_WORKER_POD', false),
     ]
 ];

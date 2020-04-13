@@ -274,6 +274,8 @@ return array(
             'wait_timeout'              => env('DB_WAIT_TIMEOUT'),
             'transaction_wait_timeout'  => env('DB_TRANSACTION_WAIT_TIMEOUT'),
         ],
+
+        'proxy_sql_unix_socket' => env('PROXY_SQL_UNIX_SOCKET'),
     ],
 
     /*

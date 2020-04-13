@@ -3,6 +3,7 @@
 namespace RZP\Base\Database\Connectors;
 
 use App;
+use Exception;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\File;
 use Illuminate\Database\Connectors\MySqlConnector as BaseMySqlConnector;
@@ -27,7 +28,7 @@ class MySqlConnector extends BaseMySqlConnector
     protected $app;
 
     // wait timeout config
-    protected $waitTiemout;
+    protected $waitTimeout;
 
     public function __construct($app)
     {
@@ -36,7 +37,37 @@ class MySqlConnector extends BaseMySqlConnector
 
     public function connect(array $config)
     {
-        $connection = parent::connect($config);
+        $socketConnection = (empty($config['unix_socket']) === false);
+
+        if ($socketConnection === true)
+        {
+            $this->app['trace']->info(TraceCode::PROXY_SQL_CONNECTION_STARTING);
+        }
+
+        try
+        {
+            $connection = parent::connect($config);
+        }
+        catch (Exception $e)
+        {
+            if ($this->causedByLostConnection($e)) {
+                // If it was socket connection that failed then,
+                // create connection using mysql host now.
+
+                if ($socketConnection === true)
+                {
+                    $this->app['db.config']->unsetSocketFromDatabaseConfig($config['name']);
+
+                    unset($config['unix_socket']);
+
+                    $this->app['trace']->warning(TraceCode::PROXY_SQL_CONNECTION_FAILED_TRYING_NORMAL_CONNECTION);
+
+                    $connection = parent::connect($config);
+                }
+            }
+
+            throw $e;
+        }
 
         $this->initializeWaitTimeout($connection, $config);
 

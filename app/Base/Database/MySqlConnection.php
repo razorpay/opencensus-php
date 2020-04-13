@@ -6,6 +6,7 @@ use App;
 use Cache;
 use Closure;
 use Razorpay\Trace\Logger as Trace;
+use Illuminate\Database\QueryException;
 use Razorpay\Trace\Facades\Trace as TraceFacade;
 use Illuminate\Database\MySqlConnection as BaseMySqlConnection;
 
@@ -97,6 +98,29 @@ class MySqlConnection extends BaseMySqlConnection
         $this->forceCheckReplicaLag = false;
 
         $this->previousReadPdo = null;
+    }
+
+    protected function tryAgainIfCausedByLostConnection(QueryException $e, $query, $bindings, Closure $callback)
+    {
+        if ($this->causedByLostConnection($e->getPrevious())) {
+            $dbConfig = $this->getConfig();
+
+            if (isset($dbConfig['unix_socket']) === true)
+            {
+                $this->trace->warning(TraceCode::PROXY_SQL_CONNECTION_FAILED_TRYING_NORMAL_CONNECTION,
+                    [
+                        'query' => true,
+                    ]);
+
+                App::getFacadeRoot()['db.config']->unsetSocketFromDatabaseConfig($this->getName());
+            }
+
+            $this->reconnect();
+
+            return $this->runQueryCallback($query, $bindings, $callback);
+        }
+
+        throw $e;
     }
 
     /**
