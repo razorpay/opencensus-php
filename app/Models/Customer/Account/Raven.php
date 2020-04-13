@@ -86,6 +86,11 @@ class Raven extends Base\Core
             ]
         );
 
+        if (isset($input['sms_hash']) === true)
+        {
+            $request['params']['sms_hash'] = $input['sms_hash'];
+        }
+
         if (empty($input['template']) === false)
         {
             $request['template'] = $input['template'];

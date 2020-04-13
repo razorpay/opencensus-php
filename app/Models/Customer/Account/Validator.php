@@ -116,6 +116,17 @@ class Validator extends Base\Validator
         return $input[Entity::CONTACT];
     }
 
+    public static function validateSmsHash(array $input)
+    {
+        if (isset($input['sms_hash']) === true)
+        {
+            if (strlen($input['sms_hash']) > 20)
+            {
+                throw new Exception\BadRequestValidationFailureException('The SMS hash length should be less than 20');
+            }
+        }
+    }
+
     /**
      * - Validates contact of given input array against contact rules
      * - Returns input array which contains parsed and formatted value

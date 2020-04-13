@@ -214,6 +214,8 @@ class Service extends Base\Service
      */
     public function fetchGlobalCustomerStatus($contact, $input, $sendOtp = false)
     {
+        Customer\Validator::validateSmsHash($input);
+
         $data = ['saved' => false];
 
         if ($sendOtp === true)
@@ -251,7 +253,13 @@ class Service extends Base\Service
                     return $retData;
                 }
 
-                $this->sendOtp(['contact' => $contact]);
+                $otpInput = ['contact' => $contact];
+
+                if (isset($input['sms_hash']) === true)
+                {
+                    $otpInput = array_merge($otpInput, ['sms_hash' => $input['sms_hash']]);
+                }
+                $this->sendOtp($otpInput);
 
                 return ['saved' => true];
             }
@@ -303,7 +311,14 @@ class Service extends Base\Service
 
             if ($sendOtp === true)
             {
-                $this->sendOtp(['contact' => $contact]);
+                $otpInput = ['contact' => $contact];
+
+                if (isset($input['sms_hash']) === true)
+                {
+                    $otpInput = array_merge($otpInput, ['sms_hash' => $input['sms_hash']]);
+                }
+
+                $this->sendOtp($otpInput);
             }
         }
 
