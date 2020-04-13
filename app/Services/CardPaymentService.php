@@ -164,6 +164,8 @@ class CardPaymentService
             self::INPUT   => $input
         ];
 
+        $this->addOrderDetailsIfNotPresent($content);
+
         $response = $this->sendRequest('POST', 'action/' . $action, $content);
 
         return $response;
@@ -200,6 +202,7 @@ class CardPaymentService
             self::INPUT   => $input
         ];
 
+        $this->addOrderDetailsIfNotPresent($content);
 
         $response = $this->sendRequest('POST', self::AUTHORIZE , $content);
 
@@ -222,8 +225,6 @@ class CardPaymentService
 
     public function sendRequest(string $method, string $url, array $data = [])
     {
-        $this->addOrderDetailsIfNotPresent($data);
-
         $request = [
             'url'     => $url,
             'method'  => $method,
@@ -258,18 +259,21 @@ class CardPaymentService
 
     protected function addOrderDetailsIfNotPresent(array & $data)
     {
-        $input = $data['input'];
-
-        if ((isset($input['payment']) === true) and
-            (isset($input['payment']['order_id']) === true))
+        if (isset($data['input']) === true)
         {
-            $orderId = $input['payment']['order_id'];
+            $input = $data['input'];
 
-            $order = (new Order\Repository())->find($orderId);
-
-            if (is_null($order) === false)
+            if ((isset($input['payment']) === true) and
+                (isset($input['payment']['order_id']) === true))
             {
-                $data['input']['order'] = $order->toArrayPublic();
+                $orderId = $input['payment']['order_id'];
+
+                $order = (new Order\Repository())->find($orderId);
+
+                if (is_null($order) === false)
+                {
+                    $data['input']['order'] = $order->toArrayPublic();
+                }
             }
         }
     }
