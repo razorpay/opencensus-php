@@ -4,6 +4,7 @@ namespace RZP\Mail\Dispute;
 
 use RZP\Mail\Base\Mailable;
 use RZP\Mail\Base\Constants;
+use RZP\Models\Currency\Currency;
 
 class Base extends Mailable
 {
@@ -62,4 +63,10 @@ class Base extends Mailable
 
         return $this;
     }
+
+    protected function getFormattedAmount($amount, $currency)
+    {
+        return Currency::getSymbol($currency) . ' ' . ((float) ($amount / Currency::getDenomination($currency)));
+    }
+
 }

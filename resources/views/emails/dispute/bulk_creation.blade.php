@@ -68,7 +68,7 @@
     <div style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; text-align: center; background-color: {{ $brand_color }}; color: {{ $brand_text_color }}; padding: 30px 0 135px !important;">
 
         <h2 style="font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; padding: 0; word-break: normal; margin: 0; font-size: 20px; line-height: 24px; text-align: center; color: {{ $brand_text_color }};">
-            Dispute(s) raised for a total amount of Rs. {{ $disputedAmount }}
+            Dispute(s) received against {{ $totalPayments }} payment(s).
         </h2>
 
         <div style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; margin-top: 12px; color: {{ $brand_text_color }};">
@@ -97,12 +97,12 @@
                     <br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;"><br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;">
                     @switch($phase)
                         @case('chargeback')
-                            We have received chargeback(s) for a total amount of Rs. {{ $disputedAmount }} for the payment(s) mentioned above. Please share all proofs like invoices, proof of delivery of product/service and any relevant screenshots pertaining to each dispute in a consolidated ZIP archive each named as the Payment ID (eg, pay_xxxxx).
+                            We have received chargeback(s) against {{ $totalPayments }} payment(s) mentioned above. Please share all proofs like invoices, proof of delivery of product/service and any relevant screenshots pertaining to each dispute in a consolidated ZIP archive each named as the Payment ID (eg, pay_xxxxx).
                             <br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;"><br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;">
                             Note: Kindly reply to this email with the requested documents in the required format by the deadline, failing which the corresponding amount might be debited from the current balance.
                         @break
                         @case('retrieval')
-                            We have received dispute(s) for a total amount of Rs. {{ $disputedAmount }} for the payment(s) mentioned above. Please share all proofs like invoices, proof of delivery of product/service and any relevant screenshots pertaining to each dispute in a consolidated ZIP archive files each named as the Payment ID (eg, pay_xxxxx).
+                            We have received dispute(s) against {{ $totalPayments }} payment(s) mentioned above. Please share all proofs like invoices, proof of delivery of product/service and any relevant screenshots pertaining to each dispute in a consolidated ZIP archive files each named as the Payment ID (eg, pay_xxxxx).
                             <br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;"><br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;">
                             Note: Kindly reply to this email with the requested documents in the required format by the deadline, failing which the corresponding amount will be debited from your current balance.
                         @break

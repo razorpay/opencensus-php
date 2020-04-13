@@ -11,7 +11,10 @@ class Creation extends Base
     {
         $merchantName = $this->data['merchant']['name'];
 
-        $formattedAmount = $this->getFormattedAmount();
+        $amount = $this->data['dispute']['amount'];
+        $currency = $this->data['dispute']['currency'];
+
+        $formattedAmount = $this->getFormattedAmount($amount, $currency);
 
         $subject = 'Dispute raised for ' . $formattedAmount . ' on '
             . $this->data['dispute']['payment_id']
@@ -27,14 +30,6 @@ class Creation extends Base
         $this->view('emails.dispute.creation');
 
         return $this;
-    }
-
-    protected function getFormattedAmount()
-    {
-        $amount = $this->data['dispute']['amount'];
-        $currency = $this->data['dispute']['currency'];
-
-        return Currency::getSymbol($currency) . ' ' . ((float) ($amount / Currency::getDenomination($currency)));
     }
 
     protected function addHeaders()

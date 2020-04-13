@@ -659,11 +659,9 @@ class Core extends Base\Core
                     foreach ($disputeIds as $disputeId)
                     {
                         $bulkMailData[Constants::DISPUTES][] = $disputeData[$disputeId];
-
-                        $totalAmount += $disputeData[$disputeId][Entity::AMOUNT];
                     }
 
-                    $bulkMailData['totalAmount'] = $totalAmount;
+                    $bulkMailData['totalPayments'] = count($disputeIds);
 
                     Mail::queue(new DisputeMailer\BulkCreation($bulkMailData));
                 }

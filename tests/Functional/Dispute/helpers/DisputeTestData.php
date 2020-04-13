@@ -1409,7 +1409,7 @@ return [
     'testPhaseBasedBulkCreateDisputes' => [
         'request' => [
             'url' => '/disputes/bulk_create',
-            'method' => 'post',
+        'method' => 'post',
             'files' => [],
         ],
         'response' => [
@@ -1431,6 +1431,17 @@ return [
     'testBulkDisputeCreateMailAttachment' => [
         'request' => [
             'url' => '/disputes/bulk_create',
+            'method' => 'post',
+            'files' => [],
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
+    'testBulkDisputeNewFormat' => [
+        'request' => [
+            'url' => '/disputes/bulk-create',
             'method' => 'post',
             'files' => [],
         ],

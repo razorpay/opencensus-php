@@ -48,6 +48,20 @@ class Service extends Base\Service
         Entity::SKIP_EMAIL,
     ];
 
+    const BULK_CREATE_DISPUTES_COLUMNS_NEW = [
+        Entity::PAYMENT_ID,
+        Entity::GATEWAY_DISPUTE_ID,
+        Entity::GATEWAY_DISPUTE_STATUS,
+        Reason\Entity::NETWORK_CODE,
+        Reason\Entity::REASON_CODE,
+        Entity::PHASE,
+        Entity::RAISED_ON,
+        Entity::EXPIRES_ON,
+        Entity::GATEWAY_AMOUNT,
+        Entity::GATEWAY_CURRENCY,
+        Entity::SKIP_EMAIL,
+    ];
+
     const BULK_EDIT_DISPUTES_COLUMNS = [
         Entity::ID,
         Entity::GATEWAY_DISPUTE_STATUS,
@@ -60,6 +74,7 @@ class Service extends Base\Service
         Entity::ID,
         Entity::PAYMENT_ID,
         Entity::AMOUNT,
+        Entity::CURRENCY,
         Entity::GATEWAY_DISPUTE_ID,
         Entity::PHASE,
         Entity::RESPOND_BY,
@@ -324,23 +339,32 @@ class Service extends Base\Service
             );
         }
 
-        $headers = [];
+        $headersList = [];
 
         switch ($action)
         {
             case self::BULK_CREATE_ACTION :
-                $headers = self::BULK_CREATE_DISPUTES_COLUMNS;
+                $headersList = [self::BULK_CREATE_DISPUTES_COLUMNS, self::BULK_CREATE_DISPUTES_COLUMNS_NEW];
                 break;
             case self::BULK_EDIT_ACTION :
-                $headers = self::BULK_EDIT_DISPUTES_COLUMNS;
+                $headersList = [self::BULK_EDIT_DISPUTES_COLUMNS];
                 break;
         }
 
-        if ($validator->validateArrayEqual($data[0], $headers) === false)
+        $headerMatch = false;
+
+        foreach ($headersList as $headers)
+        {
+            if ($validator->validateArrayEqual($data[0], $headers) === true)
+            {
+                $headerMatch = true;
+            }
+        }
+
+        if ($headerMatch === false)
         {
             throw new Exception\BadRequestValidationFailureException(
-                'File Header columns do not match expected values'
-            );
+                'File Header columns do not match expected values');
         }
 
         return $data;

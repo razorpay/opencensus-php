@@ -73,7 +73,7 @@
             ">
 
             <h2 style="color: {{ $brand_text_color }}">
-                  Dispute(s) raised for a total amount of Rs. {{ $disputedAmount }}
+                  Dispute(s) received against {{ $totalPayments }} payment(s).
             </h2>
 
         </div>
@@ -104,12 +104,12 @@
                         <br><br>
                         @switch($phase)
                             @case('chargeback')
-                                We have received chargeback(s) for a total amount of Rs. {{ $disputedAmount }} for the payment(s) mentioned above. Please share all proofs like invoices, proof of delivery of product/service and any relevant screenshots pertaining to each dispute in a consolidated ZIP archive each named as the Payment ID (eg, pay_xxxxx).
+                                We have received chargeback(s) against {{ $totalPayments }} payment(s) mentioned above. Please share all proofs like invoices, proof of delivery of product/service and any relevant screenshots pertaining to each dispute in a consolidated ZIP archive each named as the Payment ID (eg, pay_xxxxx).
                                 <br><br>
                                 Note: Kindly reply to this email with the requested documents in the required format by the deadline, failing which the corresponding amount might be debited from the current balance.
                             @break
                             @case('retrieval')
-                                We have received dispute(s) for a total amount of Rs. {{ $disputedAmount }} for the payment(s) mentioned above. Please share all proofs like invoices, proof of delivery of product/service and any relevant screenshots pertaining to each dispute in a consolidated ZIP archive files each named as the Payment ID (eg, pay_xxxxx).
+                                We have received dispute(s) against {{ $totalPayments }} payment(s) mentioned above. Please share all proofs like invoices, proof of delivery of product/service and any relevant screenshots pertaining to each dispute in a consolidated ZIP archive files each named as the Payment ID (eg, pay_xxxxx).
                                 <br><br>
                                 Note: Kindly reply to this email with the requested documents in the required format by the deadline, failing which the corresponding amount will be debited from your current balance.
                             @break

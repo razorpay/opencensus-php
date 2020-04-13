@@ -22,7 +22,7 @@ class BulkCreation extends Base
             {
                 $tableRow['dispute_id']          = $dispute['id'];
                 $tableRow['payment_id']          = $dispute['payment_id'];
-                $tableRow['amount']              = 'Rs. ' . floatval(sprintf('%0.2f', ($dispute['amount'] / 100)));
+                $tableRow['amount']              = $this->getFormattedAmount($dispute['amount'], $dispute['currency']);
                 $tableRow['case_id']             = $dispute['gateway_dispute_id'];
                 $tableRow['phase']               = $dispute['phase'];
                 $tableRow['respond_by']          = date('d F Y', $dispute['respond_by']);
@@ -48,8 +48,6 @@ class BulkCreation extends Base
     protected function addHtmlView()
     {
         $this->createViewTableData();
-
-        $this->data['disputedAmount'] = strval(floatval(sprintf('%0.2f', ($this->data['totalAmount'] / 100))));
 
         $this->view('emails.dispute.bulk_creation');
 
