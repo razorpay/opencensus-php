@@ -387,7 +387,7 @@ class Selector extends Base\Core
 
             $authNTerminals = $this->getAuthNTerminals();
 
-            $validAuth = $this->getValidAuths($payment);
+            $validAuth = $this->getValidAuths($payment, $authNTerminals);
 
             $merchantData = $this->getMerchantData($merchant);
 
@@ -911,15 +911,21 @@ class Selector extends Base\Core
         return AuthenticationTerminals::AUTHENTICATION_TERMINALS;
     }
 
-    protected function getValidAuths($payment)
+    protected function getValidAuths($payment, $terminals)
     {
         $valid = [];
+
+        // To select authentication terminals we first filter out all the terminals based on valid auths
 
         if ($payment->isMethodCardOrEmi() === true)
         {
             $autflowObj = new Terminal\Auth\Card\AuthFilter($payment);
 
-            $valid = $autflowObj->getValidAuths();
+            $authenticationGateways = array_unique(array_pluck($terminals, 'authentication_gateway'));
+
+            // to get all the auths valid for the payment
+
+            $valid = $autflowObj->getValidAuths($authenticationGateways);
         }
 
         return $valid;
