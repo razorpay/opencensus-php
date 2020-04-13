@@ -117,7 +117,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $createOrderRules = [
-        Entity::LINE_ITEMS  => 'required|array|min:1|max:25|custom'
+        Entity::LINE_ITEMS  => 'array|custom|min:1|max:25'
     ];
 
     protected static $createOrderLineItemRules = [
@@ -126,8 +126,26 @@ class Validator extends Base\Validator
         LineItem\Entity::QUANTITY    => 'sometimes|integer|min:1',
     ];
 
-    public function validateLineItems(string $attribute, array $value)
+    public function validateLineItems(string $attribute, $value)
     {
+        if(is_array($value) === false)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+                null,
+                null,
+                'line items must be array');
+        }
+
+        if(empty($value) === true)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+                null,
+                null,
+                'Please select an amount to pay.');
+        }
+
         $totalAmount = 0;
 
         $paymentPageItemMandatoryIds = $this->entity

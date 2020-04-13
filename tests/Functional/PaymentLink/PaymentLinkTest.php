@@ -720,6 +720,21 @@ class PaymentLinkTest extends TestCase
         $this->capturePayment($payment['id'], $payment['amount'], 'INR', 0, Payment\Status::REFUNDED);
     }
 
+    public function testCreateOrderLineItemsEmptyArray()
+    {
+        $this->createPaymentLinkWithMultipleItem();
+
+        $this->startTest();
+
+    }
+
+    public function testCreateOrderLineItemsNotArray()
+    {
+        $this->createPaymentLinkWithMultipleItem();
+
+        $this->startTest();
+    }
+
     // -------------------- Protected methods --------------------
 
     protected function createPaymentLink(string $id = self::TEST_PL_ID, array $attributes = []): PaymentLinkModel\Entity
