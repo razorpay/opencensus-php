@@ -778,7 +778,9 @@ class Gateway extends Base\Gateway
             case Payment\Gateway::NETBANKING_YESB:
                 return $this->preProcessServerCallbackForYesb($input);
             case Payment\Gateway::WALLET_PHONEPE:
-                return json_decode(base64_decode($input['response'], true), true);
+                $response = json_decode(base64_decode($input['response'], true), true);
+                $response['callback_type'] = 's2s';
+                return $response;
             case Payment\Gateway::NETBANKING_KVB:
                 return $this->preProcessServerCallbackForKvb($input, $mode);
             default :
