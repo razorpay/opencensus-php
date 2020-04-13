@@ -141,6 +141,18 @@ class Type
     ];
 
     /**
+     * Below batch types can not be retried in case of failures.
+     * New batch to be created in case of reprocessing of same file.
+     *
+     * @var array
+     */
+    public static $retryDisabledTypes = [
+        self::IRCTC_SETTLEMENT,
+        self::IRCTC_REFUND,
+        self::IRCTC_DELTA_REFUND,
+    ];
+
+    /**
      * For following batch types, sometimes batches get stuck during
      * processing due to big file size or infra issue. So we are enabling
      * 'Retry Batch' option for these batches even when they are in created
@@ -321,6 +333,11 @@ class Type
     public static function isDisabled(string $type)
     {
         return (in_array($type, self::$disabledTypes, true) === true);
+    }
+
+    public static function isRetryDisabled(string $type)
+    {
+        return (in_array($type, self::$retryDisabledTypes, true) === true);
     }
 
     public static function validateType(string $type)

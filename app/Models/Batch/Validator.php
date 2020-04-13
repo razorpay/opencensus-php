@@ -394,7 +394,7 @@ class Validator extends Base\Validator
         Entity::FILE                 => 'required|file|max:10240' . self::DEFAULT_MIME_RULE,
         Entity::FILE_ID              => 'required_without:file|public_id',
     ];
-    
+
     public function validateConfig($attribute, $value)
     {
         (new Validator())->validateInput('entityUpdateActionConfig', $value);
@@ -453,6 +453,22 @@ class Validator extends Base\Validator
                 ErrorCode::BAD_REQUEST_BATCH_FILE_UNDER_PROCESSING,
                 Entity::STATUS,
                 $this->entity->toArray());
+        }
+        else if ($this->entity->getProcessedCount() > 0)
+        {
+            //
+            // if processed count is greater than 0, that means, batch was processed earlier and it's a retry,
+            // check if batch type is disabled for retry
+            //
+            $type = $this->entity->getType();
+
+            if (Type::isRetryDisabled($type) === true)
+            {
+                throw new BadRequestException(
+                    ErrorCode::BAD_REQUEST_BATCH_FILE_CANNOT_BE_RETRIED,
+                    Entity::STATUS,
+                    $this->entity->toArray());
+            }
         }
     }
 

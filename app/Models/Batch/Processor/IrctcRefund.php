@@ -102,6 +102,17 @@ class IrctcRefund extends Base
         return $paymentProcessor->createRefundFromMerchantFile($payment, $input, $this->batch);
     }
 
+    /**
+     * Will not mark batch as processed in case of failures,
+     * even if there is a single failure, batch will go to partially processed state.
+     *
+     * @return bool
+     */
+    protected function shouldMarkProcessedOnFailures(): bool
+    {
+        return false;
+    }
+
     protected function getRefundDate(Refund\Entity $refund)
     {
         $ts = $refund->getCreatedAt();

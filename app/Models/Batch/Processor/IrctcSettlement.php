@@ -65,6 +65,17 @@ class IrctcSettlement extends Base
     }
 
     /**
+     * Will not mark batch as processed in case of failures,
+     * even if there is a single failure, batch will go to partially processed state.
+     *
+     * @return bool
+     */
+    protected function shouldMarkProcessedOnFailures(): bool
+    {
+        return false;
+    }
+
+    /**
      * @param $headings
      * @param $values
      * @param $ix
