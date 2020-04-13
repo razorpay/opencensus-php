@@ -579,20 +579,24 @@ class Validator extends Base\Validator
 
             $mutex =  App::getFacadeRoot()['api.mutex'];
 
-            $mutex->acquireAndRelease(
-                $merchant->getId()."-".$receipt,
-                function () use ($receipt)
-                {
-                    $isDuplicateReceipt = app('repo')->invoice->isDuplicateReceipt($this->entity, $receipt);
+            $mutexAcquired = $mutex->acquire($merchant->getId()."-".$receipt, self::RECEIPT_MUTEX_TIMEOUT);
 
-                    if ($isDuplicateReceipt === true)
-                    {
-                        throw new BadRequestValidationFailureException(
-                            "receipt must be unique for each item : {$receipt}");
-                    }
-                },
-                self::RECEIPT_MUTEX_TIMEOUT,
-                ErrorCode::BAD_REQUEST_INVOICE_RECEIPT_ANOTHER_OPERATION_IN_PROGRESS);
+            if ($mutexAcquired === false)
+            {
+                throw new BadRequestException(
+                    ErrorCode::BAD_REQUEST_INVOICE_RECEIPT_ANOTHER_OPERATION_IN_PROGRESS,
+                    null,
+                    ['resource' => $merchant->getId()."-".$receipt]
+                );
+            }
+
+            $isDuplicateReceipt = app('repo')->invoice->isDuplicateReceipt($this->entity, $receipt);
+
+            if ($isDuplicateReceipt === true)
+            {
+                throw new BadRequestValidationFailureException(
+                    "receipt must be unique for each item : {$receipt}");
+            }
         }
     }
 
