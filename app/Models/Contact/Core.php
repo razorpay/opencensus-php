@@ -108,6 +108,12 @@ class Core extends Base\Core
         // a rzp_fees contact's type to some other type.
         $contact->edit($input);
 
+        // Because edit has been shifted below setTypeIfApplicable(), below condition cannot be written inside it
+        if (empty($input[Entity::TYPE]) === true)
+        {
+            $contact->setType(null);
+        }
+
         $this->repo->saveOrFail($contact);
 
         return $contact;
@@ -137,6 +143,11 @@ class Core extends Base\Core
         }
 
         $type = $input[Entity::TYPE] ?? null;
+
+        if (empty($input[Entity::TYPE]) === true) {
+            $contact->setType(null);
+            return;
+        }
 
         if ($type === null)
         {
