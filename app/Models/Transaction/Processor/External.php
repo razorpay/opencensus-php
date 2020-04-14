@@ -48,6 +48,7 @@ class External extends Base
 
     public function updateTransaction()
     {
+        $this->updatePostedDate();
     }
 
     public function setMerchantBalanceLockForUpdate()

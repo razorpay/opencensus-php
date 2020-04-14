@@ -5721,3 +5721,6 @@ ALTER TABLE invoices
 ALTER TABLE orders
     ADD COLUMN checkout_config_id CHAR(14) DEFAULT NULL;
 
+ALTER TABLE transactions
+    CHANGE reference10 posted_at BIGINT UNSIGNED DEFAULT NULL;
+    ADD INDEX transactions_balance_idposted_at_index  (`balance_id`, `posted_at`);

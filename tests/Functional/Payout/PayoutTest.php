@@ -122,6 +122,7 @@ class PayoutTest extends TestCase
 
         $this->assertEquals($payout['transaction_id'], $txn['id']);
         $this->assertNotNull($txn['balance_id']);
+        $this->assertNotNull($txn['posted_at']);
 
         $feesSplit = $this->getEntities('fee_breakup', ['transaction_id' => $txnId], true);
 
@@ -254,6 +255,13 @@ class PayoutTest extends TestCase
             'IMPS is not enabled on Beneficiary Account');
         $this->assertEquals($updatedPayout[Payout\Entity::STATUS],Payout\Status::REVERSED);
         $this->assertNotNull($updatedPayout[Payout\Entity::REVERSED_AT]);
+
+
+        //get reversal and check posted_at in reversal txn
+        $payoutReversal = $this->getDbLastEntity('reversal');
+
+        $txn = $this->getLastEntity('transaction', true);
+        $this->assertNotNull($txn['posted_at']);
     }
 
     public function testPublicErrorCodeMappingWithNonExistentBankStatusCode()
@@ -276,6 +284,12 @@ class PayoutTest extends TestCase
             'Payout failed. Contact support for help');
         $this->assertEquals($updatedPayout[Payout\Entity::STATUS],Payout\Status::REVERSED);
         $this->assertNotNull($updatedPayout[Payout\Entity::REVERSED_AT]);
+
+        //get reversal and check posted_at in reversal txn
+        $payoutReversal = $this->getDbLastEntity('reversal');
+
+        $txn = $this->getLastEntity('transaction', true);
+        $this->assertNotNull($txn['posted_at']);
     }
 
     public function testPublicErrorCodeMappingWithEmptyPublicError()
@@ -297,6 +311,12 @@ class PayoutTest extends TestCase
         $this->assertEquals($updatedPayout[Payout\Entity::FAILURE_REASON], 'Beneficiary bank\'s systems are down. Please retry after some time.');
         $this->assertEquals($updatedPayout[Payout\Entity::STATUS],Payout\Status::REVERSED);
         $this->assertNotNull($updatedPayout[Payout\Entity::REVERSED_AT]);
+
+        //get reversal and check posted_at in reversal txn
+        $payoutReversal = $this->getDbLastEntity('reversal');
+
+        $txn = $this->getLastEntity('transaction', true);
+        $this->assertNotNull($txn['posted_at']);
     }
 
     public function testPublicErrorCodeMappingWhenBankStatusCodeNotSent()
@@ -318,6 +338,12 @@ class PayoutTest extends TestCase
             'Payout failed. Contact support for help');
         $this->assertEquals($updatedPayout[Payout\Entity::STATUS],Payout\Status::REVERSED);
         $this->assertNotNull($updatedPayout[Payout\Entity::REVERSED_AT]);
+
+        //get reversal and check posted_at in reversal txn
+        $payoutReversal = $this->getDbLastEntity('reversal');
+
+        $txn = $this->getLastEntity('transaction', true);
+        $this->assertNotNull($txn['posted_at']);
     }
 
     public function testRxPayoutOnBankingHoliday(): array

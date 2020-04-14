@@ -14,6 +14,7 @@ use RZP\Models\External;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Models\Reversal;
+use RZP\Models\Transaction;
 use RZP\Models\BankingAccount;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Mail\BankingAccount\StatementMail;
@@ -386,6 +387,8 @@ class Core extends Base\Core
             $basEntity->source()->associate($sourceEntity);
 
             $basEntity->transaction()->associate($sourceEntity->transaction);
+
+            (new Transaction\Core)->updatePostedDate($sourceEntity, $basEntity->getPostedDate());
 
             $this->trace->info(TraceCode::BANKING_ACCOUNT_STATEMENT_SAVE, $basEntity->toArray());
 

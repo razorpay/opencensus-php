@@ -142,6 +142,8 @@ class Payout extends Base
 
         $this->txn->setGatewayServiceTax(0);
 
+        $this->updatePostedDate();
+
         // the transaction is saved in the caller
     }
 

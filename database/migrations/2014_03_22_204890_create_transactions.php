@@ -147,7 +147,7 @@ class CreateTransactions extends Migration
                   ->unsigned()
                   ->nullable();
 
-            $table->bigInteger(Transaction::REFERENCE10)
+            $table->bigInteger(Transaction::POSTED_AT)
                   ->unsigned()
                   ->nullable();
 
@@ -178,6 +178,8 @@ class CreateTransactions extends Migration
             $table->index(Transaction::UPDATED_AT);
 
             $table->index([Transaction::MERCHANT_ID, Transaction::CREATED_AT]);
+
+            $table->index([Transaction::BALANCE_ID, Transaction::POSTED_AT]);
 
             $table->index([Transaction::SETTLED, Transaction::CHANNEL, Transaction::ON_HOLD, Transaction::MERCHANT_ID]);
 

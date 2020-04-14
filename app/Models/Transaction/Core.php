@@ -1618,4 +1618,15 @@ class Core extends Base\Core
 
         return $failedTransactionUpdate ;
     }
+
+    public function updatePostedDate(Base\Entity $source, int $postedDate)
+    {
+        $processor = $this->getFactory($source);
+
+        $processor->setTransaction($source->transaction);
+
+        $processor->updatePostedDate($postedDate);
+
+        $this->repo->saveOrFail($source->transaction);
+    }
 }

@@ -57,6 +57,7 @@ class Entity extends Base\PublicEntity
     const RECONCILED_TYPE     = 'reconciled_type';
     const BALANCE_ID          = 'balance_id';
     const BALANCE_UPDATED     = 'balance_updated';
+    const POSTED_AT           = 'posted_at';
 
     // dummy columns usable later
     const REFERENCE3          = 'reference3';
@@ -66,7 +67,6 @@ class Entity extends Base\PublicEntity
     const REFERENCE7          = 'reference7';
     const REFERENCE8          = 'reference8';
     const REFERENCE9          = 'reference9';
-    const REFERENCE10         = 'reference10';
 
     const PAYMENT_ID        = 'payment_id';
 
@@ -104,6 +104,7 @@ class Entity extends Base\PublicEntity
         self::CREDIT_TYPE,
         self::ON_HOLD,
         self::SETTLED_AT,
+        self::POSTED_AT,
     ];
 
     protected $public = [
@@ -122,6 +123,7 @@ class Entity extends Base\PublicEntity
         self::CREATED_AT,
         self::SETTLED_AT,
         self::SETTLEMENT_ID,
+        self::POSTED_AT,
     ];
 
     /**
@@ -145,6 +147,7 @@ class Entity extends Base\PublicEntity
         self::CREATED_AT,
         self::UPDATED_AT,
         self::SETTLED_AT,
+        self::POSTED_AT,
     ];
 
     protected $defaults = [
@@ -991,5 +994,15 @@ class Entity extends Base\PublicEntity
     public static function getCacheTag(): string
     {
         return implode('_', func_get_args());
+    }
+
+    public function setPostedDate(int $posted_at)
+    {
+        $this->setAttribute(self::POSTED_AT, $posted_at);
+    }
+
+    public function getPostedDate()
+    {
+        return $this->getAttribute(self::POSTED_AT);
     }
 }

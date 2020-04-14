@@ -165,6 +165,8 @@ class RblBankingAccountStatementTest extends TestCase
 
         $this->assertNotNull($baAfterTest[BaEntity::LAST_STATEMENT_ATTEMPT_AT]);
 
+        $this->assertEquals($txnActual[TransactionEntity::POSTED_AT], $basActual[BasEntity::POSTED_DATE]);
+
         $basExpected = [
             BasEntity::MERCHANT_ID           => $txnActual[TransactionEntity::MERCHANT_ID],
             BasEntity::BANK_TRANSACTION_ID   => trim($txn['txnId']),

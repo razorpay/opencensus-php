@@ -164,6 +164,8 @@ class Reversal extends Base
 
         $this->txn->setAttribute(Transaction\Entity::SETTLED_AT, $settledAt);
 
+        $this->updatePostedDate();
+
         // Save is necessary here to create CreditReversalTransaction
         $this->repo->saveOrFail($this->txn);
     }

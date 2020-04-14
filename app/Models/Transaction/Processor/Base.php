@@ -688,4 +688,13 @@ abstract class Base extends BaseCore
             );
         }
     }
+
+    public function updatePostedDate(int $postedDate = null)
+    {
+        $postedAt = Carbon::now(Timezone::IST)->getTimestamp();
+
+        $postedDate = $postedDate ? $postedDate : $postedAt;
+
+        $this->txn->setPostedDate($postedDate);
+    }
 }
