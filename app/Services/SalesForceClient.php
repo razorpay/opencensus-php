@@ -35,7 +35,7 @@ class SalesForceClient
     // Constants
 
     const ACCESS_TOKEN    = 'access_token';
-    const PRODUCT_BANKING = 'Razorpay X';
+    const PRODUCT_BANKING = 'RazorpayX';
 
     const JSON_METHOD     = [self::POST, self::PUT, self::PATCH];
 
