@@ -187,6 +187,7 @@ app
         currentSubStep: 0, // 0 -> email+pwd, 1 -> provision for OTP screen
         disableLogInSubmission: isProd,
         isCaptchaLoaded: false,
+        captchaControl: {},
       };
 
       $scope.secondFA = {
@@ -205,6 +206,8 @@ app
       $scope.$watch('login.data.captcha', function(newVal) {
         if (newVal && newVal.length !== 0) {
           $scope.login.disableLogInSubmission = false;
+        } else if (newVal === null && isProd) {
+          $scope.login.disableLogInSubmission = true;
         }
       });
 
@@ -1208,8 +1211,8 @@ app
             hideSpinner();
             var firstError = data.errors[0];
 
-            if (window.grecaptcha) {
-              window.grecaptcha.reset();
+            if ($scope.login.captchaControl.reset) {
+              $scope.login.captchaControl.reset();
             }
 
             if (typeof firstError === 'string') {
