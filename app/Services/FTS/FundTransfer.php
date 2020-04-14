@@ -274,12 +274,13 @@ class FundTransfer extends Base
     {
         $channel = $this->fta->getChannel();
 
-        if ($channel === Channel::YESBANK)
+        $sourceType = $this->fta->getSourceType();
+
+        // Ref: https://razorpay.slack.com/archives/CNXASR0H3/p1586861024155400
+        if (($sourceType === Entity::PAYOUT) and ($channel === Channel::YESBANK))
         {
             $channel = Channel::ICICI;
         }
-
-        $sourceType = $this->fta->getSourceType();
 
         $request[Constants::TRANSFER] = [
             Constants::PREFERRED_MODE    => $this->fta->getMode(),
