@@ -14,6 +14,7 @@ const captchaKey = '6LdsmwETAAAAADmNGCLvbrjL09O_Fv7WOVTngbO4';
 export default class PasswordReLogin extends Component {
   state = {
     gResponse: null,
+    isProd: window.location.hostname === 'dashboard.razorpay.com'
   };
 
   componentDidMount() {
@@ -61,7 +62,7 @@ export default class PasswordReLogin extends Component {
 
     let captcha = this.state.gResponse;
 
-    if (window.location.hostname !== 'dashboard.razorpay.com') {
+    if (!this.state.isProd) {
       captcha = 'Faked';
     }
 
@@ -105,6 +106,9 @@ export default class PasswordReLogin extends Component {
   };
 
   render() {
+    let isSubmitDisabled = !this.state.gResponse || this.state.isPending;
+    if (!this.state.isProd) isSubmitDisabled = false;
+
     return (
       <ModalMask maskClosable={false} class="password-relogin" isBlur={true}>
         <Modal showCloseBtn={false}>
@@ -133,7 +137,7 @@ export default class PasswordReLogin extends Component {
               <Button.Primary
                 type="submit"
                 class="Btn--Link Button--input--right"
-                disabled={!this.state.gResponse || this.state.isPending}
+                disabled={isSubmitDisabled}
               >
                 {this.state.isPending ? 'Unlocking...' : 'Unlock'}
               </Button.Primary>
