@@ -980,6 +980,7 @@ class Service extends Base\Service
             'disable_va_creation_bank_account',
             'rx_ssl_cert_renew',
             'user-2fa',
+            'rx_webhook_migration_april_alert',
         ];
 
         $experimentsResults = $merchantService->getBulkTreatment($features);
