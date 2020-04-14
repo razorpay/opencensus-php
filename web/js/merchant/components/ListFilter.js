@@ -61,9 +61,10 @@ export default class ListFilter extends Component {
   // update query params as empty for auto search in willReceiveProps
   resetForm = () => {
     this.props.history.push({
-      pathname: this.props.location.pathname,
       search: stringifyQueryParams({}),
     });
+
+    this.props.reset();
 
     this.props.onClearAnalytics();
   };
