@@ -80,7 +80,6 @@ export default class Payment extends GenericEntity {
   didDeserialize() {
     let session = this.getSession();
     this.capturableAmount = this.amount;
-
     if (session.user.tags.indexOf('Feebearer') > -1) {
       this.capturableAmount = this.amount - this.fee;
     }

@@ -57,6 +57,32 @@ export default class CongfigurationContainer extends Component {
       });
   };
 
+  componentDidUpdate() {
+    this.popupIfSettle();
+  }
+
+  popupIfSettle() {
+    if (this.props.location.hash === '#paypalonboard') {
+      this.resetHash();
+      setTimeout(this.scrollIntoView, 1000);
+    }
+  }
+
+  scrollIntoView() {
+    const el = document.getElementById('paypal-onboard');
+    if (el) {
+      el.scrollIntoView();
+      el.click();
+    }
+  }
+
+  resetHash = () => {
+    this.props.history.push({
+      pathname: this.props.history.location.pathname,
+      hash: '',
+    });
+  };
+
   render() {
     let { config, features, loading } = this.props.configState;
 
@@ -73,6 +99,7 @@ export default class CongfigurationContainer extends Component {
               <FlashCheckout />
             )}
             {this.props.user.isActivated &&
+            this.props.mode === 'live' &&
             showWhenUtil({ featureEnabled: 'offers' }) ? (
               <PaypalOnboarding />
             ) : null}

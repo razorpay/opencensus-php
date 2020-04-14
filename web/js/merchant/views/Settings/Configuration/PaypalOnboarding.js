@@ -21,7 +21,7 @@ export default class PaypalOnboarding extends Component {
   constructor(props) {
     super(props);
   }
-
+  is_redirected = false;
   state = {
     loading: false,
     terminals: [],
@@ -32,12 +32,12 @@ export default class PaypalOnboarding extends Component {
       .getOnboardingStatus('wallet_paypal')
       .then(res => {
         this.setState({ terminals: res.data.items });
+        return Promise.resolve();
       })
       .catch(err => {
         this.props.showNotification({
           type: 'error',
-          message:
-            'The server encountered an error. The incident has been reported to admins.',
+          message: err.errors,
         });
       });
   };
@@ -58,15 +58,33 @@ export default class PaypalOnboarding extends Component {
         );
         window.addEventListener('message', e => {
           if (e.data === 'paypal_onboard_redirect') {
+            this.is_redirected = true;
             window.focus();
             win.close();
           }
         });
-        win.window.focus();
+        if (win && win.window) {
+          win.window.focus();
+        }
+
         var interval = setInterval(() => {
           if (win && win.closed) {
-            this.getOnboardingStatus();
-            this.setState({ loading: false });
+            if (this.is_redirected) {
+              onboardTerminal('wallet_paypal').finally(() => {
+                this.props
+                  .getOnboardingStatus('wallet_paypal')
+                  .then(() => this.props.getOnboardingStatus('wallet_paypal'))
+                  .then(res => {
+                    this.setState({
+                      terminals: res.data.items,
+                      loading: false,
+                    });
+                  });
+              });
+            } else {
+              this.setState({ loading: false });
+            }
+            this.is_redirected = false;
             clearInterval(interval);
           }
         }, 400);
@@ -75,8 +93,7 @@ export default class PaypalOnboarding extends Component {
         this.setState({ loading: false });
         this.props.showNotification({
           type: 'error',
-          message:
-            'The server encountered an error. The incident has been reported to admins.',
+          message: err.errors,
         });
       });
   };
@@ -91,9 +108,12 @@ export default class PaypalOnboarding extends Component {
       ['created', 'activated', 'rejected', 'pending'].indexOf(status) !== -1;
     return (
       <React.Fragment>
-        <div class="panel panel-default paypal-auto-onboarding">
+        <div
+          class="panel panel-default paypal-auto-onboarding"
+          id="paypal-onboard"
+        >
           <div class="panel-heading">
-            <span class="title">Paypal </span>{' '}
+            <span class="title">PayPal </span>{' '}
             <a
               class={`highlight ${showStatus ? 'know-more' : ''}`}
               target="_blank"
@@ -161,7 +181,10 @@ export default class PaypalOnboarding extends Component {
                 class="btn btn-primary paypal-onboard-button"
               >
                 {' '}
-                <i class="i i-paypal paypal-onboard-icon" />{' '}
+                <img
+                  class="paypal-onboard-img"
+                  src="https://cdn.razorpay.com/static/assets/paypal.svg"
+                />
                 {this.state.loading ? 'Processing..' : 'Link Account'}
               </button>
             ) : null}
