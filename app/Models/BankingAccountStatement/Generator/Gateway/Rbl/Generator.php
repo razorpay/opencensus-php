@@ -143,10 +143,13 @@ abstract class Generator extends Base
 
     protected function convertToLineItem(StatementEntity $statement)
     {
-        $formattedTransactionDate = Carbon::createFromTimestamp($statement->getCreatedAt(), Timezone::IST)
-                                          ->format(TransactionLineItem::ITEM_DATE_FORMAT);
-
         $description = $this->extractDescription($statement);
+
+        // Banking Account statement transaction date is source of truth in case of current Account
+        // Current Account Statement fetch has delay in the system so transaction created in X can have
+        // delay in comparision to transaction on RBL.
+        $formattedTransactionDate = Carbon::createFromTimestamp($this->getTransactionDate($statement), Timezone::IST)
+                                          ->format(TransactionLineItem::ITEM_DATE_FORMAT);
 
         $lineItem = [
             TransactionLineItem::TRANSACTION_DATE    => $formattedTransactionDate,
@@ -199,6 +202,20 @@ abstract class Generator extends Base
         }
 
         return $line2;
+    }
+
+    // If banking account statement available fetch transaction date from bas
+    // Else take created at of transaction/statement
+    protected function getTransactionDate(StatementEntity $statement)
+    {
+        $bas = $statement->bankingAccountStatement;
+
+        if ($bas !== null)
+        {
+            return $bas->getPostedDate();
+        }
+
+        return $statement->getPostedDate() ? $statement->getPostedDate() : $statement->getCreatedAt();
     }
     /**
      * @param BankingAccountEntity $bankingAccount
