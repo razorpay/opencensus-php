@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\Gateway\Hitachi;
 
 use Mockery;
 use RZP\Models\Merchant;
+use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Gateway\Hitachi\TerminalFields;
 use RZP\Models\Merchant\Detail;
@@ -42,6 +43,35 @@ class HitachiOnboardTest extends TestCase
 
     public function testOnboard()
     {
+        $this->createMerchants();
+
+        $data =$this->getDefaultInput();
+
+        $response = $this->onboard($this->merchantId, $data);
+
+        $this->assertNotNull($response);
+
+        $this->assertEquals($response['gateway'], 'hitachi');
+
+        $this->assertEquals($response['type'], ['non_recurring', 'recurring_3ds', 'recurring_non_3ds', 'debit_recurring']);
+    }
+
+    protected function enableRazorXTreatmentForRazorX()
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->willReturn('mozart');
+    }
+
+    public function testOnboardMozart()
+    {
+        $this->enableRazorXTreatmentForRazorX();
         $this->createMerchants();
 
         $data =$this->getDefaultInput();

@@ -946,6 +946,26 @@ class Gateway extends Base\Gateway
         return false;
     }
 
+    public function merchantOnboard(array $input)
+    {
+        $this->input = $input;
+        $this->action = Action::MERCHANT_ONBOARD;
+
+        $request = $this->getMozartOnboardRequestArray($input);
+
+        $this->trace->info(
+            TraceCode::MOZART_SERVICE_REQUEST,
+            [
+                'url'      => $request['url'],
+                'gateway'  => $this->gateway,
+                'input'    => $request['content'],
+            ]);
+
+        $response = $this->sendGatewayRequest($request);
+
+        return $this->parseMerchantOnboardResponse($response, $input);
+    }
+
     public function verify(array $input)
     {
         parent::verify($input);
@@ -1115,11 +1135,55 @@ class Gateway extends Base\Gateway
         return $this->getAuthenticatedMozartRequestArray($url, $input['content'], Mode::LIVE);
     }
 
+    protected function getMozartOnboardRequestArray($input)
+    {
+        $url = $this->getUrlForMozartRequest($input, 'onboarding', Mode::LIVE);
+
+        $content = $this->getMozartOnboardRequestContent($input);
+
+        return $this->getAuthenticatedMozartRequestArray($url, $content, Mode::LIVE, $this->getGateway($input));
+    }
+
+    protected function getMozartOnboardRequestContent($input)
+    {
+        return [
+            'merchant' => $input['merchant'],
+            'merchant_details' => $input['merchant_details'],
+            'currency'       => [ $input['gateway_input']['currency_code'] ] ,
+            'methods'     => [ 'CARDS' ],
+            'identifiers' => [
+                'gateway_merchant_id' => $input['gateway_input']['mid'],
+                'gateway_terminal_id'    => $input['gateway_input']['tid'],
+                'category'                 => $input['gateway_input']['mcc'],
+            ],
+        ];
+    }
+
+    protected function shouldUseMozartWhitelisted($gateway)
+    {
+        $gateways = [
+            Payment\Gateway::HITACHI,
+        ];
+
+        return (in_array($gateway, $gateways, true));
+    }
+
+    protected function getWhitelistedConfig($mode, $postfix)
+    {
+        return 'applications.mozart.' . $mode . '_whitelisted' . $postfix;
+    }
+
     protected function getUrlForMozartRequest($input, $prefix, $mode = null)
     {
         $mode = $this->mode ?? $mode;
 
-        $urlConfig = 'applications.mozart.' . $mode . '.url';
+        if (($mode === 'live') and ($this->shouldUseMozartWhitelisted($this->getGateway($input)) === true))
+        {
+            $urlConfig = $this->getWhitelistedConfig($mode, '.url');
+        }
+        else {
+            $urlConfig = 'applications.mozart.' . $mode . '.url';
+        }
 
         $baseUrl = $this->app['config']->get($urlConfig);
 
@@ -1137,11 +1201,17 @@ class Gateway extends Base\Gateway
         return $url;
     }
 
-    protected function getAuthenticatedMozartRequestArray($url, $content, $mode = null)
+    protected function getAuthenticatedMozartRequestArray($url, $content, $mode = null, $gateway=null)
     {
         $mode = $this->mode ?? $mode;
 
-        $passwordConfig = 'applications.mozart.' . $mode . '.password';
+        if (($mode === 'live') and ($this->shouldUseMozartWhitelisted($gateway)) === true)
+        {
+            $passwordConfig = $this->getWhitelistedConfig($mode, '.password');
+        }
+        else {
+            $passwordConfig = 'applications.mozart.' . $mode . '.password';
+        }
 
         $authentication = [
             'api',
@@ -1159,6 +1229,26 @@ class Gateway extends Base\Gateway
             'options' => [
                 'auth' => $authentication
             ]
+        ];
+    }
+
+    protected function parseMerchantOnboardResponse($response, $input)
+    {
+        if ((isset($response['success']) === true) and
+            ($response['success'] === false))
+            {
+                throw new Exception\GatewayErrorException(
+                    $response['error']['internal_error_code'],
+                    $response['error']['gateway_error_code'],
+                    $response['error']['gateway_error_description']);
+            }
+        return [
+            'gateway_merchant_id' => $response['data']['identifiers']['gateway_merchant_id'],
+            'gateway_terminal_id' => $response['data']['identifiers']['gateway_terminal_id'],
+            'gateway_acquirer'   => 'ratn',
+            'gateway'            => 'hitachi',
+            'currency'           => $input['gateway_input']['currency_code'],
+            'category'           => $input['gateway_input']['mcc'],
         ];
     }
 
@@ -1878,7 +1968,7 @@ class Gateway extends Base\Gateway
 
     protected function getGateway($input)
     {
-        $nonPaymentActions = [Action::CREATE_TERMINAL, ACTION::VERIFY_TERMINAL, Action::DISABLE_TERMINAL, Action::ENABLE_TERMINAL];
+        $nonPaymentActions = [Action::CREATE_TERMINAL, ACTION::VERIFY_TERMINAL, Action::DISABLE_TERMINAL, Action::ENABLE_TERMINAL, ACTION::MERCHANT_ONBOARD];
 
         if (
             (in_array($this->action, $nonPaymentActions)) or

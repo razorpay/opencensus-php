@@ -524,6 +524,30 @@ class Server extends Base\Mock\Server
         ];
     }
 
+    public function merchantOnboard($input)
+    {
+        $reponseBody =  [
+            'data' => [
+                "_raw" => "{\"TID\":\"38R68287\",\"Response Code\":\"00\",\"Response description\":\"Success\",\"MID\":\"38RR00000068287\",\"S_no\":1585390152}",
+                'identifiers'   => [
+                    "gateway_merchant_id"=> "38RR00000068287",
+                    "gateway_terminal_id"=> "38R68287",
+
+                ]
+            ],
+            'error'             => [],
+            'external_trace_id' => "",
+            'mozart_id'         => "blfq216r1gunssphbs01",
+            'next'              => null,
+            'success'           => true
+        ];
+        $response = \Response::make($reponseBody);
+
+        $response->headers->set('Content-Type', 'application/json; charset=UTF-8');
+
+        return $response;
+    }
+
     public function createTerminal($body)
     {
         $mockCase = $this->app['config']->get('worldline_terminal_onboarding_creation.case');

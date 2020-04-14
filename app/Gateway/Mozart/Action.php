@@ -46,4 +46,6 @@ class Action
     const MANDATE_CREATE_VERIFY = 'mandate_create_verify';
 
     const DECRYPT               = 'decrypt';
+
+    const MERCHANT_ONBOARD      = 'merchantOnboard';
 }

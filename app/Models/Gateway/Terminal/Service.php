@@ -16,6 +16,9 @@ use RZP\Models\TerminalOnboardingDetail;
 use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\Merchant\Entity as Merchant;
 
+const HITACHI_ONBOARDING_MOZART = 'hitachi_onboarding_mozart';
+const MOZART_VARIANT_RESPONSE = 'mozart';
+
 class Service extends Base\Service
 {
     const MERCHANT_ONBOARD                          = 'merchant_onboard';
@@ -97,17 +100,29 @@ class Service extends Base\Service
                 $gatewayInput = $gatewayProcessor->getInputValue($gatewayInput, $merchant);
 
                 $gatewayData = [
+                    'gateway'          => $gateway,
                     'merchant'         => $merchant,
                     'merchant_details' => $merchantDetail,
                     'gateway_input'    => $gatewayInput,
                 ];
 
+                $variantFlag = $this->app->razorx->getTreatment($merchant['id'], HITACHI_ONBOARDING_MOZART, $this->mode);
+                $shouldUseMozart = ($variantFlag === MOZART_VARIANT_RESPONSE ? true : false);
+
                 try
                 {
-                    $terminalData = $this->app['gateway']->call($gateway,
-                        Constants::MERCHANT_ONBOARD,
-                        $gatewayData,
-                        $this->mode);
+                    if ($shouldUseMozart) {
+                        $terminalData = $this->app['gateway']->call('mozart',
+                            Constants::MERCHANT_ONBOARD,
+                            $gatewayData,
+                            $this->mode);
+
+                    } else {
+                        $terminalData = $this->app['gateway']->call($gateway,
+                            Constants::MERCHANT_ONBOARD,
+                            $gatewayData,
+                            $this->mode);
+                    }
 
                     $terminal = $gatewayProcessor->processTerminalData($terminalData, $merchant);
 
@@ -162,7 +177,7 @@ class Service extends Base\Service
             }
             catch (\Throwable $ex)
             {
-                if( ($ex->getMessage() === 'Terminal has already been processed') or 
+                if( ($ex->getMessage() === 'Terminal has already been processed') or
                     ($ex->getCode() === ErrorCode::BAD_REQUEST_TERMINAL_ONBOARDING_ANOTHER_OPERATION_IN_PROGRESS)
                 )
                 {
@@ -175,16 +190,16 @@ class Service extends Base\Service
             }
 
         }
-        
+
         return $cronResponse;
     }
 
     protected function shouldCreateTerminal(bool $checkFeatureEnabled, $merchantId)
     {
         $isFunc = $this->app->environment(Environment::FUNC);
-        
+
         if($isFunc === true){
-            return false;                                                         
+            return false;
         }
 
         $isProduction = $this->app->environment(Environment::PRODUCTION);
@@ -279,7 +294,7 @@ class Service extends Base\Service
                 $currentTimestamp = Carbon::now()->getTimestamp();
 
                 // skip if it has already been processed
-                if ((is_null($terminalOnboardingDetail->getVerifyAt())) or 
+                if ((is_null($terminalOnboardingDetail->getVerifyAt())) or
                     ($terminalOnboardingDetail->getVerifyAt() > $currentTimestamp))
                     {
                         throw new LogicException('Terminal has already been processed');
@@ -315,7 +330,7 @@ class Service extends Base\Service
                 }
             }, self::MUTEX_LOCK_TIMEOUT, ErrorCode::BAD_REQUEST_TERMINAL_ONBOARDING_ANOTHER_OPERATION_IN_PROGRESS
         );
-        
+
         return $terminalOnboardingDetail->getStatus();
     }
 
@@ -328,7 +343,7 @@ class Service extends Base\Service
         $request = $gatewayProcessor->getGatewayRequestArrayForEnableOrDisable($terminal);
 
         $response = $this->app['gateway']->call($gateway, $action, $request, $this->mode, $terminal);
-        
-        $gatewayProcessor->raiseExceptionIfEnableOrDisableFails($response, $action);           
+
+        $gatewayProcessor->raiseExceptionIfEnableOrDisableFails($response, $action);
     }
 }
