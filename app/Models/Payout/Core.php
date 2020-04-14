@@ -641,7 +641,9 @@ class Core extends Base\Core
 
                 $actionChecker = (new Workflow\Action\Checker\Core)->create($actionCheckerCreateParams);
 
-                if (empty($actionChecker) === true)
+                if ((empty($actionChecker) === true) and
+                    (empty($this->app['basicauth']->getAdmin()) === false) and
+                    ($this->app['basicauth']->getAdmin()->isSuperAdmin() === false))
                 {
                     throw new Exception\BadRequestException(
                         ErrorCode::BAD_REQUEST_PAYOUT_WORKFLOW_ACTION_FAILED,

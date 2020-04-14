@@ -3634,4 +3634,38 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_CARD_NOT_SUPPORTED_FOR_FUND_ACCOUNT,
         ],
     ],
+
+    'testRejectPayoutWithSuperAdmin' => [
+        'request'  => [
+            'method'  => 'POST',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'status' => 'rejected',
+            ],
+        ],
+    ],
+
+    'testRejectPayoutWithOrdinaryAdmin' => [
+        'request'  => [
+            'method'  => 'POST',
+            'content' => [
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Access Denied',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ACCESS_DENIED,
+        ],
+    ],
 ];

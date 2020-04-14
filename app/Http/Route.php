@@ -905,6 +905,7 @@ final class Route
         'payout_reject_bulk'                       => ['post',     'payouts/reject/bulk',                            'PayoutController@bulkRejectFundAccountPayouts'                     ],
         'payout_approve'                           => ['post',     'payouts/{id}/approve',                           'PayoutController@postApproveFundAccountPayout'                     ],
         'payout_reject'                            => ['post',     'payouts/{id}/reject',                            'PayoutController@postRejectFundAccountPayout'                      ],
+        'payout_reject_admin'                      => ['post',     'admin/payouts/{id}/reject',                      'PayoutController@postRejectFundAccountPayout'                      ],
         'payout_fetch_by_id'                       => ['get',      'payouts/{id}',                                   'PayoutController@getPayout'                                        ],
         'payout_fetch_multiple'                    => ['get',      'payouts',                                        'PayoutController@getPayouts'                                       ],
         'payout_retry'                             => ['post',     'payouts/{id}/retry',                             'PayoutController@postPayoutRetry'                                  ],
@@ -2502,6 +2503,7 @@ final class Route
     // of X-Admin-Token being passed.
     //
     public static $admin = [
+        'payout_reject_admin',
         'd2c_create_csv_report',
         'offline_verification_service_get',
         'offline_verification_service_put',
@@ -3066,6 +3068,7 @@ final class Route
         ];
 
     public static $routePermission = [
+        'payout_reject_admin'                      => Permission::REJECT_PAYOUT,
         'offline_verification_service_get'         => Permission::OFFLINE_VERIFICATION_SERVICE_VIEW,
         'offline_verification_service_post'        => Permission::OFFLINE_VERIFICATION_SERVICE_EDIT,
         'offline_verification_service_patch'       => Permission::OFFLINE_VERIFICATION_SERVICE_EDIT,

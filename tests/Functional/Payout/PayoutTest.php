@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\Payout;
 
 use DB;
 use Mail;
+use Hash;
 use Queue;
 use Config;
 
@@ -26,6 +27,8 @@ use RZP\Tests\Functional\TestCase;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Mail\Banking\LowBalanceAlert;
 use RZP\Exception\BadRequestException;
+use RZP\Models\BankingAccount\Gateway\Rbl;
+use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Helpers\WebhookTrait;
 use RZP\Tests\Functional\Helpers\MocksDnsTrait;
 use RZP\Tests\Functional\Settlement\SettlementTrait;
@@ -2964,6 +2967,81 @@ class PayoutTest extends TestCase
         ]);
 
         $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
+    public function testRejectPayoutWithSuperAdmin()
+    {
+        $this->liveSetUp();
+
+        $workflow = $this->createPayoutWorkflowWithBankingUsersLiveMode();
+
+        $payout = $this->createPayoutWithWorkflow($workflow, [], 'rzp_live_TheLiveAuthKey');
+
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/admin/payouts/' . $payout['id'] . '/reject';
+
+        $this->mockRazorxTreatment('yesbank', 'on');
+
+        $this->createWebhook(['events' => ['payout.rejected' => '1']], [], 'live');
+
+        $eventTestDataKey = 'testFiringOfWebhookOnRejectionOfPayoutEventData';
+
+        $this->setInfernoExpectations([$eventTestDataKey]);
+
+        $this->fixtures->on('live')->create('admin', [
+            'id' => 'RzrpySprAdmnId',
+            'org_id' => Org::RZP_ORG,
+            'name' => 'test admin'
+        ]);
+
+        $this->app['config']->set('database.default', 'live');
+
+        $this->ba->adminAuth('live');
+
+        $this->startTest();
+
+        $payout = $this->getDbEntityById('payout',$payout['id'],'live');
+        $actionState = $this->getDbLastEntity('action_state','live');
+
+        $this->assertEquals($payout['status'],'rejected');
+        $this->assertEquals($actionState['admin_id'],'RzrpySprAdmnId');
+        $this->assertEquals($actionState['name'],'rejected');
+        $this->assertNull($actionState['merchant_id']);
+        $this->assertNull($actionState['user_id']);
+    }
+
+    public function testRejectPayoutWithOrdinaryAdmin()
+    {
+        $this->liveSetUp();
+
+        $workflow = $this->createPayoutWorkflowWithBankingUsersLiveMode();
+
+        $payout = $this->createPayoutWithWorkflow($workflow, [], 'rzp_live_TheLiveAuthKey');
+
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/admin/payouts/' . $payout['id'] . '/reject';
+        $testData['request']['server'][] = ['HTTP_X-Razorpay-Account' => 'acc_10000000000000'];
+
+        $liveMode = $this->app['basicauth']->getLiveConnection();
+
+        $admin = $this->fixtures->on($liveMode)->create('admin', [
+            'id' => 'RzrpyRndAdmnId',
+            'org_id' => Org::RZP_ORG,
+            'name' => 'test admin'
+        ]);
+
+        $this->fixtures->on($liveMode)->create('admin_token', [
+            'id'        => 'AdminToken1234',
+            'token'     => Hash::make('secondToken'),
+            'admin_id'  => $admin->getId(),
+        ]);
+
+        $this->app['config']->set('database.default', 'live');
+
+        // Reject with Random Admin
+        $this->ba->adminAuth('live','secondTokenAdminToken1234');
 
         $this->startTest();
     }

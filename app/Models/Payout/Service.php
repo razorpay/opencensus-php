@@ -177,8 +177,16 @@ class Service extends Base\Service
     {
         $this->trace->info(TraceCode::PAYOUT_REJECT_REQUEST, ['id' => $id]);
 
-        /** @var Entity $payout */
-        $payout = $this->repo->payout->findByPublicIdAndMerchant($id, $this->merchant);
+        if ($this->app['basicauth']->isAdminAuth() === true)
+        {
+            /** @var Entity $payout */
+            $payout = $this->repo->payout->findByPublicId($id);
+        }
+        else
+        {
+            /** @var Entity $payout */
+            $payout = $this->repo->payout->findByPublicIdAndMerchant($id, $this->merchant);
+        }
 
         $payout->getValidator()->validatePayoutStatusForApproveOrReject();
 

@@ -41,15 +41,17 @@ class Core extends Base\Core
         // If the permission being worked on is a merchant side permission (ex: RazorpayX Workflows)
         // the checkerEntity is the current user, else admin.
         //
+        $checkerEntity = $basicAuth->getAdmin();
+        $checkerType   = 'admin';
+
         if (Permission\Name::isMerchantPermission($permissionName) === true)
         {
-            $checkerEntity = $basicAuth->getUser();
-            $checkerType   = 'user';
-        }
-        else
-        {
-            $checkerEntity = $basicAuth->getAdmin();
-            $checkerType   = 'admin';
+            if (($checkerEntity === null) or
+                ($checkerEntity->isSuperAdmin() === false))
+            {
+                $checkerEntity = $basicAuth->getUser();
+                $checkerType   = 'user';
+            }
         }
 
         if ($checkerEntity === null)

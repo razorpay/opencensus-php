@@ -1112,7 +1112,8 @@ class Entity extends Base\PublicEntity
         /** @var BasicAuth $basicAuth */
         $basicAuth = app('basicauth');
 
-        if ($basicAuth->isStrictPrivateAuth() === true)
+        if (($basicAuth->isStrictPrivateAuth() === true) or
+            ($basicAuth->isAdminAuth() === true))
         {
             unset($attributes[self::PENDING_ON_USER]);
 

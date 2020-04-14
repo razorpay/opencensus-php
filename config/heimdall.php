@@ -838,6 +838,11 @@ return [
                 'assignable'  => false,
                 'workflow'    => true,
             ],
+            Permission::REJECT_PAYOUT => [
+                'description' => 'Allows SuperAdmin to reject payout',
+                'assignable'  => false,
+                'workflow'    => true,
+            ],
             Permission::PROCESS_FEE_RECOVERY => [
                 'assignable' => true,
             ]

@@ -1074,6 +1074,7 @@ class ErrorCode
     const SERVER_ERROR_BATCH_SERVICE_NOT_CALLED                                     = 'SERVER_ERROR_BATCH_SERVICE_NOT_CALLED';
     const SERVER_ERROR_BATCH_SERVICE_NOT_FOUND                                      = 'SERVER_ERROR_BATCH_SERVICE_NOT_FOUND';
     const SERVER_ERROR_FILE_NOT_FOUND                                               = 'SERVER_ERROR_FILE_NOT_FOUND';
+    const SERVER_ERROR_PAYOUT_DATA_NOT_IN_ES                                        = 'SERVER_ERROR_PAYOUT_DATA_NOT_IN_ES';
     const BAD_REQUEST_BATCH_SERVICE_ERROR                                           = 'BAD_REQUEST_BATCH_SERVICE_ERROR';
 
     const BAD_REQUEST_CUSTOMER_ALREADY_EXISTS                                       = 'BAD_REQUEST_CUSTOMER_ALREADY_EXISTS';
