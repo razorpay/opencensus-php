@@ -62,6 +62,12 @@ class Reporting implements ExternalService
     const GENERATED_BY_HEADER   = 'X-Generated-By';
     const BATCH_ID              = 'X-Batch-Id';
 
+    const MERCHANT_REPORT_TYPES = [
+        self::MERCHANT,
+        self::RAZORPAYX,
+        self::PARTNER,
+    ];
+
     /**
      * @var array
      */
@@ -164,9 +170,9 @@ class Reporting implements ExternalService
             // For non-merchant reports X_REPORT_TYPE should not be MERCHANT
             // otherwise admins/banks will be able to download merchant reports.
             // Admin auth will be used here
-            if ($reportType === self::MERCHANT)
+            if (in_array($reportType, self::MERCHANT_REPORT_TYPES, true) === true)
             {
-                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_REPORTING_INTEGRATION);
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_REPORTING_ADMIN_NOT_ALLOWED_MERCHANT_REPORTS);
             }
 
             if ((empty($reportType) === false) and
@@ -176,15 +182,7 @@ class Reporting implements ExternalService
                 $headers[self::CONSUMER_HEADER] = $consumer;
             }
 
-            //
-            // The below if condition check is not for admins of RZP organisation. Here, Admin should not be able to
-            // access the consumer(org id here) which is not same as his organisation. Admin auth will be used here.
-            //
-            if (($this->ba->getAdmin()->getOrgId() !== Org\Entity::RAZORPAY_ORG_ID) and
-                ($this->ba->getAdmin()->getOrgId() !== $consumer))
-            {
-                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_REPORTING_INTEGRATION);
-            }
+            $this->validateRequestFromOrg($consumer);
         }
 
         $this->headers = $headers;
@@ -1190,5 +1188,21 @@ class Reporting implements ExternalService
         }
 
         return $scheduleData;
+    }
+
+    private function validateRequestFromOrg(?string $consumer)
+    {
+        //
+        // The below if condition check is not for admins of RZP organisation. Here, Admin from other org
+        // should only access data for their own org(consumer as org_id) or else consumer should be empty.
+        // Admin auth will be used here.
+        //
+        $orgId = $this->ba->getAdmin()->getOrgId();
+
+        if (($orgId !== Org\Entity::RAZORPAY_ORG_ID) and
+            (empty($consumer) === false and $orgId !== $consumer))
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_REPORTING_OTHER_ORG_INVALID_REQUEST);
+        }
     }
 }

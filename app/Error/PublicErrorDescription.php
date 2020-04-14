@@ -576,6 +576,9 @@ class PublicErrorDescription
     const BAD_REQUEST_CANNOT_UPDATE_CLOSED_DISPUTE                              = 'This dispute is already closed and cannot be updated';
 
     const BAD_REQUEST_REPORTING_INTEGRATION                                     = 'Issue with Reporting Integration';
+    const BAD_REQUEST_REPORTING_OTHER_ORG_INVALID_REQUEST                       = 'Invalid request for reporting from other org';
+    const BAD_REQUEST_REPORTING_ADMIN_NOT_ALLOWED_MERCHANT_REPORTS              = 'Invalid request for reporting, admins are not allowed to access merchant level reports';
+
     const BAD_REQUEST_UFH_INTEGRATION                                           = 'Issue with UFH Integration';
 
     // batch processor related error codes

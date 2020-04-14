@@ -979,6 +979,8 @@ class ErrorCode
     const BAD_REQUEST_INVALID_INTEGRATION                                           = 'BAD_REQUEST_INVALID_INTEGRATION';
 
     const BAD_REQUEST_REPORTING_INTEGRATION                                         = 'BAD_REQUEST_REPORTING_INTEGRATION';
+    const BAD_REQUEST_REPORTING_OTHER_ORG_INVALID_REQUEST                           = 'BAD_REQUEST_REPORTING_OTHER_ORG_INVALID_REQUEST';
+    const BAD_REQUEST_REPORTING_ADMIN_NOT_ALLOWED_MERCHANT_REPORTS                  = 'BAD_REQUEST_REPORTING_ADMIN_NOT_ALLOWED_MERCHANT_REPORTS';
     const BAD_REQUEST_UFH_INTEGRATION                                               = 'BAD_REQUEST_UFH_INTEGRATION';
     const BAD_REQUEST_CAPITAL_INTEGRATION                                           = 'BAD_REQUEST_CAPITAL_INTEGRATION';
     const BAD_REQUEST_KYC_INTEGRATION                                               = 'BAD_REQUEST_KYC_INTEGRATION';
