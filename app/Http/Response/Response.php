@@ -199,6 +199,11 @@ class Response
         {
             if ($this->isMerchantCallbackRoute($route))
             {
+                if (isset($data['error'], $data['error']['metadata']) === true)
+                {
+                    $data['error']['metadata'] = json_encode($data['error']['metadata'], JSON_FORCE_OBJECT);
+                }
+
                 $data = $this->flattenArrayForPost($data);
 
                 $callbackArray = [

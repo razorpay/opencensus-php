@@ -3,6 +3,7 @@
 namespace RZP\Error;
 
 use App;
+use ArrayObject;
 use RZP\Exception;
 use Illuminate\Support;
 use RZP\Models\Feature\Constants;
@@ -225,6 +226,11 @@ class Error extends Support\Fluent
 
     public function setMetadata($metadata)
     {
+        if ($metadata === null)
+        {
+            $metadata = new \ArrayObject([], ArrayObject::STD_PROP_LIST|ArrayObject::ARRAY_AS_PROPS);
+        }
+
         $this->setAttribute(self::METADATA, $metadata);
     }
 
@@ -244,18 +250,25 @@ class Error extends Support\Fluent
 
         $cacheKey = sprintf(self::ERROR_CODE_CACHE_KEY,$method);
 
-        if ($this->redis->exists($cacheKey) === 1)
+        try
         {
-            if ($this->redis->get($cacheKey) !== null)
+            if ($this->redis->exists($cacheKey) === 1)
             {
-                $errorCodeMap = json_decode($this->redis->get($cacheKey), true);
+                if ($this->redis->get($cacheKey) !== null)
+                {
+                    $errorCodeMap = json_decode($this->redis->get($cacheKey), true);
+                }
+                else
+                {
+                    $this->readMappingFromFile($cacheKey, $method, $errorCodeMap);
+                }
             }
             else
             {
                 $this->readMappingFromFile($cacheKey, $method, $errorCodeMap);
             }
         }
-        else
+        catch (\Exception $exception)
         {
             $this->readMappingFromFile($cacheKey, $method, $errorCodeMap);
         }
@@ -517,10 +530,17 @@ class Error extends Support\Fluent
 
         $description = $isPublicRoute ? $this->getCustomerDescription() : $this->getDescription();
 
+        $metadata = $this->getAttribute(self::METADATA);
+
+        if (isset($metadata) === false)
+        {
+            $metadata = new \ArrayObject([], ArrayObject::STD_PROP_LIST|ArrayObject::ARRAY_AS_PROPS);
+        }
+
         $error = array(
             self::PUBLIC_ERROR_CODE => $this->getPublicErrorCode(),
             self::DESCRIPTION       => $description,
-            self::METADATA          => $this->getAttribute(self::METADATA)
+            self::METADATA          => $metadata
         );
 
         $isReasonFeatureEnabled = false;
