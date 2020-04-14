@@ -842,10 +842,10 @@ class ApiServiceProvider extends BaseServiceProvider
             return new RZP\Base\Database\Config();
         });
 
+        $this->app['db.config']->setDatabaseHostsIfApplicable();
+
         $this->app->singleton('db.connector.mysql', function($app)
         {
-            $app['db.config']->setDatabaseHostsIfApplicable();
-
             return (new MySqlConnector($app));
         });
 

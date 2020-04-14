@@ -45,7 +45,7 @@ class Config
         // Worker only makes a db connection once. So we will not need proxySQL for this.
         $isWorkerPod = $app['config']->get(self::WORKER_CONFIG . '.' . self::IS_WORKER_POD);
 
-        if (empty($isWorkerPod) === true)
+        if ($isWorkerPod === true)
         {
             return;
         }
