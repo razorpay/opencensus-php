@@ -12,6 +12,7 @@ use RZP\Models\Transfer;
 use RZP\Models\Merchant;
 use RZP\Constants\Table;
 use RZP\Models\Payment\Config;
+use RZP\Models\Feature\Constants;
 use RZP\Models\Currency\Currency;
 use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Models\SubscriptionRegistration;
@@ -649,7 +650,8 @@ class Entity extends Base\PublicEntity
 
     public function setPublicCheckoutConfigIdAttribute(array & $array)
         {
-            if (isset($array[self::CHECKOUT_CONFIG_ID]) === true)
+            if ((isset($array[self::CHECKOUT_CONFIG_ID]) === true) and
+                 ($this->merchant->isFeatureEnabled(Constants::SEND_PAYMENT_CONFIG_ID) === true))
             {
                 $array[self::CHECKOUT_CONFIG_ID] = Config\Entity::getSignedId($array[self::CHECKOUT_CONFIG_ID]);
             }

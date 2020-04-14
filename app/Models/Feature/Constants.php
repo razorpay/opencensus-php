@@ -340,12 +340,16 @@ class Constants
      * for merchant that will have recon at their end.
      */
     const CYBERSOURCE_VAS = 'cybersource_vas';
-
     /*
      * This flag when enabled, will enable payment link dashboard to hit new set of
      * payment link service endpoints
      */
     const PAYMENTLINKS_V2                = 'paymentlinks_v2';
+    /*
+     * This flag when enabled, send checkout_config_id will be send in order response
+     * if the value is not null
+    */
+    const SEND_PAYMENT_CONFIG_ID         = 'send_payment_config_id';
 
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
@@ -557,6 +561,7 @@ class Constants
         self::COVID                           => true,
         self::SR_SENSITIVE                    => true,
         self::PAYMENTLINKS_V2                 => true,
+        self::SEND_PAYMENT_CONFIG_ID          => false,
     ];
 
     // Entity type constants

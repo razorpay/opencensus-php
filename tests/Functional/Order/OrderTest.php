@@ -1833,6 +1833,8 @@ class OrderTest extends TestCase
     {
         $config = $this->fixtures->create('config');
 
+        $this->fixtures->merchant->addFeatures(['send_payment_config_id']);
+
         $this->testData[__FUNCTION__]['request']['content']['checkout_config_id'] = $config->getPublicId();
 
         $response = $this->startTest();
