@@ -226,7 +226,9 @@ export default class Content extends Component {
             path="/recurring_payments"
             component={Subscriptions}
             additionalCondition={user =>
-              user.isAllowedView('subscriptions') && user.isChargeAtWillEnabled
+              user.isAllowedView('subscriptions') &&
+              user.isChargeAtWillEnabled &&
+              user.isRegistrationLinkTokenAndPaymentsEnabled
             }
           />
 
@@ -234,7 +236,9 @@ export default class Content extends Component {
             path="/tokens"
             component={Subscriptions}
             additionalCondition={user =>
-              user.isAllowedView('subscriptions') && user.isChargeAtWillEnabled
+              user.isAllowedView('subscriptions') &&
+              user.isChargeAtWillEnabled &&
+              user.isRegistrationLinkTokenAndPaymentsEnabled
             }
           />
           <ShowWhenRoute

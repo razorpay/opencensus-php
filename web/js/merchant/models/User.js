@@ -303,19 +303,30 @@ export default class User {
     return this.findTag('enable_RBL_role');
   }
 
-  get isAuthLinkRoleEnabled() {
+  get isRegistrationLinkRoleEnabled() {
     return this.findTag('Enable_auth_link_role');
   }
 
-  get isAuthLinkTokenAndPaymentsEnabled() {
+  get isRegistrationLinkTokenAndPaymentsEnabled() {
     return (
-      this.userRole !== rolesList.AUTH_LINK_AGENT &&
-      this.userRole !== rolesList.AUTH_LINK_SUPERVISOR
+      this.userRole !== rolesList.REGISTRATION_LINK_AGENT &&
+      this.userRole !== rolesList.REGISTRATION_LINK_SUPERVISOR
     );
   }
 
-  get isAuthLinkBatchUploadEnabled() {
-    return this.userRole !== rolesList.AUTH_LINK_AGENT;
+  get isRegistrationLinkBatchUploadEnabled() {
+    return this.userRole !== rolesList.REGISTRATION_LINK_AGENT;
+  }
+
+  get isRegistrationLinkBasedRole() {
+    return (
+      this.userRole === rolesList.REGISTRATION_LINK_AGENT ||
+      this.userRole === rolesList.REGISTRATION_LINK_SUPERVISOR
+    );
+  }
+
+  get isRegistrationLinkSupervisorRole() {
+    return this.userRole === rolesList.REGISTRATION_LINK_SUPERVISOR;
   }
 
   get enabledFeatures() {

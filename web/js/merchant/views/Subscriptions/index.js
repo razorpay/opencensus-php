@@ -154,7 +154,7 @@ export default class SubscriptionsController extends React.Component {
             <ShowWhen additionalCondition={user => user.isChargeAtWillEnabled}>
               <ShowWhen
                 additionalCondition={user =>
-                  user.isAuthLinkTokenAndPaymentsEnabled
+                  user.isRegistrationLinkTokenAndPaymentsEnabled
                 }
               >
                 <NavLink to="/recurring_payments">Payments</NavLink>
@@ -172,7 +172,9 @@ export default class SubscriptionsController extends React.Component {
                 </span>
               </NavLink>
               <ShowWhen
-                additionalCondition={user => user.isAuthLinkBatchUploadEnabled}
+                additionalCondition={user =>
+                  user.isRegistrationLinkBatchUploadEnabled
+                }
               >
                 <NavLink exact to="/subscriptions/batchuploads">
                   Batch Upload
@@ -202,11 +204,25 @@ export default class SubscriptionsController extends React.Component {
                 additionalCondition={user => !user.isChargeAtWillEnabled}
               />
 
-              <Route path="/recurring_payments" component={RecurringPayments} />
-              <Route path="/tokens" component={TokensList} />
               <Route
                 path="/registration_links"
                 component={RegistrationLinksList}
+              />
+
+              <Route
+                path="/recurring_payments"
+                component={RecurringPayments}
+                additionalCondition={user =>
+                  user.isRegistrationLinkTokenAndPaymentsEnabled
+                }
+              />
+
+              <Route
+                path="/tokens"
+                component={TokensList}
+                additionalCondition={user =>
+                  user.isRegistrationLinkTokenAndPaymentsEnabled
+                }
               />
             </Switch>
           </content>

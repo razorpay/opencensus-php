@@ -16,7 +16,7 @@ import RegistrationLinksBatchForm from './components/RegistrationLinkBatchCreati
 
 const gaEvents = setGaTrack('Dashboard - Subscriptions - BU');
 
-@connect(null, {
+@connect(state => ({ user: state.session.user }), {
   createRecurringChargeBatch,
   validateRecurringChargeBatch,
   createRegistrationLinkBatch,
@@ -51,7 +51,7 @@ export default class CreateHostedMandateBatch extends Component {
   );
 
   render() {
-    const { openUploadModal } = this.props;
+    const { openUploadModal, user } = this.props;
 
     return (
       <div class="SubscriptionsBatch--upload-modal">
@@ -71,21 +71,23 @@ export default class CreateHostedMandateBatch extends Component {
           </div>
         </div>
 
-        <div
-          class="panel panel-default recurring-charge"
-          onClick={openUploadModal(this.renderRecurringChargeModal)}
-        >
-          <div class="panel-body">
-            <div class="logo" />
-            <div class="description">
-              <div class="text-primary">
-                <strong>Batch Recurring Payments</strong>
+        {!user.isRegistrationLinkSupervisorRole && (
+          <div
+            class="panel panel-default recurring-charge"
+            onClick={openUploadModal(this.renderRecurringChargeModal)}
+          >
+            <div class="panel-body">
+              <div class="logo" />
+              <div class="description">
+                <div class="text-primary">
+                  <strong>Batch Recurring Payments</strong>
+                </div>
+                <div>Create bulk recurring Payments</div>
               </div>
-              <div>Create bulk recurring Payments</div>
+              <i class="i-chevron-right pull-right text-primary" />
             </div>
-            <i class="i-chevron-right pull-right text-primary" />
           </div>
-        </div>
+        )}
       </div>
     );
   }

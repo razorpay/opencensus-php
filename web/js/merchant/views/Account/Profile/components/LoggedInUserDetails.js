@@ -4,11 +4,11 @@ import {
   roles,
   agentRole,
   RBLRoles,
-  AuthLinkRoles,
+  RegistrationLinkRoles,
 } from 'merchant/helpers/data';
 
 export default ({ loggedInUser, loggedInUserRole }) => {
-  let ROLES = { ...roles, ...agentRole, ...RBLRoles, ...AuthLinkRoles };
+  let ROLES = { ...roles, ...agentRole, ...RBLRoles, ...RegistrationLinkRoles };
 
   return (
     <div class="panel panel-default">

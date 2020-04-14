@@ -6,7 +6,10 @@ import BatchList from 'merchant/containers/BatchNew/List';
 
 import setGaTrack from 'merchant/containers/BatchNew/ga';
 
-import { fetchHostMandateBatches as fetchAll } from 'merchant/reducers/batches';
+import {
+  fetchHostMandateBatches as fetchAll,
+  fetchHostMandateAuthLinkBatches,
+} from 'merchant/reducers/batches';
 import { titleCase } from 'common/utils/rzp-utils';
 
 import CreateBatch from './CreateBatch';
@@ -22,7 +25,7 @@ const typeColumn = {
   value: ({ type }) => titleCase(type),
 };
 
-const ExtraFilterFields = () => (
+const BatchTypeFilterField = () => (
   <div class="form-group list-filter-item">
     <label>Batch Type</label>
     <Field name="type" component="select" class="form-control input-sm">
@@ -33,9 +36,24 @@ const ExtraFilterFields = () => (
   </div>
 );
 
-@connect(null, { fetchAll })
+@connect(state => ({ user: state.session.user }), {
+  fetchAll,
+  fetchHostMandateAuthLinkBatches,
+})
 export default class BatchListContainer extends Component {
+  fetchAll = filter => {
+    if (this.props.user.isRegistrationLinkSupervisorRole) {
+      return this.props.fetchHostMandateAuthLinkBatches(filter);
+    }
+
+    return this.props.fetchAll(filter);
+  };
   render() {
+    const ExtraFilterFields = !this.props.user
+      .isRegistrationLinkSupervisorRole && {
+      ExtraFilterFields: BatchTypeFilterField,
+    };
+
     return (
       <BatchList
         form="batchListFilter"
@@ -43,9 +61,10 @@ export default class BatchListContainer extends Component {
         gaEvents={gaEvents}
         renderBatchOptions={renderBatchOptions}
         extraColumns={[typeColumn]}
-        ExtraFilterFields={ExtraFilterFields}
         multiBatch
         {...this.props}
+        fetchAll={this.fetchAll}
+        {...ExtraFilterFields}
       />
     );
   }

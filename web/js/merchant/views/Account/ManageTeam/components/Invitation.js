@@ -13,7 +13,7 @@ import {
 } from 'merchant/reducers/team';
 
 import rolesList from 'merchant/helpers/permissions/roles-list';
-import { AuthLinkRoles } from '../../../../helpers/data';
+import { RegistrationLinkRoles } from '../../../../helpers/data';
 
 let ROLES = without(roles, rolesList.OWNER);
 @connect(state => state.session, {
@@ -116,8 +116,8 @@ export default class EditInvitation extends Component {
       }
     }
 
-    if (user.isAuthLinkRoleEnabled) {
-      allRoles = { ...allRoles, ...AuthLinkRoles };
+    if (user.isRegistrationLinkRoleEnabled) {
+      allRoles = { ...allRoles, ...RegistrationLinkRoles };
     }
 
     let ROLES = allRoles;

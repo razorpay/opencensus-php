@@ -99,14 +99,14 @@ export const RBLRoles = {
   },
 };
 
-export const AuthLinkRoles = {
-  [rolesList.AUTH_LINK_SUPERVISOR]: {
-    label: 'Auth Link Supervisor',
-    desc: 'Auth Link Supervisor Role',
+export const RegistrationLinkRoles = {
+  [rolesList.REGISTRATION_LINK_SUPERVISOR]: {
+    label: 'Registration Link Supervisor',
+    desc: 'Registration Link Supervisor Role',
   },
-  [rolesList.AUTH_LINK_AGENT]: {
-    label: 'Auth Link Agent',
-    desc: 'Auth Link Agent Role',
+  [rolesList.REGISTRATION_LINK_AGENT]: {
+    label: 'Registration Link Agent',
+    desc: 'Registration Link Agent Role',
   },
 };
 

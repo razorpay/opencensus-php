@@ -129,6 +129,14 @@ export default class Sidebar extends Component {
       this.prevRoute = user.isChargeAtWillEnabled
         ? 'recurring_payments'
         : 'subscriptions';
+
+      this.prevRoute = user.isRegistrationLinkBasedRole
+        ? 'registration_links'
+        : this.prevRoute;
+    }
+
+    if (user.isRegistrationLinkBasedRole) {
+      this.routes.chargeAtWill = 'registration_links';
     }
   }
 
