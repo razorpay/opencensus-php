@@ -696,6 +696,7 @@ class PublicErrorDescription
     const BAD_REQUEST_MERCHANT_DETAIL_ALREADY_LOCKED                            = 'Activation form has been locked for editing by admin.';
     const BAD_REQUEST_MERCHANT_BUSINESS_NAME_REQUIRED                           = 'Business Name is required';
     const BAD_REQUEST_MERCHANT_PAN_NAME_REQUIRED                                = 'PAN Name is required';
+    const BAD_REQUEST_MERCHANT_EXTRA_FIELDS_PRESENT_IN_INPUT                    = 'Extra details present in input';
     const BAD_REQUEST_UNREGISTERED_NOT_SUPPORTED                                = 'We are not supporting (unregistered businesses) at the moment. We shall inform you when we start supporting';
     const BAD_REQUEST_UNSUPPORTED_BUSINESS_CATEGORY                             = 'We don\'t support this business category';
     const BAD_REQUEST_MERCHANT_DETAIL_FILE_TYPE                                 = 'Invalid File format. Only pdf, png and jpg is allowed.';

@@ -94,6 +94,18 @@ class BusinessType
         self::TRUST
     ];
 
+    protected static $ValidateCompanyPanBusinessType = [
+        self::PRIVATE_LIMITED,
+        self::PUBLIC_LIMITED,
+        self::LLP,
+        self::EDUCATIONAL_INSTITUTES,
+        self::TRUST,
+        self::SOCIETY,
+        self::OTHER,
+        self::NGO,
+        self::PARTNERSHIP
+    ];
+
     public static function isBusinessTypeGreylistedForInternational($businessType = null)
     {
         if (empty($businessType) === true)
@@ -215,5 +227,17 @@ class BusinessType
         }
 
         return $map[$index];
+    }
+
+    public static function isCompanyPanEnableBusinessTypes($businessType) : bool
+    {
+        if (empty($businessType) === true)
+        {
+            return false;
+        }
+
+        $businessTypeName = self::getKeyFromIndex($businessType);
+
+        return in_array($businessTypeName, self::$ValidateCompanyPanBusinessType, true);
     }
 }

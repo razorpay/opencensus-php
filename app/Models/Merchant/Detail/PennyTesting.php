@@ -281,9 +281,10 @@ class PennyTesting extends Base\Core
             Constants::BANK_VERIFICATION_THRESHOLD_FOR_PAN           => BankDetailsVerificationStatus::BANK_DETAIL_VERIFICATION_THRESHOLD_FOR_PAN,
         ];
 
-        $this->trace->count(DetailMetric::UNREGISTERED_PENNY_TESTING_STATUS_TOTAL,
+        $this->trace->count(DetailMetric::PENNY_TESTING_STATUS_TOTAL,
                             [
-                                Constants::BANK_DETAILS_VERIFICATION_STATUS => $merchantDetails->getBankDetailsVerificationStatus()
+                                Constants::BANK_DETAILS_VERIFICATION_STATUS => $merchantDetails->getBankDetailsVerificationStatus(),
+                                Constants::BUSINESS_TYPE                    => $merchantDetails->getBusinessType() ?? "",
                             ]);
 
         $this->app['diag']->trackOnboardingEvent(EventCode::KYC_SAVE_MODIFICATIONS_SUCCESS, $merchant, null, $eventAttributesForKycModification);
@@ -315,9 +316,7 @@ class PennyTesting extends Base\Core
     {
         $panFuzzyMatcher = new FuzzyMatcher(BankDetailsVerificationStatus::BANK_DETAIL_VERIFICATION_THRESHOLD_FOR_PAN, FuzzyMatcher::JUMBLED_MATCH);
 
-        $isValidName = $panFuzzyMatcher->isMatch($merchantDetails->getPromoterPanName(),
-                                                    $input[Constants::REGISTERED_NAME],
-                                                    $panPercentMatch);
+        $isValidName = $panFuzzyMatcher->isMatch($merchantDetails->getPromoterPanName(), $input[Constants::REGISTERED_NAME],$panPercentMatch);
 
         $validationData = [
             Constants::PENNY_TESTING_FUZZY_MATCH_PERCENTAGE_WITH_PAN => $panPercentMatch,
@@ -367,7 +366,8 @@ class PennyTesting extends Base\Core
     {
         $this->trace->count(DetailMetric::PENNY_TESTING_RETRY_COUNT,
                             [
-                                Constants::BANK_DETAILS_VERIFICATION_STATUS => $merchantDetails->getBankDetailsVerificationStatus()
+                                Constants::BANK_DETAILS_VERIFICATION_STATUS => $merchantDetails->getBankDetailsVerificationStatus(),
+                                Constants::BUSINESS_TYPE                    => $merchantDetails->getBusinessType() ?? "",
                             ]);
 
         $this->trace->info(TraceCode::MERCHANT_PENNY_TESTING_RETRY, [
@@ -389,8 +389,9 @@ class PennyTesting extends Base\Core
 
         $this->setBankDetailsVerificationStatusAndUpdatedAt($merchantDetails, BankDetailsVerificationStatus::INITIATED);
 
-        $this->trace->count(DetailMetric::UNREGISTERED_PENNY_TESTING_STATUS_TOTAL,
+        $this->trace->count(DetailMetric::PENNY_TESTING_STATUS_TOTAL,
                             [
+                                Constants::BUSINESS_TYPE                    => $merchantDetails->getBusinessType() ?? "",
                                 Constants::BANK_DETAILS_VERIFICATION_STATUS => BankDetailsVerificationStatus::INITIATED
                             ]);
 

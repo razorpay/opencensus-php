@@ -8,5 +8,7 @@ interface ProcessorFactory
 
     public static function getRegisterProcessor(array $input): ?Processor;
 
+    public static function getCompanyPanProcessor(array $input): ?Processor;
+
     public static function getPOAProcessor(array $input): Processor;
 }

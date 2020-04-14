@@ -49,7 +49,7 @@ class Factory
             return self::getSourceForExistingDocuments($fileStoreId);
         }
 
-        return self::shouldServeFileFromUFH($merchantId) ? Source::UFH : Source::API;
+        return Source::UFH;
     }
 
     /**
@@ -69,24 +69,6 @@ class Factory
         $document = $repo->merchant_document->findDocumentByFileStoreId($fileStoreId);
 
         return optional($document)->getFileStoreSource() ?? Source::API;
-    }
-
-    /**
-     * @param string $merchantId
-     *
-     * @return bool
-     */
-    private static function shouldServeFileFromUFH(string $merchantId): bool
-    {
-        $app = App::getFacadeRoot();
-
-        $mode = $app['rzp.mode'] ?? Mode::LIVE;
-
-        $status = $app['razorx']->getTreatment($merchantId,
-                                               RazorxTreatment::USE_UFH_FILE_STORE,
-                                               $mode);
-
-        return (strtolower($status) === 'on');
     }
 
     /**

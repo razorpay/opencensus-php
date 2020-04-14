@@ -8,6 +8,7 @@ use RZP\Exception\LogicException;
 use RZP\Models\Merchant\AutoKyc\Verifiers\POAVerifier;
 use RZP\Models\Merchant\AutoKyc\Verifiers\POIVerifier;
 use RZP\Models\Merchant\Detail\Constants as DEConstants;
+use RZP\Models\Merchant\AutoKyc\Verifiers\CompanyPanVerifier;
 use RZP\Models\Merchant\AutoKyc\KycService\ProcessorFactoryImpl as KycProcessorFactory;
 
 class Core extends Base\Core
@@ -66,6 +67,33 @@ class Core extends Base\Core
         (new Events())->sendServiceVerifierEvents($response);
 
         return $poiVerifier->verify();
+    }
+
+    /**
+     * @param KycEntity $entity
+     *
+     * @param array     $input
+     *
+     * @return string
+     * @throws LogicException
+     */
+    public function verifyCompanyPan(KycEntity $entity, array $input): string
+    {
+        $this->registerKyc($entity);
+
+        $companyPanInput = [
+            DEConstants::PAN_NUMBER => $input[DEConstants::COMPANY_PAN],
+            DEConstants::ENTITY_ID  => $entity->getEntityId(),
+            DEConstants::KYC_ID     => $entity->getKycId(),
+        ];
+
+        $response = $this->process($companyPanInput, DEConstants::COMPANY_PAN);
+
+        $companyPanVerifier = new CompanyPanVerifier($input[DEConstants::COMPANY_PAN_NAME], $response);
+
+        (new Events())->sendServiceVerifierEvents($response);
+
+        return $companyPanVerifier->verify();
     }
 
     /**
@@ -187,6 +215,10 @@ class Core extends Base\Core
             case DEConstants::REGISTER :
 
                 return $kycVerifierFactory::getRegisterProcessor($input);
+
+            case DEConstants::COMPANY_PAN :
+
+                return $kycVerifierFactory::getCompanyPanProcessor($input);
 
             default :
                 throw new LogicException(ErrorCode::UNHANDLED_KYC_PROCESSOR_TYPE, null, [

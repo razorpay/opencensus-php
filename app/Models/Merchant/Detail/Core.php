@@ -433,17 +433,21 @@ class Core extends Base\Core
 
         $merchantDetails->edit($input, 'instant_activation');
 
-        return $this->repo->transactionOnLiveAndTest(function() use ($input, $merchantDetails, $merchant)
-        {
+        // do pan validation
+        $this->verifyPOIDetailsIfApplicable($merchantDetails, $merchant);
+
+        // do business pan validation
+        $this->verifyCompanyPanDetailsIfApplicable($merchantDetails, $merchant);
+
+
+
+        return $this->repo->transactionOnLiveAndTest(function() use ($input, $merchantDetails, $merchant) {
             // The function below, uses isDirty() and hence must be called before saveOrFail over merchantDetails
             $this->autoUpdateMerchantCategoryDetailsIfApplicable($merchantDetails, $merchant);
 
             $this->autoUpdateMerchantActivationFlows($merchant);
 
             $this->updateToDefaultDepartmentVolumeIfApplicable($merchantDetails);
-
-            // do pan validation
-            $this->verifyPOIDetailsIfApplicable($merchantDetails, $merchant);
 
             $this->updateLegalEntity($input, $merchant);
 
@@ -453,19 +457,16 @@ class Core extends Base\Core
             // Sync few input fields to merchant entity
             $merchant = $merchantCore->syncMerchantEntityFields($merchant, $input);
 
-            if ($merchantCore->isUnRegisteredOnBoardingEnabled($merchant, $merchantDetails->isUnregisteredBusiness()))
+            if ($merchantCore->isAutoKycEnabled($merchantDetails, $merchant) === true)
             {
-                if ($merchantDetails->getPoiVerificationStatus() === Detail\POIStatus::VERIFIED)
+                if ($this->canProcessInstantActivation($merchantDetails) === true)
                 {
-                    // in case of unregistered business if pan is verified then instantly activate merchant
-                    (new Detail\ActivationFlow\Whitelist())->process($merchant);
+                    $this->processInstantActivation($merchant, $merchantDetails);
                 }
             }
             else
             {
-                // $activationFlow will be an instance of the ActivationFlowInterface
-                $activationFlow = ActivationFlow\Factory::getActivationFlowImpl($merchantDetails);
-                $activationFlow->process($merchant);
+                $this->processInstantActivation($merchant, $merchantDetails);
             }
 
             $response = $this->createResponse($merchantDetails);
@@ -487,28 +488,73 @@ class Core extends Base\Core
     }
 
     /**
+     * @param Merchant\Entity $merchant
+     * @param Entity          $merchantDetails
+     *
+     * @throws \RZP\Exception\BadRequestException
+     * @throws \RZP\Exception\LogicException
+     */
+    protected function processInstantActivation(Merchant\Entity $merchant, Entity $merchantDetails)
+    {
+        if (BusinessType::isUnregisteredBusiness($merchantDetails->getBusinessType()) === true)
+        {
+            // in case of unregistered business if pan is verified then instantly activate merchant
+            (new Detail\ActivationFlow\Whitelist())->process($merchant);
+        }
+        else
+        {
+            // $activationFlow will be an instance of the ActivationFlowInterface
+            $activationFlow = ActivationFlow\Factory::getActivationFlowImpl($merchantDetails);
+            $activationFlow->process($merchant);
+        }
+    }
+
+    /**
+     * Contains preconditions for Processing Instant activation
+     *
+     * @param Entity $merchantDetails
+     *
+     * @return bool
+     */
+    protected function canProcessInstantActivation(Entity $merchantDetails): bool
+    {
+        switch ($merchantDetails->getBusinessType())
+        {
+            case BusinessType::NOT_YET_REGISTERED:
+            case BusinessType::INDIVIDUAL:
+
+                return $merchantDetails->isPoiVerified();
+
+            case BusinessType::PROPRIETORSHIP:
+                $allowedPOIStatus = [POIStatus::VERIFIED, POIStatus::FAILED, POIStatus::NOT_MATCHED];
+
+                return (in_array($merchantDetails->getPoiVerificationStatus(), $allowedPOIStatus) === true);
+
+            default :
+
+                $allowedPOIStatus        = [POIStatus::VERIFIED, POIStatus::FAILED, POIStatus::NOT_MATCHED];
+                $allowedCompanyPanStatus = [CompanyPanStatus::VERIFIED, CompanyPanStatus::FAILED, CompanyPanStatus::NOT_MATCHED];
+
+                return ((in_array($merchantDetails->getPoiVerificationStatus(), $allowedPOIStatus) === true) and
+                        (in_array($merchantDetails->getCompanyPanVerificationStatus(), $allowedCompanyPanStatus) === true));
+        }
+    }
+
+    /**
      * @param Entity          $merchantDetails
      * @param Merchant\Entity $merchant
-     *
-     * @return MozartService\PanVerifierResponse|null
      */
-    protected function verifyPOIDetailsIfApplicable(Entity $merchantDetails, MErchant\Entity $merchant)
+    protected function verifyPOIDetailsIfApplicable(Entity $merchantDetails, Merchant\Entity $merchant)
     {
-        if ($merchantDetails->isUnregisteredBusiness() === false)
+        if (empty($merchantDetails->getPromoterPan()) === true)
         {
-            $merchantDetails->setPoiVerificationStatus(null);
-
-            return null;
+            return;
         }
 
-        $enabled = (new Merchant\Core())->isUnRegisteredOnBoardingEnabled($merchant,
-                                                                          $merchantDetails->isUnregisteredBusiness());
-
-        if ($enabled === false)
+        if ((new Merchant\Core())->isAutoKycEnabled($merchantDetails, $merchant) === false)
         {
-            return null;
+            return;
         }
-
 
         $response = null;
 
@@ -535,8 +581,56 @@ class Core extends Base\Core
         $dimension = $this->fetchPoiMetricDimensions($merchantDetails);
 
         $this->trace->count(DetailMetric::POI_VERIFICATION_STATUS_TOTAL, $dimension);
+    }
 
-        return $response;
+    /**
+     * @param Entity          $merchantDetails
+     * @param Merchant\Entity $merchant
+     */
+    protected function verifyCompanyPanDetailsIfApplicable(Entity $merchantDetails, Merchant\Entity $merchant)
+    {
+        if (empty($merchantDetails->getPan()) === true)
+        {
+            return;
+        }
+
+        // For handling business type switch
+        if (BusinessType::isCompanyPanEnableBusinessTypes($merchantDetails->getBusinessTypeValue()) === false)
+        {
+            $merchantDetails->setCompanyPanVerificationStatus(null);
+        }
+
+        if ((new Merchant\Core())->isAutoKycEnabled($merchantDetails, $merchant) === false)
+        {
+            return;
+        }
+
+        $response = null;
+
+        $verificationStatus = CompanyPanStatus::FAILED;
+
+        try
+        {
+            $input = [
+                DEConstants::COMPANY_PAN      => $merchantDetails->getPan(),
+                DEConstants::COMPANY_PAN_NAME => $merchantDetails->getBusinessName(),
+            ];
+
+            $verificationStatus = (new AutoKyc\Core())->verifyCompanyPan($merchantDetails, $input);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e,
+                                         null,
+                                         TraceCode::MERCHANT_COMPANY_PAN_VERIFICATION_FAILED);
+
+        }
+
+        $merchantDetails->setCompanyPanVerificationStatus($verificationStatus);
+
+        $dimension = $this->fetchBusinessPanMetricDimensions($merchantDetails);
+
+        $this->trace->count(DetailMetric::COMPANY_PAN_VERIFICATION_STATUS_TOTAL, $dimension);
     }
 
     /**
@@ -1587,6 +1681,13 @@ class Core extends Base\Core
         ];
     }
 
+    protected function fetchBusinessPanMetricDimensions(Entity $merchantDetail): array
+    {
+        return [
+            Detail\Constants::COMPANY_PAN_VERIFICATION_STATUS => $merchantDetail->getPoiVerificationStatus()
+        ];
+    }
+
       /**
        * This function is used for creating activation flow metric dimensions
        *
@@ -1679,7 +1780,7 @@ class Core extends Base\Core
             return;
         }
 
-        if($this->shouldSkipBankAccountRegistration() == true)
+        if ($this->shouldSkipBankAccountRegistration() == true)
         {
             return;
         }

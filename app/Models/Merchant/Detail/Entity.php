@@ -98,6 +98,7 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
     const ACTIVATION_STATUS                  = 'activation_status';
     const BANK_DETAILS_VERIFICATION_STATUS   = 'bank_details_verification_status';
     const POI_VERIFICATION_STATUS            = 'poi_verification_status';
+    const COMPANY_PAN_VERIFICATION_STATUS    = 'company_pan_verification_status';
     const POA_VERIFICATION_STATUS            = 'poa_verification_status';
     const CLARIFICATION_MODE                 = 'clarification_mode';
     const ARCHIVED_AT                        = 'archived_at';
@@ -363,6 +364,7 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
         self::PLATFORM,
         self::FUND_ACCOUNT_VALIDATION_ID,
         self::DATE_OF_ESTABLISHMENT,
+        self::COMPANY_PAN_VERIFICATION_STATUS,
     ];
 
     protected $defaults = [
@@ -778,6 +780,16 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
     public function setPoiVerificationStatus(string $status = null)
     {
         return $this->setAttribute(self::POI_VERIFICATION_STATUS, $status);
+    }
+
+    public function getCompanyPanVerificationStatus()
+    {
+        return $this->getAttribute(self::COMPANY_PAN_VERIFICATION_STATUS);
+    }
+
+    public function setCompanyPanVerificationStatus(string $status = null)
+    {
+        return $this->setAttribute(self::COMPANY_PAN_VERIFICATION_STATUS, $status);
     }
 
     public function setActivationProgress($activationProgress)

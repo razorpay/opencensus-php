@@ -89,7 +89,7 @@ class Validator extends Base\Validator
         Entity::PROMOTER_PAN_NAME               => 'sometimes|max:255',
         Entity::BANK_NAME                       => 'sometimes|alpha_num|between:5,20',
         Entity::BANK_ACCOUNT_NUMBER             => 'sometimes|regex:/^[a-zA-Z0-9-]+$/|between:5,20|custom',
-        Entity::BANK_ACCOUNT_NAME               => 'sometimes|string|min:4|max:120',
+        Entity::BANK_ACCOUNT_NAME               => 'sometimes|regex:/^[a-zA-Z0-9\s]+$/|min:4|max:120',
         Entity::BANK_ACCOUNT_TYPE               => 'sometimes|alpha_space|max:20',
         Entity::BANK_BRANCH                     => 'sometimes|max:255',
         Entity::BANK_BRANCH_IFSC                => 'sometimes|alpha_num|max:11|custom',
@@ -272,6 +272,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $instantActivationRules = [
+        Entity::COMPANY_PAN                 => 'sometimes|max:255|companyPan',
         Entity::BUSINESS_CATEGORY           => 'required|max:255|custom',
         Entity::BUSINESS_SUBCATEGORY        => 'sometimes|max:255|custom',
         Entity::PROMOTER_PAN                => 'required|pan',
@@ -440,6 +441,17 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_BUSINESS_NAME_REQUIRED);
         }
+
+        if ((empty($input[Entity::COMPANY_PAN])) === false and
+            (BusinessType::isCompanyPanEnableBusinessTypes($input[Entity::BUSINESS_TYPE]) === false))
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_EXTRA_FIELDS_PRESENT_IN_INPUT,
+                                                    Entity::COMPANY_PAN,
+                                                    [
+                                                        Entity::COMPANY_PAN   => $input[Entity::COMPANY_PAN],
+                                                        Entity::BUSINESS_TYPE => $input[Entity::BUSINESS_TYPE]
+                                                    ]);
+        }
     }
 
     protected function validateUnregisteredBusinessRules(array $input)
@@ -461,6 +473,11 @@ class Validator extends Base\Validator
         if (empty($input[Entity::PROMOTER_PAN_NAME]) === true)
         {
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_PAN_NAME_REQUIRED);
+        }
+
+        if (empty($input[Entity::COMPANY_PAN]) === false)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_EXTRA_FIELDS_PRESENT_IN_INPUT);
         }
     }
 

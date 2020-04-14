@@ -28,7 +28,7 @@ final class RazorxTreatment
     // Razorx treatment constant for which batch validation needs to skip or not.
     const BATCH_SERVICE_SKIP_VALIDATION = 'batch_service_skip_validation';
 
-    const NON_REGISTERED_ONBOARDING = 'non_registered_onboarding';
+    const REGISTERED_ONBOARDING_AUTO_KYC = 'registered_onboarding_auto_kyc';
 
     // Decides if increased cap for allowed line items in invoice to be used for merchant's invoice.
     const INV_INCREASED_LINE_ITEMS_CAP = 'inv_increased_line_items_cap';
@@ -54,15 +54,8 @@ final class RazorxTreatment
     // Decides if payout.created webhook should be fired for the merchant
     const PAYOUTS_CREATED_WEBHOOK = 'payouts_created_webhook';
 
-    //Decides to hit KYC Service or Mozart for KYC verification
-    const KYC_SERVICE_VERIFICATION     = 'kyc_service_verification';
-    const POI_KYC_SERVICE_VERIFICATION = 'poi_kyc_service_verification';
-    const POA_KYC_SERVICE_VERIFICATION = 'poa_kyc_service_verification';
-
     // Decides if the Settlement UX changes are displayed to the merchant
     const SETTLEMENT_UX_REVAMP = 'settlement_ux_revamp';
-
-    const USE_UFH_FILE_STORE = 'use_ufh_file_store';
 
     // Decides payout channel based on IMPS mode
     const IMPS_MODE_PAYOUT_FILTER = 'imps_mode_payout_filter';

@@ -194,24 +194,13 @@ class ActivationTest extends OAuthTestCase
 
     }
 
-    public function testPostInstantActivationForUnregisteredRazorxOff()
-    {
-        $merchantId = '1cXSLlUU8V9sXl';
-
-        $this->fixtures->create('merchant_detail', ['merchant_id' => $merchantId]);
-
-        $this->ba->proxyAuth('rzp_test_' . $merchantId);
-
-        $this->startTest();
-    }
-
     public function testInstantActivationForForUnRegisteredTORegisteredSwitch()
     {
         $merchantId = '1cXSLlUU8V9sXl';
 
-        Config::set('applications.mozart.mock', true);
+        Config::set('applications.kyc.mock', true);
 
-        Config::set('applications.mozart.mock.status', MerchantDetailsConstant::SUCCESS);
+        Config::set('applications.kyc.pan_authentication', MerchantDetailsConstant::SUCCESS);
 
         $this->fixtures->create(
             'merchant_detail',
@@ -225,8 +214,6 @@ class ActivationTest extends OAuthTestCase
         $this->fixtures->on('live')->create('methods:default_methods', [
             'merchant_id' => '1cXSLlUU8V9sXl'
         ]);
-
-        $this->mockRazorX(__FUNCTION__, 'non_registered_onboarding', 'on');
 
         $this->ba->proxyAuth('rzp_test_' . $merchantId);
 
@@ -244,8 +231,6 @@ class ActivationTest extends OAuthTestCase
     {
         $merchantId = '1cXSLlUU8V9sXl';
 
-        $this->mockRazorX(__FUNCTION__, 'non_registered_onboarding', 'on');
-
         $this->fixtures->create(
             'merchant_detail',
             [
@@ -262,9 +247,9 @@ class ActivationTest extends OAuthTestCase
     {
         $merchantId = '1cXSLlUU8V9sXl';
 
-        Config::set('applications.mozart.mock', true);
+        Config::set('applications.kyc.mock', true);
 
-        Config::set('applications.mozart.pan_authentication', MerchantDetailsConstant::SUCCESS);
+        Config::set('applications.kyc.pan_authentication', MerchantDetailsConstant::SUCCESS);
 
         $this->fixtures->create(
             'merchant_detail',
@@ -278,8 +263,6 @@ class ActivationTest extends OAuthTestCase
         $this->fixtures->on('live')->create('methods:default_methods', [
             'merchant_id' => '1cXSLlUU8V9sXl'
         ]);
-
-        $this->mockRazorX(__FUNCTION__, 'non_registered_onboarding', 'on');
 
         $this->ba->proxyAuth('rzp_test_' . $merchantId);
 
@@ -297,17 +280,15 @@ class ActivationTest extends OAuthTestCase
     {
         $merchantId = '1cXSLlUU8V9sXl';
 
-        Config::set('applications.mozart.mock', true);
+        Config::set('applications.kyc.mock', true);
 
-        Config::set('applications.mozart.pan_authentication', MerchantDetailsConstant::SUCCESS);
+        Config::set('applications.kyc.pan_authentication', MerchantDetailsConstant::SUCCESS);
 
         $this->fixtures->create('merchant_detail', ['merchant_id' => $merchantId]);
 
         $this->fixtures->on('live')->create('methods:default_methods', [
             'merchant_id' => '1cXSLlUU8V9sXl'
         ]);
-
-        $this->mockRazorX(__FUNCTION__, 'non_registered_onboarding', 'on');
 
         $this->ba->proxyAuth('rzp_test_' . $merchantId);
 
@@ -338,14 +319,12 @@ class ActivationTest extends OAuthTestCase
             'testIAForUnregisteredBusinessFeatureEnabled'                 => MerchantDetailsConstant::SUCCESS, // at bottom because once successful, the request can not be tried again
         ];
 
-        Config::set('applications.mozart.mock', true);
+        Config::set('applications.kyc.mock', true);
 
         foreach ($tests as $test => $mockStatus)
         {
 
-            Config::set('applications.mozart.pan_authentication', $mockStatus);
-
-            $this->mockRazorX($test,'non_registered_onboarding','on');
+            Config::set('applications.kyc.pan_authentication', $mockStatus);
 
             $testData = $this->testData[$test];
 
@@ -378,18 +357,61 @@ class ActivationTest extends OAuthTestCase
 
             Config::set('applications.kyc.mock', true);
 
-            $featureVariantMap = [
-                'non_registered_onboarding'    => 'on',
-                'kyc_service_verification'     => 'on',
-                'poi_kyc_service_verification' => 'on',
-            ];
-
-            $this->mockRazorXMultiFeature($test,$featureVariantMap);
-
             $testData = $this->testData[$test];
 
             $this->runRequestResponseFlow($testData);
         }
+    }
+
+    public function testIAForRegisteredBusinessFeatureEnabledNameMisMatch()
+    {
+        $this->instantActivationForRegistered(__FUNCTION__, MerchantDetailsConstant::SUCCESS);
+    }
+
+    public function testIAForRegisteredBusinessFeatureEnabledIncorrectDetails()
+    {
+        $this->instantActivationForRegistered(__FUNCTION__, MerchantDetailsConstant::INCORRECT_DETAILS);
+    }
+
+    public function testIAForRegisteredBusinessFeatureEnabledTimeout()
+    {
+        $this->instantActivationForRegistered(__FUNCTION__, MerchantDetailsConstant::FAILURE);
+    }
+
+    public function testIAForRegisteredBusinessSuccessCase()
+    {
+        $this->instantActivationForRegistered(__FUNCTION__, MerchantDetailsConstant::SUCCESS);
+    }
+
+    private function instantActivationForRegistered(string $test, string $mockStatus)
+    {
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        $this->fixtures->create('merchant_detail', ['merchant_id' => $merchantId]);
+
+        $this->fixtures->on('live')->create('methods:default_methods', [
+            'merchant_id' => '1cXSLlUU8V9sXl'
+        ]);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId);
+
+        Config::set('applications.kyc.company_pan_authentication', $mockStatus);
+
+        Config::set('applications.kyc.pan_authentication', $mockStatus);
+
+        Config::set('applications.kyc.mock', true);
+
+        $featureVariantMap = [
+            'registered_onboarding_auto_kyc' => 'on',
+            'kyc_service_verification'       => 'on',
+            'poi_kyc_service_verification'   => 'on',
+        ];
+
+        $this->mockRazorXMultiFeature($test, $featureVariantMap);
+
+        $testData = $this->testData[$test];
+
+        $this->runRequestResponseFlow($testData);
     }
 
     protected function mockHubSpotClient($methodName)
@@ -732,6 +754,8 @@ class ActivationTest extends OAuthTestCase
 
         $plan = $this->createZeroFundAccountValidationPricingPlan();
 
+        $this->createBalanceForSharedMerchant();
+
         $this->fixtures->merchant->editEntity('merchant',
                                               '100000Razorpay',
                                               [
@@ -788,8 +812,6 @@ class ActivationTest extends OAuthTestCase
 
         foreach ($testSuits as $index => $testSuit)
         {
-            $this->mockRazorX($testSuit, 'non_registered_onboarding', 'on');
-
             $testData = $this->testData[$testSuit];
 
             $this->startTest($testData);
@@ -830,8 +852,6 @@ class ActivationTest extends OAuthTestCase
 
         foreach ($testSuits as $index => $testSuit)
         {
-            $this->mockRazorX($testSuit, 'non_registered_onboarding', 'on');
-
             $testData = $this->testData[$testSuit];
 
             $this->startTest($testData);
@@ -1574,8 +1594,6 @@ class ActivationTest extends OAuthTestCase
                                               [
                                                   'pricing_plan_id' => $plan->getPlanId()
                                               ]);
-
-        $this->mockRazorX(__FUNCTION__, 'non_registered_onboarding', 'on', $merchantId);
 
         $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id']);
 

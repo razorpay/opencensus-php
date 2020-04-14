@@ -13,8 +13,10 @@ use RZP\Models\Merchant\AutoKyc\KycService\poa\POAProcessorMock;
 use RZP\Models\Merchant\AutoKyc\KycService\poi\POIProcessorMock;
 use RZP\Models\Merchant\AutoKyc\KycService\kycDetails\KycDetailsProcessor;
 use RZP\Models\Merchant\AutoKyc\KycService\register\RegistrationProcessor;
+use RZP\Models\Merchant\AutoKyc\KycService\companyPan\CompanyPanProcessor;
 use RZP\Models\Merchant\AutoKyc\KycService\kycDetails\KycDetailProcessorMock;
 use RZP\Models\Merchant\AutoKyc\KycService\register\RegistrationProcessorMock;
+use RZP\Models\Merchant\AutoKyc\KycService\companyPan\CompanyPanProcessorMock;
 
 /**
  * Returns Processor to be used when doing auto kyc using kyc service
@@ -124,5 +126,26 @@ class ProcessorFactoryImpl implements ProcessorFactory
         }
 
         return new KycDetailsProcessor($input);
+    }
+
+    public static function getCompanyPanProcessor(array $input): ?Processor
+    {
+        $app = App::getFacadeRoot();
+
+        $mock = $app['config']['applications.kyc.mock'];
+
+        if ($mock === true)
+        {
+            $companyPanProcessorMock = new CompanyPanProcessorMock($input);
+
+            // this config is not defined in application config , this is used in test case only
+            $mockStatus = $app['config']['applications.kyc.company_pan_authentication'] ?? Constants::SUCCESS;
+
+            $companyPanProcessorMock->setMockStatus($mockStatus);
+
+            return $companyPanProcessorMock;
+        }
+
+        return new CompanyPanProcessor($input);
     }
 }

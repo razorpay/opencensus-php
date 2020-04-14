@@ -2,34 +2,34 @@
 
 namespace RZP\Models\Merchant\AutoKyc\Verifiers;
 
-use RZP\Models\Merchant\Detail\POIStatus;
+use RZP\Models\Merchant\Detail\CompanyPanStatus;
 
-class POIVerifier implements Verifier
+class CompanyPanVerifier implements Verifier
 {
     use PanVerifier;
 
     protected function getIncorrectDetailsStatus()
     {
-        return POIStatus::INCORRECT_DETAILS;
+        return CompanyPanStatus::INCORRECT_DETAILS;
     }
 
     protected function getFailedStatus()
     {
-        return POIStatus::FAILED;
+        return CompanyPanStatus::FAILED;
     }
 
     protected function getNotMatchedStatus()
     {
-        return POIStatus::NOT_MATCHED;
+        return CompanyPanStatus::NOT_MATCHED;
     }
 
     protected function getVerifiedStatus()
     {
-        return POIStatus::VERIFIED;
+        return CompanyPanStatus::VERIFIED;
     }
 
     protected function getExpectedMatchPercentage()
     {
-        return POIStatus::POI_VERIFICATION_THRESHOLD;
+        return CompanyPanStatus::VERIFICATION_THRESHOLD;
     }
 }

@@ -86,23 +86,8 @@ class MerchantDocumentTest Extends TestCase
 
     }
 
-    public function testDocumentUploadToAPI()
-    {
-        $this->testDocumentUpload();
-
-        $merchantDocumentEntry = $this->getLastEntity('merchant_document', true, 'test');
-
-        $fileStoreEntry = $this->getDbEntityById('file_store', $merchantDocumentEntry['file_store_id'], 'test');
-
-        $this->assertTrue(substr($fileStoreEntry->getName(), -2) === "/a");
-
-        $this->assertEquals($merchantDocumentEntry['source'], Source::API);
-    }
-
     public function testDocumentUploadToUFH()
     {
-        $this->mockRazorX('testDocumentUpload', 'use_ufh_file_store', 'on');
-
         $this->testDocumentUpload();
 
         $merchantDocumentEntry = $this->getLastEntity('merchant_document', true, 'test');
@@ -166,55 +151,6 @@ class MerchantDocumentTest Extends TestCase
         $this->startTest();
     }
 
-    public function testDocUploadAndCheckOcrStatusSuccess()
-    {
-        $this->ba->proxyAuth('rzp_test_' . '10000000000000');
-
-        $this->fixtures->create(
-            'merchant_detail',
-            [
-                'merchant_id'       => '10000000000000',
-                'promoter_pan_name' => 'ABCDE FGHIJ',
-                'business_type'     => 2,
-            ]);
-
-        $ocrResponseTypes = [
-            Constants::PASSPORT_FRONT,
-            Constants::AADHAR_FRONT,
-            Constants::VOTER_ID_FRONT,
-        ];
-
-        $documentType = Constants::VOTER_ID_FRONT;
-
-        $this->updateUploadDocumentData(__FUNCTION__);
-
-        foreach ($ocrResponseTypes as $ocrResponseType)
-        {
-            Config::set('applications.kyc.mock', true);
-            Config::set('applications.kya.poa_ocr_response_type', $ocrResponseType);
-
-            $testData = &$this->testData[__FUNCTION__];
-
-            $featureVariantMap = [
-                'non_registered_onboarding'    => 'on',
-                'kyc_service_verification'     => 'on',
-                'poa_kyc_service_verification' => 'on'
-            ];
-
-            $this->mockRazorXMultiFeature(__FUNCTION__, $featureVariantMap, 10000000000000);
-
-            $testData['request']['content']['document_type'] = $documentType;
-
-            $testData['response']['content']['documents'][$documentType] = [];
-
-            $response = $this->startTest($testData);
-
-            $merchantDocumentDb = $this->getDbEntityById('merchant_document', $response['documents'][$documentType][0]['id']);
-
-            $this->assertEquals($merchantDocumentDb['ocr_verify'], 'verified');
-        }
-    }
-
     public function testDocumentUploadAndCheckOcrVerificationStatusSuccess()
     {
         $this->ba->proxyAuth('rzp_test_' . '10000000000000');
@@ -228,13 +164,10 @@ class MerchantDocumentTest Extends TestCase
             ]);
 
         $ocrResponseTypes = [
-            Constants::PASSPORT_FRONT,
-            Constants::AADHAR_FRONT,
-            Constants::VOTER_ID_FRONT,
-            Constants::AADHAAR_FRONT_COMPLETE
+            Constants::AADHAAR,
+            Constants::VOTERS_ID,
+            Constants::PASSPORT,
         ];
-
-        $this->mockRazorX(__FUNCTION__, 'non_registered_onboarding', 'on', 10000000000000);
 
         $documentType = Constants::VOTER_ID_FRONT;
 
@@ -242,7 +175,8 @@ class MerchantDocumentTest Extends TestCase
 
         foreach ($ocrResponseTypes as $ocrResponseType)
         {
-            Config::set('applications.mozart.poa_ocr_response_type', $ocrResponseType);
+            Config::set('applications.kyc.mock', true);
+            Config::set('applications.kya.poa_ocr_response_type', $ocrResponseType);
 
             $testData = &$this->testData[__FUNCTION__];
 
@@ -273,11 +207,9 @@ class MerchantDocumentTest Extends TestCase
                 'business_type'     => 2,
             ]);
 
-        $this->mockRazorX($testDataKeyName, 'non_registered_onboarding', 'on', 10000000000000);
-
         $this->updateUploadDocumentData($testDataKeyName);
 
-        Config::set('applications.mozart.poa_ocr_response_type', Constants::FAILURE);
+        Config::set('applications.kya.poa_ocr_response_type', Constants::FAILURE);
 
         $testData = &$this->testData[$testDataKeyName];
 
@@ -305,8 +237,6 @@ class MerchantDocumentTest Extends TestCase
                 'promoter_pan_name' => 'XYZ',
                 'business_type'     => 11,
             ]);
-
-        $this->mockRazorX(__FUNCTION__, 'non_registered_onboarding', 'on', 10000000000000);
 
         $this->updateUploadDocumentData(__FUNCTION__);
 

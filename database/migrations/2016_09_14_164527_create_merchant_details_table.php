@@ -260,6 +260,9 @@ class CreateMerchantDetailsTable extends Migration
             $table->string(MerchantDetail::POA_VERIFICATION_STATUS, 30)
                   ->nullable();
 
+            $table->string(MerchantDetail::COMPANY_PAN_VERIFICATION_STATUS, 30)
+                  ->nullable();
+
             $table->string(MerchantDetail::BANK_DETAILS_VERIFICATION_STATUS, 30)
                   ->nullable();
 

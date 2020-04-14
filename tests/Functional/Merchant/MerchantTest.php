@@ -1637,8 +1637,6 @@ class MerchantTest extends TestCase
 
     public function testUpdateBankAccountWithAddressProofUsingUFH()
     {
-        $this->mockRazorX('testUpdateBankAccountWithAddressProof', 'use_ufh_file_store', 'on', 10000000000000);
-
         $this->testUpdateBankAccountWithAddressProof();
 
         $merchantDocumentEntry = $this->getLastEntity('merchant_document', true, 'test');

@@ -3115,24 +3115,6 @@ class Core extends Base\Core
         ];
     }
 
-
-    /**
-     * Checks if UNREGISTERED_ON_BOARDING razorx experiment enabled for merchant id
-     *
-     * @param string $merchantId
-     * @param null   $mode
-     *
-     * @return bool
-     */
-    protected function isUnregisteredOnBoardingRazorxEnabled(string $merchantId, $mode = null): bool
-    {
-        $mode = $mode ?? $this->mode;
-
-        $status = $this->app['razorx']->getTreatment($merchantId, Merchant\RazorxTreatment::NON_REGISTERED_ONBOARDING, $mode);
-
-        return (strtolower($status) === 'on');
-    }
-
     /**
      * Enable unregistered on-Boarding only for
      *
@@ -3153,9 +3135,31 @@ class Core extends Base\Core
 
         return (($isRazorpayOrgId === true) and
                 ($this->app['basicauth']->getRequestOriginProduct() === Product::PRIMARY) and
-                ($isUnregisteredBusiness === true) and
-                (($merchant->isActivated()) or
-                 ($this->isUnregisteredOnBoardingRazorxEnabled($merchant->getId(), $mode))));
+                ($isUnregisteredBusiness === true));
+    }
+
+    public function isRegisteredAutoKycBoardingEnabled(string $merchantId): bool
+    {
+        $mode = $this->mode;
+
+        $status = $this->app['razorx']->getTreatment($merchantId, Merchant\RazorxTreatment::REGISTERED_ONBOARDING_AUTO_KYC, $mode);
+
+        return (strtolower($status) === 'on');
+    }
+
+    public function isAutoKycEnabled(Detail\Entity $merchantDetails, Entity $merchant): bool
+    {
+        if ($this->isUnRegisteredOnBoardingEnabled($merchant, $merchantDetails->isUnregisteredBusiness()) === true)
+        {
+            return true;
+        }
+
+        if ($this->isRegisteredAutoKycBoardingEnabled($merchant->getId()) === true)
+        {
+            return true;
+        }
+
+        return false;
     }
 
     public function getAllMerchantsMappedToMerchantLegalEntity(Merchant\Entity $merchant): Base\PublicCollection

@@ -11,12 +11,19 @@ class Constants
     const PROMOTER_PAN      = 'promoter_pan';
     const PROMOTER_PAN_NAME = 'promoter_pan_name';
 
+    // input for business pan verifier
+    const COMPANY_PAN      = 'company_pan';
+    const BUSINESS_PAN     = 'business_pan';
+    const COMPANY_PAN_NAME = 'company_pan_name';
+
     const POI_STATUS                       = 'poi_status';
     const POA_STATUS                       = 'poa_status';
     const DOCUMENT_TYPE                    = 'document_type';
     const DOCUMENT_SOURCE                  = 'document_source';
     const BANK_DETAILS_VERIFICATION_STATUS = 'bank_details_verification_status';
+    const COMPANY_PAN_VERIFICATION_STATUS  = 'company_pan_verification_status';
     const EXTERNAL_VERIFIER                = 'external_verifier';
+    const BUSINESS_TYPE                    = 'business_type';
 
     // pan verifier response types
     const INCORRECT_DETAILS = 'incorrect_details';
@@ -79,6 +86,7 @@ class Constants
 
     const DOCUMENT_TYPES = [
         self::PERSONAL_PAN    => 'personal_pan',
+        self::BUSINESS_PAN    => 'business_pan',
         self::AADHAAR         => 'aadhaar',
         self::PASSPORT        => 'passport',
         self::VOTERS_ID       => 'voters_id',

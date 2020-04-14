@@ -1092,22 +1092,11 @@ class MerchantDetailTest extends OAuthTestCase
 
     public function testFileUploadSyncDetailAndDocumentUploadedToUFH()
     {
-        $this->mockRazorX('testFileUploadSyncInDetailAndDocumentTable', 'use_ufh_file_store', 'on');
-
         $this->testFileUploadSyncInDetailAndDocumentTable();
 
         $merchantDocumentEntry = $this->getLastEntity('merchant_document', true, 'test');
         
         $this->assertEquals($merchantDocumentEntry['source'], Source::UFH);
-    }
-
-    public function testFileUploadSyncDetailAndDocumentUploadedToAPI()
-    {
-        $this->testFileUploadSyncInDetailAndDocumentTable();
-
-        $merchantDocumentEntry = $this->getLastEntity('merchant_document', true, 'test');
-
-        $this->assertEquals($merchantDocumentEntry['source'], Source::API);
     }
 
     public function updateUploadDocumentData(string $callee, string $documentType)

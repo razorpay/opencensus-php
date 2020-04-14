@@ -71,4 +71,9 @@ class ProcessorFactoryImpl implements ProcessorFactory
     {
         return null;
     }
+
+    public static function getCompanyPanProcessor(array $input): ?Processor
+    {
+        return null;
+    }
 }
