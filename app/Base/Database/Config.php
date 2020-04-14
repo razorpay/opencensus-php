@@ -56,7 +56,7 @@ class Config
 
         $currentRoute = $app['request.ctx']->getRoute();
 
-        $allowedRoutes = array_merge(Route::$admin, Route::$proxy, [self::TEST_ROUTE]);
+        $allowedRoutes = array_merge(Route::$admin, [self::TEST_ROUTE]);
 
         if ((in_array($currentRoute, $allowedRoutes, true) === false))
         {
