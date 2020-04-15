@@ -4,19 +4,24 @@ namespace RZP\Tests\Functional\Adjustment;
 
 use Mail;
 
-use RZP\Mail\Merchant\NegativeBalanceAlert;
-use RZP\Mail\Merchant\NegativeBalanceThresholdAlert;
 use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
+use RZP\Mail\Transaction\Adjustment;
 use RZP\Mail\Banking\YesbankLoadViaAdjustment;
+use RZP\Tests\Functional\Helpers\WebhookTrait;
+use RZP\Tests\Functional\Fixtures\Entity\User;
+use RZP\Tests\Functional\Helpers\MocksDnsTrait;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use RZP\Mail\Merchant\NegativeBalanceThresholdAlert;
 use RZP\Mail\Merchant\ReserveBalanceActivate as ReserveBalanceActivateMail;
 
 class AdjustmentTest extends TestCase
 {
     use RequestResponseFlowTrait;
     use DbEntityFetchTrait;
+    use WebhookTrait;
+    use MocksDnsTrait;
 
     public function setUp()
     {
@@ -311,158 +316,6 @@ class AdjustmentTest extends TestCase
         });
     }
 
-    public function testSendYesbankLoadSuccessfulEmail()
-    {
-        Mail::fake();
-
-        $razorxMock = $this->getMockBuilder(RazorXClient::class)
-            ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
-            ->getMock();
-
-        $this->app->instance('razorx', $razorxMock);
-
-        $this->app->razorx->method('getTreatment')
-            ->willReturn('on');
-
-        $this->fixtures->create('balance',
-                                [
-                                    'type'           => 'banking',
-                                    'account_type'   => 'shared',
-                                    'account_number' => 'ABC123PQR',
-                                    'merchant_id'    => '100abc000abc00',
-                                    'balance'        => 30000
-                                ]);
-
-        $response = $this->startTest();
-
-        $adjId = $response['id'];
-
-        $txnId = $response['transaction_id'];
-
-        $adjustment = $this->getDbEntityById('adjustment', $adjId);
-
-        $balanceId = $adjustment['balance_id'];
-
-        $balance = $this->getDbEntityById('balance', $balanceId);
-
-        $transaction = $this->getDbEntityById('transaction', $txnId);
-
-        $this->assertNotNull($adjustment, 'adjustment should not be null');
-
-        $this->assertNotNull($balance, 'balance should not be null');
-
-        $this->assertNotNull($transaction, 'transaction should not be null');
-
-        $this->assertEquals($txnId, $adjustment['transaction_id']);
-        $this->assertEquals('100abc000abc00', $adjustment['merchant_id']);
-        $this->assertEquals(250000, $adjustment['amount']);
-
-        $this->assertEquals('banking', $balance['type']);
-        $this->assertEquals('100abc000abc00', $balance['merchant_id']);
-        $this->assertEquals(280000, $balance['balance']);
-
-        $this->assertEquals('adjustment', $transaction['type']);
-        $this->assertEquals('100abc000abc00', $transaction['merchant_id']);
-        $this->assertEquals(250000, $transaction['amount']);
-        $this->assertEquals($balanceId, $transaction['balance_id']);
-
-        Mail::assertQueued(YesbankLoadViaAdjustment::class, function($mail)
-        {
-            $viewData = $mail->viewData;
-
-            $this->assertEquals('250000', $viewData['amount']); // raw amount
-            $this->assertEquals('2,500.00', amount_format_IN($viewData['amount'])); // formatted amount
-
-            $expectedData = [
-                'adjustment_description' => 'Account: ABC123, Bank: ICICI',
-                'account_number'         => 'ABC123PQR',
-            ];
-
-            $this->assertArraySelectiveEquals($expectedData, $viewData);
-
-            $this->assertEquals('emails.banking.yesbank_load_via_adjustment', $mail->view);
-
-            return true;
-        });
-    }
-
-    public function testSendYesbankLoadSuccessfulEmailRazorxControl()
-    {
-        Mail::fake();
-
-        $razorxMock = $this->getMockBuilder(RazorXClient::class)
-            ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
-            ->getMock();
-
-        $this->app->instance('razorx', $razorxMock);
-
-        $this->app->razorx->method('getTreatment')
-            ->willReturn('control');
-
-        $this->fixtures->create('balance',
-            [
-                'type'           => 'banking',
-                'account_type'   => 'shared',
-                'account_number' => 'ABC123PQR',
-                'merchant_id'    => '100abc000abc00',
-                'balance'        => 30000
-            ]);
-
-        $response = $this->startTest();
-
-        $adjId = $response['id'];
-
-        $txnId = $response['transaction_id'];
-
-        $adjustment = $this->getDbEntityById('adjustment', $adjId);
-
-        $balanceId = $adjustment['balance_id'];
-
-        $balance = $this->getDbEntityById('balance', $balanceId);
-
-        $transaction = $this->getDbEntityById('transaction', $txnId);
-
-        $this->assertNotNull($adjustment, 'adjustment should not be null');
-
-        $this->assertNotNull($balance, 'balance should not be null');
-
-        $this->assertNotNull($transaction, 'transaction should not be null');
-
-        $this->assertEquals($txnId, $adjustment['transaction_id']);
-        $this->assertEquals('100abc000abc00', $adjustment['merchant_id']);
-        $this->assertEquals(250000, $adjustment['amount']);
-
-        $this->assertEquals('banking', $balance['type']);
-        $this->assertEquals('100abc000abc00', $balance['merchant_id']);
-        $this->assertEquals(280000, $balance['balance']);
-
-        $this->assertEquals('adjustment', $transaction['type']);
-        $this->assertEquals('100abc000abc00', $transaction['merchant_id']);
-        $this->assertEquals(250000, $transaction['amount']);
-        $this->assertEquals($balanceId, $transaction['balance_id']);
-
-        Mail::assertQueued(YesbankLoadViaAdjustment::class, function($mail)
-        {
-            $viewData = $mail->viewData;
-
-            $this->assertEquals('250000', $viewData['amount']); // raw amount
-            $this->assertEquals('2,500.00', amount_format_IN($viewData['amount'])); // formatted amount
-
-            $expectedData = [
-                'adjustment_description' => 'Account: ABC123, Bank: ICICI',
-                'account_number'         => 'ABC123PQR',
-            ];
-
-            $this->assertArraySelectiveEquals($expectedData, $viewData);
-
-            $this->assertEquals('emails.banking.yesbank_load_via_adjustment', $mail->view);
-
-            return true;
-        });
-    }
-
     public function testAddReserveBalance()
     {
         Mail::fake();
@@ -700,5 +553,481 @@ class AdjustmentTest extends TestCase
         $this->fixtures->admin->edit($admin['id'], ['allow_all_merchants' => true]);
 
         $this->ba->adminProxyAuth($merchantId, 'rzp_test_'.$merchantId);
+    }
+
+    public function testTransactionCreatedWebhookFiringAndMailOnAdjustmentCreateForBankingBalance()
+    {
+        Mail::fake();
+
+        $this->setupMockDns();
+
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                           ->setConstructorArgs([$this->app])
+                           ->setMethods(['getTreatment', 'getCachedTreatment'])
+                           ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+                          ->willReturn('on');
+
+        $this->app->razorx->method('getCachedTreatment')
+                          ->willReturn('off');
+
+        $this->fixtures->create('balance',
+                                [
+                                    'type'           => 'banking',
+                                    'account_type'   => 'shared',
+                                    'account_number' => 'ABC123PQR',
+                                    'merchant_id'    => '100abc000abc00',
+                                    'balance'        => 30000
+                                ]);
+
+        // Create merchant user mapping
+        $this->fixtures->on('live')->user->createUserMerchantMapping([
+                                                                         'merchant_id' => '100abc000abc00',
+                                                                         'user_id'     => User::MERCHANT_USER_ID,
+                                                                         'product'     => 'banking',
+                                                                         'role'        => 'owner',
+                                                                     ], 'test');
+
+        $this->app->forgetInstance('basicauth');
+
+        $request = array(
+            'url'     => '/webhooks',
+            'method'  => 'post',
+            'content' => array('url'    => 'http://webhook.com/v1/dummy/route',
+                               'events' => ['transaction.created' => '1']),
+            'server'  => ['HTTP_X-Request-Origin' => \Config::get('applications.banking_service_url')]);
+
+        $this->ba->proxyAuth("rzp_test_100abc000abc00");
+
+        $this->makeRequestAndGetContent($request);
+
+        $this->app->forgetInstance('basicauth');
+
+        $admin = $this->ba->getAdmin();
+
+        $this->fixtures->admin->edit($admin['id'], ['allow_all_merchants' => true]);
+
+        $this->ba->adminProxyAuth('100abc000abc00', 'rzp_test_100abc000abc00');
+
+        $eventTestDataKey = 'testTransactionCreatedWebhookFiringAndMailOnAdjustmentCreateForBankingBalanceData';
+        $this->setInfernoExpectations([$eventTestDataKey]);
+
+        $response = $this->startTest();
+
+        $adjId = $response['id'];
+
+        $txnId = $response['transaction_id'];
+
+        $adjustment = $this->getDbEntityById('adjustment', $adjId);
+
+        $balanceId = $adjustment['balance_id'];
+
+        $balance = $this->getDbEntityById('balance', $balanceId);
+
+        $transaction = $this->getDbEntityById('transaction', $txnId);
+
+        $this->assertNotNull($adjustment, 'adjustment should not be null');
+
+        $this->assertNotNull($balance, 'balance should not be null');
+
+        $this->assertNotNull($transaction, 'transaction should not be null');
+
+        $this->assertEquals($txnId, $adjustment['transaction_id']);
+        $this->assertEquals('100abc000abc00', $adjustment['merchant_id']);
+        $this->assertEquals(250000, $adjustment['amount']);
+
+        $this->assertEquals('banking', $balance['type']);
+        $this->assertEquals('100abc000abc00', $balance['merchant_id']);
+        $this->assertEquals(280000, $balance['balance']);
+
+        $this->assertEquals('adjustment', $transaction['type']);
+        $this->assertEquals('100abc000abc00', $transaction['merchant_id']);
+        $this->assertEquals(250000, $transaction['amount']);
+        $this->assertEquals($balanceId, $transaction['balance_id']);
+
+        Mail::assertQueued(Adjustment::class, function($mail)
+        {
+            $viewData = $mail->viewData;
+
+            $this->assertEquals('250000', $viewData['txn']['amount']); // raw amount
+            $this->assertEquals('2,500.00', amount_format_IN($viewData['txn']['amount'])); // formatted amount
+
+            $expectedData = [
+                'source' => [
+                    'description' => 'Account: ABC123, Bank: ICICI',
+                    'amount'      => 250000
+                ],
+            ];
+
+            $this->assertArraySelectiveEquals($expectedData, $viewData);
+
+            $mailSubject = "[Test Mode] Your A/C ending with XXXXX3PQR has been credited by INR 2,500.00";
+
+            $this->assertEquals($mailSubject, $mail->subject);
+
+            $this->assertEquals('emails.transaction.adjustment', $mail->view);
+
+            return true;
+        });
+    }
+
+    public function testTransactionCreatedWebhookFiringAndMailOnNegativeAdjustmentCreateForBankingBalance()
+    {
+        Mail::fake();
+
+        $this->setupMockDns();
+
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                           ->setConstructorArgs([$this->app])
+                           ->setMethods(['getTreatment', 'getCachedTreatment'])
+                           ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+                          ->willReturn('on');
+
+        $this->app->razorx->method('getCachedTreatment')
+                          ->willReturn('off');
+
+        $this->fixtures->create('balance',
+                                [
+                                    'type'           => 'banking',
+                                    'account_type'   => 'shared',
+                                    'account_number' => 'ABC123PQR',
+                                    'merchant_id'    => '100abc000abc00',
+                                    'balance'        => 280000
+                                ]);
+
+        // Create merchant user mapping
+        $this->fixtures->on('live')->user->createUserMerchantMapping([
+                                                                         'merchant_id' => '100abc000abc00',
+                                                                         'user_id'     => User::MERCHANT_USER_ID,
+                                                                         'product'     => 'banking',
+                                                                         'role'        => 'owner',
+                                                                     ], 'test');
+
+        $this->app->forgetInstance('basicauth');
+
+        $request = array(
+            'url'     => '/webhooks',
+            'method'  => 'post',
+            'content' => array('url'    => 'http://webhook.com/v1/dummy/route',
+                               'events' => ['transaction.created' => '1']),
+            'server'  => ['HTTP_X-Request-Origin' => \Config::get('applications.banking_service_url')]);
+
+        $this->ba->proxyAuth("rzp_test_100abc000abc00");
+
+        $this->makeRequestAndGetContent($request);
+
+        $this->app->forgetInstance('basicauth');
+
+        $admin = $this->ba->getAdmin();
+
+        $this->fixtures->admin->edit($admin['id'], ['allow_all_merchants' => true]);
+
+        $this->ba->adminProxyAuth('100abc000abc00', 'rzp_test_100abc000abc00');
+
+        $eventTestDataKey = 'testTransactionCreatedWebhookFiringAndMailOnNegativeAdjustmentCreateForBankingBalanceData';
+        $this->setInfernoExpectations([$eventTestDataKey]);
+
+        $response = $this->startTest();
+
+        $adjId = $response['id'];
+
+        $txnId = $response['transaction_id'];
+
+        $adjustment = $this->getDbEntityById('adjustment', $adjId);
+
+        $balanceId = $adjustment['balance_id'];
+
+        $balance = $this->getDbEntityById('balance', $balanceId);
+
+        $transaction = $this->getDbEntityById('transaction', $txnId);
+
+        $this->assertNotNull($adjustment, 'adjustment should not be null');
+
+        $this->assertNotNull($balance, 'balance should not be null');
+
+        $this->assertNotNull($transaction, 'transaction should not be null');
+
+        $this->assertEquals($txnId, $adjustment['transaction_id']);
+        $this->assertEquals('100abc000abc00', $adjustment['merchant_id']);
+        $this->assertEquals(-250000, $adjustment['amount']);
+
+        $this->assertEquals('banking', $balance['type']);
+        $this->assertEquals('100abc000abc00', $balance['merchant_id']);
+        $this->assertEquals(30000, $balance['balance']);
+
+        $this->assertEquals('adjustment', $transaction['type']);
+        $this->assertEquals('100abc000abc00', $transaction['merchant_id']);
+        $this->assertEquals(250000, $transaction['amount']);
+        $this->assertEquals($balanceId, $transaction['balance_id']);
+
+        Mail::assertQueued(Adjustment::class, function($mail)
+        {
+            $viewData = $mail->viewData;
+
+            $this->assertEquals('250000', $viewData['txn']['amount']); // raw amount
+            $this->assertEquals('2,500.00', amount_format_IN($viewData['txn']['amount'])); // formatted amount
+
+            $expectedData = [
+                'source' => [
+                    'description' => 'Account: ABC123, Bank: ICICI',
+                    'amount'      => -250000
+                ],
+            ];
+
+            $this->assertArraySelectiveEquals($expectedData, $viewData);
+
+            $mailSubject = "[Test Mode] Your A/C ending with XXXXX3PQR has been debited by INR 2,500.00";
+
+            $this->assertEquals($mailSubject, $mail->subject);
+
+            $this->assertEquals('emails.transaction.adjustment', $mail->view);
+
+            return true;
+        });
+    }
+
+    public function testTransactionCreatedWebhookFiringAndMailOnAdjustmentCreateForBankingBalanceRazorxControl()
+    {
+        Mail::fake();
+
+        $this->setupMockDns();
+
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                           ->setConstructorArgs([$this->app])
+                           ->setMethods(['getTreatment', 'getCachedTreatment'])
+                           ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+                          ->willReturn('control');
+
+        $this->app->razorx->method('getCachedTreatment')
+                          ->willReturn('off');
+
+        $this->fixtures->create('balance',
+                                [
+                                    'type'           => 'banking',
+                                    'account_type'   => 'shared',
+                                    'account_number' => 'ABC123PQR',
+                                    'merchant_id'    => '100abc000abc00',
+                                    'balance'        => 30000
+                                ]);
+
+        // Create merchant user mapping
+        $this->fixtures->on('live')->user->createUserMerchantMapping([
+                                                                         'merchant_id' => '100abc000abc00',
+                                                                         'user_id'     => User::MERCHANT_USER_ID,
+                                                                         'product'     => 'banking',
+                                                                         'role'        => 'owner',
+                                                                     ], 'test');
+
+        $this->app->forgetInstance('basicauth');
+
+        $request = array(
+            'url'     => '/webhooks',
+            'method'  => 'post',
+            'content' => array('url'    => 'http://webhook.com/v1/dummy/route',
+                               'events' => ['transaction.created' => '1']),
+            'server'  => ['HTTP_X-Request-Origin' => \Config::get('applications.banking_service_url')]);
+
+        $this->ba->proxyAuth("rzp_test_100abc000abc00");
+
+        $this->makeRequestAndGetContent($request);
+
+        $this->app->forgetInstance('basicauth');
+
+        $admin = $this->ba->getAdmin();
+
+        $this->fixtures->admin->edit($admin['id'], ['allow_all_merchants' => true]);
+
+        $this->ba->adminProxyAuth('100abc000abc00', 'rzp_test_100abc000abc00');
+
+        $eventTestDataKey = 'testTransactionCreatedWebhookFiringAndMailOnAdjustmentCreateForBankingBalanceRazorxControlData';
+        $this->setInfernoExpectations([$eventTestDataKey]);
+
+        $response = $this->startTest();
+
+        $adjId = $response['id'];
+
+        $txnId = $response['transaction_id'];
+
+        $adjustment = $this->getDbEntityById('adjustment', $adjId);
+
+        $balanceId = $adjustment['balance_id'];
+
+        $balance = $this->getDbEntityById('balance', $balanceId);
+
+        $transaction = $this->getDbEntityById('transaction', $txnId);
+
+        $this->assertNotNull($adjustment, 'adjustment should not be null');
+
+        $this->assertNotNull($balance, 'balance should not be null');
+
+        $this->assertNotNull($transaction, 'transaction should not be null');
+
+        $this->assertEquals($txnId, $adjustment['transaction_id']);
+        $this->assertEquals('100abc000abc00', $adjustment['merchant_id']);
+        $this->assertEquals(250000, $adjustment['amount']);
+
+        $this->assertEquals('banking', $balance['type']);
+        $this->assertEquals('100abc000abc00', $balance['merchant_id']);
+        $this->assertEquals(280000, $balance['balance']);
+
+        $this->assertEquals('adjustment', $transaction['type']);
+        $this->assertEquals('100abc000abc00', $transaction['merchant_id']);
+        $this->assertEquals(250000, $transaction['amount']);
+        $this->assertEquals($balanceId, $transaction['balance_id']);
+
+        Mail::assertQueued(Adjustment::class, function($mail)
+        {
+            $viewData = $mail->viewData;
+
+            $this->assertEquals('250000', $viewData['txn']['amount']); // raw amount
+            $this->assertEquals('2,500.00', amount_format_IN($viewData['txn']['amount'])); // formatted amount
+
+            $expectedData = [
+                'source' => [
+                    'description' => 'Account: ABC123, Bank: ICICI',
+                    'amount'      => 250000
+                ],
+            ];
+
+            $this->assertArraySelectiveEquals($expectedData, $viewData);
+
+            $mailSubject = "[Test Mode] Your A/C ending with XXXXX3PQR has been credited by INR 2,500.00";
+
+            $this->assertEquals($mailSubject, $mail->subject);
+
+            $this->assertEquals('emails.transaction.adjustment', $mail->view);
+
+            return true;
+        });
+    }
+
+    public function testTransactionCreatedWebhookFiringAndMailOnNegativeAdjustmentCreateForBankingBalanceRazorxControl()
+    {
+        Mail::fake();
+
+        $this->setupMockDns();
+
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                           ->setConstructorArgs([$this->app])
+                           ->setMethods(['getTreatment', 'getCachedTreatment'])
+                           ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+                          ->willReturn('control');
+
+        $this->app->razorx->method('getCachedTreatment')
+                          ->willReturn('off');
+
+        $this->fixtures->create('balance',
+                                [
+                                    'type'           => 'banking',
+                                    'account_type'   => 'shared',
+                                    'account_number' => 'ABC123PQR',
+                                    'merchant_id'    => '100abc000abc00',
+                                    'balance'        => 280000
+                                ]);
+
+        // Create merchant user mapping
+        $this->fixtures->on('live')->user->createUserMerchantMapping([
+                                                                         'merchant_id' => '100abc000abc00',
+                                                                         'user_id'     => User::MERCHANT_USER_ID,
+                                                                         'product'     => 'banking',
+                                                                         'role'        => 'owner',
+                                                                     ], 'test');
+
+        $this->app->forgetInstance('basicauth');
+
+        $request = array(
+            'url'     => '/webhooks',
+            'method'  => 'post',
+            'content' => array('url'    => 'http://webhook.com/v1/dummy/route',
+                               'events' => ['transaction.created' => '1']),
+            'server'  => ['HTTP_X-Request-Origin' => \Config::get('applications.banking_service_url')]);
+
+        $this->ba->proxyAuth("rzp_test_100abc000abc00");
+
+        $this->makeRequestAndGetContent($request);
+
+        $this->app->forgetInstance('basicauth');
+
+        $admin = $this->ba->getAdmin();
+
+        $this->fixtures->admin->edit($admin['id'], ['allow_all_merchants' => true]);
+
+        $this->ba->adminProxyAuth('100abc000abc00', 'rzp_test_100abc000abc00');
+
+        $eventTestDataKey = 'testTransactionCreatedWebhookFiringAndMailOnNegativeAdjustmentCreateForBankingBalanceRazorxControlData';
+        $this->setInfernoExpectations([$eventTestDataKey]);
+
+        $response = $this->startTest();
+
+        $adjId = $response['id'];
+
+        $txnId = $response['transaction_id'];
+
+        $adjustment = $this->getDbEntityById('adjustment', $adjId);
+
+        $balanceId = $adjustment['balance_id'];
+
+        $balance = $this->getDbEntityById('balance', $balanceId);
+
+        $transaction = $this->getDbEntityById('transaction', $txnId);
+
+        $this->assertNotNull($adjustment, 'adjustment should not be null');
+
+        $this->assertNotNull($balance, 'balance should not be null');
+
+        $this->assertNotNull($transaction, 'transaction should not be null');
+
+        $this->assertEquals($txnId, $adjustment['transaction_id']);
+        $this->assertEquals('100abc000abc00', $adjustment['merchant_id']);
+        $this->assertEquals(-250000, $adjustment['amount']);
+
+        $this->assertEquals('banking', $balance['type']);
+        $this->assertEquals('100abc000abc00', $balance['merchant_id']);
+        $this->assertEquals(30000, $balance['balance']);
+
+        $this->assertEquals('adjustment', $transaction['type']);
+        $this->assertEquals('100abc000abc00', $transaction['merchant_id']);
+        $this->assertEquals(250000, $transaction['amount']);
+        $this->assertEquals($balanceId, $transaction['balance_id']);
+
+        Mail::assertQueued(Adjustment::class, function($mail)
+        {
+            $viewData = $mail->viewData;
+
+            $this->assertEquals('250000', $viewData['txn']['amount']); // raw amount
+            $this->assertEquals('2,500.00', amount_format_IN($viewData['txn']['amount'])); // formatted amount
+
+            $expectedData = [
+                'source' => [
+                    'description' => 'Account: ABC123, Bank: ICICI',
+                    'amount'      => -250000
+                ],
+            ];
+
+            $this->assertArraySelectiveEquals($expectedData, $viewData);
+
+            $mailSubject = "[Test Mode] Your A/C ending with XXXXX3PQR has been debited by INR 2,500.00";
+
+            $this->assertEquals($mailSubject, $mail->subject);
+
+            $this->assertEquals('emails.transaction.adjustment', $mail->view);
+
+            return true;
+        });
     }
 }

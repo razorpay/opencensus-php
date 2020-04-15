@@ -144,50 +144,6 @@ return [
         ]
     ],
 
-    'testSendYesbankLoadSuccessfulEmail' => [
-        'request' => [
-            'url' => '/adjustments',
-            'method' => 'POST',
-            'content' => [
-                'amount'        =>  250000,
-                'type'          =>  'banking',
-                'merchant_id'   =>  '100abc000abc00',
-                'currency'      =>  'INR',
-                'description'   =>  'Account: ABC123, Bank: ICICI'
-            ]
-        ],
-        'response' => [
-            'content' => [
-                'entity'        => 'adjustment',
-                'amount'        => 250000,
-                'currency'      => 'INR',
-                'description'   => 'Account: ABC123, Bank: ICICI',
-            ],
-        ]
-    ],
-
-    'testSendYesbankLoadSuccessfulEmailRazorxControl' => [
-        'request' => [
-            'url' => '/adjustments',
-            'method' => 'POST',
-            'content' => [
-                'amount'        =>  250000,
-                'type'          =>  'banking',
-                'merchant_id'   =>  '100abc000abc00',
-                'currency'      =>  'INR',
-                'description'   =>  'Account: ABC123, Bank: ICICI'
-            ]
-        ],
-        'response' => [
-            'content' => [
-                'entity'        => 'adjustment',
-                'amount'        => 250000,
-                'currency'      => 'INR',
-                'description'   => 'Account: ABC123, Bank: ICICI',
-            ],
-        ]
-    ],
-
     'testAddReserveBalance' => [
         'request' => [
             'url' => '/adjustments',
@@ -344,5 +300,165 @@ return [
                 ],
             ],
         ]
+    ],
+
+    'testTransactionCreatedWebhookFiringAndMailOnAdjustmentCreateForBankingBalance' => [
+        'request' => [
+            'url' => '/adjustments',
+            'method' => 'POST',
+            'content' => [
+                'amount'        =>  250000,
+                'type'          =>  'banking',
+                'merchant_id'   =>  '100abc000abc00',
+                'currency'      =>  'INR',
+                'description'   =>  'Account: ABC123, Bank: ICICI'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'entity'        => 'adjustment',
+                'amount'        => 250000,
+                'currency'      => 'INR',
+                'description'   => 'Account: ABC123, Bank: ICICI',
+            ],
+        ]
+    ],
+
+    'testTransactionCreatedWebhookFiringAndMailOnAdjustmentCreateForBankingBalanceData' => [
+        'entity'   => 'event',
+        'event'    => 'transaction.created',
+        'contains' => [
+            'transaction',
+        ],
+        'payload'  => [
+            'transaction' => [
+                'entity' => [
+                    'entity' => 'transaction',
+                    'source'   => [
+                        'entity' => 'adjustment',
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testTransactionCreatedWebhookFiringAndMailOnNegativeAdjustmentCreateForBankingBalance' => [
+        'request' => [
+            'url' => '/adjustments',
+            'method' => 'POST',
+            'content' => [
+                'amount'        =>  -250000,
+                'type'          =>  'banking',
+                'merchant_id'   =>  '100abc000abc00',
+                'currency'      =>  'INR',
+                'description'   =>  'Account: ABC123, Bank: ICICI'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'entity'        => 'adjustment',
+                'amount'        => -250000,
+                'currency'      => 'INR',
+                'description'   => 'Account: ABC123, Bank: ICICI',
+            ],
+        ]
+    ],
+
+    'testTransactionCreatedWebhookFiringAndMailOnNegativeAdjustmentCreateForBankingBalanceData' => [
+        'entity'   => 'event',
+        'event'    => 'transaction.created',
+        'contains' => [
+            'transaction',
+        ],
+        'payload'  => [
+            'transaction' => [
+                'entity' => [
+                    'entity' => 'transaction',
+                    'source'   => [
+                        'entity' => 'adjustment',
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testTransactionCreatedWebhookFiringAndMailOnAdjustmentCreateForBankingBalanceRazorxControl' => [
+        'request' => [
+            'url' => '/adjustments',
+            'method' => 'POST',
+            'content' => [
+                'amount'        =>  250000,
+                'type'          =>  'banking',
+                'merchant_id'   =>  '100abc000abc00',
+                'currency'      =>  'INR',
+                'description'   =>  'Account: ABC123, Bank: ICICI'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'entity'        => 'adjustment',
+                'amount'        => 250000,
+                'currency'      => 'INR',
+                'description'   => 'Account: ABC123, Bank: ICICI',
+            ],
+        ]
+    ],
+
+    'testTransactionCreatedWebhookFiringAndMailOnAdjustmentCreateForBankingBalanceRazorxControlData' => [
+        'entity'   => 'event',
+        'event'    => 'transaction.created',
+        'contains' => [
+            'transaction',
+        ],
+        'payload'  => [
+            'transaction' => [
+                'entity' => [
+                    'entity' => 'transaction',
+                    'source'   => [
+                        'entity' => 'adjustment',
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testTransactionCreatedWebhookFiringAndMailOnNegativeAdjustmentCreateForBankingBalanceRazorxControl' => [
+        'request' => [
+            'url' => '/adjustments',
+            'method' => 'POST',
+            'content' => [
+                'amount'        =>  -250000,
+                'type'          =>  'banking',
+                'merchant_id'   =>  '100abc000abc00',
+                'currency'      =>  'INR',
+                'description'   =>  'Account: ABC123, Bank: ICICI'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'entity'        => 'adjustment',
+                'amount'        => -250000,
+                'currency'      => 'INR',
+                'description'   => 'Account: ABC123, Bank: ICICI',
+            ],
+        ]
+    ],
+
+    'testTransactionCreatedWebhookFiringAndMailOnNegativeAdjustmentCreateForBankingBalanceRazorxControlData' => [
+        'entity'   => 'event',
+        'event'    => 'transaction.created',
+        'contains' => [
+            'transaction',
+        ],
+        'payload'  => [
+            'transaction' => [
+                'entity' => [
+                    'entity' => 'transaction',
+                    'source'   => [
+                        'entity' => 'adjustment',
+                    ],
+                ],
+            ],
+        ],
     ],
 ];

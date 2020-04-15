@@ -175,4 +175,14 @@ class Entity extends Base\PublicEntity
 
         $input[self::SETTLEMENT_ID] = Settlement\Entity::verifyIdAndSilentlyStripSign($settlementId);
     }
+
+    public function shouldNotifyTxnViaSms(): bool
+    {
+        return false;
+    }
+
+    public function shouldNotifyTxnViaEmail(): bool
+    {
+        return $this->isBalanceTypeBanking() === true;
+    }
 }
