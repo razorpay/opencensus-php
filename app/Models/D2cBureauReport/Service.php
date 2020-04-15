@@ -2,19 +2,39 @@
 
 namespace RZP\Models\D2cBureauReport;
 
+use Carbon\Carbon;
+
 use RZP\Models\Base;
 use RZP\Models\User;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
+use RZP\Constants\Timezone;
 use RZP\Models\D2cBureauDetail;
-use RZP\Models\Merchant\Account;
 use RZP\Jobs\D2cCsvReportCreate;
 
 class Service extends Base\Service
 {
-    public function getReport(D2cBureauDetail\Entity $bureauDetail, Merchant\Entity $merchant, User\Entity $user): Entity
+    public function getReport(D2cBureauDetail\Entity $bureauDetail,
+                              Merchant\Entity $merchant = null,
+                              User\Entity $user = null): Entity
     {
-        $report = $this->repo->d2c_bureau_report->findByProviderDetailIdAndMerchantId(Provider::EXPERIAN, $bureauDetail->getId(), $merchant->getId());
+        if ($merchant === null)
+        {
+            $merchant = $this->repo->merchant->findOrFail($bureauDetail->getMerchantId());
+        }
+
+        if ($user === null)
+        {
+            $user = $this->repo->user->findOrFail($bureauDetail->getUserId());
+        }
+
+        $reportValidity = Carbon::now(Timezone::IST)->subDays(15)->getTimestamp();
+
+        $report = $this->repo->d2c_bureau_report->findByProviderDetailIdAndMerchantIdCreatedAfter(
+                                                        Provider::EXPERIAN,
+                                                        $bureauDetail->getId(),
+                                                        $merchant->getId(),
+                                                        $reportValidity);
 
         if ($report !== null)
         {
@@ -26,13 +46,6 @@ class Service extends Base\Service
         D2cCsvReportCreate::dispatch($this->mode, $report);
 
         return $report;
-    }
-
-    public function fetchReport(D2cBureauDetail\Entity $bureauDetail): array
-    {
-        $report = $this->repo->d2c_bureau_report->findByProviderAndDetailId(Provider::EXPERIAN, $bureauDetail->getId());
-
-        return $report->toArrayForDashboard();
     }
 
     public function update($id, array $input): array

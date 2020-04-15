@@ -30,9 +30,12 @@ class D2cBureauDetailsTest extends TestCase
 
         parent::setUp();
 
-        $this->merchantDetail = $this->fixtures->create('merchant_detail:valid_fields');
+        $this->merchantDetail = $this->fixtures->create('merchant_detail:valid_fields', [
+            'merchant_id' => '10000000000000'
+        ]);
 
         $this->user = $this->fixtures->user->createUserForMerchant($this->merchantDetail['merchant_id'], [
+            'id'               => '20000000000000',
             'name'              => 'john doe',
             'contact_mobile'    => '9876543210',
         ]);
@@ -53,7 +56,7 @@ class D2cBureauDetailsTest extends TestCase
                 function ($namespace, $gateway, $action, $input, $version, $useMozartMappedInternalErrorCode)
                 {
                     $this->assertArraySelectiveEquals([
-                        'first_name'    => 'testhello',
+                        'first_name'    => 'john',
                         'address'       => 'Adress',
                         'city'          => 'city',
                     ], $input['d2c_bureau_details']);
@@ -101,6 +104,31 @@ class D2cBureauDetailsTest extends TestCase
         ], $d2cOwnerDetails);
     }
 
+    public function testPostCreateInternal()
+    {
+        $this->ba->appAuth('rzp_test', Config::get('applications.los')['secret']);
+
+        $this->startTest();
+
+        $d2cOwnerDetails = $this->getLastEntity('d2c_bureau_detail', true);
+
+        $this->assertArraySelectiveEquals([
+//            'id'              => 'd2cbd_EeKAdZlPeSM4mM',
+            'first_name'      => 'john',
+            'last_name'       => 'doe',
+            'date_of_birth'   => '1996-10-10',
+            'gender'          => 'male',
+            'contact_mobile'  => '9999999999',
+            'email'           => 'test@razorpay.com',
+            'address'         => 'Flat no 12, opp Adugodi Police Station',
+            'city'            => 'Bangalore',
+            'state'           => 'PB',
+            'pincode'         => '560030',
+            'pan'             => 'ABCDE1234F',
+//            'created_at'      => 1586858252
+        ], $d2cOwnerDetails);
+    }
+
     public function testPatchBureauDetails()
     {
         $this->ba->proxyAuth('rzp_test_' . $this->merchantDetail['merchant_id'], $this->user->getId());
@@ -120,6 +148,10 @@ class D2cBureauDetailsTest extends TestCase
 
         $bureauDetailsId = $response['id'];
 
+        $this->testData['testPatchBureauDetails']['request']['url'] .= $bureauDetailsId;
+
+        $response = $this->makeRequestAndGetContent($this->testData['testPatchBureauDetails']['request']);
+
         $this->testData['testSubmitOtp']['request']['url'] = strtr($this->testData['testSubmitOtp']['request']['url'], ['{id}' => $bureauDetailsId,]);
 
         $response = $this->makeRequestAndGetContent($this->testData['testSubmitOtp']['request']);
@@ -137,9 +169,15 @@ class D2cBureauDetailsTest extends TestCase
 
         $response = $this->makeRequestAndGetContent($this->testData['testPostCreate']['request']);
 
-        $this->reportUrl = 'report_experian_' . $response['id'] . '.txt.txt';
+        $bureauDetailsId = $response['id'];
 
-        $this->testData[__FUNCTION__]['request']['url'] = strtr($this->testData[__FUNCTION__]['request']['url'], ['{id}' => $response['id'],]);
+        $this->reportUrl = 'report_experian_' . $bureauDetailsId . '.txt.txt';
+
+        $this->testData['testPatchBureauDetails']['request']['url'] .= $bureauDetailsId;
+
+        $response = $this->makeRequestAndGetContent($this->testData['testPatchBureauDetails']['request']);
+
+        $this->testData[__FUNCTION__]['request']['url'] = strtr($this->testData[__FUNCTION__]['request']['url'], ['{id}' => $bureauDetailsId,]);
 
         $ufhServiceMock = $this->getMockBuilder(UfhService::class)
                                ->setConstructorArgs([$this->app])
@@ -197,13 +235,93 @@ class D2cBureauDetailsTest extends TestCase
         Queue::assertPushed(D2cCsvReportCreate::class);
     }
 
+    public function testSubmitOtpInternal()
+    {
+        $this->ba->proxyAuth('rzp_test_' . $this->merchantDetail['merchant_id'], $this->user->getId());
+
+        $response = $this->makeRequestAndGetContent($this->testData['testPostCreate']['request']);
+
+        $bureauDetailsId = $response['id'];
+
+        $this->reportUrl = 'report_experian_' . $bureauDetailsId . '.txt.txt';
+
+        $this->testData['testPatchBureauDetails']['request']['url'] .= $bureauDetailsId;
+
+        $response = $this->makeRequestAndGetContent($this->testData['testPatchBureauDetails']['request']);
+
+        $this->testData[__FUNCTION__]['request']['url'] = strtr($this->testData[__FUNCTION__]['request']['url'], ['{id}' => $bureauDetailsId,]);
+
+        $ufhServiceMock = $this->getMockBuilder(UfhService::class)
+                               ->setConstructorArgs([$this->app])
+                               ->setMethods(['getSignedUrl', 'uploadFileAndGetUrl'])
+                               ->getMock();
+
+        $ufhServiceMock->expects($this->at(0))
+                       ->method('getSignedUrl')
+                       ->will($this->returnCallback(
+                           function (string $fileId, array $params = [], $merchantId = null)
+                           {
+                               return [
+                                   'signed_url'    => 'storage/files/filestore/' .  $this->reportUrl,
+                               ];
+                           }));
+
+        $ufhServiceMock->method('getSignedUrl')
+                       ->will($this->returnCallback(
+                           function (string $fileId, array $params = [], $merchantId = null)
+                           {
+                               return [
+                                   'signed_url'    => 'rzp_file_mock_id_1000000_bureau_report_csv'
+                               ];
+                           }));
+
+        $ufhServiceMock->method('uploadFileAndGetUrl')
+                       ->will($this->returnCallback(
+                           function ($file, $storageFileName, string $type, Entity $entity, array $metadata = [])
+                           {
+                               return [
+                                   'file_id'           => 'file_1cXSLlUU8V9sXl',
+                                   'relative_location' => $storageFileName,
+                               ];
+                           }));
+
+        $this->app->instance('ufh.service', $ufhServiceMock);
+
+        Queue::fake();
+
+        $this->ba->appAuth('rzp_test', Config::get('applications.los')['secret']);
+
+        $this->startTest();
+
+        $d2cBureauReport = $this->getLastEntity('d2c_bureau_report', true);
+
+        $this->assertArraySelectiveEquals([
+            'merchant_id'           => $this->merchantDetail['merchant_id'],
+            'user_id'               => $this->user->getId(),
+            'd2c_bureau_detail_id'  => D2cBureauDetail\Entity::verifyIdAndStripSign($response['id']),
+            'provider'              => 'experian',
+//            'score'                 => 752,
+//            'report'                => '{"active_accounts": "1", "closed_accounts": "1", "count_of_accounts": "2", "total_outstanding_balance": "152000", "secured_account_outstanding_balance": "152000", "un_secured_account_outstanding_balance": "0"}',
+            'ufh_file_id'           => 'file_1cXSLlUU8V9sXl',
+//                'created_at'        => 1571374473
+        ], $d2cBureauReport);
+
+        Queue::assertPushed(D2cCsvReportCreate::class);
+    }
+
     public function testPatchBureauReport()
     {
         $this->ba->proxyAuth('rzp_test_' . $this->merchantDetail['merchant_id'], $this->user->getId());
 
         $response = $this->makeRequestAndGetContent($this->testData['testPostCreate']['request']);
 
-        $this->testData['testSubmitOtp']['request']['url'] = strtr($this->testData['testSubmitOtp']['request']['url'], ['{id}' => $response['id'],]);
+        $bureauDetailsId = $response['id'];
+
+        $this->testData['testPatchBureauDetails']['request']['url'] .= $bureauDetailsId;
+
+        $response = $this->makeRequestAndGetContent($this->testData['testPatchBureauDetails']['request']);
+
+        $this->testData['testSubmitOtp']['request']['url'] = strtr($this->testData['testSubmitOtp']['request']['url'], ['{id}' => $bureauDetailsId,]);
 
         $response = $this->makeRequestAndGetContent($this->testData['testSubmitOtp']['request']);
 
@@ -224,7 +342,13 @@ class D2cBureauDetailsTest extends TestCase
 
         $response = $this->makeRequestAndGetContent($this->testData['testPostCreate']['request']);
 
-        $this->reportUrl = 'report_experian_' . $response['id'] . '.txt.txt';
+        $bureauDetailsId = $response['id'];
+
+        $this->reportUrl = 'report_experian_' . $bureauDetailsId . '.txt.txt';
+
+        $this->testData['testPatchBureauDetails']['request']['url'] .= $bureauDetailsId;
+
+        $response = $this->makeRequestAndGetContent($this->testData['testPatchBureauDetails']['request']);
 
         $this->testData['testSubmitOtp']['request']['url'] = strtr($this->testData['testSubmitOtp']['request']['url'], ['{id}' => $response['id'],]);
 

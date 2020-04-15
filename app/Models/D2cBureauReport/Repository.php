@@ -8,20 +8,13 @@ class Repository extends Base\Repository
 {
     protected $entity = 'd2c_bureau_report';
 
-    public function findByProviderDetailIdAndMerchantId(string $provider, string $detailId, string $merchantId)
+    public function findByProviderDetailIdAndMerchantIdCreatedAfter(string $provider, string $detailId, string $merchantId, int $after)
     {
         return $this->newQuery()
                     ->where(Entity::D2C_BUREAU_DETAIL_ID, $detailId)
                     ->where(Entity::PROVIDER, $provider)
                     ->where(Entity::MERCHANT_ID, $merchantId)
-                    ->first();
-    }
-
-    public function findByProviderAndDetailId(string $provider, string $detailId)
-    {
-        return $this->newQuery()
-                    ->where(Entity::D2C_BUREAU_DETAIL_ID, $detailId)
-                    ->where(Entity::PROVIDER, $provider)
+                    ->where(Entity::CREATED_AT, '>=', $after)
                     ->get()
                     ->last();
     }

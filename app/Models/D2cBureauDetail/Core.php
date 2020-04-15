@@ -13,7 +13,7 @@ use RZP\Constants\IndianStates;
 
 class Core extends Base\Core
 {
-    public function getOrCreate(Merchant\Detail\Entity $merchantDetails, Merchant\Entity $merchant, User\Entity $user): Entity
+    public function getOrCreate(Merchant\Detail\Entity $merchantDetails, Merchant\Entity $merchant, User\Entity $user, array $data = []): Entity
     {
         $ownerDetails = $this->repo->d2c_bureau_detail->findByUserIdAndMerchant($user->getId(), $merchant->getId());
 
@@ -55,6 +55,13 @@ class Core extends Base\Core
             Entity::PAN             => $merchantDetails[Detail\Entity::PROMOTER_PAN],
             Entity::STATUS          => Status::CREATED,
         ];
+
+        if(count($data) !== 0)
+        {
+            $input = $data['data'] + [
+                Entity::STATUS => Status::CREATED
+            ];
+        }
 
         /** @var Entity $ownerDetails */
         $ownerDetails = (new Entity)->build($input);

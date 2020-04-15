@@ -30,8 +30,17 @@ class Service extends Base\Service
         $this->bureauReport = new D2cBureauReport\Service();
     }
 
-    public function getOrCreate(): array
+    public function getOrCreate(array $input): array
     {
+        if (isset($input[Entity::MERCHANT_ID]) === true)
+        {
+            $this->merchant = $this->repo->merchant->findOrFail($input[Entity::MERCHANT_ID]);
+
+            $this->app['basicauth']->setMerchant($this->merchant);
+
+            $this->user = $this->repo->user->findOrFail($input[Entity::USER_ID]);
+        }
+
         $this->trace->info(TraceCode::D2C_BUREAU_DETAILS_CREATE, [
             'merchant_id'   => $this->merchant->getId(),
             'user_id'       => $this->user->getId(),
@@ -53,7 +62,7 @@ class Service extends Base\Service
 
         try
         {
-           return $this->core()->getOrCreate($merchantDetails, $this->merchant, $this->user)->toArrayPublic();
+           return $this->core()->getOrCreate($merchantDetails, $this->merchant, $this->user, $input)->toArrayPublic();
         }
         catch (\Exception $e)
         {
@@ -70,14 +79,34 @@ class Service extends Base\Service
 
     public function updateDetails($id, array $input): array
     {
+        if (isset($input[Entity::MERCHANT_ID]) === true)
+        {
+            $this->merchant = $this->repo->merchant->findOrFail($input[Entity::MERCHANT_ID]);
+
+            $this->app['basicauth']->setMerchant($this->merchant);
+
+            $this->user = $this->repo->user->findOrFail($input[Entity::USER_ID]);
+        }
+
         $this->trace->info(TraceCode::D2C_BUREAU_DETAILS_UPDATE, [
             'id'    => $id,
             'input' => $input,
         ]);
 
+        /** @var Entity $bureauDetail */
         $bureauDetail = $this->repo->d2c_bureau_detail->findByPublicIdAndMerchant($id, $this->merchant);
 
+        $contactMobile = $bureauDetail->getContactMobile();
+
         $bureauDetail->edit($input);
+
+        if ((isset($input[Entity::CONTACT_MOBILE]) === true) &&
+            ($input[Entity::CONTACT_MOBILE] !== $contactMobile))
+        {
+            $bureauDetail[Entity::STATUS] = Status::CREATED;
+
+            $bureauDetail->setVerifiedAtNull();
+        }
 
         $this->repo->saveOrFail($bureauDetail);
 
@@ -92,24 +121,39 @@ class Service extends Base\Service
 
     public function fetchReport($id): array
     {
-        $this->trace->info(TraceCode::D2C_BUREAU_REPORT_FETCH, [
+        $this->trace->info(TraceCode::LOS_D2C_BUREAU_REPORT_FETCH, [
             'id'    => $id,
         ]);
 
         $bureauDetail = $this->repo->d2c_bureau_detail->findByPublicId($id);
 
-        return $this->bureauReport->fetchReport($bureauDetail);
+        return $this->bureauReport->getReport($bureauDetail)->toArrayForDashboard();
     }
 
     public function getReportWithOtp($id, array $input): array
     {
+        if (isset($input[Entity::MERCHANT_ID]) === true)
+        {
+            $this->merchant = $this->repo->merchant->findOrFail($input[Entity::MERCHANT_ID]);
+
+            $this->app['basicauth']->setMerchant($this->merchant);
+
+            $this->user = $this->repo->user->findOrFail($input[Entity::USER_ID]);
+        }
+
         $this->trace->info(TraceCode::D2C_BUREAU_OTP_SUBMIT_REQUEST, [
-                'id'    => $id,
-                'input' => $input,
+            'id'    => $id,
+            'input' => $input,
         ]);
 
         /** @var Entity $bureauDetail */
         $bureauDetail = $this->repo->d2c_bureau_detail->findByPublicIdAndMerchant($id, $this->merchant);
+
+        (new JitValidator)->rules(Validator::$afterPatchRules)
+                          ->caller($this)
+                          ->input($bureauDetail->toArray())
+                          ->strict(false)
+                          ->validate();
 
         $this->user->validateInput('verifyOtp', [
                                         'otp'               => $input['otp'],
@@ -131,10 +175,10 @@ class Service extends Base\Service
 
             $this->core()->updateStatusVerified($bureauDetail);
 
-            return $this->repo->transactionOnLiveAndTest(function() use ($bureauDetail, $input)
-            {
-                $report = $this->bureauReport->getReport($bureauDetail, $this->merchant, $this->user);
+            $report = $this->bureauReport->getReport($bureauDetail, $this->merchant, $this->user);
 
+            return $this->repo->transactionOnLiveAndTest(function() use ($bureauDetail, $input, $report)
+            {
                 // every bureau credit score pull cost us some money. So removing feature after pulling score once so
                 // that dashboard doesn't fetch score again.
                 $this->removeFeature();

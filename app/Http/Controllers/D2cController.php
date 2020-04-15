@@ -10,7 +10,9 @@ class D2cController extends Controller
 {
     public function getOrCreate()
     {
-        $entity = $this->service(Entity::D2C_BUREAU_DETAIL)->getOrCreate();
+        $input = Request::all();
+
+        $entity = $this->service(Entity::D2C_BUREAU_DETAIL)->getOrCreate($input);
 
         return ApiResponse::json($entity);
     }

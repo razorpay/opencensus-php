@@ -97,9 +97,19 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::VERIFIED_AT, $verifiedAt);
     }
 
+    public function setVerifiedAtNull()
+    {
+        $this->setAttribute(self::VERIFIED_AT, null);
+    }
+
     public function getContactMobile(): string
     {
         return $this->getAttribute(self::CONTACT_MOBILE);
+    }
+
+    public function getUserId(): string
+    {
+        return $this->getAttribute(self::USER_ID);
     }
 
     protected function getSettingsAccessor(): Settings\Accessor
