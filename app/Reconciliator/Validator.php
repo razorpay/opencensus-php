@@ -96,7 +96,7 @@ class Validator extends Base\Core
         RequestProcessor\Base::BAJAJFINSERV       => ["/Payment MIS RAZORPAY SOFTWARE PRIVATE LIMITED_ [0-9]{1,2} (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) 20[0-9]{2}/"],
         RequestProcessor\Base::YES_BANK           => ["/Yes Bank_ MPR [0-9]{2}-[0-9]{2}-20[0-9]{2}/"],
         RequestProcessor\Base::HDFC_DEBIT_EMI     => ["/^DCEMI Reconciliation & Payment Summary Report/"],
-        RequestProcessor\Base::UPI_JUSPAY         => ["/^BAJAJ TXN DETAILS"],
+        RequestProcessor\Base::UPI_JUSPAY         => ["/^BAJAJ TXN DETAILS/"],
     ];
 
     const GATEWAY_BODY_REGEX = [
