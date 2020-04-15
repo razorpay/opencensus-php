@@ -24,4 +24,6 @@ class Constants
 
     const OCR_MATCH_TYPE = 'ocr_match_type';
 
+    const CONTENT_DISPOSITION        = 'Content-Disposition';
+    const CONTENT_DISPOSITION_INLINE = 'inline';
 }

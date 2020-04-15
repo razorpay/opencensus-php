@@ -28,10 +28,15 @@ class UFHFileHandler implements FileHandlerInterface
         $type     = $input[Constants::TYPE];
         $fileName = $input[Constants::FILE_NAME];
 
+        $fileMetaData = [
+            Constants::CONTENT_DISPOSITION => Constants::CONTENT_DISPOSITION_INLINE
+        ];
+
         $fileMetaData = $this->ufhService->uploadFileAndGetUrl($file,
                                                                $fileName,
                                                                $type,
-                                                               $input[Constants::ENTITY]);
+                                                               $input[Constants::ENTITY],
+                                                               $fileMetaData);
 
         $results[Constants::FILE_ID] = FileStore\Entity::verifyIdAndSilentlyStripSign($fileMetaData[UfhService::FILE_ID]);
         $results[Constants::SOURCE]  = $this->getSource();
