@@ -5,10 +5,10 @@ namespace RZP\Models\Dispute;
 use RZP\Base;
 use RZP\Exception;
 use RZP\Models\Payment;
-use RZP\Models\Currency;
 use RZP\Error\ErrorCode;
 use RZP\Models\FileStore;
 use RZP\Models\Admin\File;
+use RZP\Models\Currency\Currency;
 use RZP\Exception\BadRequestValidationFailureException;
 
 class Validator extends Base\Validator
@@ -32,8 +32,8 @@ class Validator extends Base\Validator
         Entity::EXPIRES_ON             => 'required|epoch',
         Entity::REASON_ID              => 'required|alpha_num|size:14',
         Entity::AMOUNT                 => 'sometimes|integer|min:100',
-        Entity::GATEWAY_AMOUNT         => 'sometimes|integer',
-        Entity::GATEWAY_CURRENCY       => 'required_with:gateway_amount|string|size:3',
+        Entity::GATEWAY_AMOUNT         => 'sometimes|integer|min:1',
+        Entity::GATEWAY_CURRENCY       => 'required_with:gateway_amount|string|size:3|custom',
         Entity::DEDUCT_AT_ONSET        => 'sometimes|boolean',
         Entity::PARENT_ID              => 'sometimes|alpha_num|size:14',
         Entity::MERCHANT_EMAILS        => 'sometimes|array',
@@ -85,6 +85,16 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_CANNOT_UPDATE_CLOSED_DISPUTE);
+        }
+    }
+
+    protected function validateGatewayCurrency($attribute, $currency)
+    {
+        if (Currency::isSupportedCurrency($currency) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_CURRENCY_NOT_SUPPORTED,
+                'currency');
         }
     }
 
