@@ -22,8 +22,10 @@ RUN set -eu && \
     php artisan optimize && \
     php artisan rzp:write_routes_meta
 
+# Usage specific image which has luarocks compiled.
+FROM openresty/openresty:1.15.8.2-6-alpine-fat-nosse42
 
-FROM openresty/openresty:1.15.8.2-6-alpine-nosse42
+RUN /usr/local/openresty/luajit/bin/luarocks install lua-resty-jwt
 
 RUN echo "* Installing deps" && \
     apk add --no-cache \
