@@ -219,4 +219,17 @@ return [
             'content' => []
         ]
     ],
+
+    'testFetchStatementByTransactionIdForRbl' => [
+         'request' => [
+            'method'  => 'GET',
+            'url'     => '/transactions',
+            'content' => [
+                'account_number' => '2224440041626905',
+            ],
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
 ];

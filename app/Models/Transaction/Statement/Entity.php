@@ -220,4 +220,18 @@ class Entity extends Transaction\Entity
         // Transaction\Entity's toArrayPublic() for some legacy reason unsets lot of attributes.
         return PublicEntity::toArrayPublic();
     }
+
+    public function getCreatedAtAttribute()
+    {
+        $createAt = (int) $this->attributes[self::CREATED_AT];
+
+        $postedAt = (int) $this->attributes[self::POSTED_AT];
+
+        if ($this->isBalanceAccountTypeDirect() === true)
+        {
+            return $postedAt ? $postedAt : $createAt;
+        }
+
+         return $createAt;
+    }
 }

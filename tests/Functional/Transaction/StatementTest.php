@@ -103,6 +103,7 @@ class StatementTest extends TestCase
 
         $txn = $response['items'][0];
 
+        $this->assertEquals($this->transaction->getCreatedAt(), $txn['created_at']);
         $this->assertEquals($this->transaction->getPublicId(), $txn['id']);
         $this->assertEquals($this->transaction['amount'], $txn['amount']);
         $this->assertEquals($this->transaction->getSignedEntityId(), $txn['source']['id']);
@@ -122,6 +123,7 @@ class StatementTest extends TestCase
 
         $txn = $response['items'][0];
 
+        $this->assertEquals($this->transaction->getCreatedAt(), $txn['created_at']);
         $this->assertEquals($this->transaction->getPublicId(), $txn['id']);
         $this->assertEquals($this->transaction['amount'], $txn['amount']);
         $this->assertEquals($this->transaction->getSignedEntityId(), $txn['source']['id']);

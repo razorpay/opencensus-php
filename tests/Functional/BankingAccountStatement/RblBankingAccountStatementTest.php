@@ -157,9 +157,9 @@ class RblBankingAccountStatementTest extends TestCase
 
         $externalTxnId = $externalActual[ExternalEntity::TRANSACTION_ID];
 
-        $txnEntity = $this->getDbEntityById(EntityConstants::TRANSACTION, $externalTxnId);
+        $this->txnEntity = $this->getDbEntityById(EntityConstants::TRANSACTION, $externalTxnId);
 
-        $txnActual = $txnEntity->toArray();
+        $txnActual = $this->txnEntity->toArray();
 
         $baAfterTest = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT, true);
 
@@ -1557,5 +1557,24 @@ class RblBankingAccountStatementTest extends TestCase
 
         // updated_at remains same as BAS fetch failed
         $this->assertEquals($initialBalance['updated_at'], $finalBalance['updated_at']);
+    }
+
+    public function testFetchStatementByTransactionIdForRbl()
+    {
+        $this->testRblAccountStatementCase1();
+
+        $this->testData['testFetchStatementByTransactionIdForRbl']['request']['url'] = '/transactions/'  . $this->txnEntity->getPublicId();
+
+        $request = $this->testData['testFetchStatementByTransactionIdForRbl']['request'];
+
+        $this->ba->privateAuth();
+
+        $this->ba->privateAuth();
+
+        $response = $this->startTest();
+        
+        $this->assertEquals($this->txnEntity->getPostedDate(), $response['created_at']);
+        $this->assertEquals($this->txnEntity->getPublicId(), $response['id']);
+        $this->assertEquals($this->txnEntity['amount'], $response['amount']);
     }
 }

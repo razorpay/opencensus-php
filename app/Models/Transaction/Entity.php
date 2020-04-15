@@ -1005,4 +1005,14 @@ class Entity extends Base\PublicEntity
     {
         return $this->getAttribute(self::POSTED_AT);
     }
+
+    public function isBalanceAccountTypeDirect(): bool
+    {
+        if ($this->isBalanceTypeBanking() === true)
+        {
+            return ($this->accountBalance->isAccountTypeDirect() === true);
+        }
+
+        return false;
+    }
 }
