@@ -8,7 +8,7 @@ use RZP\Models\P2p\Base\Libraries\ArrayBag;
 
 class Entity extends Base\PublicEntity
 {
-    // Common constants across Entities
+    // Common constants across Entities,
     const REQUEST       = 'request';
     const RESPONSE      = 'response';
     const SUCCESS       = 'success';
@@ -19,6 +19,8 @@ class Entity extends Base\PublicEntity
     const GATEWAY_DATA  = 'gateway_data';
     const CALLBACK      = 'callback';
     const SDK           = 'sdk';
+    const SMS           = 'sms';
+    const POLL          = 'poll';
     const UPI           = 'upi';
     const ACTION        = 'action';
     const DATA          = 'data';

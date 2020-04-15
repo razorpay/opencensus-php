@@ -45,7 +45,7 @@ class DeviceTest extends TestCase
 
         $helper->withSchemaValidated();
 
-        $response = $helper->verification($initiate['callback']);
+        $response = $helper->verification($initiate['callback'], ['sms' => ['success' => true]]);
 
         $device = $this->getDbLastDevice();
 

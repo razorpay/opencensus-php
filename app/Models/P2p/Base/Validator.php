@@ -55,6 +55,8 @@ class Validator extends Base\Validator
         return [
             Entity::CALLBACK    => 'sometimes',
             Entity::SDK         => 'sometimes',
+            Entity::SMS         => 'sometimes',
+            Entity::POLL        => 'sometimes',
         ];
     }
 
