@@ -2133,6 +2133,12 @@ class Entity extends Base\PublicEntity
         return $this->isFeatureEnabled(Feature\Constants::HEADLESS_DISABLE) === false;
     }
 
+
+    public function isIvrEnabled() : bool
+    {
+        return $this->isFeatureEnabled(Feature\Constants::IVR) === false;
+    }
+
     /**
      * Used for Marketplace, dashboard:
      * Return report data for a linked account under a marketplace merchant

@@ -3084,7 +3084,10 @@ trait Authorize
             return;
         }
 
-        if ($this->merchant->isFeatureEnabled(Feature\Constants::OTP_AUTH_DEFAULT) === true)
+        if (($this->merchant->isFeatureEnabled(Feature\Constants::OTP_AUTH_DEFAULT) === true) or
+            ((($this->merchant->isHeadlessEnabled() === true) or
+            ($this->merchant->isIvrEnabled() === true)) and
+            ($this->app['basicauth']->isDirectAuth() === true)))
         {
             $preferredAuth = $payment->getMetadata(Payment\Entity::PREFERRED_AUTH, []);
 
@@ -6622,6 +6625,14 @@ trait Authorize
         {
             return false;
         }
+
+        $merchant = $payment->merchant;
+
+        if ($merchant->isHeadlessEnabled() === false)
+        {
+            return true;
+        }
+
 
         // check only for headless need to figure out for IVR and Axis express pay
         if (($this->canRunHeadlessOtpFlow($payment, $gatewayInput) === true) and

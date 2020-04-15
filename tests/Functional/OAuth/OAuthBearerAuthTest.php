@@ -383,7 +383,6 @@ class OAuthBearerAuthTest extends OAuthTestCase
             'network' => 'MasterCard',
             'flows'   => [
                 '3ds'          => '1',
-                'headless_otp' => '1',
             ]
         ]);
 
