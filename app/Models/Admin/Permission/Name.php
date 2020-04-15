@@ -357,6 +357,7 @@ class Name
     const UPLOAD_MERCHANT_DOCUMENT            = 'upload_merchant_document';
     const DELETE_MERCHANT_DOCUMENT            = 'delete_merchant_document';
     const UPDATE_MERCHANT_BANK_ACCOUNT_STATUS = 'merchant_bank_account_change_status';
+    const TOGGLE_TRANSACTION_HOLD_STATUS      = 'toggle_transaction_hold_status';
 
     public static $actionMap = [
         Merchant\Action::ARCHIVE                            => self::EDIT_MERCHANT_ARCHIVE,

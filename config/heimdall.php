@@ -431,7 +431,7 @@ return [
                 'assignable'  => true,
             ],
             Permission::EDIT_MERCHANT_INTERNATIONAL  => '',
-
+            Permission::TOGGLE_TRANSACTION_HOLD_STATUS => '',
         ],
 
         PermissionCategory::SETTLEMENT => [

@@ -3677,8 +3677,8 @@ final class Route
         'update_sr_level_global_config'             => '*',
         //'get_all_sr_level_global_config'            => Permission::LIST_DOWNTIME_CONFIG,
         'get_all_sr_level_global_config'            => '*',
-        'toggle_transaction_hold'                   => Permission::EDIT_MERCHANT_RISK_THRESHOLD,
-        'toggle_transaction_release'                => Permission::EDIT_MERCHANT_RISK_THRESHOLD,
+        'toggle_transaction_hold'                   => Permission::TOGGLE_TRANSACTION_HOLD_STATUS,
+        'toggle_transaction_release'                => Permission::TOGGLE_TRANSACTION_HOLD_STATUS,
         'register_offline_device'                   => '*',
 
         'fetch_batch_action_entities'               => Permission::ADMIN_BATCH_CREATE,
