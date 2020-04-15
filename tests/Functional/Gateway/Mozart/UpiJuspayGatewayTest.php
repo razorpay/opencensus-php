@@ -49,6 +49,7 @@ class UpiJuspayGatewayTest extends TestCase
             Entity::STATUS          => 'created',
             Entity::GATEWAY         => 'upi_juspay',
             Entity::TERMINAL_ID     => $this->terminal->getId(),
+            Entity::REFUND_AT       => null,
         ], $payment->toArray());
 
         $request = $this->mockServer()->getCallbackRequest($payment->toArray());
@@ -61,6 +62,7 @@ class UpiJuspayGatewayTest extends TestCase
         $payment->refresh();
 
         $this->assertTrue($payment->isAuthorized());
+        $this->assertNotNull($payment->getRefundAt());
 
         return $payment;
     }

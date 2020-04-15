@@ -91,6 +91,12 @@ class UpiMindgateGatewayTest extends TestCase
 
         $payment = $this->getEntityById('payment', $paymentId, true);
 
+        /**
+           Adding a check that , refund_at should be null while the payment is
+            in created state
+        */
+        $this->assertNull($payment['refund_at']);
+
         $content = $this->mockServer()->getAsyncCallbackContent($upiEntity, $payment);
 
         $response = $this->makeS2SCallbackAndGetContent($content);
@@ -101,6 +107,7 @@ class UpiMindgateGatewayTest extends TestCase
         // The payment should now be authorized
         $payment = $this->getEntityById('payment', $paymentId, true);
         $this->assertEquals('authorized', $payment['status']);
+        $this->assertNotNull($payment['refund_at']);
 
         $upiEntity = $this->getLastEntity('upi', true);
         $this->assertNotNull($upiEntity['npci_reference_id']);

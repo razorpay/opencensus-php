@@ -3257,6 +3257,10 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             $this->setRefundStatus(RefundStatus::FULL);
 
             $this->setStatus(Payment\Status::REFUNDED);
+
+            // Setting refund_at to null when, payment is refunded, so it wont get picked
+            // up by cron.
+            $this->setRefundAt(null);
         }
         else
         {

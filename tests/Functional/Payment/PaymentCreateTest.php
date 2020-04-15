@@ -2905,4 +2905,50 @@ class PaymentCreateTest extends TestCase
         $this->assertNull($payment);
         $this->assertNull($upiMetadata);
     }
+
+    public function testPaymentCaptureForNullRefundAt()
+    {
+        $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
+
+        $payment = $this->getDefaultUpiPaymentArray();
+
+        $this->doAuthPayment($payment);
+
+        $payment = $this->getDbLastPayment();
+
+        $this->assertNotNull($payment->getRefundAt());
+
+        $this->capturePayment($payment->getPublicId(), $payment->getAmount());
+
+        $payment->refresh();
+
+        $this->assertNull($payment->getRefundAt());
+        $this->assertSame('captured', $payment->getStatus());
+    }
+
+    public function testPaymentRefundForNullRefundAt()
+    {
+        $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
+
+        $payment = $this->getDefaultUpiPaymentArray();
+
+        $this->doAuthPayment($payment);
+
+        $payment = $this->getDbLastPayment();
+
+        // As sharp, will be directly authorized.
+        $this->assertSame('authorized', $payment->getStatus());
+        $this->assertNotNull($payment->getRefundAt());
+
+        $after = Carbon::now()->addDays(6);
+
+        Carbon::setTestNow($after);
+
+        $this->refundOldAuthorizedPayments();
+
+        $payment = $this->getDbLastPayment();
+
+        $this->assertSame('refunded', $payment->getStatus());
+        $this->assertNull($payment->getRefundAt());
+    }
 }

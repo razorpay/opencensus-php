@@ -45,6 +45,11 @@ class AxisGatewayTest extends TestCase
         $payment = $this->getDefaultPaymentArray();
         $payment = $this->doAuthPayment($payment);
 
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertNotNull($payment['refund_at']);
+        $this->assertSame('authorized', $payment['status']);
+
         $txn = $this->getLastEntity('transaction', true);
         $this->assertNull($txn);
 
@@ -59,6 +64,13 @@ class AxisGatewayTest extends TestCase
             $this->testData['testPaymentAxisMigsEntity'], $migs);
 
         $payment = $this->capturePayment($payment['public_id'], $payment['amount']);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertArraySubset([
+            'refund_at' => null,
+            'status'    => 'captured',
+        ], $payment);
 
         $txn = $this->getDbLastEntityPublic('transaction');
 

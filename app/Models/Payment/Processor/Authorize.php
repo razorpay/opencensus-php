@@ -3067,8 +3067,6 @@ trait Authorize
             $this->setRecurringType($payment, $input);
         }
 
-        $this->setAutoRefundTimestamp($payment);
-
         $this->setPreferredAuthIfApplicable($payment);
 
         // this needs to be done after we have card entity as we need to know if card is debit or credit
@@ -3209,23 +3207,23 @@ trait Authorize
 
     protected function setAutoRefundTimestamp(Payment\Entity $payment)
     {
-        $currentTime = Carbon::now()->getTimestamp();
+        $createdAt = $payment->getCreatedAt();
 
-        $minAutoRefundTime = $currentTime + Merchant\Entity::MIN_AUTO_REFUND_DELAY;
+        $minAutoRefundTime = $createdAt + Merchant\Entity::MIN_AUTO_REFUND_DELAY;
 
-        $merchantAutoRefundTime = $currentTime + $payment->merchant->getAutoRefundDelay();
+        $merchantAutoRefundTime = $createdAt + $payment->merchant->getAutoRefundDelay();
 
         $merchantAutoRefundTime = max($minAutoRefundTime, $merchantAutoRefundTime);
 
         if ($payment->isEmandate() === true)
         {
-            $emandateAutoRefundTime = $currentTime + Merchant\Entity::AUTO_REFUND_DELAY_FOR_EMANDATE;
+            $emandateAutoRefundTime = $createdAt + Merchant\Entity::AUTO_REFUND_DELAY_FOR_EMANDATE;
 
             $merchantAutoRefundTime = $emandateAutoRefundTime;
         }
         else if ($payment->isNach() === true)
         {
-            $merchantAutoRefundTime = $currentTime + Merchant\Entity::AUTO_REFUND_DELAY_FOR_NACH;
+            $merchantAutoRefundTime = $createdAt + Merchant\Entity::AUTO_REFUND_DELAY_FOR_NACH;
         }
 
         $payment->setRefundAt($merchantAutoRefundTime);
@@ -6170,6 +6168,9 @@ trait Authorize
             {
                 return false;
             }
+
+            // Auto refund timestamp will be set, when the payment is authorized.
+            $this->setAutoRefundTimestamp($payment);
 
             $payment->setErrorNull();
 
