@@ -572,11 +572,7 @@ class Service extends Base\Service
 
         $payment = $this->repo->payment->findOrFailPublic($paymentId);
 
-        $input[Entity::SPEED] = RefundSpeed::OPTIMUM;
-
-        $refundFee = $this->getNewProcessor($this->merchant)->fetchFeeForRefundAmount($payment, $input);
-
-        return $refundFee;
+        return $this->getNewProcessor($this->merchant)->fetchFeeForRefundAmount($payment, $input);
     }
 
     public function verifyMultiple($ids)

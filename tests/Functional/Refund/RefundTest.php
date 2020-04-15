@@ -4415,4 +4415,30 @@ class RefundTest extends TestCase
         $this->assertEquals(RefundStatus::PROCESSED, $refund['status']);
         $this->assertEquals(RefundSpeed::NORMAL, $refund['speed_processed']);
     }
+
+    public function testPaymentInstantRefundFee()
+    {
+        $payment = $this->defaultAuthPayment();
+        $payment = $this->capturePayment($payment['id'], $payment['amount']);
+
+        $card = $this->getDbLastEntity('card');
+
+        $iin = $this->getDbEntityById('iin', $card['iin']);
+
+        $this->assertEquals($iin['type'], 'credit');
+
+        $this->assertEquals($iin['issuer'], 'HDFC');
+
+        $this->fixtures->card->edit($payment['card_id'], ['vault_token' => 'XXXXXXXXXXX']);
+
+        $this->gateway = 'hdfc';
+
+        $this->fixtures->pricing->createInstantRefundsDefaultPricingplan();
+
+        // Adding specific amount to refund - this is meant to test successful instant refunds on scrooge -
+        $refundFee = $this->paymentRefundFetchFee($payment['id'], 3471);
+
+        $this->assertEquals(589, $refundFee['fee']);
+        $this->assertEquals(90, $refundFee['tax']);
+    }
 }

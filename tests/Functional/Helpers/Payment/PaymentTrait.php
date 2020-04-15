@@ -1278,6 +1278,22 @@ trait PaymentTrait
         return $data;
     }
 
+    protected function paymentRefundFetchFee(string $paymentId, int $amount)
+    {
+        $this->ba->proxyAuth();
+
+        $request = [
+            'url'     => '/refunds/fee',
+            'method'  => 'get',
+            'content' => [
+                'amount'     => $amount,
+                'payment_id' => $paymentId,
+            ]
+        ];
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
     protected function authorizeFailedPayment($id)
     {
         $request = array(

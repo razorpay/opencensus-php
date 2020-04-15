@@ -1503,15 +1503,50 @@ trait Refund
 
     public function fetchFeeForRefundAmount($payment, $input)
     {
-        // We are just building refund Entity to return fee and not saving the entity
-        $refund = $this->buildRefundEntity($payment, $input);
+        try
+        {
+            $this->setPayment($payment);
 
-        $refundFees = [
-            RefundEntity::FEE => $refund->getFee(),
-            RefundEntity::TAX => $refund->getTax(),
+            $refund = (new Payment\Refund\Entity)->build($input, $payment);
+
+            $refund->merchant()->associate($this->merchant);
+
+            $refund->setBaseAmount();
+            $refund->setGatewayAmountCurrency();
+            $refund->setSpeedRequested(RefundSpeed::OPTIMUM);
+            $refund->setSpeedDecisioned(RefundSpeed::OPTIMUM);
+
+            $mode = $this->getRefundModeFromScrooge($payment);
+
+            if (empty($mode) === false)
+            {
+                $refund->setModeRequested($mode);
+            }
+
+            list($fee, $tax, $feesSplit) = (new Pricing\Fee)->calculateMerchantFees($refund);
+
+            return [
+                RefundEntity::FEE => $fee,
+                RefundEntity::TAX => $tax,
+            ];
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->traceException(
+                $ex,
+                Trace::ERROR,
+                TraceCode::REFUND_PRICING_FETCH_FAILURE_EXCEPTION,
+                [
+                    'payment_id'     => $payment->getId(),
+                    'payment_method' => $payment->getMethod(),
+                    'refund_amount'  => $input[RefundEntity::AMOUNT],
+                ]);
+        }
+
+        return [
+            RefundEntity::FEE => null,
+            RefundEntity::TAX => null,
         ];
-
-        return $refundFees;
     }
 
     protected function processRefund()
