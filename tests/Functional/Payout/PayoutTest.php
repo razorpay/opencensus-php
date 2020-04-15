@@ -1519,6 +1519,78 @@ class PayoutTest extends TestCase
         $this->assertEquals($payout['fees'], $responsePayout['fees']);
     }
 
+    public function testSearchPayoutByContactEmailExactMatch($email1='user1@payout.com',
+                                                             $email2='user2@payout.com')
+    {
+        $contact1 = $this->fixtures->create('contact',
+            ['id' => '1000005contact', 'email' => $email1, 'contact' => '8888888888', 'name' => 'test user1']);
+
+        $contact2 = $this->fixtures->create('contact',
+            ['id' => '1000006contact', 'email' => $email2, 'contact' => '8888888889', 'name' => 'test user2']);
+
+        $this->fixtures->edit(
+            'fund_account',
+            '100000000000fa',
+            [
+                'source_id'     => $contact1->id,
+                'source_type'   => 'contact',
+            ]);
+
+        $this->fixtures->create(
+            'fund_account',
+            [
+                'id'           => '100000000001fa',
+                'source_id'    => $contact2->id,
+                'source_type'  => 'contact',
+                'account_type' => 'bank_account',
+                'account_id'   => '1000000lcustba'
+            ]);
+
+        $payout1 = $this->testCreatePayout();
+
+        $payout2 = $this->testCreatePayout();
+
+        $this->fixtures->edit(
+            'payout',
+            $payout1['id'],
+            [
+                'fund_account_id' => '100000000000fa'
+            ]
+        );
+
+        $this->fixtures->edit(
+            'payout',
+            $payout2['id'],
+            [
+                'fund_account_id' => '100000000001fa'
+            ]
+        );
+
+        $this->createEsIndex();
+
+        $request = & $this->testData[__FUNCTION__]['request'];
+
+        $request['url'] = "/payouts?contact_email={$email1}&account_number=2224440041626905";
+
+        $this->ba->privateAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEquals(1, $response['count']);
+
+        $responsePayout = $response['items'][0];
+
+        $this->assertEquals($payout1['id'], $responsePayout['id']);
+    }
+
+    public function testSearchPayoutByContactEmailDifferentDomainExactMatch()
+    {
+        $this->testSearchPayoutByContactEmailExactMatch(
+            'user1@payout.com',
+            'user1@pt.com'
+        );
+    }
+
     public function testSearchPayoutByFundAccountId()
     {
         $contact = $this->fixtures->create('contact', ['id' => '1000005contact', 'email' => 'test@payout.com', 'contact' => '8888888888', 'name' => 'test user']);

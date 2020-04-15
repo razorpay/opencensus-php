@@ -1330,6 +1330,19 @@ return [
         ]
     ],
 
+    'testSearchPayoutByContactEmailExactMatch' => [
+        'request' => [
+            'method'  => 'get',
+            'url'     => '/payouts',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ]
+        ]
+    ],
+
     'testSearchPayoutByFundAccountId' => [
         'request' => [
             'method'  => 'get',

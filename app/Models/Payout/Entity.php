@@ -154,6 +154,9 @@ class Entity extends Base\PublicEntity
     const CARD    = 'card';
     const NUMBER  = 'number';
 
+    // Used exclusively for Elasticsearch queries
+    const CONTACT_EMAIL_RAW = 'contact_email.raw';
+
     protected $queueFlag = false;
 
     protected $composite = false;

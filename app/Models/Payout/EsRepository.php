@@ -76,4 +76,14 @@ class EsRepository extends Base\EsRepository
 
         $this->addFilter($query, $filter);
     }
+
+    protected function buildQueryForContactEmail(array & $query, $value)
+    {
+        if (empty($value) === true)
+        {
+            return;
+        }
+
+        $this->addTermFilter($query, Entity::CONTACT_EMAIL_RAW, $value);
+    }
 }

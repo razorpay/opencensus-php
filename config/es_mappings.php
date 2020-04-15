@@ -517,6 +517,12 @@ return [
                 'analyzer'        => 'edge_ngram_analyzer',
                 'search_analyzer' => 'standard_custom',
                 'index_options'   => 'offsets',
+                'fields'          => [
+                    'raw' => [
+                        'type'  => 'keyword',
+                        'index' => 'not_analyzed'
+                    ]
+                ]
             ],
             'type' => [
                 'type'  => 'keyword',
