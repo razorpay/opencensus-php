@@ -8,8 +8,8 @@ use RZP\Reconciliator\Base;
 use RZP\Models\Payment\Action;
 use RZP\Models\Payment\Refund;
 use RZP\Gateway\Netbanking\Sbi\Status;
+use RZP\Exception\BadRequestException;
 use RZP\Exception\ReconciliationException;
-use Razorpay\Spine\Exception\DbQueryException;
 use RZP\Gateway\Netbanking\Sbi\ReconFields\RefundReconFields;
 
 class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
@@ -53,7 +53,7 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
 
             $refundId = $this->refund->getId();
         }
-        catch (DbQueryException $ex)
+        catch (BadRequestException $ex)
         {
             $this->messenger->raiseReconAlert(
                 [
