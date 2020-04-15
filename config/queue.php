@@ -306,6 +306,11 @@ return [
         'test'       => env('AWS_TRANSFER_SETTLEMENT_TEST_QUEUE'),
         'live'       => env('AWS_TRANSFER_SETTLEMENT_LIVE_QUEUE'),
     ],
+    //order transfers queue
+    'order_transfer' => [
+        'test'       => env('AWS_ORDER_TRANSFER_TEST_QUEUE'),
+        'live'       => env('AWS_ORDER_TRANSFER_LIVE_QUEUE'),
+    ],
     // settlement related QUEUES
     'settlement_create' => [
         'test'       => env('AWS_SETTLEMENT_CREATE_TEST_QUEUE'),

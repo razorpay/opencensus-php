@@ -18,6 +18,8 @@ class OrderTransferProcess extends Job
 
     protected $payment;
 
+    protected $queueConfigKey = 'order_transfer';
+
     public function __construct(string $mode, Payment\Entity $payment)
     {
         parent::__construct($mode);
