@@ -58,7 +58,6 @@ class NbPlusPaymentServiceTest extends TestCase
                            ->setMethods(['getTreatment'])
                            ->getMock();
 
-        // we are ramping up auth terminal selection hence to make sure all test cases passes
         $this->app->instance('razorx', $razorxMock);
 
         $this->app->razorx

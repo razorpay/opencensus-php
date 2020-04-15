@@ -34,6 +34,25 @@ class Netbanking extends NetbankingBase
         return [];
     }
 
+    public function fetchNetbankingData(array $request)
+    {
+        $response = [
+          'count'  => 1,
+          'entity' => 'collection',
+          'items'  => []
+        ];
+
+        foreach ($request['payment_ids'] as $paymentId)
+        {
+            $response['items'][$paymentId] = [
+                'gateway_transaction_id' => str_random(),
+                'bank_transaction_id'    => str_random()
+            ];
+        }
+
+        return $response;
+    }
+
     protected function authorize($input)
     {
         return [

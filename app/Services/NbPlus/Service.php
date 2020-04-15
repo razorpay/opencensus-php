@@ -112,11 +112,6 @@ class Service
         return $driver->action($gateway, $action, $input);
     }
 
-    public function fetchNetbankingData(array $input)
-    {
-        return $this->sendRequest('POST', 'entities/netbanking', $input);
-    }
-
     public function fetchMultiple(string $entityName, array $input)
     {
         $path = self::ADMIN_PATH . $entityName;
@@ -129,6 +124,11 @@ class Service
         $path = self::ADMIN_PATH . $entityName . '/' . $id;
 
         return $this->sendRequest('GET', $path, $input);
+    }
+
+    public function fetchNetbankingData(array $input)
+    {
+        return $this->sendRequest('POST', 'entities/netbanking', $input);
     }
 
     public function sendRequest(string $method, string $url, array $data = [])
