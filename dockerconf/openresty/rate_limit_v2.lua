@@ -251,7 +251,7 @@ end
 
 --Readiness probe for the application , basically checks if the app is able to establish redis connection
 function M.check_redis_connection(ngx)
-    local redis, err = utility.get_redis_conn()
+    local redis, err = utility.get_redis_conn(ngx)
     if err then
         ngx.exit(ngx.HTTP_INTERNAL_SERVER_ERROR)
     else
