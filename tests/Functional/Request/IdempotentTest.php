@@ -23,6 +23,7 @@ class IdempotentTest  extends TestCase
         //X-Idempotent-Key
         $headers = [
             'HTTP_X_Idempotent_Key'    => 'idempotentId',
+            'HTTP_X_Creator_Id'        => 'MerchantUser01',
         ];
 
         // append headers
@@ -41,6 +42,7 @@ class IdempotentTest  extends TestCase
         //X-Idempotent-Key
         $headers = [
             'HTTP_X_Idempotent_Key'    => 'idempotentId',
+            'HTTP_X_Creator_Id'        => 'MerchantUser01',
         ];
 
         $this->ba->batchAuth();
@@ -65,6 +67,7 @@ class IdempotentTest  extends TestCase
         //X-Idempotent-Key
         $headers = [
             'HTTP_X_Idempotent_Key'    => 'idempotentId',
+            'HTTP_X_Creator_Id'        => 'MerchantUser01',
         ];
 
         $this->ba->privateAuth();

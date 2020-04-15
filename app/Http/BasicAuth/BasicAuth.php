@@ -1449,6 +1449,12 @@ class BasicAuth
         return (in_array($this->getInternalApp(), ['dashboard', 'dashboard_guest'], true) === true);
     }
 
+    public function isInternalApp(): bool
+    {
+        return (($this->isDashboardApp() === true) or
+                ($this->isBatchApp() === true));
+    }
+
     public function isDebugApp()
     {
         $app = $this->getInternalApp();
@@ -2228,6 +2234,11 @@ class BasicAuth
         $dashboardHeaders = $this->getDashboardHeaders();
 
         $userId = $dashboardHeaders['user_id'] ?? null;
+
+        if($userId === null)
+        {
+            $userId = $this->request->headers->get(RequestHeader::X_Creator_Id);
+        }
 
         if (empty($userId) === false)
         {

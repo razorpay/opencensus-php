@@ -96,7 +96,7 @@ class UserAccess
 
         if (($this->ba->isAdminAuth() === false) and
             ($this->ba->isStrictPrivateAuth() === false) and
-            ($this->ba->isDashboardApp() === true))
+            ($this->ba->isInternalApp() === true))
         {
             $route = $this->router->currentRouteName();
 
