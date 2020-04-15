@@ -120,6 +120,26 @@ class SalesForceClient
         );
     }
 
+    public function sendPartnerInfo(Merchant\Entity $partner)
+    {
+        if ($partner->isPartner() === false)
+        {
+            return;
+        }
+
+        $url = $this->generateUrlForMerchantUpsert();
+
+        $data = [
+            Merchant\Entity::MERCHANT_ID  => $partner->getId(),
+            Merchant\Entity::PARTNER_TYPE => $partner->getPartnerType()
+        ];
+
+        $this->dispatchRequestJob($url, $data, TraceCode::SALESFORCE_PARTNER_TYPE_REQUEST,
+                                  TraceCode::SALESFORCE_PARTNER_TYPE_RESPONSE,
+                                  TraceCode::SALESFORCE_PARTNER_TYPE_EXCEPTION
+        );
+    }
+
     public function payloadGenerationForPreSignupDetails(array $input, Merchant\Entity $merchant)
     {
         $data = ['merchant_id' => $merchant->getId(), 'email' => $merchant->getEmail(), 'name' => $merchant->getName()];

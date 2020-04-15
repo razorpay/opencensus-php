@@ -1449,6 +1449,8 @@ class Core extends Base\Core
 
         $this->sendPartnerOnBoardedEmail($partner);
 
+        $this->sendPartnerInfoToSalesforce($partner);
+
         return [
             'partner_type'              => $partnerType,
             'has_commission_configs'    => true,
@@ -1466,6 +1468,17 @@ class Core extends Base\Core
         $email = new PartnerOnBoarded($data);
 
         Mail::queue($email);
+    }
+
+    protected function sendPartnerInfoToSalesForce(Entity $partner)
+    {
+        $variant = $this->app->razorx->getTreatment($this->merchant->getId(),
+                                                    Merchant\RazorxTreatment::PARTNER_TYPE_TO_SALESFORCE,
+                                                    $this->mode);
+        if ($variant === 'on')
+        {
+            $this->app->salesforce->sendPartnerInfo($partner);
+        }
     }
 
     /**

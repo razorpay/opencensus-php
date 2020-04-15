@@ -2428,6 +2428,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SALESFORCE_INTEREST_IN_X_REQUEST                      = 'SALESFORCE_INTEREST_IN_X_REQUEST';
     const SALESFORCE_INTEREST_IN_X_RESPONSE                     = 'SALESFORCE_INTEREST_IN_X_RESPONSE';
     const SALESFORCE_INTEREST_IN_X_ERROR                        = 'SALESFORCE_INTEREST_IN_X_ERROR';
+    const SALESFORCE_PARTNER_TYPE_REQUEST                       = 'SALESFORCE_PARTNER_TYPE_REQUEST';
+    const SALESFORCE_PARTNER_TYPE_RESPONSE                      = 'SALESFORCE_PARTNER_TYPE_RESPONSE';
+    const SALESFORCE_PARTNER_TYPE_EXCEPTION                     = 'SALESFORCE_PARTNER_TYPE_EXCEPTION';
 
 
     // Banking account

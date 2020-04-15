@@ -104,6 +104,9 @@ final class RazorxTreatment
     // allow pre_signup data to send to salesforce
     const PRE_SIGNUP_DETAILS_TO_SALESFORCE = 'pre_signup_details_to_salesforce';
 
+    // allow partner_type data push to salesforce
+    const PARTNER_TYPE_TO_SALESFORCE = 'PARTNER_TYPE_TO_SALESFORCE';
+
     // Check whether payout to amex cards is supported for a merchant ot not.
     const PAYOUT_TO_AMEX_CARDS = 'payout_to_amex_cards';
 }
