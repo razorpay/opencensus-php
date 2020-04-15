@@ -478,7 +478,8 @@ trait Authorize
                 $retry = false;
 
                 if (($this->headlessError === false) and
-                    ($this->canRunHeadlessOtpFlow($payment, $terminalGatewayInput) === true))
+                    ($this->canRunHeadlessOtpFlow($payment, $terminalGatewayInput) === true) and
+                    ($payment->getCpsRoute() !== Payment\Entity::CARD_PAYMENT_SERVICE))
                 {
                     $request = $this->runHeadlessOtpFlow($payment, $request);
                 }
