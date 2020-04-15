@@ -135,11 +135,18 @@ class Service extends Base\Service
 
         if ($terminal === null)
         {
+            $gatewayResponseTrace = $gatewayResponse;
+            
+            if (is_array($gatewayResponseTrace) === true)
+            {
+                unset($gatewayResponseTrace['mpan']);
+            }
+
             throw new Exception\LogicException(
                 'Terminal should not be null here',
                 null,
                 [
-                    'gateway_response'   => $gatewayResponse,
+                    'gateway_response'   => $gatewayResponseTrace,
                     'mode'               => $this->mode,
                 ]
             );
