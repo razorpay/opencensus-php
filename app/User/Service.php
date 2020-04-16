@@ -730,7 +730,7 @@ class Service extends Base\Service
         }
         else
         {
-            $request = new \App\Admin\ApiRequestAny();
+            $request = new \App\Admin\ApiRequestAny(['client_type' => 'user']);
 
             list($error, $data) = $request->send("users/$userId", "GET");
         }
@@ -745,10 +745,7 @@ class Service extends Base\Service
 
             if ($currentMerchantId !== null and empty($adminUser) === true)
             {
-                $currentMerchant = $genericUser
-                    ->merchants
-                    ->where('id', $currentMerchantId)
-                    ->first();
+                $currentMerchant = $genericUser->merchants->where('id', $currentMerchantId)->first();
 
                 // if currentMerchant is not in merchants array
                 // then check user's access on it using checkAccessOfUserOnMerchant
