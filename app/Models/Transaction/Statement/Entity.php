@@ -223,15 +223,15 @@ class Entity extends Transaction\Entity
 
     public function getCreatedAtAttribute()
     {
-        $createAt = (int) $this->attributes[self::CREATED_AT];
-
-        $postedAt = (int) $this->attributes[self::POSTED_AT];
+        $createdAt = (int) $this->attributes[self::CREATED_AT];
 
         if ($this->isBalanceAccountTypeDirect() === true)
         {
-            return $postedAt ? $postedAt : $createAt;
+            $postedAt = (int) $this->attributes[self::POSTED_AT];
+
+            return $postedAt ? $postedAt : $createdAt;
         }
 
-         return $createAt;
+         return $createdAt;
     }
 }

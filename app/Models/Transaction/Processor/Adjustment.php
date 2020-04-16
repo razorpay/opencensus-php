@@ -46,8 +46,6 @@ class Adjustment extends Base
         $this->txn->setApiFee(0);
         $this->txn->setReconciledAt(Carbon::now(Timezone::IST)->getTimestamp());
         $this->txn->setReconciledType(Transaction\ReconciledType::NA);
-         
-        $this->updatePostedDate();
 
         $this->repo->saveOrFail($this->txn);
 
