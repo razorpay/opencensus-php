@@ -2447,6 +2447,14 @@ class Gateway
         $gateways = [
             self::PAYTM,
             self::ISG,
+            self::HITACHI,
+            self::HDFC,
+            self::CYBERSOURCE,
+            self::CARD_FSS,
+            self::AXIS_MIGS,
+            self::AMEX,
+            self::PAYSECURE,
+            self::MPGS,
         ];
 
         return (in_array($gateway, $gateways, true));
