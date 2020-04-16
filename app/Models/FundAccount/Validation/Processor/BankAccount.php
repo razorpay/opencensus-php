@@ -222,12 +222,6 @@ class BankAccount extends Base
                 'validation_status' => $this->validation->getStatus(),
             ];
 
-            $this->slack->queue(
-                TraceCode::BENEFICIARY_NAME_NOT_PRESENT,
-                $traceArray,
-                Constants::slackSettings()
-            );
-
             $this->trace->warn(TraceCode::BENEFICIARY_NAME_NOT_PRESENT, $traceArray);
         }
     }
