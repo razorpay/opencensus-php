@@ -6,6 +6,7 @@ use App;
 use RZP\Exception;
 use Requests_Session;
 use RZP\Models\Order;
+use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
 use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Base\VerifyResult;
@@ -166,6 +167,8 @@ class CardPaymentService
 
         $this->addOrderDetailsIfNotPresent($content);
 
+        $this->addMerchantFeaturesExplicitly($content);
+
         $response = $this->sendRequest('POST', 'action/' . $action, $content);
 
         return $response;
@@ -203,6 +206,8 @@ class CardPaymentService
         ];
 
         $this->addOrderDetailsIfNotPresent($content);
+
+        $this->addMerchantFeaturesExplicitly($content);
 
         $response = $this->sendRequest('POST', self::AUTHORIZE , $content);
 
@@ -278,6 +283,25 @@ class CardPaymentService
         }
     }
 
+    protected function addMerchantFeaturesExplicitly(array & $data)
+    {
+        if (isset($data['input']) === true)
+        {
+            $input = $data['input'];
+
+            if ((isset($input['merchant']) === true) and
+                (isset($input['merchant']['id']) === true))
+            {
+                $merchant = $input['merchant'];
+
+                if (is_null($merchant) === false)
+                {
+                    $data['input']['merchant']['features'] = $merchant->features;
+                }
+            }
+        }
+    }
+
     protected function traceRequest(array $request)
     {
         try
@@ -300,6 +324,7 @@ class CardPaymentService
                 'payment.auth_type'        => 'content.input.payment.auth_type',
                 'merchant.id'              => 'content.input.merchant.id',
                 'merchant.name'            => 'content.input.merchant.name',
+                'merchant.features'        => 'content.input.merchant.features',
                 'terminal.id'              => 'content.input.terminal.id',
                 'terminal.merchant_id'     => 'content.input.terminal.merchant_id',
                 'terminal.type'            => 'content.input.terminal.type',
