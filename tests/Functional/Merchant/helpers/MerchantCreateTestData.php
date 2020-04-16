@@ -3,6 +3,7 @@
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
+use RZP\Models\Merchant\Balance\BalanceConfig;
 
 return [
     'testCreateMerchantWithDuplicateEmail' => [
@@ -1105,7 +1106,7 @@ return [
                 'items' => [
                     '0' => [
                         'type'                          => 'primary',
-                        'negative_limit_auto'          => 0,
+                        'negative_limit_auto'          => BalanceConfig\Entity::DEFAULT_MAX_NEGATIVE,
                         'negative_limit_manual'        => 0,
                         'negative_transaction_flows'   => ['payment']
                     ]

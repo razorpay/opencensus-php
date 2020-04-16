@@ -87,7 +87,7 @@ class Entity extends Base\PublicEntity
 
         $balanceConfig->balance()->associate($balance);
         $balanceConfig->setAttribute(self::TYPE, Type::PRIMARY);
-        $balanceConfig->setAttribute(self::NEGATIVE_LIMIT_AUTO, 0);
+        $balanceConfig->setAttribute(self::NEGATIVE_LIMIT_AUTO, self::DEFAULT_MAX_NEGATIVE);
         $balanceConfig->setAttribute(self::NEGATIVE_LIMIT_MANUAL, 0);
         $balanceConfig->setAttribute(self::NEGATIVE_TRANSACTION_FLOWS, ['payment']);
 
