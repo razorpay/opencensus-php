@@ -785,8 +785,8 @@ class SettlementTest extends TestCase
         $txn1 = $this->getEntityById('transaction', $paymentTxns['items'][1]['id'], true);
         $this->assertNotNull($txn1['settled_at']);
 
-        $this->assertEquals(2, $content[$channel]['count']);
-        $this->assertEquals(4, $content[$channel]['txnCount']);
+        $this->assertEquals(1, $content['enqueued']);
+        $this->assertEquals(1, $content['total_merchants']);
 
         //
         // Have to be fetched separately since they're created at the

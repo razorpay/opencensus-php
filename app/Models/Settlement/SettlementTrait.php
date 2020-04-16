@@ -52,7 +52,8 @@ trait SettlementTrait
      * validates if merchant is eligible for settlement
      *
      * @param Merchant\Entity $merchant
-     * @return bool
+     * @param bool $forceFlag
+     * @return array
      */
     public function isMerchantSettlementAllowed(Merchant\Entity $merchant, $forceFlag = false): array
     {
@@ -270,8 +271,7 @@ trait SettlementTrait
                                        ->findMerchantWithFeatures(
                                            $merchant->getId(),
                                            [
-                                               Feature\Constants::BLOCK_SETTLEMENTS,
-                                               Feature\Constants::DAILY_SETTLEMENT
+                                               Feature\Constants::BLOCK_SETTLEMENTS
                                            ]);
 
         if ($skipSetlFeatureEnabled->isNotEmpty() === true)
@@ -279,7 +279,7 @@ trait SettlementTrait
             $this->traceMerchantSettlementSkip(
                 $merchant,
                 [
-                    'reason' => 'merchant has block_settlement/daily_settlement feature',
+                    'reason' => 'merchant has block_settlement feature',
                 ]);
 
             return true;

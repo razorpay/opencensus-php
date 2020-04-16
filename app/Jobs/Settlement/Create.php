@@ -207,7 +207,10 @@ class Create extends Job
                     'channel' => $channel,
                 ]);
 
-            $this->dispatchForSettlementInitiateIfRequired($channel);
+            if (isset($this->params['daily_settlement']) === false)
+            {
+                $this->dispatchForSettlementInitiateIfRequired($channel);
+            }
         }
     }
 

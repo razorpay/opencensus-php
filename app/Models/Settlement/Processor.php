@@ -322,82 +322,22 @@ class Processor extends Base\Core
 
     /**
      * @return array
-     * Return array is keyed by channel
-     * Sample [
-     *          'channel1' => [
-     *              'count' => 'some integer',
-     *              'txnCount' => 'some integer'
-     *          ],
-     *         'channel2' => [
-     *              'count' => 'some integer',
-     *              'txnCount' => 'some integer'
-     *          ]
-     *      ]
      */
     protected function createDailySettlements(): array
     {
-        $channels = $this->getArrayedChannels();
+        $merchantIds      = $this->getMerchantsOnDailySettlement();
 
-        $response = $this->makeResponse($channels);
+        $currentTimestamp = Carbon::now(Timezone::IST)->getTimestamp();
 
-        try
-        {
-            $mids = $this->getMerchantsOnDailySettlement();
-            $merchantSettleToPartner = (new MerchantModel\Core)->getPartnerBankAccountIdsForSubmerchants($mids);
+        $settledAtCutoff  = Carbon::tomorrow(Timezone::IST)->getTimestamp();
 
-            $merchants = $this->repo->merchant->findMany(
-                            $mids,
-                            [
-                                MerchantModel\Entity::ID,
-                                MerchantModel\Entity::CHANNEL,
-                                MerchantModel\Entity::HOLD_FUNDS
-                            ]);
+        $params = [
+            'settled_at'        => $settledAtCutoff,
+            'daily_settlement'  => true,
+        ];
 
-            $this->setlTime = Carbon::now(Timezone::IST)->getTimestamp();
-
-            $settledAtCutoff = Carbon::tomorrow(Timezone::IST)->getTimestamp();
-
-            foreach ($merchants as $merchant)
-            {
-                $channel = $merchant->getChannel();
-
-                if ($merchant->getHoldFunds() === true)
-                {
-                    continue;
-                }
-
-                $mid = $merchant->getId();
-
-                // Get all transactions due settlement till yesterday end of day
-                $txns = $this->fetchRequiredEntities($settledAtCutoff, $channel, [$mid]);
-
-                $filteredTxns = $this->filterTransactionsForSettlement($txns, $merchantSettleToPartner);
-
-                if (isset($filteredTxns[$mid]) === false)
-                {
-                    continue;
-                }
-
-                $groupedTxns = $this->groupTransactionsByDay($filteredTxns[$mid]);
-
-                $setlResponse = $this->createSettlementEntities($groupedTxns, $channel, $merchantSettleToPartner);
-
-                $response[$channel]['count']    += $setlResponse['settlement_count'];
-                $response[$channel]['txnCount'] += $setlResponse['txn_count'];
-            }
-        }
-        catch (\Throwable $e)
-        {
-            $this->trace->traceException(
-                $e,
-                Trace::ERROR,
-                TraceCode::DAILY_SETTLEMENT_CREATE_FAILED
-            );
-
-            $this->settlementFailure($channel, $e, TraceCode::DAILY_SETTLEMENT_CREATE_FAILED);
-        }
-
-        return $response;
+        return $this->pushMerchantsToSettlementQueue(
+            $merchantIds, Balance\Type::PRIMARY, $currentTimestamp, $params);
     }
 
     /**
@@ -854,7 +794,13 @@ class Processor extends Base\Core
         MerchantModel\Entity $merchant, string $channel, string $balanceType, array $params = [])
     {
         $this->setlTime = Carbon::now(Timezone::IST)->getTimestamp();
-        $forceFlag = $params['ignore_time_limit'] === '1';
+
+        $forceFlag = false;
+
+        if(isset($params['ignore_time_limit']) === true)
+        {
+            $forceFlag = $params['ignore_time_limit'] === '1';
+        }
 
         list ($status, $_) = $this->isMerchantSettlementAllowed($merchant, $forceFlag);
 
@@ -965,9 +911,17 @@ class Processor extends Base\Core
 
         // refund filter is removed as this is handled while creating auth refund
         // /Models/Transaction/Processor/Refund.php:getSettledAtTimestampForRefund
-        $transactionsGroup = [
-            $merchant->getId() => $txns,
-        ];
+
+        if((isset($params['daily_settlement']) === true) and ($params['daily_settlement'] === true) )
+        {
+            $transactionsGroup = $this->groupTransactionsByDay($txns);
+        }
+        else
+        {
+            $transactionsGroup = [
+                $merchant->getId() => $txns,
+            ];
+        }
 
         $merchantSettleToPartner = (new MerchantModel\Core)->getPartnerBankAccountIdsForSubmerchants([
             $merchant->getId()
