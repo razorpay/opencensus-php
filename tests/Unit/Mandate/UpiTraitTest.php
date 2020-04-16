@@ -7,10 +7,18 @@ use RZP\Models\UpiMandate;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Unit\MocksAppServices;
 use RZP\Models\Payment\Processor\UpiTrait;
+use RZP\Models\Payment\UpiMetadata\Entity;
 
 class UpiTraitTest extends TestCase
 {
     use UpiTrait;
+
+    public function setUp()
+    {
+        parent::setUp();
+
+        $this->trace = $this->app['trace'];
+    }
 
     public function functionIsOtmPayment()
     {
@@ -97,6 +105,84 @@ class UpiTraitTest extends TestCase
 
                 $this->assertSame($expected, $input);
             });
+    }
+
+    public function functionSetUpiMetadataIfApplicable()
+    {
+        // ['test_name' => [ INPUT_WITH_UPI_BLOCK , UPI_METADATA_EXPECTED, THROWABLE_PARAMS ] ]
+        $cases = [];
+
+        $cases['extra_upi_param'] = [
+            [[
+                'upi' => [
+                    '0' => 5,
+                    'flow' => 'collect',
+                    'type' => 'default',
+                    'vpa'  => 'aa@asd'
+                ],
+            ]],
+            [
+                'flow' => 'collect',
+                'type' => 'default',
+                'vpa'  => 'aa@asd'
+            ],
+            null,
+        ];
+
+        $cases['extra_upi_param_mixed'] = [
+            [[
+                'upi' => [
+                    '0'    => 5,
+                    'flow' => 'collect',
+                    'type' => 'default',
+                    'vpa'  => 'aa@asd',
+                    '1'    => 3
+                ],
+            ]],
+            [
+                'flow' => 'collect',
+                'type' => 'default',
+                'vpa'  => 'aa@asd'
+            ],
+            null,
+        ];
+
+        $cases['invalid_values'] = [
+            [[
+                'upi' => [
+                    'flow' => 4,
+                    'type' => 'otm'
+                ],
+            ]],
+            null,
+            null,
+        ];
+
+        return $cases;
+    }
+
+    /**
+     * @dataProvider functionSetUpiMetadataIfApplicable
+     */
+    public function testFunctionSetUpiMetadataIfApplicable($input, $expected, $throwable)
+    {
+        $payment = $this->fixtures->create('payment', ['method' => 'upi']);
+
+        $this->goWithTheFlow($input, $throwable ,function ($input) use ($payment, $expected)
+        {
+            $this->setUpiMetadataIfApplicable($payment, $input);
+
+            $upiMetadata = $payment->getMetadata(Entity::UPI_METADATA);
+
+            if ($expected === null)
+            {
+                $this->assertNull($upiMetadata);
+            }
+            else
+            {
+                $this->assertArraySubset($expected, $upiMetadata->toArray());
+            }
+        });
     }
 
     /**

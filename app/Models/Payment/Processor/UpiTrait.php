@@ -155,7 +155,7 @@ trait UpiTrait
      * @param Payment\Entity $payment
      * @param $input
      */
-    protected function setUpiMetadataIfApplicable(Payment\Entity $payment, $input)
+    protected function setUpiMetadataIfApplicable(Payment\Entity $payment, $input, $filtered = false)
     {
         if ($payment->isUpi() === true)
         {
@@ -170,6 +170,22 @@ trait UpiTrait
                  * entity's metadata.
                  */
                 $payment->setMetadataKey(Payment\UpiMetadata\Entity::UPI_METADATA, $upiMetadata);
+            }
+            catch (Exception\ExtraFieldsException $e)
+            {
+                $this->trace->traceException(
+                    $e,
+                    $filtered === true ? Trace::CRITICAL : Trace::INFO,
+                    TraceCode::PAYMENT_UPI_METADATA_SAVE_FAILED,
+                    $input[Payment\Method::UPI] ?? null
+                );
+
+                if ($filtered === false)
+                {
+                    $input[Payment\Method::UPI] = array_only($input[Payment\Method::UPI], (new Entity)->getFillable());
+
+                    $this->setUpiMetadataIfApplicable($payment, $input, true);
+                }
             }
             catch (Exception\BaseException $e)
             {
