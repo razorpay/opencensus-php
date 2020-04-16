@@ -224,7 +224,7 @@ class PaysecureGatewayTest extends TestCase
 
     public function testS2SPaymentAuthViaRedirect()
     {
-        $this->fixtures->merchant->addFeatures(['s2s']);
+        $this->fixtures->merchant->addFeatures(['s2s', 'headless_disable']);
 
         $authResponse = $this->doS2SPrivateAuthPayment($this->payment);
 
@@ -648,7 +648,7 @@ class PaysecureGatewayTest extends TestCase
     public function testCaptureDispatchedOnFailure()
     {
         $this->markTestSkipped();
-        
+
         Mail::fake();
         Queue::fake();
 

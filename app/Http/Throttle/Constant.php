@@ -71,4 +71,6 @@ final class Constant
     const THROTTLE_REQUEST_WINDOW     = 'request_count_window';
     const THROTTLE_TYPE               = 'throttle_type';
 
+    const CUSTOM_MERCHANT_SET        = 'throttle:custom:merchant';
+    const CUSTOM_ROUTE_SET           = 'throttle:custom:route';
 }

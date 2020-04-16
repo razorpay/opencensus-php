@@ -119,8 +119,6 @@ class Service
             return $redis->del($key);
         }
 
-
-
         return $redis->hdel($key, $setKeys);
     }
 
@@ -148,10 +146,16 @@ class Service
 
     protected function getRedisKey($input): string
     {
+        $redis = $this->initRedisConnection();
+
         if (empty($input['merchant_id']) === true)
         {
+            $redis->sadd(K::CUSTOM_ROUTE_SET, $input['route']);
+
             return K::THROTTLE_PREFIX . K::CONFIGURATION_TYPE_ROUTE . ':' . $input['route'];
         }
+
+        $redis->sadd(K::CUSTOM_MERCHANT_SET, $input['merchant_id']);
 
         return K::THROTTLE_PREFIX . K::CONFIGURATION_TYPE_MERCHANT . ':' . $input['merchant_id'];
     }
