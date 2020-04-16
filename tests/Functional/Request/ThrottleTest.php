@@ -285,4 +285,46 @@ class ThrottleTest extends TestCase
             $this->makeRequestAndGetContent($this->testData[__FUNCTION__.'Fetch']['request'])
         );
     }
+
+    public function testThrottleFetchAll()
+    {
+        $this->ba->adminAuth();
+
+        // create config order create type merchant
+        $this->makeRequestAndGetContent($this->testData['testThrottleConfigCreateRoute1']['request']);
+
+        // create config for order create
+        $this->makeRequestAndGetContent($this->testData['testThrottleConfigCreateMerchant1']['request']);
+
+        // create config for payment create
+        $this->makeRequestAndGetContent($this->testData['testThrottleConfigCreateMerchant2']['request']);
+
+        $expected = [
+            'merchants' => [
+                '10000000000000' => [
+                    'order_create' => [
+                        'request_count' => '120',
+                        'request_count_window' => '60',
+                    ],
+                    'payment_create' => [
+                        'request_count' => '100',
+                        'request_count_window' => '60',
+                    ],
+                ],
+            ],
+            'routes' => [
+                'order_create' => [
+                    'type'  => 'merchant',
+                    'request_count' => '120',
+                    'request_count_window' => '60',
+                ]
+            ],
+        ];
+
+        // fetch all config
+        $this->assertArraySelectiveEquals(
+            $expected,
+            $this->makeRequestAndGetContent($this->testData[__FUNCTION__]['request'])
+        );
+    }
 }

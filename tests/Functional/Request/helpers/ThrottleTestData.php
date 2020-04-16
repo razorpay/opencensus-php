@@ -419,4 +419,13 @@ return [
             ],
         ],
     ],
+
+    'testThrottleFetchAll' => [
+        'request' => [
+            'method'  => 'get',
+            'url'     => '/throttle/config',
+            'content' => [
+            ],
+        ],
+    ],
 ];

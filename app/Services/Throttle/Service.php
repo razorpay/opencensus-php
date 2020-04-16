@@ -48,6 +48,11 @@ class Service
     {
        (new Validator)->validateInput('delete_config', $input);
 
+       if (empty($input) === true)
+       {
+            return $this->fetchAll();
+       }
+
         $key = $this->getRedisKey($input);
 
         $redis = $this->initRedisConnection();
@@ -69,6 +74,60 @@ class Service
         }
 
         return $formattedRules;
+    }
+
+    public function fetchAll()
+    {
+        $redis = $this->initRedisConnection();
+
+        $output= [
+            'merchants' => [],
+            'routes'    => [],
+        ];
+
+        $routes    = $redis->smembers(K::CUSTOM_ROUTE_SET);
+        $merchants = $redis->smembers(K::CUSTOM_MERCHANT_SET);
+
+        foreach ($merchants as $merchantId)
+        {
+            $key = $this->getRedisKey(['merchant_id' => $merchantId]);
+
+            $rules = $redis->hgetall($key);
+
+            if (empty($rules) === true)
+            {
+                $redis->smembers(K::CUSTOM_MERCHANT_SET, $merchantId);
+            }
+
+            $formattedRules = $this->formatRules($rules);
+
+            if (empty($formattedRules) == false)
+            {
+                $output['merchants'][$merchantId] = $formattedRules;
+            }
+
+        }
+
+        foreach ($routes as $route)
+        {
+            $key = $this->getRedisKey(['route' => $route]);
+
+            $rules = $redis->hgetall($key);
+
+            if (empty($rules) === true)
+            {
+                $redis->smembers(K::CUSTOM_ROUTE_SET, $route);
+            }
+
+            $formattedRules = $this->formatRules($rules);
+
+            if (empty($formattedRules) == false)
+            {
+                $output['routes'][$route] = $formattedRules[$route];
+            }
+        }
+
+        return $output;
     }
 
     public function formatRules($rules)
