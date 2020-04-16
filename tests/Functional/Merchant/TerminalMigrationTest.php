@@ -61,7 +61,6 @@ class TerminalMigrationTest extends TestCase
 
         $this->merchant = $this->fixtures->create('merchant');
 
-        $this->terminalRepository = new Terminal\Repository;
 
         $this->ba->adminAuth();
 
@@ -70,34 +69,8 @@ class TerminalMigrationTest extends TestCase
         $this->fixtures->admin->edit($admin["id"], ['allow_all_merchants' => true]);
     }
 
-    protected function getTerminalToArrayPassword($terminalId)
-    {
-        Terminal\Entity::verifyIdAndSilentlyStripSign($terminalId);
 
-        $terminalEntity = $this->terminalRepository->findOrFail($terminalId);
 
-        return $terminalEntity->toArrayWithPassword();
-    }
-
-    protected function getDefaultTerminalServiceResponse($data = []) : \Requests_Response
-    {
-        if ($data === [])
-        {
-            $terminal = $this->getLastEntity(Entity::TERMINAL, true);
-
-            $data = $this->getTerminalToArrayPassword($terminal[Terminal\Entity::ID]);
-
-            Terminal\Entity::verifyIdAndSilentlyStripSign($data['id']);
-        }
-
-        $response =  new \Requests_Response;
-
-        $responseData = ['data' => $data];
-
-        $response->body = json_encode($responseData);
-
-        return $response;
-    }
 
     protected function getTerminalsServiceResponseForEntityNotFound()
     {
@@ -1558,6 +1531,8 @@ class TerminalMigrationTest extends TestCase
 
     public function testPaymentCallbackSyncForUnUsedTerminal()
     {
+        $this->markTestSkipped();
+
         $this->razorxValue = 'migrate';
 
         $this->mockTerminalsServiceSendRequest(function () {

@@ -22,18 +22,22 @@ use RZP\Exception\RuntimeException;
 use RZP\Models\Merchant\Preferences;
 use RZP\Error\PublicErrorDescription;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
+use RZP\Tests\Functional\Helpers\TerminalTrait;
 use RZP\Gateway\Hitachi\Gateway as HitachiGateway;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class TerminalSelectionTest extends TestCase
 {
     use PaymentTrait;
+    use TerminalTrait;
 
     public function setUp()
     {
         $this->testDataFilePath = __DIR__.'/helpers/TerminalSelectionTestData.php';
 
         parent::setUp();
+
+        $this->terminalsServiceMock = $this->getTerminalsServiceMock();
     }
 
     public function testChooseGatewayWithSharedTerminals()
@@ -1299,6 +1303,41 @@ class TerminalSelectionTest extends TestCase
 
     public function testHitachiTerminalCreationOnRun()
     {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->will($this->returnCallback(
+                function ($mid, $feature, $mode)
+                {
+                    if ($feature === 'TerminalsService_MigrateTerminal')
+                    {
+                        return 'migrate';
+                    }
+                    return 'control';
+
+                }) );
+
+        // in hitachi onboarding flow, there is a function called checkDbConstraints
+        // it runs in a trasnaction block and rolls back the transaction.
+        // it is used to check if a hitach terminal with given details exist or not by trying to create a terminal
+        // however, this was causing sync of the just created terminal to terminals service
+        // later in the flow, we actually create the terminal(and not roll it back).
+        // again at this stage, the created terminal is synced to terminals service
+        // however, this call was failing because the rollback was done on API only and not on terminals service
+        // the reason for failure was "DUPLICATE_TERMINAL_EXIST"
+        // this test is to check that in the checkDbConstraints, the sync terminal entity to terminals service is not called
+        // reason we are asserting that the mock is called 2 times is because:
+        // in every migrate terminal call, we first call POST to create on terminals service
+        // then call GET on the same enntity to verify that we are able to fetch the just created terminal
+        $this->mockTerminalsServiceSendRequest(function($path, $content, $method) {
+            return $this->getDefaultTerminalServiceResponse();
+        }, 2);
+
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
 
         $this->fixtures->merchant->setCategory('1240');

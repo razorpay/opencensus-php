@@ -49,7 +49,9 @@ class TerminalsServiceMigrateJob extends Job
 
             $terminal = $repo->findOrFail($this->terminalId);
 
-            $repo->saveOrFail($terminal, [], Terminal\SyncStatus::SYNC_FAILED);
+            $terminal->setSyncStatus(Terminal\SyncStatus::SYNC_FAILED);
+
+            $repo->saveOrFail($terminal, ['shouldSync' => false]);
 
 
             $this->trace->error(TraceCode::TERMINALS_SERVICE_MIGRATE_JOB_FAILED, $data);

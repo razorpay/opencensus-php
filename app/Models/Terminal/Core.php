@@ -21,7 +21,7 @@ class Core extends Base\Core
 {
     const TEST_MODE_ACCOUNT_NUMBER_SERIES_PREFIX = '232323';
 
-    public function create($input, $merchant)
+    public function create($input, $merchant, bool $shouldSync = true)
     {
         $this->trace->info(
             TraceCode::TERMINAL_CREATE_REQUEST,
@@ -42,7 +42,7 @@ class Core extends Base\Core
 
         $this->validateDirectSettlementMapping($terminal);
 
-        $this->repo->saveOrFail($terminal);
+        $this->repo->saveOrFail($terminal, ['shouldSync' => $shouldSync]);
 
         return $terminal;
     }

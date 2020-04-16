@@ -6221,7 +6221,8 @@ trait Authorize
                if ($payment->terminal->isUsed() === false)
                 {
                     $payment->terminal->setUsed();
-                    $this->repo->saveOrFail($payment->terminal);
+
+                    $this->repo->saveOrFail($payment->terminal, ['shouldSync'=> false]);
                 }
              }
 

@@ -513,7 +513,7 @@ class Service extends Base\Service
 
                 $terminal->setSyncStatus(SyncStatus::SYNC_IN_PROGRESS);
 
-                $this->repo->terminal->saveOrFail($terminal, [],SyncStatus::SYNC_IN_PROGRESS);
+                $this->repo->terminal->saveOrFail($terminal, ['shouldSync' => false]);
 
                 $succesCount += 1;
             }

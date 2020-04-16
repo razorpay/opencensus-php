@@ -53,17 +53,29 @@ class Repository extends Base\Repository
         }
     }
 
-    public function saveOrFail($entity, array $options = array(), string $syncStatus = SyncStatus::NOT_SYNCED)
+    public function saveOrFail($entity, array $options = array())
     {
-            $entity = $this->transaction(function () use (& $entity, $options, $syncStatus)
-            {
-                $entity->setSyncStatus($syncStatus);
+        $shouldSync = true;
+
+        if (isset($options['shouldSync']) === true)
+        {
+            $shouldSync = $options['shouldSync'];
+
+            unset($options['shouldSync']);
+        }
+
+        $entity = $this->transaction(function () use (& $entity, $options, $shouldSync)
+        {
+                if ($shouldSync === true)
+                {
+                    $entity->setSyncStatus(SyncStatus::NOT_SYNCED);
+                }
 
                 // dont delete this line. this line is needed to generate id for a new terminal
                 // id gets created on save
                 parent::saveOrFail($entity, $options);
 
-                if (Terminal\Service::shouldMigrateTerminal($syncStatus) === true)
+                if (Terminal\Service::shouldMigrateTerminal($shouldSync) === true)
                 {
                     $entity = (new Terminal\Service)->migrateTerminalCreateOrUpdate($entity->getId());
 
@@ -74,7 +86,7 @@ class Repository extends Base\Repository
 
                 return $entity;
 
-            });
+        });
 
         return $entity;
     }
@@ -481,11 +493,10 @@ class Repository extends Base\Repository
         $count = $this->repo->payment->getTotalUsedCountForTerminal(
                     $entity->getId());
 
-        $syncStatus = SyncStatus::NOT_SYNCED;
 
-        return $this->transaction(function() use ($entity, $count, $syncStatus)
+        return $this->transaction(function() use ($entity, $count)
         {
-            if (Migrate::shouldMigrateTerminal($syncStatus) === true)
+            if (Migrate::shouldMigrateTerminal(true) === true)
             {
                 (new Terminal\Service)->migrateTerminalDelete($entity->getId());
 

@@ -174,7 +174,12 @@ class GatewayProcessor extends BaseGatewayProcessor
 
                 $this->setTerminalType($terminalData);
 
-                (new Core)->create($terminalData, $merchant);
+                // this function is running a transaction block and is rolled back
+                // however, within the transaction a terminal is created
+                // the newly created terminal is getting synced to terminals service
+                // but we are unable to rollback changes on terminals service whenever its rolled back on API
+                // to solve this, we avoid syncing by calling create() with shouldSync=false
+                (new Core)->create($terminalData, $merchant, false);
             });
     }
 

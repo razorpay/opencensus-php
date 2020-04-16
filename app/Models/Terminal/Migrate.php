@@ -12,12 +12,19 @@ use RZP\Trace\TraceCode;
 trait Migrate
 {
 
-    public static function shouldMigrateTerminal(string $newSyncStatus) : bool
+    /**
+     * @param bool $shouldSync
+     * @return bool
+     * order of preference in deciding whether the terminals should be synced or not
+     * 1) shouldSync
+     * 2) razorx feature called "TerminalsService_MigrateTerminal"
+     */
+    public static function shouldMigrateTerminal(bool $shouldSync) : bool
     {
-       if ($newSyncStatus !== SyncStatus::NOT_SYNCED)
-       {
-           return false;
-       }
+        if ($shouldSync === false)
+        {
+            return false;
+        }
 
         return self::getRazorxTreatment(self::getMigrateTerminalFeature());
     }
@@ -276,7 +283,11 @@ trait Migrate
 
     protected function processMigrateTerminalSuccess(Entity $terminal)
     {
-        $this->repo->terminal->saveOrFail($terminal, [], SyncStatus::SYNC_SUCCESS);
+        $options = [
+            'shouldSync' => false,
+        ];
+
+        $this->repo->terminal->saveOrFail($terminal, $options);
     }
 
     protected function processMigrateTerminalFailure(Entity $terminal)

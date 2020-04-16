@@ -127,7 +127,7 @@ class GatewayProcessor extends BaseGatewayProcessor
                     Terminal\Entity::EXPECTED              => '1',
                 ];
 
-                (new Core)->create($terminalData, $merchant);
+                (new Core)->create($terminalData, $merchant, false);
             }
         );
     }

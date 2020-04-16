@@ -4,11 +4,15 @@
 namespace RZP\Tests\Functional\Helpers;
 
 use Mockery;
+use RZP\Models\Terminal;
+use RZP\Constants\Entity;
 
 trait TerminalTrait
 {
     protected function getTerminalsServiceMock()
     {
+        $this->terminalRepository = new Terminal\Repository;
+
         $terminalsServiceMock = Mockery::mock('RZP\Services\TerminalsService')->makePartial();
 
         $terminalsServiceMock->shouldAllowMockingProtectedMethods();
@@ -32,4 +36,34 @@ trait TerminalTrait
     {
         throw new \Requests_Exception_Transport_cURL('curl timed out', []);
     }
+
+    protected function getDefaultTerminalServiceResponse($data = []) : \Requests_Response
+    {
+        if ($data === [])
+        {
+            $terminal = $this->getLastEntity(Entity::TERMINAL, true);
+
+            $data = $this->getTerminalToArrayPassword($terminal[Terminal\Entity::ID]);
+
+            Terminal\Entity::verifyIdAndSilentlyStripSign($data['id']);
+        }
+
+        $response =  new \Requests_Response;
+
+        $responseData = ['data' => $data];
+
+        $response->body = json_encode($responseData);
+
+        return $response;
+    }
+
+    protected function getTerminalToArrayPassword($terminalId)
+    {
+        Terminal\Entity::verifyIdAndSilentlyStripSign($terminalId);
+
+        $terminalEntity = $this->terminalRepository->findOrFail($terminalId);
+
+        return $terminalEntity->toArrayWithPassword();
+    }
+
 }
