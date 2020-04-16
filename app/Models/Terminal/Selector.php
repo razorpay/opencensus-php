@@ -404,6 +404,20 @@ class Selector extends Base\Core
 
             $traceData = $data;
 
+            $unsetTerminals = [];
+
+            // remove sensitive terminal data from logging
+            foreach ($traceData['terminals'] as $traceTerminal)
+            {
+                unset($traceTerminal['mc_mpan'], $traceTerminal['visa_mpan'], $traceTerminal['rupay_mpan'], $traceTerminal['network_mpan']);
+
+                array_push($unsetTerminals, $traceTerminal);
+            }
+
+            $traceData['terminals'] = $unsetTerminals;
+
+            unset($traceData['authentication_terminals']);
+
             // remove sensitive data from logging
             unset($traceData['payment']['email'], $traceData['payment']['contact'], $traceData['payment']['notes']);
 

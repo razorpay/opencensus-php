@@ -202,7 +202,8 @@ class SmartRouting
             $this->trace->error(
                 TraceCode::SMART_ROUTING_SERVICE_ERROR,
                 [
-                    'response' => $e->getMessage(),
+                    'response' => $response,
+                    'error'    => $e->getMessage(),
                     'action'   => $action,
                     'data'     => $traceData,
                 ]);
@@ -271,20 +272,32 @@ class SmartRouting
 
         $traceResponse = $responseBody;
 
-//        $newTraceResponse = [];
-//
-//        foreach ($traceResponse as $terminal)
-//        {
-//            unset($terminal['mc_mpan'], $terminal['visa_mpan'], $terminal['rupay_mpan'], $terminal['network_mpan']);
-//
-//            array_push($newTraceResponse, $terminal);
-//        }
+        // checking whether its terminals selection related response or rule crud related response
+        if (array_key_exists('success', $traceResponse) === false)
+        {
+            $newTraceResponse = [];
 
-        $this->trace->info(
-            TraceCode::SMART_ROUTING_RESPONSE,
-            [
-                'response' => $traceResponse
-            ]);
+            foreach ($traceResponse as $terminal)
+            {
+                unset($terminal['mc_mpan'], $terminal['visa_mpan'], $terminal['rupay_mpan'], $terminal['network_mpan']);
+
+                array_push($newTraceResponse, $terminal);
+            }
+
+            $this->trace->info(
+                TraceCode::SMART_ROUTING_RESPONSE,
+                [
+                    'response' => $newTraceResponse
+                ]);
+        }
+        else
+        {
+            $this->trace->info(
+                TraceCode::SMART_ROUTING_RESPONSE,
+                [
+                    'response' => $traceResponse
+                ]);
+        }
 
         if ($response->status_code >= 400)
         {
