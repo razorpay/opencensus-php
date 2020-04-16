@@ -958,7 +958,6 @@ class Gateway extends Base\Gateway
             [
                 'url'      => $request['url'],
                 'gateway'  => $this->gateway,
-                'input'    => $request['content'],
             ]);
 
         $response = $this->sendGatewayRequest($request);
