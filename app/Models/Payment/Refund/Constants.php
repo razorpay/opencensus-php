@@ -104,4 +104,7 @@ class Constants
     // Some constants are named not make complete sense,
     // basically to avoid user understanding the feature when inspected on dashboard
     const REFUND_STATUS_FILTER = 'rs_filter';
+
+    // Scrooge skip verify flag
+    const SCROOGE_SKIP_REFUND_VERIFY = 'skip_refund_verify';
 }

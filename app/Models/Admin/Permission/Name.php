@@ -232,6 +232,7 @@ class Name
     const BULK_RETRY_REFUNDS_VIA_FTA          = 'bulk_retry_refunds_via_fta';
     const EDIT_INSTANT_REFUNDS_MODE_CONFIG    = 'edit_instant_refunds_mode_config';
     const RETRY_REFUND                        = 'retry_refund';
+    const RETRY_REFUNDS_WITHOUT_VERIFY        = 'retry_refunds_without_verify';
     const DOWNLOAD_NON_MERCHANT_REPORT        = 'download_non_merchant_report';
     const CREATE_VIRTUAL_ACCOUNTS             = 'create_virtual_accounts';
     const CREATE_BANKING_VIRTUAL_ACCOUNTS     = 'create_banking_virtual_accounts';

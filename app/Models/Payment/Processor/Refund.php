@@ -1812,6 +1812,9 @@ trait Refund
     {
         $dispatchDelayTime = $input[RefundConstants::DISPATCH_DELAY_TIME] ?? 0;
 
+        // Max. delay supported by SQS job is 900 seconds
+        $dispatchDelayTime = min(900, $dispatchDelayTime);
+
         $data = $this->getGatewayDataForScroogeRefund($refund, $refund->payment, $input);
 
         $data['mode'] = $this->mode;
@@ -2112,6 +2115,9 @@ trait Refund
         // Speed decisioned is being sent as speed_requested - no need to be sent again
         //
         unset($refundData[RefundEntity::SPEED_DECISIONED]);
+
+        // Flag for skipping verify call on scrooge when retrying refund
+        $refundData[RefundConstants::SCROOGE_SKIP_REFUND_VERIFY] = $input[RefundConstants::SCROOGE_SKIP_REFUND_VERIFY] ?? false;
 
         $scroogeData = array_merge($refundData, $extraData);
 

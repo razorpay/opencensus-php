@@ -62,6 +62,11 @@ class Validator extends Base\Validator
         'transfer_method' => 'required|in:source_vpa',
     ];
 
+    protected static $retryScroogeRefundsWithoutVerifyRules = [
+        'refund_ids'      => 'required|sequential_array|max:1000',
+        'refund_ids.*'    => 'filled|unsigned_id',
+    ];
+
     protected static $createValidators = [
         'paymentStatus',
         'paymentRefundStatus',

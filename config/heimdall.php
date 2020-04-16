@@ -283,6 +283,10 @@ return [
                 'description' => 'Retry refunds',
                 'assignable'  => true,
             ],
+            Permission::RETRY_REFUNDS_WITHOUT_VERIFY        => [
+                'description' => 'Retry scrooge refunds without verify',
+                'assignable'  => true,
+            ],
             Permission::GENERATE_REFUND_EXCEL               => [
                 'assignable'  => true,
             ],

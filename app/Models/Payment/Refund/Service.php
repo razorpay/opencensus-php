@@ -1321,6 +1321,53 @@ class Service extends Base\Service
         ];
     }
 
+    public function retryScroogeRefundsWithoutVerify(array $input)
+    {
+        (new Validator)->validateInput('retry_scrooge_refunds_without_verify', $input);
+
+        $this->trace->info(TraceCode::RETRY_SCROOGE_REFUNDS_WITHOUT_VERIFY, $input);
+
+        $retryFailures = [];
+
+        $refundIds = array_unique($input[RefundConstants::REFUND_IDS]);
+
+        foreach ($refundIds as $key => $refundId)
+        {
+            try
+            {
+                $refund = $this->repo->refund->findOrFail($refundId);
+
+                if ($refund->isScrooge() === false)
+                {
+                    throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_REFUND_NOT_SCROOGE);
+                }
+
+                if ((Payment\Gateway::isScroogeGatewayAndMerchant($refund->getGateway()) === false) or
+                    (($refund->isCreated() === false) and ($refund->isInitiated() === false)))
+                {
+                    throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_REFUND_INVALID_STATE_FOR_RETRY);
+                }
+
+                // Will be passing this flag to scrooge for skipping verify before retry
+                $input[RefundConstants::SCROOGE_SKIP_REFUND_VERIFY] = true;
+
+                $this->getNewProcessor($refund->merchant)->processRefundRetry($refund, $input);
+            }
+            catch (\Exception $ex)
+            {
+                $this->trace->traceException($ex, null, null, [RefundConstants::REFUND_ID => $refundId]);
+
+                $retryFailures[] = $refundId;
+            }
+        }
+
+        return [
+            'refunds_successfully_queued_for_retry' => count($refundIds) - count($retryFailures),
+            'refund_retry_failure_count'            => count($retryFailures),
+            'failed_ids'                            => $retryFailures,
+        ];
+    }
+
     public function directRetryBulk(array $input)
     {
         (new Validator)->validateInput('direct_retry_bulk', $input);
