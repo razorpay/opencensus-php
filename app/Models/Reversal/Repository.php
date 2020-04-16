@@ -162,6 +162,24 @@ class Repository extends Base\Repository
                     ->first();
     }
 
+    /**
+     * @param $merchantId
+     * @param $count
+     * @param int $skip
+     * @return mixed
+     */
+    public function fetchreversals($merchantId, $count, $skip = 0)
+    {
+        return $this->newQuery()
+                      ->merchantId($merchantId)
+                      ->where(Entity::ENTITY_TYPE,'!=','payout')
+                      ->orderBy(Entity::CREATED_AT, 'desc')
+                      ->orderBy(Entity::ID, 'desc')
+                      ->take($count)
+                      ->skip($skip)
+                      ->get();
+    }
+
     public function fetchFeesAndIdOfReversalsForGivenBalanceIdForPeriod($merchantId, $balanceId, $from, $to)
     {
         $payoutsTable         = Table::PAYOUT;

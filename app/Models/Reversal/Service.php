@@ -22,7 +22,20 @@ class Service extends Base\Service
     {
         $merchantId = $this->merchant->getId();
 
-        $reversals = $this->repo->reversal->fetch($input, $merchantId);
+        $skip = 0;
+
+        $count = 25;
+
+        if(isset($input['skip']))
+        {
+            $skip = $input['skip'];
+        }
+        if(isset($input['count']))
+        {
+            $count = $input['count'];
+        }
+
+        $reversals = $this->repo->reversal->fetchreversals($merchantId, $count, $skip);
 
         return $reversals->toArrayPublic();
     }
