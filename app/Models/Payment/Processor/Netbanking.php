@@ -75,7 +75,8 @@ class Netbanking
         self::UTIB_C => 'Axis Bank - Corporate Banking',
         self::YESB_C => 'Yes Bank - Corporate Banking',
         IFSC::ORBC   => 'PNB (Erstwhile-Oriental Bank of Commerce)',
-        IFSC::UTBI   => 'PNB (Erstwhile-United Bank of India)'
+        IFSC::UTBI   => 'PNB (Erstwhile-United Bank of India)',
+        IFSC::CORP   => 'Union Bank of India (Erstwhile Corporation Bank)'
     ];
 
     const ACCOUNT_NUMBER_LENGTHS = [
