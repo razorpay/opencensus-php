@@ -97,7 +97,7 @@ local function get_req_ctx(redis, ngx)
         req_ctx.mode    = details.mode
     end
 
-    ngx.log(ngx.INFO, "rate limit request context : ", utility.dump(req_ctx))
+    ngx.log(ngx.DEBUG, "rate limit request context : ", utility.dump(req_ctx))
     return req_ctx, nil
 end
 

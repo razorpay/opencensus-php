@@ -1,6 +1,6 @@
 local M = {}
 
-local version  = os.getenv("RESTY_TROTTLE_VERSION") or "v2"
+local version  = os.getenv("RESTY_THROTTLE_VERSION") or "v2"
 
 local v1 = require 'rate_limit'
 local v2 = require 'rate_limit_v2'
