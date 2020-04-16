@@ -1769,6 +1769,76 @@ class RefundTest extends TestCase
         $this->assertEquals(0, $transaction['credit']);
     }
 
+    // Direct settlement without refund - No balance
+    public function testRefundSettledByWithZeroBalance()
+    {
+        $this->fixtures->create('terminal:direct_settlement_hdfc_terminal');
+
+        $this->ba->privateAuth();
+
+        $payment = $this->getDefaultNetbankingPaymentArray('HDFC');
+
+        $payment = $this->doAuthPayment($payment);
+
+        $this->ba->privateAuth();
+
+        $this->fixtures->edit('balance', '10000000000000', ['balance' => '0']);
+
+        $this->startTest($payment['razorpay_payment_id']);
+    }
+
+    // Direct settlement with refund - No  balance
+    public function testDirectSettlementRefundSettledByWithZeroBalance()
+    {
+        $this->fixtures->create('terminal:direct_settlement_refund_hdfc_terminal');
+
+        $this->ba->privateAuth();
+
+        $payment = $this->getDefaultNetbankingPaymentArray('HDFC');
+
+        $payment = $this->doAuthPayment($payment);
+
+        $this->ba->privateAuth();
+
+        $this->fixtures->edit('balance', '10000000000000', ['balance' => '0']);
+
+        $refund = $this->startTest($payment['razorpay_payment_id']);
+
+        $this->assertEquals('rfnd_', substr($refund['id'], 0, 5));
+
+        $this->assertGreaterThan(time() - 30, $refund['created_at']);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals('hdfc', $refund['settled_by']);
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->assertEquals($refund['id'], $transaction['entity_id']);
+        $this->assertEquals(0, $transaction['debit']);
+        $this->assertEquals(0, $transaction['credit']);
+    }
+
+    // Direct settlement with refund - No  balance - InstantRefund
+    public function testDirectSettlementInstantRefundSettledByWithZeroBalance()
+    {
+        $this->fixtures->create('terminal:direct_settlement_refund_hdfc_terminal');
+
+        $this->fixtures->pricing->createInstantRefundsPricingPlan();
+
+        $this->ba->privateAuth();
+
+        $payment = $this->getDefaultNetbankingPaymentArray('HDFC');
+
+        $payment = $this->doAuthPayment($payment);
+
+        $this->ba->privateAuth();
+
+        $this->fixtures->edit('balance', '10000000000000', ['balance' => '0']);
+
+        $this->startTest($payment['razorpay_payment_id']);
+    }
+
     public function startTest($paymentId = null, $amount = null)
     {
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);

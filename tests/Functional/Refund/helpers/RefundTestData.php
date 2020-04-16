@@ -707,6 +707,24 @@ return [
         ],
     ],
 
+    'testRefundSettledByWithZeroBalance' => [
+        'request'   => [
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Your account does not have enough balance to carry out the refund operation. You can add funds to your account from your Razorpay dashboard or capture new payments.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'                 => 'RZP\Exception\BadRequestException',
+            'internal_error_code'   => ErrorCode::BAD_REQUEST_REFUND_NOT_ENOUGH_BALANCE
+        ]
+    ],
+
     'testDirectSettlementRefundSettledBy' => [
         'request' => [
         ],
@@ -717,6 +735,39 @@ return [
                 'currency' => 'INR',
             ],
         ],
+    ],
+
+    'testDirectSettlementRefundSettledByWithZeroBalance' => [
+        'request' => [
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'refund',
+                'amount' => 50000,
+                'currency' => 'INR',
+            ],
+        ],
+    ],
+
+    'testDirectSettlementInstantRefundSettledByWithZeroBalance' => [
+        'request'   => [
+            'content' => [
+                'speed' => 'optimum',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Your account does not have enough balance to carry out the refund operation. You can add funds to your account from your Razorpay dashboard or capture new payments.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'                 => 'RZP\Exception\BadRequestException',
+            'internal_error_code'   => ErrorCode::BAD_REQUEST_REFUND_NOT_ENOUGH_BALANCE
+        ]
     ],
 
     'testRefundEditNotes' => [

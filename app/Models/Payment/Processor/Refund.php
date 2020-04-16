@@ -1491,7 +1491,22 @@ trait Refund
 
         if ($this->payment->isCaptured() === true)
         {
-            $this->validateMerchantBalance($refund, 'refund');
+            //
+            // Merchant balance / refund credits checks are not applicable in case of a normal refund on a
+            // Direct Settlement with Refund terminal - since the payment / refund will be settled
+            // by the gateway to the merchant directly and
+            // balance checks and deductions are made at the gateway itself
+            //
+            // In case of Instant Refunds - we process the refund and deduct merchant balance directly,
+            // hence balance checks are necessary
+            //
+            $validBalanceCheckNotApplicable = (($refund->isRefundSpeedInstant() === false) and
+                ($refund->isDirectSettlementRefund() === true));
+
+            if ($validBalanceCheckNotApplicable === false)
+            {
+                $this->validateMerchantBalance($refund, 'refund');
+            }
         }
 
         $refund->batch()->associate($batch);
