@@ -927,26 +927,34 @@ EOT;
         $this->assertSame($this->payment['payment']['verified'], 1);
     }
 
-    public function testVerifyFailedPayment()
+    public function testVerifyCreatedPayment()
     {
-        $this->ba->publicAuth();
+        //inititate payment
+        $input = $this->getDefaultUpiPaymentArray();
+        $input['notes']['status'] = 'success';
 
-        $data = $this->testData[__FUNCTION__];
+        $this->doAuthPaymentViaAjaxRoute($input);
 
-        $payment = $this->getDefaultUpiPaymentArray();
-        $payment['notes']['status'] = 'success';
+        $payment = $this->getDbLastPayment();
+        $upi = $this->getDbLastEntity('upi');
 
-        $authPayment = $this->doAuthPaymentViaAjaxRoute($payment);
+        //No callback was fired from mock at this point, hence payment status == created
+        $this->assertSame($payment->getId(), $upi->getPaymentId());
+        $this->assertTrue($payment->isCreated());
+        $this->assertSame(['rrn' => null], $payment->acquirer_data->toArray());
+        $this->assertSame($input['vpa'], $upi['vpa']);
+        $this->assertSame($input['vpa'], $payment['vpa']);
 
-        $payment = $this->getEntityById('payment', $authPayment['payment_id'], true);
+        $this->authorizeFailedPayment($payment->getPublicId());  //will change payment status from fail to authorised
+        $this->assertTestResponse($upi->refresh()->toArrayAdmin(), 'testPaymentUpiEntity');
 
-        $this->authorizeFailedPayment($payment['id']);
-
-        $upi = $this->getLastEntity('upi', true);
-        $this->assertTestResponse($upi, 'testPaymentUpiEntity');
+        $this->assertNotEmpty($upi->getNpciReferenceId());
+        $this->assertSame($upi->getNpciReferenceId(), $payment->refresh()->getReference16());
+        $this->assertSame(true, $upi->getReceived());
+        $this->assertSame(['rrn' => $upi->getNpciReferenceId()], $payment->acquirer_data->toArray()); //Assertion to make sure RRN is captured
         $this->assertArrayHasKey('gateway_payment_id', $upi);
-        $this->assertNotNull($upi['vpa']);
-        $this->assertNotNull($payment['vpa']);
+        $this->assertSame($input['vpa'], $upi['vpa']);
+        $this->assertSame($input['vpa'], $payment['vpa']);
     }
 
     public function testRefundExcelFile()

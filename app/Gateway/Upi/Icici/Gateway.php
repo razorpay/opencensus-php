@@ -790,6 +790,12 @@ class Gateway extends Base\Gateway
             $status = VerifyResult::STATUS_MISMATCH;
         }
 
+        // Ensuring RNN is set if exists in $content
+        if (isset($content[Fields::ORIGINAL_BANK_RRN]) === true)
+        {
+            $content[Entity::NPCI_REFERENCE_ID] = $content[Fields::ORIGINAL_BANK_RRN];
+        }
+        
         $verify->match = ($status === VerifyResult::STATUS_MATCH) ? true : false;
 
         $verify->verifyResponseContent = $content;
