@@ -6173,8 +6173,12 @@ trait Authorize
                 return false;
             }
 
-            // Auto refund timestamp will be set, when the payment is authorized.
-            $this->setAutoRefundTimestamp($payment);
+            // Disable Auto Refunds Merchants' payments must not have the auto refund timestamp set
+            if ($payment->merchant->isFeatureEnabled(Feature\Constants::DISABLE_AUTO_REFUNDS) === false)
+            {
+                // Auto refund timestamp will be set, when the payment is authorized.
+                $this->setAutoRefundTimestamp($payment);
+            }
 
             $payment->setErrorNull();
 

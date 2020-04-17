@@ -1457,7 +1457,7 @@ class Service extends Base\Service
 
         $payments = $payments->shuffle();
 
-        $this->removeEmandatePaymentsAsApplicable($payments);
+        $this->removePaymentsAsApplicable($payments);
 
         $this->trace->info(
             TraceCode::PAYMENT_AUTO_REFUND_CRON,
@@ -2124,7 +2124,11 @@ class Service extends Base\Service
         return $processor;
     }
 
-    protected function removeEmandatePaymentsAsApplicable(Base\PublicCollection & $payments)
+    //
+    // 1. Remove Auto Refund Disabled Payments
+    // 2. Remove Emandate payments as applicable
+    //
+    protected function removePaymentsAsApplicable(Base\PublicCollection & $payments)
     {
         $seconds = Merchant\Entity::AUTO_REFUND_DELAY_FOR_EMANDATE;
 
@@ -2134,15 +2138,30 @@ class Service extends Base\Service
 
         $payments = $payments->reject(function($payment) use ($ts)
         {
-            if ($payment->isEmandate() === false)
+            //
+            // If disable_auto_refund feature is enabled for the merchant we reject the payment -
+            // it must not be auto refunded
+            //
+            if ($payment->merchant->isFeatureEnabled(Feature\Constants::DISABLE_AUTO_REFUNDS) === false)
             {
-                return false;
+                // If its not an emandate payment we can auto refund it
+                if ($payment->isEmandate() === false)
+                {
+                    return false;
+                }
+
+                // If its an emandate payment and the emandate refund delay has passed, we can refund it
+                if ($payment->getCreatedAt() <= $ts)
+                {
+                    return false;
+                }
             }
 
-            if ($payment->getCreatedAt() <= $ts)
-            {
-                return false;
-            }
+            //
+            // We reject the payment in the following cases :
+            // 1. Payment of a merchant who has disabled auto refunds
+            // 2. Emandate payment - where emandate auto refund delay has not passed yet
+            //
 
             return true;
         });

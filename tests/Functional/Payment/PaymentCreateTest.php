@@ -2926,6 +2926,28 @@ class PaymentCreateTest extends TestCase
         $this->assertSame('captured', $payment->getStatus());
     }
 
+    public function testAutoRefundDisabledPaymentRefundAtNull()
+    {
+        $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
+
+        $this->fixtures->merchant->addFeatures(['disable_auto_refunds']);
+
+        $payment = $this->getDefaultUpiPaymentArray();
+
+        $this->doAuthPayment($payment);
+
+        $payment = $this->getDbLastPayment();
+
+        $this->assertNull($payment->getRefundAt());
+
+        $this->capturePayment($payment->getPublicId(), $payment->getAmount());
+
+        $payment->refresh();
+
+        $this->assertNull($payment->getRefundAt());
+        $this->assertSame('captured', $payment->getStatus());
+    }
+
     public function testPaymentRefundForNullRefundAt()
     {
         $this->fixtures->merchant->enableMethod('10000000000000', 'upi');

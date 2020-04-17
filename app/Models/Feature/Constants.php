@@ -262,6 +262,11 @@ class Constants
     const DISABLE_CARD_REFUNDS          = 'disable_card_refunds';
 
     /**
+     * If set, disables all auto refund operations (from RZP side) on the merchant's account
+     */
+    const DISABLE_AUTO_REFUNDS               = 'disable_auto_refunds';
+
+    /**
      * Makes `receipt` a mandatory field for invoice creation
      */
     const INVOICE_RECEIPT_MANDATORY     = 'invoice_receipt_mandatory';
@@ -501,6 +506,7 @@ class Constants
         self::FUND_ACCOUNT_VALIDATIONS        => true,
         self::DISABLE_REFUNDS                 => true,
         self::DISABLE_CARD_REFUNDS            => true,
+        self::DISABLE_AUTO_REFUNDS            => true,
         self::TOKEN_BANK_DETAILS              => true,
         self::INVOICE_RECEIPT_MANDATORY       => true,
         self::INVOICE_NO_EXPIRY_EMAIL         => true,

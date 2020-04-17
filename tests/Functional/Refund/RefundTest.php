@@ -1190,6 +1190,46 @@ class RefundTest extends TestCase
         $this->assertEquals(4, $content['authorized']);
     }
 
+    public function testRefundPaymentsWithRefundDelayAutoRefundsDisabled()
+    {
+        //
+        // Totally 4 authorized payments to be auto refunded
+        // 3 belong to disable_auto_refunds merchant
+        // 1 belongs to normal merchant
+        //
+
+        // Change auto refund delay to 2 days
+        $this->fixtures->merchant->editAutoRefundDelay('2 days');
+
+        $this->fixtures->merchant->addFeatures(['disable_auto_refunds']);
+
+        $createdAt = Carbon::today(Timezone::IST)->subDays(2)->timestamp;
+
+        $payments = $this->fixtures->times(3)->create(
+            'payment:authorized',
+            ['created_at' => $createdAt]);
+
+        $createdAt = Carbon::today(Timezone::IST)->subDays(6)->timestamp;
+        $this->fixtures->on('test')->create('balance', ['id' => '1MercShareTerm', 'balance' => '1000000', 'merchant_id' => '1MercShareTerm']);
+
+        $payment = $this->fixtures->create(
+            'payment:authorized',
+            ['created_at' => $createdAt, 'merchant_id' => '1MercShareTerm', 'transaction_id' => null]);
+
+        $createdAt = Carbon::today(Timezone::IST)->subDays(1)->timestamp;
+
+        $payments = $this->fixtures->times(2)->create(
+            'payment:authorized',
+            ['created_at' => $createdAt]);
+
+        $content = $this->refundOldAuthorizedPayments();
+
+        $this->assertArrayHasKey('refunded', $content);
+        $this->assertEquals(1, $content['refunded']);
+        $this->assertArrayHasKey('authorized', $content);
+        $this->assertEquals(4, $content['authorized']);
+    }
+
     public function testRefundCalledOnPurchaseWithoutCapture()
     {
         $createdAt = Carbon::today(Timezone::IST)->subDays(6)->timestamp;
