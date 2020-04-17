@@ -21,12 +21,11 @@ use RZP\Http\RequestHeader;
 use RZP\Constants\Timezone;
 use RZP\Models\Card\Issuer;
 use RZP\Models\Card\Network;
-use RZP\Services\Mock\Mozart;
-use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Mail\Banking\LowBalanceAlert;
 use RZP\Exception\BadRequestException;
+use RZP\Models\Merchant\Webhook\Event;
 use RZP\Models\BankingAccount\Gateway\Rbl;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Helpers\WebhookTrait;
@@ -78,6 +77,8 @@ class PayoutTest extends TestCase
             ]);
 
         $this->setUpMerchantForBusinessBanking(false, 10000000);
+
+        $this->mockStorkService();
     }
 
     public function testCreatePayout(): array
@@ -2775,6 +2776,146 @@ class PayoutTest extends TestCase
         $this->assertEquals('pending', $payout['status']);
     }
 
+    public function testFiringOfWebhookPayoutStatusQueuedWithStork()
+    {
+        // When WebhookViaStork experiment is turned on, webhook setting is skipped and
+        // stork is called regardless event setting is enabled or not
+        $this->mockRazorxTreatment('yesbank', 'on', 'on');
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::BANKING_STORK_MIGRATION]);
+
+        $payoutQueuedEventData = $this->testData['testFiringOfWebhookOnQueuedPayoutEventData'];
+
+        $payoutInitiatedEventData = $this->testData['testFiringOfWebhookOnInitiatedPayoutEventData'];
+        $payoutTransactionCreatedEventData = $this->testData['testFiringOfWebhookOnCreatedTransactionPayoutEventData'];
+
+        $this->mockServiceStorkRequest(
+            function ($path, $payload) use ($payoutQueuedEventData, $payoutInitiatedEventData, $payoutTransactionCreatedEventData)
+            {
+                $this->assertContains($payload['event']['name'],
+                                      [
+                                          'virtual_account.created',
+                                          'payout.initiated',
+                                          'payout.queued',
+                                          'transaction.created'
+                                      ]);
+
+                switch ($payload['event']['name'])
+                {
+                    case Event::PAYOUT_INITIATED:
+                        $this->validateStorkWebhookFireEvent('payout.initiated',
+                                                             $payoutInitiatedEventData,
+                                                             $payload);
+                        break;
+
+                    case Event::PAYOUT_QUEUED:
+                        $this->validateStorkWebhookFireEvent('payout.queued', $payoutQueuedEventData, $payload);
+                        break;
+
+                    case Event::TRANSACTION_CREATED:
+                        $this->validateStorkWebhookFireEvent('transaction.created',
+                                                             $payoutTransactionCreatedEventData,
+                                                             $payload);
+                        break;
+                }
+
+                return new \Requests_Response();
+            })->times(4);
+
+        $this->testCreateQueuedPayout();
+    }
+
+    public function testFiringOfWebhookPayoutStatusUpdateWithStork()
+    {
+        // When WebhookViaStork experiment is turned on, webhook setting is skipped and
+        // stork is called regardless event setting is enabled or not
+        $this->mockRazorxTreatment('yesbank', 'on', 'on');
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::BANKING_STORK_MIGRATION]);
+
+        $payoutUpdatedEventData = $this->testData['testFiringOfWebhookOnUpdateOfPayoutEventData'];
+        $payoutProcessedEventData = $this->testData['testFiringOfWebhookOnProcessPayoutEventData'];
+
+        $this->mockServiceStorkRequest(
+            function ($path, $payload) use ($payoutUpdatedEventData, $payoutProcessedEventData)
+            {
+                $this->assertContains($payload['event']['name'], ['payout.updated', 'payout.processed']);
+                switch ($payload['event']['name'])
+                {
+                    case Event::PAYOUT_UPDATED:
+                        $this->validateStorkWebhookFireEvent('payout.updated', $payoutUpdatedEventData, $payload);
+                        break;
+
+                    case Event::PAYOUT_PROCESSED:
+                        $this->validateStorkWebhookFireEvent('payout.processed', $payoutProcessedEventData, $payload);
+                        break;
+
+                }
+
+                return new \Requests_Response();
+            })->times(2);
+
+        $this->testPayoutStatusUpdate();
+    }
+
+    public function testFiringOfWebhookRejectPayoutWithStork()
+    {
+        $this->liveSetUp();
+
+        $workflow = $this->createPayoutWorkflowWithBankingUsersLiveMode();
+
+        $payout = $this->createPayoutWithWorkflow($workflow, [], 'rzp_live_TheLiveAuthKey');
+
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/payouts/' . $payout['id'] . '/reject';
+
+        $this->mockRazorxTreatment('yesbank', 'on', 'on');
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::BANKING_STORK_MIGRATION]);
+
+        $eventData = $this->testData['testFiringOfWebhookOnRejectionOfPayoutEventData'];
+
+        $this->mockServiceStorkRequest(
+            function ($path, $payload) use ($eventData)
+            {
+                $this->validateStorkWebhookFireEvent('payout.rejected', $eventData, $payload, 'live');
+
+                return new \Requests_Response();
+            })->once();
+
+        // Reject with Owner role user
+        $this->ba->proxyAuth('rzp_live_10000000000000', $this->ownerRoleUser->getId());
+
+        $this->startTest();
+    }
+
+    public function testFiringOfWebhookOnCreationOfPendingPayoutWithStork()
+    {
+        $this->liveSetUp();
+
+        $this->setupMockDns();
+
+        $this->mockRazorxTreatment('yesbank', 'on', 'on');
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::BANKING_STORK_MIGRATION]);
+
+        $testData = $this->testData['testFiringOfWebhookOnCreationOfPendingPayoutEventData'];
+
+        $this->mockServiceStorkRequest(
+            function ($path, $payload) use ($testData)
+            {
+                $this->validateStorkWebhookFireEvent('payout.pending', $testData, $payload, 'live');
+
+                return new \Requests_Response();
+            })->once();
+
+        $workflow = $this->setupWorkflowForLiveMode();
+
+        $payout = $this->createPayoutWithWorkflow($workflow, [], 'rzp_live_TheLiveAuthKey');
+
+        $this->assertEquals('pending', $payout['status']);
+    }
+
     public function testApprovePayoutWithNonBankingRoleInWorkflow()
     {
         $this->liveSetUp();
@@ -3117,4 +3258,14 @@ class PayoutTest extends TestCase
 
         $this->startTest();
     }
+
+    protected function validateStorkWebhookFireEvent($event, $testData, $storkPayload, $mode='test')
+    {
+        $this->assertEquals('rx-' . $mode, $storkPayload['event']['service']);
+        $this->assertEquals($event, $storkPayload['event']['name']);
+        $this->assertEquals('merchant', $storkPayload['event']['owner_type']);
+        $this->assertEquals('10000000000000', $storkPayload['event']['owner_id']);
+        $this->assertArraySelectiveEquals($testData, json_decode($storkPayload['event']['payload'], true));
+    }
+
 }

@@ -10,6 +10,7 @@ use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Models\FundAccount\Validation\Entity;
+use RZP\Tests\Functional\Helpers\WebhookTrait;
 use RZP\Tests\Functional\Helpers\MocksDnsTrait;
 use RZP\Tests\Functional\FundTransfer\AttemptTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -23,6 +24,7 @@ use RZP\Tests\Functional\Helpers\FundAccount\FundAccountValidationTrait;
  */
 class FundAccountValidationTest extends TestCase
 {
+    use WebhookTrait;
     use AttemptTrait;
     use MocksDnsTrait;
     use FundAccountTrait;
@@ -42,6 +44,8 @@ class FundAccountValidationTest extends TestCase
         $this->fixtures->merchant->editEntity('merchant', '10000000000000', ['fee_model' => 'postpaid']);
 
         $this->ba->privateAuth();
+
+        $this->mockStorkService();
     }
 
     public function testCreateValidationWithFundAccountId()
@@ -318,6 +322,28 @@ class FundAccountValidationTest extends TestCase
         });
 
         $this->createValidationWithFundAccountEntity();
+    }
+
+    public function testWebhookFundAccountValidationCompletedWithStork()
+    {
+        $testData = $this->testData['testFiringOfWebhookOnFAVCompletionWithStork'];
+
+        $this->enableRazorXTreatmentForStork();
+        $this->fixtures->merchant->addFeatures([Feature\Constants::BANKING_STORK_MIGRATION]);
+
+        $this->mockServiceStorkRequest(
+            function ($path, $payload) use ($testData)
+            {
+                $this->assertEquals('rx-test', $payload['event']['service']);
+                $this->assertEquals('fund_account.validation.completed', $payload['event']['name']);
+                $this->assertEquals('merchant', $payload['event']['owner_type']);
+                $this->assertEquals('10000000000000', $payload['event']['owner_id']);
+                $this->assertArraySelectiveEquals($testData, json_decode($payload['event']['payload'], true));
+
+                return new \Requests_Response();
+            })->once();
+
+        $this->testFundAccValidationWithAccountNumberAndBankAccount();
     }
 
     public function testFundAccValidationRetry()
