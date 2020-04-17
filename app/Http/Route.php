@@ -1488,6 +1488,7 @@ final class Route
         'governor_create_rule_chain_v1'           => ['post',     'namespaces/{namespace_id}/rule_chains',                                                              'GovernorController@proxy'              ],
         'governor_update_rule_chain_v1'           => ['put',      'namespaces/{namespace_id}/rule_chains/{rule_chain_id}',                                              'GovernorController@proxy'              ],
         'governor_delete_rule_chain_v1'           => ['delete',   'namespaces/{namespace_id}/rule_chains/{rule_chain_id}',                                              'GovernorController@proxy'              ],
+        'governor_update_chain_group_sequence_v1' => ['put',      'namespaces/{namespace_id}/rule_chains/{rule_chain_id}/group_sequence',                               'GovernorController@proxy'              ],
 
         // Governor Proxy APIs New - Rule Groups
         'governor_list_rule_groups_v1'            => ['get',      'namespaces/{namespace_id}/rule_chains/{rule_chain_id}/rule_groups',                                  'GovernorController@proxy'              ],
@@ -2954,6 +2955,7 @@ final class Route
         'governor_create_rule_chain_v1',
         'governor_update_rule_chain_v1',
         'governor_delete_rule_chain_v1',
+        'governor_update_chain_group_sequence_v1',
         'governor_list_rule_groups_v1',
         'governor_create_rule_group_v1',
         'governor_create_bulk_rule_group_v1',
@@ -3580,6 +3582,7 @@ final class Route
         'governor_create_rule_chain_v1'            => Permission::CREATE_GATEWAY_RULE,
         'governor_update_rule_chain_v1'            => Permission::EDIT_GATEWAY_RULE,
         'governor_delete_rule_chain_v1'            => Permission::DELETE_GATEWAY_RULE,
+        'governor_update_chain_group_sequence_v1'  => Permission::EDIT_GATEWAY_RULE,
         'governor_list_rule_groups_v1'             => Permission::VIEW_GATEWAY_RULE,
         'governor_create_rule_group_v1'            => Permission::CREATE_GATEWAY_RULE,
         'governor_create_bulk_rule_group_v1'       => Permission::CREATE_GATEWAY_RULE,
@@ -4322,7 +4325,7 @@ final class Route
         'terminals_service' => [
             'internal_merchant_fetch',
             'merchant_create_terminal_internal',
-            'pricing_add_plan_rule_bulk',    
+            'pricing_add_plan_rule_bulk',
             'merchant_methods_edit_internal',
         ],
     ];
