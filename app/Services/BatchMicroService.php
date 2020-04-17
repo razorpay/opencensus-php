@@ -138,7 +138,7 @@ class BatchMicroService
         try
         {
             $userId = $this->app['request']->header(RequestHeader::X_DASHBOARD_USER_ID, null);
-            
+
             $response = $this->client->request(Requests::POST, $relativeUri, [
                 'multipart' =>
                     $multipartData,
@@ -367,14 +367,20 @@ class BatchMicroService
         // merge the result and update the count
         // If skip/count is present, update the fetchResult
         //
-        $batchResult =  $this->getBatchesFromBatchService(null, $merchant, $input);
+        $batchResult =  $this->getBatchesFromBatchService($input['id']??null, $merchant, $input);
 
         if ($batchResult === null)
         {
             return $fetchResult;
         }
 
-        $batchServiceArray = (array) $batchResult['data'];
+        if ( (isset($batchResult['data']) == false) or ( $batchResult['data'] == null)) {
+            $result['data'] = [];
+            array_push($result['data'], $batchResult);
+            $batchResult = $result;
+        }
+
+        $batchServiceArray = (array)$batchResult['data'];
 
         $count = 0;
 
@@ -475,7 +481,8 @@ class BatchMicroService
             $queryParams['entityId'] = $merchant->getId();
         }
 
-        $relativeUrl = ($batchId != null) ? self::BATCH_URLS['batch'] . '/' . Batch\Entity::verifyIdAndStripSign($batchId) : self::BATCH_URLS['batch'];
+        $relativeUrl = ($batchId != null) ? self::BATCH_URLS['batch'] . '/' . Batch\Entity::verifyIdAndStripSign($batchId)
+                            : self::BATCH_URLS['batch'];
 
         try
         {

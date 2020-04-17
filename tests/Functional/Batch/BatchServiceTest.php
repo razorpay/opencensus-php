@@ -113,6 +113,45 @@ class BatchServiceTest extends TestCase
         $this->startTest();
     }
 
+    public function testBatchAPIGetAllBatchesWithFilters()
+    {
+        $batch1 = $this->fixtures->create(
+            'batch',
+            [
+                'id'          => '00000000000010',
+                'type'        => 'auth_link',
+                'total_count' => 5,
+            ]);
+
+        $batch2 = $this->fixtures->create(
+            'batch',
+            [
+                'id'          => '00000000000011',
+                'type'        => 'auth_link',
+                'total_count' => 5,
+            ]);
+
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testBatchAPIGetBatchWithIdAndFilters()
+    {
+        $batch1 = $this->fixtures->create(
+            'batch',
+            [
+                'id'          => '00000000000012',
+                'type'        => 'auth_link',
+                'total_count' => 6,
+            ]);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
     public function testBatchRawAPIUpdateSettings()
     {
         $this->ba->adminAuth();

@@ -228,4 +228,58 @@ return [
             ],
         ],
     ],
+
+    'testBatchAPIGetAllBatchesWithFilters' => [
+        'request' => [
+            'url'     => '/batches',
+            'method'  => 'get',
+            'content'=> [
+                'type'        => 'auth_link'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                "entity" => "collection",
+
+                "items"  => [
+                    [
+                        'id'               => 'batch_00000000000011',
+                        'type'             => 'auth_link',
+                        'total_count'      => 5,
+                        'status'           => 'created',
+                    ],
+                    [
+                        'id'               => 'batch_00000000000010',
+                        'type'             => 'auth_link',
+                        'total_count'      => 5,
+                        'status'           => 'created',
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testBatchAPIGetBatchWithIdAndFilters' => [
+        'request' => [
+            'url'     => '/batches',
+            'method'  => 'get',
+            'content'=> [
+                'type'        => 'auth_link',
+                'id'          => 'batch_00000000000012'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                "entity" => "collection",
+                "items"   => [
+                    [
+                        'id'               => 'batch_00000000000012',
+                        'type'             => 'auth_link',
+                        'total_count'      => 6,
+                        'status'           => 'created',
+                    ]
+                ],
+            ],
+        ],
+    ],
 ];
