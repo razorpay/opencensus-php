@@ -5,7 +5,6 @@ namespace RZP\Models\Merchant\Webhook;
 use RZP\Models\Base;
 use RZP\Base\BuilderEx;
 use RZP\Models\Merchant;
-use RZP\Constants\Product;
 
 class Repository extends Base\Repository
 {
@@ -152,11 +151,6 @@ class Repository extends Base\Repository
             try
             {
                 (new Stork)->upsert($entity);
-                // Additionally if it is banking ensure a copy(and dual write on that) into stork.
-                if ($this->auth->isProductBanking())
-                {
-                    (new Stork(Product::BANKING))->upsert($entity);
-                }
             }
             catch (\Throwable $e)
             {

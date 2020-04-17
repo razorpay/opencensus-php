@@ -9,9 +9,7 @@ use RZP\Exception;
 use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
-use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
-use RZP\Constants\Product;
 use RZP\Base\RuntimeManager;
 use RZP\Models\Event\Entity as EventEntity;
 use RZP\Mail\Merchant\Webhook as WebhookMail;
@@ -39,6 +37,7 @@ class Core extends Base\Core
 
         // Association must happen before build() because the same is used in validations.
         $webhook->merchant()->associate($merchant);
+
         $webhook->build($input);
 
         $this->repo->saveOrFail($webhook);
@@ -183,154 +182,5 @@ class Core extends Base\Core
         $webhook->deactivate();
 
         $this->repo->saveOrFail($webhook);
-    }
-
-    /**
-     * @param Merchant\Entity $merchant
-     * @param array           $input
-     * @param string          $product
-     *
-     * @return Entity
-     * @throws Exception\BadRequestException
-     */
-    public function createToStork(Merchant\Entity $merchant,
-                                     array $input,
-                                     string $product)
-    {
-        $stork = new Stork($product);
-
-        try
-        {
-            $storkResponse = $stork->fetchMultiple($this->merchant);
-        }
-        catch (Exception\ServerErrorException $e)
-        {
-            $this->trace->traceException($e);
-            throw new Exception\BadRequestException(ErrorCode::SERVER_ERROR_STORK_FAILURE);
-        }
-
-        if ((Product::isProductBanking($product)) and sizeof($storkResponse) > 0)
-        {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_STORK_WEBHOOK_ALREADY_CREATED);
-        }
-
-        $webhook = new Entity;
-        $webhook->merchant()->associate($merchant);
-        $webhook->build($input);
-
-        try
-        {
-            $response = $stork->create($webhook);
-            $webhook->setId($response['webhook']['id']);
-        }
-        catch (Exception\ServerErrorException $e)
-        {
-            $this->trace->traceException($e);
-            throw new Exception\BadRequestException(ErrorCode::SERVER_ERROR_STORK_FAILURE);
-        }
-        catch (\Throwable $e)
-        {
-            $this->trace->traceException($e);
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_WEBHOOK_VALIDATION_FAILED);
-        }
-
-        return  $webhook;
-    }
-
-    /**
-     * @param Merchant\Entity $merchant
-     * @param string          $webhookId
-     * @param array           $input
-     * @param string          $product
-     *
-     * @return Entity
-     * @throws Exception\BadRequestException
-     */
-    public function updateToStork(Merchant\Entity $merchant,
-                                  string $webhookId,
-                                  array $input,
-                                  $product = null)
-    {
-        $stork = new Stork($product);
-        try
-        {
-            $storkResponse = $stork->fetch($this->merchant, $webhookId);
-        }
-        catch (Exception\ServerErrorException $e)
-        {
-            $this->trace->traceException($e);
-            throw new Exception\BadRequestException(ErrorCode::SERVER_ERROR_STORK_FAILURE);
-        }
-
-        if (sizeof($storkResponse) < 1)
-        {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_STORK_WEBHOOK_NOT_FOUND);
-        }
-
-        try
-        {
-            $webhook = new Entity;
-            $webhook->merchant()->associate($merchant);
-            $webhook->edit($input);
-            $webhook->setId($webhookId);
-
-            $stork->update($webhook);
-        }
-        catch (Exception\ServerErrorException $e)
-        {
-            $this->trace->traceException($e);
-            throw new Exception\BadRequestException(ErrorCode::SERVER_ERROR_STORK_FAILURE);
-        }
-        catch (\Throwable $e)
-        {
-            $this->trace->traceException($e);
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_WEBHOOK_VALIDATION_FAILED);
-        }
-
-        return  $webhook;
-    }
-
-    /**
-     * @param Merchant\Entity $merchant
-     *
-     * @param string          $product
-     *
-     * @return Base\PublicCollection
-     * @throws Exception\BadRequestException
-     */
-    public function fetchFromStork(Merchant\Entity $merchant, $product = null)
-    {
-        $webhookCollection = (new Base\PublicCollection);
-
-        try
-        {
-            $stork = new Stork($product);
-
-            $storkResponse = $stork->fetchMultiple($this->merchant);
-
-            if (sizeof($storkResponse) < 1)
-            {
-                return $webhookCollection;
-            }
-
-            $webhookData = $stork->deserializeStorkWebhook($storkResponse['webhooks'][0]);
-
-            $webhook = new Entity;
-            $webhook->merchant()->associate($merchant);
-            $webhook->edit($webhookData);
-            $webhook->setId($storkResponse['webhooks'][0]['id']);
-        }
-        catch (Exception\ServerErrorException $e)
-        {
-            $this->trace->traceException($e);
-            throw new Exception\BadRequestException(ErrorCode::SERVER_ERROR_STORK_FAILURE);
-        }
-        catch (\Throwable $e)
-        {
-            $this->trace->traceException($e);
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_WEBHOOK_VALIDATION_FAILED);
-        }
-
-        return  $webhookCollection->push($webhook);
     }
 }

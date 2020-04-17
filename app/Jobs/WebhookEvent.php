@@ -6,7 +6,6 @@ use RZP\Jobs\Job;
 use RZP\Models\Event;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
-use RZP\Constants\Product;
 
 /**
  * This is a fallback queued job and the handler just calls stork's processEvent().
@@ -34,18 +33,12 @@ class WebhookEvent extends Job
      */
     public $eventAttrs;
 
-    public $product;
-
-    public function __construct(string $mode,
-                                Merchant\Entity $merchant,
-                                array $eventAttrs,
-                                string $product = Product::PRIMARY)
+    public function __construct(string $mode, Merchant\Entity $merchant, array $eventAttrs)
     {
         parent::__construct($mode);
 
         $this->merchant   = $merchant;
         $this->eventAttrs = $eventAttrs;
-        $this->product    = $product;
     }
 
     public function handle()
@@ -59,7 +52,7 @@ class WebhookEvent extends Job
 
             $this->trace->info(TraceCode::WEBHOOK_EVENT_JOB_RECEIVED, $event->toArrayPublic());
 
-            (new Merchant\Webhook\Stork($this->product))->processEvent($event, $this->mode);
+            (new Merchant\Webhook\Stork)->processEvent($event, $this->mode);
         }
         catch (\Throwable $e)
         {

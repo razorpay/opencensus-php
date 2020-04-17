@@ -116,20 +116,4 @@ trait FundAccountValidationTrait
         $this->app->razorx->method('getTreatment')
             ->willReturn('on');
     }
-
-    protected function enableRazorXTreatmentForStork()
-    {
-        $razorxMock = $this->getMockBuilder(RazorXClient::class)
-                           ->setConstructorArgs([$this->app])
-                           ->setMethods(['getTreatment', 'getCachedTreatment'])
-                           ->getMock();
-
-        $this->app->instance('razorx', $razorxMock);
-
-        $this->app->razorx->method('getTreatment')
-                          ->willReturn('on');
-
-        $this->app->razorx->method('getCachedTreatment')
-                          ->willReturn('on');
-    }
 }

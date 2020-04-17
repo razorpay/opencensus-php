@@ -154,11 +154,6 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::DISABLE_ON_FAILURE);
     }
 
-    public function setId($id)
-    {
-        return $this->setAttribute('id', $id);
-    }
-
     public function getUrl()
     {
         return $this->getAttribute(self::URL);
@@ -348,8 +343,7 @@ class Entity extends Base\PublicEntity
 
     public function setPublicEventsAttribute(array & $array)
     {
-        $array[self::EVENTS] = (isset($array[self::EVENTS]) === true) ?
-                                Event::filterForPublicApi($this->merchant, $array[self::EVENTS]): [];
+        $array[self::EVENTS] = Event::filterForPublicApi($this->merchant, $array[self::EVENTS]);
     }
 
     public function setPublicApplicationIdAttribute(array & $array)

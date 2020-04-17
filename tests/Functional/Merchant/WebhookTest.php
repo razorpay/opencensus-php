@@ -51,9 +51,6 @@ class WebhookTest extends TestCase
 
     protected $sharedTerminal;
 
-    // Used in webhook trait
-    protected $storkMock;
-
     public function setUp()
     {
         $this->testDataFilePath = __DIR__.'/helpers/WebhookData.php';
@@ -68,7 +65,6 @@ class WebhookTest extends TestCase
 
         $this->setupMockDns();
 
-        $this->mockStorkService();
     }
 
     public function testCreateWebhook()
@@ -204,76 +200,6 @@ class WebhookTest extends TestCase
             ['merchant_id' => '100000Razorpay']);
 
         $this->fixtures->merchant->addFeatures(['payout']);
-
-        $this->startTest();
-    }
-
-    public function testCreateWebhookForProductBankingWithStork()
-    {
-        $this->fixtures->merchant->addFeatures(['payout']);
-        $this->fixtures->merchant->addFeatures([Feature\Constants::BANKING_STORK_MIGRATION]);
-
-        $this->mockServiceStorkRequest(
-            function ($path, $payload)
-            {
-                if ($path === "/twirp/rzp.stork.webhook.v1.WebhookAPI/List") {
-                    return $this->getStorkListResponseEmpty();
-                }
-
-                if ($path === "/twirp/rzp.stork.webhook.v1.WebhookAPI/Create")
-                {
-                    return $this->getStorkCreateResponse();
-                }
-            });
-
-        $this->startTest();
-    }
-
-    public function testCreateWebhookForProductBankingWithInvalidEventsWithStork()
-    {
-        $this->fixtures->merchant->addFeatures(['payout']);
-        $this->fixtures->merchant->addFeatures([Feature\Constants::BANKING_STORK_MIGRATION]);
-
-        $this->mockServiceStorkRequest(
-            function ($path, $payload)
-            {
-                return $this->getStorkListResponseEmpty();
-            })->once();
-
-        $this->startTest();
-    }
-
-    public function testEditWebhookForProductBankingWithStork()
-    {
-        $this->fixtures->merchant->addFeatures(['payout']);
-        $this->fixtures->merchant->addFeatures([Feature\Constants::BANKING_STORK_MIGRATION]);
-
-        $this->mockServiceStorkRequest(
-            function ($path, $payload)
-            {
-                if ($path === "/twirp/rzp.stork.webhook.v1.WebhookAPI/Get") {
-                    return $this->getStorkGetResponse();
-                }
-
-                if ($path === "/twirp/rzp.stork.webhook.v1.WebhookAPI/Update")
-                {
-                    return $this->getStorkUpdateResponse();
-                }
-            });
-
-        $this->startTest();
-    }
-
-    public function testGetWebhooksProductBankingWithStork()
-    {
-        $this->fixtures->merchant->addFeatures([Feature\Constants::BANKING_STORK_MIGRATION]);
-        $this->fixtures->merchant->addFeatures(['payout']);
-
-        $this->mockServiceStorkRequest(
-            function ($path, $payload)
-            {
-                return $this->getStorkListResponse();
-            });
 
         $this->startTest();
     }

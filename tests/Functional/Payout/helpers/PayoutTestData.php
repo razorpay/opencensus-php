@@ -393,23 +393,6 @@ return [
         ],
     ],
 
-    'testFiringOfWebhookRejectPayoutWithStork' => [
-        'request'  => [
-            'method'  => 'POST',
-            'url'     => '/payouts/{id}/reject',
-            'content' => [
-                'token'        => 'BUIj3m2Nx2VvVj',
-                'otp'          => '1234',
-                'user_comment' => 'Rejecting',
-            ],
-        ],
-        'response' => [
-            'content' => [
-                'status' => 'rejected',
-            ],
-        ],
-    ],
-
     'testRejectPayoutWithoutComment' => [
         'request'  => [
             'method'  => 'POST',
@@ -2612,89 +2595,6 @@ return [
                 'entity' => [
                     'entity'     => 'payout',
                     'utr'        => '933815233814',
-                ],
-            ],
-        ],
-    ],
-
-    'testFiringOfWebhookOnUpdateOfPayoutEventData' => [
-        'entity'   => 'event',
-        'event'    => 'payout.updated',
-        'contains' => [
-            'payout',
-        ],
-        'payload'  => [
-            'payout' => [
-                'entity' => [
-                    'entity' => 'payout',
-                    'status' => 'processing',
-                ],
-            ],
-        ],
-    ],
-
-    'testFiringOfWebhookOnProcessPayoutEventData' => [
-        'entity'   => 'event',
-        'event'    => 'payout.processed',
-        'contains' => [
-            'payout',
-        ],
-        'payload'  => [
-            'payout' => [
-                'entity' => [
-                    'entity' => 'payout',
-                    'status' => 'processed',
-                ],
-            ],
-        ],
-    ],
-
-    'testFiringOfWebhookOnQueuedPayoutEventData' => [
-        'entity'   => 'event',
-        'event'    => 'payout.queued',
-        'contains' => [
-            'payout',
-        ],
-        'payload'  => [
-            'payout' => [
-                'entity' => [
-                    'entity' => 'payout',
-                    'status' => 'queued',
-                ],
-            ],
-        ],
-    ],
-
-    'testFiringOfWebhookOnInitiatedPayoutEventData' => [
-        'entity'   => 'event',
-        'event'    => 'payout.initiated',
-        'contains' => [
-            'payout',
-        ],
-        'payload'  => [
-            'payout' => [
-                'entity' => [
-                    'entity' => 'payout',
-                    'status' => 'processing',
-                ],
-            ],
-        ],
-    ],
-
-    'testFiringOfWebhookOnCreatedTransactionPayoutEventData' => [
-        'entity'   => 'event',
-        'event'    => 'transaction.created',
-        'contains' => [
-            'transaction',
-        ],
-        'payload'  => [
-            'transaction' => [
-                'entity' => [
-                    'entity' => 'transaction',
-                    'source' => [
-                        'entity' => 'payout',
-                        'status' => 'processing',
-                    ]
                 ],
             ],
         ],

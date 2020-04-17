@@ -92,12 +92,6 @@ class ApiEventSubscriber extends Base\Core
      */
     protected $activeAppsWebhooks     = [];
 
-    /**
-     * Webhook\Stork is initialized with a product(i.e. banking, primary).
-     * @var string|null
-     */
-    protected $storkProduct = Constants\Product::PRIMARY;
-
     const MAIN        = 'main';
     const WITH        = 'with';
     const MERCHANT_ID = 'merchant_id';
@@ -962,17 +956,6 @@ class ApiEventSubscriber extends Base\Core
             'entity' => $fundAccountValidation->toArrayPublic()
         ];
 
-        try
-        {
-            $this->setMerchantProductForStork($fundAccountValidation->merchant,
-                optional($fundAccountValidation->balance)->getType());
-        }
-        catch (\Exception $e)
-        {
-            $this->trace->traceException(
-                $e, Logger::WARNING, TraceCode::STORK_PRODUCT_SET_FAILED);
-        }
-
         return $partialPayload;
     }
 
@@ -1062,16 +1045,6 @@ class ApiEventSubscriber extends Base\Core
             ],
         ];
 
-        try
-        {
-            $this->setMerchantProductForStork($txn->merchant, optional($txn->accountBalance)->getType());
-        }
-        catch (\Exception $e)
-        {
-            $this->trace->traceException(
-                $e, Logger::WARNING, TraceCode::STORK_PRODUCT_SET_FAILED);
-        }
-
         return $payload;
     }
 
@@ -1086,16 +1059,6 @@ class ApiEventSubscriber extends Base\Core
 
     protected function getPayoutPayload(Payout\Entity $payout): array
     {
-        try
-        {
-            $this->setMerchantProductForStork($payout->merchant, $payout->balance->getType());
-        }
-        catch (\Exception $e)
-        {
-            $this->trace->traceException(
-                $e, Logger::WARNING, TraceCode::STORK_PRODUCT_SET_FAILED);
-        }
-
         $merchantId = $this->getMerchantFromEntity($this->mainEntity)->getId();
 
         $variant = $this->app->razorx->getTreatment(
@@ -1106,18 +1069,18 @@ class ApiEventSubscriber extends Base\Core
 
         if (strtolower($variant) === 'on')
         {
-            $payload[Constants\Entity::PAYOUT] = [
-                'entity' => $payout->toArrayPublic(),
-            ];
-        }
-        else
-        {
-            $payload[Constants\Entity::PAYOUT] = [
-                'entity' => $payout->toArrayWebhook(),
+            return [
+                Constants\Entity::PAYOUT => [
+                    'entity' => $payout->toArrayPublic(),
+                ],
             ];
         }
 
-        return $payload;
+        return [
+            Constants\Entity::PAYOUT => [
+                'entity' => $payout->toArrayWebhook(),
+            ],
+        ];
     }
 
     protected function getPaymentPayloadWithDispute($payment)
@@ -1482,9 +1445,7 @@ class ApiEventSubscriber extends Base\Core
      * Dispatches event to stork where dispatch-able webhooks are resolved and
      * events are fired to all of them. It returns true on success.
      *
-     * @param array  $payload
-     * @param string $product
-     *
+     * @param  array   $payload
      * @return boolean
      */
     protected function dispatchEventToStork(array $payload): bool
@@ -1493,7 +1454,7 @@ class ApiEventSubscriber extends Base\Core
 
         try
         {
-            (new Stork($this->storkProduct))->processEventSafe($event, $this->getMode());
+            (new Stork)->processEventSafe($event, $this->getMode());
         }
         catch (Throwable $e)
         {
@@ -1504,32 +1465,5 @@ class ApiEventSubscriber extends Base\Core
         }
 
         return true;
-    }
-
-    /**
-     * Sets storkProduct attribute to banking if balanceType is such but temporarily
-     * controlled via a feature. This should be removed later.
-     *
-     * @param Merchant\Entity $merchant
-     * @param string|null     $balanceType
-     *
-     * @return void
-     */
-    protected function setMerchantProductForStork(Merchant\Entity $merchant, $balanceType)
-    {
-        // feature flag check is for stork migration
-        if (($balanceType === Merchant\Balance\Type::BANKING) and
-            $merchant->isFeatureEnabled(Feature\Constants::BANKING_STORK_MIGRATION))
-        {
-            $this->trace->info(TraceCode::STORK_DISPATCH_EVENT_REQUEST_PRODUCT_BANKING,
-                               ['merchant_id' => $merchant->getId()]);
-
-            $this->storkProduct = Constants\Product::BANKING;
-
-            return;
-        }
-
-        // default value
-        $this->storkProduct = Constants\Product::PRIMARY;
     }
 }

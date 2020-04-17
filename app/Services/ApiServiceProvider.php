@@ -362,8 +362,6 @@ class ApiServiceProvider extends BaseServiceProvider
         $this->registerTokenService();
 
         $this->registerTerminalsService();
-
-        $this->registerStorkService();
     }
 
     /**
@@ -949,14 +947,6 @@ class ApiServiceProvider extends BaseServiceProvider
             return new TerminalsService($app);
         });
 
-    }
-
-    protected function registerStorkService()
-    {
-        $this->app->singleton('stork_service', function ($app)
-        {
-            return new Stork();
-        });
     }
 
     protected function registerTokenService()

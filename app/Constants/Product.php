@@ -47,9 +47,4 @@ final class Product
             throw new BadRequestValidationFailureException('Not a valid product: ' . $product);
         }
     }
-
-    public static function isProductBanking(string $product): bool
-    {
-        return (self::BANKING === $product);
-    }
 }
