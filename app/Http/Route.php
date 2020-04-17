@@ -696,6 +696,7 @@ final class Route
         'payment_links_service_main_route'         => ['any',      'payment_links',                                  'PlinkController@sendRequest'                                       ],
         'payment_links_service_sub_route'          => ['any',      'payment_links/{path?}',                          'PlinkController@sendRequest'                                       ],
         'payment_links_service_count_route'        => ['any',      'payment_links_count',                            'PlinkController@sendRequest'                                       ],
+        'payment_links_demo'                       => ['post',     'payment_links_demo',                             'PlinkController@plDemo'                                            ],
 
         'app_delete_token'                         => ['delete',   'apps/tokens/{token}',                            'CustomerController@deleteTokenForGlobalCustomer'                   ],
         'app_fetch_tokens'                         => ['get',      'apps/tokens',                                    'CustomerController@fetchTokensForGlobalCustomer'                   ],
@@ -3846,6 +3847,7 @@ final class Route
     ];
 
     public static $direct = [
+        'payment_links_demo',
         'payment_links_service_hosted_page',
         'third_party_health_check',
         'channel_health_check',

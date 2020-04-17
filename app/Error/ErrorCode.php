@@ -1194,6 +1194,7 @@ class ErrorCode
     const BAD_REQUEST_CAPTCHA_FAILED                                                = 'BAD_REQUEST_CAPTCHA_FAILED';
     const BAD_REQUEST_INVALID_PASSWORD                                              = 'BAD_REQUEST_INVALID_PASSWORD';
     const BAD_REQUEST_NEW_PASSWORD_SAME_AS_OLD_PASSWORD                             = 'BAD_REQUEST_NEW_PASSWORD_SAME_AS_OLD_PASSWORD';
+    const BAD_REQUEST_CAPTCHA_TOKEN_NOT_PRESENT                                     = 'BAD_REQUEST_CAPTCHA_TOKEN_NOT_PRESENT';
 
     const BAD_REQUEST_LOCKED_BALANCE_UPDATE_NON_BANKING                             = 'BAD_REQUEST_LOCKED_BALANCE_UPDATE_NON_BANKING';
 

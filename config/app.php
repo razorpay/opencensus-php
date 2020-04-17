@@ -303,4 +303,8 @@ return array(
     'query_cache' => [
         'mock' => env('QUERY_CACHE_MOCK', false),
     ],
+
+    'pl_demo' => [
+        'nocaptcha_secret'      => env('NOCAPTCHA_SECRET', ''),
+    ],
 );

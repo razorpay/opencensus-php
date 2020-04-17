@@ -2,7 +2,7 @@
 
 namespace RZP\Http\Controllers;
 
-
+use App;
 use Requests;
 use ApiResponse;
 use Illuminate\Http\Request;
@@ -71,6 +71,66 @@ class PlinkController extends Controller
         }
 
         return ApiResponse::json($res);
+    }
+
+    public function plDemo(Request $request)
+    {
+        $input = $request->post();
+
+        $this->validateCaptcha($input);
+
+        $request->request->remove('captcha');
+
+        $this->sendRequest($request);
+
+    }
+
+    protected function validateCaptcha(array $input)
+    {
+        $app = App::getFacadeRoot();
+
+        if ($app->environment('production') === false)
+        {
+            return;
+        }
+
+        if(isset($input['captcha']) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_CAPTCHA_TOKEN_NOT_PRESENT
+            );
+        }
+
+        $captchaResponse = $input['captcha'];
+
+        $clientIpAddress = $_SERVER['HTTP_X_IP_ADDRESS'] ?? $app['request']->ip();
+
+        $noCaptchaSecret = config('app.pl_demo.nocaptcha_secret');
+
+        $input = [
+            'secret'   => $noCaptchaSecret,
+            'response' => $captchaResponse,
+            'remoteip' => $clientIpAddress,
+        ];
+
+        $captchaQuery = http_build_query($input);
+
+        $url = 'https://www.google.com/recaptcha/api/siteverify?'. $captchaQuery;
+
+        $response = \Requests::get($url);
+
+        $output = json_decode($response->body);
+
+        if($output->success !== true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_CAPTCHA_FAILED,
+                null,
+                [
+                    'output_from_google'        => (array)$output,
+                ]
+            );
+        }
     }
 
     protected function parseAndReturnResponse($res)
