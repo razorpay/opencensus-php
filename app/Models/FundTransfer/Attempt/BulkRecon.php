@@ -122,19 +122,7 @@ class BulkRecon extends Base\Core
                 return $this->initiateBulkReconProcess($collection);
             });
 
-        try
-        {
-            $summary = $this->getSummary();
-
-            (new SlackNotification)->send('setl_reconciliation', $summary, null, $summary['failures_count']);
-        }
-        catch (\Throwable $e)
-        {
-            $this->trace->traceException(
-                $e,
-                Trace::CRITICAL,
-                TraceCode::SETTLEMENT_RECON_NOTIFIER_FAILED);
-        }
+        $summary = $this->getSummary();
 
         $this->fireSettlementWebhook();
 
@@ -184,8 +172,6 @@ class BulkRecon extends Base\Core
                                 [
                                     'fta_id' => $fta->getId(),
                                 ]);
-
-                            (new SlackNotification)->send('setl_reconciliation', [], $e);
                         }
                     }
                 }
@@ -195,8 +181,6 @@ class BulkRecon extends Base\Core
             }
             catch (\Throwable $e)
             {
-                (new SlackNotification)->send('setl_reconciliation', [], $e);
-
                 throw $e;
             }
         });

@@ -25,7 +25,6 @@ class SlackNotification extends Base\Core
     protected $messages = [
         'setl_skipped'            => 'Settlement Skipped. Check for Retry.',
         'setl_initiate'           => 'Settlements initiated.',
-        'setl_reconciliation'     => 'Settlements reconciled. ',
         'reconcile_file'          => 'Reconciliation file processed.',
         'setl_return'             => 'Settlements returns occurred. ',
         'fta_recon_report'        => 'Fund Transfer Potential Failures',
@@ -52,28 +51,15 @@ class SlackNotification extends Base\Core
     {
         try
         {
-            $icon = ':thumbsup:';
-
             $info = $this->messages[$operation] ?? 'Operation:: '.$operation;
 
-            if (($failureCount === 0) and ($e === null))
-            {
-                $color = self::GOOD;
+            $color = self::BAD;
 
-                $username =  'Settlements Logs';
+            $icon = ':boom:';
 
-                $channel = Config::get('slack.channels.settlement_logs');
-            }
-            else
-            {
-                $color = self::BAD;
+            $username =  'Settlements';
 
-                $icon = ':boom:';
-
-                $username =  'Settlements';
-
-                $channel = Config::get('slack.channels.settlements');
-            }
+            $channel = Config::get('slack.channels.settlements');
 
             if ($e !== null)
             {
