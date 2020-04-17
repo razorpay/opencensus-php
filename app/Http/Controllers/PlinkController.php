@@ -108,11 +108,13 @@ class PlinkController extends Controller
 
         $headers = $this->getHeaders();
 
+        $requestBody = [];
+
         $body = $request->post();
 
         if ((empty($body) === false) && ($request->method() !== Request::METHOD_GET))
         {
-            $body = json_encode($body);
+            $requestBody = json_encode($body);
         }
 
         $options = [
@@ -125,7 +127,7 @@ class PlinkController extends Controller
         $response = [
             'url'     => $url,
             'headers' => $headers,
-            'data'    => $body,
+            'data'    => $requestBody,
             'options' => $options,
             'method'  => $method,
         ];
@@ -144,6 +146,13 @@ class PlinkController extends Controller
         if ($this->ba->getMerchantId() !== null)
         {
             $headers['X-Razorpay-MerchantId'] = $this->ba->getMerchantId();
+        }
+
+        $user = $this->ba->getUser();
+
+        if ($user !== null)
+        {
+            $headers['X-Razorpay-UserId'] = $user->getId();
         }
 
         $headers['X-Razorpay-Mode']          = $this->ba->getMode();
