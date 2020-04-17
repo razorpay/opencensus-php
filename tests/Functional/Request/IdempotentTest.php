@@ -67,7 +67,6 @@ class IdempotentTest  extends TestCase
         //X-Idempotent-Key
         $headers = [
             'HTTP_X_Idempotent_Key'    => 'idempotentId',
-            'HTTP_X_Creator_Id'        => 'MerchantUser01',
         ];
 
         $this->ba->privateAuth();
@@ -86,4 +85,46 @@ class IdempotentTest  extends TestCase
 
         $this->assertNotEquals($responseFirst['id'],$responseSecond['id']);
     }
+
+    public function testUserIdAndUserSetting()
+    {
+        $this->ba->batchAuth();
+
+        //X-Idempotent-Key
+        $headers = [
+            'HTTP_X_Idempotent_Key'    => 'idempotentId',
+            'HTTP_X_Creator_Id'        => 'MerchantUser01',
+        ];
+
+        // append headers
+        $this->testData[__FUNCTION__]['request']['server'] = $headers;
+
+        $responseFirst = $this->startTest();
+
+        $this->assertEquals($responseFirst['user_id'], 'MerchantUser01');
+
+        $this->assertTrue(isset($responseFirst['user']) === true);
+
+    }
+
+    public function testUserIdAndUserNotSetting()
+    {
+        //X-Idempotent-Key
+        $headers = [
+            'HTTP_X_Idempotent_Key'    => 'idempotentId',
+            'HTTP_X_Creator_Id'        => 'MerchantUser01',
+        ];
+
+        $this->ba->privateAuth();
+
+        // append headers
+        $this->testData[__FUNCTION__]['request']['server'] = $headers;
+
+        $response = $this->startTest();
+
+        $this->assertTrue(array_key_exists('user_id', $response) === false);
+
+        $this->assertTrue(array_key_exists('user', $response) === false);
+    }
+
 }
