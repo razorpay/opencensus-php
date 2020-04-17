@@ -28,7 +28,6 @@ return [
         'terminal_id'       => '1ShrdPaypalTml',
         'signed'            => false,
         'verified'          => null,
-        'entity'            => 'payment',
     ],
 
     'testInternationalPayment' => [

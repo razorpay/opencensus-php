@@ -73,31 +73,9 @@ class PaypalGatewayTest extends TestCase
         return $payment;
     }
 
-    public function testCapturePayment()
-    {
-        $payment = $this->payment;
-
-        $response = $this->doAuthPayment($payment);
-
-        $payment = $this->getLastEntity('payment', true);
-
-        $this->assertTestResponse($payment, 'testPayment');
-        $this->assertEquals('1ShrdPaypalTml', $payment['terminal_id']);
-
-        $mozartEntity = $this->getLastEntity('mozart', true);
-
-        $this->assertTestResponse($mozartEntity, 'testPaymentMozartEntity');
-
-        $capturedPayment = $this->capturePayment($payment['id'], $payment['amount'], $payment['currency']);
-
-        $this->assertEquals('captured', $capturedPayment['status']);
-    }
-
     public function testRefundPayment()
     {
-        $payment = $this->testPayment();
-
-        $payment = $this->capturePayment($payment['id'], $payment['amount'], $payment['currency']);
+        $payment = $this->doAuthAndCapturePayment($this->payment);
 
         $this->payment = $this->refundPayment($payment['id']);
 
@@ -121,7 +99,7 @@ class PaypalGatewayTest extends TestCase
     {
         $this->mockServerContentFunction(function (&$content, $action = null)
         {
-            if ($action === 'pay_verify')
+            if ($action === 'auth_verify')
             {
                 $content['data']['paymentId'] = 'Hacked'; //some random payment_id
             }
@@ -143,7 +121,7 @@ class PaypalGatewayTest extends TestCase
     {
         $this->mockServerContentFunction(function (&$content, $action = null)
         {
-            if ($action === 'pay_verify')
+            if ($action === 'auth_verify')
             {
                 $content['success'] = false;
             }
@@ -170,9 +148,7 @@ class PaypalGatewayTest extends TestCase
 
     public function testVerifyRefundFailedOnGateway()
     {
-        $payment = $this->testPayment();
-
-        $this->gateway = 'mozart';
+        $payment = $this->doAuthAndCapturePayment($this->payment);
 
         $this->mockServerContentFunction(function (& $content, $action = null)
         {
@@ -200,8 +176,6 @@ class PaypalGatewayTest extends TestCase
                 ];
             }
         });
-
-        $payment = $this->capturePayment($payment['id'], $payment['amount'], $payment['currency']);
 
         $this->payment = $this->refundPayment($payment['id']);
 

@@ -938,11 +938,12 @@ class DatabaseSeeder extends Seeder
                 'merchant_id'           => Account::TEST_ACCOUNT,
                 'gateway'               => Gateway::WALLET_PAYPAL,
                 'card'                  => '0',
-                'gateway_merchant_id'   => 'SPSZR25DLBKN6',
+                'gateway_merchant_id'   => 'A6BJBXR5ABB2G',
                 'recurring'             => 0,
                 'created_at'            => time(),
                 'updated_at'            => time(),
                 'type'                  => 0,
+                'mode'                  => 2,
             )
         );
 

@@ -119,6 +119,11 @@ class Gateway extends Base\Gateway
             parent::action($input, Action::AUTHENTICATE_INIT);
         }
 
+        if ($this->getGateway($input) === 'wallet_paypal')
+        {
+            parent::action($input, Action::AUTH_INIT);
+        }
+
         if (is_null($this->terminal) === false)
         {
             switch ($this->terminal->getGatewayAcquirer())
@@ -480,6 +485,38 @@ class Gateway extends Base\Gateway
         {
             $this->authorize($input);
         }
+        else if ($this->isDebitGateway($input))
+        {
+            parent::action($input,Action::DEBIT);
+
+            $request = $this->getMozartRequestArray($input);
+
+            $traceReq = [
+                'method' => $request['method'],
+                'url' => $request['url'],
+            ];
+
+            $this->traceGatewayPaymentRequest($traceReq, $input, TraceCode::GATEWAY_PAYMENT_DEBIT_REQUEST);
+
+            $response = $this->sendGatewayRequest($request);
+
+            $traceRes = $this->getRedactedData($response);
+
+            $this->traceGatewayPaymentResponse($traceRes, $input, TraceCode::GATEWAY_PAYMENT_DEBIT_RESPONSE);
+
+            $attributes = $this->getMappedAttributes($response);
+
+            $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
+                $input['payment']['id'], Action::AUTHORIZE);
+
+            $this->gatewayPayment = $this->updateGatewayPaymentEntityWithAction(
+                $gatewayPayment,
+                $response,
+                true,
+                Action::AUTHORIZE
+            );
+            $this->checkErrorsAndThrowExceptionFromMozartResponse($response);
+        }
         else
         {
             parent::debit($input);
@@ -489,6 +526,11 @@ class Gateway extends Base\Gateway
     public function callback(array $input)
     {
         parent::action($input, Action::PAY_VERIFY);
+
+        if ($this->getGateway($input) === 'wallet_paypal')
+        {
+            parent::action($input, Action::AUTH_VERIFY);
+        }
 
         if ($this->isS2SFlow($input) === true)
         {
@@ -519,6 +561,7 @@ class Gateway extends Base\Gateway
                 TraceCode::GATEWAY_PAYMENT_RESPONSE,
                 false);
         }
+
         else if ($this->fullyEncryptedFlow($input['payment']['gateway']) === false)
         {
             $gateway = $input['gateway'];
@@ -870,32 +913,6 @@ class Gateway extends Base\Gateway
         $this->checkErrorsAndThrowExceptionFromMozartResponse($response);
     }
 
-    public function capture(array $input)
-    {
-        parent::capture($input);
-
-        $request = $this->getMozartRequestArray($input);
-
-        $traceReq = [
-            'method' => $request['method'],
-            'url' => $request['url'],
-        ];
-
-        $this->traceGatewayPaymentRequest($traceReq, $input, TraceCode::GATEWAY_CAPTURE_REQUEST);
-
-        $response = $this->sendGatewayRequest($request);
-
-        $traceRes = $this->getRedactedData($response);
-
-        $this->traceGatewayPaymentResponse($traceRes, $input, TraceCode::GATEWAY_CAPTURE_RESPONSE);
-
-        $attributes = $this->getMappedAttributes($response);
-
-        $this->createGatewayPaymentEntity($attributes, $input, Action::CAPTURE);
-
-        $this->checkErrorsAndThrowExceptionFromMozartResponse($response);
-    }
-
     public function verifyRefund(array $input)
     {
         $this->input = $input;
@@ -1101,6 +1118,12 @@ class Gateway extends Base\Gateway
         if ($prevStepName != null)
         {
             $input['gateway'][$prevStepName] = $this->getPreviousData($input, $prevStepDB);
+
+            if (($gateway === 'wallet_paypal') and ($this->getAction() === 'refund') and ($input['gateway'][$prevStepName]['status'] !== 'capture_successful'))
+            {
+                $input['gateway'][$prevStepName] = $this->getPreviousData($input, "capture");
+
+            }
         }
 
         $content['entities'] = $input;
@@ -1298,11 +1321,11 @@ class Gateway extends Base\Gateway
                 Action::VERIFY_REFUND => null
             ],
             Payment\Gateway::WALLET_PAYPAL => [
-                Action::PAY_INIT => null,
-                Action::PAY_VERIFY => Action::PAY_INIT,
-                Action::CAPTURE => Action::PAY_INIT,
-                Action::VERIFY => Action::PAY_INIT,
-                Action::REFUND => Action::CAPTURE,
+                Action::AUTH_INIT     => null,
+                Action::AUTH_VERIFY   => Action::PAY_INIT,
+                Action::DEBIT         => Action::PAY_INIT,
+                Action::VERIFY        => Action::PAY_INIT,
+                Action::REFUND        => Action::CAPTURE,
                 Action::VERIFY_REFUND => Action::REFUND,
             ],
             Payment\Gateway::NETBANKING_CUB => [
@@ -1434,12 +1457,12 @@ class Gateway extends Base\Gateway
                 Action::VERIFY_REFUND => null
             ],
             Payment\Gateway::WALLET_PAYPAL => [
-                Action::PAY_INIT => null,
-                Action::PAY_VERIFY => Action::AUTHORIZE,
-                Action::CAPTURE => Action::AUTHORIZE,
-                Action::REFUND => Action::CAPTURE,
+                Action::AUTH_INIT     => null,
+                Action::AUTH_VERIFY   => Action::AUTHORIZE,
+                Action::DEBIT         => Action::AUTHORIZE,
+                Action::REFUND        => Action::AUTHORIZE,
                 Action::VERIFY_REFUND => Action::REFUND,
-                Action::VERIFY => Action::AUTHORIZE,
+                Action::VERIFY        => Action::AUTHORIZE,
             ],
             Payment\Gateway::UPI_AIRTEL => [
                 Action::PAY_INIT => null,
@@ -2201,5 +2224,24 @@ class Gateway extends Base\Gateway
         }
 
         return $response['body'][UpiJuspay\Fields::MERCHANT_REQUEST_ID];
+    }
+
+    protected function isDebitGateway($input)
+    {
+        if ($input['payment']['method'] === Payment\Method::WALLET)
+        {
+            return $this->isDebitWallet($input['payment']['wallet']);
+        }
+
+        return false;
+    }
+
+    public static function isDebitWallet($wallet)
+    {
+        $wallets = [
+            Payment\Processor\Wallet::PAYPAL,
+        ];
+
+        return (in_array($wallet, $wallets, true));
     }
 }

@@ -18,6 +18,8 @@ class Action
     const VERIFY                = 'verify';
     const VERIFY_REFUND         = 'verify_refund';
 
+    const DEBIT                 = 'debit';
+
     const AUTHORIZE             = 'authorize';
 
     const OMNI_PAY              = 'omni_pay';

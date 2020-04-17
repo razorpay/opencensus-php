@@ -4,7 +4,7 @@ namespace RZP\Gateway\Mozart\Mock;
 
 use RZP\Gateway\Base;
 
-class CaptureData extends Base\Mock\Server
+class DebitData extends Base\Mock\Server
 {
     public static function wallet_paypal($entities)
     {

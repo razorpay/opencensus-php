@@ -57,11 +57,11 @@ class Server extends Base\Mock\Server
         return $this->processMockResponse($input, $verifyObj, 'verify');
     }
 
-    public function capture($input)
+    public function debit($input)
     {
-        $captureObj = new CaptureData();
+        $captureObj = new DebitData();
 
-        return $this->processMockResponse($input, $captureObj, 'capture');
+        return $this->processMockResponse($input, $captureObj, 'debit');
     }
 
     public function refund($input)
@@ -325,7 +325,6 @@ class Server extends Base\Mock\Server
 
     protected function wallet_paypal($input)
     {
-        $content = $input;
         $content = [
             'token'     => 'PayPal_Token',
             'PayId'     => '8DS61651XA862144J',

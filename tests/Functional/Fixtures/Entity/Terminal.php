@@ -3372,7 +3372,7 @@ class Terminal extends Base
             'gateway'                   => 'wallet_paypal',
             'shared'                    => 0,
             'gateway_merchant_id'       => 'RazorpayPaypal',
-            'mode'                      => '1',
+            'mode'                      => '2',
         ];
 
         $attributes = array_merge($defaultValues, $attributes);
@@ -3390,7 +3390,7 @@ class Terminal extends Base
             'gateway'                    => 'wallet_paypal',
             'shared'                     => 1,
             'gateway_merchant_id'        => 'RazorpayPaypal2',
-            'mode'                       => '1',
+            'mode'                       => '2',
             'currency'                   => 'USD'
         ];
 
