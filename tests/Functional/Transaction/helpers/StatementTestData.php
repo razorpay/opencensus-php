@@ -451,6 +451,17 @@ return [
         ],
     ],
 
+    'testFAVFetchStatement' => [
+        'request' => [
+            'url'    => '/transactions/txn_00000000000001',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
     'testActionFilter' => [
         'request' => [
             'method'  => 'GET',

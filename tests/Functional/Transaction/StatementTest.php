@@ -291,6 +291,25 @@ class StatementTest extends TestCase
         $this->assertEquals("111000111", $txn['source']['fund_account']['bank_account']['account_number']);
     }
 
+    public function testFAVFetchStatement()
+    {
+        $this->ba->privateAuth();
+
+        $this->createFAVBankAccount();
+
+        $transaction = $this->getDbLastEntity('transaction');
+        $this->testData[__FUNCTION__]['request']['url'] = '/transactions/' . $transaction->getPublicId();
+
+        $this->ba->privateAuth();
+        $response = $this->startTest();
+
+        // Asserts other keys existence in response.
+        $this->assertEquals("fund_account.validation", $response['source']['entity']);
+        $this->assertEquals("fund_account", $response['source']['fund_account']['entity']);
+        $this->assertEquals("bank_account", $response['source']['fund_account']['account_type']);
+        $this->assertEquals("111000111", $response['source']['fund_account']['bank_account']['account_number']);
+    }
+
     protected function createBankTransferTransaction()
     {
         $this->fixtures->merchant->enableMethod('10000000000000', 'bank_transfer');

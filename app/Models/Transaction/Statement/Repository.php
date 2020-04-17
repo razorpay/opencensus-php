@@ -74,6 +74,10 @@ class Repository extends Transaction\Repository
         {
             $statement->load($this->expandsForTypePayout);
         }
+        else if ($statement->isTypeFundAccountValidation() === true)
+        {
+            $statement->load($this->expandsForTypeFAV);
+        }
 
         return $statement;
     }
