@@ -340,6 +340,15 @@ class RefundController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function setUnprocessedRefundsConfig()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->setUnprocessedRefundsConfig($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function scroogeTaggingBackfill()
     {
         $input = Request::all();

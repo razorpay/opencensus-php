@@ -17,11 +17,13 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\Bank\BankCodes;
 use RZP\Models\Payment\Refund;
+use RZP\Models\Admin\ConfigKey;
 use RZP\Jobs\ScroogeRefundUpdate;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Jobs\BulkScroogeVerifyRefund;
 use RZP\Jobs\BulkRefund as BulkRefundJob;
 use RZP\Models\Payment\Processor\Netbanking;
+use RZP\Models\Admin\Service as AdminService;
 use RZP\Models\Payment\Refund\Speed as RefundSpeed;
 use RZP\Models\Payment\Refund\Entity as RefundEntity;
 use RZP\Models\Payment\Refund\Constants as RefundConstants;
@@ -2767,5 +2769,18 @@ class Service extends Base\Service
         }
 
         return true;
+    }
+
+    /**
+     * @param array $input
+     * @return array
+     */
+    public function setUnprocessedRefundsConfig(array $input) : array
+    {
+        (new Validator)->validateInput('set_unprocessed_refunds_config', $input);
+
+        $setConfigInput[ConfigKey::GATEWAY_UNPROCESSED_REFUNDS] = $input[RefundConstants::REFUND_IDS];
+
+        return (new AdminService)->setConfigKeys($setConfigInput);
     }
 }

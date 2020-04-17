@@ -154,6 +154,11 @@ class Validator extends Base\Validator
         'amount'        => 'required|integer|min:0',
     ];
 
+    protected static $setUnprocessedRefundsConfigRules = [
+        'refund_ids'   => 'required|sequential_array|max:5000',
+        'refund_ids.*' => 'required|filled|unsigned_id|size:14',
+    ];
+
     protected $payment;
 
     public function setPayment($payment)

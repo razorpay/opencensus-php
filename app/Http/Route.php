@@ -162,6 +162,7 @@ final class Route
         'refund_without_verify_bulk'               => ['post',     'refunds/retry/direct/bulk',                      'RefundController@postRefundDirectRetryBulk'                        ],
         'refund_verify'                            => ['get',      'refunds/{id}/verify',                            'RefundController@postRefundVerify'                                 ],
         'refund_verify_bulk'                       => ['post',     'refunds/verify/bulk',                            'RefundController@postVerifyRefundsBulk'                            ],
+        'refund_set_unprocessed_config'            => ['put',      'refunds/set_unprocessed_config',                 'RefundController@setUnprocessedRefundsConfig'                      ],
         'scrooge_tagging_backfill'                 => ['post',     'refunds/scrooge_tagging_backfill',               'RefundController@scroogeTaggingBackfill'                           ],
         'refund_speed_processed_backfill'          => ['post',     'refunds/speed_processed_backfill',               'RefundController@speedProcessedBackfill'                           ],
         // We will change this in the future when we want to update more things than just marking it as processed.
@@ -2670,6 +2671,7 @@ final class Route
         'merchant_tags_bulk',
         'refund_verify',
         'refund_verify_bulk',
+        'refund_set_unprocessed_config',
         'merchant_edit',
         'adj_add_bulk',
         'adj_add_reverse',
@@ -3294,6 +3296,7 @@ final class Route
         'refund_verify_multiple'                   => '*',
         'refund_verify_failed'                     => Permission::VERIFY_REFUND,
         'refund_verify_failed_bulk'                => Permission::RETRY_REFUND,
+        'refund_set_unprocessed_config'            => Permission::RETRY_REFUND,
         'refund_retry_bulk_via_fta'                => Permission::BULK_RETRY_REFUNDS_VIA_FTA,
         'refund_without_verify_bulk'               => Permission::RETRY_REFUND,
         'merchant_edit_bank_account'               => Permission::EDIT_MERCHANT_BANK_DETAIL,
