@@ -3,13 +3,16 @@
 namespace RZP\Reconciliator\VasAxis\SubReconciliator;
 
 use Carbon\Carbon;
+use RZP\Models\BharatQr;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
 use RZP\Reconciliator\Base;
 use RZP\Models\Payment\Action;
+use RZP\Models\Payment\Gateway;
+use RZP\Gateway\Worldline\Entity;
 use RZP\Models\Base\PublicEntity;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Gateway\Terminal\Constants;
-use Razorpay\Spine\Exception\DbQueryException;
 
 class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 {
@@ -28,6 +31,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
     const COLUMN_FEE                    = 'mdr';
     const COLUMN_GST                    = 'gst';
     const COLUMN_MERCHANT_ID            = 'mid';
+    const COLUMN_INTL_FLAG              = 'intl_flag';
     const COLUMN_SETTLED_AT             = 'process_date';
     const COLUMN_GATEWAY_UTR            = 'utr';
 
@@ -55,6 +59,19 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         'R' => Constants::RUPAY,
     ];
 
+    const METHOD_TO_TXN_TYPE_MAP = [
+        self::BHARAT_QR => '1',
+        self::UPI       => '2',
+    ];
+
+    //
+    // This field is manually added in MIS for creating unexpected payment
+    // against a reference number (rrn). Its the RRN of the payment to be
+    // created but still taking in input as a confirmation token of unexpected
+    // payment creation.
+    //
+    const UNEXPECTED_PAYMENT_REF_ID = 'unexpected_payment_ref_id';
+
     protected function getPaymentId(array $row)
     {
         return $this->getPaymentIdByMethod($row);
@@ -78,28 +95,218 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
                 return null;
             }
 
-            try
-            {
-                $worldLine = $this->repo->worldline->findByReferenceNumberAndAction($row[self::COLUMN_RRN], Action::AUTHORIZE);
+            $rrn = $row[self::COLUMN_RRN];
 
+            $worldLine = $this->repo->worldline->findByReferenceNumberAndAction($rrn, Action::AUTHORIZE);
+
+            if (empty($worldLine) === false)
+            {
                 $paymentId = $worldLine->getPaymentId();
 
                 $this->gatewayPayment = $worldLine;
             }
-            catch (DbQueryException $ex)
+            else
             {
-                $this->messenger->raiseReconAlert(
-                    [
-                        'info_code'              => Base\InfoCode::UNEXPECTED_PAYMENT,
-                        'payment_reference_id'   => $row[self::COLUMN_RRN],
-                        'gateway'                => $this->gateway,
-                        'batch_id'               => $this->batch->getId(),
-                    ]
-                );
+                if (empty($row[self::UNEXPECTED_PAYMENT_REF_ID]) === false)
+                {
+                    $paymentId = $this->attemptToCreateUnexpectedPayment($rrn, $row);
+
+                    if (empty($paymentId) === false)
+                    {
+                        // Payment has been created. Set the gateway payment
+                        $this->gatewayPayment = $this->repo->worldline->findByReferenceNumberAndAction($rrn, Action::AUTHORIZE);
+                    }
+                }
+                else
+                {
+                    $this->messenger->raiseReconAlert(
+                        [
+                            'info_code'              => Base\InfoCode::UNEXPECTED_PAYMENT,
+                            'payment_reference_id'   => $row[self::COLUMN_RRN],
+                            'gateway'                => $this->gateway,
+                            'batch_id'               => $this->batch->getId(),
+                        ]
+                    );
+                }
             }
         }
 
         return $paymentId;
+    }
+
+    /**
+     * Attempts to create unexpected payment
+     * Returns payment_id if attempt is successful,
+     * null otherwise.
+     * @param string $rrn
+     * @param array $input
+     * @return string|null
+     */
+    protected function attemptToCreateUnexpectedPayment(string $rrn, array $input)
+    {
+        $paymentId = null;
+
+        $callbackInput = $this->createCallbackdata($input);
+
+        if (empty($callbackInput) === true)
+        {
+            return null;
+        }
+
+        $this->trace->info(
+            TraceCode::RECON_INFO,
+            [
+                'infoCode'                  => Base\InfoCode::RECON_UNEXPECTED_PAYMENT_CREATE_INITIATED,
+                'rrn'                       => $rrn,
+                'gateway'                   => $this->gateway,
+                'batch_id'                  => $this->batch->getId(),
+            ]);
+
+        try
+        {
+            $response = (new BharatQr\Service)->processPayment($callbackInput, Gateway::WORLDLINE);
+
+            // Fetch and trace alert if payment still not created
+            $worldLine = $this->repo->worldline->findByReferenceNumberAndAction($rrn, Action::AUTHORIZE);
+
+            if ($worldLine === null)
+            {
+                $this->trace->info(
+                    TraceCode::RECON_INFO_ALERT,
+                    [
+                        'infoCode'  => Base\InfoCode::RECON_UNEXPECTED_PAYMENT_CREATION_FAILED,
+                        'rrn'       => $rrn,
+                        'response'  => $response,
+                        'gateway'   => $this->gateway,
+                        'batch_id'  => $this->batch->getId(),
+                    ]);
+            }
+            else
+            {
+                $paymentId = $worldLine->getPaymentId();
+
+                $this->gatewayPayment = $worldLine;
+
+                $this->trace->info(
+                    TraceCode::RECON_INFO,
+                    [
+                        'infoCode'      => Base\InfoCode::RECON_UNEXPECTED_PAYMENT_CREATED,
+                        'payment_id'    => $paymentId,
+                        'rrn'           => $rrn,
+                        'gateway'       => $this->gateway,
+                        'batch_id'      => $this->batch->getId(),
+                    ]);
+            }
+        }
+        catch (\Exception $ex)
+        {
+            $this->trace->traceException(
+                $ex,
+                Trace::ERROR,
+                TraceCode::RECON_UNEXPECTED_PAYMENT_CREATION_FAILED,
+                [
+                    'rrn'       => $rrn,
+                    'gateway'   => $this->gateway,
+                    'batch_id'  => $this->batch->getId(),
+                ]
+            );
+        }
+
+        return $paymentId;
+    }
+
+    // Prepare and return callback input required
+    // for creating unexpected payment
+    protected function createCallbackData(array $input)
+    {
+        // Only supporting domestic payment for now
+        if ((empty($input[self::COLUMN_INTL_FLAG]) === false) and
+            ($input[self::COLUMN_INTL_FLAG]) === 'N')
+        {
+            $currencyCode = BharatQr\Constants::CURRENCY_CODE;
+        }
+        else
+        {
+            $this->trace->info(
+                TraceCode::RECON_INFO_ALERT,
+                [
+                    'info_code' => Base\InfoCode::RECON_UNEXPECTED_PAYMENT_CREATION_FAILED,
+                    'message'   => 'MIS rows says International, not creating payment.',
+                    'rrn'       => $input[self::COLUMN_RRN],
+                    'gateway'   => $this->gateway,
+                    'batch_id'  => $this->batch->getId(),
+
+                ]);
+
+            return [];
+        }
+
+        $cardNumber = $this->getCardNumber($input);
+
+        $cardFirst6 = substr($cardNumber, 0, 6);
+        $cardLast4 = substr($cardNumber, 12, 4);
+
+        $mpan = $this->getMpanForTerminal($input);
+
+        return [
+            'txn_currency'            => $currencyCode,
+            'transaction_type'        => self::METHOD_TO_TXN_TYPE_MAP[self::BHARAT_QR],
+            'customer_name'           => '',
+            'secondary_id'            => null,
+            'bank_code'               => '0031',                    // Bank code for Axis is 0031
+            'aggregator_id'           => null,
+            'primary_id'              => $input[Entity::PRIMARY_ID] ?? '',
+            'auth_code'               => $input[self::COLUMN_AUTH_CODE],
+            'ref_no'                  => strval($input[self::COLUMN_RRN]),
+            'settlement_amount'       => $input[self::COLUMN_GATEWAY_AMOUNT],
+            'mid'                     => strval($input[self::COLUMN_MERCHANT_ID]),
+            'txn_amount'              => $input[self::COLUMN_PAYMENT_AMOUNT],
+            'mpan'                    => $mpan,
+            'time_stamp'              => Carbon::now(Timezone::IST)->format('YmdHis'),
+            'consumer_pan'            => null,
+            'card_first6'             => $cardFirst6,
+            'card_last4'              => $cardLast4,
+        ];
+    }
+
+    protected function getMpanForTerminal(array $input)
+    {
+        $gatewayMerchantId = $input[self::COLUMN_MERCHANT_ID];
+        $gatewayTerminalId = $input[self::COLUMN_TERMINAL_NUMBER];
+
+        $terminal = $this->repo->terminal->findActivatedTerminalByGatewayMerchantIdAndGatewayTerminalId($gatewayMerchantId,
+                                                                                                        $gatewayTerminalId,
+                                                                                                Gateway::WORLDLINE
+        );
+
+        //
+        // In future, we might allow terminal to be created with only visa mpan,
+        // allowing mc_mpan to be null. So Loop through all networks (mc, visa, rupay)
+        // and return the first non-empty mpan.
+        //
+
+        if (empty($terminal) === false)
+        {
+            if (empty($terminal->getMCMpan()) === false)
+            {
+                return $terminal->getMCMpan();
+            }
+            else if (empty($terminal->getVisaMpan()) === false)
+            {
+                return $terminal->getVisaMpan();
+            }
+            else if (empty($terminal->getRupayMpan()) === false)
+            {
+                return $terminal->getRupayMpan();
+            }
+        }
+
+        return null;
+    }
+
+    protected function getCardNumber(array $row)
+    {
+        return $row[self::COLUMN_CARD_NUMBER] ?? null;
     }
 
     public function getGatewayPayment($paymentId)

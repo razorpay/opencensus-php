@@ -13,6 +13,6 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->where(Entity::REF_NO, '=', $refNo)
                     ->where(Entity::ACTION, '=', $action)
-                    ->firstOrFail();
+                    ->first();
     }
 }

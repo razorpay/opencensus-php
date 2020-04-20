@@ -357,7 +357,7 @@ return [
             'MDR'               =>  24,
             'GST'               =>  6,
             'NET_AMT'           =>  170,
-            'MID'               =>  37011000076590,
+            'MID'               =>  '37011000076590',
             'INTL_FLAG'         =>  'N',
             'CASH_TYPE'         =>  null,
             'CASH_AMOUNT'       =>  '0',

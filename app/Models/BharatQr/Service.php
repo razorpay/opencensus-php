@@ -87,7 +87,7 @@ class Service extends Base\Service
             if ($gateway !== Gateway::WORLDLINE)
             {
                 $gatewayClass->verifyBharatQrNotification($gatewayResponse);
-            } 
+            }
         }
         catch (\Exception $ex)
         {
@@ -115,20 +115,20 @@ class Service extends Base\Service
             case Payment\Gateway::WORLDLINE:
                 if (isset($gatewayResponse[GatewayResponseParams::MPAN]) === true)
                 {
-                    if (isset($gatewayResponse[GatewayResponseParams::GATEWAY_MERCHANT_ID]) === true) 
+                    if (isset($gatewayResponse[GatewayResponseParams::GATEWAY_MERCHANT_ID]) === true)
                     {
                         $gatewayMerchantId = $gatewayResponse[GatewayResponseParams::GATEWAY_MERCHANT_ID];
-        
+
                         $gatewayMpan = $gatewayResponse[GatewayResponseParams::MPAN];
-            
-                        $terminal = $this->repo->terminal->findActivatedTerminalByMpanAndGatewayMerchantId($gatewayMerchantId, $gateway, $gatewayMpan);     
+
+                        $terminal = $this->repo->terminal->findActivatedTerminalByMpanAndGatewayMerchantId($gatewayMerchantId, $gateway, $gatewayMpan);
                     }
                 }
                 else
                 {
                     $terminal = $this->getTerminalDefaultCase($gatewayResponse, $gateway);
                 }
-                break;   
+                break;
             default:
                 $terminal = $this->getTerminalDefaultCase($gatewayResponse, $gateway);
         }
@@ -150,7 +150,7 @@ class Service extends Base\Service
                     'mode'               => $this->mode,
                 ]
             );
-        }    
+        }
 
         return $terminal;
     }

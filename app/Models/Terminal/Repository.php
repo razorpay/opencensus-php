@@ -208,6 +208,16 @@ class Repository extends Base\Repository
             ->first();
     }
 
+    public function findActivatedTerminalByGatewayMerchantIdAndGatewayTerminalId(string $gatewayMerchantId, string $gatewayTerminalId, string $gateway)
+    {
+        return $this->newQuery()
+                    ->where(Entity::GATEWAY_MERCHANT_ID, '=', $gatewayMerchantId)
+                    ->where(Entity::GATEWAY_TERMINAL_ID, '=', $gatewayTerminalId)
+                    ->where(Entity::GATEWAY, '=', $gateway)
+                    ->where(Entity::STATUS, '=', Terminal\Status::ACTIVATED)
+                    ->first();
+    }
+
     public function findActivatedTerminalByMpanAndGatewayMerchantId(string $gatewayMerchantId, string $gateway, string $mpan)
     {
         return $this->newQuery()

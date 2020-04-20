@@ -15,6 +15,7 @@ use RZP\Models\Payment;
 use RZP\Constants\Entity as BaseEntity;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Models\Base\UniqueIdEntity;
+use RZP\Reconciliator\Base\Reconciliate;
 
 class Gateway extends Base\Gateway
 {
@@ -377,12 +378,25 @@ class Gateway extends Base\Gateway
         switch ($input[Fields::TRANSACTION_TYPE])
         {
             case 1:
-                $customerCardNumber = $this->decryptAes($input[Fields::CONSUMER_PAN]);
 
-                $this->checkDecryptionFailure($input[Fields::CONSUMER_PAN], $customerCardNumber);
+                if (Reconciliate::$isReconRunning === false)
+                {
+                    $customerCardNumber = $this->decryptAes($input[Fields::CONSUMER_PAN]);
 
-                $qrData[BharatQr\GatewayResponseParams::CARD_FIRST6]    = substr($customerCardNumber, 0, 6);
-                $qrData[BharatQr\GatewayResponseParams::CARD_LAST4]     = substr($customerCardNumber, 12, 4);
+                    $this->checkDecryptionFailure($input[Fields::CONSUMER_PAN], $customerCardNumber);
+
+                    $qrData[BharatQr\GatewayResponseParams::CARD_FIRST6]    = substr($customerCardNumber, 0, 6);
+                    $qrData[BharatQr\GatewayResponseParams::CARD_LAST4]     = substr($customerCardNumber, 12, 4);
+                }
+                else
+                {
+                    // We are in the flow of recon, trying to create unexpected payment
+                    // We get card number directly in MIS file, which has been passed in callback data
+                    // Take from that directly.
+                    $qrData[BharatQr\GatewayResponseParams::CARD_FIRST6]    = $input[BharatQr\GatewayResponseParams::CARD_FIRST6];
+                    $qrData[BharatQr\GatewayResponseParams::CARD_LAST4]     = $input[BharatQr\GatewayResponseParams::CARD_LAST4];
+                }
+
                 $qrData[BharatQr\GatewayResponseParams::SENDER_NAME]    = $input[Fields::CUSTOMER_NAME];
                 $qrData[BharatQr\GatewayResponseParams::METHOD]         = Payment\Method::CARD;
                 $qrData[BharatQr\GatewayResponseParams::MPAN]           = $input[Fields::M_PAN];
@@ -672,10 +686,10 @@ class Gateway extends Base\Gateway
     }
 
     /**
-     * We are generating and adding primary_id in callback becuase we cannot remove validtion on merchant reference 
+     * We are generating and adding primary_id in callback becuase we cannot remove validtion on merchant reference
      * and we need qrcode in BQR payments flow
      */
-    protected function addDefaultInputsIfRequired(& $input) 
+    protected function addDefaultInputsIfRequired(& $input)
     {
         if (empty($input[Fields::PRIMARY_ID]) === true)
         {

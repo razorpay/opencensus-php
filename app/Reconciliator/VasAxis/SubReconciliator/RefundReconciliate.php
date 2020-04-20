@@ -45,24 +45,24 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
                 return null;
             }
 
-            try
-            {
-                $worldLine = $this->repo->worldline->findByReferenceNumberAndAction($row[self::COLUMN_RRN], Action::REFUND);
+            $worldLine = $this->repo->worldline->findByReferenceNumberAndAction($row[self::COLUMN_RRN], Action::REFUND);
 
+            if (empty($worldLine) === false)
+            {
                 $refundId = $worldLine->getRefundId();
 
                 $this->gatewayRefund = $worldLine;
             }
-            catch (DbQueryException $ex)
+            else
             {
-                $this->messenger->raiseReconAlert(
+                $this->trace->info(
+                    TraceCode::RECON_INFO_ALERT,
                     [
                         'info_code'              => Base\InfoCode::UNEXPECTED_REFUND,
                         'refund_reference_id'    => $row[self::COLUMN_RRN],
                         'gateway'                => $this->gateway,
                         'batch_id'               => $this->batch->getId(),
-                    ]
-                );
+                    ]);
             }
         }
 
