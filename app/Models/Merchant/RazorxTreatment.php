@@ -109,4 +109,7 @@ final class RazorxTreatment
 
     // Check whether payout to amex cards is supported for a merchant ot not.
     const PAYOUT_TO_AMEX_CARDS = 'payout_to_amex_cards';
+
+    // Check whether refund pricing rules should be logged for merchant
+    const LOG_REFUND_PRICING_RULES = 'log_refund_pricing_rules';
 }
