@@ -1,4 +1,4 @@
-internal_error_code,error_description,reason,failure_type,point_of_failure,next_best_action,failure_stage,recoverable
+internal_error_code,error_description,reason,failure_type,source,next_best_action,step,recoverable
 BAD_REQUEST_CARDLESS_EMI_USER_DOES_NOT_EXIST,User does not have an account with the selected provider,invalid_user,Business,Customer,,Eligibility Check,
 BAD_REQUEST_PAYMENT_TIMED_OUT,Payment was not completed on time.,payment_timed_out,Technical,Gateway,,Authorization,
 BAD_REQUEST_CARDLESS_EMI_CREDIT_LIMIT_NOT_APPROVED,Cardless Emi credit limit of customer not approved,limit_not_approved,Business,Customer,,Authorization,

@@ -1,1 +1,1 @@
-internal_error_code,error_description,reason,failure_type,point_of_failure,next_best_action,failure_stage,recoverable
+internal_error_code,error_description,reason,failure_type,source,next_best_action,step,recoverable

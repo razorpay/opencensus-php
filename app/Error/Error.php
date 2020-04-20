@@ -42,8 +42,8 @@ class Error extends Support\Fluent
     const METADATA              = 'metadata';
     const REASON                = 'reason';
     const FAILURE_TYPE          = 'failure_type';
-    const POINT_OF_FAILURE      = 'point_of_failure';
-    const FAILURE_STAGE         = 'failure_stage';
+    const SOURCE                = 'source';
+    const STEP                  = 'step';
     const NEXT_BEST_ACTION      = 'next_best_action';
     const PAYMENT_METHOD        = 'payment_method';
     const RECOVERABLE           = 'recoverable';
@@ -328,11 +328,11 @@ class Error extends Support\Fluent
 
                 $this->setFailureType($errorCodeMap[$code][2]);
 
-                $this->setPointOfFailure($errorCodeMap[$code][3] ?: "NA");
+                $this->setSource($errorCodeMap[$code][3] ?: "NA");
 
                 $this->setNextBestAction($errorCodeMap[$code][4]);
 
-                $this->setFailureStage($errorCodeMap[$code][5] ?: "NA");
+                $this->setStep($errorCodeMap[$code][5] ?: "NA");
 
                 $this->setRecoverable($errorCodeMap[$code][6]);
             }
@@ -368,14 +368,14 @@ class Error extends Support\Fluent
         $this->setAttribute(self::FAILURE_TYPE, $failureType);
     }
 
-    protected function setPointOfFailure($pointOfFailure)
+    protected function setSource($source)
     {
-        $this->setAttribute(self::POINT_OF_FAILURE, $pointOfFailure);
+        $this->setAttribute(self::SOURCE, $source);
     }
 
-    protected function setFailureStage($failureStage)
+    protected function setStep($step)
     {
-        $this->setAttribute(self::FAILURE_STAGE, $failureStage);
+        $this->setAttribute(self::STEP, $step);
     }
 
     protected function setNextBestAction($nextBestAction)
@@ -540,7 +540,6 @@ class Error extends Support\Fluent
         $error = array(
             self::PUBLIC_ERROR_CODE => $this->getPublicErrorCode(),
             self::DESCRIPTION       => $description,
-            self::METADATA          => $metadata
         );
 
         $isReasonFeatureEnabled = false;
@@ -555,29 +554,23 @@ class Error extends Support\Fluent
 
         if ($isReasonFeatureEnabled === true)
         {
-            $publicReason   = null;
-
-            //New Error Detailed Field on feature basis will be shown to merchants
-            //This field is fetched from mapping file and concatanated here to
-            //Sample reason: Bank-Authorization-risk_decline
-            if($this->getAttribute(self::REASON) !== null)
-            {
-                $publicReason   = $this->getAttribute(self::POINT_OF_FAILURE)."-".
-                    $this->getAttribute(self::FAILURE_STAGE)."-".$this->getAttribute(self::REASON);
-            }
-
             $reasonArr = array(
-                self::REASON            => $publicReason,
+                self::SOURCE            => $this->getAttribute(self::SOURCE),
+                self::STEP              => $this->getAttribute(self::STEP),
+                self::REASON            => $this->getAttribute(self::REASON),
             );
 
             $error = array_merge($error, $reasonArr);
 
-            $this->trace->info(TraceCode::ERROR_RESPONSE_DATA,
-                [
-                'error_response' => $error
-                ]
-            );
         }
+
+        $error = array_merge($error, [self::METADATA  => $metadata]);
+
+        $this->trace->info(TraceCode::ERROR_RESPONSE_DATA,
+            [
+                'error_response' => $error
+            ]
+        );
 
         $error = $this->checkAndAddDataToErrorResp($error);
 

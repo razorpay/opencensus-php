@@ -1,4 +1,4 @@
-internal_error_code,error_description,reason,failure_type,point_of_failure,next_best_action,failure_stage,recoverable
+internal_error_code,error_description,reason,failure_type,source,next_best_action,step,recoverable
 BAD_REQUEST_PAYMENT_TIMED_OUT,Payment was not completed on time.,timed_out,Technical,Gateway,,Payment_response,I
 BAD_REQUEST_PAYMENT_CANCELLED_BY_USER,Payment processing cancelled by user,cancelled,Business,Customer,,Authentication,N
 GATEWAY_ERROR_DEBIT_FAILED,Payment failed. Please try again with another bank account.,payment_failed,Technical,Issuing Bank,,Debit_response,N

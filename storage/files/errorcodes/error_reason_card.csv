@@ -1,4 +1,4 @@
-internal_error_code,error_description,reason,failure_type,point_of_failure,next_best_action,failure_stage,recoverable
+internal_error_code,error_description,reason,failure_type,source,next_best_action,step,recoverable
 GATEWAY_ERROR_CARD_NOT_ENROLLED,Card is not enrolled for 3D Secure authentication,Card_Not_Enrolled,,Customer,,Enrollment,
 BAD_REQUEST_PAYMENT_AMEX_3DSECURE_AUTH_FAILED,The card is not enrolled for American Express SafeKey program. Please try another card.,Card_Not_Enrolled,,Customer,,Enrollment,
 GATEWAY_ERROR_CARD_RUPAY_MAESTRO_NOT_ENABLED,The card does not support this type of purchase.,Network_Type_Not_Supported,Business,Customer,,Enrollment,I

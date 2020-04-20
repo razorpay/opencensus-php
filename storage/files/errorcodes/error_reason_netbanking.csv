@@ -1,4 +1,4 @@
-internal_error_code,error_description,reason,failure_type,point_of_failure,next_best_action,failure_stage,recoverable
+internal_error_code,error_description,reason,failure_type,source,next_best_action,step,recoverable
 BAD_REQUEST_PAYMENT_TIMED_OUT,Payment was not completed on time.,timed_out,Technical,customer,,authentication,
 BAD_REQUEST_PAYMENT_CANCELLED_BY_USER,Payment processing cancelled by user,cancelled,Business,customer,,authentication,N
 BAD_REQUEST_NETBANKING_USER_NOT_REGISTERED,User is not registered for NetBanking payments.,not_eligible_for_netbanking,Business,customer,,authentication,N
