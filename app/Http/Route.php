@@ -693,7 +693,7 @@ final class Route
         'payment_page_create_order_option'         => ['options',  'payment_pages/{id}/order',                       'PaymentLinkController@createOrderOptions'                          ],
         'payment_page_items_migrate_min_purchase'  => ['post',     'payment_pages/migrate_payment_page_purchase',    'PaymentLinkController@migratePaymentPageItemForMinPurchase'        ],
         // payment link service end points
-        'payment_links_service_hosted_page'        => ['get,post', 'payment_links/{id}/view/{mode}',                 'PlinkController@sendRequest'                                       ],
+        'payment_links_service_hosted_page'        => ['get,post', 'hosted/payment_links/{path?}',                   'PlinkController@sendRequest'                                       ],
         'payment_links_service_main_route'         => ['any',      'payment_links',                                  'PlinkController@sendRequest'                                       ],
         'payment_links_service_sub_route'          => ['any',      'payment_links/{path?}',                          'PlinkController@sendRequest'                                       ],
         'payment_links_service_count_route'        => ['any',      'payment_links_count',                            'PlinkController@sendRequest'                                       ],
