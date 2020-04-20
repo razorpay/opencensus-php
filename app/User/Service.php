@@ -760,11 +760,8 @@ class Service extends Base\Service
                     }
                 }
 
-                Auth::login($genericUser, false);
                 Session::put('dashboard_user_payload', $genericUser);
-
             }
-
         }
 
         return [$error, $genericUser];
