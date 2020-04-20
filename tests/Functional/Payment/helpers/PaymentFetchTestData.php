@@ -249,6 +249,70 @@ return [
         ],
     ],
 
+    'testFetchStatusCountForPrivateAuth' => [
+        'request' => [
+            'url'     => '/payments/transaction/count',
+            'method'  => 'get',
+            'content' => [
+                'to' => 1589242880,
+                'from' => 1589242280
+            ],
+        ],
+        'response' => [
+            'content' => [
+                "status" => "true",
+                "response" => [
+                    "captured" => 2,
+                    "created" => 0,
+                    "authorized" => 1,
+                    "count" => 3
+                ]
+            ],
+        ],
+    ],
+
+    'testFetchStatusCountForPrivateAuthError' => [
+        'request' => [
+            'url'     => '/payments/transaction/count',
+            'method'  => 'get',
+            'content' => [
+                'to' => 1589242880,
+                'from' => 1589242980
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testFetchStatusCountForPrivateAuthFeatureOff' => [
+        'request' => [
+            'url'     => '/payments/transaction/count',
+            'method'  => 'get',
+            'content' => [
+                'to' => 1589242880,
+                'from' => 1589242980
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+    ],
+
     'testFindWithEmiAsExpandsForPrivateAuth' => [
         'request' => [
             'url'     => '/payments/',

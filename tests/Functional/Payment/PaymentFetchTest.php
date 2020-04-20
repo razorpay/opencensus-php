@@ -9,6 +9,7 @@ use RZP\Tests\Functional\OAuth\OAuthTrait;
 use RZP\Models\Feature\Constants as Feature;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use Carbon\Carbon;
 
 /**
  * Covers Base/Fetch implementation. Currently it's not enabled for Payment
@@ -180,6 +181,44 @@ class PaymentFetchTest extends TestCase
         $payment = $this->fixtures->create('payment', ['card_id' => $card->getId()]);
 
         $this->testData[__FUNCTION__]['request']['url'] .= $payment->getPublicId();
+
+        $this->startTest();
+    }
+
+    public function testFetchStatusCountForPrivateAuth()
+    {
+        $paymentArray = $this->getDefaultPaymentArray();
+
+        //create 3 dummy payments
+        $this->doAuthAndCapturePayment($paymentArray);
+
+        $this->doAuthAndCapturePayment($paymentArray);
+
+        $this->doAuthAndGetPayment($paymentArray);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['to'] = Carbon::now()->getTimestamp() + 20;
+
+        $testData['request']['content']['from'] = Carbon::now()->getTimestamp() - 20;
+
+        $this->fixtures->merchant->addFeatures([Feature::PAYMENT_STATUS_AGGREGATE]);
+
+        $this->startTest();
+    }
+
+    public function testFetchStatusCountForPrivateAuthError()
+    {
+        $this->ba->privateAuth();
+
+        $this->fixtures->merchant->addFeatures([Feature::PAYMENT_STATUS_AGGREGATE]);
+
+        $this->startTest();
+    }
+
+    public function testFetchStatusCountForPrivateAuthFeatureOff()
+    {
+        $this->ba->privateAuth();
 
         $this->startTest();
     }

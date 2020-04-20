@@ -115,6 +115,39 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function fetchPaymentsStatusCountBetweenTimestamps(array $params,
+                          string $merchantId = null,
+                          bool $useSlave = false)
+    {
+        $query = $this->newQuery();
+
+        if ($useSlave === true)
+        {
+            $query = $this->newQueryWithConnection($this->getSlaveConnection());
+        }
+
+        $this->addCommonQueryParamMerchantId($query, $merchantId);
+
+        // Splits the params into mysqlParams and esParams. Check methods doc on
+        // how that happens.
+        list($mysqlParams, $esParams) = $this->getMysqlAndEsParams($params);
+
+        $query = $query->groupBy(Payment\Entity::STATUS)
+                       ->selectRaw(
+                       Payment\Entity::STATUS . ', ' .
+                       'COUNT(*) AS count');
+
+        if((empty($mysqlParams['from']) === false) and
+           (empty($mysqlParams['to']) === false))
+        {
+            $query = $query->where(Payment\Entity::CREATED_AT, '>=', $mysqlParams['from'])
+                           ->where(Payment\Entity::CREATED_AT, '<=', $mysqlParams['to']);
+        }
+
+        return  $query->get();
+
+    }
+
     public function fetchPaymentsWithStatus($from, $to, $gateway, $status)
     {
         return $this->newQuery()

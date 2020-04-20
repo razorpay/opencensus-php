@@ -1083,6 +1083,38 @@ class Service extends Base\Service
         return $payments->toArrayPublic();
     }
 
+    public function fetchStatusCount(array $input)
+    {
+        $merchantId = $this->merchant->getId();
+
+        (new Payment\Validator)->validateInput('fetch_status_count', $input);
+
+        $paymentsStatusCounts = $this->repo->payment->fetchPaymentsStatusCountBetweenTimestamps($input, $merchantId, true);
+
+        $statusItem = [];
+
+        //fill the status count to 0
+        $statusList = Payment\Status::getStatusList();
+
+        foreach ($statusList as $status)
+        {
+            $statusItem[$status] = 0;
+        }
+
+        foreach ($paymentsStatusCounts->toArrayWithItems()['items'] as $paymentsStatusCount)
+        {
+            $statusItem[$paymentsStatusCount->getStatus()] = $paymentsStatusCount->getAttribute("count");
+        }
+
+        $statusItem['count'] = array_sum($statusItem);
+
+        $response['status'] = "true";
+
+        $response['response'] = $statusItem;
+
+        return $response;
+    }
+
     public function fetch(string $id, array $input = []): array
     {
         $id = Entity::stripSignWithoutValidation($id);

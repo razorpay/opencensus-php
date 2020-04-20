@@ -121,6 +121,7 @@ final class Route
         'payment_fetch_by_id'                      => ['get',      'payments/{id}',                                  'PaymentController@getPayment'                                      ],
         'subscription_payment_fetch_by_id'         => ['get',      'payments/{paymentId}/subscriptions/{subId}',     'PaymentController@getPaymentForSubscription'                       ],
         'payment_fetch_multiple'                   => ['get',      'payments',                                       'PaymentController@getPayments'                                     ],
+        'payment_status_count'                     => ['get',      'payments/transaction/count',                     'PaymentController@getPaymentsStatusCount'                                     ],
         'payment_fetch_card_details'               => ['get',      'payments/{id}/card',                             'PaymentController@getCardForPayment'                               ],
         'payment_fetch_refunds'                    => ['get',      'payments/{id}/refunds',                          'PaymentController@getRefundsForPayment'                            ],
         'payment_fetch_refund_by_id'               => ['get',      'payments/{paymentId}/refunds/{rfndId}',          'PaymentController@getRefundByRefundAndPaymentId'                   ],
@@ -1788,6 +1789,7 @@ final class Route
         'payments_downtime',
         'payment_fetch_by_id',
         'payment_fetch_multiple',
+        'payment_status_count',
         'payment_fetch_refunds',
         'payment_fetch_refund_by_id',
         'payment_fetch_transaction',
@@ -4441,6 +4443,7 @@ final class Route
         'merchant_activation_status_partner'   => [Feature::PARTNER_ACTIVATE_MERCHANT],
         'enable_es_scheduled'                  => [Feature::ES_ON_DEMAND],
         'create_virtual_account_from_order'    => [Feature::OFFLINE_PAYMENTS],
+        'payment_status_count'                 => [Feature::PAYMENT_STATUS_AGGREGATE],
     ];
 
     /*

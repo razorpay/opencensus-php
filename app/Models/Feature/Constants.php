@@ -150,6 +150,8 @@ class Constants
     const COVID                           = 'covid';
     const SR_SENSITIVE                    = 'sr_sensitive';
 
+    const PAYMENT_STATUS_AGGREGATE        = 'payment_status_aggregate';
+
     /**
      * Disables retry option in checkout
      */
@@ -568,6 +570,7 @@ class Constants
         self::SR_SENSITIVE                    => true,
         self::PAYMENTLINKS_V2                 => true,
         self::SEND_PAYMENT_CONFIG_ID          => false,
+        self::PAYMENT_STATUS_AGGREGATE        => true,
     ];
 
     // Entity type constants

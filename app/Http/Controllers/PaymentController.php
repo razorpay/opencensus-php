@@ -41,6 +41,15 @@ class PaymentController extends Controller
         return ApiResponse::json($payments);
     }
 
+    public function getPaymentsStatusCount()
+    {
+        $input = Request::all();
+
+        $payments = $this->service()->fetchStatusCount($input);
+
+        return ApiResponse::json($payments);
+    }
+
     public function getPaymentFlows()
     {
         $input = Request::all();

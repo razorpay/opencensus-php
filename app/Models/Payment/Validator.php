@@ -283,6 +283,27 @@ class Validator extends Base\Validator
         Entity::AMOUNT => 'required|integer|min_amount'
     ];
 
+    protected static $fetchStatusCountRules = [
+        'from'          => 'required|filled|epoch',
+        'to'            => 'required|filled|epoch'
+    ];
+
+    protected static $fetchStatusCountValidators = [
+        'range'
+    ];
+
+    protected function validateRange(array $input)
+    {
+        //Only query for last 7 days
+        if (($input['to'] < $input['from']) or
+            ((Carbon::now()->getTimestamp() - $input['from']) > 604800))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                "The date range is invalid", null, null );
+        }
+
+    }
+
     protected function validateIfsc(array $input)
     {
         if (isset($input[Entity::BANK_ACCOUNT][Entity::IFSC]) === false)
