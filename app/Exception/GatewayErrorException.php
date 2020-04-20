@@ -15,6 +15,7 @@ class GatewayErrorException extends RecoverableException
     protected $safeRetry;
 
     protected $twoFaErrorCodes = [
+        ErrorCode::BAD_REQUEST_PAYMENT_CARD_NOT_ENROLLED_FOR_3DSECURE,
         ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_3DSECURE_AUTH_FAILED,
         ErrorCode::BAD_REQUEST_PAYMENT_OTP_INCORRECT,
         ErrorCode::BAD_REQUEST_PAYMENT_OTP_VALIDATION_ATTEMPT_LIMIT_EXCEEDED,

@@ -40,7 +40,6 @@ class PublicErrorDescription
     const GATEWAY_ERROR_AUTHENTICATION_STATUS_ATTEMPTED                         = '3D Secure authentication attempted';
     const GATEWAY_ERROR_AUTHENTICATION_STATUS_FAILED                            = '3D Secure authentication failed';
     const BAD_REQUEST_SAME_IDEM_KEY_DIFFERENT_REQUEST                           = 'Different request body sent for the same Idempotency Header';
-    const BAD_REQUEST_PAYMENT_CARDHOLDER_NOT_ENROLLED_IN_3DSECURE_AUTH          = 'Card is not enrolled for 3D Secure authentication';
     const BAD_REQUEST_PAYMENT_CARD_NOT_LINKED_WITH_MOBILE                       = 'Card is not linked with mobile number';
     const BAD_REQUEST_ERROR                                                     = 'Bad request';
     const BAD_REQUEST_INVALID_PASSWORD_RESET_TOKEN                              = 'The reset link has expired or invalid';
@@ -400,7 +399,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_DECLINED_BY_BANK_DUE_TO_RISK                      = 'Payment processing failed by bank due to risk';
     const BAD_REQUEST_PAYMENT_DECLINED_BY_GATEWAY_DUE_TO_RISK                   = 'Payment processing failed by gateway due to risk';
     const BAD_REQUEST_PAYMENT_DECLINED_BY_BANK_DUE_TO_BLOCKED_CARD              = 'Payment processing failed because cardholder\'s card was blocked';
-    const BAD_REQUEST_PAYMENT_CARD_NOT_ENROLLED_FOR_3DSECURE                    = 'Payment processing failed because card is not enrolled for the required 3dsecure authentication';
+    const BAD_REQUEST_PAYMENT_CARD_NOT_ENROLLED_FOR_3DSECURE                    = 'Payment processing failed because cardholder is not enrolled for the required 3dsecure authentication';
     const BAD_REQUEST_PAYMENT_OTP_VALIDATION_ATTEMPT_LIMIT_EXCEEDED             = 'Payment processing failed because OTP validation attempts limit exceeded';
     const BAD_REQUEST_PAYMENT_OTP_INCORRECT                                     = 'Payment processing failed because of incorrect OTP';
     const BAD_REQUEST_PAYMENT_OTP_INCORRECT_OR_EXPIRED                          = 'Payment processing failed because of incorrect or expired OTP';

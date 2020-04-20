@@ -9,6 +9,7 @@ class CustomerErrorDescription
     const BAD_REQUEST_RATE_LIMIT_EXCEEDED                                       = 'Request failed. Please try after sometime.';
 
     const BAD_REQUEST_PAYMENT_DECLINED_3DSECURE_AUTH_FAILED                     = '3dsecure or OTP authentication failed';
+    const BAD_REQUEST_PAYMENT_CARD_NOT_ENROLLED_FOR_3DSECURE                    = 'The card holder is not enrolled for 3dsecure authentication';
     const BAD_REQUEST_PAYMENT_BLOCKED_DUE_TO_FRAUD                              = 'Payment declined';
     const BAD_REQUEST_PAYMENT_POSSIBLE_FRAUD                                    = 'Payment declined';
     const BAD_REQUEST_PAYMENT_DECLINED_BY_BANK_DUE_TO_BLOCKED_CARD              = 'Payment declined';

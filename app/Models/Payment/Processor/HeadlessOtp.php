@@ -24,15 +24,15 @@ trait HeadlessOtp
 
     // Error codes for which payment should not be retried on 3DS flow.
     public static $elfErrorCodeMapping = [
-        OtpElf::CARD_BLOCKED         => ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_BY_BANK_DUE_TO_BLOCKED_CARD,
-        OtpElf::CARD_INVALID         => ErrorCode::BAD_REQUEST_INVALID_CARD_DETAILS,
-        OtpElf::CARD_NOT_ENROLLED    => ErrorCode::BAD_REQUEST_PAYMENT_CARD_NOT_ENROLLED_FOR_3DSECURE,
-        OtpElf::MOBILE_NOT_UPDATED   => ErrorCode::BAD_REQUEST_PAYMENT_CARD_NOT_LINKED_WITH_MOBILE,
-        OtpElf::NETWORK_ERROR        => ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT,
-        OtpElf::BANK_ERROR           => ErrorCode::BAD_REQUEST_PAYMENT_BANK_SYSTEM_ERROR,
-        OtpElf::PAYMENT_TIMEOUT      => ErrorCode::BAD_REQUEST_PAYMENT_TIMED_OUT_AT_GATEWAY,
-        OtpElf::BANK_SERVICE_DOWN    => ErrorCode::GATEWAY_ERROR_ISSUER_DOWN,
-        OtpElf::NO_AVAILABLE_ACTIONS => ErrorCode::BAD_REQUEST_PAYMENT_OTP_VALIDATION_ATTEMPT_LIMIT_EXCEEDED,
+        OtpElf::CARD_BLOCKED             => ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_BY_BANK_DUE_TO_BLOCKED_CARD,
+        OtpElf::CARD_INVALID             => ErrorCode::BAD_REQUEST_INVALID_CARD_DETAILS,
+        OtpElf::CARD_NOT_ENROLLED        => ErrorCode::BAD_REQUEST_PAYMENT_CARD_NOT_ENROLLED_FOR_3DSECURE,
+        OtpElf::MOBILE_NOT_UPDATED       => ErrorCode::BAD_REQUEST_PAYMENT_CARD_NOT_LINKED_WITH_MOBILE,
+        OtpElf::NETWORK_ERROR            => ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT,
+        OtpElf::BANK_ERROR               => ErrorCode::BAD_REQUEST_PAYMENT_BANK_SYSTEM_ERROR,
+        OtpElf::PAYMENT_TIMEOUT          => ErrorCode::BAD_REQUEST_PAYMENT_TIMED_OUT_AT_GATEWAY,
+        OtpElf::BANK_SERVICE_DOWN        => ErrorCode::GATEWAY_ERROR_ISSUER_DOWN,
+        OtpElf::NO_AVAILABLE_ACTIONS     => ErrorCode::BAD_REQUEST_PAYMENT_OTP_VALIDATION_ATTEMPT_LIMIT_EXCEEDED,
     ];
 
     protected function getNextOtpAction(array $actions)
@@ -125,7 +125,7 @@ trait HeadlessOtp
         }
         catch(\Throwable $ex)
         {
-            $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_AUTHENTICATION_HEADLESS_PROCESSED, $payment, $ex);
+            $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_AUTHENTICATION_HEADLESS_PROCESSED, $payment, $ex); //phpcs:ignore
 
             throw $ex;
         }
@@ -225,7 +225,6 @@ trait HeadlessOtp
                 true);
         }
 
-
         if ($this->isS2SJsonRoute === true)
         {
             $this->headlessError = true;
@@ -243,7 +242,7 @@ trait HeadlessOtp
 
         if ($this->isRupayNetwork($payment) === true)
         {
-            throw new Exception\IntegrationException("Unknown error for Rupay transaction",
+            throw new Exception\IntegrationException('Unknown error for Rupay transaction',
                 ErrorCode::SERVER_ERROR_OTP_ELF_FAILED_FOR_RUPAY);
         }
 
@@ -423,7 +422,7 @@ trait HeadlessOtp
                 'flow'  => $flow,
             ]);
 
-        if ($flow  === Payment\AuthType::IVR)
+        if ($flow === Payment\AuthType::IVR)
         {
             $this->app['slack']->queue(
                 'IIN disable notification',
