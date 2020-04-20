@@ -293,6 +293,7 @@ class Base extends Core
         ],
         Gateway::BAJAJFINSERV           => self::BAJAJFINSERV,
         Gateway::HDFC_DEBIT_EMI         => self::HDFC_DEBIT_EMI,
+        Gateway::WORLDLINE              => self::VAS_AXIS,
     ];
 
     /**
