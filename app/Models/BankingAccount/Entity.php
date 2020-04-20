@@ -551,6 +551,26 @@ class Entity extends Base\PublicEntity
             ]);
     }
 
+    /**
+     *  There are two crons updating balance
+     *   gateway balance fetch cron which updates gateway balance(in banking account table).
+     *   acc statement fetch which also updates balance(in balance table)
+     *
+     *   This function checks if balance from gateway balance cron is more updated.
+     *   returns true if balance fetch cron ran after acc stmt fetch cron and vice versa
+     * @return bool
+     */
+    public function isGatewayBalanceFetchCronMoreUpdated(): bool
+    {
+        $balance = $this->balance;
+
+        $gatewayBalanceLastFetchedAt = $this->getBalanceLastFetchedAt();
+
+        $accStatementLastFetchedAt = $balance->getLastFetchedAtAttribute();
+
+        return ($gatewayBalanceLastFetchedAt > $accStatementLastFetchedAt);
+    }
+
     protected function isSharedChannel()
     {
         $channel = $this->getChannel();

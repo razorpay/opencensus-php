@@ -2,8 +2,10 @@
 
 namespace RZP\Tests\Functional\Helpers;
 
+use RZP\Models\Admin;
 use RZP\Models\Payout;
 use RZP\Services\RazorXClient;
+use RZP\Models\Merchant\Account;
 use RZP\Models\Settlement\Channel;
 use RZP\Models\Merchant\Balance\AccountType;
 
@@ -89,6 +91,13 @@ trait TestsBusinessBanking
             $this->fixtures->merchant->addFeatures(['virtual_accounts', 'payout']);
         }
 
+        (new Admin\Service)->setConfigKeys(
+            [
+                Admin\ConfigKey::RX_ACCOUNT_NUMBER_SERIES_PREFIX => [
+                    Account::SHARED_ACCOUNT => '222444',
+                ]
+            ]);
+
         // Additionally, creates a terminal for bank transfer on banking balance.
         $this->fixtures->terminal->createBankAccountTerminalForBusinessBanking();
 
@@ -137,6 +146,13 @@ trait TestsBusinessBanking
         {
             $this->fixtures->on('live')->merchant->addFeatures(['virtual_accounts', 'payout']);
         }
+
+        (new Admin\Service)->setConfigKeys(
+            [
+                Admin\ConfigKey::RX_ACCOUNT_NUMBER_SERIES_PREFIX => [
+                    Account::SHARED_ACCOUNT => '222444',
+                ]
+            ]);
 
         // Sets instance member variable to be re-usable in other test methods for assertions.
         $this->bankingBalance = $bankingBalance;

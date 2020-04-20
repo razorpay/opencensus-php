@@ -291,6 +291,40 @@ trait PayoutTrait
         ], 'live');
     }
 
+    protected function runBalanceFetchCron()
+    {
+        (new Admin\Service)->setConfigKeys([Admin\ConfigKey::BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_RATE_LIMIT => 1]);
+
+        $request = [
+            'method'  => 'put',
+            'url'     => '/banking_accounts/gateway/rbl/balance',
+        ];
+
+        $this->ba->cronAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        return $response;
+    }
+
+    protected function runBankingAccountStatementFetchCron()
+    {
+        $this->ba->cronAuth();
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/banking_account_statement/process',
+            'content' => [
+                'account_number' => '2224440041626905',
+                'channel'        => 'rbl',
+            ]
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        return $response;
+    }
+
     public function liveSetUpForRbl()
     {
         $this->testDataFilePath = __DIR__ . '/helpers/PayoutTestData.php';
@@ -327,5 +361,6 @@ trait PayoutTrait
                                                                          'product'     => 'primary',
                                                                          'role'        => 'owner',
                                                                      ], 'live');
+
     }
 }

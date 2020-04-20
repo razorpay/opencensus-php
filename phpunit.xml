@@ -53,6 +53,7 @@
           <exclude>./tests/Functional/Workflow/</exclude>
           <exclude>./tests/Unit/</exclude>
           <exclude>./tests/Functional/Gateway/</exclude>
+          <exclude>./tests/Functional/BankingAccountStatement/</exclude>
           <exclude>./tests/Functional/Admin/GroupEsTest.php</exclude>
           <exclude>./tests/Functional/PaymentsUpi</exclude>
           <exclude>./tests/Functional/FeeRecovery/</exclude>
@@ -77,6 +78,7 @@
           <exclude>./tests/Functional/Merchant/PartnerTest.php</exclude>
       </testsuite>
       <testsuite name = "Features-3 Test Suite">
+          <directory>./tests/Functional/BankingAccountStatement/</directory>
           <directory>./tests/Functional/Lambda/</directory>
           <directory>./tests/Functional/Mailgun/</directory>
           <directory>./tests/Functional/OAuth/</directory>

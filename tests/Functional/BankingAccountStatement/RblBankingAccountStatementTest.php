@@ -8,16 +8,20 @@ use Redis;
 use Mockery;
 use Carbon\Carbon;
 
+use RZP\Models\Admin;
 use RZP\Models\Payout;
 use RZP\Services\Mozart;
+use RZP\Constants\Timezone;
 use RZP\Models\FundTransfer;
+use RZP\Models\BankingAccount;
 use RZP\Models\Admin\ConfigKey;
-use RZP\Models\FundTransfer\Mode;
+use RZP\Models\Merchant\Balance;
 use RZP\Constants\Mode as EnvMode;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\BankingAccount\Channel;
 use PhpOffice\PhpSpreadsheet\IOFactory;
+use RZP\Models\BankingAccount\Gateway\Rbl;
 use RZP\Mail\BankingAccount\StatementMail;
 use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Constants\Entity as EntityConstants;
@@ -26,15 +30,16 @@ use RZP\Models\BankingAccount\Entity as BaEntity;
 use RZP\Jobs\FTS\FundTransfer as FtsFundTransfer;
 use RZP\Models\External\Entity as ExternalEntity;
 use RZP\Tests\Functional\FundTransfer\AttemptTrait;
+use RZP\Tests\Functional\Helpers\Payout\PayoutTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 use RZP\Models\Transaction\Entity as TransactionEntity;
 use RZP\Models\BankingAccountStatement\Entity as BasEntity;
 use RZP\Jobs\BankingAccountStatement as BankingAccountStatementJob;
 
-
 class RblBankingAccountStatementTest extends TestCase
 {
+    use PayoutTrait;
     use AttemptTrait;
     use DbEntityFetchTrait;
     use TestsBusinessBanking;
@@ -50,6 +55,19 @@ class RblBankingAccountStatementTest extends TestCase
         $this->testDataFilePath = __DIR__ . '/helpers/RblBankingAccountStatementTestData.php';
 
         parent::setUp();
+
+        $this->fixtures->create('contact', ['id' => '1000001contact', 'active' => 1]);
+
+        $this->fixtures->create(
+            'fund_account',
+            [
+                'id'           => '100000000000fa',
+                'source_id'    => '1000001contact',
+                'source_type'  => 'contact',
+                'account_type' => 'bank_account',
+                'account_id'   => '1000000lcustba'
+            ]);
+
 
         $this->ba->privateAuth();
 
@@ -77,6 +95,30 @@ class RblBankingAccountStatementTest extends TestCase
         ]);
 
         $this->balance = $this->getDbEntity('balance', ['merchant_id' => '10000000000000', 'type' => 'banking']);
+    }
+
+    protected function mockMozartResponseForFetchingBalanceFromRblGateway(int $amount): void
+    {
+        $mozartServiceMock = $this->getMockBuilder(\RZP\Services\Mock\Mozart::class)
+                                  ->setConstructorArgs([$this->app])
+                                  ->setMethods(['sendMozartRequest'])
+                                  ->getMock();
+
+        $mozartServiceMock->method('sendMozartRequest')
+                          ->willReturn([
+                                           'data' => [
+                                               'success' => true,
+                                               Rbl\Fields::GET_ACCOUNT_BALANCE => [
+                                                   Rbl\Fields::BODY => [
+                                                       Rbl\Fields::BAL_AMOUNT => [
+                                                           Rbl\Fields::AMOUNT_VALUE => $amount
+                                                       ]
+                                                   ]
+                                               ]
+                                           ]
+                                       ]);
+
+        $this->app->instance('mozart', $mozartServiceMock);
     }
 
     public function testRblXlsxStatementGeneration()
@@ -1476,7 +1518,8 @@ class RblBankingAccountStatementTest extends TestCase
         {
             if (isset($balance['type']) and ($balance['type'] === 'banking') and ($balance['account_type'] === 'direct'))
             {
-                $this->assertEquals('1578044039', $balance['last_fetched_at']);
+                $this->assertGreaterThanOrEqual($startTime, $balance['last_fetched_at']);
+                $this->assertLessThanOrEqual($endTime, $balance['last_fetched_at']);
             }
         }
 
@@ -1514,7 +1557,8 @@ class RblBankingAccountStatementTest extends TestCase
         {
             if (isset($balance['type']) and ($balance['type'] === 'banking') and ($balance['account_type'] === 'direct'))
             {
-                $this->assertEquals('1578044039', $balance['last_fetched_at']);
+                $this->assertGreaterThanOrEqual($startTime, $balance['last_fetched_at']);
+                $this->assertLessThanOrEqual($endTime, $balance['last_fetched_at']);
             }
         }
 
@@ -1524,6 +1568,39 @@ class RblBankingAccountStatementTest extends TestCase
         $this->assertEquals($initialBalance['updated_at'], $finalBalance['updated_at']);
     }
 
+    // in this balance fetch cron is run after banking Account statement fetch Cron.
+    // and then checks dispatch queued payout flow uses balance from cron which updated latest for processing
+    // of queued payout
+    public function testProcessingRblQueuedPayoutWhenBalanceFetchCronRunsAfterBankingAccountStatementCron()
+    {
+        $this->mockMozartResponseForFetchingBalanceFromRblGateway(50);
+
+        $queuedPayoutAttributes = [
+            'account_number'        =>  '2224440041626905',
+            'amount'                =>  6000,
+            'queue_if_low_balance'  =>  1,
+        ];
+
+        sleep(1);
+
+        $queuedPayout = $this->createQueuedOrPendingPayout($queuedPayoutAttributes, 'rzp_test_TheTestAuthKey');
+
+        $this->testLatestBalanceWhenBalanceFetchCronRunsAfterBankingAccountStatementCron(70);
+
+        $actualOutput = $this->dispatchQueuedPayouts();
+
+        $expectedOutput = [
+            $this->bankingBalance->getId() => [
+                'original_balance'         => 7000,
+                'balance_remaining'        => 1000,
+                'total_payout_count'       => 1,
+                'dispatched_payout_count'  => 1,
+                'dispatched_payout_amount' => 6000,
+            ]
+        ];
+
+        $this->assertArraySelectiveEquals($expectedOutput, $actualOutput);
+    }
 
     public function testLastFetchedAtEqualsBalanceUpdatedAtInitially()
     {
@@ -1559,6 +1636,241 @@ class RblBankingAccountStatementTest extends TestCase
         $this->assertEquals($initialBalance['updated_at'], $finalBalance['updated_at']);
     }
 
+    // in this first balance fetch cron is run after banking Account statement fetch Cron.
+    // and then balance api is checked to see it uses balance from cron which last updated
+    public function testLatestBalanceWhenBalanceFetchCronRunsAfterBankingAccountStatementCron($amount = 500)
+    {
+        $oldDateTime = Carbon::create(2019, 07, 21, 12, 23, 41, Timezone::IST);
+
+        Carbon::setTestNow($oldDateTime);
+
+        // account statement fetch cron
+        $mockedResponse = $this->getRblDataResponse();
+
+        $this->setMozartMockResponse($mockedResponse);
+
+        $this->runBankingAccountStatementFetchCron();
+
+        $this->ba->proxyAuth();
+
+        $request = [
+            'method'  => 'GET',
+            'url'     => '/balances?type=banking',
+            'content' => [
+            ]
+        ];
+
+        $balanceApiResponseAfterStmtCron = $this->makeRequestAndGetContent($request);
+
+        foreach ($balanceApiResponseAfterStmtCron['items'] as $item)
+        {
+            if (($item[Balance\Entity::ACCOUNT_TYPE] === AccountType::DIRECT) and
+                ($item[Balance\Entity::CHANNEL] === Balance\Channel::RBL))
+            {
+                $actualOutputAfterStmtCron = $item;
+            }
+        }
+
+        $oldDateTime = Carbon::create(2019, 07, 21, 12, 25, 41, Timezone::IST);
+
+        Carbon::setTestNow($oldDateTime);
+
+        // running balance fetch cron
+        $this->mockMozartResponseForFetchingBalanceFromRblGateway($amount);
+
+        $this->runBalanceFetchCron();
+
+        $this->ba->proxyAuth();
+
+        $request = [
+            'method'  => 'GET',
+            'url'     => '/balances?type=banking',
+            'content' => [
+            ]
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $bankingAccount = $this->getDbEntityById('banking_account', 'xba00000000001')->toArray();
+
+        foreach ($response['items'] as $item)
+        {
+            if (($item[Balance\Entity::ACCOUNT_TYPE] === AccountType::DIRECT) and
+                ($item[Balance\Entity::CHANNEL] === Balance\Channel::RBL))
+            {
+                $actualOutputAfterBalanceFetchCron = $item;
+            }
+        }
+
+        // assertions
+
+        $expectedResponse = [
+            'last_fetched_at' => $bankingAccount[BankingAccount\Entity::BALANCE_LAST_FETCHED_AT],
+            'balance'         => $bankingAccount[BankingAccount\Entity::GATEWAY_BALANCE],
+        ];
+
+        $this->assertNotEquals($actualOutputAfterStmtCron[Balance\Entity::LAST_FETCHED_AT],
+                               $actualOutputAfterBalanceFetchCron[Balance\Entity::LAST_FETCHED_AT]);
+
+        $this->assertArraySelectiveEquals($expectedResponse, $actualOutputAfterBalanceFetchCron);
+
+        Carbon::setTestNow();
+    }
+
+    // in this first balance fetch cron is run before banking Account statement fetch Cron.
+    // and then balance api is checked to see it uses balance from cron which last updated
+    public function testLatestBalanceWhenBalanceFetchCronRunsBeforeBankingAccountStatementCron($amount = 500)
+    {
+        $oldDateTime = Carbon::create(2019, 07, 21, 12, 23, 41, Timezone::IST);
+
+        Carbon::setTestNow($oldDateTime);
+
+        // running balance fetch cron
+        $this->mockMozartResponseForFetchingBalanceFromRblGateway($amount);
+
+        $this->runBalanceFetchCron();
+
+        $this->ba->proxyAuth();
+
+        $request = [
+            'method'  => 'GET',
+            'url'     => '/balances?type=banking',
+            'content' => [
+            ]
+        ];
+
+        $balanceApiResponseAfterBalanceFetchCron = $this->makeRequestAndGetContent($request);
+
+        foreach ($balanceApiResponseAfterBalanceFetchCron['items'] as $item)
+        {
+            if (($item[Balance\Entity::ACCOUNT_TYPE] === AccountType::DIRECT) and
+                ($item[Balance\Entity::CHANNEL] === Balance\Channel::RBL))
+            {
+                $actualOutputAfterBalanceFetchCron = $item;
+            }
+        }
+
+        $oldDateTime = Carbon::create(2019, 07, 21, 12, 25, 41, Timezone::IST);
+
+        Carbon::setTestNow($oldDateTime);
+
+        // account statement fetch cron
+        $mockedResponse = $this->getRblDataResponse();
+
+        $this->setMozartMockResponse($mockedResponse);
+
+        $this->runBankingAccountStatementFetchCron();
+
+        $this->ba->proxyAuth();
+
+        $request = [
+            'method'  => 'GET',
+            'url'     => '/balances?type=banking',
+            'content' => [
+            ]
+        ];
+
+        $balanceApiResponseAfterStmtCron = $this->makeRequestAndGetContent($request);
+
+        foreach ($balanceApiResponseAfterStmtCron['items'] as $item)
+        {
+            if (($item[Balance\Entity::ACCOUNT_TYPE] === AccountType::DIRECT) and
+                ($item[Balance\Entity::CHANNEL] === Balance\Channel::RBL))
+            {
+                $actualOutputAfterStmtCron = $item;
+            }
+        }
+
+        // assertions
+
+        $this->assertNotEquals($actualOutputAfterStmtCron[Balance\Entity::LAST_FETCHED_AT],
+                               $actualOutputAfterBalanceFetchCron[Balance\Entity::LAST_FETCHED_AT]);
+
+        $this->assertNotEquals($actualOutputAfterStmtCron[Balance\Entity::BALANCE],
+                               $actualOutputAfterBalanceFetchCron[Balance\Entity::BALANCE]);
+
+        Carbon::setTestNow();
+
+    }
+
+    // in this first balance fetch cron is run before banking Account statement fetch Cron.
+    // and then checks payout creation uses balance from cron which updated latest
+    public function testCreateRblPayoutWhenBalanceFetchCronRunsBeforeBankingAccountStatementCron()
+    {
+        $this->testLatestBalanceWhenBalanceFetchCronRunsBeforeBankingAccountStatementCron();
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
+    // in this first balance fetch cron is run after banking Account statement fetch Cron.
+    // and then checks payout creation uses balance from cron which updated latest
+    public function testCreateRblPayoutWhenBalanceFetchCronRunsAfterBankingAccountStatementCron()
+    {
+        $this->testLatestBalanceWhenBalanceFetchCronRunsAfterBankingAccountStatementCron();
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
+    // in this first balance fetch cron is run after banking Account statement fetch Cron.
+    // and then checks payout creation uses balance from cron which updated latest,but this time balance
+    // is low so payout gets queued
+    public function testCreateRblPayoutWhenBalanceFetchCronRunsAfterBankingAccountStatementCronWithLowBalance()
+    {
+        $this->testLatestBalanceWhenBalanceFetchCronRunsAfterBankingAccountStatementCron(50);
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
+    // in this first balance fetch cron is run before banking Account statement fetch Cron.
+    // and then checks payout creation uses balance from cron which updated latest,but this time balance
+    // is low so payout gets queued
+    public function testCreateRblPayoutWhenBalanceFetchCronRunsBeforeBankingAccountStatementCronWithLowBalance()
+    {
+        $this->testLatestBalanceWhenBalanceFetchCronRunsBeforeBankingAccountStatementCron(50);
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
+    // in this first balance fetch cron is run before banking Account statement fetch Cron.
+    // and then checks dispatch queued payout flow uses balance from cron which updated latest for processing
+    // of queued payout
+    public function testProcessingRblQueuedPayoutWhenBalanceFetchCronRunsBeforeBankingAccountStatementCron()
+    {
+        $this->mockMozartResponseForFetchingBalanceFromRblGateway(50);
+
+        $queuedPayoutAttributes = [
+            'account_number'        =>  '2224440041626905',
+            'amount'                =>  11000,
+            'queue_if_low_balance'  =>  1,
+        ];
+
+        $queuedPayout = $this->createQueuedOrPendingPayout($queuedPayoutAttributes, 'rzp_test_TheTestAuthKey');
+
+        $this->testLatestBalanceWhenBalanceFetchCronRunsBeforeBankingAccountStatementCron(50);
+
+        $actualOutput = $this->dispatchQueuedPayouts();
+
+        $expectedOutput = [
+            $this->bankingBalance->getId() => [
+                'original_balance'         => 11355,
+                'balance_remaining'        => 355,
+                'total_payout_count'       => 1,
+                'dispatched_payout_count'  => 1,
+                'dispatched_payout_amount' => 11000,
+            ]
+        ];
+
+        $this->assertArraySelectiveEquals($expectedOutput, $actualOutput);
+    }  
+      
     public function testFetchStatementByTransactionIdForRbl()
     {
         $this->testRblAccountStatementCase1();

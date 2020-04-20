@@ -503,11 +503,10 @@ class Core extends Base\Core
 
                 $merchantBankingAccount = $this->fetchAndUpdateGatewayBalance($merchantBankingAccount);
 
-                $balanceAmount = $merchantBankingAccount->getGatewayBalance();
-
-                // Suppose merchant makes request soon after code is deployed and cron hasn't run yet,
-                // then gateway_balance will be null . In that case use balance from balance table
-                $balanceAmount = $balanceAmount ?? $balanceEntity->getBalance();
+                if ($merchantBankingAccount->isGatewayBalanceFetchCronMoreUpdated() === true)
+                {
+                    $balanceAmount = $merchantBankingAccount->getGatewayBalance();
+                }
             }
 
             $dispatchedData = $this->dispatchApplicablePayouts($balanceAmount, $payouts);

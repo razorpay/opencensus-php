@@ -148,8 +148,14 @@ class Entity extends Base\PublicEntity
         if (($accountType === AccountType::DIRECT) and
             ($channel === Channel::RBL))
         {
-            $attributes[self::BALANCE] = $this->bankingAccount->getGatewayBalance() ??
-                                         $attributes[self::BALANCE];
+            $bankingAccount = $this->bankingAccount;
+
+            // in normal scenario we are sending balance table's balance but if the gateway balance is
+            // more updated, then we use that instead
+            if ($bankingAccount->isGatewayBalanceFetchCronMoreUpdated() === true)
+            {
+                $attributes[self::BALANCE] = $bankingAccount->getGatewayBalance();
+            }
         }
     }
 
@@ -162,8 +168,12 @@ class Entity extends Base\PublicEntity
         if (($accountType === AccountType::DIRECT) and
             ($channel === Channel::RBL))
         {
-            $attributes[self::LAST_FETCHED_AT] = $this->bankingAccount->getBalanceLastFetchedAt() ??
-                                                 $attributes[self::LAST_FETCHED_AT];
+            $bankingAccount = $this->bankingAccount;
+
+            if ($bankingAccount->isGatewayBalanceFetchCronMoreUpdated() === true)
+            {
+                $attributes[self::LAST_FETCHED_AT] = $bankingAccount->getBalanceLastFetchedAt();
+            }
         }
     }
 

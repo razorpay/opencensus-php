@@ -20,11 +20,12 @@ class Rbl extends Base
 
         $merchantBankingAccount = (new Payout\Core)->fetchAndUpdateGatewayBalance($merchantBankingAccount);
 
-        $merchantGatewayBalance = $merchantBankingAccount->getGatewayBalance();
+        $merchantBalance = $payout->balance->getBalance();
 
-        // Suppose merchant makes request soon after code is deployed and cron hasn't run yet,
-        // then gateway_balance will be null . In that case use balance from balance table
-        $merchantBalance = $merchantGatewayBalance ?? $payout->balance->getBalance();
+        if ($merchantBankingAccount->isGatewayBalanceFetchCronMoreUpdated() === true)
+        {
+            $merchantBalance = $merchantBankingAccount->getGatewayBalance();
+        }
 
         return $merchantBalance;
     }

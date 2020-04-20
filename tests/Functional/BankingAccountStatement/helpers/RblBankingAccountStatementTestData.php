@@ -220,6 +220,170 @@ return [
         ]
     ],
 
+    'testCreateRblPayoutWhenBalanceFetchCronRunsBeforeBankingAccountStatementCron' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number'       => '2224440041626905',
+                'amount'               => 10000,
+                'currency'             => 'INR',
+                'purpose'              => 'refund',
+                'narration'            => 'Batman',
+                'mode'                 => 'IMPS',
+                'fund_account_id'      => 'fa_100000000000fa',
+                'queue_if_low_balance' => true,
+                'notes'                => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => "payout",
+                'fund_account_id' => "fa_100000000000fa",
+                'amount'          => 10000,
+                'currency'        => "INR",
+                'notes'           => [
+                    'abc' => "xyz",
+                ],
+                'fees'            => 590,
+                'tax'             => 90,
+                'status'          => "processing",
+                'purpose'         => "refund",
+                'utr'             => null,
+                'mode'            => "IMPS",
+                'reference_id'    => null,
+                'narration'       => "Batman",
+                'batch_id'        => null,
+                'failure_reason'  => null,
+            ]
+        ]
+    ],
+
+    'testCreateRblPayoutWhenBalanceFetchCronRunsAfterBankingAccountStatementCron' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number'       => '2224440041626905',
+                'amount'               => 10000,
+                'currency'             => 'INR',
+                'purpose'              => 'refund',
+                'narration'            => 'Batman',
+                'mode'                 => 'IMPS',
+                'fund_account_id'      => 'fa_100000000000fa',
+                'queue_if_low_balance' => true,
+                'notes'                => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => "payout",
+                'fund_account_id' => "fa_100000000000fa",
+                'amount'          => 10000,
+                'currency'        => "INR",
+                'notes'           => [
+                    'abc' => "xyz",
+                ],
+                'fees'            => 590,
+                'tax'             => 90,
+                'status'          => "processing",
+                'purpose'         => "refund",
+                'utr'             => null,
+                'mode'            => "IMPS",
+                'reference_id'    => null,
+                'narration'       => "Batman",
+                'batch_id'        => null,
+                'failure_reason'  => null,
+            ]
+        ]
+    ],
+
+    'testCreateRblPayoutWhenBalanceFetchCronRunsAfterBankingAccountStatementCronWithLowBalance' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number'       => '2224440041626905',
+                'amount'               => 10000,
+                'currency'             => 'INR',
+                'purpose'              => 'refund',
+                'narration'            => 'Batman',
+                'mode'                 => 'IMPS',
+                'fund_account_id'      => 'fa_100000000000fa',
+                'queue_if_low_balance' => true,
+                'notes'                => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => "payout",
+                'fund_account_id' => "fa_100000000000fa",
+                'amount'          => 10000,
+                'currency'        => "INR",
+                'notes'           => [
+                    'abc' => "xyz",
+                ],
+                'fees'            => 0,
+                'tax'             => 0,
+                'status'          => "queued",
+                'purpose'         => "refund",
+                'utr'             => null,
+                'mode'            => "IMPS",
+                'reference_id'    => null,
+                'narration'       => "Batman",
+                'batch_id'        => null,
+                'failure_reason'  => null,
+            ]
+        ]
+    ],
+
+    'testCreateRblPayoutWhenBalanceFetchCronRunsBeforeBankingAccountStatementCronWithLowBalance' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number'       => '2224440041626905',
+                'amount'               => 12000,
+                'currency'             => 'INR',
+                'purpose'              => 'refund',
+                'narration'            => 'Batman',
+                'mode'                 => 'IMPS',
+                'fund_account_id'      => 'fa_100000000000fa',
+                'queue_if_low_balance' => true,
+                'notes'                => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => "payout",
+                'fund_account_id' => "fa_100000000000fa",
+                'amount'          => 12000,
+                'currency'        => "INR",
+                'notes'           => [
+                    'abc' => "xyz",
+                ],
+                'fees'            => 0,
+                'tax'             => 0,
+                'status'          => "queued",
+                'purpose'         => "refund",
+                'utr'             => null,
+                'mode'            => "IMPS",
+                'reference_id'    => null,
+                'narration'       => "Batman",
+                'batch_id'        => null,
+                'failure_reason'  => null,
+            ]
+        ]
+    ],
+  
     'testFetchStatementByTransactionIdForRbl' => [
          'request' => [
             'method'  => 'GET',

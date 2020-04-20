@@ -217,6 +217,10 @@ class RblPayoutTest extends TestCase
             'balance_last_fetched_at' => $oldDateTime->getTimestamp(),
         ] );
 
+        $this->fixtures->edit('balance', $this->bankingBalance->getId(), [
+            'updated_at' => $oldDateTime->getTimestamp(),
+        ] );
+
         $this->mockMozartResponseForFetchingBalanceFromRblGateway(500);
 
         $this->startTest();
@@ -325,6 +329,12 @@ class RblPayoutTest extends TestCase
 
         $this->mockMozartResponseForFetchingBalanceFromRblGateway($gatewayBalance);
 
+        $oldDateTime = Carbon::create(2019, 7, 21, 12, 23, 41, Timezone::IST);
+
+        $this->fixtures->edit('balance', $this->bankingBalance->getId(), [
+            'updated_at' => $oldDateTime->getTimestamp(),
+        ] );
+
         $response = $this->makeRequestAndGetContent($request);
 
         return $response;
@@ -370,12 +380,22 @@ class RblPayoutTest extends TestCase
             ],
         ];
 
+        $oldDateTime = Carbon::create(2019, 7, 21, 12, 23, 41, Timezone::IST);
+
+        $this->fixtures->edit('balance', $this->bankingBalance->getId(), [
+            'updated_at' => $oldDateTime->getTimestamp(),
+        ] );
+
         $this->makeRequestAndGetContent($request);
 
         $this->app['config']->set('database.default', 'live');
 
         // Make Request to Approve pending payout for second level from Finance L3 role
         $this->ba->proxyAuth('rzp_live_10000000000000', $this->finL3RoleUser->getId());
+
+        $this->fixtures->edit('balance', $this->bankingBalance->getId(), [
+            'updated_at' => $oldDateTime->getTimestamp(),
+        ] );
 
         $this->mockMozartResponseForFetchingBalanceFromRblGateway($gatewayBalance);
 
