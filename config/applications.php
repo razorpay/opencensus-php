@@ -89,8 +89,8 @@ return [
         'live_whitelisted' => [
             'mock'     => env('MOZART_WHITELISTED_LIVE_MOCK', false),
             'url'      => env('MOZART_WHITELISTED_LIVE_URL'),
-            'password' => env('MOZART_LIVE_USERNAME'),
-            'username' => env('MOZART_LIVE_PASSWORD'),
+            'password' => env('MOZART_LIVE_PASSWORD'),
+            'username' => env('MOZART_LIVE_USERNAME'),
             ]
     ],
 
