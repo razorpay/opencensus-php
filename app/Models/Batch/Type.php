@@ -57,6 +57,8 @@ class Type
 
     const MDR_ADJUSTMENT            = 'mdr_adjustment';
 
+    const PAYMENT_LINK_V2           = 'payment_link_v2';
+
     // Batch Terminal Creation
     const TERMINAL                  = 'terminal';
 
@@ -290,6 +292,7 @@ class Type
         self::OAUTH_MIGRATION_TOKEN,
         self::LINKED_ACCOUNT_REVERSAL,
         self::ADJUSTMENT,
+        self::PAYMENT_LINK_V2,
         self::ECOLLECT_ICICI,
         self::ECOLLECT_RBL,
         self::REPORT,
@@ -311,6 +314,7 @@ class Type
         self::MDR_ADJUSTMENT,
         self::ENTITY_UPDATE_ACTION,
         self::ADJUSTMENT,
+        self::PAYMENT_LINK_V2,
         self::ECOLLECT_ICICI,
         self::ECOLLECT_RBL,
         self::REPORT,

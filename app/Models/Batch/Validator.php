@@ -107,6 +107,16 @@ class Validator extends Base\Validator
         Entity::CONFIG                  => 'filled|array',
     ];
 
+    protected static $paymentLinkV2CreateRules = [
+        Entity::TYPE                    => 'required|in:payment_link_v2',
+        Entity::NAME                    => 'filled|string|max:255',
+        Entity::FILE                    => 'required_without:file_id|file|max:60720' . self::DEFAULT_MIME_RULE,
+        Entity::FILE_ID                 => 'required_without:file|public_id',
+        Invoice\Entity::SMS_NOTIFY      => 'filled|in:0,1',
+        Invoice\Entity::EMAIL_NOTIFY    => 'filled|in:0,1',
+        Entity::CONFIG                  => 'filled|array',
+    ];
+
     protected static $linkedAccountReversalCreateRules = [
         Entity::TYPE                    => 'required|in:linked_account_reversal',
         Entity::NAME                    => 'filled|string|max:255',

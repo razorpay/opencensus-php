@@ -1012,6 +1012,37 @@ class Header
             ],
         ],
 
+        Type::PAYMENT_LINK_V2 => [
+            self::INPUT => [
+                self::INVOICE_NUMBER,
+                self::CUSTOMER_NAME,
+                self::CUSTOMER_EMAIL,
+                self::CUSTOMER_CONTACT,
+                self::AMOUNT,
+                self::DESCRIPTION,
+                self::EXPIRE_BY,
+                self::PARTIAL_PAYMENT,
+                self::NOTES,
+            ],
+
+            self::OUTPUT => [
+                self::INVOICE_NUMBER,
+                self::CUSTOMER_NAME,
+                self::CUSTOMER_EMAIL,
+                self::CUSTOMER_CONTACT,
+                self::AMOUNT,
+                self::DESCRIPTION,
+                self::EXPIRE_BY,
+                self::PARTIAL_PAYMENT,
+                self::NOTES,
+                self::STATUS,
+                self::PAYMENT_LINK_ID,
+                self::SHORT_URL,
+                self::ERROR_CODE,
+                self::ERROR_DESCRIPTION,
+            ],
+        ],
+
         Type::IRCTC_REFUND => [
 
             self::INPUT => [
@@ -2710,7 +2741,7 @@ class Header
         // For PL batch, we want to optionally accept the FIRST_PAYMENT_MIN_AMOUNT
         // headers. This is temporary until we have support for optional headers.
         //
-        if (($type === Type::PAYMENT_LINK) and
+        if (($type === Type::PAYMENT_LINK or $type === Type::PAYMENT_LINK_V2) and
             ((in_array(self::FIRST_PAYMENT_MIN_AMOUNT, $actualHeaders, true) === true)))
         {
             $expectedHeaders[] = self::FIRST_PAYMENT_MIN_AMOUNT;
@@ -2732,7 +2763,7 @@ class Header
             }
         }
 
-        if (($type === Type::PAYMENT_LINK) and
+        if (($type === Type::PAYMENT_LINK or $type === Type::PAYMENT_LINK_V2) and
             ((in_array(self::CURRENCY, $actualHeaders, true) === true)))
         {
             $expectedHeaders[] = self::CURRENCY;
@@ -2770,7 +2801,7 @@ class Header
         $valid = self::areTwoHeadersSame($expectedHeaders, $actualHeaders);
 
         // Todo: Fix this hack!
-        if (($valid === false) and ($type === Type::PAYMENT_LINK))
+        if (($valid === false) and ($type === Type::PAYMENT_LINK or $type === Type::PAYMENT_LINK_V2))
         {
             $expectedHeaders = array_replace($expectedHeaders, [4 => self::AMOUNT_IN_PAISE]);
 
