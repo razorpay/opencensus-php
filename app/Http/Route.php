@@ -909,6 +909,9 @@ final class Route
         'payout_reject_bulk'                       => ['post',     'payouts/reject/bulk',                            'PayoutController@bulkRejectFundAccountPayouts'                     ],
         'payout_approve'                           => ['post',     'payouts/{id}/approve',                           'PayoutController@postApproveFundAccountPayout'                     ],
         'payout_reject'                            => ['post',     'payouts/{id}/reject',                            'PayoutController@postRejectFundAccountPayout'                      ],
+        // TODO: 1. Change route name from reject to cancel.
+        //       2. Add functionality to cancel payouts in bulk rather than one by one.
+        //       3. Allow normal admin rather than SuperAdmin to cancel payouts.
         'payout_reject_admin'                      => ['post',     'admin/payouts/{id}/reject',                      'PayoutController@postRejectFundAccountPayout'                      ],
         'payout_fetch_by_id'                       => ['get',      'payouts/{id}',                                   'PayoutController@getPayout'                                        ],
         'payout_fetch_multiple'                    => ['get',      'payouts',                                        'PayoutController@getPayouts'                                       ],
