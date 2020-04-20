@@ -387,6 +387,7 @@ class UserController extends Controller
         else
         {
             $error = ["Incorrect password/Network issue, please reload the page"];
+            $data = null;
         }
 
         return AppResponse::jsonResponse($error, $data);
