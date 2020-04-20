@@ -19,6 +19,8 @@ class TerminalOnboardingCreateJob extends Job
 {
     protected $terminal;
 
+    protected $terminalId;
+
     protected $queueConfigKey = 'terminal_onboarding_creation';
 
     public function __construct(string $mode, $terminalId)
@@ -26,6 +28,8 @@ class TerminalOnboardingCreateJob extends Job
         parent::__construct($mode);
 
         $this->terminal = (new Terminal\Repository)->find($terminalId);
+
+        $this->terminalId = $terminalId;
     }
 
     public function handle()
@@ -34,7 +38,7 @@ class TerminalOnboardingCreateJob extends Job
 
         $this->trace->info(
             TraceCode::TERMINAL_ONBOARDING_JOB_REQUEST,
-            $this->terminal->toArray()
+            ['terminal_id' => $this->terminalId]
         );
 
         try
@@ -51,7 +55,7 @@ class TerminalOnboardingCreateJob extends Job
                 $ex,
                 Trace::ERROR,
                 TraceCode::TERMINAL_ONBOARDING_CREATE_JOB_FAILURE_EXCEPTION,
-                $this->terminal->toArray()
+                ['terminal_id' => $this->terminalId]
             );
 
             $exceptionData = [];
@@ -68,7 +72,7 @@ class TerminalOnboardingCreateJob extends Job
             $this->trace->info(
                 TraceCode::TERMINAL_ONBOARDING_JOB_DELETE,
                 [
-                    'terminal'                      =>  $this->terminal->toArray(),
+                    'terminal_id'                   =>  $this->terminalId,
                     'terminal_onboarding_detail'    =>  $this->terminal->terminalOnboardingDetail,
                     'message'                       => 'Deleting the job.'
                 ]

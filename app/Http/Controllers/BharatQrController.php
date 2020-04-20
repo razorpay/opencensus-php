@@ -6,6 +6,7 @@ use Request;
 use ApiResponse;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
+use RZP\Models\Mpan\Entity as MpanEntity;
 
 class BharatQrController extends Controller
 {
@@ -15,7 +16,13 @@ class BharatQrController extends Controller
 
         if (is_array($inputTrace) === true)
         {
-            unset($inputTrace['mpan'], $inputTrace['customer_name'], $inputTrace['MERCHANT_PAN']);
+            if (isset($inputTrace['mpan']) === true)
+            {
+                // logs only first 6 and last 4, mask remaining
+                $inputTrace['mpan'] =  (new MpanEntity)->getMaskedMpan($inputTrace['mpan']);
+            }
+            
+            unset($inputTrace['customer_name'], $inputTrace['MERCHANT_PAN']);
         }
 
         $this->trace->info(

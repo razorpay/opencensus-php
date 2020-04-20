@@ -16,6 +16,8 @@ use RZP\Models\Payment\Gateway;
 use RZP\Jobs\TerminalOnboardingCreateJob;
 use RZP\Models\TerminalOnboardingDetail;
 use RZP\Exception\BaseException;
+use RZP\Models\Mpan\Entity as MpanEntity;
+use RZP\Models\Gateway\Terminal\Constants;
 use RZP\Models\Terminal\Entity as TerminalEntity;
 use RZP\Models\Gateway\Terminal\Service as GatewayTerminalService;
 
@@ -52,7 +54,7 @@ class Service extends Base\Service
                 'merchant_id'    => $this->merchant->getId(),
                 'partner_id'     => $this->app['basicauth']->getPartnerMerchantId(),
                 'submerchant_id' => $submerchant->getId(),
-                'input'          => $input,
+                'input'          => $this->getCreateTraceInput($input),
             ]);
         
         $this->verifySubMerchantShouldBeActivated($submerchant);
@@ -334,5 +336,18 @@ class Service extends Base\Service
         
         throw new Exception\BadRequestException(
             ErrorCode::BAD_REQUEST_MERCHANT_NOT_ACTIVATED);
+    }
+
+    protected function getCreateTraceInput(array $input)
+    {
+        foreach([Constants::MASTERCARD, Constants::VISA, Constants::RUPAY] as $network)
+        {
+            if (isset($input['mpan'][$network]) === true)
+            {
+                $input['mpan'][$network] = (new MpanEntity)->getMaskedMpan($input['mpan'][$network]);
+            }
+        }
+
+        return $input;
     }
 }

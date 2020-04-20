@@ -67,6 +67,18 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::MPAN);
     }
 
+    public function getMaskedMpan(string $mpan)
+    {
+        if (empty($mpan) === true)
+        {
+            return $mpan;
+        }
+
+        $maskedMpan =  substr($mpan,0, 6) . str_repeat("*", 6) . substr($mpan, -4);
+
+        return $maskedMpan;
+    }
+
     public function setPublicMpanAttribute(array &$array)
     {
 

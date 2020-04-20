@@ -14,6 +14,7 @@ use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Gateway;
 use RZP\Error\PublicErrorDescription;
 use RZP\Models\TerminalOnboardingDetail;
+use RZP\Models\Mpan\Entity as MpanEntity;
 use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Models\Gateway\Terminal\Service as GatewayTerminalService;
 
@@ -572,6 +573,14 @@ class Core extends Base\Core
         foreach ($terminalHiddenFields as $hidden)
         {
             unset($input[$hidden]);
+        }
+
+        foreach ([Entity::MC_MPAN, Entity::VISA_MPAN, Entity::RUPAY_MPAN] as $networkMpan)
+        {
+            if (isset($input[$networkMpan]) === true)
+            {
+                $input[$networkMpan] = (new MpanEntity)->getMaskedMpan($input[$networkMpan]);
+            }
         }
 
         return $input;

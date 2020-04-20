@@ -11,6 +11,7 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Entity;
 use RZP\Models\Payment\Gateway;
+use RZP\Models\Mpan\Entity as MpanEntity;
 
 class Service extends Base\Service
 {
@@ -29,7 +30,13 @@ class Service extends Base\Service
 
         if (is_array($inputTrace) === true)
         {
-            unset($inputTrace['mpan'], $inputTrace['customer_name'], $inputTrace['MERCHANT_PAN']);
+            if (isset($inputTrace['mpan']) === true)
+            {
+                // logs only first 6 and last 4, mask remaining
+                $inputTrace['mpan'] =  (new MpanEntity)->getMaskedMpan($inputTrace['mpan']);
+            }
+
+            unset($inputTrace['customer_name'], $inputTrace['MERCHANT_PAN']);
         }
 
         $this->trace->info(
