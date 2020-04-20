@@ -81,6 +81,8 @@ class Table
     const SETTLEMENT_TRANSFER       = 'settlement_transfer';
     const SETTLEMENT_DESTINATION    = 'settlement_destination';
     const BANK_TRANSFER_HISTORY     = 'bank_transfer_history';
+    const VIRTUAL_VPA_PREFIX            = 'virtual_vpa_prefixes';
+    const VIRTUAL_VPA_PREFIX_HISTORY    = 'virtual_vpa_prefix_history';
 
     // Subscriptions Tables
     const SUBSCRIPTION                   = 'subscriptions';

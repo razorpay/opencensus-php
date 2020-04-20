@@ -146,6 +146,9 @@ class Entity
     const TERMINAL_ONBOARDING_DETAIL = 'terminal_onboarding_detail';
     const PAYMENT_META               = 'payment_meta';
 
+    const VIRTUAL_VPA_PREFIX            = 'virtual_vpa_prefix';
+    const VIRTUAL_VPA_PREFIX_HISTORY    = 'virtual_vpa_prefix_history';
+
     // heimdall
     const ORG                   = 'org';
     const ROLE                  = 'role';
