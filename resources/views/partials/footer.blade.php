@@ -41,6 +41,9 @@
       },
       invoice: function() {
         return window.rzpQ;
+      },
+      now: function() {
+        return window.rzpQ;
       }
     };
 
