@@ -119,4 +119,24 @@ class TestCase extends Functional\TestCase
     {
         $this->app['p2p.ctx']->setShouldRefreshDeviceToken($value);
     }
+
+    /**
+     * Will clone if the $item is Object, else returns the $item itself
+     * Also runs a closure on cloned item
+     *
+     * @param $item
+     * @param $closure
+     * @return mixed
+     */
+    protected function clone($item, $closure)
+    {
+        if (is_object($item))
+        {
+            $item = clone $item;
+        }
+
+        $closure($item);
+
+        return $item;
+    }
 }

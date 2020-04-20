@@ -163,8 +163,8 @@ class P2pHelper
      */
     public function setScenarioInContext(
         string $id = null,
-        string $sub = '000',
-        string $contact = '919999999999',
+        string $sub = null,
+        string $contact = null,
         string $stan = null): self
     {
         $scenario = ($id === null) ? null : new Scenario($id, $sub, $contact, $stan);

@@ -61,4 +61,21 @@ trait MockSdkTrait
 
         return $url;
     }
+
+    protected function assertRequestResponse(string $type, array $request, string $callback, array $response)
+    {
+        // TODO: This check is added to avoid JSON Schema change, Fix schema and remove this
+        if (isset($request['time']) === true)
+        {
+            $request['time'] = (string) $request['time'];
+        }
+        $expected = [
+            'version'   => 'v1',
+            'type'      => $type,
+            'request'   => $request,
+            'callback'  => $callback,
+        ];
+
+        $this->assertArraySubset($expected, $response, true);
+    }
 }

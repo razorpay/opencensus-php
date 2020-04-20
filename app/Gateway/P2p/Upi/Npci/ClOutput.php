@@ -15,4 +15,28 @@ class ClOutput
     // Used as Type for ClAction::GET_CHALLENGE
     const INITIAL           = 'initial';
     const ROTATE            = 'rotate';
+
+    // GetCredential::CONTROLS
+    const CRED_ALLOWED      = 'CredAllowed';
+    const SUB_TYPE          = 'subType';
+    const DTYPE             = 'dtype';
+    const DLENGTH           = 'dlength';
+
+    // GetCredential::SALT
+    const TXN_ID            = CLInput::TXN_ID;
+    const TXN_AMOUNT        = 'txnAmount';
+    const DEVICE_ID         = CLInput::DEVICE_ID;
+    const APP_ID            = CLInput::APP_ID;
+    const MOBILE_NUMBER     = CLInput::MOBILE_NUMBER;
+    const PAYER_ADDR        = 'payerAddr';
+    const PAYEE_ADDR        = 'payeeAddr';
+
+    // GetCredential::PAY_INFO
+    const NAME              = 'name';
+    const VALUE             = 'value';
+    const PAYEE_NAME        = 'payeeName';
+    const NOTE              = 'note';
+    const REF_ID            = 'refId';
+    const REF_URL           = 'refUrl';
+    const ACCOUNT           = 'account';
 }

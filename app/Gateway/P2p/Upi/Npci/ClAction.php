@@ -10,4 +10,12 @@ class ClAction
     const REGISTER_APP          = 'registerApp';
 
     const GET_CREDENTIAL        = 'getCredential';
+
+    // These are get credential errors
+
+    const SET                   = 'set';
+    const RESET                 = 'reset';
+    const CHANGE                = 'change';
+    const BALANCE               = 'balance';
+    const DEBIT                 = 'debit';
 }

@@ -304,7 +304,7 @@ class DeviceTest extends TestCase
         {
             $this->npciClAssertionMessage = $message;
 
-            $this->handleNpciClRequest(
+            $function = $this->handleNpciClRequest(
                 $response,
                 'getChallenge',
                 $this->expectedCallback(Requests::P2P_CUSTOMER_GET_TOKEN, [], ['type' => $type]),
@@ -324,11 +324,7 @@ class DeviceTest extends TestCase
                 $token = 'Bu1DCDFS3udZuKyJosfi+yget5o/mfXrvlXKyn+arAw=';
             }
 
-            $sdkData = $this->getMockedSdkData('getChallenge', [
-                'type'      => $type,
-                'token'     => $token,
-                'deviceId'  => $this->fixtures->device->getUuid(),
-            ]);
+            $sdkData = $function(['token' => $token]);
 
             // This is important for test case, we are rewinding time to beginning of the minute
             // Thus the api call time and current time are within that second itself
@@ -350,7 +346,7 @@ class DeviceTest extends TestCase
                 return;
             }
 
-            $this->handleNpciClRequest(
+            $function = $this->handleNpciClRequest(
                 $response,
                 'registerApp',
                 $this->expectedCallback(Requests::P2P_CUSTOMER_GET_TOKEN, [], $callbackParams),
@@ -358,15 +354,10 @@ class DeviceTest extends TestCase
                     $this->fixtures->device->getAppName(),
                     substr($this->fixtures->device->getContact(), -10),
                     $this->fixtures->device->getUuid(),
-                    $this->calculateHmac($token),
+                    $this->calculateHmac('registerApp', $token),
                 ]);
 
-            $sdkData = $this->getMockedSdkData('registerApp', [
-                'appId'     => $this->fixtures->device->getAppName(),
-                'mobile'    => substr($this->fixtures->device->getContact(), -10),
-                'deviceId'  => $this->fixtures->device->getUuid(),
-                'hmac'      => $this->calculateHmac($token),
-            ]);
+            $sdkData = $function();
 
             $helper->setScenarioInContext($scenario[2]);
 
@@ -454,38 +445,6 @@ class DeviceTest extends TestCase
             $this->assertFalse($bankAccount->refresh()->trashed());
             $this->assertSame($bankAccount->getId(), $vpa->refresh()->getBankAccountId());
         }
-    }
-
-    private function getMockedSdkData(string $method, array $input)
-    {
-        switch ($method)
-        {
-            case 'getChallenge':
-                $response = base64_encode(implode('|', [
-                    $input['token'],
-                    $input['type'],
-                    $input['deviceId'],
-                ]));
-                break;
-
-            case 'registerApp':
-                $response = true;
-        }
-
-        return [$method => $response];
-    }
-
-    private function calculateHmac($token)
-    {
-        $crypto = (new AES(AES::MODE_CTR, base64_decode($token)));
-
-        $string = $this->fixtures->device->getAppName() . '|' .
-                    substr($this->fixtures->device->getContact(), -10) . '|' .
-                    $this->fixtures->device->getUuid();
-
-        $hash = hash('sha256', $string);
-
-        return base64_encode($crypto->encrypt($hash));
     }
 
     private function getCommonCases($failure, $registration, $rotation)

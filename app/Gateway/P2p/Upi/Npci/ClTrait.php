@@ -25,9 +25,10 @@ trait ClTrait
             $handle = $this->getContextHandle();
 
             // Apart from Gateway Data these fields are added to input
-            $input[ClInput::DEVICE_ID] = $this->getContextDevice()->get(Entity::UUID);
-            $input[ClInput::APP_ID]    = $this->getContextDevice()->get(Entity::APP_NAME);
-            $input[ClInput::MOBILE]    = substr($this->getContextDevice()->get(Entity::CONTACT), -10);
+            $input[ClInput::TXN_ID]         = $this->getHandlePrefix() . $this->getRequestId();
+            $input[ClInput::DEVICE_ID]      = $this->getContextDevice()->get(Entity::UUID);
+            $input[ClInput::APP_ID]         = $this->getContextDevice()->get(Entity::APP_NAME);
+            $input[ClInput::MOBILE_NUMBER]  = substr($this->getContextDevice()->get(Entity::CONTACT), -10);
 
             // Here we have access to gateway data, we can switch version from here
 
