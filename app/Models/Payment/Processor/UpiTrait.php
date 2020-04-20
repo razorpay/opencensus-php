@@ -4,12 +4,13 @@ namespace RZP\Models\Payment\Processor;
 
 use RZP\Exception;
 use Carbon\Carbon;
+use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Payment;
 use RZP\Models\Payment\Method;
 use RZP\Models\Payment\UpiMetadata\Type;
 use RZP\Models\Payment\UpiMetadata\Entity;
-use RZP\Trace\TraceCode;
+use RZP\Models\Payment\UpiMetadata\Contants;
 
 trait UpiTrait
 {
@@ -91,7 +92,7 @@ trait UpiTrait
         {
             $startDate = Carbon::createFromTimestamp($input[Payment\Method::UPI][Entity::START_TIME]);
 
-            $input[Payment\Method::UPI][Entity::END_TIME] = $startDate->addDays(90)->getTimestamp();
+            $input[Payment\Method::UPI][Entity::END_TIME] = $startDate->addSeconds(Entity::DEFAULT_OTM_EXECUTION_RANGE)->getTimestamp();
         }
     }
 

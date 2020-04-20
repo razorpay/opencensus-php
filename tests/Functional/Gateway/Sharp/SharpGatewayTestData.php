@@ -319,6 +319,21 @@ return [
             'library'               => 'custom',
             'library_version'       => '3.6.0'
         ],
-    ]
+    ],
 
+    'testOtmInvalidExecute' => [
+        'response'  => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_UPI_MANDATE_INVALID_EXECUTION_TIME,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'                 => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code'   => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ]
+    ]
 ];

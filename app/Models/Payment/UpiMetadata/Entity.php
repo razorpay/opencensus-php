@@ -19,6 +19,9 @@ class Entity extends Base\PublicEntity
     // Constants
     const UPI_METADATA = 'upi_metadata';
 
+    // 90 days, in seconds
+    const DEFAULT_OTM_EXECUTION_RANGE = 7776000;
+
     protected $entity = 'upi_metadata';
 
     protected $generateIdOnCreate = false;
@@ -169,6 +172,23 @@ class Entity extends Base\PublicEntity
     }
 
     // Helpers
+
+    public function isOtm(): bool
+    {
+        return ($this->getAttribute(self::TYPE) === Type::OTM);
+    }
+
+    /**
+     * Returns if the given timestamp is in range of start time
+     * and end time.
+     * @param int $timestamp
+     * @return bool
+     */
+    public function inTimeRange(int $timestamp): bool
+    {
+        return (($this->getStartTime() <= $timestamp) and
+                ($timestamp <= $this->getEndTime()));
+    }
 
     /**
      * @return int

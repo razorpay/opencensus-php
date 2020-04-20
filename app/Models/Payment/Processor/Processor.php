@@ -2952,6 +2952,13 @@ class Processor
      */
     protected function shouldAutoCapture(Payment\Entity $payment): bool
     {
+        // For upi otm, Payments cannot auto captured, as merchants needs to hit the capture
+        // api, to execute the mandate, we will block this scenario right now.
+        if ($payment->isUpiOtm() === true)
+        {
+           return false;
+        }
+
         // Bank transfers are auto-captured only if they are expected. This is checked later.
         if ($payment->isBankTransfer() === true)
         {

@@ -3229,6 +3229,19 @@ trait Authorize
         {
             $merchantAutoRefundTime = $createdAt + Merchant\Entity::AUTO_REFUND_DELAY_FOR_NACH;
         }
+        else if ($payment->isUpiOtm() === true)
+        {
+            $upiMetadata = $payment->getUpiMetadata();
+
+            // In case, the payment is OTM, we need to set the refund_at on based of OTM end_time.
+            // So we fetch upi_metadata , and add necessary/default delay to the end_time after
+            // which payment can be refunded.
+            if (($upiMetadata instanceof UpiMetadata\Entity) and
+                ($upiMetadata->isOtm() === true))
+            {
+                $merchantAutoRefundTime = $upiMetadata->getEndTime() + $payment->merchant->getAutoRefundDelay();
+            }
+        }
 
         $payment->setRefundAt($merchantAutoRefundTime);
     }
@@ -6338,6 +6351,16 @@ trait Authorize
         }
 
         $terminalMode = $payment->terminal->getMode();
+
+        /*
+         In case of UPI OTM payments, we are using auth and capture flow.
+         And we need payment to be gateway_captured=false, and thereby,
+         capture actually hits the gateway to execute the mandate.
+        */
+        if ($payment->isUpiOtm() === true)
+        {
+            return true;
+        }
 
         if ($terminalMode === Terminal\Mode::AUTH_CAPTURE)
         {

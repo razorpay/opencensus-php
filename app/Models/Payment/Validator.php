@@ -1050,6 +1050,8 @@ class Validator extends Base\Validator
         $this->captureAmountValidate($payment, $amount);
 
         $this->captureCurrencyValidate($payment, $currency);
+
+        $this->captureUpiOtmExecuteValidate($payment);
     }
 
     public function cancelValidate($payment)
@@ -1095,6 +1097,30 @@ class Validator extends Base\Validator
                 ]);
         }
 
+    }
+
+    protected function captureUpiOtmExecuteValidate(Payment\Entity $payment)
+    {
+        if ($payment->isUpiOtm() === true)
+        {
+            $upiMetadata = $payment->getUpiMetadata();
+
+            $currentTimestamp = Carbon::now()->getTimestamp();
+
+            if ($upiMetadata->inTimeRange($currentTimestamp) === false)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    PublicErrorDescription::BAD_REQUEST_UPI_MANDATE_INVALID_EXECUTION_TIME,
+                    null,
+                    [
+                        'start_time'   => $upiMetadata->getStartTime(),
+                        'end_time'     => $upiMetadata->getEndTime(),
+                        'current_time' => $currentTimestamp,
+                        'payment_id'   => $payment->getId(),
+                        'merchant_id'  => $payment->merchant->getId(),
+                    ]);
+            }
+        }
     }
 
     protected function failIfNotCreated($payment)
@@ -1201,35 +1227,51 @@ class Validator extends Base\Validator
         }
         if ($this->isOtmPayment($input))
         {
-            if ((isset($input['upi']['start_time']) === false) or
-                (isset($input['upi']['end_time']) === false))
-            {
-                throw new Exception\BadRequestValidationFailureException(
-                    PublicErrorDescription::BAD_REQUEST_UPI_MANDATE_TIME_RANGE_REQUIRED,
-                    'upi',
-                    ['input'=> $input]
-                    );
-            }
+            $this->validateUpiBlockForOtm($input);
+        }
+    }
 
-            if ($this->getUpiStartTime($input) > $this->getUpiEndTime($input))
-            {
-                throw new Exception\BadRequestValidationFailureException(
-                    PublicErrorDescription::BAD_REQUEST_UPI_MANDATE_END_TIME_INVALID,
-                    'upi.end_time',
-                    ['input'=> $input]
-                );
-            }
+    protected function validateUpiBlockForOtm($input)
+    {
+        if ((isset($input['upi']['start_time']) === false) or
+            (isset($input['upi']['end_time']) === false))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                PublicErrorDescription::BAD_REQUEST_UPI_MANDATE_TIME_RANGE_REQUIRED,
+                'upi',
+                ['input'=> $input]
+            );
+        }
 
-            $now = Carbon::now()->getTimestamp();
+        if ($this->getUpiStartTime($input) > $this->getUpiEndTime($input))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                PublicErrorDescription::BAD_REQUEST_UPI_MANDATE_END_TIME_INVALID,
+                'upi.end_time',
+                ['input'=> $input]
+            );
+        }
 
-            if ($this->getUpiEndTime($input) < $now)
-            {
-                throw new Exception\BadRequestValidationFailureException(
-                    PublicErrorDescription::BAD_REQUEST_UPI_MANDATE_END_TIME_INVALID,
-                    'upi.end_time',
-                    ['input' => $input]
-                );
-            }
+        $now = Carbon::now()->getTimestamp();
+
+        if ($this->getUpiEndTime($input) < $now)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                PublicErrorDescription::BAD_REQUEST_UPI_MANDATE_END_TIME_INVALID,
+                'upi.end_time',
+                ['input' => $input]
+            );
+        }
+
+        $diff = ($this->getUpiEndTime($input) - $this->getUpiStartTime($input));
+
+        if ($diff > UpiMetadata\Entity::DEFAULT_OTM_EXECUTION_RANGE)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                PublicErrorDescription::BAD_REQUEST_UPI_END_TIME_OUT_OF_RANGE,
+                'upi.end_time',
+                ['input' => $input]
+            );
         }
     }
 }

@@ -845,6 +845,13 @@ trait Refund
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_CARD_REFUND_NOT_ALLOWED);
         }
 
+        // In case of UPI OTM Payments, For revoking the mandate, we call the refund api on authorized payment
+        // In case it is captured, It will follow the normal flow.
+        if (($payment->isAuthorized() === true) and ($payment->isUpiOtm() === true))
+        {
+            return $this->refundAuthorizedPayment($payment, $input);
+        }
+
         return $this->refundCapturedPayment($payment, $input);
     }
 

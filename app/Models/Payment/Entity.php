@@ -1840,6 +1840,19 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
                 ($this->getAttribute(self::RECURRING) === true));
     }
 
+    public function isUpiOtm(): bool
+    {
+        if ($this->isUpi() === false)
+        {
+            return false;
+        }
+
+        $upiMetadata = $this->getUpiMetadata();
+
+        return (($upiMetadata instanceof UpiMetadata\Entity) and
+                ($upiMetadata->isOtm() === true));
+    }
+
     public function isTransfer()
     {
         return ($this->getAttribute(self::METHOD) === Payment\Method::TRANSFER);
@@ -3183,6 +3196,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         return $this->belongsTo('RZP\Models\Transfer\Entity', self::TRANSFER_ID);
     }
 
+    public function upiMetadata()
+    {
+        return $this->hasOne('RZP\Models\Payment\UpiMetadata\Entity');
+    }
+
     public function disputes()
     {
         return $this->hasMany(\RZP\Models\Dispute\Entity::class);
@@ -3228,6 +3246,14 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     public function getOffer()
     {
         return $this->offers()->first();
+    }
+
+    /**
+     * @return UpiMetadata\Entity
+     */
+    public function getUpiMetadata()
+    {
+        return $this->upiMetadata;
     }
 
 

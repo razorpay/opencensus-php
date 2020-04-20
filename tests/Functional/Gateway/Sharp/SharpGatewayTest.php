@@ -3,8 +3,10 @@
 namespace RZP\Tests\Functional\Gateway\Sharp;
 
 use Cache;
+use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Models\Feature;
+use RZP\Models\Merchant;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -558,6 +560,156 @@ class SharpGatewayTest extends TestCase
 
         // catches the exception
         $this->checkPaymentStatus($paymentId, 'created');
+    }
+
+    public function testOtmSharpPayment()
+    {
+        $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
+
+        $this->fixtures->merchant->editAutoRefundDelay('2 days');
+
+        $payment = $this->getDefaultUpiOtmPayment();
+
+        $response = $this->doAuthPaymentViaAjaxRoute($payment);
+
+        $paymentId = $response['payment_id'];
+
+        $upiMetadata = $this->getLastEntity('upi_metadata', true);
+
+        $this->assertArraySubset([
+            'type' => 'otm',
+            'flow' => 'collect',
+        ], $upiMetadata, true);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        // Assert that payment refund_at is set to 2 days (which is default) after upi_metadata end time,
+        // as merchant can capture it between start_time and end_time.
+        $refundDelay = ($payment['refund_at'] - $upiMetadata['end_time']) / (24 * 60 * 60);
+        $this->assertSame(2, $refundDelay);
+
+        // Assert it is never gateway_captured while authorizing
+        $this->assertSame(null, $payment['gateway_captured']);
+
+        // Execute the mandate by calling capture.
+        $this->capturePayment($paymentId, $payment['amount']);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        // Assert that it is gateway_captured now
+        $this->assertArraySubset([
+            'status'           => 'captured',
+            'gateway_captured' => true,
+        ], $payment);
+    }
+
+    public function testOtmInvalidExecute()
+    {
+        $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
+
+        $payment = $this->getDefaultUpiOtmPayment();
+
+        // Setting the start_time for 1 day after now, so now we cannot execute today.
+        $payment['upi']['start_time'] = Carbon::now()->addDays(1)->getTimestamp();
+
+        unset($payment['upi']['end_time']);
+
+        $response = $this->doAuthPaymentViaAjaxRoute($payment);
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function () use ($payment, $response)
+        {
+           $this->capturePayment($response['payment_id'], $payment['amount']);
+        });
+
+        $payment = $this->getLastEntity('payment', true);
+
+        // Assert that payment is still authorized, after a failed capture.
+        $this->assertSame('authorized', $payment['status']);
+    }
+
+    public function testOtmRefundAuthorized()
+    {
+        $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
+
+        $payment = $this->getDefaultUpiOtmPayment();
+
+        $response = $this->doAuthPaymentViaAjaxRoute($payment);
+
+        $paymentId = $response['payment_id'];
+
+        // Refund a authorized payment, as it is otm, it will mandate revoke.
+        $this->refundPayment($paymentId, $payment['amount']);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        // Assert it went to refunded.
+        $this->assertSame('refunded', $payment['status']);
+    }
+
+    public function testOtmRefundCaptured()
+    {
+        $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
+
+        $payment = $this->getDefaultUpiOtmPayment();
+
+        $response = $this->doAuthPaymentViaAjaxRoute($payment);
+
+        $paymentId = $response['payment_id'];
+
+        $this->capturePayment($paymentId, $payment['amount']);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertSame('captured', $payment['status']);
+
+        // Assert refund processed
+        $data = $this->refundPayment($paymentId);
+        $this->assertSame('processed', $data['status']);
+
+        // Assert payment refunded
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertSame('refunded', $payment['status']);
+    }
+
+    public function testOtmAutoCaptureBlocked()
+    {
+        $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
+
+        $order = $this->createOrder([
+           'payment_capture' => true
+        ]);
+
+        $payment = $this->getDefaultUpiOtmPayment();
+
+        $payment['order_id'] = $order['id'];
+
+        $this->doAuthPaymentViaAjaxRoute($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        // Assert that even if the payment is set to be auto captured by order,
+        // dont auto capture, as it will execute the mandate right away as soon as
+        // it is authorized.
+        $this->assertSame('authorized', $payment['status']);
+    }
+
+    public function testOtmInvalidEndTimeOutOfRange()
+    {
+        $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
+
+        $payment = $this->getDefaultUpiOtmPayment();
+
+        $payment['upi']['start_time'] = Carbon::now()->getTimestamp();
+        $payment['upi']['end_time'] = Carbon::now()->addDays(90)->addMinute(1)->getTimestamp();
+
+        $this->makeRequestAndCatchException(function () use ($payment)
+        {
+            $this->doAuthPaymentViaAjaxRoute($payment);
+        },
+         Exception\BadRequestValidationFailureException::class,
+        'End time provided for upi mandate is out of range');
     }
 
     protected function otpCommonFlow($otp)
