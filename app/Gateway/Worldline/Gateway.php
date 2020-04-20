@@ -562,14 +562,6 @@ class Gateway extends Base\Gateway
     {
         parent::refund($input);
 
-        throw new Exception\LogicException(
-            'Not a supported action',
-            null,
-            [
-                'input'     => $input,
-                'gateway'   => $this->gateway
-            ]);
-
         $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
             $input['payment']['id'], Base\Action::AUTHORIZE);
 
