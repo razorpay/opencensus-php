@@ -68,6 +68,14 @@ class AuthSelector extends Base\Core
 
         $verbose = $this->isVerboseLogEnabled();
 
+        $payment = $this->input['payment'];
+
+        if ( ($this->isEnvironmentProduction() === true) && ($this->isLiveMode() === true) &&
+            ($this->app->razorx->getTreatment($payment->getId(), 'authentication_logs_api', $this->mode) === 'on'))
+        {
+            $verbose = true;
+        }
+
         $this->traceAuthTerminals($applicableTerminals, 'Auth terminals via auth', $verbose);
 
         $this->input['auths'] = array_pluck($applicableTerminals, 'auth_type');
@@ -95,10 +103,6 @@ class AuthSelector extends Base\Core
         // filtered list of terminals is used to further filter upon using the other
         // filter classes.
         //
-
-        // Temporary changes to be removed
-        $verbose = true;
-
         $filteredTerminals = $terminals;
 
         $filterRules = $this->getRulesForFiltering($rules);
@@ -110,7 +114,7 @@ class AuthSelector extends Base\Core
             $filteredTerminals = $filterObj->filter($filteredTerminals, $verbose);
         }
 
-        $this->traceAuthTerminals($terminals, 'Auth terminals after filteration', $verbose);
+        $this->traceAuthTerminals($filteredTerminals, 'Auth terminals after filteration', $verbose);
 
         return $filteredTerminals;
     }
@@ -118,9 +122,6 @@ class AuthSelector extends Base\Core
     // $shouldHitRoutingService is not being used. add to make this func signature compatible with RZP\Models\Terminal\Selector::sortTerminals()
     protected function sortTerminals(array $terminals, Base\PublicCollection $rules, bool $verbose = false, bool $shouldHitRoutingService = false): array
     {
-        // Temporary changes to be removed
-        $verbose = true;
-
         $sortedTerminals = $terminals;
 
         $sorterRules = $this->getRulesForSorting($rules);
