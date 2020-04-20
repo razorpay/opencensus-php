@@ -96,7 +96,7 @@ class Service
 
             if (empty($rules) === true)
             {
-                $redis->smembers(K::CUSTOM_MERCHANT_SET, $merchantId);
+                $redis->srem(K::CUSTOM_MERCHANT_SET, $merchantId);
             }
 
             $formattedRules = $this->formatRules($rules);
@@ -116,7 +116,7 @@ class Service
 
             if (empty($rules) === true)
             {
-                $redis->smembers(K::CUSTOM_ROUTE_SET, $route);
+                $redis->srem(K::CUSTOM_ROUTE_SET, $route);
             }
 
             $formattedRules = $this->formatRules($rules);
