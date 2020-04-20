@@ -2472,7 +2472,6 @@ class Gateway
             self::MPGS,
             self::MPI_BLADE,
             self::MPI_ENSTAGE,
-            self::PAYSECURE,
             self::PAYTM,
             self::AMEX,
             self::ISG,
