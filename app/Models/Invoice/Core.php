@@ -5,6 +5,7 @@ namespace RZP\Models\Invoice;
 use Config;
 use Carbon\Carbon;
 
+use App;
 use RZP\Models\Base;
 use RZP\Models\Order;
 use RZP\Models\Batch;
@@ -23,6 +24,7 @@ use RZP\Models\Invoice\Reminder;
 use RZP\Models\Plan\Subscription;
 use RZP\Exception\BadRequestException;
 use RZP\Jobs\Invoice\Job as InvoiceJob;
+use RZP\Models\Feature\Constants as Features;
 use RZP\Jobs\Invoice\BatchJob as InvoiceBatchJob;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Jobs\Invoice\BatchIssue as InvoiceBatchIssueJob;
@@ -53,6 +55,8 @@ class Core extends Base\Core
      * @var Reminders
      */
     protected $reminders;
+
+    const RECEIPT_MUTEX_TIMEOUT  = 5; // 5 seconds timeout
 
     public function __construct()
     {
@@ -147,6 +151,8 @@ class Core extends Base\Core
 
             unset($input[Entity::BATCH_OFFSET]);
         }
+
+        $this->takeMutexOnReceiptOrFail($merchant, $input, $batchIdOrBatch);
 
         $invoice = (new Generator($merchant))
                         ->setSubscription($subscription)
@@ -1277,6 +1283,46 @@ class Core extends Base\Core
         {
             $input[Entity::CUSTOMER][Customer\Entity::EMAIL] = null;
             $input[Entity::CUSTOMER][Customer\Entity::CONTACT] = null;
+        }
+    }
+
+    protected function takeMutexOnReceiptOrFail(Merchant\Entity $merchant, array & $input, $batch)
+    {
+        if ($batch !== null)
+        {
+            return;
+        }
+
+        if (isset($input[Entity::RECEIPT]) === false)
+        {
+            return;
+        }
+
+        $receipt = $input[Entity::RECEIPT];
+
+        if (empty($receipt) === true)
+        {
+            return;
+        }
+
+        $skipUniquenessCheck = $merchant->isFeatureEnabled(Features::INVOICE_NO_RECEIPT_UNIQUE);
+
+        if ($skipUniquenessCheck === true)
+        {
+            return;
+        }
+
+        $mutex =  App::getFacadeRoot()['api.mutex'];
+
+        $mutexAcquired = $mutex->acquire($merchant->getId()."-".$receipt, self::RECEIPT_MUTEX_TIMEOUT);
+
+        if ($mutexAcquired === false)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_INVOICE_RECEIPT_ANOTHER_OPERATION_IN_PROGRESS,
+                null,
+                ['resource' => $merchant->getId()."-".$receipt]
+            );
         }
     }
 }
