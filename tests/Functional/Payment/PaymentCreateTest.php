@@ -10,14 +10,13 @@ use Illuminate\Database\Eloquent\Factory;
 use RZP\Exception;
 use RZP\Models\Admin;
 use RZP\Error\ErrorCode;
-use RZP\Exception\BadRequestException;
 use RZP\Models\Feature;
 use RZP\Models\Bank\IFSC;
-use RZP\Models\Merchant\FeeBearer;
 use RZP\Constants\Timezone;
 use RZP\Models\Payment\Entity;
 use RZP\Services\RazorXClient;
 use RZP\Models\Currency\Currency;
+use RZP\Models\Merchant\FeeBearer;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Payment\UpiMetadata;
 use RZP\Models\Base\UniqueIdEntity;
@@ -25,6 +24,7 @@ use RZP\Tests\Functional\OAuth\OAuthTrait;
 use RZP\Models\Merchant\Entity as Merchant;
 use RZP\Mail\Payment\Refunded as RefundedMail;
 use RZP\Mail\Payment\Captured as CapturedMail;
+use RZP\Mail\Merchant\AuthorizedPaymentsReminder;
 use RZP\Mail\Payment\Authorized as AuthorizedMail;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -2946,6 +2946,76 @@ class PaymentCreateTest extends TestCase
 
         $this->assertNull($payment->getRefundAt());
         $this->assertSame('captured', $payment->getStatus());
+    }
+
+    public function testAutoRefundDisabledPaymentMerchantMail()
+    {
+        Mail::fake();
+
+        $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
+
+        $this->fixtures->merchant->addFeatures(['disable_auto_refunds']);
+
+        $payment = $this->getDefaultUpiPaymentArray();
+
+        $this->doAuthPayment($payment);
+
+        $payment = $this->getDbLastPayment();
+
+        $this->assertNull($payment->getRefundAt());
+
+        $createdAt = Carbon::today(Timezone::IST)->subDays(1)->timestamp;
+
+        $payment = $this->fixtures->edit(
+            'payment', $payment->getId(),
+            ['authorized_at' => $createdAt, 'created_at' => $createdAt]);
+
+        $this->fixtures->payment->edit($payment->getId(), ['status' => 'authorized']);
+
+        $this->ba->cronAuth();
+
+        $response = $this->runRequestResponseFlow($this->testData[__FUNCTION__]);
+
+        Mail::assertSent(AuthorizedPaymentsReminder::class, function ($mail)
+        {
+            $this->assertTrue($mail->viewData['autoRefundsDisabledForMerchant']);
+
+            return true;
+        });
+    }
+
+    public function testAutoRefundsPaymentMerchantMail()
+    {
+        Mail::fake();
+
+        $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
+
+        $payment = $this->getDefaultUpiPaymentArray();
+
+        $this->doAuthPayment($payment);
+
+        $payment = $this->getDbLastPayment();
+
+        $this->assertNotNull($payment->getRefundAt());
+
+        $createdAt = Carbon::today(Timezone::IST)->subDays(1)->timestamp;
+
+        $payment = $this->fixtures->edit(
+            'payment', $payment->getId(),
+            ['authorized_at' => $createdAt, 'created_at' => $createdAt]);
+
+        $this->fixtures->payment->edit($payment->getId(), ['status' => 'authorized']);
+
+        $this->ba->cronAuth();
+
+        $response = $this->runRequestResponseFlow($this->testData[__FUNCTION__]);
+
+        Mail::assertSent(AuthorizedPaymentsReminder::class, function ($mail)
+        {
+            $this->assertFalse($mail->viewData['autoRefundsDisabledForMerchant']);
+
+            return true;
+        });
     }
 
     public function testPaymentRefundForNullRefundAt()

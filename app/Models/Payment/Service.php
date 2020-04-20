@@ -2103,9 +2103,11 @@ class Service extends Base\Service
             return;
         }
 
+        $autoRefundsDisabledForMerchant = $merchant->isFeatureEnabled(Feature\Constants::DISABLE_AUTO_REFUNDS);
+
         $merchant = $merchant->toArray();
 
-        $data = compact('merchant', 'payments', 'final');
+        $data = compact('merchant', 'payments', 'final', 'autoRefundsDisabledForMerchant');
 
         $authorizedPaymentsReminderMail = new AuthorizedPaymentsReminderMail($data);
 

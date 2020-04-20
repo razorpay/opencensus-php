@@ -72,7 +72,9 @@
 <td class="darktext left-text-pad right-text-pad" style="word-break: break-word; -webkit-hyphens: auto; -moz-hyphens: auto; hyphens: auto; border-collapse: collapse !important; vertical-align: top; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; margin: 0; font-size: 14px; line-height: 25px; color: #484B4C; text-align: right; padding: 0px 0px 10px; padding-left: 10px; padding-right: 10px;">
 <p style="color: #222222; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; padding: 0; margin: 0; text-align: left; font-size: 14px; margin-bottom: 10px; line-height: 25px;">Hi {{{$merchant['name']}}},</p>
 
-@if($final)
+@if($autoRefundsDisabledForMerchant === true)
+<p style="color: #222222; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; padding: 0; margin: 0; text-align: left; font-size: 14px; margin-bottom: 10px; line-height: 25px;">There are payments that are not captured.</p>
+@elseif($final === true)
 <p style="color: #222222; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; padding: 0; margin: 0; text-align: left; font-size: 14px; margin-bottom: 10px; line-height: 25px;">The following payments will be refunded after 1 day if they are not captured.</p>
 @else
 <p style="color: #222222; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; padding: 0; margin: 0; text-align: left; font-size: 14px; margin-bottom: 10px; line-height: 25px;">The following payments will be refunded after 2 days if they are not captured.</p>

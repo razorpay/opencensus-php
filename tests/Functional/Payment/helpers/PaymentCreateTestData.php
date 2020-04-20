@@ -557,4 +557,56 @@ return [
            'internal_error_code' => 'BAD_REQUEST_VALIDATION_FAILURE',
        ]
     ],
+
+    'testAutoRefundDisabledPaymentMerchantMail' => [
+        'request' => [
+            'url' => '/payments/all/reminder',
+            'method' => 'GET',
+        ],
+        'response'  => [
+            'content' => [
+                'initial' =>  [
+                    'counts' =>  [
+                        'payments'       =>  1,
+                        'merchants'      =>  1,
+                        'failures'       =>  0,
+                        '10000000000000' =>  1,
+                    ]
+                ],
+                'final' =>  [
+                    'counts' =>  [
+                        'payments'  =>  0,
+                        'merchants' =>  0,
+                        'failures'  =>  0,
+                        ]
+                ]
+            ]
+        ],
+    ],
+
+    'testAutoRefundsPaymentMerchantMail' => [
+    'request' => [
+        'url' => '/payments/all/reminder',
+        'method' => 'GET',
+    ],
+    'response'  => [
+        'content' => [
+            'initial' =>  [
+                'counts' =>  [
+                    'payments'       =>  1,
+                    'merchants'      =>  1,
+                    'failures'       =>  0,
+                    '10000000000000' =>  1,
+                ]
+            ],
+            'final' =>  [
+                'counts' =>  [
+                    'payments'  =>  0,
+                    'merchants' =>  0,
+                    'failures'  =>  0,
+                ]
+            ]
+        ]
+    ],
+]
 ];
