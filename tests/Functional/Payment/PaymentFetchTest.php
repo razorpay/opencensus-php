@@ -511,4 +511,44 @@ class PaymentFetchTest extends TestCase
 
         $this->assertArrayNotHasKey('base_currency', $paymentFromAdminFetch);
     }
+
+    public function testPrivateAuthPaymentFetchFeeBearerAttribute()
+    {
+        $payment = $this->fixtures->create('payment', []);
+
+        $testData['request']['url'] = '/payments/pay_' . $payment['id'];
+
+        $this->ba->privateAuth();
+
+        $response = $this->startTest();
+
+        $this->assertArrayNotHasKey('fee_bearer', $response['items']['0']);
+    }
+
+    public function testAdminAuthPaymentFetchFeeBearerAttribute()
+    {
+        $payment = $this->fixtures->create('payment', []);
+
+        $paymentEntity = $this->getLastPayment(true);
+
+        $this->assertArrayHasKey('fee_bearer', $paymentEntity);
+    }
+
+
+    public function testProxyAuthPaymentFetchFeeBearerAttribute()
+    {
+        $payment = $this->fixtures->create('payment:authorized', []);
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/payments/pay_' . $payment['id'];
+
+        $this->ba->proxyAuth();
+
+        $response = $this->startTest();
+
+        $this->assertNotNull($response);
+
+        $this->assertArrayHasKey('fee_bearer', $response);
+
+        $this->assertEquals('platform', $response['fee_bearer']);
+    }
 }
