@@ -29,6 +29,8 @@ class Gateway extends BaseProcessor
 
     const DEFAULT_RBL_STATEMENT_FETCH_ATTEMPT_LIMIT = 3;
 
+    const RBL_ACCOUNT_STATEMENT_DISPATCH_DELAY = 120;
+
     public function __construct(string $channel, string $accountNumber)
     {
         $this->setSource(Source::FETCH_API);
@@ -115,11 +117,17 @@ class Gateway extends BaseProcessor
         } while (($this->hasMoreData($bankResponse) === true) and
                  ($attemptCount < $attemptLimit));
 
-        // TODO: Thinking of moving the logic of dispatching job again in case of more data in job itself
-        // But not sure if this logic is generic for all bank as of now
+        // TODO: Thinking of moving the logic of dispatching job again in case of
+        // more data in job itself. But not sure if this logic is generic for all
+        // bank as of now
+
+        // Adding a dispatch delay of 120 seconds as account statement process takes
+        // around 1 min for processing and save.
         if (($this->hasMoreData($bankResponse) === true))
         {
-            (new BankingAccountStatementCore)->dispatchBankingAccountStatementJob($this->channel, $this->accountNumber);
+            $delay = self::RBL_ACCOUNT_STATEMENT_DISPATCH_DELAY;
+
+            (new BankingAccountStatementCore)->dispatchBankingAccountStatementJob($this->channel, $this->accountNumber, $delay);
         }
 
         return $finalFormattedResponse;

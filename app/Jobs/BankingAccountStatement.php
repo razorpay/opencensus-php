@@ -27,6 +27,13 @@ class BankingAccountStatement extends Job
     protected $params;
 
     /**
+     * Default timeout value for a job is 60s. Changing it to 300s 
+     * as account statement process takes 1-2 mins to complete.
+     * @var integer
+     */
+    public $timeout = 300;
+
+    /**
      * @param string $mode
      * @param array  $params
      *      1. channel (bank channel)

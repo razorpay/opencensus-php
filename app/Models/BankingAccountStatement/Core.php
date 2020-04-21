@@ -690,7 +690,10 @@ class Core extends Base\Core
         return ['account_processed' => $accountNumbers];
     }
 
-    public function dispatchBankingAccountStatementJob(string $channel, string $accountNumber)
+    // Adding a delay in dispatch and default is 0 min delay.
+    public function dispatchBankingAccountStatementJob(string $channel,
+                                                       string $accountNumber,
+                                                       int $delay = 0)
     {
         $this->trace->info(
             TraceCode::BANKING_ACCOUNT_STATEMENT_DISPATCH_JOB_REQUEST,
@@ -703,6 +706,6 @@ class Core extends Base\Core
                                              [
                                                  'channel'       => $channel,
                                                  'account_number' => $accountNumber
-                                             ]);
+                                             ])->delay($delay);
     }
 }
