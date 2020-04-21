@@ -10,6 +10,7 @@ const L1_BUSINESS_FIELD_NAMES = [
   'business_type',
   'business_name',
   'business_website',
+  'company_pan',
 ];
 const ADDRESS_FIELD_NAMES = AddressFields.map(
   field =>

@@ -53,11 +53,12 @@ function handleInstantActivationSuccess(props) {
       isWhitelistFlow,
       isBlacklistFlow,
       isGraylistFlow,
+      isL1Submitted,
     } = props.instantActivation;
-    if (isWhitelistFlow) {
+    if (isWhitelistFlow && isL1Submitted) {
       props.showInstantActivationSuccessModal();
       fireL1FormSuccessEvents(props.activation_flow);
-    } else if (isGraylistFlow) {
+    } else if (isGraylistFlow && isL1Submitted) {
       props.showKYCDetailsModal();
       fireL1FormSuccessEvents(props.activation_flow);
     }
@@ -147,7 +148,7 @@ function isL1Completed(activation) {
   return isL1Submitted(activation) && !user.instantActivation.isBlacklistFlow;
 }
 
-function excludeFor_CompanyPan(activation) {
+function displayCompanyPAN(activation) {
   const currentBusinessType =
     activation.state.dirty.business_type || activation.props.data.business_type;
   return (
@@ -230,6 +231,14 @@ function getAccountNumberInfo() {
       'Should be a current bank account of the company to which your payments will be settled.';
   }
   return text;
+}
+
+function getBusinessNameInfo() {
+  if (displayCompanyPAN(this) && this.props.user.isRegAutoKYCEnabled) {
+    return 'We verify the details with the central PAN database. Please ensure you enter the correct PAN details';
+  } else {
+    return 'Example: Acme Infotech Private Limited';
+  }
 }
 
 function hasSelectedBlacklistedCategory(activation) {
@@ -353,6 +362,26 @@ function isAdditonalDocRequired(state, props) {
   return !isOptionalAdditionalDoc(additional_doc, bizCatSubCatKey);
 }
 
+function hasAPIL1Error({
+  poi_verification_status,
+  company_pan_verification_status,
+  is_unreg,
+}) {
+  if (
+    is_unreg &&
+    (poi_verification_status === 'incorrect_details' ||
+      poi_verification_status === 'not_matched')
+  ) {
+    return true;
+  } else if (
+    poi_verification_status === 'incorrect_details' ||
+    company_pan_verification_status === 'incorrect_details'
+  ) {
+    return true;
+  }
+  return false;
+}
+
 export {
   handleInstantActivationSuccess,
   L1FormError,
@@ -364,7 +393,7 @@ export {
   _showForIndiv,
   isL1Submitted,
   isL1Completed,
-  excludeFor_CompanyPan,
+  displayCompanyPAN,
   requiredForNGO,
   showForOrgs,
   isActivatedUnreg,
@@ -373,10 +402,12 @@ export {
   getBeneficiaryInfo,
   getBillingLabelInfo,
   getAccountNumberInfo,
+  getBusinessNameInfo,
   hasSelectedBlacklistedCategory,
   doesHaveAdditionalDocs,
   getDefaultAdditionalDoc,
   getAdditionalDocOptions,
   getAdditionalDocCount,
   isAdditonalDocRequired,
+  hasAPIL1Error,
 };

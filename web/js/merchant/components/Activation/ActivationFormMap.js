@@ -11,7 +11,8 @@ import {
   validateCIN,
   validateIFSC,
   validatePANCard,
-  validatePANCardUnregBiz,
+  validatePersonalPAN,
+  validateCompanyPAN,
   validateCompanyAB,
   isUrlLenient,
 } from 'common/utils/validators';
@@ -24,7 +25,7 @@ import {
   isUnregisteredBusiness,
   _showForIndiv,
   isL1Completed,
-  excludeFor_CompanyPan,
+  displayCompanyPAN,
   requiredForNGO,
   showForOrgs,
   isActivatedUnreg,
@@ -33,6 +34,7 @@ import {
   getBeneficiaryInfo,
   getBillingLabelInfo,
   getAccountNumberInfo,
+  getBusinessNameInfo,
   hasSelectedBlacklistedCategory,
   doesHaveAdditionalDocs,
   getAdditionalDocCount,
@@ -89,18 +91,6 @@ const ADDRESS_PROOF_TYPES = {
 const CIN_BusinessTypes = [PRIVATE, PUBLIC];
 export const LLPIN_BusinessTypes = [LLP];
 const ORG_BusinessTypes = [NGO, TRUST, SOCIETY];
-
-const individualMsg =
-  'We are not supporting individuals (unregistered businesses) at the moment. We shall inform you when we start supporting individuals.';
-
-const stateOptions = ['--Select--'].concat(
-  Object.keys(states).map(c => {
-    return {
-      name: c,
-      label: states[c],
-    };
-  })
-);
 
 const DOC_UPLOAD_LABELS = {
   [PROPRIETORSHIP]: {
@@ -345,32 +335,105 @@ const businessModel = [
 ];
 
 const businessDetails = [
-  {
-    label: 'Business Name',
-    name: 'business_name',
-    info: 'Example: Acme Infotech Private Limited',
-    placeholder: 'Registered name',
-    validator: function(value) {
-      let contactName =
-          this.state.dirty['contact_name'] || this.props.data['contact_name'],
-        showCompanyName = this.props.user.isCompanyNameHiddenRazorX;
-      return isUnregisteredBusiness(this)
-        ? false
-        : validateCompanyAB(value, contactName, showCompanyName);
+  [
+    {
+      label: 'Business PAN',
+      name: 'company_pan',
+      placeholder: 'PAN of the company',
+      className: 'Input--capitalize',
+      info:
+        'Mandatory for Companies. PAN details should be of the mentioned business only.',
+      validator: validateCompanyPAN,
+      checkValidityFromAPI: activation => {
+        const errMsg =
+          'The number entered doesn’t exist in the PAN database. Please verify and enter again';
+        return checkValidityFromAPI(
+          activation.props.data,
+          'company_pan_verification_status',
+          'incorrect_details',
+          errMsg
+        );
+      },
+      _when: activation => displayCompanyPAN(activation),
     },
-    _when: excludeFor_Indiv,
-  },
-  {
-    label: 'Business PAN',
-    name: 'company_pan',
-    placeholder: 'PAN of the company',
-    className: 'Input--capitalize',
-    info:
-      'Mandatory for Companies. PAN details should be of the mentioned business only.',
-    validator: validatePANCard,
-    _when: activation =>
-      isL1Completed(activation) && excludeFor_CompanyPan(activation),
-  },
+    {
+      label: 'Business Name',
+      name: 'business_name',
+      info: getBusinessNameInfo,
+      placeholder: 'Registered name',
+      validator: function(value) {
+        let contactName =
+            this.state.dirty['contact_name'] || this.props.data['contact_name'],
+          showCompanyName = this.props.user.isCompanyNameHiddenRazorX;
+        return isUnregisteredBusiness(this)
+          ? false
+          : validateCompanyAB(value, contactName, showCompanyName);
+      },
+      _when: excludeFor_Indiv,
+    },
+  ],
+  [
+    {
+      name: 'promoter_pan',
+      placeholder: 'PAN Number',
+      className: 'Input--capitalize',
+      getPlaceholder: activation =>
+        isUnregisteredBusiness(activation)
+          ? 'Business owner’s PAN'
+          : 'PAN of one of the directors',
+      validator: function(value) {
+        const isUnregBusiness = isUnregisteredBusiness(this);
+        return validatePersonalPAN(value, isUnregBusiness);
+      },
+      getLabel: activation =>
+        isUnregisteredBusiness(activation) ? 'PAN' : 'Authorised Signatory PAN',
+      _disabledWhen: isActivatedUnreg,
+      checkValidityFromAPI: activation => {
+        const errMsg =
+          'The number entered doesn’t exist in the PAN database. Please verify and enter again';
+        return checkValidityFromAPI(
+          activation.props.data,
+          'poi_verification_status',
+          'incorrect_details',
+          errMsg
+        );
+      },
+    },
+    {
+      getLabel: activation => {
+        return isUnregisteredBusiness(activation)
+          ? 'PAN Holder’s Name'
+          : 'PAN Owner’s Name';
+      },
+      name: 'promoter_pan_name',
+      placeholder: 'Name as per PAN',
+      info: function() {
+        return isUnregisteredBusiness(this) ||
+          !this.props.user.isRegAutoKYCEnabled
+          ? ''
+          : 'We verify the details with the central PAN database. Please ensure you enter the correct PAN details';
+      },
+      description: activation =>
+        isUnregisteredBusiness(activation)
+          ? getPANDescription(activation.props.data)
+          : '',
+      checkValidityFromAPI: activation => {
+        if (!isUnregisteredBusiness(activation)) {
+          return null;
+        }
+        const errMsg =
+          'Please ensure you are entering the same spelling as on your PAN card';
+        return checkValidityFromAPI(
+          activation.props.data,
+          'poi_verification_status',
+          'not_matched',
+          errMsg
+        );
+      },
+      _disabledWhen: isActivatedUnreg,
+    },
+  ],
+  ...AddressFields, // check ./AddressFieldsMap.js for address fields
   {
     label: 'CIN',
     name: 'company_cin',
@@ -402,62 +465,6 @@ const businessDetails = [
         Number(activation.props.data.business_type)
       ) !== -1,
   },
-  [
-    {
-      name: 'promoter_pan',
-      placeholder: 'PAN Number',
-      getPlaceholder: activation =>
-        isUnregisteredBusiness(activation)
-          ? 'Business owner’s PAN'
-          : 'PAN of one of the directors',
-      validator: function(value) {
-        return isUnregisteredBusiness(this)
-          ? validatePANCardUnregBiz(value)
-          : validatePANCard(value);
-      },
-      getLabel: activation =>
-        isUnregisteredBusiness(activation) ? 'PAN' : 'Authorised Signatory PAN',
-      _disabledWhen: isActivatedUnreg,
-      checkValidityFromAPI: activation => {
-        const errMsg =
-          'The number entered doesn’t exist in the PAN database. Please verify and enter again';
-        return checkValidityFromAPI(
-          activation.props.data,
-          'poi_verification_status',
-          'incorrect_details',
-          errMsg
-        );
-      },
-    },
-    {
-      getLabel: activation => {
-        return isUnregisteredBusiness(activation)
-          ? 'PAN Holder’s Name'
-          : 'PAN Owner’s Name';
-      },
-      name: 'promoter_pan_name',
-      placeholder: 'Name as per PAN',
-      description: activation =>
-        isUnregisteredBusiness(activation)
-          ? getPANDescription(activation.props.data)
-          : '',
-      _when: activation => {
-        return _showForIndiv(activation) || isL1Completed(activation); // always show for Unreg Biz. or show when L1Submitted in case of Reg. Biz
-      },
-      checkValidityFromAPI: activation => {
-        const errMsg =
-          'Please ensure you are entering the same spelling as on your PAN card';
-        return checkValidityFromAPI(
-          activation.props.data,
-          'poi_verification_status',
-          'not_matched',
-          errMsg
-        );
-      },
-      _disabledWhen: isActivatedUnreg,
-    },
-  ],
-  ...AddressFields, // check ./AddressFieldsMap.js for address fields
   [
     {
       _name: 'has_gstin',

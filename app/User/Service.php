@@ -976,6 +976,7 @@ class Service extends Base\Service
             'rx_ssl_cert_renew',
             'user-2fa',
             'rx_webhook_migration_april_alert',
+            'registered_onboarding_auto_kyc'
         ];
 
         $experimentsResults = $merchantService->getBulkTreatment($features);

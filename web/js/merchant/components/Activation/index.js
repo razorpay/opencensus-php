@@ -49,8 +49,9 @@ import User from 'merchant/models/User';
 
 import { showNotification } from 'merchant_common/reducers/notifications';
 import {
-  validatePANCardUnregBiz,
+  validatePersonalPAN,
   validateCompanyAB,
+  validateCompanyPAN,
 } from 'common/utils/validators';
 
 import {
@@ -63,6 +64,8 @@ import {
   doesHaveAdditionalDocs,
   getDefaultAdditionalDoc,
   getAdditionalDocOptions,
+  hasAPIL1Error,
+  displayCompanyPAN,
 } from './ActivationUtils';
 import QueryString from 'query-string';
 import { getNeedsClarificationTabsData } from './NeedsClarificationFormMap';
@@ -773,15 +776,21 @@ export default class ActivationWizard extends React.Component {
       this.state.dirty.business_name || this.props.data.business_name;
     const contactName =
       this.state.dirty.contact_name || this.props.data.contact_name;
+    const companyPAN =
+      this.state.dirty.company_pan || this.props.data.company_pan;
+    const isCompanyPANValid = displayCompanyPAN(this)
+      ? companyPAN && !validateCompanyPAN(companyPAN)
+      : true;
+    const isPromoterPANValid = promoterPan && !validatePersonalPAN(promoterPan);
+    const isCompanyNameValid = this.isUnregBiz
+      ? true
+      : !validateCompanyAB(businessName, contactName, showCompanyName);
 
     return (
       !hasSelectedBlacklistedCategory(this) &&
-      (this.isUnregBiz
-        ? promoterPan && !validatePANCardUnregBiz(promoterPan)
-        : true) &&
-      (this.isUnregBiz
-        ? true
-        : !validateCompanyAB(businessName, contactName, showCompanyName))
+      isPromoterPANValid &&
+      isCompanyPANValid &&
+      isCompanyNameValid
     );
   }
 
@@ -842,6 +851,7 @@ export default class ActivationWizard extends React.Component {
       submitted,
       international,
       poi_verification_status,
+      company_pan_verification_status,
       promoter_pan_name,
       promoter_pan,
       business_type,
@@ -856,6 +866,7 @@ export default class ActivationWizard extends React.Component {
       activation_flow,
       international,
       poi_verification_status,
+      company_pan_verification_status,
       promoter_pan,
       promoter_pan_name,
       business_type,
@@ -908,6 +919,7 @@ export default class ActivationWizard extends React.Component {
         activation_flow,
         business_type,
         poi_verification_status,
+        company_pan_verification_status,
         instantActivation,
       } = this.user;
       const {
@@ -921,6 +933,7 @@ export default class ActivationWizard extends React.Component {
         instantActivation,
         business_type,
         poi_verification_status,
+        company_pan_verification_status,
         showKYCDetailsModal,
         showPANStatusModal,
         showInstantActivationSuccessModal,
@@ -932,8 +945,11 @@ export default class ActivationWizard extends React.Component {
 
       this.setState({ callingAPI: false }, () => {
         if (
-          poi_verification_status != 'incorrect_details' &&
-          poi_verification_status != 'not_matched'
+          !hasAPIL1Error({
+            poi_verification_status,
+            company_pan_verification_status,
+            is_unreg: this.isUnregBiz,
+          })
         ) {
           return this.props.history.replace('/');
         }
@@ -969,11 +985,6 @@ export default class ActivationWizard extends React.Component {
 
     if (!Object.keys(reqData).length) {
       return; // Nothing changed on the currentActive Tab, although the data do exist in dirty
-    }
-
-    // If it is a registered biz then promoter_pan_name should not be sent
-    if (!this.isUnregBiz) {
-      delete reqData.promoter_pan_name;
     }
 
     return reqData;

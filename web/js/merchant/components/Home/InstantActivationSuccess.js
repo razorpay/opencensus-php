@@ -28,11 +28,16 @@ export default ({
           {content ? (
             <p>{content}</p>
           ) : (
-            <p>
-              Now you can start accepting payments from your customers. However,
-              your payments will be settled to your account only after KYC
-              verification.
-            </p>
+            <>
+              <p>
+                You can now start accepting payment by integrating with a
+                website/app or using other products.
+              </p>
+              <p>
+                However, payments will be settled to your account only after KYC
+                verification.
+              </p>
+            </>
           )}
           <button className="btn btn-primary" onClick={onGoToDashboard}>
             Go to Dashboard

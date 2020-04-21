@@ -50,6 +50,7 @@ export default class ActivationCard extends Component {
         activated,
         business_type,
         poi_verification_status,
+        isUnregisteredBusiness,
       } = nextProps,
       {
         isL1Submitted,
@@ -62,7 +63,7 @@ export default class ActivationCard extends Component {
 
     if (!isL1Submitted) {
       status = possibleStatuses.active;
-      if (poi_verification_status) {
+      if (poi_verification_status && isUnregisteredBusiness) {
         status = possibleStatuses.blocked;
         if (poi_verification_status == 'failed') {
           content = (

@@ -108,11 +108,31 @@ export function validateCompanyAB(value1 = '', value2 = '', isExpOn = false) {
     : false;
 }
 
-export function validatePANCardUnregBiz(value) {
+export function validatePersonalPAN(value, isUnregisteredBusiness) {
   if (validatePANCard(value)) {
     return validatePANCard(value);
   } else if (value && value[3] !== 'P' && value[3] !== 'p') {
-    return "The PAN entered is a business PAN. If you are a registered business, please change your business type in the 'Business Overview' tab.";
+    if (isUnregisteredBusiness) {
+      return "The PAN entered is a business PAN. If you are a registered business, please change your business type in the 'Business Overview' tab.";
+    } else {
+      return 'Invalid PAN format';
+    }
+  }
+}
+
+export function validateCompanyPAN(value) {
+  if (!value) {
+    return;
+  }
+  const panValidationError = validatePANCard(value);
+  if (panValidationError) {
+    return panValidationError;
+  } else if (
+    ['C', 'H', 'F', 'A', 'T', 'B', 'J', 'G', 'L'].indexOf(
+      value[3].toUpperCase()
+    ) === -1
+  ) {
+    return 'Invalid PAN format';
   }
 }
 

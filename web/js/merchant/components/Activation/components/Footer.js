@@ -14,14 +14,14 @@ const SaveAndNext = ({ next }) => (
   </Button.Primary>
 );
 
-const SubmitL1Form = ({ canSubmitL1Form, submitL1, isUnregBiz }) => (
+const SubmitL1Form = ({ canSubmitL1Form, submitL1 }) => (
   <AsyncBtn.Primary
     disabled={!canSubmitL1Form}
     onClick={submitL1}
-    pendingState={isUnregBiz ? 'Verifying' : 'Submitting'}
+    pendingState={'Verifying'}
     name="submit-and-verify"
   >
-    {isUnregBiz ? 'Submit and Verify' : 'Submit'}
+    {'Submit and Verify'}
   </AsyncBtn.Primary>
 );
 
