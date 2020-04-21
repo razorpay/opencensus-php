@@ -374,7 +374,7 @@ class BatchMicroService
             return $fetchResult;
         }
 
-        if ( (isset($batchResult['data']) == false) or ( $batchResult['data'] == null)) {
+        if ( (isset($batchResult['data']) == false) ) {
             $result['data'] = [];
             array_push($result['data'], $batchResult);
             $batchResult = $result;
