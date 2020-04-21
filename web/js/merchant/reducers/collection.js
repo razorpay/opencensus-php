@@ -18,7 +18,13 @@ import RegistrationLink from 'merchant/models/RegistrationLink';
 
 // useEntityReducer tells whether to use common reducer or entity-specific
 export const fetchAll = (params, Entity, namespace) => {
-  let entity = new Entity();
+  let entity;
+  if (typeof Entity === 'function') {
+    entity = new Entity();
+  } else {
+    entity = Entity;
+  }
+
   return {
     type: getActionName(namespace),
     payload: entity.fetchAll(params),

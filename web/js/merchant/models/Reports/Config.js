@@ -1,5 +1,5 @@
-import GenericEntity from '../GenericEntity';
+import BaseReportingEntity from './BaseReportingEntity';
 
-export default class ReportConfig extends GenericEntity {
+export default class ReportConfig extends BaseReportingEntity {
   resourceUrl = 'reporting/configs';
 }

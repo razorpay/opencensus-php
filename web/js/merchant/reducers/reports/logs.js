@@ -1,4 +1,4 @@
-import Log from 'merchant/models/Log';
+import Log from 'merchant/models/Reports/Log';
 import {
   listFetchSuccessState,
   getActionName as getFetchActionName,
@@ -60,7 +60,7 @@ const appendEntityIfNotDuplicated = (state, action) =>
     : appendEntityToList(state, action);
 
 export const fetchPartnerReportLogs = params =>
-  fetchAll(params, Log, PARTNER_LOGS);
+  fetchAll(params, new Log({ reportType: 'partner' }), PARTNER_LOGS);
 
 export const partnerLogListReducer = makeActionCollectionReducer(PARTNER_LOGS, {
   [`${partnerLogFetchAction}::PENDING`]: handleFetchLogsPending,
@@ -70,7 +70,8 @@ export const partnerLogListReducer = makeActionCollectionReducer(PARTNER_LOGS, {
 });
 
 export const fetchMerchantReportLogs = params =>
-  fetchAll(params, Log, MERCHANT_LOGS);
+  fetchAll(params, new Log({ reportType: 'merchant' }), MERCHANT_LOGS);
+
 export const merchantLogListReducer = makeActionCollectionReducer(
   MERCHANT_LOGS,
   {
@@ -85,7 +86,12 @@ export const merchantLogListReducer = makeActionCollectionReducer(
 // Actions
 export const loadMoreMerchantLogs = params => ({
   type: getLoadMoreActionName(MERCHANT_LOGS),
-  payload: new Log().fetchAll(params),
+  payload: new Log({ reportType: 'merchant' }).fetchAll(params),
+});
+
+export const loadMorePartnerLogs = params => ({
+  type: getLoadMoreActionName(PARTNER_LOGS),
+  payload: new Log({ reportType: 'partner' }).fetchAll(params),
 });
 
 const createLog = reportType => {

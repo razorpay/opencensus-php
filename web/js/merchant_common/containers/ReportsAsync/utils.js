@@ -30,7 +30,8 @@ export const isLogInProgress = logStatus =>
 export const getActualLogStatus = ({ status, fileId }) => {
   switch (status) {
     case 'created':
-      return status;
+    case 'processing':
+      return 'in-process';
     case 'processed':
       return fileId ? 'ready-for-download' : 'no-data';
     case 'failed':

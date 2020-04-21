@@ -108,6 +108,9 @@ export default class ReportHome extends React.PureComponent {
                     mode={otherProps.mode}
                     showSelectAccount={otherProps.showSelectAccount}
                     accounts={otherProps.accounts}
+                    onlyDailyOptionsInReferredAccounts={
+                      otherProps.onlyDailyOptionsInReferredAccounts
+                    }
                   />
                   <div class="m-t" />
                   <LogList

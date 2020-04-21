@@ -10,7 +10,7 @@ export default function LogStatus(props) {
 
 function renderActionBasedOnStatus({ actualStatus, ...props }) {
   switch (actualStatus) {
-    case 'created':
+    case 'in-process':
       return <p>Generating...</p>;
     case 'no-data':
       return <NoDataError />;

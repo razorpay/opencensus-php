@@ -14,6 +14,10 @@ import EmailReport from './EmailReport';
 
 @RTracking(() => window.rzpQ.component('GenerateReportPanel'))
 export default class GenerateReportPanel extends React.PureComponent {
+  static defaultProps = {
+    customConfigs: [],
+  };
+
   static getDerivedStateFromProps(nextProps, prevState) {
     const { accounts } = nextProps;
     const { selectedAccount } = prevState;
@@ -96,12 +100,23 @@ export default class GenerateReportPanel extends React.PureComponent {
   };
 
   render() {
-    const { configs, customConfigs, accounts, showSelectAccount } = this.props;
+    const {
+      configs,
+      customConfigs,
+      accounts,
+      showSelectAccount,
+      onlyDailyOptionsInReferredAccounts,
+    } = this.props;
     const { selectedConfig, dateRangeError, selectedAccount } = this.state;
     const allConfigs = [...configs.items, ...customConfigs];
 
     const isCustomConfig = (selectedConfig || {}).type === 'custom';
     const isFormDisabled = !selectedConfig;
+
+    const avlblPeriodOptions = getAvlblPeriodOptions({
+      onlyDailyOptionsInReferredAccounts,
+      selectedConfig,
+    });
 
     return configs.loading ? (
       <div className="page-spinner-container">
@@ -133,7 +148,7 @@ export default class GenerateReportPanel extends React.PureComponent {
             ))}
 
           <SelectPeriod
-            avlblPeriodOptions={defaultPeriodOptions}
+            avlblPeriodOptions={avlblPeriodOptions}
             ref={ref => (this.selectPeriod = ref)}
             isCustomConfig={isCustomConfig}
             isFormDisabled={isFormDisabled}
@@ -186,12 +201,29 @@ const defaultPeriodOptions = [
   { label: 'Custom', name: 'dateRange' },
 ];
 
+const dailyPeriodOptions = [
+  { label: 'Yesterday', name: 'yesterday' },
+  { label: 'Daily', name: 'daily' },
+];
+
 const marketplaceConfigTypes = [
   'transactions',
   'payments',
   'refunds',
   'settlements',
 ];
+
+function getAvlblPeriodOptions({
+  onlyDailyOptionsInReferredAccounts,
+  selectedConfig = {},
+}) {
+  const isReferredAccountsAll =
+    (selectedConfig.template || {}).referred_accounts === 'all';
+  if (onlyDailyOptionsInReferredAccounts && isReferredAccountsAll) {
+    return dailyPeriodOptions;
+  }
+  return defaultPeriodOptions;
+}
 
 function getDateRangeError(startAt, endAt) {
   const difference = endAt.diff(startAt, 'days');

@@ -71,7 +71,10 @@ import {
 
 import { teamReducer } from 'merchant/reducers/team';
 
-import { merchantReportsReducer } from 'merchant/reducers/reports/home';
+import {
+  merchantReportsReducer,
+  partnerReportsReducer,
+} from 'merchant/reducers/reports/home';
 
 import {
   subscriptionsReducer,
@@ -138,6 +141,7 @@ export default combineReducers({
   taxes: taxesReducer,
   reports: reportsReducer,
   merchantReports: merchantReportsReducer,
+  partnerReports: partnerReportsReducer,
   submerchants: submerchantsReducer,
   submerchant: submerchantReducer,
   commisions: commissionsReducer,
