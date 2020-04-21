@@ -7,6 +7,7 @@ export default ({
   displayText,
   terms,
   type,
+  isOnlyNoCostEmi,
 }) => {
   return (
     <React.Fragment>
@@ -39,26 +40,28 @@ export default ({
         required
         onChange={getFormOnChangeHandler()}
       />
-      <Input.Select
-        name="type"
-        label="Offer Type"
-        required
-        defaultValue={type}
-        options={[
-          { label: 'Please select', name: '' },
-          { label: 'Instant', name: 'instant' },
-          { label: 'Cashback', name: 'deferred' },
-          { label: 'Already Discounted', name: 'already_discounted' },
-        ]}
-        onChange={getFormOnChangeHandler('stateResetter')([
-          'discount_type',
-          'min_amount',
-        ])}
-        description={
-          type === 'deferred' &&
-          'Cashbacks need to be processed by the provider (Wallet providers, Banks etc). Please create Cashback Offers only if you have an agreement in place with them'
-        }
-      />
+      {!isOnlyNoCostEmi && (
+        <Input.Select
+          name="type"
+          label="Offer Type"
+          required
+          defaultValue={type}
+          options={[
+            { label: 'Please select', name: '' },
+            { label: 'Instant', name: 'instant' },
+            { label: 'Cashback', name: 'deferred' },
+            { label: 'Already Discounted', name: 'already_discounted' },
+          ]}
+          onChange={getFormOnChangeHandler('stateResetter')([
+            'discount_type',
+            'min_amount',
+          ])}
+          description={
+            type === 'deferred' &&
+            'Cashbacks need to be processed by the provider (Wallet providers, Banks etc). Please create Cashback Offers only if you have an agreement in place with them'
+          }
+        />
+      )}
     </React.Fragment>
   );
 };

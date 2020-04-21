@@ -40,7 +40,11 @@ export default class OfferIndex extends Component {
                         user.isAllowedEdit('offers')
                       }
                     >
-                      <NavLink class="btn btn-primary" exact to="/offers/new">
+                      <NavLink
+                        class="btn btn-primary"
+                        exact
+                        to="/offers/new?offer_creation_modal_type=basic"
+                      >
                         <i className="i i-plus" />
                         <span
                           onClick={() => {
@@ -52,6 +56,24 @@ export default class OfferIndex extends Component {
                           }}
                         >
                           Create New Offer
+                        </span>
+                      </NavLink>
+                      <NavLink
+                        class="btn btn-primary"
+                        exact
+                        to="/offers/new?offer_creation_modal_type=no-cost-emi"
+                      >
+                        <i className="i i-plus" />
+                        <span
+                          onClick={() => {
+                            this.props.tracking.trackEvent(
+                              window.rzpQ
+                                .merchantActions()
+                                .initiated('nocostemi_create')
+                            );
+                          }}
+                        >
+                          Create No Cost Emi
                         </span>
                       </NavLink>
                     </ShowWhen>

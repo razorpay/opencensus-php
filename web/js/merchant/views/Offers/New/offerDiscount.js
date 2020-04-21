@@ -11,6 +11,7 @@ export default ({
   currency,
   getFormOnChangeHandler,
   type,
+  isOnlyNoCostEmi,
 }) => {
   const fieldToResetOnMinAmountChange =
     discountType === 'no_cost_emi' ? ['emi_durations', 'issuer'] : [];
@@ -22,34 +23,29 @@ export default ({
         <p>The customer will pay the discounted price for the product</p>
       )}
       <div>
-        <Input.Select
-          name="discount_type"
-          class="Input--half"
-          label="Discount Type"
-          placeholder="Discount Type"
-          required
-          defaultValue={discountType}
-          options={
-            (type === 'instant' && [
+        {!isOnlyNoCostEmi && (
+          <Input.Select
+            name="discount_type"
+            class="Input--half"
+            label="Discount Type"
+            placeholder="Discount Type"
+            required
+            defaultValue={discountType}
+            options={[
               { label: 'Select Type', name: '' },
               { label: 'Flat', name: 'flat' },
               { label: 'Percentage', name: 'percent' },
-              { label: 'No Cost EMI', name: 'no_cost_emi' },
-            ]) || [
-              { label: 'Select Type', name: '' },
-              { label: 'Flat', name: 'flat' },
-              { label: 'Percentage', name: 'percent' },
-            ]
-          }
-          onChange={getFormOnChangeHandler('stateResetter')([
-            'flat_cashback',
-            'percent_rate',
-            'max_cashback',
-            'emi_durations',
-            'max_order_amount',
-          ])}
-          validator={getFormElementValidations('discount_type')}
-        />
+            ]}
+            onChange={getFormOnChangeHandler('stateResetter')([
+              'flat_cashback',
+              'percent_rate',
+              'max_cashback',
+              'emi_durations',
+              'max_order_amount',
+            ])}
+            validator={getFormElementValidations('discount_type')}
+          />
+        )}
         {discountType && (
           <Input
             label="Minimum Order amount"

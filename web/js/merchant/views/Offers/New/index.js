@@ -45,6 +45,8 @@ export default class CreateOfferWizard extends React.Component {
   };
   IS_MODAL_VIEW = (this.props.onClose && true) || false;
 
+  isOnlyNoCostEmi = false;
+
   tabsData = [
     {
       name: 'Description',
@@ -56,6 +58,7 @@ export default class CreateOfferWizard extends React.Component {
           terms={this.state.terms}
           getFormOnChangeHandler={this.getFormOnChangeHandler}
           type={this.state.type}
+          isOnlyNoCostEmi={this.isOnlyNoCostEmi}
         />
       ),
       getFieldsToBeValidated: () => {
@@ -76,6 +79,7 @@ export default class CreateOfferWizard extends React.Component {
           maxAmount={this.state.max_order_amount}
           currency={CURRENCY}
           type={this.state.type}
+          isOnlyNoCostEmi={this.isOnlyNoCostEmi}
         />
       ),
       getFieldsToBeValidated: () => {
@@ -433,7 +437,7 @@ export default class CreateOfferWizard extends React.Component {
                 this.state.creation_terms_accepted === 'false'
               }
             >
-              Create Offer
+              {this.isOnlyNoCostEmi ? 'Create No Cost EMI' : 'Create Offer'}
             </AsyncBtn.Primary>
           )}
         </footer>
@@ -534,6 +538,10 @@ export default class CreateOfferWizard extends React.Component {
   }
 
   onCreate = () => {
+    const creationEventToFire = this.isOnlyNoCostEmi
+      ? 'nocostemi_create'
+      : 'Offer_create';
+
     let form = this.tranformFormFields(this.state);
     let offer = new Offer(form);
     return offer
@@ -554,7 +562,7 @@ export default class CreateOfferWizard extends React.Component {
 
           //analytics event tracking
           this.props.tracking.trackEvent(
-            window.rzpQ.merchantActions().success('Offer_create', {
+            window.rzpQ.merchantActions().success(creationEventToFire, {
               offer_id: savedOffer.id,
             })
           );
@@ -571,7 +579,7 @@ export default class CreateOfferWizard extends React.Component {
         } else {
           //analytics event tracking
           this.props.tracking.trackEvent(
-            window.rzpQ.merchantActions().failed('Offer_create', {
+            window.rzpQ.merchantActions().failed(creationEventToFire, {
               error: resp.errors,
             })
           );
@@ -602,6 +610,29 @@ export default class CreateOfferWizard extends React.Component {
         });
       });
   };
+
+  setCurrentOfferCreationType(searchParams) {
+    const queryParams = new URLSearchParams(searchParams);
+    this.isOnlyNoCostEmi =
+      queryParams.get('offer_creation_modal_type') === 'no-cost-emi';
+
+    if (this.isOnlyNoCostEmi) {
+      this.setState({
+        type: 'instant',
+        discount_type: 'no_cost_emi',
+      });
+    }
+  }
+
+  componentWillReceiveProps(nextProps) {
+    if (nextProps.location.search !== this.props.location.search) {
+      this.setCurrentOfferCreationType(nextProps.location.search);
+    }
+  }
+
+  componentDidMount() {
+    this.setCurrentOfferCreationType(this.props.location.search);
+  }
 
   render() {
     const isModalView = this.props.onClose;
