@@ -2453,7 +2453,6 @@ class Gateway
             self::CARD_FSS,
             self::AXIS_MIGS,
             self::AMEX,
-            self::PAYSECURE,
             self::MPGS,
         ];
 
@@ -2474,6 +2473,7 @@ class Gateway
             self::MPI_ENSTAGE,
             self::PAYTM,
             self::AMEX,
+            self::PAYSECURE,
             self::ISG,
         ];
 
