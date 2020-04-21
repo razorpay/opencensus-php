@@ -868,12 +868,12 @@ export default class InvoicesNewContainer extends Component {
     const onSave = () => {
       this.props.closeModal();
 
-      this.trackInvoiceCreate('save_label');
+      this.trackCreateInvoice('save_label');
 
       this.getMerchantInfo();
     };
 
-    this.trackInvoiceCreate('change_label');
+    this.trackCreateInvoice('change_label');
 
     this.props.openModal({
       size: 'small',
@@ -918,13 +918,13 @@ export default class InvoicesNewContainer extends Component {
     const onSave = address => {
       // Select address.
       if (type === 'billing') {
-        this.trackInvoiceCreation('billing_save');
+        this.trackCreateInvoice('billing_save');
 
         this.selectBillingAddress(address);
       } else {
         this.selectShippingAddress(address);
 
-        this.trackInvoiceCreation('shipping_save');
+        this.trackCreateInvoice('shipping_save');
       }
 
       // Add address to master list.

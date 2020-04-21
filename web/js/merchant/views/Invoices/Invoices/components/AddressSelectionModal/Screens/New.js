@@ -217,7 +217,6 @@ export default class New extends Component {
   render() {
     const {
       header,
-      onClickClose,
       saveLabel,
       handleSubmit,
       change,
@@ -244,7 +243,7 @@ export default class New extends Component {
 
     return (
       <div id="add-address-modal">
-        <ModalHeader title={header} onCloseClick={onClickClose} />
+        <ModalHeader title={header} onCloseClick={this.onClickClose} />
 
         <div class="modal-body AddressSelectionModal">
           {!hideBack && (
