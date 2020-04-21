@@ -851,7 +851,7 @@ class Core extends Base\Core
     {
         $payload = [
             Entity::PARAMS   => [
-                Entity::MERCHANT_NAME  => $this->merchant->getDisplayNameElseName(),
+                Entity::MERCHANT_NAME  => $this->merchant->getBillingLabel(),
                 Entity::OTP            => $otp,
                 Entity::PAYOUT_PURPOSE => $payoutLink->getPurpose()
             ],

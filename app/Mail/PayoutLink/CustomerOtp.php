@@ -91,11 +91,9 @@ class CustomerOtp extends Mailable
 
         $payoutLink = $this->getPayoutLink();
 
-        $displayName = $merchant->getDisplayName() ? $merchant->getDisplayName() : $merchant->getName();
-
         $data = [
             'otp'                   => $this->otp,
-            'merchant_display_name' => $displayName,
+            'merchant_display_name' => $merchant->getBillingLabel(),
             'purpose'               => $payoutLink->getPurpose(),
             'logoUrl'               => $merchant->getFullLogoUrlWithSize(),
             'primary_color'         => $merchant->getBrandColorElseDefault(),

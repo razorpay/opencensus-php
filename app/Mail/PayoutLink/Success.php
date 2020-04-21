@@ -80,7 +80,7 @@ class Success extends Mailable
         $payoutLink = $this->getPayoutLink();
 
         $subject = sprintf(self::SUBJECT,
-                           $payoutLink->merchant->getDisplayNameElseName(),
+                           $payoutLink->merchant->getBillingLabel(),
                            $payoutLink->getPurpose()
         );
 
@@ -107,7 +107,7 @@ class Success extends Mailable
 
         $merchant = $payoutLink->merchant;
 
-        $displayName = $merchant->getDisplayNameElseName();
+        $displayName = $merchant->getBillingLabel();
 
         /** @var \RZP\Models\Vpa\Entity|\RZP\Models\BankAccount\Entity $account */
         $account = optional($payoutLink->fundAccount)->account;

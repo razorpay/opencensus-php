@@ -80,7 +80,7 @@ class SendLink extends Mailable
         $payoutLink = $this->getPayoutLink();
 
         $subject = sprintf(self::SUBJECT,
-                           $payoutLink->merchant->getDisplayNameElseName(),
+                           $payoutLink->merchant->getBillingLabel(),
                            $payoutLink->getPurpose()
         );
 
@@ -95,7 +95,7 @@ class SendLink extends Mailable
 
         $merchant = $payoutLink->merchant;
 
-        $displayName = $merchant->getDisplayNameElseName();
+        $displayName = $merchant->getBillingLabel();
 
         $data = [
             'billing_label'         => $displayName,
@@ -110,7 +110,6 @@ class SendLink extends Mailable
             'contact_email'         => $payoutLink->getContactEmail(),
             'contact_phone'         => $payoutLink->getContactPhoneNumber(),
         ];
-
 
         $this->with($data);
 

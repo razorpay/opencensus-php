@@ -73,7 +73,7 @@ class Failed extends Base
 
         $payload = [
             Entity::PARAMS   => [
-                'merchant_display_name' => $merchant->getDisplayNameElseName(),
+                'merchant_display_name' => $merchant->getBillingLabel(),
                 'purpose'               => $this->payoutLink->getPurpose(),
                 'short_url'             => $this->payoutLink->getShortUrl(),
                 'amount'                => $this->payoutLink->getFormattedAmount()

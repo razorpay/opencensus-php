@@ -75,7 +75,7 @@ class Success extends Base
 
         $payload = [
             Entity::PARAMS   => [
-                'merchant_display_name' => $merchant->getDisplayNameElseName(),
+                'merchant_display_name' => $merchant->getBillingLabel(),
                 'purpose'               => $this->payoutLink->getPurpose(),
                 'utr'                   => $this->payoutLink->payout()->getUtr(),
                 'amount'                => $this->payoutLink->getFormattedAmount()
