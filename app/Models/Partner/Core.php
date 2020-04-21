@@ -85,6 +85,20 @@ class Core extends Base\Core
                 ($partner->forceGreyListInternational() === true));
     }
 
+    public function isKycHandledBYPartner(Merchant\Entity $subMerchant)
+    {
+        $partners = (new Merchant\Core)->fetchAffiliatedPartners($subMerchant->getId());
+
+        $partner = $partners->filter(function(Merchant\Entity $partner) use ($subMerchant) {
+
+            return ($partner->isKycHandledByPartner() === true);
+
+        })->first();
+
+        return ((empty($partner) === false) and
+                ($partner->isKycHandledByPartner() === true));
+    }
+
     public function validateExternalIdForPartnerSubmerchant(Merchant\Entity $partner, string $externalId)
     {
         $merchantCore = new Merchant\Core;

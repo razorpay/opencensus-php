@@ -3162,11 +3162,40 @@ class Core extends Base\Core
 
     public function isAutoKycEnabled(Detail\Entity $merchantDetails, Entity $merchant): bool
     {
+        $isRazorpayOrgId = ($merchant->getOrgId() === Org::RAZORPAY_ORG_ID);
+
+        // if merchant belongs to some different org then don't to auto kyc
+        if ($isRazorpayOrgId === false)
+        {
+            return false;
+        }
+        // if merchant belongs to unregistered business , request is coming from dashboard and belongs to razorpay org
         if ($this->isUnRegisteredOnBoardingEnabled($merchant, $merchantDetails->isUnregisteredBusiness()) === true)
         {
             return true;
         }
 
+        // for other unregistered business don't do auto kyc
+        if ($merchantDetails->isUnregisteredBusiness() === true)
+        {
+            return false;
+        }
+
+        // in case of link account if kyc is handled by merchant then don't do auto kyc
+        $parentMerchant = $merchant->parent;
+
+        if ((empty($parentMerchant)) === false and ($parentMerchant->linkedAccountsRequireKyc() === false))
+        {
+            return false;
+        }
+
+        // if kyc is handled my partner then don't do auto kyc
+        if ((new Partner\Core)->isKycHandledBYPartner($merchant) === true)
+        {
+            return false;
+        }
+
+        // if razorx experiemnt is enabled for merchant
         if ($this->isRegisteredAutoKycBoardingEnabled($merchant->getId()) === true)
         {
             return true;

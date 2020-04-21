@@ -1544,4 +1544,79 @@ return [
             ],
         ],
     ],
+
+    'testCompanyPanVerificationBusinessNameUpdate' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/merchant/activation',
+            'content' => [
+                'business_name'    => 'Test123',
+            ],
+        ],
+        'response' => [
+            'content' => [
+
+            ],
+        ],
+    ],
+
+    'testCompanyPanVerificationCompanyPanUpdate' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/merchant/activation',
+            'content' => [
+                'company_pan'    => 'ABCPD1234J',
+            ],
+        ],
+        'response' => [
+            'content' => [
+
+            ],
+        ],
+    ],
+
+    'testPromoterPanVerificationPromoterPanNameUpdate' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/merchant/activation',
+            'content' => [
+                'promoter_pan_name' => 'Test123',
+            ],
+        ],
+        'response' => [
+            'content' => [
+
+            ],
+        ],
+    ],
+
+    'testPromoterPanVerificationPromoterPanUpdate' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/merchant/activation',
+            'content' => [
+                'promoter_pan' => 'ABCPD1234J',
+            ],
+        ],
+        'response' => [
+            'content' => [
+
+            ],
+        ],
+    ],
+
+    'testCanSubmitAutoKycVerificationStatusIncorrect' => [
+        'request'  => [
+            'content' => [
+                'submit' => true
+            ],
+            'url'     => '/merchant/activation',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'can_submit'   => false,
+            ],
+        ],
+    ],
 ];

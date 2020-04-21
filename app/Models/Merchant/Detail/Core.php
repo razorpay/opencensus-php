@@ -68,6 +68,11 @@ class Core extends Base\Core
 
         $merchantDetails->edit($input);
 
+        // do pan validation
+        $this->verifyPOIDetailsIfApplicable($merchantDetails, $merchant, $input);
+
+        $this->verifyCompanyPanDetailsIfApplicable($merchantDetails, $merchant, $input);
+
         return $this->repo
                     ->transactionOnLiveAndTest(
                         function () use (
@@ -434,11 +439,11 @@ class Core extends Base\Core
         $merchantDetails->edit($input, 'instant_activation');
 
         // do pan validation
-        $this->verifyPOIDetailsIfApplicable($merchantDetails, $merchant);
+
+        $this->verifyPOIDetailsIfApplicable($merchantDetails, $merchant, $input);
 
         // do business pan validation
-        $this->verifyCompanyPanDetailsIfApplicable($merchantDetails, $merchant);
-
+        $this->verifyCompanyPanDetailsIfApplicable($merchantDetails, $merchant, $input);
 
 
         return $this->repo->transactionOnLiveAndTest(function() use ($input, $merchantDetails, $merchant) {
@@ -498,8 +503,11 @@ class Core extends Base\Core
     {
         if (BusinessType::isUnregisteredBusiness($merchantDetails->getBusinessType()) === true)
         {
-            // in case of unregistered business if pan is verified then instantly activate merchant
-            (new Detail\ActivationFlow\Whitelist())->process($merchant);
+            if ($this->canProcessInstantActivation($merchantDetails) === true)
+            {
+                // in case of unregistered business if pan is verified then instantly activate merchant
+                (new Detail\ActivationFlow\Whitelist())->process($merchant);
+            }
         }
         else
         {
@@ -532,26 +540,31 @@ class Core extends Base\Core
 
             default :
 
-                $allowedPOIStatus        = [POIStatus::VERIFIED, POIStatus::FAILED, POIStatus::NOT_MATCHED];
-                $allowedCompanyPanStatus = [CompanyPanStatus::VERIFIED, CompanyPanStatus::FAILED, CompanyPanStatus::NOT_MATCHED];
-
-                return ((in_array($merchantDetails->getPoiVerificationStatus(), $allowedPOIStatus) === true) and
-                        (in_array($merchantDetails->getCompanyPanVerificationStatus(), $allowedCompanyPanStatus) === true));
+                return (new FormSubmissionValidStatusesMap())->isDocumentsStatusValidForFormSubmission(
+                        $merchantDetails,
+                        FormSubmissionValidStatusesMap::DOCUMENT_LIST_FOR_L1
+                    ) === true;
         }
     }
 
     /**
      * @param Entity          $merchantDetails
      * @param Merchant\Entity $merchant
+     * @param array           $input
      */
-    protected function verifyPOIDetailsIfApplicable(Entity $merchantDetails, Merchant\Entity $merchant)
+    protected function verifyPOIDetailsIfApplicable(Entity $merchantDetails, Merchant\Entity $merchant, array $input)
     {
-        if (empty($merchantDetails->getPromoterPan()) === true)
+
+        if ((new Merchant\Core())->isAutoKycEnabled($merchantDetails, $merchant) === false)
         {
+            $merchantDetails->setPoiVerificationStatus(null);
+
             return;
         }
 
-        if ((new Merchant\Core())->isAutoKycEnabled($merchantDetails, $merchant) === false)
+        $fields = [Detail\Entity::PROMOTER_PAN, Detail\Entity::PROMOTER_PAN_NAME];
+
+        if ($this->checkFieldsUpdation($fields, $input, $merchant->getId()) === false)
         {
             return;
         }
@@ -586,21 +599,28 @@ class Core extends Base\Core
     /**
      * @param Entity          $merchantDetails
      * @param Merchant\Entity $merchant
+     * @param array           $input
      */
-    protected function verifyCompanyPanDetailsIfApplicable(Entity $merchantDetails, Merchant\Entity $merchant)
+    protected function verifyCompanyPanDetailsIfApplicable(Entity $merchantDetails, Merchant\Entity $merchant, array $input)
     {
-        if (empty($merchantDetails->getPan()) === true)
-        {
-            return;
-        }
-
         // For handling business type switch
         if (BusinessType::isCompanyPanEnableBusinessTypes($merchantDetails->getBusinessTypeValue()) === false)
         {
             $merchantDetails->setCompanyPanVerificationStatus(null);
+
+            return;
         }
 
         if ((new Merchant\Core())->isAutoKycEnabled($merchantDetails, $merchant) === false)
+        {
+            $merchantDetails->setCompanyPanVerificationStatus(null);
+
+            return;
+        }
+
+        $fields = [Detail\Entity::COMPANY_PAN, Detail\Entity::BUSINESS_NAME];
+
+        if ($this->checkFieldsUpdation($fields, $input, $merchant->getId()) === false)
         {
             return;
         }
@@ -1504,7 +1524,12 @@ class Core extends Base\Core
             $documentsResponse,
             $requiredFields);
 
-        if (count($requiredFields) > 0)
+        $isAutoKycDocumentsVerificationStatusAllowed = (new FormSubmissionValidStatusesMap())->isDocumentsStatusValidForFormSubmission(
+            $merchantDetails,
+            FormSubmissionValidStatusesMap::DOCUMENT_LIST_L2);
+
+        if (count($requiredFields) > 0 or
+            $isAutoKycDocumentsVerificationStatusAllowed === false)
         {
             $remainingFields = count($requiredFields);
 
@@ -2139,5 +2164,29 @@ class Core extends Base\Core
         });
 
         return $merchantDetails;
+    }
+
+    /**
+     * this function takes key of the fields and return true if that fields was updated else false
+     *
+     * @param array  $fields
+     * @param array  $input
+     * @param string $merchantId
+     *
+     * @return bool
+     */
+    protected function checkFieldsUpdation(array $fields, array $input, string $merchantId)
+    {
+        $merchantDetails = $this->repo->merchant_detail->findByPublicId($merchantId);
+
+        foreach ($fields as $field)
+        {
+            if ((isset($input[$field]) === true) and ($merchantDetails->getAttribute($field) !== $input[$field]))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

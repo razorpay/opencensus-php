@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\Merchant;
 
 use DB;
 use Mail;
+use Config;
 
 use RZP\Constants;
 use RZP\Constants\Mode;
@@ -1095,7 +1096,7 @@ class MerchantDetailTest extends OAuthTestCase
         $this->testFileUploadSyncInDetailAndDocumentTable();
 
         $merchantDocumentEntry = $this->getLastEntity('merchant_document', true, 'test');
-        
+
         $this->assertEquals($merchantDocumentEntry['source'], Source::UFH);
     }
 
@@ -1416,5 +1417,204 @@ class MerchantDetailTest extends OAuthTestCase
         $this->ba->proxyAuth('rzp_test_' . $merchant['id'], $user->getId());
 
         $this->startTest();
+    }
+
+    public function testCompanyPanVerificationBusinessNameUpdateSuccess()
+    {
+        $test = 'testCompanyPanVerificationBusinessNameUpdate';
+
+        $data = [
+            'mock_status'                  => 'success',
+            'previous_verification_status' => 'failed',
+            'new_verification_status'      => 'verified',
+            'business_name'                => 'xyz',
+        ];
+
+        $this->companyPanVerificationAutoKyc($test, $data);
+    }
+
+    public function testCompanyPanVerificationBusinessNameUpdateFailed()
+    {
+        $test = 'testCompanyPanVerificationBusinessNameUpdate';
+
+        $data = [
+            'mock_status'                  => 'failure',
+            'previous_verification_status' => 'verified',
+            'new_verification_status'      => 'failed',
+            'business_name'                => 'xyz',
+        ];
+
+        $this->companyPanVerificationAutoKyc($test, $data);
+    }
+
+    public function testCompanyPanVerificationCompanyPanUpdateSuccess()
+    {
+        $test = 'testCompanyPanVerificationCompanyPanUpdate';
+
+        $data = [
+            'mock_status'                  => 'success',
+            'previous_verification_status' => 'failed',
+            'new_verification_status'      => 'verified',
+            'company_pan'                  => 'AAAPA1234J',
+        ];
+
+        $this->companyPanVerificationAutoKyc($test, $data);
+    }
+
+    public function testCompanyPanVerificationCompanyPanUpdateFailed()
+    {
+        $test = 'testCompanyPanVerificationCompanyPanUpdate';
+
+        $data = [
+            'mock_status'                  => 'failure',
+            'previous_verification_status' => 'verified',
+            'new_verification_status'      => 'failed',
+            'company_pan'                  => 'AAAPA1234J',
+        ];
+
+        $this->companyPanVerificationAutoKyc($test, $data);
+    }
+
+    protected function companyPanVerificationAutoKyc(string $test, array $data)
+    {
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id'                     => $merchantId,
+            'company_pan_verification_status' => $data['previous_verification_status'],
+            'business_name'                   => $data['business_name'] ?? 'Test123',
+            'company_pan'                     => 'AAAPA1234J',
+            'business_type'                   => '4',
+        ]);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId);
+
+        Config::set('applications.kyc.company_pan_authentication', $data['mock_status']);
+
+        Config::set('applications.kyc.pan_authentication', $data['mock_status']);
+
+        Config::set('applications.kyc.mock', true);
+
+        $this->mockRazorX($test, 'registered_onboarding_auto_kyc', 'on', $merchantId);
+
+        $testData = $this->testData[$test];
+
+        $this->startTest($testData);
+
+        $merchantDetails = $this->getDbEntityById('merchant_detail', $merchantId);
+
+        $this->assertEquals($merchantDetails[Entity::COMPANY_PAN_VERIFICATION_STATUS], $data['new_verification_status']);
+    }
+
+    public function testPromoterPanVerificationPromoterPanNameUpdateSuccess()
+    {
+        $test = 'testPromoterPanVerificationPromoterPanNameUpdate';
+
+        $data = [
+            'mock_status'                  => 'success',
+            'previous_verification_status' => 'failed',
+            'new_verification_status'      => 'verified',
+            'promoter_pan_name'            => 'xyz',
+        ];
+
+        $this->PromoterPanVerificationAutoKyc($test, $data);
+    }
+
+    public function testPromoterPanVerificationPromoterPanNameUpdateFailed()
+    {
+        $test = 'testPromoterPanVerificationPromoterPanNameUpdate';
+
+        $data = [
+            'mock_status'                  => 'failure',
+            'previous_verification_status' => 'verified',
+            'new_verification_status'      => 'failed',
+            'promoter_pan_name'            => 'xyz',
+        ];
+
+        $this->PromoterPanVerificationAutoKyc($test, $data);
+    }
+
+    public function testPromoterPanVerificationPromoterPanUpdateSuccess()
+    {
+        $test = 'testPromoterPanVerificationPromoterPanUpdate';
+
+        $data = [
+            'mock_status'                  => 'success',
+            'previous_verification_status' => 'failed',
+            'new_verification_status'      => 'verified',
+        ];
+
+        $this->PromoterPanVerificationAutoKyc($test, $data);
+    }
+
+    public function testPromoterPanVerificationPromoterPanUpdateFailed()
+    {
+        $test = 'testPromoterPanVerificationPromoterPanUpdate';
+
+        $data = [
+            'mock_status'                  => 'failure',
+            'previous_verification_status' => 'verified',
+            'new_verification_status'      => 'failed',
+        ];
+
+        $this->PromoterPanVerificationAutoKyc($test, $data);
+    }
+
+    protected function PromoterPanVerificationAutoKyc(string $test, array $data)
+    {
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id'             => $merchantId,
+            'poi_verification_status' => $data['previous_verification_status'],
+            'promoter_pan_name'       => $data['promoter_pan_name'] ?? 'Test123',
+            'promoter_pan'            => 'AAAPA1234J',
+            'business_type'           => '4',
+        ]);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId);
+
+        Config::set('applications.kyc.pan_authentication', $data['mock_status']);
+
+        Config::set('applications.kyc.mock', true);
+
+        $this->mockRazorX($test, 'registered_onboarding_auto_kyc', 'on', $merchantId);
+
+        $testData = $this->testData[$test];
+
+        $this->runRequestResponseFlow($testData);
+
+        $merchantDetails = $this->getDbEntityById('merchant_detail', $merchantId);
+
+        $this->assertEquals($merchantDetails[Entity::POI_VERIFICATION_STATUS], $data['new_verification_status']);
+    }
+
+    public function testCanSubmitAutoKycVerificationStatusIncorrect()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields', [
+            'poi_verification_status'         => 'incorrect_details',
+            'company_pan_verification_status' => 'verified',
+            'business_type'                   => '4'
+        ]);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id']);
+
+        $this->mockRazorX(__FUNCTION__, 'registered_onboarding_auto_kyc', 'on', $merchantDetail['merchant_id']);
+
+        $this->startTest();
+    }
+
+    public function testCanSubmitAutoKycVerificationStatusCorrectDetails()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields',[
+            'poi_verification_status' => 'failed',
+            'company_pan_verification_status' => 'verified']);
+
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id']);
+
+        $this->mockRazorX(__FUNCTION__, 'registered_onboarding_auto_kyc', 'on', $merchantDetail['merchant_id']);
+
+        $this->startTest($this->testData['testSubmit']);
     }
 }

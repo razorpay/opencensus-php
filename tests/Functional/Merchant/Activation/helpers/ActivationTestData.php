@@ -1512,7 +1512,7 @@ return [
                 'business_category'           => 'ecommerce',
                 'business_subcategory'        => 'fashion_and_lifestyle',
                 'promoter_pan'                => 'ABCDE0000Z',
-                'promoter_pan_name'           => 'promoter pan name',
+                'promoter_pan_name'           => 'test name',
                 'business_name'               => 'business_name',
                 'business_dba'                => 'tsest123',
                 'business_type'               => 11,

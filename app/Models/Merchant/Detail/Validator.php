@@ -441,17 +441,6 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_BUSINESS_NAME_REQUIRED);
         }
-
-        if ((empty($input[Entity::COMPANY_PAN])) === false and
-            (BusinessType::isCompanyPanEnableBusinessTypes($input[Entity::BUSINESS_TYPE]) === false))
-        {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_EXTRA_FIELDS_PRESENT_IN_INPUT,
-                                                    Entity::COMPANY_PAN,
-                                                    [
-                                                        Entity::COMPANY_PAN   => $input[Entity::COMPANY_PAN],
-                                                        Entity::BUSINESS_TYPE => $input[Entity::BUSINESS_TYPE]
-                                                    ]);
-        }
     }
 
     protected function validateUnregisteredBusinessRules(array $input)
