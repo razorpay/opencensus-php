@@ -68,14 +68,6 @@ class AuthSelector extends Base\Core
 
         $verbose = $this->isVerboseLogEnabled();
 
-        $payment = $this->input['payment'];
-
-        if ( ($this->isEnvironmentProduction() === true) && ($this->isLiveMode() === true) &&
-            ($this->app->razorx->getTreatment($payment->getId(), 'authentication_logs_api', $this->mode) === 'on'))
-        {
-            $verbose = true;
-        }
-
         $this->traceAuthTerminals($applicableTerminals, 'Auth terminals via auth', $verbose);
 
         $this->input['auths'] = array_pluck($applicableTerminals, 'auth_type');
@@ -85,6 +77,9 @@ class AuthSelector extends Base\Core
         {
             return (new Rule\Core)->fetchApplicableAuthenticationRulesForPayment($this->input);
         });
+
+        // ToDo switch off verbose
+        $verbose = true;
 
         $applicableTerminals = $this->filterTerminals($applicableTerminals, $applicableRules, $verbose);
 
