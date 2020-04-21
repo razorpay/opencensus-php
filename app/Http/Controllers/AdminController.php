@@ -366,6 +366,14 @@ class AdminController extends Controller
 
         return ApiResponse::json([]);
     }
+    public function updateMerchantPocWithTimeStamp()
+    {
+        $input = Request::all();
+
+        $this->service()->updateMerchantPocWithTimeStamp($input);
+
+        return ApiResponse::json([]);
+    }
 
     public function unclaimedMerchantPoc()
     {

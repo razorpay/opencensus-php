@@ -3,16 +3,16 @@
 namespace RZP\Services;
 
 use Requests;
-use Requests_Response;
-use Requests_Exception;
-use Razorpay\Trace\Logger as Trace;
 
 use RZP\Exception;
+use Carbon\Carbon;
+use Requests_Response;
+use Requests_Exception;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Http\RequestHeader;
 use RZP\Jobs\SalesforceRequestJob;
-
+use Razorpay\Trace\Logger as Trace;
 
 class SalesForceClient
 {
@@ -171,11 +171,18 @@ class SalesForceClient
         }
     }
 
-    public function fetchAccountDetails($nextUrl = '')
+    public function fetchAccountDetails($nextUrl = '', $timeStamp = 0, $timeBased = false)
     {
         $accessToken = $this->fetchAccessToken();
 
-        $url = $this->generateUrlForAccountFetch($nextUrl);
+        if ($timeStamp > 0 or $timeBased)
+        {
+            $url = $this->generateUrlForAccountWithTimeStampFetch($timeStamp);
+        }
+        else
+        {
+            $url = $this->generateUrlForAccountFetch($nextUrl);
+        }
 
         $request = [
             'url'     => $url,
@@ -235,6 +242,22 @@ class SalesForceClient
         }
 
         return $this->baseUrl . '/services/data/v34.0/query?q=select Account.Merchant_ID__c, Account.Owner.Email, Owner_Role__c, Managers_in_role_hierarchy__c from Account where Owner_Role__c != null AND Merchant_ID__c != null AND ((NOT Website like \'%mswipe%\') OR (Transacting__c = true))';
+    }
+
+    protected function generateUrlForAccountWithTimeStampFetch(int $timeStamp = 0)
+    {
+        if ($timeStamp <= 0)
+        {
+            $timeStamp = Carbon::now('Asia/Kolkata')->timestamp ;
+        }
+
+        $timeStamp = $timeStamp - 7200;
+
+        $dateTime = Carbon::createFromTimestamp($timeStamp)->format('yy-m-d\Th:i:s.u');
+
+        $timeFormatString = $dateTime . '%2B05:30';
+
+        return $this->baseUrl . '/services/data/v34.0/query?q=select Account.Merchant_ID__c, Account.Owner.Email,Owner_Role__c, Managers_in_role_hierarchy__c, MRH_Date__c from Account where Owner_Role__c != null AND Merchant_ID__c != null AND ((NOT Website like \'%mswipe%\') OR (Transacting__c = true)) and MRH_Date__c >' . $timeFormatString;
     }
 
     protected function generateUrl()

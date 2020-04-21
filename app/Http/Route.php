@@ -839,8 +839,9 @@ final class Route
         'group_delete'                             => ['delete',   'groups/{id}',                                    'OrganizationController@deleteGroup'                                ],
         'admin_lock_old_accounts'                  => ['post',     'admins/lock_accounts',                           'OrganizationController@postLockBulkAccounts'                       ],
         'terminal_bank_bulk'                       => ['put',      'terminals/banks/bulk',                           'TerminalController@updateTerminalsBank'                            ],
-        'merchant_poc_update'                      => ['post',      'admin/poc_update',                              'AdminController@updateMerchantPoc'                                 ],
-        'unclaimed_merchant_poc_update'            => ['post',      'admin/unclaimed_poc_update',                    'AdminController@unclaimedMerchantPoc'                              ],
+        'merchant_poc_update'                      => ['post',     'admin/poc_update',                               'AdminController@updateMerchantPoc'                                 ],
+        'merchant_poc_update_with_time'            => ['post',     'admin/poc_update_with_time',                     'AdminController@updateMerchantPocWithTimeStamp'                    ],
+        'unclaimed_merchant_poc_update'            => ['post',     'admin/unclaimed_poc_update',                     'AdminController@unclaimedMerchantPoc'                              ],
 
         // Permission can only be created by certain organizations.
         'permission_create'                        => ['post',     'permissions',                                    'OrganizationController@createPermission'                           ],
@@ -2168,6 +2169,7 @@ final class Route
         'transaction_settled_data_fix',
         'banking_account_gateway_balance_fetch',
         'merchant_poc_update',
+        'merchant_poc_update_with_time',
         'unclaimed_merchant_poc_update',
         'internal_merchant_fetch',
         'terminal_migrate_cron',
@@ -3680,6 +3682,7 @@ final class Route
         'subscription_registration_cancel_links_batch'      => Permission::CANCEL_BATCH,
 
         'unclaimed_merchant_poc_update'                     => '*',
+        'merchant_poc_update_with_time'                     => '*',
         'merchant_poc_update'                               => '*',
 
         'fetch_merchant_balance_configs'                    => '*',
@@ -4136,6 +4139,7 @@ final class Route
             'transaction_settled_data_fix',
             'banking_account_gateway_balance_fetch',
             'merchant_poc_update',
+            'merchant_poc_update_with_time',
             'unclaimed_merchant_poc_update',
             'terminal_migrate_cron',
             'virtual_account_batch_migrate_yesbank',

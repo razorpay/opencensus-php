@@ -1044,6 +1044,8 @@ class Service extends Base\Service
      */
     public function merchantPocUpdateOperation(array $input, array &$currentSmeAdminIds, array &$currentClaimedMerchantsIds)
     {
+        (new Validator)->validateInput('sf_poc_data', $input);
+
         foreach ($input['records'] as $key => $value)
         {
             try
@@ -1089,6 +1091,43 @@ class Service extends Base\Service
     }
 
     /**
+     * @param array $input
+     * @param array $currentSmeAdminIds
+     * @param array $currentClaimedMerchantsIds
+     * @param int   $timeStamp
+     * @param bool  $timeBased
+     *
+     * Either Fetch SF data from client or use passed data while testing
+     */
+    private function fetchAndDispatchPocOperation(array &$input, array &$currentSmeAdminIds, array &$currentClaimedMerchantsIds, int $timeStamp = 0, bool $timeBased = false)
+    {
+        if (empty($input) === true)
+        {
+            if ($timeStamp > 0 or $timeBased)
+            {
+                $input = $this->app->salesforce->fetchAccountDetails($nextUrl = '', $timeStamp, $timeBased);
+            }
+            else
+            {
+                $input = $this->app->salesforce->fetchAccountDetails();
+            }
+
+            $this->merchantPocUpdateOperation($input, $currentSmeAdminIds, $currentClaimedMerchantsIds);
+
+            while ($input['done'] === false)
+            {
+                $input = $this->app->salesforce->fetchAccountDetails($input['nextRecordsUrl']);
+
+                $this->merchantPocUpdateOperation($input, $currentSmeAdminIds, $currentClaimedMerchantsIds);
+            }
+        }
+        else
+        {
+            $this->merchantPocUpdateOperation($input, $currentSmeAdminIds, $currentClaimedMerchantsIds);
+        }
+    }
+
+    /**
      * @param $input
      *
      * @throws \Throwable
@@ -1110,29 +1149,7 @@ class Service extends Base\Service
                                      ->pluck('entity_id')
                                      ->toArray();
 
-        if (empty($input) === true)
-        {
-            $input = $this->app->salesforce->fetchAccountDetails();
-
-            (new Validator)->validateInput('sf_poc_data', $input);
-
-            $this->merchantPocUpdateOperation($input, $currentSmeAdminIds, $currentClaimedMerchantsIds);
-
-            while ($input['done'] === false)
-            {
-                $input = $this->app->salesforce->fetchAccountDetails($input['nextRecordsUrl']);
-
-                (new Validator)->validateInput('sf_poc_data', $input);
-
-                $this->merchantPocUpdateOperation($input, $currentSmeAdminIds, $currentClaimedMerchantsIds);
-            }
-        }
-        else
-        {
-            (new Validator)->validateInput('sf_poc_data', $input);
-
-            $this->merchantPocUpdateOperation($input, $currentSmeAdminIds, $currentClaimedMerchantsIds);
-        }
+        $this->fetchAndDispatchPocOperation($input, $currentSmeAdminIds, $currentClaimedMerchantsIds);
 
         $historicalClaimedMerchantIds = $this->repo->merchant->fetchHistoricalClaimedMerchantIds($this->mode);
 
@@ -1191,4 +1208,25 @@ class Service extends Base\Service
 
         return [];
     }
+
+
+    public function updateMerchantPocWithTimeStamp(array $input = [])
+    {
+        $timeStamp = $input['timeStamp'] ?? 0;
+
+        unset($input['timeStamp']);
+
+        RuntimeManager::setMemoryLimit('2048M');
+
+        RuntimeManager::setTimeLimit(20000);
+
+        $currentClaimedMerchantsIds = [];
+
+        $currentSmeAdminIds = [];
+
+        $this->fetchAndDispatchPocOperation($input, $currentSmeAdminIds, $currentClaimedMerchantsIds, $timeStamp, true);
+
+        EsSync::dispatch($this->mode, EsRepository::UPDATE, Entity::MERCHANT, array_unique($currentClaimedMerchantsIds));
+    }
+
 }

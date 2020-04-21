@@ -8,7 +8,7 @@ use RZP\Services\SalesForceClient as BaseSalesForceClient;
 
 class SalesForceClient extends BaseSalesForceClient
 {
-    public function fetchAccountDetails($input = '')
+    public function fetchAccountDetails( $input = '', $timeStamp = 0, $timeBased = false)
     {
         return $input;
     }

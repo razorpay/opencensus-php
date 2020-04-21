@@ -49,6 +49,7 @@ class Validator extends Base\Validator
         'Owner.Email'                   => 'required|email',
         'Owner_Role__c'                 => 'required|string',
         'Managers_In_Role_Hierarchy__c' => 'sometimes|string|custom|nullable',
+        'MRH_Date__c'                   => 'sometimes|string',
     ];
 
     protected static $setConfigKeysRules = [
