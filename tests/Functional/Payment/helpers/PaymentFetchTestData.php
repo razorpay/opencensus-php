@@ -506,25 +506,4 @@ return [
             'internal_error_code'   => ErrorCode::BAD_REQUEST_INVALID_ID,
         ],
     ],
-
-    'testPrivateAuthPaymentFetchFeeBearerAttribute' => [
-        'request' => [
-            'url'     => '/payments/',
-            'method'  => 'GET',
-        ],
-        'response' => [
-            'content' => [
-                ],
-        ],
-    ],
-    'testProxyAuthPaymentFetchFeeBearerAttribute' => [
-        'request' => [
-            'url'     => '/payments/',
-            'method'  => 'GET',
-        ],
-        'response' => [
-            'content' => [
-            ],
-        ],
-    ],
 ];
