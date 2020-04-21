@@ -215,6 +215,10 @@ export default class CreateNewContainer extends React.Component {
 
     const self = this;
 
+    const timestamp = Date.now();
+
+    this.UUID = `payment_link_creation_${timestamp}`;
+
     defaultFieldProps.call(this, FORM_FIELDS.content); // Set the default props for fields of all tabs in Wizard
 
     this.state = {
@@ -257,6 +261,7 @@ export default class CreateNewContainer extends React.Component {
         ...options,
         origin: 'dashboard',
         clone: this.isIntentDuplicate ? 1 : 0,
+        uuid: this.UUID,
       })
     );
   };
