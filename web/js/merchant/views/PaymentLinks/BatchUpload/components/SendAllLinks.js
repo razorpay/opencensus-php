@@ -39,7 +39,9 @@ export default class SendAllLinksModal extends Component {
         this.props.fetchAll({
           skip: 0,
           count: 25,
-          type: 'payment_link',
+          type: this.props.user.isPaymentlinksV2Enabled
+            ? 'payment_link_v2'
+            : 'payment_link',
         });
       })
       .catch(({ errors }) => {

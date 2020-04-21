@@ -8,10 +8,7 @@ import fetchPaymentMethods from 'merchant/utils/fetchPaymentMethods';
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import { luminateRow } from 'merchant/reducers/app';
 import { showNotification } from 'merchant_common/reducers/notifications';
-import {
-  saveInvoice,
-  updatePLInReduxList,
-} from 'merchant/reducers/invoices/list';
+import { saveInvoice } from 'merchant/reducers/invoices/list';
 import { createRegistrationLink } from 'merchant/reducers/registration_link';
 
 import Form from 'common/new-ui/Form';
@@ -85,7 +82,6 @@ let DEFAULT_FIRST_CHARGE = 0;
   openModal,
   closeModal,
   saveInvoice,
-  updatePLInReduxList,
   showNotification,
   luminateRow,
   createRegistrationLink,

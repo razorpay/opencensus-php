@@ -40,7 +40,7 @@ import {
 export default props => {
   let {
     user,
-    invoice,
+    paymentlink,
     isLoading,
     statusMsg,
     nextReminders,
@@ -52,28 +52,33 @@ export default props => {
     isPaymentLinksRemindersEnabled,
   } = props;
 
-  let status = invoice.status;
+  let status = paymentlink.status ? paymentlink.status.toLowerCase() : null;
   const isDraft = status === 'draft';
-  const isIssued = status === 'issued';
+  const isIssued =
+    status && ['issued', 'created'].indexOf(status.toLowerCase()) > -1;
   const isPaid = status === 'paid';
   const isPartiallyPaid = status === 'partially_paid';
   const isCancelled = status === 'cancelled';
   const isExpired = status === 'expired';
 
   let isSmsOrEmailSent =
-    invoice.sms_status === 'sent' || invoice.email_status === 'sent';
+    paymentlink.sms_status === 'sent' || paymentlink.email_status === 'sent';
 
   const isRemindersEnabled =
-    invoice.reminder_status &&
+    paymentlink.reminder_status &&
     !(
-      invoice.reminder_status === 'disabled' ||
-      invoice.reminder_status === 'failed'
+      paymentlink.reminder_status === 'disabled' ||
+      paymentlink.reminder_status === 'failed'
     );
 
   const isPaymentLinkClosed = isPaid || isCancelled || isExpired;
 
   const isContactDetailsAvl =
-    invoice.customer && (invoice.customer.email || invoice.customer.contact);
+    paymentlink.customer_details &&
+    !!(
+      paymentlink.customer_details.customer_email ||
+      paymentlink.customer_details.customer_contact
+    );
 
   return (
     <div class="content-wrapper content-sm txn-details">
@@ -85,20 +90,23 @@ export default props => {
         <div class="panel panel-default SliderPanel">
           <div class="panel-heading">
             <i class="i i-link text-primary icon--formal" />{' '}
-            <strong>{invoice.id}</strong>
+            <strong>{paymentlink.id}</strong>
             <div class="btn-toolbar pull-right">
               <NavLink
                 onClick={trackClickDuplicatePaymentLink}
                 class="btn Button--primary--invert"
-                to={`/paymentlinks/new?duplicate_id=${invoice.id}`}
+                to={`/paymentlinks/new?duplicate_id=${paymentlink.id}`}
               >
                 <i class="i i-copy" />
                 <Tooltip theme="dark">Duplicate Payment Link</Tooltip>
               </NavLink>
               {(isRoleAllowedEdit || user.role === rolesList.RBL_AGENT) &&
-                invoice.customer_id &&
+                isContactDetailsAvl &&
                 (isDraft || isIssued || isPartiallyPaid) && (
-                  <button class="btn Button--primary" onClick={props.onIssue}>
+                  <button
+                    class="btn Button--primary"
+                    onClick={props.notifyCustomer}
+                  >
                     <Tooltip theme="dark">
                       {isSmsOrEmailSent ? 'Resend Link' : 'Send Link'}
                     </Tooltip>
@@ -110,27 +118,25 @@ export default props => {
           </div>
 
           <div class="SliderPanel__Body">
-            {invoice.type === 'invoice' && (
-              <Banner cta="View Invoice" ctaUrl={'/invoices/' + invoice.id}>
-                <span>
-                  Following is the summary of the invoice. See invoice to view
-                  all details.
-                </span>
-              </Banner>
-            )}
             <div class="panel-body">
               <div class="list-group details-row-container">
                 <EntityDetailRow
                   label="Payment For"
                   pairClass="description"
-                  value={invoice.description || '--'}
+                  value={paymentlink.description || '--'}
                 />
 
                 <EntityDetailRow
                   label="Status"
                   value={() => (
                     <div>
-                      <InvoiceStatusLabel status={invoice.status} />
+                      <InvoiceStatusLabel
+                        status={
+                          paymentlink.status
+                            ? paymentlink.status.toLowerCase()
+                            : null
+                        }
+                      />
                       {isRoleAllowedEdit &&
                         isIssued && (
                           <Button.Transparent
@@ -147,7 +153,7 @@ export default props => {
 
                 <React.Fragment>
                   {do {
-                    const isPartialPayment = invoice.partial_payment;
+                    const isPartialPayment = paymentlink.partial_payment;
 
                     <EntityDetailRow
                       label="Partial Payment"
@@ -159,12 +165,13 @@ export default props => {
                               <AsyncBtn.Transparent
                                 onClick={() => {
                                   const toEnablePartialPayment = +!isPartialPayment;
+
                                   editPaymentLink({
                                     partial_payment: toEnablePartialPayment,
                                   });
 
                                   trackTogglePartialPayment(
-                                    invoice.id,
+                                    paymentlink.id,
                                     'Toggle Partial Payment',
                                     toEnablePartialPayment
                                   );
@@ -181,10 +188,10 @@ export default props => {
                           {isMinimumFirstPaymentEnabled &&
                             isPartialPayment && (
                               <EditMinimumAmount
-                                value={invoice.first_payment_min_amount}
-                                maximum={invoice.amount}
-                                currency={invoice.currency}
-                                entityId={invoice.id}
+                                value={paymentlink.first_payment_min_amount}
+                                maximum={paymentlink.amount}
+                                currency={paymentlink.currency}
+                                entityId={paymentlink.id}
                                 editFn={editPaymentLink}
                                 trackerFn={() => {}}
                                 isRoleAllowedEdit={isRoleAllowedEdit}
@@ -200,34 +207,35 @@ export default props => {
                   label="Amount"
                   value={() => (
                     <Amount
-                      value={invoice.amount}
-                      currency={invoice.currency}
+                      value={paymentlink.amount}
+                      currency={paymentlink.currency}
                     />
                   )}
                 />
                 <EntityDetailRow label="Amount Paid">
-                  <PaymentDetails invoice={invoice} />
+                  <PaymentDetails
+                    paymentlink={paymentlink}
+                    isPaymentlinksV2Enabled={user.isPaymentlinksV2Enabled}
+                  />
                 </EntityDetailRow>
 
                 <EntityDetailRow
                   label="Link Url"
                   value={() => (
                     <CopyLink
-                      url={invoice.short_url}
+                      url={paymentlink.short_url}
                       onCopy={() => {
-                        if (invoice.type === 'link') {
-                          window.rzpAnalytics({
-                            eventCategory: 'Dashboard - Payment Links',
-                            eventAction: 'Copy - Payment Link',
-                            eventLabel: `payment_link_id=${invoice.id}`,
-                          });
-                        }
+                        window.rzpAnalytics({
+                          eventCategory: 'Dashboard - Payment Links',
+                          eventAction: 'Copy - Payment Link',
+                          eventLabel: `payment_link_id=${paymentlink.id}`,
+                        });
                       }}
                     />
                   )}
                 />
                 <EntityDetailRow label="Customer Details">
-                  <CustomerDetails invoice={invoice} />
+                  <CustomerDetails paymentlink={paymentlink} />
                 </EntityDetailRow>
 
                 {user.isRemindersEnabled &&
@@ -289,8 +297,8 @@ export default props => {
                     isIssued
                       ? () => (
                           <EditReceipt
-                            value={invoice.receipt}
-                            entityId={invoice.id}
+                            value={paymentlink.receipt}
+                            entityId={paymentlink.id}
                             editFn={editPaymentLink}
                             trackerFn={(...args) => {
                               props.trackEditReceipt(...args);
@@ -301,15 +309,15 @@ export default props => {
                             required={user.isInvoiceReceiptMandatory}
                           />
                         )
-                      : invoice.receipt || '--'
+                      : paymentlink.receipt || '--'
                   }
                 />
 
                 <EntityDetailRow label="Created By">
-                  {!!invoice.user ? (
+                  {!!paymentlink.user ? (
                     <Definition>
-                      {invoice.user.name}
-                      {invoice.user.email}
+                      {paymentlink.user.name}
+                      {paymentlink.user.email}
                     </Definition>
                   ) : (
                     'API'
@@ -318,7 +326,9 @@ export default props => {
 
                 <EntityDetailRow
                   label="Created At"
-                  value={() => <Time value={invoice.date} />}
+                  value={() => (
+                    <Time value={paymentlink.date || paymentlink.created_at} />
+                  )}
                 />
                 <EntityDetailRow
                   label={isExpired ? 'Expired On' : 'Expires On'}
@@ -326,9 +336,9 @@ export default props => {
                     isIssued
                       ? () => (
                           <EditExpiry
-                            value={invoice.expire_by}
+                            value={paymentlink.expire_by}
                             editFn={editPaymentLink}
-                            entityId={invoice.id}
+                            entityId={paymentlink.id}
                             trackerFn={(...args) => {
                               props.trackEditExpiry(...args);
 
@@ -339,9 +349,9 @@ export default props => {
                           />
                         )
                       : () =>
-                          invoice.expire_by ? (
+                          paymentlink.expire_by ? (
                             <Time
-                              value={invoice.expire_by}
+                              value={paymentlink.expire_by}
                               format="DD MMM YYYY, hh:mm a"
                             />
                           ) : (
@@ -353,10 +363,10 @@ export default props => {
                 {!user.isCustomNotesDropdownEnabled ? (
                   <EntityDetailRow label="Notes">
                     <EditNotes
-                      value={invoice.notes}
+                      value={paymentlink.notes}
                       editFn={editPaymentLink}
                       isRoleAllowedEdit={isRoleAllowedEdit}
-                      entityId={invoice.id}
+                      entityId={paymentlink.id}
                       trackerFn={(...args) => {
                         props.trackEditNotes(...args);
 
@@ -367,9 +377,9 @@ export default props => {
                 ) : (
                   <EditBusinessSegment
                     isRoleAllowedEdit={isRoleAllowedEdit}
-                    value={invoice.notes}
+                    value={paymentlink.notes}
                     editFn={editPaymentLink}
-                    entityId={invoice.id}
+                    entityId={paymentlink.id}
                     trackerFn={trackDetailViewEdits}
                   />
                 )}

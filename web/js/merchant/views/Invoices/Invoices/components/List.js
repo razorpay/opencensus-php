@@ -28,7 +28,7 @@ const InvoiceListItem = props => {
         }}
       </td>
       <td>
-        <Time value={invoice.date} />
+        <Time value={invoice.date || invoice.created_at} />
       </td>
       <td class="text-right">
         <Amount value={invoice.amount} currency={invoice.currency} />
@@ -55,7 +55,9 @@ const InvoiceListItem = props => {
         )}
       </td>
       <td>
-        <InvoiceStatusLabel status={invoice.status} />
+        <InvoiceStatusLabel
+          status={invoice.status ? invoice.status.toLowerCase() : null}
+        />
       </td>
     </EntityItemRow>
   );

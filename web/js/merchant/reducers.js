@@ -7,6 +7,8 @@ import sessionReducer from 'merchant/reducers/session';
 import appReducer from 'merchant/reducers/app';
 import homeReducer from 'merchant/reducers/home';
 import invoicesReducer from 'merchant/reducers/invoices/list';
+import paymentlinksReducer from 'merchant/reducers/paymentlinks/list';
+import paymentlinkReducer from 'merchant/reducers/paymentlinks/details';
 import invoiceDetailsReducer from 'merchant/reducers/invoices/details';
 import profileReducer from 'merchant/reducers/profile';
 import customersReducer from 'merchant/reducers/customers';
@@ -96,6 +98,8 @@ export default combineReducers({
   home: homeReducer,
   invoices: invoicesReducer,
   invoice: invoiceDetailsReducer,
+  paymentlinks: paymentlinksReducer,
+  paymentlink: paymentlinkReducer,
   paymentBatchIds: PaymentBatchIdsReducer,
   refundbatches: refundBatchesReducer,
   batchDetails: batchDetailsReducer,

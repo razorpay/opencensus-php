@@ -111,7 +111,9 @@ export default [
     label: form => getPaymentLinkFormLabel('description', form.props.user),
     placeholder: form =>
       getPaymentLinkFormPlaceholder('description', form.props.user),
-    required: true,
+    required: function(ctx) {
+      return !ctx.props.user.isPaymentlinksV2Enabled; // In new PL micro service, it's not mandatory
+    },
     description: 'This will be visible to the customer',
     _cmp: Input.Textarea,
   },

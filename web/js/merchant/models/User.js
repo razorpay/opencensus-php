@@ -356,7 +356,11 @@ export default class User {
   }
 
   get isMinimumFirstPaymentEnabled() {
-    return this.isFeatureEnabled('pl_first_min_amount');
+    // For merchant who have new PL microservice enabled, this feature would be enabled by default
+    return (
+      this.isFeatureEnabled('pl_first_min_amount') ||
+      this.isPaymentlinksV2Enabled
+    );
   }
 
   /* Check case-insensitive tag check existence */
@@ -549,6 +553,12 @@ export default class User {
 
   get isSupportCallEnabled() {
     return this.getExpStatus('support_call') && this.isActivated;
+  }
+
+  // This is for new payment links microservice.
+  // If enabled, then all the apis before sending data, and after fetching/receiving data must transform its data, as FE operate on old structure until 100% rollout.
+  get isPaymentlinksV2Enabled() {
+    return this.findTag('paymentlinks_v2');
   }
 
   get isUnregisteredBusiness() {

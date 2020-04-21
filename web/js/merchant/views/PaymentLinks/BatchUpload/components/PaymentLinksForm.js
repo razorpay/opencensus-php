@@ -19,6 +19,7 @@ import { fetchReminders } from 'merchant/reducers/reminders';
 @connect(
   state => {
     return {
+      user: state.session.user,
       reminders: state.reminders.reminders,
       isRemindersEnabled: state.session.user.isRemindersEnabled,
     };
@@ -41,8 +42,11 @@ export default class extends React.Component {
       return <PlaceholderLoader />;
     }
 
+    const type = this.props.user.isPaymentlinksV2Enabled
+      ? 'payment_link_v2'
+      : 'payment_link';
     const paymentLinksRemindersSettings =
-      findBy(this.props.reminders.items, 'namespace', 'payment_link') || {};
+      findBy(this.props.reminders.items, 'namespace', type) || {};
 
     if (paymentLinksRemindersSettings.active) {
       return (

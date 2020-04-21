@@ -1,3 +1,4 @@
+import store from 'merchant/store';
 import { set, merge } from 'common/utils/immutable';
 import {
   getActionName,
@@ -68,8 +69,9 @@ export const editIssuableBatchList = batchIdToRemove => {
   };
 };
 
-/* methods to create actions for validating batch */
-const validateBatch = batchType => (file, progressTracker) => {
+/////
+
+function _validateBatch(file, progressTracker, batchType) {
   let formData = new FormData();
   formData.append('file', file);
   formData.append('type', batchType);
@@ -83,7 +85,14 @@ const validateBatch = batchType => (file, progressTracker) => {
       onUploadProgress: progressTracker,
     }),
   };
+}
+
+/* methods to create actions for validating batch */
+const validateBatch = batchType => (file, progressTracker) => {
+  return _validateBatch(file, progressTracker, batchType);
 };
+
+/////
 
 /* method to create action for fetching batch list */
 const fetchBatches = (batchType, fetchActionName) => params => ({
@@ -97,8 +106,9 @@ const fetchBatchDetails = (batchType, fetchDetailAction) => params => ({
   payload: fetchBatchAjax(params.id, batchType),
 });
 
-/* method to create action for create batch action */
-const createBatch = batchType => data => {
+/////
+
+function _createBatch(data, batchType) {
   return {
     type: getCreateActioName(BATCH),
     payload: merchantFetch({
@@ -110,7 +120,14 @@ const createBatch = batchType => data => {
       },
     }).then(response => response.data),
   };
+}
+
+/* method to create action for create batch action */
+const createBatch = batchType => data => {
+  return _createBatch(data, batchType);
 };
+
+/////
 
 /* method to create action for upload batch action */
 // currently used by only refund batches
@@ -135,7 +152,9 @@ const uploadBatch = (actionType, batchType) => (file, mode, extraFields) => {
   };
 };
 
-export const cancelBatch = actionType => batchId => {
+/////
+
+const _cancelBatch = (batchId, actionType) => {
   return {
     type: actionType,
     payload: merchantFetch({
@@ -144,6 +163,12 @@ export const cancelBatch = actionType => batchId => {
     }),
   };
 };
+
+export const cancelBatch = actionType => batchId => {
+  return _cancelBatch(batchId, actionType);
+};
+
+/////
 
 /* extra methods for more details related to payment link batch */
 export const fetchBatchStats = batchId =>
@@ -200,13 +225,19 @@ export const uploadRefundBatch = uploadBatch(REFUND, 'refund');
 
 /* action for payment link batch */
 export const fetchPaymentLinkBatches = params => {
+  const user = store.getState().session.user;
+
+  const type = user.isPaymentlinksV2Enabled
+    ? 'payment_link_v2'
+    : 'payment_link';
+
   //for new batches
   params.with_config = '1';
 
   return dispatch => {
     return dispatch({
       type: BATCH_LIST,
-      payload: fetchBatchesAjax(params, 'payment_link').then(res => {
+      payload: fetchBatchesAjax(params, type).then(res => {
         const listOfBatchIds = [];
 
         res.data.items.forEach(item => {
@@ -235,9 +266,32 @@ export const fetchPaymentLinkBatchesDetails = params => {
   };
 };
 
-export const createPaymentLinkBatch = createBatch('payment_link');
-export const cancelPaymentLinkBatch = cancelBatch('payment_link');
-export const validatePaymentLinkBatch = validateBatch('payment_link');
+export const createPaymentLinkBatch = data => {
+  const user = store.getState().session.user;
+  const batchType = user.isPaymentlinksV2Enabled
+    ? 'payment_link_v2'
+    : 'payment_link';
+
+  return _createBatch(data, batchType);
+};
+
+export const cancelPaymentLinkBatch = batchId => {
+  const user = store.getState().session.user;
+  const actionType = user.isPaymentlinksV2Enabled
+    ? 'payment_link_v2'
+    : 'payment_link';
+
+  return _cancelBatch(batchId, actionType);
+};
+
+export const validatePaymentLinkBatch = (file, progressTracker) => {
+  const user = store.getState().session.user;
+  const batchType = user.isPaymentlinksV2Enabled
+    ? 'payment_link_v2'
+    : 'payment_link';
+
+  return _validateBatch(file, progressTracker, batchType);
+};
 
 /* direct debit batches */
 export const createPaymentsBatch = createBatch('direct_debit');

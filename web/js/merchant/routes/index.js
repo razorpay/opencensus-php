@@ -74,7 +74,7 @@ const entityDetailsMap = {
     component: SettlementDetails,
     additionalCondition: user => user.isAllowedView('settlements'),
   },
-  '/paymentlinks/:id(inv_.+)': {
+  '/paymentlinks/:id(inv_.+|plink_.+)': {
     component: PaymentLinkDetails,
     additionalCondition: user => user.isAllowedView('payment_links'),
   },

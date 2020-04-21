@@ -19,6 +19,7 @@ const gaEvents = setGaTrack('Dashboard - Payment Links - BU');
 @connect(
   state => {
     return {
+      user: state.session.user,
       issuableIdList: state.paymentBatchIds.issuableIdList,
     };
   },
@@ -90,7 +91,11 @@ export default class BatchListContainer extends Component {
         ctaText={`Create Batch${notify ? ' & Send Payment Links' : ''}`}
         pendingText={`Creating${notify ? ' & Sending' : ''}...`}
         batchFormInitialValues={batchFormInitialValues}
-        batchType="payment_link"
+        batchType={
+          this.props.user.isPaymentlinksV2Enabled
+            ? 'payment_link_v2'
+            : 'payment_link'
+        }
         maxRows={50000}
         maxFileSize={60457280} // 60MB
         gaEvents={gaEvents}
@@ -116,7 +121,11 @@ export default class BatchListContainer extends Component {
         form="batchListFilter"
         docUrl="https://razorpay.com/docs/payment-links/batch-upload/"
         sampleUrl="/files/sample_batch_payment_links_v2.xlsx"
-        batchType="payment_link"
+        batchType={
+          this.props.user.isPaymentlinksV2Enabled
+            ? 'payment_link_v2'
+            : 'payment_link'
+        }
         batchActions={[this.sendAllLinks]}
         renderUploadModal={this.renderUploadModal}
         gaEvents={gaEvents}

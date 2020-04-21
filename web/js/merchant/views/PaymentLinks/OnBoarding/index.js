@@ -114,20 +114,20 @@ function getOnBoardingSliderDots({
   );
 }
 
-export function getIsAllowedResetPaymentLinksOnBoarding(invoices) {
-  if (invoices.invoices.length || invoices.loading) {
+export function getIsAllowedResetPaymentLinksOnBoarding(paymentlinks) {
+  if (paymentlinks.paymentlinks.length || paymentlinks.loading) {
     return false;
   }
 
   return getIsAllowedResetBoarding(RZPFeatures.PL);
 }
 
-export function getIsPaymentLinksEnabled({ user, invoices }) {
-  if (user.isPaymentLinksEnabled || invoices.loading) {
+export function getIsPaymentLinksEnabled({ user, paymentlinks }) {
+  if (user.isPaymentLinksEnabled || paymentlinks.loading) {
     return true;
   }
 
-  if (invoices.invoices.length) {
+  if (paymentlinks.paymentlinks.length) {
     setOnBoardingDataInLocalState({
       feature: RZPFeatures.PL,
       data: {

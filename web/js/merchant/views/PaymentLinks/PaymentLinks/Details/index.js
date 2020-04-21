@@ -2,14 +2,20 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import RTracking from 'react-tracking';
+import {
+  fetchPLRemindersList,
+  fetchPaymentLinkDetails,
+  notifyCustomer,
+  cancelPaymentLink,
+} from 'merchant/reducers/paymentlinks/details';
 
-import * as InvoiceActions from 'merchant/reducers/invoices/details';
+import { updatePLInReduxList } from 'merchant/reducers/paymentlinks/list';
+
 import * as ModalActions from 'merchant_common/reducers/modals';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
 import Details from './Details';
 import IssueConfirmModal from 'merchant/views/Invoices/Invoices/components/IssueConfirmModal';
 import { editPaymentLink } from 'merchant/views/PaymentLinks/PaymentLinks/model';
-import { updatePLInReduxList } from 'merchant/reducers/invoices/list';
 import { keysToSentence, findBy } from 'common/utils/rzp-utils';
 import {
   fetchReminders,
@@ -20,21 +26,23 @@ import { MIN_AMOUNT_TEXT } from '../components/Edit/EditMinimumAmount';
 
 @connect(
   state => ({
-    ...state.invoice,
+    ...state.paymentlink,
     ...state.session,
     reminders: state.reminders,
   }),
   {
-    ...InvoiceActions,
     ...ModalActions,
     ...NotificationsActions,
+    fetchPaymentLinkDetails,
+    notifyCustomer,
     updatePLInReduxList,
+    cancelPaymentLink,
     fetchReminders,
     fetchRemindersMerchantConfigs,
   }
 )
 @RTracking(() => window.rzpQ.component('InvoiceDetailContainer'))
-export default class InvoiceDetailContainer extends Component {
+export default class PaymentLinkDetails extends Component {
   static contextTypes = {
     confirm: PropTypes.func,
   };
@@ -56,7 +64,7 @@ export default class InvoiceDetailContainer extends Component {
   }
 
   componentWillMount() {
-    this.fetchDataForInvoice();
+    this.fetchDataForPaymentLink();
   }
 
   componentDidMount() {
@@ -65,7 +73,7 @@ export default class InvoiceDetailContainer extends Component {
 
   componentWillReceiveProps(nextProps) {
     if (this.props.id !== nextProps.id) {
-      this.fetchDataForInvoice(nextProps.id);
+      this.fetchDataForPaymentLink(nextProps.id);
     }
   }
 
@@ -78,12 +86,12 @@ export default class InvoiceDetailContainer extends Component {
     );
   };
 
-  fetchDataForInvoice = (id = this.props.id) => {
-    this.props.fetchInvoice(id);
-    this.fetchInvoiceRemindersList(id);
+  fetchDataForPaymentLink = (id = this.props.id) => {
+    this.props.fetchPaymentLinkDetails(id);
+    this.fetchPLRemindersList(id);
   };
 
-  fetchInvoiceRemindersList = (id = this.props.id) => {
+  fetchPLRemindersList = (id = this.props.id) => {
     if (!this.props.user.isRemindersEnabled) {
       return;
     }
@@ -96,15 +104,16 @@ export default class InvoiceDetailContainer extends Component {
       promiseList.push(Promise.resolve());
     }
 
-    promiseList.push(InvoiceActions.fetchInvoiceRemindersList(id));
+    promiseList.push(fetchPLRemindersList(id));
 
     Promise.all(promiseList).then(respList => {
+      const namespace = this.props.user.isPaymentlinksV2Enabled
+        ? 'payment_link_v2'
+        : 'payment_link';
+
       const paymentLinksRemindersSettings =
-        findBy(
-          this.props.reminders.reminders.items,
-          'namespace',
-          'payment_link'
-        ) || {};
+        findBy(this.props.reminders.reminders.items, 'namespace', namespace) ||
+        {};
 
       this.setState({
         isPaymentLinksRemindersEnabled: paymentLinksRemindersSettings.active,
@@ -122,13 +131,13 @@ export default class InvoiceDetailContainer extends Component {
     this.editPaymentLink({
       reminder_enable: event.target.value === '1',
     }).then(resp => {
-      this.fetchInvoiceRemindersList();
+      this.fetchPLRemindersList();
 
       return resp;
     });
   };
 
-  issueInvoice = (props, notifyProps) => {
+  notifyCustomer = (props, notifyProps) => {
     let promises = [];
 
     if (notifyProps.email_notify) {
@@ -181,9 +190,9 @@ export default class InvoiceDetailContainer extends Component {
       });
   };
 
-  showIssueConfirmModal = () => {
-    let customer = this.props.invoice.customer;
-    if (!customer.contact && !customer.email) {
+  showNotifyCustomerModal = () => {
+    let customer = this.props.paymentlink.customer_details;
+    if (!customer.customer_contact && !customer.customer_email) {
       this.props.showNotification({
         type: 'error',
         message: "Customer's contact/email was not provided",
@@ -201,28 +210,28 @@ export default class InvoiceDetailContainer extends Component {
       size: 'small',
       component: (
         <IssueConfirmModal
-          isPaymentLink={true}
-          customer={this.props.invoice.customer}
+          isPaymentLink
+          customer={this.props.paymentlink.customer_details}
           onIssue={notifyProps => {
             window.rzpAnalytics({
               eventCategory: 'Dashboard - Payment Links',
               eventAction: 'Send - Payment Link',
-              eventLabel: `payment_link_id=${this.props.invoice.id}`,
+              eventLabel: `payment_link_id=${this.props.paymentlink.id}`,
             });
-            return this.issueInvoice(this.props.invoice, notifyProps);
+            return this.notifyCustomer(this.props.paymentlink, notifyProps);
           }}
           onMount={() => {
             window.rzpAnalytics({
               eventCategory: 'Dashboard - Payment Links',
               eventAction: 'Open Form - Send Link',
-              eventLabel: `payment_link_id=${this.props.invoice.id}`,
+              eventLabel: `payment_link_id=${this.props.paymentlink.id}`,
             });
           }}
           onUnmount={() => {
             window.rzpAnalytics({
               eventCategory: 'Dashboard - Payment Links',
               eventAction: 'Close Form - Send Link',
-              eventLabel: `payment_link_id=${this.props.invoice.id}`,
+              eventLabel: `payment_link_id=${this.props.paymentlink.id}`,
             });
           }}
           onCloseClick={() => {
@@ -246,8 +255,8 @@ export default class InvoiceDetailContainer extends Component {
     });
   };
 
-  cancelInvoice = () => {
-    let invoice = this.props.invoice;
+  cancelPaymentLink = () => {
+    let paymentlink = this.props.paymentlink;
 
     this.trackPaymentLinkDetailsView('pl.update.deactivate');
 
@@ -266,19 +275,20 @@ export default class InvoiceDetailContainer extends Component {
       abortLabel: "No, don't!",
       action: () => {
         return this.props
-          .cancelInvoice(invoice)
-          .then(invoice => {
-            this.props.updatePLInReduxList({ data: invoice }, false);
+          .cancelPaymentLink(paymentlink)
+          .then(paymentlink => {
+            this.props.updatePLInReduxList({ data: paymentlink }, false);
+
             window.rzpAnalytics({
               eventCategory: 'Dashboard - Payment Links',
               eventAction: 'Submit Form - Cancel Payment Link',
-              eventLabel: `payment_link_id=${invoice.id}`,
+              eventLabel: `payment_link_id=${paymentlink.id}`,
             });
 
             window.rzpAnalytics({
               eventCategory: 'Dashboard - Payment Links',
               eventAction: 'Close Form - Cancel Payment Link',
-              eventLabel: `payment_link_id=${invoice.id}`,
+              eventLabel: `payment_link_id=${paymentlink.id}`,
             });
 
             this.props.showNotification({
@@ -317,14 +327,14 @@ export default class InvoiceDetailContainer extends Component {
         window.rzpAnalytics({
           eventCategory: 'Dashboard - Payment Links',
           eventAction: 'Open Form - Cancel Payment Link',
-          eventLabel: `payment_link_id=${invoice.id}`,
+          eventLabel: `payment_link_id=${paymentlink.id}`,
         });
       },
       abort: () => {
         window.rzpAnalytics({
           eventCategory: 'Dashboard - Payment Links',
           eventAction: 'Close Form - Cancel Payment Link',
-          eventLabel: `payment_link_id=${invoice.id}`,
+          eventLabel: `payment_link_id=${paymentlink.id}`,
         });
 
         this.trackPaymentLinkDetailsView('pl.update.deactivate_abort');
@@ -376,7 +386,7 @@ export default class InvoiceDetailContainer extends Component {
       this.trackPaymentLinkDetailsView('pl.update.partial');
     }
 
-    return editPaymentLink(this.props.invoice.id, data)
+    return editPaymentLink(this.props.paymentlink.id, data)
       .then(resp => {
         if (resp.data) {
           this.props.updatePLInReduxList(resp, false);
@@ -415,7 +425,7 @@ export default class InvoiceDetailContainer extends Component {
               },
             });
 
-            this.props.fetchInvoice(this.props.id);
+            this.props.fetchPaymentLinkDetails(this.props.id);
           } else {
             this.props.showNotification({
               type: 'success',
@@ -441,7 +451,7 @@ export default class InvoiceDetailContainer extends Component {
             d.hasOwnProperty('expire_by') &&
             this.props.user.isRemindersEnabled
           ) {
-            this.fetchDataForInvoice();
+            this.fetchDataForPaymentLink();
           }
 
           return resp;
@@ -477,18 +487,18 @@ export default class InvoiceDetailContainer extends Component {
   };
 
   render() {
-    let { loading, invoice, user } = this.props;
+    let { loading, paymentlink, user } = this.props;
     let statusMsg = this.state.statusMsg;
 
     return (
       <Details
         user={user}
-        invoice={invoice}
+        paymentlink={paymentlink}
         isLoading={loading}
         statusMsg={statusMsg}
         nextReminders={this.state.nextReminders}
-        onIssue={this.showIssueConfirmModal}
-        onCancel={this.cancelInvoice}
+        notifyCustomer={this.showNotifyCustomerModal}
+        onCancel={this.cancelPaymentLink}
         editPaymentLink={this.editPaymentLink}
         isRoleAllowedEdit={user.isAllowedEdit('payment_links')}
         onChangeSendAutoReminder={this.onChangeSendAutoReminder}

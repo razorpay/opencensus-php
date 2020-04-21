@@ -27,7 +27,7 @@ import QuickGuide, { getPaymentLinksQuickGuideIsClosed } from './QuickGuide';
   state => {
     return {
       user: state.session.user,
-      invoices: state.invoices,
+      paymentlinks: state.paymentlinks,
       paymentLinksProductOnBoarding: getCurrentProductOnBoardingDetails(
         state,
         RZPFeatures.PL
@@ -38,7 +38,7 @@ import QuickGuide, { getPaymentLinksQuickGuideIsClosed } from './QuickGuide';
 )
 export default class PaymentLinksContainer extends React.Component {
   componentWillReceiveProps(nextProps) {
-    if (nextProps.invoices.loading !== this.props.invoices.loading) {
+    if (nextProps.paymentlinks.loading !== this.props.paymentlinks.loading) {
       this.initPaymentLinksOnboarding(nextProps);
     }
   }
@@ -64,7 +64,7 @@ export default class PaymentLinksContainer extends React.Component {
     const data = {
       user: props.user,
       merchantId: props.user.current,
-      invoices: props.invoices,
+      paymentlinks: props.paymentlinks,
     };
 
     const isPaymentLinksEnabled = getIsPaymentLinksEnabled(data);
@@ -72,7 +72,9 @@ export default class PaymentLinksContainer extends React.Component {
     let showOnboarding = !isPaymentLinksEnabled;
 
     if (isPaymentLinksEnabled) {
-      showOnboarding = getIsAllowedResetPaymentLinksOnBoarding(data.invoices);
+      showOnboarding = getIsAllowedResetPaymentLinksOnBoarding(
+        data.paymentlinks
+      );
     }
 
     const paymentLinksProductOnBoarding = {

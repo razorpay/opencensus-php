@@ -29,16 +29,6 @@ export const saveInvoice = (params, headers = {}, isIntentDuplicate) => {
   };
 };
 
-/* Hook to update newly-created/edited payment link in redux list*/
-export const updatePLInReduxList = (newInvoice, isNew) => {
-  const invoice = new Invoice(newInvoice.data).deserialize();
-
-  return {
-    type: isNew ? `${INVOICE_CREATE}::SUCCESS` : `${INVOICE_EDIT}::SUCCESS`,
-    payload: invoice,
-  };
-};
-
 /* Hook to update newly created payment-page in redux list */
 export const updatePPInReduxList = (newLink, isNew) => {
   return {

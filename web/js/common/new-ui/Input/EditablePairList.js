@@ -118,7 +118,7 @@ export default class EditablePairsList extends React.PureComponent {
     this.props.trackerFn('Save Notes', !notModified);
 
     return this.props.saveAndUpdate(freshPairs).then(resp => {
-      if (resp.data) {
+      if (resp && resp.data) {
         this.setState({
           pairs: freshPairs,
         });
@@ -211,7 +211,7 @@ class PairDecider extends React.Component {
 
     if (promise) {
       promise.then(resp => {
-        if (resp.data) {
+        if (resp && resp.data) {
           this.toggleEditMode();
         }
       });

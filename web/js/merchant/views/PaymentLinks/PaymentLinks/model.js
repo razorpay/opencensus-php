@@ -1,7 +1,13 @@
 import { merchantFetch } from 'merchant/utils/ajax';
 import { getKeysSeparatedByPipe } from 'common/utils/rzp-utils';
 
+import {
+  transformCreatePLPayload_OldToNew,
+  transformPLDetails_NewToOld,
+} from './js/transformer';
 import { trackFormSubmit } from './ga';
+
+import store from 'merchant/store';
 
 /*
 *
@@ -10,7 +16,7 @@ import { trackFormSubmit } from './ga';
 * */
 
 export function createPaymentLink(payload) {
-  const reqPayload = { ...payload };
+  let reqPayload = { ...payload };
   reqPayload.type = 'link';
 
   reqPayload.amount *= 100;
@@ -57,37 +63,87 @@ export function createPaymentLink(payload) {
     delete reqPayload.reminder_enable;
   }
 
+  const user = store.getState().session.user;
+
+  let url;
+
+  if (user.isPaymentlinksV2Enabled) {
+    url = 'payment_links';
+    if (!reqPayload.currency) {
+      reqPayload.currency = 'INR';
+    }
+  } else {
+    url = 'invoices';
+  }
+
+  // Transform payload to new format
+
+  reqPayload = user.isPaymentlinksV2Enabled
+    ? transformCreatePLPayload_OldToNew(reqPayload)
+    : reqPayload;
+
   const reqPayloadToTrack = {
     ...reqPayload,
     notes: reqPayload.notes && Object.keys(reqPayload.notes).length,
     version: 'Payment Links V2',
   };
+
   trackFormSubmit(getKeysSeparatedByPipe(reqPayloadToTrack));
 
   return merchantFetch({
-    url: 'invoices',
+    url,
     // mode: this.props.mode,
     method: 'post',
     data: reqPayload,
+    headers: {
+      'content-type': 'application/json',
+    },
   }).then(resp => {
-    return resp;
+    // Transform payload to new format as per
+
+    const _resp = user.isPaymentlinksV2Enabled
+      ? { ...resp, data: transformPLDetails_NewToOld(resp.data) }
+      : resp;
+
+    return _resp;
   });
 }
 
 export function editPaymentLink(id, payload) {
-  const reqPayload = { ...payload };
+  let reqPayload = { ...payload };
 
   delete reqPayload.currency;
 
   reqPayload.expire_by &&
     (reqPayload.expire_by = Math.floor(reqPayload.expire_by / 1000));
 
+  const user = store.getState().session.user;
+
+  // Transform payload to new format
+  if (user.isPaymentlinksV2Enabled) {
+    reqPayload = transformCreatePLPayload_OldToNew(reqPayload);
+  }
+
+  const url = user.isPaymentlinksV2Enabled
+    ? `payment_links/${id}`
+    : `invoices/${id}`;
+
   return merchantFetch({
-    url: `invoices/${id}`,
+    url,
     method: 'patch',
     data: reqPayload,
     headers: {
       'content-type': 'application/json',
     },
+  }).then(resp => {
+    // Transform payload to new format as per
+
+    if (resp.data && user.isPaymentlinksV2Enabled) {
+      const _resp = { ...resp, data: transformPLDetails_NewToOld(resp.data) };
+
+      return _resp;
+    }
+
+    return resp;
   });
 }

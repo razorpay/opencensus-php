@@ -16,11 +16,11 @@ const { done, locked, active, loading } = PossibleStatuses;
 
 @QuickGuide({
   feature: RZPFeatures.PL,
-  data_points: ['invoices'],
+  data_points: ['paymentlinks'],
   dataTransformer: (key, state) => {
     return {
-      ...state.invoices,
-      items: state.invoices.invoices,
+      ...state.paymentlinks,
+      items: state.paymentlinks.paymentlinks,
     };
   },
 })
@@ -76,11 +76,11 @@ export const getPaymentLinksQuickGuideIsClosed = props => {
   let isClosed = getQuickGuideIsClosedFromLocalStorage(RZPFeatures.PL);
 
   // Check if transfers non created state count is more then or equal to 2
-  if (isClosed || props.invoices.invoices.length <= 2) {
+  if (isClosed || props.paymentlinks.paymentlinks.length <= 2) {
     return isClosed;
   }
 
-  props.invoices.invoices.forEach(page => {
+  props.paymentlinks.paymentlinks.forEach(page => {
     if (page.status === 'paid' || page.status === 'partially_paid') {
       setQuickGuideIsClosedInLocalStorage(RZPFeatures.PL, true);
       return false;
@@ -90,22 +90,22 @@ export const getPaymentLinksQuickGuideIsClosed = props => {
   return true;
 };
 
-const getStatus = ({ invoices }) => {
+const getStatus = ({ paymentlinks }) => {
   let paymentLinkStatus = loading,
     paymentReceiveStatus = loading;
 
-  if (invoices.loading) {
+  if (paymentlinks.loading) {
     return {
       paymentLinkStatus,
       paymentReceiveStatus,
     };
   }
 
-  if (invoices.items.length) {
+  if (paymentlinks.items.length) {
     paymentLinkStatus = done;
     paymentReceiveStatus = active;
 
-    invoices.items.forEach(page => {
+    paymentlinks.items.forEach(page => {
       if (page.status === 'paid' || page.status === 'partially_paid') {
         paymentReceiveStatus = done;
 

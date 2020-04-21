@@ -8,6 +8,7 @@ import { batchDownload } from 'merchant/reducers/batches';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
 import ShowWhen from 'merchant/components/ShowWhen';
 import BatchListFilter from './BatchListFilter';
+import store from 'merchant/store';
 
 const batchName = {
   title: 'Name',
@@ -21,6 +22,11 @@ function batchActions({
   onDownloadClick,
   issuableIdList,
 }) {
+  const storeData = store.getState();
+  const plType = storeData.session.user.isPaymentlinksV2Enabled
+    ? 'payment_link_v2'
+    : 'payment_link';
+
   return {
     viewAll,
     issueAll,
@@ -35,7 +41,7 @@ function batchActions({
             Download
           </button>
           {do {
-            if (item.type === 'payment_link') {
+            if (item.type === plType) {
               if (viewAll) {
                 <button
                   class="btn btn-default btn-xs"

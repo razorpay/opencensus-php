@@ -23,13 +23,16 @@ import { onChangeNotes } from 'common/new-ui/Input/PairList';
 
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
-import { updatePLInReduxList } from 'merchant/reducers/invoices/list';
-import { fetchInvoice } from 'merchant/reducers/invoices/details';
+
+import { updatePLInReduxList } from 'merchant/reducers/paymentlinks/list';
+import { fetchPaymentLinkDetails } from 'merchant/reducers/paymentlinks/details';
 import {
   fetchReminders,
   fetchRemindersMerchantConfigs,
 } from 'merchant/reducers/reminders';
 import { luminateRow } from 'merchant/reducers/app';
+
+import Spinner from 'common/ui/Spinner';
 
 import {
   getURLQueryParams,
@@ -43,7 +46,7 @@ import {
 } from '../ga';
 import { generateField } from './Utils';
 
-import Spinner from 'common/ui/Spinner';
+import { transformPLDetails_NewToOld } from 'merchant/views/PaymentLinks/PaymentLinks/js/transformer';
 
 const FORM_FIELDS = {
   title: 'Payment Link',
@@ -158,9 +161,12 @@ function WizardFields(field) {
 @withRouter
 @connect(
   state => {
+    const namespace = state.session.user.isPaymentlinksV2Enabled
+      ? 'payment_link_v2'
+      : 'payment_link';
+
     const paymentLinksRemindersSettings =
-      findBy(state.reminders.reminders.items, 'namespace', 'payment_link') ||
-      {};
+      findBy(state.reminders.reminders.items, 'namespace', namespace) || {};
 
     let withExpireRemindersCount = 0,
       withOutExpireRemindersCount = 0;
@@ -192,8 +198,7 @@ function WizardFields(field) {
     showNotification,
     fetchReminders,
     fetchRemindersMerchantConfigs,
-    updatePLInReduxList,
-    fetchInvoice,
+    fetchPaymentLinkDetails,
     openModal,
     closeModal,
     luminateRow,
@@ -258,8 +263,13 @@ export default class CreateNewContainer extends React.Component {
 
   fetchIfIntentDuplicate(invoiceId) {
     return this.props
-      .fetchInvoice(invoiceId)
+      .fetchPaymentLinkDetails(invoiceId)
       .then(data => {
+        // Transform data from new format to old as per
+        data = this.props.user.isPaymentlinksV2Enabled
+          ? transformPLDetails_NewToOld(data)
+          : data;
+
         this.isIntentDuplicate = true;
         let expire_by = data.expire_by && moment(data.expire_by * 1000);
 
@@ -646,6 +656,7 @@ export default class CreateNewContainer extends React.Component {
               action: 'PL_Creation_Failed',
             })
           );
+
           throw new Error(resp.errors);
         }
       })

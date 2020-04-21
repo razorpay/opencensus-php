@@ -10,19 +10,23 @@ import {
   createReminders,
 } from 'merchant/reducers/reminders';
 
-import { fetchInvoiceCount } from 'merchant/reducers/invoices/details';
+import { fetchPLCount } from 'merchant/reducers/paymentlinks/details';
 import ReminderSettings from 'merchant/views/Settings/Reminders/components/Settings';
 
 @connect(
   state => {
+    const namespace = state.session.user.isPaymentlinksV2Enabled
+      ? 'payment_link_v2'
+      : 'payment_link';
+
     const configs = filterBy(
       state.reminders.configs.items,
       'namespace',
-      'payment_link'
+      namespace
     );
 
     const merchantConfig = state.reminders.merchant_config.items.filter(
-      config => config.reminder_config.namespace === 'payment_link'
+      config => config.reminder_config.namespace === namespace
     );
 
     let withExpireByConfigs = [],
@@ -68,8 +72,7 @@ import ReminderSettings from 'merchant/views/Settings/Reminders/components/Setti
 
     return {
       paymentLinkReminder:
-        findBy(state.reminders.reminders.items, 'namespace', 'payment_link') ||
-        {},
+        findBy(state.reminders.reminders.items, 'namespace', namespace) || {},
       withExpireByConfigs,
       withOutExpireByConfigs,
       withExpireByMerchantConfigs,
@@ -97,7 +100,7 @@ export default class PaymentLinksSettings extends React.Component {
   }
 
   componentDidMount() {
-    fetchInvoiceCount({
+    fetchPLCount({
       type: 'link',
       status: 'issued',
     }).then(resp => {
@@ -151,7 +154,11 @@ export default class PaymentLinksSettings extends React.Component {
 
   disableEnableReminders = active => {
     if (!this.props.paymentLinkReminder.id) {
-      return createReminders('payment_link').then(this.props.fetchReminders);
+      const namespace = this.props.user.isPaymentlinksV2Enabled
+        ? 'payment_link_v2'
+        : 'payment_link';
+
+      return createReminders(namespace).then(this.props.fetchReminders);
     }
 
     return disableEnableReminders(this.props.paymentLinkReminder.id, {

@@ -7,7 +7,7 @@ import Alert from 'common/ui/Forms/Alert';
 import { RZPFeatures } from 'merchant/helpers/data';
 import { getKeysSeparatedByPipe, findBy } from 'common/utils/rzp-utils';
 
-import * as InvoiceActions from 'merchant/reducers/invoices/list';
+import { fetchPaymentLinks } from 'merchant/reducers/paymentlinks/list';
 import { fetchReminders } from 'merchant/reducers/reminders';
 
 import ShowWhen from 'merchant/components/ShowWhen';
@@ -22,8 +22,8 @@ import { EmptyListWithTableRow } from 'merchant/components/EmptyList';
 import { trackSearchFilterForInternational } from './ga';
 
 @withRouter
-@connect(state => ({ ...state.invoices, ...state.session }), {
-  ...InvoiceActions,
+@connect(state => ({ ...state.paymentlinks, ...state.session }), {
+  fetchPaymentLinks,
   fetchReminders,
 })
 @RTracking(() => window.rzpQ.component('PaymentLinksContainer'))
@@ -34,7 +34,7 @@ export default class PaymentLinksContainer extends ListContainer {
 
   fetchEntityList(params) {
     params.types = ['link', 'ecod'];
-    return this.props.fetchInvoices(params);
+    return this.props.fetchPaymentLinks(params);
   }
 
   // Temporary fn. for handling code of merchant/models/Invoice.js for handling notes in deserialize fn.
@@ -109,7 +109,7 @@ export default class PaymentLinksContainer extends ListContainer {
   };
 
   render() {
-    let { loading, invoices, user, mode, tracking } = this.props;
+    let { loading, paymentlinks, user, mode, tracking } = this.props;
     let status = this.state.status;
 
     return (
@@ -172,7 +172,7 @@ export default class PaymentLinksContainer extends ListContainer {
         />
 
         <InvoicesList
-          invoices={invoices}
+          invoices={paymentlinks}
           isLoading={loading}
           type="link"
           onCopy={this.onCopy}
@@ -183,7 +183,7 @@ export default class PaymentLinksContainer extends ListContainer {
         <Pager
           count={this.state.count}
           skip={this.state.skip}
-          length={invoices.length}
+          length={paymentlinks.length}
           onClick={(params, type) => {
             this.props.tracking.trackEvent(
               window.rzpQ.paymentLinks().interaction(`pl.browse.${type}`, {
