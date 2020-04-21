@@ -20,6 +20,12 @@ fix_permissions(){
   cd /app/ && chmod 777 -R storage
 }
 
+trap finish EXIT
+
+function finish {
+  touch /container-share/sigterm-check.txt
+}
+
 configure(){
   ALOHOMORA_BIN=$(which alohomora)
   echo "casting alohomora - vault,env.php,apache"
