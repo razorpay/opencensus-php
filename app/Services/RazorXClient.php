@@ -155,7 +155,8 @@ class RazorXClient
     protected function checkWhitelistedExperimentsForCardPs($feature)
     {
         if (($this->env !== 'func') and
-            ($this->env !== 'automation'))
+            ($this->env !== 'automation') and
+            ($this->env !== 'bvt'))
         {
             return null;
         }
