@@ -156,7 +156,7 @@ class GatewayDowntimeDetectionV2Test extends TestCase
         $this->doAuthPayment();
 
         $request = [
-            'method'  => 'GET',
+            'method'  => 'POST',
             'url'     => '/gateway/downtimes/detection/cron',
         ];
 

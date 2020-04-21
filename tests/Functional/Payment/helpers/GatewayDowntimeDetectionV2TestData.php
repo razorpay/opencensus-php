@@ -83,7 +83,7 @@ return [
         'request' => [
             'content' => [
             ],
-            'method'  => 'GET',
+            'method'  => 'POST',
             'url'     => '/gateway/downtimes/detection/cron',
         ],
         'response' => [
