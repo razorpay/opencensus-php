@@ -124,18 +124,19 @@ const MerchantDetails = ({
               </small>
             </div>
           )}
-          value={() => (
-            <span>
-              {user.display_name || 'Set Display Name'}
+          value={() =>
+            user.display_name ? (
+              <span>{user.display_name}</span>
+            ) : (
               <a
                 class="p-l"
-                title="Edit Display Name"
                 onClick={changeDisplayName}
+                title="Set Display Name"
               >
-                <i class="i i-edit" />
+                Set Display Name
               </a>
-            </span>
-          )}
+            )
+          }
         />
       )}
 
