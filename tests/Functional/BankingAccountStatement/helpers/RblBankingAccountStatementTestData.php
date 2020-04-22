@@ -152,30 +152,6 @@ return [
         ],
     ],
 
-    'testRblAccountStatementCase7' => [
-        'request'  => [
-            'method'  => 'POST',
-            'url'     => '/banking_account_statement/process',
-            'content' => [
-                'account_number'  => '2224440041626905',
-                'channel'         => 'rbl',
-            ],
-        ],
-        'response'  => [
-            'content'     => [
-                'error' => [
-                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
-            'message'             => 'The PayGenRes.Body.transactionDetails.1.txnBalance.amountValue must be at least 0.'
-        ],
-    ],
-
     'testRblAccountStatementTxnMappingCase1' => [
         'request'  => [
             'method'  => 'POST',
@@ -219,6 +195,73 @@ return [
             'content' => []
         ]
     ],
+
+    'testRblAccountStatementNegativeBalance' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/banking_account_statement/process',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'channel'         => 'rbl',
+            ],
+        ],
+        'response'  => [
+            'content' => []
+        ],
+    ],
+
+    'testRblAccountStatementNegativeBalanceWithExternalSource' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/banking_account_statement/process',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'channel'         => 'rbl',
+            ],
+        ],
+        'response'  => [
+            'content' => []
+        ],
+    ],
+
+    'testRblAccountStatementNegativeBalanceWithSourceReversal' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/banking_account_statement/process',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'channel'         => 'rbl',
+            ],
+        ],
+        'response'  => [
+            'content' => []
+        ],
+    ],
+
+    'testRblAccountStatementWhenNegativeBalanceExceedsMaxLimit' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/banking_account_statement/process',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'channel'         => 'rbl',
+            ],
+        ],
+        'response'  => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Negative Balance has crossed the negative limit threshold',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_NEGATIVE_BALANCE_BREACHED,
+            'message'             => 'Negative Balance has crossed the negative limit threshold',
+        ]
+     ],
 
     'testCreateRblPayoutWhenBalanceFetchCronRunsBeforeBankingAccountStatementCron' => [
         'request' => [
@@ -383,7 +426,7 @@ return [
             ]
         ]
     ],
-  
+
     'testFetchStatementByTransactionIdForRbl' => [
          'request' => [
             'method'  => 'GET',

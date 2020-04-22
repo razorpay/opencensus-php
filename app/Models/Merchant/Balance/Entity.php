@@ -390,7 +390,9 @@ class Entity extends Base\PublicEntity
                     'locked_balance'                => $this->getLockedBalance(),
                     'balance_with_locked_balance'   => $newBalanceWithLockedBalance,
                     'negative_limit'                => $negativeLimit,
-                ]);
+                ],
+                $data['message']
+            );
         }
     }
 

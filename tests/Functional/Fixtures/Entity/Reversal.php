@@ -61,4 +61,17 @@ class Reversal extends Base
 
         return $reversal;
     }
+
+    public function createReversalWithoutTransaction(array $attributes = [])
+    {
+        $defaultValues = [
+            'currency' => 'INR',
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        $reversal = parent::create($attributes);
+
+        return $reversal;
+    }
 }

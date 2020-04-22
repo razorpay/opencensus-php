@@ -647,6 +647,22 @@ class Core extends Base\Core
      */
     public function getNegativeLimit(Transaction\Entity $txn) : int
     {
+        $txnSource = $txn->source;
+
+        /** @var Entity $balance */
+        $balance = optional($txnSource->balance);
+
+        $balanceType = $balance->getType();
+
+        $accountType = $balance->getAccountType();
+
+        if (($balanceType === Type::BANKING) and
+            ($accountType === AccountType::DIRECT) and
+            ($balance->getChannel() === Channel::RBL))
+        {
+            return -1 * BalanceConfig\Entity::BANKING_MAX_NEGATIVE_FOR_RBL;
+        }
+
         $negativeLimit = 0;
 
         $balanceType = $this->getTransactionBalanceType($txn);

@@ -18,9 +18,16 @@ class Entity extends Base\PublicEntity
     const DEFAULT_MAX_NEGATIVE = 500000;
     const CUSTOM_MAX_NEGATIVE  = 50000000;
 
-    const ID                                    = 'id';
-    const BALANCE_ID                            = 'balance_id';
-    const TYPE                                  = 'type';
+    // For current account on X for RBL , while processing of account statement , closing balance may be negative
+    // because of some charges levied by bank on merchants account. We want to allow -ve balance for all merchants on
+    // current account(RBL) for X. We can't decide on max allowed for each merchant. There By setting a high value
+    // 10 lakhs common for each merchant.
+    // for more ref https://docs.google.com/document/d/1b_CsSdwC4n-Sld46g7i2TxhtCZQ6Kdeh8VK39HGyk2s/edit
+    const BANKING_MAX_NEGATIVE_FOR_RBL = 100000000;
+
+    const ID                                   = 'id';
+    const BALANCE_ID                           = 'balance_id';
+    const TYPE                                 = 'type';
     const NEGATIVE_LIMIT_AUTO                  = 'negative_limit_auto';
     const NEGATIVE_LIMIT_MANUAL                = 'negative_limit_manual';
     const NEGATIVE_TRANSACTION_FLOWS           = 'negative_transaction_flows';

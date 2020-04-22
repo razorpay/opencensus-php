@@ -31,7 +31,7 @@ class Validator extends Base\Validator
 
         self::BALANCE                                       => 'required|array',
         self::BALANCE . '.' . F::CURRENCY_CODE              => 'required|string|in:INR',
-        self::BALANCE . '.' . F::AMOUNT_VALUE               => 'required|numeric|min:0',
+        self::BALANCE . '.' . F::AMOUNT_VALUE               => 'required|numeric',
 
         self::SUMMARY                                       => 'required|array',
         self::SUMMARY . '.' . F::INSTRUMENT_ID              => 'present|string',

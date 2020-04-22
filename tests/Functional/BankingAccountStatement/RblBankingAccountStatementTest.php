@@ -21,6 +21,7 @@ use RZP\Tests\Functional\TestCase;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\BankingAccount\Channel;
 use PhpOffice\PhpSpreadsheet\IOFactory;
+use RZP\Models\Merchant\Balance\Entity;
 use RZP\Models\BankingAccount\Gateway\Rbl;
 use RZP\Mail\BankingAccount\StatementMail;
 use RZP\Models\Merchant\Balance\AccountType;
@@ -29,6 +30,7 @@ use RZP\Models\Admin\Service as AdminService;
 use RZP\Models\BankingAccount\Entity as BaEntity;
 use RZP\Jobs\FTS\FundTransfer as FtsFundTransfer;
 use RZP\Models\External\Entity as ExternalEntity;
+use RZP\Models\BankingAccount\Gateway\Rbl\Fields;
 use RZP\Tests\Functional\FundTransfer\AttemptTrait;
 use RZP\Tests\Functional\Helpers\Payout\PayoutTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -49,6 +51,9 @@ class RblBankingAccountStatementTest extends TestCase
     const MOCK_UFH_BASE_LOCATION = 'files/filestore';
 
     const FILE_ID                = 'file_id';
+
+    /* @var Entity */
+    private $balance;
 
     public function setUp()
     {
@@ -341,20 +346,6 @@ class RblBankingAccountStatementTest extends TestCase
     public function testRblAccountStatementCase6()
     {
         $mockedResponse = $this->getRblIncorrectBalanceResponse();
-
-        $this->setMozartMockResponse($mockedResponse);
-
-        $this->ba->cronAuth();
-
-        $this->startTest();
-    }
-
-    /**
-     * Case where the balances is negative
-     */
-    public function testRblAccountStatementCase7()
-    {
-        $mockedResponse = $this->getRblNegativeBalanceResponse();
 
         $this->setMozartMockResponse($mockedResponse);
 
@@ -1636,6 +1627,233 @@ class RblBankingAccountStatementTest extends TestCase
         $this->assertEquals($initialBalance['updated_at'], $finalBalance['updated_at']);
     }
 
+    protected function getBasicNegativeBalanceResponse()
+    {
+        $response = [
+            'data' => [
+                'PayGenRes' => [
+                    'Body'      => [
+                        'hasMoreData'        => 'N',
+                        'transactionDetails' => [
+                            [
+                                'pstdDate'           => '2016-01-05T01:36:33.000',
+                                'transactionSummary' => [
+                                    'instrumentId' => '',
+                                    'txnAmt'       => [
+                                        'amountValue'  => '221.00',
+                                        'currencyCode' => 'INR'
+                                    ],
+                                    'txnDate'      => '2016-01-05T00:00:00.000',
+                                    'txnDesc'      => '123456-Z',
+                                    'txnType'      => 'D'
+                                ],
+                                'txnBalance'         => [
+                                    'currencyCode' => 'INR',
+                                    'amountValue'  => '-121.00'
+                                ],
+                                'txnCat'             => 'TCI',
+                                'txnId'              => '  S807068',
+                                'txnSrlNo'           => '  49',
+                                'valueDate'          => '2016-01-05T00:00:00.000'
+                            ],
+                        ]
+                    ],
+                    'Header'    => [
+                        'Approver_ID' => '',
+                        'Corp_ID'     => 'RAZORPAY',
+                        'Error_Cde'   => '',
+                        'Error_Desc'  => '',
+                        'Status'      => 'SUCCESS',
+                        'TranID'      => '1'
+                    ],
+                    'Signature' => [
+                        'Signature' => 'Signature'
+                    ]
+                ],
+            ],
+            'error'             => null,
+            'external_trace_id' => '',
+            'mozart_id'         => 'bjt1l8jc1osqk0jtadrg',
+            'next'              => [],
+            'success'           => true
+        ];
+
+        return $response;
+    }
+
+    public function testRblAccountStatementNegativeBalance()
+    {
+        $mockedResponse = $this->getBasicNegativeBalanceResponse();
+
+        $this->setMozartMockResponse($mockedResponse);
+
+        $payoutAttributes = [
+            'utr'             => '123456',
+            'balance_id'      => $this->balance->getId(),
+            'amount'          => '22100',
+            'channel'         => 'rbl',
+            'fees'            => '500',
+            'tax'             => '90',
+            'pricing_rule_id' => 'Bbg7fgaDwax04u',
+        ];
+
+        $payout = $this->fixtures->payout->createPayoutWithoutTransaction($payoutAttributes);
+
+        $this->ba->cronAuth();
+
+        $this->startTest();
+
+        $basAfterTest = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT_STATEMENT, true);
+
+        $txn = $this->getDbLastEntity('transaction')->toArray();
+
+        $payout = $this->getDbEntityById('payout', $payout->getId())->toArray();
+
+        $balance = $this->getDbEntityById('balance', $this->balance->getId())->toArray();
+
+        $this->assertEquals($payout['transaction_id'], $txn['id']);
+
+        $this->assertEquals($payout['balance_id'], $txn['balance_id']);
+
+        $this->assertEquals($txn['balance_id'], $balance['id']);
+
+        $this->assertTrue($balance['balance'] < 0);
+
+        $this->assertTrue($txn['balance'] < 0);
+
+        $this->assertTrue($basAfterTest['balance'] < 0);
+    }
+
+    public function testRblAccountStatementNegativeBalanceWithExternalSource()
+    {
+        $mockedResponse = $this->getBasicNegativeBalanceResponse();
+
+        $this->setMozartMockResponse($mockedResponse);
+
+        $this->ba->cronAuth();
+
+        $this->startTest();
+
+        $basAfterTest = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT_STATEMENT, true);
+
+        $txn = $this->getDbLastEntity('transaction')->toArray();
+
+        $external = $this->getDbLastEntity('external')->toArray();
+
+        $balance = $this->getDbEntityById('balance', $this->balance->getId())->toArray();
+
+        $this->assertEquals($external['transaction_id'], $txn['id']);
+
+        $this->assertEquals($external['utr'], $basAfterTest['utr']);
+
+        $this->assertEquals($external['balance_id'], $txn['balance_id']);
+
+        $this->assertEquals($txn['balance_id'], $balance['id']);
+
+        $this->assertTrue($balance['balance'] < 0);
+
+        $this->assertTrue($txn['balance'] < 0);
+
+        $this->assertTrue($basAfterTest['balance'] < 0);
+    }
+
+    public function testRblAccountStatementNegativeBalanceWithSourceReversal()
+    {
+        $mockedResponse = $this->getBasicNegativeBalanceResponse();
+
+        $mockedResponse['data']['PayGenRes']['Body']['transactionDetails'][0]['transactionSummary']['txnType'] = 'C';
+        $mockedResponse['data']['PayGenRes']['Body']['transactionDetails'][0]['transactionSummary']['txnDesc'] = 'R-123456//';
+        $mockedResponse['data']['PayGenRes']['Body']['transactionDetails'][0]['transactionSummary']['txnAmt']['amountValue'] ='100.00';
+
+        $balanceId = $this->balance->getId();
+
+        $this->setMozartMockResponse($mockedResponse);
+
+        $payoutAttributes = [
+            'utr'             => '123456',
+            'balance_id'      => $this->balance->getId(),
+            'amount'          => '22100',
+            'channel'         => 'rbl',
+            'fees'            => '500',
+            'tax'             => '90',
+            'pricing_rule_id' => 'Bbg7fgaDwax04u',
+        ];
+
+        $payout = $this->fixtures->create('payout',$payoutAttributes);
+
+        $this->fixtures->edit('balance', $balanceId, [
+            'balance' => -22100
+        ]);
+
+        $reversalAttributes = [
+            'utr'         => '123456',
+            'balance_id'  => $balanceId,
+            'entity_id'   => $payout->getId(),
+            'entity_type' => 'payout',
+            'amount'      => '10000',
+            'channel'     => 'rbl',
+            'fee'         => 0,
+            'tax'         => 0,
+        ];
+
+       $reversal = $this->fixtures->reversal->createReversalWithoutTransaction($reversalAttributes);
+
+        $this->ba->cronAuth();
+
+        $this->startTest();
+
+        $basAfterTest = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT_STATEMENT, true);
+
+        $txn = $this->getDbLastEntity('transaction')->toArray();
+
+        $reversal = $this->getDbLastEntity('reversal')->toArray();
+
+        $balance = $this->getDbEntityById('balance', $this->balance->getId())->toArray();
+
+        $this->assertEquals($reversal['transaction_id'], $txn['id']);
+
+        $this->assertEquals($reversal['utr'], $basAfterTest['utr']);
+
+        $this->assertEquals($reversal['balance_id'], $txn['balance_id']);
+
+        $this->assertEquals($reversal['balance_id'], $balance['id']);
+
+        $this->assertTrue($balance['balance'] < 0);
+
+        $this->assertTrue($txn['balance'] < 0);
+
+        $this->assertTrue($basAfterTest['balance'] < 0);
+    }
+
+   public function testRblAccountStatementWhenNegativeBalanceExceedsMaxLimit()
+    {
+        $mockedResponse = $this->getBasicNegativeBalanceResponse();
+
+        $mockedResponse['data']['PayGenRes']['Body']['transactionDetails'][0]['txnBalance']['amountValue'] = '-1000001.00';
+
+        $this->setMozartMockResponse($mockedResponse);
+
+        $payoutAttributes = [
+            'utr'             => '123456',
+            'balance_id'      => $this->balance->getId(),
+            'amount'          => '22100',
+            'channel'         => 'rbl',
+            'fees'            => '500',
+            'tax'             => '90',
+            'pricing_rule_id' => 'Bbg7fgaDwax04u',
+        ];
+
+        $this->fixtures->payout->createPayoutWithoutTransaction($payoutAttributes);
+
+        $this->fixtures->edit('balance', $this->balance->getId(), [
+            'balance' => -99999900
+        ]);
+
+        $this->ba->cronAuth();
+
+        $this->startTest();
+    }
+
     // in this first balance fetch cron is run after banking Account statement fetch Cron.
     // and then balance api is checked to see it uses balance from cron which last updated
     public function testLatestBalanceWhenBalanceFetchCronRunsAfterBankingAccountStatementCron($amount = 500)
@@ -1804,6 +2022,95 @@ class RblBankingAccountStatementTest extends TestCase
         $this->startTest();
     }
 
+    public function testPayoutForRblWhenBalanceIsNegative()
+    {
+        $originalMozart = $this->app['mozart'];
+
+        $this->mockMozartResponseForFetchingBalanceFromRblGateway(-300);
+
+        // queue flag is set. Since we dont check for balance amount < or > payoutAmount when queue_if_low_balance not
+        // set it goes to processing and fails at fts
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number'       => '2224440041626905',
+                'amount'               => 20000,
+                'currency'             => 'INR',
+                'purpose'              => 'refund',
+                'narration'            => 'Batman',
+                'mode'                 => 'IMPS',
+                'fund_account_id'      => 'fa_100000000000fa',
+                'queue_if_low_balance' => 1,
+                'notes'                => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals('queued', $response['status']);
+
+        $this->app->instance('mozart', $originalMozart);
+    }
+
+    public function testRblBankingAccountStatementAndPayoutWithNegativeBalance()
+    {
+        $this->testRblAccountStatementNegativeBalance();
+
+        $this->mockMozartResponseForFetchingBalanceFromRblGateway(-121);
+
+        $this->ba->privateAuth();
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number'       => '2224440041626905',
+                'amount'               => 20000,
+                'currency'             => 'INR',
+                'purpose'              => 'refund',
+                'narration'            => 'Batman',
+                'mode'                 => 'IMPS',
+                'fund_account_id'      => 'fa_100000000000fa',
+                'queue_if_low_balance' => 1,
+                'notes'                => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals('queued', $response['status']);
+
+        $mockedResponse = $this->getBasicNegativeBalanceResponse();
+
+        $this->setMozartMockResponse($mockedResponse);
+
+        $this->ba->cronAuth();
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/banking_account_statement/process',
+            'content' => [
+                'account_number' => '2224440041626905',
+                'channel'        => 'rbl',
+            ]
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $expectedResponse = [
+            'channel' => 'rbl',
+            'account_number' => '2224440041626905',
+        ];
+
+        $this->assertEquals($expectedResponse, $response);
+
+    }
+
     // in this first balance fetch cron is run after banking Account statement fetch Cron.
     // and then checks payout creation uses balance from cron which updated latest
     public function testCreateRblPayoutWhenBalanceFetchCronRunsAfterBankingAccountStatementCron()
@@ -1869,8 +2176,8 @@ class RblBankingAccountStatementTest extends TestCase
         ];
 
         $this->assertArraySelectiveEquals($expectedOutput, $actualOutput);
-    }  
-      
+    }
+
     public function testFetchStatementByTransactionIdForRbl()
     {
         $this->testRblAccountStatementCase1();
@@ -1884,7 +2191,7 @@ class RblBankingAccountStatementTest extends TestCase
         $this->ba->privateAuth();
 
         $response = $this->startTest();
-        
+
         $this->assertEquals($this->txnEntity->getPostedDate(), $response['created_at']);
         $this->assertEquals($this->txnEntity->getPublicId(), $response['id']);
         $this->assertEquals($this->txnEntity['amount'], $response['amount']);

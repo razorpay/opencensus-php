@@ -10,7 +10,9 @@ use RZP\Constants\Product;
 use RZP\Constants\Timezone;
 use RZP\Models\Pricing\Calculator;
 use RZP\Models\Payout as PayoutModel;
+use RZP\Models\Merchant\Balance\Type;
 use RZP\Exception\BadRequestException;
+use RZP\Models\Merchant\Balance\Channel;
 use RZP\Models\Transaction\ReconciledType;
 use RZP\Models\Merchant\Balance\AccountType;
 
@@ -175,11 +177,22 @@ class Payout extends Base
     {
         $this->validateMerchantBalance();
 
-        parent::updateBalances();
+        parent::updateBalances($negativeLimit);
     }
 
     protected function validateMerchantBalance()
     {
+        $balanceType = $this->merchantBalance->getType();
+
+        $accountType = $this->merchantBalance->getAccountType();
+
+        if (($balanceType === Type::BANKING) and
+            ($accountType === AccountType::DIRECT) and
+            ($this->merchantBalance->getChannel() === Channel::RBL))
+        {
+            return ;
+        }
+
         $debitAmount = $this->txn->getAmount();
 
         if ($this->source->getPayoutType() === PayoutModel\Entity::ON_DEMAND)

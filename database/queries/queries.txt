@@ -5647,6 +5647,9 @@ ALTER TABLE users
     ADD COLUMN old_password1 varchar(100) DEFAULT NULL,
     ADD COLUMN old_password2 varchar(100) DEFAULT NULL;
 
+ALTER TABLE banking_account_statement
+    MODIFY COLUMN balance BIGINT(20);
+
 ALTER TABLE blade
     MODIFY COLUMN amount BIGINT NOT NULL;
 

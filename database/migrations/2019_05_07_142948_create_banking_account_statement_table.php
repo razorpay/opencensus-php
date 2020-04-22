@@ -64,8 +64,7 @@ class CreateBankingAccountStatementTable extends Migration
             $table->string(Entity::BANK_INSTRUMENT_ID, 255)
                   ->nullable();
 
-            $table->bigInteger(Entity::BALANCE)
-                  ->unsigned();
+            $table->bigInteger(Entity::BALANCE);
 
             $table->char(Entity::BALANCE_CURRENCY, 3)
                   ->default(Currency::INR);

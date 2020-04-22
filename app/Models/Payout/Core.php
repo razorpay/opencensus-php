@@ -1105,7 +1105,6 @@ class Core extends Base\Core
             TraceCode::TRANSACTION_FOUND_DURING_PAYOUT_REVERSED,
             [
                 'reversal_id'       => $reversal->getId(),
-              
                 'payout_id'         => $reversal->entity->getId(),
                 'transaction_id'    => $transaction->getId(),
                 'source_id'         => $source->getId(),

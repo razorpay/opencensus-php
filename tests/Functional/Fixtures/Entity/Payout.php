@@ -56,4 +56,20 @@ class Payout extends Base
 
         return $payout;
     }
+
+    public function createPayoutWithoutTransaction(array $attributes = [])
+    {
+        $defaultValues = [
+            'customer_id'       => '100000customer',
+            'destination_id'    => '1000000lcustba',
+            'destination_type'  => 'bank_account',
+            'balance_id'        => '10000000000000',
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        $payout = parent::create($attributes);
+
+        return $payout;
+    }
 }
