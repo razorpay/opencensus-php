@@ -653,7 +653,7 @@ class Gateway extends Base\Gateway
                 break;
 
             // Hard failure
-            case ($amount === 4444):
+            case (($amount === 4444) or ($amount === 4442)):
 
                 $response['result']         = 'Payment failed because of risk score.';
                 $response['status_code']    = ErrorCode::GATEWAY_ERROR_DENIED_BY_RISK;
