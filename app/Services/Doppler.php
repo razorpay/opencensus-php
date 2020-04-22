@@ -216,12 +216,9 @@ class Doppler
 
         if($payment->isUPI() === true)
         {
-            $upiEntity = $this->repo->upi->fetchByPaymentId($payment->getId());
-            $type = $upiEntity['type'];
-            if ($type === Base\Type::PAY)
-            {
-                $type = Base\Type::INTENT;
-            }
+            $upiEntity = $this->repo->upi_metadata->fetchByPaymentId($payment->getId());
+            $type = $upiEntity->getFlow();
+
             $vpaHandle = $payment->getVpaHandleFromVpa();
             if (strlen($vpaHandle) == 0)
             {

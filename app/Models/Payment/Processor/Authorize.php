@@ -6266,12 +6266,9 @@ trait Authorize
 
     protected function sendFeedbackPaymentAuthorizedToDoppler($payment)
     {
-        $isProduction = $this->app->environment(Environment::PRODUCTION);
+        $razorXForDoppler = $this->app->doppler->checkRazorXForDoppler($payment->getId(), Doppler::RAZORX_DOPPLER);
 
-        $variant  = $this->app->razorx->getTreatment($payment->getId(), 'api_hitting_doppler_service', $this->mode);
-
-        if (($isProduction === true) and
-            (strtolower($variant) === 'on'))
+        if ($razorXForDoppler === true)
         {
             //TODO: Remove this later
             try

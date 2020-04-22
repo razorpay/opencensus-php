@@ -13,4 +13,11 @@ class Repository extends Base\Repository
         // Index only in payment_id
         $query->orderBy(Entity::PAYMENT_ID, 'desc');
     }
+
+    public function fetchByPaymentId($paymentId)
+    {
+        return $this->newQuery()
+            ->where(Entity::PAYMENT_ID , '=', $paymentId)
+            ->first();
+    }
 }
