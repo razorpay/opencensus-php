@@ -3112,6 +3112,7 @@ final class Route
         'pricing_add_plan_rule_bulk'               => '*',
         'adj_add_batch'                            => '*',
         'reminder_admin'                           => Permission::REMINDER_OPERATION,
+        'reminder_service'                         => Permission::REMINDER_OPERATION,
         'merchant_document_admin_fetch'            => '*',
         'group_create'                             => Permission::CREATE_GROUP,
         'admin_create'                             => Permission::CREATE_ADMIN,

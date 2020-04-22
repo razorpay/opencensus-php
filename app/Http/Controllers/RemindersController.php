@@ -53,6 +53,7 @@ class RemindersController extends Controller
             '^configs\/[[:alnum:]]{14}$',
         ],
         self::POST => [
+            '^merchant_config$',
             '^merchant_settings$',
             '^configs$',
         ],
