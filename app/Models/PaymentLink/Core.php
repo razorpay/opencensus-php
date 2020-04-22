@@ -6,8 +6,10 @@ use RZP\Models\Base;
 use RZP\Models\Item;
 use RZP\Models\User;
 use RZP\Models\Order;
+use RZP\Models\Invoice;
 use RZP\Diag\EventCode;
 use RZP\Models\Payment;
+use RZP\Models\Customer;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
@@ -16,6 +18,7 @@ use RZP\Models\LineItem;
 use Razorpay\Trace\Logger;
 use RZP\Services\UfhService;
 use RZP\Constants\Entity as E;
+use RZP\Models\Invoice\Entity as IE;
 use RZP\Exception\BaseException;
 use RZP\Models\Currency\Currency;
 use RZP\Models\Base\UniqueIdEntity;
@@ -407,6 +410,7 @@ class Core extends Base\Core
                 Order\Entity::AMOUNT   => $totalAmount,
                 Order\Entity::CURRENCY => $paymentLink->getCurrency(),
                 Order\Entity::PAYMENT_CAPTURE => true,
+                Order\Entity::NOTES    => $input[Order\Entity::NOTES] ?? [],
             ],
             $paymentLink->merchant
         );
@@ -576,6 +580,66 @@ class Core extends Base\Core
         return $response;
     }
 
+    public function getInvoiceDetails(string $paymentId)
+    {
+        $payment = $this->repo->payment->findByPublicIdAndMerchant($paymentId, $this->merchant);
+
+        $order = $payment->order;
+
+        $invoice = $order->invoice;
+
+        $response = [];
+
+        if(empty($invoice) === false) {
+
+            $invoiceId = $invoice->getPublicId();
+
+            $receipt = $invoice->getReceipt();
+
+            $response = [
+                'invoice_id' => $invoiceId,
+                'receipt'    => $receipt,
+            ];
+
+        }
+
+        return $response;
+    }
+
+    public function sendReceipt(string $paymentId, array $input)
+    {
+        $payment = $this->repo->payment->findByPublicIdAndMerchant($paymentId, $this->merchant);
+
+        $order = $payment->order;
+
+        $invoice = $order->invoice;
+
+        if(empty($invoice) === true)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_ERROR,
+            null,
+            null,
+            'Recept not preset');
+        }
+
+        if(isset($input[Invoice\Entity::RECEIPT]) === true)
+        {
+            $receipt = $input[Invoice\Entity::RECEIPT];
+
+            $invoice->setAttribute(Invoice\Entity::RECEIPT, $receipt);
+
+            $this->repo->invoice->save($invoice);
+        }
+
+        $invoiceCore = new Invoice\Core();
+
+        $invoice->setRelation('entity', $invoice->entity);
+
+        return $invoiceCore->sendNotification($invoice, Invoice\NotifyMedium::EMAIL);
+
+    }
+
     protected function addAdditionalDataToSettings(array & $settings, Entity $paymentLink)
     {
         $settings[Entity::CHECKOUT_OPTIONS] = [
@@ -649,6 +713,15 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($paymentLink);
 
+        try
+        {
+            $this->createInvoiceIfEnabled($paymentLink, $payment);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e);
+        }
+
         $this->trace->info(
             TraceCode::PAYMENT_LINK_UPDATED_POST_PAYMENT_CAPTURE,
             [
@@ -657,6 +730,99 @@ class Core extends Base\Core
             ]);
 
         $this->trace->count(Metric::PAYMENT_PAGE_PAID_TOTAL);
+    }
+
+    protected function createInvoiceIfEnabled(Entity $paymentLink, Payment\Entity $payment)
+    {
+        if($paymentLink->isReceiptEnabled() === false)
+        {
+            return;
+        }
+        $invoiceCreateInput = $this->getInvoiceCreateInput($paymentLink, $payment);
+
+        $invoiceCore = (new Invoice\Core());
+
+        $invoice = $invoiceCore->create(
+            $invoiceCreateInput,
+            $this->merchant,
+            null,
+            null,
+            $paymentLink,
+            null,
+            $payment->order);
+
+        $invoice->setStatus(Invoice\Status::PAID);
+
+        $this->repo->save($invoice);
+    }
+
+    protected function getInvoiceCreateInput(Entity $paymentLink, Payment\Entity $payment): array
+    {
+        $type = Invoice\Type::INVOICE;
+
+        $smsNotify = 0;
+
+        $order = $payment->order;
+
+        $customer = [
+            Customer\Entity::CONTACT   => $payment->getContact(),
+            Customer\Entity::EMAIL     => $payment->getEmail()
+        ];
+
+        $comment = Settings\Accessor::for($paymentLink, Settings\Module::PAYMENT_LINK)
+            ->get(Entity::PAYMENT_SUCCESS_MESSAGE);
+
+        $lineItems = $this->getLineItemsInput($order);
+
+        $terms = $paymentLink->getAttribute(Entity::TERMS);
+
+        $customSerialNumberEnabled = $paymentLink->isCustomSerialNumberEnabled();
+
+        $emailNotify = $customSerialNumberEnabled ? 0 : 1;
+
+        $receipt = $customSerialNumberEnabled ? null : $payment->getPublicId();
+
+        $input = [
+            IE::TYPE                => $type,
+            IE::EMAIL_NOTIFY        => $emailNotify,
+            IE::SMS_NOTIFY          => $smsNotify,
+            IE::CUSTOMER            => $customer,
+            IE::LINE_ITEMS          => $lineItems,
+            IE::COMMENT             => is_string($comment) ? $comment : null,
+            IE::TERMS               => $terms,
+            IE::RECEIPT             => $receipt,
+            IE::REMINDER_ENABLE     => false,
+        ];
+
+        $input = array_filter(
+            $input,
+            function ($value) {
+                return $value !== null;
+            }
+        );
+
+        return $input;
+    }
+
+    protected function getLineItemsInput(Order\Entity $order)
+    {
+        $invoiceLineItems = [];
+
+        $lineItems = $order->lineItems()->get()->all();
+
+        foreach ($lineItems as $lineItem)
+        {
+            $invoiceLineItem = [
+                LineItem\Entity::NAME           => $lineItem->getName(),
+                LineItem\Entity::DESCRIPTION    => $lineItem->getDescription(),
+                LineItem\Entity::AMOUNT         => $lineItem->getAmount(),
+                LineItem\Entity::CURRENCY       => $lineItem->getCurrency(),
+                LineItem\Entity::QUANTITY       => $lineItem->getQuantity()
+            ];
+            array_push($invoiceLineItems, $invoiceLineItem);
+        }
+
+        return $invoiceLineItems;
     }
 
     /**
@@ -1165,6 +1331,8 @@ class Core extends Base\Core
 
             $PPIValidator->validateAmountQuantityAndStockOfPPI($paymentPageItem, $lineItem);
         }
+
+        $modifiedInput[Order\Entity::NOTES] = $input[Order\Entity::NOTES] ?? [];
 
         return $modifiedInput;
     }

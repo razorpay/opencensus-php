@@ -317,6 +317,7 @@ class Validator extends Base\Validator
 
     protected static $validExternalEntities = [
         E::SUBSCRIPTION_REGISTRATION,
+        E::PAYMENT_PAGE,
     ];
 
     public function validateView($attribute, $value)
@@ -568,6 +569,11 @@ class Validator extends Base\Validator
                                         ->merchant
                                         ->isFeatureEnabled(Features::INVOICE_NO_RECEIPT_UNIQUE);
 
+            if($this->entity->isPaymentPageInvoice() === true)
+            {
+                $skipUniquenessCheck = true;
+            }
+
             if ($skipUniquenessCheck === true)
             {
                 return;
@@ -698,6 +704,8 @@ class Validator extends Base\Validator
 
         $op = $invoice->isOfSubscription() ? 'sendSubscriptionNotification' : 'sendNotification';
 
+        $op = $invoice->isPaymentPageInvoice() ? 'sendPPReceiptNotification' : $op;
+
         $this->validateOperation($op);
 
         if (NotifyMedium::isMediumValid($medium) === false)
@@ -799,6 +807,14 @@ class Validator extends Base\Validator
                 $allowedStatuses = [
                     Status::CANCELLED,
                     Status::EXPIRED,
+                ];
+
+                break;
+
+            case 'sendPPReceiptNotification':
+
+                $allowedStatuses = [
+                    Status::PAID,
                 ];
 
                 break;

@@ -81,6 +81,7 @@ class Entity
     const FEE_RECOVERY               = 'fee_recovery';
     const LEGAL_ENTITY               = 'legal_entity';
     const PAYMENT_LINK               = 'payment_link';
+    const PAYMENT_PAGE               = 'payment_page';
     const GATEWAY_RULE               = 'gateway_rule';
     const GATEWAY_FILE               = 'gateway_file';
     const BANK_ACCOUNT               = 'bank_account';

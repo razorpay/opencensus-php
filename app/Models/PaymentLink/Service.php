@@ -187,6 +187,16 @@ class Service extends Base\Service
 
     }
 
+    public function getInvoiceDetails(string $paymentId)
+    {
+        return $this->core->getInvoiceDetails($paymentId);
+    }
+
+    public function sendReceipt(string $paymentId, array $input)
+    {
+        return $this->core->sendReceipt($paymentId, $input);
+    }
+
     protected function getPaymentLinkAndSetModeAndMerchant(string $id)
     {
         $paymentPage = null;

@@ -235,6 +235,11 @@ class Notifier extends Base\Core
             $viewPayload['invoice']['short_url'] = $newShortUrl;
         }
 
+        if ($this->invoice->isPaymentPageInvoice() === true)
+        {
+            $viewPayload['pp_invoice'] = true;
+        }
+
         $fileData = [
             'name' => $this->invoice->getPdfDisplayName(),
             'path' => $this->issuedPdfPath,

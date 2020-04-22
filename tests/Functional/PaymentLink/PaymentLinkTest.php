@@ -9,6 +9,7 @@ use RZP\Models\Order;
 use RZP\Models\PaymentLink\Entity;
 use RZP\Services\Elfin;
 use RZP\Models\Payment;
+use RZP\Models\Invoice;
 use RZP\Models\Settings;
 use RZP\Error\ErrorCode;
 use RZP\Models\LineItem;
@@ -788,6 +789,134 @@ class PaymentLinkTest extends TestCase
         $this->startTest();
     }
 
+    public function testMakePaymentReceiptEnabledCustomSerialNotEnabled()
+    {
+        $settings = [
+            PaymentLink\Entity::UDF_SCHEMA => '[
+            {"name":"email","required":true,"title":"Email","type":"string","pattern":"email","settings":{"position":1}},
+            {"name":"phone","title":"Phone","required":true,"type":"number","pattern":"phone","minLength":"8","options":{},"settings":{"position":2}}]',
+            PaymentLink\Entity::RECEIPT_ENABLE          => true,
+            PaymentLink\Entity::SELECTED_INPUT_FIELD    => 'email',
+            PaymentLink\Entity::PAYMENT_SUCCESS_MESSAGE => 'success',
+        ];
+
+        $data = $this->createPaymentLinkAndOrderForThat();
+
+        $paymentLink = $data['payment_link'];
+
+        $order = $data['payment_link_order']['order'];
+
+        $paymentLink->getSettingsAccessor()->upsert($settings)->save();
+
+        $paymentNotes = [
+            'email' => 'abc@abc.com',
+            'phone' =>  '1234567890'
+        ];
+
+        $payment = $this->makePaymentForPaymentLinkWithOrderAndAssert(
+            $paymentLink,
+            $order,
+            Payment\Status::CAPTURED ,
+            $paymentNotes);
+
+        $invoice = $order->invoice;
+
+        $this->assertNotNull($invoice);
+
+        $this->assertEquals($invoice->getStatus(), Invoice\Status::PAID);
+
+        $this->assertEquals($invoice->getAttribute(Invoice\Entity::COMMENT), 'success');
+
+        $this->assertEquals($invoice->getEmailStatus(), Invoice\NotifyStatus::SENT);
+
+        $this->assertEquals($invoice->getReceipt(), $payment['id']);
+
+        $this->assertLineItems($invoice->lineItems->toArray(), $order->lineItems->toArray());
+
+    }
+
+    public function testMakePaymentReceiptEnabledCustomSerialEnabled()
+    {
+        $settings = [
+            PaymentLink\Entity::UDF_SCHEMA => '[
+            {"name":"email","required":true,"title":"Email","type":"string","pattern":"email","settings":{"position":1}},
+            {"name":"phone","title":"Phone","required":true,"type":"number","pattern":"phone","minLength":"8","options":{},"settings":{"position":2}}]',
+            PaymentLink\Entity::RECEIPT_ENABLE          => true,
+            PaymentLink\Entity::SELECTED_INPUT_FIELD    => 'email',
+            PaymentLink\Entity::PAYMENT_SUCCESS_MESSAGE => 'success',
+            PaymentLink\Entity::CUSTOM_SERIAL_NUMBER    => true,
+        ];
+
+        $data = $this->createPaymentLinkAndOrderForThat();
+
+        $paymentLink = $data['payment_link'];
+
+        $order = $data['payment_link_order']['order'];
+
+        $paymentLink->getSettingsAccessor()->upsert($settings)->save();
+
+        $paymentNotes = [
+            'email' => 'abc@abc.com',
+            'phone' =>  '1234567890'
+        ];
+
+        $payment = $this->makePaymentForPaymentLinkWithOrderAndAssert(
+            $paymentLink,
+            $order,
+            Payment\Status::CAPTURED ,
+            $paymentNotes);
+
+        $invoice = $order->invoice;
+
+        $this->assertNotNull($invoice);
+
+        $this->assertEquals($invoice->getStatus(), Invoice\Status::PAID);
+
+        $this->assertEquals($invoice->getAttribute(Invoice\Entity::COMMENT), 'success');
+
+        $this->assertNull($invoice->getEmailStatus());
+
+        $this->assertNull($invoice->getReceipt());
+
+        $this->assertLineItems($invoice->lineItems->toArray(), $order->lineItems->toArray());
+
+    }
+
+    public function testMakePaymentReceiptDisabled()
+    {
+        $settings = [
+            PaymentLink\Entity::UDF_SCHEMA => '[
+            {"name":"email","required":true,"title":"Email","type":"string","pattern":"email","settings":{"position":1}},
+            {"name":"phone","title":"Phone","required":true,"type":"number","pattern":"phone","minLength":"8","options":{},"settings":{"position":2}}]',
+            PaymentLink\Entity::RECEIPT_ENABLE          => false,
+            PaymentLink\Entity::SELECTED_INPUT_FIELD    => 'email',
+            PaymentLink\Entity::PAYMENT_SUCCESS_MESSAGE => 'success'
+        ];
+
+        $data = $this->createPaymentLinkAndOrderForThat();
+
+        $paymentLink = $data['payment_link'];
+
+        $order = $data['payment_link_order']['order'];
+
+        $paymentLink->getSettingsAccessor()->upsert($settings)->save();
+
+        $paymentNotes = [
+            'email' => 'abc@abc.com',
+            'phone' =>  '1234567890'
+        ];
+
+        $this->makePaymentForPaymentLinkWithOrderAndAssert(
+            $paymentLink,
+            $order,
+            Payment\Status::CAPTURED ,
+            $paymentNotes);
+
+        $invoice = $order->invoice;
+
+        $this->assertNull($invoice);
+    }
+
     // -------------------- Protected methods --------------------
 
     protected function createPaymentLink(string $id = self::TEST_PL_ID, array $attributes = []): PaymentLinkModel\Entity
@@ -992,7 +1121,8 @@ class PaymentLinkTest extends TestCase
     protected function makePaymentForPaymentLinkWithOrderAndAssert(
         PaymentLinkModel\Entity $paymentLink,
         Order\Entity $order,
-        $status = Payment\Status::CAPTURED
+        $status = Payment\Status::CAPTURED,
+        array $paymentNotes = []
     )
     {
         $payment = $this->getDefaultPaymentArray();
@@ -1000,6 +1130,7 @@ class PaymentLinkTest extends TestCase
         $payment[Payment\Entity::PAYMENT_LINK_ID] = $paymentLink->getPublicId();
         $payment[Payment\Entity::AMOUNT]          = $order->getAmount();
         $payment[Payment\Entity::ORDER_ID]        = $order->getPublicId();
+        $payment[Payment\Entity::NOTES]           = $paymentNotes;
 
         $payment = $this->doAuthAndGetPayment($payment, [
             Payment\Entity::STATUS   => $status,
@@ -1032,6 +1163,22 @@ class PaymentLinkTest extends TestCase
         if (empty($message) === false)
         {
             $this->assertContains($message, $response->getContent());
+        }
+    }
+
+    protected function assertLineItems(array $lineItemsInvoice, array $lineItemsPP)
+    {
+        $this->assertEquals(count($lineItemsInvoice), count($lineItemsPP));
+
+        for($i = 0; $i < count($lineItemsPP); $i++)
+        {
+            $itemInvoice = $lineItemsInvoice[$i];
+            $itemPP = $lineItemsPP[$i];
+            $this->assertEquals($itemInvoice[LineItem\Entity::NAME], $itemPP[LineItem\Entity::NAME]);
+            $this->assertEquals($itemInvoice[LineItem\Entity::DESCRIPTION], $itemPP[LineItem\Entity::DESCRIPTION]);
+            $this->assertEquals($itemInvoice[LineItem\Entity::AMOUNT], $itemPP[LineItem\Entity::AMOUNT]);
+            $this->assertEquals($itemInvoice[LineItem\Entity::CURRENCY], $itemPP[LineItem\Entity::CURRENCY]);
+            $this->assertEquals($itemInvoice[LineItem\Entity::QUANTITY], $itemPP[LineItem\Entity::QUANTITY]);
         }
     }
 }

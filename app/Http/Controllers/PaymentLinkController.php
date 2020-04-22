@@ -200,4 +200,20 @@ class PaymentLinkController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function getInvoiceDetails(string $paymentId)
+    {
+        $response = $this->service()->getInvoiceDetails($paymentId);
+
+        return ApiResponse::json($response);
+    }
+
+    public function sendReceipt(string $paymentId)
+    {
+        $input = Request::all();
+
+        $response = $this->service()->sendReceipt($paymentId, $input);
+
+        return ApiResponse::json($response);
+    }
 }

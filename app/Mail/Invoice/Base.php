@@ -163,6 +163,13 @@ class Base extends Mailable
                 break;
         }
 
+        if(empty($this->data['pp_invoice']) === false)
+        {
+            $template = static::SUBJECT_TEMPLATES['pp_invoice'];
+
+            $args = [];
+        }
+
         return sprintf($template, ...$args);
     }
 }

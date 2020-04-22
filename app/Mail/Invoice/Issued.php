@@ -17,6 +17,7 @@ class Issued extends Base
         Type::INVOICE                           => ' Invoice from %s',
         Preferences::MID_RBL_RETAIL_ASSETS      => ' Mandate registration link from RBL Bank',
         Preferences::MID_RBL_INTERIM_PROCESS2   => ' Mandate registration link from RBL Bank',
+        'pp_invoice'                            => ' Payment Page Receipt',
     ];
 
     protected $fileData;
@@ -66,6 +67,11 @@ class Issued extends Base
 
                 break;
 
+        }
+
+        if(empty($this->data['pp_invoice']) === false)
+        {
+            $this->view('emails.invoice.customer.pp_invoice');
         }
 
         return $this;

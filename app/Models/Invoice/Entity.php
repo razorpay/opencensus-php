@@ -18,6 +18,7 @@ use RZP\Models\LineItem;
 use RZP\Models\Merchant;
 use RZP\Models\Customer;
 use RZP\Models\FileStore;
+use RZP\Models\PaymentLink;
 use RZP\Models\Currency\Currency;
 use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Models\Plan\Subscription;
@@ -239,6 +240,7 @@ class Entity extends Base\PublicEntity
         'expireInvoice',
         'sendNotification',
         'sendSubscriptionNotification',
+        'sendPPReceiptNotification',
         'addLineItems',
         'addManyLineItems',
         'updateLineItem',
@@ -984,6 +986,12 @@ class Entity extends Base\PublicEntity
     {
         return (($this->getEntityType() !== null) and
             ($this->entity instanceof SubscriptionRegistration\Entity));
+    }
+
+    public function isPaymentPageInvoice(): bool
+    {
+        return (($this->getEntityType() !== null)) and
+            ($this->getRelation('entity') instanceof PaymentLink\Entity);
     }
 
     /**

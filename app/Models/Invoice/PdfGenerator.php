@@ -9,6 +9,7 @@ use Mustache_Engine;
 use mikehaertl\wkhtmlto\Pdf;
 
 use RZP\Exception;
+use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
@@ -18,6 +19,7 @@ class PdfGenerator extends Base\Core
     // Following is cache key to get which holds templates data
 
     const INVOICE_PDF_TEMPLATES_KEY = 'invoice:invoices.pdf.templates';
+    const INVOICE_PDF_PP_TEMPLATES_KEY = 'invoice:invoices.pdf.templates';
 
     const CACHE_DEFAULT_TTL         = 15; // In minutes
 
@@ -29,6 +31,8 @@ class PdfGenerator extends Base\Core
 
     const INVOICE_PDF_TEMPLATE_PATH = '/invoice_standard.mustache';
     const INVOICE_PDF_CSS_PATH      = '/invoice.css';
+    const INVOICE_PDF_PP_TEMPLATE_PATH = '/invoice_receipt.mustache';
+    const INVOICE_PDF_PP_CSS_PATH      = '/invoice.css';
 
     protected $invoicejsBaseUrl;
     protected $invoice;
@@ -122,7 +126,18 @@ class PdfGenerator extends Base\Core
 
     protected function getFilesFromRedisOrRemote(): array
     {
-        $result = $this->cache->get(self::INVOICE_PDF_TEMPLATES_KEY);
+        $templateType = self::INVOICE_PDF_TEMPLATE_PATH;
+        $templateKey = self::INVOICE_PDF_TEMPLATES_KEY;
+        $templateCss = self::INVOICE_PDF_CSS_PATH;
+
+        if($this->invoice->isPaymentPageInvoice() === true)
+        {
+            $templateType = self::INVOICE_PDF_PP_TEMPLATE_PATH;
+            $templateKey = self::INVOICE_PDF_PP_TEMPLATES_KEY;
+            $templateCss = self::INVOICE_PDF_PP_CSS_PATH;
+        }
+
+        $result = $this->cache->get($templateKey);
 
         if ($result !== null)
         {
@@ -131,11 +146,11 @@ class PdfGenerator extends Base\Core
 
         $result = [];
 
-        $result[self::TEMPLATE_FILE] = $this->getFileFromRemote(self::INVOICE_PDF_TEMPLATE_PATH);
+        $result[self::TEMPLATE_FILE] = $this->getFileFromRemote($templateType);
 
-        $result[self::CSS_FILE] = $this->getFileFromRemote(self::INVOICE_PDF_CSS_PATH);
+        $result[self::CSS_FILE] = $this->getFileFromRemote($templateCss);
 
-        $this->cache->put(self::INVOICE_PDF_TEMPLATES_KEY, json_encode($result), self::CACHE_DEFAULT_TTL);
+        $this->cache->put($templateKey, json_encode($result), self::CACHE_DEFAULT_TTL);
 
         return $result;
     }

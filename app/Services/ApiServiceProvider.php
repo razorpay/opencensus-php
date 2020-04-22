@@ -32,6 +32,7 @@ use RZP\Models\Transfer;
 use RZP\Models\Promotion;
 use RZP\Models\Adjustment;
 use RZP\Models\Settlement;
+use RZP\Models\PaymentLink;
 use RZP\Models\BankAccount;
 use RZP\Models\FundAccount;
 use RZP\Models\Transaction;
@@ -699,6 +700,8 @@ class ApiServiceProvider extends BaseServiceProvider
 
             'subscription_registration' => SubscriptionRegistration\Entity::class,
             'paper_mandate'             => PaperMandate\Entity::class,
+
+            'payment_page'              => PaymentLink\Entity::class,
 
             'contact'                   => Contact\Entity::class,
 

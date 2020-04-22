@@ -118,7 +118,8 @@ class Validator extends Base\Validator
     ];
 
     protected static $createOrderRules = [
-        Entity::LINE_ITEMS  => 'array|custom|min:1|max:25'
+        Entity::LINE_ITEMS  => 'array|custom|min:1|max:25',
+        Entity::NOTES       => 'sometimes|notes',
     ];
 
     protected static $createOrderLineItemRules = [

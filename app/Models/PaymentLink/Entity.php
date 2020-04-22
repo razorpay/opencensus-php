@@ -441,6 +441,38 @@ class Entity extends Base\PublicEntity
         return true;
     }
 
+    public function isReceiptEnabled(): bool
+    {
+        $receiptEnable = Settings\Accessor::for($this, Settings\Module::PAYMENT_LINK)
+            ->get(self::RECEIPT_ENABLE);
+
+        if(isset($receiptEnable) === true and $receiptEnable == '1')
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    public function getSelectedInputField(): string
+    {
+        return Settings\Accessor::for($this, Settings\Module::PAYMENT_LINK)
+            ->get(self::SELECTED_INPUT_FIELD);
+    }
+
+    public function isCustomSerialNumberEnabled(): bool
+    {
+        $customSerialNumber = Settings\Accessor::for($this, Settings\Module::PAYMENT_LINK)
+            ->get(self::CUSTOM_SERIAL_NUMBER);
+
+        if(isset($customSerialNumber) === true and $customSerialNumber == '1')
+        {
+            return true;
+        }
+
+        return false;
+    }
+
     /**
      * Checks if link in it's current state is payable or not.
      * @return boolean

@@ -12,6 +12,8 @@ use RZP\Models\Merchant;
 use RZP\Models\Payment;
 use RZP\Models\Options;
 use RZP\Constants\Mode;
+use RZP\Models\Settings;
+use RZP\Models\PaymentLink;
 use RZP\Constants\Timezone;
 use RZP\Models\BankAccount;
 use RZP\Models\PaperMandate;
@@ -20,6 +22,7 @@ use RZP\Models\Options\Constants;
 use RZP\Models\Plan\Subscription;
 use RZP\Models\Merchant\Preferences;
 use RZP\Models\SubscriptionRegistration;
+use RZP\Models\PaymentLink\Template\UdfSchema;
 
 /**
  * This class is common source of invoice and related data to be sent
@@ -572,10 +575,80 @@ class ViewDataSerializer extends Base\Core
                 [PaperMandate\Entity::IS_NACH_FORM_UPLOADED] = empty($paperMandate->getUploadedFileID()) === false;
             }
         }
+        elseif ($this->invoice->isPaymentPageInvoice() === true)
+        {
+            $serialized[Entity::ENTITY_TYPE] = E::PAYMENT_PAGE;
+
+            $selectedInputFieldName = Settings\Accessor::for($externalEntity, Settings\Module::PAYMENT_LINK)
+                ->get(PaymentLink\Entity::SELECTED_INPUT_FIELD);
+
+            $seletcedInputFieldValue = $this->getSelectedInputFieldValue($selectedInputFieldName);
+
+            $selectedInputFieldTitle = $this->getSelectedInputFieldTitleFromName($externalEntity, $selectedInputFieldName);
+
+            $selectedInputField = [
+                'label'   => $selectedInputFieldTitle,
+                'value' => $seletcedInputFieldValue,
+            ];
+
+            $ppMerchantSettings = Settings\Accessor::for($this->merchant, Settings\Module::PAYMENT_LINK)
+                ->all();
+
+            $text80G = $ppMerchantSettings[PaymentLink\Entity::TEXT_80G_12A] ?? null;
+
+            $imageURL80G = $ppMerchantSettings[PaymentLink\Entity::IMAGE_URL_80G] ?? null;
+
+            $details80g = [
+                'text'      => $text80G,
+                'image_url' => $imageURL80G,
+            ];
+
+            $details80g = array_filter($details80g);
+
+            $title = $externalEntity->getAttribute(PaymentLink\Entity::TITLE);
+
+            $serialized[E::PAYMENT_PAGE] = [
+                'details_80g'          => empty($details80g) ? null : $details80g,
+                'selected_input_field' => $selectedInputField,
+                'title'                => $title,
+            ];
+        }
         else
         {
             $serialized[Entity::ENTITY_TYPE] = null;
         }
+    }
+
+    protected function getSelectedInputFieldValue($selectedInputFiledName)
+    {
+        $order = $this->invoice->order;
+
+        $payment = $this->repo->payment->fetchPaymentsForOrderId($order->getId())[0];
+
+        $this->repo->loadRelations($payment);
+
+        $notes = $payment->getNotes()->toArray();
+
+        return $notes[$selectedInputFiledName] ?? null;
+    }
+
+    protected function getSelectedInputFieldTitleFromName($paymentPage, $selectedInputFieldName)
+    {
+        $udfSchemaClass = new UdfSchema($paymentPage);
+
+        $udfSchemaJson = $udfSchemaClass->getSchema();
+
+        $udfSchema = json_decode($udfSchemaJson);
+
+        foreach ($udfSchema as $udf)
+        {
+            if($udf->name === $selectedInputFieldName)
+            {
+                return $udf->title;
+            }
+        }
+
+        return '';
     }
 
     protected function getNonFailurePaymentsForOrder(Order\Entity $order)
