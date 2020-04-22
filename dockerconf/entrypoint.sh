@@ -23,7 +23,10 @@ fix_permissions(){
 trap finish EXIT
 
 function finish {
-  touch /container-share/sigterm-check.txt
+  if [ -d "/container-share" ]
+  then
+    touch /container-share/sigterm-check.txt
+  fi
 }
 
 configure(){
