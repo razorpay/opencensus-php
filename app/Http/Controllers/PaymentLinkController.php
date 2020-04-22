@@ -175,4 +175,29 @@ class PaymentLinkController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function setMerchantDetails()
+    {
+        $input = Request::all();
+
+        $response =  $this->service()->setMerchantDetails($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function fetchMerchantDetails(string $merchantId)
+    {
+        $response = $this->service()->fetchMerchantDetails();
+
+        return ApiResponse::json($response);
+    }
+
+    public function setReceiptDetails(string $id)
+    {
+        $input = Request::all();
+
+        $response = $this->service()->setReceiptDetails($id, $input);
+
+        return ApiResponse::json($response);
+    }
 }

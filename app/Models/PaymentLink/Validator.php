@@ -13,6 +13,7 @@ use RZP\Constants\Timezone;
 use RZP\Models\Currency\Currency;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Models\PaymentLink\Template\UdfSchema;
 
 /**
  * Class Validator
@@ -124,6 +125,17 @@ class Validator extends Base\Validator
         Entity::PAYMENT_PAGE_ITEM_ID => 'required|public_id',
         LineItem\Entity::AMOUNT      => 'required|mysql_unsigned_int|custom',
         LineItem\Entity::QUANTITY    => 'sometimes|integer|min:1',
+    ];
+
+    protected static $setMerchantDetailsRules = [
+        Entity::TEXT_80G_12A    => 'sometimes|string|max:2048',
+        Entity::IMAGE_URL_80G   => 'sometimes|nullable|string|max:512',
+    ];
+
+    protected static $setInvoiceDetailsRules = [
+        Entity::RECEIPT_ENABLE       => 'sometimes|boolean',
+        Entity::SELECTED_INPUT_FIELD => 'sometimes|string|custom',
+        Entity::CUSTOM_SERIAL_NUMBER => 'sometimes|boolean',
     ];
 
     public function validateLineItems(string $attribute, $value)
@@ -465,5 +477,37 @@ class Validator extends Base\Validator
 
             throw new BadRequestValidationFailureException($message);
         }
+    }
+
+    public function validateSetMerchantDetails(array $input)
+    {
+        $this->validateInput('setMerchantDetails', $input);
+    }
+
+    public function validateSetInvoiceDetails(array $input)
+    {
+        $this->validateInput('setInvoiceDetails', $input);
+    }
+
+    public function validateSelectedInputField(string $attribute,string $value)
+    {
+        $udfSchemaClass = new UdfSchema($this->entity);
+
+        $udfSchemaJson = $udfSchemaClass->getSchema();
+
+        $udfSchema = json_decode($udfSchemaJson);
+
+        foreach ($udfSchema as $udf)
+        {
+            if($udf->name === $value)
+            {
+                return;
+            }
+        }
+        throw new BadRequestException(
+            ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        null,
+        null,
+        'Input field not present');
     }
 }

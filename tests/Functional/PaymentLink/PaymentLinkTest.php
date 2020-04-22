@@ -6,8 +6,10 @@ use Carbon\Carbon;
 
 use RZP\Models\Item;
 use RZP\Models\Order;
+use RZP\Models\PaymentLink\Entity;
 use RZP\Services\Elfin;
 use RZP\Models\Payment;
+use RZP\Models\Settings;
 use RZP\Error\ErrorCode;
 use RZP\Models\LineItem;
 use RZP\Models\PaymentLink;
@@ -718,6 +720,57 @@ class PaymentLinkTest extends TestCase
         );
 
         $this->capturePayment($payment['id'], $payment['amount'], 'INR', 0, Payment\Status::REFUNDED);
+    }
+
+    public function testSetMerchantDetails()
+    {
+        $this->startTest();
+    }
+
+    public function testFetchMerchantDetails()
+    {
+        $settings = [
+            PaymentLink\Entity::TEXT_80G_12A    => 'text',
+            PaymentLink\Entity::IMAGE_URL_80G   => 'https://url',
+        ];
+        $merchant = $this->getDbEntityById('merchant', 10000000000000);
+        Settings\Accessor::for($merchant, Settings\Module::PAYMENT_LINK)
+            ->upsert($settings)
+            ->save();
+        $this->startTest();
+    }
+
+    public function testSetReceiptDetails()
+    {
+        $settings = [
+            PaymentLink\Entity::UDF_SCHEMA => '[
+            {"name":"email","required":true,"title":"Email","type":"string","pattern":"email","settings":{"position":1}},
+            {"name":"phone","title":"Phone","required":true,"type":"number","pattern":"phone","minLength":"8","options":{},"settings":{"position":2}}]'
+        ];
+
+        $paymentLink = $this->createPaymentLink(self::TEST_PL_ID);
+
+        $paymentLink->getSettingsAccessor()->upsert($settings)->save();
+
+        $this->startTest();
+    }
+
+    public function testSetReceiptDetailsEmpty()
+    {
+        $settings = [
+            PaymentLink\Entity::UDF_SCHEMA => '[
+            {"name":"email","required":true,"title":"Email","type":"string","pattern":"email","settings":{"position":1}},
+            {"name":"phone","title":"Phone","required":true,"type":"number","pattern":"phone","minLength":"8","options":{},"settings":{"position":2}}]',
+            PaymentLink\Entity::RECEIPT_ENABLE          => true,
+            PaymentLink\Entity::SELECTED_INPUT_FIELD    => 'email',
+            PaymentLink\Entity::CUSTOM_SERIAL_NUMBER    => true,
+        ];
+
+        $paymentLink = $this->createPaymentLink(self::TEST_PL_ID);
+
+        $paymentLink->getSettingsAccessor()->upsert($settings)->save();
+
+        $this->startTest();
     }
 
     public function testCreateOrderLineItemsEmptyArray()

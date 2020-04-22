@@ -1549,6 +1549,74 @@ return [
         ],
     ],
 
+    'testSetMerchantDetails' => [
+        'request' => [
+            'url'       => '/payment_pages/merchant_details',
+            'method'    => 'post',
+            'content'   => [
+                'text_80g_12a'  => 'text',
+                'image_url_80g' => 'https://url',
+            ]
+        ],
+        'response' => [
+            'status_code' => 200,
+            'content'     => [
+                'text_80g_12a'  => 'text',
+                'image_url_80g' => 'https://url',
+            ]
+        ]
+    ],
+
+    'testFetchMerchantDetails' => [
+        'request' => [
+            'url'       => '/payment_pages/merchant_details/10000000000000',
+            'method'    => 'get',
+        ],
+        'response'  => [
+            'status_code'   => 200,
+            'content'   => [
+                'text_80g_12a'  => 'text',
+                'image_url_80g' => 'https://url',
+            ]
+        ]
+    ],
+
+    'testSetReceiptDetails' => [
+        'request'   => [
+            'url'       => '/payment_pages/pl_100000000000pl/receipt',
+            'method'    => 'post',
+            'content'   => [
+                'receipt_enable' => true,
+                'selected_input_field' => 'email',
+                'custom_serial_number' => true,
+            ]
+        ],
+        'response'  => [
+            'status_code'   => 200,
+            'content'       => [
+                'receipt_enable'    => '1',
+                'selected_input_field' => 'email',
+                'custom_serial_number' => '1',
+            ]
+        ]
+    ],
+
+    'testSetReceiptDetailsEmpty' => [
+        'request'   => [
+            'url'       => '/payment_pages/pl_100000000000pl/receipt',
+            'method'    => 'post',
+            'content'   => []
+        ],
+        'response'  => [
+            'status_code'   => 200,
+            'content'       => [
+                'receipt_enable'    => '1',
+                'selected_input_field' => 'email',
+                'custom_serial_number' => '1',
+            ]
+        ]
+    ],
+
     'testCreateOrderLineItemsEmptyArray' => [
         'request' => [
             'url'    => '/payment_pages/pl_100000000000pl/order',

@@ -91,6 +91,11 @@ class Entity extends Base\PublicEntity
     const CHECKOUT_OPTIONS             = 'checkout_options';
     const PAYMENT_BUTTON_LABEL         = 'payment_button_label';
     const VERSION                      = 'version';
+    const TEXT_80G_12A                 = 'text_80g_12a';
+    const IMAGE_URL_80G                = 'image_url_80g';
+    const RECEIPT_ENABLE               = 'receipt_enable';
+    const SELECTED_INPUT_FIELD         = 'selected_input_field';
+    const CUSTOM_SERIAL_NUMBER         = 'custom_serial_number';
 
     const DEFAULT_THEME                = 'light';
 
@@ -104,6 +109,12 @@ class Entity extends Base\PublicEntity
         self::CHECKOUT_OPTIONS,
         self::PAYMENT_BUTTON_LABEL,
         self::VERSION,
+    ];
+
+    const INVOICE_DETAILS_KEYS          = [
+        self::RECEIPT_ENABLE,
+        self::SELECTED_INPUT_FIELD,
+        self::CUSTOM_SERIAL_NUMBER,
     ];
 
     /**

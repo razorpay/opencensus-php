@@ -4,6 +4,8 @@ namespace RZP\Models\PaymentLink;
 
 use RZP\Models\Base;
 use RZP\Models\Payment;
+use RZP\Error\ErrorCode;
+use RZP\Exception\BadRequestException;
 
 class Service extends Base\Service
 {
@@ -165,6 +167,24 @@ class Service extends Base\Service
         $paymentPageItem = $this->core->updatePaymentPageItem($paymentPageItem, $input);
 
         return $paymentPageItem->toArrayPublic();
+    }
+
+    public function setMerchantDetails(array $input)
+    {
+        return $this->core->setMerchantDetails($input);
+    }
+
+    public function fetchMerchantDetails()
+    {
+        return $this->core->fetchMerchantDetails();
+    }
+
+    public function setReceiptDetails(string $id, array $input)
+    {
+        $paymentLink = $this->repo->payment_link->findActiveByPublicId($id);
+
+        return $this->core->setReceiptDetails($paymentLink, $input);
+
     }
 
     protected function getPaymentLinkAndSetModeAndMerchant(string $id)

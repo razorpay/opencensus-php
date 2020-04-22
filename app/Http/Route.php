@@ -692,6 +692,10 @@ final class Route
         'payment_page_create_order'                => ['post',     'payment_pages/{id}/order',                       'PaymentLinkController@createOrder'                                 ],
         'payment_page_create_order_option'         => ['options',  'payment_pages/{id}/order',                       'PaymentLinkController@createOrderOptions'                          ],
         'payment_page_items_migrate_min_purchase'  => ['post',     'payment_pages/migrate_payment_page_purchase',    'PaymentLinkController@migratePaymentPageItemForMinPurchase'        ],
+        'payment_page_set_merchant_details'        => ['post',     'payment_pages/merchant_details',                 'PaymentLinkController@setMerchantDetails'                          ],
+        'payment_page_fetch_merchant_details'      => ['get',      'payment_pages/merchant_details/{merchant_id}',   'PaymentLinkController@fetchMerchantDetails'                        ],
+        'payment_page_set_receipt_details'         => ['post',     'payment_pages/{id}/receipt',                     'PaymentLinkController@setReceiptDetails'                           ],
+        // end of payment page section
         // payment link service end points
         'payment_links_service_hosted_page'        => ['get,post', 'hosted/payment_links/{path?}',                   'PlinkController@sendRequest'                                       ],
         'payment_links_service_main_route'         => ['any',      'payment_links',                                  'PlinkController@sendRequest'                                       ],
@@ -2413,6 +2417,9 @@ final class Route
         'payment_page_activate',
         'payment_page_slug_exists',
         'payment_page_item_update',
+        'payment_page_set_merchant_details',
+        'payment_page_fetch_merchant_details',
+        'payment_page_set_receipt_details',
         'submerchants_fetch',
         'submerchants_fetch_multiple',
         'webhook_fire',

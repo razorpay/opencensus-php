@@ -11,6 +11,7 @@ use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
+use RZP\Models\Settings;
 use RZP\Models\LineItem;
 use Razorpay\Trace\Logger;
 use RZP\Services\UfhService;
@@ -536,6 +537,43 @@ class Core extends Base\Core
         );
 
         return $summary;
+    }
+
+    public function setMerchantDetails(array $settings)
+    {
+        (new Validator())->validateSetMerchantDetails($settings);
+
+        $merchant = $this->merchant;
+
+        Settings\Accessor::for($merchant, Settings\Module::PAYMENT_LINK)
+            ->upsert($settings)
+            ->save();
+
+        return Settings\Accessor::for($merchant, Settings\Module::PAYMENT_LINK)
+            ->all();
+    }
+
+    public function fetchMerchantDetails()
+    {
+        $merchant = $this->merchant;
+
+        return Settings\Accessor::for($merchant, Settings\Module::PAYMENT_LINK)
+            ->all();
+    }
+
+    public function setReceiptDetails(Entity $paymentLink, array $input)
+    {
+        $validator = new Validator($paymentLink);
+        $validator->validateSetInvoiceDetails($input);
+
+        $this->upsertSettings($paymentLink, $input);
+
+        $receiptSettings = Settings\Accessor::for($paymentLink, Settings\Module::PAYMENT_LINK)
+            ->all();
+
+        $response = array_intersect_key($receiptSettings->toArray(), array_flip(Entity::INVOICE_DETAILS_KEYS));
+
+        return $response;
     }
 
     protected function addAdditionalDataToSettings(array & $settings, Entity $paymentLink)
