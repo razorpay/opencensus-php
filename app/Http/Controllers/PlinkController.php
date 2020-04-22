@@ -159,9 +159,13 @@ class PlinkController extends Controller
 
         $url = $this->baseUrl . $path;
 
+        $urlAppend = '?';
+
         if ($request->getQueryString() !== null)
         {
-            $url .= '?' . $request->getQueryString();
+            $url .= $urlAppend . $request->getQueryString();
+
+            $urlAppend = '&';
         }
 
         $method = $request->method();
@@ -175,6 +179,14 @@ class PlinkController extends Controller
         if ((empty($body) === false) && ($request->method() !== Request::METHOD_GET))
         {
             $requestBody = json_encode($body);
+        }
+
+        //needed because dashboard backend passes the get params in request body
+        if ((empty($body) === false) && ($request->method() === Request::METHOD_GET))
+        {
+            $extraParams = http_build_query( $body );
+
+            $url .= $urlAppend .$extraParams;
         }
 
         $options = [

@@ -735,6 +735,11 @@ class Constants
             'display_name'  => 'Covid-19 relief campaign',
             'documentation' => '',
         ],
+        self::PAYMENTLINKS_V2             => [
+            'feature'       => self::PAYMENTLINKS_V2,
+            'display_name'  => 'Payment links micro service for dashboard',
+            'documentation' => '',
+        ],
     ];
 
     /**
