@@ -215,8 +215,7 @@ class Core extends Base\Core
      */
     public function updatePoaVerificationStatusIfApplicable(Entity $merchantDetails, Merchant\Entity $merchant)
     {
-        if ((new Merchant\Core)->isUnRegisteredOnBoardingEnabled($merchant,
-                                                                 $merchantDetails->isUnregisteredBusiness()) === false)
+        if ((new Merchant\Core)->isAutoKycEnabled($merchantDetails, $merchant) === false)
         {
             return;
         }
@@ -247,7 +246,7 @@ class Core extends Base\Core
                         'document_type' => $document[Document\Entity::DOCUMENT_TYPE],
                     ]);
 
-                $documentType =  $document[Document\Entity::DOCUMENT_TYPE];
+                $documentType = $document[Document\Entity::DOCUMENT_TYPE];
 
                 $isOcrVerified = true;
 
@@ -260,7 +259,8 @@ class Core extends Base\Core
         $this->trace->count(DetailMetric::POA_VERIFICATION_STATUS_TOTAL,
                             [
                                 Detail\Constants::POA_STATUS    => $poaVerificationStatus,
-                                Detail\Constants::DOCUMENT_TYPE => $documentType
+                                Detail\Constants::DOCUMENT_TYPE => $documentType,
+                                Detail\Constants::BUSINESS_TYPE => $merchantDetails->getBusinessTypeValue()
                             ]);
 
         $merchantDetails->setPoaVerificationStatus($poaVerificationStatus);

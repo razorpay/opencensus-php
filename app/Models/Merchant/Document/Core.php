@@ -230,10 +230,11 @@ class Core extends Base\Core
         Entity $document,
         Merchant\Entity $merchant)
     {
+
         $merchantCore = new Merchant\Core();
 
         if ((Type::isDocumentTypeToPerformOcr($document->getDocumentType()) === false) or
-            ($merchantCore->isUnRegisteredOnBoardingEnabled($merchant, $merchantDetails->isUnregisteredBusiness()) === false))
+            ($merchantCore->isAutoKycEnabled($merchantDetails, $merchant) === false))
         {
             return;
         }
@@ -245,7 +246,8 @@ class Core extends Base\Core
 
         $this->trace->count(Detail\Metric::MERCHANT_DOCUMENT_OCR_PERFORMED_TOTAL,
                             [
-                                Entity::DOCUMENT_TYPE => $document->getDocumentType()
+                                Entity::DOCUMENT_TYPE        => $document->getDocumentType(),
+                                Detail\Entity::BUSINESS_TYPE => $merchantDetails->getBusinessTypeValue()
                             ]);
 
         $this->pushEventsForOCRVerification($merchant,
@@ -356,7 +358,7 @@ class Core extends Base\Core
             Constants::OCR_MATCH_TYPE          => $verificationData[Detail\Constants::POA_FUZZY_MATCH_TYPE] ?? null,
             Constants::OCR_MATCHING_THRESHOLD  => OcrVerificationStatus::OCR_VERIFICATION_THRESHOLD,
             Constants::OCR_NAME                => $ocrDetails[Constants::NAME] ?? null,
-            Detail\Entity::PROMOTER_PAN_NAME   => $promoterPanName,
+            Detail\Entity::PROMOTER_PAN_NAME   => $promoterPanName
         ];
 
         $this->app['diag']->trackOnboardingEvent(EventCode::DOCUMENT_VERIFICATION_OCR, $merchant, null, $eventProperties);

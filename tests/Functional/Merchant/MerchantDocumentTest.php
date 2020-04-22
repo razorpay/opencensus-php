@@ -151,7 +151,27 @@ class MerchantDocumentTest Extends TestCase
         $this->startTest();
     }
 
-    public function testDocumentUploadAndCheckOcrVerificationStatusSuccess()
+    public function testDocUploadAndCheckOcrStatusSuccessForRegistered()
+    {
+        $this->uploadDocAndCheckOcrSuccess(1, 'verified');
+    }
+
+    public function testDocUploadAndCheckOcrStatusSuccessForUnregistered()
+    {
+        $this->uploadDocAndCheckOcrSuccess(2, 'verified');
+    }
+
+    public function testDocUploadAndCheckOcrStatusFailureForRegistered()
+    {
+        $this->uploadDocAndCheckOcrSuccess(1, 'failed', 'random name');
+    }
+
+    public function testDocUploadAndCheckOcrStatusFailureForUnregistered()
+    {
+        $this->uploadDocAndCheckOcrSuccess(2, 'failed', 'random name');
+    }
+
+    public function uploadDocAndCheckOcrSuccess(int $businessType, string $status, string $panName = 'ABCDE FGHIJ')
     {
         $this->ba->proxyAuth('rzp_test_' . '10000000000000');
 
@@ -159,8 +179,8 @@ class MerchantDocumentTest Extends TestCase
             'merchant_detail',
             [
                 'merchant_id'       => '10000000000000',
-                'promoter_pan_name' => 'ABCDE FGHIJ',
-                'business_type'     => 2,
+                'promoter_pan_name' => $panName,
+                'business_type'     => $businessType,
             ]);
 
         $ocrResponseTypes = [
@@ -180,6 +200,15 @@ class MerchantDocumentTest Extends TestCase
 
             $testData = &$this->testData[__FUNCTION__];
 
+            $featureVariantMap = [
+                'registered_onboarding_auto_kyc' => 'on',
+                'non_registered_onboarding'      => 'on',
+                'kyc_service_verification'       => 'on',
+                'poa_kyc_service_verification'   => 'on'
+            ];
+
+            $this->mockRazorXMultiFeature(__FUNCTION__, $featureVariantMap, 10000000000000);
+
             $testData['request']['content']['document_type'] = $documentType;
 
             $testData['response']['content']['documents'][$documentType] = [];
@@ -188,7 +217,7 @@ class MerchantDocumentTest Extends TestCase
 
             $merchantDocumentDb = $this->getDbEntityById('merchant_document', $response['documents'][$documentType][0]['id']);
 
-            $this->assertEquals($merchantDocumentDb['ocr_verify'], 'verified');
+            $this->assertEquals($merchantDocumentDb['ocr_verify'], $status);
         }
     }
 

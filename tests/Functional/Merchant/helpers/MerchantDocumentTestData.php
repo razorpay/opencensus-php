@@ -189,6 +189,25 @@ return [
         ]
     ],
 
+    'uploadDocAndCheckOcrSuccess' => [
+        'request'  => [
+            'url'     => '/merchant/documents/upload',
+            'method'  => 'POST',
+            'content' => [
+                'document_type' => ''
+            ],
+            'server'  => [
+                'HTTP_X-Request-Origin' => 'https://dashboard.razorpay.com',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'documents' => [
+                ],
+            ]
+        ]
+    ],
+
     'testDocumentUploadAndCheckOcrVerificationStatusFailed' => [
         'request'  => [
             'url'     => '/merchant/documents/upload',
