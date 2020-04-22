@@ -94,32 +94,40 @@ class Core extends Base\Core
             return false;
         }
 
-        try
-        {
-            $txn = $this->createMissingRefundTransaction($refund);
-
-            if ($txn === null)
+        $this->mutex->acquireAndRelease(
+            $refund->getId(),
+            function () use ($refund)
             {
-                return false;
-            }
+                try
+                {
+                    $txn = $this->createMissingRefundTransaction($refund);
 
-            return true;
-        }
-        catch (\Exception $ex)
-        {
-            $this->messenger->raiseReconAlert(
-                [
-                    'trace_code'    => TraceCode::REFUND_TRANSACTION_CREATE_FAILED,
-                    'message'       => 'Refund transaction create failed with -> ' . $ex->getMessage(),
-                    'payment_id'    => $refund->payment->getId(),
-                    'refund_id'     => $refund->getId(),
-                    'gateway'       => $refund->getGateway(),
-                ]);
+                    if ($txn === null)
+                    {
+                        return false;
+                    }
 
-            $this->trace->traceException($ex);
+                    return true;
+                }
+                catch (\Exception $ex)
+                {
+                    $this->messenger->raiseReconAlert(
+                        [
+                            'trace_code'    => TraceCode::REFUND_TRANSACTION_CREATE_FAILED,
+                            'message'       => 'Refund transaction create failed with -> ' . $ex->getMessage(),
+                            'payment_id'    => $refund->payment->getId(),
+                            'refund_id'     => $refund->getId(),
+                            'gateway'       => $refund->getGateway(),
+                        ]);
 
-            return false;
-        }
+                    $this->trace->traceException($ex);
+
+                    return false;
+                }
+            },
+            self::MUTEX_LOCK_TIMEOUT,
+            ErrorCode::BAD_REQUEST_ANOTHER_OPERATION_IN_PROGRESS
+        );
     }
 
     protected function createMissingRefundTransaction(Refund\Entity $refund)
