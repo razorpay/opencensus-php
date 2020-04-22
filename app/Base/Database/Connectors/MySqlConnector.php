@@ -56,7 +56,7 @@ class MySqlConnector extends BaseMySqlConnector
 
                 if ($socketConnection === true)
                 {
-                    $this->app['db.config']->unsetSocketFromDatabaseConfig($config['name']);
+                    $this->app['proxysql.config']->unsetSocketFromDatabaseConfig($config['name']);
 
                     unset($config['unix_socket']);
 

@@ -29,6 +29,7 @@ final class Throttle
         $start = millitime();
 
         app('request.ctx')->init();
+        app('request.ctx')->resolveKeyIdIfApplicable();
 
         (new Throttler)->throttle();
 

@@ -35,6 +35,7 @@ class RequestContextTest extends TestCase
 
         $context = new RequestContext($this->app);
         $context->init();
+        $context->resolveKeyIdIfApplicable();
 
         $testDataExpected = $this->testData[$case]['expected'];
         foreach ($testDataExpected as $key => $expected)

@@ -840,12 +840,10 @@ class ApiServiceProvider extends BaseServiceProvider
 
     protected function registerDatabaseConnection()
     {
-        $this->app->singleton('db.config', function()
+        $this->app->singleton('proxysql.config', function()
         {
             return new RZP\Base\Database\Config();
         });
-
-        $this->app['db.config']->setDatabaseHostsIfApplicable();
 
         $this->app->singleton('db.connector.mysql', function($app)
         {

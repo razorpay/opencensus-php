@@ -45,6 +45,7 @@ class Kernel extends HttpKernel
      */
     protected $middlewarePriority = [
         // Route middleware
+        Middleware\ProxySQL::class,
         Middleware\Throttle::class,
         Middleware\Authenticate::class,
         Middleware\AdminAccess::class,
@@ -74,6 +75,7 @@ class Kernel extends HttpKernel
      * @var array
      */
     protected $routeMiddleware = [
+        'proxysql'                      => Middleware\ProxySQL::class,
         'throttle'                      => Middleware\Throttle::class,
         'auth'                          => Middleware\Authenticate::class,
         'admin_access'                  => Middleware\AdminAccess::class,

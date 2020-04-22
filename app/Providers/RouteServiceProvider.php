@@ -84,6 +84,7 @@ class RouteServiceProvider extends ServiceProvider
             'prefix'        => 'v1',
             'namespace'     => $this->namespace,
             'middleware'    => [
+                'proxysql',
                 'auth',
                 'admin_access',
                 'user_access',

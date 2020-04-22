@@ -138,6 +138,12 @@ final class RequestContext
      */
     protected $userId;
 
+    /**
+     * To check if request context is already initialized or not.
+     * @var null|string
+     */
+    protected $initialized = false;
+
     public function __construct(Application $app)
     {
         $this->app = $app;
@@ -145,10 +151,15 @@ final class RequestContext
 
     public function init()
     {
-        $this->initInstanceVars();
-        $this->setAuthVars();
-        $this->setAdditionalVars();
-        $this->resolveKeyIdIfApplicable();
+        $env = $this->app->environment();
+
+        if ($env === 'testing' or $this->initialized === false)
+        {
+            $this->initInstanceVars();
+            $this->setAuthVars();
+            $this->setAdditionalVars();
+            $this->initialized = true;
+        }
     }
 
     // There are few cases where getRoute returns null
@@ -390,6 +401,10 @@ final class RequestContext
         {
             $this->auth = Type::DEVICE_AUTH;
         }
+        else if ($this->setAdditionalVarsForApiStatus() == true)
+        {
+            // do nothing
+        }
         else
         {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
@@ -399,7 +414,7 @@ final class RequestContext
     /**
      * Resolves $keyId and sets $keyEntity as well as $mid instance
      */
-    protected function resolveKeyIdIfApplicable()
+    public function resolveKeyIdIfApplicable()
     {
         if ((empty($this->keyId) === true) or
             (empty($this->mode) === true) or
@@ -535,6 +550,16 @@ final class RequestContext
     protected function setAdditionalVarsForP2pDeviceAuth()
     {
         if (in_array($this->route, P2pRoute::$device, true) === true)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    protected function setAdditionalVarsForApiStatus()
+    {
+        if ($this->route === 'api_status')
         {
             return true;
         }

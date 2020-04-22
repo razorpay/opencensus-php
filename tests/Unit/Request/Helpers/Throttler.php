@@ -19,6 +19,7 @@ class Throttler extends BaseThrottler
         // For the purpose of Unit testing we initialize reqCtx manually.
         //
         $this->reqCtx->init();
+        $this->reqCtx->resolveKeyIdIfApplicable();
     }
 
     public function __call(string $name, array $args)

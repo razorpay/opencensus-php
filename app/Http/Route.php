@@ -5122,7 +5122,7 @@ final class Route
                   [
                       'as'   => 'api_status',
                       'uses' => '\RZP\Http\Controllers\PublicController@getStatus'
-                  ]);
+                  ])->middleware('proxysql');
     }
 
     public function getApiRouteInCategory($category)
