@@ -50,12 +50,14 @@ class Server extends Base\Mock\Server
 
         $this->validateAuthorizeInput($input);
 
+        $this->validateAccountNumberForTPV($input);
+
         if (isset($input['payerVa']) === false)
         {
             if ((isset($input['payerAccount']) === true) and
                 (isset($input['validatePayerAccFlag']) === false))
             {
-                throw new AssertionException('validatePayerAccFlag is expected for Collect TPV');
+                throw new AssertionException('validatePayerAccFlag is expected for Intent TPV');
             }
         }
         else
@@ -63,7 +65,7 @@ class Server extends Base\Mock\Server
             if ((isset($input['payerAccount']) === true) and
                 (isset($input['ValidatePayerAccFlag']) === false))
             {
-                throw new AssertionException('ValidatePayerAccFlag is expected for Intent TPV');
+                throw new AssertionException('ValidatePayerAccFlag is expected for Collect TPV');
             }
         }
 
@@ -82,9 +84,26 @@ class Server extends Base\Mock\Server
         $dontEncrypt = ((isset($input['payerVa']) === true) and
                         ($input['payerVa'] === 'dontencrypt@icici'));
 
-        $this->content($content, 'authorize');
+        $this->content($content, 'authorize', $input);
 
         return $this->makeResponse($content, $dontEncrypt);
+    }
+
+    // For certain banks, like SBIN, CBIN account numbers have to be of fixed specific length. We modify the account
+    // numbers for these banks. Adding a validation here so that test case added for SBI fails if there is some bug
+    // introduced in code.
+    protected function validateAccountNumberForTPV($input)
+    {
+        if ((isset($input['validatePayerAccFlag']) === true) or (isset($input['ValidatePayerAccFlag']) === true))
+        {
+            if (substr($input['payerIFSC'], 0, 4) === 'SBIN')
+            {
+                if (strlen($input['payerAccount']) < 17)
+                {
+                    throw new AssertionException('Invalid Account number');
+                }
+            }
+        }
     }
 
     public function refund($input)

@@ -138,6 +138,60 @@ class UpiIciciGatewayTest extends TestCase
         $this->assertEquals('pay', $gatewayEntity['type']);
     }
 
+    public function testIntentTpvWithoutZeroesForSbi()
+    {
+        $terminal = $this->fixtures->create('terminal:shared_upi_icici_intent_terminal');
+
+        $terminal->setAttribute('tpv', 2)->saveOrFail();
+
+        $this->ba->privateAuth();
+
+        $this->fixtures->merchant->enableTPV();
+
+        $this->mockServerContentFunction(function (& $content, $action, $request) use (& $requestAsserted)
+        {
+            // zeros are left padded for SBI
+            $this->assertSame('00000000003040304', $request['payerAccount']);
+            $requestAsserted = true;
+
+            if ($action === 'authorize')
+            {
+                $content['refId'] = 'ICICIRefId';
+            }
+            else
+            {
+                $content['PayerVA'] = 'user@icici';
+            }
+        });
+
+        $this->startTest($this->testData[__FUNCTION__]);
+
+        $order = $this->getLastEntity('order', true);
+
+        $payment = $this->getDefaultUpiPaymentArray();
+
+        unset($payment['vpa']);
+        $payment['_']['flow'] = 'intent';
+
+        $payment['amount'] = $order['amount'];
+        $payment['bank'] = $order['bank'];
+        $payment['order_id'] = $order['id'];
+
+        $this->doAuthPayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('1UpiIntICICTml', $payment['terminal_id']);
+
+        $this->fixtures->merchant->disableTPV();
+
+        $gatewayEntity = $this->getLastEntity('upi', true);
+
+        $this->assertEquals('pay', $gatewayEntity['type']);
+
+        $this->assertTrue($requestAsserted);
+    }
+
     public function testIntentDisabledPayment()
     {
         $this->fixtures->merchant->addFeatures(['disable_upi_intent']);

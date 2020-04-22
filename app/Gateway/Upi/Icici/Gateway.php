@@ -6,6 +6,7 @@ use Request;
 use Carbon\Carbon;
 use RZP\Exception;
 use ErrorException;
+use RZP\Models\Order;
 use RZP\Constants\Mode;
 use RZP\Models\Payment;
 use RZP\Gateway\Utility;
@@ -449,7 +450,7 @@ class Gateway extends Base\Gateway
         if ($input['merchant']->isTPVRequired() === true)
         {
             $data[Fields::VALIDATE_PAYER_ACCOUNT] = 'Y';
-            $data[Fields::PAYER_ACCOUNT] = $input['order']['bank_account'][BankAccount\Entity::ACCOUNT_NUMBER];
+            $data[Fields::PAYER_ACCOUNT] = $input['order'][Order\Entity::ACCOUNT_NUMBER];
             $data[Fields::PAYER_IFSC] = $input['order']['bank_account'][BankAccount\Entity::IFSC];
         }
 
@@ -492,7 +493,7 @@ class Gateway extends Base\Gateway
             $path = 'pay_v3';
 
             $data[Fields::VALIDATE_PAYER_ACCOUNT2] = 'Y';
-            $data[Fields::PAYER_ACCOUNT] = $input['order']['bank_account'][BankAccount\Entity::ACCOUNT_NUMBER];
+            $data[Fields::PAYER_ACCOUNT] = $input['order'][Order\Entity::ACCOUNT_NUMBER];
             $data[Fields::PAYER_IFSC] = $input['order']['bank_account'][BankAccount\Entity::IFSC];
         }
 
