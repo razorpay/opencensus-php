@@ -10,7 +10,7 @@ class Repository extends Base\Repository
 
     protected function addQueryOrder($query)
     {
-        $query->orderBy(Entity::CREATED_AT, 'desc')
-              ->orderBy(Entity::PAYMENT_ID, 'desc');
+        // Index only in payment_id
+        $query->orderBy(Entity::PAYMENT_ID, 'desc');
     }
 }
