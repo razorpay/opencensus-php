@@ -25,6 +25,7 @@ use RZP\Error\PublicErrorDescription;
 use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\Schedule\Task as ScheduleTask;
 use RZP\Models\Admin\Permission\Name as Permission;
+use RZP\Services\Reporting\Constants;
 
 /**
  * Interface for api to talk to Reporting service
@@ -52,6 +53,13 @@ class Reporting implements ExternalService
     const MERCHANT      = 'merchant';
     const PARTNER       = 'partner';
     const RAZORPAYX     = 'razorpayx';
+
+    //CA TRANSACTION constants
+    const RAW_SQL            = 'raw_sql';
+    const FILTERS            = 'filters';
+    const CA_TRANSACTIONS    = 'ca_transactions';
+    const TEMPLATE_OVERRIDES = 'template_overrides';
+    const QUERY_PARAMS       = 'query_params';
 
     // Headers
     const CONSUMER_HEADER       = 'X-Consumer';
@@ -301,6 +309,13 @@ class Reporting implements ExternalService
         if (empty($input['emails']) === true)
         {
             $path .= '?send_email=false';
+        }
+
+        if ((empty($input['transactions_report_type']) === false) and ($input['transactions_report_type'] === self::CA_TRANSACTIONS))
+        {
+            unset($input['transactions_report_type']);
+
+            $input = $this->buildCaTransactionRawQueryParams($input);
         }
 
         return $this->createAndSendRequest(Requests::POST, $path, $input);
@@ -1204,5 +1219,145 @@ class Reporting implements ExternalService
         {
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_REPORTING_OTHER_ORG_INVALID_REQUEST);
         }
+    }
+
+    // buildCaTransactionRawQueryParams is required to transform the config filters format
+    // into raw sql config supported format. This is required as to handle CA transactions
+    // we need raw sql config, hence need arises to convert the format of data send by dasboard.
+
+    private function buildCaTransactionRawQueryParams(array $input)
+    {
+        $filters = $input[self::TEMPLATE_OVERRIDES][self::FILTERS];
+
+        unset($input[self::TEMPLATE_OVERRIDES][self::FILTERS]);
+
+        $query_params = [];
+
+        // traversing over the filters and building raw query params
+        // using them for custom query
+
+        foreach ($filters as $filterKey => $filterValue)
+        {
+            if ($filterKey === Constants::BALANCE)
+            {
+                $balanceFilters = $filters[$filterKey];
+
+                foreach ($balanceFilters as $key => $value)
+                {
+                    if ($key === Constants::ACCOUNT_NUMBER)
+                    {
+                        $query_params[Constants::ACCOUNT_NUMBER] = $value['values'][0];
+                    }
+                    else
+                    {
+                        $this->trace->error(TraceCode::REPORTING_SERVICE_INVALID_PARAMS_CA_TRANSACTION, $balanceFilters);
+                    }
+                }
+            }
+
+            if ($filterKey === Constants::CONTACTS)
+            {
+                $contactsFilters = $filters[$filterKey];
+
+                foreach ($contactsFilters as $key => $value)
+                {
+                    if ($key === Constants::CONTACT)
+                    {
+                        $query_params[Constants::CONTACTS_CONTACT] = $value['values'][0];
+                    }
+                    else if ($key === Constants::EMAIL)
+                    {
+                        $query_params[Constants::CONTACTS_EMAIL] = $value['values'][0];
+                    }
+                    else if ($key === Constants::ID)
+                    {
+                        $query_params[Constants::CONTACTS_ID] = $value['values'][0];
+                    }
+                    else if ($key === Constants::TYPE)
+                    {
+                        $query_params[Constants::CONTACTS_TYPE] = $value['values'][0];
+                    }
+                    else
+                    {
+                        $this->trace->error(TraceCode::REPORTING_SERVICE_INVALID_PARAMS_CA_TRANSACTION, $contactsFilters);
+                    }
+                }
+            }
+
+            if ($filterKey === Constants::PAYOUTS)
+            {
+                $payoutsFilters = $filters[$filterKey];
+
+                foreach ($payoutsFilters as $key => $value)
+                {
+                    if ($key === Constants::ID)
+                    {
+                        $query_params[Constants::PAYOUTS_ID] = $value['values'][0];
+                    }
+                    else if ($key === Constants::PURPOSE)
+                    {
+                        $query_params[Constants::PAYOUTS_PURPOSE] = $value['values'][0];
+                    }
+                    else if ($key === Constants::MODE)
+                    {
+                        $query_params[Constants::PAYOUTS_MODE] = $value['values'][0];
+                    }
+                    else
+                    {
+                        $this->trace->error(TraceCode::REPORTING_SERVICE_INVALID_PARAMS_CA_TRANSACTION, $payoutsFilters);
+                    }
+                }
+            }
+
+            if ($filterKey === Constants::TRANSACTIONS)
+            {
+                $transactionsFilters = $filters[$filterKey];
+
+                foreach ($transactionsFilters as $key => $value)
+                {
+                    if ($key === Constants::ID)
+                    {
+                        $query_params[Constants::TRANSACTIONS_ID] = $value['values'][0];
+                    }
+                    else if ($key === Constants::TYPE)
+                    {
+                        $query_params[Constants::TRANSACTIONS_TYPE] = $value['values'][0];
+                    }
+                    else if ($key === Constants::CREDIT)
+                    {
+                        $query_params[Constants::TRANSACTIONS_CREDIT] = $value['values'][0];
+                    }
+                    else if ($key === Constants::DEBIT)
+                    {
+                        $query_params[constants::TRANSACTIONS_DEBIT] = $value['values'][0];
+                    }
+                    else
+                    {
+                        $this->trace->error(TraceCode::REPORTING_SERVICE_INVALID_PARAMS_CA_TRANSACTION, $transactionsFilters);
+                    }
+                }
+            }
+
+            if ($filterKey === Constants::FUND_ACCOUNTS)
+            {
+                $fundAccountsFilters = $filters[$filterKey];
+
+                foreach ($fundAccountsFilters as $key => $value)
+                {
+                    if ($key === Constants::ID)
+                    {
+                        $query_params[Constants::FUND_ACCOUNTS_ID] = $value['values'][0];
+                    }
+                    else
+                    {
+                        $this->trace->error(TraceCode::REPORTING_SERVICE_INVALID_PARAMS_CA_TRANSACTION, $fundAccountsFilters);
+                    }
+                }
+            }
+        }
+
+        $input[self::TEMPLATE_OVERRIDES][self::RAW_SQL][self::QUERY_PARAMS] = $query_params;
+
+        return $input;
     }
 }
