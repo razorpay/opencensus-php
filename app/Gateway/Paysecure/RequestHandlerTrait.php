@@ -105,6 +105,8 @@ trait RequestHandlerTrait
         }
 
         $userAgent = substr($this->app['request']->header('User-Agent'), 0, 512);
+        $userAgent = str_replace("\t", " ", $userAgent);
+
         $ip = $this->app['request']->ip();
 
         $extraParameters = [
