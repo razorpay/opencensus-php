@@ -380,7 +380,7 @@ class Core extends Base\Core
      */
     protected function removeTaxFieldsForInternational(Base\PublicEntity $morphEntity, array & $input)
     {
-        if ($morphEntity->isInternational() === true)
+        if ((method_exists($morphEntity, 'isInternational') === true) and ($morphEntity->isInternational() === true))
         {
             $taxAttributes = Validator::TAX_ATTRIBUTES;
 

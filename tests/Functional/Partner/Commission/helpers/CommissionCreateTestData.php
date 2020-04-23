@@ -18,6 +18,33 @@ return [
         ],
     ],
 
+    'testInvoiceAction' => [
+        'request'  => [
+            'method'  => 'PUT',
+            'content' => [
+                'action' => 'approved',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'success' => 'true',
+            ],
+        ],
+    ],
+
+    'testInvoiceGenerate' => [
+        'request'  => [
+            'method' => 'POST',
+            'url'    => '/commissions/invoice/create',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+
+            ],
+        ],
+    ],
+
     'testImplicitFixedOnPaymentCapture' => [
         'request' => [
             'method' => 'POST',

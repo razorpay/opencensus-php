@@ -31,7 +31,9 @@ class Validator extends Base\Validator
     ];
 
     protected static $markForSettlementRules = [
-        Constants::TO      => 'required|integer|custom:end_time',
+        Constants::FROM       => 'sometimes|integer|custom:start_time',
+        Constants::TO         => 'sometimes|integer|custom:end_time',
+        Constants::INVOICE_ID => 'required_without:to|string|size:14',
     ];
 
     protected static $bulkCaptureRules = [
@@ -56,6 +58,16 @@ class Validator extends Base\Validator
     public function validateModel($attribute, $type)
     {
         Config\CommissionModel::validate($type);
+    }
+
+    public function validateStartTime($attribute, $value)
+    {
+        $now = Carbon::now(Timezone::IST)->getTimestamp();
+
+        if ($value > $now)
+        {
+            throw new BadRequestValidationFailureException('Start time should be less than current time');
+        }
     }
 
     public function validateEndTime($attribute, $value)

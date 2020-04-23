@@ -1348,6 +1348,11 @@ final class Route
         'commissions_mark_for_settlement'          => ['post',     'commissions/partner/{id}/on_hold/clear',         'CommissionController@clearOnHoldForPartner'                        ],
         'commissions_analytics'                    => ['get',      'commissions_analytics',                          'CommissionController@fetchAnalytics'                               ],
 
+        'commissions_invoice_fetch_all'            => ['get',      'commissions/invoice/fetch/bulk',                 'CommissionInvoiceController@fetchBulk'                             ],
+        'commissions_invoice_generate'             => ['post',     'commissions/invoice/create',                     'CommissionInvoiceController@postCreateInvoices'                    ],
+        'commissions_invoice_status_change'        => ['put',      'commissions/invoice/{id}',                       'CommissionInvoiceController@changeStatus'                          ],
+        'commissions_invoice_fetch'                => ['get',      'commissions/invoice/{id}',                       'CommissionInvoiceController@fetch'                                 ],
+
         'submerchants_fetch'                       => ['get',      'submerchants/{id}',                              'MerchantController@getSubmerchant'                                 ],
         'submerchants_fetch_multiple'              => ['get',      'submerchants',                                   'MerchantController@listSubmerchants'                               ],
         'merchant_partners_fetch'                  => ['get',      'merchants/{id}/partners',                        'MerchantController@getAffiliatedPartners'                          ],
@@ -2175,6 +2180,7 @@ final class Route
         'merchant_mtu_update',
         'webhook_deactivate',
         'transaction_settled_data_fix',
+        'commissions_invoice_generate',
         'banking_account_gateway_balance_fetch',
         'fee_recovery_payout_process',
         'merchant_poc_update',
@@ -2501,6 +2507,9 @@ final class Route
         'offer_fetch_by_id',
         'partner_referral_fetch',
         'partner_referral_create',
+        'commissions_invoice_status_change',
+        'commissions_invoice_fetch',
+        'commissions_invoice_fetch_all',
 
         //balance configs
         'fetch_merchant_balance_configs',
@@ -3707,6 +3716,10 @@ final class Route
 
         'merchant_locked_balance_update'                    => Permission::EDIT_MERCHANT_HOLD_FUNDS,
 
+        'commissions_invoice_generate'              => '*',
+
+        'commissions_invoice_status_change'         => Permission::COMMISSION_PAYOUT,
+
         //Todo update permission later
         //'update_sr_level_global_config'             => Permission::UPDATE_DOWNTIME_CONFIG,
         'update_sr_level_global_config'             => '*',
@@ -4154,6 +4167,7 @@ final class Route
             'banking_account_statement_channel_fetch',
             'create_merchant_options_admin',
             'transaction_settled_data_fix',
+            'commissions_invoice_generate',
             'banking_account_gateway_balance_fetch',
             'merchant_poc_update',
             'merchant_poc_update_with_time',

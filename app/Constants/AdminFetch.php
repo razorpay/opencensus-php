@@ -2123,6 +2123,7 @@ class AdminFetch
                     Fetch::TYPE   => Fetch::TYPE_ARRAY,
                     Fetch::VALUES => Channel::getChannels()
                 ],
+                'balance_id' => Fetch::FIELD_BALANCE_ID,
             ],
 
             Entity::SETTLEMENT_DETAILS => [

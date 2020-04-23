@@ -10,12 +10,15 @@ use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Models\Adjustment;
 use RZP\Models\Transaction;
+use RZP\Constants\Entity as E;
 use RZP\Jobs\CommissionCapture;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\Currency\Currency;
 use RZP\Models\Settlement\Channel;
 use RZP\Jobs\CommissionOnHoldClear;
+use RZP\Models\Partner\Commission\Tds;
 use RZP\Models\Partner\Config as PartnerConfig;
+use RZP\Models\Partner\Commission\Invoice as CommissionInvoice;
 
 class Core extends Base\Core
 {
@@ -94,7 +97,21 @@ class Core extends Base\Core
 
         $this->validateTdsDefined($partner);
 
-        CommissionOnHoldClear::dispatch($this->mode, $partner->getId(), $input[Constants::TO]);
+        // For clearing commission, use invoice Id if present.
+        if (isset($input[Constants::INVOICE_ID]) === true)
+        {
+            $invoice = $this->repo->commission_invoice->findByIdAndMerchant($input[Constants::INVOICE_ID], $partner);
+
+            $data = (new CommissionInvoice\Core)->convertMonthAndYearToTimeStamp($invoice->getMonth(), $invoice->getYear());
+
+            $data[Constants::INVOICE_ID] = $input[Constants::INVOICE_ID];
+
+            CommissionOnHoldClear::dispatch($this->mode, $partner->getId(), $data);
+        }
+        else
+        {
+            CommissionOnHoldClear::dispatch($this->mode, $partner->getId(), $input);
+        }
 
         return [];
     }
@@ -103,59 +120,26 @@ class Core extends Base\Core
     {
         (new Validator)->validateInput('mark_for_settlement', $input);
 
-        // if harvester is mocked, return hardcoded values
-        $harvesterClientMock = $this->config->get('applications.harvester.mock');
+        $input[Constants::FROM] = $input[Constants::FROM] ?? null;
 
-        if ($harvesterClientMock === true)
-        {
-            return [
-                Constants::TOTAL_TAX        => 36,
-                Constants::TOTAL_TDS        => 10,
-                Constants::TOTAL_COMMISSION => 200,
-                Constants::TOTAL_NET_AMOUNT => 226,
-            ];
-        }
+        $commissionAggregate = $this->fetchAggregateCommissionDataFromHarvester($partner, $input);
 
-        $query = (new Analytics)->fetchAggregateCommissionDetailsQuery($input);
-
-        // send mode in query if its only test
-        if ($this->mode === Mode::TEST)
-        {
-            foreach ($query['aggregations'] as $aggregateType => $aggregateQuery)
-            {
-                $query['aggregations'][$aggregateType]['details']['mode'] = Mode::TEST;
-            }
-        }
-
-        $query = (new Merchant\Core)->processMerchantAnalyticsQuery($partner->getId(), $query);
-
-        $aggregateData = $this->app['eventManager']->query($query);
-
-        $totalTax               = $aggregateData[Analytics::TOTAL_TAX][Analytics::RESULT][0][Analytics::VALUE];
-        $totalCommissionWithTax = $aggregateData[Analytics::TOTAL_COMMISSION_WITH_TAX][Analytics::RESULT][0][Analytics::VALUE];
-
-        $totalCommission = $totalCommissionWithTax - $totalTax;
+        $totalCommission = $commissionAggregate[Constants::TOTAL_COMMISSION];
+        $totalTax        = $commissionAggregate[Constants::TOTAL_TAX];
 
         $totalTds = $this->calculateTds($partner, $totalCommission);
 
-        $netAmount = $totalCommissionWithTax - $totalTds;
+        $netAmount = $totalCommission + $totalTax - $totalTds;
 
         return [
             Constants::TOTAL_TAX        => $totalTax,
             Constants::TOTAL_TDS        => $totalTds,
             Constants::TOTAL_COMMISSION => $totalCommission,
             Constants::TOTAL_NET_AMOUNT => $netAmount,
+            Constants::COMPONENTS       => [
+                Constants::COMMISSION => $commissionAggregate,
+            ],
         ];
-    }
-
-    protected function validateTdsDefined(Merchant\Entity $partner)
-    {
-        $configs = (new PartnerConfig\Core)->fetchAllDefaultConfigsByPartner($partner);
-
-        if ($configs->isEmpty() === true)
-        {
-            throw new Exception\LogicException('Default partner config not found for partner');
-        }
     }
 
     public function calculateTds(Merchant\Entity $partner, int $totalCommission): int
@@ -172,7 +156,7 @@ class Core extends Base\Core
         return ((int) round(($tdsPercentage * $totalCommission) / 10000));
     }
 
-    public function createAdjustmentForTds(Merchant\Entity $partner, int $totalTds)
+    public function createCommissionTds(Merchant\Entity $partner, int $totalTds)
     {
         // adj should be on yes_bank channel as commission channel is also yes_bank
         $input = [
@@ -180,10 +164,10 @@ class Core extends Base\Core
             Adjustment\Entity::AMOUNT      => (-1 * $totalTds), // tds should be debit
             Adjustment\Entity::CURRENCY    => Currency::INR,
             Adjustment\Entity::CHANNEL     => Channel::YESBANK,
-            Adjustment\Entity::DESCRIPTION => 'Tds deduction on commission payout',
+            Adjustment\Entity::DESCRIPTION => Constants::ADJUSTMENT_TDS_DESCRIPTION,
         ];
 
-        return (new Adjustment\Core)->createAdjustment($input, $partner);
+        (new Adjustment\Core)->createAdjustment($input, $partner);
     }
 
     public function setOnHoldFalse(Transaction\Entity $transaction): Transaction\Entity
@@ -200,8 +184,6 @@ class Core extends Base\Core
 
             return $txn;
         });
-
-        (new Transaction\Core)->dispatchForSettlementBucketing($transaction, $transaction->getSettledAt());
 
         return $result;
     }
@@ -292,6 +274,28 @@ class Core extends Base\Core
     }
 
     /**
+     * @param Merchant\Entity $partner
+     *
+     * @return bool
+     * @throws \RZP\Exception\BadRequestException
+     * @throws \RZP\Exception\LogicException
+     */
+    public function shouldShowAggregateCommissionReportForPartner(Merchant\Entity $partner): bool
+    {
+        if ($partner->isResellerPartner() === true)
+        {
+            $activatedSubMerchants = (new Merchant\Core)->fetchActivatedSubMerchantsForPartner($partner);
+
+            if ($activatedSubMerchants->count() < Constants::RESELLER_SUBMERCHANT_LIMIT)
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
      * Checks whether the commission needs to be captured
      *
      * @param Entity $commission
@@ -327,25 +331,52 @@ class Core extends Base\Core
         return true;
     }
 
-    /**
-     * @param Merchant\Entity $partner
-     *
-     * @return bool
-     * @throws \RZP\Exception\BadRequestException
-     * @throws \RZP\Exception\LogicException
-     */
-    public function shouldShowAggregateCommissionReportForPartner(Merchant\Entity $partner): bool
+    protected function fetchAggregateCommissionDataFromHarvester(Merchant\Entity $partner, array $input): array
     {
-        if ($partner->isResellerPartner() === true)
-        {
-            $activatedSubMerchants = (new Merchant\Core)->fetchActivatedSubMerchantsForPartner($partner);
+        // if harvester is mocked, return hardcoded values
+        $harvesterClientMock = $this->config->get('applications.harvester.mock');
 
-            if ($activatedSubMerchants->count() < Constants::RESELLER_SUBMERCHANT_LIMIT)
+        if ($harvesterClientMock === true)
+        {
+            return [
+                Constants::TOTAL_TAX        => 36,
+                Constants::TOTAL_COMMISSION => 200,
+            ];
+        }
+
+        $query = (new Analytics)->fetchAggregateCommissionDetailsQuery($input);
+
+        // send mode in query if its only test
+        if ($this->mode === Mode::TEST)
+        {
+            foreach ($query['aggregations'] as $aggregateType => $aggregateQuery)
             {
-                return false;
+                $query['aggregations'][$aggregateType]['details']['mode'] = Mode::TEST;
             }
         }
 
-        return true;
+        $query = (new Merchant\Core)->processMerchantAnalyticsQuery($partner->getId(), $query);
+
+        $aggregateData = $this->app['eventManager']->query($query);
+
+        $totalTax               = $aggregateData[Analytics::TOTAL_TAX][Analytics::RESULT][0][Analytics::VALUE];
+        $totalCommissionWithTax = $aggregateData[Analytics::TOTAL_COMMISSION_WITH_TAX][Analytics::RESULT][0][Analytics::VALUE];
+
+        $totalCommission = $totalCommissionWithTax - $totalTax;
+
+        return [
+            Constants::TOTAL_TAX        => $totalTax,
+            Constants::TOTAL_COMMISSION => $totalCommission,
+        ];
+    }
+
+    protected function validateTdsDefined(Merchant\Entity $partner)
+    {
+        $configs = (new PartnerConfig\Core)->fetchAllDefaultConfigsByPartner($partner);
+
+        if ($configs->isEmpty() === true)
+        {
+            throw new Exception\LogicException('Default partner config not found for partner');
+        }
     }
 }

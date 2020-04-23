@@ -60,12 +60,23 @@ class Repository extends Base\Repository
                     ->first();
     }
 
-    public function findMerchantsHavingFeatures(array $featureNames)
+    public function findMerchantsHavingFeatures(array $featureNames, $limit = null, $afterId = null)
     {
-        return $this->newQuery()
-                    ->whereIn(Entity::NAME, $featureNames)
-                    ->where(Entity::ENTITY_TYPE, 'merchant')
-                    ->get();
+        $query = $this->newQuery()
+                      ->whereIn(Entity::NAME, $featureNames)
+                      ->where(Entity::ENTITY_TYPE, 'merchant');
+
+        if (empty($limit) === false)
+        {
+            $query->take($limit);
+        }
+
+        if (empty($afterId) === false)
+        {
+            $query->where(Entity::ID, '>', $afterId);
+        }
+
+        return $query->get();
     }
 
     public function findMerchantWithFeatures(string $merchantId, array $featureNames)

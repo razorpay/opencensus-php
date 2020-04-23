@@ -53,6 +53,7 @@ class Workflow
         Permission::DELETE_TERMINAL,
         Permission::TOGGLE_TERMINAL,
         Permission::EDIT_MERCHANT_INTERNATIONAL,
+        Permission::COMMISSION_PAYOUT,
     ];
 
     protected $app;

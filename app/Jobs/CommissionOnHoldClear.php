@@ -10,6 +10,8 @@ use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
 use RZP\Models\Transaction;
 use RZP\Models\Partner\Commission;
+use RZP\Models\Partner\Commission\Invoice;
+use RZP\Models\Partner\Commission\Constants;
 
 class CommissionOnHoldClear extends Job
 {
@@ -28,12 +30,23 @@ class CommissionOnHoldClear extends Job
 
     protected $toTimestamp;
 
-    public function __construct(string $mode, string $partnerId, int $toTimestamp)
+    public $timeout = 1800;
+
+    protected $fromTimestamp;
+
+    protected $invoiceId;
+
+    public function __construct(string $mode, string $partnerId, $input)
     {
         parent::__construct($mode);
 
         $this->partnerId   = $partnerId;
-        $this->toTimestamp = $toTimestamp;
+
+        $this->toTimestamp = $input['to'] ?? null;
+
+        $this->fromTimestamp = $input['from'] ?? null;
+
+        $this->invoiceId = $input[Constants::INVOICE_ID] ?? null;
     }
 
     public function handle()
@@ -45,9 +58,11 @@ class CommissionOnHoldClear extends Job
             $this->trace->info(
                 TraceCode::COMMISSION_TRANSACTION_ON_HOLD_CLEAR_REQUEST,
                 [
-                    'mode'        => $this->mode,
-                    'partner_id'  => $this->partnerId,
-                    'toTimestamp' => $this->toTimestamp,
+                    'mode'          => $this->mode,
+                    'partner_id'    => $this->partnerId,
+                    'toTimestamp'   => $this->toTimestamp,
+                    'fromTimestamp' => $this->fromTimestamp,
+                    'invoice_id'    => $this->invoiceId,
                 ]);
 
             $core = new Commission\Core;
@@ -68,8 +83,9 @@ class CommissionOnHoldClear extends Job
             while (true)
             {
                 // fetch txns in batches and process
-                $transactions = $this->repoManager->transaction->fetchPartnerCommissionTransactionsOnHold(
-                    $this->partnerId,
+                $transactions = $this->repoManager->transaction->fetchUnsettledCommissionTransactions(
+                    $partner,
+                    $this->fromTimestamp,
                     $this->toTimestamp,
                     self::COMMISSIONS_TRANSACTION_FETCH_LIMIT,
                     $afterId);
@@ -85,10 +101,18 @@ class CommissionOnHoldClear extends Job
                 {
                     try
                     {
-                        $totalTax               += $transaction->source->getTax();
-                        $totalCommissionWithTax += $transaction->source->getCredit();
+                        $source = $transaction->source;
+
+                        // skip if some commission on hold clear is already done so that we don't create tds again
+                        if ($transaction->isOnHold() === false)
+                        {
+                            continue;
+                        }
 
                         $txn = $core->setOnHoldFalse($transaction);
+
+                        $totalTax               += $source->getTax();
+                        $totalCommissionWithTax += ($source->getCredit() - $source->getDebit());
 
                         $summary['success_count']++;
                     }
@@ -118,10 +142,19 @@ class CommissionOnHoldClear extends Job
 
             if ($totalTds > 0)
             {
-                $core->createAdjustmentForTds($partner, $totalTds);
+                $core->createCommissionTds($partner, $totalTds);
             }
 
-            // dispatch for settlement bucketing if at least one transaction is processed
+            if (empty($this->invoiceId) === false)
+            {
+                $invoice = $this->repoManager->commission_invoice->findOrFail($this->invoiceId);
+
+                $invoice->setStatus(Invoice\Status::PROCESSED);
+
+                $this->repoManager->saveOrFail($invoice);
+            }
+
+            // dispatch for settlement bucketing if at least one commission transaction on hold is cleared
             if (empty($txn) === false)
             {
                 $settledAt = Carbon::now(Timezone::IST)->getTimestamp();
@@ -141,6 +174,7 @@ class CommissionOnHoldClear extends Job
                     'mode'        => $this->mode,
                     'partner_id'  => $this->partnerId,
                     'toTimestamp' => $this->toTimestamp,
+                    'fromTimestamp' => $this->fromTimestamp,
                 ]
             );
 
@@ -156,6 +190,7 @@ class CommissionOnHoldClear extends Job
                 'mode'         => $this->mode,
                 'partner_id'   => $this->partnerId,
                 'toTimestamp'  => $this->toTimestamp,
+                'fromTimestamp' => $this->fromTimestamp,
                 'job_attempts' => $this->attempts(),
                 'message'      => 'Deleting the job after configured number of tries. Still unsuccessful.'
             ]);

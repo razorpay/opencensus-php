@@ -72,6 +72,16 @@ class Repository extends BaseRepository
         return $commissionIds;
     }
 
+    public function fetchAggregateFeesAndTax(string $partnerId, int $start, int $end)
+    {
+        $query = $this->newQuery()
+                      ->selectRaw('SUM(' . Entity::TAX . ') AS tax, SUM(' . Entity::FEE . ') AS fee')
+                      ->where(Entity::PARTNER_ID, $partnerId)
+                      ->whereBetween(Entity::CREATED_AT, [$start, $end]);
+
+        return $query->first();
+    }
+
     /**
      * Override this function to include relations when indexing entity
      *

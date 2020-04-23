@@ -29,11 +29,20 @@ class Constants
     const TOTAL_TAX        = 'total_tax';
     const TOTAL_TDS        = 'total_tds';
     const TOTAL_NET_AMOUNT = 'total_net_amount';
+    const COMPONENTS       = 'components';
+
+    const ADJUSTMENT_TDS_DESCRIPTION = 'Tds deduction on commission payout';
+
+    // line item names
+    const COMMISSION = 'commission';
+    const ADJUSTMENT = 'adjustment';
 
     /**
      * Used for bulk capture
      */
     const PARTNER_IDS = 'partner_ids';
+
+    const INVOICE_ID = 'invoice_id';
 
     /**
      * List of entities for which the commission can be rolled out.

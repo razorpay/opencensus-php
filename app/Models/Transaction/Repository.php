@@ -5,7 +5,6 @@ namespace RZP\Models\Transaction;
 use DB;
 use Cache;
 use Carbon\Carbon;
-use Illuminate\Database\Query\JoinClause;
 
 use RZP\Exception;
 use RZP\Models\Base;
@@ -20,14 +19,11 @@ use RZP\Constants\Product;
 use RZP\Models\Settlement;
 use RZP\Constants\Timezone;
 use RZP\Models\Transaction;
+use RZP\Constants\Entity as E;
 use RZP\Models\Payment\Refund;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Merchant\Balance;
-use RZP\Models\Pricing\Calculator;
 use RZP\Constants\Entity as ConstantEntity;
-use RZP\Models\Payout\Entity as PayoutEntity;
-use RZP\Models\Reversal\Entity as ReversalEntity;
-use RZP\Models\Merchant\Invoice\Type as InvoiceType;
 
 class Repository extends Base\Repository
 {
@@ -1744,24 +1740,42 @@ class Repository extends Base\Repository
         return $results;
     }
 
-    public function fetchPartnerCommissionTransactionsOnHold(
-        string $partnerId,
-        int $timestamp,
-        int $limit,
+    public function fetchUnsettledCommissionTransactions(
+        Merchant\Entity $partner,
+        $fromTimestamp,
+        int $toTimestamp,
+        $limit = null,
         $afterId = null): Base\PublicCollection
     {
+        $commissionBalance = $partner->commissionBalance;
+
+        if ($commissionBalance === null)
+        {
+            return new Base\PublicCollection;
+        }
+
         $query = $this->newQuery()
-                      ->where(Entity::TYPE, ConstantEntity::COMMISSION)
-                      ->where(Entity::MERCHANT_ID, $partnerId)
-                      ->where(Entity::SETTLED_AT, '<=', $timestamp)
-                      ->where(Entity::ON_HOLD, true)
+                      ->where(Entity::MERCHANT_ID, $partner->getId())
+                      ->where(Entity::BALANCE_ID, $commissionBalance->getId())
+                      ->where(Entity::SETTLED_AT, '<=', $toTimestamp)
+                      ->where(Entity::TYPE, E::COMMISSION)
+                      ->where(Entity::SETTLED, 0)
                       ->with('source')
-                      ->orderBy(Entity::ID)
-                      ->take($limit);
+                      ->orderBy(Entity::ID);
+
+        if (empty($fromTimestamp) === false)
+        {
+            $query->where(Entity::SETTLED_AT, '>=', $fromTimestamp);
+        }
 
         if ($afterId !== null)
         {
             $query->where(Entity::ID, '>', $afterId);
+        }
+
+        if (empty($limit) === false)
+        {
+            $query->take($limit);
         }
 
         return $query->get();

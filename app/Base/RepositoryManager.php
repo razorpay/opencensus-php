@@ -52,6 +52,8 @@ use RZP\Base\Database\Connectors\MySqlConnector;
  * @property Models\BankingAccountStatement\Repository          $banking_account_statement
  * @property Models\Admin\Role\Repository                       $role
  * @property Models\Admin\Permission\Repository                 $permission
+ * @property Models\Partner\Commission\Invoice\Repository       $commission_invoice
+ * @property Models\Partner\Commission\Repository               $commission
  * @property Models\Workflow\Action\Repository                  $workflow_action
  * @property Models\Workflow\Step\Repository                    $workflow_step
  * @property Models\Workflow\Repository                         $workflow

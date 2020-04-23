@@ -68,6 +68,7 @@ class Entity extends Base\PublicEntity
         self::REMARKS,
         self::CHANNEL,
         self::UTR,
+        self::BALANCE_ID,
         self::PROCESSED_AT,
         self::SETTLED_ON,
         self::CREATED_AT,

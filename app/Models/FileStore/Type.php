@@ -147,6 +147,7 @@ class Type
     const BLANK                             = 'blank';
 
     const INVOICE_PDF                       = 'invoice_pdf';
+    const COMMISSION_INVOICE                = 'commission_invoice';
 
     const QR_CODE_IMAGE                     = 'qr_code_image';
 
@@ -299,6 +300,10 @@ class Type
 
         Constants\Entity::INVOICE => [
             self::INVOICE_PDF,
+        ],
+
+        Constants\Entity::COMMISSION_INVOICE => [
+            self::COMMISSION_INVOICE,
         ],
 
         Constants\Entity::QR_CODE => [
@@ -462,6 +467,7 @@ class Type
 
         self::INVOICE_BUCKET_CONFIG => [
             self::INVOICE_PDF,
+            self::COMMISSION_INVOICE,
         ],
 
         self::CUSTOMER_BUCKET_CONFIG => [

@@ -328,11 +328,11 @@ class Analytics
 
     public function fetchAggregateCommissionDetailsQuery(array $input)
     {
-        return [
+        $query = [
             'filters'      => [
                 'default' => [
                     [
-                        'created_at'  => [
+                        'created_at'           => [
                             'lte' => $input[Constants::TO],
                         ],
                         'model'                => 'commission',
@@ -345,18 +345,25 @@ class Analytics
                 self::TOTAL_COMMISSION_WITH_TAX => [
                     'agg_type' => 'sum',
                     'details'  => [
-                        'index'    => 'commissions',
-                        'column'   => 'commission',
+                        'index'  => 'commissions',
+                        'column' => 'commission',
                     ],
                 ],
-                self::TOTAL_TAX => [
-                    'agg_type'   => 'sum',
-                    'details'    => [
-                        'index'    => 'commissions',
-                        'column'   => 'tax',
+                self::TOTAL_TAX                 => [
+                    'agg_type' => 'sum',
+                    'details'  => [
+                        'index'  => 'commissions',
+                        'column' => 'tax',
                     ],
                 ],
             ],
         ];
+
+        if (empty($input[Constants::FROM]) === false)
+        {
+            $query['filters']['default'][0]['created_at']['gte'] = $input[Constants::FROM];
+        }
+
+        return $query;
     }
 }

@@ -2,9 +2,13 @@
 
 namespace RZP\Tests\Functional\Partner\Commission;
 
+use DB;
+
+use Mail;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factory;
 
+use RZP\Constants\Timezone;
 use RZP\Models\Merchant\FeeBearer;
 use RZP\Models\Partner\Config;
 use RZP\Tests\Functional\TestCase;
@@ -16,6 +20,7 @@ use RZP\Tests\Functional\Merchant\CommissionTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Models\Partner\Commission\Type as CommissionType;
+use RZP\Mail\Merchant\CommissionInvoice as CommissionInvoiceMail;
 use RZP\Models\Partner\Commission\Constants as CommissionConstants;
 
 class CommissionCreateTest extends TestCase
@@ -51,6 +56,99 @@ class CommissionCreateTest extends TestCase
         list($payment, $commission) = $this->assertAndGetCommissionByType(CommissionType::IMPLICIT);
 
         $this->checkClearOnHoldAndSettlement($commission);
+    }
+
+    public function testInvoiceGenerate()
+    {
+        Mail::fake();
+
+        list($partner, $subMerchant, $payment, $config, $commission) = $this->createSampleCommission([],[],[],[
+            'credit' => 1770,
+            'debit'  => 0,
+            'fee'    => 1770,
+            'tax'    => 270,
+        ]);
+
+        $this->ba->adminAuth();
+
+        $testData = $this->testData['testCaptureCommission'];
+
+        $testData['request']['url'] = '/commissions/'.$commission->getPublicId().'/capture';
+
+        $this->runRequestResponseFlow($testData);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $now = Carbon::now(Timezone::IST);
+
+        $testData['request']['content']['month']        = $now->month;
+        $testData['request']['content']['year']         = $now->year;
+        $testData['request']['content']['merchant_ids'] = [$partner->getId()];
+
+        DB::connection('test')->table('taxes')->insert(
+            [
+                'id' => '9nDpYjuyZsOlMK',
+                'rate' => 90000,
+                'rate_type' => 'percentage',
+                'name' => 'CGST 9%',
+                'merchant_id' => '100000Razorpay',
+                'created_at' => '1548745646',
+                'updated_at' => '1548745646',
+            ]
+        );
+        DB::connection('test')->table('taxes')->insert(
+            [
+                'id' => '9nDpYqgYcqpr8q',
+                'rate' => 90000,
+                'rate_type' => 'percentage',
+                'name' => 'SGST 9%',
+                'merchant_id' => '100000Razorpay',
+                'created_at' => '1548745646',
+                'updated_at' => '1548745646',
+            ]
+        );
+
+        $this->startTest($testData);
+
+        // check that invoice is created with line items and amounts
+        $invoice = $this->getDbLastEntity('commission_invoice');
+
+        $invoiceExpectedData = [
+            'merchant_id' => 'DefaultPartner',
+            'month' => $now->month,
+            'year' => $now->year,
+            'status' => 'issued',
+            'gross_amount' => 1770,
+            'tax_amount' => 270,
+        ];
+
+        $this->assertArraySelectiveEquals($invoiceExpectedData, $invoice->toArray());
+
+        $lineItemExpectedData = [
+            [
+                'amount' => 1770,
+                'gross_amount' => 1770,
+                'tax_amount' => 270,
+                'net_amount' => 1770,
+                'tax_inclusive' => true,
+            ]
+        ];
+
+        $this->assertArraySelectiveEquals($lineItemExpectedData, $invoice->lineItems->toArray());
+
+        $this->fixtures->merchant->addFeatures('automated_comm_payout', $partner->getId());
+
+        $testData = $this->testData['testInvoiceAction'];
+
+        $testData['request']['url'] = '/commissions/invoice/' . $invoice->getId();
+
+        $this->ba->proxyAuth('rzp_test_' . $partner->getId());
+
+        $this->runRequestResponseFlow($testData);
+
+        $invoice = $this->getDbLastEntity('commission_invoice');
+
+        $this->assertEquals('processed', $invoice['status']);
     }
 
     public function testCaptureCommission()

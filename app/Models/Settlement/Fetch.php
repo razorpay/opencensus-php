@@ -16,6 +16,7 @@ class Fetch extends BaseFetch
             Entity::STATUS                 => 'sometimes|in:created,initiated,processed,failed',
             Entity::UTR                    => 'sometimes|alpha_num',
             Entity::CHANNEL                => 'sometimes|string',
+            Entity::BALANCE_ID             => 'sometimes|alpha_dash|min:14|max:18',
         ],
     ];
 
@@ -28,12 +29,14 @@ class Fetch extends BaseFetch
             Entity::STATUS,
             Entity::UTR,
             Entity::CHANNEL,
+            Entity::BALANCE_ID,
         ],
     ];
 
     const SIGNED_IDS = [
         Entity::BANK_ACCOUNT_ID,
         Entity::TRANSACTION_ID,
+        Entity::BALANCE_ID,
     ];
 
 }
