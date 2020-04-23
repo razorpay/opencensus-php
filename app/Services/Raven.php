@@ -218,15 +218,11 @@ class Raven
 
         $response = $this->sendRavenRequest($request);
 
-        $this->trace->info(TraceCode::RAVEN_RESPONSE, [
-                    'response' => $response->body
-                ]);
-
         $decodedResponse = json_decode($response->body, true);
 
         $decodedResponse = $decodedResponse ?? [];
 
-        $this->trace->info(TraceCode::RAVEN_RESPONSE, $decodedResponse);
+        $this->traceResponse($decodedResponse);
 
         //check if $response is a valid json
         if (json_last_error() !== JSON_ERROR_NONE)
@@ -238,6 +234,18 @@ class Raven
         $this->checkErrors($decodedResponse);
 
         return $decodedResponse;
+    }
+
+    protected function traceResponse(array $response)
+    {
+        unset($response['otp']);
+
+        if (isset($response['receiver']) === true)
+        {
+            $response['receiver'] = mask_phone($response['receiver']);
+        }
+
+        $this->trace->info(TraceCode::RAVEN_RESPONSE, $response);
     }
 
     protected function sendRavenRequest($request)
@@ -265,6 +273,8 @@ class Raven
     protected function traceRequest($request)
     {
         unset($request['options']['auth']);
+        unset($request['content']['otp']);
+
         if (isset($request['content']['receiver']) === true)
         {
             $request['content']['receiver'] = mask_phone($request['content']['receiver']);
