@@ -12,4 +12,11 @@ class Service extends Base\Service
 
         return $feeRecovery->toArrayPublic();
     }
+
+    public function recoveryPayoutCron(array $input)
+    {
+        $feeRecovery = $this->core()->recoveryPayoutCron($input);
+
+        return $feeRecovery;
+    }
 }

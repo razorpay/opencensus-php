@@ -415,6 +415,10 @@ return [
         'test'       =>  env('AWS_RBL_BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_TEST_QUEUE'),
         'live'       =>  env('AWS_RBL_BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_LIVE_QUEUE'),
     ],
+    'fee_recovery' => [
+        'test'       =>  env('AWS_RBL_FEE_RECOVERY_TEST_QUEUE'),
+        'live'       =>  env('AWS_RBL_FEE_RECOVERY_LIVE_QUEUE'),
+    ],
 
     /*
      | Lists various queues to be used per mailable

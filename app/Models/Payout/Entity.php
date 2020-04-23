@@ -207,6 +207,7 @@ class Entity extends Base\PublicEntity
         self::REFERENCE_ID,
         self::NARRATION,
         self::IDEMPOTENCY_KEY,
+        self::PRICING_RULE_ID,
     ];
 
     protected $visible = [
@@ -370,6 +371,7 @@ class Entity extends Base\PublicEntity
         self::FEES              => 0,
         self::TAX               => 0,
         self::IDEMPOTENCY_KEY   => null,
+        self::PRICING_RULE_ID   => null,
     ];
 
     protected $amounts = [

@@ -233,7 +233,7 @@ class BankingAccountTest extends TestCase
 
         $merchantDetail = $this->fixtures->create('merchant_detail', $attribute);
 
-        $this->ba->proxyAuth('rzp_test_' .  $merchantDetail->merchant['id']);
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail->merchant['id']);
 
         $this->createBankingAccount();
 
@@ -246,6 +246,8 @@ class BankingAccountTest extends TestCase
         ]);
 
         $this->setupDataForActivation($bankingAccount);
+
+        $schedule = $this->setupDefaultScheduleForFeeRecovery();
 
         $dataToReplace = [
           'request' => [
@@ -308,7 +310,7 @@ class BankingAccountTest extends TestCase
         $this->assertEquals($contact['type'], Contact\Type::RZP_FEES);
         $this->assertEquals($contact['active'], true);
         $this->assertEquals($contact['merchant_id'], $merchantDetail->merchant['id']);
-        $this->assertEquals($contact['name'],  config('banking_account.razorpayx_fee_details.name'));
+        $this->assertEquals($contact['name'], config('banking_account.razorpayx_fee_details.name'));
 
         $fundAccount = $this->getDbLastEntity('fund_account')->toArray();
 
@@ -324,6 +326,14 @@ class BankingAccountTest extends TestCase
         $this->assertEquals($account['ifsc'], config('banking_account.razorpayx_fee_details.ifsc'));
         $this->assertEquals($account['merchant_id'], $merchantDetail->merchant['id']);
         $this->assertEquals($account['entity_id'], $contact['id']);
+
+        $scheduleTask = $this->getDbLastEntity('schedule_task')->toArray();
+
+        // Every activated merchant should have a default schedule task for fee recovery purposes.
+        $this->assertEquals($scheduleTask['merchant_id'], $merchantDetail->merchant['id']);
+        $this->assertEquals($scheduleTask['entity_id'], $balance['id']);
+        $this->assertEquals($scheduleTask['entity_type'], 'balance');
+        $this->assertEquals($scheduleTask['schedule_id'], $schedule['id']);
     }
 
     public function testActivateFailedDueToFtsFailure()
@@ -913,6 +923,7 @@ class BankingAccountTest extends TestCase
         $this->assertEquals('processing', $logs['items'][3]['status']);
         $this->assertEquals('open', $logs['items'][3]['bank_status']);
     }
+
     public function testUpdatedStatusFromProcessingToRejected()
     {
         $bankingAccount = $this->createBankingAccount();
@@ -1110,6 +1121,27 @@ class BankingAccountTest extends TestCase
         $this->fixtures->create('banking_account_detail', $attributes[0]);
         $this->fixtures->create('banking_account_detail', $attributes[1]);
 
+    }
+
+    protected function setupDefaultScheduleForFeeRecovery()
+    {
+        $createScheduleRequest = [
+            'method'  => 'POST',
+            'url'     => '/schedules',
+            'content' => [
+                'type'      => 'fee_recovery',
+                'name'      => 'Basic T+7',
+                'period'    => 'daily',
+                'interval'  => 7,
+                'hour'      => 8,
+            ],
+        ];
+
+        $this->ba->adminAuth();
+
+        $schedule = $this->makeRequestAndGetContent($createScheduleRequest);
+
+        return $schedule;
     }
 
     public function testBulkAssignReviewersToBankingAccounts()

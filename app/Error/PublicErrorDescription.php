@@ -861,6 +861,7 @@ class PublicErrorDescription
     const BAD_REQUEST_FEE_RECOVERY_FOR_GIVEN_ENTITY_ALREADY_EXISTS              = 'Entry for given source entity already exists';
     const BAD_REQUEST_FEE_RECOVERY_FAILED_PAYOUT_TO_REVERSAL                    = 'Credit entry corresponding to reversal\'s payout already exists';
     const BAD_REQUEST_FEE_RECOVERY_INCORRECT_TIMESTAMPS                         = 'Start timestamp cannot be greater than end timestamp';
+    const BAD_REQUEST_FEE_RECOVERY_AMOUNT_ZERO                                  = 'Fee Recovery payout amount cannot be zero';
 
     // payout links
     const BAD_REQUEST_CANNOT_GENERATE_OTP_WITHOUT_PHONE_AND_EMAIL              = 'Provided contact neither has email nor phone number';

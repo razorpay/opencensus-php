@@ -1064,6 +1064,12 @@ class Entity extends Base\PublicEntity
                     ->where(Balance\Entity::TYPE, Balance\Type::BANKING);
     }
 
+    public function directBankingBalances()
+    {
+        return $this->bankingBalances()
+                    ->where(Balance\Entity::ACCOUNT_TYPE, Balance\AccountType::DIRECT);
+    }
+
     public function commissionBalance()
     {
         return $this->hasOne(Balance\Entity::class)

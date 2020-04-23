@@ -124,6 +124,9 @@ class Entity extends Base\PublicEntity
 
     const IDS           = 'ids';
 
+    // Slack channel for alerts
+    const RX_CA_RBL_ALERTS = 'rx_ca_rbl_alerts';
+
     protected $entity = 'banking_account';
 
     protected static $sign = 'bacc';

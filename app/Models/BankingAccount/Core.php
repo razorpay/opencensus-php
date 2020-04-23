@@ -5,6 +5,7 @@ namespace RZP\Models\BankingAccount;
 use Mail;
 use Carbon\Carbon;
 
+use RZP\Constants\Timezone;
 use Razorpay\Trace\Logger as Trace;
 
 use RZP\Models\Base;
@@ -15,7 +16,10 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Admin\Admin;
 use RZP\Models\BankAccount;
 use RZP\Models\FundAccount;
+use RZP\Models\Schedule\Type;
+use RZP\Models\Schedule\Task;
 use RZP\Models\VirtualAccount;
+use RZP\Models\Schedule\Period;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Balance;
@@ -24,6 +28,7 @@ use RZP\Models\Settlement\Channel;
 use RZP\Exception\BadRequestException;
 use RZP\Models\BankingAccount\Gateway;
 use RZP\Mail\BankingAccount\XProActivation;
+use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\Admin\Service as AdminService;
 use RZP\Jobs\BankingAccountGatewayBalanceUpdate;
 use RZP\Models\BankingAccount\Channel as BAChannel;
@@ -37,6 +42,10 @@ class Core extends Base\Core
     const PROCESSOR = 'processor';
 
     const DEFAULT_BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_RATE_LIMIT = 1000;
+
+    // Values for default Fee Recovery Schedule
+    const DEFAULT_SCHEDULE_PERIOD   = Period::DAILY;
+    const DEFAULT_SCHEDULE_INTERVAL = 7;
 
     public function __construct()
     {
@@ -496,6 +505,8 @@ class Core extends Base\Core
 
             $this->repo->saveOrFail($bankingAccount);
 
+            $this->createScheduleTaskForFeeRecovery($balance, $merchant);
+
             $stateCore = new State\Core;
 
             $content = [
@@ -526,16 +537,64 @@ class Core extends Base\Core
 
         if ($rzpFeesContacts->count() > 0)
         {
+            $errorMessage = 'Merchant has an existing rzp_fees type contact';
+
+            $errorData = [
+                'merchant_id' => $merchant->getId()
+            ];
+
+            $this->sendSlackAlert($errorMessage, $errorData);
+
             throw new LogicException('Merchant has an existing rzp_fees type contact',
-                                               ErrorCode::BAD_REQUEST_LOGIC_ERROR_MULTIPLE_RZP_FEES_CONTACT,
-                                               [
-                                                   'merchant_id' => $merchant->getId()
-                                               ]);
+                                     ErrorCode::BAD_REQUEST_LOGIC_ERROR_MULTIPLE_RZP_FEES_CONTACT,
+                                     $errorData);
         }
 
         $contact = (new Contact\Core)->createRZPFeesContact($merchant);
 
         (new FundAccount\Core)->createRZPFeesFundAccount($merchant, $contact);
+    }
+
+    protected function createScheduleTaskForFeeRecovery(Merchant\Balance\Entity $balance,
+                                                        Merchant\Entity $merchant)
+    {
+        $defaultFeeRecoverySchedule = $this->repo->schedule->getScheduleByPeriodIntervalAnchorDelayAndType(
+                                                                self::DEFAULT_SCHEDULE_PERIOD,
+                                                                self::DEFAULT_SCHEDULE_INTERVAL,
+                                                                null,
+                                                                0,
+                                                                Type::FEE_RECOVERY);
+
+        if (empty($defaultFeeRecoverySchedule) === true)
+        {
+            $errorMessage = 'Default Fee Recovery schedule does not exist';
+
+            $this->sendSlackAlert($errorMessage, null);
+
+            throw new LogicException($errorMessage,
+                                     ErrorCode::BAD_REQUEST_LOGIC_ERROR_FEE_RECOVERY_DEFAULT_SCHEDULE_DOES_NOT_EXIST,
+                                     null);
+        }
+
+        $input = [
+            Task\Entity::TYPE          => Task\Type::FEE_RECOVERY,
+            Task\Entity::SCHEDULE_ID   => $defaultFeeRecoverySchedule->getId(),
+        ];
+
+        $task = (new Task\Core)->create($merchant, $balance, $input);
+
+        $oneWeekLaterTimeStamp = Carbon::now(Timezone::IST)->addWeek()->getTimestamp();
+
+        $task->setNextRunAt($oneWeekLaterTimeStamp);
+
+        $task->saveOrFail();
+
+        $this->trace->info(TraceCode::FEE_RECOVERY_SCHEDULE_TASK_CREATED,
+            [
+                'merchant_id'   => $merchant->getId(),
+                'balance_id'    => $balance->getId(),
+                'task_id'       => $task->getId()
+            ]);
     }
 
     public function bulkCreateBankingAccountsForYesbank(array $input)
@@ -992,4 +1051,8 @@ class Core extends Base\Core
         return $input;
     }
 
+    protected function sendSlackAlert($operation, $data)
+    {
+        (new SlackNotification)->send($operation, $data, null, 1, Entity::RX_CA_RBL_ALERTS);
+    }
 }

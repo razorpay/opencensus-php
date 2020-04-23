@@ -32,6 +32,9 @@ class Entity extends Base\PublicEntity
     const FROM                  = 'from';
     const TO                    = 'to';
 
+    // Slack channel for alerts
+    const RX_CA_RBL_ALERTS = 'rx_ca_rbl_alerts';
+
     protected $generateIdOnCreate = true;
 
     protected static $generators = [

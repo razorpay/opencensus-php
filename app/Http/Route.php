@@ -962,7 +962,8 @@ final class Route
 
         'payout_cancel'                            => ['post',     'payouts/{id}/cancel',                            'PayoutController@cancelPayout'                                     ],
         'payout_update_status'                     => ['patch',    'payouts/{id}/status',                            'PayoutController@updateTestPayoutStatus'                           ],
-        'fee_recovery_payout_create'               => ['post',     'payouts/fee_recovery',                           'FeeRecoveryController@createRecoveryPayout'                        ],
+        'fee_recovery_payout_admin'                => ['post',     'payouts/fee_recovery',                           'FeeRecoveryController@createRecoveryPayout'                        ],
+        'fee_recovery_payout_process'              => ['post',     'payouts/fee_recovery/process',                   'FeeRecoveryController@processRecoveryPayout'                          ],
         'transfer_fetch'                           => ['get',      'transfers/{id}',                                 'TransferController@getTransfer'                                    ],
         'transfer_fetch_multiple'                  => ['get',      'transfers/',                                     'TransferController@getTransfers'                                   ],
 
@@ -2175,6 +2176,7 @@ final class Route
         'webhook_deactivate',
         'transaction_settled_data_fix',
         'banking_account_gateway_balance_fetch',
+        'fee_recovery_payout_process',
         'merchant_poc_update',
         'merchant_poc_update_with_time',
         'unclaimed_merchant_poc_update',
@@ -3084,7 +3086,7 @@ final class Route
         'merchant_locked_balance_update',
 
         'merchant_balance_fetch_admin',
-        'fee_recovery_payout_create',
+        'fee_recovery_payout_admin',
 
         // Banking VA
         'virtual_account_bulk_create_for_banking',
@@ -3725,7 +3727,7 @@ final class Route
         'update_payment_config_admin'               => '*',
         'admin_fetch_fund_account_validate'         => '*',
 
-        'fee_recovery_payout_create'                => Permission::PROCESS_FEE_RECOVERY,
+        'fee_recovery_payout_admin'                => Permission::PROCESS_FEE_RECOVERY,
     ];
 
     public static $bankingRoutePermissions = [
@@ -4159,6 +4161,7 @@ final class Route
             'virtual_account_batch_migrate_yesbank',
             'transfer_settlements_update',
             'retry_penny_testing_cron',
+            'fee_recovery_payout_process',
         ],
 
         'subscriptions' => [

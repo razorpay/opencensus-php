@@ -2,6 +2,9 @@
 
 namespace RZP\Models\FeeRecovery;
 
+use Carbon\Carbon;
+
+use RZP\Jobs;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Payout;
@@ -10,10 +13,12 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Models\Reversal;
+use RZP\Constants\Timezone;
+use RZP\Models\Schedule\Task;
 use RZP\Models\BankingAccount;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\Currency\Currency;
-use Razorpay\Trace\Logger as Trace;
+use RZP\Models\Settlement\SlackNotification;
 
 class Core extends Base\Core
 {
@@ -24,6 +29,60 @@ class Core extends Base\Core
         $this->mutex = $this->app['api.mutex'];
     }
 
+    /**
+     * Creates an entry into the fee_recovery table corresponding to a Payout/Reversal.
+     * This function gets invoked at payout initiation and reversal creation.
+     *
+     * @param Base\PublicEntity $entity
+     *
+     */
+    public function createFeeRecoveryEntityForSource(Base\PublicEntity $entity)
+    {
+        $this->mutex->acquireAndRelease(
+            'fee_recovery_' . $entity->getId(),
+            function () use ($entity)
+            {
+                $feeRecoveryEntity = (new Entity)->build();
+
+                Validator::validateSourceEntity($entity);
+
+                $type = (new Type)->getTypeFromSourceEntity($entity);
+
+                $feeRecoveryEntity->setType($type);
+
+                $feeRecoveryEntity->setStatus(Status::UNRECOVERED);
+
+                $feeRecoveryEntity->entity()->associate($entity);
+
+                $skipCreation = $this->skipIfExistingFeeRecoveryDataExists($feeRecoveryEntity);
+
+                if ($skipCreation === true)
+                {
+                    return;
+                }
+
+                $this->repo->saveOrFail($feeRecoveryEntity);
+
+                $this->trace->info(
+                    TraceCode::FEE_RECOVERY_ENTITY_CREATED,
+                    [
+                        'source_id'       => $entity->getId(),
+                        'source_type'     => $entity->getEntityName(),
+                        'fee_recovery_id' => $feeRecoveryEntity->getId()
+                    ]);
+            },
+            60,
+            ErrorCode::BAD_REQUEST_FEE_RECOVERY_ANOTHER_OPERATION_IN_PROGRESS);
+    }
+
+    /**
+     * This function is called every time a payout changes status.
+     * It creates a new entry, in case a payout failed/reversed
+     * It also updates all the corresponding entries if the state change occurred for a 'rzp_fees' payout
+     *
+     * @param Payout\Entity        $payout
+     * @param Reversal\Entity|null $reversal
+     */
     public function handlePayoutStatusUpdate(Payout\Entity $payout,
                                              Reversal\Entity $reversal = null)
     {
@@ -62,52 +121,6 @@ class Core extends Base\Core
     }
 
     /**
-     * Creates an entry into the fee_recovery table corresponding to a Payout/Reversal.
-     * This function gets invoked at payout initiation and reversal creation.
-     *
-     * @param Base\PublicEntity $entity
-     *
-     */
-    public function createFeeRecoveryEntityForSource(Base\PublicEntity $entity)
-    {
-        $this->mutex->acquireAndRelease(
-            'fee_recovery_' . $entity->getId(),
-            function () use ($entity)
-        {
-            $feeRecoveryEntity = (new Entity)->build();
-
-            Validator::validateSourceEntity($entity);
-
-            $type = (new Type)->getTypeFromSourceEntity($entity);
-
-            $feeRecoveryEntity->setType($type);
-
-            $feeRecoveryEntity->setStatus(Status::UNRECOVERED);
-
-            $feeRecoveryEntity->entity()->associate($entity);
-
-            $skipCreation = $this->skipIfExistingFeeRecoveryDataExists($feeRecoveryEntity);
-
-            if ($skipCreation === true)
-            {
-                return;
-            }
-
-            $this->repo->saveOrFail($feeRecoveryEntity);
-
-            $this->trace->info(
-                TraceCode::FEE_RECOVERY_ENTITY_CREATED,
-                [
-                    'source_id'       => $entity->getId(),
-                    'source_type'     => $entity->getEntityName(),
-                    'fee_recovery_id' => $feeRecoveryEntity->getId()
-                ]);
-        },
-        60,
-        ErrorCode::BAD_REQUEST_FEE_RECOVERY_ANOTHER_OPERATION_IN_PROGRESS);
-    }
-
-    /**
      * This function picks up all payouts, failed payouts and reversals between a certain period,
      * calculates fees that needs to be recovered for these entities (positive for debit, negative for credit)
      * and makes a payout to a designated rzp_fees fund account with the calculated amount
@@ -143,6 +156,47 @@ class Core extends Base\Core
         return $feeRecoveryPayout;
     }
 
+    /**
+     * @param array $input
+     *
+     * @return array
+     */
+    public function recoveryPayoutCron(array $input)
+    {
+        $currentTimeStamp = Carbon::now(Timezone::IST)->getTimestamp();
+
+        $pendingTasks = $this->repo->schedule_task->fetchDueScheduleTasks(Task\Type::FEE_RECOVERY, $currentTimeStamp);
+
+        foreach ($pendingTasks as $task)
+        {
+            $balanceId = $task->getEntityId();
+
+            $balance = $this->repo->balance->find($balanceId);
+
+            //
+            // We are going to run the fee recovery payout for payouts created between lastRunAt and nextRunAt of a
+            // schedule task.
+            //
+            // IMPORTANT : If the task runs 23 min post it's current nextRunAt, lastRunAt is still updated to
+            // the current value of nextRunAt. Hence, we don't have to consider any actual delay that happen
+            // when we run the cron.
+            //
+            // Also, we have manually added 1 here because the query is inclusive on both ends. The same route is also
+            // called via admin auth, and keeping the timestamps inclusive makes it less prone to human error.
+            //
+            $lastRunAt = ($task->getLastRunAt() + 1) ?? $balance->getCreatedAt();
+            $nextRunAt = $task->getNextRunAt();
+
+            Jobs\FeeRecovery::dispatch($this->mode, $balanceId, $lastRunAt, $nextRunAt);
+
+            $task->updateNextRunAndLastRun();
+
+            $this->repo->saveOrFail($task);
+        }
+
+        return ['success' => true];
+    }
+
     protected function skipIfExistingFeeRecoveryDataExists(Entity $feeRecovery): bool
     {
         /** @var Base\PublicEntity $source */
@@ -159,13 +213,19 @@ class Core extends Base\Core
 
         if ($existingData->count() > 1)
         {
-            throw new Exception\LogicException('More than one entry in fee_recovery for given source entity',
+            $errorData = [
+                'source_id'      => $source->getId(),
+                'source_type'    => $source->getEntityName(),
+                'count'          => $existingData->count(),
+            ];
+
+            $errorMessage = 'More than one entry in fee_recovery for given source entity';
+
+            $this->sendSlackAlert($errorMessage, $errorData);
+
+            throw new Exception\LogicException($errorMessage,
                                                ErrorCode::BAD_REQUEST_LOGIC_ERROR_FEE_RECOVERY_DUPLICATE_DATA,
-                                               [
-                                                   'source_id'      => $source->getId(),
-                                                   'source_type'    => $source->getEntityName(),
-                                                   'count'          => $existingData->count(),
-                                               ]);
+                                               $errorData);
         }
 
         if ($existingData->count() === 1)
@@ -222,10 +282,29 @@ class Core extends Base\Core
 
             $amount = $this->getFeesForFeeRecovery($payouts, $failedPayouts, $reversals);
 
-            if ($amount <= 0)
+            if ($amount < 0)
             {
+                $errorData = [
+                    'balance_id'            => $balance->getId(),
+                    'start_timestamp'       => $startTimestamp,
+                    'end_timestamp'         => $endTimestamp,
+                    'fee_recovery_amount'   => $amount
+                ];
+
+                $errorMessage = 'Amount is insufficient to make a fee recovery payout';
+
+                $this->sendSlackAlert($errorMessage, $errorData);
+
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_FEE_RECOVERY_AMOUNT_INSUFFICIENT,
+                    null,
+                    $errorData
+                    );
+            }
+            if ($amount == 0)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_FEE_RECOVERY_AMOUNT_ZERO,
                     null,
                     [
                         'balance_id'            => $balance->getId(),
@@ -241,7 +320,7 @@ class Core extends Base\Core
                                                          $balance,
                                                          $amount);
         },
-        600,
+        300,
         ErrorCode::BAD_REQUEST_FEE_RECOVERY_ANOTHER_OPERATION_IN_PROGRESS);
 
         return $feeRecoveryPayout;
@@ -549,5 +628,10 @@ class Core extends Base\Core
         $feeRecoveryContact = $rzpFeesContacts->first();
 
         return $feeRecoveryContact;
+    }
+
+    protected function sendSlackAlert($operation, $data)
+    {
+        (new SlackNotification)->send($operation, $data, null, 1, Entity::RX_CA_RBL_ALERTS);
     }
 }

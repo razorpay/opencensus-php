@@ -27,7 +27,7 @@ class BankingAccountStatement extends Job
     protected $params;
 
     /**
-     * Default timeout value for a job is 60s. Changing it to 300s 
+     * Default timeout value for a job is 60s. Changing it to 300s
      * as account statement process takes 1-2 mins to complete.
      * @var integer
      */
@@ -107,7 +107,6 @@ class BankingAccountStatement extends Job
 
             $operation = 'banking account statement fetch job failed';
 
-            //TODO: Need to decide on channel name for slack alert and run book
             (new SlackNotification)->send($operation, $this->params, null, 1, 'rx_ca_rbl_alerts');
         }
     }

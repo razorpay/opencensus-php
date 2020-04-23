@@ -55,6 +55,21 @@ class Repository extends Base\Repository
                      ->first();
     }
 
+    public function getScheduleByPeriodIntervalAnchorDelayAndType(string $period,
+                                                                  int $interval,
+                                                                  $anchor,
+                                                                  int $delay,
+                                                                  string $type)
+    {
+        return $this->newQuery()
+                    ->where(Entity::PERIOD, '=', $period)
+                    ->where(Entity::INTERVAL, '=', $interval)
+                    ->where(Entity::ANCHOR, '=', $anchor)
+                    ->where(Entity::DELAY, '=', $delay)
+                    ->where(Entity::TYPE, '=', $type)
+                    ->first();
+    }
+
     public function getScheduleByPeriodIntervalAnchorHourDelayAndType(string $period, int $interval, $anchor, int $hour, int $delay, string $type)
     {
          return $this->newQuery()

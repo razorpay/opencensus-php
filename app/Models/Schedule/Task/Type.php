@@ -11,6 +11,9 @@ class Type
     const PROMOTION    = 'promotion';
     const REPORTING    = 'reporting'; // Reporting Service
 
+    // Used for fee recovery payouts for RX Current Accounts
+    const FEE_RECOVERY = 'fee_recovery';
+
     const LOG          = 'log';
 
     const SYNC_LIVE_TEST = [
@@ -21,7 +24,8 @@ class Type
         self::SETTLEMENT,
         self::SUBSCRIPTION,
         self::PROMOTION,
-        self::REPORTING
+        self::REPORTING,
+        self::FEE_RECOVERY
     ];
 
     const EXTERNAL_SERVICES = [

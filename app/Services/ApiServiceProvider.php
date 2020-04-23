@@ -714,6 +714,8 @@ class ApiServiceProvider extends BaseServiceProvider
             'options'                   => Options\Entity::class,
 
             'banking_account'           => BankingAccount\Entity::class,
+
+            'balance'                   => Merchant\Balance\Entity::class,
         ]);
     }
 

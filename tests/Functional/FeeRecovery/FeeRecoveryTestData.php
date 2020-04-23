@@ -65,6 +65,18 @@ return [
         ],
     ],
 
+    'testFeeRecoveryPayoutCron' => [
+        'request'  => [
+            'url'    => '/payouts/fee_recovery/process',
+            'method' => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                'success'   => true,
+            ],
+        ],
+    ],
+
     'testProcessQueuedPayoutFeeRecoveryCreated' => [
         'request'  => [
             'url'    => '/payouts/queued/process',
@@ -90,4 +102,5 @@ return [
             ],
         ],
     ],
+
 ];

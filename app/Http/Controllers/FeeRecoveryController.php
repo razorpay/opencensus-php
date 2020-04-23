@@ -15,4 +15,13 @@ class FeeRecoveryController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function processRecoveryPayout()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->recoveryPayoutCron($input);
+
+        return ApiResponse::json($response);
+    }
 }
