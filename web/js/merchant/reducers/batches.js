@@ -262,9 +262,9 @@ export const fetchPaymentLinkBatchesDetails = params => {
   const promises = [fetchBatchAjax(id), fetchBatchStats(id)];
 
   if (user.isPaymentlinksV2Enabled) {
-    fetchBatchPaymentLinks(id);
+    promises.push(fetchBatchPaymentLinks(id));
   } else {
-    fetchBatchInvoices(id);
+    promises.push(fetchBatchInvoices(id));
   }
 
   params.with_config = '1';
