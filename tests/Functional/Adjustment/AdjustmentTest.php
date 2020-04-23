@@ -78,6 +78,8 @@ class AdjustmentTest extends TestCase
         $this->assertEquals('100abc000abc00', $transaction['merchant_id']);
         $this->assertEquals(500000, $transaction['amount']);
         $this->assertEquals($balanceId, $transaction['balance_id']);
+
+        $this->assertNotNull($transaction['posted_at']);
     }
 
     public function testCreateReservePrimaryBalance()

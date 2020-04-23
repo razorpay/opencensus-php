@@ -53,6 +53,7 @@ class BankTransfer extends Base
      */
     public function updateTransaction()
     {
+        $this->updatePostedDate();
     }
 
     /**

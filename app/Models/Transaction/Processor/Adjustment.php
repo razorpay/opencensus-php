@@ -47,6 +47,8 @@ class Adjustment extends Base
         $this->txn->setReconciledAt(Carbon::now(Timezone::IST)->getTimestamp());
         $this->txn->setReconciledType(Transaction\ReconciledType::NA);
 
+        $this->updatePostedDate();
+
         $this->repo->saveOrFail($this->txn);
 
         $this->dispatchForSettlementBucketing($this->txn, $settledAt);

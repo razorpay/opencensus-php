@@ -94,6 +94,8 @@ class FundAccountValidationTest extends TestCase
         $this->assertEquals(0, $txn['fee_credits']);
         $this->assertEquals('default', $txn['credit_type']);
 
+        $this->assertNotNull($txn['posted_at']);
+
         // utr should be present in response['results'] array
         $this->assertArrayKeysExist($response['results'], ['utr','account_status','registered_name']);
 

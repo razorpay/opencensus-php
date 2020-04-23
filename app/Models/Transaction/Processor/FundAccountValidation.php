@@ -31,6 +31,8 @@ class FundAccountValidation extends BaseProcessor
 
         $this->txn->setAttribute(Transaction\Entity::SETTLED_AT, $nowTimestamp);
 
+        $this->updatePostedDate();
+
         $this->repo->saveOrFail($this->txn);
     }
 
