@@ -973,16 +973,38 @@ class SubReconciliate extends Base\Core
 
         if ($defined === false)
         {
-            $this->messenger->raiseReconAlert(
-                [
-                    'info_code' => InfoCode::RECON_BLACKLISTED_COLUMNS_NOT_DEFINED,
-                    'gateway'   => $this->gateway,
-                ]);
+            // This function is called from 2 flows. First, while creating
+            // output file. That time calling class is gateway subreconciliator.
+            // Second, while tracing row. In case of combined reconciliate
+            // gateways, the calling class is either payment or refund reconciliate
+            // (and not the gateway subreconciliator i.e. combinedReconciliate).
+            // So checking for 2nd case here.
+            $parentNamespace = $this->getParentNamespace();
 
-            return null;
+            // SubReconciliator class name should be something like - Reconciliator/Hitachi/CombinedReconciliate
+            $className = $parentNamespace . '\\' . 'CombinedReconciliate';
+
+            $defined = defined($className  . '::' . 'BLACKLISTED_COLUMNS');
+
+            if ($defined === false)
+            {
+                $this->trace->info(TraceCode::RECON_INFO_ALERT,
+                    [
+                        'info_code' => InfoCode::RECON_BLACKLISTED_COLUMNS_NOT_DEFINED,
+                        'gateway' => $this->gateway,
+                    ]);
+
+                return null;
+            }
         }
 
         return constant($className . '::' . 'BLACKLISTED_COLUMNS');
+    }
+
+    protected function getParentNamespace()
+    {
+        // Gets the namespace from the called class, by removing the last part of the FQCN.
+        return join('\\', explode('\\', get_called_class(), -1));
     }
 
     /**
