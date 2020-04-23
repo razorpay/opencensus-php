@@ -2,7 +2,10 @@ import { set, merge, unshift, remove } from 'common/utils/immutable';
 import { merchantFetch } from 'merchant/utils/ajax';
 
 import store from 'merchant/store';
-import { transformPLDetails_NewToOld } from 'merchant/views/PaymentLinks/PaymentLinks/js/transformer';
+import {
+  transformPLDetails_NewToOld,
+  transformPLListFilters_NewToOld,
+} from 'merchant/views/PaymentLinks/PaymentLinks/js/transformer';
 import Invoice from 'merchant/models/Invoice';
 
 import { PL_UPDATE } from './details';
@@ -17,7 +20,8 @@ export const fetchPaymentLinks = params => {
 
   if (user.isPaymentlinksV2Enabled) {
     url = 'payment_links';
-    delete params.types;
+
+    params = transformPLListFilters_NewToOld(params);
   } else {
     url = 'invoices';
   }
@@ -51,7 +55,7 @@ export const updatePLInReduxList = (respPayload, isNew) => {
   const user = store.getState().session.user;
 
   if (user.isPaymentlinksV2Enabled) {
-    payload = transformPLDetails_NewToOld(respPayload.data);
+    payload = respPayload.data;
   } else {
     payload = new Invoice(respPayload.data).deserialize();
   }

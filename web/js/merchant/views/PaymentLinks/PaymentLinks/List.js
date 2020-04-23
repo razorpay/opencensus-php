@@ -163,6 +163,7 @@ export default class PaymentLinksContainer extends ListContainer {
           onClearAnalytics={this.onClearAnalytics}
           isInttCurrenciesEnabled={user.isInttCurrenciesEnabled}
           trackSearchFilterForInternational={trackSearchFilterForInternational}
+          isPaymentlinksV2Enabled={user.isPaymentlinksV2Enabled}
         />
 
         <Alert

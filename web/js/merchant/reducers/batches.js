@@ -180,6 +180,9 @@ export const fetchBatchStats = batchId =>
 export const fetchBatchInvoices = batchId =>
   merchantFetch(`invoices?batch_id=${batchId}`);
 
+const fetchBatchPaymentLinks = batchId =>
+  merchantFetch(`payment_links?batch_id=${batchId}`);
+
 /* actions currently used by only payment link batch */
 export const issuePaymentLinkBatch = (batchId, data) => {
   return {
@@ -253,16 +256,21 @@ export const fetchPaymentLinkBatches = params => {
 };
 
 export const fetchPaymentLinkBatchesDetails = params => {
+  const user = store.getState().session.user;
   const id = params.id;
+
+  const promises = [fetchBatchAjax(id), fetchBatchStats(id)];
+
+  if (user.isPaymentlinksV2Enabled) {
+    fetchBatchPaymentLinks(id);
+  } else {
+    fetchBatchInvoices(id);
+  }
 
   params.with_config = '1';
   return {
     type: PAYMENT_LINK_DETAILS,
-    payload: Promise.all([
-      fetchBatchAjax(id),
-      fetchBatchStats(id),
-      fetchBatchInvoices(id),
-    ]),
+    payload: Promise.all(promises),
   };
 };
 

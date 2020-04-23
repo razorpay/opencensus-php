@@ -564,7 +564,7 @@ export default class User {
   // This is for new payment links microservice.
   // If enabled, then all the apis before sending data, and after fetching/receiving data must transform its data, as FE operate on old structure until 100% rollout.
   get isPaymentlinksV2Enabled() {
-    return this.findTag('paymentlinks_v2');
+    return this.isFeatureEnabled('paymentlinks_v2');
   }
 
   get isUnregisteredBusiness() {

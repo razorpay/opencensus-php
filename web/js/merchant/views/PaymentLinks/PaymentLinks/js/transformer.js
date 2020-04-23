@@ -28,14 +28,16 @@ export function transformCreatePLPayload_OldToNew(data) {
   }
 
   // 5.
-  reqPayload.notify = {};
+  if (reqPayload.email_notify === '1' || reqPayload.sms_notify === '1') {
+    reqPayload.notify = {};
 
-  if (reqPayload.hasOwnProperty('email_notify')) {
-    reqPayload.notify.email = reqPayload.email_notify === '1' ? true : false;
-  }
+    if (reqPayload.hasOwnProperty('email_notify')) {
+      reqPayload.notify.email = reqPayload.email_notify === '1' ? true : false;
+    }
 
-  if (reqPayload.hasOwnProperty('sms_notify')) {
-    reqPayload.notify.sms = reqPayload.sms_notify === '1' ? true : false;
+    if (reqPayload.hasOwnProperty('sms_notify')) {
+      reqPayload.notify.sms = reqPayload.sms_notify === '1' ? true : false;
+    }
   }
 
   // 6.
@@ -98,4 +100,33 @@ export function transformPLDetails_NewToOld(data) {
   // Other keys are not needed to be changed and extra keys need not to be deleted, as they won't beused further
 
   return resPayload;
+}
+
+export function transformPLListFilters_NewToOld(_params) {
+  const params = JSON.parse(JSON.stringify(_params));
+
+  // 1.
+  if (params.hasOwnProperty('types')) {
+    delete params.types;
+  }
+
+  // 2.
+  if (params.hasOwnProperty('receipt')) {
+    params.reference_id = params.receipt;
+    delete params.receipt;
+  }
+
+  // 3.
+  if (params.hasOwnProperty('customer_email')) {
+    params.email = params.customer_email;
+    delete params.customer_email;
+  }
+
+  // 3.
+  if (params.hasOwnProperty('customer_contact')) {
+    params.contact = params.customer_contact;
+    delete params.customer_contact;
+  }
+
+  return params;
 }

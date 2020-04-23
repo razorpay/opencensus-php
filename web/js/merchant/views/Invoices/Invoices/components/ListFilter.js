@@ -4,6 +4,7 @@ import { Field } from 'redux-form';
 
 export default ({
   type,
+  isPaymentlinksV2Enabled,
   isInttCurrenciesEnabled,
   trackSearchFilterForInternational,
   onSubmit,
@@ -38,8 +39,11 @@ export default ({
         <Field name="status" component="select" class="form-control input-sm">
           <option value="">All</option>
           {!isTypeLink && <option value="draft">Draft</option>}
-
-          <option value="issued">Issued</option>
+          {isPaymentlinksV2Enabled ? (
+            <option value="created">Created</option>
+          ) : (
+            <option value="issued">Issued</option>
+          )}
           <option value="partially_paid">Partially Paid</option>
           <option value="paid">Paid</option>
           <option value="cancelled">Cancelled</option>

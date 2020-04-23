@@ -314,14 +314,23 @@ export default props => {
                 />
 
                 <EntityDetailRow label="Created By">
-                  {!!paymentlink.user ? (
-                    <Definition>
-                      {paymentlink.user.name}
-                      {paymentlink.user.email}
-                    </Definition>
-                  ) : (
-                    'API'
-                  )}
+                  {do {
+                    if (!!paymentlink.user_id) {
+                      if (!!paymentlink.user) {
+                        <Definition>
+                          {paymentlink.user.name}
+                          {paymentlink.user.email}
+                        </Definition>;
+                      } else {
+                        <Definition>
+                          <span>User Id</span>
+                          <span>{paymentlink.user_id}</span>
+                        </Definition>;
+                      }
+                    } else {
+                      <span>API</span>;
+                    }
+                  }}
                 </EntityDetailRow>
 
                 <EntityDetailRow

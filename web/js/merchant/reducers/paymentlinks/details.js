@@ -5,6 +5,8 @@ import Invoice from 'merchant/models/Invoice';
 
 import { transformPLDetails_NewToOld } from 'merchant/views/PaymentLinks/PaymentLinks/js/transformer';
 
+import { fetchUserDetailsById } from 'merchant/reducers/session';
+
 export const PL_UPDATE = 'PL_UPDATE';
 const PL_FETCH = 'PL_FETCH';
 const PL_CANCEL = 'PL_CANCEL';
@@ -46,12 +48,31 @@ export const fetchPaymentLinkDetails = paymentLinkId => {
   if (user.isPaymentlinksV2Enabled) {
     const reqPayload = {
       url: `payment_links/${paymentLinkId}`,
-      params: { expand: ['user'] },
     };
 
     payload = merchantFetch(reqPayload).then(resp => {
       if (resp.data) {
-        return transformPLDetails_NewToOld(resp.data);
+        const userId = resp.data.user_id;
+
+        const paymentLink = {
+          ...resp.data,
+        };
+
+        if (userId) {
+          return fetchUserDetailsById(userId)
+            .then(userResp => {
+              if (userResp.data) {
+                paymentLink.user = userResp.data;
+              }
+
+              return transformPLDetails_NewToOld(paymentLink);
+            })
+            .catch(err => {
+              return transformPLDetails_NewToOld(paymentLink);
+            });
+        }
+
+        return transformPLDetails_NewToOld(paymentLink);
       }
 
       return resp;

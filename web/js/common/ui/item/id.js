@@ -23,6 +23,7 @@ const sources = {
 
 const batchBaseUrls = {
   payment_link: 'paymentlinks',
+  payment_link_v2: 'paymentlinks',
   auth_link: 'subscriptions',
   recurring_charge: 'subscriptions',
   linked_account_reversal: 'reversals',

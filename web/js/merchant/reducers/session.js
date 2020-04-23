@@ -1,4 +1,5 @@
 import ajax from 'merchant/utils/ajax';
+import { merchantFetch } from 'merchant/utils/ajax';
 import User from 'merchant/models/User';
 import { set, merge } from 'common/utils/immutable';
 import { titleCase } from 'common/utils/rzp-utils';
@@ -52,6 +53,12 @@ export const logout = () => {
       appendModeInURL: false,
     }),
   };
+};
+
+export const fetchUserDetailsById = userId => {
+  return merchantFetch({
+    url: `users/fetch_for_merchant/${userId}`,
+  });
 };
 
 export const showOrHideTour = toShowTour => {

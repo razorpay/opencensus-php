@@ -120,6 +120,8 @@ function WizardFields(field) {
     key = _name;
   }
 
+  key += field.label;
+
   if (rest.description && typeof rest.description === 'function') {
     rest.description = rest.description(this);
   }
