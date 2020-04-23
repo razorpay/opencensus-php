@@ -883,6 +883,20 @@ class Gateway extends Base\Gateway
     {
         parent::refund($input);
 
+        if ($input['payment']['gateway'] === Payment\Gateway::PAYLATER)
+        {
+            switch ($this->terminal->getGatewayAcquirer())
+            {
+                case Payment\Gateway::GETSIMPL:
+                    $input['payment']['gateway'] = $input['payment']['wallet'];
+                    break;
+                case Payment\Processor\PayLater::ICICI:
+                    $input['payment']['gateway'] = Payment\Gateway::PAYLATER_ICICI;
+                    break;
+            }
+        }
+
+
         if ($this->isFileBasedRefund($input['payment']['gateway']) === true)
         {
             return;
@@ -893,13 +907,6 @@ class Gateway extends Base\Gateway
             throw new Exception\LogicException(
                 'Refund not available on mozart',
                 ErrorCode::GATEWAY_ERROR_PAYMENT_INVALID_ACTION);
-        }
-
-        switch ($this->terminal->getGatewayAcquirer())
-        {
-            case Payment\Gateway::GETSIMPL:
-                $input['payment']['gateway'] = $input['payment']['wallet'];
-                break;
         }
 
         list($response, $attributes) = $this->sendMozartRequestAndGetResponse(
@@ -1983,6 +1990,7 @@ class Gateway extends Base\Gateway
             Payment\Gateway::NETBANKING_IBK,
             Payment\Gateway::NETBANKING_IDBI,
             Payment\Gateway::NETBANKING_KVB,
+            Payment\Gateway::PAYLATER_ICICI,
         ];
 
         return in_array($gateway, $fileBasedGateways, true);

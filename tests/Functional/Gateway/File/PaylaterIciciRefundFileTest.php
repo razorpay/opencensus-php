@@ -44,6 +44,8 @@ class PaylaterIciciRefundFileTest extends TestCase
 
         $refund = $this->refundPayment($payment['id']);
 
+        $this->assertEquals($refund['status'], 'processed');
+
         $this->ba->adminAuth();
 
         $content = $this->startTest();
