@@ -3,9 +3,11 @@
 namespace RZP\Models\BankingAccount;
 
 use RZP\Models\Base;
+use RZP\Models\Payout;
 use RZP\Models\Merchant;
 use RZP\Constants\Table;
 use RZP\Models\Admin\Admin;
+use RZP\Models\FeeRecovery;
 use RZP\Models\Merchant\Balance;
 use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Models\BankingAccount\State;
@@ -109,10 +111,15 @@ class Entity extends Base\PublicEntity
 
     const DETAILS       = 'details';
 
+    // Constants for fee recovery details
+    const LAST_DEDUCTED_AT   = 'last_deducted_at';
+    const OUTSTANDING_AMOUNT = 'outstanding_amount';
+
     // Relation Constants
     const BANKING_ACCOUNT_DETAILS = 'banking_account_details';
     const BALANCE                 = 'balance';
     const REVIEWERS               = 'reviewers';
+    const FEE_RECOVERY_DETAILS    = 'fee_recovery_details';
 
     // Constants for reviewers() relation
     const REVIEWER_ID             = 'reviewer_id';
@@ -237,6 +244,7 @@ class Entity extends Base\PublicEntity
         self::PINCODE,
         self::BANKING_ACCOUNT_DETAILS,
         self::BALANCE,
+        self::FEE_RECOVERY_DETAILS,
     ];
 
     protected $relations = [
@@ -247,6 +255,7 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::BALANCE,
         self::BANKING_ACCOUNT_DETAILS,
+        self::FEE_RECOVERY_DETAILS,
     ];
 
     // ---------------------------- Setters ----------------------------------- //
@@ -520,6 +529,29 @@ class Entity extends Base\PublicEntity
 
     // ----------------------- Public setters ---------------------------------
 
+    public function setPublicFeeRecoveryDetailsAttribute(array & $array)
+    {
+        if (app('basicauth')->isProxyAuth() === true)
+        {
+            $balance = optional($this->balance);
+
+            if (($balance->isAccountTypeDirect() === true) and
+                ($balance->isTypeBanking() === true) and
+                ($balance->getChannel() === Channel::RBL))
+            {
+                $latestFeeRecoveryPayout = (new Payout\Repository)->fetchFeeLastDeductedAt($this->getMerchantId(),
+                                                                                  $balance->getId());
+
+                $outstandingAmount = $this->fetchOutstandingAmountToBeRecovered();
+
+                $array[self::FEE_RECOVERY_DETAILS] = [
+                    self::OUTSTANDING_AMOUNT => $outstandingAmount,
+                    self::LAST_DEDUCTED_AT   => optional($latestFeeRecoveryPayout)->getProcessedAt()
+                ];
+            }
+        }
+    }
+
     public function setPublicBankingAccountDetailsAttribute(array & $array)
     {
         if (app('basicauth')->isAdminAuth() === false)
@@ -586,5 +618,25 @@ class Entity extends Base\PublicEntity
         }
 
         return false;
+    }
+
+    protected function fetchOutstandingAmountToBeRecovered()
+    {
+        $feeRecoveryRepo = new FeeRecovery\Repository;
+
+        $unrecoveredAmountForPayouts = $feeRecoveryRepo->fetchUnrecoveredAmountForPayouts($this->getMerchantId(),
+                                                                                          $this->balance->getId());
+
+        $unrecoveredAmountForFailedPayouts = $feeRecoveryRepo->fetchUnrecoveredAmountForFailedPayouts($this->getMerchantId(),
+                                                                                          $this->balance->getId());
+
+        $unrecoveredAmountForReversals = $feeRecoveryRepo->fetchUnrecoveredAmountForReversals($this->getMerchantId(),
+                                                                                              $this->balance->getId());
+
+        $outstandingAmount = $unrecoveredAmountForPayouts->getAttribute(Payout\Entity::FEES) -
+                             $unrecoveredAmountForFailedPayouts->getAttribute(Payout\Entity::FEES) -
+                             $unrecoveredAmountForReversals->getAttribute(Payout\Entity::FEES);
+
+        return $outstandingAmount;
     }
 }

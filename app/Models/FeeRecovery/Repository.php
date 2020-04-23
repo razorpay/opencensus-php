@@ -3,6 +3,9 @@
 namespace RZP\Models\FeeRecovery;
 
 use RZP\Models\Base;
+use RZP\Models\Payout;
+use RZP\Models\Reversal;
+use RZP\Constants\Table;
 
 class Repository extends Base\Repository
 {
@@ -98,5 +101,82 @@ class Repository extends Base\Repository
                     ->where($recoveryPayoutIdColumn, '=', $recoveryPayoutId)
                     ->whereIn($statusColumn, [Status::PROCESSING, Status::RECOVERED])
                     ->update($dataToUpdate);
+    }
+
+    public function fetchUnrecoveredAmountForPayouts(string $merchantId, string $balanceId)
+    {
+        // payout columns
+        $balanceIdColumn  = $this->repo->payout->dbColumn(Payout\Entity::BALANCE_ID);
+        $feesColumn       = $this->repo->payout->dbColumn(Payout\Entity::FEES);
+        $idColumn         = $this->repo->payout->dbColumn(Payout\Entity::ID);
+        $merchantIdColumn = $this->repo->payout->dbColumn(Payout\Entity::MERCHANT_ID);
+
+        // fee recovery columns
+        $entityIdColumn = $this->dbColumn(Entity::ENTITY_ID);
+        $statusColumn   = $this->dbColumn(Entity::STATUS);
+        $typeColumn     = $this->dbColumn(Entity::TYPE);
+
+        return $this->newQuery()
+                    ->selectRaw(
+                        'SUM(' . $feesColumn .') AS fees')
+                    ->join(Table::PAYOUT, $idColumn, '=', $entityIdColumn)
+                    ->where($merchantIdColumn, '=', $merchantId)
+                    ->where($balanceIdColumn, '=', $balanceId)
+                    ->whereIn($statusColumn, [Status::UNRECOVERED, Status::PROCESSING])
+                    ->where($typeColumn, '=', Type::DEBIT)
+                    ->first();
+    }
+
+    public function fetchUnrecoveredAmountForFailedPayouts(string $merchantId, string $balanceId)
+    {
+        // payout columns
+        $balanceIdColumn  = $this->repo->payout->dbColumn(Payout\Entity::BALANCE_ID);
+        $feesColumn       = $this->repo->payout->dbColumn(Payout\Entity::FEES);
+        $idColumn         = $this->repo->payout->dbColumn(Payout\Entity::ID);
+        $merchantIdColumn = $this->repo->payout->dbColumn(Payout\Entity::MERCHANT_ID);
+
+        // fee recovery columns
+        $entityIdColumn   = $this->dbColumn(Entity::ENTITY_ID);
+        $statusColumn     = $this->dbColumn(Entity::STATUS);
+        $typeColumn       = $this->dbColumn(Entity::TYPE);
+
+        return $this->newQuery()
+                    ->selectRaw(
+                        'SUM(' . $feesColumn .') AS fees')
+                    ->join(Table::PAYOUT, $idColumn, '=', $entityIdColumn)
+                    ->where($merchantIdColumn, '=', $merchantId)
+                    ->where($balanceIdColumn, '=', $balanceId)
+                    ->whereIn($statusColumn, [Status::UNRECOVERED, Status::PROCESSING])
+                    ->where($typeColumn, '=', Type::CREDIT)
+                    ->first();
+    }
+
+    public function fetchUnrecoveredAmountForReversals(string $merchantId, string $balanceId)
+    {
+        // reversal columns
+        $balanceIdColumn        = $this->repo->reversal->dbColumn(Reversal\Entity::BALANCE_ID);
+        $reversalIdColumn       = $this->repo->reversal->dbColumn(Reversal\Entity::ID);
+        $merchantIdColumn       = $this->repo->reversal->dbColumn(Reversal\Entity::MERCHANT_ID);
+        $reversalEntityIdColumn = $this->repo->reversal->dbColumn(Reversal\Entity::ENTITY_ID);
+
+        // payout columns
+        $feesColumn       = $this->repo->payout->dbColumn(Payout\Entity::FEES);
+        $payoutIdColumn   = $this->repo->payout->dbColumn(Payout\Entity::ID);
+
+        // fee recovery columns
+        $entityIdColumn   = $this->dbColumn(Entity::ENTITY_ID);
+        $statusColumn     = $this->dbColumn(Entity::STATUS);
+        $typeColumn       = $this->dbColumn(Entity::TYPE);
+
+        return $this->newQuery()
+                    ->selectRaw(
+                        'SUM(' . $feesColumn .') AS fees')
+                    ->join(Table::REVERSAL, $reversalIdColumn, '=', $entityIdColumn)
+                    ->join(Table::PAYOUT, $reversalEntityIdColumn, '=', $payoutIdColumn)
+                    ->where($merchantIdColumn, '=', $merchantId)
+                    ->where($balanceIdColumn, '=', $balanceId)
+                    ->whereIn($statusColumn, [Status::UNRECOVERED, Status::PROCESSING])
+                    ->where($typeColumn, '=', Type::CREDIT)
+                    ->first();
     }
 }

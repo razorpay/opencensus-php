@@ -11,6 +11,7 @@ use RZP\Models\FeeRecovery;
 use RZP\Models\Feature\Constants;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\FundTransfer\Attempt;
+use RZP\Models\BankingAccount\Entity;
 use RZP\Models\BankingAccount\Channel;
 use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
@@ -30,6 +31,16 @@ class FeeRecoveryTest extends TestCase
 
     private $checkerRoleUser;
 
+    /**
+     * @var Entity
+     */
+    private $bankingAccount;
+
+    /**
+     * @var \RZP\Models\FundAccount\Entity
+     */
+    private $fundAccount;
+
     public function setUp()
     {
         $this->testDataFilePath = __DIR__ . '/FeeRecoveryTestData.php';
@@ -44,9 +55,21 @@ class FeeRecoveryTest extends TestCase
             AccountType::DIRECT,
             Channel::RBL);
 
+        $this->contactForPayout =  $this->fixtures->create('contact', ['id' => '1000001contact', 'active' => 1]);
+
+        $this->fundAccount = $this->fixtures->create(
+            'fund_account',
+            [
+                'id'           => '100000000000fa',
+                'source_id'    => '1000001contact',
+                'source_type'  => 'contact',
+                'account_type' => 'bank_account',
+                'account_id'   => '1000000lcustba'
+            ]);
+
         $this->balance = $this->getDbEntity('balance', ['merchant_id' => '10000000000000', 'type' => 'banking']);
 
-        $this->fixtures->create('banking_account', [
+        $this->bankingAccount = $this->fixtures->create('banking_account', [
             'account_number'        => '2224440041626905',
             'account_type'          => 'current',
             'merchant_id'           => '10000000000000',
@@ -856,6 +879,172 @@ class FeeRecoveryTest extends TestCase
             ]);
 
         return $fundAccount;
+    }
+
+    // tests outstanding fees to be recovered when fee recovery payout is initiated for 3 payouts
+    // out of which one is failed and other is reversed
+    public function testOutstandingFeesToBeRecovered()
+    {
+        $this->testCreateFeeRecoveryPayout();
+
+        $this->ba->proxyAuth();
+
+        $request = [
+            'url'     => '/banking_accounts',
+            'method'  => 'GET',
+            'content' => [],
+        ];
+
+        $observedResponse = $this->makeRequestAndGetContent($request);
+
+        $observedResponse = array_filter($observedResponse['items'],function($item){
+            return $item['channel'] === 'rbl';
+        });
+
+        $observedResponse = reset($observedResponse);
+
+        $expectedResponse = [
+            'id'             => 'bacc_'. $this->bankingAccount->getId(),
+            'channel'        => "rbl",
+            'merchant_id'    => "10000000000000",
+            'account_number' => "2224440041626905",
+            'balance'        => [
+                'id'             => $this->bankingBalance->getId(),
+                'balance'        => 10000,
+                'currency'       => "INR",
+                'locked_balance' => 0,
+            ],
+            'fee_recovery_details' => [
+                'outstanding_amount' => 590,
+                'last_deducted_at'   => null,
+            ]
+        ];
+
+        $this->assertArraySelectiveEquals($expectedResponse, $observedResponse);
+    }
+
+    // tests outstanding fees to be recovered when fee recovery payout is initiated for 3 payouts
+    // out of which one is failed and other is reversed. In this case Fee recovery payouts is processed.
+    // hence no outstanding amount. Last deducted at will also be equal to processed_at of fee recovery_payout
+    public function testOutstandingFeesToBeRecoveredWhenFeeRecoveryPayoutsAreProcessed()
+    {
+        $this->testCreateFeeRecoveryPayout();
+
+        $feeRecoveryPayout = $this->getDbLastEntity('payout');
+
+        $oldTime =  Carbon::create(2020, 9,3);
+
+        Carbon::setTestNow($oldTime);
+
+        $this->updateFtaAndSource($feeRecoveryPayout, Payout\Status::PROCESSED, '933818903814');
+
+        $this->ba->proxyAuth();
+
+        $request = [
+            'url'     => '/banking_accounts',
+            'method'  => 'GET',
+            'content' => [],
+        ];
+
+        $observedResponse = $this->makeRequestAndGetContent($request);
+
+        $observedResponse = array_filter($observedResponse['items'],function($item){
+            return $item['channel'] === 'rbl';
+        });
+
+        $observedResponse = reset($observedResponse);
+
+        $expectedResponse = [
+            'id'             => 'bacc_'. $this->bankingAccount->getId(),
+            'channel'        => "rbl",
+            'merchant_id'    => "10000000000000",
+            'account_number' => "2224440041626905",
+            'balance'        => [
+                'id'             => $this->bankingBalance->getId(),
+                'balance'        => 10000,
+                'currency'       => "INR",
+                'locked_balance' => 0,
+            ],
+            'fee_recovery_details' => [
+                'outstanding_amount' => 0,
+                'last_deducted_at'   => $oldTime->getTimestamp(),
+            ]
+        ];
+
+        $this->assertArraySelectiveEquals($expectedResponse, $observedResponse);
+    }
+
+    // tests outstanding fees to be recovered when fee recovery payout is initiated for 3 payouts
+    // out of which one is failed and other is reversed. In this case first Fee recovery payouts is processed.
+    // so outstanding amount. Last deducted at will also be equal to processed_at of fee recovery_payout
+    // Later two new payouts are made then hence some outstanding amount to be recovered
+    public function testFeeRecoveryDetails()
+    {
+        $this->testCreateFeeRecoveryPayout();
+
+        $feeRecoveryPayout = $this->getDbLastEntity('payout');
+
+        $oldTime =  Carbon::create(2020, 9, 3, 12, 23, 45);
+
+        Carbon::setTestNow($oldTime);
+
+        // update fee_recovery payout to processed
+        $this->updateFtaAndSource($feeRecoveryPayout, Payout\Status::PROCESSED, '933818903814');
+
+        // create a new payout
+        $newTime =  Carbon::create(2020, 10,3);
+
+        Carbon::setTestNow($newTime);
+
+        $this->createPayoutForFundAccount($this->fundAccount, $this->bankingBalance);
+
+        $newPayout = $this->getDbLastEntity('payout');
+
+        $this->fixtures->edit('payout', $newPayout['id'], ['initiated_at' => $newTime->getTimestamp()]);
+
+        // create another payout
+
+        $this->createPayoutForFundAccount($this->fundAccount, $this->bankingBalance);
+
+        $newPayout = $this->getDbLastEntity('payout');
+
+        $this->fixtures->edit('payout', $newPayout['id'], ['initiated_at' => $newTime->getTimestamp()]);
+
+        // get banking_accounts
+        $this->ba->proxyAuth();
+
+        $request = [
+            'url'     => '/banking_accounts',
+            'method'  => 'GET',
+            'content' => [],
+        ];
+
+        $observedResponse = $this->makeRequestAndGetContent($request);
+
+        $observedResponse = array_filter($observedResponse['items'],function($item){
+            return $item['channel'] === 'rbl';
+        });
+
+        $observedResponse = reset($observedResponse);
+
+        $expectedResponse = [
+            'id'             => 'bacc_'. $this->bankingAccount->getId(),
+            'channel'        => "rbl",
+            'merchant_id'    => "10000000000000",
+            'account_number' => "2224440041626905",
+            'balance'        => [
+                'id'             => $this->bankingBalance->getId(),
+                'balance'        => 10000,
+                'currency'       => "INR",
+                'locked_balance' => 0,
+            ],
+            'fee_recovery_details' => [
+                'outstanding_amount' => 1180,
+                'last_deducted_at'   => $oldTime->getTimestamp(),
+            ]
+        ];
+
+        $this->assertArraySelectiveEquals($expectedResponse, $observedResponse);
     }
 
     protected function setupScheduleAndScheduleTaskForMerchant()

@@ -17,6 +17,7 @@ use RZP\Models\Merchant;
 use RZP\Models\Workflow;
 use RZP\Models\Admin\Org;
 use RZP\Models\FundAccount;
+use RZP\Models\FeeRecovery;
 use RZP\Models\Workflow\Step;
 use RZP\Constants\Entity as E;
 use RZP\Models\Workflow\Action;
@@ -745,5 +746,24 @@ class Repository extends Base\Repository
         $reversedAtCol = $this->dbColumn(Entity::REVERSED_AT);
 
         $query->where($reversedAtCol, '<=', $reversedTo);
+    }
+
+    // fetches when fee recovery was last made for CA
+    public function fetchFeeLastDeductedAt(string $merchantId, string $balanceId)
+    {
+        $processedAtColumn = $this->dbColumn(Entity::PROCESSED_AT);
+        $balanceIdColumn   = $this->dbColumn(Entity::BALANCE_ID);
+        $purposeColumn     = $this->dbColumn(Entity::PURPOSE);
+        $statusColumn      = $this->dbColumn(Entity::STATUS);
+
+        return $this->newQuery()
+                    ->select($processedAtColumn)
+                    ->merchantId($merchantId)
+                    ->where($balanceIdColumn, '=', $balanceId)
+                    ->where($purposeColumn, '=', Purpose::RZP_FEES)
+                    ->where($statusColumn, '=', Status::PROCESSED)
+                    ->orderBy($processedAtColumn, 'desc')
+                    ->limit(1)
+                    ->first();
     }
 }
