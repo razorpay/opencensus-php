@@ -2479,4 +2479,23 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
     {
         return;
     }
+
+    /**
+     * Sometimes the Rrn we receive in MIS, is either more than 12 digits, with
+     * extra 0s appended at the left of it, or they are already trimmed so the 0s are
+     * removed from left part of string, making it unsearchable in the Upi repo.
+     *
+     * @param $rrn
+     */
+    protected function formatUpiRrn(&$rrn)
+    {
+        if(isset($rrn) === false)
+        {
+            return;
+        }
+
+        $rrn = ltrim($rrn, '0');
+
+        $rrn = str_pad($rrn, 12, '0', STR_PAD_LEFT);
+    }
 }

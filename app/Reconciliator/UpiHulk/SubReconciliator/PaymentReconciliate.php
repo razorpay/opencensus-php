@@ -42,6 +42,8 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
             return null;
         }
 
+        $this->formatUpiRrn($npciTxnId);
+
         $gatewayPayments = $this->repo->upi->findAllByNpciTxnId($npciTxnId);
 
         // Very rare scenario, but still would like to know if this happens in future

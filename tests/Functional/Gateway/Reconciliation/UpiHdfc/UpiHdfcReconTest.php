@@ -330,6 +330,37 @@ class UpiHdfcReconTest extends TestCase
         $this->assertEquals('failed', $updatedPayment['status']);
     }
 
+    public function testUpiHdfcUnexpectedPaymentRrnFormat()
+    {
+        $this->fixtures->create('terminal:shared_upi_mindgate_terminal');
+
+        $this->payment = $this->getDefaultUpiPaymentArray();
+
+        $upiEntity = $this->getNewUpiEntity('10000000000000', 'upi_mindgate');
+
+        $this->fixtures->upi->edit($upiEntity['id'],
+            [
+                 'npci_reference_id' => '001234567890'
+            ]);
+
+        $entries[] = $this->overrideUpiHdfcPayment([
+            'payment_id'          => 'EHloDoL0yeRPV0123',
+            'npci_reference_id'   => '1234567890'
+        ]);
+
+        $file = $this->writeToExcelFile($entries, 'UpiHdfc');
+
+        $uploadedFile = $this->createUploadedFile($file);
+
+        $this->reconcile($uploadedFile, 'UpiHdfc');
+
+        $transaction = $this->getDbLastEntityToArray('transaction');
+
+        $this->assertNotNull($transaction['reconciled_at']);
+
+        $this->assertNotNull($transaction['gateway_settled_at']);
+    }
+
     protected function overrideUpiHdfcPayment(array $upiEntity)
     {
         $facade = $this->testData['upiHdfc'];

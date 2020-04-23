@@ -107,6 +107,8 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         // our payment id for these rows in mis.
         //
 
+        $this->formatUpiRrn($rrn);
+
         $upiEntity = $this->repo->upi->fetchByNpciReferenceIdAndGateway($rrn , $gateway = Gateway::UPI_MINDGATE);
 
         if (empty($upiEntity) === false)
@@ -181,11 +183,10 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
                 $this->trace->info(
                     TraceCode::RECON_INFO_ALERT,
                     [
-                        'info_code'     => Base\InfoCode::UNEXPECTED_PAYMENT,
-                        'rrn'           => $rrn,
-                        'payment_id'    => $gatewayPaymentId,
-                        'row'           => $row,
-                        'gateway'       => $this->gateway
+                        'info_code'             => Base\InfoCode::UNEXPECTED_PAYMENT,
+                        'payment_reference_id'  => $rrn,
+                        'payment_id'            => $gatewayPaymentId,
+                        'gateway'               => $this->gateway
                     ]);
 
                 //

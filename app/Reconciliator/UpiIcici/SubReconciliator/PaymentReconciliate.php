@@ -107,6 +107,8 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
     {
         $npciRefId = $gatewayPayment->getNpciReferenceId();
 
+        $this->formatUpiRrn($npciRefId);
+
         if ((empty($npciRefId) === false) and
             ($npciRefId !== $referenceNumber))
         {
