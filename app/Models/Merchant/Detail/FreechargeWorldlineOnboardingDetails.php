@@ -234,7 +234,7 @@ class FreechargeWorldlineOnboardingDetails
         self::MONTHRENTFEE  => '0',
         self::SETUPFEE      => '0',
         self::OTHERFEE      => '250.00',
-        self::PAYBY         => 'NEFT',
+        self::PAYBY         => 'A/C Credit',
         self::PAYSOLID      => '',
         self::ACCLABEL      => '',
     ];
