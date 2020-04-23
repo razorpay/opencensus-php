@@ -203,6 +203,21 @@ return [
         ],
     ],
 
+    'testFetchResponseForLateAuthFlagResponse' => [
+        'request' => [
+            'url'     => '/payments',
+            'method'  => 'get',
+            'content' => [
+                'order_id' => '',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'count' => 1,
+            ],
+        ],
+    ],
+
     'testFetchWithExpandsForProxyAuth' => [
         'request' => [
             'url'     => '/payments',

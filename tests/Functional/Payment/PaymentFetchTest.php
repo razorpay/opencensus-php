@@ -157,6 +157,43 @@ class PaymentFetchTest extends TestCase
         $this->startTest();
     }
 
+    public function testFetchResponseForLateAuthFlagResponse()
+    {
+        $partner = $this->fixtures->create('merchant');
+
+        $partnerId = $partner->getId();
+
+        $this->fixtures->edit('merchant', $partnerId, ['partner_type' => 'aggregator']);
+
+        // Assign submerchant to partner
+        $accessMapData = [
+            'entity_type'     => 'application',
+            'merchant_id'     => '10000000000000',
+            'entity_owner_id' => $partnerId,
+        ];
+
+        $this->fixtures->create('merchant_access_map', $accessMapData);
+
+        $this->fixtures->merchant->addFeatures(
+            [Feature::SEND_PAYMENT_LATE_AUTH],
+            $partnerId
+        );
+
+        $this->ba->privateAuth();
+
+        $order = $this->fixtures->create('order');
+
+        $this->fixtures->create('payment', ['order_id' => $order->getId()]);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['order_id'] = $order->getPublicId();
+
+        $response = $this->startTest();
+
+        $this->assertArrayHasKey('late_authorized', $response['items'][0]);
+    }
+
     public function testFetchWithExpandsForProxyAuth()
     {
         $this->ba->proxyAuth();

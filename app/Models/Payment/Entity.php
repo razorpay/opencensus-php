@@ -367,6 +367,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::ORDER_ID,
         self::INVOICE_ID,
         self::TERMINAL_ID,
+        self::LATE_AUTHORIZED,
         self::INTERNATIONAL,
         self::METHOD,
         self::REFUNDS,
@@ -464,6 +465,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::ACQUIRER_DATA,
         self::ACCOUNT_ID,
         self::TERMINAL_ID,
+        self::LATE_AUTHORIZED,
     ];
 
     protected $appends = [self::PUBLIC_ID, self::CAPTURED, self::ACQUIRER_DATA, self::GATEWAY_PROVIDER];
@@ -2700,6 +2702,27 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         // unset terminal_id from public, if above condition is not true
         // not unsetting from $array as doing so will break anywhere someone do $payment['terminal'] in the code
         $key = array_search(self::TERMINAL_ID, $this->public);
+
+        if ($key !== false)
+        {
+            unset($this->public[$key]);
+        }
+    }
+
+    public function setPublicLateAuthorizedAttribute(array & $array)
+    {
+        $merchant = $this->merchant;
+
+        if ($merchant->isFeatureEnabledOnNonPurePlatformPartner(Feature\Constants::SEND_PAYMENT_LATE_AUTH) === true)
+        {
+            $lateAuth = $this->isLateAuthorized();
+
+            $array[self::LATE_AUTHORIZED] = $lateAuth;
+
+            return;
+        }
+
+        $key = array_search(self::LATE_AUTHORIZED, $this->public);
 
         if ($key !== false)
         {

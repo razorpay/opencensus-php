@@ -358,6 +358,8 @@ class Constants
     */
     const SEND_PAYMENT_CONFIG_ID         = 'send_payment_config_id';
 
+    const SEND_PAYMENT_LATE_AUTH         = 'send_payment_late_auth';
+
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
         self::SUBSCRIPTIONS,
@@ -571,6 +573,7 @@ class Constants
         self::PAYMENTLINKS_V2                 => true,
         self::SEND_PAYMENT_CONFIG_ID          => false,
         self::PAYMENT_STATUS_AGGREGATE        => true,
+        self::SEND_PAYMENT_LATE_AUTH          => true,
     ];
 
     // Entity type constants
