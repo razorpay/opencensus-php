@@ -128,4 +128,5 @@ export const RZPFeatures = {
   PP: 'payment_pages',
   PL: 'payment_links',
   INVOICE: 'invoices',
+  OFFERS: 'offers',
 };

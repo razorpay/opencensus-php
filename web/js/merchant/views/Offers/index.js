@@ -1,6 +1,11 @@
 import React, { Component } from 'react';
+import { connect } from 'react-redux';
+
 import HeaderAction from 'common/ui/HeaderAction';
 import Alert from 'common/ui/Forms/Alert';
+
+import { RZPFeatures } from 'merchant/helpers/data';
+
 import ShowWhen, { ShowWhenRoute } from 'merchant/components/ShowWhen';
 import TestModeBanner from 'merchant/components/TestModeBanner';
 import List from 'merchant/views/Offers/List';
@@ -8,7 +13,33 @@ import { Route, Switch, NavLink } from 'react-router-dom';
 import RTracking from 'react-tracking';
 
 import DocsLink from 'merchant/components/DocsLink';
+import TakeATourButton from 'merchant/components/QuickGuide/TakeATourButton';
 
+import OnBoarding, {
+  getIsOffersEnabled,
+  getIsAllowedResetOffersOnBoarding,
+} from './OnBoarding';
+
+import {
+  handleProductQuickGuide,
+  getCurrentProductOnBoardingDetails,
+} from 'merchant/reducers/onboarding';
+
+@connect(
+  state => {
+    return {
+      offers: state.offers,
+      user: state.session.user,
+      offersProductOnBoarding: getCurrentProductOnBoardingDetails(
+        state,
+        RZPFeatures.OFFERS
+      ),
+    };
+  },
+  {
+    handleProductQuickGuide,
+  }
+)
 @RTracking(() => window.rzpQ.component('OfferIndex'))
 export default class OfferIndex extends Component {
   componentDidMount() {
@@ -17,7 +48,45 @@ export default class OfferIndex extends Component {
     );
   }
 
+  componentWillReceiveProps(nextProps) {
+    if (nextProps.offers.loading !== this.props.offers.loading) {
+      this.initOffersOnboarding(nextProps);
+    }
+  }
+
+  initOffersOnboarding = (props = this.props) => {
+    if (props.offersProductOnBoarding.isTour) {
+      return;
+    }
+
+    const data = {
+      user: props.user,
+      merchantId: props.user.current,
+      offers: props.offers,
+    };
+
+    const isOffersEnabled = getIsOffersEnabled(data);
+
+    let showOnboarding = !isOffersEnabled;
+
+    if (isOffersEnabled) {
+      showOnboarding = getIsAllowedResetOffersOnBoarding(data.offers);
+    }
+
+    const offersProductOnBoarding = {
+      ...props.offersProductOnBoarding,
+      showOnboarding,
+      isQuickGuideOpen: false,
+    };
+
+    this.props.handleProductQuickGuide(offersProductOnBoarding);
+  };
+
   render() {
+    const { showOnboarding } = this.props.offersProductOnBoarding;
+    if (showOnboarding) {
+      return <OnBoarding />;
+    }
     return (
       <tabbed-container>
         <header id="link-header">
@@ -33,6 +102,7 @@ export default class OfferIndex extends Component {
               <div className="content-wrapper">
                 <HeaderAction>
                   <div className="btn-toolbar pull-right">
+                    <TakeATourButton feature={RZPFeatures.OFFERS} />
                     <DocsLink url="https://razorpay.com/docs/offers/" />
                     <ShowWhen
                       additionalCondition={user =>

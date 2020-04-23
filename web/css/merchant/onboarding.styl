@@ -338,6 +338,7 @@
 .OnBoarding--PaymentPages,
 .OnBoarding--PaymentLinks,
 .OnBoarding--Invoices,
+.OnBoarding--Offers,
 .OnBoarding--SmartCollect
   .Landing--Image
     overflow: hidden
@@ -371,6 +372,15 @@
       transform-origin: 0 0
       transform: rotateZ(45deg) skewX(-15deg) skewY(-16deg)
 
+.OnBoarding--Offers .Landing--Image img
+  right: unset;
+  left: 100px;
+  min-width: 400px;
+  width: 80%;
+  top:160px;
+
+  
+
 .OnBoarding--Route
   .Landing--Image
     &:before
@@ -390,6 +400,14 @@
 
     img
       transform: translate(0, -25%)  rotateY(-180deg)
+
+.OnBoarding--Offers
+  .Landing--Image
+    &:before
+      color: #7a47c2;
+      background: linear-gradient(101.32deg, #012980 2.2%, #0072AE 103%);
+      box-shadow: 1px 1px 0 #012980, 2px 2px 0 #012980, 3px 3px 0 #012980, 4px 4px 0 #012980;
+
 
 .OnBoarding--PaymentLinks
   .Landing--Image

@@ -279,6 +279,12 @@ export default class User {
     return isEnabled;
   }
 
+  get isOffersEnabled() {
+    const { isEnabled } = getOnBoardingDataFromLocalState(RZPFeatures.OFFERS);
+
+    return isEnabled;
+  }
+
   get currentMerchant() {
     return this.merchants[this.current];
   }
