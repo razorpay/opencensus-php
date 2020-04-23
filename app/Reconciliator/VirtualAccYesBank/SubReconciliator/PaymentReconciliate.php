@@ -28,6 +28,11 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         self::COLUMN_PAYER_NAME,
     ];
 
+    const PII_COLUMNS = [
+        'rmtr_account_no',
+        'bene_account_no',
+    ];
+
     /**
      * Identify the bank transfer using UTR, and thus find payment
      *

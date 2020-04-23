@@ -3,25 +3,26 @@
 namespace RZP\Reconciliator\VirtualAccRbl;
 
 use RZP\Reconciliator\Base;
+use RZP\Reconciliator\VirtualAccRbl\SubReconciliator\ReconciliationFields;
 
 class Reconciliate extends Base\Reconciliate
 {
     const HEADERS = [
-        'transaction_type',
-        'amount',
-        'utr_number',
-        'rrn_number',
-        'sender_ifsc',
-        'sender_account_number',
-        'sender_account_type',
-        'sender_name',
-        'beneficiary_account_type',
-        'beneficiary_account_number',
-        'benename',
-        'credit_date',
-        'credit_account_number',
-        'corporate_code',
-        'sender_information',
+        ReconciliationFields::TRANSACTION_TYPE,
+        ReconciliationFields::AMOUNT,
+        ReconciliationFields::UTR_NUMBER,
+        ReconciliationFields::RRN_NUMBER,
+        ReconciliationFields::SENDER_IFSC,
+        ReconciliationFields::SENDER_ACCOUNT_NUMBER,
+        ReconciliationFields::SENDER_ACCOUNT_TYPE,
+        ReconciliationFields::SENDER_NAME,
+        ReconciliationFields::BENEFICIARY_ACCOUNT_TYPE,
+        ReconciliationFields::BENEFICIARY_ACCOUNT_NUMBER,
+        ReconciliationFields::BENENAME,
+        ReconciliationFields::CREDIT_DATE,
+        ReconciliationFields::CREDIT_ACCOUNT_NUMBER,
+        ReconciliationFields::CORPORATE_CODE,
+        ReconciliationFields::SENDER_INFORMATION,
     ];
 
     /**

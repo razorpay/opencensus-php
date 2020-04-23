@@ -13,16 +13,28 @@ use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
 
 class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 {
-    const COLUMN_UTR                = 'utr_number';
-    const COLUMN_RRN_NUMBER         = 'rrn_number';
-    const COLUMN_AMOUNT             = 'amount';
-    const COLUMN_PAYER_NAME         = 'sender_name';
-    const COLUMN_PAYEE_ACCOUNT      = 'beneficiary_account_number';
-    const COLUMN_PAYER_IFSC         = 'sender_ifsc';
-    const COLUMN_TRANSACTION_TYPE   = 'transaction_type';
+    const COLUMN_UTR                = ReconciliationFields::UTR_NUMBER;
+    const COLUMN_RRN_NUMBER         = ReconciliationFields::RRN_NUMBER;
+    const COLUMN_AMOUNT             = ReconciliationFields::AMOUNT;
+    const COLUMN_PAYER_NAME         = ReconciliationFields::SENDER_NAME;
+    const COLUMN_PAYEE_ACCOUNT      = ReconciliationFields::BENEFICIARY_ACCOUNT_NUMBER;
+    const COLUMN_PAYER_IFSC         = ReconciliationFields::SENDER_IFSC;
+    const COLUMN_TRANSACTION_TYPE   = ReconciliationFields::TRANSACTION_TYPE;
 
     const BLACKLISTED_COLUMNS = [
         self::COLUMN_PAYER_NAME,
+    ];
+
+    const PII_COLUMNS = [
+        ReconciliationFields::SENDER_ACCOUNT_NUMBER,
+        ReconciliationFields::SENDER_NAME,
+        ReconciliationFields::BENEFICIARY_ACCOUNT_NUMBER,
+        ReconciliationFields::BENENAME,
+        ReconciliationFields::SENDER_INFORMATION,
+        'sender_acct_no',
+        'benef_name',
+        'sender_info',
+        'beneficiary_num',
     ];
 
     /**

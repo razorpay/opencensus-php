@@ -853,10 +853,7 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
 
     protected function getRowDetailsStructured($row)
     {
-        $this->trace->info(
-            TraceCode::RECON_FILE_ROW,
-            $row
-        );
+        $this->traceReconRow($row);
 
         $paymentId = $this->getPaymentId($row);
 

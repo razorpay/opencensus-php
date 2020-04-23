@@ -15,6 +15,10 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 
     const BLACKLISTED_COLUMNS = [];
 
+    const PII_COLUMNS = [
+        self::COLUMN_BANK_ACCOUNT_NUMBER,
+    ];
+
     protected function getPaymentId(array $row)
     {
         return $row[self::COLUMN_PAYMENT_ID];

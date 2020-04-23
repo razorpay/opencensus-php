@@ -783,17 +783,20 @@ class SubReconciliate extends Base\Core
      * or refund entity to reconcile, we mark the row processing as success or failure
      * depending on the specific gateway's reconciliator.
      *
-     * @param  array $row
+     * @param array $row
+     * @throws LogicException
      */
     protected function handleUnprocessedRow(array $row)
     {
         $rowStatus = ($this->failUnprocessedRow === true) ? 'Failed' : 'Success';
 
+        $reconRowForTrace = $this->removePiiColumns($row);
+
         $this->trace->info(TraceCode::RECON_UNPROCESSED_ROW,
             [
                 'gateway' => $this->gateway,
                 'status'  => $rowStatus,
-                'row'     => $row,
+                'row'     => $reconRowForTrace,
             ]);
 
         //
@@ -820,6 +823,43 @@ class SubReconciliate extends Base\Core
     {
         // Increment the failure count for the summary.
         $this->setSummaryCount(self::FAILURES_SUMMARY, $entityId);
+    }
+
+    /**
+     * Remove PII columns and trace recon row
+     *
+     * @param array $row
+     */
+    protected function traceReconRow(array $row)
+    {
+        $reconRowForTrace = $this->removePiiColumns($row);
+
+        $this->trace->info(
+            TraceCode::RECON_FILE_ROW,
+            $reconRowForTrace
+        );
+    }
+
+    /**
+     * Get the PII columns for gateway and
+     * return array after un-setting.
+     *
+     * @param array $row
+     * @return array
+     */
+    protected function removePiiColumns(array $row)
+    {
+        $piiColumns = $this->getPiiColumnHeadersForLogs();
+
+        foreach ($piiColumns as $piiColumn)
+        {
+            if (isset($row[$piiColumn]) === true)
+            {
+                unset($row[$piiColumn]);
+            }
+        }
+
+        return $row;
     }
 
     /**
@@ -943,6 +983,31 @@ class SubReconciliate extends Base\Core
         }
 
         return constant($className . '::' . 'BLACKLISTED_COLUMNS');
+    }
+
+    /**
+     * Returns merged array of black listed and
+     * PII columns defined for gateway
+     *
+     * @return array
+     */
+    protected function getPiiColumnHeadersForLogs()
+    {
+        $blacklistedColumns = $this->getBlackListedColumnHeadersForOutputFile();
+
+        $className = get_class($this);
+
+        // check if constant PII_COLUMNS defined in gateway subreconciliator
+        $defined = defined($className . '::' . 'PII_COLUMNS');
+
+        $piiColumns = [];
+
+        if ($defined === true)
+        {
+            $piiColumns = constant($className . '::' . 'PII_COLUMNS');
+        }
+
+        return array_unique(array_merge(($blacklistedColumns ?? []), $piiColumns));
     }
 
     /**
