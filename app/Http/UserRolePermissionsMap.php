@@ -91,6 +91,7 @@ class UserRolePermissionsMap
                  Permission::UPLOAD_MERCHANT_DOCUMENT,
                  Permission::DELETE_MERCHANT_DOCUMENT,
                  Permission::UPDATE_MERCHANT_BANK_ACCOUNT_STATUS,
+                 Permission::UPDATE_MERCHANT_2FA_SETTING,
              ],
 
              BankingRole::ADMIN => [

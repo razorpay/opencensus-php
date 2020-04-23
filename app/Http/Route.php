@@ -3761,7 +3761,6 @@ final class Route
         'fetch_merchant_balance_configs'               => '*',
         'balance_fetch'                                => '*',
         'setl_amount'                                  => '*',
-
         // Specific to Banking
         'payout_bulk_create'                           => Permission::CREATE_PAYOUT_BULK,
         'payout_approve_bulk'                          => Permission::APPROVE_PAYOUT_BULK,
@@ -3836,6 +3835,8 @@ final class Route
         'merchant_document_upload'                     => Permission::UPLOAD_MERCHANT_DOCUMENT,
         'merchant_document_delete'                     => Permission::DELETE_MERCHANT_DOCUMENT,
         'merchant_bank_account_change_status'          => Permission::UPDATE_MERCHANT_BANK_ACCOUNT_STATUS,
+        'merchant_2fa_change_setting'                  => Permission::UPDATE_MERCHANT_2FA_SETTING,
+        'user_account_unlock'                          => Permission::UPDATE_MERCHANT_2FA_SETTING,
         'banking_account_create'                       => '*',
         'merchant_activation_upload_file'              => '*',
         'user_verify_contact'                          => '*',

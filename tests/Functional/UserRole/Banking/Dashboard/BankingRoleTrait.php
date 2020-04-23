@@ -93,6 +93,8 @@ trait BankingRoleTrait
                 'merchant_document_upload',
                 'merchant_document_delete',
                 'merchant_bank_account_change_status',
+                'merchant_2fa_change_setting',
+                'user_account_unlock',
             ],
             BankingRole::ADMIN => [
                 'payout_bulk_create',
@@ -167,6 +169,8 @@ trait BankingRoleTrait
                 'reporting_log_update',
                 'bank_transfer_process_test',
                 'merchant_features_update',
+                'merchant_2fa_change_setting',
+                'user_account_unlock',
             ],
             BankingRole::FINANCE_L1 => [
                 'payout_bulk_create',
