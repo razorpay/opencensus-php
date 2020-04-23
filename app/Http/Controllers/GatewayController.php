@@ -264,6 +264,13 @@ class GatewayController extends Controller
         return $this->service('payment')->s2sCallback($paymentId, $input);
     }
 
+    public function callbackGetsimpl()
+    {
+        $input = Request::all();
+        $data = $this->processGetSimplCallback($input);
+        return $data;
+    }
+
     public function callbackGateway($gateway)
     {
         $input = Request::all();

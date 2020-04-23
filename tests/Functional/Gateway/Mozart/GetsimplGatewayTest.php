@@ -113,6 +113,35 @@ class GetsimplGatewayTest extends TestCase
         $this->assertequals($getsimplEntity['data']['data']['transaction']['status'], 'CLAIMED');
     }
 
+    public function testOldRedirectionPaymentFlow()
+    {
+        $payment = $this->payment;
+
+        $payment['contact'] = '8602579721';
+
+        $request = $this->buildAuthPaymentRequest($payment);
+
+        $this->ba->publicAuth();
+
+        $this->makeRequestParent($request);
+
+        $this->processStaticCallback(null, 'token', 'Test_Token', 'old');
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $getsimplEntity = $this->getLastEntity('mozart', true);
+
+        $this->assertequals($payment['status'], 'authorized');
+
+        $this->assertequals($payment['id'], 'pay_'.$getsimplEntity['payment_id']);
+
+        $this->assertequals($getsimplEntity['action'], 'authorize');
+
+        $this->assertequals($getsimplEntity['data']['status'], 'payment_successful');
+
+        $this->assertequals($getsimplEntity['data']['data']['transaction']['status'], 'CLAIMED');
+    }
+
     public function testRedirectionPaymentFlowNoToken()
     {
         $payment = $this->payment;
@@ -300,7 +329,7 @@ class GetsimplGatewayTest extends TestCase
             });
     }
 
-    public function processStaticCallback($key = null, $tkey = 'token', $tval = 'Test_Token')
+    public function processStaticCallback($key = null, $tkey = 'token', $tval = 'Test_Token', $route = 'new')
     {
         $getsimplEntity = $this->getLastEntity('mozart', true);
 
@@ -311,9 +340,16 @@ class GetsimplGatewayTest extends TestCase
              $tkey                      => $tval
         ];
 
+        $url = '/gateway/getsimpl/callback';
+
+        if($route === 'old')
+        {
+            $url = '/callback/getsimpl';
+        }
+
         $request = [
             'method'  => 'POST',
-            'url'     => '/callback/getsimpl',
+            'url'     => $url,
             'content' => $data
         ];
 
