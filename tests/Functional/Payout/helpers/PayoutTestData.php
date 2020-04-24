@@ -301,6 +301,35 @@ return [
         ],
     ],
 
+    'testPayoutRejectWhenWorkflowEdit' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number'        => '2224440041626905',
+                'amount'                => 10000,
+                'currency'              => 'INR',
+                'purpose'               => 'refund',
+                'fund_account_id'       => 'fa_100000000000fa',
+                'mode'                  => 'NEFT',
+                'queue_if_low_balance'  => 0,
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Workflow edit on the same payout rule is active',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYOUT_WORKFLOW_EDIT_IN_PROGRESS,
+        ],
+    ],
+
     'testApprovePayoutWithoutComment' => [
         'request'  => [
             'method'  => 'POST',

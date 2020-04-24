@@ -6,6 +6,7 @@ use DB;
 use Mail;
 use Hash;
 use Queue;
+use Redis;
 use Config;
 
 use Carbon\Carbon;
@@ -807,6 +808,21 @@ class PayoutTest extends TestCase
         $this->assertEquals('processing', $secondApprovalResponse['status']);
         $this->assertEquals('Approving', $secondActionChecker['user_comment']);
         $this->assertEquals(true, $secondActionChecker['approved']);
+    }
+
+    public function testPayoutRejectWhenWorkflowEdit()
+    {
+        $this->setupRedisMock();
+
+        $this->liveSetUp();
+
+        $workflow = $this->createPayoutWorkflowWithBankingUsersLiveMode();
+
+        $this->disableWorkflowMocks();
+
+        $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
+
+        $this->startTest();
     }
 
     public function testApprovePayoutWithoutComment()
@@ -3116,5 +3132,16 @@ class PayoutTest extends TestCase
         $this->ba->adminAuth('live','secondTokenAdminToken1234');
 
         $this->startTest();
+    }
+
+    protected function setupRedisMock()
+    {
+        $redisMock = $this->getMockBuilder(Redis::class)->setMethods(['get'])
+            ->getMock();
+
+        Redis::shouldReceive('connection')
+            ->andReturn($redisMock);
+
+        $redisMock->method('get')->will($this->returnValue('true'));
     }
 }
