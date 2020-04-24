@@ -181,7 +181,7 @@ export const fetchBatchInvoices = batchId =>
   merchantFetch(`invoices?batch_id=${batchId}`);
 
 const fetchBatchPaymentLinks = batchId =>
-  merchantFetch(`payment_links?batch_id=${batchId}`);
+  merchantFetch(`payment_links?source_id=${batchId}`);
 
 /* actions currently used by only payment link batch */
 export const issuePaymentLinkBatch = (batchId, data) => {

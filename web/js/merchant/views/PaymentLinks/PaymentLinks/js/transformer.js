@@ -122,10 +122,16 @@ export function transformPLListFilters_NewToOld(_params) {
     delete params.customer_email;
   }
 
-  // 3.
+  // 4.
   if (params.hasOwnProperty('customer_contact')) {
     params.contact = params.customer_contact;
     delete params.customer_contact;
+  }
+
+  // 5.
+  if (params.hasOwnProperty('batch_id')) {
+    params.source_id = params.batch_id;
+    delete params.batch_id;
   }
 
   return params;
