@@ -79,6 +79,10 @@ class ApiTraceProcessor
         'beneficiary_address1',
         'beneficiary_address2',
         'beneficiary_address3',
+        'beneficiaryAccountNo',
+        'debitAccountNo',
+        'beneficiaryName',
+        'beneficiaryContact',
     ];
 
     public function __construct($app)
