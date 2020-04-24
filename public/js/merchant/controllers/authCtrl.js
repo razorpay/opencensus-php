@@ -520,7 +520,8 @@ app
               mode: $scope.eventsMode,
             })
         );
-        location.hash = '/app';
+        location.hash = '';
+        location.pathname = '/app';
         location.reload();
       };
 

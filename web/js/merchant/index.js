@@ -3,7 +3,7 @@ import React from 'react';
 import 'react-dates/initialize';
 import { Provider } from 'react-redux';
 import { render } from 'react-dom';
-import { HashRouter as Router } from 'react-router-dom';
+import { BrowserRouter as Router } from 'react-router-dom';
 
 import 'common/utils/polyfills';
 import ConfirmModalProvider from 'common/ui/ConfirmModal/ConfirmModalProvider';

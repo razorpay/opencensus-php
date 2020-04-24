@@ -18,6 +18,8 @@ use App\Http\AppResponse;
 class UserController extends Controller
 {
 
+    const ROOT_PATH = '/';
+
     protected $guard = 'users';
 
     protected $app;
@@ -41,6 +43,7 @@ class UserController extends Controller
     public function getIndex()
     {
         $domain = \Request::server('SERVER_NAME');
+
         list($orgError, $org) = (new Admin\Service)->getOrg($domain);
         list($userError, $details) = (new User\Service)->getUserDetails();
 
@@ -71,6 +74,14 @@ class UserController extends Controller
         $data['cdnBaseUrl'] = \Config::get('app.cdn_base_url');
         $data['ljKey'] = \Config::get('app.lj_key');
         $data['env'] = \Config::get('app.env');
+
+        $baseUrl = $this->getDashboardBaseUrl();
+        $requestPath = \Request::path();
+
+        $data['redirectUrl']    = $baseUrl . '?next=' . $requestPath;
+        $data['requestPath']     = $requestPath;
+        $data['rootPath']       = self::ROOT_PATH;
+
 
         // $data is used to run diferent pieces of JS
         if (isset($data['user']) === true and isset($details['linked_account']) === true and $details['linked_account'] === true)
@@ -391,5 +402,21 @@ class UserController extends Controller
         }
 
         return AppResponse::jsonResponse($error, $data);
+    }
+
+    private function getDashboardBaseUrl()
+    {
+        $isSessionSecure = \Config::get('session.secure');
+
+        if ($isSessionSecure === true)
+        {
+            $connection = 'https://';
+        }
+        else
+        {
+            $connection = 'http://';
+        }
+
+        return $connection . \Request::server('SERVER_NAME');
     }
 }

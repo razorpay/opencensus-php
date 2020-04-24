@@ -36,6 +36,8 @@ Route::group(['middleware' => ['web']], function () {
         ->where(['path' => '.*']);
 
     Route::get('/', 'UserController@getIndex')->name('dashboard');
+    Route::get('/app/{path?}', 'UserController@getIndex')->name('dashboard')
+        ->where(['path' => '.*']);
 
     // User (guest auth route)
     Route::any('/user/api/{mode}/{path?}', 'GenericController@handleAny')

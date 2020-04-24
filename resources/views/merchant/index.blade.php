@@ -60,6 +60,12 @@
   <script type="text/javascript">
       window.session_id = "{!! $session_id !!}"
   </script>
+  <?php  ?>
+  @if($requestPath !== $rootPath)
+    <script>
+      window.location.href = "{!! $redirectUrl !!}"
+    </script>
+  @endif
   <script src='{{$cdnDashboardUrl}}/js/generated/signup.js'></script>
 
 @endif

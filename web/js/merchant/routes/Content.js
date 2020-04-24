@@ -39,6 +39,8 @@ import { openSlider } from 'merchant_common/reducers/slider';
 
 import store from 'merchant/store';
 
+import HandleIndex from './HandleIndex';
+
 // Can be removed with old navigation removal
 const TabbedContent = ({ headerId, navLabel, path, to, component }) => {
   return (
@@ -347,7 +349,7 @@ export default class Content extends Component {
             path="/paypal_onboard_redirect"
             component={PaypalOnboardRedirect}
           />
-          <Redirect to="/dashboard" />
+          <Route exact path="/" component={HandleIndex} />
         </Switch>
       </ErrorBoundary>
     );
