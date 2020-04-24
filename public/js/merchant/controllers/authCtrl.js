@@ -1959,7 +1959,7 @@ app
       shouldRenderCouponCode();
 
       $scope.$watch('signup.currentSubStep', function(newVal) {
-        if (newVal === 3) {
+        if (newVal === 2) {
           if (
             !isHostedInBB &&
             !$scope.coupon.shouldRender &&
