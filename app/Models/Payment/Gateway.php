@@ -1275,6 +1275,7 @@ class Gateway
         self::ENACH_NPCI_NETBANKING,
         self::NETBANKING_CBI,
         self::HDFC_DEBIT_EMI,
+        self::WALLET_JIOMONEY,
     ];
 
     public static $captureVerifyEnabled = [
