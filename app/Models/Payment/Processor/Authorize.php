@@ -3666,14 +3666,23 @@ trait Authorize
             // save local saved card for local customer
             $token = $this->savePaymentMethod($customer, $payment, $savedLocalCard->getId(), $input);
         }
-        else if ($payment->isEmandate() === true or $payment->isUpiRecurring() === true)
+        else if ($payment->isEmandate() === true)
         {
             // save emandate bank locally for local customer
             $token = $this->savePaymentMethod($customer, $payment, null, $input);
         }
-        else if ($this->shouldSaveVpaForUpiPayments() === true)
+        else if (($payment->isUpiRecurring() === true) or ($this->shouldSaveVpaForUpiPayments() === true))
         {
             $token = $this->savePaymentMethod($customer, $payment, null, $input);
+
+            // If payment is upi recurring, we will update the mandate entity with the token id. We have already
+            // validated that for upi recurring, the order has upi mandate entity linked.
+            if (($payment->isUpiRecurring() === true) and ($token !== null))
+            {
+                $upiMandate = $this->updateUpiMandateEntity($token, $payment);
+
+                $gatewayInput['upi_mandate'] = $upiMandate->toArray();
+            }
         }
         else if ($payment->isNach() === true)
         {
@@ -3711,16 +3720,24 @@ trait Authorize
             // save global saved card for global customer
             $token = $this->savePaymentMethod($customer, $payment, $savedGlobalCard->getId(), $input);
         }
-        else if ($payment->isEmandate() === true or $payment->isUpiRecurring() === true)
+        else if ($payment->isEmandate() === true)
         {
             // save emandate bank token globally for global customer
             $token = $this->savePaymentMethod($customer, $payment, null, $input);
         }
-        else if ($this->shouldSaveVpaForUpiPayments() === true)
+        else if (($payment->isUpiRecurring() === true) or ($this->shouldSaveVpaForUpiPayments() === true))
         {
             $token = $this->savePaymentMethod($customer, $payment, null, $input);
-        }
 
+            // If payment is upi recurring, we will update the mandate entity with the token id. We have already
+            // validated that for upi recurring, the order has upi mandate entity linked.
+            if (($payment->isUpiRecurring() === true) and ($token !== null))
+            {
+                $upiMandate = $this->updateUpiMandateEntity($token, $payment);
+
+                $gatewayInput['upi_mandate'] = $upiMandate->toArray();
+            }
+        }
         if ($token !== null)
         {
             $this->payment->globalToken()->associate($token);
@@ -3846,15 +3863,6 @@ trait Authorize
                 }
             }
         }
-        else if ($payment->isUpiRecurring() === true)
-        {
-            $saveMethodInput[Token\Entity::MAX_AMOUNT] =
-                                        $input[Payment\Entity::RECURRING_TOKEN][Payment\Entity::MAX_AMOUNT] ?? null;
-            $saveMethodInput[Token\Entity::EXPIRED_AT] =
-                                            $input[Payment\Entity::RECURRING_TOKEN][Payment\Entity::EXPIRE_BY] ?? null;
-            $saveMethodInput[Token\Entity::START_TIME] =
-                                            $input[Payment\Entity::RECURRING_TOKEN][Token\Entity::START_TIME] ?? null;
-        }
         else if ($payment->isUpi() === true)
         {
             $saveMethodInput[Token\Entity::METHOD] = Payment\Method::UPI;
@@ -3862,6 +3870,15 @@ trait Authorize
             $vpa = $this->createVpaEntity($input);
 
             $saveMethodInput[Token\Entity::VPA_ID] = $vpa[PaymentsUpi\Vpa\Entity::ID];
+
+            // These fields will be set for upi recurring payments. We dont need to have a check for recurring because
+            // we are checking if the fields exist. If not values for these in token will be null.
+            $saveMethodInput[Token\Entity::MAX_AMOUNT] =
+                $input[Payment\Entity::RECURRING_TOKEN][Payment\Entity::MAX_AMOUNT] ?? null;
+            $saveMethodInput[Token\Entity::EXPIRED_AT] =
+                $input[Payment\Entity::RECURRING_TOKEN][Payment\Entity::EXPIRE_BY] ?? null;
+            $saveMethodInput[Token\Entity::START_TIME] =
+                $input[Payment\Entity::RECURRING_TOKEN][Token\Entity::START_TIME] ?? null;
         }
 
         $token = null;
@@ -5685,6 +5702,15 @@ trait Authorize
         $vpa = $vpaCore->firstOrCreate($input);
 
         return $vpa->toArray();
+    }
+
+    protected function updateUpiMandateEntity(Token\Entity $token, Payment\Entity $payment): \RZP\Models\UpiMandate\Entity
+    {
+        $this->upiMandate->setTokenId($token->getId());
+
+        $this->repo->saveOrFail($this->upiMandate);
+
+        return $this->upiMandate;
     }
 
     protected function setRzpVaultForPayment(array &$cardInput, bool $vault, Merchant\Entity $merchant, array $input = [])

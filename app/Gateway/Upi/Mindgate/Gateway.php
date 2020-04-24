@@ -25,7 +25,7 @@ class Gateway extends Base\Gateway
 {
     use AuthorizeFailed;
 
-    use Base\MandateTrait;
+    use Base\RecurringTrait;
 
     const ACQUIRER = 'hdfc';
 
@@ -90,14 +90,9 @@ class Gateway extends Base\Gateway
     {
         parent::action($input, Action::AUTHENTICATE);
 
-        if ($this->isMandateCreateRequest($input) === true)
+        if ($this->isFirstRecurringPayment($input) === true)
         {
-            return $this->mandateCreate($input);
-        }
-
-        if ($this->isMandateExecuteRequest($input) === true)
-        {
-            return $this->mandateExecute($input);
+            return $this->authorizeRecurring($input);
         }
 
         if (($this->isBharatQrPayment() === true) or

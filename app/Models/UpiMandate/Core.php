@@ -29,6 +29,8 @@ class Core extends Base\Core
 
         $upiMandate->customer()->associate($customer);
 
+        $upiMandate->setStatus('created');
+
         $this->repo->saveOrFail($upiMandate);
 
         $this->trace->info(

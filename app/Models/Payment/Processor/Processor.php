@@ -28,6 +28,7 @@ use RZP\Models\Terminal;
 use RZP\Services\Doppler;
 use RZP\Trace\TraceCode;
 use RZP\Models\Bank\IFSC;
+use RZP\Models\UpiMandate;
 use RZP\Models\BankAccount;
 use RZP\Models\PaymentLink;
 use RZP\Constants\Timezone;
@@ -217,6 +218,11 @@ class Processor
      * @var Offer\Entity
      */
     protected $offer;
+
+    /**
+     * @var UpiMandate\Entity
+     */
+    protected $upiMandate;
 
     /**
      * @var Subscription\Entity
@@ -2414,6 +2420,8 @@ class Processor
 
         $this->validateAndSetInvoiceDetailsIfApplicable($payment);
 
+        $this->validateUpiRecurringIfApplicable($payment);
+
         $this->setApplicationIfApplicable($payment, $input);
 
         $metadata = $payment->getMetadata();
@@ -2623,7 +2631,8 @@ class Processor
 
             if (($tpvRequired === true) or
                 ($payment->isEmandate() === true) or
-                ($payment->isNach() === true))
+                ($payment->isNach() === true) or
+                (($payment->isUpiRecurring() === true) and (empty($input[Payment\Entity::TOKEN_ID]) === true)))
             {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_PAYMENT_ORDER_ID_REQUIRED,
@@ -2641,6 +2650,11 @@ class Processor
         if ($payment->isNach() === true)
         {
             $payment->setBank($this->order->getBankForNachMethod());
+        }
+
+        if ($payment->isUpiRecurring() === true)
+        {
+            $this->validateOrderForUpiRecurring($this->order);
         }
 
         $this->order->getValidator()->validatePaymentCreation($payment);
@@ -2679,6 +2693,22 @@ class Processor
         $orderNotes = $this->order->getNotes()->toArray();
 
         $payment->setIntegrationMetadataUsingNotes($orderNotes);
+    }
+
+    protected function validateOrderForUpiRecurring(Order\Entity $order)
+    {
+        $orderId = $order['id'];
+
+        $upiMandate = $this->app['repo']->upi_mandate->findByOrderId($orderId);
+
+        if ($upiMandate === null)
+        {
+            throw new Exception\BadRequestValidationFailureException (
+                'Invalid order passed for upi recurring'
+            );
+        }
+
+        $this->upiMandate = $upiMandate;
     }
 
     protected function validateAndSetReceiverIfApplicable(Payment\Entity $payment, array $input)
@@ -2743,6 +2773,25 @@ class Processor
             {
                 $payment->setNotes($invoice->getNotes()->toArray());
             }
+        }
+    }
+
+    protected function validateUpiRecurringIfApplicable(Payment\Entity $payment)
+    {
+        if ($payment->isUpiRecurring() === false)
+        {
+            return;
+        }
+
+        if ($payment->isFlowIntent() === true)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Upi recurring does not support intent flow',
+                [
+                    'payment_id'        => $payment->getId(),
+                    'method'            => $payment->getMethod(),
+                    'recurring_type'    => $payment->getRecurringType(),
+                ]);
         }
     }
 

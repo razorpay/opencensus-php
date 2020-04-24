@@ -258,16 +258,19 @@ trait UpiRecurring
 
     protected function validateInitialRecurringForUpi(Payment\Entity $payment, array $input)
     {
-        if ($payment->getAmount() !== 0)
+        $order = $payment->order;
+
+        if ($payment->getAmount() !== $order->getAmount())
         {
             throw new Exception\BadRequestValidationFailureException(
-                'The amount must be 0 for Upi Mandate Creation',
+                'The initial payment amount must be equal to order amount for upi recurring',
                 Payment\Entity::AMOUNT,
                 [
-                    'amount'            => $payment->getAmount(),
+                    'payment_amount'    => $payment->getAmount(),
                     'payment_id'        => $payment->getId(),
                     'method'            => $payment->getMethod(),
                     'recurring_type'    => $payment->getRecurringType(),
+                    'order_amount'      => $order->getAmount(),
                 ]);
         }
     }

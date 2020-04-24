@@ -715,8 +715,7 @@ class Validator extends Base\Validator
         }
 
         if (($method !== Payment\Method::EMANDATE) and
-            ($method !== Payment\Method::NACH) and
-            ($this->checkUpiRecurring($input) === false))
+            ($method !== Payment\Method::NACH))
         {
             $this->validateInputValues('min_amount_check', $input);
         }
@@ -762,20 +761,6 @@ class Validator extends Base\Validator
                 'amount',
                 ['amount' => $amount]);
         }
-    }
-
-    protected function checkUpiRecurring($input)
-    {
-        $method = $input['method'];
-
-        if (($method === Payment\Method::UPI) and
-            (isset($input['recurring']) === true) and
-            ($input['recurring']) === '1')
-        {
-            return true;
-        }
-
-        return false;
     }
 
     public function validateUpiVpaPsp(string $vpa, array $excludedPsps)

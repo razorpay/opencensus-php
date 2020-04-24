@@ -690,9 +690,9 @@ class Terminal extends Base
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
-    public function createSharedOtmMindgateTerminal(array $attributes = [])
+    public function createSharedMindgateRecurringTerminal(array $attributes = [])
     {
-        $termId = \RZP\Models\Terminal\Shared::UPI_MINDGATE_OTM_TERMINAL;
+        $termId = Shared::UPI_MINDGATE_RECURRING_TERMINAL;
 
         $default = [
             'id'                        => $termId,
@@ -702,8 +702,8 @@ class Terminal extends Base
             'netbanking'                => 0,
             'upi'                       => 1,
             'gateway_merchant_id'       => 'abcd',
-            'gateway_merchant_id2'      => 'payumoney_auth_code',
-            'gateway_terminal_id'       => 'payumoney_terminal',
+            'gateway_merchant_id2'      => 'auth_code',
+            'gateway_terminal_id'       => 'mindgate_terminal',
             'gateway_terminal_password' => 'razorpay_password',
             'gateway_access_code'       => '293823',
             'gateway_secure_secret'     => 'secret',

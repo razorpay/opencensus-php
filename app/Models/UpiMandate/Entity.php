@@ -64,6 +64,10 @@ class Entity extends Base\PublicEntity
         self::GATEWAY_REFERENCE_ID,
     ];
 
+    protected $defaults = [
+        self::STATUS  => 'created',
+    ];
+
     public function merchant()
     {
         return $this->belongsTo(Merchant\Entity::class);
@@ -82,5 +86,15 @@ class Entity extends Base\PublicEntity
     public function order()
     {
         return $this->belongsTo(Order\Entity::class);
+    }
+
+    public function setTokenId(string $tokenId = null)
+    {
+        $this->setAttribute(self::TOKEN_ID, $tokenId);
+    }
+
+    public function setStatus(string $status)
+    {
+        $this->setAttribute(self::STATUS, $status);
     }
 }
