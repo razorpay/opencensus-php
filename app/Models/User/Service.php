@@ -886,4 +886,19 @@ class Service extends Base\Service
 
         return $this->core()->verifyUserThroughEmail($input, $merchant, $user);
     }
+
+    public function getUserForMerchant(string $userId)
+    {
+        $merchant = $this->auth->getMerchant();
+
+        $user = $this->repo->merchant->getMerchantUserMapping($merchant->getId(),$userId);
+
+        if ($user === null)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_USER_NOT_FOUND);
+        }
+
+        return $user->toArrayPublic();
+    }
 }

@@ -705,6 +705,7 @@ final class Route
         'payment_links_service_sub_route'          => ['any',      'payment_links/{path?}',                          'PlinkController@sendRequest'                                       ],
         'payment_links_service_count_route'        => ['any',      'payment_links_count',                            'PlinkController@sendRequest'                                       ],
         'payment_links_demo'                       => ['post',     'payment_links_demo',                             'PlinkController@plDemo'                                            ],
+        'payment_links_bulk_expire'                => ['post',     'payment_links_bulk_expire',                      'PlinkController@sendRequest'                                       ],
 
         'app_delete_token'                         => ['delete',   'apps/tokens/{token}',                            'CustomerController@deleteTokenForGlobalCustomer'                   ],
         'app_fetch_tokens'                         => ['get',      'apps/tokens',                                    'CustomerController@fetchTokensForGlobalCustomer'                   ],
@@ -1035,6 +1036,8 @@ final class Route
         'user_update_contact_merchant'             => ['patch',    'users/contact',                                  'UserController@updateContactMobile'                                ],
         'user_account_lock_unlock_admin'           => ['put',      'users-admin/account/{id}/{action}',              'UserController@accountLockUnlock'                                  ],
         'otp_create'                               => ['post',     'otp/send',                                       'UserController@sendOtpWithContact'                                 ],
+
+        'user_fetch_for_merchant'                  => ['get',      'users/fetch_for_merchant/{id}',                  'UserController@getUserForMerchant'                                 ],
 
         // Tax groups and taxes
         'tax_get_meta_gst_taxes'                   => ['get',      'taxes/meta/gst_taxes',                           'TaxController@getMetaGstTaxes'                                     ],
@@ -2193,6 +2196,7 @@ final class Route
         'merchant_create_terminal_internal',
         'retry_penny_testing_cron',
         'merchant_methods_edit_internal',
+        'payment_links_bulk_expire',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -2261,6 +2265,7 @@ final class Route
     ];
 
     public static $proxy = [
+        'user_fetch_for_merchant',
         'send_email_for_pl_service',
         'oauth_token_create',
         'merchant_activation_update_website_status',
@@ -4176,6 +4181,7 @@ final class Route
             'virtual_account_batch_migrate_yesbank',
             'transfer_settlements_update',
             'retry_penny_testing_cron',
+            'payment_links_bulk_expire',
             'fee_recovery_payout_process',
         ],
 

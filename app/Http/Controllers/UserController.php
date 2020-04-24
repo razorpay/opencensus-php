@@ -278,4 +278,11 @@ class UserController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function getUserForMerchant(string $userId)
+    {
+        $data = $this->service()->getUserForMerchant($userId);
+
+        return ApiResponse::json($data);
+    }
 }
