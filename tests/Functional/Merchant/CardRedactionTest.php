@@ -950,4 +950,99 @@ class CardRedactionTest extends TestCase
 
         $this->assertArraySelectiveEquals($expectedResponse, $updatedRecord);
     }
+
+    public function testPayerNameInExceptionData()
+    {
+        /** @var ApiTraceProcessor $trace */
+        $trace = new ApiTraceProcessor($this->app);
+
+        $this->mockRouter('bank_transfer_process_rbl');
+
+        $record = [
+            "timestamp" => "2020-03-11T11:09:33.175",
+            "code"      => "BANK_TRANSFER_PAYER_BANK_ACCOUNT_SKIPPED",
+            "message"   => "BANK_TRANSFER_PAYER_BANK_ACCOUNT_SKIPPED",
+            "context"   => [
+                "class"   => "RZP\\Exception\\BadRequestValidationFailureException",
+                "code"    => "BAD_REQUEST_VALIDATION_FAILURE",
+                "message" => "The account number field is required.",
+                "data"    => [
+                    "payer_account"  => "4012888888881881",
+                    "payer_name"     => "AXI2b63f52d070743b6bd163f564e4379eb",
+                    "payer_ifsc"     => "HDFC0000001",
+                    "mode"           => "neft",
+                    "transaction_id" => "AYDIC1O4JPXPLBPTTUOOQ9",
+                    "time"           => 1543052014,
+                    "amount"         => 10000,
+                    "description"    => "Test bank transfer",
+                    "payee_account"  => "371449635398431",
+                    "payee_ifsc"     => "RAZRB000000"
+                ],
+                "stack"   => [
+                    "#0 /app/app/Models/VirtualAccount/Processor.php(70)=>" .
+                    "RZP\\Models\\BankTransfer\\Processor->isDuplicate(Object(RZP\\Models\\BankTransfer\\Entity))",
+                    "#1 /app/app/Models/BankTransfer/Core.php(02)=> RZP\\Models\\VirtualAccount\\Processor->" .
+                    "process(Object(RZP\\Models\\BankTransfer\\Entity))",
+                ]
+            ]
+        ];
+
+        $updatedRecord =  $trace($record);
+
+        $expectedResponse = [
+            "context" => [
+                "class"   => "RZP\\Exception\\BadRequestValidationFailureException",
+                "code"    => "BAD_REQUEST_VALIDATION_FAILURE",
+                "message" => "The account number field is required.",
+                "data"    => [
+                    "payer_account"  => "CARD_NUMBER_SCRUBBED(16)",
+                    "payer_name"     => "SCRUBBED(35)",
+                    "payer_ifsc"     => "HDFC0000001",
+                    "mode"           => "neft",
+                    "transaction_id" => "AYDIC1O4JPXPLBPTTUOOQ9",
+                    "time"           => 1543052014,
+                    "amount"         => 10000,
+                    "description"    => "Test bank transfer",
+                    "payee_account"  => "CARD_NUMBER_SCRUBBED(15)",
+                    "payee_ifsc"     => "RAZRB000000"
+                ],
+                "stack"   => [
+                    "#0 /app/app/Models/VirtualAccount/Processor.php(70)=>" .
+                    "RZP\\Models\\BankTransfer\\Processor->isDuplicate(Object(RZP\\Models\\BankTransfer\\Entity))",
+                    "#1 /app/app/Models/BankTransfer/Core.php(02)=> RZP\\Models\\VirtualAccount\\Processor->" .
+                    "process(Object(RZP\\Models\\BankTransfer\\Entity))",
+                ]
+            ]
+        ];
+
+        $this->assertArraySelectiveEquals($expectedResponse, $updatedRecord);
+    }
+
+    public function testPayerName()
+    {
+        /** @var ApiTraceProcessor $trace */
+        $trace = new ApiTraceProcessor($this->app);
+
+        $this->mockRouter('bank_transfer_process_rbl');
+
+        $record = [
+            'context' => [
+                "payer_account"  => "4012888888881881",
+                "payer_name"     => "AXI2b63f52d070743b6bd163f564e4379eb",
+                "payer_ifsc"     => "HDFC0000001",
+            ]
+        ];
+
+        $updatedRecord =  $trace($record);
+
+        $expectedResponse = [
+            'context' => [
+                "payer_account"  => "CARD_NUMBER_SCRUBBED(16)",
+                "payer_name"     => "SCRUBBED(35)",
+                "payer_ifsc"     => "HDFC0000001",
+            ]
+        ];
+
+        $this->assertArraySelectiveEquals($expectedResponse, $updatedRecord);
+    }
 }

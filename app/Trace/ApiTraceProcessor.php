@@ -79,6 +79,7 @@ class ApiTraceProcessor
         'beneficiary_address1',
         'beneficiary_address2',
         'beneficiary_address3',
+        'payer_name',
         'beneficiaryAccountNo',
         'debitAccountNo',
         'beneficiaryName',
