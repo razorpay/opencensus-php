@@ -218,6 +218,12 @@ class PlinkController extends Controller
         if ($this->ba->getMerchantId() !== null)
         {
             $headers['X-Razorpay-MerchantId'] = $this->ba->getMerchantId();
+
+            $merchant = $this->ba->getMerchant();
+
+            $enabledFeatures = $merchant->getEnabledFeatures();
+
+            $headers['X-Razorpay-Merchant-Features'] = json_encode($enabledFeatures);
         }
 
         $user = $this->ba->getUser();
@@ -225,9 +231,14 @@ class PlinkController extends Controller
         if ($user !== null)
         {
             $headers['X-Razorpay-UserId'] = $user->getId();
+
+            $role = $this->ba->getUserRole();
+
+            $headers['X-Razorpay-UserRole'] = $role;
         }
 
         $headers['X-Razorpay-Mode']          = $this->ba->getMode();
+
         $headers['X-Razorpay-Auth']          = $this->ba->getAuthType();
 
         return $headers;
