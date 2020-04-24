@@ -126,7 +126,16 @@ const MerchantDetails = ({
           )}
           value={() =>
             user.display_name ? (
-              <span>{user.display_name}</span>
+              <span>
+                {user.display_name}
+                <a
+                  class="p-l"
+                  onClick={changeDisplayName}
+                  title="Edit Display Name"
+                >
+                  <i class="i i-edit" />
+                </a>
+              </span>
             ) : (
               <a
                 class="p-l"
