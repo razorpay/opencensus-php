@@ -31,6 +31,8 @@ class JiomoneyGatewayTest extends TestCase
 
     public function testPayment()
     {
+        $this->markTestSkipped();
+
         $payment = $this->getDefaultWalletPaymentArray('jiomoney');
 
         $this->doAuthAndCapturePayment($payment);
@@ -46,6 +48,8 @@ class JiomoneyGatewayTest extends TestCase
 
     public function testAmountTampering()
     {
+        $this->markTestSkipped();
+
         $this->mockServerContentFunction(function (&$content, $action = null)
         {
             $content['amount'] = '1';
@@ -63,6 +67,8 @@ class JiomoneyGatewayTest extends TestCase
 
     public function testPaymentFailureFlow()
     {
+        $this->markTestSkipped();
+
         $payment = $this->getDefaultWalletPaymentArray('jiomoney');
 
         $this->mockServerContentFunction(function (& $content, $action = null)
@@ -90,6 +96,8 @@ class JiomoneyGatewayTest extends TestCase
 
     public function testPaymentFailedWithMissingChecksum()
     {
+        $this->markTestSkipped();
+
         $payment = $this->getDefaultWalletPaymentArray('jiomoney');
 
         $this->mockServerContentFunction(function (& $content, $action = null)
@@ -122,6 +130,8 @@ class JiomoneyGatewayTest extends TestCase
 
     public function testSuccessfulPaymentWithMissingChecksum()
     {
+        $this->markTestSkipped();
+
         $payment = $this->getDefaultWalletPaymentArray('jiomoney');
 
         $this->mockServerContentFunction(function (& $content, $action = null)
@@ -141,6 +151,8 @@ class JiomoneyGatewayTest extends TestCase
 
     public function testRefundPayment()
     {
+        $this->markTestSkipped();
+
         $payment = $this->getDefaultWalletPaymentArray('jiomoney');
 
         $capturePayment = $this->doAuthAndCapturePayment($payment);
@@ -163,6 +175,8 @@ class JiomoneyGatewayTest extends TestCase
 
     public function testPartialRefundPayment()
     {
+        $this->markTestSkipped();
+
         $payment = $this->getDefaultWalletPaymentArray('jiomoney');
 
         $capturePayment = $this->doAuthAndCapturePayment($payment);
@@ -190,6 +204,8 @@ class JiomoneyGatewayTest extends TestCase
 
     public function testRefundFailedPayment()
     {
+        $this->markTestSkipped();
+
         $payment = $this->getDefaultWalletPaymentArray('jiomoney');
 
         $this->mockServerContentFunction(function (& $content, $action = null)
@@ -229,6 +245,8 @@ class JiomoneyGatewayTest extends TestCase
 
     public function testVerifyPayment()
     {
+        $this->markTestSkipped();
+
         $payment = $this->getDefaultWalletPaymentArray('jiomoney');
 
         $authPayment = $this->doAuthPayment($payment);
@@ -240,6 +258,8 @@ class JiomoneyGatewayTest extends TestCase
 
     public function testVerifyPaymentWhenCheckPaymentStatusApiReturnsArrayOfObjects()
     {
+        $this->markTestSkipped();
+
         $payment = $this->getDefaultWalletPaymentArray('jiomoney');
 
         $this->mockServerContentFunction(function (& $content, $action = null)
@@ -268,6 +288,8 @@ class JiomoneyGatewayTest extends TestCase
      */
     public function testStatusQueryApiVerifyPayment()
     {
+        $this->markTestSkipped();
+
         $payment = $this->getDefaultWalletPaymentArray('jiomoney');
 
         $this->mockServerContentFunction(function (& $content, $action = null)
@@ -287,6 +309,8 @@ class JiomoneyGatewayTest extends TestCase
 
     public function testVerifyFailedPayment()
     {
+        $this->markTestSkipped();
+
         $this->ba->publicAuth();
 
         $data = $this->testData[__FUNCTION__];
@@ -325,6 +349,8 @@ class JiomoneyGatewayTest extends TestCase
 
     public function testVerifyLateAuthorizedPayment()
     {
+        $this->markTestSkipped();
+
         $this->ba->publicAuth();
 
         $payment = $this->fixtures->create(
@@ -364,6 +390,8 @@ class JiomoneyGatewayTest extends TestCase
 
     public function testVerifyRefund()
     {
+        $this->markTestSkipped();
+
         $refund = $this->testRefundFailedPayment();
 
         $this->clearMockFunction();
@@ -379,6 +407,8 @@ class JiomoneyGatewayTest extends TestCase
 
     public function testVerifyRefundFailedOnGateway()
     {
+        $this->markTestSkipped();
+
         $refund = $this->testRefundFailedPayment();
 
         $this->mockServerContentFunction(function (& $content, $action = null)
@@ -409,6 +439,8 @@ class JiomoneyGatewayTest extends TestCase
 
     public function testAuthorizedPaymentRefund()
     {
+        $this->markTestSkipped();
+
         $payment = $this->getDefaultPaymentArray();
 
         $response = $this->doAuthPayment($payment);
