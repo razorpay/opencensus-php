@@ -47,6 +47,7 @@ class Constants
     const ACCOUNT_STATUS                                = 'account_status';
     const REGISTERED_NAME                               = 'registered_name';
     const PENNY_TESTING_FUZZY_MATCH_PERCENTAGE_WITH_PAN = 'fuzzy_match_percentage_with_pan';
+    const PENNY_TESTING_FUZZY_MATCH_BASE                = 'penny_testing_fuzzy_match_base';
     const PENNY_TESTING_FUZZY_MATCH_TYPE_FOR_PAN        = 'penny_testing_fuzzy_match_type_for_pan';
     const POA_FUZZY_MATCH_TYPE                          = 'poa_fuzzy_match_type';
     const POI_FUZZY_MATCH_TYPE                          = 'poi_fuzzy_match_type';

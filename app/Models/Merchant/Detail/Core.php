@@ -122,7 +122,7 @@ class Core extends Base\Core
 
         $this->updateActivationSource($merchant, $originProduct);
 
-        $statusToBeUpdated = $this->getApplicableActivationStatus($merchantDetails, $merchant);
+        $statusToBeUpdated = $this->getApplicableActivationStatus($merchantDetails);
 
         $activationStatusData = [
             Entity::ACTIVATION_STATUS => $statusToBeUpdated,
@@ -1780,7 +1780,7 @@ class Core extends Base\Core
      */
     protected function attemptPennyTesting(Entity $merchantDetails, Merchant\Entity $merchant)
     {
-        if ((new Merchant\Core())->isUnRegisteredOnBoardingEnabled($merchant, $merchantDetails->isUnregisteredBusiness()) === false)
+        if ((new Merchant\Core())->isAutoKycEnabled($merchantDetails, $merchant) === false)
         {
             return;
         }
@@ -1831,29 +1831,44 @@ class Core extends Base\Core
 
     /**
      * Set activation status to activated if
-     * 1) poaVerificationStatus is Verified and
-     * 2) bankDetailsVerificationStatus is Verified and
-     * 3) poiVerificationStatus is Verified and
-     * 4) Unregistered on-boarding is enabled for merchant and
+     * a) If merchant belongs to unregistered business type then activate merchant if
+     *  a.1) poaVerificationStatus is Verified and
+     *  a.2) bankDetailsVerificationStatus is Verified and
+     *  a.3) poiVerificationStatus is Verified and
      *
      * Else change set activation status to under review
      *
-     * @param Entity          $merchantDetails
-     * @param Merchant\Entity $merchant
+     * @param Entity $merchantDetails
      *
      * @return string
      */
-    public function getApplicableActivationStatus(Entity $merchantDetails, Merchant\Entity $merchant)
+    public function getApplicableActivationStatus(Entity $merchantDetails): string
     {
-        if (($merchantDetails->isPoaVerified() === true) and
-            ($merchantDetails->isBankDetailStatusVerified() === true) and
-            ($merchantDetails->isPoiVerified() === true) and
-            ((new Merchant\Core)->isUnRegisteredOnBoardingEnabled($merchant, $merchantDetails->isUnregisteredBusiness()) === true))
+        switch ($merchantDetails->getBusinessType())
         {
-            return Status::ACTIVATED;
-        }
+            case BusinessType::NOT_YET_REGISTERED:
+            case BusinessType::INDIVIDUAL:
 
-        return Status::UNDER_REVIEW;
+                $preConditions = [
+                    Entity::POA_VERIFICATION_STATUS          => [POIStatus::VERIFIED],
+                    Entity::POI_VERIFICATION_STATUS          => [POIStatus::VERIFIED],
+                    Entity::BANK_DETAILS_VERIFICATION_STATUS => [POIStatus::VERIFIED],
+                ];
+
+                foreach ($preConditions as $key => $allowedStatus)
+                {
+                    if (in_array($merchantDetails->getAttribute($key), $allowedStatus, true) === false)
+                    {
+                        return Status::UNDER_REVIEW;
+                    }
+                }
+
+                return Status::ACTIVATED;
+
+            default :
+
+                return Status::UNDER_REVIEW;
+        }
     }
 
     /**

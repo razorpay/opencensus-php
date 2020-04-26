@@ -1606,15 +1606,29 @@ class MerchantDetailTest extends OAuthTestCase
 
     public function testCanSubmitAutoKycVerificationStatusCorrectDetails()
     {
-        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields',[
-            'poi_verification_status' => 'failed',
+        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields', [
+            'poi_verification_status'         => 'failed',
             'company_pan_verification_status' => 'verified']);
 
+        $this->createBalanceForSharedMerchant();
 
         $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id']);
 
         $this->mockRazorX(__FUNCTION__, 'registered_onboarding_auto_kyc', 'on', $merchantDetail['merchant_id']);
 
         $this->startTest($this->testData['testSubmit']);
+    }
+
+    protected function createBalanceForSharedMerchant()
+    {
+        $balanceData = [
+            'id'          => '100abc000abc00',
+            'merchant_id' => '100000Razorpay',
+            'type'        => 'primary',
+            'currency'    => 'INR',
+            'balance'     => 500,
+        ];
+
+        $this->fixtures->create('balance', $balanceData);
     }
 }

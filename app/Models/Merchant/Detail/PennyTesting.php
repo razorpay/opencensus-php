@@ -162,11 +162,10 @@ class PennyTesting extends Base\Core
         {
             case BankDetailsVerificationStatus::VERIFIED:
 
-                $newActivationStatus = (($merchantDetails->isPoaVerified() === true) and
-                                        ($merchantDetails->isPoiVerified() === true))
-                    ? Status::ACTIVATED : Status::UNDER_REVIEW;
+                $newActivationStatus = $detailCore->getApplicableActivationStatus($merchantDetails);
 
                 break;
+
             case BankDetailsVerificationStatus::FAILED:
 
                 $newActivationStatus = Status::NEEDS_CLARIFICATION;
@@ -279,6 +278,7 @@ class PennyTesting extends Base\Core
             Constants::PENNY_TESTING_FUZZY_MATCH_PERCENTAGE_WITH_PAN => $nameValidationData[Constants::PENNY_TESTING_FUZZY_MATCH_PERCENTAGE_WITH_PAN],
             Constants::PENNY_TESTING_FUZZY_MATCH_TYPE_FOR_PAN        => $nameValidationData[Constants::PENNY_TESTING_FUZZY_MATCH_TYPE_FOR_PAN],
             Constants::BANK_VERIFICATION_THRESHOLD_FOR_PAN           => BankDetailsVerificationStatus::BANK_DETAIL_VERIFICATION_THRESHOLD_FOR_PAN,
+            Constants::PENNY_TESTING_FUZZY_MATCH_BASE                => $nameValidationData[Constants::PENNY_TESTING_FUZZY_MATCH_BASE] ?? '',
         ];
 
         $this->trace->count(DetailMetric::PENNY_TESTING_STATUS_TOTAL,
@@ -316,12 +316,15 @@ class PennyTesting extends Base\Core
     {
         $panFuzzyMatcher = new FuzzyMatcher(BankDetailsVerificationStatus::BANK_DETAIL_VERIFICATION_THRESHOLD_FOR_PAN, FuzzyMatcher::JUMBLED_MATCH);
 
-        $isValidName = $panFuzzyMatcher->isMatch($merchantDetails->getPromoterPanName(), $input[Constants::REGISTERED_NAME],$panPercentMatch);
+        $baseStringToBeMatched = $this->getPennyTestingMatchSourceString($merchantDetails);
+
+        $isValidName = $panFuzzyMatcher->isMatch($baseStringToBeMatched, $input[Constants::REGISTERED_NAME], $panPercentMatch);
 
         $validationData = [
             Constants::PENNY_TESTING_FUZZY_MATCH_PERCENTAGE_WITH_PAN => $panPercentMatch,
             Constants::PENNY_TESTING_FUZZY_MATCH_TYPE_FOR_PAN        => $panFuzzyMatcher->getMatchType(),
             Constants::IS_VALID_NAME                                 => $isValidName,
+            Constants::PENNY_TESTING_FUZZY_MATCH_BASE                => $baseStringToBeMatched,
         ];
 
         return $validationData;
@@ -329,7 +332,6 @@ class PennyTesting extends Base\Core
 
     /**
      * @param Entity $merchantDetails
-     *
      * @param array  $input
      *
      * @return bool
@@ -392,7 +394,7 @@ class PennyTesting extends Base\Core
         $this->trace->count(DetailMetric::PENNY_TESTING_STATUS_TOTAL,
                             [
                                 Constants::BUSINESS_TYPE                    => $merchantDetails->getBusinessType() ?? "",
-                                Constants::BANK_DETAILS_VERIFICATION_STATUS => BankDetailsVerificationStatus::INITIATED
+                                Constants::BANK_DETAILS_VERIFICATION_STATUS => $merchantDetails->getBankDetailsVerificationStatus()
                             ]);
 
         $this->increasePennyTestingAttempt($merchantDetails);
@@ -446,5 +448,28 @@ class PennyTesting extends Base\Core
         $merchantDetails = $merchant->merchantDetail;
 
         return [$merchant, $merchantDetails];
+    }
+
+    /**
+     * Returns base string to be matched in case of penny testing
+     *
+     * @param Entity $merchantDetails
+     *
+     * @return string
+     */
+    protected function getPennyTestingMatchSourceString(Entity $merchantDetails) : string
+    {
+        switch ($merchantDetails->getBusinessType())
+        {
+            case BusinessType::NOT_YET_REGISTERED:
+            case BusinessType::INDIVIDUAL:
+            case BusinessType::PROPRIETORSHIP:
+
+                return $merchantDetails->getPromoterPanName();
+
+            default :
+
+                return $merchantDetails->getBusinessName();
+        }
     }
 }

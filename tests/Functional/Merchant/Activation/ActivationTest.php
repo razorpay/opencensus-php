@@ -1605,60 +1605,94 @@ class ActivationTest extends OAuthTestCase
         $this->assertNotNull($merchantDetails->getFundAccountValidationId());
     }
 
-    public function testSuccessBankDetailsVerification()
+    public function testSuccessBankDetailsVerificationForUnregistered()
     {
-        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields',
-                                                  ['business_type'           => 2,
-                                                   'promoter_pan_name'       => 'pankaj kumar',
-                                                   'bank_account_name'       => 'pankaj k',
-                                                   'poa_verification_status' => 'verified',
-                                                   'poi_verification_status' => 'verified',
-                                                   'submitted'               => 1,
-                                                   'submitted_at'            => now()->getTimestamp()]);
-
-        $attribute = [
-            ValidationEntity::REGISTERED_NAME => "p kumar",
-            ValidationEntity::ACCOUNT_STATUS  => "active",
-            ValidationEntity::NOTES           => [
-                ValidationEntity::MERCHANT_ID => $merchantDetail['merchant_id'],
-            ],
+        $merchantDetailAttribute = [
+            'business_type'     => 2,
+            'promoter_pan_name' => 'pankaj kumar',
+            'bank_account_name' => 'pankaj k',
         ];
 
-        $this->fixtures->create('fund_account_validation', $attribute);
+        $favAttribute = [
+            ValidationEntity::REGISTERED_NAME => "p kumar",
+        ];
 
-        $fav  = $this->getLastEntity('fund_account_validation', true, 'test');
+        $this->verifySuccessBankDetailVerification($favAttribute, $merchantDetailAttribute, 'activated');
+    }
 
-        FundAccountValidation::dispatch('test', $fav['id']);
+    public function testSuccessBankDetailsVerificationForPartnerShip()
+    {
+        $merchantDetailAttribute = [
+            'business_type'     => 1,
+            'promoter_pan_name' => 'pankaj kumar',
+            'bank_account_name' => 'pankaj k',
+        ];
 
-        $merchant  = $this->getDbEntityById('merchant', $merchantDetail['merchant_id']);
+        $favAttribute = [
+            ValidationEntity::REGISTERED_NAME => "p kumar",
+        ];
 
-        $merchantDetail = $merchant->merchantDetail;
+        $this->verifySuccessBankDetailVerification($favAttribute, $merchantDetailAttribute, 'under_review');
+    }
 
-        $this->assertEquals($merchantDetail->getBankDetailsVerificationStatus(), 'verified');
+    public function testSuccessBankDetailsVerificationForRegistered()
+    {
+        $merchantDetailAttribute = [
+            'business_type'     => 4,
+            'business_name'     => 'pankaj kumar',
+            'bank_account_name' => 'pankaj k',
+        ];
 
-        $this->assertEquals($merchantDetail->getActivationStatus(), 'activated');
+        $favAttribute = [
+            ValidationEntity::REGISTERED_NAME => "p kumar",
+        ];
+
+        $this->verifySuccessBankDetailVerification($favAttribute, $merchantDetailAttribute, 'under_review');
     }
 
     public function testSuccessJumbledBankDetailsVerification()
     {
-        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields',
-                                                  ['business_type'           => 2,
-                                                   'promoter_pan_name'       => 'mr subramaniam laxmi vijay',
-                                                   'bank_account_name'       => 'mr subramaniam laxmi vijay',
-                                                   'poa_verification_status' => 'verified',
-                                                   'poi_verification_status' => 'verified',
-                                                   'submitted'               => 1,
-                                                   'submitted_at'            => now()->getTimestamp()]);
+        $merchantDetailAttribute = [
+            'business_type'     => 2,
+            'promoter_pan_name' => 'mr subramaniam laxmi vijay',
+            'bank_account_name' => 'mr subramaniam laxmi vijay',
+        ];
 
-        $attribute = [
+        $favAttribute = [
             ValidationEntity::REGISTERED_NAME => "vijay laxmi subramaniam",
-            ValidationEntity::ACCOUNT_STATUS  => "active",
-            ValidationEntity::NOTES           => [
+        ];
+
+        $this->verifySuccessBankDetailVerification($favAttribute, $merchantDetailAttribute, 'activated');
+    }
+
+    /**
+     * @param array  $customFavAttributes
+     * @param array  $customMerchantAttributes
+     * @param string $accountStatus
+     */
+    private function verifySuccessBankDetailVerification(array $customFavAttributes , array $customMerchantAttributes, string $accountStatus): void
+    {
+        $defaultMerchantDetailsAttributes = [
+            'poa_verification_status' => 'verified',
+            'poi_verification_status' => 'verified',
+            'submitted'               => 1,
+            'submitted_at'            => now()->getTimestamp()
+        ];
+
+        $detailAttributes = array_merge($defaultMerchantDetailsAttributes, $customMerchantAttributes);
+
+        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields', $detailAttributes);
+
+        $defaultFavAttribute = [
+            ValidationEntity::ACCOUNT_STATUS => "active",
+            ValidationEntity::NOTES          => [
                 ValidationEntity::MERCHANT_ID => $merchantDetail['merchant_id'],
             ],
         ];
 
-        $this->fixtures->create('fund_account_validation', $attribute);
+        $customFavAttributes = array_merge($defaultFavAttribute, $customFavAttributes);
+
+        $this->fixtures->create('fund_account_validation', $customFavAttributes);
 
         $fav = $this->getLastEntity('fund_account_validation', true, 'test');
 
@@ -1670,16 +1704,60 @@ class ActivationTest extends OAuthTestCase
 
         $this->assertEquals('verified', $merchantDetail->getBankDetailsVerificationStatus());
 
-        $this->assertEquals('activated', $merchantDetail->getActivationStatus());
+        $this->assertEquals($accountStatus, $merchantDetail->getActivationStatus());
     }
 
-    public function testFailureBankDetailsVerification()
+    public function testFailureBankDetailsVerificationForUnRegisteredBusiness()
     {
-        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields',
-                                                  ['business_type'             => 2,
-                                                   'promoter_pan_name'         => 'pankaj kumar',
-                                                   'kyc_clarification_reasons' => $this->getClarificationReason(),
-                                                  ]);
+        $merchantAttributes = ['business_type' => 2, 'promoter_pan_name' => 'pankaj kumar'];
+
+        $this->verifyFailureBankDetailsVerification($merchantAttributes);
+    }
+
+    public function testFailureBankDetailsVerificationForNameMismatchCaseForUnRegisteredBusiness()
+    {
+        $merchantAttributes = ['business_type' => 2, 'promoter_pan_name' => 'pankaj kumar'];
+
+        $this->verifyFailureBankDetailsVerificationForNameMismatchCase($merchantAttributes);
+    }
+
+    public function testFailureBankDetailsVerificationForPartnerShip()
+    {
+        $merchantAttributes = ['business_type' => 1, 'promoter_pan_name' => 'pankaj kumar'];
+
+        $this->verifyFailureBankDetailsVerification($merchantAttributes);
+    }
+
+    public function testFailureBankDetailsVerificationForNameMismatchCasePartnerShip()
+    {
+        $merchantAttributes = ['business_type' => 1, 'promoter_pan_name' => 'pankaj kumar'];
+
+        $this->verifyFailureBankDetailsVerificationForNameMismatchCase($merchantAttributes);
+    }
+
+    public function testFailureBankDetailsVerificationForRegisteredBusiness()
+    {
+        $merchantAttributes = ['business_type' => 4, 'business_name' => 'pankaj kumar'];
+
+        $this->verifyFailureBankDetailsVerification($merchantAttributes);
+    }
+
+    public function testFailureBankDetailsVerificationForNameMismatchCaseForRegisteredBusiness()
+    {
+        $merchantAttributes = ['business_type' => 4, 'business_name' => 'pankaj kumar'];
+
+        $this->verifyFailureBankDetailsVerificationForNameMismatchCase($merchantAttributes);
+    }
+
+    private function verifyFailureBankDetailsVerification(array $merchantAttributes)
+    {
+        $defaultValues = [
+            'kyc_clarification_reasons' => $this->getClarificationReason(),
+        ];
+
+        $attributes = array_merge($defaultValues, $merchantAttributes);
+
+        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields', $attributes);
 
         $attribute = $this->getFavAttributes($merchantDetail, "pankaj kumar", "invalid");
 
@@ -1819,15 +1897,18 @@ class ActivationTest extends OAuthTestCase
         $this->assertEquals($activationStatus, $merchantDetail->getActivationStatus());
     }
 
-    public function testFailureBankDetailsVerificationForNameMismatchCase()
+    public function verifyFailureBankDetailsVerificationForNameMismatchCase(array $merchantAttributes)
     {
-        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields',
-                                                  ['business_type'             => 2,
-                                                   'promoter_pan_name'         => 'pankaj kumar',
-                                                   'poa_verification_status'   => 'verified',
-                                                   'submitted'                 => 1,
-                                                   'kyc_clarification_reasons' => $this->getClarificationReason(),
-                                                   'submitted_at'              => now()->getTimestamp()]);
+        $defaultValues = [
+            'poa_verification_status'   => 'verified',
+            'submitted'                 => 1,
+            'kyc_clarification_reasons' => $this->getClarificationReason(),
+            'submitted_at'              => now()->getTimestamp()
+        ];
+
+        $attributes = array_merge($defaultValues, $merchantAttributes);
+
+        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields', $attributes);
 
         $attribute = $this->getFavAttributes($merchantDetail, "random name", "active");
 
