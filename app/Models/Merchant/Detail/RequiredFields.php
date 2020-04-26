@@ -4,7 +4,7 @@ namespace RZP\Models\Merchant\Detail;
 
 class RequiredFields
 {
-    const MERCHANT_DEFAULT_DOCUMENTS = [
+    const MERCHANT_DEFAULT_FIELDS = [
         //registered address
         Entity::BUSINESS_REGISTERED_ADDRESS,
         Entity::BUSINESS_REGISTERED_CITY,
@@ -23,12 +23,9 @@ class RequiredFields
         Entity::BUSINESS_DBA,
         Entity::BUSINESS_INTERNATIONAL,
         Entity::BUSINESS_NAME,
-
-        //documents
-        Entity::ADDRESS_PROOF_URL,
+        
         Entity::BUSINESS_PAN_URL,
         Entity::BUSINESS_PROOF_URL,
-        Entity::PROMOTER_ADDRESS_URL,
 
         //operational address related fields
         Entity::BUSINESS_OPERATION_ADDRESS,

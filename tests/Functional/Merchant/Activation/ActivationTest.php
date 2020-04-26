@@ -699,7 +699,14 @@ class ActivationTest extends OAuthTestCase
             'business_proof_url'   => '124',
             'promoter_address_url' => '124',
         ];
+
         $data = array_merge($data, $otherMerchantDetailAttributes);
+
+        $this->fixtures->create('merchant_document', [
+            'document_type' => 'promoter_address_url',
+            'merchant_id'   => $merchantId,
+        ]);
+
         $this->fixtures->create('merchant_detail', $data);
 
         $this->fixtures->on('live')->create('methods:default_methods', [
@@ -722,35 +729,86 @@ class ActivationTest extends OAuthTestCase
         $this->kycSubmissionWithSuccessCases('verified', 'verified');
     }
 
-    public function testKycUnregisteredCanSubmitWithAadhar()
-    {
-        $this->validateKYCSubmission([Type::AADHAR_FRONT, Type::AADHAR_BACK]);
-    }
-
-    public function testKycUnregisteredCanSubmitWithPassport()
-    {
-        $this->validateKYCSubmission([Type::PASSPORT_BACK, Type::PASSPORT_FRONT]);
-    }
-
-    public function testKycUnregisteredCanSubmitWithDL()
-    {
-        $this->validateKYCSubmission([Type::DRIVER_LICENSE_FRONT, Type::DRIVER_LICENSE_BACK]);
-    }
-
-    public function testKycUnregisteredCanSubmitWithVoterId()
-    {
-        $this->validateKYCSubmission([Type::VOTER_ID_BACK, Type::VOTER_ID_FRONT]);
-    }
-
-    private function validateKYCSubmission(array $documentTypes)
+    public function testPOASubmissionForUnRegisteredMerchantWithAadhaar()
     {
         $merchantId = '1cXSLlUU8V9sXl';
 
-        $data = $this->getKycSubmittedMerchantDetailData($merchantId);
-
-        $otherMerchantDetailAttributes = [
-            'business_type' => 2,
+        $attributes = [
+            'business_type'        => 11,
+            'merchant_id'          => $merchantId,
         ];
+
+        $this->validatePOASubmission([Type::AADHAR_FRONT, Type::AADHAR_BACK], $merchantId, $attributes);
+    }
+
+    public function testPOASubmissionForRegisteredMerchantWithAadhaar()
+    {
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        $attributes = [
+            'business_type'        => 1,
+            'merchant_id'          => $merchantId,
+            'promoter_address_url' => null
+        ];
+
+        $this->validatePOASubmission([Type::AADHAR_FRONT, Type::AADHAR_BACK], $merchantId, $attributes);
+    }
+
+    public function testPOASubmissionForRegisteredMerchantWithPassport()
+    {
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        $attributes = [
+            'business_type'        => 1,
+            'merchant_id'          => $merchantId,
+            'promoter_address_url' => null
+        ];
+
+        $this->validatePOASubmission([Type::PASSPORT_BACK, Type::PASSPORT_FRONT], $merchantId, $attributes);
+    }
+
+    public function testPOASubmissionForUnRegisteredMerchantWithVoterId()
+    {
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        $attributes = [
+            'business_type'        => 11,
+            'merchant_id'          => $merchantId,
+            'promoter_address_url' => null
+        ];
+
+        $this->validatePOASubmission([Type::VOTER_ID_FRONT, Type::VOTER_ID_BACK], $merchantId, $attributes);
+    }
+
+    public function testPOASubmissionForRegisteredMerchantWithVoterId()
+    {
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        $attributes = [
+            'business_type'        => 1,
+            'merchant_id'          => $merchantId,
+            'promoter_address_url' => null
+        ];
+
+        $this->validatePOASubmission([Type::VOTER_ID_FRONT, Type::VOTER_ID_BACK], $merchantId, $attributes);
+    }
+
+    public function testPOASubmissionForRegisteredMerchantWithPromoterAddress()
+    {
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        $attributes = [
+            'business_type'        => 1,
+            'merchant_id'          => $merchantId,
+            'promoter_address_url' => null
+        ];
+
+        $this->validatePOASubmission([Type::PROMOTER_ADDRESS_URL], $merchantId, $attributes);
+    }
+
+    private function createPOACanSubmitData(array $attributes)
+    {
+        $this->fixtures->create('merchant_detail:filledEntity', $attributes);
 
         $plan = $this->createZeroFundAccountValidationPricingPlan();
 
@@ -761,11 +819,13 @@ class ActivationTest extends OAuthTestCase
                                               [
                                                   'pricing_plan_id' => $plan->getPlanId()
                                               ]);
-        $data = array_merge($data, $otherMerchantDetailAttributes);
+    }
 
-        $this->fixtures->create('merchant_detail', $data);
+    private function validatePOASubmission(array $documentTypes, string $merchantId = '1cXSLlUU8V9sXl', array $attributes = [])
+    {
+        $this->createPOACanSubmitData($attributes);
 
-        $testSuit = 'validateUnregisteredKycSubmission';
+        $testSuit = 'validateCanSubmit';
 
         $this->ba->proxyAuth('rzp_test_' . $merchantId);
 

@@ -30,7 +30,25 @@ class MerchantDetail extends Base
     {
         $merchantDetailArray = $this->createMerchantDetail($attributes);
 
-        return $this->create($merchantDetailArray);
+        $merchantDetail = $this->create($merchantDetailArray);
+
+        $this->fixtures->create('merchant_document:multiple',
+                                [
+                                    'document_types' => ['promoter_address_url',],
+                                    'attributes'     => ['merchant_id' => $merchantDetail['merchant_id']]
+                                ]
+        );
+
+        return $merchantDetail;
+    }
+
+    public function createFilledEntity(array $attributes = array())
+    {
+        $merchantDetailArray = $this->createMerchantDetail($attributes);
+
+        $merchantDetail = $this->create($merchantDetailArray);
+
+        return $merchantDetail;
     }
 
     public function createInvalidFields(array $attributes = array())

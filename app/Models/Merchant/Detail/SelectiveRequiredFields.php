@@ -4,7 +4,7 @@ namespace RZP\Models\Merchant\Detail;
 
 use RZP\Models\Merchant\Document\Type;
 
-class SelectiveRequiredDocument
+class SelectiveRequiredFields
 {
     const POA_DOCUMENTS                         = 'poa_documents';
     const SEBI_REGISTRATION_CERTIFICATE_OR_SLA  = 'sebi_registration_certificate_or_sla';
@@ -16,8 +16,18 @@ class SelectiveRequiredDocument
     /**
      * This contains documents required for unregistered business
      */
-    const UNREGISTERED = [
+    const UNREGISTERED_POA_FIELDS = [
         self::POA_DOCUMENTS => [
+            [Type::AADHAR_FRONT, Type::AADHAR_BACK],
+            [Type::PASSPORT_FRONT, Type::PASSPORT_BACK],
+            [Type::VOTER_ID_FRONT, Type::VOTER_ID_BACK],
+            [Type::DRIVER_LICENSE_FRONT, Type::DRIVER_LICENSE_BACK],
+        ]
+    ];
+
+    const REGISTERED_POA_FIELDS = [
+        self::POA_DOCUMENTS => [
+            [Type::PROMOTER_ADDRESS_URL],
             [Type::AADHAR_FRONT, Type::AADHAR_BACK],
             [Type::PASSPORT_FRONT, Type::PASSPORT_BACK],
             [Type::VOTER_ID_FRONT, Type::VOTER_ID_BACK],
@@ -92,15 +102,16 @@ class SelectiveRequiredDocument
      * list of all selective required fields
      */
     const ALL_SELECTIVE_FIELDS = [
-        SelectiveRequiredDocument::MUTUAL_FUND,
-        SelectiveRequiredDocument::LENDING,
-        SelectiveRequiredDocument::INSURANCE,
-        SelectiveRequiredDocument::NBFC,
-        SelectiveRequiredDocument::FOREX,
-        SelectiveRequiredDocument::SECURITIES,
-        SelectiveRequiredDocument::COMMODITIES,
-        SelectiveRequiredDocument::FINANCIAL_ADVISOR,
-        SelectiveRequiredDocument::TRADING,
-        SelectiveRequiredDocument::UNREGISTERED,
+        SelectiveRequiredFields::MUTUAL_FUND,
+        SelectiveRequiredFields::LENDING,
+        SelectiveRequiredFields::INSURANCE,
+        SelectiveRequiredFields::NBFC,
+        SelectiveRequiredFields::FOREX,
+        SelectiveRequiredFields::SECURITIES,
+        SelectiveRequiredFields::COMMODITIES,
+        SelectiveRequiredFields::FINANCIAL_ADVISOR,
+        SelectiveRequiredFields::TRADING,
+        SelectiveRequiredFields::UNREGISTERED_POA_FIELDS,
+        SelectiveRequiredFields::REGISTERED_POA_FIELDS,
     ];
 }

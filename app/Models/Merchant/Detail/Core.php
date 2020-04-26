@@ -564,7 +564,8 @@ class Core extends Base\Core
 
         $fields = [Detail\Entity::PROMOTER_PAN, Detail\Entity::PROMOTER_PAN_NAME];
 
-        if ($this->checkFieldsUpdation($fields, $input, $merchant->getId()) === false)
+        if (($merchantDetails->getPoiVerificationStatus() !== POIStatus::FAILED) and
+            ($this->checkFieldsUpdation($fields, $input, $merchant->getId()) === false))
         {
             return;
         }
@@ -620,7 +621,8 @@ class Core extends Base\Core
 
         $fields = [Detail\Entity::COMPANY_PAN, Detail\Entity::BUSINESS_NAME];
 
-        if ($this->checkFieldsUpdation($fields, $input, $merchant->getId()) === false)
+        if (($merchantDetails->getCompanyPanVerificationStatus() !== CompanyPanStatus::FAILED) and
+            ($this->checkFieldsUpdation($fields, $input, $merchant->getId()) === false))
         {
             return;
         }
@@ -1424,7 +1426,7 @@ class Core extends Base\Core
     {
         // @todo: Activation flow will define its own validation fields
 
-        [$validationFields, $validationDocumentFields, $validationOptionalFields] = ValidationFields::getValidationFields($merchantDetails);
+        [$validationFields, $validationSelectiveRequiredFields, $validationOptionalFields] = ValidationFields::getValidationFields($merchantDetails);
 
         if (self::shouldSkipBankAccountRegistration() === true)
         {
@@ -1436,7 +1438,7 @@ class Core extends Base\Core
         if ($merchant->isLinkedAccount() === true)
         {
             $validationFields         = RequiredFields::MARKETPLACE_ACCOUNT_FIELDS;
-            $validationDocumentFields = [];
+            $validationSelectiveRequiredFields = [];
             $validationOptionalFields = [];
 
             $parentMerchant = $merchant->parent;
@@ -1454,18 +1456,13 @@ class Core extends Base\Core
             }
         }
 
-        return [$validationFields, $validationDocumentFields, $validationOptionalFields];
+        return [$validationFields, $validationSelectiveRequiredFields, $validationOptionalFields];
     }
 
     public function createResponse(Entity $merchantDetails): array
     {
-        $merchantDetailsArr = $merchantDetails->toArray();
-
         $response = $merchantDetails->toArrayPublic();
 
-        $requiredFields = [];
-
-        [$validationFields, $validationDocumentFields, $validationOptionalFields] = $this->getValidationFields($merchantDetails);
 
         //
         // refreshing the merchant relation here as createResponse is called at many places
@@ -1499,59 +1496,7 @@ class Core extends Base\Core
             $response[Entity::REJECTION_REASONS] = $rejectionReasons->toArrayPublic();
         }
 
-        $totalFields = count($validationFields) + count($validationDocumentFields);
-
-        $documentsResponse = (new Document\Core())->documentResponse($merchant);
-
-        $response['documents'] = $documentsResponse;
-
-        foreach ($validationFields as $key)
-        {
-            //
-            // Add the key to the list of the required fields if:
-            //- key is not present in  merchant detail
-            //- and if the key that needs to be validated is not present in the merchant Document array
-            //
-            if (($this->isKeyNotInMerchantDetail($key, $merchantDetailsArr) === true) and
-                (array_key_exists($key, $documentsResponse) === false))
-            {
-                $requiredFields[] = $key;
-            }
-        }
-
-        $this->calculateRequiredDocumentFields(
-            $validationDocumentFields,
-            $documentsResponse,
-            $requiredFields);
-
-        $isAutoKycDocumentsVerificationStatusAllowed = (new FormSubmissionValidStatusesMap())->isDocumentsStatusValidForFormSubmission(
-            $merchantDetails,
-            FormSubmissionValidStatusesMap::DOCUMENT_LIST_L2);
-
-        if (count($requiredFields) > 0 or
-            $isAutoKycDocumentsVerificationStatusAllowed === false)
-        {
-            $remainingFields = count($requiredFields);
-
-            $response['verification'] = [
-                'status'              => 'disabled',
-                'disabled_reason'     => 'required_fields',
-                'required_fields'     => $requiredFields,
-                'optional_fields'     => $validationOptionalFields,
-                'activation_progress' => 100 - intval($remainingFields * 100 / $totalFields),
-            ];
-
-            $response['can_submit'] = false;
-        }
-        else
-        {
-            $response['verification'] = [
-                'status'              => 'pending',
-                'activation_progress' => 100,
-            ];
-
-            $response['can_submit'] = true;
-        }
+        $response = $this->setVerificationDetails($merchantDetails, $merchant, $response);
 
         $response[Merchant\Entity::ACTIVATED]                   = (int) $merchant->isActivated();
         $response[Merchant\Entity::LIVE]                        = $merchant->isLive();
@@ -1918,7 +1863,7 @@ class Core extends Base\Core
 
             if ($isFieldPresent === false)
             {
-                $requiredFields[] = $requiredDocumentField;
+                $requiredFields = array_merge($requiredFields, $documentGroups[0]);
             }
         }
     }
@@ -2188,12 +2133,26 @@ class Core extends Base\Core
      * @param array  $input
      * @param string $merchantId
      *
+     * @param array  $requiredFields
+     *
      * @return bool
      */
-    protected function checkFieldsUpdation(array $fields, array $input, string $merchantId)
+    protected function checkFieldsUpdation(array $fields, array $input, string $merchantId, array $requiredFields = [])
     {
+        $requiredFields = empty($reqiredFields) === true ? $fields : $requiredFields;
+
         $merchantDetails = $this->repo->merchant_detail->findByPublicId($merchantId);
 
+        // check that all require fields are present for calling external api
+        foreach ($requiredFields as $field)
+        {
+            if ((isset($input[$field]) === false) and $merchantDetails->getAttribute($field) === null)
+            {
+                return false;
+            }
+        }
+
+        // check if there is any change in any field
         foreach ($fields as $field)
         {
             if ((isset($input[$field]) === true) and ($merchantDetails->getAttribute($field) !== $input[$field]))
@@ -2203,5 +2162,78 @@ class Core extends Base\Core
         }
 
         return false;
+    }
+
+
+    /**
+     * @param Entity          $merchantDetails
+     * @param Merchant\Entity $merchant
+     * @param array           $response
+     *
+     * @return array
+     */
+    private function setVerificationDetails(Entity $merchantDetails, Merchant\Entity $merchant, array $response)
+    {
+        $requiredFields = [];
+
+        $merchantDetailsArr = $merchantDetails->toArray();
+
+        [$validationFields, $validationSelectiveRequiredFields, $validationOptionalFields] = $this->getValidationFields($merchantDetails);
+
+        $totalFields = count($validationFields) + count($validationSelectiveRequiredFields);
+
+        $documentsResponse = (new Document\Core())->documentResponse($merchant);
+
+        $response['documents'] = $documentsResponse;
+
+        foreach ($validationFields as $key)
+        {
+            //
+            // Add the key to the list of the required fields if:
+            //- key is not present in  merchant detail
+            //- and if the key that needs to be validated is not present in the merchant Document array
+            //
+            if (($this->isKeyNotInMerchantDetail($key, $merchantDetailsArr) === true) and
+                (array_key_exists($key, $documentsResponse) === false))
+            {
+                $requiredFields[] = $key;
+            }
+        }
+
+        $this->calculateRequiredDocumentFields(
+            $validationSelectiveRequiredFields,
+            $documentsResponse,
+            $requiredFields);
+
+        $isAutoKycDocumentsVerificationStatusAllowed = (new FormSubmissionValidStatusesMap())->isDocumentsStatusValidForFormSubmission(
+            $merchantDetails,
+            FormSubmissionValidStatusesMap::DOCUMENT_LIST_L2);
+
+        if ((count($requiredFields) > 0) or
+            ($isAutoKycDocumentsVerificationStatusAllowed === false))
+        {
+            $remainingFields = count($requiredFields);
+
+            $response['verification'] = [
+                'status'              => 'disabled',
+                'disabled_reason'     => 'required_fields',
+                'required_fields'     => $requiredFields,
+                'optional_fields'     => $validationOptionalFields,
+                'activation_progress' => 100 - intval($remainingFields * 100 / $totalFields),
+            ];
+
+            $response['can_submit'] = false;
+        }
+        else
+        {
+            $response['verification'] = [
+                'status'              => 'pending',
+                'activation_progress' => 100,
+            ];
+
+            $response['can_submit'] = true;
+        }
+
+        return $response;
     }
 }

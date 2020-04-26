@@ -47,63 +47,63 @@ class ValidationFields
         BusinessSubcategory::MUTUAL_FUND       => [
             self::DEFAULT => [
                 self::SELECTIVE_REQUIRED_FIELDS => [
-                    SelectiveRequiredDocument::MUTUAL_FUND,
+                    SelectiveRequiredFields::MUTUAL_FUND,
                 ],
             ]
         ],
         BusinessSubcategory::LENDING           => [
             self::DEFAULT => [
                 self::SELECTIVE_REQUIRED_FIELDS => [
-                    SelectiveRequiredDocument::LENDING
+                    SelectiveRequiredFields::LENDING
                 ],
             ],
         ],
         BusinessSubcategory::INSURANCE         => [
             self::DEFAULT => [
                 self::SELECTIVE_REQUIRED_FIELDS => [
-                    SelectiveRequiredDocument::INSURANCE,
+                    SelectiveRequiredFields::INSURANCE,
                 ],
             ],
         ],
         BusinessSubcategory::NBFC              => [
             self::DEFAULT => [
                 self::SELECTIVE_REQUIRED_FIELDS => [
-                    SelectiveRequiredDocument::NBFC,
+                    SelectiveRequiredFields::NBFC,
                 ],
             ],
         ],
         BusinessSubcategory::FOREX             => [
             self::DEFAULT => [
                 self::SELECTIVE_REQUIRED_FIELDS => [
-                    SelectiveRequiredDocument::FOREX,
+                    SelectiveRequiredFields::FOREX,
                 ],
             ],
         ],
         BusinessSubcategory::SECURITIES        => [
             self::DEFAULT => [
                 self::SELECTIVE_REQUIRED_FIELDS => [
-                    SelectiveRequiredDocument::SECURITIES,
+                    SelectiveRequiredFields::SECURITIES,
                 ],
             ],
         ],
         BusinessSubcategory::COMMODITIES => [
             self::DEFAULT => [
                 self::SELECTIVE_REQUIRED_FIELDS => [
-                    SelectiveRequiredDocument::COMMODITIES,
+                    SelectiveRequiredFields::COMMODITIES,
                 ],
             ],
         ],
         BusinessSubcategory::FINANCIAL_ADVISOR => [
             self::DEFAULT => [
                 self::SELECTIVE_REQUIRED_FIELDS => [
-                    SelectiveRequiredDocument::FINANCIAL_ADVISOR,
+                    SelectiveRequiredFields::FINANCIAL_ADVISOR,
                 ],
             ],
         ],
         BusinessSubcategory::TRADING           => [
             self::DEFAULT => [
                 self::SELECTIVE_REQUIRED_FIELDS => [
-                    SelectiveRequiredDocument::TRADING,
+                    SelectiveRequiredFields::TRADING,
                 ],
             ],
         ],
@@ -162,7 +162,8 @@ class ValidationFields
         BusinessCategory::EDUCATION          => self::EDUCATION_OPTIONAL_FIELDS,
         BusinessCategory::TOURS_AND_TRAVEL   => self::TOURS_AND_TRAVEL_OPTIONAL_FIELDS,
         self::DEFAULT                        => [
-            self::REQUIRED_FIELDS => [RequiredFields::REGISTERED_BUSINESS_FIELDS],
+            self::REQUIRED_FIELDS           => [RequiredFields::REGISTERED_BUSINESS_FIELDS],
+            self::SELECTIVE_REQUIRED_FIELDS => [SelectiveRequiredFields::REGISTERED_POA_FIELDS]
         ],
     ];
 
@@ -171,13 +172,14 @@ class ValidationFields
         BusinessCategory::EDUCATION          => self::EDUCATION_OPTIONAL_FIELDS,
         BusinessCategory::TOURS_AND_TRAVEL   => self::TOURS_AND_TRAVEL_OPTIONAL_FIELDS,
         self::DEFAULT                        => [
-            self::REQUIRED_FIELDS => [RequiredFields::REGISTERED_BUSINESS_FIELDS, RequiredFields::NGO_MERCHANT_FIELDS],
+            self::REQUIRED_FIELDS           => [RequiredFields::REGISTERED_BUSINESS_FIELDS, RequiredFields::NGO_MERCHANT_FIELDS],
+            self::SELECTIVE_REQUIRED_FIELDS => [SelectiveRequiredFields::REGISTERED_POA_FIELDS]
         ],
     ];
 
     const UNREGISTERED_FIELD_GROUP = [
         self::DEFAULT => [
-            self::SELECTIVE_REQUIRED_FIELDS => [SelectiveRequiredDocument::UNREGISTERED],
+            self::SELECTIVE_REQUIRED_FIELDS => [SelectiveRequiredFields::UNREGISTERED_POA_FIELDS],
         ],
     ];
 
@@ -200,7 +202,7 @@ class ValidationFields
         BusinessType::NOT_YET_REGISTERED => self::UNREGISTERED_FIELD_GROUP,
 
         self::DEFAULT => [
-            self::REQUIRED_FIELDS           => [RequiredFields::BANK_ACCOUNT_FIELDS, RequiredFields::MERCHANT_DEFAULT_DOCUMENTS],
+            self::REQUIRED_FIELDS           => [RequiredFields::BANK_ACCOUNT_FIELDS, RequiredFields::MERCHANT_DEFAULT_FIELDS],
             self::SELECTIVE_REQUIRED_FIELDS => [],
             self::OPTIONAL_FIELDS           => [],
         ],
@@ -221,7 +223,7 @@ class ValidationFields
             return [$field];
         }
 
-        $allSelectiveFields = self::mergeFirstLevelArrays(SelectiveRequiredDocument::ALL_SELECTIVE_FIELDS);
+        $allSelectiveFields = self::mergeFirstLevelArrays(SelectiveRequiredFields::ALL_SELECTIVE_FIELDS);
 
         //
         // explain :(example)

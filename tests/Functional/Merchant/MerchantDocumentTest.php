@@ -41,7 +41,7 @@ class MerchantDocumentTest Extends TestCase
 
         $response = $this->startTest();
 
-        $this->assertContains('address_proof_url',$response['verification']['required_fields']);
+        $this->assertContains('business_pan_url',$response['verification']['required_fields']);
     }
 
     public function testDeleteDocumentIdNotValid()
