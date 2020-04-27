@@ -94,6 +94,12 @@ class GatewayProcessor extends BaseGatewayProcessor
         }
         catch (Exception\BadRequestValidationFailureException $exception)
         {
+            if ((empty($merchantDetail[MerchantDetailConstants::BUSINESS_NAME]) === true)
+                or (empty($merchantDetail[MerchantDetailConstants::BUSINESS_DBA]) === true))
+            {
+                throw $exception;
+            }
+
             $shouldUpdate = true;
         }
 

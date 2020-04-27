@@ -113,6 +113,35 @@ class HitachiOnboardTest extends TestCase
         $this->assertEquals($response['type'], ['non_recurring', 'recurring_3ds', 'recurring_non_3ds', 'debit_recurring']);
     }
 
+    // this shd fail in validation as name is mandatory
+    public function testOnboardWhenRequiredMerchantDetailsAlongWithNameAreMissing()
+    {
+        $this->createMerchants();
+
+        $data = $this->getDefaultInput();
+
+        $merchant = (new MerchantRepo)->findOrFailPublic($this->merchantId);
+
+        $merchantDetail = $merchant->merchantDetail;
+
+        $merchantDetail[Detail\Entity::BUSINESS_OPERATION_ADDRESS] =  "test Address";
+        $merchantDetail[Detail\Entity::BUSINESS_OPERATION_STATE]   =  "KA";
+        $merchantDetail[Detail\Entity::BUSINESS_OPERATION_PIN]     =  "123456";
+        $merchantDetail[Detail\Entity::BUSINESS_DBA]               =  "abc";
+        $merchantDetail[Detail\Entity::BUSINESS_NAME]              =  "";
+        $merchantDetail[Detail\Entity::BUSINESS_OPERATION_CITY]    =  "Bengaluru";
+        $merchantDetail->save();
+
+        $merchantId = $this->merchantId;
+
+        $this->makeRequestAndCatchException(
+            function() use ($merchantId, $data)
+            {
+                $this->onboard($merchantId, $data);
+            },
+            \RZP\Exception\BadRequestValidationFailureException::class);
+   }
+
     public function testOnboardFailure()
     {
         $this->createMerchants();
