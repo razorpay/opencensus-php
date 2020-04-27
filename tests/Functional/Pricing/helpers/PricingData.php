@@ -105,7 +105,8 @@ return [
                     'idempotency_key'       => 'batch_DZtFGiJXmcdLaM',
                     'amount_range_active'   => '',
                     'amount_range_min'      => '',
-                    'amount_range_max'      => ''
+                    'amount_range_max'      => '',
+                    'update'                => ''
                 ],
                 [
                     'merchant_id'           => '10000000000000',
@@ -119,7 +120,52 @@ return [
                     'idempotency_key'       => 'batch_DZtFGiJXmcdLfM',
                     'amount_range_active'   => '',
                     'amount_range_min'      => '',
+                    'amount_range_max'      => '',
+                    'update'                => '0'
+                ],
+                [
+                    'merchant_id'           => '10000000000000',
+                    'product'               => 'primary',
+                    'feature'               => 'payment',
+                    'payment_method'        => 'card',
+                    'payment_method_type'   => 'credit',
+                    'payment_network'       => 'DICL',
+                    'percent_rate'          => '10',
+                    'international'         => '0',
+                    'idempotency_key'       => 'batch_aZtFGiJXmcdLfM',
+                    'amount_range_active'   => '',
+                    'amount_range_min'      => '',
                     'amount_range_max'      => ''
+                ],
+                [
+                    'merchant_id'           => '10000000000000',
+                    'product'               => 'primary',
+                    'feature'               => 'payment',
+                    'payment_method'        => 'card',
+                    'payment_method_type'   => 'credit',
+                    'payment_network'       => 'DICL',
+                    'percent_rate'          => '10',
+                    'international'         => '0',
+                    'idempotency_key'       => 'batch_DxtFGiJXmcdLfM',
+                    'amount_range_active'   => '',
+                    'amount_range_min'      => '',
+                    'amount_range_max'      => '',
+                    'update'                => '1'
+                ],
+                [
+                    'merchant_id'           => '10000000000000',
+                    'product'               => 'primary',
+                    'feature'               => 'payment',
+                    'payment_method'        => 'card',
+                    'payment_method_type'   => 'credit',
+                    'payment_network'       => 'DICL',
+                    'percent_rate'          => '10',
+                    'international'         => '0',
+                    'idempotency_key'       => 'batch_DxtFGiJXmcdLfM',
+                    'amount_range_active'   => '',
+                    'amount_range_min'      => '',
+                    'amount_range_max'      => '',
+                    'update'                => '1'
                 ],
                 [
                     'merchant_id'           => '10000000000000',
@@ -133,7 +179,8 @@ return [
                     'idempotency_key'       => 'batch_DZtFGiJXmcdLfn',
                     'amount_range_active'   => '',
                     'amount_range_min'      => '',
-                    'amount_range_max'      => ''
+                    'amount_range_max'      => '',
+                    'update'                => ''
                 ],
                 [
                     'merchant_id'           => '10000000000000',
@@ -147,7 +194,8 @@ return [
                     'idempotency_key'       => 'batch_DZtFGiJXdcdLaM',
                     'amount_range_active'   => '',
                     'amount_range_min'      => '',
-                    'amount_range_max'      => ''
+                    'amount_range_max'      => '',
+                    'update'                => ''
                 ],
                 [
                     'merchant_id'           => '10000000000000',
@@ -161,7 +209,8 @@ return [
                     'idempotency_key'       => 'batch_DZtFGiJXdcdqaM',
                     'amount_range_active'   => '',
                     'amount_range_min'      => '',
-                    'amount_range_max'      => ''
+                    'amount_range_max'      => '',
+                    'update'                => ''
                 ],
                 [
                     'merchant_id'           => '10000000000000',
@@ -176,6 +225,7 @@ return [
                     'amount_range_active'   => true,
                     'amount_range_min'      => 900,
                     'amount_range_max'      => 1000,
+                    'update'                => ''
                 ],
                 [
                     'merchant_id'           => '10000000000000',
@@ -190,6 +240,7 @@ return [
                     'amount_range_active'   => true,
                     'amount_range_min'      => 1000,
                     'amount_range_max'      => 2000,
+                    'update'                => ''
                 ],
                 [
                     'merchant_id'           => '10000000000000',
@@ -204,6 +255,7 @@ return [
                     'amount_range_active'   => true,
                     'amount_range_min'      => 900,
                     'amount_range_max'      => 1100,
+                    'update'                => ''
                 ],
                 [
                     'merchant_id'           => '10000000000000',
@@ -216,8 +268,9 @@ return [
                     'international'         => '0',
                     'idempotency_key'       => 'batch_DZtFGiJXdcdabc',
                     'amount_range_active'   => false,
-                    'amount_range_min' => '',
-                    'amount_range_max' => '',
+                    'amount_range_min'      => '',
+                    'amount_range_max'      => '',
+                    'update'                => ''
                 ],
             ],
             'url'       => '/pricing/rules/bulk',
@@ -226,7 +279,7 @@ return [
         'response' => [
             'content'   => [
                 'entity'    => 'collection',
-                'count'     => 9,
+                'count'     => 12,
                 'items'     => [
                     [
                         'success'           => true,
@@ -238,6 +291,26 @@ return [
                         'error' => [
                             'description'   => 'The new rule matches with an active existing rule',
                             'code'          => 'BAD_REQUEST_PRICING_RULE_ALREADY_DEFINED'
+                        ]
+                    ],
+                    [
+                        'idempotency_key'   => 'batch_aZtFGiJXmcdLfM',
+                        'success'           => false,
+                        'error' => [
+                            'description'   => 'The new rule matches with an active existing rule',
+                            'code'          => 'BAD_REQUEST_PRICING_RULE_ALREADY_DEFINED'
+                        ]
+                    ],
+                    [
+                        'idempotency_key'   => 'batch_DxtFGiJXmcdLfM',
+                        'success'           => true
+                    ],
+                    [
+                        'idempotency_key'   => 'batch_DxtFGiJXmcdLfM',
+                        'success'           => false,
+                        'error' => [
+                            'description'   => 'The new rule is same as the previous rule',
+                            'code'          => 'BAD_REQUEST_SAME_PRICING_RULE_ALREADY_EXISTS'
                         ]
                     ],
                     [
@@ -311,7 +384,8 @@ return [
                     'idempotency_key'       => 'batch_DZtFGiJXmcdLaM',
                     'amount_range_active'   => '',
                     'amount_range_min'      => '',
-                    'amount_range_max'      => ''
+                    'amount_range_max'      => '',
+                    'update'                => ''
                 ],
                 [
                     'merchant_id'           => '10000000000000',
@@ -325,7 +399,8 @@ return [
                     'idempotency_key'       => 'batch_DZtFGiJXmcdLaM',
                     'amount_range_active'   => '',
                     'amount_range_min'      => '',
-                    'amount_range_max'      => ''
+                    'amount_range_max'      => '',
+                    'update'                => ''
                 ],
                 [
                     'merchant_id'           => '10000000000000',
@@ -339,7 +414,23 @@ return [
                     'idempotency_key'       => 'batch_DZtFGiJXmcdLfM',
                     'amount_range_active'   => '',
                     'amount_range_min'      => '',
-                    'amount_range_max'      => ''
+                    'amount_range_max'      => '',
+                    'update'                => ''
+                ],
+                [
+                    'merchant_id'           => '10000000000000',
+                    'product'               => 'primary',
+                    'feature'               => 'payment',
+                    'payment_method'        => 'card',
+                    'payment_method_type'   => 'credit',
+                    'payment_network'       => 'DICL',
+                    'percent_rate'          => '10',
+                    'international'         => '0',
+                    'idempotency_key'       => 'batch_DxtFGiJXmcdLfM',
+                    'amount_range_active'   => '',
+                    'amount_range_min'      => '',
+                    'amount_range_max'      => '',
+                    'update'                => '1'
                 ]
             ],
             'url'       => '/pricing/rules/bulk',
@@ -348,7 +439,7 @@ return [
         'response' => [
             'content'     => [
                 'entity'    => 'collection',
-                'count'     => 3,
+                'count'     => 4,
                 'items'=> [
                     [
                         'success'           => true,
@@ -365,7 +456,52 @@ return [
                             'description'   => 'The new rule matches with an active existing rule',
                             'code'          => 'BAD_REQUEST_PRICING_RULE_ALREADY_DEFINED'
                         ]
+                    ],
+                    [
+                        'success'           => true,
+                        'idempotency_key'   => 'batch_DxtFGiJXmcdLfM'
                     ]
+                ]
+            ],
+            'status_code'   => 200,
+        ]
+    ],
+
+    'testAddBulkPlanRulesNoReplication' => [
+        'request'  => [
+            'content' => [
+                [
+                    'merchant_id'           => '10000000000000',
+                    'product'               => 'primary',
+                    'feature'               => 'payment',
+                    'payment_method'        => 'card',
+                    'payment_method_type'   => 'credit',
+                    'payment_network'       => 'DICL',
+                    'percent_rate'          => '1000',
+                    'international'         => '0',
+                    'idempotency_key'       => 'batch_DZtFGiJXmcdLaM',
+                    'amount_range_active'   => '',
+                    'amount_range_min'      => '',
+                    'amount_range_max'      => '',
+                    'update'                => '1'
+                ]
+            ],
+            'url'       => '/pricing/rules/bulk',
+            'method'    => 'POST',
+        ],
+        'response' => [
+            'content'     => [
+                'entity'    => 'collection',
+                'count'     => 1,
+                'items'=> [
+                    [
+                        'idempotency_key'   => 'batch_DZtFGiJXmcdLaM',
+                        'success'           => false,
+                        'error' => [
+                            'description'   => 'The new rule is same as the previous rule',
+                            'code'          => 'BAD_REQUEST_SAME_PRICING_RULE_ALREADY_EXISTS'
+                        ]
+                    ],
                 ]
             ],
             'status_code'   => 200,

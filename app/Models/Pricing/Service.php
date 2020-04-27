@@ -64,11 +64,19 @@ class Service extends Base\Service
         foreach ($input as $item)
         {
             $idempotencyKey = $item['idempotency_key'];
+            $shouldUpdate = isset($item['update']) ? $item['update'] : false;
             try
             {
-                $result = $this->repo->transactionOnLiveAndTest(function () use ($item, $idempotencyKey)
+                $result = $this->repo->transactionOnLiveAndTest(function () use ($item, $idempotencyKey, $shouldUpdate)
                 {
                     $merchant = $this->repo->merchant->findByPublicId($item[Entity::MERCHANT_ID]);
+
+                    unset($item[Entity::MERCHANT_ID], $item['idempotency_key'], $item['update']);
+
+                    array_walk($item, function (&$value, &$key)
+                    {
+                        $value = $value === '' ? null : $value;
+                    });
 
                     $planId = $merchant->getPricingPlanId();
 
@@ -76,14 +84,9 @@ class Service extends Base\Service
 
                     $ruleOrgId = $plan->getOrgId();
 
-                    unset($item[Entity::MERCHANT_ID], $item['idempotency_key']);
 
-                    array_walk($item, function (&$value, &$key)
-                    {
-                        $value = $value === '' ? null : $value;
-                    });
-
-                    if (((new Pricing\Repository)->getPricingRuleByMultipleParams(
+                    /** @var Pricing\Entity $existingRule */
+                    $existingRule = (new Pricing\Repository)->getPricingRuleByMultipleParams(
                         $planId,
                         $item[Entity::PRODUCT],
                         $item[Pricing\Entity::FEATURE],
@@ -91,8 +94,11 @@ class Service extends Base\Service
                         $item[Pricing\Entity::PAYMENT_METHOD_TYPE],
                         $item[Pricing\Entity::PAYMENT_NETWORK],
                         $item[Pricing\Entity::INTERNATIONAL],
-                        0)) === null)
+                        0);
+
+                    if ($existingRule === null)
                     {
+                        // replicates pricing plan if more than one merchants are using it.
                         if (($this->repo->merchant->fetchMerchantsCountWithPricingPlanId($planId)) !== 1)
                         {
                             $plan = $this->replicatePlanAndAssign($merchant, $plan);
@@ -102,10 +108,58 @@ class Service extends Base\Service
 
                         (new Pricing\Core)->addPlanRule($plan, $item, $ruleOrgId);
                     }
+                    else if (filter_var($shouldUpdate, FILTER_VALIDATE_BOOLEAN) === true)
+                    {
+                        $editRulekeys = [
+                                            Entity::PERCENT_RATE,
+                                            Entity::FIXED_RATE,
+                                            Entity::MIN_FEE,
+                                            Entity::MAX_FEE,
+                                            Entity::FEE_BEARER
+                        ];
+
+                        $rule = array_filter($item, function ($k) use ($editRulekeys)
+                                            {
+                                                if (in_array($k, $editRulekeys, true) === true)
+                                                {
+                                                    return true;
+                                                }
+
+                                                return false;
+                                            },
+                                            ARRAY_FILTER_USE_KEY);
+
+                        // Updates pricing rule only if it has been changed,
+                        // so that plans aren't replicated unnecessarily
+                        if(empty(array_diff_assoc($rule, $existingRule->toArray())) === false)
+                        {
+                            if (($this->repo->merchant->fetchMerchantsCountWithPricingPlanId($planId)) !== 1)
+                            {
+                                $plan = $this->replicatePlanAndAssign($merchant, $plan);
+
+                                $planId = $plan->getId();
+                            }
+                            $existingRule = (new Pricing\Repository)->getPricingRuleByMultipleParams(
+                                $planId,
+                                $item[Entity::PRODUCT],
+                                $item[Pricing\Entity::FEATURE],
+                                $item[Pricing\Entity::PAYMENT_METHOD],
+                                $item[Pricing\Entity::PAYMENT_METHOD_TYPE],
+                                $item[Pricing\Entity::PAYMENT_NETWORK],
+                                $item[Pricing\Entity::INTERNATIONAL],
+                                0);
+
+                            (new Pricing\Core)->editPlanRule($planId, $existingRule->getId(), $rule);
+                        }
+                        else
+                        {
+                            throw new BadRequestException(ErrorCode::BAD_REQUEST_SAME_PRICING_RULE_ALREADY_EXISTS);
+                        }
+                    }
                     else
                     {
                         $this->trace->error(TraceCode::PRICING_RULE_ALREADY_DEFINED,
-                            ['pricing_rule' => $item]);
+                                            ['pricing_rule' => $item]);
 
                         throw new BadRequestException(ErrorCode::BAD_REQUEST_PRICING_RULE_ALREADY_DEFINED);
                     }

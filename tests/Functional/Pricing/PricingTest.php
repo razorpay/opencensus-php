@@ -955,6 +955,18 @@ class PricingTest extends TestCase
         $this->assertEquals($response['items'][0]['plan_id'],$response['items'][1]['plan_id']);
     }
 
+    // this test makes sure that pricing plan isn't replicated if the pricing rule that we're adding is same as before.
+    public function testAddBulkPlanRulesNoReplication()
+    {
+        $content = $this->assignPricingPlanToMerchant();
+
+        $this->fixtures->merchant->edit('1ApiFeeAccount', ['pricing_plan_id' => $content['id']]);
+
+        $this->ba->batchAuth();
+
+        $response = $this->startTest();
+    }
+
     public function testDeletePricingPlanRule()
     {
         $this->ba->adminAuth();
