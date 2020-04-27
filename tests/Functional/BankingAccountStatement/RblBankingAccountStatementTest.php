@@ -2196,4 +2196,56 @@ class RblBankingAccountStatementTest extends TestCase
         $this->assertEquals($this->txnEntity->getPublicId(), $response['id']);
         $this->assertEquals($this->txnEntity['amount'], $response['amount']);
     }
+
+    public function testAccountStatementLastUpdatedAtInBankingAccountsApi()
+    {
+        $oldDateTime = Carbon::create(2019, 07, 21, 12, 23, 41, Timezone::IST);
+
+        Carbon::setTestNow($oldDateTime);
+
+        // account statement fetch cron
+        $mockedResponse = $this->getRblDataResponse();
+
+        $this->setMozartMockResponse($mockedResponse);
+
+        $this->runBankingAccountStatementFetchCron();
+
+        $this->ba->proxyAuth();
+
+        $request = [
+            'url'     => '/banking_accounts',
+            'method'  => 'GET',
+            'content' => [],
+        ];
+
+        $observedResponse = $this->makeRequestAndGetContent($request);
+
+        $observedResponse = array_filter($observedResponse['items'],function($item){
+            return $item['channel'] === 'rbl';
+        });
+
+        $observedResponse = reset($observedResponse);
+
+        $expectedResponse = [
+            'id'             => 'bacc_' . 'xba00000000001',
+            'channel'        => "rbl",
+            'merchant_id'    => "10000000000000",
+            'account_number' => "2224440041626905",
+            'balance'        => [
+                'id'             => $this->bankingBalance->getId(),
+                'balance'        => 11355,
+                'currency'       => "INR",
+                'locked_balance' => 0,
+            ],
+            'fee_recovery_details' => [
+                'outstanding_amount' => 0,
+                'last_deducted_at'   => null,
+            ],
+            'account_statement_last_updated_at' => stringify($oldDateTime->getTimestamp()),
+        ];
+
+        $this->assertArraySelectiveEquals($expectedResponse, $observedResponse);
+
+        Carbon::setTestNow();
+    }
 }

@@ -44,6 +44,8 @@ class Entity extends Base\PublicEntity
     const GATEWAY_BALANCE                   = 'gateway_balance';
     const BALANCE_LAST_FETCHED_AT           = 'balance_last_fetched_at';
 
+    const ACCOUNT_STATEMENT_LAST_UPDATED_AT = 'account_statement_last_updated_at';
+
     // For tracking Last statement fetch attempt for merchant
     // This field is being used to schedule merchant next fetch using cron
     const LAST_STATEMENT_ATTEMPT_AT = 'last_statement_attempt_at';
@@ -245,6 +247,7 @@ class Entity extends Base\PublicEntity
         self::BANKING_ACCOUNT_DETAILS,
         self::BALANCE,
         self::FEE_RECOVERY_DETAILS,
+        self::ACCOUNT_STATEMENT_LAST_UPDATED_AT,
     ];
 
     protected $relations = [
@@ -256,6 +259,7 @@ class Entity extends Base\PublicEntity
         self::BALANCE,
         self::BANKING_ACCOUNT_DETAILS,
         self::FEE_RECOVERY_DETAILS,
+        self::ACCOUNT_STATEMENT_LAST_UPDATED_AT,
     ];
 
     // ---------------------------- Setters ----------------------------------- //
@@ -584,6 +588,22 @@ class Entity extends Base\PublicEntity
                 Balance\Entity::CURRENCY,
                 Balance\Entity::LOCKED_BALANCE,
             ]);
+    }
+
+    public function setPublicAccountStatementLastUpdatedAtAttribute(array & $array)
+    {
+        if (app('basicauth')->isProxyAuth() === true)
+        {
+            /** @var Balance\Entity $balance */
+            $balance = optional($this->balance);
+
+            if (($balance->isAccountTypeDirect() === true) and
+                ($balance->isTypeBanking() === true) and
+                ($balance->getChannel() === Channel::RBL))
+            {
+                $array[self::ACCOUNT_STATEMENT_LAST_UPDATED_AT] = $balance->getLastFetchedAtAttribute();
+            }
+        }
     }
 
     /**
