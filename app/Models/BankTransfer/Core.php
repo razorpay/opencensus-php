@@ -4,6 +4,7 @@ namespace RZP\Models\BankTransfer;
 
 use Config;
 
+use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Order;
 use RZP\Models\Payment;

@@ -2692,6 +2692,11 @@ class Processor
 
         $orderNotes = $this->order->getNotes()->toArray();
 
+        if($payment->isBankTransfer() === true)
+        {
+            $payment->setNotes($orderNotes);
+        }
+
         $payment->setIntegrationMetadataUsingNotes($orderNotes);
     }
 

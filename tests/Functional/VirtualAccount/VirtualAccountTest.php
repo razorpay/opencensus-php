@@ -1971,4 +1971,25 @@ class VirtualAccountTest extends TestCase
 
         return $bankAccount;
     }
+
+    public function testVirtualAccountPaymentForOrderWithNotes()
+    {
+        $order = $this->fixtures->create('order', ['notes' => ['key' => 'value']]);
+
+        $virtualAccount = $this->createVirtualAccountForOrder($order);
+
+        $this->payVirtualAccount($virtualAccount['id'], ['amount' => 10000]);
+
+        $bankTransfer = $this->getLastEntity('bank_transfer', true);
+        $this->assertEquals($virtualAccount['id'], $bankTransfer['virtual_account_id']);
+
+        $order = $this->getLastEntity('order', true);
+        $this->assertEquals('paid', $order['status']);
+
+        // Payment is automatically captured
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals($bankTransfer['payment_id'], $payment['id']);
+        $this->assertEquals($payment['notes'], ['key' => 'value']);
+        $this->assertEquals('bank_transfer', $payment['method']);
+    }
 }
