@@ -140,15 +140,35 @@ class Gateway extends Base\Gateway
     {
         parent::action($input, Action::VALIDATE_VPA);
 
-        $request = $this->getValidateVpaRequest($input);
+        $request = [
+            'terminal' =>  $this->terminal,
+            'payment' => [
+                'id' => random_alpha_string(10),
+                'vpa' => $input['vpa'],
+            ],
+        ];
 
-        $response = $this->sendGatewayRequest($request);
+        $this->trace->info('GATEWAY_VALIDATE_VPA_REQUEST',
+            [
+                'encrypted'  => false,
+                'vpa'        => $request['payment']['vpa'],
+                'gateway'    => $this->gateway,
+            ]);
 
-        $responseContent = $this->parseGatewayResponse($response->body, TraceCode::GATEWAY_VALIDATE_VPA_RESPONSE);
+        $response = $this->sendMozartRequest($request);
 
-        $this->checkResponseStatus($responseContent[ResponseFields::STATUS]);
+        $response = $response["data"]["gateway_response"];
 
-        return $this->returnValidateVpaResponse($responseContent);
+        $this->trace->info(TraceCode::GATEWAY_VALIDATE_VPA_RESPONSE,
+            [
+                'encrypted'  => false,
+                'response'   => $response,
+                'gateway'    => $this->gateway,
+            ]);
+
+        $this->checkResponseStatus($response[ResponseFields::STATUS]);
+
+        return $this->returnValidateVpaResponse($response);
     }
 
     private function assertPaymentIdAndAmount(array $input, array $response)
@@ -190,22 +210,6 @@ class Gateway extends Base\Gateway
         $this->updateGatewayPaymentEntity($verify->payment, $entityData);
 
         $this->setVerifyStatus($verify);
-    }
-
-    private function getValidateVpaRequest(array $payment): array
-    {
-        $content = [
-            RequestFields::REQUEST_INFO => [
-                RequestFields::PG_MERCHANT_ID => $this->getMerchantId(),
-                RequestFields::PSP_REFERENCE_NO => random_alpha_string(10),
-            ],
-            RequestFields::PAYEE_TYPE => [
-                RequestFields::VIRTUAL_ADDRESS => $payment[Payment\Entity::VPA]
-            ],
-            RequestFields::VA_REQUEST_TYPE => Constants::VA_REQUEST_TYPE
-        ];
-
-        return $this->getStandardRequestArray($content);
     }
 
     /**

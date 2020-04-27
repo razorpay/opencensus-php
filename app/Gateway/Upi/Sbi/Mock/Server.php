@@ -48,23 +48,11 @@ class Server extends Base\Mock\Server
 
     public function validateVpa($input)
     {
-        if (isset($input['grant_type']) === true)
-        {
-            return $this->getOauthToken();
-        }
-
-        $request = $this->decrypt(json_decode($input, true)['requestMsg']);
-
-        $this->validateActionInput($request, Action::VALIDATE_VPA);
+        $request = json_decode($input, true);
 
         $response = $this->getValidateVpaResponseArray($request);
 
-        $content = [
-            ResponseFields::RESPONSE       => $this->encrypt($response),
-            ResponseFields::PG_MERCHANT_ID => $this->getGatewayInstance()->getMerchantId()
-        ];
-
-        return $this->makeResponse($content);
+        return $this->makeResponse($response);
     }
 
     public function getAsyncCallbackContent(array $upiEntity)
@@ -144,9 +132,11 @@ class Server extends Base\Mock\Server
 
     private function getValidateVpaResponseArray(array $input)
     {
-        $paymentId = $input[RequestFields::REQUEST_INFO][RequestFields::PSP_REFERENCE_NO];
+        $input = $input["entities"];
 
-        $vpa = $input[RequestFields::PAYEE_TYPE][RequestFields::VIRTUAL_ADDRESS];
+        $paymentId = $input['payment']['id'];
+
+        $vpa = $input['payment']['vpa'];
 
         $response = [
             ResponseFields::REQUEST_INFO => [
@@ -171,6 +161,8 @@ class Server extends Base\Mock\Server
             $response[ResponseFields::STATUS] = 'T';
             $response[ResponseFields::STATUS_DESCRIPTION] = 'Timeout';
         }
+
+        $response["data"]["gateway_response"] = $response;
 
         return $response;
     }

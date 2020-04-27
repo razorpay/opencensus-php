@@ -1833,7 +1833,7 @@ class Gateway
 
         $attributes = $this->getMappedAttributes($responseBody['data']);
 
-        if (in_array(snake_case($this->action), [Action::VERIFY, Action::VERIFY_REFUND]) === true)
+        if (in_array(snake_case($this->action), [Action::VERIFY, Action::VERIFY_REFUND, Action::VALIDATE_VPA]) === true)
         {
             return $responseBody;
         }
