@@ -6979,11 +6979,11 @@ trait Authorize
                 break;
 
             case IFSC::KKBK:
-                $accountNumber = str_pad($accountNumber, 14, '0', STR_PAD_LEFT );
+                $accountNumber = str_pad($accountNumber, 10, '0', STR_PAD_LEFT );
                 break;
 
             case IFSC::CBIN:
-                $accountNumber = str_pad($accountNumber, 10, '0', STR_PAD_LEFT );
+                $accountNumber = str_pad($accountNumber, 17, '0', STR_PAD_LEFT );
                 break;
 
             default:

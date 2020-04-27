@@ -1676,7 +1676,7 @@ class PaymentCreateTest extends TestCase
             (function ($gateway,$action,$input,$mode)
             {
                 $length = strlen($input['order']['account_number']);
-                $this->assertEquals(14, $length);
+                $this->assertEquals(10, $length);
             });
 
         $this->app->instance('gateway', $gateway);
