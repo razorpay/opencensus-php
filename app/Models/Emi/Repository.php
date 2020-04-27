@@ -54,7 +54,23 @@ class Repository extends Base\Repository
         return $query->get();
     }
 
-    public function fetchByDurationsAndBankOrNetwork(array $durations = [], string $bank = null, string $network = null)
+
+    /**
+     *Description:- Method to fetch emi plans based on durations, bank, network, type
+     *
+     * @param array $durations
+     * @param string|null $bank
+     * @param string|null $network
+     * @param string|null $type | payment method type (credit, debit)
+     *
+     * final query if everything is not null:-
+     * select * from emil_plans where duration in($durations) and bank = $bank
+     * and network = $network and type = $type
+     *
+     * @return list of emi_plans
+     */
+
+    public function fetchByParams(array $durations = [], string $bank = null, string $network = null, string $type = null)
     {
         $query = $this->newQuery();
 
@@ -71,6 +87,11 @@ class Repository extends Base\Repository
         if (empty($network) === false)
         {
             $query->where(Entity::NETWORK, $network);
+        }
+
+        if (empty($type) === false)
+        {
+            $query->where(Entity::TYPE, $type);
         }
 
         return $query->get();

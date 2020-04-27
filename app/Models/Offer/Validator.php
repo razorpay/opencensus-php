@@ -379,9 +379,20 @@ class Validator extends Base\Validator
 
         $network = $input[Entity::PAYMENT_NETWORK] ?? null;
 
+        $type = $input[Entity::PAYMENT_METHOD_TYPE] ?? null;
+
+        //in case of emi PAYMENT_METHOD_TYPE comes as null
+        //as of now only credit is supported so added type credit for emi
+
+        if (($type === null) and
+             ($input[Entity::PAYMENT_METHOD] === 'emi'))
+        {
+            $type = 'credit';
+        }
+
         $emiDurations = $input[Entity::EMI_DURATIONS] ?? [];
 
-        $requiredMinAmount = (new Emi\Core)->calculateMinAmountForPlans($emiDurations, $bank, $network);
+        $requiredMinAmount = (new Emi\Core)->calculateMinAmountForPlans($emiDurations, $bank, $network, $type);
 
         if ($minAmount < $requiredMinAmount)
         {

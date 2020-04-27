@@ -21,9 +21,16 @@ class Core extends Base\Core
         return $emiPlan;
     }
 
-    public function calculateMinAmountForPlans(array $durations = [], string $bank = null, string $network = null): int
+    /**
+     * @param array $durations
+     * @param string|null $bank
+     * @param string|null $network
+     * @param string|null $type | payment method type (credit, debit)
+     * @return int | minAmount
+     */
+    public function calculateMinAmountForPlans(array $durations = [], string $bank = null, string $network = null, string $type = null): int
     {
-        $emiPlans = $this->repo->emi_plan->fetchByDurationsAndBankOrNetwork($durations, $bank, $network);
+        $emiPlans = $this->repo->emi_plan->fetchByParams($durations, $bank, $network, $type);
 
         $minAmounts =  $emiPlans->map(function($emiPlan) {
             return Calculator::calculateMinAmount($emiPlan->getMinAmount(), $emiPlan->getMerchantPayback());

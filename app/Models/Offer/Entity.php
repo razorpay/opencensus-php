@@ -579,7 +579,18 @@ class Entity extends Base\PublicEntity
 
         $emiDurations = $input[self::EMI_DURATIONS] ?? [];
 
-        $minAmount = (new Emi\Core)->calculateMinAmountForPlans($emiDurations, $bank, $network);
+        $type = $input[Entity::PAYMENT_METHOD_TYPE] ?? null;
+
+        //in case of emi PAYMENT_METHOD_TYPE comes as null
+        //as of now only credit is supported so added type credit for emi
+
+        if (($type === null) and
+             ($input[Entity::PAYMENT_METHOD] === 'emi'))
+        {
+            $type = 'credit';
+        }
+
+        $minAmount = (new Emi\Core)->calculateMinAmountForPlans($emiDurations, $bank, $network, $type);
 
         $this->setAttribute(self::MIN_AMOUNT, $minAmount);
     }
