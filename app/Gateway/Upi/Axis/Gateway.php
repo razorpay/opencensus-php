@@ -601,9 +601,9 @@ class Gateway extends Base\Gateway
 
         $content = $input['gateway'];
 
-        $traceContent = $content;
-
-        unset($traceContent[Fields::CUSTOMER_VPA]);
+        $traceContent = $this->maskUpiDataForTracing($content, [
+            Entity::VPA => Fields::CUSTOMER_VPA,
+        ]);
 
         $this->trace->info(TraceCode::GATEWAY_PAYMENT_CALLBACK, [
             'gateway'           => $this->gateway,
@@ -943,9 +943,9 @@ class Gateway extends Base\Gateway
         {
             $content = $this->jsonToArray($responseBody);
 
-            $trace['content'] = $content;
-
-            unset($trace['content'][Fields::CHECK_STATUS_DEBIT_VPA]);
+            $trace['content'] = $this->maskUpiDataForTracing($content, [
+                Entity::VPA => Fields::CHECK_STATUS_DEBIT_VPA,
+            ]);
 
             $this->trace->info(TraceCode::GATEWAY_RESPONSE, $trace);
 

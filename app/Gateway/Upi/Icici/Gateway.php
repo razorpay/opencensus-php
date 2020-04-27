@@ -458,9 +458,10 @@ class Gateway extends Base\Gateway
 
         $request = $this->getStandardRequestArray($content);
 
-        $traceData = $data;
-
-        unset($traceData[Fields::PAYER_ACCOUNT], $traceData[Fields::PAYER_VA]);
+        $traceData = $this->maskUpiDataForTracing($data, [
+            Entity::VPA             => Fields::PAYER_VA,
+            Entity::ACCOUNT_NUMBER  => Fields::PAYER_ACCOUNT,
+        ]);
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_REQUEST,
@@ -972,9 +973,9 @@ class Gateway extends Base\Gateway
     {
         $response = $this->parseGatewayResponse($body, true);
 
-        $traceResponse = $response;
-
-        unset($traceResponse[Fields::PAYER_VA]);
+        $traceResponse = $this->maskUpiDataForTracing($response, [
+            Entity::VPA             => Fields::PAYER_VA,
+        ]);
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_CALLBACK,

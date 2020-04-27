@@ -404,10 +404,15 @@ class Gateway extends Base\Gateway
 
         $response = $this->getDecryptedPayload($encryptedResponse);
 
+        $traceResponse = $this->maskUpiDataForTracing($response, [
+            Base\Entity::VPA    => ResponseFields::PAYEE_TYPE . '.' . ResponseFields::VIRTUAL_ADDRESS,
+            Base\Entity::NAME   => ResponseFields::PAYEE_TYPE . '.' . ResponseFields::NAME,
+        ]);
+
         $this->trace->info($traceCode,
             [
                 'encrypted'  => false,
-                'response'   => $response,
+                'response'   => $traceResponse,
                 'gateway'    => $this->gateway,
             ]);
 
@@ -512,10 +517,14 @@ class Gateway extends Base\Gateway
 
         $callback = $this->getDecryptedPayload($response);
 
+        $traceCallback = $this->maskUpiDataForTracing($callback, [
+            Base\Entity::VPA    => ResponseFields::PAYER_VPA,
+        ]);
+
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_CALLBACK,
             [
-                'decrypted_data' => $callback,
+                'decrypted_data' => $traceCallback,
                 'payment_id'     => $callback[ResponseFields::API_RESPONSE][ResponseFields::PSP_REFERENCE_NO]
             ]);
 

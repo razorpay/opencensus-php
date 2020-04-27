@@ -476,10 +476,11 @@ class Gateway extends Base\Gateway
                 ]);
         }
 
-        $traceResult = $result;
-
-        unset($traceResult[ResponseFields::PAYER_VA], $traceResult[ResponseFields::PHONE_NUMBER], $traceResult[ResponseFields::ACCOUNT_NUMBER]);
-
+        $traceResult = $this->maskUpiDataForTracing($result, [
+            Entity::VPA             => ResponseFields::PAYER_VA,
+            Entity::CONTACT         => ResponseFields::PHONE_NUMBER,
+            Entity::ACCOUNT_NUMBER  => ResponseFields::ACCOUNT_NUMBER,
+        ]);
 
         $this->trace->info(TraceCode::GATEWAY_RESPONSE, [
             'body'              => $responseBody,
@@ -522,9 +523,11 @@ class Gateway extends Base\Gateway
             assertTrue($content[ResponseFields::UPI_TXN_ID] === $gatewayPayment->getGatewayPaymentId());
         }
 
-        $traceContent = $content;
-
-        unset($traceContent[ResponseFields::PAYER_VA], $traceContent[ResponseFields::PHONE_NUMBER], $traceContent[ResponseFields::ACCOUNT_NUMBER]);
+        $traceContent = $this->maskUpiDataForTracing($content, [
+            Entity::VPA             => ResponseFields::PAYER_VA,
+            Entity::CONTACT         => ResponseFields::PHONE_NUMBER,
+            Entity::ACCOUNT_NUMBER  => ResponseFields::ACCOUNT_NUMBER,
+        ]);
 
         $this->trace->info(TraceCode::GATEWAY_RESPONSE, [
             'parsed'            => $traceContent,
@@ -962,10 +965,15 @@ class Gateway extends Base\Gateway
 
         $request = $this->getStandardRequestArray($content);
 
+        $traceData = $this->maskUpiDataForTracing($data, [
+            // Vpa is at third position
+            Entity::VPA => 2,
+        ]);
+
         $this->trace->info(
             TraceCode::GATEWAY_SUPPORT_REQUEST,
             [
-                'decrypted_content' => $data,
+                'decrypted_content' => $traceData,
                 'encrypted'         => $content,
                 'gateway'           => $this->gateway,
                 'action'            => Action::VALIDATE_VPA,

@@ -964,3 +964,26 @@ if (!function_exists('mask_email'))
         return $maskedEmail;
     }
 }
+
+if (!function_exists('mask_vpa'))
+{
+    /**
+     * For VPA we do not need to mask the PSP Code
+     * We only need to mask the username
+     * @param string|null $vpa
+     * @return string|null
+     */
+    function mask_vpa(string $vpa = null)
+    {
+        if (empty($vpa) === true)
+        {
+            return null;
+        }
+        $exploded = explode('@', $vpa);
+        // Note last4 do not come in to PII
+        // First pad the username to not give the VPA size
+        $username = str_pad($exploded[0], 10, '*', STR_PAD_LEFT);
+
+        return mask_except_last4($username, '*') . '@' . ($exploded[1] ?? '');
+    }
+}
