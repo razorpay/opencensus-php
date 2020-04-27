@@ -632,6 +632,7 @@ return [
             ],
         ],
     ],
+
     'testEmandateCaptureWithZeroBalance' => [
         'response' => [
             'content' => [
@@ -719,6 +720,101 @@ return [
     ],
 
     'testEmandateCaptureWithFeeCreditsAndReserveBalance' => [
+        'response' => [
+            'content' => [
+                'status' => 'captured',
+                'amount' => 0
+            ],
+        ],
+    ],
+
+    'testNachCaptureWithSufficientBalance' => [
+        'response' => [
+            'content' => [
+                'status' => 'captured',
+                'amount' => 0
+            ],
+        ],
+    ],
+
+    'testNachCaptureWithZeroBalance' => [
+        'response' => [
+            'content' => [
+                'status' => 'captured',
+                'amount' => 0
+            ],
+        ],
+    ],
+
+    'testNachCaptureWithZeroBalanceWithAutoRecurringType' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::SERVER_ERROR,
+                    'description' => 'The server encountered an error. The incident has been reported to admins.',
+                ],
+            ],
+            'status_code' => 500,
+        ],
+        'exception' => [
+            'class'                  => 'RZP\Exception\LogicException',
+            'internal_error_code'   => ErrorCode::SERVER_ERROR_LOGICAL_ERROR,
+        ]
+    ],
+
+    'testNachCaptureWithNegativeAndReserveBalance' => [
+        'response' => [
+            'content' => [
+                'status' => 'captured',
+                'amount' => 0
+            ],
+        ],
+    ],
+
+    'testNachCaptureWithSufficientFeeCredits' => [
+        'response' => [
+            'content' => [
+                'status' => 'captured',
+                'amount' => 0
+            ],
+        ],
+    ],
+
+    'testNachCaptureWithNegativeBalance' => [
+        'response' => [
+            'content' => [
+                'status' => 'captured',
+                'amount' => 0
+            ],
+        ],
+    ],
+
+    'testNachCaptureWithNegativeBalanceCrossingThreshold' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Bad request',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'                  => 'RZP\Exception\BadRequestException',
+            'internal_error_code'   => ErrorCode::BAD_REQUEST_NEGATIVE_BALANCE_BREACHED,
+        ]
+    ],
+
+    'testNachCaptureWithInSufficientFeeCredits' => [
+        'response' => [
+            'content' => [
+                'status' => 'captured',
+                'amount' => 0
+            ],
+        ],
+    ],
+
+    'testNachCaptureWithFeeCreditsAndReserveBalance' => [
         'response' => [
             'content' => [
                 'status' => 'captured',

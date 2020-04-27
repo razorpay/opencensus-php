@@ -1516,6 +1516,25 @@ trait PaymentTrait
         return $payment;
     }
 
+    protected function getNachNetbankingRecurringPaymentArray($bank = 'HDFC', $amount = 4000)
+    {
+        $payment = $this->getDefaultPaymentArray();
+        unset($payment['card']);
+
+        $payment['bank'] = $bank;
+        $payment['amount'] = $amount;
+
+
+        $payment['amount'] = 0;
+
+        $payment['method'] = Payment\Method::NACH;
+        $payment['auth_type'] = Payment\AuthType::NETBANKING;
+
+        $payment['customer_id'] = 'cust_100000customer';
+
+        return $payment;
+    }
+
     protected function getOtmInitialPaymentArray()
     {
         $payment = $this->getDefaultUpiPaymentArray();

@@ -266,8 +266,7 @@ class Core extends Base\Core
 
         $mode = $this->mode ?? 'live';
 
-        $response = $this->app->razorx->getTreatment($merchantId, self::NEGATIVE_BALANCE_FEATURE,
-            $mode);
+        $response = $this->app->razorx->getTreatment($merchantId, self::NEGATIVE_BALANCE_FEATURE, $mode);
 
         $this->trace->info(TraceCode::NEGATIVE_BALANCE_RAZORX_RESPONSE,
             [

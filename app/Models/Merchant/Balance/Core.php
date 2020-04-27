@@ -47,6 +47,11 @@ class Core extends Base\Core
         ],
     ];
 
+    const NEGATIVE_BALANCE_ALLOWED_PAYMENT_METHODS = [
+        Payment\Method::EMANDATE,
+        Payment\Method::NACH,
+    ];
+
     /**
      * @param Merchant\Entity $merchant
      * @param array           $input
@@ -668,7 +673,7 @@ class Core extends Base\Core
         $balanceType = $this->getTransactionBalanceType($txn);
 
         // If the Transaction Type is Payment, then we only allow Negative Balance for
-        // E-Mandate Registrations (Recurring type: Initital, not second recurring).
+        // E-Mandate/Nach Registrations
         if ($txn->getType() === Transaction\Type::PAYMENT)
         {
             if ($txn->source === null)
@@ -678,9 +683,9 @@ class Core extends Base\Core
 
             $payment = $txn->source;
 
-            if (($payment->getMethod() !== Payment\Method::EMANDATE) or
-                (($payment->getMethod() === Payment\Method::EMANDATE) and
-                    ($payment->isRecurringTypeInitial() === false)))
+            // Only allowed for E-Mandate/Nach Registerations: (Recurring type: Initital, not second recurring).
+            if ((in_array($payment->getMethod() , self::NEGATIVE_BALANCE_ALLOWED_PAYMENT_METHODS) === false) or
+                ($payment->isRecurringTypeInitial() === false))
             {
                 return $negativeLimit;
             }
