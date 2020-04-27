@@ -28,6 +28,8 @@ class NetbankingVijayaCombinedFileTest extends TestCase
         parent::setUp();
 
         $this->terminal = $this->fixtures->create('terminal:shared_netbanking_vijaya_terminal');
+
+        $this->markTestSkipped();
     }
 
     public function testNetbankingVijayaCombinedFile()

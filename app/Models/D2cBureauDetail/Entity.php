@@ -102,7 +102,7 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::VERIFIED_AT, null);
     }
 
-    public function getContactMobile(): string
+    public function getContactMobile()
     {
         return $this->getAttribute(self::CONTACT_MOBILE);
     }
