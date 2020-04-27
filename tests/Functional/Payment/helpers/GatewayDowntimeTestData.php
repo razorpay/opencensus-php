@@ -1382,4 +1382,27 @@ return [
             'withoutTerminal' => '{"method":  "upi", "gateway":  "upi_mindgate"}',
         ],
     ],
+
+    'testVajraErrorViaSourceWebhook' => [
+        'request' => [
+            'content' => [
+                'evalMatches' =>
+                    [
+                        [
+                            'value'  => 58.45,
+                            'metric' => 'Total Success Rate',
+                            'tags'   => [],
+                        ],
+                    ],
+                'message'  => null,
+                'ruleId'   => 242,
+                'ruleName' => 'Total Success  Rate is less then 80',
+                'ruleUrl'  => 'https://vajra.razorpay.com/d/XmyC-WYmz/prod-payments-success-rate?fullscreen=true&edit=true&tab=alert&panelId=2&orgId=1',
+                'state'    => 'alerting',
+                'title'    => '[Alerting] Total Success  Rate is less then 80',
+            ],
+            'method' => 'POST',
+            'url' => '/gateway/downtimes/vajra/webhook'
+        ],
+    ],
 ];

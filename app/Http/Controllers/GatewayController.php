@@ -915,7 +915,11 @@ class GatewayController extends Controller
      */
     public function postGatewayDowntimeVajraWebhook(Downtime\Service $service)
     {
-        return $this->postGatewayDowntimeWebhook($service, Downtime\Source::VAJRA);
+        $input = Request::all();
+
+        $data = $service->processGatewayDowntimeVajraWebhook($input);
+
+        return ApiResponse::json($data);
     }
 
     /**

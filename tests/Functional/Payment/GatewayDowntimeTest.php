@@ -1072,6 +1072,22 @@ class GatewayDowntimeTest extends TestCase
         $this->assertNotNull($downtimeWithTerminalEntity['end']);
     }
 
+    public function testVajraErrorViaSourceWebhook()
+    {
+        $this->createUpiTerminals();
+
+        $this->ba->appAuth();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        try {
+            $this->startTest($testData);
+        }
+        catch(\Throwable $e) {
+            $this->assertEquals('vajra downtime is not created through this webhook.', $e->getMessage());
+        }
+    }
+
     public function testGatewayCreateOverlappingDowntimeViaDashboard1()
     {
         $request = $this->getDowntimeCreationRequest();

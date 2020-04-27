@@ -3,6 +3,7 @@
 namespace RZP\Models\Gateway\Downtime;
 
 use RZP\Models\Admin\Query\Validator;
+use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Models\Payment\Method;
@@ -71,7 +72,28 @@ class Service extends Base\Service
     {
         $this->setMode();
 
+        if (strtoupper($source) === Source::VAJRA)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                $source . ' downtime is not created through this webhook.');
+        }
+
         $processor = new Webhook\Processor($source);
+
+        $this->trace->info(TraceCode::GATEWAY_DOWNTIME_WEBHOOK, $input);
+
+        $processor->validate($input);
+
+        $data = $processor->process($input);
+
+        return $data;
+    }
+
+    public function processGatewayDowntimeVajraWebhook(array $input)
+    {
+        $this->setMode();
+
+        $processor = new Webhook\Processor(Source::VAJRA);
 
         $this->trace->info(TraceCode::GATEWAY_DOWNTIME_WEBHOOK, $input);
 
