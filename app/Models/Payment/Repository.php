@@ -366,6 +366,27 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    /**
+     * This function will fetch all the payments using the refund_at
+     * column and the timestamp provided.
+     * @param int $timestamp*
+     * @return Base\PublicCollection
+     */
+    public function getAuthorizedPaymentsToBeRefundedUsingRefundAt(
+        int $timestamp
+    ): Base\PublicCollection
+    {
+        $refundAt = $this->repo->payment->dbColumn(Payment\Entity::REFUND_AT);
+
+        $query = $this->newQuery()
+                      ->select($this->dbColumn('*'))
+                      ->where($refundAt, '<=', $timestamp)
+                      ->orderBy($refundAt, 'DESC')
+                      ->limit(1000);
+
+        return $query->get();
+    }
+
     public function getAuthorizedPaymentsBetweenTimestamps($timeLowerLimit, $timeUpperLimit)
     {
         return $this->newQuery()

@@ -881,13 +881,34 @@ class RefundTest extends TestCase
     {
         $createdAt = Carbon::today(Timezone::IST)->subDays(6)->timestamp;
 
+        $refundAt = Carbon::now()->subMinute(5)->getTimestamp();
+
         $payments = $this->fixtures->times(2)->create(
             'payment:authorized',
-            ['created_at' => $createdAt]);
+                    [
+                        'created_at' => $createdAt,
+                        'refund_at'  => $refundAt,
+                    ]);
 
         $payments = $this->fixtures->times(2)->create('payment:authorized');
 
+        // Creating captured payments with refund at set. So it can unset by the cron.
+        // Ideally this should not come. It is just to test that the cron should unset
+        // in case it is not authorized.
+        $capturedPayments = $this->fixtures->times(2)->create(
+            'payment:captured',
+            [
+                'refund_at' => $refundAt
+            ]);
+
+
         $content = $this->refundOldAuthorizedPayments();
+
+        // Assert that the refund_at is null in case the cron picks up these payments.
+        $capturedPayments[0]->refresh();
+        $capturedPayments[1]->refresh();
+        $this->assertNull($capturedPayments[0]->getRefundAt());
+        $this->assertNull($capturedPayments[1]->getRefundAt());
 
         $this->assertArrayHasKey('refunded', $content);
         $this->assertEquals(2, $content['refunded']);
@@ -899,10 +920,15 @@ class RefundTest extends TestCase
     {
         $createdAt = Carbon::today(Timezone::IST)->subDays(35)->timestamp;
 
+        $refundAt = Carbon::now()->subDays(1)->getTimestamp();
+
         $oldPayment = $this->fixtures->create(
             'payment:authorized',
-            ['method' => 'emandate',
-             'created_at' => $createdAt]);
+            [
+                'method'     => 'emandate',
+                'created_at' => $createdAt,
+                'refund_at'  => $refundAt
+            ]);
 
         $content = $this->refundOldAuthorizedPayments();
 
@@ -912,32 +938,121 @@ class RefundTest extends TestCase
         $this->assertEquals(1, $content['authorized']);
     }
 
+    public function testRefundOfOldAuthorizedEmandatePaymentsFlow()
+    {
+        // Setup for emandate payment.
+        $this->fixtures->create('terminal:shared_emandate_hdfc_terminal');
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $this->fixtures->merchant->addFeatures(['charge_at_will']);
+
+        $this->fixtures->merchant->enableEmandate();
+
+        $payment = $this->getEmandateNetbankingRecurringPaymentArray('HDFC');
+
+        $payment['bank_account'] = [
+            'account_number'    => '0123456789',
+            'ifsc'              => 'HDFC0000186',
+            'name'              => 'Test Account'
+        ];
+
+        $this->gateway = 'netbanking_hdfc';
+
+        $order = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
+        $payment['order_id'] = $order->getPublicId();
+
+        $this->doAuthPayment($payment);
+
+        $payment = $this->getDbLastEntity('payment');
+
+        $this->assertSame('authorized', $payment->getStatus());
+
+        // Now start refunding old authorized payments
+        // Setting it to null, as it should not go through scrooge.
+        $this->gateway = null;
+        $data = $this->refundOldAuthorizedPayments();
+
+        // Should not refund this payments as delay set
+        $this->assertSame(0, $data['authorized']);
+        $this->assertSame(0, $data['refunded']);
+
+        // Change now after 30 days to actually refund this payment
+        $testTime = Carbon::now()->addDays(30);
+        Carbon::setTestNow($testTime);
+
+        $data = $this->refundOldAuthorizedPayments();
+
+        // Should refund this payments as already 30 days completed
+        $this->assertSame(1, $data['authorized']);
+        $this->assertSame(1, $data['refunded']);
+    }
+
+    public function testRefundOfOldAuthorizedPaymentsWithOffset()
+    {
+        $now = Carbon::now();
+
+        $this->fixtures->times(2)->create('payment:authorized',
+            [
+                'refund_at' => $now->getTimestamp()
+            ]);
+
+        $this->fixtures->times(2)->create('payment:authorized',
+            [
+                'refund_at' => $now->subDays(20)->getTimestamp()
+            ]);
+
+        // -15 days offset
+        $offsetInSeconds = 1296000;
+
+        $response =  $this->refundOldAuthorizedPayments($offsetInSeconds);
+
+        $this->assertArraySubset([
+            'refunded' => 2
+        ], $response);
+    }
+
     public function testRefundOldAuthorizedEmandatePayments2()
     {
         $createdAt = Carbon::today(Timezone::IST)->subDays(6)->timestamp;
 
-        $this->fixtures->create('payment:authorized', ['method' => 'emandate', 'created_at' => $createdAt]);
+        $refundAt = Carbon::now()->addDays(2)->timestamp;
+
+        $this->fixtures->create('payment:authorized',
+            [
+                'method'     => 'emandate',
+                'created_at' => $createdAt,
+                'refund_at'  => $refundAt,
+            ]);
 
         $content = $this->refundOldAuthorizedPayments();
 
         $this->assertArrayHasKey('refunded', $content);
         $this->assertEquals(0, $content['refunded']);
         $this->assertArrayHasKey('authorized', $content);
-        $this->assertEquals(1, $content['authorized']);
+        $this->assertEquals(0, $content['authorized']);
     }
 
     public function testRefundOfOldAuthorizedPaymentsContainingDisputed()
     {
         $createdAt = Carbon::today(Timezone::IST)->subDays(6)->timestamp;
 
+        $refundAt = Carbon::now()->subDays(2)->timestamp;
+
         $this->fixtures->times(2)->create(
             'payment:authorized',
-            ['created_at' => $createdAt]);
+            [
+                'created_at' => $createdAt,
+                'refund_at'  => $refundAt,
+            ]);
 
         $this->fixtures->create(
             'payment:authorized',
-            ['created_at' => $createdAt,
-             'disputed'   => 1]);
+            [
+                'created_at' => $createdAt,
+                'disputed'   => 1,
+                'refund_at'  => $refundAt,
+            ]);
 
         $content = $this->refundOldAuthorizedPayments();
 
@@ -1163,31 +1278,23 @@ class RefundTest extends TestCase
         // Change auto refund delay to 2 days
         $this->fixtures->merchant->editAutoRefundDelay('2 days');
 
+        $earlyDate = Carbon::now()->subDays(2);
+
+        $now = Carbon::now();
+
         $createdAt = Carbon::today(Timezone::IST)->subDays(2)->timestamp;
 
-        $payments = $this->fixtures->times(3)->create(
-            'payment:authorized',
-            ['created_at' => $createdAt]);
+        Carbon::setTestNow($earlyDate);
 
-        $createdAt = Carbon::today(Timezone::IST)->subDays(6)->timestamp;
-        $this->fixtures->on('test')->create('balance', ['id' => '1MercShareTerm', 'balance' => '1000000', 'merchant_id' => '1MercShareTerm']);
+        $response = $this->doAuthPayment();
 
-        $payment = $this->fixtures->create(
-            'payment:authorized',
-            ['created_at' => $createdAt, 'merchant_id' => '1MercShareTerm', 'transaction_id' => null]);
+        $payment = $this->getDbLastPayment();
 
-        $createdAt = Carbon::today(Timezone::IST)->subDays(1)->timestamp;
-
-        $payments = $this->fixtures->times(2)->create(
-            'payment:authorized',
-            ['created_at' => $createdAt]);
+        Carbon::setTestNow($now);
 
         $content = $this->refundOldAuthorizedPayments();
 
-        $this->assertArrayHasKey('refunded', $content);
-        $this->assertEquals(4, $content['refunded']);
-        $this->assertArrayHasKey('authorized', $content);
-        $this->assertEquals(4, $content['authorized']);
+        $this->assertSame(1, $content['refunded']);
     }
 
     public function testRefundPaymentsWithRefundDelayAutoRefundsDisabled()
@@ -1214,7 +1321,13 @@ class RefundTest extends TestCase
 
         $payment = $this->fixtures->create(
             'payment:authorized',
-            ['created_at' => $createdAt, 'merchant_id' => '1MercShareTerm', 'transaction_id' => null]);
+            [
+                'transaction_id' => null,
+                'merchant_id'    => '1MercShareTerm',
+                'created_at'     => $createdAt,
+                'refund_at'      => Carbon::today(Timezone::IST)->timestamp,
+            ]
+        );
 
         $createdAt = Carbon::today(Timezone::IST)->subDays(1)->timestamp;
 
@@ -1227,16 +1340,21 @@ class RefundTest extends TestCase
         $this->assertArrayHasKey('refunded', $content);
         $this->assertEquals(1, $content['refunded']);
         $this->assertArrayHasKey('authorized', $content);
-        $this->assertEquals(4, $content['authorized']);
+        $this->assertEquals(1, $content['authorized']);
     }
 
     public function testRefundCalledOnPurchaseWithoutCapture()
     {
         $createdAt = Carbon::today(Timezone::IST)->subDays(6)->timestamp;
 
+        $refundAt = Carbon::today(Timezone::IST)->timestamp;
+
         $payments = $this->fixtures->times(1)->create(
             'payment:purchased',
-            ['created_at' => $createdAt]);
+            [
+                'created_at' => $createdAt,
+                'refund_at'  => $refundAt,
+            ]);
 
         $payments = $this->fixtures->times(1)->create('payment:purchased');
 
@@ -1278,10 +1396,15 @@ class RefundTest extends TestCase
     {
         $createdAt = Carbon::today(Timezone::IST)->subDays(6)->timestamp;
         $authorizedAt = Carbon::today(Timezone::IST)->timestamp;
+        $refundAt = Carbon::today(Timezone::IST)->timestamp;
 
         $payment = $this->fixtures->create(
             'payment:captured',
-            ['authorized_at' => $authorizedAt, 'created_at' => $createdAt]);
+            [
+                'authorized_at' => $authorizedAt,
+                'created_at'    => $createdAt,
+                'refund_at'     => $refundAt,
+            ]);
 
         $this->fixtures->payment->edit($payment->getId(), ['status' => 'authorized']);
 

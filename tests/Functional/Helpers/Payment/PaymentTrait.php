@@ -1259,14 +1259,21 @@ trait PaymentTrait
         return $refund;
     }
 
-    protected function refundOldAuthorizedPayments()
+    protected function refundOldAuthorizedPayments($offset = null)
     {
         $this->ba->cronAuth();
+
+        $content = [];
+
+        if (empty($offset) === false)
+        {
+            $content['offset'] = $offset;
+        }
 
         $request = array(
             'method'  => 'POST',
             'url'     => '/payments/refund/authorized',
-            'content' => []);
+            'content' => $content);
 
         $data = $this->makeRequestAndGetContent($request);
 

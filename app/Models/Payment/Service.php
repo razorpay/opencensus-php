@@ -1455,28 +1455,82 @@ class Service extends Base\Service
         return $summary;
     }
 
-    public function refundOldAuthorizedPayments()
+    protected function isRefundRequiredForPayment($payment)
     {
-        //
-        // Since we are taking 12 am of today,
-        // we only need to subtract 4 days from today
-        // to arrive at 5 days before.
-        //
-        $seconds = Merchant\Entity::AUTO_REFUND_DELAY_DEFAULT;
+        /**
+         * Take a lock, in case it is already updated by another thread
+         * and determine should we refund the payments now.
+         */
+        $response = $this->mutex->acquireAndRelease($payment->getId(), function () use ($payment)
+        {
+            /**
+             * @var $payment Payment\Entity
+             */
 
-        $date = Carbon::today(Timezone::IST);
-        $ts = $date->subSeconds($seconds)->getTimestamp();
+            $payment->reload();
 
-        $payments = $this->repo->payment->getAuthorizedPaymentsBeforeTimestamp($ts, false);
+            if ($payment->isAuthorized() === false)
+            {
+                return false;
+            }
 
-        //
-        // We fetch all the authorized payments eligible for refund.
-        // Payments are identified on the basis of merchant auto_refund_delay
-        // Maximum delay can be 10 days
-        //
-        $payments2 = $this->repo->payment->getAuthorizedPaymentsWithAutoRefundDelay();
+            return true;
+        });
 
-        $payments = $payments->merge($payments2);
+        return $response;
+    }
+
+    public function refundOldAuthorizedPayments($input = [])
+    {
+        // Using current time for fetching payments as refund_at is set properly.
+        $ts = Carbon::now()->getTimestamp();
+
+        if (isset($input['offset']) === true)
+        {
+            $ts -= $input['offset'];
+        }
+
+        // Fetch all the authorized payments whose refund_at is on or before current time.
+        $payments = $this->repo->payment->getAuthorizedPaymentsToBeRefundedUsingRefundAt($ts);
+
+        // Counts for determining the unsetting refund_at work and rejections
+        $initialCount = $payments->count();
+        $updatedRefundAt = 0;
+
+        /**
+         * Rejecting all the disputed payments
+         * as the query only depends on refund_at column
+         */
+        $payments = $payments->reject(function ($payment) use (&$updatedRefundAt)
+        {
+            /**
+             * @var $payment Payment\Entity
+             */
+            if ($payment->isDisputed() === true)
+            {
+                return true;
+            }
+
+            $isRefundRequired = $this->isRefundRequiredForPayment($payment);
+
+            /**
+             * Check that if the refund is not required , then unset the refund_at
+             * for the payment.
+             * Ideally, This should not happen.But there are old payments which have refund_at
+             * set and have a failed or refunded state. This will eventually clean all
+             * payments where refund_at shouldn't be set.
+             */
+            if ($isRefundRequired === false)
+            {
+                $this->core->updateRefundAt($payment->getPublicId(), null);
+
+                $updatedRefundAt++;
+
+                return true;
+            }
+
+            return false;
+        });
 
         $authorized = $payments->count();
         $refunded = 0;
@@ -1488,8 +1542,6 @@ class Service extends Base\Service
         $time = time();
 
         $payments = $payments->shuffle();
-
-        $this->removePaymentsAsApplicable($payments);
 
         $this->trace->info(
             TraceCode::PAYMENT_AUTO_REFUND_CRON,
@@ -1557,12 +1609,14 @@ class Service extends Base\Service
         $time = time() - $time;
 
         $results = array(
-            'authorized'    => $authorized,
-            'refunded'      => $refunded,
-            'error'         => $error,
-            'failed'        => $failed,
-            'timed out'     => $timedOut,
-            'total time'    => $time . ' secs');
+            'inital count'    => $initialCount,
+            'updatedRefundAt' => $updatedRefundAt,
+            'authorized'      => $authorized,
+            'refunded'        => $refunded,
+            'error'           => $error,
+            'failed'          => $failed,
+            'timed out'       => $timedOut,
+            'total time'      => $time . ' secs');
 
         $message = 'Authorized payments refunded: ' . $refunded;
 
@@ -2156,49 +2210,6 @@ class Service extends Base\Service
         $processor = new Processor\Processor($merchant);
 
         return $processor;
-    }
-
-    //
-    // 1. Remove Auto Refund Disabled Payments
-    // 2. Remove Emandate payments as applicable
-    //
-    protected function removePaymentsAsApplicable(Base\PublicCollection & $payments)
-    {
-        $seconds = Merchant\Entity::AUTO_REFUND_DELAY_FOR_EMANDATE;
-
-        $currentTime = Carbon::now(Timezone::IST);
-
-        $ts = $currentTime->subSeconds($seconds)->getTimestamp();
-
-        $payments = $payments->reject(function($payment) use ($ts)
-        {
-            //
-            // If disable_auto_refund feature is enabled for the merchant we reject the payment -
-            // it must not be auto refunded
-            //
-            if ($payment->merchant->isFeatureEnabled(Feature\Constants::DISABLE_AUTO_REFUNDS) === false)
-            {
-                // If its not an emandate payment we can auto refund it
-                if ($payment->isEmandate() === false)
-                {
-                    return false;
-                }
-
-                // If its an emandate payment and the emandate refund delay has passed, we can refund it
-                if ($payment->getCreatedAt() <= $ts)
-                {
-                    return false;
-                }
-            }
-
-            //
-            // We reject the payment in the following cases :
-            // 1. Payment of a merchant who has disabled auto refunds
-            // 2. Emandate payment - where emandate auto refund delay has not passed yet
-            //
-
-            return true;
-        });
     }
 
     public function getDummyPayment(Order\Entity $orderEntity, Card\IIN\Entity $iinEntity)
