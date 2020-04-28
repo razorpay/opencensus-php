@@ -8,6 +8,7 @@ import ListGroupToggler from 'common/ui/Toggler/ListGroupToggler';
 import { OrderStatusLabel } from 'merchant/components/StatusLabel';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import { paymentId, amount, status, createdAt } from 'common/ui/item/pair';
+import Definition from 'common/ui/Definition';
 
 export default props => {
   let { order, payments, isLoading, statusMsg } = props;
@@ -68,6 +69,17 @@ export default props => {
               ) : (
                 <EntityDetailRow label="Payments" value="No Payments" />
               )}
+
+              <EntityDetailRow label="Notes">
+                {Object.keys(order.notes).length
+                  ? Object.keys(order.notes).map((key, index) => (
+                      <Definition key={index} customClass="notes">
+                        {key}
+                        {String(order.notes[key] || '--')}
+                      </Definition>
+                    ))
+                  : '--'}
+              </EntityDetailRow>
             </div>
           </div>
         </div>
