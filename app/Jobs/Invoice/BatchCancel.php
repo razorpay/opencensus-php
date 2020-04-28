@@ -43,63 +43,18 @@ class BatchCancel extends Job
     const TOTAL_INVOICES_COUNT = 'total_invoices_count';
     const FAILED_INVOICE_IDS   = 'failed_invoice_ids';
 
-    public function __construct(string $mode, string $batchId, int $successCount, MerchantEntity $merchant = null)
+    public function __construct(string $mode, string $batchId, int $successCount)
     {
         parent::__construct($mode);
 
         $this->batchId = $batchId;
 
         $this->successCount = $successCount;
-
-        $this->merchant = $merchant;
     }
 
     public function handle()
     {
         parent::handle();
-
-        $batch = [];
-
-        if (empty($this->merchant) === false)
-        {
-            $batch = (new Batch\Service())->getBatchById($this->batchId, $this->merchant);
-        }
-        else
-        {
-            $batch = (new Batch\Service())->fetchBatchById($this->batchId);
-        }
-
-        if ($batch === [])
-        {
-            $this->trace->debug(
-                TraceCode::BATCH_NOT_FOUND, // To be changed
-                [
-                    'batch_id'      => $this->batchId,
-                    'merchant_id'   => $this->merchant ? $this->merchant->getId() : null,
-                ]
-            );
-
-            $this->delete();
-
-            return;
-        }
-
-        $batchStatus = $batch[Batch\Entity::STATUS];
-
-        if (($batchStatus !== Batch\Status::PROCESSED) and
-            ($batchStatus !== Batch\Status::CANCELLED))
-        {
-            if ($this->attempts() <= self::MAX_RETRY_ATTEMPTS)
-            {
-                $this->release(self::RETRY_DELAY);
-            }
-            else
-            {
-                $this->delete();
-            }
-
-            return;
-        }
 
         $this->core = new InvoiceModel\Core;
 

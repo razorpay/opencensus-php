@@ -35,7 +35,7 @@ class Core extends Base\Core
 {
     const QUEUE_JOB_DELAY              = 5; // In seconds
     const MAX_ALLOWED_PDF_GEN_ATTEMPTS = 2;
-
+    const CANCEL_JOB_DELAY_WITH_STOP   = 300;
     //
     // When someone requests pdf version of invoice we use this factor
     // to determine if we should create new latest pdf in sync or use already
@@ -1019,18 +1019,39 @@ class Core extends Base\Core
     {
         (new Validator())->validateCancelInvoicesOfBatch($batch);
 
-        (new Batch\Service())->stopBatchProcessIfRequired($batch);
+        $batchService = new Batch\Service();
+
+        $needToStopBatch = $batchService->isStoppingRequired($batch[Batch\Entity::STATUS]);
+
+        $delay = self::QUEUE_JOB_DELAY;
+
+        if ($needToStopBatch === true)
+        {
+            $delay = self::CANCEL_JOB_DELAY_WITH_STOP;
+
+            $batchService->stopBatchProcess($batch);
+        }
 
         $batchId = $batch[Batch\Entity::ID];
 
         Batch\Entity::verifyIdAndStripSign($batchId);
+
+        $this->trace->info(
+            TraceCode::INVOICE_BATCH_CANCEL_DISPATCH_REQUEST,
+            [
+                'batch'        => $batch,
+                'delay'        => $delay,
+            ]);
 
         //
         // This function is also used for cancel auth links via batch on
         // admin auth. Since merchant is not available on admin auth,
         // keeping $this->merchant ?? null explicitly.
         //
-        InvoiceBatchCancelJob::dispatch($this->mode, $batchId, $batch[Batch\Entity::SUCCESS_COUNT], $this->merchant ?? null);
+        InvoiceBatchCancelJob::dispatch($this->mode,
+                                        $batchId,
+                                        $batch[Batch\Entity::SUCCESS_COUNT])
+                             ->delay($delay);
     }
 
     /**

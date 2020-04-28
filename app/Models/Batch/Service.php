@@ -271,7 +271,12 @@ class Service extends Base\Service
         return $result->toArray();
     }
 
-    public function stopBatchProcessIfRequired(array $batch)
+    public function isStoppingRequired(string $batchStatus)
+    {
+        return $batchStatus !== Status::PROCESSED and $batchStatus !== Status::CANCELLED;
+    }
+
+    public function stopBatchProcess(array $batch)
     {
         $batchId = $batch[Entity::ID];
 
