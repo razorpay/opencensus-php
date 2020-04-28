@@ -316,6 +316,7 @@ class Entity extends Base\PublicEntity
         self::FEE_CREDITS_THRESHOLD,
         self::DISPLAY_NAME,
         self::DEFAULT_REFUND_SPEED,
+        self::FEE_BEARER,
     ];
 
     const INTERNAL_CONFIG_LIST = [

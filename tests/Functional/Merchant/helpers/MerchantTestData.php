@@ -194,6 +194,7 @@ return [
                     'test@razorpay.com'
                 ],
                 'default_refund_speed' =>  'normal',
+                'fee_bearer' => 'platform',
             ],
         ],
     ],
