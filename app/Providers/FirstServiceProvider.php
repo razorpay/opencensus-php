@@ -11,6 +11,7 @@ use RZP\Diag;
 use RZP\Models\P2p;
 use RZP\Jobs\Context;
 use RZP\Http\RequestContext;
+use RZP\Http\RequestContextV2;
 use RZP\Trace\ApiTraceProcessor;
 
 class FirstServiceProvider extends ServiceProvider
@@ -140,6 +141,7 @@ class FirstServiceProvider extends ServiceProvider
     protected function registerRequestContext()
     {
         $this->app->singleton('request.ctx', function($app) { return new RequestContext($app); });
+        $this->app->singleton('request.ctx.v2', function($app) { return new RequestContextV2(); });
     }
 
     protected function registerWorkerContext()

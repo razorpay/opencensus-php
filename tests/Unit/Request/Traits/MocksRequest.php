@@ -13,6 +13,22 @@ use RZP\Http\Route;
 trait MocksRequest
 {
     /**
+     * Headers used for next mockRouteRequest() call and reset after.
+     * @var array
+     */
+    protected $withRequestHeaders = [];
+
+    /**
+     * @param  array $headers
+     * @return mixed
+     */
+    protected function withRequestHeaders(array $headers)
+    {
+        $this->withRequestHeaders = $headers;
+        return $this;
+    }
+
+    /**
      * Mocks a route request.
      * @param  string      $name    Name of the route (Ref Route.php)
      * @param  string|null $path    Actual url to be accessed(without placeholders)
@@ -40,6 +56,9 @@ trait MocksRequest
         // Sets request user and password
         $server['PHP_AUTH_USER']  = $auth[0] ?? null;
         $server['PHP_AUTH_PW']    = $auth[1] ?? null;
+        // Merges additional headers for this request. See $withRequestHeaders.
+        $server = array_merge($server, $this->withRequestHeaders);
+        $this->withRequestHeaders = [];
 
         $requestMock = $this->getMockBuilder(Request::class)
                             ->setConstructorArgs([$query, $input, [], [], [], $server, null])

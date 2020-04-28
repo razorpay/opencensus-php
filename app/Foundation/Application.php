@@ -2,6 +2,8 @@
 
 namespace RZP\Foundation;
 
+use RZP\Constants\Environment;
+
 class Application extends \Illuminate\Foundation\Application
 {
     /**
@@ -49,5 +51,10 @@ class Application extends \Illuminate\Foundation\Application
         //
         return (($this->runningInConsole() === true) and
                 ($this->runningUnitTests() === false));
+    }
+
+    public function isEnvironmentQA(): bool
+    {
+        return Environment::isEnvironmentQA($this->env);
     }
 }

@@ -2567,6 +2567,11 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const STORK_ADMIN_REQUEST                                   = 'STORK_ADMIN_REQUEST';
     const STORK_ADMIN_RESPONSE                                  = 'STORK_ADMIN_RESPONSE';
 
+    // Edge<>api integration.
+    const PASSPORT_JWT_PARSE_INVOKED                            = 'PASSPORT_JWT_PARSE_INVOKED';
+    const PASSPORT_JWT_PARSE_FAILED                             = 'PASSPORT_JWT_PARSE_FAILED';
+    const PASSPORT_ATTRS_MISMATCH                               = 'PASSPORT_ATTRS_MISMATCH';
+
     // Terminal Onboarding
     const TERMINAL_ENABLE_REQUEST                                  = 'TERMINAL_ENABLE_REQUEST';
     const TERMINAL_DISABLE_REQUEST                                 = 'TERMINAL_DISABLE_REQUEST';

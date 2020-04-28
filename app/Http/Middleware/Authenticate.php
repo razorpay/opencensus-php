@@ -3,15 +3,19 @@
 namespace RZP\Http\Middleware;
 
 use Closure;
-use Illuminate\Foundation\Application;
 use Illuminate\Support\Str;
+use Illuminate\Foundation\Application;
+use Symfony\Component\HttpFoundation\Response;
 
 use ApiResponse;
 use RZP\Http\Route;
 use RZP\Http\OAuth;
 use RZP\Http\P2pRoute;
 use RZP\Http\FeatureAccess;
+use RZP\Http\Response\Header;
 use RZP\Http\BasicAuth\BasicAuth;
+use RZP\Http\Edge\PreAuthenticate;
+use RZP\Http\Edge\PostAuthenticate;
 
 class Authenticate
 {
@@ -63,6 +67,8 @@ class Authenticate
      */
     public function handle($request, Closure $next)
     {
+        (new PreAuthenticate)->handle($request);
+
         $startAt = millitime();
 
         $route = $this->router->currentRouteName();
@@ -90,6 +96,8 @@ class Authenticate
             millitime() - $startAt,
             $this->ba->getRequestMetricDimensions());
 
+        (new PostAuthenticate)->handle($ret === null);
+
         // Post process after authentication completes
         $ret = (new FeatureAccess)->verifyFeatureAccess($ret, $bearerToken);
 
@@ -99,7 +107,9 @@ class Authenticate
             return $ret;
         }
 
-        return $next($request);
+        $ret = $next($request);
+
+        return $this->postHandle($ret);
     }
 
     /**
@@ -270,5 +280,28 @@ class Authenticate
         }
 
         return $bearerToken;
+    }
+
+    /**
+     * Post part of this middleware.
+     * @param  Response $res
+     * @return void
+     * @return Response
+     */
+    protected function postHandle(Response $res): Response
+    {
+        //
+        // If request is from qa environment and there exists passport
+        // attributes mismatch returns a header to let qa build fail.
+        // See: PostAuthenticate.php.
+        //
+        /** @var \RZP\Http\RequestContextV2 $reqCtx */
+        $reqCtx = $this->app['request.ctx.v2'];
+        if (($this->app->isEnvironmentQA() === true) and ($reqCtx->passportAttrsMismatch === true))
+        {
+            $res->headers->set(Header::X_PASSPORT_ATTRS_MISMATCH, 1);
+        }
+
+        return $res;
     }
 }

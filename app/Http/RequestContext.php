@@ -16,6 +16,7 @@ use RZP\Http\BasicAuth\AuthCreds;
 use RZP\Exception\BadRequestException;
 
 /**
+ * @deprecated ...in favor of RequestContextV2, would take around one year time though.
  * Extracts and holds various variables from request to be used in throttling and subsequent middle-wares.
  * This only does minimal database/redis calls, which is required even by throttle(first middleware) module.
  */

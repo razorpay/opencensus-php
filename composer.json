@@ -60,7 +60,8 @@
         "myclabs/deep-copy": "^1.6.1",
         "razorpay/lqext": "^1.0",
         "brozot/laravel-fcm": "^1.3",
-        "razorpay/laravel-excel": "dev-master"
+        "razorpay/laravel-excel": "dev-master",
+        "razorpay/edge-passport-php": "dev-master"
     },
     "repositories": [
         {
@@ -99,6 +100,10 @@
         {
             "type": "vcs",
             "url": "git@github.com:razorpay/laravel-excel.git"
+        },
+        {
+            "type": "vcs",
+            "url": "git@github.com:razorpay/edge-passport-php.git"
         }
     ],
     "require-dev": {

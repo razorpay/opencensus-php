@@ -11,4 +11,12 @@ final class Environment
     const TESTING     = 'testing';
     const FUNC        = 'func';
     const DEV         = 'dev';
+    const AUTOMATION  = 'automation';
+    const PERF        = 'perf';
+    const QA_ENVS     = [self::PERF, self::FUNC, self::AUTOMATION];
+
+    public static function isEnvironmentQA(string $env): bool
+    {
+        return in_array($env, self::QA_ENVS, true);
+    }
 }
