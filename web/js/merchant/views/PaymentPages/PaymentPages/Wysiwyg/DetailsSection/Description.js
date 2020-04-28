@@ -5,6 +5,7 @@ import { showNotification } from 'merchant_common/reducers/notifications';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 
 import { uploadImageInDescription } from '../../model';
+import { validateEmbeddedVideoUrl } from 'common/utils/validators';
 
 const FILE_SIZE_LIMIT = 2; // 2MB limit
 const COLORS_LIST = [
@@ -122,6 +123,8 @@ export default class extends React.PureComponent {
       this.handleImageInsert()
     );
 
+    this.addHookForVideoUrlValidation();
+
     /* Fix keyboard bindings */
     const keyboard = this.QUILL.getModule('keyboard');
     for (let key in keyboard.hotkeys) {
@@ -152,6 +155,25 @@ export default class extends React.PureComponent {
       }
       return ret;
     });
+  }
+
+  addHookForVideoUrlValidation() {
+    const self = this;
+    const tooltipSave = this.QUILL.theme.tooltip.save;
+
+    this.QUILL.theme.tooltip.save = function() {
+      // overwrite save link functionality
+      var url = this.textbox.value;
+
+      if (url.indexOf('http') === -1) {
+        url = 'https://' + url;
+      }
+
+      // validate url
+      if (validateEmbeddedVideoUrl(url)) {
+        tooltipSave.call(this);
+      }
+    };
   }
 
   handleImageInsert(f) {

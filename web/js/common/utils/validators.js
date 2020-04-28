@@ -35,6 +35,14 @@ export const isDeepLink = url => {
   return urlRegExp.test(url);
 };
 
+// Note: Fallacy in this method is, the 3rd party urls can keep modifying / may add new url shortner. So this would have to be updated.
+export const validateEmbeddedVideoUrl = url => {
+  url = url || '';
+  const urlRegExp = /^(http(s)?:\/\/)((w){3}.)?(vimeo\.com|youtu\.be|youtube\.com)\/([\w-_\/]+)([\?].*)?$/i;
+
+  return urlRegExp.test(url);
+};
+
 export const isAmount = amount => {
   amount = amount || '';
   let amountRexExp = /^\d+(\.\d{1,2})?$/;
