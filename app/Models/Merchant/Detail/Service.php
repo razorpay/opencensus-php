@@ -3,6 +3,8 @@
 namespace RZP\Models\Merchant\Detail;
 
 use Carbon\Carbon;
+use Razorpay\Trace\Logger as Trace;
+
 use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Models\Base;
@@ -70,9 +72,30 @@ class Service extends Base\Service
         $variant = $this->app->razorx->getTreatment($this->merchant->getId(),
                                                     Merchant\RazorxTreatment::PRE_SIGNUP_DETAILS_TO_SALESFORCE,
                                                     $this->mode);
-        if ($variant === 'on')
+
+        $isBankingProduct = $this->auth->isProductBanking();
+
+        // If product is banking, then all signups are to be sent to Salesforce
+        // in real-time.
+        // If product is primary, the razorx treatment determines whether or not
+        // to send the events to Salesforce.
+        if (($isBankingProduct === true) or
+            (($isBankingProduct === false) and
+             ($variant === 'on')))
         {
-            $this->app->salesforce->sendPreSignupDetails($input, $this->merchant);
+            // Putting in a try catch block so that any error here does not disrupt
+            // the main signup flow.
+            try
+            {
+                $this->app->salesforce->sendPreSignupDetails($input, $this->merchant);
+            }
+            catch(\Throwable $e)
+            {
+                $this->trace->traceException(
+                    $e,
+                    Trace::ERROR,
+                    TraceCode::SALESFORCE_FAILED_TO_DISPATCH_JOB);
+            }
         }
 
         return $response;

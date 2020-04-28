@@ -3831,10 +3831,22 @@ class Service extends Base\Service
                 // Merchant has switched from primary product to banking product for the first time,
                 // so, sending details to salesforce.
 
-                /** @var  $salesforceClient SalesForceClient */
-                $salesforceClient = $this->app->salesforce;
+                // Putting in a try catch block so that any error here does not disrupt
+                // the main flow.
+                try
+                {
+                    /** @var  $salesforceClient SalesForceClient */
+                    $salesforceClient = $this->app->salesforce;
 
-                $salesforceClient->captureInterestOfPrimaryMerchantInBanking($merchant);
+                    $salesforceClient->captureInterestOfPrimaryMerchantInBanking($merchant);
+                }
+                catch(\Throwable $e)
+                {
+                    $this->trace->traceException(
+                        $e,
+                        Trace::ERROR,
+                        TraceCode::SALESFORCE_FAILED_TO_DISPATCH_JOB);
+                }
             }
         }
     }

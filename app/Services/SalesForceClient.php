@@ -35,7 +35,8 @@ class SalesForceClient
     // Constants
 
     const ACCESS_TOKEN    = 'access_token';
-    const PRODUCT_BANKING = 'RazorpayX';
+
+    const DATE_FORMAT     = 'Y-m-d';
 
     const JSON_METHOD     = [self::POST, self::PUT, self::PATCH];
 
@@ -142,7 +143,12 @@ class SalesForceClient
 
     public function payloadGenerationForPreSignupDetails(array $input, Merchant\Entity $merchant)
     {
-        $data = ['merchant_id' => $merchant->getId(), 'email' => $merchant->getEmail(), 'name' => $merchant->getName()];
+        $data = [
+            'merchant_id'      => $merchant->getId(),
+            'email'            => $merchant->getEmail(),
+            'name'             => $merchant->getName(),
+            'business_banking' => $merchant->isBusinessBankingEnabled()
+        ];
 
         $keyMap = [
             'business_name'      => 'business_name',
@@ -202,13 +208,20 @@ class SalesForceClient
 
     public function captureInterestOfPrimaryMerchantInBanking(Merchant\Entity $merchant)
     {
-        $url = $this->baseUrl . '/services/apexrest/DashboardOpportunityUpsert';
+        $url = $this->generateUrlForMerchantUpsert();
 
         $payload = [
             [
-                "merchant_id"       => $merchant->id,
-                "submission_date"   => date("Y-m-d"),
-                "product_name"      => self::PRODUCT_BANKING
+                "merchant_id"       => $merchant->getId(),
+                "name"              => $merchant->getName(),
+                "email"             => $merchant->getEmail(),
+                "activated"         => $merchant->isActivated(),
+                "signup_date"       => epoch_format($merchant->getCreatedAt(), self::DATE_FORMAT),
+                "business_name"     => $merchant->merchantDetail->getBusinessName(),
+                "contact_name"      => $merchant->merchantDetail->getContactName(),
+                "business_banking"  => $merchant->isBusinessBankingEnabled(),
+                "submission_date"   => date(self::DATE_FORMAT),
+                "submitted"         => 1,
             ]
         ];
 

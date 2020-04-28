@@ -5708,6 +5708,30 @@ class MerchantTest extends TestCase
         $this->testMerchantSwitchProductWhenMerchantNotActivatedAndXOnboardingExperimentOff('off', 'school', $banking);
     }
 
+    /**
+     * Testing that the Salesforce client method fails gracefully and does not disrupt the main flow
+     * @param int $timesMethodCalled
+     * @param bool $banking
+     */
+    public function testMerchantSwitchProductSendsInterestDetailsToSalesforceFailsGracefully($timesMethodCalled = 1, $banking = false)
+    {
+        // if merchant is not on x,
+        // information should be sent to Salesforce.
+        $salesforceClientMethodName = 'captureInterestOfPrimaryMerchantInBanking';
+
+        $salesforceClientMock = $this->getMockBuilder(SalesForceClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods([$salesforceClientMethodName])
+            ->getMock();
+
+        $salesforceClientMock->method($salesforceClientMethodName)
+            ->willThrowException(new \Exception('Force failed by testcase'));
+
+        $this->app->instance('salesforce', $salesforceClientMock);
+
+        $this->testMerchantSwitchProductWhenMerchantNotActivatedAndXOnboardingExperimentOff('off', 'school', $banking);
+    }
+
     public function testMerchantSwitchProductNotSendsInterestDetailsToSalesforce()
     {
         // if business_banking is already true for merchant,

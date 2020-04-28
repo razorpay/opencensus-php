@@ -1,9 +1,11 @@
 <?php
 
 use Carbon\Carbon;
+use Razorpay\Trace\Logger as Trace;
+
+use RZP\Constants\Date;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
-use Razorpay\Trace\Logger as Trace;
 use RZP\Exception\AssertionException;
 
 /**
@@ -611,13 +613,14 @@ if (! function_exists('group_array_by_sub_array_value'))
 if (! function_exists('epoch_format'))
 {
     /**
-     * Formats given epoch to human readable string representation. Currently returns in one specific format only.
+     * Formats given epoch to human readable string representation.
      * @param  int    $epoch
+     * @param  string $format
      * @return string
      */
-    function epoch_format(int $epoch): string
+    function epoch_format(int $epoch, string $format = Date::DEFAULT_STRING_FORMAT): string
     {
-        return date('M d, Y (h:i A)', $epoch);
+        return date($format, $epoch);
     }
 }
 

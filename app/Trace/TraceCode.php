@@ -2446,6 +2446,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SALESFORCE_PARTNER_TYPE_REQUEST                       = 'SALESFORCE_PARTNER_TYPE_REQUEST';
     const SALESFORCE_PARTNER_TYPE_RESPONSE                      = 'SALESFORCE_PARTNER_TYPE_RESPONSE';
     const SALESFORCE_PARTNER_TYPE_EXCEPTION                     = 'SALESFORCE_PARTNER_TYPE_EXCEPTION';
+    const SALESFORCE_FAILED_TO_DISPATCH_JOB                     = 'SALESFORCE_FAILED_TO_DISPATCH_JOB';
 
 
     // Banking account
