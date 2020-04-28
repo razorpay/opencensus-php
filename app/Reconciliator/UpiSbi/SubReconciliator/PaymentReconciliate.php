@@ -25,6 +25,18 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         self::PAYER_VIRTUAL_ACCOUNT,
         self::PAYER_ACCOUNT_NAME,
     ];
+
+    const PII_COLUMNS = [
+        'payer_ac_no',
+        'payer_virtual_address',
+        'device_type',
+        'app',
+        'device_os',
+        'device_mobile_no',
+        'device_location',
+        'ip_address',
+    ];
+
     protected function getPaymentId(array $row)
     {
         $paymentId = $row[self::ORDER_NUMBER] ?? null;
