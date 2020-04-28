@@ -2470,14 +2470,33 @@ class Core extends Base\Core
             $this->updateWhitelistedDomain($merchant, $merchantInput);
         }
 
-        if (isset($input[Detail\Entity::BUSINESS_NAME]) === true)
+        if (empty($input[Detail\Entity::BUSINESS_DBA]) === false)
+        {
+            $merchantInput[Entity::BILLING_LABEL] = $input[Detail\Entity::BUSINESS_DBA];
+        }
+
+        if (empty($input[Detail\Entity::BUSINESS_NAME]) === false)
         {
             $merchantInput[Entity::NAME] = $input[Detail\Entity::BUSINESS_NAME];
         }
-
-        if (isset($input[Detail\Entity::BUSINESS_DBA]) === true)
+        else
         {
-            $merchantInput[Entity::BILLING_LABEL] = $input[Detail\Entity::BUSINESS_DBA];
+            // if business name is empty, copy billing label if it's not empty
+            $merchantDetails = (new Detail\Core)->getMerchantDetails($merchant);
+
+            $businessName = $merchantDetails->getBusinessName();
+            $dbaName      = $input[Detail\Entity::BUSINESS_DBA] ?? $merchant->getDbaName();
+
+            if ((empty($businessName) === true) and
+                (empty($input[Detail\Entity::BUSINESS_NAME]) === true) and
+                (empty($dbaName) === false))
+            {
+                $merchantDetails->setBusinessName($dbaName);
+
+                $this->repo->saveOrFail($merchantDetails);
+
+                $merchantInput[Entity::NAME] = $dbaName;
+            }
         }
 
         if (empty($merchantInput) === true)

@@ -882,6 +882,11 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
         return $this->getAttribute(self::BUSINESS_NAME);
     }
 
+    public function setBusinessName($name)
+    {
+        $this->setAttribute(self::BUSINESS_NAME, $name);
+    }
+
     public function getKycClarificationReasons()
     {
         return $this->getAttribute(self::KYC_CLARIFICATION_REASONS);
