@@ -794,7 +794,7 @@ return [
             'content' => [
                 'error' => [
                     'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Bad request',
+                    'description' => 'Negative Balance has crossed the negative limit threshold',
                 ],
             ],
             'status_code' => 400,
