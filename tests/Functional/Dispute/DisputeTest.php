@@ -63,6 +63,19 @@ class DisputeTest extends TestCase
         $this->assertEquals('payment', $txn['type']);
     }
 
+    public function testDomesticDisputeCreateWithExcessGatewayAmount()
+    {
+        $payment = $this->fixtures->create('payment:captured', [
+            'amount' => 500,
+            'base_amount' => 500,
+            'amount_authorized' => 500,
+        ]);
+
+        $testData = $this->updateCreateTestData($payment->getPublicId());
+
+        $this->startTest($testData);
+    }
+
     public function testInternationalDisputeCreateAudInr()
     {
         $payment = $this->fixtures->create('payment:captured', ['amount' => 1000, 'currency' => 'AUD', 'base_amount' => 10000]);

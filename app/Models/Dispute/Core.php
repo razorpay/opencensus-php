@@ -82,6 +82,8 @@ class Core extends Base\Core
 
                 $dispute->build($input);
 
+                (new Validator)->validateGatewayAmount($dispute);
+
                 // entity id is required to create associated transaction
                 $dispute->generateId();
 

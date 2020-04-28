@@ -464,14 +464,7 @@ class Service extends Base\Service
 
             if (method_exists($this, $func))
             {
-                if ($value === Reason\Entity::NETWORK_CODE)
-                {
-                    $res = $this->$func($res, $input);
-                }
-                else
-                {
-                    $res = $this->$func($res);
-                }
+                $res = $this->$func($res, $input);
             }
 
             if ($res !== null)

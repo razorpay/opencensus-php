@@ -263,7 +263,7 @@ class Validator extends Base\Validator
      */
     public function validateCustomBoolean($res) : bool
     {
-        $res = strtoupper($res);
+        $res = trim(strtoupper($res));
 
         switch ($res)
         {
@@ -303,6 +303,20 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestValidationFailureException(
                 'Invalid File extension. Only ' . implode(', ', self::ACCEPTED_EXTENSIONS) . ' file formats are allowed'
             );
+        }
+    }
+
+    public function validateGatewayAmount(Entity $dispute)
+    {
+        if (($dispute->payment->isInternational() === false) and
+            ($dispute->payment->getCurrency() === Currency::INR))
+        {
+            if (($dispute->payment->getCurrency() === $dispute->getGatewayCurrency()) and
+                ($dispute->getGatewayAmount() > $dispute->payment->getBaseAmount()))
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'Dispute gateway amount cannot exceed payment amount');
+            }
         }
     }
 }
