@@ -282,6 +282,7 @@ class KubernetesClient
                 'name' => $metaName,
                 'labels' => [
                     'name' => 'batch-job',
+                    'bu'   => 'all'
                 ]
             ],
             'spec' => [
@@ -289,6 +290,7 @@ class KubernetesClient
                     'metadata' => [
                         'labels' => [
                             'name' => 'batch-job',
+                            'bu'   => 'all'
                         ],
                         'annotations' => [
                             'iam.amazonaws.com/role' => $this->iamRole,
@@ -398,6 +400,7 @@ class KubernetesClient
                 'name' => $metaName,
                 'labels' => [
                     'name' => 'batch-job',
+                    'bu'   => 'all'
                 ]
             ],
             'spec' => [
@@ -405,6 +408,7 @@ class KubernetesClient
                     'metadata' => [
                         'labels' => [
                             'name' => 'batch-job',
+                            'bu'   => 'all'
                         ],
                         'annotations' => [
                             'iam.amazonaws.com/role' => $this->iamRole,
