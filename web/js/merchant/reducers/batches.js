@@ -177,6 +177,13 @@ export const fetchBatchStats = batchId =>
     url: `batches/${batchId}/stats`,
   });
 
+/* extra methods for more details related to payment link batch */
+export const fetchBatchStatsForPLV2 = batchId =>
+  merchantFetch({
+    method: 'get',
+    url: `payment_links/${batchId}/batch`,
+  });
+
 export const fetchBatchInvoices = batchId =>
   merchantFetch(`invoices?batch_id=${batchId}`);
 
@@ -259,11 +266,13 @@ export const fetchPaymentLinkBatchesDetails = params => {
   const user = store.getState().session.user;
   const id = params.id;
 
-  const promises = [fetchBatchAjax(id), fetchBatchStats(id)];
+  const promises = [fetchBatchAjax(id)];
 
   if (user.isPaymentlinksV2Enabled) {
+    promises.push(fetchBatchStatsForPLV2(id));
     promises.push(fetchBatchPaymentLinks(id));
   } else {
+    promises.push(fetchBatchStats(id));
     promises.push(fetchBatchInvoices(id));
   }
 
@@ -271,6 +280,7 @@ export const fetchPaymentLinkBatchesDetails = params => {
   return {
     type: PAYMENT_LINK_DETAILS,
     payload: Promise.all(promises),
+    isPaymentlinksV2Enabled: user.isPaymentlinksV2Enabled,
   };
 };
 
@@ -325,12 +335,15 @@ let paymentBatchIdsInitialState = {
   issuableIdList: [],
 };
 
-const onPaymentLinkDetails = (state, { payload }) =>
+const onPaymentLinkDetails = (state, { payload, isPaymentlinksV2Enabled }) =>
   merge(state, {
     loading: false,
     entity: {
       batch: payload[0].batch,
       stats: payload[1].data.stats,
+      paymentlinks: isPaymentlinksV2Enabled
+        ? payload[2].data.payment_links
+        : payload[2].data.items,
       invoices: payload[2].data.items,
     },
   });

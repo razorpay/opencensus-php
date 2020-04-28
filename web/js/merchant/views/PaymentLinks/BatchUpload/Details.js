@@ -17,13 +17,22 @@ import DataTable from 'common/ui/Table/DataTable';
 import ListToggler from 'common/ui/Toggler/ListToggler';
 import Time from 'common/ui/Time';
 import { amount, status } from 'common/ui/item/pair';
-import { BatchUploadStatusLabel } from 'merchant/components/StatusLabel';
+import {
+  BatchUploadStatusLabel,
+  InvoiceStatusLabel,
+} from 'merchant/components/StatusLabel';
+
+import store from 'merchant/store';
 
 const gaEvents = setGaTrack('Dashboard - Payment Links - BU');
 
 const renderBatchDetails = props => {
-  const { batch, stats, invoices } = props;
-  const statsTable = getStatsTable(stats);
+  const { batch, stats, paymentlinks } = props;
+  const user = store.getState().session.user;
+
+  const statsTable = user.isPaymentlinksV2Enabled
+    ? getStatsTableForPLV2(stats, batch ? batch.processed_count : null)
+    : getStatsTable(stats);
 
   const showCancelBtn =
     batch.status === 'partially_processed' || batch.status === 'processed';
@@ -51,10 +60,11 @@ const renderBatchDetails = props => {
           <Time value={batch.created_at} />
         </EntityDetailRow>
       </div>
-      <InvoicesTable
+      <PaymentLinksTable
         totalItems={stats.issued_count}
-        invoices={invoices}
+        paymentlinks={paymentlinks}
         batchId={batch.id}
+        isPaymentlinksV2Enabled={user.isPaymentlinksV2Enabled}
       />
       <hr />
       {stats.batch_total > stats.issued_count &&
@@ -70,7 +80,10 @@ const renderBatchDetails = props => {
 };
 
 @connect(
-  state => ({ isBatchCancelEnabled: state.session.user.isBatchCancelEnabled }),
+  state => ({
+    isBatchCancelEnabled: state.session.user.isBatchCancelEnabled,
+    isPaymentlinksV2Enabled: state.session.user.isPaymentlinksV2Enabled,
+  }),
   {
     cancelPaymentLinkBatch,
     showNotification,
@@ -123,23 +136,35 @@ export default class PaymentLinksBatchDetailsContainer extends Component {
   }
 }
 
-function InvoicesTable({ invoices, batchId, totalItems }) {
+function PaymentLinksTable({
+  isPaymentlinksV2Enabled,
+  paymentlinks,
+  batchId,
+  totalItems,
+}) {
+  const newStatus = { title: 'Status', value: InvoiceStatusLabel };
+  const statusLabel = isPaymentlinksV2Enabled ? newStatus : status;
+
   return (
     <ListToggler
-      label={invoices.length ? pluralize('Payment Link', invoices.length) : ''}
-      subLabel={invoices.length ? 'created from this batch' : ''}
+      label={
+        paymentlinks.length
+          ? pluralize('Payment Link', paymentlinks.length)
+          : ''
+      }
+      subLabel={paymentlinks.length ? 'created from this batch' : ''}
       limit={4}
       limitUrl={`/paymentlinks?batch_id=${batchId}`}
       totalItems={totalItems}
       onViewAllClick={gaEvents.trackSeeAllLinks(batchId)}
     >
       <DataTable
-        columns={[invoiceEmail, amount, status]}
+        columns={[paymentLinkEmail, amount, statusLabel]}
         customClass="invoice-list"
         limit={4}
-        title="Invoices"
+        title="Payment Links"
         showHeaders={false}
-        items={invoices}
+        items={paymentlinks}
       />
     </ListToggler>
   );
@@ -160,8 +185,11 @@ function LinksErrMessage({ issuedCount, onDownload, batchId }) {
   );
 }
 
-var invoiceEmail = {
-  value: invoice => invoice.customer_details.email,
+var paymentLinkEmail = {
+  value: paymentlink =>
+    paymentlink.customer_details
+      ? paymentlink.customer_details.email
+      : paymentlink.customer.email,
 };
 
 function getStatsTable(stats) {
@@ -178,6 +206,25 @@ function getStatsTable(stats) {
       {
         title: 'Expired',
         value: <span class="text-danger">{stats.expired_count}</span>,
+      },
+    ],
+  ];
+}
+
+function getStatsTableForPLV2(stats, processedCount) {
+  return [
+    [
+      { title: 'Total rows processed', value: processedCount },
+      { title: 'Payment links created', value: stats.CREATED || 0 },
+    ],
+    [
+      {
+        title: 'Paid',
+        value: <span class="text-success">{stats.PAID || 0}</span>,
+      },
+      {
+        title: 'Expired',
+        value: <span class="text-danger">{stats.EXPIRED || 0}</span>,
       },
     ],
   ];
