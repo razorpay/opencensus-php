@@ -202,4 +202,29 @@ class Entity extends Base\PublicEntity
     {
         return in_array($flow, [Flow::INTENT, Flow::OMNICHANNEL, Flow::COLLECT]);
     }
+
+    public function isTypeOtm()
+    {
+        return ($this->getAttribute(self::TYPE) === Type::OTM);
+    }
+
+    public function isFlowCollect()
+    {
+        return ($this->getAttribute(self::FLOW) === Flow::COLLECT);
+    }
+
+    public function isFlowIntent()
+    {
+        return ($this->getAttribute(self::FLOW) === Flow::INTENT);
+    }
+
+    public function isOtmCollect()
+    {
+        return (($this->isTypeOtm() === true) and ($this->isFlowCollect() === true));
+    }
+
+    public function isOtmIntent()
+    {
+        return (($this->isTypeOtm() === true) and ($this->isFlowIntent() === true));
+    }
 }

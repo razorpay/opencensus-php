@@ -361,6 +361,21 @@ class TransactionFilter extends Terminal\Filter
                 return false;
             }
 
+            $upiMetadata = $payment->getMetadata(Payment\UpiMetadata\Entity::UPI_METADATA);
+
+            if ($upiMetadata instanceof Payment\UpiMetadata\Entity)
+            {
+                if ($upiMetadata->isOtmCollect() === true)
+                {
+                    return ($terminal->isOtmCollect() === true);
+                }
+
+                if ($upiMetadata->isOtmIntent() === true)
+                {
+                    return ($terminal->isOtmPay() === true);
+                }
+            }
+
             $flow = $payment->getMetadata('flow', 'collect');
 
             if (($payment->isBharatQr() === true) and ($payment->isFlowIntent() === false))
