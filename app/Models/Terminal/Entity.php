@@ -1357,16 +1357,6 @@ class Entity extends Base\PublicEntity
         return ($this->isTypeApplicable(Type::PAY) === true);
     }
 
-    public function isOtmPay()
-    {
-        return ($this->isTypeApplicable(Type::OTM_PAY) === true);
-    }
-
-    public function isOtmCollect()
-    {
-        return ($this->isTypeApplicable(Type::OTM_COLLECT) === true);
-    }
-
     public function isPin()
     {
         return ($this->isTypeApplicable(Type::PIN) === true);

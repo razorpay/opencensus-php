@@ -26,7 +26,6 @@ use RZP\Models\Gateway\Downtime;
 use RZP\Models\Card\NetworkName;
 use RZP\Models\Currency\Currency;
 use Razorpay\Trace\Logger as Trace;
-use RZP\Models\Payment\UpiMetadata;
 use RZP\Models\Merchant\Preferences;
 use RZP\Constants\Entity as Constants;
 use RZP\Models\Payment\Processor\Netbanking;
@@ -884,12 +883,6 @@ class Selector extends Base\Core
             ($metadata['payment_analytics'] !== null ))
         {
             $metadata['payment_analytics'] = $metadata['payment_analytics']->toArray();
-        }
-
-        if ((isset($metadata[UpiMetadata\Entity::UPI_METADATA]) === true) and
-            ($metadata[UpiMetadata\Entity::UPI_METADATA] instanceof UpiMetadata\Entity))
-        {
-            $metadata[UpiMetadata\Entity::UPI_METADATA] = $metadata[UpiMetadata\Entity::UPI_METADATA]->toArray();
         }
 
         return $metadata;
