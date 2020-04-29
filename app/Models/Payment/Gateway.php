@@ -701,6 +701,7 @@ class Gateway
         Payment\Gateway::NETBANKING_AIRTEL,
         Payment\Gateway::WALLET_MPESA,
         Payment\Gateway::ISG,
+        Payment\Gateway::BILLDESK,
     ];
 
     public static $scroogeFileBasedRefundGatewaysWithTimestamps = [

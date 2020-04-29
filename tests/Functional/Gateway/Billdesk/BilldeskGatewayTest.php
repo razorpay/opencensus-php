@@ -4,9 +4,10 @@ namespace RZP\Tests\Functional\Gateway\Billdesk;
 
 use RZP\Exception;
 use Carbon\Carbon;
-use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Constants\Timezone;
 use RZP\Tests\Functional\TestCase;
 use RZP\Gateway\Billdesk\Gateway;
+use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class BilldeskGatewayTest extends TestCase
 {
@@ -529,6 +530,41 @@ class BilldeskGatewayTest extends TestCase
         $this->runRequestResponseFlow($data, function() use ($payment) {
             $this->refundPayment($payment['id'], 40000);
         });
+    }
+
+    public function testGatewayRefundVerify()
+    {
+        $payment = $this->getDefaultNetbankingPaymentArray();
+
+        $payment = $this->doAuthAndCapturePayment($payment);
+
+        $this->refundPayment($payment['id']);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->fixtures->edit('refund', $refund['id'], ['status' => 'created']);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals(1, $refund['attempts']);
+        $this->assertEquals('created', $refund['status']);
+
+        $time = Carbon::now(Timezone::IST)->addMinutes(35);
+
+        Carbon::setTestNow($time);
+
+        $response = $this->retryFailedRefund($refund['id'], $refund['payment_id']);
+
+        $this->assertEquals('created', $response['status']);
+
+        $id = explode('_', $refund['id'], 2)[1];
+
+        $actualRefund = $this->getEntityById('refund', $id, true);
+
+        $this->assertEquals($refund['amount'], $actualRefund['amount']);
+        $this->assertEquals('processed', $actualRefund['status']);
+        $this->assertEquals(1, $actualRefund['attempts']);
+        $this->assertEquals(true, $actualRefund['gateway_refunded']);
     }
 
     public function testReconcileCancelledTransactions()

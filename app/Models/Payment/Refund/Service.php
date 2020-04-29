@@ -904,6 +904,11 @@ class Service extends Base\Service
         // We get all the gateway refunds. We return back data for applicable and if success.
         foreach ($refunds as $refund)
         {
+            if ($refund->isScrooge() === true and $gateway === Payment\Gateway::BILLDESK)
+            {
+                continue;
+            }
+
             $merchant = $this->repo->merchant->fetchMerchantFromEntity($refund);
 
             $data[] = $this->getNewProcessor($merchant)->createGatewayRefundRecord($refund);

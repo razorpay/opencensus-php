@@ -14,6 +14,7 @@ use RZP\Gateway\Billdesk;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
+use RZP\Gateway\Base\ScroogeResponse;
 use Symfony\Component\DomCrawler\Crawler;
 
 class Gateway extends Base\Gateway
@@ -182,16 +183,51 @@ class Gateway extends Base\Gateway
                         'refund_id'      => $input['refund']['id'],
                     ]);
 
-                return;
+                return [
+                    Payment\Gateway::GATEWAY_RESPONSE  => json_encode($response),
+                    Payment\Gateway::GATEWAY_KEYS      => $this->getGatewayData($response)
+                ];
             }
 
             $this->trace->error(
                 TraceCode::PAYMENT_REFUND_FAILURE,
                 $response);
 
+            $errorCode   = $response[Fields::ERROR_CODE] ?? null;
+            $errorReason = $response[Fields::ERROR_REASON] ?? null;
+
             throw new Exception\GatewayErrorException(
-                ErrorCode::BAD_REQUEST_REFUND_FAILED);
+                ErrorCode::BAD_REQUEST_REFUND_FAILED,
+                $errorCode,
+                $errorReason,
+                [
+                    Payment\Gateway::GATEWAY_RESPONSE   => json_encode($response),
+                    Payment\Gateway::GATEWAY_KEYS       => $this->getGatewayData($response)
+                ]);
         }
+
+        return [
+            Payment\Gateway::GATEWAY_RESPONSE  => json_encode($response),
+            Payment\Gateway::GATEWAY_KEYS      => $this->getGatewayData($response)
+        ];
+    }
+
+    protected  function getGatewayData(array $refundFields)
+    {
+        if (empty($refundFields) === false)
+        {
+            return [
+                Fields::REQUEST_TYPE       => $refundFields[Fields::REQUEST_TYPE] ?? null,
+                Fields::MERCHANT_ID        => $refundFields[Fields::MERCHANT_ID] ?? null,
+                Fields::REF_STATUS         => $refundFields[Fields::REF_STATUS] ?? null,
+                Fields::ERROR_CODE         => $refundFields[Fields::ERROR_CODE] ?? null,
+                Fields::ERROR_REASON       => $refundFields[Fields::ERROR_REASON] ?? null,
+                Fields::PROCESS_STATUS     => $refundFields[Fields::PROCESS_STATUS] ?? null,
+                Fields::CHECKSUM           => $refundFields[Fields::CHECKSUM] ?? null,
+            ];
+        }
+
+        return [];
     }
 
     public function verify(array $input)
@@ -926,7 +962,12 @@ class Gateway extends Base\Gateway
         if (count($fields) !== count($content))
         {
             throw new Exception\GatewayErrorException(
-                ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE);
+                  ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE,
+                  null,
+                  null,
+                  [
+                    Payment\Gateway::GATEWAY_RESPONSE  => $responseBody
+                  ]);
         }
 
         $content = array_combine($fields, $content);
@@ -1191,14 +1232,44 @@ class Gateway extends Base\Gateway
      * Calls gateway to verify if a refund has
      * been successfully performed or not.
      *
-     * true  if refunded
-     * false if not refunded
      * @param array $input
-     * @return bool
+     * @return array
      */
     public function verifyRefund(array $input)
     {
-        return false;
+        parent::verify($input);
+
+        $scroogeResponse = new ScroogeResponse();
+
+        if ($this->isUnprocessedRefund($input) === true)
+        {
+            return $scroogeResponse->setSuccess(false)
+                                   ->setStatusCode(ErrorCode::REFUND_MANUALLY_CONFIRMED_UNPROCESSED)
+                                   ->toArray();
+        }
+
+        if ($this->isProcessedRefund($input) === true)
+        {
+            return $scroogeResponse->setSuccess(true)
+                                   ->toArray();
+        }
+
+        list($refunded, $verifyResponse) = $this->verifyIfRefunded($input);
+
+        if ($refunded === true)
+        {
+
+            return $scroogeResponse->setSuccess(true)
+                                   ->setGatewayVerifyResponse($verifyResponse)
+                                   ->toArray();
+        }
+        else
+        {
+            return $scroogeResponse->setSuccess(false)
+                                   ->setGatewayVerifyResponse($verifyResponse)
+                                   ->setStatusCode(ErrorCode::GATEWAY_ERROR_TRANSACTION_PENDING)
+                                   ->toArray();
+        }
     }
 
     protected function isMerchantProcuredTerminal($terminal)

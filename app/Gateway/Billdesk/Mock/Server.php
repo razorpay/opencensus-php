@@ -175,12 +175,12 @@ class Server extends Base\Mock\Server
 
         foreach ($refunds as $refund)
         {
-            $refundAmount += (double) $refunds['RefAmount'];
+            $refundAmount += (double) $refund['RefAmount'];
 
             $content['TotalRefundAmount'] = $refundAmount;
-            $content['LastRefundDate'] = $refunds['RefDateTime'];
-            $content['LastRefundRefNo'] = $refunds['RefundId'];
-            $content['RefundStatus'] = $refunds['RefStatus]'];
+            $content['LastRefundDate']    = $refund['RefDateTime'];
+            $content['LastRefundRefNo']   = $refund['RefundId'];
+            $content['RefundStatus']      = $refund['RefStatus]'];
         }
 
         $content['QueryStatus'] = 'Y';
