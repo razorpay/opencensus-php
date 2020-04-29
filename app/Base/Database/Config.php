@@ -35,6 +35,8 @@ class Config
     {
         $app = App::getFacadeRoot();
 
+        $env = $app->environment();
+
         $proxySqlSocket = $app['config']->get(self::DATABASE_CONFIG . '.' . self::PROXY_SQL_CONFIG);
 
         if ((empty($proxySqlSocket) === true) or (file_exists($proxySqlSocket) === false))
@@ -58,7 +60,8 @@ class Config
 
         $allowedRoutes = array_merge(Route::$admin, [self::TEST_ROUTE]);
 
-        if ((in_array($currentRoute, $allowedRoutes, true) === false))
+        if (($env !== 'automation') and
+            (in_array($currentRoute, $allowedRoutes, true) === false))
         {
             return;
         }

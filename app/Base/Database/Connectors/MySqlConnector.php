@@ -66,7 +66,8 @@ class MySqlConnector extends BaseMySqlConnector
                 // If it was socket connection that failed then,
                 // create connection using mysql host now.
 
-                if ($socketConnection === true)
+                if ((App::getFacadeRoot()->environment() !== 'automation') and
+                    ($socketConnection === true))
                 {
                     $this->app['proxysql.config']->unsetSocketFromDatabaseConfig($config['name']);
 

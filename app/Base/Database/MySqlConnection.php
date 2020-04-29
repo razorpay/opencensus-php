@@ -105,7 +105,8 @@ class MySqlConnection extends BaseMySqlConnection
         if ($this->causedByLostConnection($e->getPrevious())) {
             $dbConfig = $this->getConfig();
 
-            if (isset($dbConfig['unix_socket']) === true)
+            if ((App::getFacadeRoot()->environment() !== 'automation') and
+                (isset($dbConfig['unix_socket']) === true))
             {
                 $this->trace->warning(TraceCode::PROXY_SQL_CONNECTION_FAILED_TRYING_NORMAL_CONNECTION,
                     [
