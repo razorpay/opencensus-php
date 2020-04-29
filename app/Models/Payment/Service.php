@@ -1522,7 +1522,18 @@ class Service extends Base\Service
              */
             if ($isRefundRequired === false)
             {
+                $previousRefundAt = $payment->getRefundAt();
+
                 $this->core->updateRefundAt($payment->getPublicId(), null);
+
+                $this->trace->info(
+                    TraceCode::PAYMENTS_UPDATE_REFUND_AT,
+                    [
+                        'payment_id'         => $payment->getId(),
+                        'payment_status'     => $payment->getStatus(),
+                        'previous_refund_at' => $previousRefundAt,
+                        'current_refund_at'  => null,
+                    ]);
 
                 $updatedRefundAt++;
 
