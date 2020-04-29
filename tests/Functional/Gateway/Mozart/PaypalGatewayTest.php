@@ -181,7 +181,7 @@ class PaypalGatewayTest extends TestCase
 
         $refund = $this->getLastEntity('refund', true);
 
-        $this->assertEquals('failed', $refund['status']);
+        $this->assertEquals('created', $refund['status']);
         $this->assertEquals(1, $refund['attempts']);
 
         $this->clearMockFunction();
@@ -245,13 +245,15 @@ class PaypalGatewayTest extends TestCase
             }
         });
 
-        $response = $this->retryFailedRefund($refund['id']);
+        $response = $this->retryFailedRefund($refund['id'], $refund['payment_id'], [], ['amount' => $refund['amount']],'wallet_paypal');
+
 
         $refund = $this->getEntityById('refund', $refund['id'], true);
 
         $this->assertEquals($refund['id'], $response['refund_id']);
-        $this->assertEquals('processed', $response['status']);
-        $this->assertEquals(2, $refund['attempts']);
+       // Since scrooge is calling mozart directly without going via api, the refund row entity is not present in Mozart. Hence for wallet_paypal these changes are made in the test
+        $this->assertEquals('created', $response['status']);
+        $this->assertEquals(1, $refund['attempts']);
 
     }
 
