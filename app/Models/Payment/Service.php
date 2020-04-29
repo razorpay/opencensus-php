@@ -37,6 +37,7 @@ use RZP\Models\Customer\Token;
 use RZP\Models\Payment\Gateway;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Payment\Verify\Verify;
+use RZP\Exception\BadRequestException;
 use RZP\Models\Payment\Refund\Constants as RefundConstants;
 
 class Service extends Base\Service
@@ -2301,8 +2302,18 @@ class Service extends Base\Service
         $payment = $this->repo->payment->find($paymentId);
         $transaction = $payment->transaction;
 
-        if (($transaction === null) or
-            ($transaction->isBalanceUpdated() === true))
+        if (($payment->getStatus() !== Payment\Status::CAPTURED) or
+            (empty($transaction) === true))
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_STATUS_NOT_CAPTURED,
+                [
+                    'payment_id' => $paymentId
+                ]
+            );
+        }
+
+        if ($transaction->isBalanceUpdated() === true)
         {
             return;
         }

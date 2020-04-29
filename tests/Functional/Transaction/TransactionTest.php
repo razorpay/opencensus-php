@@ -628,6 +628,25 @@ class TransactionTest extends TestCase
         $this->assertEquals($oldBalance['balance']+ ($payment['amount'] - $payment['fee']), $balance['balance']);
     }
 
+    public function testHandleAsyncMerchantBalanceUpdateWithAuthPayment()
+    {
+        $this->mockRazorx();
+
+        $this->fixtures->merchant->addFeatures(['async_balance_update']);
+        $payment = $this->getDefaultPaymentArray();
+
+        $oldBalance = $this->getEntityById('balance', '10000000000000', true);
+
+        $payment = $this->doAuthPayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $balance = $this->getEntityById('balance', '10000000000000', true);
+
+        $this->assertEquals('authorized', $payment['status']);
+        $this->assertNotEquals($oldBalance['balance']+ ($payment['amount'] - $payment['fee']), $balance['balance']);
+    }
+
     public function testTransactionHold()
     {
         $transaction = $this->fixtures->create('transaction', ['merchant_id' => '10000000000000']);
