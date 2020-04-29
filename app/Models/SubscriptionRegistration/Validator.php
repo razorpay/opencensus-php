@@ -12,6 +12,7 @@ use RZP\Models\Payment;
 use RZP\Models\PaperMandate;
 use RZP\Models\Customer\Token;
 use RZP\Constants\Entity as E;
+use RZP\Models\UpiMandate\Entity as UPI_MANDATE;
 use RZP\Exception\BadRequestValidationFailureException;
 
 class Validator extends Base\Validator
@@ -23,8 +24,9 @@ class Validator extends Base\Validator
         Entity::MAX_AMOUNT                      => 'sometimes|integer|nullable',
         Entity::FIRST_PAYMENT_AMOUNT            => 'sometimes|integer|nullable',
         Entity::AUTH_TYPE                       => 'sometimes|string|nullable|in:netbanking,aadhaar,debitcard,physical',
-        Entity::METHOD                          => 'sometimes|string|nullable|in:emandate,card,nach',
+        Entity::METHOD                          => 'sometimes|string|nullable|in:emandate,card,nach,upi',
         Entity::NOTES                           => 'sometimes|notes',
+        UPI_MANDATE::FREQUENCY                  => 'required_if:method,upi',
     ];
 
     protected static $createValidators = [
@@ -73,10 +75,11 @@ class Validator extends Base\Validator
         Entity::MAX_AMOUNT                      => 'sometimes|integer|nullable',
         Entity::FIRST_PAYMENT_AMOUNT            => 'sometimes|integer|nullable',
         Entity::AUTH_TYPE                       => 'sometimes|string|nullable|in:netbanking,aadhaar,debitcard,physical',
-        Entity::METHOD                          => 'sometimes|string|nullable|in:emandate,card,nach',
+        Entity::METHOD                          => 'sometimes|string|nullable|in:emandate,card,nach,upi',
         Entity::NOTES                           => 'sometimes|notes',
         Entity::BANK_ACCOUNT                    => 'required_if:method,nach',
         Entity::NACH                            => 'sometimes_if:method,nach|custom',
+        UPI_MANDATE::FREQUENCY                  => 'required_if:method,upi',
     ];
 
     protected static $nachAuthTypeRules = [

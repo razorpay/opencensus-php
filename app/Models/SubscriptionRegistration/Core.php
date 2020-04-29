@@ -2,6 +2,7 @@
 
 namespace RZP\Models\SubscriptionRegistration;
 
+use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Constants;
 use RZP\Models\Base;
@@ -64,6 +65,12 @@ class Core extends Base\Core
             {
                 $customer = $this->createCustomer($input, $merchant);
 
+                if(isset($input['subscription_registration']['method'])  and
+                    $input['subscription_registration']['method'] == Method::UPI and $order === null)
+                {
+                    $order = $this->createOrderForUPI($input, $customer);
+                }
+
                 $subscriptionRegistration = $this->createSubscriptionRegistration($input, $merchant, $customer);
 
                 $invoice = $this->createInvoice($input, $merchant, $subscriptionRegistration, $batch, $order, $batchId);
@@ -81,6 +88,34 @@ class Core extends Base\Core
         $this->trace->count(Metric::SUBSCRIPTION_REGISTRATION_CREATED,$tokenRegistration->getMetricDimensions());
 
         return $invoice;
+    }
+
+    public function createOrderForUPI(& $input, $customer)
+    {
+        $orderPayLoad =
+            [
+                'amount'          =>  $input['subscription_registration']['first_payment_amount'],
+                'currency'        => 'INR',
+                'method'          =>  Method::UPI,
+                'customer_id'     => $input[Entity::CUSTOMER_ID],
+                'payment_capture' => 1,
+                'token'           =>
+                    [
+                        'max_amount'      => $input['subscription_registration']['max_amount'],
+                        'frequency'       => $input['subscription_registration']['frequency'],
+                        'recurring_type'  => \RZP\Models\UpiMandate\RecurringType::BEFORE,
+                        'recurring_value' => 31,
+                        'start_time'      => Carbon::now()->addDay(1)->getTimestamp(),
+                        'end_time'        => isset($input['subscription_registration']['end_time']) ? $input['subscription_registration']['end_time'] :
+                                                                            Carbon::now()->addYear(10)->getTimestamp(),
+                    ]
+            ];
+
+        $orderService = new Order\Service();
+
+        $order = $orderService->createOrder($orderPayLoad);
+
+        return $order;
     }
 
     public function createAuthLinkForOrder(array $tokenRegistrationInput, Order\Entity $order, Customer\Entity $customer)
@@ -495,7 +530,7 @@ class Core extends Base\Core
             $this->trace->count(Metric::SUBSCRIPTION_REGISTRATION_AUTO_PAYMENT_FAILED, $tokenRegistration->getMetricDimensions());
 
             $this->trace->traceException(
-                $e,
+                $ex,
                 null,
                 TraceCode::TOKEN_REGISTRATION_AUTO_CHARGE_FAILED,
                 [

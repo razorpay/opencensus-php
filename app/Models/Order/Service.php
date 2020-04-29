@@ -73,8 +73,9 @@ class Service extends Base\Service
         return $order;
     }
 
-    public function create(array $input)
+    public function createOrder(array $input)
     {
+
         $this->beforeCreate($input);
 
         $orderInput = (new Core())->getInputWithoutExtraParams($input);
@@ -82,6 +83,13 @@ class Service extends Base\Service
         $order = $this->processCreate($orderInput);
 
         $order = $this->afterCreate($input, $order);
+
+        return $order;
+    }
+
+    public function create(array $input)
+    {
+        $order = $this->createOrder($input);
 
         return $order->toArrayPublic();
     }
