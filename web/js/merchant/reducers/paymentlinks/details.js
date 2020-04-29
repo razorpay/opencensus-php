@@ -113,11 +113,11 @@ export const notifyCustomer = (paymentLink, medium) => {
   } else {
     let _paymentlink = new Invoice(paymentLink);
 
-    payload = _paymentlink.notify(type);
+    payload = _paymentlink.notify(medium);
   }
 
   return {
-    type: type === 'sms' ? SMS_SEND : EMAIL_SEND,
+    type: medium === 'sms' ? SMS_SEND : EMAIL_SEND,
     payload,
   };
 };
