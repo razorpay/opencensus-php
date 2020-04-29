@@ -136,6 +136,22 @@ return [
         ],
     ],
 
+    E::D2C_BUREAU_DETAIL => [
+        Type::PRIVILEGE_AUTH => [
+            [
+                'merchant_id' => '10000000000000'
+            ]
+        ]
+    ],
+
+    E::D2C_BUREAU_REPORT => [
+        Type::PRIVILEGE_AUTH => [
+            [
+                'merchant_id' => '10000000000000'
+            ]
+        ]
+    ],
+
     E::BATCH => [
         Type::PROXY_AUTH => [
             [
