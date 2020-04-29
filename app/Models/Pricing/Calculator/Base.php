@@ -436,6 +436,15 @@ abstract class Base extends BaseModel\Core
         }
         else
         {
+            // please see comment in validateAndGetOnePricingRule in Models/Pricing/Payment/Calculator.php
+            // for the reason to filter here
+            $rules = $this->getRelevantPricingRulesForFeeBearer($rules);
+
+            if (count($rules) === 1)
+            {
+                return $rules[0];
+            }
+
             // Should not reach this case, ever.
             throw new Exception\RuntimeException(
                 'Should not have reached here');

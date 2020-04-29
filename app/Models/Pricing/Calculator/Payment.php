@@ -40,7 +40,27 @@ class Payment extends Base
 
     protected function getPricingRule($rules, $method)
     {
-        $rules = $this->getRelevantPricingRulesForFeeBearer($rules);
+        $merchant = $this->entity->merchant;
+
+        $mode = $this->app['rzp.mode'] ?? \RZP\Constants\Mode::LIVE;
+
+        /*
+         * removing the fee bearer filter via razorx.
+         * at the beginning, the variant will be at 0(control) -> behavior is same as current behavior with the filter
+         * slowly, the variant will be ramped up to 100%.
+         * at this stage, the filter is no longer applicable -> fee bearer is decided by merchants fee bearer
+         * attribute for customer/platform merchants. for dynamic merchants, it would be decided by
+         * pricing rule selected
+         */
+        if ($merchant !== null)
+        {
+            $variant = $this->app['razorx']->getTreatment($merchant->getId(), 'removeFeeBearerFilter', $mode);
+
+            if ($variant === 'control')
+            {
+                $rules = $this->getRelevantPricingRulesForFeeBearer($rules);
+            }
+        }
 
         $rules = $this->getRelevantPricingRuleForProcurer($rules);
 
@@ -71,7 +91,6 @@ class Payment extends Base
 
         return $this->applyFiltersOnRules($rules, $filters);
     }
-
 
     protected function getRelevantPricingRuleForMethod($rules, $method)
     {
@@ -236,6 +255,35 @@ class Payment extends Base
         $rules = $this->applyFiltersOnRules($rules, $filters2);
 
         return $this->applyAmountRangeFilterAndReturnOneRule($rules);
+    }
+
+    protected function validateAndGetOnePricingRule($pricing)
+    {
+
+        /*
+         * Reason this "if" block of code is needed:
+         * During dynamic fee bearer rollout - fee_bearer is/was the very first filter attribute in
+         * payment pricing rule filtering
+         * However at initial rollout, validations were missing for some time. These validations were later added
+         *  to ensure that customer rules were not added to platform
+         * merchant and vice versa. But in the interim, some rules got added of the opposite fee_bearer type.
+         *  Even now, when a merchant is edited, it is possible that rules of opposite
+         * fee bearer may be present.
+         * .
+         * .
+         * Later, we removed/are removing via razorx the fee_bearer filter. So on account of above, we *may*
+         *  have multiple redundant rules.
+         * Due to above reason, we may end up with situation where payment could fail due to 2 rules being present
+         * 1 with platform fee_bearer and other with customer fee_bearer
+         *
+         * This if block is a last shot attempt to remove the redundant rule by applying fee_bearer filter
+         */
+        if (count($pricing) > 1)
+        {
+            $pricing = $this->getRelevantPricingRulesForFeeBearer($pricing);
+        }
+
+        return parent::validateAndGetOnePricingRule($pricing);
     }
 
     protected function getRelevantPricingRuleForWalletPayment($rules)
@@ -454,10 +502,18 @@ class Payment extends Base
     {
         parent::getRelevantPricingRule($pricing);
 
-        $feeBearer = $this->validateAndGetFeeBearer($this->pricingRules);
-
         $payment = $this->entity;
         // this is an side effect that is unavoidable.
+        if (($payment->merchant !== null) and
+            ($payment->merchant->isFeeBearerDynamic() === true))
+        {
+            $feeBearer = $this->validateAndGetFeeBearer($this->pricingRules);
+        }
+        else
+        {
+            $feeBearer = $payment->merchant->getFeeBearer();
+        }
+
         $payment->setFeeBearer($feeBearer);
 
     }

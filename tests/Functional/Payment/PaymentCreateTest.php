@@ -2595,19 +2595,6 @@ class PaymentCreateTest extends TestCase
         $this->assertEquals($paymentArray['amount'], $payment['amount']);
     }
 
-    public function testPaymentCreateMerchantCustomerBearerPricingPlatformBearer()
-    {
-        $paymentArray = $this->setUpAndGetPaymentArrayForFeeBearerPricingTest(
-            FeeBearer::CUSTOMER,
-            FeeBearer::PLATFORM);
-
-        $this->expectException(Exception\LogicException::class);
-
-        $this->expectExceptionMessage('Invalid rule count');
-
-        $this->doAuthAndCapturePayment($paymentArray);
-    }
-
     public function testPaymentCreateMerchantDynamicBearerPricingPlatformBearer()
     {
         $paymentArray = $this->setUpAndGetPaymentArrayForFeeBearerPricingTest(
@@ -2621,19 +2608,6 @@ class PaymentCreateTest extends TestCase
         $this->assertEquals(FeeBearer::PLATFORM, $payment['fee_bearer']);
 
         $this->assertEquals($paymentArray['amount'], $payment['amount']);
-    }
-
-    public function testPaymentCreateMerchantPlatformBearerPricingCustomerBearer()
-    {
-        $paymentArray = $this->setUpAndGetPaymentArrayForFeeBearerPricingTest(
-            FeeBearer::PLATFORM,
-            FeeBearer::CUSTOMER);
-
-        $this->expectException(Exception\LogicException::class);
-
-        $this->expectExceptionMessage('Invalid rule count');
-
-        $this->doAuthAndCapturePayment($paymentArray);
     }
 
     public function testPaymentCreateMerchantCustomerBearerPricingCustomerBearer()
