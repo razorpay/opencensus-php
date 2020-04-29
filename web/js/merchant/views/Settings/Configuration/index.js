@@ -85,7 +85,6 @@ export default class CongfigurationContainer extends Component {
 
   render() {
     let { config, features, loading } = this.props.configState;
-
     return (
       <div class="content-wrapper content-sm" id="settings-content">
         {loading ? (
@@ -100,6 +99,7 @@ export default class CongfigurationContainer extends Component {
             )}
             {this.props.user.isActivated &&
             this.props.mode === 'live' &&
+            config.fee_bearer !== 'customer' &&
             showWhenUtil({ featureEnabled: 'offers' }) ? (
               <PaypalOnboarding />
             ) : null}
