@@ -56,7 +56,6 @@
           <exclude>./tests/Functional/Workflow/</exclude>
           <exclude>./tests/Unit/</exclude>
           <exclude>./tests/Functional/Gateway/</exclude>
-          <exclude>./tests/Functional/BankingAccountStatement/</exclude>
           <exclude>./tests/Functional/Admin/GroupEsTest.php</exclude>
           <exclude>./tests/Functional/PaymentsUpi</exclude>
           <exclude>./tests/Functional/FeeRecovery/</exclude>
@@ -88,6 +87,7 @@
           <directory>./tests/Functional/Offer/</directory>
           <directory>./tests/Functional/Order/</directory>
           <directory>./tests/Functional/PaymentLink/</directory>
+          <directory>./tests/Functional/Payout/</directory>
           <directory>./tests/Functional/Pricing/</directory>
           <directory>./tests/Functional/Promotion/</directory>
           <directory>./tests/Functional/RazorX/</directory>
@@ -118,10 +118,8 @@
           <directory>./tests/Functional/PaymentsUpi</directory>
           <directory>./tests/Functional/Contact/</directory>
           <directory>./tests/Functional/FundAccounts/</directory>
-          <directory>./tests/Functional/Payout/</directory>
           <directory>./tests/Functional/FeeRecovery/</directory>
           <directory>./tests/Functional/PayoutLink/</directory>
-          <directory>./tests/Functional/BankingAccountStatement/</directory>
       </testsuite>
       <testsuite name="Payment Test Suite">
           <directory>./tests/Functional/Payment/</directory>

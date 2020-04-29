@@ -58,13 +58,6 @@ trait TestsBusinessBanking
         string $balanceType = AccountType::SHARED,
         $channel = null)
     {
-        (new Admin\Service)->setConfigKeys(
-            [
-                Admin\ConfigKey::RX_ACCOUNT_NUMBER_SERIES_PREFIX => [
-                    Account::SHARED_ACCOUNT => '222444',
-                ]
-            ]);
-
         // Activate merchant with business_banking flag set to true.
         $this->fixtures->merchant->edit('10000000000000', ['business_banking' => 1]);
         $this->fixtures->merchant->activate();
@@ -98,12 +91,7 @@ trait TestsBusinessBanking
             $this->fixtures->merchant->addFeatures(['virtual_accounts', 'payout']);
         }
 
-        (new Admin\Service)->setConfigKeys(
-            [
-                Admin\ConfigKey::RX_ACCOUNT_NUMBER_SERIES_PREFIX => [
-                    Account::SHARED_ACCOUNT => '222444',
-                ]
-            ]);
+        $this->setupRedisConfigKeysForTerminalSelection();
 
         // Additionally, creates a terminal for bank transfer on banking balance.
         $this->fixtures->terminal->createBankAccountTerminalForBusinessBanking();
@@ -154,17 +142,30 @@ trait TestsBusinessBanking
             $this->fixtures->on('live')->merchant->addFeatures(['virtual_accounts', 'payout']);
         }
 
+        $this->setupRedisConfigKeysForTerminalSelection();
+
+        // Sets instance member variable to be re-usable in other test methods for assertions.
+        $this->bankingBalance = $bankingBalance;
+        $this->virtualAccount = $virtualAccount;
+        $this->bankAccount    = $bankAccount;
+    }
+
+    protected function setupRedisConfigKeysForTerminalSelection()
+    {
+        (new Admin\Service)->setConfigKeys(
+            [
+                Admin\ConfigKey::RX_SHARED_ACCOUNT_ALLOWED_CHANNELS => [
+                    Channel::YESBANK,
+                    Channel::ICICI
+                ]
+            ]);
+
         (new Admin\Service)->setConfigKeys(
             [
                 Admin\ConfigKey::RX_ACCOUNT_NUMBER_SERIES_PREFIX => [
                     Account::SHARED_ACCOUNT => '222444',
                 ]
             ]);
-
-        // Sets instance member variable to be re-usable in other test methods for assertions.
-        $this->bankingBalance = $bankingBalance;
-        $this->virtualAccount = $virtualAccount;
-        $this->bankAccount    = $bankAccount;
     }
 
     protected function createPayout(array $extraPayoutParams = [])
