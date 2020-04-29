@@ -832,7 +832,7 @@ class UpiMindgateGatewayTest extends TestCase
 
     public function testValidateVpaSuccess()
     {
-        Gateway::$upiValidateVpaTerminals[Mode::TEST] = ['100UPIMindgate'];
+        config()->set('gateway.validate_vpa_terminal_ids.test', '100UPIMindgate');
 
         $this->fixtures->merchant->addFeatures(['enable_vpa_validate']);
 
@@ -843,7 +843,7 @@ class UpiMindgateGatewayTest extends TestCase
 
     public function testValidateVpaFailure()
     {
-        Gateway::$upiValidateVpaTerminals[Mode::TEST] = ['100UPIMindgate'];
+        config()->set('gateway.validate_vpa_terminal_ids.test', '100UPIMindgate');
 
         $this->fixtures->merchant->addFeatures(['enable_vpa_validate']);
 

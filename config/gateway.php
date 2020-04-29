@@ -916,4 +916,9 @@ return [
     'proxy_enabled' => env('PROXY_ENABLED'),
 
     'proxy_address' => env('PROXY_ADDRESS'),
+
+    'validate_vpa_terminal_ids' => [
+        'test'  => env('VALIDATE_VPA_TEST_TERMINAL_IDS'),
+        'live'  => env('VALIDATE_VPA_LIVE_TERMINAL_IDS'),
+    ],
 ];

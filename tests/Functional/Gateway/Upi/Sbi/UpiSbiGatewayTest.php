@@ -274,7 +274,7 @@ class UpiSbiGatewayTest extends TestCase
 
     public function testValidateVpaSuccess()
     {
-        Gateway::$upiValidateVpaTerminals['test'] = ['100UPIMgateSbi'];
+        config()->set('gateway.validate_vpa_terminal_ids.test', '100UPIMgateSbi');
 
         $this->fixtures->merchant->addFeatures(['enable_vpa_validate']);
 
@@ -285,7 +285,7 @@ class UpiSbiGatewayTest extends TestCase
 
     public function testValidateVpaFailure()
     {
-        Gateway::$upiValidateVpaTerminals['test'] = ['100UPIMgateSbi'];
+        config()->set('gateway.validate_vpa_terminal_ids.test', '100UPIMgateSbi');
 
         $this->fixtures->merchant->addFeatures(['enable_vpa_validate']);
 
@@ -296,7 +296,7 @@ class UpiSbiGatewayTest extends TestCase
 
     public function testValidateAccountVpa()
     {
-        Gateway::$upiValidateVpaTerminals['test'] = ['100UPIMgateSbi'];
+        config()->set('gateway.validate_vpa_terminal_ids.test', '100UPIMgateSbi');
 
         $this->ba->publicAuth();
 
@@ -305,7 +305,7 @@ class UpiSbiGatewayTest extends TestCase
 
     public function testValidateAccountVpaFailed()
     {
-        Gateway::$upiValidateVpaTerminals['test'] = ['100UPIMgateSbi'];
+        config()->set('gateway.validate_vpa_terminal_ids.test', '100UPIMgateSbi');
 
         $this->ba->publicAuth();
 
@@ -314,7 +314,7 @@ class UpiSbiGatewayTest extends TestCase
 
     public function testValidateAccountInvalidInput()
     {
-        Gateway::$upiValidateVpaTerminals['test'] = ['100UPIMgateSbi'];
+        config()->set('gateway.validate_vpa_terminal_ids.test', '100UPIMgateSbi');
 
         $this->ba->publicAuth();
 
@@ -323,7 +323,7 @@ class UpiSbiGatewayTest extends TestCase
 
     public function testValidateAccountVpaGatewayError()
     {
-        Gateway::$upiValidateVpaTerminals['test'] = ['100UPIMgateSbi'];
+        config()->set('gateway.validate_vpa_terminal_ids.test', '100UPIMgateSbi');
 
         $this->ba->publicAuth();
 

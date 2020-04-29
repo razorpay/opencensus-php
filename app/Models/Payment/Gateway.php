@@ -2390,9 +2390,36 @@ class Gateway
 
     public static function getTerminalsForValidateVpaForMode(string $mode)
     {
-        // Currently we are only using MindGate and SBI for live and Sharp for test, later when
-        // we have more gateways, we can introduce gateway selection logic here.
-        return self::$upiValidateVpaTerminals[$mode];
+        $config = config('gateway.validate_vpa_terminal_ids');
+
+        try
+        {
+            $tids = str_getcsv($config[$mode]);
+
+            if (count($tids) === 0)
+            {
+                throw new Exception\RuntimeException('At least one terminal id is needed');
+            }
+
+            return array_map(
+                function($tid)
+                {
+                    $trimmed = trim($tid);
+
+                    if (strlen($trimmed) !== Entity::ID_LENGTH)
+                    {
+                        throw new Exception\RuntimeException('Invalid length for terminal Id');
+                    }
+                    return $trimmed;
+                },
+                $tids);
+        }
+        catch (\Throwable $throwable)
+        {
+            // As a fallback, we are still relying on older implementation
+            // This is to ignore any human error with envs on production
+            return self::$upiValidateVpaTerminals[$mode];
+        }
     }
 
     public static function isCaptureVerifyEnabledGateway($gateway)
