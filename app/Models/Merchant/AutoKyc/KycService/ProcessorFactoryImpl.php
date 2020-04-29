@@ -11,6 +11,8 @@ use RZP\Models\Merchant\AutoKyc\KycService\poa\POAProcessor;
 use RZP\Models\Merchant\AutoKyc\KycService\poi\POIProcessor;
 use RZP\Models\Merchant\AutoKyc\KycService\poa\POAProcessorMock;
 use RZP\Models\Merchant\AutoKyc\KycService\poi\POIProcessorMock;
+use RZP\Models\Merchant\AutoKyc\KycService\gstin\GSTINProcessor;
+use RZP\Models\Merchant\AutoKyc\KycService\gstin\GSTINProcessorMock;
 use RZP\Models\Merchant\AutoKyc\KycService\kycDetails\KycDetailsProcessor;
 use RZP\Models\Merchant\AutoKyc\KycService\register\RegistrationProcessor;
 use RZP\Models\Merchant\AutoKyc\KycService\companyPan\CompanyPanProcessor;
@@ -126,6 +128,27 @@ class ProcessorFactoryImpl implements ProcessorFactory
         }
 
         return new KycDetailsProcessor($input);
+    }
+
+    public static function getGSTINProcessor(array $input): Processor
+    {
+        $app = App::getFacadeRoot();
+
+        $mock = $app['config']['applications.kyc.mock'];
+
+        if ($mock === true)
+        {
+            $GSTINProcessorMock = new GSTINProcessorMock($input);
+
+            // this config is not defined in application config , this is used in test case only
+            $mockStatus = $app['config']['applications.kyc.gstin_authentication'] ?? Constants::SUCCESS;
+
+            $GSTINProcessorMock->setMockStatus($mockStatus);
+
+            return $GSTINProcessorMock;
+        }
+
+        return new GSTINProcessor($input);
     }
 
     public static function getCompanyPanProcessor(array $input): ?Processor

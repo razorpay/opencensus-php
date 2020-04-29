@@ -117,6 +117,7 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
     const COUPON_CODE                        = 'coupon_code';
     const REFERRAL_CODE                      = 'referral_code';
     const FUND_ACCOUNT_VALIDATION_ID         = 'fund_account_validation_id';
+    const GSTIN_VERIFICATION_STATUS          = 'gstin_verification_status';
 
     const SUBMIT                                   = 'submit';
     const ARCHIVE                                  = 'archive';
@@ -363,6 +364,7 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
         self::AUTHORIZED_SIGNATORY_DOB,
         self::PLATFORM,
         self::FUND_ACCOUNT_VALIDATION_ID,
+        self::GSTIN_VERIFICATION_STATUS,
         self::DATE_OF_ESTABLISHMENT,
         self::COMPANY_PAN_VERIFICATION_STATUS,
     ];
@@ -1092,5 +1094,15 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
     public function setPennyTestingUpdatedAt(string $pennyTestingUpdatedAt)
     {
         $this->setAttribute(self::PENNY_TESTING_UPDATED_AT, $pennyTestingUpdatedAt);
+    }
+
+    public function getGstinVerificationStatus()
+    {
+        return $this->getAttribute(self::GSTIN_VERIFICATION_STATUS);
+    }
+
+    public function setGstinVerificationStatus(string $gstinVerificationStatus = null)
+    {
+        return $this->setAttribute(self::GSTIN_VERIFICATION_STATUS, $gstinVerificationStatus);
     }
 }

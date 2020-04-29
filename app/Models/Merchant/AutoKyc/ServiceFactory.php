@@ -61,16 +61,13 @@ class ServiceFactory
         {
             case DEConstants::POI :
             case DEConstants::REGISTER :
-
+            case DEConstants::GSTIN :
+            case DEConstants::COMPANY_PAN:
                 return true;
 
             case DEConstants::POA :
 
                 return self::servePOAFromKycService($input);
-
-            case DEConstants::COMPANY_PAN:
-
-                return true;
 
             default :
                 throw new LogicException(ErrorCode::UNHANDLED_KYC_PROCESSOR_TYPE, null, [

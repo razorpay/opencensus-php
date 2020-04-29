@@ -11,4 +11,6 @@ interface ProcessorFactory
     public static function getCompanyPanProcessor(array $input): ?Processor;
 
     public static function getPOAProcessor(array $input): Processor;
+
+    public static function getGSTINProcessor(array $input): ?Processor;
 }

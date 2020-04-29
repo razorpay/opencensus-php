@@ -13,6 +13,7 @@ final class Metric
     const POI_VERIFICATION_STATUS_TOTAL         = 'poi_verification_status_total';
     const POA_VERIFICATION_STATUS_TOTAL         = 'poa_verification_status_total';
     const COMPANY_PAN_VERIFICATION_STATUS_TOTAL = 'company_pan_verification_total';
+    const GSTIN_VERIFICATION_STATUS_TOTAL       = 'gstin_verification_status_total';
 
     const PENNY_TESTING_STATUS_TOTAL              = 'penny_testing_status_total';
     const PENNY_TESTING_RETRY_COUNT               = 'penny_testing_retry_count';

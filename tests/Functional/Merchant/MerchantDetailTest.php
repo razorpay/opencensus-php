@@ -22,6 +22,7 @@ use RZP\Models\Merchant\Detail\BusinessCategory;
 use RZP\Models\Merchant\Detail\BusinessSubcategory;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Models\Merchant\Detail\GSTINVerificationStatus;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 use RZP\Models\Merchant\Detail\Entity as MerchantDetails;
 use RZP\Models\Merchant\Document\Entity as MerchantDocuments;
@@ -1591,32 +1592,103 @@ class MerchantDetailTest extends OAuthTestCase
 
     public function testCanSubmitAutoKycVerificationStatusIncorrect()
     {
-        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields', [
+        $input = [
             'poi_verification_status'         => 'incorrect_details',
             'company_pan_verification_status' => 'verified',
             'business_type'                   => '4'
-        ]);
+        ];
 
-        $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id']);
-
-        $this->mockRazorX(__FUNCTION__, 'registered_onboarding_auto_kyc', 'on', $merchantDetail['merchant_id']);
-
-        $this->startTest();
+        $this->checkCanSubmitForAutoKycVerificationStatus($input, 'submitL2FormCanSubmitFalse');
     }
 
     public function testCanSubmitAutoKycVerificationStatusCorrectDetails()
     {
-        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields', [
+        $input = [
             'poi_verification_status'         => 'failed',
-            'company_pan_verification_status' => 'verified']);
+            'company_pan_verification_status' => 'verified',
+            'gstin_verification_status'       => 'verified',
+            ];
 
-        $this->createBalanceForSharedMerchant();
+        $this->checkCanSubmitForAutoKycVerificationStatus($input, 'testSubmit');
+    }
+
+    protected function checkCanSubmitForAutoKycVerificationStatus(array $input, string $test)
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields', $input);
 
         $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id']);
 
         $this->mockRazorX(__FUNCTION__, 'registered_onboarding_auto_kyc', 'on', $merchantDetail['merchant_id']);
 
-        $this->startTest($this->testData['testSubmit']);
+        $this->createBalanceForSharedMerchant();
+
+        $testdata = $this->testData[$test];
+
+        $this->startTest($testdata);
+    }
+
+    public function testGSTINVerification()
+    {
+        $this->fixtures->create('merchant_detail', ['merchant_id' => '10000000000000']);
+
+        $this->gstinVerification('gstinVerification', 'success', 'verified', [
+            'promoter_pan_name' => 'Shashank Kumar',
+            'business_name'     => 'xyz',]);
+
+        $this->gstinVerification('gstinVerification', 'incorrect_details', 'incorrect_details', [
+            'promoter_pan_name' => 'Shashank Kumar',
+            'business_name'     => 'xyz',]);
+
+        $this->gstinVerification('gstinVerification', 'failure', 'failed', [
+            'promoter_pan_name' => 'Shashank Kumar',
+            'business_name'     => 'xyz',]);
+
+        $this->gstinVerification('gstinVerification', 'success', 'not_matched', [
+            'promoter_pan_name' => 'random name',
+            'business_name'     => 'xyz',]);
+    }
+
+    public function testGSTINVerificationFuzzyMatchFailureOnBusinessName()
+    {
+        $this->fixtures->create('merchant_detail', ['merchant_id' => '10000000000000']);
+
+        $this->gstinVerification('testGSTINVerificationFuzzyMatchFailureOnBusinessName','success','not_matched',[
+            'promoter_pan_name' => 'Shashank Kumar',
+            'business_name'     => 'xyz',]);
+    }
+
+    protected function gstinVerification($test, string $mockStatus, string $gstinVerificationStatus, array $input)
+    {
+        Config::set('applications.kyc.gstin_authentication', $mockStatus);
+
+        Config::set('applications.kyc.mock', true);
+
+        $this->fixtures->on('live')->edit('merchant_detail','10000000000000', $input);
+        $this->fixtures->on('test')->edit('merchant_detail','10000000000000', $input);
+
+        $this->mockRazorX($test, 'registered_onboarding_auto_kyc', 'on', '10000000000000');
+
+        $this->ba->proxyAuth();
+
+        $testData = $this->testData[$test];
+
+        $this->startTest($testData);
+
+        $merchantDetails = $this->getDbEntityById('merchant_detail', '10000000000000');
+
+        $this->assertEquals($gstinVerificationStatus, $merchantDetails->getGstinVerificationStatus());
+    }
+
+    public function testCanSubmitAutoKycVerificationStatusGstinIncorrect()
+    {
+        $input = [
+            'poi_verification_status'         => 'verified',
+            'company_pan_verification_status' => 'verified',
+            'gstin_verification_status'       => 'incorrect_details',
+            'business_type'                   => '4'
+        ];
+
+        $this->checkCanSubmitForAutoKycVerificationStatus($input, 'submitL2FormCanSubmitFalse');
     }
 
     protected function createBalanceForSharedMerchant()

@@ -73,6 +73,8 @@ class Core extends Base\Core
 
         $this->verifyCompanyPanDetailsIfApplicable($merchantDetails, $merchant, $input);
 
+        $this->verifyGSTINIfApplicable($merchantDetails, $merchant, $input);
+
         return $this->repo
                     ->transactionOnLiveAndTest(
                         function () use (
@@ -2139,7 +2141,7 @@ class Core extends Base\Core
      */
     protected function checkFieldsUpdation(array $fields, array $input, string $merchantId, array $requiredFields = [])
     {
-        $requiredFields = empty($reqiredFields) === true ? $fields : $requiredFields;
+        $requiredFields = empty($requiredFields) === true ? $fields : $requiredFields;
 
         $merchantDetails = $this->repo->merchant_detail->findByPublicId($merchantId);
 
@@ -2235,5 +2237,73 @@ class Core extends Base\Core
         }
 
         return $response;
+    }
+
+    protected function verifyGSTINIfApplicable(Entity $merchantDetails, Merchant\Entity $merchant, array $input)
+    {
+        if (((new Merchant\Core())->isAutoKycEnabled($merchantDetails, $merchant) === false) or
+            ((array_key_exists(Entity::GSTIN, $input) === true) and
+             ($input[Entity::GSTIN] === null)))
+        {
+            $merchantDetails->setgstinVerificationStatus(null);
+
+            return;
+        }
+
+        $fields = [
+            Entity::GSTIN,
+            Entity::BUSINESS_NAME,
+            Entity::PROMOTER_PAN_NAME,
+            Entity::BUSINESS_OPERATION_ADDRESS
+        ];
+
+        $requiredFields = [
+            Entity::GSTIN,
+            Entity::BUSINESS_NAME,
+            Entity::PROMOTER_PAN_NAME,
+        ];
+
+        if (($merchantDetails->getGstinVerificationStatus() !== GSTINVerificationStatus::FAILED) and
+            ($this->checkFieldsUpdation($fields, $input, $merchant->getId(), $requiredFields) === false))
+        {
+            return;
+        }
+
+        $verificationStatus = GSTINVerificationStatus::FAILED;
+        try
+        {
+            $input = [
+                DEConstants::GSTIN               => $merchantDetails->getGstin(),
+                DEConstants::COMPANY_NAME        => $merchantDetails->getBusinessName() ?? '',
+                DEConstants::PROMOTER_PAN_NAME   => $merchantDetails->getPromoterPanName() ?? '',
+                DEConstants::OPERATIONAL_ADDRESS => $merchantDetails->getBusinessOperationAddress() ?? '',
+            ];
+
+            $verificationStatus = (new AutoKyc\Core())->verifyGSTIN($merchantDetails, $input);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e,
+                                         null,
+                                         TraceCode::MERCHANT_GSTIN_VERIFICATION_FAILED);
+        }
+
+        $merchantDetails->setGstinVerificationStatus($verificationStatus);
+
+        $dimension = $this->fetchGSTINMetricDimensions($merchantDetails);
+
+        $this->trace->count(DetailMetric::GSTIN_VERIFICATION_STATUS_TOTAL, $dimension);
+    }
+
+    /**
+     * @param Entity $merchantDetail
+     *
+     * @return array
+     */
+    protected function fetchGSTINMetricDimensions(Entity $merchantDetail): array
+    {
+        return [
+            Detail\Constants::GSTIN_STATUS => $merchantDetail->getGstinVerificationStatus()
+        ];
     }
 }

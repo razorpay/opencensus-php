@@ -72,6 +72,16 @@ class ProcessorFactoryImpl implements ProcessorFactory
         return null;
     }
 
+    /**
+     * @param array $input
+     *
+     * @return null|Processor
+     */
+    public static function getGSTINProcessor(array $input): ?Processor
+    {
+        return null;
+    }
+
     public static function getCompanyPanProcessor(array $input): ?Processor
     {
         return null;

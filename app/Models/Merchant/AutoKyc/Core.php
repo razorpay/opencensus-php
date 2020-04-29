@@ -7,6 +7,7 @@ use RZP\Error\ErrorCode;
 use RZP\Exception\LogicException;
 use RZP\Models\Merchant\AutoKyc\Verifiers\POAVerifier;
 use RZP\Models\Merchant\AutoKyc\Verifiers\POIVerifier;
+use RZP\Models\Merchant\AutoKyc\Verifiers\GSTINVerifier;
 use RZP\Models\Merchant\Detail\Constants as DEConstants;
 use RZP\Models\Merchant\AutoKyc\Verifiers\CompanyPanVerifier;
 use RZP\Models\Merchant\AutoKyc\KycService\ProcessorFactoryImpl as KycProcessorFactory;
@@ -130,7 +131,38 @@ class Core extends Base\Core
             DEConstants::OCR_RESPONSE        => $response,
             DEConstants::VERIFICATION_RESULT => $verificationResult,
         ];
+    }
 
+    /**
+     * @param KycEntity $entity
+     * @param array     $input
+     *
+     * @return string
+     * @throws LogicException
+     */
+    public function verifyGSTIN(KycEntity $entity, array $input): string
+    {
+        $this->registerKyc($entity);
+
+        $gstinInput = [
+            DEConstants::GSTIN     => $input[DEConstants::GSTIN],
+            DEConstants::ENTITY_ID => $entity->getEntityId(),
+            DEConstants::KYC_ID    => $entity->getKycId(),
+        ];
+
+        $response = $this->process($gstinInput, DEConstants::GSTIN);
+
+        $dataToVerify = [
+            DEConstants::COMPANY_NAME        => $input[DEConstants::COMPANY_NAME],
+            DEConstants::PROMOTER_PAN_NAME   => $input[DEConstants::PROMOTER_PAN_NAME],
+            DEConstants::OPERATIONAL_ADDRESS => $input[DEConstants::OPERATIONAL_ADDRESS],
+        ];
+
+        $gstinVerifier = new GSTINVerifier($dataToVerify, $response);
+
+        (new Events())->sendServiceVerifierEvents($response);
+
+        return $gstinVerifier->verify();
     }
 
     /**
@@ -219,6 +251,10 @@ class Core extends Base\Core
             case DEConstants::COMPANY_PAN :
 
                 return $kycVerifierFactory::getCompanyPanProcessor($input);
+
+            case DEConstants::GSTIN :
+
+                return $kycVerifierFactory::getGSTINProcessor($input);
 
             default :
                 throw new LogicException(ErrorCode::UNHANDLED_KYC_PROCESSOR_TYPE, null, [

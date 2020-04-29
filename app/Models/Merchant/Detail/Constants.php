@@ -10,6 +10,7 @@ class Constants
     const PAN_NUMBER        = 'pan_number';
     const PROMOTER_PAN      = 'promoter_pan';
     const PROMOTER_PAN_NAME = 'promoter_pan_name';
+    const MEMBERS           = 'members';
 
     // input for business pan verifier
     const COMPANY_PAN      = 'company_pan';
@@ -18,6 +19,7 @@ class Constants
 
     const POI_STATUS                       = 'poi_status';
     const POA_STATUS                       = 'poa_status';
+    const GSTIN_STATUS                     = 'gstin_status';
     const DOCUMENT_TYPE                    = 'document_type';
     const DOCUMENT_SOURCE                  = 'document_source';
     const BANK_DETAILS_VERIFICATION_STATUS = 'bank_details_verification_status';
@@ -82,6 +84,12 @@ class Constants
     const OCR_RESPONSE           = 'ocr_response';
     const VERIFICATION_RESULT    = 'verification_result';
 
+    //gstin integration constants
+    const COMPANY_NAME        = 'company_name';
+    const LEGAL_NAME          = 'legal_name';
+    const OPERATIONAL_ADDRESS = 'operational_address';
+    const ADDRESS             = 'address';
+
     const DOCUMENT_VERIFICATION_STATUS          = 'document_verification_status';
     const OCR_MATCHING_PERCENTAGE_WITH_PAN_NAME = 'ocr_match_percentage_with_pan_name';
 
@@ -91,7 +99,8 @@ class Constants
         self::AADHAAR         => 'aadhaar',
         self::PASSPORT        => 'passport',
         self::VOTERS_ID       => 'voters_id',
-        self::DRIVERS_LICENSE => 'drivers_license'
+        self::DRIVERS_LICENSE => 'drivers_license',
+        self::GSTIN           => 'gstin',
     ];
 
     // Using this blacked listed banks to block bank account details
@@ -125,6 +134,7 @@ class Constants
     const PASSPORT        = 'PASSPORT';
     const VOTERS_ID       = 'VOTERS_ID';
     const DRIVERS_LICENSE = 'DRIVERS_LICENSE';
+    const GSTIN           = 'GSTIN';
 
     // flows used during activation
     const ACTIVATION               = 'activaiton';

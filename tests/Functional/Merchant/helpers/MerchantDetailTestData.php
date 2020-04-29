@@ -1602,7 +1602,7 @@ return [
         ],
     ],
 
-    'testCanSubmitAutoKycVerificationStatusIncorrect' => [
+    'submitL2FormCanSubmitFalse' => [
         'request'  => [
             'content' => [
                 'submit' => true
@@ -1613,6 +1613,50 @@ return [
         'response' => [
             'content' => [
                 'can_submit'   => false,
+            ],
+        ],
+    ],
+
+    'gstinVerification' => [
+        'request' => [
+            'content' => [
+                'gstin' => '07AADCB2230M1ZV',
+                'business_name' => 'RELIANCE INDUSTRIES LIMITED',
+            ],
+            'url' => '/merchant/activation',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'gstin' => '07AADCB2230M1ZV',
+                'business_name' => 'RELIANCE INDUSTRIES LIMITED',
+                'verification' => [
+                    'status' => 'disabled',
+                    'disabled_reason' => 'required_fields',
+                ],
+                'can_submit' => false,
+            ],
+        ],
+    ],
+
+    'testGSTINVerificationFuzzyMatchFailureOnBusinessName' => [
+        'request' => [
+            'content' => [
+                'gstin' => '07AADCB2230M1ZV',
+                'business_name' => 'random business'
+            ],
+            'url' => '/merchant/activation',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'gstin' => '07AADCB2230M1ZV',
+                'business_name' => 'random business',
+                'verification' => [
+                    'status' => 'disabled',
+                    'disabled_reason' => 'required_fields',
+                ],
+                'can_submit' => false,
             ],
         ],
     ],

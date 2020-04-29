@@ -10,6 +10,7 @@ class FormSubmissionValidStatusesMap
     const DOCUMENT_LIST_L2 = [
         Constants::POI,
         Constants::COMPANY_PAN,
+        Constants::GSTIN,
     ];
     /**
      * list of documents for which we need to verify status before submission
@@ -23,12 +24,14 @@ class FormSubmissionValidStatusesMap
         Constants::POI         => Entity::POI_VERIFICATION_STATUS,
         Constants::POA         => Entity::POA_VERIFICATION_STATUS,
         Constants::COMPANY_PAN => Entity::COMPANY_PAN_VERIFICATION_STATUS,
+        Constants::GSTIN       => Entity::GSTIN_VERIFICATION_STATUS,
     ];
 
     const ALLOWED_VERIFICATION_STATUS_MAP = [
         Constants::POI         => [POIStatus::FAILED, POIStatus::VERIFIED, POIStatus::NOT_MATCHED],
         Constants::COMPANY_PAN => [CompanyPanStatus::FAILED, CompanyPanStatus::VERIFIED, CompanyPanStatus::NOT_MATCHED],
         Constants::POA         => [PoaVerificationStatus::VERIFIED, PoaVerificationStatus::FAILED],
+        Constants::GSTIN       => [GSTINVerificationStatus::FAILED, GSTINVerificationStatus::VERIFIED, GSTINVerificationStatus::NOT_MATCHED],
     ];
 
     /**
