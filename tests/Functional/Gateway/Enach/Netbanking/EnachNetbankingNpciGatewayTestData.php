@@ -161,4 +161,48 @@ return [
             'internal_error_code'   => ErrorCode::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED,
         ],
     ],
+
+    'testRegistrationPaymentForDebitOnlyBank' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'   => PublicErrorDescription::BAD_REQUEST_PAYMENT_BANK_RECURRING_NOT_SUPPORTED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'                 => 'RZP\Exception\BadRequestException',
+            'internal_error_code'   => ErrorCode::BAD_REQUEST_PAYMENT_BANK_RECURRING_NOT_SUPPORTED,
+        ],
+    ],
+
+    'testPreferencesForDebitOnlyBank' => [
+        'request' => [
+            'content' => [],
+            'url' => '/preferences',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
+    'testRegistrationOrderForDebitOnlyBank' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'   => PublicErrorDescription::BAD_REQUEST_ORDER_BANK_INVALID,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'                 => 'RZP\Exception\BadRequestException',
+            'internal_error_code'   => ErrorCode::BAD_REQUEST_ORDER_BANK_INVALID,
+        ],
+    ],
 ];

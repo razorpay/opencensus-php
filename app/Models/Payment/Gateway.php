@@ -382,6 +382,7 @@ class Gateway
         IFSC::TMBL,
         IFSC::UBIN,
         IFSC::USFB,
+        IFSC::UTBI,
         IFSC::UTIB,
         IFSC::YESB,
     ];
@@ -408,7 +409,12 @@ class Gateway
         IFSC::SBIN,
         IFSC::SIBL,
         IFSC::USFB,
+        IFSC::UTBI,
         IFSC::YESB,
+    ];
+
+    const EMANDATE_REGISTRATION_DISABLED_BANKS = [
+        IFSC::UTBI,
     ];
 
     const EMANDATE_NB_DIRECT_BANKS = [
@@ -2435,6 +2441,11 @@ class Gateway
     public static function isCaptureVerifyReportEnabledGateways($gateway)
     {
         return (in_array($gateway, Payment\Gateway::$captureVerifyReportDisabledGateways, true) === false);
+    }
+
+    public static function removeEmandateRegistrationDisabledBanks(array $banks)
+    {
+        return array_diff($banks, static::EMANDATE_REGISTRATION_DISABLED_BANKS);
     }
 
     /**

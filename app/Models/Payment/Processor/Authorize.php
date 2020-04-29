@@ -1916,10 +1916,9 @@ trait Authorize
 
         // TODO: Handle first recurring / second recurring based on token and route
 
-        if (in_array(
-                $bank,
-                Payment\Gateway::getAvailableEmandateBanksForAuthType($authType),
-                true) === false)
+        $supportedBanks = Payment\Gateway::getAvailableEmandateBanksForAuthType($authType);
+
+        if (in_array($bank, Gateway::removeEmandateRegistrationDisabledBanks($supportedBanks), true) === false)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_BANK_RECURRING_NOT_SUPPORTED,

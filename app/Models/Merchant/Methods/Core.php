@@ -295,6 +295,8 @@ class Core extends Base\Core
                 $banks = $this->getEmandateBanksEnabled($merchant, $authType);
             }
 
+            $banks = Payment\Gateway::removeEmandateRegistrationDisabledBanks($banks);
+
             if (empty($banks) === false)
             {
                 $banks = $this->getBankNames($banks);

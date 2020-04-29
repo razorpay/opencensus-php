@@ -435,6 +435,11 @@ class Validator extends Base\Validator
         {
             case Payment\Method::EMANDATE:
                 $supportedBanks = Payment\Gateway::getAllEMandateBanks();
+
+                if ($input[Entity::AMOUNT] === '0')
+                {
+                    $supportedBanks = Payment\Gateway::removeEmandateRegistrationDisabledBanks($supportedBanks);
+                }
                 break;
 
             case Payment\Method::UPI:

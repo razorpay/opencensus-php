@@ -11,12 +11,15 @@ use RZP\Jobs\BeamJob;
 use RZP\Models\Feature;
 use RZP\Models\Terminal;
 use RZP\Constants\Entity;
+use RZP\Models\Bank\IFSC;
 use RZP\Constants\Timezone;
 use RZP\Models\Customer\Token;
+use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Refund;
 use RZP\Models\Settlement\Channel;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\FundTransfer\Attempt;
+use RZP\Models\Order\Entity as Order;
 use RZP\Models\Payment\Entity as Payment;
 use Illuminate\Http\Testing\File as TestingFile;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
@@ -95,6 +98,75 @@ class EnachNetbankingNpciGatewayTest extends TestCase
         $this->assertNotNull($token['gateway_token']);
         $this->assertEquals($token['gateway_token'], $enach['umrn']);
         $this->assertEquals($token['account_type'], $paymentInput['bank_account']['account_type']);
+    }
+
+    public function testRegistrationOrderForDebitOnlyBank()
+    {
+        $orderInput = [
+            Order::AMOUNT          => 0,
+            Order::BANK            => IFSC::UTBI,
+            Order::METHOD          => Method::EMANDATE,
+            Order::PAYMENT_CAPTURE => true,
+        ];
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($testData, function() use ($orderInput) {
+            $this->createOrder($orderInput);
+        });
+    }
+
+    public function testRegistrationPaymentForDebitOnlyBank()
+    {
+        $paymentInput                 = $this->getEmandatePaymentArray('UTBI', 'netbanking', 0);
+
+        $paymentInput['bank_account'] = [
+            'account_number' => '1111111111111',
+            'ifsc'           => 'UTBI0ITSR41',
+            'name'           => 'Test account',
+            'account_type'   => 'current',
+        ];
+
+        $order               = $this->fixtures->create('order:emandate_order', ['amount' => $paymentInput['amount']]);
+        $paymentInput['order_id'] = $order->getPublicId();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($testData, function() use ($paymentInput) {
+            $this->doAuthPayment($paymentInput);
+        });
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertNull($payment);
+
+        $enach = $this->getLastEntity('enach', true);
+        $this->assertNull($enach);
+
+        $token = $this->getLastEntity('token', true);
+        $this->assertEquals('netbanking', $token['auth_type']);
+        $this->assertEquals(null, $token['recurring_status']);
+        $this->assertEquals(null, $token['gateway_token']);
+    }
+
+    public function testPreferencesForDebitOnlyBank()
+    {
+        $orderInput = [
+            'amount' => 0,
+            'payment_capture' => true,
+            'method' => Method::EMANDATE,
+        ];
+
+        $order = $this->createOrder($orderInput);
+
+        $this->ba->publicAuth();
+
+        $testData['request']['content'] = ['key_id' => $this->ba->getKey(), 'order_id' => $order['id']];
+
+        $content = $this->startTest($testData);
+
+        $banks = $content['methods']['recurring']['emandate'];
+
+        $this->assertArrayNotHasKey(IFSC::UTBI, $banks);
     }
 
     public function testPaymentWithDisplayFeature()
