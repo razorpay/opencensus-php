@@ -213,7 +213,7 @@ class Stork
         switch ($entity)
         {
             case self::WEBHOOK:
-                $items = array_map(function ($v) { return $this->formatWebhook($v); }, $res['webhooks']);
+                $items = array_map(function ($v) { return $this->formatWebhook($v); }, $res['webhooks'] ?? []);
                 break;
             default:
                 $items = [];
