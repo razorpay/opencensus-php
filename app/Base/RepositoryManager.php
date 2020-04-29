@@ -296,10 +296,6 @@ class RepositoryManager extends Illuminate\Support\Manager
             $result = $this->db->transaction($callback, ...$params);
         }
 
-        $duration = millitime() - $start;
-
-        $this->app['db.connector.mysql']->recordTransactionDuration($duration);
-
         $this->app['db.connector.mysql']->setWaitTimeout(MySqlConnector::TYPE_WAIT_TIMEOUT);
 
         return $result;
