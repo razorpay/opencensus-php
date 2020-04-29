@@ -55,6 +55,12 @@ class Type
     // Terminals For Upi Transfer payments
     const UPI_TRANSFER                       = 'upi_transfer';
 
+    // Terminals for Upi One time mandates, Pay
+    const OTM_PAY                            = 'otm_pay';
+
+    // Terminals for Upi One time mandates, Collect
+    const OTM_COLLECT                        = 'otm_collect';
+
     protected static $types = [
         self::NON_RECURRING,
         self::RECURRING_3DS,
@@ -73,6 +79,8 @@ class Type
         self::ALPHA_NUMERIC_ACCOUNT,
         self::BUSINESS_BANKING,
         self::UPI_TRANSFER,
+        self::OTM_PAY,
+        self::OTM_COLLECT,
     ];
 
     protected static $bitPosition = [
@@ -93,6 +101,8 @@ class Type
         self::BUSINESS_BANKING                 => 15,
         self::DIRECT_SETTLEMENT_WITHOUT_REFUND => 16,
         self::UPI_TRANSFER                     => 17,
+        self::OTM_PAY                          => 18,
+        self::OTM_COLLECT                      => 19,
     ];
 
     /**
