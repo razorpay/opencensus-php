@@ -7,6 +7,7 @@ use ApiResponse;
 use Requests_Session;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
+use Razorpay\Edge\Passport\Passport;
 use Illuminate\Foundation\Application;
 
 use RZP\Exception;
@@ -14,6 +15,7 @@ use RZP\Constants\Mode;
 use RZP\Models\Feature;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
+use RZP\Models\Merchant\RazorxTreatment;
 
 class SubscriptionProxy
 {
@@ -24,6 +26,11 @@ class SubscriptionProxy
     protected $router;
 
     protected $requestTimeout;
+
+    /**
+     * @var \RZP\Services\RazorXClient
+     */
+    protected $razorx;
 
     public function __construct(Application $app)
     {
@@ -38,6 +45,8 @@ class SubscriptionProxy
         $this->trace = $this->app['trace'];
 
         $this->request = $this->initRequestObject();
+
+        $this->razorx = $app['razorx'];
     }
 
     protected function initRequestObject(): Requests_Session
@@ -100,7 +109,7 @@ class SubscriptionProxy
             $body = $request->post();
         }
 
-        $headers = $this->getHeaders();
+        $headers = $this->getHeaders($request);
 
         $method = $request->method();
 
@@ -111,7 +120,7 @@ class SubscriptionProxy
         return $response;
     }
 
-    protected function getHeaders(): array
+    protected function getHeaders(Request $request): array
     {
         $headers = [];
 
@@ -126,6 +135,23 @@ class SubscriptionProxy
 
         // send appId in case request is via partner auth
         $headers['X-Razorpay-ApplicationId'] = $this->ba->getOAuthApplicationId();
+
+        // If passport exists in request(from edge) header then forward the same
+        // to subscriptions service. And razorx is used to control ramp.
+        $jwt = $request->headers->get(Passport::PASSPORT_JWT_V1);
+        if (empty($jwt) === false)
+        {
+            $treatment = $this->razorx->getTreatment(
+                $request->getId(),
+                RazorxTreatment::FORWARD_PASSPORT_TO_SUBSCRIPTIONS,
+                $this->ba->getMode()
+            );
+
+            if ($treatment === 'on')
+            {
+                $headers[Passport::PASSPORT_JWT_V1] = $jwt;
+            }
+        }
 
         return $headers;
     }

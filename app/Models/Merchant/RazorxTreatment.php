@@ -112,4 +112,7 @@ final class RazorxTreatment
 
     // Check whether refund pricing rules should be logged for merchant
     const LOG_REFUND_PRICING_RULES = 'log_refund_pricing_rules';
+
+    // Decides if should forward passport(jwt) received from edge to subscriptions service.
+    const FORWARD_PASSPORT_TO_SUBSCRIPTIONS = 'forward_passport_to_subscriptions';
 }
