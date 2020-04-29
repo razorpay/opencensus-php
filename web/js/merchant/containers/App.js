@@ -32,7 +32,7 @@ import {
   updateMerchantLiveTransactionFlag,
 } from 'merchant/reducers/app';
 import { matchFullPageView } from 'merchant/routes';
-import { classList } from 'common/utils/rzp-utils';
+import { classList, isPresent } from 'common/utils/rzp-utils';
 
 import { merchantFetch } from 'merchant/utils/ajax';
 import rolesList from 'merchant/helpers/permissions/roles-list';
@@ -180,6 +180,7 @@ export default class App extends Component {
 
         this.props.updateSession({ mode: currentMode });
         this.redirectToRoute(role);
+        this.setLiveTransactionDone(user);
 
         setTimeout(() => {
           initChat(user);
@@ -250,8 +251,11 @@ export default class App extends Component {
     return merchantFetch('currency/all/proxy');
   }
   setLiveTransactionDone = ({ live_transaction_done, id }) => {
-    if (live_transaction_done === undefined) return;
+    if (!isPresent(live_transaction_done)) {
+      return;
+    }
 
+    live_transaction_done = parseInt(live_transaction_done);
     switch (live_transaction_done) {
       case 1:
         updateMerchantLiveTransactionFlag(id)
@@ -291,7 +295,6 @@ export default class App extends Component {
 
     if (user) {
       this.props.updateSession({ user });
-      this.setLiveTransactionDone(user);
 
       // if the user is live but chose to browse in test mode,
       // it will be stored in rzp_mode
