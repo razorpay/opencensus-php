@@ -605,40 +605,70 @@ class Service extends Base\Service
 
         $terminal = $this->repo->transaction(function () use ($terminal, $client) {
 
-        $this->repo->terminal->lockForUpdateAndReload($terminal);
+            $this->repo->terminal->lockForUpdateAndReload($terminal);
 
-        $client->deleteTerminalById($terminal->getId());
-
-        $data = [];
-
-        try
-        {
-            $data = $client->fetchTerminalById($terminal->getId());
-
-            if ($data !== [])
+            try
             {
-                throw new Exception\IntegrationException(
-                    'delete failed on terminals service side
-                    got non empty response when fetching a deleted terminal
-                    . should not have reached here',
-                    ErrorCode::SERVER_ERROR_TERMINALS_SERVICE_INTEGRATION_ERROR);
+                $client->deleteTerminalById($terminal->getId());
             }
-        }
-        catch (\Exception $exception)
-        {
-            // assert on message and rethrow if not correct
-            if (($data === []) and
-                ($exception->getCode() === ErrorCode::SERVER_ERROR_TERMINALS_SERVICE_INTEGRATION_ERROR))
+            catch (\Exception $exception)
             {
+                $exceptionData = $exception->getData();
 
+                if ($exceptionData === null)
+                {
+                    throw $exception;
+                }
+
+                $error = $exceptionData['response']['error'];
+
+                $statusCode = (int)($exceptionData['status_code']);
+
+                if (($statusCode === 400) and
+                    ($error['internal_error_code'] === ErrorCode::BAD_REQUEST_ERROR) and
+                    ($error['description']) === 'Terminal doesn\'t exist with this Id')
+                {
+                    $this->app['trace']->info(TraceCode::TERMINALS_SERVICE_TERMINAL_ALREADY_DELETED,
+                        [
+                            Entity::ID => $terminal->getId(),
+                        ]);
+                }
+                else
+                {
+                    throw $exception;
+                }
             }
-            else
+
+            $data = [];
+
+            try
             {
-                throw $exception;
-            }
-        }
+                $data = $client->fetchTerminalById($terminal->getId());
 
-    });
+                if ($data !== [])
+                {
+                    throw new Exception\IntegrationException(
+                        'delete failed on terminals service side
+                        got non empty response when fetching a deleted terminal
+                        . should not have reached here',
+                        ErrorCode::SERVER_ERROR_TERMINALS_SERVICE_INTEGRATION_ERROR);
+                }
+            }
+            catch (\Exception $exception)
+            {
+                // assert on message and rethrow if not correct
+                if (($data === []) and
+                    ($exception->getCode() === ErrorCode::SERVER_ERROR_TERMINALS_SERVICE_INTEGRATION_ERROR))
+                {
+
+                }
+                else
+                {
+                    throw $exception;
+                }
+            }
+
+        });
     }
 
     public function migrateTerminalAddMerchant(Terminal\Entity $terminal, Merchant\Entity $merchant)

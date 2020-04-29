@@ -83,7 +83,7 @@ class TerminalMigrationTest extends TestCase
         "internal_error_code": "BAD_REQUEST_ERROR",
         "gateway_error_code": "",
         "gateway_error_description": "",
-        "description": "invalid request sent"
+        "description": "Terminal doesn\'t exist with this Id"
     }
 }';
         $response->status_code = Response::HTTP_BAD_REQUEST;
@@ -601,6 +601,66 @@ class TerminalMigrationTest extends TestCase
 
         $this->assertEquals($beforeCount - 1, $afterCount);
 
+    }
+
+    public function testDeleteTerminalNoPaymentTerminalsServiceUpTerminalDoesntExistOnTerminalsService()
+    {
+        $terminal = $this->fixtures->create(
+            'terminal:shared_axis_terminal', ['used' => true, 'enabled' => '1']);
+
+        $tid = $terminal['id'];
+
+        $url = '/terminals/'.$tid;
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->razorxValue = 'migrate';
+
+        $this->mockTerminalsServiceSendRequest(function ($path, $content, $method) use ($tid) {
+            $response = new  \Requests_Response;
+
+            $this->assertStringEndsWith('/' . $tid, $path);
+
+            if ($method == \Requests::DELETE)
+            {
+                $response = new \Requests_Response;
+
+                $response->status_code = Response::HTTP_BAD_REQUEST;
+
+                $response->body = '
+                    {
+                        "data": null,
+                        "error": {
+                            "internal_error_code": "BAD_REQUEST_ERROR",
+                            "gateway_error_code": "",
+                            "gateway_error_description": "",
+                            "description": "Terminal doesn\'t exist with this Id"
+                        }
+                    }
+                    ';
+
+                throw new IntegrationException('Terminals service request failed with status code : ' . $response->status_code,
+                    ErrorCode::SERVER_ERROR_TERMINALS_SERVICE_INTEGRATION_ERROR,
+                    [
+                        'response'     => json_decode($response->body, true),
+                        'status_code'  => 400,
+                    ]);
+            }
+
+            if ($method == \Requests::GET)
+            {
+                return $this->getTerminalsServiceResponseForEntityNotFound();
+            }
+
+        }, 2);
+
+        $beforeCount = DB::table('terminals')->count();
+
+        $this->startTest();
+
+        $afterCount = DB::table('terminals')->count();
+
+        $this->assertEquals($beforeCount - 1, $afterCount);
     }
 
     public function testDeleteTerminalNoPaymentTerminalsServiceDownMigrateVariant()

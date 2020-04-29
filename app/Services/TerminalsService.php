@@ -300,8 +300,9 @@ class TerminalsService
                     throw new Exception\IntegrationException('Terminals service request failed with status code : ' . $response->status_code,
                         ErrorCode::SERVER_ERROR_TERMINALS_SERVICE_INTEGRATION_ERROR,
                         [
-                            self::RESPONSE => $this->parseAndReturnResponse($response)]
-                        );    
+                            self::RESPONSE      => $this->parseAndReturnResponse($response),
+                            self::STATUS_CODE   => $response->status_code,
+                        ]);
                 }
             }
 

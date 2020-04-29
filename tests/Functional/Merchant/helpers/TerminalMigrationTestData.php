@@ -264,6 +264,16 @@ return [
         ],
     ],
 
+    'testDeleteTerminalNoPaymentTerminalsServiceUpTerminalDoesntExistOnTerminalsService' => [
+        'request' => [
+            'method' => 'DELETE'
+        ],
+        'response' => [
+            'content' => [
+            ]
+        ],
+    ],
+
     'testDeleteTerminalNoPaymentTerminalsServiceDownMigrateVariant' => [
         'request' => [
             'method' => 'DELETE'
