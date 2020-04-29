@@ -78,9 +78,6 @@ class AuthSelector extends Base\Core
             return (new Rule\Core)->fetchApplicableAuthenticationRulesForPayment($this->input);
         });
 
-        // ToDo switch off verbose
-        $verbose = true;
-
         $applicableTerminals = $this->filterTerminals($applicableTerminals, $applicableRules, $verbose);
 
         $this->input['auths'] = array_pluck($applicableTerminals, 'auth_type');
