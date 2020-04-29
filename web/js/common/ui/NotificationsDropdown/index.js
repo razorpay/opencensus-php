@@ -289,7 +289,7 @@ const NotificationCard = ({
               });
             }
 
-            let internalUrl = isHash ? `${location.href}${URL}` : `#/app${URL}`;
+            let internalUrl = isHash ? `${location.href}${URL}` : `/app${URL}`;
 
             return (
               <a
