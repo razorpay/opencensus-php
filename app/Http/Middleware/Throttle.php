@@ -3,6 +3,7 @@
 namespace RZP\Http\Middleware;
 
 use Illuminate\Http\Request;
+use Razorpay\Edge\Passport\Passport;
 use Symfony\Component\HttpFoundation\Response;
 
 use RZP\Constants\Metric;
@@ -77,6 +78,7 @@ final class Throttle
             Metric::LABEL_RZP_AUTH              => $requestCtx->getAuth(),
             Metric::LABEL_RZP_AUTH_FLOW_TYPE    => $requestCtx->getAuthFlowType(),
             Metric::LABEL_RZP_INTERNAL_APP_NAME => $requestCtx->getInternalAppName() ?: Metric::LABEL_NONE_VALUE,
+            Metric::LABEL_HAS_PASSPORT          => $request->headers->has(Passport::PASSPORT_JWT_V1),
         ];
     }
 }

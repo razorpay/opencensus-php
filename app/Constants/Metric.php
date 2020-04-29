@@ -51,6 +51,7 @@ class Metric
     const LABEL_TRACE_LEVEL_NAME                = 'level_name';
     const LABEL_INSTANCE                        = 'instance';
     const LABEL_TYPE                            = 'type';
+    const LABEL_HAS_PASSPORT                    = 'has_passport';
 
     // Default label values
     const LABEL_DEFAULT_VALUE                   = 'other';
