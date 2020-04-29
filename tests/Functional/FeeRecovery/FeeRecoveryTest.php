@@ -732,6 +732,185 @@ class FeeRecoveryTest extends TestCase
         $this->assertEquals($feeRecoveryEntityUpdated['status'], FeeRecovery\Status::UNRECOVERED);
     }
 
+    public function testCreateFeeRecoveryScheduleTaskForMerchant()
+    {
+        $currentTimeStamp = Carbon::now()->getTimestamp();
+        $threeDaysLaterTimeStamp = Carbon::now()->addDays(3)->getTimestamp();
+
+        // Create a schedule
+        $createScheduleRequest = [
+            'method'  => 'POST',
+            'url'     => '/schedules',
+            'content'   => [
+                'type'      => 'fee_recovery',
+                'name'      => 'Basic T+7',
+                'period'    => 'daily',
+                'interval'  => 3,
+            ],
+        ];
+
+        $this->ba->adminAuth();
+
+        $schedule = $this->makeRequestAndGetContent($createScheduleRequest);
+
+        $data = & $this->testData[__FUNCTION__];
+
+        $data['request']['content'] = [
+            'balance_id'    => $this->balance->getId(),
+            'schedule_id'   => $schedule['id'],
+        ];
+
+        $this->startTest();
+
+        $task = $this->getDbLastEntity('schedule_task')->toArray();
+
+        // Assert next run at and last run at (keeping 1 sec leeway for both timestamps because test takes time to run)
+        // Cannot use Carbon::setTestNow() here since Carbon is used during the flow and then returns erroneous time.
+        $this->assertGreaterThanOrEqual($currentTimeStamp, $task['last_run_at']);
+        $this->assertLessThanOrEqual($currentTimeStamp + 1, $task['last_run_at']);
+        $this->assertGreaterThanOrEqual($threeDaysLaterTimeStamp, $task['next_run_at']);
+        $this->assertLessThanOrEqual($threeDaysLaterTimeStamp + 1, $task['next_run_at']);
+
+        // Assert schedule Id and Entity Id
+        $this->assertEquals($schedule['id'], $task['schedule_id']);
+        $this->assertEquals($this->balance['id'], $task['entity_id']);
+    }
+
+    // This test will create a new schedule task for a recently activated merchant
+    // (where fee recovery hasn't happened even once)
+    public function testCreateFeeRecoveryScheduleTaskForRecentlyActivatedMerchant()
+    {
+        // This will create a default schedule for a merchant
+        $this->setupScheduleAndScheduleTaskForMerchant();
+
+        $oldTask = $this->getDbLastEntity('schedule_task');
+
+        // The default task would have last_run_at as null since fee has never been been recovered for this balance
+        $this->assertNull($oldTask['last_run_at']);
+
+        // Create a schedule
+        $createScheduleRequest = [
+            'method'  => 'POST',
+            'url'     => '/schedules',
+            'content'   => [
+                'type'      => 'fee_recovery',
+                'name'      => 'Basic T+7',
+                'period'    => 'daily',
+                'interval'  => 3,
+            ],
+        ];
+
+        $this->ba->adminAuth();
+
+        $schedule = $this->makeRequestAndGetContent($createScheduleRequest);
+
+        $data = & $this->testData[__FUNCTION__];
+
+        $data['request']['content'] = [
+            'balance_id'    => $this->balance->getId(),
+            'schedule_id'   => $schedule['id'],
+        ];
+
+        $this->startTest();
+
+        $newTask = $this->getDbLastEntity('schedule_task')->toArray();
+
+        // Assert schedule Id and Entity Id
+        $this->assertEquals($schedule['id'], $newTask['schedule_id']);
+        $this->assertEquals($this->balance['id'], $newTask['entity_id']);
+
+        // Assert that timestamps are same
+        $this->assertEquals($oldTask['last_run_at'], $newTask['last_run_at']);
+        $this->assertEquals($oldTask['next_run_at'], $newTask['next_run_at']);
+        $this->assertNull($newTask['last_run_at']);
+    }
+
+    public function testUpdateFeeRecoveryScheduleTaskForMerchant()
+    {
+        $currentTimeStamp       = Carbon::now()->getTimestamp();
+        $threeDaysLaterTimeStamp  = Carbon::now()->addDays(3)->getTimestamp();
+
+        // Create a schedule
+        $createScheduleRequest = [
+            'method'  => 'POST',
+            'url'     => '/schedules',
+            'content'   => [
+                'type'      => 'fee_recovery',
+                'name'      => 'Original Schedule',
+                'period'    => 'daily',
+                'interval'  => 3,
+            ],
+        ];
+
+        $this->ba->adminAuth();
+
+        $schedule = $this->makeRequestAndGetContent($createScheduleRequest);
+
+        // Create a second schedule
+        $createScheduleRequest2 = [
+            'method'  => 'POST',
+            'url'     => '/schedules',
+            'content'   => [
+                'type'      => 'fee_recovery',
+                'name'      => 'New Schedule',
+                'period'    => 'daily',
+                'interval'  => 7,
+            ],
+        ];
+
+        $this->ba->adminAuth();
+
+        $schedule2 = $this->makeRequestAndGetContent($createScheduleRequest2);
+
+        $data = & $this->testData[__FUNCTION__];
+
+        $data['request']['content'] = [
+            'balance_id'    => $this->balance->getId(),
+            'schedule_id'   => $schedule['id'],
+        ];
+
+        //This will create a schedule task for schedule-1
+        $this->startTest();
+
+        $task = $this->getDbLastEntity('schedule_task')->toArray();
+
+        $taskCountBeforeUpdation = $this->getDbEntities('schedule_task')->count();
+
+        // Assert next run at and last run at (keeping 1 sec leeway for both timestamps because test takes time to run)
+        // Cannot use Carbon::setTestNow() here since Carbon is used during the flow and then returns erroneous time.
+        $this->assertGreaterThanOrEqual($currentTimeStamp, $task['last_run_at']);
+        $this->assertLessThanOrEqual($currentTimeStamp + 1, $task['last_run_at']);
+        $this->assertGreaterThanOrEqual($threeDaysLaterTimeStamp, $task['next_run_at']);
+        $this->assertLessThanOrEqual($threeDaysLaterTimeStamp + 1, $task['next_run_at']);
+
+        // Assert Schedule Id and Entity Id
+        $this->assertEquals($schedule['id'], $task['schedule_id']);
+        $this->assertEquals($this->balance['id'], $task['entity_id']);
+
+        $data = & $this->testData[__FUNCTION__];
+
+        $data['request']['content'] = [
+            'balance_id'    => $this->balance->getId(),
+            'schedule_id'   => $schedule2['id'],
+        ];
+
+        //This will create a schedule task for schedule-2
+        $this->startTest();
+
+        $newTask = $this->getDbLastEntity('schedule_task')->toArray();
+
+        $this->assertEquals($newTask['last_run_at'], $task['last_run_at']);
+        $this->assertEquals($newTask['next_run_at'], $task['next_run_at']);
+        $this->assertEquals($schedule2['id'], $newTask['schedule_id']);
+        $this->assertEquals($this->balance['id'], $newTask['entity_id']);
+
+        // Assert that old task was deleted
+
+        $taskCountAfterUpdation = $this->getDbEntities('schedule_task')->count();
+
+        $this->assertEquals($taskCountBeforeUpdation, $taskCountAfterUpdation);
+    }
+
     protected function updateFtaAndSource($payout, $status, $utr = '933815233814')
     {
         $this->ba->appAuth();
@@ -1069,7 +1248,9 @@ class FeeRecoveryTest extends TestCase
             'schedule_id'   => $schedule['id'],
         ];
 
-        (new Schedule\Task\Core)->createOrUpdate($this->merchant, $this->balance , $scheduleTaskInput);
+        $scheduleTask = (new Schedule\Task\Core)->create($this->merchant, $this->balance , $scheduleTaskInput);
+
+        $scheduleTask->saveOrFail();
 
         $scheduleTask = $this->getDbLastEntity('schedule_task')->toArray();
 

@@ -587,7 +587,7 @@ class Core extends Base\Core
 
         $task->setNextRunAt($oneWeekLaterTimeStamp);
 
-        $task->saveOrFail();
+        $this->repo->schedule_task->saveOrFail($task);
 
         $this->trace->info(TraceCode::FEE_RECOVERY_SCHEDULE_TASK_CREATED,
             [

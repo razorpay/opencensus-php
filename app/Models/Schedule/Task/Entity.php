@@ -32,6 +32,7 @@ class Entity extends Base\PublicEntity
     const NEXT_RUN_AT       = 'next_run_at';
     const LAST_RUN_AT       = 'last_run_at';
     const DELETED_AT        = 'deleted_at';
+    const BALANCE_ID        = 'balance_id';
 
     const SCHEDULE_NAME     = 'schedule_name';
 
@@ -203,7 +204,7 @@ class Entity extends Base\PublicEntity
         return $this->setAttribute(self::NEXT_RUN_AT, $timestamp);
     }
 
-    public function setLastRunAt(int $timestamp)
+    public function setLastRunAt($timestamp)
     {
         return $this->setAttribute(self::LAST_RUN_AT, $timestamp);
     }

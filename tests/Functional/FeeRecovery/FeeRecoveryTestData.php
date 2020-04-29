@@ -103,4 +103,51 @@ return [
         ],
     ],
 
+    'testCreateFeeRecoveryScheduleTaskForMerchant' => [
+        'request'  => [
+            'url'    => '/schedules/tasks/fee_recovery',
+            'method' => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                'method'        => null,
+                'international' => 0,
+                'type'          => 'fee_recovery',
+                'merchant_id'   => '10000000000000',
+                'entity_type'   => 'balance',
+            ],
+        ],
+    ],
+
+    'testUpdateFeeRecoveryScheduleTaskForMerchant' => [
+        'request'  => [
+            'url'    => '/schedules/tasks/fee_recovery',
+            'method' => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                'method'        => null,
+                'international' => 0,
+                'type'          => 'fee_recovery',
+                'merchant_id'   => '10000000000000',
+                'entity_type'   => 'balance',
+            ],
+        ],
+    ],
+
+    'testCreateFeeRecoveryScheduleTaskForRecentlyActivatedMerchant' => [
+        'request'  => [
+            'url'    => '/schedules/tasks/fee_recovery',
+            'method' => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                'method'        => null,
+                'international' => 0,
+                'type'          => 'fee_recovery',
+                'merchant_id'   => '10000000000000',
+                'entity_type'   => 'balance',
+            ],
+        ],
+    ],
 ];

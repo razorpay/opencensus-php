@@ -58,6 +58,13 @@ trait TestsBusinessBanking
         string $balanceType = AccountType::SHARED,
         $channel = null)
     {
+        (new Admin\Service)->setConfigKeys(
+            [
+                Admin\ConfigKey::RX_ACCOUNT_NUMBER_SERIES_PREFIX => [
+                    Account::SHARED_ACCOUNT => '222444',
+                ]
+            ]);
+
         // Activate merchant with business_banking flag set to true.
         $this->fixtures->merchant->edit('10000000000000', ['business_banking' => 1]);
         $this->fixtures->merchant->activate();

@@ -156,6 +156,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::HOUR);
     }
 
+    public function getType()
+    {
+        return $this->getAttribute(self::TYPE);
+    }
+
     public function getDelay()
     {
         return $this->getAttribute(self::DELAY);

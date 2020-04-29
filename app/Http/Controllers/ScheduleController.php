@@ -79,4 +79,13 @@ class ScheduleController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function createFeeRecoveryScheduleTask()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->createFeeRecoveryScheduleTask($input);
+
+        return ApiResponse::json($data);
+    }
 }

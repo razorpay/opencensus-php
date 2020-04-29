@@ -278,6 +278,9 @@ class Name
     //Permission to allow fee recovery attempt
     const PROCESS_FEE_RECOVERY                = 'process_fee_recovery';
 
+    //Permission to assign a fee recovery schedule to a merchant
+    const ASSIGN_FEE_RECOVERY_SCHEDULE        = 'assign_fee_recovery_schedule';
+
     // Perform write operations around stork integration e.g. webhook migrations etc
     const STORK_WRITE_OPERATION               = 'stork_write_operation';
 

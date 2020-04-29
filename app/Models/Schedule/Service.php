@@ -179,6 +179,28 @@ class Service extends Base\Service
         return $scheduleDetails;
     }
 
+    public function createFeeRecoveryScheduleTask($input)
+    {
+        (new ScheduleTask\Validator)->validateInput(ScheduleTask\Validator::CREATE_FEE_RECOVERY_SCHEDULE_TASK, $input);
+
+        $balanceId  = $input[ScheduleTask\Entity::BALANCE_ID];
+        $scheduleId = $input[ScheduleTask\Entity::SCHEDULE_ID];
+
+        $schedule = $this->repo->schedule->findOrFail($scheduleId);
+        $balance = $this->repo->balance->findOrFailById($balanceId);
+
+        (new ScheduleTask\Validator)->validateBalanceAndSchedule($balance, $schedule);
+
+        $merchant = $balance->merchant;
+
+        $input = [
+            Task\Entity::TYPE          => Task\Type::FEE_RECOVERY,
+            Task\Entity::SCHEDULE_ID   => $scheduleId,
+        ];
+
+        return (new Task\Core)->createOrUpdateForFeeRecovery($merchant, $balance, $input);
+    }
+
     /***
      * @param array $scheduleDetails
      * @param array $featureList

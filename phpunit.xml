@@ -34,6 +34,9 @@
           <exclude>./tests/Functional/PaymentLink/</exclude>
           <exclude>./tests/Functional/Payout/</exclude>
           <exclude>./tests/Functional/PayoutLink/</exclude>
+          <exclude>./tests/Functional/Contact/</exclude>
+          <exclude>./tests/Functional/FundAccounts/</exclude>
+          <exclude>./tests/Functional/BankingAccountStatement/</exclude>
           <exclude>./tests/Functional/Pricing/</exclude>
           <exclude>./tests/Functional/Promotion/</exclude>
           <exclude>./tests/Functional/RazorX/</exclude>
@@ -85,9 +88,6 @@
           <directory>./tests/Functional/Offer/</directory>
           <directory>./tests/Functional/Order/</directory>
           <directory>./tests/Functional/PaymentLink/</directory>
-          <directory>./tests/Functional/Payout/</directory>
-          <directory>./tests/Functional/PayoutLink/</directory>
-          <directory>./tests/Functional/FeeRecovery/</directory>
           <directory>./tests/Functional/Pricing/</directory>
           <directory>./tests/Functional/Promotion/</directory>
           <directory>./tests/Functional/RazorX/</directory>
@@ -116,6 +116,12 @@
       <testsuite name="Feature-6 Test Suite">
           <directory>./tests/Unit/PaymentsUpi</directory>
           <directory>./tests/Functional/PaymentsUpi</directory>
+          <directory>./tests/Functional/Contact/</directory>
+          <directory>./tests/Functional/FundAccounts/</directory>
+          <directory>./tests/Functional/Payout/</directory>
+          <directory>./tests/Functional/FeeRecovery/</directory>
+          <directory>./tests/Functional/PayoutLink/</directory>
+          <directory>./tests/Functional/BankingAccountStatement/</directory>
       </testsuite>
       <testsuite name="Payment Test Suite">
           <directory>./tests/Functional/Payment/</directory>

@@ -3,12 +3,14 @@
 namespace RZP\Models\Schedule\Task;
 
 use Config;
+use Carbon\Carbon;
 
 use RZP\Models\Base;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Models\Schedule;
+use RZP\Constants\Timezone;
 use RZP\Exception\LogicException;
 use RZP\Constants\Entity as EntityConstant;
 
@@ -66,6 +68,7 @@ class Core extends Base\Core
      *
      * @return Entity
      * @throws \Exception
+     * @throws \Throwable
      */
     public function createOrUpdate(Merchant\Entity $merchant, Base\Entity $entity, $input)
     {
@@ -260,9 +263,13 @@ class Core extends Base\Core
 
         $originalData = [];
 
+        $this->handleChangesForFeeRecoverySchedule($entity, $currentScheduleTask, 'create');
+
         if ($currentScheduleTask !== null)
         {
             $entity->updateNextRunAt($currentScheduleTask->getNextRunAt());
+
+            $this->handleChangesForFeeRecoverySchedule($entity, $currentScheduleTask, 'update');
 
             $originalData = [
                 Entity::TYPE          => $currentScheduleTask->getType(),
@@ -288,6 +295,22 @@ class Core extends Base\Core
              ->handle($originalData, $dirtyData);
 
         $this->repo->saveOrFail($entity);
+
+        // NOTE : This return statement was added for fee recovery schedules. Since we are updating next & last run at
+        // for the cloned entity. We want to return the updated values (which are getting saved).
+        return $entity;
+    }
+
+    public function createOrUpdateForFeeRecovery(Merchant\Entity $merchant, Base\Entity $balance, $input)
+    {
+        return $this->repo->transaction(function () use ($merchant, $balance, $input)
+        {
+            $scheduleTask = $this->create($merchant, $balance, $input);
+
+            $this->app['workflow']->setEntityId($merchant->getId());
+
+            return $this->createOrUpdateInMode($scheduleTask, $this->mode);
+        });
     }
 
     /**
@@ -428,5 +451,30 @@ class Core extends Base\Core
                                             $merchant,
                                             EntityConstant::SETTLEMENT_TRANSFER);
         return $scheduleTasks;
+    }
+
+    protected function handleChangesForFeeRecoverySchedule(&$entity, $currentScheduleTask, $action)
+    {
+        if ($entity->getType() !== Type::FEE_RECOVERY)
+        {
+            return;
+        }
+
+        // Makes sure that last_run_at and next_run_at remain same as earlier
+        if ($action === 'update')
+        {
+            $entity->setNextRunAt($currentScheduleTask->getNextRunAt());
+            $entity->setLastRunAt($currentScheduleTask->getLastRunAt());
+        }
+        // Makes last_run_at as current time and next_run_at as per the schedule
+        if ($action === 'create')
+        {
+            $currentTImeStamp = Carbon::now(Timezone::IST)->getTimestamp();
+            $entity->setNextRunAt($currentTImeStamp);
+
+            // This function updates the task based on the schedule. It sets the new last_run_at
+            // as the current next_run_at and updates the new next_run_at based on the schedule
+            $entity->updateNextRunAndLastRun();
+        }
     }
 }
