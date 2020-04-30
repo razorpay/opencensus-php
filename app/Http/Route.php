@@ -4771,6 +4771,19 @@ final class Route
 
         'fund_transfer_attempt_process',
         'on_demand_settlement',
+
+        'payment_refund',
+        'refund_create',
+        'refund_retry_failed',
+        'refund_verify_failed',
+        'refund_verify_failed_bulk',
+        'refund_retry_bulk_via_fta',
+        'refund_without_verify_bulk',
+        'scrooge_refunds_retry_without_verify',
+        'refund_gateway_call',
+        'scrooge_refund_create',
+        'scrooge_refund_create_bulk',
+        'scrooge_verify_refund_call',
     ];
 
     /**
