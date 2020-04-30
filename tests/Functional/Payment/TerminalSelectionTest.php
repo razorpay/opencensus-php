@@ -1358,7 +1358,7 @@ class TerminalSelectionTest extends TestCase
         $this->assertEquals('38R10001', $terminal->getGatewayTerminalId());
         $this->assertEquals('1240', $terminal->getCategory());
     }
-    
+
     public function testSkipHitachiTerminalCreationOnRun()
     {
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
@@ -1376,7 +1376,7 @@ class TerminalSelectionTest extends TestCase
         $selectedTerminals = $selector->select();
 
         // There should be no seleted terminals, not even of 'hitachi' gateway
-        $this->assertEquals(1, sizeof($selectedTerminals));        
+        $this->assertEquals(1, sizeof($selectedTerminals));
         $this->assertNull($selectedTerminals[0]);
     }
 

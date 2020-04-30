@@ -16,8 +16,6 @@ use RZP\Models\TerminalOnboardingDetail;
 use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\Merchant\Entity as Merchant;
 
-const HITACHI_ONBOARDING_MOZART = 'hitachi_onboarding_mozart';
-const MOZART_VARIANT_RESPONSE = 'mozart';
 
 class Service extends Base\Service
 {
@@ -106,23 +104,12 @@ class Service extends Base\Service
                     'gateway_input'    => $gatewayInput,
                 ];
 
-                $variantFlag = $this->app->razorx->getTreatment($merchant['id'], HITACHI_ONBOARDING_MOZART, $this->mode);
-                $shouldUseMozart = ($variantFlag === MOZART_VARIANT_RESPONSE ? true : false);
-
                 try
                 {
-                    if ($shouldUseMozart) {
-                        $terminalData = $this->app['gateway']->call('mozart',
-                            Constants::MERCHANT_ONBOARD,
-                            $gatewayData,
-                            $this->mode);
-
-                    } else {
-                        $terminalData = $this->app['gateway']->call($gateway,
-                            Constants::MERCHANT_ONBOARD,
-                            $gatewayData,
-                            $this->mode);
-                    }
+                    $terminalData = $this->app['gateway']->call('mozart',
+                        Constants::MERCHANT_ONBOARD,
+                        $gatewayData,
+                        $this->mode);
 
                     $terminal = $gatewayProcessor->processTerminalData($terminalData, $merchant);
 

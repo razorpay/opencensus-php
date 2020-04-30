@@ -56,33 +56,22 @@ class HitachiOnboardTest extends TestCase
         $this->assertEquals($response['type'], ['non_recurring', 'recurring_3ds', 'recurring_non_3ds', 'debit_recurring']);
     }
 
-    protected function enableRazorXTreatmentForRazorX()
+    public function testOnboardFailure()
     {
-        $razorxMock = $this->getMockBuilder(RazorXClient::class)
-            ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
-            ->getMock();
+        $this->app['config']->set('hitachi_merchant_onboarding_creation.case', "2");
 
-        $this->app->instance('razorx', $razorxMock);
-
-        $this->app->razorx->method('getTreatment')
-            ->willReturn('mozart');
-    }
-
-    public function testOnboardMozart()
-    {
-        $this->enableRazorXTreatmentForRazorX();
         $this->createMerchants();
 
         $data =$this->getDefaultInput();
 
-        $response = $this->onboard($this->merchantId, $data);
+        $merchantId = $this->merchantId;
 
-        $this->assertNotNull($response);
-
-        $this->assertEquals($response['gateway'], 'hitachi');
-
-        $this->assertEquals($response['type'], ['non_recurring', 'recurring_3ds', 'recurring_non_3ds', 'debit_recurring']);
+        $this->makeRequestAndCatchException(
+            function() use ($merchantId, $data)
+            {
+                $this->onboard($merchantId, $data);
+            },
+            \RZP\Exception\GatewayErrorException::class);
     }
 
     // Should add default merchant details if not present
@@ -141,27 +130,6 @@ class HitachiOnboardTest extends TestCase
             },
             \RZP\Exception\BadRequestValidationFailureException::class);
    }
-
-    public function testOnboardFailure()
-    {
-        $this->createMerchants();
-
-        $data =$this->getDefaultInput();
-
-        $merchant = $this->merchantId;
-
-        $this->mockServerContentFunction(function (& $content, $action = null)
-        {
-            $content[TerminalFields::RESPONSE_CODE] = '05';
-        });
-
-        $this->makeRequestAndCatchException(
-            function() use ($merchant, $data)
-            {
-                $this->onboard($merchant, $data);
-            },
-            \RZP\Exception\GatewayErrorException::class);
-    }
 
     public function testMerchantDoesntExist()
     {
