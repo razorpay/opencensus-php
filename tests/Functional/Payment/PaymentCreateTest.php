@@ -3017,4 +3017,39 @@ class PaymentCreateTest extends TestCase
         $this->assertSame('refunded', $payment->getStatus());
         $this->assertNull($payment->getRefundAt());
     }
+
+    public function testCreateExistingCardS2SPayment()
+    {
+        $this->ba->privateAuth();
+
+        $paymentArray = $this->getDefaultPaymentArray();
+
+        $paymentArray['card']['number'] = '555555555555558';
+        $paymentArray['callback_url'] = $this->getLocalMerchantCallbackUrl();
+
+        $this->fixtures->merchant->addFeatures(['s2s']);
+        $this->fixtures->merchant->enableInternational();
+        $this->fixtures->iin->create([
+            'iin' => '555555',
+            'country' => 'US',
+            'network' => 'MasterCard',
+        ]);
+
+        $response = $this->doS2SPrivateAuthPayment($paymentArray);
+
+        $this->assertArrayHasKey('razorpay_payment_id', $response);
+
+        $payment = $this->getLastEntity('payment', true );
+
+        $this->assertEquals($payment['international'], true);
+
+        $this->fixtures->edit('iin', '555555', ['country' => 'IN']);
+
+        $this->doS2SPrivateAuthPayment($paymentArray);
+
+        $payment = $this->getLastEntity('payment', true );
+
+        $this->assertEquals($payment['international'], false);
+    }
+
 }

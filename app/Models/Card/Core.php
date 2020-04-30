@@ -130,11 +130,19 @@ class Core extends Base\Core
                 $card = $this->findOneExistingCards($newCard, $merchant);
 
                 // temproary code
-                if (($card != null) and
-                    (empty($card->getGlobalFingerprint()) === true) and
-                    (empty($newCard->getGlobalFingerprint()) === false))
+                if ($card != null)
                 {
-                    $card->setGlobalFingerprint($newCard->getGlobalFingerprint());
+                    if ((empty($card->getGlobalFingerprint()) === true) and
+                        (empty($newCard->getGlobalFingerprint()) === false))
+                    {
+                        $card->setGlobalFingerprint($newCard->getGlobalFingerprint());
+                    }
+
+                    if (($card->iinRelation !== null) and
+                        ($card->isInternational() !== $card->iinRelation->isInternational()))
+                    {
+                        $card->setInternational($card->iinRelation->isInternational());
+                    }
 
                     $this->repo->saveOrFail($card);
                 }
