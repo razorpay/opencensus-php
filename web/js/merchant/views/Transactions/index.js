@@ -169,7 +169,10 @@ export default class TransactionsContainer extends Component {
         ) : (
           <TestModeBanner />
         )}
-        {nextSettlement && no_settlement && no_settlement.on_hold === true ? (
+        {nextSettlement &&
+        no_settlement &&
+        no_settlement.on_hold === true &&
+        isSubmitted === true ? (
           <OnHoldBanner
             ctaOnClick={() => {
               this.props.openModal({

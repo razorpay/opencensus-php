@@ -297,6 +297,7 @@ export default class SettlementsListContainer extends ListContainer {
             <TestModeBanner />
           )}
           {nextSettlement === null &&
+          isSubmitted === true &&
           no_settlement &&
           no_settlement.on_hold === true ? (
             <OnHoldBanner

@@ -73,7 +73,7 @@ export default class SettlementDetail extends Component {
                 <div class="settlement-alert-warning">
                   <span style={{ fontWeight: 'bold', fontSize: '15px' }}>
                     {isOnHold ? (
-                      <b>Settlements on Hold</b>
+                      <b>Settlements on hold</b>
                     ) : (
                       <Fragment>
                         <strong>
@@ -118,7 +118,7 @@ export default class SettlementDetail extends Component {
                     ) : (
                       <span class="grey" style={{ opacity: '.7' }}>
                         Because of some risk issues with your payments or with
-                        your razorpay account, Your settlements have been put on
+                        your razorpay account, your settlements have been put on
                         hold.
                       </span>
                     )}
