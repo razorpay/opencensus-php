@@ -946,6 +946,8 @@ class EnachNetbankingNpciGatewayTest extends TestCase
 
         $this->assertEquals($fundTransferAttempt['source'], $refund['id']);
 
+        $this->assertEquals('Test Merchant Refund ' . $payment['id'], $fundTransferAttempt['narration']);
+
         $this->assertEquals('yesbank', $fundTransferAttempt['channel']);
 
         $bankAccount = $this->getLastEntity('bank_account', true);

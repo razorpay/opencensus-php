@@ -4,6 +4,7 @@ namespace RZP\Models\Payment\Processor;
 
 use Mail;
 use Carbon\Carbon;
+use Illuminate\Support\Str;
 
 use RZP\Exception;
 use RZP\Models\Vpa;
@@ -2901,8 +2902,10 @@ trait Refund
 
     protected function getFundTransferAttemptInput(Payment\Entity $payment, $data = []): array
     {
+        $defaultRefundNarration = $this->getDefaultRefundFundTransferAttemptNarration($payment);
+
         $input = [
-            FundTransferAttempt\Entity::NARRATION => null,
+            FundTransferAttempt\Entity::NARRATION => $defaultRefundNarration,
             FundTransferAttempt\Entity::MODE      => null,
         ];
 
@@ -2936,6 +2939,25 @@ trait Refund
         }
 
         return $input;
+    }
+
+    protected function getDefaultRefundFundTransferAttemptNarration(Payment\Entity $payment): string
+    {
+        $merchant = $payment->merchant;
+
+        $merchantBillingLabel = $merchant->getBillingLabel();
+
+        //
+        // Remove all characters other than a-z, A-Z, 0-9 and space
+        // If formattedLabel is non-empty, pick the first 24 chars, else fallback to 'Razorpay'
+        //
+        $formattedLabel = preg_replace('/[^a-zA-Z0-9 ]+/', '', $merchantBillingLabel) ? : 'Razorpay';
+
+        $formattedLabel = Str::limit($formattedLabel, 24, '');
+
+        $narration = $formattedLabel . ' Refund ' . $payment->getId();
+
+        return $narration;
     }
 
     protected function isValidTiming($mode)

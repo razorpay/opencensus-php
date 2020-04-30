@@ -683,6 +683,8 @@ class NetbankingHdfcEmandateTest extends TestCase
 
         $this->assertEquals($fundTransferAttempt['source'], $refund['id']);
 
+        $this->assertEquals('Test Merchant Refund ' . substr($debitPayment['id'], 4), $fundTransferAttempt['narration']);
+
         $this->assertEquals('yesbank', $fundTransferAttempt['channel']);
 
         $bankAccount = $this->getLastEntity('bank_account', true);

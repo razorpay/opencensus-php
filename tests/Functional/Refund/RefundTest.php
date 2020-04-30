@@ -1707,6 +1707,8 @@ class RefundTest extends TestCase
 
         $this->assertEquals($fundTransferAttempt['source'], $refund['id']);
 
+        $this->assertEquals('Test Merchant Refund ' . substr($payment['id'], 4), $fundTransferAttempt['narration']);
+
         $this->assertEquals('yesbank', $fundTransferAttempt['channel']);
 
         $bankAccount = $this->getLastEntity('bank_account', true);
@@ -1754,6 +1756,8 @@ class RefundTest extends TestCase
 
         $this->assertEquals($fundTransferAttempt['source'], $refund['id']);
 
+        $this->assertEquals('Test Merchant Refund ' . $payment['id'], $fundTransferAttempt['narration']);
+
         $this->assertEquals('yesbank', $fundTransferAttempt['channel']);
 
         $bankAccount = $this->getLastEntity('bank_account', true);
@@ -1794,6 +1798,8 @@ class RefundTest extends TestCase
         $fundTransferAttempt  = $this->getLastEntity('fund_transfer_attempt', true);
 
         $this->assertEquals($fundTransferAttempt['source'], $refund['id']);
+
+        $this->assertEquals('Test Merchant Refund ' . substr($payment['id'], 4), $fundTransferAttempt['narration']);
 
         $this->assertEquals('yesbank', $fundTransferAttempt['channel']);
 
@@ -2388,6 +2394,8 @@ class RefundTest extends TestCase
         $this->assertEquals('refund', $fta['purpose']);
         $this->assertEquals('failed', $fta['status']);
 
+        $this->assertEquals('Test Merchant Refund ' . substr($payment['id'], 4), $fta['narration']);
+
         $transaction = $this->getDbEntities('transaction', ['entity_id' => substr($refund['id'], 5)])->last();
 
         $this->assertEquals(3470, $transaction['amount']);
@@ -2642,6 +2650,8 @@ class RefundTest extends TestCase
         $this->assertEquals('refund', $fta['purpose']);
         $this->assertEquals('processed', $fta['status']);
 
+        $this->assertEquals('Test Merchant Refund ' . substr($payment['id'], 4), $fta['narration']);
+
         $transaction = $this->getDbEntities('transaction', ['entity_id' => substr($refund['id'], 5)])->last();
 
         $this->assertEquals(3471, $transaction['amount']);
@@ -2668,6 +2678,8 @@ class RefundTest extends TestCase
         $this->assertEquals($fta['source'], $refund['id']);
         $this->assertNull($fta['vpa_id']);
         $this->assertEquals('refund', $fta['purpose']);
+
+        $this->assertEquals('Test Merchant Refund ' . substr($payment['id'], 4), $fta['narration']);
 
         $this->assertEquals('processed', $refund['status']);
         $this->assertEquals('instant', $refund['speed_processed']);
@@ -2730,6 +2742,8 @@ class RefundTest extends TestCase
         $this->assertEquals('refund', $fta['purpose']);
         $this->assertEquals('processed', $fta['status']);
 
+        $this->assertEquals('Test Merchant Refund ' . substr($payment['id'], 4), $fta['narration']);
+
         $transaction = $this->getDbEntities('transaction', ['entity_id' => substr($refund['id'], 5)])->last();
 
         $this->assertEquals(3471, $transaction['amount']);
@@ -2756,6 +2770,8 @@ class RefundTest extends TestCase
         $this->assertEquals($fta['source'], $refund['id']);
         $this->assertNull($fta['vpa_id']);
         $this->assertEquals('refund', $fta['purpose']);
+
+        $this->assertEquals('Test Merchant Refund ' . substr($payment['id'], 4), $fta['narration']);
 
         $this->assertEquals('processed', $refund['status']);
         $this->assertEquals('instant', $refund['speed_processed']);
@@ -2834,6 +2850,8 @@ class RefundTest extends TestCase
         $this->assertEquals('refund', $fta['purpose']);
         $this->assertEquals('processed', $fta['status']);
 
+        $this->assertEquals('Test Merchant Refund ' . substr($payment['id'], 4), $fta['narration']);
+
         $transaction = $this->getDbEntities('transaction', ['entity_id' => substr($refund['id'], 5)])->last();
 
         $this->assertEquals(3471, $transaction['amount']);
@@ -2860,6 +2878,8 @@ class RefundTest extends TestCase
         $this->assertEquals($fta['source'], $refund['id']);
         $this->assertNull($fta['vpa_id']);
         $this->assertEquals('refund', $fta['purpose']);
+
+        $this->assertEquals('Test Merchant Refund ' . substr($payment['id'], 4), $fta['narration']);
 
         $this->assertEquals('processed', $refund['status']);
         $this->assertEquals('instant', $refund['speed_processed']);
@@ -2957,6 +2977,8 @@ class RefundTest extends TestCase
         $this->assertEquals($fta['source'], $refund['id']);
         $this->assertEquals($refund['vpa_id'], $fta['vpa_id']);
         $this->assertEquals('refund', $fta['purpose']);
+
+        $this->assertEquals('Test Merchant Refund ' . substr($payment['id'], 4), $fta['narration']);
 
         $this->assertEquals('processed', $refund['status']);
         $this->assertEquals('instant', $refund['speed_processed']);
@@ -3153,6 +3175,8 @@ class RefundTest extends TestCase
         $this->assertEquals('refund', $fta['purpose']);
         $this->assertEquals('processed', $fta['status']);
 
+        $this->assertEquals('Test Merchant Refund ' . substr($payment['id'], 4), $fta['narration']);
+
         $transaction = $this->getDbEntities('transaction', ['entity_id' => substr($refund['id'], 5)])->last();
 
         $this->assertEquals(3471, $transaction['amount']);
@@ -3179,6 +3203,8 @@ class RefundTest extends TestCase
         $this->assertEquals($fta['source'], $refund['id']);
         $this->assertNull($fta['vpa_id']);
         $this->assertEquals('refund', $fta['purpose']);
+
+        $this->assertEquals('Test Merchant Refund ' . substr($payment['id'], 4), $fta['narration']);
 
         $this->assertEquals('processed', $refund['status']);
         $this->assertEquals('instant', $refund['speed_processed']);
@@ -3245,6 +3271,8 @@ class RefundTest extends TestCase
         $this->assertEquals($refund['vpa_id'], $fta['vpa_id']);
         $this->assertEquals('refund', $fta['purpose']);
         $this->assertEquals('failed', $fta['status']);
+
+        $this->assertEquals('Test Merchant Refund ' . substr($payment['id'], 4), $fta['narration']);
 
         $transaction = $this->getDbEntities('transaction', ['entity_id' => substr($refund['id'], 5)])->last();
 
@@ -3465,6 +3493,8 @@ class RefundTest extends TestCase
         $this->assertEquals('refund', $fta['purpose']);
         $this->assertEquals('processed', $fta['status']);
 
+        $this->assertEquals('Test Merchant Refund ' . substr($payment['id'], 4), $fta['narration']);
+
         $transaction = $this->getDbEntities('transaction', ['entity_id' => substr($refund['id'], 5)])->last();
 
         $this->assertEquals(3471, $transaction['amount']);
@@ -3491,6 +3521,8 @@ class RefundTest extends TestCase
         $this->assertEquals($fta['source'], $refund['id']);
         $this->assertNull($fta['vpa_id']);
         $this->assertEquals('refund', $fta['purpose']);
+
+        $this->assertEquals('Test Merchant Refund ' . substr($payment['id'], 4), $fta['narration']);
 
         $this->assertEquals('processed', $refund['status']);
         $this->assertEquals('instant', $refund['speed_processed']);
@@ -3575,6 +3607,8 @@ class RefundTest extends TestCase
         $this->assertEquals($refund['vpa_id'], $fta['vpa_id']);
         $this->assertEquals('refund', $fta['purpose']);
 
+        $this->assertEquals('Test Merchant Refund ' . substr($payment['id'], 4), $fta['narration']);
+
         $this->assertEquals('processed', $refund['status']);
         $this->assertEquals('instant', $refund['speed_processed']);
         $this->assertEquals(118, $refund['fee']);
@@ -3634,12 +3668,16 @@ class RefundTest extends TestCase
         $this->assertEquals('refund', $fta['purpose']);
         $this->assertEquals('processed', $fta['status']);
 
+        $this->assertEquals('Test Merchant Refund ' . substr($payment['id'], 4), $fta['narration']);
+
         $this->markProcessedInstantRefundFailed($refund, $fta);
 
         $fta = $this->getLastEntity('fund_transfer_attempt', true);
         $this->assertEquals($fta['source'], $refund['id']);
         $this->assertEquals($refund['vpa_id'], $fta['vpa_id']);
         $this->assertEquals('failed', $fta['status']);
+
+        $this->assertEquals('Test Merchant Refund ' . substr($payment['id'], 4), $fta['narration']);
 
         $refund = $this->getLastEntity('refund', true);
         $this->assertEquals(false, $refund['gateway_refunded']);
@@ -3747,6 +3785,8 @@ class RefundTest extends TestCase
         $this->assertEquals($fta['source'], $refund['id']);
         $this->assertEquals($refund['vpa_id'], $fta['vpa_id']);
         $this->assertEquals('refund', $fta['purpose']);
+
+        $this->assertEquals('Test Merchant Refund ' . substr($payment['id'], 4), $fta['narration']);
 
         // Monday 8:15 AM
         $this->assertEquals(1578883500, $fta['initiate_at']);
@@ -4326,6 +4366,8 @@ class RefundTest extends TestCase
 
         $this->assertEquals($fundTransferAttempt['source'], $refund['id']);
 
+        $this->assertEquals('Test Merchant Refund ' . substr($payment['id'], 4), $fundTransferAttempt['narration']);
+
         $this->assertEquals('icici', $fundTransferAttempt['channel']);
 
         $this->assertEquals(1, $fundTransferAttempt['is_fts']);
@@ -4664,5 +4706,74 @@ class RefundTest extends TestCase
 
         $this->assertEquals(589, $refundFee['fee']);
         $this->assertEquals(90, $refundFee['tax']);
+    }
+
+    public function testInstantRefundFTAWithNullMerchantBillingLabel()
+    {
+        $payment = $this->defaultAuthPayment();
+        $payment = $this->capturePayment($payment['id'], $payment['amount']);
+
+        $card = $this->getDbLastEntity('card');
+
+        $iin = $this->getDbEntityById('iin', $card['iin']);
+
+        $this->fixtures->card->edit($payment['card_id'], ['vault_token' => 'XXXXXXXXXXX']);
+
+        $this->fixtures->merchant->edit('10000000000000', ['billing_label' => null, 'name' => null]);
+
+        $this->gateway = 'hdfc';
+
+        $this->fixtures->merchant->addFeatures('card_transfer_refund');
+
+        $this->fixtures->pricing->createInstantRefundsDefaultPricingplan();
+
+        // Adding specific amount to refund - this is meant to test successful instant refunds on scrooge -
+        $refund = $this->refundPayment($payment['id'], 3471, ['speed' => 'optimum', 'is_fta' => true]);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $fta = $this->getLastEntity('fund_transfer_attempt', true);
+
+        $this->assertEquals($fta['source'], $refund['id']);
+        $this->assertEquals($refund['vpa_id'], $fta['vpa_id']);
+        $this->assertEquals('refund', $fta['purpose']);
+        $this->assertEquals('processed', $fta['status']);
+
+        $this->assertEquals('Razorpay Refund ' . substr($payment['id'], 4), $fta['narration']);
+    }
+
+    public function testInstantRefundFTAWithLongMerchantBillingLabel()
+    {
+        $payment = $this->defaultAuthPayment();
+        $payment = $this->capturePayment($payment['id'], $payment['amount']);
+
+        $card = $this->getDbLastEntity('card');
+
+        $iin = $this->getDbEntityById('iin', $card['iin']);
+
+        $this->fixtures->card->edit($payment['card_id'], ['vault_token' => 'XXXXXXXXXXX']);
+
+        $this->fixtures->merchant->edit('10000000000000', ['billing_label' => 'Test Razorpay Long#Merchant>Name?Characters']);
+
+        $this->gateway = 'hdfc';
+
+        $this->fixtures->merchant->addFeatures('card_transfer_refund');
+
+        $this->fixtures->pricing->createInstantRefundsDefaultPricingplan();
+
+        // Adding specific amount to refund - this is meant to test successful instant refunds on scrooge -
+        $refund = $this->refundPayment($payment['id'], 3471, ['speed' => 'optimum', 'is_fta' => true]);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $fta = $this->getLastEntity('fund_transfer_attempt', true);
+
+        $this->assertEquals($fta['source'], $refund['id']);
+        $this->assertEquals($refund['vpa_id'], $fta['vpa_id']);
+        $this->assertEquals('refund', $fta['purpose']);
+        $this->assertEquals('processed', $fta['status']);
+
+        // Ensuring removal of special characters and Character limit of 24
+        $this->assertEquals('Test Razorpay LongMercha Refund ' . substr($payment['id'], 4), $fta['narration']);
     }
 }

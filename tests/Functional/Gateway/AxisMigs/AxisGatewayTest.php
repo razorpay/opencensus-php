@@ -905,6 +905,8 @@ class AxisGatewayTest extends TestCase
 
         $this->assertEquals($fta['source'], $refund['id']);
 
+        $this->assertEquals('Test Merchant Refund ' . substr($payment['id'], 4), $fta['narration']);
+
         $refund = $this->getLastEntity('refund', true);
 
         // Refund will be in created state

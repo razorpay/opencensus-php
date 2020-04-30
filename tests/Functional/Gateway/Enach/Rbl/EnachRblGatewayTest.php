@@ -1046,6 +1046,8 @@ class EnachRblGatewayTest extends TestCase
 
         $this->assertEquals($fundTransferAttempt['source'], $refund['id']);
 
+        $this->assertEquals('Test Merchant Refund ' . $payment['id'], $fundTransferAttempt['narration']);
+
         $this->assertEquals('yesbank', $fundTransferAttempt['channel']);
 
         $bankAccount = $this->getLastEntity('bank_account', true);
@@ -1101,6 +1103,8 @@ class EnachRblGatewayTest extends TestCase
 
         $this->assertEquals($fundTransferAttempt['source'], $refund['id']);
 
+        $this->assertEquals('Test Merchant Refund ' . $payment['id'], $fundTransferAttempt['narration']);
+
         $this->assertEquals('yesbank', $fundTransferAttempt['channel']);
 
         $bankAccount = $this->getLastEntity('bank_account', true);
@@ -1154,6 +1158,8 @@ class EnachRblGatewayTest extends TestCase
         $fundTransferAttempt  = $this->getLastEntity('fund_transfer_attempt', true);
 
         $this->assertEquals($fundTransferAttempt['source'], $refund['id']);
+
+        $this->assertEquals('Test Merchant Refund ' . $payment['id'], $fundTransferAttempt['narration']);
 
         $this->assertEquals('yesbank', $fundTransferAttempt['channel']);
 

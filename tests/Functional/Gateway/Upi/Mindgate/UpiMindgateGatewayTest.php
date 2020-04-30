@@ -764,6 +764,8 @@ class UpiMindgateGatewayTest extends TestCase
 
         $this->assertEquals($fta['source'], $refund['id']);
 
+        $this->assertEquals('Test Merchant Refund ' . substr($payment['id'], 4), $fta['narration']);
+
         // Refund will be in created state
         $this->assertEquals($refund['status'], 'created');
     }

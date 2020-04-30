@@ -2503,6 +2503,8 @@ class BankTransferTest extends TestCase
 
         $this->assertEquals('yesbank', $fundTransferAttempt['channel']);
 
+        $this->assertEquals('Test Merchant Refund ' . substr($payment['id'], 4), $fundTransferAttempt['narration']);
+
         $bankAccount = $this->getDbLastEntity('bank_account');
         $bankAccount = $bankAccount->toArray();
 
