@@ -93,6 +93,7 @@ export default class AddFundsContainer extends Component {
         this.setState({
           isSaving: false,
         });
+        this.props.fetchCurrentBalance();
         this.props.showNotification({
           type: 'success',
           message: 'Funds added successfully',
