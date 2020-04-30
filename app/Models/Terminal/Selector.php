@@ -48,6 +48,8 @@ class Selector extends Base\Core
 
     const RAZORX_ASYNC = 'payments_hit_routing_service_async';
 
+    const RAZORX_AUTHN = 'payments_hit_authn_async';
+
     const RAZORX_ASYNC_AUTHN = 'payments_hit_routing_service_authentication';
 
     protected static $filters = [
@@ -787,6 +789,22 @@ class Selector extends Base\Core
                 }
 
                 $this->app->smartRouting->sendNonBlockingPaymentData($data, $params);
+            }
+
+            // TODO: Remove following code
+            // Async call for authentication response time check
+
+            if ($this->shouldHitRoutingService(self::RAZORX_AUTHN, $payment->getId()) === true)
+            {
+                $authNTerminals = $this->getAuthNTerminals();
+                $validAuth = $this->getValidAuths($payment, $authNTerminals);
+
+                $data['authentication_terminals'] = array_values($authNTerminals);
+                $data['valid_auths'] = $validAuth;
+
+                $params = null;
+
+                $this->app->smartRouting->sendNonBlockingPaymentDataAuthN($data, $params);
             }
         }
         catch (\Throwable $e)
