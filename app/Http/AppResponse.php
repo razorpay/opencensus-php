@@ -23,20 +23,28 @@ class AppResponse
      */
     const EXCEL_TRIGGER_CHARS = ['=', '-', '+'];
 
-    public static function jsonResponse($errors, $data = null)
+    public static function jsonResponse($errors, $data = null, $httpCode = null)
     {
+        $response = array();
+
+        // Add httpCode of downstream API
+        if (empty($httpCode) === false)
+        {
+            $response += array('status_code' => $httpCode);
+        }
+
         if (empty($errors))
         {
-            $response = array('success' => true);
+            $response += array('success' => true);
 
             if ($data !== null)
             {
-                $response = $response + array('data' => $data);
+                $response += array('data' => $data);
             }
         }
         else
         {
-            $response = array('success' => false, 'errors' => $errors);
+            $response += array('success' => false, 'errors' => $errors);
         }
 
         return Response::json($response);

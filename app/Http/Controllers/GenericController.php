@@ -48,9 +48,9 @@ class GenericController extends Controller
 
         $method = Request::method();
 
-        list($error, $data) = $request->send($path, $method);
+        list($error, $data, $httpCode) = $request->send($path, $method);
 
-        return AppResponse::jsonResponse($error, $data);
+        return AppResponse::jsonResponse($error, $data, $httpCode);
     }
 
     public function handleAnyExtension($mode, $path)

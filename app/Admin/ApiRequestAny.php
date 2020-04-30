@@ -381,6 +381,7 @@ class ApiRequestAny
         $exception = null;
         $errors = [];
         $response = null;
+        $httpCode = null;
         $method = $method ?? Request::method();
 
         // In some cases (for instance dashboard merchant searches)
@@ -391,11 +392,14 @@ class ApiRequestAny
 
         try
         {
-            $response = $this->client
-                             ->$method($path, $this->options)
-                             ->json();
+            $client = $this->client
+                           ->$method($path, $this->options);
 
-            return [null, $response];
+            $response = $client->json();
+
+            $httpCode = $client->getStatusCode();
+
+            return [null, $response, $httpCode];
         }
         // This captures all the errors that might happen for now
         catch(\GuzzleHttp\Exception\ConnectException $e)
@@ -407,12 +411,14 @@ class ApiRequestAny
         {
             $exception = $e;
             $json = $e->getResponse()->json();
-            $errors = [$json['error']['description'], "Status Code: {$e->getResponse()->getStatusCode()}"];
+            $httpCode = $e->getResponse()->getStatusCode();
+            $errors = [$json['error']['description'], "Status Code: {$httpCode}"];
         }
         catch(\GuzzleHttp\Exception\ClientException $e)
         {
             $json = $e->getResponse()->json();
-            $errors = [$json['error']['description'], "Status Code: {$e->getResponse()->getStatusCode()}"];
+            $httpCode = $e->getResponse()->getStatusCode();
+            $errors = [$json['error']['description'], "Status Code: {$httpCode}"];
 
             //in case of 2fa api calls we need the _internal passed by the api
             // and dashboard will consume that _internal. For eg.
@@ -425,7 +431,7 @@ class ApiRequestAny
                 $errors = [
                     self::INTERNAL_ERROR_CODE => $json['error']['_internal'][self::INTERNAL_ERROR_CODE],
                     'description'             => $json['error']['description'],
-                    'status_code'             => $e->getResponse()->getStatusCode(),
+                    'status_code'             => $httpCode,
                     'code'                    => $json['error']['code'],
                     '_internal'               => $json['error']['_internal'] ?? [],
                 ];
@@ -434,6 +440,7 @@ class ApiRequestAny
         catch(\GuzzleHttp\Exception\ServerException $e)
         {
             $exception = $e;
+            $httpCode = $e->hasResponse() ? $e->getResponse()->getStatusCode() : null;
             $errors = [$e->getMessage()];
         }
         catch(RZPErrors\Error $e)
@@ -451,11 +458,12 @@ class ApiRequestAny
             Trace::error(
                 TraceCode::API_REQUEST_FAILURE,
                 [
-                    'message' => $e->getMessage(),
+                    'message'           => $e->getMessage(),
+                    'api_status_code'   => $httpCode,
                 ]);
         }
 
-        return [$errors, null];
+        return [$errors, null, $httpCode];
     }
 
     protected function flatten($parent, $array, $prefix)
