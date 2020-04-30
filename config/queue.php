@@ -419,6 +419,10 @@ return [
         'test'       =>  env('AWS_RBL_FEE_RECOVERY_TEST_QUEUE'),
         'live'       =>  env('AWS_RBL_FEE_RECOVERY_LIVE_QUEUE'),
     ],
+    'downtime' => [
+        'test'       => env('AWS_DOWNTIME_QUEUE'),
+        'live'       => env('AWS_DOWNTIME_QUEUE'),
+    ],
 
     /*
      | Lists various queues to be used per mailable

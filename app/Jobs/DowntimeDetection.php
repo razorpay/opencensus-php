@@ -17,7 +17,7 @@ class DowntimeDetection extends Job
 {
     public $timeout = 5;
 
-    protected $queueConfigKey = 'capture';
+    protected $queueConfigKey = 'downtime';
 
     private $type;
 
