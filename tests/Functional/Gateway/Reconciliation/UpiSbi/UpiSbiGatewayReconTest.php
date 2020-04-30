@@ -10,10 +10,10 @@ use RZP\Models\Merchant;
 use RZP\Constants\Entity;
 use RZP\Constants\Timezone;
 use RZP\Models\Batch\Status;
+use RZP\Models\Base\PublicEntity;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Batch\BatchTestTrait;
 use RZP\Tests\Functional\Gateway\Upi\Sbi\Constants;
-use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Helpers\Reconciliator\ReconTrait;
 
 class UpiSbiGatewayReconTest extends TestCase
@@ -29,6 +29,8 @@ class UpiSbiGatewayReconTest extends TestCase
 
     public function setUp()
     {
+        $this->testDataFilePath = __DIR__ . '/UpiSbiGatewayReconTestData.php';
+
         parent::setUp();
 
         $this->ba->appAuth();
@@ -151,6 +153,38 @@ class UpiSbiGatewayReconTest extends TestCase
         $this->assertBatchStatus(Status::PROCESSED);
     }
 
+    public function testUpiSbiRefundReconciliation()
+    {
+        $createdAt = Carbon::yesterday(Timezone::IST)->addHours(3)->getTimestamp();
+
+        $this->makeUpiSbiRefundsSince($createdAt);
+
+        $this->ba->appAuth();
+
+        $entries[] = $this->mockRefundData();
+
+        $file = $this->writeToExcelFile($entries, 'refundreport');
+
+        $uploadedFile = $this->createRefundUploadedFile($file);
+
+        $this->reconcile($uploadedFile, 'UpiSbi');
+
+        $refunds = $this->getEntities('refund', [], true);
+
+        foreach ($refunds['items'] as $refund)
+        {
+            $this->assertEquals('processed', $refund['status']);
+
+            $transactionId = $refund['transaction_id'];
+
+            $transaction = $this->getEntityById('transaction', $transactionId, true);
+
+            $this->assertNotNull($transaction['reconciled_at']);
+        }
+
+        $this->assertBatchStatus(Status::PROCESSED);
+    }
+
     private function assertUpiEntityChanged()
     {
         $upiEntity = $this->getLastEntity('upi', true);
@@ -176,6 +210,24 @@ class UpiSbiGatewayReconTest extends TestCase
         return $uploadedFile;
     }
 
+    private function createRefundUploadedFile($file)
+    {
+        $this->assertFileExists($file);
+
+        $mimeType = 'application/octet-stream';
+
+        $uploadedFile = new UploadedFile(
+            $file,
+            'refundreport.xlsx',
+            $mimeType,
+            filesize($file),
+            null,
+            true
+        );
+
+        return $uploadedFile;
+    }
+
     private function makeUpiSbiPaymentsSince(int $count = 3, int $createdAt)
     {
         for ($i = 0; $i < $count; $i++)
@@ -187,6 +239,13 @@ class UpiSbiGatewayReconTest extends TestCase
         {
             $this->fixtures->edit('payment', $payment, ['created_at' => $createdAt]);
         }
+    }
+
+    private function makeUpiSbiRefundsSince(int $createdAt)
+    {
+        $paymentId = $this->doUpiSbiPayment();
+
+        $this->refundAuthorizedPayment($paymentId);
     }
 
     private function doUpiSbiPayment()
@@ -218,5 +277,18 @@ class UpiSbiGatewayReconTest extends TestCase
         $response = $this->getPaymentStatus($id);
 
         $this->assertEquals($status, $response[Payment\Entity::STATUS]);
+    }
+
+    protected function mockRefundData()
+    {
+        $refund = $this->getDbLastRefund();
+
+        $facade = $this->testData['upiSbiRefund'];
+
+        $facade['REFREQNO']     = PublicEntity::stripDefaultSIgn($refund->getPublicId());
+
+        $facade['REFUNDREQAMT'] = $refund->getAmount()/100;
+
+        return $facade;
     }
 }

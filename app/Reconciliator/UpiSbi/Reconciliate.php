@@ -16,6 +16,8 @@ class Reconciliate extends Base\Reconciliate
      */
     const TRANSACTION_REPORT = 'transaction report';
 
+    const REFUND_REPORT      = 'refundreport';
+
     protected function getFileName(array $extraDetails): string
     {
         return $extraDetails[FileProcessor::FILE_DETAILS][FileProcessor::FILE_NAME];
@@ -32,6 +34,10 @@ class Reconciliate extends Base\Reconciliate
         if (str_contains(strtolower($fileName), self::TRANSACTION_REPORT) !== false)
         {
             return self::PAYMENT;
+        }
+        elseif (str_contains(strtolower($fileName), self::REFUND_REPORT) !== false)
+        {
+            return self::REFUND;
         }
 
         return null;
