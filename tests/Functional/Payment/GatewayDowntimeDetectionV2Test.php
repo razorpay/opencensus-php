@@ -8,7 +8,17 @@ use App;
 use Mockery;
 use Carbon\Carbon;
 use RZP\Error;
+use RZP\Error\ErrorCode;
+use RZP\Error\PublicErrorCode;
+use RZP\Error\PublicErrorDescription;
+use RZP\Exception\GatewayErrorException;
+use RZP\Gateway\Upi\Base\ProviderCode;
 use RZP\Models\Admin\ConfigKey;
+use RZP\Models\Card\Issuer;
+use RZP\Models\Card\Network;
+use RZP\Models\Gateway\Downtime\DowntimeDetection;
+use RZP\Models\Merchant\Account;
+use RZP\Models\Payment\Method;
 use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\TestCase;
@@ -47,6 +57,15 @@ class GatewayDowntimeDetectionV2Test extends TestCase
 
         $this->app->razorx->method('getTreatment')
             ->willReturn('On');
+
+        $this->fixtures->merchant->enableMethod(Account::TEST_ACCOUNT, Method::UPI);
+
+        $this->fixtures->create('terminal:shared_upi_mindgate_terminal');
+
+        $externalMock = Mockery::mock('alias:RZP\Models\Gateway\Downtime\Constants', ConstantsStub::class);
+
+        $externalMock->shouldReceive('getMaxSingleMerchantContribution')->andReturn(1);
+        $externalMock->shouldReceive('getAllJobTypes')->andReturn($this->getAllJobTypes());
     }
 
     public function tearDown()
@@ -68,11 +87,15 @@ class GatewayDowntimeDetectionV2Test extends TestCase
     protected function getDefaultRedisSettings()
     {
         return [
-            'success_rate_issuer_hdfc_create' => json_encode(
+            'success_rate_card_issuer_hdfc_create' => json_encode(
                 [['30', '2' , '0.05'],
                  ['300', '2' , '0.05']]),
-            'success_rate_issuer_hdfc_resolve' => json_encode(
-                [['2' , '0.40']]),
+            'success_rate_card_issuer_hdfc_resolve' => json_encode(
+                [['', '2' , '0.40']]),
+            'payment_interval_upi_provider_okhdfcbank_create' => json_encode(
+                [['60', '2' , '0.05']]),
+            'payment_interval_upi_provider_okhdfcbank_resolve' => json_encode(
+                [['60', '2' , '0.40']]),
         ];
     }
 
@@ -95,6 +118,25 @@ class GatewayDowntimeDetectionV2Test extends TestCase
         ];
     }
 
+    protected function getErrorTestDataForUPI()
+    {
+        return [
+            'response'  => [
+                'content'     => [
+                    'error' => [
+                        'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                        'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_FAILED,
+                    ],
+                ],
+                'status_code' => 400,
+            ],
+            'exception' => [
+                'class'               => GatewayErrorException::class,
+                'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_FAILED
+            ],
+        ];
+    }
+
     // ------------------------- Tests -----------------------------------------
     public function testPutGatewayDowntimeRedisConf()
     {
@@ -105,7 +147,7 @@ class GatewayDowntimeDetectionV2Test extends TestCase
         $sbiExpected = $this->testData['redisConfDowntimeResponse'];
 
         $sbiActual = array_filter($response['config:downtime:detection:configuration_v2'], function($arr) {
-            return $arr['key'] === 'success_rate_issuer_sbin_create';
+            return $arr['key'] === 'success_rate_card_issuer_sbin_create';
         });
 
         $this->assertEquals(current($sbiActual), $sbiExpected);
@@ -137,13 +179,9 @@ class GatewayDowntimeDetectionV2Test extends TestCase
 
         $this->ba->cronAuth();
 
-        $externalMock = Mockery::mock('alias:RZP\Models\Gateway\Downtime\Constants', ConstantsStub::class);
-
-        $externalMock->shouldReceive('getMaxSingleMerchantContribution')->andReturn(1);
-
         $this->startTest();
 
-        $this->assertNotNull($this->redis->get('DOWNTIME_CREATED_success_rate_ISSUER_HDFC'));
+        $this->assertNotNull($this->redis->get('DOWNTIME_CREATED_success_rate_card_ISSUER_HDFC'));
 
         $this->ba->adminAuth();
 
@@ -164,7 +202,49 @@ class GatewayDowntimeDetectionV2Test extends TestCase
 
         $this->makeRequestAndGetContent($request);
 
-        $this->assertNull($this->redis->get('DOWNTIME_CREATED_success_rate_ISSUER_HDFC'));
+        $this->assertNull($this->redis->get('DOWNTIME_CREATED_success_rate_card_ISSUER_HDFC'));
+    }
+
+
+    public function testDowntimeDetectionForUpi()
+    {
+        $payment = $this->getDefaultUpiPaymentArray();
+
+        $payment['vpa'] = 'failedcollect@okhdfcbank';
+
+        $this->doAuthPaymentViaAjaxRoute($payment);
+        $this->doAuthPaymentViaAjaxRoute($payment);
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/gateway/downtimes/detection/cron',
+        ];
+
+        $this->ba->cronAuth();
+
+        Carbon::setTestNow(Carbon::now()->addSeconds(70));
+
+        $this->makeRequestAndGetContent($request);
+
+        $this->assertNotNull($this->redis->get('DOWNTIME_CREATED_payment_interval_upi_PROVIDER_okhdfcbank'));
+    }
+
+    public function getAllJobTypes()
+    {
+        return [
+            [
+                'type' => DowntimeDetection::SUCCESS_RATE,
+                'method' => Method::CARD,
+                'key' => DowntimeDetection::ISSUER,
+                'value' => Issuer::HDFC,
+            ],
+            [
+                'type' => DowntimeDetection::PAYMENT_INTERVAL,
+                'method' => Method::UPI,
+                'key' => DowntimeDetection::PROVIDER,
+                'value' => ProviderCode::OKHDFCBANK,
+            ],
+        ];
     }
 }
 

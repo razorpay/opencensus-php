@@ -5,8 +5,6 @@ namespace RZP\Models\Gateway\Downtime;
 
 
 use App;
-use RZP\Models\Card\Issuer;
-use RZP\Models\Card\Network;
 use \stdClass;
 use Carbon\Carbon;
 use Illuminate\Redis\RedisManager;
@@ -14,6 +12,7 @@ use Illuminate\Support\Facades\Redis;
 
 use RZP\Exception;
 use RZP\Trace\TraceCode;
+use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Status;
 use RZP\Foundation\Application;
 use Razorpay\Trace\Logger as Trace;
@@ -31,91 +30,22 @@ class DowntimeDetection
      */
     protected $redis;
 
-    const ISSUER = 'ISSUER';
+    const ISSUER            = 'ISSUER';
 
-    const NETWORK = 'NETWORK';
+    const NETWORK           = 'NETWORK';
 
-    const SUCCESS_RATE = 'success_rate';
+    const PROVIDER          = 'PROVIDER';
 
-    const PAYMENT_INTERVAL = 'payment_interval';
+    const METHOD            = 'METHOD';
 
-    protected $allJobTypes = [
-        [
-            'type' => self::SUCCESS_RATE,
-            'key' => self::ISSUER,
-            'value' => Issuer::SBIN,
-        ],
-        [
-            'type' => self::SUCCESS_RATE,
-            'key' => self::ISSUER,
-            'value' => Issuer::HDFC,
-        ],
-        [
-            'type' => self::SUCCESS_RATE,
-            'key' => self::ISSUER,
-            'value' => Issuer::ICIC,
-        ],
-        [
-            'type' => self::SUCCESS_RATE,
-            'key' => self::ISSUER,
-            'value' => Issuer::UTIB,
-        ],
-        [
-            'type' => self::SUCCESS_RATE,
-            'key' => self::ISSUER,
-            'value' => Issuer::CITI,
-        ],
-        [
-            'type' => self::SUCCESS_RATE,
-            'key' => self::ISSUER,
-            'value' => Issuer::PUNB,
-        ],
-        [
-            'type' => self::SUCCESS_RATE,
-            'key' => self::ISSUER,
-            'value' => Issuer::KKBK,
-        ],
-        [
-            'type' => self::SUCCESS_RATE,
-            'key' => self::ISSUER,
-            'value' => Issuer::CNRB,
-        ],
-        [
-            'type' => self::SUCCESS_RATE,
-            'key' => self::ISSUER,
-            'value' => Issuer::BKID,
-        ],
-        [
-            'type' => self::SUCCESS_RATE,
-            'key' => self::ISSUER,
-            'value' => Issuer::BARB,
-        ],
-        [
-            'type' => self::SUCCESS_RATE,
-            'key' => self::NETWORK,
-            'value' => Network::AMEX,
-        ],
-        [
-            'type' => self::SUCCESS_RATE,
-            'key' => self::NETWORK,
-            'value' => Network::VISA,
-        ],
-        [
-            'type' => self::SUCCESS_RATE,
-            'key' => self::NETWORK,
-            'value' => Network::MC,
-        ],
-        [
-            'type' => self::SUCCESS_RATE,
-            'key' => self::NETWORK,
-            'value' => Network::DICL,
-        ],
-        [
-            'type' => self::SUCCESS_RATE,
-            'key' => self::NETWORK,
-            'value' => Network::RUPAY,
-        ],
-    ];
+    /**
+     * Type of Downtime Check
+     * Success_rate: will calculate success rate on last N payments having final state.
+     * Payment_interval: will calculate rate at which we receive callbacks for last N payments.
+     */
+    const SUCCESS_RATE      = 'success_rate';
+
+    const PAYMENT_INTERVAL  = 'payment_interval';
 
     public function __construct()
     {
@@ -131,9 +61,9 @@ class DowntimeDetection
         $this->redis   = Redis::connection()->client();
     }
 
-    protected function initConfigurationSettings($type, $key, $value, $settingType)
+    protected function initConfigurationSettings($type, $method, $key, $value, $settingType)
     {
-        $settings = $this->loadSettingsFromRedis($type, $key, $value, $settingType);
+        $settings = $this->loadSettingsFromRedis($type, $method, $key, $value, $settingType);
 
         if (empty($settings) === true)
         {
@@ -141,10 +71,11 @@ class DowntimeDetection
             $this->trace->error(
                 TraceCode::GATEWAY_DOWNTIME_CONFIGURATION_V2_SETTINGS_MISSING,
                 [
-                    'type' => $type,
-                    'key' => $key,
-                    'value' => $value,
-                    'setting_type' => $settingType,
+                    'type'          => $type,
+                    'method'        => $method,
+                    'key'           => $key,
+                    'value'         => $value,
+                    'setting_type'  => $settingType,
                 ]
             );
 
@@ -154,27 +85,51 @@ class DowntimeDetection
         return $settings;
     }
 
-    protected function loadSettingsFromRedis($type, $key, $value, $settingType)
+    protected function loadSettingsFromRedis($type, $method, $key, $value, $settingType)
     {
-        $arrayKey = $type . '_' . $key . '_' . $value . '_' . $settingType;
+        $arrayKey = $type . '_' . $method . '_' . $key . '_' . $value . '_' . $settingType;
 
         $allSettings = $this->redis->hget(Constants::SETTINGS_KEY, strtolower($arrayKey));
 
         return json_decode($allSettings);
     }
 
-    protected function calculateDowntimeMetric(PublicCollection $payments)
+    protected function isSuccess(\RZP\Models\Payment\Entity $payment, $type): bool
+    {
+        if ($type === self::SUCCESS_RATE)
+        {
+            if ($payment->hasBeenAuthorized() === true)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+        else if ($type === self::PAYMENT_INTERVAL)
+        {
+            if ($payment->getStatus() !== Status::CREATED)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        throw new Exception\LogicException("Invalid Type");
+    }
+
+    protected function calculateDowntimeMetric(PublicCollection $payments, string $type)
     {
         $downtimeMetric = new stdClass;
-        $downtimeMetric->total_authorized = 0;
-        $downtimeMetric->total_payments = 0;
+        $downtimeMetric->numerator = 0;
+        $downtimeMetric->denominator = 0;
 
         // will only be used if downtime is detected
         $downtimeMetric->downtime_start_time = null;
-        if ($payments->isEmpty() == false)
-        {
-            $downtimeMetric->downtime_start_time = $payments->get(0)->getCreatedAt();
-        }
 
         // will be used if downtime is resolved
         $downtimeMetric->downtime_recover_time = null;
@@ -185,38 +140,33 @@ class DowntimeDetection
 
         foreach ($payments as $index => $payment)
         {
-            if ($payment->getStatus() != Status::CREATED)
+            $downtimeMetric->denominator = $downtimeMetric->denominator + 1;
+
+            if (array_key_exists($payment->getMerchantId(), $merchantTotalPaymentsMap) == true)
             {
-                $downtimeMetric->total_payments = $downtimeMetric->total_payments + 1;
-
-                if (array_key_exists($payment->getMerchantId(), $merchantTotalPaymentsMap) == true)
-                {
-                    $merchantTotalPaymentsMap[$payment->getMerchantId()]++;
-                }
-                else
-                {
-                    $merchantTotalPaymentsMap[$payment->getMerchantId()] = 1;
-                }
-
-                if ($merchantTotalPaymentsMap[$payment->getMerchantId()] > $downtimeMetric->top_merchant_count)
-                {
-                    $downtimeMetric->top_merchant_count += 1;
-                }
+                $merchantTotalPaymentsMap[$payment->getMerchantId()]++;
+            }
+            else
+            {
+                $merchantTotalPaymentsMap[$payment->getMerchantId()] = 1;
             }
 
-            if ($payment->hasBeenAuthorized())
+            if ($merchantTotalPaymentsMap[$payment->getMerchantId()] > $downtimeMetric->top_merchant_count)
             {
-                $downtimeMetric->total_authorized = $downtimeMetric->total_authorized + 1;
+                $downtimeMetric->top_merchant_count += 1;
+            }
 
+            if ($this->isSuccess($payment, $type) === true)
+            {
+                $downtimeMetric->numerator = $downtimeMetric->numerator + 1;
+
+                // First success payment will be assumed as downtime resolve time.
+                $downtimeMetric->downtime_recover_time = $payment->getCreatedAt();
+            }
+            else
+            {
                 // First failed payment after all success payment will be assumed as downtime start time.
-                $nextPayment = $payments->get($index+1);
-                $downtimeMetric->downtime_start_time = (empty($nextPayment) == false) ? $nextPayment->getCreatedAt() : null;
-
-                if (empty($downtimeMetric->downtime_recover_time) == true)
-                {
-                    // First success payment will be assumed as downtime resolve time.
-                    $downtimeMetric->downtime_recover_time = $payment->getCreatedAt();
-                }
+                $downtimeMetric->downtime_start_time = $payment->getCreatedAt();
             }
         }
 
@@ -227,11 +177,12 @@ class DowntimeDetection
     {
         $to = Carbon::now();
 
-        foreach ($this->allJobTypes as $job)
+        foreach (Constants::getAllJobTypes() as $job)
         {
             \RZP\Jobs\DowntimeDetection::dispatch(
                 $this->mode,
                 $job['type'],
+                $job['method'],
                 $job['key'],
                 $job['value'],
                 $to
@@ -239,58 +190,86 @@ class DowntimeDetection
         }
     }
 
-    public function createDowntimeIfNecessary($type, $key, $value, $to)
+    public function createDowntimeIfNecessary($type, $method, $key, $value, $to)
     {
-        $redisKeyForDowntime = Constants::DOWNTIME_KEY . '_' . $type . '_' . $key .'_' . $value;
+        $redisKeyForDowntime = Constants::DOWNTIME_KEY . '_' . $type .'_' . $method . '_' . $key .'_' . $value;
 
         // check if downtime is already there for this issuer
         $downtimeCreatedSince = $this->redis->get($redisKeyForDowntime);
 
         if (empty($downtimeCreatedSince) == true)
         {
-            // if downtime is not present let's check if it's needed to be created.
-            $createSettings = $this->initConfigurationSettings($type, $key, $value, 'create');
+            // if downtime is not present let's check if it needs to be created.
+            $createSettings = $this->initConfigurationSettings($type, $method, $key, $value, 'create');
 
             foreach ($createSettings as $setting)
             {
-                $maxWindowSizeInSeconds = $setting[0];
+                $windowSizeInSeconds = $setting[0];
 
                 $minimumPayments = $setting[1];
 
                 $successRateForDowntime = $setting[2];
 
-                $from = $to->copy()->subSeconds($maxWindowSizeInSeconds);
+                if ($type === self::SUCCESS_RATE)
+                {
+                    $from = $to->copy()->subSeconds($windowSizeInSeconds);
+                }
+                else if ($type === self::PAYMENT_INTERVAL)
+                {
+                    $from = $to->copy()->subSeconds(300);
 
-                $payments = (new \RZP\Models\Payment\Repository())->fetchLastNPaymentsForDowntime($from->timestamp, $to->timestamp, $key, $value, $minimumPayments);
+                    $to = $to->subSeconds($windowSizeInSeconds);
+                }
+                else
+                {
+                    throw new Exception\LogicException("invalid type.");
+                }
 
-                $metric = $this->calculateDowntimeMetric($payments);
+                $this->trace->info(TraceCode::GATEWAY_DOWNTIME_DETECTION_V2_QUERY_STARTED);
 
-                $totalAuthorized = $metric->total_authorized;
+                if ($method === Method::CARD)
+                {
+                    $payments = (new \RZP\Models\Payment\Repository())->fetchLastNPaymentsForDowntime($from->timestamp, $to->timestamp, $type, $key, $value, $minimumPayments);
+                }
+                else if ($method === Method::UPI)
+                {
+                    $payments = (new \RZP\Models\Payment\Repository())->fetchLastNUpiPaymentsForDowntime($from->timestamp, $to->timestamp, $type, $key, $value, $minimumPayments);
+                }
+                else
+                {
+                    new Exception\LogicException("Method not supported yet.");
+                }
 
-                $totalPayments = $metric->total_payments;
+                $this->trace->info(TraceCode::GATEWAY_DOWNTIME_DETECTION_V2_QUERY_COMPLETED);
+
+                $metric = $this->calculateDowntimeMetric($payments, $type);
+
+                $numerator = $metric->numerator;
+
+                $denominator = $metric->denominator;
 
                 $this->trace->info(TraceCode::GATEWAY_DOWNTIME_CONFIGURATION_V2_METRIC,
                     [
-                        'type' => $type,
-                        'key' => $key,
-                        'value' => $value,
-                        'setting_type' => 'create',
-                        'downtime_start_time' => $metric->downtime_start_time,
-                        'top_merchant_count' => $metric->top_merchant_count,
-                        'maxWindowSizeInSeconds' => $maxWindowSizeInSeconds,
-                        'minimumPayments' => $minimumPayments,
-                        'successRateForDowntime' => $successRateForDowntime,
-                        'totalAuthorized' => $totalAuthorized,
-                        'totalPayments' => $totalPayments,
+                        'type'                      => $type,
+                        'method'                    => $method,
+                        'key'                       => $key,
+                        'value'                     => $value,
+                        'downtime_start_time'       => $metric->downtime_start_time,
+                        'top_merchant_count'        => $metric->top_merchant_count,
+                        'window'                    => $windowSizeInSeconds,
+                        'minimumPayments'           => $minimumPayments,
+                        'successRateForDowntime'    => $successRateForDowntime,
+                        'numerator'                 => $numerator,
+                        'denominator'               => $denominator,
 
                     ]);
 
-                if ($totalPayments < $minimumPayments)
+                if ($denominator < $minimumPayments)
                 {
                     continue;
                 }
 
-                $successRate = $this->checkPercentage($totalAuthorized, $totalPayments);
+                $successRate = $this->checkPercentage($numerator, $denominator);
 
                 if ($successRate <= $successRateForDowntime)
                 {
@@ -302,23 +281,16 @@ class DowntimeDetection
 
                     //todo: more than 50% of the payments are not of error cancelled_by_user
 
-                    if (empty($metric->downtime_start_time) == true)
-                    {
-                        // downtime start time can be null if last payment was success.
-                        // Do not create downtime in this case.
-                        //
-                        continue;
-                    }
-
                     $this->trace->info(TraceCode::GATEWAY_DOWNTIME_CONFIGURATION_V2_DOWNTIME_DETECTED,
                         [
-                            'type' => $type,
-                            'key' => $key,
-                            'value' => $value,
-                            'downtime_start_time' => $metric->downtime_start_time,
-                            'maxWindowSizeInSeconds' => $maxWindowSizeInSeconds,
-                            'minimumPayments' => $minimumPayments,
-                            'successRateForDowntime' => $successRateForDowntime,
+                            'type'                      => $type,
+                            'method'                    => $method,
+                            'key'                       => $key,
+                            'value'                     => $value,
+                            'downtime_start_time'       => $metric->downtime_start_time,
+                            'windowSizeInSeconds'       => $windowSizeInSeconds,
+                            'minimumPayments'           => $minimumPayments,
+                            'successRateForDowntime'    => $successRateForDowntime,
                         ]);
 
 
@@ -335,26 +307,63 @@ class DowntimeDetection
             // If downtime is present, let's check if it can be resolved.
 
             //TODO: If $downtimeCreatedSince is more then 5 hour. send slack notification.
-            // Because There has never been metric downtime for this long.
+            // Because There has never been downtime for this long.
 
-            $resolveSetting = $this->initConfigurationSettings($type, $key, $value, 'resolve')[0];
+            $resolveSetting = $this->initConfigurationSettings($type, $method, $key, $value, 'resolve')[0];
 
-            $minimumPayments = $resolveSetting[0];
+            // valid only in case of payment_interval type
+            $windowSizeInSeconds = $resolveSetting[0];
 
-            $successRateToResolve = $resolveSetting[1];
+            $minimumPayments = $resolveSetting[1];
 
-            // from and to are not needed here.
-            $payments = (new \RZP\Models\Payment\Repository())->fetchLastNPaymentsForDowntime(($downtimeCreatedSince-30), null, $key, $value, $minimumPayments);
+            $successRateToResolve = $resolveSetting[2];
 
-            $metric = $this->calculateDowntimeMetric($payments);
+            $this->trace->info(TraceCode::GATEWAY_DOWNTIME_DETECTION_V2_QUERY_STARTED);
 
-            $totalAuthorized = $metric->total_authorized;
+            if ($type === self::SUCCESS_RATE)
+            {
+                // todo: we may wanna limit this later.
+                $from = ($downtimeCreatedSince-30);
 
-            $totalPayments = $metric->total_payments;
+                $to = null;
+            }
+            else if ($type === self::PAYMENT_INTERVAL)
+            {
+                $from = $to->copy()->subSeconds(300)->timestamp;
+
+                $to = $to->subSeconds($windowSizeInSeconds)->timestamp;
+            }
+            else
+            {
+                throw new Exception\LogicException("invalid type");
+            }
+
+            if ($method === Method::CARD)
+            {
+                $payments = (new \RZP\Models\Payment\Repository())->fetchLastNPaymentsForDowntime($from, $to, $type, $key, $value, $minimumPayments);
+            }
+            else if ($method === Method::UPI)
+            {
+                $payments = (new \RZP\Models\Payment\Repository())->fetchLastNUpiPaymentsForDowntime($from, $to, $type, $key, $value, $minimumPayments);
+            }
+
+            else
+            {
+                new Exception\LogicException("Method not supported yet.");
+            }
+
+            $this->trace->info(TraceCode::GATEWAY_DOWNTIME_DETECTION_V2_QUERY_COMPLETED);
+
+            $metric = $this->calculateDowntimeMetric($payments, $type);
+
+            $numerator = $metric->numerator;
+
+            $denominator = $metric->denominator;
 
             $this->trace->info(TraceCode::GATEWAY_DOWNTIME_CONFIGURATION_V2_METRIC,
                 [
                     'type' => $type,
+                    'method' => $method,
                     'key' => $key,
                     'value' => $value,
                     'setting_type' => 'resolve',
@@ -363,16 +372,16 @@ class DowntimeDetection
                     'top_merchant_count' => $metric->top_merchant_count,
                     'minimumPayments' => $minimumPayments,
                     'successRateToResolve' => $successRateToResolve,
-                    'totalAuthorized' => $totalAuthorized,
-                    'totalPayments' => $totalPayments,
+                    'numerator' => $numerator,
+                    'denominator' => $denominator,
                 ]);
 
-            if ($totalPayments < $minimumPayments)
+            if ($denominator < $minimumPayments)
             {
                 return;
             }
 
-            $successRate = $this->checkPercentage($totalAuthorized, $totalPayments);
+            $successRate = $this->checkPercentage($numerator, $denominator);
 
             if ($successRate > $successRateToResolve)
             {

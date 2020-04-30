@@ -21,6 +21,8 @@ class DowntimeDetection extends Job
 
     private $type;
 
+    private $method;
+
     private $key;
 
     private $value;
@@ -30,6 +32,7 @@ class DowntimeDetection extends Job
     public function __construct(
         string $mode,
         string $type,
+        string $method,
         string $key,
         string $value,
         Carbon $to)
@@ -37,6 +40,8 @@ class DowntimeDetection extends Job
         parent::__construct($mode);
 
         $this->type = $type;
+
+        $this->method = $method;
 
         $this->key = $key;
 
@@ -50,17 +55,18 @@ class DowntimeDetection extends Job
         parent::handle();
 
         $tracePayload = [
-            'to'    => $this->to,
-            'type'  => $this->type,
-            'key'   => $this->key,
-            'value' => $this->value,
+            'to'        => $this->to,
+            'type'      => $this->type,
+            'method'    => $this->method,
+            'key'       => $this->key,
+            'value'     => $this->value,
         ];
 
         $this->trace->info(TraceCode::GATEWAY_DOWNTIME_DETECTION_V2_JOB_TRIGGERED, $tracePayload);
 
         try
         {
-            (new \RZP\Models\Gateway\Downtime\DowntimeDetection())->createDowntimeIfNecessary($this->type, $this->key, $this->value, $this->to);
+            (new \RZP\Models\Gateway\Downtime\DowntimeDetection())->createDowntimeIfNecessary($this->type, $this->method, $this->key, $this->value, $this->to);
         }
         catch (\Throwable $e)
         {

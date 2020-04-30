@@ -1895,7 +1895,7 @@ class Repository extends Base\Repository
                     ->findOrFailPublic($paymentId);
     }
 
-    public function fetchLastNPaymentsForDowntime($from, $to, $key, $value, $limit)
+    public function fetchLastNPaymentsForDowntime($from, $to, $type, $key, $value, $limit)
     {
         $paymentCreatedAtCol = $this->repo->payment->dbColumn(Payment\Entity::CREATED_AT);
         $paymentMerchantIdCol = $this->repo->payment->dbColumn(Payment\Entity::MERCHANT_ID);
@@ -1940,11 +1940,51 @@ class Repository extends Base\Repository
             $query = $query->where($paymentCreatedAtCol, '>' ,$from);
         }
 
-        $query = $query->where( Payment\Entity::STATUS, '<>', Status::CREATED);
+        if ($type === DowntimeDetection::SUCCESS_RATE)
+        {
+            $query = $query->where( Payment\Entity::STATUS, '<>', Status::CREATED);
+        }
 
         return $query->orderBy($paymentCreatedAtCol, 'desc')
                      ->limit($limit)
                      ->get();
+    }
+
+    public function fetchLastNUpiPaymentsForDowntime($from, $to, $type, $key, $value, $limit)
+    {
+        $query = $this->newQueryWithConnection($this->getSlaveConnection())
+            ->select(Payment\Entity::CREATED_AT, Payment\Entity::AUTHORIZED_AT, Payment\Entity::STATUS, Payment\Entity::MERCHANT_ID);
+
+        $query = $query->where(Payment\Entity::METHOD, Method::UPI);
+
+        if ($key == DowntimeDetection::PROVIDER)
+        {
+            $query = $query->where(Payment\Entity::VPA, 'like', '%@'.$value);
+        }
+        else
+        {
+            throw new Exception\LogicException(
+                'key should be provider');
+        }
+
+        if ((empty($from) == false) and
+            (empty($to) == false))
+        {
+            $query = $query->whereBetween(Payment\Entity::CREATED_AT, array($from, $to));
+        }
+        else if (empty($from) == false)
+        {
+            $query = $query->where(Payment\Entity::CREATED_AT, '>' ,$from);
+        }
+
+        if ($type === DowntimeDetection::SUCCESS_RATE)
+        {
+            $query = $query->where( Payment\Entity::STATUS, '<>', Status::CREATED);
+        }
+
+        return $query->orderBy(Payment\Entity::CREATED_AT, 'desc')
+            ->limit($limit)
+            ->get();
     }
 
     /**

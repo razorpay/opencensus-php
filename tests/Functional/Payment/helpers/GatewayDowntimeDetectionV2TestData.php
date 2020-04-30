@@ -7,7 +7,7 @@ return [
                 "config:downtime:detection:configuration_v2" =>
                     [
                         [
-                            "key" => "success_rate_issuer_sbin_create",
+                            "key" => "success_rate_card_issuer_sbin_create",
                             "value" => [
                                 [
                                     "30",
@@ -22,7 +22,7 @@ return [
                             ],
                         ],
                         [
-                            "key" => "success_rate_issuer_sbin_resolve",
+                            "key" => "success_rate_card_issuer_sbin_resolve",
                             "value" => [
                                 [
                                     "93",
@@ -41,7 +41,7 @@ return [
         ]
     ],
     'redisConfDowntimeResponse' => [
-        "key" => "success_rate_issuer_sbin_create",
+        "key" => "success_rate_card_issuer_sbin_create",
         "value" => [
             [
                 "30",
@@ -65,14 +65,24 @@ return [
                 "config:downtime:detection:configuration_v2" =>
                     [
                         [
-                            "key" => "success_rate_issuer_hdfc_create",
+                            "key" => "success_rate_card_issuer_hdfc_create",
                             "value" =>  [['30', '2' , '0.05'],
                                 ['300', '2' , '0.05']],
                         ],
                         [
-                            "key" => "success_rate_issuer_hdfc_resolve",
+                            "key" => "success_rate_card_issuer_hdfc_resolve",
                             "value" =>
-                                [['2' , '0.40']],
+                                [['', '2' , '0.40']],
+                        ],
+                        [
+                            "key" => "payment_interval_upi_provider_okhdfcbank_create",
+                            "value" =>
+                                [['60', '2' , '0.05']],
+                        ],
+                        [
+                            "key" => "payment_interval_upi_provider_okhdfcbank_resolve",
+                            "value" =>
+                                [['60', '2' , '0.40']],
                         ],
                     ]
             ]
