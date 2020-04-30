@@ -17,7 +17,7 @@ class HdfcDebitEmiTest extends TestCase
 
         parent::setUp();
 
-        $this->gateway = 'hdfc_debit_emi';
+        $this->gateway = 'mozart';
 
         $this->fixtures->merchant->enableEmi();
 
@@ -45,6 +45,38 @@ class HdfcDebitEmiTest extends TestCase
         $this->runRequestResponseFlow($data);
 
         $this->assertAuthorized();
+    }
+
+    public function testHdfcDebitEmiCheckEligibilityFailure()
+    {
+        $this->createDependentEntitiesForSuccessPayment();
+
+        $this->mockServerContentFunction(function(& $content, $action = '')
+        {
+            if ($action === 'authenticate_init')
+            {
+                $content['data']['status']                  = 'OTP_send_failed';
+                $content['data']['AuthenticationErrorCode'] = 'A034';
+                $content['success']                         = 'false';
+
+                $content['error'] = [
+                    'description'               => 'Customer is not eligible',
+                    'gateway_error_code'        => 'A034',
+                    'gateway_error_description' => 'Customer is not eligible',
+                    'gateway_status_code'       => 200,
+                    'internal_error_code'       => 'BAD_REQUEST_HDFC_DEBIT_EMI_CUSTOMER_NOT_ELIGIBLE',
+                ];
+            }
+        });
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow(
+            $data,
+            function()
+            {
+                $this->doAuthPayment($this->payment);
+            });
     }
 
     public function testHdfcDebitEmiRefundSuccess()

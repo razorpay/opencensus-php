@@ -373,6 +373,9 @@ class PublicErrorDescription
 
     // Debit EMI errors
     const BAD_REQUEST_DEBIT_EMI_CUSTOMER_NOT_ELIGIBLE                           = 'Debit Card EMI offer is not available for the entered details';
+
+    // HDFC DC EMI errors
+    const BAD_REQUEST_HDFC_DEBIT_EMI_CUSTOMER_NOT_ELIGIBLE                      = 'EMI is not available on your HDFC debit card. To check your eligibility, SMS from your registered mobile number DCEMI<space><last 4 digits of Debit Card number> to <56767>.';
     const BAD_REQUEST_DEBIT_EMI_HDFC_MAXIMUM_AMOUNT_LIMIT                       = 'Transaction Value is greater than pre-approved limit. To check your Debit Card Pre approved limit send SMS, MYHDFC to 5676712';
 
     const BAD_REQUEST_DOCUMENT_TYPE_INVALID                                     = 'invalid document type';
