@@ -91,6 +91,12 @@ class SmartRouting
         {
             $params = [
                 'group' => $group,
+            ];
+        }
+
+        if (empty($step) === false)
+        {
+            $params = [
                 'step'  => $step,
             ];
         }
