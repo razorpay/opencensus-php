@@ -1236,6 +1236,11 @@ class Processor
 
         if (Payment\Gateway::isCardPaymentServiceGateway($payment->getGateway()))
         {
+            if ($payment->isBharatQr() === true)
+            {
+                return;
+            }
+
             $this->handleCardPaymentServiceGateways($payment, $gatewayInput);
 
             if ($payment->getCpsRoute() === Payment\Entity::CARD_PAYMENT_SERVICE)
