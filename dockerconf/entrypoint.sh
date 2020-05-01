@@ -88,6 +88,9 @@ start_apache(){
 }
 
 initialize(){
+  # in case of container restart, this file might still exist.
+  # this file is used to remove proxysql after this container's execution is completed.
+  rm -f /container-share/sigterm-check.txt
   fix_permissions
   configure
 }
