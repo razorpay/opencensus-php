@@ -15,25 +15,24 @@ First install Brew on your MAC
 - `brew update`
 - `brew tap homebrew/dupes`
 - `brew tap homebrew/php`
-- Install PHP 7.0.+ `brew install php70`
-- Install gmp : `brew install php70-gmp`
+- Install PHP 7.1.+ `brew install php@7.1`
 - Finally, install composer: `brew install composer`
 
 Now if you run `$ php -v`, you will get `PHP 5.5` or something.
 This is the default PHP version that is shipped with OSX and cannot be removed.
-You just need to edit your path to ensure that `PHP 7.0` is picked up.
+You just need to edit your path to ensure that `PHP 7.1` is picked up.
 
-`export PATH="$(brew --prefix homebrew/php/php70)/bin:$PATH"`
+Unlink any old versions of php using `brew unlink ${version}` and use `brew link php@7.1` to link the path to 7.1. 
+
+Note - check if php-gmp extension is installed by `php -info | grep "GMP"`. Installing php using the above command gets gmp installed with it.
 
 To debug any issue with any package, you can run `brew info php70` etc.
 
 Also, if you are getting seemingly unrelated errors, make sure to update bash/zsh: `brew upgrade bash` and `brew upgrade zsh`.
 
-If everything is setup correctly, running `$ php -v` should give you 7.0.+.
+If everything is setup correctly, running `$ php -v` should give you 7.1.+.
 
 Note: We will use the phpunit that comes along with composer. We do not explicitly need phpunit to be installed for the docker setup.
-
-Note: If you are unable to install php-gmp, use `brew install php` to install php and gmp will be auto bundled with it. The php version that comes bundled High Sierra and does not include the gmp extension. Installing it manually does not work either since it's removed from brew. At the time of writing this, the above command installed php 7.3.3. You may need to unlink the older version. `php -v` should read 7.3.3
 
 ##### Install docker
 [Docker installation and Hello World!](https://docs.docker.com/engine/getstarted/step_one/)
@@ -71,6 +70,11 @@ export GIT_TOKEN
 ```
 or,
 add it to your `.bashrc`/`.bash_profile`
+
+##### Setup docker env vars
+create environment/env.php based on environment/env.sample.php
+It should return 'dev_docker', for which should be created as environment/.env.dev\_docker (use .env.defaults as template)
+
 
 ##### Optional configurations
 Note: By default API will run on port 28080 and mysql on 23306. In case you wish to change these params or other ports like for elasticsearch, please modify `docker-compose.dev.yml`
@@ -158,6 +162,9 @@ Available Databases:
 * api_test
 * api_testing_live
 * api_testing_test
+
+Note: you need to SSH into the mysql api docker container, or connect to the IP address of this same container.
+The port is 3306 when you are SSHing
 
 ```
 $ mysql -u api_user -p -P23306 -h 127.0.0.1 api_live
