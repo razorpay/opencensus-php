@@ -122,7 +122,7 @@ class Base extends Core
      * List email addresses in lower case. Addresses are case insensitive, our checks are not.
      */
     const GATEWAY_SENDER_MAPPING = [
-        self::HDFC                   => ['payoutreport@hdfcbank.com'],
+        self::HDFC                   => [],
         self::AXIS                   => ['pg.estatements@axisbank.com'],
         self::BILLDESK               => [],
         self::PAYZAPP                => ['donotreply@enstage.com'],
