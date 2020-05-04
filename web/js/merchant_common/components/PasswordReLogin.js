@@ -14,7 +14,7 @@ const captchaKey = '6LdsmwETAAAAADmNGCLvbrjL09O_Fv7WOVTngbO4';
 export default class PasswordReLogin extends Component {
   state = {
     gResponse: null,
-    isProd: window.location.hostname === 'dashboard.razorpay.com'
+    isProd: window.location.hostname === 'dashboard.razorpay.com',
   };
 
   componentDidMount() {

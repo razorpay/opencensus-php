@@ -505,11 +505,35 @@ const businessDetails = [
           return 'Please provide valid GSTIN';
         }
       },
+      checkValidityFromAPI: activation => {
+        if (activation.state.has_gstin === '1') {
+          return null;
+        }
+        return checkValidityFromAPI(
+          activation.props.data,
+          'gstin_verification_status',
+          'incorrect_details',
+          'Please provide the correct GSTIN details'
+        );
+      },
     },
   ],
 ];
 
 const bankAccountFields = [
+  {
+    name: 'bank_account_name',
+    label: 'Beneficiary Name',
+    info: getBeneficiaryInfo,
+    maxLength: '120',
+    minLength: '4',
+    description: activation =>
+      isUnregisteredBusiness(activation) ||
+      activation.props.user.isRegAutoKYCEnabled
+        ? 'We will deposit a small amount of money in your account to verify the account.'
+        : '',
+    linkedfields: ['cancelled_cheque'],
+  },
   {
     name: 'bank_branch_ifsc',
     label: 'Branch IFSC Code',
@@ -584,21 +608,64 @@ const bankAccountFields = [
       },
     },
   ],
-  {
-    name: 'bank_account_name',
-    label: 'Beneficiary Name',
-    maxLength: '120',
-    minLength: '4',
-    info: getBeneficiaryInfo,
-    description: activation =>
-      isUnregisteredBusiness(activation)
-        ? 'We will deposit a small amount of money in your account to verify the account.'
-        : '',
-    linkedfields: ['cancelled_cheque'],
-  },
 ];
 
 const uploadFields = [
+  {
+    label: 'Address Proof',
+    getLabel: activation => {
+      if (isUnregisteredBusiness(activation)) {
+        return 'Address Proof';
+      }
+      return "Authorized Signatory's Address Proof";
+    },
+    _name: 'address_proof',
+    _cmp: Input.Select,
+    options: Object.keys(ADDRESS_PROOF_TYPES).map(type => {
+      return { label: ADDRESS_PROOF_TYPES[type].label, name: type };
+    }),
+    _when: activation => {
+      return (
+        _showForIndiv(activation) || activation.props.user.isRegAutoKYCEnabled
+      );
+    },
+  },
+  {
+    label: 'First Page',
+    name: 'address_proof_front',
+    getLabel: activation => {
+      const { address_proof } = activation.state;
+      const addressProofType = ADDRESS_PROOF_TYPES[address_proof];
+      return addressProofType.label + ' ' + addressProofType.frontView;
+    },
+    getName: activation => activation.state.address_proof + '_' + 'front',
+    _cmp: Input.File,
+    className: 'AddressProof-upload',
+    _type: 'address_proof_doc_upload',
+    _when: activation => {
+      return (
+        _showForIndiv(activation) || activation.props.user.isRegAutoKYCEnabled
+      );
+    },
+  },
+  {
+    label: 'Last Page',
+    name: 'address_proof_back',
+    getLabel: activation => {
+      const { address_proof } = activation.state;
+      const addressProofType = ADDRESS_PROOF_TYPES[address_proof];
+      return addressProofType.label + ' ' + addressProofType.backView;
+    },
+    getName: activation => activation.state.address_proof + '_' + 'back',
+    _cmp: Input.File,
+    className: 'AddressProof-upload',
+    _type: 'address_proof_doc_upload',
+    _when: activation => {
+      return (
+        _showForIndiv(activation) || activation.props.user.isRegAutoKYCEnabled
+      );
+    },
+  },
   {
     name: 'business_proof_url',
     label: 'Business Registration Proof',
@@ -678,12 +745,38 @@ const uploadFields = [
     _when: excludeFor_Indiv,
   },
   {
-    name: 'address_proof_url',
-    label: "Company's Bank Account Statement with Address",
+    name: 'form_12a_url',
+    label: 'Form 12A Allotment Letter',
     _cmp: Input.File,
-    description:
-      'Your Bank account number, IFSC code, and Company Name should be clearly visible',
-    _when: excludeFor_Indiv,
+    required: requiredForNGO,
+    _when: showForOrgs,
+  },
+  {
+    name: 'form_80g_url',
+    label: 'Form 80G Allotment Letter',
+    _cmp: Input.File,
+    required: requiredForNGO,
+    _when: showForOrgs,
+  },
+  {
+    name: 'address_proof_url',
+    label: 'Bank Account Proof',
+    _cmp: Input.File,
+    description: (
+      <>
+        Please ensure your <b>Name, Account Number & Branch IFSC</b> are clearly
+        visible on the document{' '}
+      </>
+    ),
+    _when: activation => {
+      /* when we ramp up the experiement, merchants who didn't fall 
+        under the experiment shouldn't face any issue under needs clarfication flow */
+      return (
+        excludeFor_Indiv(activation) &&
+        (!activation.props.user.isRegAutoKYCEnabled ||
+          (activation.isNeedsClarificationMode() && activation.isOnKYCTab()))
+      );
+    },
   },
   {
     name: 'promoter_address_url',
@@ -703,60 +796,15 @@ const uploadFields = [
         to join 2 different photos.
       </span>
     ),
-    _when: excludeFor_Indiv,
-  },
-  {
-    name: 'form_12a_url',
-    label: 'Form 12A Allotment Letter',
-    _cmp: Input.File,
-    required: requiredForNGO,
-    _when: showForOrgs,
-  },
-  {
-    name: 'form_80g_url',
-    label: 'Form 80G Allotment Letter',
-    _cmp: Input.File,
-    required: requiredForNGO,
-    _when: showForOrgs,
-  },
-  {
-    label: 'Address Proof',
-    _name: 'address_proof',
-    _cmp: Input.Select,
-    options: Object.keys(ADDRESS_PROOF_TYPES).map(type => {
-      return { label: ADDRESS_PROOF_TYPES[type].label, name: type };
-    }),
-    _when: _showForIndiv,
-  },
-  {
-    label: 'First Page',
-    name: 'address_proof_front',
-    getLabel: activation => {
-      const { address_proof } = activation.state;
-      const addressProofType = ADDRESS_PROOF_TYPES[address_proof];
-      return addressProofType.label + ' ' + addressProofType.frontView;
+    _when: activation => {
+      /* when we ramp up the experiement, merchants who didn't fall 
+        under the experiment shouldn't face any issue under needs clarfication flow */
+      return (
+        excludeFor_Indiv(activation) &&
+        (!activation.props.user.isRegAutoKYCEnabled ||
+          (activation.isNeedsClarificationMode() && activation.isOnKYCTab()))
+      );
     },
-    getName: activation => activation.state.address_proof + '_' + 'front',
-    _cmp: Input.File,
-    className: 'AddressProof-upload',
-    _when: _showForIndiv,
-    _type: 'address_proof_doc_upload',
-    //linkedfields: ['address_proof'],
-  },
-  {
-    label: 'Last Page',
-    name: 'address_proof_back',
-    getLabel: activation => {
-      const { address_proof } = activation.state;
-      const addressProofType = ADDRESS_PROOF_TYPES[address_proof];
-      return addressProofType.label + ' ' + addressProofType.backView;
-    },
-    getName: activation => activation.state.address_proof + '_' + 'back',
-    _cmp: Input.File,
-    className: 'AddressProof-upload',
-    _when: _showForIndiv,
-    _type: 'address_proof_doc_upload',
-    //linkedfields: ['address_proof'],
   },
   {
     label: 'Additional DOC',

@@ -193,20 +193,18 @@ function getPANDescription(data) {
     : description;
 }
 
-function getBeneficiaryInfo() {
+function getBeneficiaryInfo(value) {
   const currentBusinessType =
     this.state.dirty.business_type || this.props.data.business_type;
-  if (isUnregisteredBusiness(this)) {
-    return 'Please ensure that the spelling is the same as your bank account.';
-  } else {
-    let text = 'Company';
 
-    if (currentBusinessType == LLP) {
-      text = 'Individual';
-    }
-
-    return `The beneficiary name should be same as ${text} name.`;
+  if (currentBusinessType == PROPRIETORSHIP) {
+    return 'Please ensure that the bank details shared belongs to the business or the owner of the company';
   }
+  if (isUnregisteredBusiness(this)) {
+    return 'It is recommended to have beneficiary name same as the owner name';
+  }
+
+  return 'It is recommended to have beneficiary name same as the company name';
 }
 
 function getBillingLabelInfo() {

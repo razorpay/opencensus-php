@@ -1176,7 +1176,7 @@ export default class ActivationWizard extends React.Component {
      * Step 2: If user marks no GSTIN from radio box
      * */
     if (stateName === 'has_gstin' && fieldValue === '1') {
-      sideEffectFieldsToUpdate.gstin = '';
+      sideEffectFieldsToUpdate.gstin = null;
     } else if (stateName === 'has_url' && fieldValue === '1') {
       sideEffectFieldsToUpdate.business_website = '';
     }
@@ -1298,6 +1298,10 @@ export default class ActivationWizard extends React.Component {
 
   /* Find if all tabs are valid */
   isAllTabsValid = () => {
+    if (!this.props.data.can_submit) {
+      return false;
+    }
+
     let isValid = true;
 
     for (let i = 0; i < this.state.tabs.length; i++) {

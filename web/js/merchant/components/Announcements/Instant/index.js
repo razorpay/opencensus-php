@@ -36,19 +36,25 @@ export default class InstantActivationAnnouncements extends Component {
             <Link to="/activation">Fill KYC Form</Link>
           </span>
         );
+      } else if (
+        user.isActivated &&
+        user.bank_details_verification_status == 'failed'
+      ) {
+        theme = 'danger';
+        title = 'Bank Verification Failed';
+        content =
+          'We were unable to verify your bank account. Please upload bank account proof.';
+      } else if (
+        user.isActivated &&
+        user.poi_verification_status == 'verified' &&
+        user.company_pan_verification_status === 'verified'
+      ) {
+        theme = 'success';
+        title = 'Account Activated';
+        content =
+          'PAN verification successful. You can start accepting domestic payments.';
       } else if (user.business_type == 11) {
-        if (
-          user.isActivated &&
-          user.bank_details_verification_status == 'failed'
-        ) {
-          theme = 'danger';
-          title = 'Bank Verification Failed';
-          content =
-            'We were unable to verify your bank account. Please upload bank account proof.';
-        } else if (
-          user.isActivated &&
-          user.poi_verification_status == 'verified'
-        ) {
+        if (user.isActivated && user.poi_verification_status == 'verified') {
           theme = 'success';
           title = 'Account Activated';
           content =
