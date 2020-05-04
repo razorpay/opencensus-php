@@ -105,6 +105,8 @@ class ApiTraceProcessor
 
         $this->addDashboardHeaders($record);
 
+        $this->addProduct($record);
+
         $this->addRouteNameForExceptions($record);
 
         $this->scrubCardNumberViaCcPay($record);
@@ -166,6 +168,13 @@ class ApiTraceProcessor
         {
             $record['request'] += $this->app['basicauth']->getDashboardHeaders();
         }
+    }
+
+    protected function addProduct(&$record)
+    {
+        $product = $this->app['basicauth']->getRequestOriginProduct();
+
+        $record['request']['product'] = $product;
     }
 
     protected function addRouteNameForExceptions(& $record)

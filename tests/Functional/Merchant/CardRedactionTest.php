@@ -3,8 +3,10 @@
 namespace Functional\Merchant;
 
 use Illuminate\Routing\Router;
+
+use RZP\Constants\Product;
 use RZP\Trace\ApiTraceProcessor;
-use RZP\Exception\LogicException;
+use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -69,6 +71,21 @@ class CardRedactionTest extends TestCase
         $this->app->instance('router', $routerMock);
 
         return $routerMock;
+    }
+
+    protected function mockBasicAuth($product = Product::PRIMARY)
+    {
+        $authMock = $this->getMockBuilder(BasicAuth::class)
+                         ->setConstructorArgs([$this->app])
+                         ->setMethods(['getRequestOriginProduct'])
+                         ->getMock();
+
+        $authMock->method('getRequestOriginProduct')
+                 ->willReturn($product);
+
+        $this->app->instance('basicauth', $authMock);
+
+        return $authMock;
     }
 
     public function testVisaCardRedaction()
@@ -368,7 +385,7 @@ class CardRedactionTest extends TestCase
                 'cc_number2' => 'hehehehwwkwk',
                 'cc_number3' => 'normalString',
                 'cc_number4' => '9834728',
-                'visa card'       => 'CARD_NUMBER_SCRUBBED(16)',
+                'visa card'  => 'CARD_NUMBER_SCRUBBED(16)',
             ]
         ];
 
@@ -767,23 +784,7 @@ class CardRedactionTest extends TestCase
 
         $this->mockRouter('payout_create');
 
-        $record = [
-            "timestamp" => "2020-03-26T14:43:12.457",
-            "code"      => "ERROR_EXCEPTION",
-            "message"   => "Unhandled critical exception occured",
-            "context"   => [
-                "class"   => "RZP\\Exception\\GatewayErrorException",
-                "code"    => "GATEWAY_ERROR_UNKNOWN_ERROR",
-                "message" => "Payment processing failed due to error at bank or wallet gateway\nGateway Error Code=> \nGateway Error Desc: ",
-                "data"    => [],
-                "stack"   => [
-                    "#0 /app/app/Http/Controllers/BankTransferController.php(125): RZP\\Models\\BankTransfer\\Service" .
-                    "->process1(371449635398431, 4012888888881881, NormalText, 37144963539, xyz@razorpay.com, Random, 6302839641, 567, abcd123@razorpay.com)",
-                    "#1 [internal function]: RZP\\Http\\Controllers\\BankTransferController->processBankTransfer()",
-                    "#2 /app/vendor/laravel/framework/src/Illuminate/Routing/Controller.php(54): call_user_func_array(Array, Array)",
-                ]
-            ]
-        ];
+        $record = $this->getExceptionRecord();;
 
         $updatedRecord =  $trace($record);
 
@@ -1033,7 +1034,7 @@ class CardRedactionTest extends TestCase
             ]
         ];
 
-        $updatedRecord =  $trace($record);
+        $updatedRecord = $trace($record);
 
         $expectedResponse = [
             'context' => [
@@ -1044,5 +1045,81 @@ class CardRedactionTest extends TestCase
         ];
 
         $this->assertArraySelectiveEquals($expectedResponse, $updatedRecord);
+    }
+
+    public function testBankingProductInExceptionStackTrace()
+    {
+        $record = $this->getExceptionRecord();
+
+        $updatedRecord =  $this->getUpdatedTrace('payment_create', $record, Product::BANKING);
+
+        $this->assertEquals($updatedRecord['request']['product'], Product::BANKING);
+    }
+
+    public function testPrimaryProductPresentInExceptionStackTrace()
+    {
+        $record = $this->getExceptionRecord();
+
+        $updatedRecord =  $this->getUpdatedTrace('payment_create', $record, Product::PRIMARY);
+
+        $this->assertEquals($updatedRecord['request']['product'], Product::PRIMARY);
+    }
+
+    public function testPrimaryProductPresentInTrace()
+    {
+        $record = [
+            'context' => [
+                'email' => 'xyz@razorpay.com',
+            ]
+        ];
+
+        $updatedRecord =  $this->getUpdatedTrace('payment_create', $record, Product::PRIMARY);
+
+        $this->assertEquals($updatedRecord['request']['product'], Product::PRIMARY);
+    }
+
+    public function testBankingProductPresentInTrace()
+    {
+        $record = [
+            'context' => [
+                'email' => 'xyz@razorpay.com',
+            ]
+        ];
+
+        $updatedRecord =  $this->getUpdatedTrace('payout_create', $record, Product::BANKING);
+
+        $this->assertEquals($updatedRecord['request']['product'], Product::BANKING);
+    }
+
+    protected function getUpdatedTrace(string $routeName, array $record, string $product = Product::PRIMARY)
+    {
+        $trace = new ApiTraceProcessor($this->app);
+
+        $this->mockRouter($routeName);
+
+        $this->mockBasicAuth($product);
+
+        return $trace($record);
+    }
+
+    protected function getExceptionRecord()
+    {
+        return [
+            "timestamp" => "2020-03-26T14:43:12.457",
+            "code"      => "ERROR_EXCEPTION",
+            "message"   => "Unhandled critical exception occured",
+            "context"   => [
+                "class"   => "RZP\\Exception\\GatewayErrorException",
+                "code"    => "GATEWAY_ERROR_UNKNOWN_ERROR",
+                "message" => "Payment processing failed due to error at bank or wallet gateway\nGateway Error Code=> \nGateway Error Desc: ",
+                "data"    => [],
+                "stack"   => [
+                    "#0 /app/app/Http/Controllers/BankTransferController.php(125): RZP\\Models\\BankTransfer\\Service" .
+                    "->process1(371449635398431, 4012888888881881, NormalText, 37144963539, xyz@razorpay.com, Random, 6302839641, 567, abcd123@razorpay.com)",
+                    "#1 [internal function]: RZP\\Http\\Controllers\\BankTransferController->processBankTransfer()",
+                    "#2 /app/vendor/laravel/framework/src/Illuminate/Routing/Controller.php(54): call_user_func_array(Array, Array)",
+                ]
+            ]
+        ];
     }
 }
