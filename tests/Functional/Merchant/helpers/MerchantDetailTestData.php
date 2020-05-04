@@ -1562,7 +1562,7 @@ return [
             'method'  => 'POST',
             'url'     => '/merchant/activation',
             'content' => [
-                'company_pan'    => 'ABCPD1234J',
+                'company_pan'    => 'ABCAD1234J',
             ],
         ],
         'response' => [

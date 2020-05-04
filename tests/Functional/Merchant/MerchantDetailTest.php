@@ -1456,7 +1456,7 @@ class MerchantDetailTest extends OAuthTestCase
             'mock_status'                  => 'success',
             'previous_verification_status' => 'failed',
             'new_verification_status'      => 'verified',
-            'company_pan'                  => 'AAAPA1234J',
+            'company_pan'                  => 'AAACA1234J',
         ];
 
         $this->companyPanVerificationAutoKyc($test, $data);
@@ -1470,7 +1470,7 @@ class MerchantDetailTest extends OAuthTestCase
             'mock_status'                  => 'failure',
             'previous_verification_status' => 'verified',
             'new_verification_status'      => 'failed',
-            'company_pan'                  => 'AAAPA1234J',
+            'company_pan'                  => 'AAACA1234J',
         ];
 
         $this->companyPanVerificationAutoKyc($test, $data);
@@ -1484,7 +1484,7 @@ class MerchantDetailTest extends OAuthTestCase
             'merchant_id'                     => $merchantId,
             'company_pan_verification_status' => $data['previous_verification_status'],
             'business_name'                   => $data['business_name'] ?? 'Test123',
-            'company_pan'                     => 'AAAPA1234J',
+            'company_pan'                     => 'AAACA1234J',
             'business_type'                   => '4',
         ]);
 

@@ -1131,7 +1131,7 @@ return [
             'content' => [
                 'business_category'           => 'ecommerce',
                 'business_subcategory'        => 'fashion_and_lifestyle',
-                'promoter_pan'                => 'ABCDE0000Z',
+                'promoter_pan'                => 'ABCPE0000Z',
                 'business_name'               => 'business_name',
                 'business_dba'                => 'tsest123',
                 'business_type'               => 1,
@@ -1149,7 +1149,7 @@ return [
         ],
         'response'    => [
             'content' => [
-                'promoter_pan'               => 'ABCDE0000Z',
+                'promoter_pan'               => 'ABCPE0000Z',
                 'gstin'                      => null,
                 'p_gstin'                    => null,
                 'business_category'          => 'ecommerce',
@@ -1195,7 +1195,7 @@ return [
             'content' => [
                 'business_category'           => 'ecommerce',
                 'business_subcategory'        => 'fashion_and_lifestyle',
-                'promoter_pan'                => 'ABCDE0000Z',
+                'promoter_pan'                => 'ABCPE0000Z',
                 'business_name'               => 'business_name',
                 'business_dba'                => 'tsest123',
                 'business_type'               => 1,
@@ -1213,7 +1213,7 @@ return [
         ],
         'response'    => [
             'content' => [
-                'promoter_pan'               => 'ABCDE0000Z',
+                'promoter_pan'               => 'ABCPE0000Z',
                 'gstin'                      => null,
                 'p_gstin'                    => null,
                 'business_category'          => 'ecommerce',
@@ -1262,7 +1262,7 @@ return [
             'content' => [
                 'business_category'           => 'ecommerce',
                 'business_subcategory'        => 'fashion_and_lifestyle',
-                'promoter_pan'                => 'ABCDE0000Z',
+                'promoter_pan'                => 'ABCPE0000Z',
                 'business_name'               => 'business_name',
                 'business_dba'                => 'test123',
                 'business_type'               => 3,
@@ -1281,7 +1281,7 @@ return [
         ],
         'response'    => [
             'content' => [
-                'promoter_pan'                => 'ABCDE0000Z',
+                'promoter_pan'                => 'ABCPE0000Z',
                 'gstin'                       => null,
                 'p_gstin'                     => null,
                 'business_category'           => 'ecommerce',
@@ -1320,7 +1320,7 @@ return [
             'content' => [
                 'business_category'           => 'ecommerce',
                 'business_subcategory'        => 'weapons_and_ammunitions',
-                'promoter_pan'                => 'ABCDE0000Z',
+                'promoter_pan'                => 'ABCPE0000Z',
                 'business_name'               => 'business_name',
                 'business_dba'                => 'test123',
                 'business_type'               => 11,
@@ -1362,7 +1362,7 @@ return [
             'content' => [
                 'business_category'           => 'ecommerce',
                 'business_subcategory'        => 'fashion_and_lifestyle',
-                'promoter_pan'                => 'ABCDE0000Z',
+                'promoter_pan'                => 'ABCPE0000Z',
                 'business_name'               => 'business_name',
                 'business_dba'                => 'test123',
                 'business_type'               => 11,
@@ -1381,7 +1381,7 @@ return [
         ],
         'response'    => [
             'content' => [
-                'promoter_pan'                => 'ABCDE0000Z',
+                'promoter_pan'                => 'ABCPE0000Z',
                 'gstin'                       => null,
                 'p_gstin'                     => null,
                 'business_category'           => 'ecommerce',
@@ -1415,7 +1415,7 @@ return [
             'content' => [
                 'business_category'           => 'ecommerce',
                 'business_subcategory'        => 'fashion_and_lifestyle',
-                'promoter_pan'                => 'ABCDE0000Z',
+                'promoter_pan'                => 'ABCPE0000Z',
                 'promoter_pan_name'           => 'Test123',
                 'business_name'               => 'business_name',
                 'business_dba'                => 'tsest123',
@@ -1434,7 +1434,7 @@ return [
         ],
         'response'    => [
             'content' => [
-                'promoter_pan'            => 'ABCDE0000Z',
+                'promoter_pan'            => 'ABCPE0000Z',
                 'archived'                => 0,
                 'submitted_at'            => null,
                 'activation_status'       => 'instantly_activated',
@@ -1457,7 +1457,7 @@ return [
             'content' => [
                 'business_category'           => 'ecommerce',
                 'business_subcategory'        => 'fashion_and_lifestyle',
-                'promoter_pan'                => 'ABCDE0000Z',
+                'promoter_pan'                => 'ABCPE0000Z',
                 'promoter_pan_name'           => 'promoter pan name',
                 'business_name'               => 'business_name',
                 'business_dba'                => 'tsest123',
@@ -1510,7 +1510,7 @@ return [
             'content' => [
                 'business_category'           => 'ecommerce',
                 'business_subcategory'        => 'fashion_and_lifestyle',
-                'promoter_pan'                => 'ABCDE0000Z',
+                'promoter_pan'                => 'ABCPE0000Z',
                 'promoter_pan_name'           => 'test name',
                 'business_name'               => 'business_name',
                 'business_dba'                => 'tsest123',
@@ -1550,7 +1550,7 @@ return [
             'content' => [
                 'business_category'           => 'ecommerce',
                 'business_subcategory'        => 'fashion_and_lifestyle',
-                'promoter_pan'                => 'ABCDE0000Z',
+                'promoter_pan'                => 'ABCPE0000Z',
                 'promoter_pan_name'           => 'promoter pan names',
                 'business_name'               => 'business_name',
                 'business_dba'                => 'tsest123',
@@ -1591,7 +1591,7 @@ return [
                 'business_category'           => 'ecommerce',
                 'company_pan'                 => 'ABCCE0000Z',
                 'business_subcategory'        => 'fashion_and_lifestyle',
-                'promoter_pan'                => 'ABCDE0000Z',
+                'promoter_pan'                => 'ABCPE0000Z',
                 'promoter_pan_name'           => 'promoter pan name',
                 'business_name'               => 'business_name',
                 'business_dba'                => 'tsest123',
@@ -1632,7 +1632,7 @@ return [
                 'company_pan'                 => 'ABCCE0000Z',
                 'business_category'           => 'ecommerce',
                 'business_subcategory'        => 'fashion_and_lifestyle',
-                'promoter_pan'                => 'ABCDE0000Z',
+                'promoter_pan'                => 'ABCPE0000Z',
                 'promoter_pan_name'           => 'promoter pan name',
                 'business_name'               => 'business_name',
                 'business_dba'                => 'tsest123',
@@ -1674,7 +1674,7 @@ return [
                 'company_pan'                 => 'ABCCE0000Z',
                 'business_category'           => 'ecommerce',
                 'business_subcategory'        => 'fashion_and_lifestyle',
-                'promoter_pan'                => 'ABCDE0000Z',
+                'promoter_pan'                => 'ABCPE0000Z',
                 'promoter_pan_name'           => 'promoter pan name',
                 'business_name'               => 'business_name',
                 'business_dba'                => 'tsest123',
@@ -1716,7 +1716,7 @@ return [
                 'company_pan'                 => 'ABCCE0000Z',
                 'business_category'           => 'ecommerce',
                 'business_subcategory'        => 'fashion_and_lifestyle',
-                'promoter_pan'                => 'ABCDE0000Z',
+                'promoter_pan'                => 'ABCPE0000Z',
                 'promoter_pan_name'           => 'test123',
                 'business_name'               => 'test123',
                 'business_dba'                => 'tsest123',
@@ -1754,7 +1754,7 @@ return [
             'content' => [
                 'business_category'    => 'financial_services',
                 'business_subcategory' => 'accounting',
-                'promoter_pan'         => 'ABCDE0000Z',
+                'promoter_pan'         => 'ABCPE0000Z',
                 'business_name'        => 'business_name',
                 'business_dba'         => 'test123',
                 'business_type'        => 1,
@@ -1764,7 +1764,7 @@ return [
         ],
         'response'    => [
             'content' => [
-                'promoter_pan'                     => 'ABCDE0000Z',
+                'promoter_pan'                     => 'ABCPE0000Z',
                 'gstin'                            => null,
                 'p_gstin'                          => null,
                 'business_category'                => 'financial_services',
@@ -1816,7 +1816,7 @@ return [
             'content' => [
                 'business_category'    => 'services',
                 'business_subcategory' => 'legal',
-                'promoter_pan'         => 'ABCDE0000Z',
+                'promoter_pan'         => 'ABCPE0000Z',
                 'business_name'        => 'business_name',
                 'business_dba'         => 'test123',
                 'business_type'        => 1,
@@ -1826,7 +1826,7 @@ return [
         ],
         'response'    => [
             'content' => [
-                'promoter_pan'                     => 'ABCDE0000Z',
+                'promoter_pan'                     => 'ABCPE0000Z',
                 'gstin'                            => null,
                 'p_gstin'                          => null,
                 'business_category'                => 'services',
@@ -1880,7 +1880,7 @@ return [
             'content' => [
                 'business_category'    => 'financial_services',
                 'business_subcategory' => 'mutual_fund',
-                'promoter_pan'         => 'ABCDE0000Z',
+                'promoter_pan'         => 'ABCPE0000Z',
                 'business_name'        => 'business_name',
                 'business_dba'         => 'test123',
                 'business_type'        => 1,
@@ -1889,7 +1889,7 @@ return [
         ],
         'response'    => [
             'content' => [
-                'promoter_pan'         => 'ABCDE0000Z',
+                'promoter_pan'         => 'ABCPE0000Z',
                 'business_category'    => 'financial_services',
                 'business_subcategory' => 'mutual_fund',
                 'can_submit'           => false,
@@ -1905,7 +1905,7 @@ return [
             'content' => [
                 'business_category'    => 'financial_services',
                 'business_subcategory' => 'mutual_fund',
-                'promoter_pan'         => 'ABCDE0000Z',
+                'promoter_pan'         => 'ABCPE0000Z',
                 'business_name'        => 'business_name',
                 'business_dba'         => 'test123',
                 'business_type'        => 1,
@@ -1914,7 +1914,7 @@ return [
         ],
         'response'    => [
             'content' => [
-                'promoter_pan'         => 'ABCDE0000Z',
+                'promoter_pan'         => 'ABCPE0000Z',
                 'business_category'    => 'financial_services',
                 'business_subcategory' => 'mutual_fund',
                 'can_submit'           => false,
@@ -1930,7 +1930,7 @@ return [
             'content' => [
                 'business_category'    => 'ecommerce',
                 'business_subcategory' => 'fashion_and_lifestyle',
-                'promoter_pan'         => 'ABCDE0000Z',
+                'promoter_pan'         => 'ABCPE0000Z',
                 'business_name'        => 'business_name',
                 'business_dba'         => 'test123',
                 'business_type'        => 1,
@@ -1959,7 +1959,7 @@ return [
             'content' => [
                 'business_category'    => 'services',
                 'business_subcategory' => 'event_planning',
-                'promoter_pan'         => 'ABCDE0000Z',
+                'promoter_pan'         => 'ABCPE0000Z',
                 'business_name'        => 'business_name',
                 'business_dba'         => 'test123',
                 'business_type'        => 1,
@@ -1988,7 +1988,7 @@ return [
             'content' => [
                 'business_category'    => 'financial_services',
                 'business_subcategory' => 'betting',
-                'promoter_pan'         => 'ABCDE0000Z',
+                'promoter_pan'         => 'ABCPE0000Z',
                 'business_name'        => 'business_name',
                 'business_dba'         => 'test123',
                 'business_type'        => 1,
@@ -1998,7 +1998,7 @@ return [
         'response' => [
             'content' => [
                 'contact_email'                    => 'test@razorpay.com',
-                'promoter_pan'                     => 'ABCDE0000Z',
+                'promoter_pan'                     => 'ABCPE0000Z',
                 'business_category'                => 'financial_services',
                 'business_subcategory'             => 'betting',
                 'activation_flow'                  => 'blacklist',
@@ -2017,7 +2017,7 @@ return [
             'content' => [
                 'business_category'    => 'financial_services',
                 'business_subcategory' => 'mutual_fund',
-                'promoter_pan'         => 'ABCDE0000Z',
+                'promoter_pan'         => 'ABCPE0000Z',
                 'business_name'        => 'business_name',
                 'business_dba'         => 'test123',
                 'business_type'        => 1,
@@ -2027,7 +2027,7 @@ return [
         'response' => [
             'content' => [
                 'contact_email'                    => 'test@razorpay.com',
-                'promoter_pan'                     => 'ABCDE0000Z',
+                'promoter_pan'                     => 'ABCPE0000Z',
                 'business_category'                => 'financial_services',
                 'business_subcategory'             => 'mutual_fund',
                 'activation_flow'                  => 'greylist',
@@ -2046,7 +2046,7 @@ return [
             'content' => [
                 'business_category'    => 'financial_services',
                 'business_subcategory' => 'accounting',
-                'promoter_pan'         => 'ABCDE0000Z',
+                'promoter_pan'         => 'ABCPE0000Z',
                 'business_name'        => 'business_name',
                 'business_dba'         => 'test123',
                 'business_type'        => 1,
@@ -2055,7 +2055,7 @@ return [
         ],
         'response'    => [
             'content' => [
-                'promoter_pan'                     => 'ABCDE0000Z',
+                'promoter_pan'                     => 'ABCPE0000Z',
                 'activation_progress'              => 0,
                 'archived'                         => 0,
                 'allowed_next_activation_statuses' => [],
@@ -2141,7 +2141,6 @@ return [
         ],
         'response'    => [
             'content' => [
-                'promoter_pan'         => 'ABCDE0000Z',
                 'promoter_pan_name'    => 'John Doe',
                 'gstin'                => null,
                 'p_gstin'              => null,
@@ -2201,7 +2200,6 @@ return [
         ],
         'response'    => [
             'content' => [
-                'promoter_pan'         => 'ABCDE0000Z',
                 'promoter_pan_name'    => 'John Doe',
                 'gstin'                => null,
                 'p_gstin'              => null,
@@ -2327,7 +2325,7 @@ return [
             'content' => [
                 'business_category'    => 'ecommerce',
                 'business_subcategory' => 'fashion_and_lifestyle',
-                'promoter_pan'         => 'ABCDE0000Z',
+                'promoter_pan'         => 'ABCPE0000Z',
                 'business_name'        => 'business_name',
                 'business_dba'         => 'test123',
                 'business_type'        => 1,
@@ -2349,7 +2347,7 @@ return [
             'content' => [
                 'business_category'    => 'ecommerce',
                 'business_subcategory' => 'fashion_and_lifestyle',
-                'promoter_pan'         => 'ABCDE0000Z',
+                'promoter_pan'         => 'ABCPE0000Z',
                 'business_name'        => 'business_name',
                 'business_dba'         => 'test123',
                 'business_type'        => 1,
@@ -2359,7 +2357,7 @@ return [
         ],
         'response'    => [
             'content' => [
-                'promoter_pan'         => 'ABCDE0000Z',
+                'promoter_pan'         => 'ABCPE0000Z',
                 'business_category'    => 'ecommerce',
                 'business_subcategory' => 'fashion_and_lifestyle',
                 'activated'            => 1,
@@ -2376,7 +2374,7 @@ return [
             'content' => [
                 'business_category'    => 'financial_services',
                 'business_subcategory' => 'accounting',
-                'promoter_pan'         => 'ABCDE0000Z',
+                'promoter_pan'         => 'ABCPE0000Z',
                 'business_name'        => 'business_name',
                 'business_dba'         => 'test123',
                 'business_type'        => 4,
@@ -2386,7 +2384,7 @@ return [
         ],
         'response'    => [
             'content' => [
-                'promoter_pan'         => 'ABCDE0000Z',
+                'promoter_pan'         => 'ABCPE0000Z',
                 'gstin'                => null,
                 'p_gstin'              => null,
                 'business_category'    => 'financial_services',
@@ -2408,7 +2406,7 @@ return [
             'content' => [
                 'business_category'    => 'financial_services',
                 'business_subcategory' => 'insurance',
-                'promoter_pan'         => 'ABCDE0000Z',
+                'promoter_pan'         => 'ABCPE0000Z',
                 'business_name'        => 'business_name',
                 'business_dba'         => 'test123',
                 'business_type'        => 1,
@@ -2418,7 +2416,7 @@ return [
         ],
         'response'    => [
             'content' => [
-                'promoter_pan'                  => 'ABCDE0000Z',
+                'promoter_pan'                  => 'ABCPE0000Z',
                 'business_category'             => 'financial_services',
                 'business_subcategory'          => 'insurance',
                 'international_activation_flow' => 'greylist',
@@ -2435,7 +2433,7 @@ return [
             'content' => [
                 'business_category'    => 'financial_services',
                 'business_subcategory' => 'accounting',
-                'promoter_pan'         => 'ABCDE0000Z',
+                'promoter_pan'         => 'ABCPE0000Z',
                 'business_name'        => 'business_name',
                 'business_dba'         => 'test123',
                 'business_type'        => 4,
@@ -2445,7 +2443,7 @@ return [
         ],
         'response'    => [
             'content' => [
-                'promoter_pan'         => 'ABCDE0000Z',
+                'promoter_pan'         => 'ABCPE0000Z',
                 'gstin'                => null,
                 'p_gstin'              => null,
                 'business_category'    => 'financial_services',
@@ -2467,7 +2465,7 @@ return [
             'content' => [
                 'business_category'    => 'financial_services',
                 'business_subcategory' => 'accounting',
-                'promoter_pan'         => 'ABCDE0000Z',
+                'promoter_pan'         => 'ABCPE0000Z',
                 'business_name'        => 'business_name',
                 'business_dba'         => 'test123',
                 'business_type'        => 4,
@@ -2476,7 +2474,7 @@ return [
         ],
         'response'    => [
             'content' => [
-                'promoter_pan'         => 'ABCDE0000Z',
+                'promoter_pan'         => 'ABCPE0000Z',
                 'gstin'                => null,
                 'p_gstin'              => null,
                 'business_category'    => 'financial_services',
@@ -2498,7 +2496,7 @@ return [
             'content' => [
                 'business_category'    => 'financial_services',
                 'business_subcategory' => 'accounting',
-                'promoter_pan'         => 'ABCDE0000Z',
+                'promoter_pan'         => 'ABCPE0000Z',
                 'business_name'        => 'business_name',
                 'business_dba'         => 'test123',
                 'business_type'        => 4,
@@ -2508,7 +2506,7 @@ return [
         ],
         'response'    => [
             'content' => [
-                'promoter_pan'         => 'ABCDE0000Z',
+                'promoter_pan'         => 'ABCPE0000Z',
                 'gstin'                => null,
                 'p_gstin'              => null,
                 'business_category'    => 'financial_services',
@@ -2530,7 +2528,7 @@ return [
             'content' => [
                 'business_category'    => 'healthcare',
                 'business_subcategory' => 'pharmacy',
-                'promoter_pan'         => 'ABCDE0000Z',
+                'promoter_pan'         => 'ABCPE0000Z',
                 'business_name'        => 'business_name',
                 'business_dba'         => 'test123',
                 'business_type'        => 4,
@@ -2540,7 +2538,7 @@ return [
         ],
         'response'    => [
             'content' => [
-                'promoter_pan'         => 'ABCDE0000Z',
+                'promoter_pan'         => 'ABCPE0000Z',
                 'gstin'                => null,
                 'p_gstin'              => null,
                 'business_category'    => 'healthcare',
@@ -2562,7 +2560,7 @@ return [
             'content' => [
                 'business_category'    => 'it_and_software',
                 'business_subcategory' => 'web_development',
-                'promoter_pan'         => 'ABCDE0000Z',
+                'promoter_pan'         => 'ABCPE0000Z',
                 'business_name'        => 'business_name',
                 'business_dba'         => 'test123',
                 'business_type'        => 4,
@@ -2572,7 +2570,7 @@ return [
         ],
         'response'    => [
             'content' => [
-                'promoter_pan'         => 'ABCDE0000Z',
+                'promoter_pan'         => 'ABCPE0000Z',
                 'gstin'                => null,
                 'p_gstin'              => null,
                 'business_category'    => 'it_and_software',
@@ -2594,7 +2592,7 @@ return [
             'content' => [
                 'business_category'    => 'ecommerce',
                 'business_subcategory' => 'wholesale',
-                'promoter_pan'         => 'ABCDE0000Z',
+                'promoter_pan'         => 'ABCPE0000Z',
                 'business_name'        => 'business_name',
                 'business_dba'         => 'test123',
                 'business_type'        => 4,
@@ -2604,7 +2602,7 @@ return [
         ],
         'response'    => [
             'content' => [
-                'promoter_pan'         => 'ABCDE0000Z',
+                'promoter_pan'         => 'ABCPE0000Z',
                 'gstin'                => null,
                 'p_gstin'              => null,
                 'business_category'    => 'ecommerce',
@@ -2626,7 +2624,7 @@ return [
             'content' => [
                 'business_category'    => 'not_for_profit',
                 'business_subcategory' => 'educational',
-                'promoter_pan'         => 'ABCDE0000Z',
+                'promoter_pan'         => 'ABCPE0000Z',
                 'business_name'        => 'business_name',
                 'business_dba'         => 'test123',
                 'business_type'        => 4,
@@ -2636,7 +2634,7 @@ return [
         ],
         'response'    => [
             'content' => [
-                'promoter_pan'         => 'ABCDE0000Z',
+                'promoter_pan'         => 'ABCPE0000Z',
                 'gstin'                => null,
                 'p_gstin'              => null,
                 'business_category'    => 'not_for_profit',
@@ -2658,7 +2656,7 @@ return [
             'content' => [
                 'business_category'    => 'financial_services',
                 'business_subcategory' => 'accounting',
-                'promoter_pan'         => 'ABCDE0000Z',
+                'promoter_pan'         => 'ABCPE0000Z',
                 'business_name'        => 'business_name',
                 'business_dba'         => 'test123',
                 'business_type'        => 4,
@@ -2668,7 +2666,7 @@ return [
         ],
         'response'    => [
             'content' => [
-                'promoter_pan'         => 'ABCDE0000Z',
+                'promoter_pan'         => 'ABCPE0000Z',
                 'gstin'                => null,
                 'p_gstin'              => null,
                 'business_category'    => 'financial_services',
@@ -2690,7 +2688,7 @@ return [
             'content' => [
                 'business_category'    => 'it_and_software',
                 'business_subcategory' => 'web_development',
-                'promoter_pan'         => 'ABCDE0000Z',
+                'promoter_pan'         => 'ABCPE0000Z',
                 'business_name'        => 'business_name',
                 'business_dba'         => 'test123',
                 'business_type'        => 1,
@@ -2700,7 +2698,7 @@ return [
         ],
         'response'    => [
             'content' => [
-                'promoter_pan'         => 'ABCDE0000Z',
+                'promoter_pan'         => 'ABCPE0000Z',
                 'gstin'                => null,
                 'p_gstin'              => null,
                 'business_category'    => 'it_and_software',
@@ -2722,7 +2720,7 @@ return [
             'content' => [
                 'business_category'    => 'healthcare',
                 'business_subcategory' => 'pharmacy',
-                'promoter_pan'         => 'ABCDE0000Z',
+                'promoter_pan'         => 'ABCPE0000Z',
                 'business_name'        => 'business_name',
                 'business_dba'         => 'test123',
                 'business_type'        => 1,
@@ -2732,7 +2730,7 @@ return [
         ],
         'response'    => [
             'content' => [
-                'promoter_pan'         => 'ABCDE0000Z',
+                'promoter_pan'         => 'ABCPE0000Z',
                 'gstin'                => null,
                 'p_gstin'              => null,
                 'business_category'    => 'healthcare',
@@ -2948,7 +2946,7 @@ return [
             'content' => [
                 'business_category'           => 'ecommerce',
                 'business_subcategory'        => 'fashion_and_lifestyle',
-                'promoter_pan'                => 'ABCDE0000Z',
+                'promoter_pan'                => 'ABCPE0000Z',
                 'business_name'               => 'business_name',
                 'business_dba'                => 'tsest123',
                 'business_type'               => 1,
