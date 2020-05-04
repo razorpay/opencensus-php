@@ -17,7 +17,7 @@ class Validator extends Base\Validator
     protected static $createRules = [
         Entity::CAMPAIGN     => 'required|alpha_dash|max:255',
         # Value is in paise
-        Entity::VALUE        => 'required|integer|between:-100000000,500000000',
+        Entity::VALUE        => 'required|integer',
         Entity::TYPE         => 'sometimes|filled|string|max:20|in:amount,fee,refund',
         Entity::EXPIRED_AT   => 'sometimes|integer',
         Entity::PROMOTION_ID => 'sometimes|alpha_num|max:14',
@@ -72,7 +72,11 @@ class Validator extends Base\Validator
                 'Cannot assign credits less than '. self::MIN_CREDITS);
         }
 
-        if ($creditsValue > $maxCreditsValue)
+        // removing refund credit upper limit because
+        // of the Covid-19 situation which increased refunds.
+        // and merchants are issuing huge amounts of refunds
+        if (($type !== Credits\Type::REFUND) and
+             ($creditsValue > $maxCreditsValue))
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Cannot assign credits more than '. $maxCreditsValue);
@@ -131,6 +135,29 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Cannot assign fee credits as amount credits are already present');
+        }
+    }
+
+    public function validateCreditsValue($input)
+    {
+        // removing laravel validator for field value of type refund
+        // because of the Covid-19 situation which increased refunds.
+        // and merchants are issuing huge amounts of refunds
+        if ((isset($input['type'])) and
+             ($input['type'] === 'refund') and
+              (($input['value'] >= -100000000)))
+        {
+            return;
+        }
+
+        elseif (($input['value'] < -100000000) or
+                 ($input['value'] > 500000000))
+        {
+            throw new Exception\BadRequestException(
+                'BAD_REQUEST_ERROR',
+                'value',
+                null,
+                'The value must be between -100000000 and 500000000.');
         }
     }
 }

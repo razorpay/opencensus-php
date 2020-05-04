@@ -84,7 +84,10 @@ class Entity extends Base\PublicEntity
 
     public function setValue(int $value)
     {
-        assertTrue (($value >= $this->getUsed()) and ($value <= 100000000));
+        // removing assert of upper limit of value
+        // because of the Covid-19 situation which increased refunds.
+        // and merchants are issuing huge amounts of refunds
+        assertTrue (($value >= $this->getUsed()));
 
         $this->setAttribute(self::VALUE, $value);
     }

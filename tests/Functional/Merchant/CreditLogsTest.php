@@ -192,4 +192,14 @@ class CreditLogsTest extends TestCase
 
         $this->assertEquals($balance['refund_credits'], 190);
     }
+
+    public function testAddRefundCreditsWithoutUpperLimit()
+    {
+        $this->startTest();
+    }
+
+    public function testAddFeeCreditsWithValueMoreThanUpperLimit()
+    {
+        $this->startTest();
+    }
 }

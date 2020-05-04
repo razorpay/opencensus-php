@@ -14,6 +14,8 @@ class Core extends Base\Core
     {
         $creditsLog = (new Credits\Entity)->build($input);
 
+        $creditsLog->getValidator()->validateCreditsValue($input);
+
         $creditsLog->setAuditAction(Action::CREATE_MERCHANT_CREDITS);
 
         $creditsLog->merchant()->associate($merchant);
