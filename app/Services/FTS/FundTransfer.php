@@ -2,12 +2,11 @@
 
 namespace RZP\Services\FTS;
 
-use Requests;
-
 use Carbon\Carbon;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Entity;
 use RZP\Constants\Timezone;
+use RZP\Http\Request\Requests;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\FundTransfer\Mode;
 use RZP\Exception\LogicException;

@@ -2,9 +2,9 @@
 
 namespace RZP\Services;
 
-use Requests;
 use RZP\Exception;
 use RZP\Trace\TraceCode;
+use RZP\Http\Request\Requests;
 
 class OtpElf
 {

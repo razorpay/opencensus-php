@@ -4,7 +4,6 @@ namespace RZP\Services\FTS;
 
 use Razorpay\Trace\Logger as Trace;
 
-use Requests;
 use RZP\Models\Vpa;
 use RZP\Models\Card;
 use RZP\Constants\Mode;
@@ -12,6 +11,7 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Country;
 use RZP\Models\BankAccount;
+use RZP\Http\Request\Requests;
 use RZP\Models\BankingAccount;
 use RZP\Constants\IndianStates;
 use RZP\Models\Admin\ConfigKey;

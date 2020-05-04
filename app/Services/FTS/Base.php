@@ -2,7 +2,6 @@
 
 namespace RZP\Services\FTS;
 
-use Requests;
 use Requests_Response;
 use Razorpay\Trace\Logger as Trace;
 
@@ -10,6 +9,7 @@ use RZP\Exception;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Http\RequestHeader;
+use RZP\Http\Request\Requests;
 use RZP\Trace\TraceCode;
 
 class Base

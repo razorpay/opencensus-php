@@ -2,8 +2,8 @@
 
 namespace RZP\Services\Elfin\Impl;
 
-use Requests;
 use RZP\Constants\HashAlgo;
+use RZP\Http\Request\Requests;
 
 class Gimli extends Base
 {

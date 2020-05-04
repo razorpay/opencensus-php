@@ -3,13 +3,13 @@
 namespace RZP\Services;
 
 use App;
-use Requests;
 use Carbon\Carbon;
 
 use RZP\Exception;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Http\Request\Requests;
 use RZP\Constants\Environment;
 
 

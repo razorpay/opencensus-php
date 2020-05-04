@@ -4,7 +4,6 @@ namespace RZP\Services;
 
 use App;
 
-use Requests;
 use Requests_Response;
 use Requests_Exception;
 
@@ -13,6 +12,7 @@ use Razorpay\Trace\Logger as Trace;
 
 use RZP\Exception;
 use RZP\Trace\TraceCode;
+use RZP\Http\Request\Requests;
 use RZP\Base\RepositoryManager;
 use RZP\Http\BasicAuth\BasicAuth;
 

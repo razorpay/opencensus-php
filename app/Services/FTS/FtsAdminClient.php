@@ -3,7 +3,7 @@
 namespace RZP\Services\FTS;
 
 use App;
-use Requests;
+use RZP\Http\Request\Requests;
 
 class FtsAdminClient extends Base
 {

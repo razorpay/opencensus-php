@@ -3,13 +3,13 @@
 namespace RZP\Jobs;
 
 use Mail;
-use Requests;
 use Requests_Response;
 
 use Carbon\Carbon;
 use RZP\Diag\EventCode;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
+use RZP\Http\Request\Requests;
 use RZP\Services\Beam\Service;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Mail\Beam\BeamRequestFailure;
