@@ -359,10 +359,15 @@ class Validator extends Base\Validator
         }
     }
 
+    public function isValidAutomationEnv(): bool
+    {
+        return ($this->env === 'func' and $this->env === 'automation');
+    }
+
     public function validateBankDetailsVerificationStatus($attribute, $value)
     {
         // adding this check for qa automation
-        if($this->env !== 'func')
+        if (self::isValidAutomationEnv() === false)
         {
             $this->validateActivationFormSubmitted();
         }
@@ -380,7 +385,7 @@ class Validator extends Base\Validator
     public function validatePOAVerificationStatus($attribute, $value)
     {
         // adding this check for qa automation
-        if($this->env !== 'func')
+        if (self::isValidAutomationEnv() === false)
         {
             $this->validateActivationFormSubmitted();
         }

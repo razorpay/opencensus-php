@@ -564,10 +564,12 @@ class Core extends Base\Core
             return;
         }
 
-        $fields = [Detail\Entity::PROMOTER_PAN, Detail\Entity::PROMOTER_PAN_NAME];
+        $fields = [Detail\Entity::PROMOTER_PAN, Detail\Entity::PROMOTER_PAN_NAME, Detail\Entity::BUSINESS_TYPE];
+
+        $requiredFields = [Detail\Entity::PROMOTER_PAN, Detail\Entity::PROMOTER_PAN_NAME];
 
         if (($merchantDetails->getPoiVerificationStatus() !== POIStatus::FAILED) and
-            ($this->checkFieldsUpdation($fields, $input, $merchant->getId()) === false))
+            ($this->checkFieldsUpdation($fields, $input, $merchant->getId(), $requiredFields) === false))
         {
             return;
         }
@@ -1732,8 +1734,7 @@ class Core extends Base\Core
             return;
         }
 
-        // adding this check for qa automation
-        if ($this->env === 'func' and $merchantDetails->getBankDetailsVerificationStatus() !== null)
+        if ($merchantDetails->getBankDetailsVerificationStatus() !== null)
         {
             return;
         }
