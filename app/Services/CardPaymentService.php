@@ -6,7 +6,7 @@ use App;
 use RZP\Exception;
 use Requests_Session;
 use RZP\Models\Order;
-use RZP\Models\Feature;
+use RZP\Models\Card;
 use RZP\Error\ErrorCode;
 use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Base\VerifyResult;
@@ -18,7 +18,6 @@ use RZP\Models\Merchant;
 use RZP\Error\ErrorClass;
 use RZP\Gateway\Base\Action;
 use Illuminate\Support\Arr;
-use RZP\Reconciliator\Base\InfoCode;
 
 class CardPaymentService
 {
@@ -167,7 +166,9 @@ class CardPaymentService
 
         $this->addOrderDetailsIfNotPresent($content);
 
-        $this->addMerchantFeaturesExplicitly($content);
+        $this->addMerchantFeatures($content);
+
+        $this->addCardIin($content);
 
         $response = $this->sendRequest('POST', 'action/' . $action, $content);
 
@@ -207,7 +208,9 @@ class CardPaymentService
 
         $this->addOrderDetailsIfNotPresent($content);
 
-        $this->addMerchantFeaturesExplicitly($content);
+        $this->addMerchantFeatures($content);
+
+        $this->addCardIin($content);
 
         $response = $this->sendRequest('POST', self::AUTHORIZE , $content);
 
@@ -264,40 +267,45 @@ class CardPaymentService
 
     protected function addOrderDetailsIfNotPresent(array & $data)
     {
-        if (isset($data['input']) === true)
+        if (isset($data[self::INPUT]) === true)
         {
-            $input = $data['input'];
-
-            if ((isset($input['payment']) === true) and
-                (isset($input['payment']['order_id']) === true))
+            if ((isset($data[self::INPUT][Entity::PAYMENT]) === true) and
+                (isset($data[self::INPUT][Entity::PAYMENT][Payment\Entity::ORDER_ID]) === true))
             {
-                $orderId = $input['payment']['order_id'];
+                $orderId = $data[self::INPUT][Entity::PAYMENT][Payment\Entity::ORDER_ID];
 
                 $order = (new Order\Repository())->find($orderId);
 
                 if (is_null($order) === false)
                 {
-                    $data['input']['order'] = $order->toArrayPublic();
+                    $data[self::INPUT][Entity::ORDER] = $order->toArrayPublic();
                 }
             }
         }
     }
 
-    protected function addMerchantFeaturesExplicitly(array & $data)
+    protected function addMerchantFeatures(array & $data)
     {
-        if (isset($data['input']) === true)
+        if ((isset($data[self::INPUT]) === true) and (isset($data[self::INPUT][Entity::MERCHANT]) === true))
         {
-            $input = $data['input'];
-
-            if ((isset($input['merchant']) === true) and
-                (isset($input['merchant']['id']) === true))
+            if (is_null($data[self::INPUT][Entity::MERCHANT]) === false)
             {
-                $merchant = $input['merchant'];
+                $data[self::INPUT][Entity::MERCHANT][Merchant\Entity::FEATURES] = $data[self::INPUT][Entity::MERCHANT]->features;
+            }
+        }
+    }
 
-                if (is_null($merchant) === false)
-                {
-                    $data['input']['merchant']['features'] = $merchant->features;
-                }
+    protected function addCardIin(array & $data)
+    {
+        if ((isset($data[self::INPUT]) === true) and (isset($data[self::INPUT][Entity::PAYMENT]) === true))
+        {
+            $cardId = $data[self::INPUT][Entity::PAYMENT][Payment\Entity::CARD_ID];
+
+            $card = (new Card\Repository())->find($cardId);
+
+            if (is_null($card) === false)
+            {
+                $data[self::INPUT][Entity::IIN] = $card->iinRelation->toArrayPublic();
             }
         }
     }
