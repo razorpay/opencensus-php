@@ -404,6 +404,8 @@ class Base extends BaseCore
 
         $isApiRequest = $this->app['basicauth']->isStrictPrivateAuth();
 
+        $isPayoutFromPGBalance = ($this->balance->getType() === Balance\Type::PRIMARY);
+
         //
         // Skip workflow if:
         // test mode
@@ -412,6 +414,7 @@ class Base extends BaseCore
         // skip workflow for requests through API
         //
         if (($this->isTestMode() === true) or
+            ($isPayoutFromPGBalance === true) or
             ($areWorkflowsEnabled === false) or
             (($isApiRequest === true) and
              ($hasSkipWorkflowFeature === true)))

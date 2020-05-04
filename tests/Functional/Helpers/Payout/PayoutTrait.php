@@ -135,7 +135,7 @@ trait PayoutTrait
 
         Entity::verifyIdAndStripSign($stepId);
 
-        // Changing Checker role to Owner role because only users with banking roles can approve payouts
+        // Changing Maker role to Finance L3 role because only users with banking roles can approve payouts
         $this->fixtures->on('live')->edit(
             'workflow_step',
             $stepId,
@@ -158,7 +158,7 @@ trait PayoutTrait
         return $workflow;
     }
 
-    protected function createPayoutWithWorkflow($workflow, $payoutAttributes = [], $authKey = null)
+    protected function createPayoutWithWorkflow($payoutAttributes = [], $authKey = null)
     {
         $this->disableWorkflowMocks();
 

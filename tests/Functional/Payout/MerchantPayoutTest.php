@@ -20,6 +20,7 @@ use RZP\Tests\Functional\Helpers\Payout\PayoutTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Tests\Functional\Helpers\Workflow\WorkflowTrait;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 
 class MerchantPayoutTest extends TestCase
@@ -30,6 +31,7 @@ class MerchantPayoutTest extends TestCase
     use DbEntityFetchTrait;
     use TestsBusinessBanking;
     use PayoutTrait;
+    use WorkflowTrait;
 
     public function setUp()
     {
@@ -394,5 +396,85 @@ class MerchantPayoutTest extends TestCase
         $fta = $this->getLastEntity('fund_transfer_attempt',true);
 
         $this->assertEquals(1, $fta['is_fts']);
+    }
+
+    public function testCreateMerchantPayoutOnDemandDoesNotTriggerWorkflow()
+    {
+        $this->fixtures->on('live')->edit('balance','10000000000000',['balance' => '1000000']);
+
+        // We want the test to be during banking hours as es on demand can switch to different channel during non banking hours.
+        $bankingHour = Carbon::create(2020, 2, 18, 10, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($bankingHour);
+
+        $this->liveSetUp();
+
+        $this->createPayoutWorkflowWithBankingUsersLiveMode();
+
+        $this->app['config']->set('heimdall.workflows.mock', false);
+
+        $this->fixtures->merchant->addFeatures([Constants::ES_ON_DEMAND]);
+
+        $this->fixtures->merchant->edit('10000000000000', ['channel' => Channel::ICICI]);
+
+        // Create payout with owner role user
+        $this->ba->proxyAuth('rzp_live_10000000000000', $this->ownerRoleUser->getId());
+
+        $this->startTest();
+
+        $payout = $this->getLastEntity('payout',true,'live');
+
+        $this->assertEquals(Mode::NEFT, $payout['mode']);
+
+        $txn = $this->getLastEntity('transaction',true,'live');
+
+        $this->assertEquals('payout', $txn['type']);
+
+        $this->assertEquals(Channel::ICICI, $txn['channel']);
+
+        $this->assertEquals(398, $txn['amount']);
+
+        $this->assertEquals(602, $txn['fee']);
+
+        $this->assertEquals(1000, $txn['debit']);
+
+        $wfAction = $this->getLastEntity('workflow_action',true,'live');
+
+        $this->assertEquals(null, $wfAction);
+
+        return $payout;
+    }
+
+    public function testCreateMerchantPayoutDoesntTriggerWorkflow()
+    {
+        $this->fixtures->on('live')->edit('balance','10000000000000',['balance' => '1000000']);
+
+        $this->liveSetUp();
+
+        $this->createPayoutWorkflowWithBankingUsersLiveMode();
+
+        $this->app['config']->set('heimdall.workflows.mock', false);
+
+        $this->fixtures->merchant->edit('10000000000000', ['channel' => Channel::ICICI]);
+
+        $this->ba->appAuth('rzp_live');
+
+        $this->startTest();
+
+        $txn = $this->getLastEntity('transaction',true,'live');
+
+        $this->assertEquals('payout', $txn['type']);
+
+        $this->assertEquals(Channel::ICICI, $txn['channel']);
+
+        $this->assertEquals(1602, $txn['amount']);
+
+        $this->assertEquals(602, $txn['fee']);
+
+        $this->assertEquals(1602, $txn['debit']);
+
+        $wfAction = $this->getLastEntity('workflow_action',true,'live');
+
+        $this->assertEquals(null, $wfAction);
     }
 }

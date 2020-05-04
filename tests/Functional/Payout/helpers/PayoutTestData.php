@@ -3810,4 +3810,50 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_ACCESS_DENIED,
         ],
     ],
+
+    'testCreateMerchantPayoutOnDemandDoesNotTriggerWorkflow' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/merchant/payout/demand',
+            'content' => [
+                'amount'   => 1000,
+                'currency' => 'INR'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'      => 'payout',
+                'amount'      => 398,
+                'currency'    => 'INR',
+                'tax'         => 92,
+                'fees'        => 602,
+                'notes'       => [],
+                'workflow_history' => [],
+                'status'      => 'processing'
+            ],
+        ],
+    ],
+
+    'testCreateMerchantPayoutDoesntTriggerWorkflow' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/merchant/payout',
+            'content' => [
+                'amount'         => 1000,
+                'merchant_id'    => '10000000000000',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'      => 'payout',
+                'amount'      => 1000,
+                'currency'    => 'INR',
+                'tax'         => 92,
+                'fees'        => 602,
+                'notes'       => [],
+                'workflow_history' => [],
+                'status'      => 'processing'
+            ],
+        ],
+    ],
 ];

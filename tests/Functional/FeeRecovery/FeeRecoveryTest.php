@@ -164,7 +164,7 @@ class FeeRecoveryTest extends TestCase
     {
         $this->liveSetUpForRbl();
 
-        $workflow = $this->setupWorkflowForLiveMode();
+        $this->createPayoutWorkflowWithBankingUsersLiveMode();
 
         $balance = $this->getDbLastEntity('balance', 'live')->toArray();
 
@@ -172,7 +172,7 @@ class FeeRecoveryTest extends TestCase
 
         $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
 
-        $this->createPayoutWithWorkflow($workflow, [], 'rzp_live_TheLiveAuthKey');
+        $this->createPayoutWithWorkflow([], 'rzp_live_TheLiveAuthKey');
 
         $payout = $this->getDbLastEntity('payout', 'live')->toArray();
 
@@ -187,15 +187,13 @@ class FeeRecoveryTest extends TestCase
 
     public function testApprovePendingPayoutFeeRecoveryCreated()
     {
-        $this->markTestSkipped("Need to fix due to live/test stuff");
-
         $this->testCreateRBLPendingPayoutNoFeeRecoveryCreated();
 
         $payout = $this->getDbLastEntity('payout', 'live');
 
         $this->assertEquals($payout['status'], Payout\Status::PENDING);
 
-        $this->ba->proxyAuth('rzp_live_10000000000000', $this->checkerRoleUser->getId());
+        $this->ba->proxyAuth('rzp_live_10000000000000', $this->ownerRoleUser->getId());
 
         $data = & $this->testData[__FUNCTION__];
 
@@ -203,19 +201,12 @@ class FeeRecoveryTest extends TestCase
 
         $this->startTest();
 
-        // Create Checker Role User for 2nd level of approval
-        $secondLevelRole = $this->getDbEntityById('role', Org::MAKER_ROLE, 'live');
-        $secondUser = $this->fixtures->on('live')
-                            ->user->createUserForMerchant('10000000000000', [], Org::MAKER_ROLE);
-
         $this->app['config']->set('database.default', 'live');
 
-        $secondUser->roles()->attach($secondLevelRole);
-
         // Make Request to Approve pending payout for second level
-        $this->ba->proxyAuth('rzp_live_10000000000000', $secondUser->getId());
+        $this->ba->proxyAuth('rzp_live_10000000000000', $this->finL3RoleUser->getId());
 
-        $secondApprovalResponse = $this->startTest();
+        $this->startTest();
 
         $this->app['config']->set('database.default', 'live');
 
@@ -224,7 +215,9 @@ class FeeRecoveryTest extends TestCase
         $payout->setStatus(Payout\Status::INITIATED);
         $payout->saveOrFail();
 
-        $feeRecovery = $this->getDbLastEntity('fee_recovery');
+        $payout = $this->getDbLastEntity('payout', 'live');
+
+        $feeRecovery = $this->getDbLastEntity('fee_recovery','live');
 
         $this->assertEquals($payout['id'], $feeRecovery['entity_id']);
         $this->assertEquals(FeeRecovery\Status::UNRECOVERED, $feeRecovery['status']);

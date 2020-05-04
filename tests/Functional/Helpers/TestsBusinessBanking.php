@@ -132,6 +132,19 @@ trait TestsBusinessBanking
         $virtualAccount->balance()->associate($bankingBalance);
         $virtualAccount->save();
 
+        $bankingAccount    = $this->fixtures->on('live')->create(
+            'banking_account',
+            [
+                'id'             => '1000000lcustba',
+                'account_type'   => 'direct',
+                'merchant_id'    => '10000000000000',
+                'account_number' => '2224440041626905',
+                'account_ifsc'   => 'RAZRB000000',
+            ]);
+
+        $bankingAccount->balance()->associate($bankingBalance);
+        $bankingAccount->save();
+
         // Updates banking balance's account number after bank account creation.
         $bankingBalance->setAccountNumber($virtualAccount->bankAccount->getAccountNumber());
         $bankingBalance->save();

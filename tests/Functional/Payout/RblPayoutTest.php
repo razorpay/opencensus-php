@@ -292,20 +292,13 @@ class RblPayoutTest extends TestCase
         $this->assertArraySelectiveEquals($dispatchResponse, $expectedResponse);
     }
 
-    protected function createPayoutWithWorkflow($workflow, $payoutAttributes = [], $authKey = null)
-    {
-        $this->disableWorkflowMocks();
-
-        return $this->createQueuedOrPendingPayout($payoutAttributes, $authKey);
-    }
-
     protected function createPendingPayoutAndApprovePayoutUptoSecondLevel(int $gatewayBalance, $queueFlag = 1)
     {
         $this->liveSetUp();
 
-        $workflow = $this->createPayoutWorkflowWithBankingUsersLiveMode();
+        $this->createPayoutWorkflowWithBankingUsersLiveMode();
 
-        $payout = $this->createPayoutWithWorkflow($workflow, [], 'rzp_live_TheLiveAuthKey');
+        $payout = $this->createPayoutWithWorkflow([], 'rzp_live_TheLiveAuthKey');
 
         // Approve with Owner role user
         $this->ba->proxyAuth('rzp_live_10000000000000', $this->ownerRoleUser->getId());
@@ -360,11 +353,11 @@ class RblPayoutTest extends TestCase
     {
         $this->liveSetUp();
 
-        $workflow = $this->createPayoutWorkflowWithBankingUsersLiveMode();
+        $this->createPayoutWorkflowWithBankingUsersLiveMode();
 
-        $payout1 = $this->createPayoutWithWorkflow($workflow, [], 'rzp_live_TheLiveAuthKey');
+        $payout1 = $this->createPayoutWithWorkflow([], 'rzp_live_TheLiveAuthKey');
 
-        $payout2 = $this->createPayoutWithWorkflow($workflow, [], 'rzp_live_TheLiveAuthKey');
+        $payout2 = $this->createPayoutWithWorkflow([], 'rzp_live_TheLiveAuthKey');
 
         // Approve with Owner role user
         $this->ba->proxyAuth('rzp_live_10000000000000', $this->ownerRoleUser->getId());
