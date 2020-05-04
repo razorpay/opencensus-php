@@ -147,9 +147,12 @@ class Gateway extends Base\Gateway
         list($response, $attributes) = $this->sendMozartRequestAndGetResponse(
             $input,
             TraceCode::GATEWAY_AUTHORIZE_REQUEST,
-            TraceCode::GATEWAY_AUTHORIZE_RESPONSE);
+            TraceCode::GATEWAY_AUTHORIZE_RESPONSE,
+            false);
 
         $this->gatewayPayment = $this->createGatewayPaymentEntity($attributes, $input, Action::AUTHORIZE);
+
+        $this->checkErrorsAndThrowExceptionFromMozartResponse($response);
 
         if ($this->action === Action::INTENT)
         {
@@ -1373,8 +1376,8 @@ class Gateway extends Base\Gateway
             Payment\Gateway::UPI_JUSPAY => [
                 Action::PAY_INIT      => null,
                 Action::PAY_VERIFY    => null,
-                Action::VERIFY        => Action::PAY_VERIFY,
-                Action::REFUND        => Action::PAY_VERIFY,
+                Action::VERIFY        => null,
+                Action::REFUND        => null,
             ],
             Payment\Gateway::UPI_CITI => [
                 Action::PAY_INIT => null,
@@ -1479,10 +1482,10 @@ class Gateway extends Base\Gateway
                 Action::VERIFY_REFUND => Action::REFUND,
             ],
             Payment\Gateway::UPI_JUSPAY => [
-                Action::PAY_INIT => null,
+                Action::PAY_INIT   => null,
                 Action::PAY_VERIFY => null,
-                Action::VERIFY => Action::AUTHORIZE,
-                Action::REFUND => Action::AUTHORIZE,
+                Action::VERIFY     => null,
+                Action::REFUND     => null,
             ],
             Payment\Gateway::NETBANKING_SIB => [
                 Action::PAY_INIT   => null,

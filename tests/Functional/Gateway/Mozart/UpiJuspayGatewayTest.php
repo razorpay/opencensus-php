@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Gateway\Mozart;
 
+use RZP\Exception;
 use RZP\Models\Payment\Entity;
 use RZP\Models\Payment\Refund;
 use RZP\Models\Payment\Method;
@@ -225,6 +226,29 @@ class UpiJuspayGatewayTest extends TestCase
         $this->assertEquals('authorized', $payment['status']);
     }
 
+    public function testCreateFailedPaymentAndVerifySuccess()
+    {
+        $this->createTestTerminal();
+
+        $this->payment['description'] = 'paymentCreateFailed';
+
+        $this->makeRequestAndCatchException(function () {
+            $this->doAuthPaymentViaAjaxRoute($this->payment);
+        });
+
+        $mozart = $this->getDbLastMozart();
+        $this->assertNotNull($mozart);
+        $this->assertSame('authorize', $mozart->getAction());
+
+        $payment = $this->getDbLastPayment();
+        $this->assertSame('failed', $payment->getStatus());
+
+        $this->makeRequestAndCatchException(function () use ($payment)
+        {
+            $this->verifyPayment($payment->getPublicId());
+        },
+        Exception\PaymentVerificationException::class);
+    }
 
     protected function enableIntentFlow($description = 'intentPayment')
     {

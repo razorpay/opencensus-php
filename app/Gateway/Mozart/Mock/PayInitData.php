@@ -116,6 +116,12 @@ class PayInitData extends Base\Mock\Server
                    ]
                 ];
              break;
+
+            case 'paymentCreateFailed':
+                $response['success'] = false;
+                $response['data'] = [];
+                $response['error']['internal_error_code'] = 'GATEWAY_ERROR_REQUEST_ERROR';
+            break;
         }
         return $response;
     }

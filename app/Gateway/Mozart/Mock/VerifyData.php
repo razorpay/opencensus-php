@@ -424,4 +424,30 @@ class VerifyData extends Base\Mock\Server
 
         return $response;
     }
+
+    public function upi_juspay($entities)
+    {
+        $response = [
+            'data' =>
+                [
+                    '_raw' => '{"amount":"100.00","customResponse":"{}","expiry":"2016-11-25T00:10:00+05:30","gatewayReferenceId":"806115044725","gatewayResponseCode":"00","gatewayResponseMessage":"Transaction is approved","gatewayTransactionId":"XYZd0c077f39c454979...","merchantChannelId":"DEMOUATAPP","merchantId":"DEMOUAT01","merchantRequestId":"TXN1234567","payeeVpa":"merchant@abc","payerName":"Customer Name","payerVpa":"customer@xyz","transactionTimestamp":"2016-11-25T00:00:00+05:30","type":"MERCHANT_CREDITED_VIA_COLLECT","udfParameters":"{}"}',
+                    'paymentId' => $entities['payment']['id'],
+                    'amount' => $entities['payment']['amount'],
+                    'customResponse' => '{}',
+                    'expiry' => '2016-11-25T00:10:00+05:30',
+                    'gatewayReferenceId' => '806115044725',
+                    'gatewayResponseMessage' => 'Transaction is approved',
+                    'gatewayResponseCode' => '00',
+                    'gatewayTransactionId' => 'XYZd0c077f39c454979...',
+                    'merchantChannelId' => 'DEMOUATAPP',
+                ],
+            'error' => NULL,
+            'external_trace_id' => 'DUMMY_REQUEST_ID',
+            'mozart_id' => 'DUMMY_MOZART_ID',
+            'next' => [],
+            'success' => true
+        ];
+
+        return $response;
+    }
 }

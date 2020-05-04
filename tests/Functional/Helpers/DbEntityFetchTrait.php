@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Helpers;
 
 use RZP\Models;
+use RZP\Gateway;
 use RZP\Constants\Entity;
 
 trait DbEntityFetchTrait
@@ -73,6 +74,11 @@ trait DbEntityFetchTrait
     protected function getDbLastRefund(): Models\Payment\Refund\Entity
     {
         return $this->getDbLastEntity('refund');
+    }
+
+    protected function getDbLastMozart(): Gateway\Mozart\Entity
+    {
+        return $this->getDbLastEntity('mozart');
     }
 
     private function getEntityObjectForMode($entity, $mode = 'test')
