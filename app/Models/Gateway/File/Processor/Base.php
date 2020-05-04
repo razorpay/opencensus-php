@@ -2,8 +2,11 @@
 
 namespace RZP\Models\Gateway\File\Processor;
 
+use App;
+
 use RZP\Exception;
 use RZP\Models\Payment;
+use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Base\Core;
 use RZP\Models\FileStore;
@@ -13,6 +16,7 @@ use RZP\Constants\Entity as E;
 use RZP\Models\Payment\Refund;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Gateway\File\Type;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Gateway\File\Status;
 use RZP\Models\Base\PublicCollection;
 
@@ -27,6 +31,14 @@ abstract class Base extends Core
      * Mutex lock is acquired by default for 900s (15 minutes)
      */
     const MUTEX_LOCK_TIMEOUT = 900;
+
+    const NBPLUS_FETCH_MAX_ATTEMPTS = 2;
+
+    /**
+     * Being used to paginate the fetch from nbplus
+     * Number of gateway entities to be fetched in each call
+     */
+    const NBPLUS_FETCH_ENTITY_COUNT = 1000;
 
     protected $mutex;
 
@@ -249,5 +261,66 @@ abstract class Base extends Core
     protected function reconcileNetbankingRefunds(array $data)
     {
         $this->refundCore->reconcileNetbankingRefunds($data);
+    }
+
+    protected function fetchNbPlusGatewayEntities($paymentIds)
+    {
+        $shouldFetchEntities = true;
+
+        $start = 0;
+
+        $fetchLimit = self::NBPLUS_FETCH_ENTITY_COUNT;
+
+        $gatewayData = [];
+
+        $fetchSuccess = true;
+
+        while ($shouldFetchEntities === true)
+        {
+            $requestPaymentIds = array_slice($paymentIds, $start, $fetchLimit);
+
+            if ((count($requestPaymentIds) === 0) or ($fetchSuccess === false))
+            {
+                $shouldFetchEntities = false;
+            }
+            else
+            {
+                for ($i = 0; $i < self::NBPLUS_FETCH_MAX_ATTEMPTS; $i++)
+                {
+                    try
+                    {
+                        $request = [
+                            'payment_ids'   => $requestPaymentIds,
+                        ];
+
+                        $response = App::getFacadeRoot()['nbplus.payments']->fetchNetbankingData($request);
+
+                        $start += $fetchLimit;
+
+                        $gatewayData = array_merge($gatewayData, $response['items']);
+
+                        $fetchSuccess = true;
+
+                        break;
+                    }
+                    catch (\Exception $e)
+                    {
+                        $this->trace->traceException(
+                            $e,
+                            Trace::ERROR,
+                            TraceCode::GATEWAY_FILE_ERROR_GENERATING_DATA,
+                            [
+                                'input' => $request,
+                                'id'    => $this->gatewayFile->getId(),
+                            ]
+                        );
+
+                        $fetchSuccess = false;
+                    }
+                }
+            }
+        }
+
+        return [$gatewayData, $fetchSuccess];
     }
 }

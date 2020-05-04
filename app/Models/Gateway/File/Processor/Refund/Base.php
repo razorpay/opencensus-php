@@ -17,6 +17,7 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Gateway\File\Constants;
 use RZP\Exception\GatewayFileException;
+use RZP\Models\Payment\Entity as PaymentEntity;
 use RZP\Mail\Gateway\RefundFile\Base as RefundFileMail;
 use RZP\Models\Payment\Refund\Constants as RefundConstants;
 use RZP\Models\Gateway\File\Processor\Base as BaseProcessor;
@@ -165,6 +166,8 @@ class Base extends BaseProcessor
     {
         $data = [];
 
+        $nbplusPaymentIds = [];
+
         // Refunds were fetched from scrooge
         if ($this->fetchRefundsFromScrooge === true)
         {
@@ -177,6 +180,11 @@ class Base extends BaseProcessor
                 $col['refund'] = $refund;
 
                 $data[] = $col;
+
+                if ($payment->getCpsRoute() === PaymentEntity::NB_PLUS_SERVICE)
+                {
+                    $nbplusPaymentIds[] = $payment->getId();
+                }
             }
 
             $data = $this->addGatewayEntitiesToDataWithPaymentIds($data, $this->scroogeRefundPaymentIds);
@@ -230,11 +238,18 @@ class Base extends BaseProcessor
                     $col['refund'] = $refund->toArray();
 
                     $data[] = $col;
+
+                    if ($payment->getCpsRoute() === PaymentEntity::NB_PLUS_SERVICE)
+                    {
+                        $nbplusPaymentIds[] = $payment->getId();
+                    }
                 }
             }
 
             $data = $this->addGatewayEntitiesToData($data, $entities);
         }
+
+        $data = $this->addNbplusGatewayEntitiesToDataWithNbPlusPaymentIds($data, $nbplusPaymentIds);
 
         $this->checkIfRefundsAreInValidDateRange($data);
 
@@ -370,6 +385,40 @@ class Base extends BaseProcessor
 
             return $row;
         }, $data);
+
+        return $data;
+    }
+
+    protected function addNbplusGatewayEntitiesToDataWithNbPlusPaymentIds(array $data, array $nbplusPaymentIds)
+    {
+        // Fetching NBPlus Payments Gateway Data from NBPlus
+        if (empty($nbplusPaymentIds) === false)
+        {
+            list($nbPlusGatewayEntities, $fetchSuccess) = $this->fetchNbPlusGatewayEntities($nbplusPaymentIds);
+
+            // Throwing an error in case of NBPlus fetch failure
+            if ($fetchSuccess === false)
+            {
+                throw new GatewayFileException(
+                    ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_GENERATING_DATA,
+                    [
+                        'id' => $this->gatewayFile->getId(),
+                    ]
+                );
+            }
+
+            $data = array_map(function($row) use ($nbPlusGatewayEntities)
+            {
+                $paymentId = $row['payment']['id'];
+
+                if (isset($nbPlusGatewayEntities[$paymentId]) === true)
+                {
+                    $row['gateway'] = $nbPlusGatewayEntities[$paymentId];
+                }
+
+                return $row;
+            }, $data);
+        }
 
         return $data;
     }
