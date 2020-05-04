@@ -8,12 +8,14 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\File;
 use Illuminate\Database\Connectors\MySqlConnector as BaseMySqlConnector;
 
-use RZP\Constants\Metric;
 use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Base\Database\DetectsLostConnections;
 
 class MySqlConnector extends BaseMySqlConnector
 {
+    use DetectsLostConnections;
+
     const ENABLE  = 'enable';
     const DISABLE = 'disable';
 

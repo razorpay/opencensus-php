@@ -16,6 +16,8 @@ use RZP\Base\Database\LagChecker;
 
 class MySqlConnection extends BaseMySqlConnection
 {
+    use DetectsLostConnections;
+
     /**
      * LagChecker object to determine which pdo connection to use
      * @var LagChecker\LagChecker
