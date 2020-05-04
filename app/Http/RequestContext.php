@@ -293,14 +293,28 @@ final class RequestContext
         return ($this->internalAppName === "dashboard_guest");
     }
 
-    public function isAuthFlowTypeKey(): bool
+    /**
+     * Checks weather auth flow type is one of which is handled in nginx sidecar throttling layer
+     * Method used to skip throttling in api throttler middleware
+     * @return bool
+     */
+    public function isNginxHandledAuthFlowType(): bool
     {
-        return $this->authFlowType === BasicAuth::KEY;
+        $authFlowTypes = [BasicAuth::KEY, BasicAuth::OAUTH];
+
+        return in_array($this->authFlowType, $authFlowTypes, true) === true;
     }
 
-    public function isAuthTypePrivate(): bool
+    /**
+     * Checks weather auth type is one of which is handled in nginx sidecar throttling layer
+     * Method used to skip throttling in api throttler middleware
+     * @return bool
+     */
+    public function isNginxHandledAuthType(): bool
     {
-        return $this->auth === Type::PRIVATE_AUTH;
+        $authTypes = [Type::PUBLIC_AUTH, Type::PROXY_AUTH, Type::PRIVATE_AUTH];
+
+        return in_array($this->auth, $authTypes, true) === true;
     }
 
     /**

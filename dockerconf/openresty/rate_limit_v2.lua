@@ -174,7 +174,7 @@ local function get_rate_limit_args(redis, req_ctx, ngx)
     if (rc ~= nil and tonumber(rc) < 1) or rc == nil or rcw == nil or key == nil then
         rate_limit_args.skip = 1
     end
-    ngx.log(ngx.INFO, "rate limit args : ", utility.dump(rate_limit_args))
+    ngx.log(ngx.DEBUG, "rate limit args : ", utility.dump(rate_limit_args))
     return rate_limit_args, nil
 end
 
@@ -241,6 +241,7 @@ function M.rate_limit_ngx(ngx)
             -- Todo: Log warn with contextual information.
             return
         end
+        ngx.log(ngx.INFO, "merchant request throttled : ", utility.dump(rate_limit_args))
         ngx.header["X-RateLimit-Limit"] = rate_limit_args.rc
         ngx.header["X-RateLimit-Current"] = rate_limit_res.current
         ngx.header["X-RateLimit-Remaining"] = rate_limit_res.remaining

@@ -81,21 +81,26 @@ class Throttler
             return;
         }
 
-        // Update: Now for private/proxy requests we do throttling at nginx
-        // layer itself and hence must not repeat here. Keeping this flow in
-        // unit tests still. Not sure.
-        if ($this->reqCtx->isAuthFlowTypeKey() and
-            $this->reqCtx->isAuthTypePrivate() and
-            ($this->runningUnitTests === false))
-        {
-            return;
-        }
 
         try
         {
             $this->initRedisConnection();
             $this->initThrottleSettings();
             $this->blockIfApplicable();
+
+            // Update: Now for private/proxy/public requests  for key and oauth based we do throttling at nginx
+            // openresty layer itself and hence must not repeat here.
+            // Keeping this flow in unit tests still.
+            // Moving this logic here as blocking is not supported in nginx layer as of now.
+            // Following Not handled in nginx layer
+            //   - partner/direct/admin/app auth
+            //   - Keyless public auth
+            if (($this->reqCtx->isNginxHandledAuthFlowType() === true) and
+                ($this->reqCtx->isNginxHandledAuthType() === true) and
+                ($this->runningUnitTests === false))
+            {
+                return;
+            }
             $this->attemptThrottleIfApplicable();
         }
         catch (\Throwable $e)
