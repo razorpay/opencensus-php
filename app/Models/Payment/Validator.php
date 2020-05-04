@@ -1210,7 +1210,7 @@ class Validator extends Base\Validator
         {
             $this->validateVpa('upi.vpa', $input['upi']['vpa']);
         }
-        if ($this->isOtmPayment($input))
+        if ($this->isOtmPayment($input) === true)
         {
             $this->validateUpiBlockForOtm($input);
         }
@@ -1218,6 +1218,37 @@ class Validator extends Base\Validator
 
     protected function validateUpiBlockForOtm($input)
     {
+        /**
+         * Currently, Blocking intent for upi mandate payments.
+         */
+        if ($this->isFlowIntent($input) === true)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                PublicErrorDescription::BAD_REQUEST_UPI_MANDATE_INTENT_NOT_SUPPORTED,
+                'upi.flow',
+                $input);
+        }
+
+        if ($this->isFlowCollect($input) === true)
+        {
+            $vpa = $this->getUpiVpa($input);
+
+            $vpaParts = explode('@', $vpa);
+
+            /**
+             * Check the vpa for supported PSP's. Else throw a validation error.
+             */
+            if (ProviderCode::validateOtmProvider($vpaParts[1]) === false)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_UPI_APP_ONE_TIME_MANDATE_NOT_SUPPORTED,
+                    'vpa',
+                    [
+                        'vpa' => $vpa
+                    ]);
+            }
+        }
+
         if ((isset($input['upi']['start_time']) === false) or
             (isset($input['upi']['end_time']) === false))
         {

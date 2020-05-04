@@ -72,6 +72,11 @@ trait UpiTrait
         return array_get($input, 'upi.type');
     }
 
+    public function getUpiVpa($input)
+    {
+        return array_get($input, 'upi.vpa');
+    }
+
     /**
      * Sets defaults for OTM payments
      * @param array $input

@@ -44,6 +44,7 @@ class ProviderCode
     const CENTRALBANK        = 'centralbank';
     const CITI               = 'citi';
     const CITIBANK           = 'citibank';
+    const CITIGOLD           = 'citigold';
     const CMSIDFC            = 'cmsidfc';
     const CNRB               = 'cnrb';
     const CSBCASH            = 'csbcash';
@@ -176,6 +177,7 @@ class ProviderCode
         self::CENTRALBANK        => IFSC::CBIN,
         self::CITI               => IFSC::CITI,
         self::CITIBANK           => IFSC::CITI,
+        self::CITIGOLD           => IFSC::CITI,
         self::CMSIDFC            => IFSC::IDFB,
         self::CNRB               => IFSC::CNRB,
         self::CSBCASH            => IFSC::CSBK,
@@ -291,6 +293,30 @@ class ProviderCode
         self::YBL           => ProviderPsp::PHONEPE,
     ];
 
+    /**
+     * @see https://www.npci.org.in/upi-live-ipo
+     * @var array Provider which support one time  feature.
+     */
+    protected static $validOtmProviders = [
+        self::BARODAMPAY,
+        self::UPI,
+        self::ALLBANK,
+        self::AXISBANK,
+        self::INDUS,
+        self::FEDERAL,
+        self::SBI,
+        self::CITI,
+        self::CITIGOLD,
+        self::OKHDFCBANK,
+        self::OKAXIS,
+        self::OKSBI,
+        self::OKICICI,
+        self::HSBC,
+        self::ICICI,
+        self::YBL,
+        self::SIB,
+    ];
+
     public static function getBankCode($provider)
     {
         return self::$bankCodes[$provider] ?? null;
@@ -317,5 +343,10 @@ class ProviderCode
     public static function validateBankCode(string $bankCode): bool
     {
         return (array_search($bankCode, self::$bankCodes) !== false);
+    }
+
+    public static function validateOtmProvider(string $bankCode): bool
+    {
+        return (array_search($bankCode, self::$validOtmProviders) !== false);
     }
 }

@@ -210,6 +210,7 @@ class PublicErrorDescription
     const BAD_REQUEST_P2P_REGISTRATION_CARD_EXPIRED                             = 'Card used while setting UPI PIN has expired. Please use another debit card to reset UPI PIN or use another bank account for payment';
     const BAD_REQUEST_VPA_DOESNT_EXIST                                          = 'VPA does not exist.';
     const BAD_REQUEST_PAYMENT_UPI_APP_NOT_SUPPORTED                             = 'Your UPI application is facing issues with handling collect requests. Please try again later';
+    const BAD_REQUEST_PAYMENT_UPI_APP_ONE_TIME_MANDATE_NOT_SUPPORTED            = 'Your UPI application does not support one time mandate.';
     const BAD_REQUEST_PAYMENT_UPI_FUNCTION_NOT_SUPPORTED                        = 'The requested UPI function is not supported';
     const BAD_REQUEST_PAYMENT_ORDER_AMOUNT_MISMATCH                             = 'Payment amount provided does not match with the amount in order';
     const BAD_REQUEST_PAYMENT_AMOUNT_MORE_THAN_ORDER_AMOUNT_DUE                 = 'Payment amount is greater than the amount due for order';
@@ -1073,4 +1074,5 @@ class PublicErrorDescription
     const BAD_REQUEST_UPI_MANDATE_TIME_RANGE_REQUIRED                               = 'Start time and end time is required in case of upi mandate payments';
     const BAD_REQUEST_UPI_MANDATE_INVALID_EXECUTION_TIME                            = 'Execution only allowed between start time and end time';
     const BAD_REQUEST_UPI_END_TIME_OUT_OF_RANGE                                     = 'End time provided for upi mandate is out of range';
+    const BAD_REQUEST_UPI_MANDATE_INTENT_NOT_SUPPORTED                              = 'Intent flow is not supported for upi mandates.';
 }

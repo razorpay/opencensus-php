@@ -2809,6 +2809,23 @@ class PaymentCreateTest extends TestCase
         $this->assertNull($upiMetadata);
     }
 
+    public function testUpiOtmInvalidPsp()
+    {
+        $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
+
+        $payment =  $this->getDefaultUpiOtmPayment();
+
+        $payment['upi']['vpa'] = 'user@hdfcbank';
+
+        $this->makeRequestAndCatchException(function () use ($payment)
+        {
+            $this->doAuthPaymentViaAjaxRoute($payment);
+        },
+        Exception\BadRequestException::class,
+        'Your UPI application does not support one time mandate.');
+
+    }
+
     public function testUpiInvalidProvider()
     {
         $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
@@ -3018,6 +3035,24 @@ class PaymentCreateTest extends TestCase
         $this->assertNull($payment->getRefundAt());
     }
 
+    public function testOtmIntentPaymentFails()
+    {
+        $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
+
+        $payment = $this->getDefaultUpiOtmPayment();
+
+        unset($payment['upi']['vpa']);
+
+        $payment['upi']['flow'] = 'intent';
+
+        $this->makeRequestAndCatchException(function () use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        },
+        Exception\BadRequestValidationFailureException::class,
+        'Intent flow is not supported for upi mandates.');
+    }
+
     public function testCreateExistingCardS2SPayment()
     {
         $this->ba->privateAuth();
@@ -3051,5 +3086,4 @@ class PaymentCreateTest extends TestCase
 
         $this->assertEquals($payment['international'], false);
     }
-
 }

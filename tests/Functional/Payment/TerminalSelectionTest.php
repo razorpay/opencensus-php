@@ -16,6 +16,7 @@ use RZP\Models\Terminal\Options;
 use RZP\Models\Terminal\Category;
 use RZP\Models\Terminal\Selector;
 use Illuminate\Database\Eloquent\Factory;
+use RZP\Exception\BadRequestValidationFailureException;
 
 use RZP\Tests\Functional\TestCase;
 use RZP\Exception\RuntimeException;
@@ -2099,11 +2100,11 @@ class TerminalSelectionTest extends TestCase
 
         $payment['upi']['flow'] = 'intent';
 
-        $this->doAuthPayment($payment);
-
-        $payment = $this->getLastEntity('payment', true);
-
-        $this->assertEquals($terminal->getId(), $payment['terminal_id']);
+        //TODO:  Intent is not support currently, remove this check when we start taking intent payments for upi otm
+        $this->makeRequestAndCatchException(function () use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
     }
 
     public function testUpiOtmCollectRejectTerminal()
@@ -2138,12 +2139,13 @@ class TerminalSelectionTest extends TestCase
         $payment['upi']['flow'] = 'intent';
         unset($payment['upi']['vpa']);
 
+        //TODO:  Intent is not support currently, remove this check when we start taking intent payments for upi otm
         $this->makeRequestAndCatchException(function () use ($payment)
         {
             $this->doAuthPayment($payment);
         },
-        RuntimeException::class,
-        'Terminal should not be null');
+        BadRequestValidationFailureException::class,
+        'Intent flow is not supported for upi mandates.');
     }
 
 }
