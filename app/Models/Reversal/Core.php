@@ -396,6 +396,8 @@ class Core extends Base\Core
         if ($skipTxn === false)
         {
             $reversal = $this->createTransactionFromPayoutReversal($reversal);
+
+            (new Transaction\Core)->dispatchEventForTransactionCreated($reversal->transaction);
         }
 
         $this->repo->saveOrFail($reversal);

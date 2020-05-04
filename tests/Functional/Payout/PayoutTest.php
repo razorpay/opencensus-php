@@ -29,6 +29,7 @@ use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\Webhook\Event;
 use RZP\Models\BankingAccount\Gateway\Rbl;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
+use RZP\Mail\Transaction\Payout as PayoutMail;
 use RZP\Tests\Functional\Helpers\WebhookTrait;
 use RZP\Tests\Functional\Helpers\MocksDnsTrait;
 use RZP\Tests\Functional\Settlement\SettlementTrait;
@@ -3293,5 +3294,196 @@ class PayoutTest extends TestCase
             ->andReturn($redisMock);
 
         $redisMock->method('get')->will($this->returnValue('true'));
+    }
+
+    public function testFiringOfWebhooksAndEmailOnPayoutReversal()
+    {
+        Mail::fake();
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::BANKING_STORK_MIGRATION]);
+
+        $this->testCreatePayout();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->fixtures->edit(
+            'payout',
+            $payout->getId(),
+            [
+                'status' => 'initiated',
+                'utr'    => 928337183,
+            ]);
+
+        $this->mockRazorxTreatment('yesbank', 'on', 'on');
+
+        $transactionCreatedEventTestDataKey = $this->testData['testFiringOfWebhooksAndEmailOnPayoutReversalTransactionCreatedEventData'];
+
+        $payoutReversedEventTestDataKey = $this->testData['testFiringOfWebhooksAndEmailOnPayoutReversalPayoutReversedEventData'];
+
+        $this->mockServiceStorkRequest(
+            function ($path, $payload) use ($transactionCreatedEventTestDataKey, $payoutReversedEventTestDataKey)
+            {
+                $this->assertContains($payload['event']['name'], ['transaction.created', 'payout.reversed']);
+                switch ($payload['event']['name'])
+                {
+                    case Event::TRANSACTION_CREATED:
+                        $this->validateStorkWebhookFireEvent('transaction.created', $transactionCreatedEventTestDataKey, $payload);
+                        break;
+
+                    case Event::PAYOUT_REVERSED:
+                        $this->validateStorkWebhookFireEvent('payout.reversed', $payoutReversedEventTestDataKey, $payload);
+                        break;
+
+                }
+
+                return new \Requests_Response();
+            })->times(2);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['source_id'] = $payout->getId();
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->ba->appAuth();
+        $this->startTest();
+
+        Mail::assertQueued(PayoutMail::class, function($mail)
+        {
+            $viewData = $mail->viewData;
+
+            $this->assertEquals('2001062', $viewData['txn']['amount']); // raw amount
+            $this->assertEquals('20,010.62', amount_format_IN($viewData['txn']['amount'])); // formatted amount
+
+            $payout = $this->getDbLastEntity('payout');
+
+            $this->assertEquals('pout_' . $payout->getId(), $viewData['source']['id']);
+            $this->assertEquals($payout->getFailureReason(), $viewData['source']['failure_reason']);
+
+            $expectedData = [
+                'txn' => [
+                    'entity_id' => $payout->getId(),
+                ]
+            ];
+
+            $this->assertArraySelectiveEquals($expectedData, $viewData);
+
+            $this->assertEquals('emails.transaction.payout_reversed', $mail->view);
+
+            return true;
+        });
+    }
+
+    public function testTransactionCreatedWebhookAndPayoutReversedEmailNotFiringForCurrentAccountPayout()
+    {
+        Mail::fake();
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::BANKING_STORK_MIGRATION]);
+
+        $this->createDirectAccountPayout();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->mockRazorxTreatment('yesbank', 'on', 'on');
+
+        $this->fixtures->edit(
+            'payout',
+            $payout->getId(),
+            [
+                'status' => 'initiated',
+                'utr'    => 928337183,
+            ]);
+
+        $ftaForPayout = $this->getDbEntities('fund_transfer_attempt',
+                                             [
+                                                 'source_id'   => $payout->getId(),
+                                                 'source_type' => 'payout',
+                                                 'is_fts'      => true,
+                                             ])->first();
+
+        $this->fixtures->edit(
+            'fund_transfer_attempt',
+            $ftaForPayout->getId(),
+            [
+                'status' => 'initiated',
+                'utr'    => 928337183,
+            ]);
+
+        $payoutReversedEventTestDataKey = $this->testData['testTransactionCreatedWebhookAndPayoutReversedEmailNotFiringForCurrentAccountPayoutEventData'];
+
+        $this->mockServiceStorkRequest(
+            function ($path, $payload) use ($payoutReversedEventTestDataKey)
+            {
+                $this->validateStorkWebhookFireEvent('payout.reversed',
+                                                     $payoutReversedEventTestDataKey,
+                                                     $payload);
+
+                return new \Requests_Response();
+            })->once();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['source_id'] = $payout->getId();
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->ba->appAuth();
+        $this->startTest();
+
+        Mail::assertNotQueued(PayoutMail::class);
+    }
+
+    protected function createDirectAccountPayout()
+    {
+        $balanceAttributes = [
+            'balance' => 10000000,
+            'balanceType' => 'direct',
+            'channel' => 'rbl',
+        ];
+
+        $bankingBalance = $this->fixtures->merchant->createBalanceOfBankingType(
+            $balanceAttributes["balance"],
+            '10000000000000',
+            $balanceAttributes["balanceType"] ,
+            $balanceAttributes["channel"]
+        );
+
+        $virtualAccount = $this->fixtures->create('virtual_account');
+        $secondBankAccount    = $this->fixtures->create(
+            'bank_account',
+            [
+                'type'           => 'virtual_account',
+                'entity_id'      => $virtualAccount->getId(),
+                'account_number' => '2224440041626906',
+                'ifsc_code'      => 'RAZRB000000',
+            ]);
+
+        $virtualAccount->bankAccount()->associate($secondBankAccount);
+        $virtualAccount->balance()->associate($bankingBalance);
+        $virtualAccount->save();
+
+        $bankingBalance->setAccountNumber($virtualAccount->bankAccount->getAccountNumber());
+        $bankingBalance->save();
+
+        $directAccountPayoutRequest = [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number'  => '2224440041626906',
+                'amount'          => 2000,
+                'currency'        => 'INR',
+                'purpose'         => 'refund',
+                'narration'       => 'Batman',
+                'mode'            => 'IMPS',
+                'fund_account_id' => 'fa_100000000000fa',
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ];
+
+        $this->ba->privateAuth();
+
+        $this->makeRequestAndGetContent($directAccountPayoutRequest);
     }
 }

@@ -276,7 +276,7 @@ trait TestsBusinessBanking
     protected function mockRazorxTreatment(string $channel = 'yesbank',
                                            string $ftsEnabled = 'off',
                                            string $webhookViaStork = 'off',
-                                           string $webhookArrayPublicPayload = 'on',
+                                           string $webhookArrayPublicPayload = 'off',
                                            string $defaultBehaviour = 'off',
                                            string $payoutToAmexCards = 'on')
     {
