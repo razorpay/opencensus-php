@@ -354,7 +354,11 @@ export default props => {
                               trackDetailViewEdits(...args);
                             }}
                             isRoleAllowedEdit={isRoleAllowedEdit}
-                            isExpireByRequired={user.isExpireByRequired}
+                            isExpireByRequired={
+                              user.isExpireByRequired ||
+                              (user.isPaymentlinksV2Enabled &&
+                                paymentlink.expire_by)
+                            }
                           />
                         )
                       : () =>
