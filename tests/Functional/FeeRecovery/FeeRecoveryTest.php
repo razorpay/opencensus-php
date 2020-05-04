@@ -934,7 +934,385 @@ class FeeRecoveryTest extends TestCase
         $this->makeRequestAndGetContent($request);
     }
 
-    protected function createVirtualBankingAccount()
+    public function testCreateManualRecovery()
+    {
+        // Random old timestamp. Does not matter what since manual recovery happens based on Ids rather than timestamps
+        $oldTimeStamp = Carbon::now()->subWeek()->getTimestamp();
+
+        $this->testCreateFeeRecoveryAtPayoutCreationForRBLPayouts();
+
+        $payout = $this->getDbLastEntity('payout')->toArray();
+
+        $fundAccount = $this->getDbLastEntity('fund_account');
+
+        // Create second payout
+        $this->createPayoutForFundAccount($fundAccount, $this->balance);
+
+        $payout2 = $this->getDbLastEntity('payout');
+
+        $this->fixtures->edit('payout', $payout2['id'], ['initiated_at' => $oldTimeStamp]);
+
+        // Fail the second payout
+        $this->updateFtaAndSource($payout2, Payout\Status::FAILED);
+
+        // Create a third payout
+        $this->createPayoutForFundAccount($fundAccount, $this->balance);
+
+        $payout3 = $this->getDbLastEntity('payout');
+
+        $this->fixtures->edit('payout', $payout3['id'], ['initiated_at' => $oldTimeStamp]);
+
+        // Updating FTA and Payout status to initiated to allow transition to reversed
+        $fta = $this->getDbEntity('fund_transfer_attempt', ['source_id' => $payout3->getId()]);
+
+        $this->fixtures->edit('fund_transfer_attempt', $fta->getId(), ['status' => Attempt\Status::INITIATED]);
+
+        $this->fixtures->edit('payout', $payout3->getId(), ['status' => Payout\Status::INITIATED]);
+
+        // Reverse the third payout
+        $this->updateFtaAndSource($payout3, Payout\Status::REVERSED,'944926344925');
+
+        $reversal = $this->getDbLastEntity('reversal');
+        //
+        // Making fake fee recoveries with attempt number 3 and status unrecovered
+        // Doing this because it is faster than having to fail the fee recovery payout 3 times.
+        //
+
+        // For payout 1 that got initiated
+        $this->fixtures->create('fee_recovery', [
+            'entity_id'         => $payout['id'],
+            'entity_type'       => 'payout',
+            'status'            => 'unrecovered',
+            'attempt_number'    => 3,
+            'type'              => 'debit',
+            'recovery_payout_id'=> '12345ABCD12345'
+        ]);
+
+        // For payout 2 that got initiated
+        $this->fixtures->create('fee_recovery', [
+            'entity_id'         => $payout2['id'],
+            'entity_type'       => 'payout',
+            'status'            => 'unrecovered',
+            'attempt_number'    => 3,
+            'type'              => 'debit',
+            'recovery_payout_id'=> '12345ABCD12345'
+        ]);
+
+        // For payout 3 that got initiated
+        $this->fixtures->create('fee_recovery', [
+            'entity_id'         => $payout3['id'],
+            'entity_type'       => 'payout',
+            'status'            => 'unrecovered',
+            'attempt_number'    => 3,
+            'type'              => 'debit',
+            'recovery_payout_id'=> '12345ABCD12345'
+        ]);
+
+        // For payout 2 that got failed
+        $this->fixtures->create('fee_recovery', [
+            'entity_id'         => $payout2['id'],
+            'entity_type'       => 'payout',
+            'status'            => 'unrecovered',
+            'attempt_number'    => 3,
+            'type'              => 'credit',
+            'recovery_payout_id'=> '12345ABCD12345'
+        ]);
+
+        // For reversal [payout 3 that got reversed]
+        $this->fixtures->create('fee_recovery', [
+            'entity_id'         => $reversal['id'],
+            'entity_type'       => 'reversal',
+            'status'            => 'unrecovered',
+            'attempt_number'    => 3,
+            'type'              => 'credit',
+            'recovery_payout_id'=> '12345ABCD12345'
+        ]);
+
+        $data = & $this->testData[__FUNCTION__];
+
+        $data['request']['content'] = [
+            'payout_ids'        => [$payout['id'], $payout2['id'], $payout3['id']],
+            'failed_payout_ids' => [$payout2['id']],
+            'reversal_ids'      => [$reversal['id']],
+            'balance_id'        => $this->balance['id'],
+            'merchant_id'       => '10000000000000',
+            'description'       => 'desc',
+            'amount'            => 590,
+            'reference_number'  => 'abcd'
+        ];
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+
+        //
+        // Asserting that new fee recovery entities were created with status = manually_recovered
+        //
+        $manualFeeRecoveryList = $this->getDbEntities('fee_recovery',
+                                                      [
+                                                          'status' => FeeRecovery\Status::MANUALLY_RECOVERED
+                                                      ])->toArray();
+
+        // Assert status = manually_recovered for payout 1 initiated
+        $this->assertEquals($payout['id'], $manualFeeRecoveryList[0]['entity_id']);
+        $this->assertEquals(FeeRecovery\Status::MANUALLY_RECOVERED, $manualFeeRecoveryList[0]['status']);
+        $this->assertEquals(1, $manualFeeRecoveryList[0]['attempt_number']);
+        $this->assertEquals($manualFeeRecoveryList[0]['recovery_payout_id'], null);
+
+        // Assert status = manually_recovered for payout 2 initiated
+        $this->assertEquals($payout2['id'], $manualFeeRecoveryList[1]['entity_id']);
+        $this->assertEquals(FeeRecovery\Status::MANUALLY_RECOVERED, $manualFeeRecoveryList[1]['status']);
+        $this->assertEquals(1, $manualFeeRecoveryList[1]['attempt_number']);
+        $this->assertEquals($manualFeeRecoveryList[1]['recovery_payout_id'], null);
+
+        // Assert status = manually_recovered for payout 3 initiated
+        $this->assertEquals($payout3['id'], $manualFeeRecoveryList[2]['entity_id']);
+        $this->assertEquals(FeeRecovery\Status::MANUALLY_RECOVERED, $manualFeeRecoveryList[2]['status']);
+        $this->assertEquals(1, $manualFeeRecoveryList[2]['attempt_number']);
+        $this->assertEquals($manualFeeRecoveryList[2]['recovery_payout_id'], null);
+
+        // Assert status = manually_recovered for payout 2 failed
+        $this->assertEquals($payout2['id'], $manualFeeRecoveryList[3]['entity_id']);
+        $this->assertEquals(FeeRecovery\Status::MANUALLY_RECOVERED, $manualFeeRecoveryList[3]['status']);
+        $this->assertEquals(1, $manualFeeRecoveryList[3]['attempt_number']);
+        $this->assertEquals($manualFeeRecoveryList[3]['recovery_payout_id'], null);
+
+        // Assert status = manually_recovered for reversal [payout 3 reversed]
+        $this->assertEquals($reversal['id'], $manualFeeRecoveryList[4]['entity_id']);
+        $this->assertEquals(FeeRecovery\Status::MANUALLY_RECOVERED, $manualFeeRecoveryList[4]['status']);
+        $this->assertEquals(1, $manualFeeRecoveryList[4]['attempt_number']);
+        $this->assertEquals($manualFeeRecoveryList[4]['recovery_payout_id'], null);
+
+        // Asserting that status of original entities was changed to failed
+        $originalFeeRecoveryList = $this->getDbEntities('fee_recovery',
+                                                    [
+                                                        'status' => FeeRecovery\Status::FAILED
+                                                    ]);
+
+        // Assert status = failed for payout 1 initiated (old entry)
+        $this->assertEquals($payout['id'], $originalFeeRecoveryList[0]['entity_id']);
+        $this->assertEquals(FeeRecovery\Status::FAILED, $originalFeeRecoveryList[0]['status']);
+        $this->assertEquals(3, $originalFeeRecoveryList[0]['attempt_number']);
+
+        // Assert status = failed for payout 2 initiated (old entry)
+        $this->assertEquals($payout2['id'], $originalFeeRecoveryList[1]['entity_id']);
+        $this->assertEquals(FeeRecovery\Status::FAILED, $originalFeeRecoveryList[1]['status']);
+        $this->assertEquals(3, $originalFeeRecoveryList[1]['attempt_number']);
+
+        // Assert status = failed for payout 3 initiated (old entry)
+        $this->assertEquals($payout3['id'], $originalFeeRecoveryList[2]['entity_id']);
+        $this->assertEquals(FeeRecovery\Status::FAILED, $originalFeeRecoveryList[2]['status']);
+        $this->assertEquals(3, $originalFeeRecoveryList[2]['attempt_number']);
+
+        // Assert status = failed for payout 2 failed (old entry)
+        $this->assertEquals($payout2['id'], $originalFeeRecoveryList[3]['entity_id']);
+        $this->assertEquals(FeeRecovery\Status::FAILED, $originalFeeRecoveryList[3]['status']);
+        $this->assertEquals(3, $originalFeeRecoveryList[3]['attempt_number']);
+
+        // Assert status = failed for reversal [payout 3 reversed] (old entry)
+        $this->assertEquals($reversal['id'], $originalFeeRecoveryList[4]['entity_id']);
+        $this->assertEquals(FeeRecovery\Status::FAILED, $originalFeeRecoveryList[4]['status']);
+        $this->assertEquals(3, $originalFeeRecoveryList[4]['attempt_number']);
+    }
+
+    public function testCreateManualRecoveryIncorrectAmount()
+    {
+        $this->testCreateFeeRecoveryAtPayoutCreationForRBLPayouts();
+
+        $payout = $this->getDbLastEntity('payout')->toArray();
+
+        $payoutId = $payout['id'];
+
+        $this->fixtures->edit('payout', $payoutId, ['status' => 'processed']);
+
+        $this->fixtures->create('fee_recovery', [
+            'entity_id'         => $payoutId,
+            'entity_type'       => 'payout',
+            'status'            => 'unrecovered',
+            'attempt_number'    => 3,
+            'type'              => 'debit',
+        ]);
+
+        $data = & $this->testData[__FUNCTION__];
+
+        $data['request']['content'] = [
+            'payout_ids'        => [$payoutId],
+            'balance_id'        => $this->balance['id'],
+            'merchant_id'       => '10000000000000',
+            'description'       => 'desc',
+            'amount'            => 591,
+            'reference_number'  => 'abcd'
+        ];
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testCreateManualRecoveryWhereRecoveryAlreadyInProgress()
+    {
+        $this->testCreateFeeRecoveryAtPayoutCreationForRBLPayouts();
+
+        $payout = $this->getDbLastEntity('payout')->toArray();
+
+        $payoutId = $payout['id'];
+
+        $this->fixtures->edit('payout', $payoutId, ['status' => 'processed']);
+
+        $this->fixtures->create('fee_recovery', [
+            'entity_id'         => $payoutId,
+            'entity_type'       => 'payout',
+            'status'            => 'processing',
+            'attempt_number'    => 2,
+            'type'              => 'debit'
+        ]);
+
+        $data = & $this->testData[__FUNCTION__];
+
+        $data['request']['content'] = [
+            'payout_ids'        => [$payoutId],
+            'balance_id'        => $this->balance['id'],
+            'merchant_id'       => '10000000000000',
+            'description'       => 'desc',
+            'amount'            => 590,
+            'reference_number'  => 'abcd'
+        ];
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    // This test covers what happens if we pass wrong IDs in the input. As an example
+    public function testCreateManualRecoveryWhenWrongIdsPassedInInput()
+    {
+        // Random old timestamp. Does not matter what since manual recovery happens based on Ids rather than timestamps
+        $oldTimeStamp = Carbon::now()->subWeek()->getTimestamp();
+
+        $this->testCreateFeeRecoveryAtPayoutCreationForRBLPayouts();
+
+        $payout = $this->getDbLastEntity('payout')->toArray();
+
+        $fundAccount = $this->getDbLastEntity('fund_account');
+
+        // Create second payout
+        $this->createPayoutForFundAccount($fundAccount, $this->balance);
+
+        $payout2 = $this->getDbLastEntity('payout');
+
+        $this->fixtures->edit('payout', $payout2['id'], ['initiated_at' => $oldTimeStamp]);
+
+        // Fail the second payout
+        $this->updateFtaAndSource($payout2, Payout\Status::FAILED);
+
+        // Create reversal for the second payout
+        $this->fixtures->reversal->createPayoutReversal([
+            'merchant_id'   => '10000000000000',
+            'entity_id'     => $payout2['id'],
+            'entity_type'   => 'payout',
+            'balance_id'    => $this->balance->getId(),
+            'amount'        => $payout2['amount'],
+            'fee'           => 0,
+            'tax'           => 0,
+            'channel'       => 'rbl',
+        ]);
+
+        $reversalForPayout2 = $this->getDbLastEntity('reversal');
+
+        // Create a third payout
+        $this->createPayoutForFundAccount($fundAccount, $this->balance);
+
+        $payout3 = $this->getDbLastEntity('payout');
+
+        $this->fixtures->edit('payout', $payout3['id'], ['initiated_at' => $oldTimeStamp]);
+
+        // Updating FTA and Payout status to initiated to allow transition to reversed
+        $fta = $this->getDbEntity('fund_transfer_attempt', ['source_id' => $payout3->getId()]);
+
+        $this->fixtures->edit('fund_transfer_attempt', $fta->getId(), ['status' => Attempt\Status::INITIATED]);
+
+        $this->fixtures->edit('payout', $payout3->getId(), ['status' => Payout\Status::INITIATED]);
+
+        // Reverse the third payout
+        $this->updateFtaAndSource($payout3, Payout\Status::REVERSED,'944926344925');
+
+        $reversalForPayout3 = $this->getDbLastEntity('reversal');
+        //
+        // Making fake fee recoveries with attempt number 3 and status unrecovered
+        // Doing this because it is faster than having to fail the fee recovery payout 3 times.
+        //
+
+        // For payout 1 that got initiated
+        $this->fixtures->create('fee_recovery', [
+            'entity_id'         => $payout['id'],
+            'entity_type'       => 'payout',
+            'status'            => 'unrecovered',
+            'attempt_number'    => 3,
+            'type'              => 'debit',
+            'recovery_payout_id'=> '12345ABCD12345'
+        ]);
+
+        // For payout 2 that got initiated
+        $this->fixtures->create('fee_recovery', [
+            'entity_id'         => $payout2['id'],
+            'entity_type'       => 'payout',
+            'status'            => 'unrecovered',
+            'attempt_number'    => 3,
+            'type'              => 'debit',
+            'recovery_payout_id'=> '12345ABCD12345'
+        ]);
+
+        // For payout 3 that got initiated
+        $this->fixtures->create('fee_recovery', [
+            'entity_id'         => $payout3['id'],
+            'entity_type'       => 'payout',
+            'status'            => 'unrecovered',
+            'attempt_number'    => 3,
+            'type'              => 'debit',
+            'recovery_payout_id'=> '12345ABCD12345'
+        ]);
+
+        // For payout 2 that got failed
+        // Note : Payout 2 also got reversed but we shall not create an entry for it since
+        // an entry already exists for failed payout corresponding to payout 2
+        $this->fixtures->create('fee_recovery', [
+            'entity_id'         => $payout2['id'],
+            'entity_type'       => 'payout',
+            'status'            => 'unrecovered',
+            'attempt_number'    => 3,
+            'type'              => 'credit',
+            'recovery_payout_id'=> '12345ABCD12345'
+        ]);
+
+        // For reversal [payout 3 that got reversed]
+        $this->fixtures->create('fee_recovery', [
+            'entity_id'         => $reversalForPayout3['id'],
+            'entity_type'       => 'reversal',
+            'status'            => 'unrecovered',
+            'attempt_number'    => 3,
+            'type'              => 'credit',
+            'recovery_payout_id'=> '12345ABCD12345'
+        ]);
+
+        $data = & $this->testData[__FUNCTION__];
+
+        $data['request']['content'] = [
+            'payout_ids'        => [$payout['id'], $payout2['id'], $payout3['id']],
+            'failed_payout_ids' => [$payout2['id']],
+            'reversal_ids'      => [$reversalForPayout2['id'], $reversalForPayout3['id']],
+            'balance_id'        => $this->balance['id'],
+            'merchant_id'       => '10000000000000',
+            'description'       => 'desc',
+            'amount'            => 590,
+            'reference_number'  => 'abcd'
+        ];
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function createVirtualBankingAccount()
     {
         $balanceAttributes = [
             'balance' => 10000000,

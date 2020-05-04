@@ -103,6 +103,27 @@ class Repository extends Base\Repository
                     ->update($dataToUpdate);
     }
 
+    public function getFeeRecoveryEntityByEntityIdTypeAttemptNumberAndStatus($entityId,
+                                                                             $entityType,
+                                                                             $attemptNumber,
+                                                                             $status,
+                                                                             $type)
+    {
+        $typeColumn             = $this->dbColumn(Entity::TYPE);
+        $statusColumn           = $this->dbColumn(Entity::STATUS);
+        $entityIdColumn         = $this->dbColumn(Entity::ENTITY_ID);
+        $entityTypeColumn       = $this->dbColumn(Entity::ENTITY_TYPE);
+        $attemptNumberColumn    = $this->dbColumn(Entity::ATTEMPT_NUMBER);
+
+        return $this->newQuery()
+                    ->where($entityIdColumn, '=', $entityId)
+                    ->where($entityTypeColumn, '=', $entityType)
+                    ->where($attemptNumberColumn, '=', $attemptNumber)
+                    ->where($statusColumn, '=', $status)
+                    ->where($typeColumn, '=', $type)
+                    ->first();
+    }
+
     public function fetchUnrecoveredAmountForPayouts(string $merchantId, string $balanceId)
     {
         // payout columns

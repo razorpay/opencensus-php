@@ -31,6 +31,12 @@ class Entity extends Base\PublicEntity
     const BALANCE_ID            = 'balance_id';
     const FROM                  = 'from';
     const TO                    = 'to';
+    const MERCHANT_ID           = 'merchant_id';
+    const FEE                   = 'fee';
+    const PAYOUT_IDS            = 'payout_ids';
+    const FAILED_PAYOUT_IDS     = 'failed_payout_ids';
+    const REVERSAL_IDS          = 'reversal_ids';
+    const AMOUNT                = 'amount';
 
     // Slack channel for alerts
     const RX_CA_RBL_ALERTS = 'rx_ca_rbl_alerts';
@@ -63,6 +69,7 @@ class Entity extends Base\PublicEntity
         self::ATTEMPT_NUMBER,
         self::REFERENCE_NUMBER,
         self::DESCRIPTION,
+        self::RECOVERY_PAYOUT_ID,
     ];
 
     // --------------- Getters ---------------
@@ -120,6 +127,26 @@ class Entity extends Base\PublicEntity
         Type::validateType($type);
 
         $this->setAttribute(Entity::TYPE, $type);
+    }
+
+    public function setReferenceNumber(string $referenceNumber)
+    {
+        $this->setAttribute(ENTITY::REFERENCE_NUMBER, $referenceNumber);
+    }
+
+    public function setDescription(string $description)
+    {
+        $this->setAttribute(ENTITY::DESCRIPTION, $description);
+    }
+
+    public function setRecoveryPayoutId(string $recoveryPayoutId)
+    {
+        $this->setAttribute(ENTITY::RECOVERY_PAYOUT_ID, $recoveryPayoutId);
+    }
+
+    public function setAttemptNumber(int $attemptNumber)
+    {
+        $this->setAttribute(ENTITY::ATTEMPT_NUMBER, $attemptNumber);
     }
 
     // --------------- End Setters ---------------

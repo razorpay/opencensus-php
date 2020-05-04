@@ -24,4 +24,13 @@ class FeeRecoveryController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function postManualRecovery()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->createManualRecovery($input);
+
+        return ApiResponse::json($response);
+    }
 }

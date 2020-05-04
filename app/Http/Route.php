@@ -966,6 +966,7 @@ final class Route
         'fee_recovery_payout_admin'                => ['post',     'payouts/fee_recovery',                           'FeeRecoveryController@createRecoveryPayout'                        ],
         'fee_recovery_payout_process'              => ['post',     'payouts/fee_recovery/process',                   'FeeRecoveryController@processRecoveryPayout'                       ],
         'fee_recovery_payout_schedule_task'        => ['post',     'schedules/tasks/fee_recovery',                   'ScheduleController@createFeeRecoveryScheduleTask'                  ],
+        'fee_recovery_manual_update'               => ['post',     'payouts/fee_recovery/manual',                    'FeeRecoveryController@postManualRecovery'                          ],
         'transfer_fetch'                           => ['get',      'transfers/{id}',                                 'TransferController@getTransfer'                                    ],
         'transfer_fetch_multiple'                  => ['get',      'transfers/',                                     'TransferController@getTransfers'                                   ],
 
@@ -3101,8 +3102,11 @@ final class Route
         'merchant_locked_balance_update',
 
         'merchant_balance_fetch_admin',
+
+        // Fee Recovery [RX - CA]
         'fee_recovery_payout_admin',
         'fee_recovery_payout_schedule_task',
+        'fee_recovery_manual_update',
 
         // Banking VA
         'virtual_account_bulk_create_for_banking',
@@ -3749,6 +3753,7 @@ final class Route
 
         'fee_recovery_payout_admin'                 => Permission::PROCESS_FEE_RECOVERY,
         'fee_recovery_payout_schedule_task'         => Permission::ASSIGN_FEE_RECOVERY_SCHEDULE,
+        'fee_recovery_manual_update'                => Permission::PROCESS_FEE_RECOVERY,
     ];
 
     public static $bankingRoutePermissions = [

@@ -10,14 +10,15 @@ use RZP\Models\Base;
 use RZP\Models\Payout;
 use RZP\Models\Contact;
 use RZP\Error\ErrorCode;
+use RZP\Models\Reversal;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
-use RZP\Models\Reversal;
 use RZP\Constants\Timezone;
 use RZP\Models\Schedule\Task;
 use RZP\Models\BankingAccount;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\Currency\Currency;
+use RZP\Exception\BadRequestException;
 use RZP\Models\Settlement\SlackNotification;
 
 class Core extends Base\Core
@@ -628,6 +629,164 @@ class Core extends Base\Core
         $feeRecoveryContact = $rzpFeesContacts->first();
 
         return $feeRecoveryContact;
+    }
+
+    /**
+     * @param array $input
+     *
+     * @return array
+     */
+    public function createManualRecovery(array $input)
+    {
+        (new Validator)->validateInput('create_manual_fee_recovery_payout', $input);
+
+        $payoutIds          = $input[Entity::PAYOUT_IDS] ?? [];
+        $reversalIds        = $input[Entity::REVERSAL_IDS] ?? [];
+        $failedPayoutIds    = $input[Entity::FAILED_PAYOUT_IDS] ?? [];
+        $balanceId          = $input[Entity::BALANCE_ID];
+        $merchantId         = $input[Entity::MERCHANT_ID];
+        $amount             = (int) $input[Entity::AMOUNT];
+
+        $manualRecoveryData = [
+            Entity::DESCRIPTION         => $input[Entity::DESCRIPTION] ?? null,
+            Entity::REFERENCE_NUMBER    => $input[Entity::REFERENCE_NUMBER] ?? null
+        ];
+
+        $this->repo->transaction(
+            function() use ($payoutIds, $failedPayoutIds, $reversalIds, $merchantId, $balanceId, $manualRecoveryData, $amount)
+            {
+
+                $feesForPayouts = $this->repo->payout->fetchFeesForPayoutIds($payoutIds,
+                                                                             $merchantId,
+                                                                             $balanceId);
+
+                $feesForFailedPayouts = $this->repo->payout->fetchFeesForFailedPayoutIds($failedPayoutIds,
+                                                                                         $merchantId,
+                                                                                         $balanceId);
+
+                $feesForReversals = $this->repo->reversal->fetchFeesForReversalIds($reversalIds,
+                                                                                   $merchantId,
+                                                                                   $balanceId);
+
+                $totalFeesAmount = $feesForPayouts['fees'] - $feesForFailedPayouts['fees'] - $feesForReversals['fees'];
+
+                if ($totalFeesAmount !== $amount)
+                {
+                    throw new BadRequestException(
+                        ErrorCode::BAD_REQUEST_FEE_RECOVERY_MANUAL_AMOUNT_MISMATCH,
+                        null,
+                        [
+                            'amount'            => $amount,
+                            'fees_calculated'   => $totalFeesAmount,
+                            'merchant_id'       => $merchantId,
+                            'balance_id'        => $balanceId,
+                            'reference_number'  => $manualRecoveryData[Entity::REFERENCE_NUMBER],
+                            'description'       => $manualRecoveryData[Entity::DESCRIPTION],
+                        ]);
+                }
+
+                foreach ($payoutIds as $payoutId)
+                {
+                    $this->createAndUpdateFeeRecoveryEntityForManualRecovery($payoutId,
+                                                                             Entity::PAYOUT,
+                                                                             $merchantId,
+                                                                             $manualRecoveryData,
+                                                                             Type::DEBIT);
+                }
+                foreach ($failedPayoutIds as $failedPayoutId)
+                {
+                    $this->createAndUpdateFeeRecoveryEntityForManualRecovery($failedPayoutId,
+                                                                             Entity::PAYOUT,
+                                                                             $merchantId,
+                                                                             $manualRecoveryData,
+                                                                             Type::CREDIT);
+                }
+                foreach ($reversalIds as $reversalId)
+                {
+                    $this->createAndUpdateFeeRecoveryEntityForManualRecovery($reversalId,
+                                                                             Entity::REVERSAL,
+                                                                             $merchantId,
+                                                                             $manualRecoveryData,
+                                                                             Type::CREDIT);
+                }
+            });
+
+        return ['success' => true];
+    }
+
+    protected function createAndUpdateFeeRecoveryEntityForManualRecovery($entityId,
+                                                                         $entityType,
+                                                                         $merchantId,
+                                                                         $manualRecoveryData,
+                                                                         $type)
+    {
+        $this->mutex->acquireAndRelease(
+            'fee_recovery_' . $entityId,
+            function () use ($entityId, $entityType, $merchantId, $manualRecoveryData, $type)
+        {
+            $feeRecovery = $this->repo->fee_recovery->getFeeRecoveryEntityByEntityIdTypeAttemptNumberAndStatus(
+                $entityId,
+                $entityType,
+                3,
+                Status::UNRECOVERED,
+                $type
+            );
+
+            if ($feeRecovery === null)
+            {
+                throw new BadRequestException(
+                    ErrorCode::BAD_REQUEST_FEE_RECOVERY_MANUAL_COLLECTION_FOR_PAYOUT_INVALID,
+                    null,
+                    [
+                        'entity_id'     => $entityId,
+                        'entity_type'   => $entityType
+                    ]);
+            }
+
+            $newFeeRecovery = $feeRecovery->replicate();
+
+            $dataToUpdate = [
+                Entity::RECOVERY_PAYOUT_ID  => null,
+                Entity::REFERENCE_NUMBER    => $manualRecoveryData[Entity::REFERENCE_NUMBER],
+                Entity::DESCRIPTION         => $manualRecoveryData[Entity::DESCRIPTION],
+                Entity::ATTEMPT_NUMBER      => 1,
+            ];
+
+            $newFeeRecovery->edit($dataToUpdate);
+
+            $newFeeRecovery->setStatus(Status::MANUALLY_RECOVERED);
+
+            if ($entityType === Entity::PAYOUT)
+            {
+                $sourceEntity = $this->repo->payout->findByIdAndMerchantId($entityId, $merchantId);
+
+                if ($sourceEntity->getPurpose() === Payout\Purpose::RZP_FEES)
+                {
+                    throw new BadRequestException(
+                        ErrorCode::BAD_REQUEST_FEE_RECOVERY_MANUAL_FOR_RZP_FEES_PAYOUT_NOT_SUPPORTED,
+                        null,
+                        [
+                            'entity_id'     => $entityId,
+                            'entity_type'   => $entityType
+                        ]);
+                }
+            }
+            else if ($entityType === Entity::REVERSAL)
+            {
+                $sourceEntity = $this->repo->reversal->findByIdAndMerchantId($entityId, $merchantId);
+            }
+
+            $newFeeRecovery->entity()->associate($sourceEntity);
+
+            $newFeeRecovery->saveOrFail();
+
+            // Set status of earlier attempt to failed
+            $feeRecovery->setStatus(Status::FAILED);
+
+            $feeRecovery->saveOrFail();
+        },
+        60,
+        ErrorCode::BAD_REQUEST_FEE_RECOVERY_ANOTHER_OPERATION_IN_PROGRESS);
     }
 
     protected function sendSlackAlert($operation, $data)

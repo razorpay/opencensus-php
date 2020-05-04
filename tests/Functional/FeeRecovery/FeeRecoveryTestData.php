@@ -3,6 +3,7 @@
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
+use RZP\Error\PublicErrorDescription;
 
 return [
     'testCreateFeeRecoveryPayout' => [
@@ -148,6 +149,77 @@ return [
                 'merchant_id'   => '10000000000000',
                 'entity_type'   => 'balance',
             ],
+        ],
+    ],
+    'testCreateManualRecovery' => [
+        'request'  => [
+            'url'       => '/payouts/fee_recovery/manual',
+            'method'    => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                'success' => true
+            ],
+        ],
+    ],
+
+    'testCreateManualRecoveryIncorrectAmount' => [
+        'request'  => [
+            'url'       => '/payouts/fee_recovery/manual',
+            'method'    => 'POST',
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_FEE_RECOVERY_MANUAL_AMOUNT_MISMATCH,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_FEE_RECOVERY_MANUAL_AMOUNT_MISMATCH,
+        ],
+    ],
+
+    'testCreateManualRecoveryWhereRecoveryAlreadyInProgress' => [
+        'request'  => [
+            'url'       => '/payouts/fee_recovery/manual',
+            'method'    => 'POST',
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_FEE_RECOVERY_MANUAL_COLLECTION_FOR_PAYOUT_INVALID,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_FEE_RECOVERY_MANUAL_COLLECTION_FOR_PAYOUT_INVALID,
+        ],
+    ],
+
+    'testCreateManualRecoveryWhenWrongIdsPassedInInput' => [
+        'request'  => [
+            'url'       => '/payouts/fee_recovery/manual',
+            'method'    => 'POST',
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_FEE_RECOVERY_MANUAL_COLLECTION_FOR_PAYOUT_INVALID,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_FEE_RECOVERY_MANUAL_COLLECTION_FOR_PAYOUT_INVALID,
         ],
     ],
 ];

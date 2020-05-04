@@ -201,4 +201,25 @@ class Repository extends Base\Repository
                     ->where($balanceIdColumn, $balanceId)
                     ->get();
     }
+
+    public function fetchFeesForReversalIds($reversalIds, $merchantId, $balanceId)
+    {
+        $payoutsTable           = $this->repo->payout->getTableName();
+        $payoutsIdColumn        = $this->repo->payout->dbColumn(PayoutEntity::ID);
+        $payoutsFeesColumn      = $this->repo->payout->dbColumn(PayoutEntity::FEES);
+        $payoutsFailedAtColumn  = $this->repo->payout->dbColumn(PayoutEntity::FAILED_AT);
+
+        $reversalsIdColumn          = $this->dbColumn(Entity::ID);
+        $reversalsEntityIdColumn    = $this->dbColumn(Entity::ENTITY_ID);
+        $reversalsBalanceIdColumn   = $this->dbColumn(Entity::BALANCE_ID);
+
+        return $this->newQuery()
+                    ->selectRaw(' SUM(' . $payoutsFeesColumn . ') AS fees')
+                    ->join($payoutsTable, $reversalsEntityIdColumn, '=', $payoutsIdColumn)
+                    ->merchantId($merchantId)
+                    ->where($reversalsBalanceIdColumn, $balanceId)
+                    ->whereIn($reversalsIdColumn, $reversalIds)
+                    ->whereNull($payoutsFailedAtColumn)
+                    ->first();
+    }
 }

@@ -18,10 +18,31 @@ class Validator extends Base\Validator
         Entity::REVERSAL,
     ];
 
+    protected static $editRules = [
+        Entity::RECOVERY_PAYOUT_ID    => 'sometimes|nullable|string|size:14',
+        Entity::DESCRIPTION           => 'sometimes|string',
+        Entity::REFERENCE_NUMBER      => 'sometimes|string',
+        Entity::ATTEMPT_NUMBER        => 'sometimes|integer',
+    ];
+
     protected static $createFeeRecoveryPayoutRules = [
         Entity::BALANCE_ID          => 'required|string|size:14',
         Entity::FROM                => 'required|filled|integer',
         Entity::TO                  => 'required|filled|integer',
+    ];
+
+    protected static $createManualFeeRecoveryPayoutRules = [
+        Entity::MERCHANT_ID                 => 'required|string|size:14',
+        Entity::AMOUNT                      => 'required|integer',
+        Entity::BALANCE_ID                  => 'required|string|size:14',
+        Entity::PAYOUT_IDS                  => 'sometimes|required|array|min:0',
+        Entity::PAYOUT_IDS . '.*'           => 'required|string|size:14',
+        Entity::FAILED_PAYOUT_IDS           => 'sometimes|required|array|min:0',
+        Entity::FAILED_PAYOUT_IDS . '.*'    => 'required|string|size:14',
+        Entity::REVERSAL_IDS                => 'sometimes|required|array|min:0',
+        Entity::REVERSAL_IDS . '.*'         => 'required|string|size:14',
+        Entity::REFERENCE_NUMBER            => 'sometimes|string|nullable|max:255',
+        Entity::DESCRIPTION                 => 'sometimes|string|nullable|max:255',
     ];
 
     // Function used by admin fetch

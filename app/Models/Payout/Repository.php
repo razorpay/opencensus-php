@@ -766,4 +766,38 @@ class Repository extends Base\Repository
                     ->limit(1)
                     ->first();
     }
+
+    // Not checking for status here, because payouts could be initiated or processed.
+    public function fetchFeesForPayoutIds(array $payoutIds, $merchantId, $balanceId)
+    {
+        $payoutsIdColumn            = $this->repo->payout->dbColumn(Entity::ID);
+        $payoutsFeesColumn          = $this->repo->payout->dbColumn(Entity::FEES);
+        $payoutsBalanceIdColumn     = $this->repo->payout->dbColumn(Entity::BALANCE_ID);
+        $payoutsInitiatedAtColumn   = $this->repo->payout->dbColumn(Entity::INITIATED_AT);
+
+
+        return $this->newQuery()
+                    ->selectRaw(' SUM(' . $payoutsFeesColumn . ') AS fees')
+                    ->merchantId($merchantId)
+                    ->where($payoutsBalanceIdColumn, '=', $balanceId)
+                    ->whereIn($payoutsIdColumn, $payoutIds)
+                    ->whereNotNull($payoutsInitiatedAtColumn)
+                    ->first();
+    }
+
+    public function fetchFeesForFailedPayoutIds(array $failedPayoutIds, $merchantId, $balanceId)
+    {
+        $payoutsIdColumn        = $this->repo->payout->dbColumn(Entity::ID);
+        $payoutsFeesColumn      = $this->repo->payout->dbColumn(Entity::FEES);
+        $payoutsBalanceIdColumn = $this->repo->payout->dbColumn(Entity::BALANCE_ID);
+        $payoutsFailedAtColumn   = $this->repo->payout->dbColumn(Entity::FAILED_AT);
+
+        return $this->newQuery()
+                    ->selectRaw(' SUM(' . $payoutsFeesColumn . ') AS fees')
+                    ->merchantId($merchantId)
+                    ->where($payoutsBalanceIdColumn, '=', $balanceId)
+                    ->whereIn($payoutsIdColumn, $failedPayoutIds)
+                    ->whereNotNull($payoutsFailedAtColumn)
+                    ->first();
+    }
 }

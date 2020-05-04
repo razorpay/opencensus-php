@@ -854,6 +854,8 @@ class PublicErrorDescription
     const BAD_REQUEST_FEE_RECOVERY_PAYOUT_CANCEL_NOT_PERMITTED                  = 'Cancelling a Fee Recovery Payout is not permitted';
     const BAD_REQUEST_INTERNAL_FUND_ACCOUNT_UPDATE_NOT_PERMITTED                = 'Updating an internal Razorpay Fund Account is not permitted';
     const BAD_REQUEST_INTERNAL_FUND_ACCOUNT_CREATION_NOT_PERMITTED              = 'Creating a fund account for an Internal Razopay contact is not permitted';
+    const BAD_REQUEST_FEE_RECOVERY_MANUAL_AMOUNT_MISMATCH                       = 'Amount recovered does not match with the total fees calculated for given payouts';
+    const BAD_REQUEST_FEE_RECOVERY_MANUAL_COLLECTION_FOR_PAYOUT_INVALID         = 'Fee Recovery cannot be provided for a certain payout';
     const BAD_REQUEST_PAYOUT_TO_INTERNAL_FUND_ACCOUNT_NOT_PERMITTED             = 'Creating a payout to an internal Razorpay Fund Account is not permitted';
     const BAD_REQUEST_FEE_RECOVERY_INVALID_STATUS                               = 'Invalid status for fee recovery';
     const BAD_REQUEST_FEE_RECOVERY_INVALID_STATUS_TRANSITION                    = 'Invalid status transition for fee recovery';
@@ -868,6 +870,7 @@ class PublicErrorDescription
     const BAD_REQUEST_FEE_RECOVERY_INCORRECT_TIMESTAMPS                         = 'Start timestamp cannot be greater than end timestamp';
     const BAD_REQUEST_FEE_RECOVERY_INCORRECT_SCHEDULE_TYPE                      = 'Schedule type supported for fee recovery';
     const BAD_REQUEST_FEE_RECOVERY_INCORRECT_BALANCE_TYPE                       = 'Only Direct-Banking type balance is allowed';
+    const BAD_REQUEST_FEE_RECOVERY_MANUAL_FOR_RZP_FEES_PAYOUT_NOT_SUPPORTED     = 'Manual recovery for rzp_fees type payouts is not supported';
     const BAD_REQUEST_FEE_RECOVERY_AMOUNT_ZERO                                  = 'Fee Recovery payout amount cannot be zero';
 
     // payout links

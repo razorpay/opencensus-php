@@ -53,9 +53,12 @@ class Reversal extends Base
 
         $reversal = $this->build('reversal', $attributes);
 
-        $txn = $this->createTransactionOnPayoutReversal($reversal);
+        if ($attributes['channel'] !== 'rbl')
+        {
+            $txn = $this->createTransactionOnPayoutReversal($reversal);
 
-        $txn->saveOrFail();
+            $txn->saveOrFail();
+        }
 
         $reversal->saveOrFail();
 

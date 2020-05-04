@@ -1399,5 +1399,15 @@ final class FactoryData
             'merchant_id'       => '10000000000000',
         ]);
 
+
+        $factory(\RZP\Models\FeeRecovery\Entity::class, [
+                'entity_id'                => $faker->uniqueid,
+                'entity_type'              => 'payout',
+                'status'                   => 'unrecovered',
+                'attempt_number'           => 0,
+                'reference_number'         => null,
+                'description'              => null
+            ]
+        );
     }
 }

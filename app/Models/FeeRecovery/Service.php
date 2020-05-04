@@ -19,4 +19,11 @@ class Service extends Base\Service
 
         return $feeRecovery;
     }
+
+    public function createManualRecovery(array $input)
+    {
+        $response = $this->core()->createManualRecovery($input);
+
+        return $response;
+    }
 }
