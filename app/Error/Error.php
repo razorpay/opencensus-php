@@ -6,9 +6,9 @@ use App;
 use ArrayObject;
 use RZP\Exception;
 use Illuminate\Support;
-use RZP\Models\Feature\Constants;
 use RZP\Trace\TraceCode;
 use RZP\Services\DowntimeMetric;
+use RZP\Models\Feature\Constants;
 
 class Error extends Support\Fluent
 {
@@ -50,19 +50,11 @@ class Error extends Support\Fluent
 
     const ERROR_CODE_FILE_PATH  = 'files/errorcodes/error_reason_%s.csv';
 
-    const ERROR_CODE_CACHE_KEY  = 'error_code_map_cache_%s';
-
-    const CACHE_EXPIRY          = 14400;
-
-    const REDIS_EXPIRY_PARAM    = 'ex';
-
     protected $attributes = array();
 
     protected $app;
 
     protected $trace;
-
-    protected $redis;
 
     public function __construct(
         $code,
@@ -75,8 +67,6 @@ class Error extends Support\Fluent
         $this->app = App::getFacadeRoot();
 
         $this->trace = $this->app['trace'];
-
-        $this->redis = $this->app['redis']->connection();
     }
 
     public function fill($code, $desc = null, $field = null, $data = null, $internalDesc = null)
@@ -248,35 +238,12 @@ class Error extends Support\Fluent
 
         $errorCodeMap = array();
 
-        $cacheKey = sprintf(self::ERROR_CODE_CACHE_KEY,$method);
-
-        try
-        {
-            if ($this->redis->exists($cacheKey) === 1)
-            {
-                if ($this->redis->get($cacheKey) !== null)
-                {
-                    $errorCodeMap = json_decode($this->redis->get($cacheKey), true);
-                }
-                else
-                {
-                    $this->readMappingFromFile($cacheKey, $method, $errorCodeMap);
-                }
-            }
-            else
-            {
-                $this->readMappingFromFile($cacheKey, $method, $errorCodeMap);
-            }
-        }
-        catch (\Exception $exception)
-        {
-            $this->readMappingFromFile($cacheKey, $method, $errorCodeMap);
-        }
+        $this->readMappingFromFile($method, $errorCodeMap);
 
         $this->setErrorParamsIfApplicable($errorCodeMap, $code, $method);
     }
 
-    protected function readMappingFromFile($cacheKey, $method, & $errorCodeMap)
+    public function readMappingFromFile($method, & $errorCodeMap)
     {
         $filePath = storage_path(sprintf(self::ERROR_CODE_FILE_PATH, $method));
 
@@ -302,13 +269,11 @@ class Error extends Support\Fluent
 
                 $errorCodeMap[$key] = $row;
             }
-
-            $this->redis->set($cacheKey, json_encode($errorCodeMap), self::REDIS_EXPIRY_PARAM, self::CACHE_EXPIRY);
         }
         catch (\Exception $exception)
         {
             $this->trace->traceException($exception, null, TraceCode::ERROR_RESPONSE_FILE_READING_FAILED,
-                ['payment_method'  => $method, 'cacheKey'  => $cacheKey]);
+                ['payment_method'  => $method]);
         }
         finally
         {

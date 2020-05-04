@@ -150,9 +150,9 @@ return [
                 'error' => [
                     'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description'   => PublicErrorDescription::BAD_REQUEST_PAYMENT_CANCELLED_BY_USER,
-                    'reason'        => 'cancelled',
+                    'reason'        => 'payment_cancelled',
                     'source'        => 'customer',
-                    'step'          => 'authentication'
+                    'step'          => 'payment_authentication'
                 ],
             ],
             'status_code' => 400,

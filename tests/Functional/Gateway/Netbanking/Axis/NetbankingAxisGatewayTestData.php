@@ -229,9 +229,9 @@ return [
                 'error' => [
                     'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description'   => PublicErrorDescription::BAD_REQUEST_PAYMENT_FAILED,
-                    'reason'   => 'declined',
+                    'reason'   => 'payment_failed',
                     'source'   => 'bank',
-                    'step'     => 'authorization'
+                    'step'     => 'payment_authorization'
                 ],
             ],
             'status_code' => 400,

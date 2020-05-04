@@ -4,6 +4,7 @@ namespace RZP\Models\Payment;
 
 use Carbon\Carbon;
 use Lib\PhoneBook;
+use RZP\Error\Error;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Constants\Procurer;
@@ -127,8 +128,9 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     const REFERENCE6            = 'reference6';
     const REFERENCE9            = 'reference9';
     const FEE_BEARER            = 'fee_bearer';
-    // From 13 to 17 are blank columns of various types(refer migration file) to be consumed after renaming when needed
+    //Reference13 has been used to store detailed error fields of combination of source, step and reason.
     const REFERENCE13           = 'reference13';
+    // From 14 to 17 are blank columns of various types(refer migration file) to be consumed after renaming when needed
     const REFERENCE14           = 'reference14';
     const REFERENCE16           = 'reference16';
     const REFERENCE17           = 'reference17';
@@ -200,6 +202,14 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     const AUTHENTICATION_GATEWAY = 'authentication_gateway';
 
     const VIRTUAL_ACCOUNT_ID     = 'virtual_account_id';
+
+    const ERROR_SOURCE           = 'error_source';
+
+    const ERROR_STEP             = 'error_step';
+
+    const ERROR_REASON           = 'error_reason';
+
+    const DETAILED_REASON        = 'detailed_reason';
 
     // constants and defaults
     const CURRENCY_LENGTH                   = 3;
@@ -305,6 +315,9 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::ERROR_CODE,
         self::INTERNAL_ERROR_CODE,
         self::ERROR_DESCRIPTION,
+        self::ERROR_SOURCE,
+        self::ERROR_STEP,
+        self::ERROR_REASON,
         self::CANCELLATION_REASON,
         self::AUTHORIZED_AT,
         self::CAPTURED_AT,
@@ -354,6 +367,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::UPDATED_AT,
         self::AUTHENTICATION_GATEWAY,
         self::FEE_BEARER,
+        self::REFERENCE13,
     ];
 
     protected $public = [
@@ -390,6 +404,9 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::TAX,
         self::ERROR_CODE,
         self::ERROR_DESCRIPTION,
+        self::ERROR_SOURCE,
+        self::ERROR_STEP,
+        self::ERROR_REASON,
         self::ACQUIRER_DATA,
         self::GATEWAY_PROVIDER,
         // self::SUBSCRIPTION_ID,
@@ -438,6 +455,9 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::AUTHORIZED_AT,
         self::UPDATED_AT,
         self::ERROR_DESCRIPTION,
+        self::ERROR_SOURCE,
+        self::ERROR_STEP,
+        self::ERROR_REASON,
         Terminal\Entity::GATEWAY_TERMINAL_ID,
     ];
 
@@ -466,6 +486,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::ACCOUNT_ID,
         self::TERMINAL_ID,
         self::LATE_AUTHORIZED,
+        self::DETAILED_REASON,
     ];
 
     protected $appends = [self::PUBLIC_ID, self::CAPTURED, self::ACQUIRER_DATA, self::GATEWAY_PROVIDER];
@@ -993,6 +1014,54 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         $this->setAttribute(self::ERROR_CODE, $errorCode);
         $this->setAttribute(self::ERROR_DESCRIPTION, $errorDesc);
         $this->setAttribute(self::INTERNAL_ERROR_CODE, $internalErrorCode);
+        $this->setDetailedError($internalErrorCode, $this->getMethod());
+    }
+
+    public function setDetailedError($code, $method)
+    {
+        if (isset($method) === false)
+        {
+            return;
+        }
+
+        $errorCodeMap = array();
+
+        $error = new Error($this->getAttribute(self::INTERNAL_ERROR_CODE));
+
+        $error->readMappingFromFile($method, $errorCodeMap);
+
+        $this->setErrorParamsIfApplicable($errorCodeMap, $code);
+    }
+
+    protected function setErrorParamsIfApplicable($errorCodeMap, $code)
+    {
+        $app = \App::getFacadeRoot();
+
+        try
+        {
+            if (array_key_exists($code, $errorCodeMap))
+            {
+                $source = strtolower($errorCodeMap[$code][3] ?: "NA");
+
+                $step = strtolower($errorCodeMap[$code][5] ?: "NA");
+
+                $reason = strtolower($errorCodeMap[$code][1]);
+
+                $sourceFieldMap = array_flip(DetailedError::$sourceFieldMap);
+
+                $stepFieldMap = array_flip(DetailedError::$stepFieldMap);
+
+                $reasonFieldMap = array_flip(DetailedError::$reasonFieldMap);
+
+                $reference13 =  ($sourceFieldMap[$source] ?? 'NA').($stepFieldMap[$step] ?? 'NA').($reasonFieldMap[$reason] ?? 'NA');
+
+                $this->setAttribute(self::REFERENCE13, $reference13);
+            }
+        }
+        catch (\Exception $exception)
+        {
+            $app['trace']->info(TraceCode::ERROR_RESPONSE_MAPPING_READ_FAILED, $errorCodeMap[$code]);
+        }
     }
 
     public function setInternalErrorCode($internalErrorCode)
@@ -2679,6 +2748,34 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         }
 
         return $reference;
+    }
+
+    public function setPublicDetailedReasonAttribute(array & $array)
+    {
+        $reference13 =  strtoupper($this->getAttribute(self::REFERENCE13));
+
+        $array[self::ERROR_SOURCE] = null;
+
+        $array[self::ERROR_STEP]   = null;
+
+        $array[self::ERROR_REASON] = null;
+
+        if (empty($reference13) === false)
+        {
+            $source      =  substr($reference13, 0, 2);
+
+            $step        =  substr($reference13, 2, 2);
+
+            $reason      =  substr($reference13, 4);
+
+            $array[self::ERROR_SOURCE] = DetailedError::$sourceFieldMap[$source] ?? 'NA';
+
+            $array[self::ERROR_STEP] = DetailedError::$stepFieldMap[$step] ?? 'NA';
+
+            $array[self::ERROR_REASON] = DetailedError::$reasonFieldMap[$reason] ?? 'NA';;
+
+            return;
+        }
     }
 
     /**
