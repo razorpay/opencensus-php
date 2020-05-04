@@ -20,7 +20,11 @@ import {
 } from 'merchant/components/File/Upload';
 import { fireAnalyticsEvents } from 'common/utils/googleAnalytics'; // fb, bing, linkedin, twitter
 import * as trackers from 'merchant/containers/Activation/ga_new';
-import * as activationUtils from './ActivationUtils';
+import {
+  fireFormStartEvents,
+  fireKYCSubmitEvents,
+  updateHubSpotContactsProperties,
+} from 'merchant/containers/Activation/ActivationFormMarketingEvents';
 
 import mainFormTabsContent, {
   mainFormTabs,
@@ -33,7 +37,6 @@ import accountFormTabsContent, {
 } from './AccountActivationFormMap';
 import BingDataObj from 'common/utils/bingDataObj';
 import RTracking from 'react-tracking';
-import L1FormFieldNames from './L1FormFieldNames';
 import { updateSession } from 'merchant/reducers/session';
 import {
   showInstantActivationSuccessModal,
@@ -46,7 +49,6 @@ import {
   submitL1FormSuccess,
 } from 'merchant/reducers/activationWizard';
 import User from 'merchant/models/User';
-
 import { showNotification } from 'merchant_common/reducers/notifications';
 import {
   validatePersonalPAN,
@@ -54,10 +56,11 @@ import {
   validateCompanyPAN,
 } from 'common/utils/validators';
 
+import L1FormFieldNames from './L1FormFieldNames';
+import * as activationUtils from './ActivationUtils';
 import {
   handleInstantActivationSuccess,
   L1FormError,
-  updateHubSpotContactsProperties,
   UNREGISTERED_TYPES,
   isL1Completed,
   hasSelectedBlacklistedCategory,
@@ -318,15 +321,13 @@ export default class ActivationWizard extends React.Component {
   componentDidMount() {
     addDropShield('.Activation--wizard');
 
-    if (!this.props.user.isAccepted && activationUtils.isL1Completed(this)) {
+    const isL1Completed = activationUtils.isL1Completed(this);
+
+    if (!this.props.user.isAccepted && isL1Completed) {
       trackers.trackKYCFormOpen();
-      fireAnalyticsEvents({
-        fbData: 'KYC_start',
-        liData: 987420,
-        twiData: 'o1ua3',
-      });
-      updateHubSpotContactsProperties({ started: true });
     }
+
+    fireFormStartEvents(isL1Completed);
 
     const query = QueryString.parse(this.props.location.search);
     this.handleActionBasedOnQuery(query);
@@ -915,25 +916,17 @@ export default class ActivationWizard extends React.Component {
 
       this.updateSession(response.data); // Updating % activation_progress (side bar)
 
-      const {
-        activation_flow,
-        business_type,
-        poi_verification_status,
-        company_pan_verification_status,
-        instantActivation,
-      } = this.user;
+      const user = this.user;
+
       const {
         showPANStatusModal,
         showKYCDetailsModal,
         showInstantActivationSuccessModal,
         tracking,
       } = this.props;
+
       const props = {
-        activation_flow,
-        instantActivation,
-        business_type,
-        poi_verification_status,
-        company_pan_verification_status,
+        user,
         showKYCDetailsModal,
         showPANStatusModal,
         showInstantActivationSuccessModal,
@@ -946,8 +939,9 @@ export default class ActivationWizard extends React.Component {
       this.setState({ callingAPI: false }, () => {
         if (
           !hasAPIL1Error({
-            poi_verification_status,
-            company_pan_verification_status,
+            poi_verification_status: user.poi_verification_status,
+            company_pan_verification_status:
+              user.company_pan_verification_status,
             is_unreg: this.isUnregBiz,
           })
         ) {
@@ -1017,74 +1011,20 @@ export default class ActivationWizard extends React.Component {
           window.hj('tagRecording', ['activation_form_save_error']);
         }
 
-        onAction &&
-          onAction.trackSubmit({
-            error: data.errors,
-            type: false,
-          });
+        const _data = {
+          error: data.errors,
+          type: false,
+        };
+
+        fireKYCSubmitEvents(_data);
       } else {
-        const compAllData = new BingDataObj('kycform', 'complete', 'all', 1);
+        const isUnregisteredBusiness = this.isUnregBiz;
+        const _data = {
+          ...data.data,
+          isUnregisteredBusiness,
+        };
 
-        /**
-         * Fire fb, bing, linkedin, quora, reddit & twitter events
-         */
-        fireAnalyticsEvents({
-          fbData: 'kyc_complete_all',
-          bingData: compAllData,
-          liData: 987452,
-          twiData: 'o1ua7',
-          quoraData: 'AddToCart',
-          redditData: 'AddToCart',
-        });
-
-        let conversionId, txnId;
-        if (data.data.activation_flow === 'greylist') {
-          conversionId = 987428;
-          txnId = 'o1ua4';
-          const greylistData = new BingDataObj(
-            'kycform',
-            'complete',
-            'greylist',
-            1
-          );
-          fireAnalyticsEvents({
-            fbData: 'KYC_complete_greylist',
-            bingData: greylistData,
-            liData: conversionId,
-            twiData: txnId,
-          });
-        } else if (data.data.activation_flow === 'whitelist') {
-          conversionId = 987436;
-          txnId = 'o1ua5';
-          const whitelistData = new BingDataObj(
-            'kycform',
-            'complete',
-            'whitelist',
-            1
-          );
-          fireAnalyticsEvents({
-            fbData: 'KYC_complete_whitelist',
-            bingData: whitelistData,
-            liData: conversionId,
-            twiData: txnId,
-          });
-        }
-
-        updateHubSpotContactsProperties(
-          {
-            final_submission: true,
-          },
-          {
-            account_status: data.data.activation_status,
-          }
-        );
-
-        onAction &&
-          onAction.trackSubmit({
-            type: true,
-            activationFlow: data.data && data.data.activation_flow,
-          });
-
+        fireKYCSubmitEvents(_data);
         window.hj && window.hj('trigger', 'L0_NPS_Post_KYC');
       }
     });

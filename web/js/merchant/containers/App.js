@@ -250,7 +250,92 @@ export default class App extends Component {
   fetchSupportedCurrencies() {
     return merchantFetch('currency/all/proxy');
   }
-  setLiveTransactionDone = ({ live_transaction_done, id }) => {
+
+  fireMTUFunnelEvents = user => {
+    const isUnregisteredBusiness = user.isUnregisteredBusiness;
+    const eventLabel = `MTU-Funnel${
+      user.isUnregisteredBusiness ? '-Unreg' : ''
+    }`;
+
+    setTrackData({
+      eventCategory: 'Dashboard - Instant Activations Live',
+      eventAction: 'Login',
+      eventLabel,
+    })();
+
+    let fbEvents = ['live_mtu_funnel', 'live_mtu_audience'];
+    const bizTypeTerm = isUnregisteredBusiness ? 'unreg' : 'reg';
+    fbEvents = [
+      ...fbEvents,
+      `live_mtu_funnel_${bizTypeTerm}`,
+      `live_mtu_audience_${bizTypeTerm}`,
+    ];
+
+    if (isUnregisteredBusiness) {
+      fbEvents = [
+        ...fbEvents,
+        'combo1',
+        'combo2',
+        'combo4',
+        'combo5',
+        'combo7',
+      ];
+    } else {
+      fbEvents = [
+        ...fbEvents,
+        'combo1',
+        'combo2',
+        'combo3',
+        'combo4',
+        'combo6',
+      ];
+    }
+
+    fbEvents.forEach(evt => {
+      fireAnalyticsEvents({
+        fbData: evt,
+      });
+    });
+    fireAnalyticsEvents({
+      liData: 1668428,
+    });
+  };
+
+  fireMTUAudienceEvents = user => {
+    const isUnregisteredBusiness = user.isUnregisteredBusiness;
+    const eventLabel = `MTU-Audience${
+      user.isUnregisteredBusiness ? '-Unreg' : ''
+    }`;
+
+    setTrackData({
+      eventCategory: 'Dashboard - Instant Activations Live',
+      eventAction: 'Login',
+      eventLabel,
+    })();
+
+    let fbEvents = ['live_mtu_audience'];
+    const bizTypeTerm = isUnregisteredBusiness ? 'unreg' : 'reg';
+    fbEvents = [
+      ...fbEvents,
+      `live_mtu_audience`,
+      `live_mtu_audience_${bizTypeTerm}`,
+    ];
+
+    fbEvents.forEach(evt => {
+      fireAnalyticsEvents({
+        fbData: evt,
+      });
+    });
+    fireAnalyticsEvents({
+      liData: 1668436,
+      quoraData: 'Purchase',
+      redditData: 'Purchase',
+    });
+  };
+
+  setLiveTransactionDone = user => {
+    let { live_transaction_done, id } = user;
+
     if (!isPresent(live_transaction_done)) {
       return;
     }
@@ -261,31 +346,13 @@ export default class App extends Component {
         updateMerchantLiveTransactionFlag(id)
           .then(resp => {
             if (resp.success) {
-              setTrackData({
-                eventCategory: 'Dashboard - Instant Activations Live',
-                eventAction: 'Login',
-                eventLabel: 'MTU-Funnel',
-              })();
-              fireAnalyticsEvents({
-                fbData: 'live_mtu_funnel',
-                liData: 1668428,
-              });
+              this.fireMTUFunnelEvents(user);
             }
           })
           .catch(err => {});
         break;
       case 2:
-        setTrackData({
-          eventCategory: 'Dashboard - Instant Activations Live',
-          eventAction: 'Login',
-          eventLabel: 'MTU-Audience',
-        })();
-        fireAnalyticsEvents({
-          fbData: 'live_mtu_audience',
-          liData: 1668436,
-          quoraData: 'Purchase',
-          redditData: 'Purchase',
-        });
+        this.fireMTUAudienceEvents(user);
         break;
     }
   };

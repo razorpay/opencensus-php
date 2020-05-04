@@ -99,18 +99,24 @@ export const trackSave = data => {
 
 /* Track 'Submit' btn in footer of activation form */
 export const trackSubmit = data => {
-  let eventLabel = _pipeLabelWithError(
-    mainFormTabs[data.tabId],
-    data.type,
-    data.error
-  );
+  let eventLabel = '';
+
+  if (data.error) {
+    eventLabel = _pipeLabelWithError(
+      mainFormTabs[data.tabId],
+      data.type,
+      data.error
+    );
+  } else {
+    const _activationFlow = data.isUnregisteredBusiness
+      ? 'unregistered'
+      : data.activationFlow;
+    eventLabel = `Instant Activation | ${_activationFlow}`;
+  }
 
   track({
     eventAction: _pipeActionWithType('Click - Submit', data.type), // type = Success / Error
-    eventLabel: data.activationFlow
-      ? ((eventLabel && eventLabel + ' | ') || '') +
-        `Instant Activation | ${data.activationFlow}`
-      : eventLabel,
+    eventLabel,
   });
 };
 
@@ -146,11 +152,14 @@ const trackIA = setTrackData({
   eventCategory: 'Dashboard - Instant Activations Activate Account',
 });
 
-export const trackL1FormSuccess = activationFlow => {
-  // activationFlow is blackist, whitelist and graylist
+export const trackL1FormSuccess = user => {
+  const eventLabel = user.isUnregisteredBusiness
+    ? 'unregistered'
+    : user.activation_flow; // activation_flow = one of [whitelist,greylist,blacklist]
+
   trackIA({
     eventAction: 'Click - Activate Account (Success)',
-    eventLabel: activationFlow,
+    eventLabel,
   });
 };
 

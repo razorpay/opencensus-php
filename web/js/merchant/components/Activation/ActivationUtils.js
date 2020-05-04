@@ -1,12 +1,8 @@
 import {
-  trackL1FormSuccess,
-  trackL1FormError,
-} from 'merchant/containers/Activation/ga_new';
-import {
-  trackhubsContactUpdate,
-  fireAnalyticsEvents,
-} from 'common/utils/googleAnalytics';
-import BingDataObj from 'common/utils/bingDataObj';
+  fireL1FormSuccessEvents,
+  fireL1FormErrorEvents,
+} from 'merchant/containers/Activation/ActivationFormMarketingEvents';
+import { fireAnalyticsEvents } from 'common/utils/googleAnalytics';
 import { addPrefixToObjectKeys, isPresent } from 'common/utils/rzp-utils';
 
 import { BUSINESS_TYPE_OPTIONS } from './AccountActivationFormMap';
@@ -17,36 +13,14 @@ import {
   BIZ_CAT_SUB_CAT_OPTIONAL_ADDITIONAL_DOCS,
 } from './Constants';
 
-function fireL1FormSuccessEvents(activation_flow) {
-  let data = new BingDataObj('activationform', 'complete', 'success', 1);
-  updateHubSpotContactsProperties(
-    {
-      ...data,
-      activation_flow: activation_flow,
-      completed: true,
-    },
-    {},
-    'l1_'
-  );
-  fireAnalyticsEvents({
-    bingData: data,
-    liData: 987404,
-    twiData: 'o1ua0',
-    fbData: 'activation_complete_success',
-    quoraData: 'AddToWishlist',
-    redditData: 'AddToWishlist',
-  });
-  trackL1FormSuccess(activation_flow);
-}
-
 function handleInstantActivationSuccess(props) {
   props.tracking.trackEvent(window.rzpQ.onbr().initiated('act.submit_form'));
 
-  if (props.business_type == 11) {
-    const { poi_verification_status } = props;
+  if (props.user.business_type == 11) {
+    const { poi_verification_status } = props.user;
     if (poi_verification_status == 'verified') {
       props.showPANStatusModal();
-      fireL1FormSuccessEvents(props.activation_flow);
+      fireL1FormSuccessEvents(props.user);
     }
   } else {
     const {
@@ -54,53 +28,19 @@ function handleInstantActivationSuccess(props) {
       isBlacklistFlow,
       isGraylistFlow,
       isL1Submitted,
-    } = props.instantActivation;
+    } = props.user.instantActivation;
     if (isWhitelistFlow && isL1Submitted) {
       props.showInstantActivationSuccessModal();
-      fireL1FormSuccessEvents(props.activation_flow);
+      fireL1FormSuccessEvents(props.user);
     } else if (isGraylistFlow && isL1Submitted) {
       props.showKYCDetailsModal();
-      fireL1FormSuccessEvents(props.activation_flow);
+      fireL1FormSuccessEvents(props.user);
     }
   }
 }
 
 function L1FormError() {
-  trackL1FormError();
-
-  let dataError = new BingDataObj('activationform', 'complete', 'error', 1);
-  fireAnalyticsEvents({
-    fbData: 'activation_complete_error',
-    bingData: dataError,
-    liData: 987412,
-    twiData: 'o1ua2',
-  });
-}
-
-function updateHubSpotContactsProperties(data, extra, prefix) {
-  const keyPrefix = prefix ? 'l2_' : prefix;
-  const hbsData = addPrefixToObjectKeys(keyPrefix, data);
-
-  const trackData = {
-    ...hbsData,
-    ...extra,
-  };
-
-  if (data.business_type) {
-    trackData.l2_business_type = (
-      BUSINESS_TYPE_OPTIONS.find(e => e.name == data.business_type) || {}
-    ).label;
-  }
-
-  if (data.promoter_pan) {
-    trackData.l2_promoter_pan = !!trackData.l2_promoter_pan;
-  }
-
-  if (data.gstin) {
-    trackData.l2_gstin = !!trackData.l2_gstin;
-  }
-
-  trackhubsContactUpdate(trackData);
+  fireL1FormErrorEvents();
 }
 
 const NOT_REGISTERED = 11; // 'Unregistered Businesses
@@ -383,7 +323,6 @@ function hasAPIL1Error({
 export {
   handleInstantActivationSuccess,
   L1FormError,
-  updateHubSpotContactsProperties,
   differentAddress,
   isUnregisteredBusiness,
   excludeFor_Indiv,

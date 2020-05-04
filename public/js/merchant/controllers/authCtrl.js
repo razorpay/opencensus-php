@@ -581,24 +581,7 @@ app
           if (data.success) {
             trackDrip('signup_flow_completed');
             pushToDrip();
-            window.ga &&
-              window.ga('send', 'event', 'Signup - Steps', 'Click - Finish');
-
-            window.rzpAnalytics({
-              name: 'facebook',
-              event: 'signup_complete',
-            });
-
-            window.rzpAnalytics({
-              name: 'quora',
-              event: 'CompleteRegistration',
-            });
-
-            window.rzpAnalytics({
-              name: 'reddit',
-              event: 'SignUp',
-            });
-
+            sendSignUpCompleteEvents();
             updateHubSpotContactProperty();
 
             // if verification is already done, go to dashboard (call /user again to check)
@@ -1979,6 +1962,47 @@ app
       $scope.$watch('signup.merchantData.business_type', function() {
         trackCompanyAB(false);
       });
+
+      function isUnregisteredBusiness(bizType) {
+        return bizType === 11;
+      }
+
+      function sendSignUpCompleteEvents() {
+        var businessType = Number($scope.signup.merchantData.business_type);
+
+        var ec = 'Signup - Steps';
+        var ea = 'Click - Finish';
+        var el = isUnregisteredBusiness(businessType)
+          ? 'Unregistered'
+          : 'Registered';
+
+        var facebookEvents = ['signup_complete'];
+
+        if (isUnregisteredBusiness(businessType)) {
+          facebookEvents.push('signup_complete_unreg');
+        } else {
+          facebookEvents.push('signup_complete_reg');
+        }
+
+        window.ga && window.ga('send', 'event', ec, ea, el);
+
+        facebookEvents.forEach(function(event) {
+          window.rzpAnalytics({
+            name: 'facebook',
+            event: event,
+          });
+        });
+
+        window.rzpAnalytics({
+          name: 'quora',
+          event: 'CompleteRegistration',
+        });
+
+        window.rzpAnalytics({
+          name: 'reddit',
+          event: 'SignUp',
+        });
+      }
 
       // Updating contact properties on hubspot
       function updateHubSpotContactProperty() {

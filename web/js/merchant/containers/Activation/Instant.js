@@ -22,18 +22,20 @@ import { trackDiffInFormFields } from 'merchant/utils/track-utils';
 import { merchantFetch } from 'merchant/utils/ajax';
 import { updateSession } from 'merchant/reducers/session';
 import User from 'merchant/models/User';
-import {
-  trackhubsContactUpdate,
-  fireAnalyticsEvents,
-} from 'common/utils/googleAnalytics';
+import { fireAnalyticsEvents } from 'common/utils/googleAnalytics';
 import {
   showInstantActivationSuccessModal,
   showKYCDetailsModal,
 } from 'merchant/reducers/home';
 
 import formFields, { BUSINESS_TYPE_OPTIONS } from './L1FormMap';
-import { trackL1FormSuccess, trackL1FormError, trackTnCClick } from './ga_new';
-import BingDataObj from 'common/utils/bingDataObj';
+import { trackTnCClick } from './ga_new';
+import {
+  fireFormStartEvents,
+  fireL1FormSuccessEvents,
+  fireL1FormErrorEvents,
+  updateHubSpotContactsProperties,
+} from './ActivationFormMarketingEvents.js';
 
 function defaultFieldProps(f) {
   const self = this;
@@ -245,44 +247,21 @@ export default class ActivationWizard extends React.Component {
 
         this.updateSession(response.data); // Updating % activation_progress (side bar)
 
-        trackL1FormSuccess(this.user.activation_flow);
-        tracking.trackEvent(window.rzpQ.onbr().initiated('act.submit_form'));
-
-        // updating contact propteries of hubspot contact
-        updateHubSpotContactsProperties({
-          ...data,
-          activation_flow: this.user.activation_flow,
-          completed: true,
-        });
-
+        const user = this.user;
         const {
           isWhitelistFlow,
           isBlacklistFlow,
           isGraylistFlow,
-        } = this.user.instantActivation;
+        } = user.instantActivation;
 
         if (isWhitelistFlow) {
           this.props.showInstantActivationSuccessModal();
-          fireAnalyticsEvents({ fbData: 'activation_complete_success' });
         } else if (isGraylistFlow) {
           this.props.showKYCDetailsModal();
         }
 
-        const data = new BingDataObj(
-          'activationform',
-          'complete',
-          'success',
-          1
-        );
-        fireAnalyticsEvents({
-          bingData: data,
-          liData: 987404,
-          twiData: 'o1ua0',
-          quoraData: 'AddToWishlist',
-          redditData: 'AddToWishlist',
-          fbData: 'activation_complete_success',
-        }); //fb = false, bing, linkedin, twitter, quora, reddit events are fired
-
+        fireL1FormSuccessEvents(user);
+        tracking.trackEvent(window.rzpQ.onbr().initiated('act.submit_form'));
         this.props.sendEventsForSubMerchantView(
           window.rzpQ
             .routeActions()
@@ -299,20 +278,7 @@ export default class ActivationWizard extends React.Component {
           });
         }
 
-        trackL1FormError();
-
-        const dataError = new BingDataObj(
-          'activationform',
-          'complete',
-          'error',
-          1
-        );
-        fireAnalyticsEvents({
-          fbData: 'activation_complete_error',
-          bingData: dataError,
-          liData: 987412,
-          twiData: 'o1ua2',
-        });
+        fireL1FormErrorEvents();
 
         if (this.onActivationSuccess) {
           this.onActivationSuccess({ success: false });
@@ -401,16 +367,7 @@ export default class ActivationWizard extends React.Component {
 
   componentDidMount() {
     this.handleUIUpdate();
-
-    fireAnalyticsEvents({
-      fbData: 'activation_start',
-      liData: 987396,
-      twiData: 'o1u9z',
-    });
-
-    updateHubSpotContactsProperties({
-      started: true,
-    });
+    fireFormStartEvents();
   }
 
   componentDidUpdate() {
@@ -606,24 +563,6 @@ function isFieldValid(field, activation, data) {
   }
 
   return true;
-}
-
-function updateHubSpotContactsProperties(data) {
-  const hbsData = addPrefixToObjectKeys('l1_', data);
-
-  delete hbsData.l1_business_model;
-
-  if (data.business_type) {
-    hbsData.l1_business_type = (
-      BUSINESS_TYPE_OPTIONS.find(e => e.name == data.business_type) || {}
-    ).label;
-  }
-
-  if (hbsData.l1_promoter_pan) {
-    hbsData.l1_promoter_pan == !!hbsData.l1_promoter_pan;
-  }
-
-  trackhubsContactUpdate(hbsData);
 }
 
 function renderTnCLink() {
