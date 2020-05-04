@@ -722,6 +722,8 @@ class Selector extends Base\Core
                 $paymentData['vpa'] = $payment->getBankCodeFromVpa();
             }
 
+            $paymentData['application'] = $payment->getApplication();
+
             $paymentData['meta_data'] = $this->getPaymentMetadataArray($payment);
 
             if ((in_array($paymentData['method'], [Method::CARD, Method::UPI, Method::EMI]) === true ) and
