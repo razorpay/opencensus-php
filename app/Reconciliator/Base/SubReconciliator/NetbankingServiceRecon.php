@@ -21,7 +21,7 @@ class NetbankingServiceRecon extends PaymentReconciliate
             return null;
         }
 
-        parent::updateAndFetchGatewayPayment();
+        return parent::updateAndFetchGatewayPayment();
     }
 
     protected function persistReconciliationData($rowDetails, $row)
