@@ -61,7 +61,7 @@ class Service extends Base\Service
 
     public function saveMerchantDetailForPreSignUp(array $input)
     {
-        $response = $this->saveMerchantDetails($input);
+        $response = $this->saveMerchantDetails($input, $this->merchant);
 
         $this->app->hubspot->trackPreSignupEvent($input, $this->merchant);
 
@@ -103,16 +103,18 @@ class Service extends Base\Service
 
     public function saveMerchantDetailsForActivation(array $input)
     {
-        $response = $this->saveMerchantDetails($input);
+        $merchant = $this->repo->merchant->findOrFailPublic($this->merchant->getMerchantId());
+
+        $response = $this->saveMerchantDetails($input, $merchant);
 
         $this->app->hubspot->trackL2ContactProperties($input, $this->merchant);
 
-        $this->app['diag']->trackOnboardingEvent(EventCode::KYC_SAVE_MODIFICATIONS_SUCCESS, $this->merchant, null,$input);
+        $this->app['diag']->trackOnboardingEvent(EventCode::KYC_SAVE_MODIFICATIONS_SUCCESS, $this->merchant, null, $input);
 
         return $response;
     }
 
-    public function saveMerchantDetails(array $input)
+    public function saveMerchantDetails(array $input, Merchant\Entity $merchant)
     {
         //
         // When a linked account is created, mainly, 2 functions are executed -
@@ -141,7 +143,7 @@ class Service extends Base\Service
 
         $originProduct = $this->auth->getRequestOriginProduct();
 
-        return $this->core()->saveMerchantDetails($input, $this->merchant, $originProduct);
+        return $this->core()->saveMerchantDetails($input, $merchant, $originProduct);
     }
 
     public function saveInstantActivationDetails(array $input): array
@@ -150,7 +152,9 @@ class Service extends Base\Service
 
         $this->core()->setModeAndDefaultConnection($liveMode);
 
-        return $this->core()->saveInstantActivationDetails($input, $this->merchant);
+        $merchant = $this->repo->merchant->findOrFailPublic($this->merchant->getMerchantId());
+
+        return $this->core()->saveInstantActivationDetails($input, $merchant);
     }
 
     /**
