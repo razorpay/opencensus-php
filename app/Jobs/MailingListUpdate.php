@@ -14,10 +14,9 @@ class MailingListUpdate extends Job
 
     /**
      * @var
-     * $suspended = 1 the merchant is the suspended merchant and should not get the holiday notification mail
-     * $suspended = 0 the merchant is the activated merchant and should get the holiday notification mail.
+     * $addOrRemoveFromList = 1 the merchant needs to be added to the list.
+     * $addOrRemoveFromList = 0 the merchant needs to be removed from the list.
      */
-    protected $suspended;
 
     /**
      * @var string
@@ -30,17 +29,33 @@ class MailingListUpdate extends Job
     protected $chunks;
 
     /**
+     * @var boolean
+     */
+    protected $addOrRemoveFromList = true;
+
+    /**
+     * @var boolean
+     */
+    protected $list = 'live';
+
+    // time (in seconds) after which the job is killed.
+    public $timeout = 300;
+
+    /**
      * @param string|void $mode
      * @param array $chunks
-     * @param true $suspended
+     * @param true $addOrRemoveFromList
+     * @param string $list
      */
-    public function __construct(string $mode , array $chunks, $suspended = false)
+    public function __construct(string $mode , array $chunks, $addOrRemoveFromList = true, string $list = 'live')
     {
         parent::__construct($mode);
 
-        $this->suspended = $suspended;
+        $this->addOrRemoveFromList = $addOrRemoveFromList;
 
         $this->chunks    = $chunks;
+
+        $this->list      = $list;
     }
 
     /**
@@ -52,13 +67,13 @@ class MailingListUpdate extends Job
         {
             parent::handle();
 
-            if($this->suspended === true)
+            if($this->addOrRemoveFromList === false)
             {
-                (new Mailgun)->deleteMemberFromMailingList($this->chunks[0]);
+                (new Mailgun)->deleteMemberFromMailingList($this->chunks[0], $this->list);
             }
             else
             {
-                (new Mailgun)->addMemberToMailingList($this->chunks);
+                (new Mailgun)->addMemberToMailingList($this->chunks, $this->list);
             }
         }
         catch (\Throwable $e)
@@ -74,7 +89,7 @@ class MailingListUpdate extends Job
                 TraceCode::MERCHANT_MAIL_UPDATE_FAIL,
                 [
                     'merchant'      => $this->chunks,
-                    'suspended'     => $this->suspended,
+                    'add_to_list'   => $this->addOrRemoveFromList,
                 ]);
         }
     }

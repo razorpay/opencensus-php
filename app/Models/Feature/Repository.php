@@ -100,6 +100,17 @@ class Repository extends Base\Repository
         return $merchantIds;
     }
 
+    public function getMerchantIdsHavingFeature(string $featureName, array $merchantIds)
+    {
+        return $this->newQuery()
+                    ->select(Entity::ENTITY_ID)
+                    ->whereIn(Entity::ENTITY_ID, $merchantIds)
+                    ->where(Entity::NAME, $featureName)
+                    ->where(Entity::ENTITY_TYPE, 'merchant')
+                    ->pluck(Entity::ENTITY_ID)
+                    ->toArray();
+    }
+
     public function saveAndSyncIfApplicableOrFail(Entity $feature, array $assignedFeatureNames, bool $shouldSync)
     {
         if ($shouldSync === true)

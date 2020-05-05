@@ -143,10 +143,13 @@ class Mailgun extends Base\Core
      * @param array $merchants
      * the array contains the name and the email id of the merchant to be added to mailing list
      * refer-https://documentation.mailgun.com/en/latest/api-mailinglists.html#mailing-lists
+     *
+     * @param string $list
+     * has the mailgun list name to which the mail has to be sent
      */
-    public function addMemberToMailingList(array $merchants)
+    public function addMemberToMailingList(array $merchants, string $list)
     {
-        $listAddress = $this->getMailgunListAddress(self::LIVE);
+        $listAddress = $this->getMailgunListAddress($list);
 
         $this->trace->info(
             TraceCode::ADDING_MEMBER_TO_MAILING_LIST,
@@ -173,10 +176,13 @@ class Mailgun extends Base\Core
     /**
      * @param string $emailAddress
      * refer-https://documentation.mailgun.com/en/latest/api-mailinglists.html#mailing-lists
+     * 
+     * @param string $list
+     * has the mailgun list name to which the mail has to be sent
      */
-    public function deleteMemberFromMailingList(string $emailAddress)
+    public function deleteMemberFromMailingList(string $emailAddress, string $list)
     {
-        $listAddress = $this->getMailgunListAddress(self::LIVE);
+        $listAddress = $this->getMailgunListAddress($list);
 
         $this->trace->info(
             TraceCode::DELETING_MEMBER_FROM_MAILING_LIST,

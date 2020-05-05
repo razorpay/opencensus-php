@@ -49,7 +49,21 @@ final class Constants
     const RECORDS_PROCESSED                        = 'records_processed';
 
     const REMOVE                                  = 'remove';
+
+    // mailing lists
     const LIVE                                    = 'live';
+
+    const RECENT                                  = 'recent';
+
+    const ALL                                     = 'all';
+
+    const LIVE_SETTLEMENT_ON_DEMAND               = 'live_settlement_on_demand';
+
+    const LIVE_SETTLEMENT_DEFAULT                 = 'live_settlement_default';
+
+    const ALL_SETTLEMENT_ON_DEMAND                = 'all_settlement_on_demand';
+
+    const ALL_SETTLEMENT_DEFAULT                  = 'all_settlement_default';
 
     public static $EntityBatchActionSettingParams = [
         self::BATCH_ACTION,

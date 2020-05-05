@@ -278,10 +278,50 @@ class Repository extends Base\Repository
      * No limits
      * @return [type] [description]
      */
-    public function fetchAllMerchantContacts()
+    public function fetchAllMerchantContacts(array $merchantIds = [])
     {
+        if (empty($merchantIds) === false)
+        {
+            return $this->newQuery()
+                        ->whereIn(Entity::ID, $merchantIds)
+                        ->select(
+                            Entity::NAME,
+                            Entity::EMAIL,
+                            Entity::TRANSACTION_REPORT_EMAIL);
+        }
         return $this->newQuery()
                     ->all(['name', 'email', 'transaction_report_email']);
+    }
+
+    public function fetchMerchantIdsInChunk($skip, $limit)
+    {
+        return $this->newQuery()
+                    ->where(Entity::LIVE, '=', 1)
+                    ->whereNull(Entity::SUSPENDED_AT)
+                    ->skip($skip)
+                    ->take($limit)
+                    ->pluck(Entity::ID)
+                    ->toArray();
+    }
+
+    public function getLiveMerchantCount()
+    {
+        return $this->newQuery()
+                    ->where(Entity::LIVE, '=', 1)
+                    ->whereNull(Entity::SUSPENDED_AT)
+                    ->count();
+    }
+
+    public function fetchLiveMerchantContacts(array $merchantIds)
+    {
+        return $this->newQuery()
+                    ->whereIn(Entity::ID, $merchantIds)
+                    ->where(Entity::LIVE, '=', 1)
+                    ->whereNull(Entity::SUSPENDED_AT)
+                    ->select(
+                        Entity::NAME,
+                        Entity::EMAIL,
+                        Entity::TRANSACTION_REPORT_EMAIL);
     }
 
     public function fetchMerchantWhereTestBankIsNull()
@@ -943,7 +983,7 @@ class Repository extends Base\Repository
             $merchants->skip($input['skip']);
         }
 
-        $merchants = $merchants->select(['email', 'transaction_report_email'])
+        $merchants = $merchants->select(['id', 'email', 'transaction_report_email'])
                                ->get();
         return $merchants;
     }

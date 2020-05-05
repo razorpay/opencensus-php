@@ -12,12 +12,14 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
+use RZP\Jobs\MailingListUpdate;
 use RZP\Exception\LogicException;
 use RZP\Models\Settings\Accessor;
 use RZP\Models\Base\PublicEntity;
 use RZP\Mail\Merchant\FeatureEnabled;
 use RZP\Mail\Merchant\EsEligible;
 use RZP\Models\Merchant\SlackActions;
+use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\Merchant\Notify as NotifyTrait;
 use RZP\Models\Merchant\Request as MerchantRequest;
 use RZP\Models\Merchant\Detail\Entity as MerchantDetail;
@@ -97,6 +99,11 @@ class Core extends Base\Core
 
         $this->notifyFeatureUpdateOnSlack($feature);
 
+        if(($feature->getName() === Feature::ES_ON_DEMAND) && ($feature->getEntityType() === Constants::MERCHANT))
+        {
+            (new Merchant\Service)->addMerchantToOnDemandEnabledMailingList($feature->getEntityId());
+        }
+
         $this->notifyMerchantOfFeatureActivationIfApplicable($entityType, $entityId, $feature, $shouldSync);
 
         return $feature;
@@ -128,6 +135,11 @@ class Core extends Base\Core
              ->handle($original, $dirty);
 
         $this->repo->feature->deleteAndSyncIfApplicableOrFail($feature, $shouldSync);
+
+        if(($feature->getName() === Feature::ES_ON_DEMAND) && ($feature->getEntityType() === Constants::MERCHANT))
+        {
+            (new Merchant\Service)->removeMerchantFromOnDemandEnabledMailingList($feature->getEntityId());
+        }
 
         $this->notifyFeatureUpdateOnSlack($feature, true);
     }

@@ -596,6 +596,10 @@ class Core extends Base\Core
 
         $this->saveAndNotify($merchant);
 
+        $newEmail = $merchant->getEmail();
+
+        $this->editEmailInMailingList($oldEmail, $newEmail, $merchant);
+
         return $merchant;
     }
 
@@ -622,6 +626,13 @@ class Core extends Base\Core
         $this->saveAndNotify($merchant);
 
         return $merchant;
+    }
+
+    public function editEmailInMailingList($oldEmail, $newEmail, $merchant)
+    {
+        $this->removeMerchantEmailToMailingList($merchant, [], [$oldEmail]);
+
+        $this->addMerchantEmailToMailingList($merchant, [], [$newEmail]);
     }
 
     public function createBalance($merchant, $mode)
@@ -3091,15 +3102,18 @@ class Core extends Base\Core
         }
     }
 
-    public function addMerchantEmailToMailingList($merchant)
+    public function addMerchantEmailToMailingList($merchant , $lists = [Constants::LIVE], $emailsToAdd = [], $iterationNumber = 0)
     {
-        $transactionReportEmails = $merchant->getTransactionReportEmail();
-
-        $transactionReportEmails = array_merge($transactionReportEmails, [$merchant->getEmail()]);
-
         $merchantEmailList = [];
 
-        foreach ($transactionReportEmails as $transactionReportEmail)
+        if(empty($emailsToAdd) === true)
+        {
+            $emailsToAdd = $merchant->getTransactionReportEmail();
+
+            $emailsToAdd = array_merge($emailsToAdd, [$merchant->getEmail()]);
+        }
+
+        foreach ($emailsToAdd as $transactionReportEmail)
         {
             if (isset($merchantEmailList[$transactionReportEmail]) === false)
             {
@@ -3110,28 +3124,66 @@ class Core extends Base\Core
             }
         }
 
+        if((in_array(Constants::LIVE_SETTLEMENT_DEFAULT, $lists) === false) && 
+            (in_array(Constants::LIVE_SETTLEMENT_ON_DEMAND, $lists) === false))
+        {
+            if($merchant->isfeatureEnabled(Feature\Constants::ES_ON_DEMAND) === false)
+            {
+                array_push($lists, Constants::LIVE, Constants::LIVE_SETTLEMENT_DEFAULT);
+            }
+            else
+            {
+                array_push($lists, Constants::LIVE, Constants::LIVE_SETTLEMENT_ON_DEMAND);
+            }
+        }
+
         $merchantEmailList = array_values($merchantEmailList);
 
-        MailingListUpdate::dispatch(
-            $this->mode,
-            $merchantEmailList);
-    }
-
-    public function removeMerchantEmailToMailingList($merchant, $i = 0)
-    {
-        $transactionReportEmails = $merchant->getTransactionReportEmail();
-
-        $transactionReportEmails = array_merge($transactionReportEmails, [$merchant->getEmail()]);
-
-        $transactionReportEmails = array_unique($transactionReportEmails);
-
-        foreach ($transactionReportEmails as $transactionReportEmail)
+        foreach ($lists as $list)
         {
             MailingListUpdate::dispatch(
                                     $this->mode,
-                                    [$transactionReportEmail],
-                                    true)
-                            ->delay($i % 901);
+                                    $merchantEmailList,
+                                    true,
+                                    $list)
+                                ->delay($iterationNumber % 901);
+        }
+    }
+
+    public function removeMerchantEmailToMailingList($merchant, $lists = [], $emailsToRemove = [], $iterationNumber = 0)
+    {
+        if(empty($emailsToRemove) === true)
+        {
+            $emailsToRemove = $merchant->getTransactionReportEmail();
+
+            $emailsToRemove = array_merge($emailsToRemove, [$merchant->getEmail()]);
+
+            $emailsToRemove = array_unique($emailsToRemove);
+        }
+
+        if(empty($lists) === true)
+        {
+            if($merchant->isfeatureEnabled(Feature\Constants::ES_ON_DEMAND) === false)
+            {
+                $lists = [Constants::LIVE, Constants::LIVE_SETTLEMENT_DEFAULT];
+            }
+            else
+            {
+                $lists = [Constants::LIVE, Constants::LIVE_SETTLEMENT_ON_DEMAND];
+            }
+        }
+
+        foreach ($emailsToRemove as $transactionReportEmail)
+        {
+            foreach ($lists as $list)
+            {
+                MailingListUpdate::dispatch(
+                                        $this->mode,
+                                        [$transactionReportEmail],
+                                        false,
+                                        $list)
+                                    ->delay($iterationNumber % 901);
+            }
         }
     }
 

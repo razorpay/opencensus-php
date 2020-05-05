@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use cebe\markdown\MarkdownExtra;
 use Config;
 use Mail;
+use RZP\Models\Feature;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Constants\MailTags;
@@ -40,8 +41,6 @@ class Newsletter
 
         $this->template = $template;
 
-        //$this->testListMemberAdd = false;
-
         $this->count = 0;
     }
 
@@ -56,105 +55,6 @@ class Newsletter
     public function setRecipient($recipient)
     {
         $this->lists = $recipient;
-    }
-
-    /**
-     * Returns all the merchants who match a particular filter
-     * @param  string $list valid list name
-     * @return array
-     */
-    protected function getEmailList($list)
-    {
-        $repo = new Merchant\Repository;
-        $merchants = [];
-
-        switch($list)
-        {
-            case 'all':
-                $merchants = $repo->fetchAllMerchantContacts()->toArray();
-                break;
-
-            case 'live':
-                $merchants = $repo->fetchAllLiveMerchants()
-                    ->select(['email', 'name', 'transaction_report_email'])->get();
-                break;
-
-            case 'recent':
-                $merchants = $repo->fetchRecentMerchants()
-                    ->select(['email', 'name','transaction_report_email'])->get();
-                break;
-
-            case 'default':
-                break;
-        }
-
-        $response = [];
-
-        // Need to switch array key from email to address
-        // And convert from collection to plain array
-        foreach ($merchants as $merchant) {
-            // We store every merchant as string
-            // because array_unique only works on strings
-            // This isn't precise but it doesn't matter
-            // because mailgun is set to ignore duplicate entries
-            $this->encodeMerchantDetails($merchant, $response);
-        }
-
-        return $response;
-    }
-
-    protected function encodeMerchantDetails($merchant, & $response)
-    {
-        $response[] = json_encode([
-                'address' => $merchant['email'],
-                'name'    => $merchant['name']
-            ]);
-
-        // Attaching the Transaction Report Emails
-        if (isset($merchant['transaction_report_email']))
-        {
-            foreach ($merchant['transaction_report_email'] as $email)
-            {
-                $response[] = json_encode([
-                        'address' => $email,
-                        'name'    => $merchant['name']
-                    ]);
-            }
-
-        }
-    }
-
-    /**
-     * Given multiple lists in csv format, returns all merchants fulfilling
-     * any of the filters, with duplicates. Returned values are in a sub-array
-     * that is chunked in batch size of 1000
-     * @param  string $lists csv of valid list names
-     * @return array chunked list of merchants
-     */
-    protected function getMerchantListChunks($lists)
-    {
-        if (strpos($lists, ',') !== false)
-        {
-            $lists = explode(',', $lists);
-        }
-        else
-        {
-            $lists = [$lists];
-        }
-
-        $merchants = [];
-
-        foreach ($lists as $list) {
-            $merchants = array_merge($merchants, $this->getEmailList($list));
-        }
-
-        // Make it unique and then run json_decode
-        $merchants = array_map('json_decode', array_unique($merchants));
-
-        $this->count = count($merchants);
-
-        // Chunks of 1000
-        return array_chunk($merchants, 1000);
     }
 
     /**
@@ -193,49 +93,7 @@ class Newsletter
     {
         $listAddress = $this->getMailgunListAddress();
 
-        if ($this->testListMemberAdd === false)
-        {
-            return $listAddress;
-        }
-
-        if($action != self::EMAIL)
-        {
-            $this->addListMembersToMailgun($lists, $listAddress);
-        }
-
         return $listAddress;
-    }
-
-    /**
-     * Adds the members of the given list to the Mailgun List
-     * Address provided.
-     **/
-    protected function addListMembersToMailgun($lists, $listAddress)
-    {
-        $chunks = $this->getMerchantListChunks($lists);
-
-        $this->app['trace']->info(
-            TraceCode::MERCHANT_NEWSLETTER_MAILING_LIST_CREATED,
-            [
-                'pre_upsert_timestamp' => Carbon::now()->getTimestamp(),
-                'merchant_count'       => $this->count,
-            ]);
-
-        foreach ($chunks as $merchants)
-        {
-            // We take this list and push it to mailgun
-
-            $relativeUrl = 'lists/'.$listAddress.'/members.json';
-
-            $this->getMailgunInstance()->post($relativeUrl,[
-                'upsert'     => true,
-                'members'    => json_encode($merchants)
-            ]);
-        }
-
-        $this->app['trace']->info(
-            TraceCode::MERCHANT_NEWSLETTER_MAILING_LIST_CREATED,
-            ['post_upsert_timestamp' => Carbon::now()->getTimestamp()]);
     }
 
     public function setTestEmail($email)
@@ -245,11 +103,6 @@ class Newsletter
         $this->email = $email;
 
         $this->count = 1;
-    }
-
-    public function setTestListMembersAdd()
-    {
-        $this->testListMemberAdd = true;
     }
 
     protected function getMailgunInstance()
@@ -264,14 +117,7 @@ class Newsletter
             // This also sets the count internally
             $this->email = $this->createMailingListAndGetEmails($this->lists, $action);
         }
-
-        if ($this->testListMemberAdd)
-        {
-            return [
-                'email' => $this->lists.' created and timestamps recorded.'
-            ];
-        }
-
+    
         return $this->sendEmail();
     }
 

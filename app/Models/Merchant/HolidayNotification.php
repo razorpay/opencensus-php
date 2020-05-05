@@ -4,8 +4,9 @@ namespace RZP\Models\Merchant;
 
 use Config;
 use Carbon\Carbon;
-use RZP\Constants\Timezone;
 use RZP\Constants\Mode;
+use RZP\Constants\Timezone;
+use RZP\Jobs\CreateMailingList;
 use RZP\Models\Admin\Newsletter;
 use RZP\Models\Settlement\Holidays;
 use RZP\Models\Settlement\SlackNotification;
@@ -20,6 +21,8 @@ class HolidayNotification
 
     // Action to send the email to mailing list
     const EMAIL       = 'email';
+
+    const SUB_LIST    = ['settlement_default', 'settlement_on_demand'];
 
     public function __construct()
     {
@@ -62,60 +65,77 @@ class HolidayNotification
      */
     protected function sendMerchantNotifyHolidayEmail($input)
     {
-        list($msg, $holidays) = $this->getHolidayNotificationMsg($input);
+        list($holidays, $nextWorkingDayString) = $this->getHolidayNotificationMsg($input);
 
-        $mailer = new Newsletter(
-            'Notification of Bank Holiday',
-            $msg,
-            'holiday_notification');
-
-        // Handle based on action
-        switch ($input['action'])
+        if($input['action'] === self::ADD_TO_LIST)
         {
-            // Action to send test email to one email id
-            case self::TEST_EMAIL:
-                // Set the email to which test email is to be sent.
-                $mailer->setTestEmail($input['lists']);
+            CreateMailingList::dispatch($this->mode);
 
-                $msg = $mailer->send();
-                break;
-
-            // Action to add email ids to mailing list
-            case self::ADD_TO_LIST:
-                $mailer->setRecipient($input['lists']);
-
-                // Set the mailer to add the members to mailing list
-                $mailer->setTestListMembersAdd();
-
-                // Set the mailing list name.
-                $mailer->setMailingListName($input['lists']);
-
-                $msg = $mailer->send();
-                break;
-
-            // Action to send the email to mailing list
-            case self::EMAIL:
-                $mailer->setRecipient($input['lists']);
-
-                // Adds logic to send only on specific days
-                list($send, $returnMessage) = $this->isMailToBeSent();
-
-                if ($send === false)
-                {
-                    $msg = ['message' => $returnMessage];
-                }
-                else
-                {
-                    $msg = $this->sendEmail($mailer, $holidays, $input);
-                }
-                break;
-
-            default:
-                $msg = ['message' => 'No Appropriate action has been set. Nothing done.'];
-                break;
+            return ["response" => "CreateMailingList job dispatched"];
         }
+        else
+        {
+            $finalResponse = [];
 
-        return $msg;
+            foreach (self::SUB_LIST as $subList)
+            {
+                switch ($subList)
+                {
+                    case 'settlement_default':
+                        $msg = $this->getMsgForOnDemandNotEnabled($holidays, $nextWorkingDayString);
+                        break;
+                    case 'settlement_on_demand':
+                        $msg = $this->getMsgForOnDemandEnabled($holidays, $nextWorkingDayString);
+                        break;
+                }
+
+                $mailer = new Newsletter(
+                    'Bank holiday : Settlement update',
+                    $msg,
+                    'holiday_notification');
+
+                // Handle based on action
+                switch ($input['action'])
+                {
+                    // Action to send test email to one email id
+                    case self::TEST_EMAIL:
+                        // Set the email to which test email is to be sent.
+                        $mailer->setTestEmail($input['lists'].'_'.$subList);
+
+                        $response = $mailer->send();
+
+                        array_push($finalResponse, [$subList => $response]);
+                        break;
+
+                    // Action to send the email to mailing list
+                    case self::EMAIL:
+                        $mailer->setRecipient($input['lists'].'_'.$subList);
+
+                        // Adds logic to send only on specific days
+                        list($send, $returnMessage) = $this->isMailToBeSent();
+
+                        if ($send === false)
+                        {
+                            $response = ['message' => $returnMessage];
+
+                            array_push($finalResponse, [$subList => $response]);
+                        }
+                        else
+                        {
+                            $response = $this->sendEmail($mailer, $holidays, $input['lists'].'_'.$subList, $input['action']);
+
+                            array_push($finalResponse, [$subList => $response]);
+                        }
+                        break;
+
+                    default:
+                        $response = ['message' => 'No Appropriate action has been set. Nothing done.'];
+
+                        array_push($finalResponse, [$subList => $response]);
+                }
+            }
+        }
+        return $finalResponse;
     }
 
     /**
@@ -179,12 +199,33 @@ class HolidayNotification
             $holidays = $this->getTestHolidayMessage();
         }
 
+        return [$holidays, $nextWorkingDayString];
+    }
+
+    protected function getMsgForOnDemandEnabled($holidays, $nextWorkingDayString)
+    {
+        $settleNowEnabled = 'enabled';
+
         $msg  = \View::make('emails.partials.holiday_notification')
                      ->with('holidays',$holidays)
                      ->with('nextWorkingDayString', $nextWorkingDayString)
+                     ->with('settleNowEnabled', $settleNowEnabled)
                      ->render();
 
-        return [$msg,$holidays];
+        return $msg;
+    }
+
+    protected function getMsgForOnDemandNotEnabled($holidays, $nextWorkingDayString)
+    {
+        $settleNowEnabled = 'not_enabled';
+
+        $msg  = \View::make('emails.partials.holiday_notification')
+                     ->with('holidays',$holidays)
+                     ->with('nextWorkingDayString', $nextWorkingDayString)
+                     ->with('settleNowEnabled', $settleNowEnabled)
+                     ->render();
+
+        return $msg;
     }
 
     protected function getTestHolidayMessage()
@@ -197,14 +238,14 @@ class HolidayNotification
         return [$testHoliday];
     }
 
-    protected function sendEmail($mailer, $holidays, $input)
+    protected function sendEmail($mailer, $holidays, $list, $action)
     {
         // Send a notification to slack
         $this->notifySettlementsChannel($holidays);
 
         // Set the mailing list name.
-        $mailer->setMailingListName($input['lists']);
+        $mailer->setMailingListName($list);
 
-        return $mailer->send($input['action']);
+        return $mailer->send($action);
     }
 }

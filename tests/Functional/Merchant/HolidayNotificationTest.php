@@ -24,13 +24,13 @@ class HolidayNotificationTest extends TestCase
     public function testHolidayNotification()
     {
         \Mail::shouldReceive('send')
-              ->once()
+              ->twice()
               ->with(
                     Mockery::any(),
                     Mockery::on(function ($data)
                         {
                             $testData = array(
-                                'subject' => 'Notification of Bank Holiday');
+                                'subject' => 'Bank holiday : Settlement update');
 
                             $this->assertArraySelectiveEquals($testData, $data);
 
@@ -52,7 +52,9 @@ class HolidayNotificationTest extends TestCase
 
         $content = $this->sendHolidayNotification(Mode::LIVE);
 
-        $this->assertEquals($content['message'],"Next working day is not a bank holiday. Nothing to send.");
+        $this->assertEquals($content[0]['settlement_default']['message'], "Next working day is not a bank holiday. Nothing to send.");
+
+        $this->assertEquals($content[1]['settlement_on_demand']['message'], "Next working day is not a bank holiday. Nothing to send.");
 
         Carbon::setTestNow();
     }
@@ -61,13 +63,13 @@ class HolidayNotificationTest extends TestCase
     public function testHolidayNotificationOnLiveHolidaySend()
     {
         \Mail::shouldReceive('send')
-              ->once()
+              ->twice()
               ->with(
                     Mockery::any(),
                     Mockery::on(function ($data)
                         {
                             $testData = array(
-                                'subject' => 'Notification of Bank Holiday');
+                                'subject' => 'Bank holiday : Settlement update');
 
                             $this->assertArraySelectiveEquals($testData, $data);
 
@@ -84,7 +86,9 @@ class HolidayNotificationTest extends TestCase
 
         $content = $this->sendHolidayNotification(Mode::LIVE);
 
-        $this->assertEquals($content['email'],'live@razorpay.com');
+        $this->assertEquals($content[0]['settlement_default']['email'], 'live_settlement_default@razorpay.com');
+
+        $this->assertEquals($content[1]['settlement_on_demand']['email'], 'live_settlement_on_demand@razorpay.com');
 
         Carbon::setTestNow();
     }

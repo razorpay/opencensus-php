@@ -1865,6 +1865,38 @@ class Service extends Base\Service
         return $finalSchedulePricing->toArrayPublic();
     }
 
+    /**
+     * Add a merchant to OnDemandEnabledMailingList mailing lists and remove from OnDemandNotEnabledMailingList.
+     *
+     * @param string $merchantId
+     */
+    public function addMerchantToOnDemandEnabledMailingList(string $merchantId)
+    {
+        $merchantCore = $this->core();
+
+        $merchant =  $this->repo->merchant->findOrFail($merchantId);
+
+        $merchantCore->addMerchantEmailToMailingList($merchant, [Constants::LIVE_SETTLEMENT_ON_DEMAND]);
+
+        $merchantCore->removeMerchantEmailToMailingList($merchant, [Constants::LIVE_SETTLEMENT_DEFAULT]);
+    }
+
+    /**
+     * Remove a merchant from OnDemandEnabledMailingList mailing lists and add to OnDemandNotEnabledMailingList.
+     *
+     * @param string $merchantId
+     */
+    public function removeMerchantFromOnDemandEnabledMailingList(string $merchantId)
+    {
+        $merchantCore = $this->core();
+
+        $merchant =  $this->repo->merchant->findOrFail($merchantId);
+
+        $merchantCore->removeMerchantEmailToMailingList($merchant, [Constants::LIVE_SETTLEMENT_ON_DEMAND]);
+
+        $merchantCore->addMerchantEmailToMailingList($merchant, [Constants::LIVE_SETTLEMENT_DEFAULT]);
+    }
+
     public function getOnDemandEarlySettlementPricingForMerchant()
     {
         // This is a wrapper over getPricingPlans to fetch payout pricing for given
@@ -3944,7 +3976,7 @@ class Service extends Base\Service
 
         foreach ($merchants as $merchant)
         {
-            $this->core()->removeMerchantEmailToMailingList($merchant, $i);
+            $this->core()->removeMerchantEmailToMailingList($merchant, [], [], $i);
 
             $i++;
         }
