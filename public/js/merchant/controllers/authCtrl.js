@@ -678,16 +678,27 @@ app
         }
 
         if (!window.ga || !$scope.signup.merchantData.business_type) return;
-        var regOrUnreg =
-            $scope.signup.merchantData.business_type == 11
-              ? 'Unregistered'
-              : 'Registered',
-          gaLabel = isSignupCompleted
-            ? 'Signup Successful'
-            : 'Last screen displayed';
-        gaAction = `${regOrUnreg} and ${
-          $scope.showCompanyName ? '' : 'NOT '
-        }asked for company name`;
+
+        var regOrUnreg = '',
+          gaLabel = '',
+          gaAction = '',
+          companyNameAsked = '';
+        if ($scope.signup.merchantData.business_type == 11) {
+          regOrUnreg = 'Unregistered';
+        } else {
+          regOrUnreg = 'Registered';
+        }
+        if (isSignupCompleted) {
+          gaLabel = 'Signup Successful';
+        } else {
+          gaLabel = 'Last screen displayed';
+        }
+        if (!$scope.showCompanyName) {
+          companyNameAsked = 'NOT ';
+        }
+        gaAction =
+          regOrUnreg + ' and ' + companyNameAsked + 'asked for company name';
+
         window.ga &&
           window.ga('send', 'event', 'Company AB', gaAction, gaLabel);
       }
@@ -713,7 +724,11 @@ app
         }
         var hideCompanyAB = experiments['hide_company_name'];
         if (hideCompanyAB && hideCompanyAB.result) {
-          $scope.showCompanyName = hideCompanyAB.result === 'on' ? false : true;
+          if (hideCompanyAB.result === 'on') {
+            $scope.showCompanyName = false;
+          } else {
+            $scope.showCompanyName = true;
+          }
         }
       };
 
