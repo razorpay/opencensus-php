@@ -5,7 +5,6 @@ import * as ConfigActions from 'merchant/reducers/config';
 import * as NotificationActions from 'merchant_common/reducers/notifications';
 import FlashCheckout from './FlashCheckout';
 import DefaultRefundSpeed from './DefaultRefundSpeed';
-import Internationalization from './Internationalization';
 import CheckoutTheme from './CheckoutTheme';
 import EmailNotifications from './EmailNotifications';
 import InternationalConfig from './InternationalConfig';
@@ -104,9 +103,7 @@ export default class CongfigurationContainer extends Component {
               <PaypalOnboarding />
             ) : null}
             <DefaultRefundSpeed />
-            {/* Hiding old International Flow. TODO: Remove permanently */}
             {/* temporarily hide internationalization for test mode due to inconsistency in db */}
-            {/* {this.props.mode === 'live' && <Internationalization />} */}
             {this.props.mode === 'live' && <InternationalConfig />}
             <EmailNotifications form="configForm" onSave={this.saveConfig} />
           </div>
