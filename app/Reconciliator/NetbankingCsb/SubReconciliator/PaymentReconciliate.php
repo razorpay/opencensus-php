@@ -8,7 +8,7 @@ use RZP\Gateway\Base\Action;
 use RZP\Gateway\Netbanking\Csb\Status;
 use RZP\Models\Payment\Status as PaymentStatus;
 
-class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
+class PaymentReconciliate extends Base\SubReconciliator\NetbankingServiceRecon
 {
     const PAYMENT_ID      = 'payment_id';
     const BANK_REF_NO     = 'bank_payment_id';

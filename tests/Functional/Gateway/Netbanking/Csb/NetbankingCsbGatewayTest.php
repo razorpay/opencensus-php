@@ -214,7 +214,13 @@ class NetbankingCsbGatewayTest extends TestCase
     {
         Mail::fake();
 
-        $this->createRefundForFileGeneration();
+        $refunds = $this->createRefundForFileGeneration();
+
+        $this->setFetchFileBasedRefundsFromScroogeMockResponse($refunds);
+
+        $this->assertEquals(1, $refunds[0]['is_scrooge']);
+        $this->assertEquals(1, $refunds[1]['is_scrooge']);
+        $this->assertEquals(1, $refunds[2]['is_scrooge']);
 
         // gateway file generation route is an internal auth
         $this->ba->appAuth();
@@ -294,6 +300,8 @@ class NetbankingCsbGatewayTest extends TestCase
 
                 $this->fixtures->edit('refund', $refund['id'], ['created_at' => $createdAt]);
                 $this->fixtures->edit('payment', $payment['id'], ['authorized_at' => $createdAt]);
+
+                return $this->getDbLastRefund();
             },
             [50000, 50000, 10000]
         );

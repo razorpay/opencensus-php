@@ -46,6 +46,10 @@ class NbPlusPaymentServiceTest extends TestCase
         'gateway_config',
         'method_data'
     ];
+    /**
+     * @var array
+     */
+    private $terminal;
 
     public function setUp()
     {

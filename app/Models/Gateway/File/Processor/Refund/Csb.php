@@ -9,8 +9,8 @@ use RZP\Models\Terminal;
 use RZP\Models\FileStore;
 use RZP\Models\Bank\IFSC;
 use RZP\Constants\Timezone;
-use RZP\Gateway\Base\Action;
 use RZP\Constants\Mode as RZPMode;
+use RZP\Services\NbPlus\Netbanking;
 use RZP\Constants\Entity as ConstantsEntity;
 use RZP\Models\Payment\Entity as PaymentEntity;
 use RZP\Models\Gateway\File\Processor\FileHandler;
@@ -56,8 +56,14 @@ class Csb extends Base
 
             $paymentId = $row[ConstantsEntity::PAYMENT][PaymentEntity::ID];
 
-            $netbanking = $this->repo->netbanking->findByPaymentIdAndAction($paymentId,
-                Action::AUTHORIZE);
+            if ($row['payment']['cps_route'] === Payment\Entity::NB_PLUS_SERVICE)
+            {
+                $bankRefId = $row['gateway'][Netbanking::BANK_TRANSACTION_ID]; // payment through nbplus service
+            }
+            else
+            {
+                $bankRefId  = $row['gateway'][NetbankingEntity::BANK_PAYMENT_ID]; // payment through api
+            }
 
             $content[] = [
                 'Sr.No'              => $srNo++,
@@ -67,7 +73,7 @@ class Csb extends Base
                 'Txn date'           => $date,
                 'Refund Date'        => $refundDate,
                 'Bank Merchant Code' => $this->getMerchantId($row[ConstantsEntity::TERMINAL]),
-                'Bank Ref No'        => $netbanking[NetbankingEntity::BANK_PAYMENT_ID],
+                'Bank Ref No'        => $bankRefId,
                 'PGI Reference No'   => $paymentId,
                 'Txn Amount(Rs Ps)'  => $row[ConstantsEntity::PAYMENT][PaymentEntity::AMOUNT] / 100,
                 'Refund'             => $row[ConstantsEntity::REFUND][RefundEntity::AMOUNT] / 100,

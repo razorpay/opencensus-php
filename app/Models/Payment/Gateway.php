@@ -691,6 +691,7 @@ class Gateway
         Payment\Gateway::NETBANKING_AXIS,
         Payment\Gateway::NETBANKING_EQUITAS,
         Payment\Gateway::NETBANKING_IBK,
+        Payment\Gateway::NETBANKING_CSB,
         Payment\Gateway::UPI_SBI,
         Payment\Gateway::NETBANKING_HDFC,
         Payment\Gateway::PAYSECURE,
@@ -729,6 +730,7 @@ class Gateway
         Payment\Gateway::UPI_SBI                => 1576578600,
         Payment\Gateway::NETBANKING_HDFC        => 1577097000,
         Payment\Gateway::NETBANKING_KOTAK       => 1578479400,
+        Payment\Gateway::NETBANKING_CSB         => 1588694400,
     ];
 
     public static $channels = [
@@ -2525,6 +2527,7 @@ class Gateway
     {
         $gateways = [
             self::ATOM,
+            self::NETBANKING_CSB,
         ];
 
         return (in_array($gateway, $gateways, true));
