@@ -22,6 +22,8 @@ class Constants
 
     const UTM_CONTENT   = "utm_content";
 
+    const UTM_ADGROUP   = "utm_adgroup";
+
     const TIMESTAMP     = "timestamp";
 
     const ATTRIBUTIONS  = "attributions";
@@ -34,6 +36,7 @@ class Constants
         self::UTM_MEDIUM,
         self::UTM_TERM,
         self::UTM_CONTENT,
+        self::UTM_ADGROUP,
         self::TIMESTAMP,
     ];
 
