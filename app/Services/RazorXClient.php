@@ -61,6 +61,11 @@ class RazorXClient
         'card_payments_gateway_routing_paysecure',
         'card_payments_gateway_routing_card_fss',
         'card_payments_gateway_routing_hitachi_mpi_blade',
+        'card_payments_gateway_routing_axis_migs_mpi_blade',
+        'card_payments_gateway_routing_axis_migs',
+        'card_payments_gateway_routing_mpgs',
+        'card_payments_gateway_routing_first_data',
+        'card_payments_gateway_routing_amex',
     ];
 
     /**
