@@ -70,6 +70,8 @@ class Base
 
     const SOURCE_ACCOUNT = '/source_account';
 
+    const SOURCE_ACCOUNT_MAPPING = '/source_account_mappings';
+
     // Headers
     const ACCEPT        = 'Accept';
     const ADMIN_EMAIL   = 'admin_email';

@@ -20,6 +20,8 @@ class FtsAdminClient extends Base
 
     const CHANNEL_HEALTH_EVENTS = "channel_health_events";
 
+    const SOURCE_ACCOUNT_MAPPINGS = "source_account_mappings";
+
     public function __construct()
     {
         $app = App::getFacadeRoot();
@@ -80,6 +82,14 @@ class FtsAdminClient extends Base
             parent::FTS_ALERT_URI,
             Requests::GET,
             $input)['body'][self::CHANNEL_HEALTH_EVENTS];
+    }
+
+    public function getSourceAccountMappings(array $input)
+    {
+        return $this->createAndSendRequest(
+            parent::SOURCE_ACCOUNT_MAPPING,
+            Requests::GET,
+            $input)['body'][self::SOURCE_ACCOUNT_MAPPINGS];
     }
 
     public function fetch(string $entity, string $id, array $input)

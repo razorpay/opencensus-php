@@ -484,6 +484,26 @@ class AdminFetch
                     Fetch::TYPE  => Fetch::TYPE_STRING,
                 ],
             ],
+            Entity::FTS_SOURCE_ACCOUNT_MAPPING => [
+                'source_account_id' => [
+                    Fetch::LABEL    => 'Source Account Id',
+                    Fetch::TYPE     => Fetch::TYPE_STRING,
+                ],
+                'product' => [
+                    Fetch::LABEL    => 'Product',
+                    Fetch::TYPE     => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES   => FtsConstants::getProducts(),
+                ],
+                'merchant_id'       => [
+                    Fetch::LABEL    => 'Merchant Id',
+                    Fetch::TYPE     => Fetch::TYPE_STRING,
+                ],
+                'mode' => [
+                    Fetch::LABEL    => 'Transfer Mode',
+                    Fetch::TYPE   => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => FundTransfer\Mode::getAll(),
+                ],
+            ],
         ];
     }
 
