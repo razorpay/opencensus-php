@@ -1085,4 +1085,14 @@ class FundTransfer extends Base
             Requests::POST,
             $input);
     }
+
+    public function createSourceAccountMappings(array $input)
+    {
+        $this->setAdminHeader();
+
+        return $this->createAndSendRequest(
+            parent::SOURCE_ACCOUNT_MAPPING,
+            Requests::POST,
+            $input);
+    }
 }
