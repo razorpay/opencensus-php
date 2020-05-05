@@ -59,10 +59,16 @@ class AccountVerification extends Base\Mailable
 
     protected function addMailData()
     {
+        $hostname = $this->org['hostname'];
+        $token = $this->token;
+
+        $confirmationLink = 'https://'.$hostname.'/#/access/confirm/'.$token;
+
         $data = [
-            'token'     => $this->token,
-            'org'       => $this->org,
-            'product'   => $this->product,
+            'token'                 => $this->token,
+            'org'                   => $this->org,
+            'product'               => $this->product,
+            'confirmation_link'     => $confirmationLink,
         ];
 
         $this->with($data);
@@ -72,7 +78,14 @@ class AccountVerification extends Base\Mailable
 
     protected function addHtmlView()
     {
-        $this->view('emails.user.account_verification');
+        if ($this->org['custom_code'] === 'rzp')
+        {
+            $this->view('emails.mjml.merchant.user.email_confirmation_via_link');
+        }
+        else
+        {
+            $this->view('emails.user.account_verification');
+        }
 
         return $this;
     }

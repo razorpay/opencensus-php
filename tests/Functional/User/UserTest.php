@@ -1127,7 +1127,7 @@ class UserTest extends TestCase
 
             $this->assertArrayHasKey('token', $viewData);
 
-            $this->assertEquals('emails.user.account_verification', $mail->view);
+            $this->assertEquals('emails.mjml.merchant.user.email_confirmation_via_link', $mail->view);
 
             return true;
         });
