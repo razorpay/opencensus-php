@@ -235,6 +235,16 @@ function getDefaultAdditionalDoc(activation) {
     '-'
   );
 
+  const allDocs = Object.keys(activation.props.data.documents);
+  const allAdditionalDocs = Object.keys(
+    ADDITIONAL_DOCS_LABEL_VALUE_MAP[defaultAdditionalDocMapKey]
+  );
+  const hasUploadedAdditionalDocs = allAdditionalDocs.filter(doc =>
+    allDocs.includes(doc)
+  );
+
+  if (hasUploadedAdditionalDocs.length > 0) return hasUploadedAdditionalDocs[0];
+
   return DEFAULT_ADDITIONAL_DOC_REG_BIZ[defaultAdditionalDocMapKey];
 }
 
