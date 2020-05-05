@@ -549,6 +549,15 @@ class Service extends Base\Service
         return array_values($oldList);
     }
 
+    public function fetchTerminalById(string $id): array
+    {
+        $terminal = $this->repo->terminal->getByIdNonDeleted($id);
+
+        $data = $terminal->toArrayPublic();
+
+        return $data;
+    }
+
     /**
      * This function is the entrypoint for migrating a terminal to Terminals service.
      * All logic will reside here for create and update

@@ -1560,4 +1560,36 @@ class TerminalTest extends TestCase
 
         return $merchant;
     }
+
+    public function testTerminalFetchByIdAppAuth()
+    {
+        $this->ba->appAuth();
+
+        $terminal   = $this->fixtures->create(
+            'terminal');
+        $id = $terminal->getId();
+
+        $url = '/terminals/'.$id;
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $res = $this->startTest();
+
+        $publicId = "term_" . $id;
+
+        $this->assertEquals($publicId, $res["id"]);
+    }
+
+    public function testTerminalFetchByIdAppAuthBadRequest()
+    {
+        $this->ba->appAuth();
+
+        $id = 'Asdfgh';
+
+        $url = '/terminals/'. $id;
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
 }

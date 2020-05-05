@@ -122,4 +122,11 @@ class TerminalController extends Controller
 
         return $response;
     }
+
+    public function fetchTerminalById(string $id)
+    {
+        $data = $this->service()->fetchTerminalById($id);
+
+        return ApiResponse::json($data);
+    }
 }

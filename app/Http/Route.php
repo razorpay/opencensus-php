@@ -316,6 +316,7 @@ final class Route
         'terminal_enable'                          => ['put',      'terminals/{id}/enable',                          'TerminalOnboardingController@putTerminalEnable'                    ],
         'terminal_disable'                         => ['put',      'terminals/{id}/disable',                         'TerminalOnboardingController@putTerminalDisable'                   ],
         'terminal_fetch'                           => ['get',      'terminals',                                      'TerminalOnboardingController@fetchTerminals'                       ],
+        'internal_terminal_fetch_by_id'            => ['get',      'terminals/{id}',                                 'TerminalController@fetchTerminalById'                       ],
         'terminal_onboard'                         => ['post',     'terminals',                                      'TerminalOnboardingController@postCreateTerminal'                   ],
         'terminal_onboarding_verification'         => ['post',     'terminals/onboard/verification',                 'TerminalOnboardingController@postOnboardTerminalVerification'      ],
         'terminal_onboarding_creation'             => ['post',     'terminals/onboard/creation',                     'TerminalOnboardingController@postOnboardTerminalCreation'          ],
@@ -2193,6 +2194,7 @@ final class Route
         'merchant_poc_update_with_time',
         'unclaimed_merchant_poc_update',
         'internal_merchant_fetch',
+        'internal_terminal_fetch_by_id',
         'terminal_migrate_cron',
         'terminal_service_sync_delete',
         'virtual_account_batch_migrate_yesbank',
@@ -4387,6 +4389,7 @@ final class Route
             'merchant_create_terminal_internal',
             'pricing_add_plan_rule_bulk',
             'merchant_methods_edit_internal',
+            'internal_terminal_fetch_by_id'
         ],
     ];
 

@@ -148,6 +148,12 @@ class Repository extends Base\Repository
                     ->findOrFailPublic($id);
     }
 
+    public function getByIdNonDeleted($id)
+    {
+        return $this->newQuery()
+                    ->findOrFailPublic($id);
+    }
+
     public function getByMerchantId($mid)
     {
         $query = $this->newQuery()
@@ -506,7 +512,7 @@ class Repository extends Base\Repository
 
         return $this->transaction(function() use ($entity, $count)
         {
-            if (Migrate::shouldMigrateTerminal(true) === true)
+            if (Migrate::shouldMigrateTerminalDelete(true) === true)
             {
                 (new Terminal\Service)->migrateTerminalDelete($entity->getId());
 

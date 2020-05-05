@@ -3083,4 +3083,36 @@ return [
             ]
         ]
     ],
+
+    'testTerminalFetchByIdAppAuth' => [
+        'request'   => [
+            'method'  => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => "terminal",
+                'status' => "activated",
+            ],
+            'status_code'   => 200,
+        ],
+    ],
+
+    'testTerminalFetchByIdAppAuthBadRequest' => [
+        'request'   => [
+            'method'  => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                ]
+            ],
+            'status_code'   => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_ID,
+        ]
+    ],
+
 ];

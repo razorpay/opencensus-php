@@ -29,6 +29,16 @@ trait Migrate
         return self::getRazorxTreatment(self::getMigrateTerminalFeature());
     }
 
+    public static function shouldMigrateTerminalDelete(bool $shouldSync) : bool
+    {
+        if ($shouldSync === false)
+        {
+            return false;
+        }
+
+        return self::getRazorxTreatment(self::getMigrateDeleteTerminalFeature());
+    }
+
     public static function shouldMigrateSubmerchant(): bool
     {
         return self::getRazorxTreatment(self::getMigrateSubmerchantFeature());
@@ -42,6 +52,11 @@ trait Migrate
     protected static function getMigrateTerminalFeature(): string
     {
         return'TerminalsService_MigrateTerminal';
+    }
+
+    protected static function getMigrateDeleteTerminalFeature(): string
+    {
+        return'TerminalsService_MigrateDeleteTerminal';
     }
 
     protected static function getMigrateSubmerchantFeature(): string
