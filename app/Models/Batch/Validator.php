@@ -361,15 +361,6 @@ class Validator extends Base\Validator
         Header::HDFC_NB_TPV                  => 'sometimes|nullable|in:0,1,2',
     ];
 
-    protected static $terminalUpiMindgateRules = [
-        Header::UPI_MINDGATE_MERCHANT_ID          => 'required|string|size:14',
-        Header::UPI_MINDGATE_GATEWAY_MERCHANT_ID  => 'required|string|max:30|alpha_dash_space',
-        Header::UPI_MINDGATE_VPA                  => 'required',
-        Header::UPI_MINDGATE_TERMINAL_PASSWORD    => 'required',
-        Header::UPI_MINDGATE_COLLECT              => 'sometimes|nullable|in:0,1',
-        Header::UPI_MINDGATE_PAY                  => 'sometimes|nullable|in:0,1',
-    ];
-
     protected static $sendMailRules = [
         Entity::BATCH            => 'required|array|custom',
         Entity::BUCKET_TYPE      => 'required|string',
@@ -583,14 +574,6 @@ class Validator extends Base\Validator
         foreach ($entries as $entry)
         {
             $this->validateInput('terminal_netbanking_hdfc', $entry);
-        }
-    }
-
-    public function validateTerminalUpiMindgateEntries($entries, array $params, $merchant)
-    {
-        foreach ($entries as $entry)
-        {
-            $this->validateInput('terminal_upi_mindgate', $entry);
         }
     }
 

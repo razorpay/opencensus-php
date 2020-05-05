@@ -231,7 +231,6 @@ class Type
         Gateway::NETBANKING_AXIS,
         Gateway::HITACHI,
         Gateway::BILLDESK,
-        Gateway::UPI_MINDGATE,
         CardlessEmi::ZESTMONEY,
         CardlessEmi::FLEXMONEY,
         CardlessEmi::EARLYSALARY,
