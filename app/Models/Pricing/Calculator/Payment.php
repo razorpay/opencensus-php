@@ -6,6 +6,7 @@ use RZP\Exception;
 use RZP\Models\Org;
 use RZP\Models\Card;
 use RZP\Models\Pricing;
+use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Pricing\Fee;
 use RZP\Models\Base as BaseModel;
@@ -59,6 +60,14 @@ class Payment extends Base
             if ($variant === 'control')
             {
                 $rules = $this->getRelevantPricingRulesForFeeBearer($rules);
+            }
+            else
+            {
+                $data = [
+                    'merchant_id'  => $merchant->getId(),
+                ];
+
+                $this->app['trace']->info(TraceCode::PRICING_FEE_BEARER_FILTER_REMOVAL_VARIANT, $data);
             }
         }
 
