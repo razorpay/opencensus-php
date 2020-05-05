@@ -680,20 +680,6 @@ class Header
     const AXIS_NB_NON_RECURRING       = 'Non Recurring';
 
     //
-    // Atom bulk terminal creation headers
-    //
-    const ATOM_MERCHANT_ID         = 'Merchant ID';
-    const ATOM_GATEWAY_MERCHANT_ID = 'Gateway Merchant ID';
-    const ATOM_CATEGORY            = 'Terminal Category';
-    const ATOM_TERMINAL_PASSWORD   = 'Gateway Terminal Password';
-    const ATOM_TERMINAL_PASSWORD2  = 'Gateway Terminal Password 2';
-    const ATOM_ACCESS_CODE         = 'Access Code';
-    const ATOM_SECURE_SECRET       = 'Secure Secret';
-    const ATOM_SECURE_SECRET2      = 'Secure Secret 2';
-    const ATOM_NON_RECURRING       = 'Non Recurring';
-    const ATOM_TERMINAL_ID         = 'Terminal ID';
-
-    //
     // Submerchant bulk assign headers
     //
     const TERMINAL_ID      = 'terminal_id';
@@ -2221,30 +2207,6 @@ class Header
                 self::AXIS_NB_CATEGORY,
                 self::AXIS_NB_TPV,
                 self::AXIS_NB_NON_RECURRING,
-                self::STATUS,
-                self::FAILURE_REASON,
-            ],
-        ],
-
-        'terminal_atom' => [
-            self::INPUT => [
-                self::ATOM_MERCHANT_ID,
-                self::ATOM_GATEWAY_MERCHANT_ID,
-                self::ATOM_CATEGORY,
-                self::ATOM_TERMINAL_PASSWORD,
-                self::ATOM_TERMINAL_PASSWORD2,
-                self::ATOM_ACCESS_CODE,
-                self::ATOM_SECURE_SECRET,
-                self::ATOM_SECURE_SECRET2,
-                self::ATOM_NON_RECURRING,
-            ],
-            self::OUTPUT => [
-                self::ATOM_MERCHANT_ID,
-                self::ATOM_GATEWAY_MERCHANT_ID,
-                self::ATOM_CATEGORY,
-                self::ATOM_ACCESS_CODE,
-                self::ATOM_NON_RECURRING,
-                self::ATOM_TERMINAL_ID,
                 self::STATUS,
                 self::FAILURE_REASON,
             ],
