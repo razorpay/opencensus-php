@@ -20,6 +20,8 @@ class Config
 
     const PROXY_SQL_CONFIG      = 'proxy_sql_unix_socket';
 
+    const PROXY_SQL_ENABLE      = 'proxy_sql_enable';
+
     const IS_WORKER_POD         = 'is_worker_pod';
 
     const WORKER_CONFIG         = 'worker';
@@ -34,8 +36,6 @@ class Config
     public function setDatabaseHostsIfApplicable()
     {
         $app = App::getFacadeRoot();
-
-        $env = $app->environment();
 
         $proxySqlSocket = $app['config']->get(self::DATABASE_CONFIG . '.' . self::PROXY_SQL_CONFIG);
 
@@ -52,24 +52,10 @@ class Config
             return;
         }
 
-        // mode is set inside request context, from Throttle Middleware
-        // mode is not present for callbacks and workers.
-        $mode = $app['request.ctx']->getMode() ?: Mode::LIVE;
+        $proxySqlEnable = $app['config']->get(self::DATABASE_CONFIG . '.' . self::PROXY_SQL_ENABLE);
 
-        $currentRoute = $app['request.ctx']->getRoute();
-
-        $allowedRoutes = array_merge(Route::$admin, [self::TEST_ROUTE]);
-
-        if (($env !== 'automation') and
-            (in_array($currentRoute, $allowedRoutes, true) === false))
-        {
-            return;
-        }
-
-        $value = $app['razorx']->getTreatment(UniqueIdEntity::generateUniqueId(), self::PROXY_SQL_FEATURE, $mode);
-
-        // always allow for test route. so that we can test before activating razorX experiment.
-        if (($currentRoute !== self::TEST_ROUTE) and ($value !== self::RAZORX_VALUE))
+        if ((env("INSTANCE_TYPE") !== "canary") or
+            ($proxySqlEnable === false))
         {
             return;
         }

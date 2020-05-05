@@ -276,6 +276,7 @@ return array(
         ],
 
         'proxy_sql_unix_socket' => env('PROXY_SQL_UNIX_SOCKET'),
+        'proxy_sql_enable' => env('PROXY_SQL_ENABLE', false),
     ],
 
     /*
