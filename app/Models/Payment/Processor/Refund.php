@@ -1557,7 +1557,7 @@ trait Refund
         {
             $this->trace->traceException(
                 $ex,
-                Trace::ERROR,
+                Trace::INFO,
                 TraceCode::REFUND_PRICING_FETCH_FAILURE_EXCEPTION,
                 [
                     'payment_id'     => $payment->getId(),
