@@ -145,7 +145,9 @@ class TerminalMigrationTest extends TestCase
     // the below cases are to ensure sanity when creating a terminal via internal auth
     public function testAssignTerminalInternalAuthMigrateVariant()
     {
-        $this->mockTerminalsServiceSendRequest(function($a, $b, $c) {
+
+
+        $this->mockTerminalsServiceSendRequest(function() {
             return $this->getDefaultTerminalServiceResponse();
         });
 
@@ -1600,5 +1602,18 @@ class TerminalMigrationTest extends TestCase
         }, 2);
 
         $this->doAuthPayment();
+    }
+
+    public function testSyncDeletedTerminals()
+    {
+        $this->ba->cronAuth();
+
+        $this->mockTerminalsServiceSendRequest(function() {
+            return $this->getSyncDeleteTerminalTerminalServiceResponse();
+        }, 1);
+
+
+        $this->startTest();
+
     }
 }

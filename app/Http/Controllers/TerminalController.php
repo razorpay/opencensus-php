@@ -105,6 +105,15 @@ class TerminalController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function syncDeletedTerminalsOnTerminalService()
+    {
+        $input = Request::all();
+
+        $response = $this->app['terminals_service']->syncDeletedTerminalsOnTerminalService($input);
+
+        return ApiResponse::json($response);
+    }
+
     public function updateTerminalsBulk()
     {
         $input = Request::all();

@@ -400,4 +400,15 @@ return [
             ],
         ],
     ],
+    'testSyncDeletedTerminals' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/terminals/sync/deleted'
+        ],
+        'response' => [
+            'content' => [
+                "count" => 7
+            ],
+        ],
+    ],
 ];

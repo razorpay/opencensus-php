@@ -51,6 +51,7 @@ class TerminalsService
     const FETCH_MERCHANT_TERMINAL_BY_ID        = 'fetch_merchant_terminal_by_id';
     const FETCH_TERMINALS_FOR_MERCHANT_GATEWAY = 'fetch_terminals_for_merchant_gateway';
     const TERMINAL_ONBOARD_CALLBACK            = 'terminal_onboard_callback';
+    const SYNC_DELETED_TERMINALS               = 'sync_deleted_terminals';
 
     // terminals service error descriptions
     const MERCHANT_HAS_ALREADY_COMPLETED_PAYPAL_ONBOARDING         = 'Merchant has already completed PayPal onboarding';
@@ -110,7 +111,11 @@ class TerminalsService
                 self::TIMEOUT         => 5, // 5 seconds
                 self::CONNECT_TIMEOUT => 5, // 5 seconds
             ],
-        ]
+        ],
+        self::SYNC_DELETED_TERMINALS => [
+            self::PATH   => 'v2/terminal/sync/deleted',
+            self::METHOD => Requests::POST,
+        ],
     ];
 
     public function __construct($app)
@@ -245,6 +250,17 @@ class TerminalsService
         $path = sprintf($params[self::PATH], $gateway);
 
         $response = $this->sendRequest($path, json_encode($input), $params[self::METHOD], $params[self::OPTIONS]);
+
+        return $this->parseAndReturnResponse($response)[self::DATA] ?? [];
+    }
+
+    public function syncDeletedTerminalsOnTerminalService(array $input)
+    {
+        $params = self::PARAMS[self::SYNC_DELETED_TERMINALS];
+
+        $path = $params[self::PATH];
+
+        $response = $this->sendRequest($path, json_encode($input));
 
         return $this->parseAndReturnResponse($response)[self::DATA] ?? [];
     }

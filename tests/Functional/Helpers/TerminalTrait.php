@@ -57,6 +57,20 @@ trait TerminalTrait
         return $response;
     }
 
+    protected function getSyncDeleteTerminalTerminalServiceResponse() : \Requests_Response
+    {
+
+        $data = ["count" => 7];
+
+        $response =  new \Requests_Response;
+
+        $responseData = ['data' => $data];
+
+        $response->body = json_encode($responseData);
+
+        return $response;
+    }
+
     protected function getTerminalToArrayPassword($terminalId)
     {
         Terminal\Entity::verifyIdAndSilentlyStripSign($terminalId);
