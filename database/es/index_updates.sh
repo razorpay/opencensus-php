@@ -144,3 +144,20 @@ curl -XPUT "http://prod.es-audit.razorpay.vpc:9200/api_payment_test/_mapping/api
         }
     }
 }'
+
+#30th April 2020
+curl -XPUT "http://prod.es-audit.razorpay.vpc:9200/api_payment_live/_mapping/api_payment_live" -d '{
+    "properties": {
+        "amount_transferred": {
+            "type": "long"
+        }
+    }
+}'
+
+curl -XPUT "http://prod.es-audit.razorpay.vpc:9200/api_payment_test/_mapping/api_payment_test" -d '{
+    "properties": {
+        "amount_transferred": {
+            "type": "long"
+        }
+    }
+}'

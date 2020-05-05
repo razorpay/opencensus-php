@@ -13,6 +13,7 @@ class EsRepository extends Base\EsRepository
         Entity::NOTES,
         Entity::RECURRING,
         Entity::CREATED_AT,
+        Entity::AMOUNT_TRANSFERRED,
     ];
 
     public function buildQueryForRecurring(array & $query, string $value)
@@ -20,5 +21,16 @@ class EsRepository extends Base\EsRepository
         $queryValue = (($value === '1') or ($value === true)) ? true : false;
 
         $this->addTermFilter($query, Entity::RECURRING, $queryValue);
+    }
+
+    public function buildQueryForTransferred(array & $query, $value)
+    {
+        if ($value !== '1')
+        {
+            return;
+        }
+
+        $filter = [Es::RANGE => [Entity::AMOUNT_TRANSFERRED => [Es::GT => 0]]];
+        $this->addFilter($query, $filter);
     }
 }

@@ -134,6 +134,7 @@ class Fetch extends BaseFetch
 
     const COMMON_FIELDS = [
         Entity::RECURRING,
+        Entity::TRANSFERRED,
     ];
 
     protected function validateCustomerId($attribute, $value)

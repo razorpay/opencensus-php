@@ -264,6 +264,9 @@ return [
             'recurring' => [
                 'type' => 'boolean',
             ],
+            'amount_transferred' => [
+                'type' => 'long',
+            ],
         ],
     ],
 
