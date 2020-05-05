@@ -1610,8 +1610,17 @@ class Service extends Base\Service
                 // get logged by global handler because it's not a critical
                 // exception but in this context it really shouldn't have
                 // occurred.
+                $traceData = $e->getData();
+                // adding extra data, in case the exception does not have enough info
+                $traceData = array_merge([], $traceData ?? [],
+                    [
+                        'meta' => [
+                            'payment_id' => $payment->getId(),
+                            'method'     => $payment->getMethod()
+                        ]
+                    ]);
 
-                $this->trace->traceException($e, Trace::INFO, TraceCode::REFUND_EXCEPTION);
+                $this->trace->traceException($e, Trace::INFO, TraceCode::REFUND_EXCEPTION, $traceData);
 
                 // Just continue
                 $error++;
