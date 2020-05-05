@@ -969,13 +969,44 @@ export default class ActivationWizard extends React.Component {
     }
   };
 
+  isValidL1Field = field_name => {
+    let field;
+    for (let i = 1; i < FORM_TABS_CONTENT.length; i++) {
+      FORM_TABS_CONTENT[i].every(f => {
+        if (Array.isArray(f)) {
+          f.every(_f => {
+            if (_f.name === field_name) {
+              field = _f;
+            }
+            if (field) return false;
+            return true;
+          });
+        } else if (f.name === field_name) {
+          field = f;
+          if (field) return false;
+          return true;
+        }
+      });
+      if (field) {
+        break;
+      }
+    }
+
+    if (field && field._when && !field._when(this)) {
+      return false;
+    }
+    return true;
+  };
+
   get formData() {
     const currentDirty = this.state.dirty;
     const reqData = {};
 
-    L1FormFieldNames.forEach(field =>
-      this.populateReqData(field, reqData, currentDirty)
-    );
+    L1FormFieldNames.forEach(field => {
+      if (this.isValidL1Field(field)) {
+        this.populateReqData(field, reqData, currentDirty);
+      }
+    });
 
     if (!Object.keys(reqData).length) {
       return; // Nothing changed on the currentActive Tab, although the data do exist in dirty
