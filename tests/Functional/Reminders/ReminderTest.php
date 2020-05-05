@@ -2,12 +2,16 @@
 
 namespace RZP\Tests\Functional\Reminders;
 
+use Mail;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use RZP\Tests\Functional\TestCase;
 use RZP\Models\Invoice\Reminder\Status;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
-use RZP\Tests\Functional\TestCase;
+use RZP\Mail\Merchant\NegativeBalanceBreachReminder;
 
 class ReminderTest extends TestCase
 {
+    use DbEntityFetchTrait;
     use RequestResponseFlowTrait;
 
     public function setUp()
@@ -26,7 +30,6 @@ class ReminderTest extends TestCase
     {
         $invoice = $this->createPaymentLink();
         $this->startTest();
-
     }
 
     public function testSendReminderWithoutReminderCountWithChannels()
@@ -39,6 +42,127 @@ class ReminderTest extends TestCase
     {
         $invoice = $this->createPaymentLink();
         $this->startTest();
+    }
+
+    //Test Negative Balance Reminder Callbacks Processing
+    public function testSendNegativeBalanceReminderWithReminderCountAndChannels()
+    {
+        Mail::fake();
+
+        $this->createNegativeBalanceReminder();
+        $this->startTest();
+
+        Mail::assertQueued(NegativeBalanceBreachReminder::class, function ($mail)
+        {
+            $viewData = $mail->viewData;
+
+            $this->assertEquals('test@razorpay.com', $viewData['email']);
+
+            $this->assertEquals('100ghi000ghi00', $viewData['merchant_id']);
+
+            $this->assertEquals('-10 INR' , $viewData['balance']);
+
+            $this->assertEquals('emails.merchant.negative_balance_breach_reminder', $mail->view);
+
+            return true;
+        });
+
+        $nbReminder = $this->getDbEntityById('merchant_reminders', '100mno000mno00');
+        $this->assertEquals(1, $nbReminder->getReminderCount());
+    }
+
+    public function testSendNegativeBalanceReminderBalanceIsPositive()
+    {
+        Mail::fake();
+
+        $this->createNegativeBalanceReminder();
+        $this->fixtures->base->editEntity('balance', '100xy000xy00xy', ['balance' => 1000]);
+
+        $this->startTest();
+
+        Mail::assertNotQueued(NegativeBalanceBreachReminder::class);
+        $nbReminder = $this->getDbEntityById('merchant_reminders', '100mno000mno00');
+        $this->assertEquals('disabled', $nbReminder->getReminderStatus());
+    }
+
+    public function testSendNegativeBalanceReminderReminderCountMax()
+    {
+        Mail::fake();
+
+        $this->createNegativeBalanceReminder();
+
+        $this->startTest();
+
+        Mail::assertNotQueued(NegativeBalanceBreachReminder::class);
+    }
+
+    public function testSendNegativeBalanceReminderDisabled()
+    {
+        Mail::fake();
+
+        $this->createNegativeBalanceReminder();
+        $this->fixtures->base->editEntity('merchant_reminders', '100mno000mno00', ['reminder_status' => 'disabled']);
+
+        $this->startTest();
+
+        Mail::assertNotQueued(NegativeBalanceBreachReminder::class);
+    }
+
+    public function testSendNegativeBalanceReminderCompleted()
+    {
+        Mail::fake();
+
+        $this->createNegativeBalanceReminder();
+        $this->fixtures->base->editEntity('merchant_reminders', '100mno000mno00', ['reminder_status' => 'completed']);
+
+        $this->startTest();
+
+        Mail::assertNotQueued(NegativeBalanceBreachReminder::class);
+    }
+
+    public function testSendNegativeBalanceReminderWithoutReminderCountWithChannels()
+    {
+        Mail::fake();
+
+        $this->createNegativeBalanceReminder();
+        $this->startTest();
+
+        Mail::assertNotQueued(NegativeBalanceBreachReminder::class);
+
+    }
+
+    public function testSendNegativeBalanceReminderWithReminderCountWithoutChannels()
+    {
+        Mail::fake();
+
+        $this->createNegativeBalanceReminder();
+        $this->startTest();
+
+        Mail::assertNotQueued(NegativeBalanceBreachReminder::class);
+
+    }
+
+    protected function createNegativeBalanceReminder()
+    {
+        $this->fixtures->create('merchant', ['id' => '100ghi000ghi00', 'email' => 'test@razorpay.com']);
+
+        $this->fixtures->create('balance',
+            [
+                'id'                            => '100xy000xy00xy',
+                'merchant_id'                   => '100ghi000ghi00',
+                'type'                          => 'primary',
+                'balance'                       => -1000
+            ]
+        );
+
+        $nbReminder = [
+            'id'                  => '100mno000mno00',
+            'merchant_id'        => '100ghi000ghi00',
+            'reminder_status'    => Status::IN_PROGRESS,
+            'reminder_namespace' => 'negative_balance'
+        ];
+
+        $this->fixtures->create('merchant_reminders', $nbReminder);
     }
 
     protected function createPaymentLink()

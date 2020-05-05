@@ -55,6 +55,7 @@ class GenerateEmailTemplates extends Command
             'emails/merchant/negative_balance_threshold_alert',
             'emails/merchant/balance_now_positive_alert',
             'emails/merchant/reserve_balance_activate_alert',
+            'emails/merchant/negative_balance_breach_reminder',
 
             'emails/partials/footer',
             'emails/partials/header',

@@ -2363,6 +2363,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const P2P_MANAGE_REQUEST                                    = 'P2P_MANAGE_REQUEST';
     const P2P_MANAGE_RESPONSE                                   = 'P2P_MANAGE_RESPONSE';
     const P2P_REMINDER_CALLBACK                                 = 'P2P_REMINDER_CALLBACK';
+    const NEGATIVE_BALANCE_REMINDER_CALLBACK                   = 'NEGATIVE_BALANCE_REMINDER_CALLBACK';
+    const MERCHANT_REMINDER_SAVE_FAILURE                        = 'MERCHANT_REMINDER_SAVE_FAILURE';
+
+    const REMINDER_DELETE_FAILURE                               = 'REMINDER_DELETE_FAILURE';
 
     const SUBSCRIPTION_PAYMENT_NOTIFY                           = 'SUBSCRIPTION_PAYMENT_NOTIFY';
 

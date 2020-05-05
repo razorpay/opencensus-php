@@ -57,7 +57,8 @@ class Core extends Base\Core
         if (($balanceType === Balance\Type::RESERVE_BANKING) or
             ($balanceType === Balance\Type::RESERVE_PRIMARY))
         {
-            [$balance, $sendReserveBalanceMail] = (new Balance\Core)->createOrFetchReserveBalance($merchant, $balanceType, $this->mode);
+            [$balance, $sendReserveBalanceMail] = (new Balance\Core)->createOrFetchReserveBalance($merchant,
+                                                                        $balanceType, $this->mode);
 
             if ($balance->getBalance() + $amount > Validator::MAX_RESERVE_BALANCE_AMOUNT)
             {
@@ -121,7 +122,7 @@ class Core extends Base\Core
 
         if ($sendReserveBalanceMail === true)
         {
-            (new Balance\Core)->sendReserveBalanceActivatedMail($merchant, $balance);
+            (new Balance\NegativeReserveBalanceMailers())->sendReserveBalanceActivatedMail($merchant, $balance);
         }
 
         return $adjustment;

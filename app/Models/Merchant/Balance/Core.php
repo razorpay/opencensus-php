@@ -4,7 +4,6 @@ namespace RZP\Models\Merchant\Balance;
 
 use App;
 use Mail;
-use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
@@ -12,16 +11,9 @@ use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Product;
 use RZP\Models\Transaction;
-use RZP\Constants\MailTags;
-use RZP\Constants\Timezone;
 use RZP\Models\Currency\Currency;
-use Razorpay\Trace\Logger as Trace;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\Balance\BalanceConfig;
-use RZP\Mail\Merchant\NegativeBalanceAlert as NegativeBalanceAlertMail;
-use RZP\Mail\Merchant\BalancePositiveAlert as BalancePositiveAlertMail;
-use RZP\Mail\Merchant\ReserveBalanceActivate as ReserveBalanceActivateMail;
-use RZP\Mail\Merchant\NegativeBalanceThresholdAlert as NegativeBalanceThresholdAlertMail;
 
 class Core extends Base\Core
 {
@@ -459,192 +451,6 @@ class Core extends Base\Core
     }
 
     /**
-     * Send Negative Balance Alert Mail, if the balance satisfies
-     * some conditions of Negative Balance Alerts.
-     *
-     * @param Merchant\Entity $merchant
-     * @param int $oldBalance
-     * @param int $newBalance
-     * @param string $balanceType
-     * @param string $balanceSource
-     * @param string $txnType
-     */
-    public function sendNegativeBalanceMailIfApplicable(Merchant\Entity $merchant,
-                                                        int $oldBalance,
-                                                        int $newBalance,
-                                                        string $balanceType,
-                                                        string $balanceSource,
-                                                        string $txnType)
-    {
-        if (($oldBalance < 0) and
-            ($newBalance >= 0))
-        {
-            $this->sendMailBalanceBecamePositive($merchant, $newBalance, $balanceSource);
-        }
-        else
-        {
-            if (($newBalance >= 0) or
-                ($oldBalance < $newBalance))
-            {
-                return;
-            }
-
-            $maxNegativeAllowed = $this->getMaximumNegativeAllowedForBalanceType($merchant, $balanceType, $txnType);
-
-            if ($maxNegativeAllowed === 0)
-            {
-                return;
-            }
-
-            //percentage thresholds below which negative balance threshold breached mail should be sent
-            $negativeThresholdAlerts = [50, 70, 80, 90, 80, 100];
-
-            $oldPercentage = (int) abs(($oldBalance * 100) / $maxNegativeAllowed);
-
-            $newPercentage = (int) abs(($newBalance * 100) / $maxNegativeAllowed);
-
-            $thresholdBreached = false;
-
-            foreach ($negativeThresholdAlerts as $threshold)
-            {
-                if (($newPercentage >= $threshold) and
-                    ($oldPercentage < $threshold))
-                {
-                    $this->sendMailNegativeBalanceThresholdBreached($merchant, $newBalance, $newPercentage,
-                                                                    $maxNegativeAllowed, $balanceSource, $txnType);
-
-                    $thresholdBreached = true;
-
-                    break;
-                }
-            }
-
-            if (($thresholdBreached === false) and
-                ($oldBalance >= 0) and
-                ($newBalance < 0))
-            {
-                $this->sendMailBalanceBecameNegative($merchant, $newBalance, $balanceSource);
-            }
-        }
-    }
-
-    /**
-     * Send Negative Balance Alert Mail, if the balance goes beyond
-     * threshold percentages of Balance Negative Limit.
-     *
-     * @param Merchant\Entity $merchant
-     * @param int $balance
-     * @param int $threshold
-     * @param int $maxNegativeAllowed
-     * @param string $balanceSource
-     * @param string $txnType
-     */
-    private function sendMailNegativeBalanceThresholdBreached(Merchant\Entity $merchant,
-                                                              int $balance,
-                                                              int $threshold,
-                                                              int $maxNegativeAllowed,
-                                                              string $balanceSource,
-                                                              string $txnType)
-    {
-        $data = [
-            'email'                  => $merchant->getEmail(),
-            'merchant_id'           => $merchant->getId(),
-            'merchant_name'         => $merchant->getName(),
-            'timestamp'             => Carbon::now(Timezone::IST)->format('d-m-Y H:i:s'),
-            'percentage'            => $threshold,
-            'max_negative_allowed'  => ($maxNegativeAllowed / 100) . ' INR',
-            'balance_source'        => $balanceSource,
-            'balance'                => ($balance / 100) . 'INR',
-            'headers'                => MailTags::NEGATIVE_BALANCE_THRESHOLD_ALERT,
-        ];
-
-        $this->trace->info(TraceCode::NEGATIVE_BALANCE_THRESHOLD_ALERT, $data);
-
-        $dimensions = (new Metric)->getBalanceNegativeThresholdBreachedDimensions($merchant, $balance, $threshold,
-                                                                                    $txnType);
-
-        $this->trace->count(Metric::BALANCE_NEGATIVE_THRESHOLD, $dimensions);
-
-        $negativeBalanceAlertMail = new NegativeBalanceThresholdAlertMail($data);
-
-        Mail::queue($negativeBalanceAlertMail);
-    }
-
-    /**
-     * Send Negative Balance Alert Mail,
-     * if the balance goes Negative from Positive value.
-     *
-     * @param Merchant\Entity $merchant
-     * @param int $balance
-     * @param string $balanceSource
-     */
-    private function sendMailBalanceBecameNegative(Merchant\Entity $merchant,
-                                                   int $balance,
-                                                   string $balanceSource)
-    {
-        $data = [
-            'email'                  => $merchant->getEmail(),
-            'merchant_id'           => $merchant->getId(),
-            'merchant_name'         => $merchant->getName(),
-            'timestamp'             => Carbon::now(Timezone::IST)->format('d-m-Y H:i:s'),
-            'balance'               => ($balance) / 100 . ' INR',
-            'balance_source'        => $balanceSource,
-            'headers'                => MailTags::BALANCE_NEGATIVE_ALERT,
-        ];
-
-        $negativeBalanceAlertMail = new NegativeBalanceAlertMail($data);
-
-        Mail::queue($negativeBalanceAlertMail);
-    }
-
-    /**
-     * Send Negative Balance Alert Mail, if the balance goes Positive from Negative value.
-     *
-     * @param Merchant\Entity $merchant
-     * @param int $newBalance
-     * @param string $balanceSource
-     */
-    private function sendMailBalanceBecamePositive(Merchant\Entity $merchant,
-                                                   int $newBalance,
-                                                   string $balanceSource)
-    {
-        $data = [
-            'email'                  => $merchant->getEmail(),
-            'merchant_id'           => $merchant->getId(),
-            'merchant_name'         => $merchant->getName(),
-            'balance'               => ($newBalance) / 100 . ' INR',
-            'balance_source'        => $balanceSource,
-            'timestamp'             => Carbon::now(Timezone::IST)->format('d-m-Y H:i:s'),
-            'headers'                => MailTags::BALANCE_POSITIVE_ALERT,
-        ];
-
-        $balancePositiveAlertMail = new BalancePositiveAlertMail($data);
-
-        Mail::queue($balancePositiveAlertMail);
-    }
-
-    /**
-     * Send Reserve Balance Activate Mail, if the Reserve balance is added for the first time.
-     *
-     * @param Merchant\Entity $merchant
-     * @param Entity $balance
-     */
-    public function sendReserveBalanceActivatedMail(Merchant\Entity $merchant, Entity $balance)
-    {
-        $data = [
-            'email'                 => $merchant->getEmail(),
-            'merchant_id'           => $merchant->getId(),
-            'reserve_limit'         => ($balance->getBalance()) / 100 . ' INR',
-            'timestamp'             => Carbon::now(Timezone::IST)->format('d-m-Y H:i:s'),
-            'headers'               => MailTags::RESERVE_BALANCE_ACTIVATED,
-        ];
-
-        $reserveBalanceActivateMail = new ReserveBalanceActivateMail($data);
-
-        Mail::queue($reserveBalanceActivateMail);
-    }
-
-    /**
      * Get the Maximum Negative Limit upto which the balance can go negative
      *
      * @param Transaction\Entity $txn
@@ -767,8 +573,11 @@ class Core extends Base\Core
                 $this->trace->count(Metric::BALANCE_NEGATIVE, $dimensions);
             }
 
-            $this->sendNegativeBalanceMailIfApplicable($merchantBalance->merchant, $oldBalance, $newBalance,
-                $balanceType, $balanceSource, $txnType);
+            $maxNegativeAllowed = $this->getMaximumNegativeAllowedForBalanceType($merchantBalance->merchant,
+                                                                                    $balanceType, $txnType);
+
+            (new NegativeReserveBalanceMailers)->sendNegativeBalanceMailIfApplicable($merchantBalance->merchant,
+                $oldBalance, $newBalance, $maxNegativeAllowed, $balanceSource, $txnType);
         }
     }
 }

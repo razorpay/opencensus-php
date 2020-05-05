@@ -663,6 +663,26 @@ class AdminFetch
                 'balance_id' => Fetch::FIELD_BALANCE_ID,
             ],
 
+            Entity::MERCHANT_REMINDERS => [
+                'merchant_id'        => Fetch::FIELD_MERCHANT_ID,
+                'reminder_namespace' => [
+                    Fetch::LABEL  => 'Reminder Namespace',
+                    Fetch::TYPE   => Fetch::TYPE_STRING
+                ],
+            ],
+
+            Entity::MERCHANT_FRESHDESK_TICKETS => [
+                'merchant_id'        => Fetch::FIELD_MERCHANT_ID,
+                'ticket_id'          => [
+                    Fetch::LABEL     => 'Ticket Id',
+                    Fetch::TYPE      => Fetch::TYPE_STRING
+                ],
+                'type'               => [
+                    Fetch::LABEL     => 'Type',
+                    Fetch::TYPE      => Fetch::TYPE_STRING
+                ],
+            ],
+
             Entity::BANK_ACCOUNT => [
                 'deleted' => [
                     Fetch::LABEL  => 'Deleted',

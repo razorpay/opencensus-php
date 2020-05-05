@@ -1342,6 +1342,9 @@ final class FactoryData
         $factory(\RZP\Models\Invoice\Reminder\Entity::class, [
         ]);
 
+        $factory(\RZP\Models\Merchant\Reminders\Entity::class, [
+        ]);
+
         $factory(\RZP\Models\PayoutLink\Entity::class, [
             'id'                   => $faker->uniqueid,
             'contact_id'           => '1000010contact',

@@ -544,5 +544,14 @@ return [
         ],
     ],
 
+    E::MERCHANT_REMINDERS => [
+        Type::PROXY_AUTH => [
+            [
+                'merchant_id' => str_random(14),
+                'reminder_id' => str_random(14)
+            ],
+        ],
+    ],
+
     E::FEE_RECOVERY => [],
 ];

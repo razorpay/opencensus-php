@@ -4,8 +4,8 @@ namespace RZP\Models\Reminders;
 
 use App;
 use RZP\Error\ErrorCode;
-use RZP\Exception\BadRequestException;
 use RZP\Services\Reminders;
+use RZP\Exception\BadRequestException;
 
 abstract class ReminderProcessor
 {
@@ -24,6 +24,14 @@ abstract class ReminderProcessor
     protected $reminders;
 
     protected $mode;
+
+    const PAYMENT_LINK      = 'payment_link';
+    const NEGATIVE_BALANCE  = 'negative_balance';
+
+    const REMINDERS_API_NAMESPACE_PROCESSORS = [
+        self::PAYMENT_LINK      => 'InvoiceReminderProcessor',
+        self::NEGATIVE_BALANCE  => 'NegativeBalanceReminderProcessor',
+    ];
 
     public function __construct()
     {
@@ -52,5 +60,16 @@ abstract class ReminderProcessor
             [
                 'error_code' => ErrorCode::BAD_REQUEST_REMINDER_NOT_APPLICABLE
             ]);
+    }
+
+    public static function getReminderProcessorName(string $namespace) : string
+    {
+        //if namespace is not provided fallback to Payment_link namespace.
+        if (empty($namespace) === true)
+        {
+            return __NAMESPACE__ . '\\' . self::REMINDERS_API_NAMESPACE_PROCESSORS[self::PAYMENT_LINK];
+        }
+
+        return __NAMESPACE__ . '\\' . self::REMINDERS_API_NAMESPACE_PROCESSORS[$namespace];
     }
 }

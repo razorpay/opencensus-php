@@ -8,7 +8,7 @@ use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use App\Http\AppResponse;
 use RZP\Exception\BadRequestException;
-use RZP\Models\Reminders\InvoiceReminderProcessor;
+use RZP\Models\Reminders\ReminderProcessor;
 
 class RemindersController extends Controller
 {
@@ -80,7 +80,9 @@ class RemindersController extends Controller
 
         $this->app['basicauth']->setModeAndDbConnection($mode);
 
-        $response = (new InvoiceReminderProcessor)->process($entity, $namespace, $id, $input);
+        $processor = ReminderProcessor::getReminderProcessorName($namespace);
+
+        $response = (new $processor)->process($entity, $namespace, $id, $input);
 
         return ApiResponse::json($response);
     }
@@ -141,9 +143,11 @@ class RemindersController extends Controller
         return ApiResponse::json($response, $statusCode);
     }
 
-    public function remindersNextRun(string $entity, string $id)
+    public function remindersNextRun(string $entity, string $id, string $namespace = '')
     {
-        $response = (new InvoiceReminderProcessor)->nextRunAt($entity, $id);
+        $processor = ReminderProcessor::getReminderProcessorName($namespace);
+
+        $response =  (new $processor)->nextRunAt($entity, $id);
 
         return ApiResponse::json($response);
     }

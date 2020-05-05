@@ -11,6 +11,11 @@ class Reminders extends BaseReminders
         return [self::REMINDER_ID => self::TEST_REMINDER_ID];
     }
 
+    public function deleteReminder(string $id, string $merchantId = null): array
+    {
+        return ['success' => true];
+    }
+
     public function getReminderSettings(array $input)
     {
         $response = [

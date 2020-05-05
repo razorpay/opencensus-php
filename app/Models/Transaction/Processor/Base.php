@@ -621,9 +621,13 @@ abstract class Base extends BaseCore
 
         $newCredits = $this->merchantBalance->getRefundCredits();
 
-        (new Balance\Core)->sendNegativeBalanceMailIfApplicable($this->merchantBalance->merchant, $refundCredits, $newCredits,
-                $this->merchantBalance->getType(), 'refund credits', $this->txn->getType());
-
+        (new Balance\NegativeReserveBalanceMailers())->sendNegativeBalanceMailIfApplicable(
+                                                        $this->merchantBalance->merchant,
+                                                        $refundCredits,
+                                                        $newCredits,
+                                                        $negativeLimit,
+                                                        'refund credits',
+                                                        $this->txn->getType());
         //create a credit transaction for the same
         $this->createCreditTransaction($amount, Credits\Type::REFUND);
     }

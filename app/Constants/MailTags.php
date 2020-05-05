@@ -187,6 +187,7 @@ class MailTags
     const BALANCE_NEGATIVE_ALERT                        = 'balance_negative_alert';
     const BALANCE_POSITIVE_ALERT                        = 'balance_positve_alert';
     const RESERVE_BALANCE_ACTIVATED                     = 'reserve_balance_activated';
+    const NEGATIVE_BALANCE_BREACH_REMINDER              = 'negative_balance_breach_reminder';
 
     // User Eamils
     const USER_ACCOUNT_LOCKED                           = 'user_account_locked';

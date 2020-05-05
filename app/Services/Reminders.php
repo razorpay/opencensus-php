@@ -72,10 +72,10 @@ class Reminders
         return $response;
     }
 
-    public function deleteReminder($id): array
+    public function deleteReminder(string $id, string $merchantId = null): array
     {
         $url = self::REMINDERS_URL['delete_reminder'] . '/' . $id;
-        $response = $this->sendRequest($url, 'DELETE', null);
+        $response = $this->sendRequest($url, 'DELETE', null, $merchantId);
         return $response;
     }
 

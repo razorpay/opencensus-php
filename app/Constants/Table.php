@@ -261,6 +261,8 @@ class Table
 
     const INVOICE_REMINDER   = 'invoice_reminders';
 
+    const MERCHANT_REMINDERS   = 'merchant_reminders';
+
     const WORKFLOW_PAYOUT_AMOUNT_RULES = 'workflow_payout_amount_rules';
 
     const OPTIONS              = 'options';

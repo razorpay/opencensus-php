@@ -831,4 +831,67 @@ return [
             ],
         ],
     ],
+
+    'testNegativeBalanceReminderCreation' => [
+        'response' => [
+            'content' => [
+                'status' => 'captured',
+                'amount' => 0
+            ],
+        ],
+    ],
+
+    'testNegativeBalanceReminderCreationFromDisabledReminder' => [
+        'response' => [
+            'content' => [
+                'status' => 'captured',
+                'amount' => 0
+            ],
+        ],
+    ],
+
+    'testNegativeBalanceReminderDeletion' => [
+        'response' => [
+            'content' => [
+                'status' => 'captured',
+                'entity' => 'payment',
+            ],
+        ],
+    ],
+
+    'testNegativeBalanceDisabledReminderDeletion' => [
+        'response' => [
+            'content' => [
+                'status' => 'captured',
+                'entity' => 'payment',
+            ],
+        ],
+    ],
+
+    'testNegativeBalanceReminderCreationFromNullReminderId' => [
+        'response' => [
+            'content' => [
+                'status' => 'captured',
+                'entity' => 'payment',
+            ],
+        ],
+    ],
+
+    'testNegativeBalanceReminderDeletionWithException' => [
+        'response' => [
+            'content' => [
+                'status' => 'captured',
+                'entity' => 'payment',
+            ],
+        ],
+    ],
+
+    'testNegativeBalanceReminderUpdateWithException' => [
+        'response' => [
+            'content' => [
+                'status' => 'captured',
+                'entity' => 'payment',
+            ],
+        ],
+    ],
 ];
