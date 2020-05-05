@@ -71,12 +71,12 @@ class Core extends Base\Core
         }
         catch (\Throwable $e)
         {
-            (new Metric)->pushFailedMetrics($input, $e);
+            (new Metric)->pushCreateFailedMetrics($input, $e);
 
             throw $e;
         }
 
-        (new Metric)->pushCreateMetrics($input);
+        (new Metric)->pushCreateSuccessMetrics($input);
 
         return $virtualAccount;
     }

@@ -4,6 +4,7 @@ namespace RZP\Models\BankTransfer;
 
 use Config;
 
+use RZP\Constants;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Order;
@@ -12,6 +13,7 @@ use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\BankAccount;
+use RZP\Models\VirtualAccount;
 use RZP\Models\Currency\Currency;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Payment\Refund as PaymentRefund;
@@ -81,6 +83,10 @@ class Core extends Base\Core
 
         $mutexKey = sprintf(self::MUTEX_KEY, $input[Entity::REQ_UTR], $input[Entity::PAYEE_ACCOUNT]);
 
+        $bankTransfer = null;
+
+        $paymentSuccess = false;
+
         try
         {
             $bankTransfer = $this->create($input, $provider);
@@ -109,12 +115,27 @@ class Core extends Base\Core
                 400);
 
             $this->mutex->release($oldMutexKey);
+
+            $paymentSuccess = true;
         }
         catch (\Throwable $ex)
         {
             $this->mutex->release($oldMutexKey);
 
+            $paymentSuccess = false;
+
             return $this->alertException($ex, $input);
+        }
+        finally
+        {
+            $isExpected = null;
+
+            if ($bankTransfer !== null)
+            {
+                $isExpected = $bankTransfer->isExpected();
+            }
+
+            (new VirtualAccount\Metric())->pushPaymentMetrics(Constants\Entity::BANK_TRANSFER, $isExpected, $paymentSuccess);
         }
 
         return true;

@@ -3,9 +3,11 @@
 namespace RZP\Models\UpiTransfer;
 
 use Config;
+use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
+use RZP\Models\VirtualAccount;
 use RZP\Exception\LogicException;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Terminal\Entity as Terminal;
@@ -36,6 +38,10 @@ class Core extends Base\Core
 
         $this->convertPayeeVpaToLower($upiTransferInput);
 
+        $upiTransfer = null;
+
+        $paymentSuccess = false;
+
         try
         {
             $terminal = $this->filterTerminal($upiTransferInput, $terminals);
@@ -59,13 +65,29 @@ class Core extends Base\Core
                 $minRetryDelay = 600,
                 $maxRetryDelay = 1200
             );
+
+            $paymentSuccess = true;
+
             return true;
         }
         catch (\Throwable $e)
         {
+            $paymentSuccess = false;
+
             $this->alertException($e, $upiTransferInput);
 
             return false;
+        }
+        finally
+        {
+            $isExpected = null;
+
+            if ($upiTransfer !== null)
+            {
+                $isExpected = $upiTransfer->isExpected();
+            }
+
+            (new VirtualAccount\Metric())->pushPaymentMetrics(Constants\Entity::UPI_TRANSFER, $isExpected, $paymentSuccess);
         }
     }
 

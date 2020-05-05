@@ -7,14 +7,19 @@ use RZP\Models\Base;
 
 class Metric extends Base\Core
 {
-    const VIRTUAL_ACCOUNT_CREATE_FAILED     = 'virtual_account_create_failed';
-    const VIRTUAL_ACCOUNT_CREATE_SUCCESS    = 'virtual_account_create_success';
+    const VIRTUAL_ACCOUNT_CREATE_SUCCESS        = 'virtual_account_create_success';
+    const VIRTUAL_ACCOUNT_CREATE_FAILED         = 'virtual_account_create_failed';
+    const VIRTUAL_ACCOUNT_CLOSE_SUCCESS         = 'virtual_account_close_success';
+    const VIRTUAL_ACCOUNT_CLOSE_FAILED          = 'virtual_account_close_failed';
+    const VIRTUAL_ACCOUNT_PAYMENT               = 'virtual_account_payment';
+    const VIRTUAL_ACCOUNT_REFUND                = 'virtual_account_refund';
 
     const LABEL_TRACE_CODE                  = 'code';
     const LABEL_HAS_BANK_ACCOUNT            = 'has_bank_account';
     const LABEL_HAS_QR_CODE                 = 'has_qr_code';
+    const LABEL_HAS_VPA                     = 'has_vpa';
 
-    protected function getDefaultDimentions(array $input): array
+    protected function getDefaultDimensions(array $input): array
     {
         $receivers = $input[Entity::RECEIVERS];
 
@@ -31,15 +36,16 @@ class Metric extends Base\Core
 
         $dimensions = [
             Metric::LABEL_HAS_BANK_ACCOUNT       => in_array(Receiver::BANK_ACCOUNT, $types),
-            Metric::LABEL_HAS_QR_CODE            => in_array(Receiver::QR_CODE, $types)
+            Metric::LABEL_HAS_QR_CODE            => in_array(Receiver::QR_CODE, $types),
+            Metric::LABEL_HAS_VPA                => in_array(Receiver::VPA, $types),
         ];
 
         return $dimensions;
     }
 
-    public function pushCreateMetrics(array $input)
+    public function pushCreateSuccessMetrics(array $input)
     {
-        $dimensions = $this->getDefaultDimentions($input);
+        $dimensions = $this->getDefaultDimensions($input);
 
         $this->trace->count(
             Metric::VIRTUAL_ACCOUNT_CREATE_SUCCESS,
@@ -47,9 +53,9 @@ class Metric extends Base\Core
         );
     }
 
-    public function pushFailedMetrics(array $input, \Throwable $e)
+    public function pushCreateFailedMetrics(array $input, \Throwable $e)
     {
-        $dimensions = $this->getDefaultDimentions($input);
+        $dimensions = $this->getDefaultDimensions($input);
 
         $this->trace->count(
             Metric::VIRTUAL_ACCOUNT_CREATE_FAILED,
@@ -58,6 +64,54 @@ class Metric extends Base\Core
                 ],
                 $dimensions
             )
+        );
+    }
+
+    public function pushCloseSuccessMetrics(array $input)
+    {
+        $dimensions = $this->getDefaultDimensions($input);
+
+        $this->trace->count(
+            Metric::VIRTUAL_ACCOUNT_CLOSE_SUCCESS,
+            $dimensions
+        );
+    }
+
+    public function pushCloseFailedMetrics(array $input, \Throwable $e)
+    {
+        $dimensions = $this->getDefaultDimensions($input);
+
+        $this->trace->count(
+            Metric::VIRTUAL_ACCOUNT_CLOSE_FAILED,
+            array_merge([
+                Metric::LABEL_TRACE_CODE => $e->getCode(),
+                ],
+                $dimensions
+            )
+        );
+    }
+
+    public function pushPaymentMetrics(string $method, bool $isExpected = null, bool $success = false)
+    {
+        $dimensions = [
+            'method'            => $method,
+            'expected'          => $isExpected,
+            'successful'        => $success,
+        ];
+
+        $this->trace->count(
+            Metric::VIRTUAL_ACCOUNT_PAYMENT,
+            $dimensions
+        );
+    }
+
+    public function pushRefundMetrics(array $input)
+    {
+        $dimensions = $this->getDefaultDimensions($input);
+
+        $this->trace->count(
+            Metric::VIRTUAL_ACCOUNT_REFUND,
+            $dimensions
         );
     }
 }
