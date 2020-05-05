@@ -170,31 +170,39 @@ class Core extends Base\Core
                 //
                 // ES does not store sequential array, so if notes comes as sequential array,
                 // need to convert it to associative array prepending "notes_key_"
+                // If the key is "" then also do this transformation
                 //
                 // Input:
                 // "notes": [
                 //    	"Testing approve workflow"
                 //	]
                 //
-                // Outout:
+                // Output:
                 // "notes": {
                 //    	"notes_key_0": "Testing approve workflow"
                 //	}
                 //
                 $notes = $differ[Differ\Entity::DIFF][Differ\Entity::NEW][Payout\Entity::NOTES] ?? [];
 
-                $keyDiff = array_diff(range(0, count($notes) - 1), array_keys($notes));
+                $notesDict = [];
 
-                if ((empty($notes) === false) and
-                    (count($keyDiff) === 0))
+                $pos = 0;
+
+                foreach ($notes as $key => $val)
                 {
-                    $notesDict = [];
-
-                    for ($pos = 0; $pos < count($notes); $pos++)
+                    if ((empty($key) === true) or
+                        (is_numeric($key) === true))
                     {
-                        $notesDict["notes_key_{$pos}"] = $notes[$pos];
+                        $notesDict["notes_key_" . $pos++] = $val;
                     }
+                    else
+                    {
+                        $notesDict[$key] = $val;
+                    }
+                }
 
+                if (empty($notesDict) === false)
+                {
                     $differ[Differ\Entity::PAYLOAD][Payout\Entity::NOTES] = $notesDict;
 
                     $differ[Differ\Entity::DIFF][Differ\Entity::NEW][Payout\Entity::NOTES] = $notesDict;

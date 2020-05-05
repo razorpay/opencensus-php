@@ -3966,4 +3966,76 @@ return [
             ],
         ],
     ],
+
+    'testWorkflowActionNotesTransformationForNumericAndEmptyKeys' => [
+        'request' => [
+            'method'  => 'GET',
+            'url'     => '/w-actions/%s/diff',
+            'content' => []
+        ],
+        'response' => [
+            'content' => [
+                'old' => [],
+                'new' => [
+                    'merchant_id' => '10000000000000',
+                    'fund_account_id' => '100000000000fa',
+                    'method' => 'fund_transfer',
+                    'attempts' => 1,
+                    'type' => 'default',
+                    'fees' => 0,
+                    'tax' => 0,
+                    'amount' => 10000,
+                    'currency' => 'INR',
+                    'purpose' => 'refund',
+                    'mode' => 'NEFT',
+                    'notes' => [
+                        'notes_key_0' => 'Test',
+                        'notes_key_1' => 'Test1',
+                        'notes_key_2' => 'Test2',
+                        'a' => 'Test2',
+                    ],
+                    'narration' => 'Test Merchant Fund Transfer',
+                    'channel' => 'yesbank',
+                    'purpose_type' => 'refund'
+                ]
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testWorkflowActionNotesTransformationForNonAssociativeArrays' => [
+        'request' => [
+            'method'  => 'GET',
+            'url'     => '/w-actions/%s/diff',
+            'content' => []
+        ],
+        'response' => [
+            'content' => [
+                'old' => [],
+                'new' => [
+                    'merchant_id' => '10000000000000',
+                    'fund_account_id' => '100000000000fa',
+                    'method' => 'fund_transfer',
+                    'attempts' => 1,
+                    'type' => 'default',
+                    'fees' => 0,
+                    'tax' => 0,
+                    'amount' => 10000,
+                    'currency' => 'INR',
+                    'purpose' => 'refund',
+                    'mode' => 'NEFT',
+                    'notes' => [
+                        'notes_key_0' => 'Test',
+                        'notes_key_1' => 'Test1',
+                        'notes_key_2' => 'Test2',
+                        'notes_key_3' => 'Test3',
+                    ],
+                    'narration' => 'Test Merchant Fund Transfer',
+                    'channel' => 'yesbank',
+                    'purpose_type' => 'refund'
+                ]
+            ],
+            'status_code' => 200,
+        ],
+    ],
 ];

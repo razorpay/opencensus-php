@@ -3486,4 +3486,136 @@ class PayoutTest extends TestCase
 
         $this->makeRequestAndGetContent($directAccountPayoutRequest);
     }
+
+        public function testWorkflowActionNotesTransformationForNumericAndEmptyKeys()
+    {
+        $this->liveSetUp();
+
+        $this->createPayoutWorkflowWithBankingUsersLiveMode();
+
+        $this->disableWorkflowMocks();
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number'        => '2224440041626905',
+                'amount'                => 10000,
+                'currency'              => 'INR',
+                'purpose'               => 'refund',
+                'fund_account_id'       => 'fa_100000000000fa',
+                'mode'                  => 'NEFT',
+                'queue_if_low_balance'  => 0,
+                'notes'                 => [
+                    0   => 'Test',
+                    1   => 'Test1',
+                    ''  => 'Test2',
+                    'a' => 'Test2',
+                ],
+            ],
+        ];
+
+        $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
+
+        // create a payout with custom notes
+        $response = $this->sendRequest($request);
+
+        $payout =  json_decode($response->getContent(), true);
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => "/payouts/{$payout['id']}/reject",
+            'content' => [
+                'token'        => 'BUIj3m2Nx2VvVj',
+                'otp'          => '1234',
+                'user_comment' => 'Rejecting',
+            ],
+        ];
+
+        $this->ba->proxyAuth('rzp_live_10000000000000', $this->ownerRoleUser->getId());
+
+        $response = $this->sendRequest($request);
+
+        // reject the payout
+        json_decode($response->getContent(), true);
+
+        $wfAction = \DB::connection('live')->table('workflow_actions')
+                       ->where('entity_id', str_after($payout['id'], 'pout_'))
+                       ->where('entity_name', 'payout')
+                       ->first();
+
+
+        // fetch diff using wf_action
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['url'] = "/w-actions/w_action_{$wfAction->id}/diff";
+
+        $this->ba->adminAuth('live');
+        $this->startTest();
+    }
+
+    public function testWorkflowActionNotesTransformationForNonAssociativeArrays()
+    {
+        $this->liveSetUp();
+
+        $this->createPayoutWorkflowWithBankingUsersLiveMode();
+
+        $this->disableWorkflowMocks();
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number'        => '2224440041626905',
+                'amount'                => 10000,
+                'currency'              => 'INR',
+                'purpose'               => 'refund',
+                'fund_account_id'       => 'fa_100000000000fa',
+                'mode'                  => 'NEFT',
+                'queue_if_low_balance'  => 0,
+                'notes'                 => [
+                    'Test',
+                    'Test1',
+                    'Test2',
+                    'Test3',
+                ],
+            ],
+        ];
+
+        $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
+
+        // create a payout with custom notes
+        $response = $this->sendRequest($request);
+
+        $payout =  json_decode($response->getContent(), true);
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => "/payouts/{$payout['id']}/reject",
+            'content' => [
+                'token'        => 'BUIj3m2Nx2VvVj',
+                'otp'          => '1234',
+                'user_comment' => 'Rejecting',
+            ],
+        ];
+
+        $this->ba->proxyAuth('rzp_live_10000000000000', $this->ownerRoleUser->getId());
+
+        $response = $this->sendRequest($request);
+
+        // reject the payout
+        json_decode($response->getContent(), true);
+
+        $wfAction = \DB::connection('live')->table('workflow_actions')
+            ->where('entity_id', str_after($payout['id'], 'pout_'))
+            ->where('entity_name', 'payout')
+            ->first();
+
+
+        // fetch diff using wf_action
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['url'] = "/w-actions/w_action_{$wfAction->id}/diff";
+
+        $this->ba->adminAuth('live');
+        $this->startTest();
+    }
 }
