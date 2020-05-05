@@ -55,6 +55,11 @@ class Gateway extends Base\Gateway
 
     const PAYSECURE_MID_SWITCH_TIME = 1567612806; // 4 Sept 2019, 4:00 PM
 
+    /*
+    * Maintain a list of blacklisted MCCs (merchant categories) in the code(hard coded),
+    * and skip Hitachi automatic onboarding for merchants belonging to these categories.
+    * Use case is high-risk merchants, who should not be onboarded via Hitachi.
+    */
     const BLACKLISTED_MCC = [
         '5962',
         '5966',

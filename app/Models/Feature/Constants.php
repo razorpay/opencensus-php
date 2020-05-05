@@ -338,6 +338,11 @@ class Constants
     const SKIP_HITACHI_AUTO_ONBOARD  = 'skip_hitachi_auto_onboard';
 
     /*
+     * This flag will be used to override the blacklist for hitachi blacklisted MCCs
+     */
+    const OVERRIDE_HITACHI_BLACKLIST = 'override_hitachi_blacklst'; // not a typo - there is a column length limit
+
+    /*
      * This flag will be used to enable payment created webhook
      */
     const PAYMENT_CREATED_WEBHOOK  = 'payment_created_webhook';
@@ -582,6 +587,7 @@ class Constants
         self::SEND_PAYMENT_CONFIG_ID          => false,
         self::PAYMENT_STATUS_AGGREGATE        => true,
         self::SEND_PAYMENT_LATE_AUTH          => true,
+        self::OVERRIDE_HITACHI_BLACKLIST      => true,
     ];
 
     // Entity type constants

@@ -615,7 +615,8 @@ class TransactionFilter extends Terminal\Filter
         // the gateway rules fails.
         // Violation of the agreement with Hitachi and RBL, which results in getting fined by the bank.
         if (($terminal->getGateway() === Gateway::HITACHI) and
-            (in_array($merchantMcc, HitachiGateway::BLACKLISTED_MCC) === true))
+            ((in_array($merchantMcc, HitachiGateway::BLACKLISTED_MCC) === true) and
+             ($merchant->isFeatureEnabled(Feature\Constants::OVERRIDE_HITACHI_BLACKLIST) === false)))
         {
             return false;
         }

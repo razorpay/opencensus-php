@@ -657,8 +657,10 @@ class Selector extends Base\Core
                 return;
             }
 
-            if (($payment->isMethod(Method::CARD) === true) and ($payment->isBharatQr() === false)
-                and (in_array($merchant->getCategory(), GatewayProcessor::HITACHI_BLACKLISTED_MCC) === false))
+            if (($payment->isMethod(Method::CARD) === true) and
+                ($payment->isBharatQr() === false) and
+                ((in_array($merchant->getCategory(), \RZP\Gateway\Hitachi\Gateway::BLACKLISTED_MCC) === false) or
+                 ($merchant->isFeatureEnabled(Feature\Constants::OVERRIDE_HITACHI_BLACKLIST) === true)))
             {
                 $payment = $this->input['payment'];
 

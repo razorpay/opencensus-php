@@ -12,6 +12,7 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Services\RazorXClient;
 use RZP\Error\PublicErrorCode;
+use RZP\Gateway\Hitachi\Gateway;
 use RZP\Models\Terminal\Options;
 use RZP\Models\Terminal\Category;
 use RZP\Models\Terminal\Selector;
@@ -1441,6 +1442,76 @@ class TerminalSelectionTest extends TestCase
         $this->assertNotEquals('hitachi', $selectedTerminals[0]->getGateway());
     }
 
+    public function testBlockedMccOnHitachiTerminalWithOverrideFeature()
+    {
+        $this->fixtures->merchant->addFeatures([Feature\Constants::OVERRIDE_HITACHI_BLACKLIST]);
+
+        $this->fixtures->merchant->setCategory(HitachiGateway::BLACKLISTED_MCC[0]);
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $cardArray = [
+            'number'        => '4012001036275556',
+            'expiry_month'  => '1',
+            'expiry_year'   => '2035',
+            'cvv'           => '123',
+            'network'       => 'Visa',
+            'issuer'        => 'HDFC',
+            'name'          => 'Test',
+            'international' => false,
+        ];
+
+        $card = (new Card\Entity)->fill($cardArray);
+
+        $merchantDetailArray = [
+            'contact_name'               => 'rzp',
+            'contact_email'              => 'test@rzp.com',
+            'merchant_id'                => '10000000000000',
+            'business_operation_address' => 'Koramangala',
+            'business_operation_state'   => 'KARNATAKA',
+            'business_operation_pin'     => 560047,
+            'business_dba'               => 'test',
+            'business_name'              => 'rzp_test',
+            'business_operation_city'    => 'Bangalore',
+        ];
+
+        $this->fixtures->create('merchant_detail', $merchantDetailArray);
+
+        $paymentArray = $this->getDefaultPaymentArray();
+        unset($paymentArray['card']);
+        $paymentArray['status'] = 'created';
+        $paymentArray['method'] = 'card';
+
+        $payment       = (new Payment\Entity)->fill($paymentArray);
+        $payment->card = $card;
+
+        $merchant = Merchant\Entity::find('10000000000000');
+
+        $payment->merchant()->associate($merchant);
+
+        $input = [
+            'payment'  => $payment,
+            'merchant' => $payment->merchant
+        ];
+
+        $this->app['rzp.mode'] = Mode::TEST;
+
+        $options           = new Options;
+        $selector          = new Selector($input, $options);
+        $selectedTerminals = $selector->select();
+
+        $selectedTerminals = array_filter($selectedTerminals);
+
+        $this->assertEquals(1, sizeof($selectedTerminals));
+
+        $terminal = $selectedTerminals[0];
+
+        $this->assertEquals('hitachi', $terminal->getGateway());
+        $this->assertEquals('38RR00000010001', $terminal->getGatewayMerchantId());
+        $this->assertEquals('38R10001', $terminal->getGatewayTerminalId());
+        $this->assertEquals(HitachiGateway::BLACKLISTED_MCC[0], $terminal->getCategory());
+    }
+
     public function testHitachiTerminalCreationOnRunWithZeroStratingCategory()
     {
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
@@ -1594,7 +1665,7 @@ class TerminalSelectionTest extends TestCase
         $paymentArray['status'] = 'created';
         $paymentArray['method'] = 'card';
 
-        foreach (GatewayProcessor::HITACHI_BLACKLISTED_MCC as $category)
+        foreach (Gateway::BLACKLISTED_MCC as $category)
         {
             $this->fixtures->merchant->setCategory($category);
 
