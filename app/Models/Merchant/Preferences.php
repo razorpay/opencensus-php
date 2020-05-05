@@ -128,6 +128,7 @@ class Preferences
     const MID_BFL                   = 'ChcYXdL7jtknMN';
     const MID_ICICI_PRUDENTIAL      = 'DyP8dTjuXkgcAA';
     const MID_SCRIP_BOX             = 'E8D4A78IIz4SAB';
+    const MID_RBL_HEMANT            = 'EgquGKAHJNz0oD';
 
     const MID_NSDL_MERCHANTS        = 'Anjg29UHP4PlvQ';
     const MID_AIRTEL                = 'AqUQQH9neAMkUG';
