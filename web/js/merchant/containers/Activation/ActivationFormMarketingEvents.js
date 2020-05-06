@@ -8,6 +8,8 @@ import { addPrefixToObjectKeys, isPresent } from 'common/utils/rzp-utils';
 import { trackL1FormSuccess, trackL1FormError, trackSubmit } from './ga_new';
 import { fireActFBEvents, fireKYCFBEvents } from './fb';
 
+import { BUSINESS_TYPE_OPTIONS } from './L1FormMap';
+
 export function fireL1FormSuccessEvents(user) {
   let data = new BingDataObj('activationform', 'complete', 'success', 1);
   updateHubSpotContactsProperties(
