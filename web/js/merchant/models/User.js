@@ -70,7 +70,11 @@ export default class User {
   get userRole() {
     if (this.current && Object.keys(this.merchants).length) {
       var currentMerchant = this.merchants[this.current];
-      if (currentMerchant.product === 'banking') {
+      // check if its loaded from X dashboard
+      // when X loads the dashboard for activation in an iframe, we pass merchant=x in queryParams
+      const { merchant: product } = getURLQueryParams(window.location.search);
+
+      if (product === 'x') {
         return currentMerchant.banking_role;
       }
       return currentMerchant.role;
