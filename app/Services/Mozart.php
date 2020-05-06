@@ -376,7 +376,9 @@ class Mozart
     {
         unset($request['options']['auth']);
 
-        $this->trace->info(TraceCode::MOZART_SERVICE_REQUEST, $request);
+        $traceRequest = $this->unsetSensitiveValuesOfGateways($request);
+
+        $this->trace->info(TraceCode::MOZART_SERVICE_REQUEST, $traceRequest);
     }
 
     protected function traceMozartServiceResponse($response)
@@ -399,5 +401,15 @@ class Mozart
         }
 
         return $decodedJson;
+    }
+
+    protected function unsetSensitiveValuesOfGateways(array $request)
+    {
+        $content = $this->jsonToArray($request['content']);
+
+        // for now RBL is the only gatewayn
+        unset($content['entities']['source_account']['credentials']);
+
+        return $content;
     }
 }
