@@ -470,6 +470,10 @@ export default class User {
     return this.getExpStatus('async_reports');
   }
 
+  get isDefaultPLBatchRemindersEnabled() {
+    return this.getExpStatus('pl_batch_reminders');
+  }
+
   get getPaymentLinkCustomizedFormFields() {
     return window.pl_customized_form_fields;
   }

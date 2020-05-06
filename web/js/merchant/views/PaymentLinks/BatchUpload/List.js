@@ -33,12 +33,13 @@ export default class BatchListContainer extends Component {
       window.hj('trigger', 'batch_payment_links');
       window.hj('tagRecording', ['batch_payment_links']);
     }
-  }
 
-  state = {
-    sms_notify: 0,
-    email_notify: 0,
-  };
+    this.state = {
+      sms_notify: 0,
+      email_notify: 0,
+      reminder_enable: props.user.isDefaultPLBatchRemindersEnabled ? '1' : '0',
+    };
+  }
 
   handlePaymentLinksFormChange = (propName, value) => {
     this.setState({
@@ -77,13 +78,14 @@ export default class BatchListContainer extends Component {
   };
 
   renderUploadModal = () => {
-    const { sms_notify, email_notify } = this.state;
+    const { sms_notify, email_notify, reminder_enable } = this.state;
     const notify = sms_notify || email_notify;
     const batchFormInitialValues = {
       config: {
         draft: 0, //for backward compatibility
         sms_notify: false,
         email_notify: false,
+        reminder_enable,
       },
     };
     return (
