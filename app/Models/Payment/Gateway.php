@@ -704,6 +704,10 @@ class Gateway
         Payment\Gateway::WALLET_MPESA,
         Payment\Gateway::ISG,
         Payment\Gateway::BILLDESK,
+        Payment\Gateway::BT_YESBANK,
+        Payment\Gateway::BT_KOTAK,
+        Payment\Gateway::BT_ICICI,
+        Payment\Gateway::BT_RBL,
     ];
 
     public static $scroogeFileBasedRefundGatewaysWithTimestamps = [

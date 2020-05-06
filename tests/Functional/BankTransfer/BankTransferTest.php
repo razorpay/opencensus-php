@@ -1859,6 +1859,11 @@ class BankTransferTest extends TestCase
         $this->assertEquals('bt_rbl', $payment['gateway']);
     }
 
+    public function testBankTransferRblRefund()
+    {
+        $this->createRblRefund(__FUNCTION__);
+    }
+
     public function testBankTransferIcici()
     {
         $this->processOrNotifyBankTransfer(
@@ -2378,6 +2383,55 @@ class BankTransferTest extends TestCase
         $this->assertEquals('10000000000000', $attempt['merchant_id']);
         $this->assertEquals($refund['bank_account_id'], $attempt['bank_account_id']);
         $this->assertStringEndsWith($utr, $attempt['narration']);
+    }
+
+    protected function createRblRefund($callee)
+    {
+        $testData = $this->testData[$callee];
+                                                                                                  
+        $testData['request']['content']['Data'][0]['beneficiaryAccountNumber'] = $this->getRblVaBankAccount();
+
+        $this->ba->directAuth();
+
+        $this->startTest($testData);
+
+        $bankTransfer =  $this->getLastEntity('bank_transfer', true);
+
+        $this->assertEquals($bankTransfer['narration'], $testData['request']['content']['Data'][0]['UTRNumber']);
+        $this->assertEquals(343946, $bankTransfer['amount']);
+
+        $payment =  $this->getLastEntity('payment', true);
+        $this->assertEquals(343946, $payment['amount']);
+        $this->assertEquals('bt_rbl', $payment['gateway']);
+
+        $this->gateway = 'bt_rbl';
+
+        $this->refundPayment($payment['id'], 343946, ['is_fta' => true]);
+
+        // Payment is refunded
+        $payment =  $this->getLastEntity('payment', true);
+        $this->assertEquals('bank_transfer', $payment['method']);
+        $this->assertEquals('refunded', $payment['status']);
+        $this->assertEquals(343946, $payment['amount_refunded']);
+
+        // Refund is created
+        $refund = $this->getDBLastEntity('refund');
+        $this->assertEquals($payment['id'], 'pay_' . $refund['payment_id']);
+        $this->assertEquals('created', $refund['status']);
+        $this->assertEquals(343946, $refund['amount']);
+
+        // Transaction is created for refund
+        $transaction = $this->getLastEntity('transaction', true);
+        $this->assertEquals('refund', $transaction['type']);
+        $this->assertEquals('rfnd_' . $refund['id'], $transaction['entity_id']);
+
+        // Fund transfer attempt created for refund
+        $attempt = $this->getLastEntity('fund_transfer_attempt', true);
+        $this->assertEquals('created', $attempt['status']);
+        $this->assertEquals('rfnd_' . $refund['id'], $attempt['source']);
+        $this->assertEquals('10000000000000', $attempt['merchant_id']);
+        $this->assertEquals($refund['bank_account_id'], $attempt['bank_account_id']);
+        $this->assertEquals('Test Merchant-CMS480098890', $attempt['narration']);
     }
 
     protected function createRefundWithDeletedTerminal($channel = null)
