@@ -883,7 +883,9 @@ export default class HomeContainer extends Component {
             onClose={() => {
               this.props.hidePANStatusModal();
             }}
-            onGoToDashboard={this.onInstantActivationSuccess}
+            onGoToDashboard={() => {
+              this.onInstantActivationSuccess();
+            }}
             user={user}
           />
         )}
