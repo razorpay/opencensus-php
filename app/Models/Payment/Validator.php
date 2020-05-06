@@ -419,6 +419,11 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_FAILED_MISSING_ORDER_ID);
         }
+        else if (isset($input[Payment\Entity::ORDER_ID]) === true and
+                   $merchant->isFeatureEnabled(Feature\Constants::PAYMENT_CONFIG_ENABLED) === true)
+        {
+            return (new Config\Validator())->validatePaymentForConfig($input, $merchant);
+        }
     }
 
     protected function validateEmail(array $input)

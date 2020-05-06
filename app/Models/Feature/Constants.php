@@ -347,6 +347,7 @@ class Constants
      */
     const PAYMENT_CREATED_WEBHOOK  = 'payment_created_webhook';
 
+    const PAYMENT_CONFIG_ENABLED   = 'payment_config_enabled';
     /*
      * Enable Stork migration for a banking merchant
      * This is temp until all merchants are not migrated
@@ -578,6 +579,7 @@ class Constants
         self::REDIRECTION_ONHOLD              => true,
         self::DCC                             => true,
         self::PAYMENT_CREATED_WEBHOOK         => true,
+        self::PAYMENT_CONFIG_ENABLED          => false,
         self::BANKING_STORK_MIGRATION         => true,
         self::CYBERSOURCE_VAS                 => true,
         self::CHECKOUT_DISABLE_RETRY          => true,

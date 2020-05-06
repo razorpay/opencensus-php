@@ -78,9 +78,17 @@ class Entity extends Base\PublicEntity
 
         $this->config = json_encode($input['config']);
 
-        if (isset($input['config']['allow']))
+        if (isset($input['config']['restrictions']) === true)
         {
-            $this->restrictions = json_encode($input['config']['allow']);
+            $restrictions = $input['config']['restrictions'];
+
+            $this->getValidator()->validateInput('add_restrictions', $restrictions);
+
+            $allow = $restrictions['allow'];
+
+            $this->getValidator()->validateRestrictionJson($allow, $this->merchant);
+
+            $this->restrictions = json_encode($allow);
         }
 
         return $this;
@@ -93,7 +101,7 @@ class Entity extends Base\PublicEntity
 
     public function setPublicConfigAttribute(array & $input)
     {
-        if (isset($input['config']))
+        if (isset($input['config']) === true)
         {
             $input['config'] = json_decode($input['config'], true);
         }

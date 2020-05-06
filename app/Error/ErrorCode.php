@@ -1608,6 +1608,7 @@ class ErrorCode
 
     //payment config
     const BAD_REQUEST_INVALID_CONFIG_ID                                             = 'BAD_REQUEST_INVALID_CONFIG_ID';
+    const BAD_REQUEST_PAYMENT_METHOD_NOT_ALLOWED_IN_CONFIG                          = 'BAD_REQUEST_PAYMENT_METHOD_NOT_ALLOWED_IN_CONFIG';
 
     const BAD_REQUEST_ANOTHER_CREDITS_OPERATION_IN_PROGRESS                         = 'BAD_REQUEST_ANOTHER_CREDITS_OPERATION_IN_PROGRESS';
 

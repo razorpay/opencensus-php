@@ -2897,6 +2897,324 @@ class PaymentCreateTest extends TestCase
         $this->assertNull($upiMetadata);
     }
 
+    public function testCreateCardPaymentWithIssuerNotMatchingConfigIssuers()
+    {
+        $paymentArray = $this->getDefaultPaymentArray();
+
+        $paymentArray['amount'] = '1000000';
+
+        $this->fixtures->merchant->addFeatures(['payment_config_enabled']);
+
+        $config = $this->fixtures->create('config', [
+            'config'=> '{"sequence": ["block.gpay","card","block.hdfc"],"settings": {"methods": {"upi": false}}}',
+            'restrictions'       =>'[{"method": "card", "issuers": ["SBIN"]}]'
+        ]);
+
+        $order = $this->fixtures->order->create(['checkout_config_id' => $config->getId()]);
+
+        $paymentArray['order_id'] = $order->getPublicId();
+
+        $this->expectException(Exception\BadRequestValidationFailureException::class);
+
+        $this->expectExceptionMessage('The following payment method is not supported for this transaction');
+
+        $this->doAuthAndCapturePayment($paymentArray);
+    }
+
+    public function testCreateCardPaymentWithCardTypeNotMatchingConfigCardTypes()
+    {
+        $paymentArray = $this->getDefaultPaymentArray();
+
+        $paymentArray['amount'] = '1000000';
+
+        $this->fixtures->merchant->addFeatures(['payment_config_enabled']);
+
+        $config = $this->fixtures->create('config', [
+            'config'=> '{"sequence": ["block.gpay","card","block.hdfc"],"settings": {"methods": {"upi": false}}}',
+            'restrictions'       =>'[{"method": "card", "issuers": ["HDFC"],"types": ["debit"]}]'
+        ]);
+
+        $order = $this->fixtures->order->create(['checkout_config_id' => $config->getId()]);
+
+        $paymentArray['order_id'] = $order->getPublicId();
+
+        $this->expectException(Exception\BadRequestValidationFailureException::class);
+
+        $this->expectExceptionMessage('The following payment method is not supported for this transaction');
+
+        $this->doAuthAndCapturePayment($paymentArray);
+    }
+
+    public function testCreateCardPaymentWithNetworkNotMatchingConfigNetworks()
+    {
+        $paymentArray = $this->getDefaultPaymentArray();
+
+        $paymentArray['amount'] = '1000000';
+
+        $this->fixtures->merchant->addFeatures(['payment_config_enabled']);
+
+        $config = $this->fixtures->create('config', [
+            'config'=> '{"sequence": ["block.gpay","card","block.hdfc"],"settings": {"methods": {"upi": false}}}',
+            'restrictions'       =>'[{"method": "card", "issuers": ["HDFC"],"types": ["credit"], "networks" : ["Maestro"]}]'
+        ]);
+
+        $order = $this->fixtures->order->create(['checkout_config_id' => $config->getId()]);
+
+        $paymentArray['order_id'] = $order->getPublicId();
+
+        $this->expectException(Exception\BadRequestValidationFailureException::class);
+
+        $this->expectExceptionMessage('The following payment method is not supported for this transaction');
+
+        $this->doAuthAndCapturePayment($paymentArray);
+    }
+
+    public function testCreateCardPaymentWithIinNotMatchingConfigIins()
+    {
+        $paymentArray = $this->getDefaultPaymentArray();
+
+        $paymentArray['amount'] = '1000000';
+
+        $this->fixtures->merchant->addFeatures(['payment_config_enabled']);
+
+        $config = $this->fixtures->create('config', [
+            'config'=> '{"sequence": ["block.gpay","card","block.hdfc"],"settings": {"methods": {"upi": false}}}',
+            'restrictions'       =>'[{"method": "card", "iins": ["4111111"]}]'
+        ]);
+
+        $order = $this->fixtures->order->create(['checkout_config_id' => $config->getId()]);
+
+        $paymentArray['order_id'] = $order->getPublicId();
+
+        $this->expectException(Exception\BadRequestValidationFailureException::class);
+
+        $this->expectExceptionMessage('The following payment method is not supported for this transaction');
+
+        $this->doAuthAndCapturePayment($paymentArray);
+    }
+
+    public function testCreateUpiPaymentWithFlowNotMatchingConfigFlows()
+    {
+        $paymentArray = $this->getDefaultUpiPaymentArray();
+
+        $paymentArray['amount'] = '1000000';
+
+        $paymentArray['upi']['flow'] = 'intent';
+
+        unset($paymentArray['vpa']);
+
+        $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
+
+        $this->fixtures->merchant->addFeatures(['payment_config_enabled']);
+
+        $config = $this->fixtures->create('config', [
+            'config'=> '{"sequence": ["block.gpay","card","block.hdfc"],"settings": {"methods": {"upi": false}}}',
+            'restrictions'       =>'[{"method": "upi", "flows": ["qr"]}]'
+        ]);
+
+        $order = $this->fixtures->order->create(['checkout_config_id' => $config->getId()]);
+
+        $paymentArray['order_id'] = $order->getPublicId();
+
+        $this->expectException(Exception\BadRequestValidationFailureException::class);
+
+        $this->expectExceptionMessage('The following payment method is not supported for this transaction');
+
+        $this->doAuthPaymentViaAjaxRoute($paymentArray);
+    }
+
+    public function testCreateNetbankingPaymentWithBankNotMatchingConfigBanks()
+    {
+        $paymentArray = $this->getDefaultNetbankingPaymentArray();
+
+        $paymentArray['amount'] = '1000000';
+
+        $this->fixtures->merchant->addFeatures(['payment_config_enabled']);
+
+        $config = $this->fixtures->create('config', [
+            'config'=> '{"sequence": ["block.gpay","card","block.hdfc"],"settings": {"methods": {"upi": false}}}',
+            'restrictions'       =>'[{"method": "upi", "flows": ["qr"]},{"method": "netbanking", "banks": ["HDFC"]}]'
+        ]);
+
+        $order = $this->fixtures->order->create(['checkout_config_id' => $config->getId()]);
+
+        $paymentArray['order_id'] = $order->getPublicId();
+
+        $this->expectException(Exception\BadRequestValidationFailureException::class);
+
+        $this->expectExceptionMessage('The following payment method is not supported for this transaction');
+
+        $this->doAuthAndCapturePayment($paymentArray);
+    }
+
+    public function testCreateWalletPaymentWithWalletNotMatchingConfigWallets()
+    {
+        $paymentArray = $this->getDefaultWalletPaymentArray('airtelmoney');
+
+        $paymentArray['amount'] = '1000000';
+
+        $this->fixtures->merchant->enableWallet('10000000000000', 'airtelmoney');
+
+        $this->fixtures->merchant->addFeatures(['payment_config_enabled']);
+
+        $config = $this->fixtures->create('config', [
+            'config'=> '{"sequence": ["block.gpay","card","block.hdfc"],"settings": {"methods": {"upi": false}}}',
+            'restrictions'       =>'[{"method": "wallet", "wallets": ["freecharge"]}]'
+        ]);
+
+        $order = $this->fixtures->order->create(['checkout_config_id' => $config->getId()]);
+
+        $paymentArray['order_id'] = $order->getPublicId();
+
+        $this->expectException(Exception\BadRequestValidationFailureException::class);
+
+        $this->expectExceptionMessage('The following payment method is not supported for this transaction');
+
+        $this->doAuthAndCapturePayment($paymentArray);
+    }
+
+    public function testCreateEmiPaymentWithIssuerNotMatchingConfigIssuers()
+    {
+        $paymentArray = $this->getDefaultEmiPaymentArray(false);
+
+        $paymentArray['amount'] = '1000000';
+
+        $this->fixtures->merchant->addFeatures(['payment_config_enabled']);
+
+        $config = $this->fixtures->create('config', [
+            'config'=> '{"sequence": ["block.gpay","card","block.hdfc"],"settings": {"methods": {"upi": false}}}',
+            'restrictions'       =>'[{"method": "emi", "issuers": ["SBIN"]}]'
+        ]);
+
+        $order = $this->fixtures->order->create(['checkout_config_id' => $config->getId()]);
+
+        $paymentArray['order_id'] = $order->getPublicId();
+
+        $this->expectException(Exception\BadRequestValidationFailureException::class);
+
+        $this->expectExceptionMessage('The following payment method is not supported for this transaction');
+
+        $this->doAuthAndCapturePayment($paymentArray);
+    }
+
+    public function testCreateEmiPaymentWithCardTypeNotMatchingConfigCardTypes()
+    {
+        $paymentArray = $this->getDefaultEmiPaymentArray(false);
+
+        $paymentArray['amount'] = '1000000';
+
+        $this->fixtures->merchant->addFeatures(['payment_config_enabled']);
+
+        $config = $this->fixtures->create('config', [
+            'config'=> '{"sequence": ["block.gpay","card","block.hdfc"],"settings": {"methods": {"upi": false}}}',
+            'restrictions'       =>'[{"method": "emi", "issuers": ["HDFC"],"types": ["debit"]}]'
+        ]);
+
+        $order = $this->fixtures->order->create(['checkout_config_id' => $config->getId()]);
+
+        $paymentArray['order_id'] = $order->getPublicId();
+
+        $this->expectException(Exception\BadRequestValidationFailureException::class);
+
+        $this->expectExceptionMessage('The following payment method is not supported for this transaction');
+
+        $this->doAuthAndCapturePayment($paymentArray);
+    }
+
+    public function testCreateEmiPaymentWithNetworkNotMatchingConfigNetworks()
+    {
+        $paymentArray = $this->getDefaultEmiPaymentArray(false);
+
+        $paymentArray['amount'] = '1000000';
+
+        $this->fixtures->merchant->addFeatures(['payment_config_enabled']);
+
+        $config = $this->fixtures->create('config', [
+            'config'=> '{"sequence": ["block.gpay","card","block.hdfc"],"settings": {"methods": {"upi": false}}}',
+            'restrictions'       =>'[{"method": "emi", "issuers": ["HDFC"],"types": ["credit"], "networks" : ["Maestro"]}]'
+        ]);
+
+        $order = $this->fixtures->order->create(['checkout_config_id' => $config->getId()]);
+
+        $paymentArray['order_id'] = $order->getPublicId();
+
+        $this->expectException(Exception\BadRequestValidationFailureException::class);
+
+        $this->expectExceptionMessage('The following payment method is not supported for this transaction');
+
+        $this->doAuthAndCapturePayment($paymentArray);
+    }
+
+    public function testCreateEmiPaymentWithIinNotMatchingConfigIins()
+    {
+        $paymentArray = $this->getDefaultEmiPaymentArray(false);
+
+        $paymentArray['amount'] = '1000000';
+
+        $this->fixtures->merchant->addFeatures(['payment_config_enabled']);
+
+        $config = $this->fixtures->create('config', [
+            'config'=> '{"sequence": ["block.gpay","card","block.hdfc"],"settings": {"methods": {"upi": false}}}',
+            'restrictions'       =>'[{"method": "emi", "iins": ["4111111"]}]'
+        ]);
+
+        $order = $this->fixtures->order->create(['checkout_config_id' => $config->getId()]);
+
+        $paymentArray['order_id'] = $order->getPublicId();
+
+        $this->expectException(Exception\BadRequestValidationFailureException::class);
+
+        $this->expectExceptionMessage('The following payment method is not supported for this transaction');
+
+        $this->doAuthAndCapturePayment($paymentArray);
+    }
+
+    public function testCreateEmiPaymentWithCardTypeMatchingConfigCardTypes()
+    {
+        $paymentArray = $this->getDefaultEmiPaymentArray(false);
+
+        $paymentArray['amount'] = '1000000';
+
+        $paymentArray['emi_duration'] = 6;
+
+        $this->fixtures->emiPlan->createMerchantSpecificEmiPlans();
+
+        $this->fixtures->merchant->enableEmi();
+
+        $this->fixtures->merchant->addFeatures(['payment_config_enabled']);
+
+        $config = $this->fixtures->create('config', [
+            'config'=> '{"sequence": ["block.gpay","card","block.hdfc"],"settings": {"methods": {"upi": false}}}',
+            'restrictions'       =>'[{"method": "emi", "issuers": ["HDFC"],"types": ["credit"]}]'
+        ]);
+
+        $order = $this->fixtures->order->create(['checkout_config_id' => $config->getId()]);
+
+        $paymentArray['order_id'] = $order->getPublicId();
+
+        $this->doAuthAndCapturePayment($paymentArray);
+    }
+
+    public function testCreateCardPaymentWithMultipleConfigsForHybridCase()
+    {
+        $paymentArray = $this->getDefaultPaymentArray();
+
+        $paymentArray['amount'] = '1000000';
+
+        $this->fixtures->merchant->addFeatures(['payment_config_enabled']);
+
+        $config = $this->fixtures->create('config', [
+            'config' => '{"sequence": ["block.gpay","card","block.hdfc"],"settings": {"methods": {"upi": false}}}',
+            'restrictions' => '[{"method": "card", "issuers": ["SBI"],"types": ["debit"]},{"method": "card", "issuers": ["HDFC"],"types": ["credit"]}]'
+        ]);
+
+        $order = $this->fixtures->order->create(['checkout_config_id' => $config->getId()]);
+
+        $paymentArray['order_id'] = $order->getPublicId();
+
+        $this->doAuthAndCapturePayment($paymentArray);
+    }
+
     public function testPaymentCaptureForNullRefundAt()
     {
         $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
