@@ -239,33 +239,23 @@ class Core extends Base\Core
             return;
         }
 
-        $response = $this->verifyPOA($document, $merchantDetails);
-
-        $ocrDetails       = $response[Detail\Constants::OCR_RESPONSE] ?? [];
-        $verificationData = $response[Detail\Constants::VERIFICATION_RESULT] ?? [];
+        $this->verifyPOA($document, $merchantDetails);
 
         $this->trace->count(Detail\Metric::MERCHANT_DOCUMENT_OCR_PERFORMED_TOTAL,
                             [
                                 Entity::DOCUMENT_TYPE        => $document->getDocumentType(),
                                 Detail\Entity::BUSINESS_TYPE => $merchantDetails->getBusinessTypeValue()
                             ]);
-
-        $this->pushEventsForOCRVerification($merchant,
-                                            $ocrDetails,
-                                            $document,
-                                            $verificationData,
-                                            $merchantDetails->getPromoterPanName());
     }
 
     /**
      * @param Entity        $document
      * @param Detail\Entity $merchantDetails
      *
-     * @return array
      * @throws \RZP\Exception\BadRequestValidationFailureException
      * @throws \RZP\Exception\LogicException
      */
-    protected function verifyPOA(Entity $document, Merchant\Detail\Entity $merchantDetails) : array
+    protected function verifyPOA(Entity $document, Merchant\Detail\Entity $merchantDetails)
     {
         $signedUrl = (new Detail\Service())->getSignedUrl(
             $document->getFileStoreId(),
@@ -280,17 +270,11 @@ class Core extends Base\Core
             DetailConstant::DOCUMENT_SOURCE   => $document->getFileStoreSource(),
         ];
 
-        $response = [];
-
         $verificationStatus = OcrVerificationStatus::FAILED;
 
         try
         {
-            $response = (new AutoKyc\Core())->verifyPOA($merchantDetails, $input);
-
-            $verificationData = $response[Detail\Constants::VERIFICATION_RESULT] ?? [];
-
-            $verificationStatus = $verificationData[Detail\Constants::DOCUMENT_VERIFICATION_STATUS] ?? OcrVerificationStatus::FAILED;
+            $verificationStatus = (new AutoKyc\Core())->verifyPOA($merchantDetails, $input);
         }
         catch (\Throwable $exception)
         {
@@ -305,8 +289,6 @@ class Core extends Base\Core
         }
 
         $document->setOcrVerify($verificationStatus);
-
-        return $response;
     }
 
     protected function mapToKycDocType(string $document_type): ?string
@@ -342,25 +324,5 @@ class Core extends Base\Core
                             ]);
 
         $this->app['diag']->trackOnboardingEvent(EventCode::KYC_UPLOAD_DOCUMENT_SUCCESS, $merchant, null, $eventAttributes);
-    }
-
-    protected function pushEventsForOCRVerification(Merchant\Entity $merchant,
-                                                    array $ocrDetails,
-                                                    Entity $document,
-                                                    $verificationData,
-                                                    $promoterPanName = null)
-    {
-        $eventProperties = [
-            Entity::DOCUMENT_TYPE              => $document->getDocumentType(),
-            Constants::API_CALL_SUCCESSFUL     => $ocrDetails[Constants::SUCCESS] ?? false,
-            Constants::VERIFIED                => ($document->getOcrVerify() === OcrVerificationStatus::VERIFIED),
-            Constants::OCR_MATCHING_PERCENTAGE => $verificationData[Detail\Constants::OCR_MATCHING_PERCENTAGE_WITH_PAN_NAME] ?? 0,
-            Constants::OCR_MATCH_TYPE          => $verificationData[Detail\Constants::POA_FUZZY_MATCH_TYPE] ?? null,
-            Constants::OCR_MATCHING_THRESHOLD  => OcrVerificationStatus::OCR_VERIFICATION_THRESHOLD,
-            Constants::OCR_NAME                => $ocrDetails[Constants::NAME] ?? null,
-            Detail\Entity::PROMOTER_PAN_NAME   => $promoterPanName
-        ];
-
-        $this->app['diag']->trackOnboardingEvent(EventCode::DOCUMENT_VERIFICATION_OCR, $merchant, null, $eventProperties);
     }
 }

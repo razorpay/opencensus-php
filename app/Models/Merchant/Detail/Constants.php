@@ -110,9 +110,6 @@ class Constants
 
     const KYC_API_TYPES = ['AUTH' => 'auth', 'OCR' => 'ocr'];
 
-    const RESPONSE_BODY    = 'response_body';
-    const RESPONSE_TIME    = 'response_time';
-    const API_STATUS_CODE  = 'api_status_code';
     const DOCUMENT_FILE_ID = 'document_file_id';
 
     // kyc service error codes
@@ -141,5 +138,23 @@ class Constants
     const INTERNATIONAL_ACTIVATION = 'international_activation';
 
     const ACTIVATION_FLOWS = [self::ACTIVATION, self::INTERNATIONAL_ACTIVATION];
+
+
+    // Kyc Events constant
+    const RESPONSE_BODY             = 'response_body';
+    const RESPONSE_TIME             = 'response_time';
+    const API_STATUS_CODE           = 'api_status_code';
+    const VERIFIED                  = 'verified';
+    const VERIFICATION_THRESHOLD    = 'verification_threshold';
+    const API_CALL_SUCCESSFUL       = 'api_call_successful';
+    const API_ERROR_CODE            = 'api_error_code';
+    const VERIFICATION_STATUS       = 'verification_status';
+    const COMPARISION               = 'comparisons';
+    const MATCH_PERCENTAGE          = 'match_percentage';
+    const MATCH_THRESHOLD           = 'match_threshold';
+    const DETAILS_FROM_API_RESPONSE = 'detail_from_api';
+    const DETAILS_FROM_USER         = 'detail_from_user';
+    const MATCH_TYPE                = 'match_type';
+
 }
 

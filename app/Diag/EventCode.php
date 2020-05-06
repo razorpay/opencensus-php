@@ -439,6 +439,26 @@ class EventCode
         'name' => 'kyc.verifier_service.response_time',
     ];
 
+    const KYC_PERSONAL_PAN_VERIFICATION = [
+        'group' => 'onboarding',
+        'name'  => 'kyc.auto_poi.perosnal.verification',
+    ];
+
+    const KYC_COMPANY_PAN_VERIFICATION = [
+        'group' => 'onboarding',
+        'name'  => 'kyc.auto_poi.business.verification',
+    ];
+
+    const KYC_GSTIN_VERIFICATION = [
+        'group' => 'onboarding',
+        'name'  => 'kyc.auto_gstin.verification',
+    ];
+
+    const KYC_POA_VERIFICATION = [
+        'group' => 'onboarding',
+        'name'  => 'kyc.auto_poa.business.verification',
+    ];
+
     const KYC_PENNY_TESTING_SUCCESS_RATE = [
         'group' => 'onboarding',
         'name'  => 'kyc.penny_testing.success.rate',

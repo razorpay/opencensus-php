@@ -7,99 +7,53 @@ use RZP\Models\Merchant\Detail\Constants;
 
 trait PanVerifier
 {
+    use DefaultVerifier;
+
     /**
      * @var string
      */
     protected $panOwnerName;
 
-    protected $data;
-
     protected $nameFromNSDL;
-
-    protected $internalErrorCode;
-
-    protected $isSuccessResponse;
 
     public function __construct(string $panOwnerName, array $data)
     {
-        $this->panOwnerName      = $panOwnerName;
-        $this->data              = $data;
-        $this->nameFromNSDL      = $this->data[Constants::PAN_NAME_FROM_NSDL] ?? null;
-        $this->internalErrorCode = $this->data[Constants::INTERNAL_ERROR_CODE] ?? '';
-        $this->isSuccessResponse = $this->data[Constants::SUCCESS] ?? false;
+        $this->initData($data);
+
+        $this->panOwnerName = $panOwnerName;
+        $this->nameFromNSDL = $this->data[Constants::PAN_NAME_FROM_NSDL] ?? null;
     }
-
-    abstract function getIncorrectDetailsStatus();
-
-    abstract function getFailedStatus();
-
-    abstract function getNotMatchedStatus();
-
-    abstract function getVerifiedStatus();
 
     abstract function getExpectedMatchPercentage();
-
-    public function verify()
-    {
-        if ($this->isSuccessResponse === true)
-        {
-            return $this->getStatusForSuccess();
-        }
-
-        return $this->getStatusForFailure();
-    }
 
     protected function isCorrectDetails(): bool
     {
         return empty($this->nameFromNSDL) === false;
     }
 
-    protected function isNameMatch(): bool
+    protected function isDetailsMatch(): bool
     {
         if ($this->isCorrectDetails() === false)
         {
             return false;
         }
+
         $poiFuzzyMatcher = new FuzzyMatcher($this->getExpectedMatchPercentage(), FuzzyMatcher::SIMPLE_MATCH);
 
-        return $poiFuzzyMatcher->isMatch($this->panOwnerName, $this->nameFromNSDL);
-    }
+        $isMatch = $poiFuzzyMatcher->isMatch($this->panOwnerName, $this->nameFromNSDL, $matchPercentage);
 
-    protected function getStatusForSuccess()
-    {
-        if ($this->isCorrectDetails() === false)
-        {
-            return $this->getIncorrectDetailsStatus();
-        }
+        $this->updateVerificationComparisionResult(
+            [
+                Constants::DOCUMENT_TYPE             => $this->documentType,
+                Constants::DETAILS_FROM_API_RESPONSE => $this->nameFromNSDL,
+                Constants::DETAILS_FROM_USER         => $this->panOwnerName,
+                Constants::MATCH_THRESHOLD           => $this->getExpectedMatchPercentage(),
+                Constants::MATCH_PERCENTAGE          => $matchPercentage,
+                Constants::SUCCESS                   => ($isMatch === true),
+                Constants::MATCH_TYPE                => FuzzyMatcher::SIMPLE_MATCH,
+            ]);
 
-        if ($this->isNameMatch() === false)
-        {
-            return $this->getNotMatchedStatus();
-        }
-
-        return $this->getVerifiedStatus();
-    }
-
-    protected function getStatusForFailure()
-    {
-        switch ($this->internalErrorCode)
-        {
-            case  Constants::VALIDATION_ERROR :
-            case  Constants::NO_DATA_FOUND:
-            case  Constants::BAD_REQUEST:
-
-                return $this->getIncorrectDetailsStatus();
-
-                break;
-
-            case  Constants::UNAUTHORIZED:
-
-                return $this->getFailedStatus();
-                break;
-
-            default :
-                return $this->getFailedStatus();
-        }
+        return ($isMatch === true);
     }
 
 }

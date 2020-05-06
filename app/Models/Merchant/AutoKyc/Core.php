@@ -3,6 +3,7 @@
 namespace RZP\Models\Merchant\AutoKyc;
 
 use RZP\Models\Base;
+use RZP\Diag\EventCode;
 use RZP\Error\ErrorCode;
 use RZP\Exception\LogicException;
 use RZP\Models\Merchant\AutoKyc\Verifiers\POAVerifier;
@@ -65,9 +66,11 @@ class Core extends Base\Core
 
         $poiVerifier = new POIVerifier($input[DEConstants::PROMOTER_PAN_NAME], $response);
 
-        (new Events())->sendServiceVerifierEvents($response);
+        $verificationStatus = $poiVerifier->verify();
 
-        return $poiVerifier->verify();
+        (new Events())->sendVerificationEvents(EventCode::KYC_PERSONAL_PAN_VERIFICATION, $response, $poiVerifier->getVerificationData());
+
+        return $verificationStatus;
     }
 
     /**
@@ -92,9 +95,11 @@ class Core extends Base\Core
 
         $companyPanVerifier = new CompanyPanVerifier($input[DEConstants::COMPANY_PAN_NAME], $response);
 
-        (new Events())->sendServiceVerifierEvents($response);
+        $verificationStatus = $companyPanVerifier->verify();
 
-        return $companyPanVerifier->verify();
+        (new Events())->sendVerificationEvents(EventCode::KYC_COMPANY_PAN_VERIFICATION, $response, $companyPanVerifier->getVerificationData());
+
+        return $verificationStatus;
     }
 
     /**
@@ -102,10 +107,10 @@ class Core extends Base\Core
      *
      * @param array     $input
      *
-     * @return array
+     * @return string
      * @throws LogicException
      */
-    public function verifyPOA(KycEntity $entity, array $input): array
+    public function verifyPOA(KycEntity $entity, array $input): string
     {
         $this->registerKyc($entity);
 
@@ -122,15 +127,20 @@ class Core extends Base\Core
 
         (new Events())->sendServiceVerifierEvents($response);
 
-        $poaVerifier = new POAVerifier($input[DEConstants::PROMOTER_PAN_NAME],
-                                       $response);
+        $poaVerifier = new POAVerifier($input[DEConstants::PROMOTER_PAN_NAME], $response);
 
-        $verificationResult = $poaVerifier->verify();
+        $verificationStatus = $poaVerifier->verify();
 
-        return [
-            DEConstants::OCR_RESPONSE        => $response,
-            DEConstants::VERIFICATION_RESULT => $verificationResult,
-        ];
+        $event = new Events();
+
+        $event->sendVerificationEvents(
+            EventCode::KYC_POA_VERIFICATION,
+            $response,
+            $poaVerifier->getVerificationData());
+
+        $event->sendPOAEvents($response, $poaVerifier->getVerificationData());
+
+        return $verificationStatus;
     }
 
     /**
@@ -160,9 +170,14 @@ class Core extends Base\Core
 
         $gstinVerifier = new GSTINVerifier($dataToVerify, $response);
 
-        (new Events())->sendServiceVerifierEvents($response);
+        $verificationStatus = $gstinVerifier->verify();
 
-        return $gstinVerifier->verify();
+        (new Events())->sendVerificationEvents(
+            EventCode::KYC_GSTIN_VERIFICATION,
+            $response,
+            $gstinVerifier->getVerificationData());
+
+        return $verificationStatus;
     }
 
     /**

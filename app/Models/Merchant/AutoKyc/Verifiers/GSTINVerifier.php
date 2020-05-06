@@ -3,114 +3,106 @@
 namespace RZP\Models\Merchant\AutoKyc\Verifiers;
 
 use RZP\lib\FuzzyMatcher;
-use RZP\Models\Merchant\Detail\Entity;
 use RZP\Models\Merchant\Detail\Constants;
 use RZP\Models\Merchant\Detail\GSTINVerificationStatus;
 
 class GSTINVerifier implements Verifier
 {
-    protected $data;
+    use DefaultVerifier;
 
     protected $dataToVerify;
 
-    protected $matchedMember;
-
-    protected $internalErrorCode;
-
-    protected $isSuccessResponse;
-
     public function __construct(array $dataToVerify, array $data)
     {
-        $this->data               = $data;
-        $this->dataToVerify       = $dataToVerify;
+        $this->dataToVerify = $dataToVerify;
 
-        $this->internalErrorCode  = $this->data[Constants::INTERNAL_ERROR_CODE] ?? '';
-        $this->isSuccessResponse  = $this->data[Constants::SUCCESS] ?? false;
+        $this->initData($data);
     }
 
-    public function verify()
-    {
-        if ($this->isSuccessResponse === true)
-        {
-            return $this->getStatusForSuccess();
-        }
-
-        return $this->getStatusForFailure();
-    }
-
-    private function getStatusForFailure()
-    {
-        switch ($this->internalErrorCode)
-        {
-            case  Constants::VALIDATION_ERROR :
-            case  Constants::NO_DATA_FOUND:
-            case  Constants::BAD_REQUEST:
-                return GSTINVerificationStatus::INCORRECT_DETAILS;
-
-                break;
-
-            case  Constants::UNAUTHORIZED:
-
-                return GSTINVerificationStatus::FAILED;
-                break;
-
-            default :
-                return GSTINVerificationStatus::FAILED;
-        }
-    }
-
-    private function getStatusForSuccess()
-    {
-        if ($this->isCorrectDetails() === false)
-        {
-            return GSTINVerificationStatus::INCORRECT_DETAILS;
-        }
-
-        if ($this->isDetailsMatch() === false)
-        {
-            return GSTINVerificationStatus::NOT_MATCHED;
-        }
-
-        return GSTINVerificationStatus::VERIFIED;
-    }
-
-    private function isCorrectDetails(): bool
+    protected function isCorrectDetails(): bool
     {
         return (empty($this->data[Constants::LEGAL_NAME] ?? '') === false);
     }
 
-    private function isDetailsMatch(): bool
+    protected function isDetailsMatch(): bool
     {
         $promoterPanNameMatch = $this->isPromoterPanNameMatch();
 
         $businessNameMatch = $this->isBusinessNameMatch();
 
-        return ($businessNameMatch === true) and
-               ($promoterPanNameMatch === true);
+        return (($businessNameMatch === true) and
+               ($promoterPanNameMatch === true));
     }
 
-    protected function isBusinessNameMatch()
+    private function isBusinessNameMatch(): bool
     {
+        $legalName = $this->data[Constants::LEGAL_NAME] ?? '';
+
         $gstinFuzzyMatcher = new FuzzyMatcher(GSTINVerificationStatus::GSTIN_VERIFICATION_BUSINESS_NAME_THRESHOLD, FuzzyMatcher::SIMPLE_MATCH);
 
-        return $gstinFuzzyMatcher->isMatch($this->dataToVerify[Constants::COMPANY_NAME], $this->data[Constants::LEGAL_NAME] ?? '') === true;
+        $isMatch = $gstinFuzzyMatcher->isMatch($this->dataToVerify[Constants::COMPANY_NAME], $legalName, $matchPercentage);
+
+        $this->updateVerificationComparisionResult(
+            [
+                Constants::DOCUMENT_TYPE             => Constants::COMPANY_NAME,
+                Constants::DETAILS_FROM_API_RESPONSE => $legalName,
+                Constants::DETAILS_FROM_USER         => $this->dataToVerify[Constants::COMPANY_NAME],
+                Constants::MATCH_THRESHOLD           => GSTINVerificationStatus::GSTIN_VERIFICATION_BUSINESS_NAME_THRESHOLD,
+                Constants::MATCH_PERCENTAGE          => $matchPercentage,
+                Constants::SUCCESS                   => ($isMatch === true),
+                Constants::MATCH_TYPE                => FuzzyMatcher::SIMPLE_MATCH,
+            ]);
+
+        return $isMatch === true;
     }
 
-    protected function isPromoterPanNameMatch()
+    private function isPromoterPanNameMatch(): bool
     {
         $gstinFuzzyMatcher = new FuzzyMatcher(GSTINVerificationStatus::GSTIN_VERIFICATION_PROMOTER_PAN_NAME_THRESHOLD, FuzzyMatcher::SIMPLE_MATCH);
 
-        $members = $this->data[Constants::MEMBERS] ?? '';
+        $members = $this->data[Constants::MEMBERS] ?? [];
 
         foreach ($members as $member)
         {
-            if ($gstinFuzzyMatcher->isMatch($this->dataToVerify[Constants::PROMOTER_PAN_NAME], $member) === true)
-            {
-                $this->matchedMember = $member;
+            $isMatch = $gstinFuzzyMatcher->isMatch($this->dataToVerify[Constants::PROMOTER_PAN_NAME], $member, $matchPercentage);
 
+            $this->updateVerificationComparisionResult(
+                [
+                    Constants::DOCUMENT_TYPE             => Constants::PROMOTER_PAN_NAME,
+                    Constants::DETAILS_FROM_API_RESPONSE => $member,
+                    Constants::DETAILS_FROM_USER         => $this->dataToVerify[Constants::PROMOTER_PAN_NAME],
+                    Constants::MATCH_THRESHOLD           => GSTINVerificationStatus::GSTIN_VERIFICATION_PROMOTER_PAN_NAME_THRESHOLD,
+                    Constants::MATCH_PERCENTAGE          => $matchPercentage,
+                    Constants::SUCCESS                   => ($isMatch === true),
+                    Constants::MATCH_TYPE                => FuzzyMatcher::SIMPLE_MATCH,
+                ]);
+
+            if ($isMatch === true)
+            {
                 return true;
             }
         }
+
         return false;
+    }
+
+    function getIncorrectDetailsStatus()
+    {
+        return GSTINVerificationStatus::INCORRECT_DETAILS;
+    }
+
+    function getFailedStatus()
+    {
+        return GSTINVerificationStatus::FAILED;
+    }
+
+    function getNotMatchedStatus()
+    {
+        return GSTINVerificationStatus::NOT_MATCHED;
+    }
+
+    function getVerifiedStatus()
+    {
+        return GSTINVerificationStatus::VERIFIED;
     }
 }

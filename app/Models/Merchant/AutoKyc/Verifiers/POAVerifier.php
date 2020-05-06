@@ -4,19 +4,17 @@ namespace RZP\Models\Merchant\AutoKyc\Verifiers;
 
 use RZP\lib\FuzzyMatcher;
 use RZP\Models\Merchant\Detail\Constants;
+use RZP\Models\Merchant\Detail\PoaVerificationStatus;
 use RZP\Models\Merchant\Document\OcrVerificationStatus;
 
 class POAVerifier implements Verifier
 {
+    use DefaultVerifier;
+
     /**
      * @var string
      */
     protected $panOwnerName;
-
-    /**
-     * @var array
-     */
-    protected $data;
 
     /**
      * @var string
@@ -25,36 +23,61 @@ class POAVerifier implements Verifier
 
     public function __construct(string $panOwnerName, array $data)
     {
+        $this->initData($data);
+
         $this->panOwnerName = $panOwnerName;
-        $this->data         = $data;
-        $this->ocrName      = $data[Constants::NAME] ?? "";
+        $this->ocrName      = $data[Constants::NAME] ?? '';
     }
 
-    public function verify()
+    protected function isDetailsMatch(): bool
     {
-        $isOcrMatch = false;
+        if ($this->isCorrectDetails() === false)
+        {
+            return false;
+        }
 
-        $matchPercent = null;
+        $documentType = $this->data[Constants::DOCUMENT_TYPE] ?? '';
 
         $poaFuzzyMatcher = new FuzzyMatcher(OcrVerificationStatus::OCR_VERIFICATION_THRESHOLD, FuzzyMatcher::JUMBLED_MATCH);
 
-        if ((empty($this->ocrName) === false) and
-            empty($this->panOwnerName) === false)
-        {
-            $isOcrMatch = $poaFuzzyMatcher->isMatch($this->panOwnerName, $this->ocrName, $matchPercent);
-        }
+        $isOcrMatch = $poaFuzzyMatcher->isMatch($this->panOwnerName, $this->ocrName, $matchPercent);
 
-        return [
-            Constants::OCR_MATCHING_PERCENTAGE_WITH_PAN_NAME => $matchPercent,
-            Constants::DOCUMENT_VERIFICATION_STATUS          => $this->getOcrVerificationStatus($isOcrMatch),
-            Constants::POA_FUZZY_MATCH_TYPE                  => $poaFuzzyMatcher->getMatchType(),
-        ];
+        $this->updateVerificationComparisionResult(
+            [
+                Constants::DOCUMENT_TYPE             => $documentType,
+                Constants::DETAILS_FROM_API_RESPONSE => $this->ocrName,
+                Constants::DETAILS_FROM_USER         => $this->panOwnerName,
+                Constants::MATCH_THRESHOLD           => OcrVerificationStatus::OCR_VERIFICATION_THRESHOLD,
+                Constants::MATCH_PERCENTAGE          => $matchPercent,
+                Constants::SUCCESS                   => ($isOcrMatch === true),
+                Constants::MATCH_TYPE                => FuzzyMatcher::JUMBLED_MATCH,
+            ]);
+
+        return ($isOcrMatch === true);
     }
 
-    protected function getOcrVerificationStatus(bool $isOcrMatch): string
+    protected function isCorrectDetails(): bool
     {
-        $ocrVerifiedStatus = $isOcrMatch ? OcrVerificationStatus::VERIFIED : OcrVerificationStatus::FAILED;
+        return empty($this->ocrName) === false;
+    }
 
-        return $ocrVerifiedStatus;
+    function getIncorrectDetailsStatus()
+    {
+        return PoaVerificationStatus::FAILED;
+    }
+
+    function getFailedStatus()
+    {
+        return PoaVerificationStatus::FAILED;
+    }
+
+    function getNotMatchedStatus()
+    {
+        return PoaVerificationStatus::FAILED;
+    }
+
+    function getVerifiedStatus()
+    {
+        return PoaVerificationStatus::VERIFIED;
     }
 }
