@@ -14,6 +14,7 @@ use RZP\Exception\LogicException;
 use RZP\Models\Settlement\Channel;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\FundTransfer\Attempt;
+use RZP\Models\FundTransfer\Redaction;
 use RZP\Models\Card\Entity as CardVault;
 use RZP\Models\FundTransfer\Yesbank\Mode;
 use RZP\Constants\Entity as ConstantsEntity;
@@ -121,7 +122,7 @@ class Transfer extends Base
 
         $requestData = $this->getRequestData();
 
-        $this->requestTrace = $requestData;
+        $this->requestTrace = (new Redaction())->redactData($requestData);
 
         if ($this->isLogEnabled() === false and
             ($this->entity->isRefund() === true))

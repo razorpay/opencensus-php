@@ -16,6 +16,7 @@ use RZP\Constants\Entity as E;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\FundTransfer\Mode;
 use RZP\Exception\LogicException;
+use RZP\Models\FundTransfer\Redaction;
 use RZP\Models\Vpa\Entity as VpaEntity;
 use RZP\Models\Card\Entity as CardEntity;
 use RZP\Models\Card\Issuer as CardIssuer;
@@ -582,7 +583,7 @@ class Core extends Base\Core
     {
         $this->trace->info(
             TraceCode::FTA_SOURCE_PROCESSING_DATA,
-            $this->redactDataForLogs($ftaData));
+            (new Redaction())->redactData($ftaData));
 
         try
         {
@@ -661,7 +662,7 @@ class Core extends Base\Core
     {
         $this->trace->info(
             TraceCode::FTA_SOURCE_PROCESSING_DATA,
-            $this->redactDataForLogs($ftaData));
+            (new Redaction())->redactData($ftaData));
 
         try
         {
@@ -970,21 +971,5 @@ class Core extends Base\Core
     public function getAttemptsFromIds(array $ftaIds)
     {
         return $this->repo->fund_transfer_attempt->fetchFtsAttemptUsingId($ftaIds);
-    }
-
-    public function redactDataForLogs(array $input): array
-    {
-        if (array_key_exists("beneficiary_name", $input) === true)
-        {
-            $input["beneficiary_name"] = str_repeat('*', strlen($input["beneficiary_name"]));
-        }
-
-        if ((array_key_exists("extra_info", $input) === true) &&
-            (array_key_exists("beneficiary_name", $input["extra_info"]) === true))
-        {
-            $input["extra_info"]["beneficiary_name"] = str_repeat('*', strlen($input["extra_info"]["beneficiary_name"]));
-        }
-
-        return $input;
     }
 }

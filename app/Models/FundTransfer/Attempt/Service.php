@@ -12,6 +12,7 @@ use RZP\Models\Admin\ConfigKey;
 use RZP\Models\FundTransfer\Mode;
 use Razorpay\Trace\Logger as Trace;
 use http\Exception\RuntimeException;
+use RZP\Models\FundTransfer\Redaction;
 use RZP\Models\FundTransfer\Attempt\Core;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\FundTransfer\Attempt\Validator;
@@ -300,7 +301,7 @@ class Service extends Base\Service
         $this->trace->info(
             TraceCode::FTS_UPDATE_FUND_TRANSFER_ATTEMPT,
             [
-                'input'     => $this->core()->redactDataForLogs($input)
+                'input'     => (new Redaction())->redactData($input)
             ]);
 
         return $this->core()->updateFundTransfer($input);
