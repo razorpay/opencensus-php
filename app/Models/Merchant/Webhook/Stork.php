@@ -270,6 +270,7 @@ class Stork
 
     protected function serializeWebhook(Entity $webhook): array
     {
+
         return [
             'id'            => $webhook->getId(),
             'service'       => $this->service->service,
@@ -278,10 +279,41 @@ class Stork
             'disabled'      => $webhook->isActive() === false,
             'url'           => $webhook->getUrl(),
             'secret'        => $webhook->getSecret(),
-            'subscriptions' => array_map(
-                function($v) { return ['eventmeta' => ['name' => $v]]; },
-                array_keys(array_filter($webhook->getEvents()))),
+            'subscriptions' => ($this->product === Product::PRIMARY) ? $this->getPrimaryProductSubscriptions($webhook)
+                                                                     : $this->getBankingProductSubscriptions($webhook),
         ];
+    }
+
+    protected function getBankingProductSubscriptions(Entity $webhook)
+    {
+        $events = \RZP\Models\Merchant\Webhook\Event::getAllEventsByProduct(Product::BANKING);
+
+        return array_map(
+            function($v)
+            {
+                return ['eventmeta' => ['name' => $v]];
+            },
+            array_keys(
+                array_filter($webhook->getEvents(),
+                    function($value, $event) use ($events)
+                    {
+                        if (in_array($event, $events) and ($value === true))
+                        {
+                            return true;
+                        }
+                        return false;
+                    }, ARRAY_FILTER_USE_BOTH)
+            ));
+    }
+
+    protected function getPrimaryProductSubscriptions(Entity $webhook)
+    {
+        return array_map(
+            function($v)
+            {
+                return ['eventmeta' => ['name' => $v]];
+            },
+            array_keys(array_filter($webhook->getEvents())));
     }
 
     public function deserializeStorkWebhook(array $response) : array

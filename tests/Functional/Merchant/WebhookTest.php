@@ -205,7 +205,9 @@ class WebhookTest extends TestCase
 
         $this->fixtures->merchant->addFeatures(['payout']);
 
-        $this->startTest();
+        $response = $this->startTest();
+
+        $this->assertNotNull($response['id']);
     }
 
     public function testCreateWebhookForProductBankingWithStork()
@@ -224,7 +226,71 @@ class WebhookTest extends TestCase
                 {
                     return $this->getStorkCreateResponse();
                 }
+
+                return new \Requests_Response();
             });
+
+        $this->startTest();
+    }
+
+    public function testCreateWebhookForProductBankingWithFeatureOffWithStork()
+    {
+        $createExpectedPayload = $this->testData['storkCreateRequestBanking'];
+        $updateExpectedPayload = $this->testData['storkUpdateRequestPrimary'];
+
+        $this->mockServiceStorkRequest(
+            function ($path, $payload) use ( $createExpectedPayload, $updateExpectedPayload )
+            {
+                switch ($path)
+                {
+                    case '/twirp/rzp.stork.webhook.v1.WebhookAPI/List':
+                        return $this->getStorkListResponseEmpty();
+
+                    case '/twirp/rzp.stork.webhook.v1.WebhookAPI/Create':
+                        $this->assertArraySelectiveEquals($createExpectedPayload, $payload);
+                        break;
+
+                    case '/twirp/rzp.stork.webhook.v1.WebhookAPI/Update':
+                        $this->assertArraySelectiveEquals($updateExpectedPayload, $payload);
+                        break;
+                }
+
+                return new \Requests_Response();
+            })->times(3);
+
+        $this->testCreateWebhookForProductBanking();
+    }
+
+    public function testEditWebhookWithFeatureOffStorkRequest()
+    {
+        $webhook = $this->createWebhook();
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/webhooks/'.$webhook['id'];
+
+        $createExpectedPayloadBanking = $this->testData['testEditWebhookStorkCreateRequestBanking'];
+        $updateExpectedPayloadPrimary = $this->testData['testEditWebhookStorkUpdateRequestPrimary'];
+
+        $this->mockServiceStorkRequest(
+            function ($path, $payload) use ( $createExpectedPayloadBanking, $updateExpectedPayloadPrimary )
+            {
+                switch ($path)
+                {
+                    case '/twirp/rzp.stork.webhook.v1.WebhookAPI/List':
+                        return $this->getStorkListResponseEmpty();
+
+                    case '/twirp/rzp.stork.webhook.v1.WebhookAPI/Create':
+                        $this->assertArraySelectiveEquals($createExpectedPayloadBanking, $payload);
+                        break;
+
+                    case '/twirp/rzp.stork.webhook.v1.WebhookAPI/Update':
+                        $this->assertArraySelectiveEquals($updateExpectedPayloadPrimary, $payload);
+                        break;
+                }
+
+                return new \Requests_Response();
+            })->times(3);
+
+        $this->fixtures->merchant->edit('10000000000000', ['business_banking' => 1]);
 
         $this->startTest();
     }
@@ -274,6 +340,34 @@ class WebhookTest extends TestCase
             {
                 return $this->getStorkListResponse();
             });
+
+        $this->startTest();
+    }
+
+    public function testCopyWebhookInBulkForBanking()
+    {
+        $this->createWebhook();
+        $createExpectedPayloadBanking = $this->testData['testEditWebhookStorkCreateRequestBanking'];
+
+        $this->fixtures->merchant->edit('10000000000000', ['business_banking' => 1]);
+
+        $this->mockServiceStorkRequest(
+            function ($path, $payload) use ($createExpectedPayloadBanking)
+            {
+                if ($path === "/twirp/rzp.stork.webhook.v1.WebhookAPI/Get") {
+                    return $this->getStorkListResponseEmpty();
+                }
+                else if ($path === "/twirp/rzp.stork.webhook.v1.WebhookAPI/Create")
+                {
+                    $this->assertArraySelectiveEquals($createExpectedPayloadBanking, $payload);
+
+                    return $this->getStorkCreateResponse();
+                }
+
+                return new \Requests_Response();
+            })->twice();
+
+        $this->ba->adminAuth();
 
         $this->startTest();
     }

@@ -54,6 +54,11 @@ class Service extends Base\Service
         return $this->core()->webhookStorkMigrate($input);
     }
 
+    public function webhookStorkCreateBankingBulk(array $input): array
+    {
+        return $this->core()->webhookStorkCreateBankingBulk($input);
+    }
+
     /**
      * @see Core::webhookDeactivate()
      *

@@ -393,6 +393,7 @@ final class Route
         'webhook_fetch_multiple'                   => ['get',      'webhooks',                                       'MerchantController@getWebhooks'                                    ],
         'oauth_app_webhook_create'                 => ['post',     'oauth/applications/{id}/webhooks',               'MerchantController@postOAuthApplicationWebhook'                    ],
         'webhook_stork_migrate'                    => ['post',     'webhooks/migrate/stork',                         'WebhookController@webhookStorkMigrate'                             ],
+        'webhook_stork_create_banking_bulk'        => ['post',     'webhooks/create/stork/banking/bulk',             'WebhookController@webhookStorkCreateBankingBulk'                   ],
         'webhook_deactivate'                       => ['post',     'webhooks/{id}/deactivate',                       'WebhookController@webhookDeactivate'                               ],
         'merchant_create_key'                      => ['post',     'keys',                                           'KeyController@postCreateKeys'                                      ],
         'merchant_fetch_keys'                      => ['get',      'keys',                                           'KeyController@getKeys'                                             ],
@@ -3121,7 +3122,10 @@ final class Route
         'create_payment_config_admin',
         'update_payment_config_admin',
         'admin_fetch_fund_account_validate',
-        ];
+
+        // Banking webhook Stork
+        'webhook_stork_create_banking_bulk',
+    ];
 
     public static $routePermission = [
         'payout_reject_admin'                      => Permission::REJECT_PAYOUT,
@@ -3762,6 +3766,9 @@ final class Route
         'fee_recovery_payout_admin'                 => Permission::PROCESS_FEE_RECOVERY,
         'fee_recovery_payout_schedule_task'         => Permission::ASSIGN_FEE_RECOVERY_SCHEDULE,
         'fee_recovery_manual_update'                => Permission::PROCESS_FEE_RECOVERY,
+
+        // copy API setting to RX on stork
+        'webhook_stork_create_banking_bulk'        => Permission::CREATE_WEBHOOK_STORK_BANKING_BULK,
     ];
 
     public static $bankingRoutePermissions = [
@@ -4200,6 +4207,7 @@ final class Route
             'retry_penny_testing_cron',
             'payment_links_bulk_expire',
             'fee_recovery_payout_process',
+            'webhook_stork_create_banking_bulk',
         ],
 
         'subscriptions' => [

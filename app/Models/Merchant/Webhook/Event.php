@@ -656,4 +656,9 @@ class Event
 
         return $eventNames;
     }
+
+    public static function getAllEventsByProduct($product)
+    {
+        return group_array_by_value_array($product, self::getLaunchedEventNames())[$product];
+    }
 }

@@ -13,6 +13,7 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Product;
 use RZP\Base\RuntimeManager;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Event\Entity as EventEntity;
 use RZP\Mail\Merchant\Webhook as WebhookMail;
 
@@ -43,6 +44,9 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($webhook);
 
+        // Copy to Stork
+        $this->saveWebhookToStork($merchant, $webhook);
+
         return $webhook;
     }
 
@@ -53,6 +57,9 @@ class Core extends Base\Core
         $webhook->edit($input);
 
         $this->repo->saveOrFail($webhook);
+
+        // Copy to Stork
+        $this->saveWebhookToStork($merchant, $webhook);
 
         return $webhook;
     }
@@ -183,6 +190,9 @@ class Core extends Base\Core
         $webhook->deactivate();
 
         $this->repo->saveOrFail($webhook);
+
+        // Copy to Stork
+        $this->saveWebhookToStork($webhook->merchant, $webhook);
     }
 
     /**
@@ -332,5 +342,173 @@ class Core extends Base\Core
         }
 
         return  $webhookCollection->push($webhook);
+    }
+
+    protected function saveWebhookToStork(Merchant\Entity $merchant,
+                                          Entity $webhook)
+    {
+        try
+        {
+            $this->upsertToStork($merchant, $webhook, Product::PRIMARY);
+
+            // Copy webhook setting for X if business banking is ON for Merchant
+            // This will go away after complete rollout of webhook separation for X and PG
+            if ($merchant->isBusinessBankingEnabled() === true)
+            {
+                $this->upsertToStork($merchant, $webhook, Product::BANKING);
+            }
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::STORK_SAVE_SETTING_FAILED,
+                [
+                    'merchant_id' => $merchant->getId(),
+                ]);
+        }
+    }
+
+    /**
+     * This is temp function for Webhook Separation rollout
+     *
+     * @param Merchant\Entity $merchant
+     * @param Entity          $webhook
+     * @param string          $product
+     *
+     * @return void
+     * @throws Exception\ServerErrorException
+     */
+    public function upsertToStork(Merchant\Entity $merchant,
+                                  Entity $webhook,
+                                  string $product): void
+    {
+        $stork = new Stork($product);
+
+        // Stork migration is already done for PRIMARY
+        // API DB and PRIMARY Stork PG setting Ids are mapped one to one
+        if ($product === Product::PRIMARY)
+        {
+            // update with db Id
+            $stork->update($webhook);
+        }
+        // Upsert for X
+        else if ($product === Product::BANKING)
+        {
+            // This will return multiple webhooks but currently only one is supported for X
+            $storkResponse = $stork->fetchMultiple($merchant);
+
+            if (sizeof($storkResponse) < 1)
+            {
+                // Create new setting on Stork for X
+                $webhook->setId(null);
+                $stork->create($webhook);
+            }
+            else
+            {
+                // Update existing setting on Stork for X
+                $webhook->setId($storkResponse['webhooks'][0]['id']);
+                $stork->update($webhook);
+            }
+        }
+    }
+
+    /**
+     * Copy API Stork setting from stork to RX setting on Stork
+     * This is temp function and only used for webhook separation
+     *
+     * @param  array  $input - List of MIDs
+     * @return array         - List of MIDs with successful and failed count
+     */
+    public function webhookStorkCreateBankingBulk(array $input): array
+    {
+        $this->trace->info(TraceCode::STORK_WEBHOOK_COPY_API_TO_RX_REQUEST, $input);
+
+        $merchantIds = $input['merchant_ids'] ?? [];
+
+        $successfulIds = [];
+        $failedIds = [];
+        $noSettingIds = [];
+
+        foreach ($merchantIds as $merchantId)
+        {
+            try
+            {
+                /** @var Merchant\Entity $merchant */
+                $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+                if ($merchant->isBusinessBankingEnabled() === true)
+                {
+                    $webhook = $this->repo->webhook->findByMerchant($merchant);
+
+                    if ($webhook === null)
+                    {
+                        $noSettingIds[] = $merchantId;
+                        continue;
+                    }
+
+                    /** @var Entity $webhook */
+                    $webhook->setId(null);
+                    $res = $this->createToStorkIfNotExists($merchant, $webhook, Product::BANKING);
+
+                    if ($res === null)
+                    {
+                        $noSettingIds[] = $merchantId;
+                        continue;
+                    }
+
+                    $successfulIds[] = $merchantId;
+                }
+                else
+                {
+                    $noSettingIds[] = $merchantId;
+                }
+            }
+
+            catch (\Throwable $e)
+            {
+                $this->trace->traceException($e);
+                $failedIds[] = $merchantId;
+            }
+        }
+
+        $summary = [
+            'successful_mids' => $successfulIds,
+            'failed_mids'     => $failedIds,
+            'no_setting_mids' => $noSettingIds,
+        ];
+
+        $this->trace->info(TraceCode::STORK_WEBHOOK_COPY_API_TO_RX_SUMMARY, $summary);
+
+        return $summary;
+    }
+
+    /**
+     * This is temp function used for webhook separation migration
+     *
+     * @param Merchant\Entity $merchant
+     * @param Entity          $webhook
+     * @param string          $product
+     *
+     * @return Entity|null
+     * @throws Exception\ServerErrorException
+     */
+    public function createToStorkIfNotExists(Merchant\Entity $merchant,
+                                             Entity $webhook,
+                                             string $product)
+    {
+        $stork = new Stork($product);
+
+        $storkResponse = $stork->fetchMultiple($merchant);
+
+        if (sizeof($storkResponse) > 0)
+        {
+            return null;
+        }
+
+        $stork->create($webhook);
+
+        return $webhook;
     }
 }

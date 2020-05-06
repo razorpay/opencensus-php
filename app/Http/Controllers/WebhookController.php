@@ -59,6 +59,17 @@ class WebhookController extends Controller
     }
 
     /**
+     *
+     * @return mixed
+     */
+    public function webhookStorkCreateBankingBulk()
+    {
+        $data = $this->service()->webhookStorkCreateBankingBulk($this->input);
+
+        return ApiResponse::json($data);
+    }
+
+    /**
      * @see Webhook\Service::webhookDeactivate()
      *
      * @param string $id

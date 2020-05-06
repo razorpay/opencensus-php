@@ -823,6 +823,10 @@ return [
                 'description' => 'Create Banking VAs for a merchant',
                 'assignable'  => true,
             ],
+            Permission::CREATE_WEBHOOK_STORK_BANKING_BULK => [
+                'description' => 'Copy RX setting from Api to Rx',
+                'assignable'  => true,
+            ],
         ],
 
         PermissionCategory::RAZORPAY_CAPITAL => [

@@ -2575,8 +2575,11 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const STORK_DISPATCH_EVENT_REQUEST                          = 'STORK_DISPATCH_EVENT_REQUEST';
     const STORK_DISPATCH_EVENT_REQUEST_PRODUCT_BANKING          = 'STORK_DISPATCH_EVENT_REQUEST_PRODUCT_BANKING';
     const STORK_WEBHOOK_MIGRATE_SUMMARY                         = 'STORK_WEBHOOK_MIGRATE_SUMMARY';
+    const STORK_WEBHOOK_COPY_API_TO_RX_REQUEST                  = 'STORK_WEBHOOK_COPY_API_TO_RX_REQUEST';
+    const STORK_WEBHOOK_COPY_API_TO_RX_SUMMARY                  = 'STORK_WEBHOOK_COPY_API_TO_RX_SUMMARY';
     const STORK_ADMIN_REQUEST                                   = 'STORK_ADMIN_REQUEST';
     const STORK_ADMIN_RESPONSE                                  = 'STORK_ADMIN_RESPONSE';
+    const STORK_SAVE_SETTING_FAILED                             = 'STORK_SAVE_SETTING_FAILED';
 
     // Edge<>api integration.
     const PASSPORT_JWT_PARSE_INVOKED                            = 'PASSPORT_JWT_PARSE_INVOKED';

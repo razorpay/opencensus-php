@@ -332,6 +332,27 @@ return [
         ],
     ],
 
+    'testEditWebhookWithFeatureOffStorkRequest' => [
+        'request' => [
+            'url'       => '/webhooks/3232',
+            'content'   => [
+                'url'       => 'http://webhook.com/v1/dummy/route',
+                'events'    => [
+                    'payment.failed' => '1',
+                ],
+            ],
+            'method'    => 'PUT',
+        ],
+        'response' => [
+            'content' => [
+                'url'       => 'http://webhook.com/v1/dummy/route',
+                'events'    => [
+                    'payment.failed' => true,
+                ],
+            ],
+        ],
+    ],
+
     'testCreateWebhookForProductBankingWithStork' => [
         'request' => [
             'url'       => '/webhooks',
@@ -355,6 +376,96 @@ return [
                     'payout.reversed'       => false,
                 ],
                 'active'    => true,
+            ],
+        ],
+    ],
+
+    'storkCreateRequestBanking' => [
+        'webhook' => [
+            'id' => NULL,
+            'service' => "rx-test",
+            'owner_id' => "10000000000000",
+            'owner_type' => "merchant",
+            'disabled' => FALSE,
+            'url' => "http://webhook.com/v1/dummy/route",
+            'secret' => NULL,
+            'subscriptions' => [
+                [
+                    'eventmeta' => [
+                        'name' => "transaction.created",
+                    ]
+                ]
+            ]
+        ]
+    ],
+
+    'storkUpdateRequestPrimary' => [
+        'webhook' => [
+            'service' => "api-test",
+            'owner_id' => "10000000000000",
+            'owner_type' => "merchant",
+            'disabled' => FALSE,
+            'url' => "http://webhook.com/v1/dummy/route",
+            'secret' => NULL,
+            'subscriptions' => [
+                [
+                    'eventmeta' => [
+                        'name' => "transaction.created",
+                    ]
+                ]
+            ]
+        ]
+    ],
+
+    'testEditWebhookStorkCreateRequestBanking' => [
+        'webhook' => [
+            'id' => NULL,
+            'service' => "rx-test",
+            'owner_id' => "10000000000000",
+            'owner_type' => "merchant",
+            'disabled' => FALSE,
+            'url' => "http://webhook.com/v1/dummy/route",
+            'secret' => NULL,
+            'subscriptions' => []
+        ]
+    ],
+
+    'testEditWebhookStorkUpdateRequestPrimary' => [
+        'webhook' => [
+            'service' => "api-test",
+            'owner_id' => "10000000000000",
+            'owner_type' => "merchant",
+            'disabled' => FALSE,
+            'url' => "http://webhook.com/v1/dummy/route",
+            'secret' => NULL,
+            'subscriptions' => [
+                [
+                    'eventmeta' => [
+                        'name' => "payment.authorized",
+                    ]
+                ],
+                [
+                    'eventmeta' => [
+                        'name' => "payment.failed",
+                    ]
+                ]
+            ]
+        ]
+    ],
+
+    'testCopyWebhookInBulkForBanking' => [
+        'request' => [
+            'url' => '/webhooks/create/stork/banking/bulk',
+            'method' => 'post',
+            'content' => [
+                "merchant_ids" => ["10000000000000", "10000000000001"]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'successful_mids'  => ['10000000000000'],
+                'failed_mids'  => ['10000000000001'],
+                'no_setting_mids'  => [],
             ],
         ],
     ],
