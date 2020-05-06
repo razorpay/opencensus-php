@@ -1935,7 +1935,7 @@ $stepIndicatorSize = 36px;
 .Modal-container--instant-activations-success {
 
   width: 90%;
-  max-width: 328px;
+  max-width: 382px;
 
   .Modal-close, modal-header {
 
@@ -1974,6 +1974,16 @@ $stepIndicatorSize = 36px;
     > p {
 
       margin-bottom: 20px;
+    }
+
+    .ias__complete_kyc {
+      margin-right: 20px;
+      
+      @media (max-width $screen-sm-min) {
+        display: block;
+        margin: auto;
+        margin-bottom: 20px;
+      }
     }
   }
 }

@@ -4,14 +4,19 @@ import LocalStorageService from 'common/utils/localStorage';
 
 import { LIVE_MODE, TEST_MODE } from './data';
 
-export const switchToMode = (merchantId, mode = TEST_MODE) => {
+export const switchToMode = (merchantId, mode = TEST_MODE, url = null) => {
   if (!LocalStorageService.getItem(`hide-mode-dd-popover`)) {
     LocalStorageService.removeItem(`hide-mode-dd-popover`);
     LocalStorageService.setItem(`show-mode-dd-popover`, 'true');
   }
 
   LocalStorageService.setItem(`rzp_mode--${merchantId}`, mode);
-  window.location.reload();
+
+  if (url) {
+    window.location = url;
+  } else {
+    window.location.reload();
+  }
 };
 
 export default class SwitchToMode extends Component {

@@ -273,8 +273,8 @@ export default class HomeContainer extends Component {
     this.onHideDiwaliPromotion = this.onHideDiwaliPromotion.bind(this);
   }
 
-  onInstantActivationSuccess() {
-    return switchToMode(this.props.user.current, 'live');
+  onInstantActivationSuccess(url) {
+    return switchToMode(this.props.user.current, 'live', url);
   }
 
   onExtraContentMount(node) {
@@ -849,6 +849,16 @@ export default class HomeContainer extends Component {
               iaActivations.trackGoToDashboard();
               this.closeOnboardingStep();
               this.onInstantActivationSuccess();
+            }}
+            onCompleteKYC={() => {
+              tracking.trackEvent(
+                window.rzpQ.onbr().initiated('kyc.form_fill', {
+                  clickSource: 'Complete_kyc',
+                })
+              );
+              this.onInstantActivationSuccess(
+                `/app/activation?basePath=${encodeURIComponent('/dashboard')}`
+              );
             }}
             user={user}
           />

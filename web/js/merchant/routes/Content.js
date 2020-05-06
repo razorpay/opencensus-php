@@ -29,6 +29,7 @@ import Support from 'merchant/components/Support';
 import Offers from 'merchant/views/Offers';
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 import PaypalOnboardRedirect from 'merchant/views/Settings/Configuration/PaypalOnboardRedirect';
+import qs from 'query-string';
 
 import {
   setBaseLocation,
@@ -96,6 +97,16 @@ export default class Content extends Component {
       setActiveEntity(resultRoute.match.params.id);
       if (Object.keys(params > 1)) {
         setSecActiveEntity(params[Object.keys(params)[1]]);
+      }
+
+      let query = qs.parse(location.search);
+      if (query.basePath) {
+        let _location = {
+          ...location,
+          pathname: query.basePath,
+        };
+        this.baseLocation = _location;
+        setBaseLocation(_location);
       }
     } else {
       this.detailView = null;
