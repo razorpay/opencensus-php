@@ -335,6 +335,15 @@ class Core extends Base\Core
 
         $balanceId = $balance->getId();
 
+        $this->trace->info(
+            TraceCode::FEE_RECOVERY_PAYOUTS_AND_REVERSALS_FETCH_INITIATED,
+            [
+                'merchant_id'   => $merchant->getId(),
+                'balance_id'    => $balanceId,
+                'start_time'    => $startTimestamp,
+                'end_time'      => $endTimestamp
+            ]);
+
         // TODO : Add a limit to make sure that these fetch statements don't choke the network
 
         $payouts = $this->repo->payout->fetchFeesAndIdOfPayoutsForGivenBalanceIdForPeriod(
@@ -357,6 +366,16 @@ class Core extends Base\Core
             $startTimestamp,
             $endTimestamp
         );
+
+        $this->trace->info(
+            TraceCode::FEE_RECOVERY_PAYOUTS_AND_REVERSALS_FETCH_COMPLETED,
+            [
+                'merchant_id'           => $merchant->getId(),
+                'balance_id'            => $balanceId,
+                'payout_count'          => $payouts->count(),
+                'failed_payout_count'   => $failedPayouts->count(),
+                'reversal_count'        => $reversals->count()
+            ]);
 
         return [$payouts, $failedPayouts, $reversals];
     }
