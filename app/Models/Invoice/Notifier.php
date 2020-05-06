@@ -769,6 +769,7 @@ class Notifier extends Base\Core
                     'receipt'        => $receipt,
                     'invoice_link'   => $invoiceLink,
                     'amount'         => $this->invoice->getAmount() / 100,
+                    'expiry_date'    => $expireBy ?? '',
                     'min_amount_due' => ($this->invoice->getFirstPaymentMinAmount() ?? 0) / 100,
                 ];
 
@@ -823,12 +824,13 @@ class Notifier extends Base\Core
 
             case Preferences::MID_RBL_HEMANT:
                 $template = 'sms.custom_invoice.rbl_hemant';
-                $sender   = 'RBLBNK';
+                $sender   = 'RBLCRD';
                 $params = [
-                    'receipt'       => $receipt,
-                    'amount'        => $this->invoice->getAmount() / 100,
-                    'invoice_link'  => $invoiceLink,
-                    'expiry_date'   => $expireBy ?? '',
+                    'receipt'        => $receipt,
+                    'invoice_link'   => $invoiceLink,
+                    'amount'         => $this->invoice->getAmount() / 100,
+                    'expiry_date'    => $expireBy ?? '',
+                    'min_amount_due' => ($this->invoice->getFirstPaymentMinAmount() ?? 0) / 100,
                 ];
 
                 break;
