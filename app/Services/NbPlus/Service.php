@@ -117,22 +117,22 @@ class Service
     {
         $path = self::ADMIN_PATH . $entityName;
 
-        return $this->sendRequest('GET', $path, $input);
+        return $this->sendRequest('GET', $path, $input, false);
     }
 
     public function fetch(string $entityName, string $id, $input)
     {
         $path = self::ADMIN_PATH . $entityName . '/' . $id;
 
-        return $this->sendRequest('GET', $path, $input);
+        return $this->sendRequest('GET', $path, $input, false);
     }
 
     public function fetchNetbankingData(array $input)
     {
-        return $this->sendRequest('POST', 'entities/netbanking', $input);
+        return $this->sendRequest('POST', 'entities/netbanking', $input, false);
     }
 
-    public function sendRequest(string $method, string $url, array $data = [])
+    public function sendRequest(string $method, string $url, array $data = [], bool $shouldTraceResponse = true)
     {
         $request = [
             'url'     => $url,
@@ -150,7 +150,10 @@ class Service
 
         list($response, $code) = $this->parseResponse($response);
 
-        $this->traceResponse($response);
+        if ($shouldTraceResponse === true)
+        {
+            $this->traceResponse($response);
+        }
 
         $this->checkForErrors($response, $code);
 
