@@ -113,7 +113,8 @@ class Repository extends Base\Repository
                     ->where($faSourceIdColumn, '=', $contact->getId())
                     ->where($bankAccountTypeColumn, '=', E::CONTACT)
                     ->where($bankAccountAccountNumberColumn, '=', $bankAccount[BankAccount\Entity::ACCOUNT_NUMBER])
-                    ->where($bankAccountIfscCodeColumn, '=', $bankAccount[BankAccount\Entity::IFSC])
+            // TODO: Can remove strtoupper() if collation for ifsc column is made case insensitive
+                    ->where($bankAccountIfscCodeColumn, '=', strtoupper($bankAccount[BankAccount\Entity::IFSC]))
                     ->where($bankAccountBeneficiaryName, '=', $bankAccount[BankAccount\Entity::NAME])
                     ->where($bankAccountMerchantIdColumn, '=', $merchant->getId())
                     ->latest($bankAccountCreatedAtColumn)

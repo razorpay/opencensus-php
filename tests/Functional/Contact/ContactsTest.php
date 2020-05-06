@@ -59,7 +59,10 @@ class ContactsTest extends TestCase
     public function testCreateContact()
     {
         $this->startTest();
+    }
 
+    public function testCreateContactWithProxyAuth()
+    {
         // Test with Proxy Auth
         $this->ba->proxyAuth();
 
@@ -221,7 +224,7 @@ class ContactsTest extends TestCase
 
         $response = $this->startTest();
 
-        $this->assertNotEquals($response['id'], $contact['id']);
+        $this->assertEquals($response['id'], $contact['id']);
     }
 
     public function testDuplicateContactCreationWithSameName()

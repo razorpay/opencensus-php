@@ -409,7 +409,7 @@ class FundAccountsTest extends TestCase
 
         $response = $this->startTest();
 
-        $this->assertNotEquals($fundAccount['id'], $response['id']);
+        $this->assertEquals($fundAccount['id'], $response['id']);
     }
 
     public function testCreateDuplicateFundAccountOnApi()
@@ -645,5 +645,18 @@ class FundAccountsTest extends TestCase
         $request['url'] = '/fund_accounts/' . $fundAccount['id'];
 
         $this->startTest();
+    }
+
+    public function testDuplicateFundAccountCreationOnDashboardForBankAccountWithLowerCaseIfsc()
+    {
+        $this->testCreateFundAccountBankAccount();
+
+        $fundAccount = $this->getLastEntity('fund_account', true);
+
+        $this->ba->proxyAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEquals($fundAccount['id'], $response['id']);
     }
 }

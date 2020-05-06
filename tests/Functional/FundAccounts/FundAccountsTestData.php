@@ -1362,7 +1362,7 @@ return [
                 'account_type' => 'bank_account',
                 'contact_id'   => 'cont_1000000contact',
             ],
-            'status_code' => 201
+            'status_code' => 200
         ],
     ],
 
@@ -2014,6 +2014,30 @@ return [
         'exception' => [
             'class'               => Exception\BadRequestException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_INTERNAL_FUND_ACCOUNT_UPDATE_NOT_PERMITTED,
+        ],
+    ],
+
+    'testDuplicateFundAccountCreationOnDashboardForBankAccountWithLowerCaseIfsc' => [
+        'request'  => [
+            'content' => [
+                'account_type' => 'bank_account',
+                'contact_id'   => 'cont_1000000contact',
+                'bank_account'      => [
+                    'ifsc'           => 'sbIn0007105',
+                    'name'           => 'Amit M',
+                    'account_number' => '111000111',
+                ],
+            ],
+            'url'     => '/fund_accounts',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'entity'       => 'fund_account',
+                'account_type' => 'bank_account',
+                'contact_id'   => 'cont_1000000contact',
+            ],
+            'status_code' => 200
         ],
     ],
 

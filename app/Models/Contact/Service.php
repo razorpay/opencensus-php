@@ -47,15 +47,9 @@ class Service extends Base\Service
 
     /**
      * The contact creation logic checks if there is a duplicate present and whether to
-     * return the duplicate contact or create a new one. This decision will be based
-     * on where the request is coming from. If the request comes from the dashboard
-     * every time a new contact will be created and if from API then a duplicate will be
-     * returned if found. The choice is made as we want the contact creation flow to be
-     * same for now on dashboard. Eventually once the designs will be ready, contact
-     * creation flow will be different for the dashboard. Also to ensure backward
-     * compatibility of contact creation, we will maintain a list of merchants
-     * who want to allow duplicates in contact creation and refer that as well
-     * during contact creation.
+     * return the duplicate contact or create a new one. By default,
+     * if some merchant wants duplicate creation, he will inform RZP
+     * and we will put him behind razorx feature. In this case duplicate will be created.
      *
      * ToDo https://razorpay.atlassian.net/browse/RX-848
      *
@@ -65,13 +59,7 @@ class Service extends Base\Service
      */
     public function create(array $input): array
     {
-        $createDuplicate = true;
-
-        if (($this->auth->isStrictPrivateAuth() === true) and
-            ($this->shouldCreateDuplicateContacts() === false))
-        {
-            $createDuplicate = false;
-        }
+        $createDuplicate = ($this->shouldCreateDuplicateContacts() === true);
 
         $entity = $this->core->create($input, $this->merchant, null, $createDuplicate);
 

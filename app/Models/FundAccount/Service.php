@@ -246,16 +246,9 @@ class Service extends Base\Service
 
     /**
      * The fund account creation method will take the parameter
-     * createDuplicate during fund account creation. The value
-     * for this parameter is decided on the basis of origin of
-     * the request. Request coming from API will not allow
-     * duplicate creation(meaning,even if all attributes are same,
-     * create another entity)  by default, if some merchant wants
-     * duplicate creation, he will inform RZP and we will put him
-     * behind razorx feature. Also for requests coming from dashboard
-     * we will not be checking for duplicates by default. This is
-     * because we do not want to change the behaviour on dashboard
-     * till we have proper designs and process in mind.
+     * createDuplicate during fund account creation. By default,
+     * if some merchant wants duplicate creation, he will inform RZP
+     * and we will put him behind razorx feature. In this case createDuplicate will be true.
      *
      * @param array $input
      *
@@ -275,7 +268,7 @@ class Service extends Base\Service
 
         $createDuplicate = true;
 
-        if ((($this->auth->isStrictPrivateAuth() === true) or
+        if ((($this->auth->isPrivateAuth() === true) or
              ($this->auth->isPublicAuth() === true)) and
             ($this->shouldCreateDuplicate() === false))
         {
@@ -284,7 +277,7 @@ class Service extends Base\Service
 
         $entity = $this->core->create($input, $this->merchant, $source, $createDuplicate);
 
-        $responseCode = ($entity->wasRecentlyCreated === true) ? Response::HTTP_CREATED : Response::HTTP_OK;;
+        $responseCode = ($entity->wasRecentlyCreated === true) ? Response::HTTP_CREATED : Response::HTTP_OK;
 
         $this->trace->info(TraceCode::FUND_ACCOUNT_CREATION_RESPONSE,
             [

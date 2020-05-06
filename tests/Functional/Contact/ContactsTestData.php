@@ -108,6 +108,37 @@ return [
         ],
     ],
 
+    'testCreateContactWithProxyAuth' => [
+        'request'  => [
+            'content' => [
+                'name'         => 'Test / Contact',
+                'type'         => 'self',
+                'reference_id' => '#123abc',
+                'email'        => 'asd@abc.com',
+                'contact'      => '9123456789',
+                'notes'        => [
+                    'test1' => 'One',
+                ],
+            ],
+            'url'     => '/contacts',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'entity'       => 'contact',
+                'name'         => 'Test / Contact',
+                'type'         => 'self',
+                'reference_id' => '#123abc',
+                'email'        => 'asd@abc.com',
+                'contact'      => '9123456789',
+                'notes'        => [
+                    'test1' => 'One',
+                ],
+            ],
+            'status_code' => '201'
+        ],
+    ],
+
     'testCreateContactWithoutType' => [
         'request'  => [
             'content' => [
@@ -539,7 +570,7 @@ return [
                     'test1' => 'One',
                 ],
             ],
-            'status_code' => '201'
+            'status_code' => '200'
         ],
     ],
 
