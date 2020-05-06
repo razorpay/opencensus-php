@@ -85,11 +85,6 @@ class Reconciliate extends Base\Reconciliate
         return 'G27471';
     }
 
-    public function getDelimiter()
-    {
-        return "\t";
-    }
-
     public function getNumLinesToSkip(array $fileDetails)
     {
         $linesFromTop = $linesFromBottom = 0;
