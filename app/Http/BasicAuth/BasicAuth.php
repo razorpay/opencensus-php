@@ -1452,7 +1452,8 @@ class BasicAuth
     public function isInternalApp(): bool
     {
         return (($this->isDashboardApp() === true) or
-                ($this->isBatchApp() === true));
+                (($this->isBatchApp() === true) and
+                    $this->request->headers->get(RequestHeader::X_Creator_Type) == 'user'));
     }
 
     public function isDebugApp()

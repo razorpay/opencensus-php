@@ -94,6 +94,7 @@ class IdempotentTest  extends TestCase
         $headers = [
             'HTTP_X_Idempotent_Key'    => 'idempotentId',
             'HTTP_X_Creator_Id'        => 'MerchantUser01',
+            'HTTP_X_Creator_Type'      => 'user',
         ];
 
         // append headers

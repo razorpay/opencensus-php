@@ -54,7 +54,8 @@ class RequestHeader
     const X_IDEMPOTENT_KEY              = 'X-Idempotent-Key';
 
     //UserId is passed through X_Creator_Id from batch service
-    const X_Creator_Id                    = 'x-creator-id';
+    const X_Creator_Id                  = 'x-creator-id';
+    const X_Creator_Type                = 'x-creator-type';
 
     const X_PAYOUT_IDEMPOTENCY          = 'X-Payout-Idempotency';
 
