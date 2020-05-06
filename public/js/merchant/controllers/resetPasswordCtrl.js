@@ -26,7 +26,7 @@ app.controller('ResetPasswordCtrl', [
     $scope.alerts = alertsFactory.getHandler();
     $scope.success = false;
     $scope.data = {
-      token: $stateParams.token,
+      token: $location.search().token || $stateParams.token,
       expiryTime: $location.search().expiry_time,
       email: $location.search().email,
     };

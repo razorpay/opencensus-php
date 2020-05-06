@@ -73,33 +73,6 @@
           disableEventEmitters
         );
 
-        // @if ($isConfirmed and $isPreSignupComplete)
-        //     analytics.init(
-        //       ['ga', 'lj'],
-        //       {
-        //         ga: 'UA-53341507-2',
-        //         lj:'{{$ljKey}}',
-        //       //  perf:'medash-{{$env}}'
-        //       },
-        //       isLocal,
-        //       appEnvironment,
-        //       disableEventEmitters
-        //     );
-        // @else
-        //     analytics.init(
-        //       ['ga', 'fb', 'twitter', 'linkedin', 'bing','lj', 'quora', 'reddit'],
-        //       {
-        //         ga: 'UA-53341507-2',
-        //         fb: '697927486977350',
-        //         lj:'{{$ljKey}}',
-        //       //  perf:'medash-{{$env}}'
-        //       },
-        //       isLocal,
-        //       appEnvironment,
-        //       disableEventEmitters
-        //     );
-        // @endif
-
          // Init old key as well
         if(analytics.createQ){
           window.rzpQ = analytics.createQ({ pollFreq:500 });
@@ -187,13 +160,63 @@
           ]
         });
 
+
+        function getFilteredURLQueryParams(url){
+            var search = url.split('?')[1];
+            var allParamsWithValues = {};
+            var privateParams = ['token','email','invitation'];
+
+            if (search) {
+                allParamsWithValues = search.split('&').reduce(function(prev, curr){
+                        let [key, value] = curr.split('=');
+                        prev[key] = value;
+                        return prev;
+                    }, {});
+            }
+
+            var allParams = Object.keys(allParamsWithValues);
+            var filteredParams = allParams.filter(function(param){
+                return privateParams.indexOf(param) === -1;  
+            });
+
+            var filteredParamsWithValues = {};
+            filteredParams.forEach(param => filteredParamsWithValues[param] = allParamsWithValues[param]);
+
+            return filteredParamsWithValues;
+        };
+
+        function getPathWithoutPrivateData() {
+            var fullPath = location.pathname + location.hash + location.search;
+            var filteredQueryParamsWithValues = getFilteredURLQueryParams(fullPath);
+            var filteredQueryParams = Object.keys(filteredQueryParamsWithValues);
+            var filteredURL = fullPath.split('?')[0];
+
+            if(filteredQueryParams.length) {
+                filteredURL =  Object.keys(filteredQueryParamsWithValues).reduce(function(path,curParam,index){
+                    if(index !== Object.keys(filteredQueryParamsWithValues).length - 1) {
+                        return path + '&' + curParam + '=' + filteredQueryParamsWithValues[curParam];
+                    }
+                    return path + curParam + '=' + filteredQueryParamsWithValues[curParam];
+                },filteredURL + '?');
+            }
+
+            return filteredURL;
+        }
+
         ga('create', 'UA-53341507-1', 'auto', 'old');
 
-        ga('set', 'page', location.pathname + location.hash + location.search);
-        ga('old.set', 'page', location.pathname + location.hash + location.search);
-        analytics.track('ga', 'pageview');
-        analytics.track('reddit', 'PageVisit');
-        analytics.track('quora', 'ViewContent');
+        var path = getPathWithoutPrivateData();
+
+        ga('set', 'page', path); 
+        ga('old.set', 'page', path);
+
+        window.addEventListener('load', function() {
+            analytics.track('ga', 'pageview');
+            analytics.track('reddit', 'PageVisit');
+            analytics.track('quora', 'ViewContent');
+            analytics.track('bing', {action: 'pageLoad', path: path});
+        });
+        
         try {
           var pendingAction = JSON.parse(analytics.utils.getCookie('pendingAction'));
           if (pendingAction && pendingAction.type === 'signup-form') {

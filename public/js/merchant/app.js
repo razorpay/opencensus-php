@@ -151,6 +151,10 @@ var app = angular
         .state('access.resetpwd', {
           url: '/resetpwd/:token',
           templateUrl: 'tpl/page_resetpwd.html',
+        })
+        .state('access.resetpassword', {
+          url: '/resetpassword',
+          templateUrl: 'tpl/page_resetpwd.html',
         }) //404
         .state('404', {
           url: '/404',
