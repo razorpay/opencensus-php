@@ -29,7 +29,7 @@ export default class PaymentsList extends ListContainer {
   }
 
   // Hook to modify fetchAll of ListContainer
-  fetchAll = params => {
+  fetchList = params => {
     return this.props.fetchAll({
       ...params,
       payment_link_id: this.props.paymentPageId,
