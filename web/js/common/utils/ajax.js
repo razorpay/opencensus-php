@@ -1,4 +1,10 @@
 import { getCookie } from './cookies';
+import { captureXhrResponseMetrics } from './perf';
+
+axios.interceptors.response.use(function(response) {
+  captureXhrResponseMetrics(response);
+  return response;
+});
 
 export default function ajax(params = {}) {
   return new Promise((resolve, reject) => {
@@ -30,14 +36,10 @@ export default function ajax(params = {}) {
         if (!data.hasOwnProperty('success') || data.success == true) {
           resolve(data);
         } else {
-          reject(
-            Object.assign(
-              {
-                code: 'UNKNOWN_ERROR_CODE',
-              },
-              data
-            )
-          );
+          reject({
+            code: 'UNKNOWN_ERROR_CODE',
+            ...data,
+          });
         }
       },
       err => {
@@ -62,29 +64,21 @@ export default function ajax(params = {}) {
                 if (data.success) {
                   resolve(data);
                 } else {
-                  reject(
-                    Object.assign(
-                      {
-                        code: 'UNKNOWN_ERROR_CODE',
-                      },
-                      data
-                    )
-                  );
+                  reject({
+                    code: 'UNKNOWN_ERROR_CODE',
+                    ...data,
+                  });
                 }
               });
               // Not calling error section Again, the catch block is upto the component to handle
             } else {
-              reject(
-                Object.assign(
-                  {
-                    code: err.status,
-                    errors: [
-                      'Your recent action was not completed. Please Try again',
-                    ],
-                  },
-                  err.responseJSON
-                )
-              );
+              reject({
+                code: err.status,
+                errors: [
+                  'Your recent action was not completed. Please Try again',
+                ],
+                ...err.responseJSON,
+              });
             }
           }
 
@@ -95,15 +89,11 @@ export default function ajax(params = {}) {
             })
           );
         } else {
-          reject(
-            Object.assign(
-              {
-                code: err.status,
-                errors: [message],
-              },
-              err.responseJSON
-            )
-          );
+          reject({
+            code: err.status,
+            errors: [message],
+            ...err.responseJSON,
+          });
         }
       }
     );
@@ -114,11 +104,11 @@ export default function ajax(params = {}) {
 function _flattenSearchParams(data) {
   const searchParams = [];
   function flattenObj(data, parentKey) {
-    for (var key in data) {
+    for (const key in data) {
       if (data.hasOwnProperty(key) && data[key]) {
         if (data[key] instanceof Object) {
           if (parentKey) {
-            flattenObj(data[key], parentKey + '[' + key + ']');
+            flattenObj(data[key], `${parentKey}[${key}]`);
           } else {
             flattenObj(data[key], key);
           }
@@ -127,13 +117,13 @@ function _flattenSearchParams(data) {
           if (data[key] != null) {
             if (parentKey) {
               searchParams.push(
-                encodeURIComponent(parentKey + '[' + key + ']') +
-                  '=' +
-                  encodeURIComponent(data[key])
+                `${encodeURIComponent(
+                  `${parentKey}[${key}]`
+                )}=${encodeURIComponent(data[key])}`
               );
             } else {
               searchParams.push(
-                encodeURIComponent(key) + '=' + encodeURIComponent(data[key])
+                `${encodeURIComponent(key)}=${encodeURIComponent(data[key])}`
               );
             }
           }
