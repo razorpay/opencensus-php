@@ -4,18 +4,14 @@ namespace RZP\Base\Database;
 
 use App;
 
-use RZP\Constants\Mode;
-use RZP\Http\Route;
-use RZP\Models\Base\UniqueIdEntity;
+use Illuminate\Support\Facades\File;
+use Razorpay\Trace\Logger as Trace;
+
+use RZP\Constants\Environment;
 use RZP\Trace\TraceCode;
 
 class Config
 {
-    const PROXY_SQL_FEATURE     = 'proxy_sql';
-    const TEST_ROUTE            = 'api_status';
-
-    const RAZORX_VALUE          = 'on';
-
     const DATABASE_CONFIG       = 'database.connections';
 
     const PROXY_SQL_CONFIG      = 'proxy_sql_unix_socket';
@@ -26,6 +22,10 @@ class Config
 
     const WORKER_CONFIG         = 'worker';
 
+    const ENABLE                = 'enable';
+
+    const DISABLE               = 'disable';
+
     const PROXY_CONNECTIONS     = [
         'live',
         'test',
@@ -33,34 +33,33 @@ class Config
         'slave-live',
     ];
 
+    public $isProxySqlActive;
+
+    protected $app;
+
+    public function __construct()
+    {
+        $this->app = App::getFacadeRoot();
+
+        // If middleware proxysql is removed or not called,
+        // proxysql is assumed disabled because of this.
+        $this->isProxySqlActive = false;
+    }
+
     public function setDatabaseHostsIfApplicable()
     {
-        $app = App::getFacadeRoot();
+        $this->isProxySqlActive = $this->canUseProxySql();
 
-        $proxySqlSocket = $app['config']->get(self::DATABASE_CONFIG . '.' . self::PROXY_SQL_CONFIG);
-
-        if ((empty($proxySqlSocket) === true) or (file_exists($proxySqlSocket) === false))
+        if ($this->isProxySqlActive === false)
         {
             return;
         }
 
-        // Worker only makes a db connection once. So we will not need proxySQL for this.
-        $isWorkerPod = $app['config']->get(self::WORKER_CONFIG . '.' . self::IS_WORKER_POD);
-
-        if ($isWorkerPod === true)
-        {
-            return;
-        }
-
-        $proxySqlEnable = $app['config']->get(self::DATABASE_CONFIG . '.' . self::PROXY_SQL_ENABLE);
-
-        if ((env("INSTANCE_TYPE") !== "canary") or
-            ($proxySqlEnable === false))
-        {
-            return;
-        }
+        $app = $this->app;
 
         $configs = $app['config']->get(self::DATABASE_CONFIG);
+
+        $proxySqlSocket = $this->app['config']->get(self::DATABASE_CONFIG . '.' . self::PROXY_SQL_CONFIG);
 
         try
         {
@@ -95,7 +94,7 @@ class Config
 
     public function unsetSocketFromDatabaseConfig($name)
     {
-        $app = App::getFacadeRoot();
+        $app = $this->app;
 
         if ($app['config']->has(self::DATABASE_CONFIG . '.' . $name . '.read') === true)
         {
@@ -110,6 +109,81 @@ class Config
         if ($app['config']->has(self::DATABASE_CONFIG . '.' . $name . '.host') === true)
         {
             $app['config']->set(self::DATABASE_CONFIG . '.' . $name . '.unix_socket', null);
+        }
+    }
+
+    public function isProxySqlActive()
+    {
+        return $this->isProxySqlActive === true;
+    }
+
+    protected function canUseProxySql()
+    {
+        $waitTimeoutActive = $this->app['db.connector.mysql']->isWaitTimeoutActive();
+
+        // if wait timeout is already enabled then do not use proxySQL
+        if ($waitTimeoutActive === true)
+        {
+            return false;
+        }
+
+        $proxySqlSocket = $this->app['config']->get(self::DATABASE_CONFIG . '.' . self::PROXY_SQL_CONFIG);
+
+        // cron env and workers will not have this file.
+        if ((empty($proxySqlSocket) === true) or (file_exists($proxySqlSocket) === false))
+        {
+            return false;
+        }
+
+        // Worker only makes a db connection once. So we will not need proxySQL for this.
+        // (Not needed but this is just extra security.)
+        $isWorkerPod = $this->app['config']->get(self::WORKER_CONFIG . '.' . self::IS_WORKER_POD);
+
+        if ($isWorkerPod === true)
+        {
+            return false;
+        }
+
+        if ($this->app->environment(Environment::AUTOMATION) === true)
+        {
+            return true;
+        }
+
+        if ($this->app->environment(Environment::PRODUCTION) === false)
+        {
+            return false;
+        }
+
+        // this is kept to rollback at later stage
+        // we can just change env and re deploy to disable proxysql.
+        $proxySqlEnable = $this->app['config']->get(self::DATABASE_CONFIG . '.' . self::PROXY_SQL_ENABLE);
+
+        if ($proxySqlEnable ===  false)
+        {
+            return false;
+        }
+
+        // this is used to ramp up each server at a time.
+        return ($this->getProxySqlConfig() === self::ENABLE);
+    }
+
+    protected function getProxySqlConfig()
+    {
+        try
+        {
+            $value = File::get(base_path() . '/database/proxy_sql', true);
+            $value = preg_replace('/\s+/', ' ', $value);
+            $value = preg_replace('/\s+/', '', $value);
+            return $value;
+        }
+        catch(\Throwable $ex)
+        {
+            $this->app['trace']->traceException(
+                $ex,
+                Trace::WARNING,
+                TraceCode::DB_PROXY_SQL_FILE_READ_FAILED);
+
+            return self::DISABLE;
         }
     }
 }

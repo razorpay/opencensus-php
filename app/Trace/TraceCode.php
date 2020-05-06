@@ -2801,6 +2801,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const TERMINALS_SERVICE_RAZORX_RESPONSE                     = 'TERMINALS_SERVICE_RAZORX_RESPONSE';
 
     const DB_WAIT_TIMEOUT_FILE_READ_FAILED                      = 'DB_WAIT_TIMEOUT_FILE_READ_FAILED';
+    const DB_PROXY_SQL_FILE_READ_FAILED                         = 'DB_PROXY_SQL_FILE_READ_FAILED';
 
     //Error Response
     const ERROR_RESPONSE_MAPPING_NOT_FOUND                      = 'ERROR_RESPONSE_MAPPING_NOT_FOUND';
@@ -2847,6 +2848,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const VA_MIGRATE_TIME               = 'VA_MIGRATE_TIME';
 
     const INVOICE_BATCH_CANCEL_DISPATCH_REQUEST = 'INVOICE_BATCH_CANCEL_DISPATCH_REQUEST';
+    const PROXY_SQL_NOT_ENABLED                                 = 'PROXY_SQL_NOT_ENABLED';
     const PROXY_SQL_CONNECTION_STARTING                         = 'PROXY_SQL_CONNECTION_STARTING';
     const PROXY_SQL_CONNECTION_FAILED_TRYING_NORMAL_CONNECTION  = 'PROXY_SQL_CONNECTION_FAILED_TRYING_NORMAL_CONNECTION';
 

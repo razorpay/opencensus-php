@@ -110,12 +110,16 @@ class MySqlConnection extends BaseMySqlConnection
             if ((App::getFacadeRoot()->environment() !== 'automation') and
                 (isset($dbConfig['unix_socket']) === true))
             {
-                $this->trace->warning(TraceCode::PROXY_SQL_CONNECTION_FAILED_TRYING_NORMAL_CONNECTION,
+                $this->trace->traceException($e,
+                    Trace::ERROR,
+                    TraceCode::PROXY_SQL_CONNECTION_FAILED_TRYING_NORMAL_CONNECTION,
                     [
                         'query' => true,
-                    ]);
+                        'name'  => $config['name'] ?? '',
+                    ]
+                );
 
-                App::getFacadeRoot()['db.config']->unsetSocketFromDatabaseConfig($this->getName());
+                App::getFacadeRoot()['proxysql.config']->unsetSocketFromDatabaseConfig($this->getName());
             }
 
             $this->reconnect();

@@ -29,20 +29,12 @@ class MySqlConnector extends BaseMySqlConnector
     */
     protected $app;
 
-    protected $isProxySqlActive;
-
     // wait timeout config
     protected $waitTimeout;
 
     public function __construct($app)
     {
         $this->app = $app;
-
-        // Default behaviour is to make proxySQL active
-        // So that if by mistake we end up calling isWaitTimeoutEnabled
-        // before correcting this variable in connect(),
-        // isWaitTimeoutEnabled will disable the wait timeout changes.
-        $this->isProxySqlActive = true;
     }
 
     public function connect(array $config)
@@ -51,11 +43,19 @@ class MySqlConnector extends BaseMySqlConnector
 
         if ($socketConnection === true)
         {
-            $this->app['trace']->info(TraceCode::PROXY_SQL_CONNECTION_STARTING);
+            $this->app['trace']->info(
+                TraceCode::PROXY_SQL_CONNECTION_STARTING,
+                [
+                    'name'  => $config['name'],
+                ]);
         }
         else
         {
-            $this->isProxySqlActive = false;
+            $this->app['trace']->info(
+                TraceCode::PROXY_SQL_NOT_ENABLED,
+                [
+                    'name'  => $config['name'],
+                ]);
         }
 
         try
@@ -75,7 +75,13 @@ class MySqlConnector extends BaseMySqlConnector
 
                     unset($config['unix_socket']);
 
-                    $this->app['trace']->warning(TraceCode::PROXY_SQL_CONNECTION_FAILED_TRYING_NORMAL_CONNECTION);
+                    $this->app['trace']->traceException($e,
+                        Trace::ERROR,
+                        TraceCode::PROXY_SQL_CONNECTION_FAILED_TRYING_NORMAL_CONNECTION,
+                        [
+                            'name'  => $config['name'] ?? '',
+                        ]
+                    );
 
                     $connection = parent::connect($config);
                 }
@@ -125,8 +131,6 @@ class MySqlConnector extends BaseMySqlConnector
 
     public function setWaitTimeout($type, $conn = '')
     {
-        // Doing getDb before calling isWaitTimeoutEnabled
-        // so that $isProxySqlActive can be set to right value.
         $db = $this->getDb($conn);
 
         // if there is a transaction already started we don't want to proceed
@@ -210,18 +214,23 @@ class MySqlConnector extends BaseMySqlConnector
 
     protected function isWaitTimeoutEnabled()
     {
-        if (empty($this->waitTimeout) === true)
+        $proxysqlActive = $this->app['proxysql.config']->isProxySqlActive();
+
+        if ($proxysqlActive === true)
         {
-            if ($this->isProxySqlActive === true)
-            {
-                $this->waitTimeout = self::DISABLE;
-            }
-            else
-            {
-                $this->waitTimeout = $this->getWaitTimeoutConfig();
-            }
+            return false;
         }
 
+        if (empty($this->waitTimeout) === true)
+        {
+            $this->waitTimeout = $this->getWaitTimeoutConfig();
+        }
+
+        return ($this->waitTimeout === self::ENABLE);
+    }
+
+    public function isWaitTimeoutActive()
+    {
         return ($this->waitTimeout === self::ENABLE);
     }
 }
