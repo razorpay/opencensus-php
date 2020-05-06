@@ -10,11 +10,11 @@
 
     {{$routeMerchantName}} has added you as their associate account on {{$org['business_name']}}.
     <br/>
-    You can set your password <a href="{{ 'https://' . $org['hostname'] . '/#/access/resetpwd/'.$token.'?email='.$email }}" target="_blank"> here</a> and proceed to view your transactions.<br/><br/>
+    You can set your password <a href="{{ 'https://' . $org['hostname'] . '/#/access/resetpassword?email='.$email.'&token='.$token }}" target="_blank"> here</a> and proceed to view your transactions.<br/><br/>
 
     You can also open the following link in your browser: <br/>
-    <a href="{{ 'https://' . $org['hostname'] . '/#/access/resetpwd/'.$token.'?email='.$email }}" target="_blank">
-        {{ 'https://' . $org['hostname'] . '/#/access/resetpwd/'.$token.'?email='.$email }}
+    <a href="{{ 'https://' . $org['hostname'] . '/#/access/resetpassword?email='.$email.'&token='.$token }}" target="_blank">
+        {{ 'https://' . $org['hostname'] . '/#/access/resetpassword?email='.$email.'&token='.$token }}
     </a>
 
 </div>

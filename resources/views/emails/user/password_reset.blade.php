@@ -17,12 +17,12 @@
             .'/forgot-password#token='. $token . '&email=' . $email}}
         </a>
     @else
-        To reset your password, <a href=" {{'https://' . $org['hostname'] . '/#/access/resetpwd/'.$token.'?email='
-        .$email }}" target="_blank">click here</a>. <br/>
+        To reset your password, <a href=" {{'https://' . $org['hostname'] . '/#/access/resetpassword?email='
+        .$email.'&token='.$token }}" target="_blank">click here</a>. <br/>
 
         Or you may open the following link in your browser: <br/>
-        <a href="{{ 'https://' . $org['hostname'] . '/#/access/resetpwd/'.$token.'?email='.$email }}" target="_blank">
-            {{ 'https://' . $org['hostname'] . '/#/access/resetpwd/'.$token.'?email='.$email }}
+        <a href="{{ 'https://' . $org['hostname'] . '/#/access/resetpassword?email='.$email.'&token='.$token }}" target="_blank">
+            {{ 'https://' . $org['hostname'] . '/#/access/resetpassword?email='.$email.'&token='.$token }}
         </a>
     @endif
 
