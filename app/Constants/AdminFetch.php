@@ -2632,6 +2632,36 @@ class AdminFetch
                     Fetch::TYPE => Fetch::TYPE_STRING
                 ],
             ],
+
+            Entity::VIRTUAL_VPA_PREFIX => [
+                'merchant_id' => [
+                    Fetch::LABEL => 'Merchant ID',
+                    Fetch::TYPE => Fetch::TYPE_STRING,
+                ],
+                'prefix' => [
+                    Fetch::LABEL => 'Prefix',
+                    Fetch::TYPE => Fetch::TYPE_STRING,
+                ],
+                'terminal_id' => [
+                    Fetch::LABEL => 'Terminal ID',
+                    Fetch::TYPE => Fetch::TYPE_STRING,
+                ],
+            ],
+
+            Entity::VIRTUAL_VPA_PREFIX_HISTORY => [
+                'virtual_vpa_prefix_id' => [
+                    Fetch::LABEL => 'Virtual VPA Prefix ID',
+                    Fetch::TYPE => Fetch::TYPE_STRING,
+                ],
+                'merchant_id' => [
+                    Fetch::LABEL => 'Merchant ID',
+                    Fetch::TYPE => Fetch::TYPE_STRING,
+                ],
+                'is_active' => [
+                    Fetch::LABEL => 'Active',
+                    Fetch::TYPE => Fetch::TYPE_BOOLEAN,
+                ],
+            ],
         ];
 
         //
