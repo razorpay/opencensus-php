@@ -33,6 +33,7 @@ class Entity extends Base\PublicEntity
     const SETTLED_ON             = 'settled_on';
     const FTS_TRANSFER_ID        = 'fts_transfer_id';
     const BALANCE_ID             = 'balance_id';
+    const IS_NEW_SERVICE         = 'is_new_service';
 
     // Nodal Nodal Settlement Constants
     const GATEWAY                = 'gateway';
@@ -51,6 +52,7 @@ class Entity extends Base\PublicEntity
         self::AMOUNT,
         self::PROCESSED_AT,
         self::SETTLED_ON,
+        self::IS_NEW_SERVICE,
     ];
 
     protected $visible = [
@@ -73,6 +75,7 @@ class Entity extends Base\PublicEntity
         self::SETTLED_ON,
         self::CREATED_AT,
         self::UPDATED_AT,
+        self::IS_NEW_SERVICE,
     ];
 
     protected $public = [
@@ -307,6 +310,11 @@ class Entity extends Base\PublicEntity
     public function setFTSTransferId($ftsTransferId)
     {
         $this->setAttribute(self::FTS_TRANSFER_ID, $ftsTransferId);
+    }
+
+    public function setId($id)
+    {
+        $this->setAttribute(self::ID, $id);
     }
 
     // --------------------------------- accessors -------------------------------

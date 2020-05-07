@@ -22,6 +22,15 @@ use RZP\Models\Report\Types\SettlementReconReport;
 
 class Service extends Base\Service
 {
+    public function createSettlementEntry($input)
+    {
+        (new Validator)->validateInput('settlement_service_create', $input);
+
+        $data = (new Processor)->createSettlementEntry($input);
+
+        return $data;
+    }
+
     public function getMerchantSettlementAmount($input)
     {
         (new Validator)->validateInput('settlement_amount', $input);

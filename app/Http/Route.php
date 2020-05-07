@@ -486,6 +486,7 @@ final class Route
         'nodal_initiate_transfer'                  => ['post',     'nodal/transfer',                                 'SettlementController@postInitiateTransfer'                         ],
         'nodal_initiate_transfer_admin'            => ['post',     'nodal/transfer/admin',                           'SettlementController@postInitiateTransfer'                         ],
         'nodal_add_beneficiary'                    => ['post',     'nodal/beneficiary/{channel}',                    'SettlementController@addBeneficiary'                               ],
+        'create_settlement_entry'                  => ['post',     'settlements/create',                             'SettlementController@createSettlementEntry'                        ],
         'adj_fetch_by_id'                          => ['get',      'adjustments/{id}',                               'AdjustmentController@getAdjustment'                                ],
         'adj_fetch_multiple'                       => ['get',      'adjustments',                                    'AdjustmentController@getAdjustments'                               ],
         'adj_add'                                  => ['post',     'adjustments',                                    'AdjustmentController@postAdjustment'                               ],
@@ -2211,6 +2212,7 @@ final class Route
         'terminal_migrate_cron',
         'terminal_service_sync_delete',
         'virtual_account_batch_migrate_yesbank',
+        'create_settlement_entry',
         'update_admin_through_batch',
         'merchant_create_terminal_internal',
         'retry_penny_testing_cron',
@@ -4423,6 +4425,10 @@ final class Route
         //
         'automation' => [
             '*'
+        ],
+
+        'settlement_service' => [
+            'create_settlement_entry',
         ],
 
         'terminals_service' => [

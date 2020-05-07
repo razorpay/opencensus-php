@@ -28,6 +28,38 @@ return [
         'batch_fund_transfer_id'    => null,
     ],
 
+    'testSettlementCreateFromNewService' => [
+        'merchant_id'               => '10000000000000',
+        'channel'                   => 'axis2',
+        'balance_type'              => 'primary',
+        'amount'                    => 1000,
+        'fees'                      => 12,
+        'tax'                       => 13,
+        'settlement_id'             => 'ABXUHPMNHULR13',
+        'status'                    => 'processed',
+        'type'                      => 'normal',
+        'details'                   => [
+            'fee'   => [
+                'type' => 'debit',
+                'amount' => 12,
+            ],
+            'tax'   => [
+                'type' => 'debit',
+                'amount' => 13,
+            ],
+            'payment' => [
+                'type' => 'credit',
+                'amount' => 1200,
+                'count'  => 34,
+            ],
+            'refund' => [
+                'type'  => 'debit',
+                'amount' => -200,
+                'count'  => 2,
+            ]
+        ]
+    ],
+
     'testSettlementForMultipleMerchants' => [
         'axis' => [
             'count'     => 2,
@@ -63,4 +95,31 @@ return [
             'type' => 'settlement',
         ],
     ],
+
+    'testSettlementCreateFromNewServiceSettlementDetails' => [
+        [
+            'component' => 'fee',
+            'amount'    => 12,
+            'count'     => NULL,
+            'type'      => 'debit'
+        ],
+        [
+            'component' => 'tax',
+            'amount'    => 13,
+            'count'     => NULL,
+            'type'      => 'debit'
+        ],
+        [
+            'component' => 'payment',
+            'amount'    => 1200,
+            'count'     => 34,
+            'type'      => 'credit'
+        ],
+        [
+            'component' => 'refund',
+            'amount'    => 200,
+            'count'     => 2,
+            'type'      => 'debit'
+        ],
+    ]
 ];

@@ -20,6 +20,7 @@ use RZP\Jobs\Settlement\Create;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\Settlement\Bucket;
 use RZP\Models\Merchant as MerchantModel;
+use RZP\Models\Settlement\Merchant as SetlMerchant;
 
 class Processor extends Base\Core
 {
@@ -1056,5 +1057,33 @@ class Processor extends Base\Core
         {
             $this->debug = (bool) $input['debug'];
         }
+    }
+
+    /**
+     * This method will create the settlement entry in the API system to maintain the back word compatibility
+     * with the newer settlement service
+     * @param $input
+     * @return mixed
+     */
+    public function createSettlementEntry($input)
+    {
+        $merchant = $this->repo->merchant->findOrFail($input['merchant_id']);
+
+        $channel = $input['channel'];
+
+        $isAggregateSettlement = $input['type'] === Feature\Constants::AGGREGATE_SETTLEMENT;
+
+        $merchantSettler = new SetlMerchant(
+            $merchant,
+            $channel,
+            $this->repo,
+            false,
+            [],
+            $isAggregateSettlement
+        );
+
+        $balance = $this->repo->balance->getMerchantBalanceByType($merchant->getId(), $input['balance_type']);
+
+        return $merchantSettler->createSettlementFromNewService($balance, $input);
     }
 }

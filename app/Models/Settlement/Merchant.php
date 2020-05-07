@@ -17,6 +17,7 @@ use RZP\Constants\Timezone;
 use RZP\Models\Transaction;
 use RZP\Constants\Environment;
 use RZP\Models\Merchant\Balance;
+use RZP\Models\Merchant as MerchantModel;
 use RZP\Models\Settlement\Details as SetlDetails;
 use RZP\Models\Schedule\Task\Type as ScheduleTaskType;
 use RZP\Models\FundTransfer\Attempt as FundTransferAttempt;
@@ -355,17 +356,28 @@ class Merchant
         return $setlDetailEntity;
     }
 
-    protected function newSettlementEntity($merchantSettleToPartner, Balance\Entity $balance)
+    protected function newSettlementEntity($merchantSettleToPartner, Balance\Entity $balance, array $input = [])
     {
-        $setl = (new Settlement\Entity)->generateId();
+        $setl = (new Settlement\Entity);
 
-        $input = [
-            Settlement\Entity::AMOUNT       => $this->amount,
-            Settlement\Entity::STATUS       => Status::CREATED,
-            Settlement\Entity::FEES         => $this->fee,
-            Settlement\Entity::TAX          => $this->tax,
-            Settlement\Entity::CHANNEL      => $this->channel,
-        ];
+        if(empty($input) === true)
+        {
+            $input = [
+                Settlement\Entity::AMOUNT       => $this->amount,
+                Settlement\Entity::STATUS       => Status::CREATED,
+                Settlement\Entity::FEES         => $this->fee,
+                Settlement\Entity::TAX          => $this->tax,
+                Settlement\Entity::CHANNEL      => $this->channel,
+            ];
+
+            $setl->generateId();
+        }
+        else
+        {
+            $setl->setId($input[Settlement\Entity::ID]);
+
+            unset($input[Settlement\Entity::ID]);
+        }
 
         $setl = $setl->build($input);
 
@@ -694,5 +706,45 @@ class Merchant
         $this->repo->saveOrFail($ba);
 
         return $ba;
+    }
+
+    public function createSettlementFromNewService($balance, array $params)
+    {
+        $input = [
+            Settlement\Entity::AMOUNT          => $params['amount'],
+            Settlement\Entity::FEES            => $params['fees'],
+            Settlement\Entity::TAX             => $params['tax'],
+            Settlement\Entity::CHANNEL         => $this->channel,
+            Settlement\Entity::ID              => $params['settlement_id'],
+            Settlement\Entity::STATUS          => $params['status'],
+            Settlement\Entity::IS_NEW_SERVICE  => true,
+        ];
+
+        $merchantSettleToPartner = $this->merchantSettleToPartner;
+
+        $this->setlDetailAmounts = $params['details'];
+
+        $this->setlDetails = new Base\Collection;
+
+        $this->repo->transaction(function() use ($merchantSettleToPartner, $balance, $input)
+        {
+            //create new settlement entity
+            $this->newSettlementEntity($merchantSettleToPartner, $balance, $input);
+
+            // Create Settlement Details entity
+            $this->createSettlementDetailsEntities();
+
+            // update schedule tasks
+            $this->updateMerchantScheduleTask();
+
+            // save settlement and details
+            $this->saveSettlementEntitiesToDb();
+
+            //create transaction corresponding to settlement
+            $this->createTransaction($this->setl);
+
+        });
+
+        return $this->setl;
     }
 }

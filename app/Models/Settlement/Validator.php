@@ -18,6 +18,7 @@ class Validator extends Base\Validator
         Entity::STATUS          => 'required|in:created,failed,processed',
         Entity::FEES            => 'sometimes',
         Entity::TAX             => 'sometimes',
+        Entity::IS_NEW_SERVICE  => 'sometimes',
         Entity::CHANNEL         => 'required|string|custom',
     ];
 
@@ -100,6 +101,19 @@ class Validator extends Base\Validator
         'created_at'          => 'sometimes|epoch',
         'settled_at'          => 'sometimes|epoch',
         'initiated_at'        => 'required_with:settled_at,created_at|epoch',
+    ];
+
+    protected static $settlementServiceCreateRules = [
+        'merchant_id'               => 'required|string|size:14',
+        'channel'                   => 'required|string',
+        'balance_type'              => 'required|string|in:primary,commission',
+        'amount'                    => 'required|integer',
+        'fees'                      => 'required|integer',
+        'tax'                       => 'required|integer',
+        'settlement_id'             => 'required|string|size:14',
+        'status'                    => 'required|string',
+        'type'                      => 'required|string',
+        'details'                   => 'required|array',
     ];
 
     protected static $settlementHolidayRules = [

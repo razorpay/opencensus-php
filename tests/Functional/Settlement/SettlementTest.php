@@ -2443,4 +2443,28 @@ class SettlementTest extends TestCase
 
         $this->assertEquals(1575628200, $returnTIme);
     }
+
+    public function testSettlementCreateFromNewService()
+    {
+        $content = $this->testData['testSettlementCreateFromNewService'];
+
+        $result = $this->createSettlementEntry($content);
+
+        $settlement = $this->getLastEntity('settlement', true);
+
+        $settlementDetails = $this->getSettlementDetails($settlement['id']);
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->assertEquals('txn_'. $settlement['transaction_id'], $transaction['id']);
+
+        $this->assertEquals($settlement['id'], $transaction['entity_id']);
+
+        $this->assertArraySelectiveEquals($this->testData['testSettlementCreateFromNewServiceSettlementDetails'],
+                                            $settlementDetails['items']);
+
+        $this->assertEquals(1, $settlement['is_new_service']);
+
+        $this->assertEquals('setl_'. $content['settlement_id'], $settlement['id']);
+    }
 }

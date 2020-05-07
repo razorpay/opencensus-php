@@ -243,4 +243,33 @@ trait SettlementTrait
 
         return $this->makeRequestAndGetContent($request);
     }
+
+    protected function createSettlementEntry(array $content)
+    {
+        $request = [
+            'url'     => '/settlements/create',
+            'method'  => 'POST',
+            'content' => $content
+        ];
+
+        $this->ba->appAuth();
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        return $content;
+    }
+
+    protected function getSettlementDetails(string $id)
+    {
+        $request = [
+            'url'    => '/settlements/'. $id . '/details',
+            'method' => 'GET',
+        ];
+
+        $this->ba->proxyAuth();
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        return $content;
+    }
 }

@@ -187,6 +187,13 @@ class Core extends Base\Core
             return false;
         }
 
+        $status = $this->skipForNewService($merchantId);
+
+        if ($status === true)
+        {
+            return false;
+        }
+
         // check early settlement preferences
         list($status, $timestamp) = $this->preference
                                          ->getEarlySettlementBucketIfApplicable($merchantId, $settlementTime);
@@ -291,5 +298,32 @@ class Core extends Base\Core
         }
 
         return false;
+    }
+
+    /**
+     * check if the settlement should be skipped for the merchant because it is
+     * being processed by the new service
+     * @param string $merchantId
+     * @return bool
+     */
+    public function skipForNewService(string $merchantId)
+    {
+        $variant = $this->app->razorx->getTreatment($merchantId,
+            ME\RazorxTreatment::SETTLEMENT_SERVICE_RAMP,
+            $this->mode);
+
+        $result = (strtolower($variant) === 'on');
+
+        if ($result === true)
+        {
+            $this->trace->info(
+                TraceCode::MERCHANT_ADDED_TO_BUCKET_SKIPPED,
+                [
+                    'merchantId' => $merchantId,
+                    'reason' => 'transaction will be settled via new service',
+                ]);
+        }
+
+        return $result;
     }
 }

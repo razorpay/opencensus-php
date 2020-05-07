@@ -976,6 +976,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const BUCKETING_INITIATE                                    = 'BUCKETING_INITIATE';
     const BUCKETING_DONE                                        = 'BUCKETING_DONE';
     const MERCHANT_ADDED_TO_BUCKET                              = 'MERCHANT_ADDED_TO_BUCKET';
+    const MERCHANT_ADDED_TO_BUCKET_SKIPPED                      = 'MERCHANT_ADDED_TO_BUCKET_SKIPPED';
     const MERCHANT_ADDED_TO_BUCKET_ON_RELEASE_FUNDS             = 'MERCHANT_ADDED_TO_BUCKET_ON_RELEASE_FUNDS';
     const DELETING_COMPLETED_BUCKET_ENTRIES                     = 'DELETING_COMPLETED_BUCKET_ENTRIES';
     const COMPLETED_BUCKET_ENTRIES_DELETED                      = 'COMPLETED_BUCKET_ENTRIES_DELETED';

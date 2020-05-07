@@ -1405,7 +1405,7 @@ trait SettlementTrait
      *
      * @return string|null
      */
-    protected function settlementToPartner(string $merchantId)
+    public function settlementToPartner(string $merchantId)
     {
         $merchantList = $this->repo
                              ->merchant_access_map

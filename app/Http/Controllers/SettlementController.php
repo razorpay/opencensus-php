@@ -9,6 +9,16 @@ use RZP\Constants\Entity as E;
 
 class SettlementController extends Controller
 {
+
+    public function createSettlementEntry()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->createSettlementEntry($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function postSettlementInitiate($channel = null)
     {
         $input = Request::all();
