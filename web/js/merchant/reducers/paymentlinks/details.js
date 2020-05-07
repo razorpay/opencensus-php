@@ -16,7 +16,7 @@ const EMAIL_SEND = 'EMAIL_SEND';
 export const fetchPLCount = data => {
   const user = store.getState().session.user;
   const url = user.isPaymentlinksV2Enabled
-    ? 'payment_links/payment_links_count'
+    ? 'payment_links_count'
     : 'invoices-count';
 
   const reqPayload = {
