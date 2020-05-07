@@ -505,31 +505,11 @@ class Error extends Support\Fluent
         $error = array(
             self::PUBLIC_ERROR_CODE => $this->getPublicErrorCode(),
             self::DESCRIPTION       => $description,
+            self::SOURCE            => $this->getAttribute(self::SOURCE),
+            self::STEP              => $this->getAttribute(self::STEP),
+            self::REASON            => $this->getAttribute(self::REASON),
+            self::METADATA          => $metadata
         );
-
-        $isReasonFeatureEnabled = false;
-
-        if (($this->app['basicauth'] !== null) and
-            ($this->app['basicauth']->getMerchant() !== null))
-        {
-            $merchant = $this->app['basicauth']->getMerchant();
-
-            $isReasonFeatureEnabled = $merchant->isFeatureEnabled(Constants::ERROR_REASON_RESPONSE);
-        }
-
-        if ($isReasonFeatureEnabled === true)
-        {
-            $reasonArr = array(
-                self::SOURCE            => $this->getAttribute(self::SOURCE),
-                self::STEP              => $this->getAttribute(self::STEP),
-                self::REASON            => $this->getAttribute(self::REASON),
-            );
-
-            $error = array_merge($error, $reasonArr);
-
-        }
-
-        $error = array_merge($error, [self::METADATA  => $metadata]);
 
         $this->trace->info(TraceCode::ERROR_RESPONSE_DATA,
             [

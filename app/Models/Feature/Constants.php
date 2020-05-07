@@ -318,8 +318,6 @@ class Constants
 
     const REDIRECTION_ONHOLD       = 'redirection_onhold';
 
-    const ERROR_REASON_RESPONSE    = 'error_reason_response';
-
     /*
      * This flag will be used to enable x_pro on a merchant. Once enabled the merchant can
      * decide to upgrade his account to x_pro. This feature gives flexibility initially
@@ -572,7 +570,6 @@ class Constants
         self::GENERATE_PARTNER_INVOICE        => true,
         self::AUTOMATED_COMM_PAYOUT           => true,
         self::OFFLINE_PAYMENTS                => true,
-        self::ERROR_REASON_RESPONSE           => true,
         self::SKIP_HITACHI_AUTO_ONBOARD       => true,
         self::SKIP_WORKFLOWS_FOR_API          => true,
         self::DISPLAY_LA_PARENT_PAYMENT_ID    => true,

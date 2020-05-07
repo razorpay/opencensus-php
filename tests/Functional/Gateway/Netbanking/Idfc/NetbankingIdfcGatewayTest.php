@@ -173,8 +173,6 @@ class NetbankingIdfcGatewayTest extends TestCase
 
     public function testPaymentCancelledByUserForResponse()
     {
-        $this->fixtures->merchant->addFeatures(['error_reason_response']);
-
         $this->mockServerContentFunction(function (&$content, $action = null)
         {
             if([$action === 'authorize'])

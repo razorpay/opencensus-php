@@ -15,7 +15,7 @@ BAD_REQUEST_TRANSACTION_AMOUNT_LIMIT_EXCEEDED,Payment failed because Transaction
 BAD_REQUEST_PAYMENT_CANCELLED_AT_NETBANKING_PAYMENT_PAGE,Payment processing cancelled by customer at netbanking payment page,payment_cancelled,Business,customer,,payment_authentication,N
 GATEWAY_ERROR_PAYMENT_FAILED,Payment processing failed due to error at bank or wallet gateway,payment_failed,Technical,bank,,payment_authorization,I
 BAD_REQUEST_VALIDATION_FAILURE,Validation Failure,bank_account_validation_failed,Technical,customer,,payment_authorization,I
-BAD_REQUEST_PAYMENT_PENDING_AUTHORIZATION,Payment is pending authorization from approver.,payment_pending,Business,customer,,payment_authorization,N
+BAD_REQUEST_PAYMENT_PENDING_AUTHORIZATION,Payment is pending authorization from approver.,payment_pending_approval,Business,customer,,payment_authorization,N
 server_error_MULTIPLE_SUCCESS_TRANSACTIONS_IN_VERIFY,The server encountered an error. The incident has been reported to admins.,server_error,Technical,internal,,payment_authorization,D
 GATEWAY_ERROR_REQUEST_ERROR,Payment processing failed due to error at bank or wallet gateway,bank_technical_error,Technical,bank,,payment_authorization,I
 BAD_REQUEST_PAYMENT_POSSIBLE_FRAUD,Payment declined because it didn't pass all risk checks,payment_risk_check_failed,Business,internal,,payment_initiation,N
