@@ -559,6 +559,10 @@ export default class User {
     return this.getExpStatus('new_pp_success_modal');
   }
 
+  get isVirtualVPAPrefixEnabled() {
+    return this.getExpStatus('virtual_vpa_prefix');
+  }
+
   get isSellerAppRole() {
     const userRole = this.userRole;
     return (

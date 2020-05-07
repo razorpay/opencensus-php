@@ -14,7 +14,7 @@ import RefundDetails from 'merchant/views/Transactions/Refunds/Details';
 import OrderDetails from 'merchant/views/Transactions/Orders/Details';
 
 import VirtualAccountDetails from 'merchant/views/SmartCollect/VirtualAccounts/Details';
-import VirtualAccountCreate from 'merchant/views/SmartCollect/VirtualAccounts/Create';
+import VirtualAccountCreate from 'merchant/views/SmartCollect/VirtualAccounts/Create/index';
 
 import OffersNew from 'merchant/views/Offers/New';
 import OfferEntity from 'merchant/views/Offers/Entity';

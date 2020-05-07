@@ -1,0 +1,235 @@
+import { connect } from 'react-redux';
+
+import Input from 'common/new-ui/Input';
+import Button from 'common/new-ui/Button';
+
+import { closeModal } from 'merchant_common/reducers/modals';
+import {
+  validateVPACustomPrefix,
+  saveVPACustomPrefix,
+} from 'merchant/reducers/virtualaccounts';
+import { showNotification } from 'merchant_common/reducers/notifications';
+
+import { validateAlphanumericWithMinAndMaxLength } from 'common/utils/validators';
+import debounce from 'common/utils/debounce';
+
+import {
+  MERCHANT_PREFIX_MIN_LENGTH_VPA,
+  MERCHANT_PREFIX_MAX_LENGTH_VPA,
+  get_VPA_Handle,
+  getStyle_CustomPrefixInput_VPA,
+  getStyle_AddOnBefore_VPA_Prefix,
+  getStyle_AddOnAfter_VPA_Prefix,
+} from 'merchant/views/SmartCollect/VirtualAccounts/helpers';
+
+@connect(state => state.virtualaccounts.va_config.vpa, {
+  closeModal,
+  showNotification,
+  saveVPACustomPrefix,
+})
+export default class VPAPrefixModal extends React.Component {
+  constructor(props) {
+    super();
+
+    this.state = {
+      merchantPrefix: '',
+      status: {},
+      isValidating: false,
+      isSaving: false,
+    };
+
+    this.debounce_validateMerchantPrefix = debounce(
+      this.validateMerchantPrefix.bind(this),
+      50
+    );
+  }
+
+  get isInvalidMerchantPrefix() {
+    return validateCustomMerchantPrefix()(this.state.merchantPrefix);
+  }
+
+  validateMerchantPrefix = value => {
+    this.setState({
+      status: {},
+      isValidating: true,
+    });
+
+    validateVPACustomPrefix(value)
+      .then(resp => {
+        const newState = {
+          isValidating: false,
+        };
+
+        if (!this.isInvalidMerchantPrefix) {
+          // We need to validate MerchantPrefix due to setState is async
+          const isValid = resp.data.is_valid;
+
+          newState.status = {
+            type: `text-${isValid ? 'success' : 'danger'}`,
+            message: isValid ? 'Prefix available' : 'Prefix unavailable',
+          };
+        }
+
+        this.setState(newState);
+      })
+      .catch(error => {
+        this.props.showNotification({
+          type: 'error',
+          message: error.errors[0],
+        });
+
+        this.setState({
+          isValidating: false,
+        });
+      });
+  };
+
+  handleVPAPrefix = event => {
+    const { value } = event.target;
+
+    const newState = {
+      merchantPrefix: value.toLowerCase(),
+    };
+
+    const isInvalidValue = validateCustomMerchantPrefix()(value);
+
+    if (this.state.status.type && isInvalidValue) {
+      newState.status = {};
+    }
+
+    this.setState(newState, () => {
+      setTimeout(() => {
+        if (!isInvalidValue) {
+          this.debounce_validateMerchantPrefix(value);
+
+          return;
+        }
+      }, 5);
+    });
+  };
+
+  saveVPACustomPrefix = () => {
+    this.setState({
+      isSaving: true,
+    });
+
+    return this.props
+      .saveVPACustomPrefix(this.state.merchantPrefix)
+      .then(resp => {
+        this.setState({
+          isSaving: false,
+        });
+
+        this.props.showNotification({
+          type: 'success',
+          message: 'Custom VPA prefix is updated',
+        });
+
+        this.props.closeModal();
+      })
+      .catch(error => {
+        this.props.showNotification({
+          type: 'error',
+          message: error.errors[0],
+        });
+
+        this.setState({
+          isSaving: false,
+        });
+      });
+  };
+
+  render() {
+    const { rzp_prefix, merchant_prefix } = this.props;
+    const { status, isValidating, merchantPrefix, isSaving } = this.state;
+
+    const handle = get_VPA_Handle(this.props.handle);
+
+    const showStatus = !!(status.type && !isValidating);
+
+    const disabled =
+      status.type !== 'text-success' ||
+      isValidating ||
+      this.isInvalidMerchantPrefix ||
+      isSaving;
+
+    return (
+      <div class="PopOver--Modal">
+        <Input
+          autoRender
+          name="descriptorVPA"
+          size="vpa_custom"
+          label="Prefix Value"
+          placeholder={merchant_prefix}
+          style={getStyle_CustomPrefixInput_VPA(rzp_prefix, handle)}
+          validator={validateCustomMerchantPrefix()}
+          onChange={this.handleVPAPrefix}
+          value={merchantPrefix}
+          description={
+            <>
+              <div class="remaining-count">
+                {merchantPrefix.length} / {MERCHANT_PREFIX_MAX_LENGTH_VPA}
+              </div>
+
+              {showStatus && <div class={status.type}>{status.message}</div>}
+            </>
+          }
+          addonBefore={
+            <span style={getStyle_AddOnBefore_VPA_Prefix(rzp_prefix)}>
+              {rzp_prefix}.
+            </span>
+          }
+          addonAfter={
+            <span style={getStyle_AddOnAfter_VPA_Prefix(handle)}>{handle}</span>
+          }
+        />
+        <div class="upi-example">
+          UPI ID Example{' '}
+          <span>
+            {rzp_prefix}.{merchantPrefix || merchant_prefix}
+            {handle}
+          </span>
+        </div>
+        <img src="/dist/css/assets/lighten-bulb.svg" /> Protip: Highlight your
+        brand by adding it as a prefix to UPI IDs.
+        <div class="Modal-actions">
+          <Button.Transparent
+            class="Cancel-btn"
+            type="button"
+            onClick={this.props.closeModal}
+          >
+            <span>&times;</span>
+            Cancel
+          </Button.Transparent>
+
+          <Button.Transparent
+            class="Save-btn"
+            type="button"
+            disabled={disabled}
+            onClick={this.saveVPACustomPrefix}
+          >
+            <span class="icon i-check" />
+            Save
+          </Button.Transparent>
+        </div>
+      </div>
+    );
+  }
+}
+
+function validateCustomMerchantPrefix() {
+  const minLength = MERCHANT_PREFIX_MIN_LENGTH_VPA;
+  const maxLength = MERCHANT_PREFIX_MAX_LENGTH_VPA;
+
+  return val => {
+    const isValid = validateAlphanumericWithMinAndMaxLength(
+      val,
+      minLength,
+      maxLength
+    );
+
+    if (isValid) return;
+
+    return `Enter only Alphanumeric, from ${minLength} upto ${maxLength} characters`;
+  };
+}

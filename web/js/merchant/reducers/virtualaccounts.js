@@ -16,6 +16,7 @@ const VIRTUAL_ACCOUNT_DELETE = 'VIRTUAL_ACCOUNT_DELETE';
 const VIRTUAL_ACCOUNT_FETCH = 'VIRTUAL_ACCOUNT_FETCH';
 const VIRTUAL_ACCOUNT_PAYMENTS_FETCH = 'VIRTUAL_ACCOUNT_PAYMENTS_FETCH';
 const VIRTUAL_ACCOUNT_CONFIG = 'VIRTUAL_ACCOUNT_CONFIG';
+const VPA_PREFIX = 'VPA_PREFIX';
 
 export const fetchConfigForVirtualAccount = () => {
   return {
@@ -81,6 +82,29 @@ export const createTestPayment = params => {
   };
 };
 
+export const validateVPACustomPrefix = prefix => {
+  return merchantFetch({
+    url: `virtual_vpa_prefixes/validate`,
+    method: 'GET',
+    data: {
+      prefix,
+    },
+  });
+};
+
+export const saveVPACustomPrefix = prefix => {
+  return {
+    type: VPA_PREFIX,
+    payload: merchantFetch({
+      url: `virtual_vpa_prefixes`,
+      method: 'POST',
+      data: {
+        prefix,
+      },
+    }),
+  };
+};
+
 // Virtual Accounts Details Reducer
 let listInitialState = {
   va_config: null, // null => data is loading
@@ -96,10 +120,32 @@ export const virtualAccountsReducer = makeActionCollectionReducer(
   'VIRTUAL_ACCOUNTS',
   {
     [`${VIRTUAL_ACCOUNT_CONFIG}::SUCCESS`]: (state, action) => {
-      return set(state, 'va_config', action.payload.data);
+      const va_config = {
+        ...action.payload.data,
+      };
+
+      const [rzp_prefix, merchant_prefix] = va_config.vpa.prefix.split('.');
+
+      va_config.vpa.rzp_prefix = rzp_prefix;
+      va_config.vpa.merchant_prefix = merchant_prefix;
+
+      return set(state, 'va_config', va_config);
     },
     [`${VIRTUAL_ACCOUNT_CONFIG}::ERROR`]: (state, action) => {
       return set(state, 'va_config', {}); // Set empty config
+    },
+    [`${VPA_PREFIX}::SUCCESS`]: (state, action) => {
+      const merchant_prefix = action.payload.data.prefix;
+      const prefix = `${state.va_config.vpa.rzp_prefix}.${merchant_prefix}`;
+
+      return set(state, 'va_config', {
+        ...state.va_config,
+        vpa: {
+          ...state.va_config.vpa,
+          merchant_prefix,
+          prefix,
+        },
+      });
     },
   }
 );

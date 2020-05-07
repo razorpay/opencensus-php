@@ -975,6 +975,7 @@ class Service extends Base\Service
             'user-2fa',
             'rx_webhook_migration_april_alert',
             'registered_onboarding_auto_kyc',
+            'virtual_vpa_prefix',
             'pl_batch_reminders'
         ];
 

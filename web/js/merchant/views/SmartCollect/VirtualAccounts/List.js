@@ -136,24 +136,8 @@ export default class VirtualAccountsListContainer extends ListContainer {
     });
   };
 
-  /*
-  showCreateVAModal = () => {
-    this.props.openModal({
-      size: 'medium',
-      className: 'create-virtual-account',
-      component: (
-        <CreateVirtualAccount
-          showCreateVAModal={this.showCreateVAModal}
-          onCopy={this.onCopy}
-        />
-      ),
-    });
-  };
-*/
-
   render() {
     const { isQuickGuideOpen, showOnboarding } = this.props.VAProductOnBoarding;
-    const { items } = this.props;
 
     if (showOnboarding) {
       return <OnBoarding />;

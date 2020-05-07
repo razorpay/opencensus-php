@@ -32,7 +32,7 @@ import {
 
 import CustomerCreation from 'merchant/views/Customers/New';
 
-import AccountDetailsSummary from './components/Modals/AccountDetailsSummary';
+import AccountDetailsSummary from '../components/Modals/AccountDetailsSummary';
 
 const CustomCustomerOption = ({ option }) => {
   return (

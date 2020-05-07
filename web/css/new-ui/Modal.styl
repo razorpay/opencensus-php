@@ -123,3 +123,42 @@
 
   .Button
     margin-top: 16px
+
+.PopOver--Modal
+  .Modal-actions
+    .Button
+      position: absolute
+      bottom: -64px
+      font-size: 12px
+      font-weight: bold
+      color: #fff
+      margin: 0
+
+      span
+        display: block
+        width: 32px
+        height: 32px
+        margin: 0 auto
+        font-size: 20px
+        border-radius: 2px
+        color: $primary-color
+        border: 1px solid rgba(82,143,240,0.77)
+        margin-bottom: 4px
+        line-height: 30px
+
+    .Cancel-btn
+      right: 60px
+      &:hover
+        color: #fff
+        opacity: .8
+      span
+        background-color:#fff
+
+    .Save-btn
+      right: 12px
+      &:hover
+        color: #fff
+        opacity: .8
+      span
+        color: #fff
+        background-color: $primary-color

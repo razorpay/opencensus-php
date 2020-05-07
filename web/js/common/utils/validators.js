@@ -258,3 +258,13 @@ export function validateBeneficiaryName(value) {
 
   return value.length >= 4 && value.length <= 120 && regex.test(value);
 }
+
+export function validateAlphanumericWithMinAndMaxLength(
+  value,
+  minLength,
+  maxLength
+) {
+  if (value.length < minLength) return false;
+
+  return validateAlphanumericWithMaxLength(value, maxLength);
+}

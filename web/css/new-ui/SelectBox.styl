@@ -1,0 +1,35 @@
+.SelectBox
+  display: flex
+  align-items: start
+  justify-content: space-between
+  padding: 12px
+  border-radius: 2px
+  background: #FDFDFD
+  border: 1px solid #E2E2E2
+  user-select: none
+  position: relative
+
+  &:not(:last-child)
+    margin-bottom: 12px
+
+  &:hover
+    border-color: rgba(82, 143, 240, 0.4)
+    background: rgba(250, 251, 255, 0.7)
+
+  &:disabled
+    cursor: not-allowed
+
+  &.checked
+    border-color: rgba(82, 143, 240, 0.4)
+
+  .SelectBox-content
+    width: 100%
+
+  .SelectBox-action .Input
+    margin: 0
+    position: absolute
+    top: 12px
+    right: 12px
+
+    .Input-checkbox
+      margin: 0

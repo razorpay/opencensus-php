@@ -90,3 +90,152 @@ $max-width = 640px
     button
       vertical-align: top
 
+.Modal-container--VirtualAccountV2
+  width: 90%
+  max-width: 400px
+  max-height: 510px
+  height: 85vh
+
+  &.Modal-container--has_bank_account,
+  &.Modal-container--has_vpa
+    max-height: 598px
+
+  &.Modal-container--has_bank_account_has_vpa
+    max-height: 694px
+
+.StandAloneContainer
+  .VirtualAccount--CreateV2
+    max-height: 510px
+    background: white
+    position: relative
+    height: 80vh
+    max-width: 400px
+
+  &.has_bank_account,
+  &.has_vpa
+    .VirtualAccount--CreateV2
+      max-height: 598px
+
+  &.has_bank_account_has_vpa
+    .VirtualAccount--CreateV2
+      max-height: 694px
+
+.VirtualAccount--CreateV2
+  .form-title
+    padding: 24px
+    font-weight: 600
+    font-size: 18px
+    position: absolute
+    top: 0
+    left: 0
+    background: white
+    z-index: 1
+    width: 100%
+
+  .Form
+    position: absolute
+    bottom: 0
+    top: 0
+    overflow: hidden
+    width: 100%
+
+    .remaining-count
+      position: absolute
+      top: 42px
+      right: 0
+
+  main
+    height: 100%
+    padding: 70px 24px 96px 24px
+    overflow: auto
+
+    &::-webkit-scrollbar
+      display: none
+
+  .payment-method-label
+    margin-bottom: 16px
+    font-weight: bold
+    font-size: 14px
+    line-height: 17px
+
+  .Input--SelectCustomer
+    .Input-label span
+      color: #828282
+      font-size: 12px
+
+  .additional-options-btn
+    margin-top: 24px
+    &:before,
+    &:after
+      content: ""
+      width: 25%
+      vertical-align: super
+      border: 1px dashed #DEE5E7
+      display: inline-block
+
+    button
+      background: #FAFAFA
+      border: 1px solid #DEE5E7
+      border-radius: 2px
+      width: 50%
+      maring-top: 24px
+
+  .AdditionalOptions,
+  .Input--SelectCustomer
+    .Input-content
+      margin-top: 8px
+
+  footer
+    position: absolute
+    left: 0
+    right: 0
+    bottom: 0
+    padding: 20px
+    background: #F6F6F6
+    border-top: 1px solid #e0e0e0
+    text-align: right
+
+    .Button
+      width: 48%
+      padding: 10px
+
+      &:first-child
+        margin: 0 2% 0 0
+
+      &:last-child
+        margin: 0
+
+  .SelectBox
+    .Input
+      margin: 12px 0 0 0
+    
+    img
+      height: 16px
+      vertical-align: text-bottom
+
+.VPAPrefixModal
+  max-width: 432px
+  padding: 16px
+  position: relative
+
+  img
+    width: 16px
+    margin-right: 4px
+    vertical-align: text-top
+
+  .Input
+    margin-top: 0
+    display: flex
+    align-times: baseline
+    .Input-label
+      width: 100px
+
+  .upi-example
+    margin: 12px 0
+    span
+      color: black
+
+  .remaining-count
+    position: absolute
+    top: 42px
+    right: 0
