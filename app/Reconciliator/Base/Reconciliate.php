@@ -214,6 +214,8 @@ class Reconciliate extends Base\Core
                 continue;
             }
 
+            $this->preProcessFileContents($fileContents);
+
             $this->updateBatchWithReconciliationType($batch, $reconciliationType, $extraDetails);
 
             $this->setSubReconciliator($reconciliationType, $batch);
@@ -1032,5 +1034,18 @@ class Reconciliate extends Base\Core
     protected function getTimeInEpochFormat(string $time, $format = 'Y-m-d H:i:s')
     {
         return Carbon::createFromFormat($format, $time, Timezone::IST)->timestamp;
+    }
+
+    /**
+     * For specific gateways, we need to modify
+     * the contents of the mis rows, before
+     * starting recon for each row.
+     * Currently only implemented for FirstData.
+     *
+     * @param array $fileContents
+     */
+    protected function preProcessFileContents(array &$fileContents)
+    {
+        return;
     }
 }

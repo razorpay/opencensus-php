@@ -1155,6 +1155,32 @@ class Repository extends Base\Repository
     }
 
     /**
+     * SELECT id FROM payments where id in
+     * (id1 COLLATE utf8_general_ci, id2 COLLATE
+     * utf8_general_ci,...) AND gateway= ?
+     */
+    public function fetchPaymentIdsbyCapsPaymentIds($capsPaymentIds, $gateway)
+    {
+        $rawCondition = '`id` in ("';
+
+        foreach ($capsPaymentIds as $capsPaymentId)
+        {
+            $rawCondition .= $capsPaymentId . '" COLLATE utf8_general_ci,"';
+        }
+
+        $rawCondition = rtrim($rawCondition, ',"');
+        $rawCondition .= ')';
+
+        $query =  $this->newQueryWithConnection($this->getSlaveConnection())
+                       ->whereRaw($rawCondition)
+                       ->where(Entity::GATEWAY, $gateway)
+                       ->select(Entity::ID)
+                       ->get();
+
+        return $query->pluck('id')->toArray();
+    }
+
+    /**
      * Fetches the number of times a payment has been made against each offer id in $offerIds
      * grouped by offerId
      *

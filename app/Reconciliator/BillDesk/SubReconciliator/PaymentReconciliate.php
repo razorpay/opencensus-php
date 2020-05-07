@@ -26,9 +26,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 
     protected function getPaymentId(array $row)
     {
-        $paymentId = $row[self::COLUMN_PAYMENT_ID];
-
-        return $paymentId;
+        return $row[self::COLUMN_PAYMENT_ID] ?? null;
     }
 
     protected function getGatewayServiceTax($row)

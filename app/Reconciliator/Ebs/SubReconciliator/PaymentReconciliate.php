@@ -34,9 +34,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
      */
     protected function getPaymentId(array $row)
     {
-        $paymentId = Helper::getArrayFirstValue($row, self::COLUMN_PAYMENT_ID);
-
-        return $paymentId;
+        return Helper::getArrayFirstValue($row, self::COLUMN_PAYMENT_ID);
     }
 
     public function getGatewayPayment($paymentId)

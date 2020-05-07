@@ -3,6 +3,9 @@
 namespace RZP\Reconciliator\FirstData;
 
 use RZP\Reconciliator\Base;
+use RZP\Models\Payment\Entity;
+use RZP\Models\Payment\Gateway;
+use RZP\Reconciliator\FirstData\SubReconciliator\PaymentReconciliate;
 
 class Reconciliate extends Base\Reconciliate
 {
@@ -49,5 +52,44 @@ class Reconciliate extends Base\Reconciliate
         }
 
         return false;
+    }
+
+    /**
+     * We want to replace CapsPaymentID by actual
+     * payment_id for all rows (in bulk, for better
+     * performance) before hand and then proceed to
+     * reconcile row by row.
+     * @param array $fileContents
+     */
+    protected function preProcessFileContents(array &$fileContents)
+    {
+        $capsPaymentIds = [];
+
+        foreach ($fileContents as $row)
+        {
+            if ((empty($row[PaymentReconciliate::COLUMN_CAPS_PAYMENT_ID]) === false) and
+              (Entity::verifyUniqueId($row[PaymentReconciliate::COLUMN_CAPS_PAYMENT_ID], false) === true))
+            {
+                $capsPaymentIds[] = $row[PaymentReconciliate::COLUMN_CAPS_PAYMENT_ID];
+            }
+        }
+
+        $paymentIds = $this->repo->payment->fetchPaymentIdsbyCapsPaymentIds($capsPaymentIds, Gateway::FIRST_DATA);
+
+        $capsKeyPaymentIdValue = [];
+
+        foreach ($paymentIds as $paymentId)
+        {
+            $capsKeyPaymentIdValue[strtoupper($paymentId)] = $paymentId;
+        }
+
+        foreach ($fileContents as &$fileContent)
+        {
+            if (empty($fileContent[PaymentReconciliate::COLUMN_CAPS_PAYMENT_ID]) === false)
+            {
+                $capsPaymentId = $fileContent[PaymentReconciliate::COLUMN_CAPS_PAYMENT_ID];
+                $fileContent[PaymentReconciliate::COLUMN_CAPS_PAYMENT_ID] = $capsKeyPaymentIdValue[$capsPaymentId] ?? $capsPaymentId;
+            }
+        }
     }
 }

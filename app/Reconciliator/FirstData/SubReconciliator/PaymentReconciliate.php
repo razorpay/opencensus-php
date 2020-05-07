@@ -15,7 +15,6 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
      * Row Header Names
      ******************/
 
-    // session_id_aspd maps to caps_payment_id
     // comm_amount (commission amount) maps to gateway fee
     const COLUMN_CAPS_PAYMENT_ID                = 'session_id_aspd';
     const COLUMN_GATEWAY_FEE                    = 'comm_amount';
@@ -30,47 +29,16 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
     const COLUMN_INTERNATIONAL_PAYMENT_AMOUNT   = 'transaction_amt';
 
     /**
-     * The payment id in the file is under column 'SESSION ID ASPD'.
-     * However, the id is sometimes capitalized, somethings not,
-     * whereas the ids in our database are case sensitive.
-     * So we compare ('SESSION ID ASPD') to 'caps_payment_id' of FirstData
-     *
-     * @param array   $row
-     * @return string $paymentId
+     * In actual MIS file we still get Caps PID,
+     * but we have pre processed the file to
+     * replace the caps PID with actual PIDs..
+     * so simply returning the value here.
+     * @param array $row
+     * @return mixed|null
      */
     protected function getPaymentId(array $row)
     {
-        $capsPaymentId = $row[self::COLUMN_CAPS_PAYMENT_ID];
-
-        // doing this because sometimes the ids are all caps, sometimes not
-        // the caps_payment_id in database is however all caps! :D
-        // just to be on the safer side.
-        $capsPaymentId = strtoupper($capsPaymentId);
-
-        $paymentId = null;
-
-        try
-        {
-            // The broad assumption here is that these ids will not collide
-            // The mathematical probability is very low (not zero though)!
-            $paymentId = $this->repo->first_data
-                                    ->findPaymentForGateway($capsPaymentId)
-                                    ->getPaymentId();
-        }
-        catch (DbQueryException $ex)
-        {
-            $this->trace->info(
-                    TraceCode::RECON_MISMATCH,
-                    [
-                        'info_code'             => Base\InfoCode::PAYMENT_ABSENT,
-                        'payment_reference_id'  => $capsPaymentId,
-                        'gateway'               => $this->gateway
-                    ]);
-
-            $this->setFailUnprocessedRow(true);
-        }
-
-        return $paymentId;
+        return $row[self::COLUMN_CAPS_PAYMENT_ID] ?? null;
     }
 
     /**

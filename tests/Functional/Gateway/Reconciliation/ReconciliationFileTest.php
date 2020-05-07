@@ -10,6 +10,7 @@ use RZP\Models\Payment;
 use RZP\Constants\Timezone;
 use RZP\Models\Batch\Status;
 use RZP\Models\Payment\Refund;
+use RZP\Models\Base\PublicEntity;
 use Illuminate\Http\UploadedFile;
 use RZP\Tests\Functional\TestCase;
 use RZP\Reconciliator\Base\Reconciliate;
@@ -71,42 +72,58 @@ class ReconciliationFileTest extends TestCase
 
         // Recurring authorised payment
         $payment1 = $this->getNewPaymentEntity(true, false);
-        $gatewayPayment1 = $this->getDbLastEntityToArray('first_data');
-
         $this->assertNull($payment1['reference1']);
         $this->assertNull($payment1['reference2']);
+        $entries[] = $this->overrideFirstDataPayment($payment1);
 
-        $entries[] = $this->overrideFirstDataPayment($gatewayPayment1);
-
-        // Non Recurring captured payment
-        $payment2 = $this->getNewPaymentEntity(false, true);
-        $gatewayPayment2 = $this->getDbLastEntityToArray('first_data');
-
+        $payment2 = $this->getNewPaymentEntity(true, false);
         $this->assertNull($payment2['reference1']);
+        $this->assertNull($payment2['reference2']);
+        $entries[] = $this->overrideFirstDataPayment($payment2);
 
-        $entries[] = $this->overrideFirstDataPayment($gatewayPayment2);
+        $payment3 = $this->getNewPaymentEntity(true, false);
+        $this->assertNull($payment3['reference1']);
+        $this->assertNull($payment3['reference2']);
+        $entries[] = $this->overrideFirstDataPayment($payment3);
 
         $file = $this->writeToExcelFile($entries, 'first_data');
         $this->runForFiles([$file], 'FirstData');
 
         $updatedPayment1 = $this->getDbEntityById('payment' ,$payment1['id']);
-
         $this->assertEquals($entries[0][FDPaymentRecon::COLUMN_ARN], $updatedPayment1['reference1']);
         $this->assertEquals($entries[0][FDPaymentRecon::COLUMN_AUTH_CODE], $updatedPayment1['reference2']);
         $this->assertTrue($updatedPayment1['gateway_captured']);
 
         $updatedPayment2 = $this->getDbEntityById('payment' ,$payment2['id']);
-
         $this->assertEquals($entries[1][FDPaymentRecon::COLUMN_ARN], $updatedPayment2['reference1']);
-        // Recon should not overwrite reference2 if it was saved before
-        $this->assertEquals($payment2['reference2'], $updatedPayment2['reference2']);
+        $this->assertEquals($entries[1][FDPaymentRecon::COLUMN_AUTH_CODE], $updatedPayment2['reference2']);
+        $this->assertTrue($updatedPayment2['gateway_captured']);
+
+        $updatedPayment3 = $this->getDbEntityById('payment' ,$payment3['id']);
+        $this->assertEquals($entries[2][FDPaymentRecon::COLUMN_ARN], $updatedPayment3['reference1']);
+        $this->assertEquals($entries[2][FDPaymentRecon::COLUMN_AUTH_CODE], $updatedPayment3['reference2']);
+        $this->assertTrue($updatedPayment3['gateway_captured']);
+
+        $updatedTransaction1 = $this->getDbEntityById('transaction', $updatedPayment1['transaction_id'])->toArrayAdmin();
+        $this->assertNotNull($updatedTransaction1['reconciled_at']);
+
+        $updatedTransaction2 = $this->getDbEntityById('transaction', $updatedPayment2['transaction_id'])->toArrayAdmin();
+        $this->assertNotNull($updatedTransaction2['reconciled_at']);
+
+        $updatedTransaction3 = $this->getDbEntityById('transaction', $updatedPayment3['transaction_id'])->toArrayAdmin();
+        $this->assertNotNull($updatedTransaction3['reconciled_at']);
+
+        // Check the status of processed batch.
+        $this->assertBatchStatus(Status::PROCESSED);
 
         // Overriding Entity to test force update
-        unset($entries[1]);
+        unset($entries[1], $entries[2]);
+
         $entries[0][FDPaymentRecon::COLUMN_ARN]         = 'force_updated_arn';
         $entries[0][FDPaymentRecon::COLUMN_AUTH_CODE]   = 'force_updated_auth_code';
 
         $file = $this->writeToExcelFile($entries, 'first_data');
+
         $this->runForFiles([$file], 'FirstData', ['payment_arn', 'payment_auth_code']);
 
         $updatedPayment1 = $this->getDbEntityById('payment' ,$payment1['id']);
@@ -164,6 +181,8 @@ class ReconciliationFileTest extends TestCase
 
         // Recurring authorised payment
         $payment = $this->getNewPaymentEntity(true, false);
+        $this->assertNull($payment['reference1']);
+        $this->assertNull($payment['reference2']);
 
         $this->fixtures->edit('payment',
             $payment['id'],
@@ -174,9 +193,7 @@ class ReconciliationFileTest extends TestCase
                 'currency'          => 'USD',
             ]);
 
-        $gatewayPayment = $this->getDbLastEntityToArray('first_data');
-
-        $entries[] = $this->overrideFirstDataNonInrPayment($gatewayPayment);
+        $entries[] = $this->overrideFirstDataNonInrPayment($payment);
 
         $file = $this->writeToExcelFile($entries, 'first_data');
         $this->runForFiles([$file], 'FirstData');
@@ -206,20 +223,16 @@ class ReconciliationFileTest extends TestCase
                 'error_description'     => 'Payment was not completed on time.',
             ]);
 
-        $gatewayPayment = $this->getDbLastEntityToArray('first_data');
-
         $payment = $this->getDbLastEntityToArray('payment');
 
         $this->assertEquals('failed', $payment['status']);
 
-        $entries[] = $this->overrideFirstDataPayment($gatewayPayment, [], 'first_data');
+        $entries[] = $this->overrideFirstDataPayment($payment);
 
         $file = $this->writeToExcelFile($entries, 'first_data');
         $this->runForFiles([$file], 'FirstData', [], ['pay_'. $payment['id']]);
 
         $updatedPayment = $this->getDbEntityById('payment', $payment['id']);
-
-        $updatedGatewayPayment = $this->getDbLastEntityToArray('first_data');
 
         $this->assertEquals('authorized', $updatedPayment['status']);
     }
@@ -246,20 +259,16 @@ class ReconciliationFileTest extends TestCase
                 'error_description'     => 'Payment was not completed on time.',
             ]);
 
-        $gatewayPayment = $this->getDbLastEntityToArray('first_data');
-
         $payment = $this->getDbLastEntityToArray('payment');
 
         $this->assertEquals('failed', $payment['status']);
 
-        $entries[] = $this->overrideFirstDataPayment($gatewayPayment, [], 'first_data');
+        $entries[] = $this->overrideFirstDataPayment($payment);
 
         $file = $this->writeToExcelFile($entries, 'first_data');
         $this->runForFiles([$file], 'FirstData', [], ['pay_'. $payment['id']]);
 
         $updatedPayment = $this->getDbEntityById('payment', $payment['id']);
-
-        $updatedGatewayPayment = $this->getDbLastEntityToArray('first_data');
 
         $this->assertEquals('failed', $updatedPayment['status']);
     }
@@ -1520,9 +1529,8 @@ class ReconciliationFileTest extends TestCase
 
         // Recurring authorised payment
         $payment1 = $this->getNewPaymentEntity(true, false);
-        $gatewayPayment1 = $this->getDbLastEntityToArray('first_data');
 
-        $entries[] = $this->overrideFirstDataPayment($gatewayPayment1);
+        $entries[] = $this->overrideFirstDataPayment($payment1);
 
         $file = $this->writeToExcelFile($entries, 'first_data', 'files/settlement', ['Sheet 1'], 'xls');
         $this->runForFiles([$file], 'FirstData');
@@ -1613,7 +1621,7 @@ class ReconciliationFileTest extends TestCase
     {
         $facade = $this->testData['facades']['first_data'];
 
-        $facade[FDPaymentRecon::COLUMN_CAPS_PAYMENT_ID] = $payment['payment_id'];
+        $facade[FDPaymentRecon::COLUMN_CAPS_PAYMENT_ID] = strtoupper(PublicEntity::stripDefaultSign($payment['id']));
         $facade[FDPaymentRecon::COLUMN_AUTH_CODE]       = random_integer(6);
         $facade[FDPaymentRecon::COLUMN_ARN]             = str_random(24);
 
@@ -1624,7 +1632,7 @@ class ReconciliationFileTest extends TestCase
     {
         $facade = $this->testData['facades']['first_data'];
 
-        $facade[FDPaymentRecon::COLUMN_CAPS_PAYMENT_ID]                = $payment['payment_id'];
+        $facade[FDPaymentRecon::COLUMN_CAPS_PAYMENT_ID]                = strtoupper(PublicEntity::stripDefaultSign($payment['id']));
         $facade[FDPaymentRecon::COLUMN_AUTH_CODE]                      = random_integer(6);
         $facade[FDPaymentRecon::COLUMN_ARN]                            = str_random(24);
         $facade[FDPaymentRecon::COLUMN_CURRENCY]                       = 'USD';
@@ -1764,9 +1772,9 @@ class ReconciliationFileTest extends TestCase
         return $facade;
     }
 
-    private function overrideFirstDataRefund(array $payment, array $forceOverride = [], $gateway = 'fss')
+    private function overrideFirstDataRefund(array $payment, array $forceOverride = [])
     {
-        $facade = $this->overrideFirstDataPayment($payment, $forceOverride, $gateway);
+        $facade = $this->overrideFirstDataPayment($payment, $forceOverride);
 
         $facade['transaction_type'] = 'REFUND (CREDIT)';
 
@@ -2511,11 +2519,9 @@ class ReconciliationFileTest extends TestCase
         $this->fixtures->create('terminal:shared_first_data_terminal');
         $this->fixtures->merchant->addFeatures('charge_at_will');
 
-        $this->getNewPaymentEntity(false, true);
+        $payment = $this->getNewPaymentEntity(false, true);
 
-        $gatewayPayment1 = $this->getDbLastEntityToArray('first_data');
-
-        $entries[] = $this->overrideFirstDataPayment($gatewayPayment1);
+        $entries[] = $this->overrideFirstDataPayment($payment);
 
         // Creating batch with failed status.
         $this->fixtures->create('batch:recon_with_failed_status', $entries);
@@ -2549,11 +2555,9 @@ class ReconciliationFileTest extends TestCase
         $this->fixtures->create('terminal:shared_first_data_terminal');
         $this->fixtures->merchant->addFeatures('charge_at_will');
 
-        $this->getNewPaymentEntity(false, true);
+        $payment = $this->getNewPaymentEntity(false, true);
 
-        $gatewayPayment1 = $this->getDbLastEntityToArray('first_data');
-
-        $entries[] = $this->overrideFirstDataPayment($gatewayPayment1);
+        $entries[] = $this->overrideFirstDataPayment($payment);
 
         // Creating batch with created status with processing as true.
         $this->fixtures->create('batch:recon_with_created_status_and_processing_true', $entries);
@@ -3350,7 +3354,6 @@ class ReconciliationFileTest extends TestCase
         $this->fixtures->merchant->addFeatures('payment_onhold');
 
         $payment = $this->getNewPaymentEntity(false, true);
-        $gatewayPayment = $this->getDbLastEntityToArray('first_data');
 
         $this->fixtures->edit('payment', $payment['id'], [
             'on_hold' => true
@@ -3368,7 +3371,7 @@ class ReconciliationFileTest extends TestCase
 
         $this->assertTrue($paymentEntity->transaction->getOnHold());
 
-        $entries[] = $this->overrideFirstDataPayment($gatewayPayment);
+        $entries[] = $this->overrideFirstDataPayment($payment);
 
         $file = $this->writeToExcelFile($entries, 'first_data');
         $this->runForFiles([$file], 'FirstData');
