@@ -359,6 +359,7 @@ final class Route
         'fts_dashboard_bulk_status_get'            => ['post',     'fts/dashboard/fund_transfer_status/bulk_get',    'FTSController@getBulkStatus'                                       ],
         'fts_dashboard_alert'                      => ['post',     'fts/dashboard/alert',                            'FTSController@sendAlert'                                           ],
         'fts_dashboard_sa_mappings_create'         => ['post',     'fts/dashboard/source_account_mappings',          'FTSController@createSourceAccountMappings'                         ],
+        'fts_dashboard_sa_mappings_delete'         => ['delete',   'fts/dashboard/source_account_mappings',          'FTSController@deleteSourceAccountMappings'                         ],
         'nodal_file_upload_retry'                  => ['post',     'nodal_file_upload/retry',                        'FundTransferAttemptController@nodalFileUploadThroughBeam',         ],
         'channel_health_check'                     => ['post',     'channel_health_check/{channel}',                 'FundTransferAttemptController@healthCheck',                        ],
         'set_channel_action'                       => ['put',      'set_channel/{channel}/{action}',                 'FundTransferAttemptController@setChannelState',                    ],
@@ -3078,6 +3079,7 @@ final class Route
         'fts_dashboard_bulk_status_get',
         'fts_dashboard_alert',
         'fts_dashboard_sa_mappings_create',
+        'fts_dashboard_sa_mappings_delete',
 
         'create_merchant_options_admin',
         'read_merchant_options_admin',
@@ -3696,7 +3698,7 @@ final class Route
         'recon_fetch_files_count'                   => '*',
         'on_demand_settlement_fees'                 => '*',
         'gateway_downtime_detection_get_stats'      => '*',
-        
+
         'fts_dashboard_fund_transfer_update'        => Permission::FTS_TRANSFER_ATTEMPT_BULK_UPDATE,
         'fts_dashboard_fund_transfer_status_bulk'   => '*',
         'fts_dashboard_raw_bank_status'             => Permission::FTS_TRANSFER_ATTEMPT_BULK_UPDATE,
@@ -3704,6 +3706,7 @@ final class Route
         'fts_dashboard_bulk_status_get'             => Permission::FTS_TRANSFER_ATTEMPT_BULK_UPDATE,
         'fts_dashboard_alert'                       => Permission::FTS_TRANSFER_ATTEMPT_BULK_UPDATE,
         'fts_dashboard_sa_mappings_create'          => Permission::FTS_TRANSFER_ATTEMPT_BULK_UPDATE,
+        'fts_dashboard_sa_mappings_delete'          => Permission::FTS_TRANSFER_ATTEMPT_BULK_UPDATE,
         'fts_dashboard_source_account_create'       => Permission::GATEWAY_PVT,
         'fts_dashboard_source_account_delete'       => Permission::GATEWAY_PVT,
         'mozart_gateway_action'                     => Permission::GATEWAY_PVT,

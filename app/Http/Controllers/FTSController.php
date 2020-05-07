@@ -68,4 +68,11 @@ class FTSController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function deleteSourceAccountMappings()
+    {
+        $response = $this->app['fts_fund_transfer']->deleteSourceAccountMappings($this->input);
+
+        return ApiResponse::json($response);
+    }
 }
