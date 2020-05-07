@@ -846,13 +846,6 @@ trait Refund
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_CARD_REFUND_NOT_ALLOWED);
         }
 
-        // In case of UPI OTM Payments, For revoking the mandate, we call the refund api on authorized payment
-        // In case it is captured, It will follow the normal flow.
-        if (($payment->isAuthorized() === true) and ($payment->isUpiOtm() === true))
-        {
-            return $this->refundAuthorizedPayment($payment, $input);
-        }
-
         return $this->refundCapturedPayment($payment, $input);
     }
 
@@ -1894,6 +1887,17 @@ trait Refund
 
     protected function gatewaySupportsReversal($payment)
     {
+        /**
+         * @var $payment Payment\Entity
+         */
+
+        // Upi otm payments are allowed reversal when we refund authorized payment
+        // i.e. that is a mandate revoke call.
+        if ($payment->isUpiOtm() === true)
+        {
+            return true;
+        }
+
         $gateway = $payment->getGateway();
 
         return Payment\Gateway::supportsReverse($gateway);
@@ -2231,6 +2235,16 @@ trait Refund
                         ErrorCode::BAD_REQUEST_PAYMENT_REVERSAL_NOT_SUPPORTED);
                 }
 
+            }
+            else if ($payment->isUpiOtm() === true and $payment->isAuthorized() === true)
+            {
+                // In case of UPI OTM Payments, For revoking the mandate, we call the refund api on authorized payment
+                // We also validate that, to not support partial refund on the revoke call.
+                if ($this->getPaymentRefundType($input, $payment) === Payment\RefundStatus::PARTIAL)
+                {
+                    throw new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_REFUND_PARTIAL_VOID_NOT_SUPPORTED);
+                }
             }
             else
             {

@@ -648,6 +648,88 @@ class SharpGatewayTest extends TestCase
         $this->assertSame('refunded', $payment['status']);
     }
 
+    public function testOtmRefundAuthorizedFailWithPartialAmount()
+    {
+        $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
+
+        $payment = $this->getDefaultUpiOtmPayment();
+
+        $response = $this->doAuthPaymentViaAjaxRoute($payment);
+
+        $paymentId = $response['payment_id'];
+
+        // Refund a authorized payment, as it is otm, it will mandate revoke.
+        $this->makeRequestAndCatchException(function () use ($paymentId, $payment)
+        {
+            $this->refundPayment($paymentId, $payment['amount'] - 100);
+        },
+        Exception\BadRequestException::class,
+        'Void is not supported for partial refunds');
+    }
+
+    public function testOtmRefundAuthorizedFailsWithVoidEnabled()
+    {
+        $this->fixtures->merchant->addFeatures([Feature\Constants::VOID_REFUNDS]);
+        $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
+
+        $payment = $this->getDefaultUpiOtmPayment();
+
+        $response = $this->doAuthPaymentViaAjaxRoute($payment);
+
+        $paymentId = $response['payment_id'];
+
+        // Refund a authorized payment, as it is otm, it will mandate revoke.
+        $this->makeRequestAndCatchException(function () use ($paymentId, $payment)
+        {
+            $this->refundPayment($paymentId, $payment['amount'] - 100);
+        },Exception\BadRequestException::class,
+        'Void is not supported for partial refunds');
+    }
+
+    public function testOtmRefundAuthorizedPassWithVoidEnabled()
+    {
+        $this->fixtures->merchant->addFeatures([Feature\Constants::VOID_REFUNDS]);
+        $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
+
+        $payment = $this->getDefaultUpiOtmPayment();
+
+        $response = $this->doAuthPaymentViaAjaxRoute($payment);
+
+        $paymentId = $response['payment_id'];
+
+        $this->refundPayment($paymentId, $payment['amount']);
+
+        $payment = $this->getLastPayment();
+
+        $this->assertSame('refunded', $payment['status']);
+    }
+
+    public function testUpiOtmInvalidExecuteAfterEndTime()
+    {
+        $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
+
+        $payment = $this->getDefaultUpiOtmPayment();
+        unset($payment['upi']['start_time']);
+        $payment['upi']['end_time'] = Carbon::now()->addSecond(45)->getTimestamp();
+
+        $response = $this->doAuthPaymentViaAjaxRoute($payment);
+
+        $actualNow = Carbon::now();
+
+        $after5Minute = Carbon::now()->addMinute(5);
+
+        Carbon::setTestNow($after5Minute);
+
+        $this->makeRequestAndCatchException(function () use ($response, $payment)
+        {
+            $this->capturePayment($response['payment_id'], $payment['amount']);
+        },
+        Exception\BadRequestValidationFailureException::class,
+        'Execution only allowed between start time and end time');
+
+        Carbon::setTestNow($actualNow);
+    }
+
     public function testOtmRefundCaptured()
     {
         $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
