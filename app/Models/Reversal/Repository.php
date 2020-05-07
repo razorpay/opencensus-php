@@ -188,6 +188,7 @@ class Repository extends Base\Repository
         $payoutsIdColumn      = $this->repo->payout->dbColumn(PayoutEntity::ID);
         $payoutsFeesColumn    = $this->repo->payout->dbColumn(PayoutEntity::FEES);
         $entityTypeColumn     = $this->dbColumn(Entity::ENTITY_TYPE);
+        $payoutsFailedAtColumn = $this->repo->payout->dbColumn(PayoutEntity::FAILED_AT);
 
         $reversalsCreatedAtColumn   = $this->repo->reversal->dbColumn(Entity::CREATED_AT);
         $reversalsEntityIdColumn    = $this->dbColumn(Entity::ENTITY_ID);
@@ -198,6 +199,7 @@ class Repository extends Base\Repository
                     ->merchantID($merchantId)
                     ->where($entityTypeColumn, Type::PAYOUT)
                     ->whereBetween($reversalsCreatedAtColumn, [$from, $to])
+                    ->whereNull($payoutsFailedAtColumn)
                     ->where($balanceIdColumn, $balanceId)
                     ->get();
     }

@@ -1312,6 +1312,126 @@ class FeeRecoveryTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateFeeRecoveryPayoutWithFailedToReversedCase()
+    {
+        $oldTime = Carbon::create(2020, 1,3);
+
+        Carbon::setTestNow($oldTime);
+
+        $oldTimeStamp = $oldTime->getTimestamp();
+
+        // Create first payout
+        $this->testCreateFeeRecoveryAtPayoutCreationForRBLPayouts();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $fundAccount = $this->getDbLastEntity('fund_account');
+
+        $this->fixtures->edit('payout', $payout['id'], ['initiated_at' => $oldTimeStamp]);
+
+        // Create second payout
+        $this->createPayoutForFundAccount($fundAccount, $this->balance);
+
+        $payout2 = $this->getDbLastEntity('payout');
+
+        $this->fixtures->edit('payout', $payout2['id'], ['initiated_at' => $oldTimeStamp]);
+
+        // Create a third payout
+        $this->createPayoutForFundAccount($fundAccount, $this->balance);
+
+        $payout3 = $this->getDbLastEntity('payout');
+
+        $this->fixtures->edit('payout', $payout3['id'], ['initiated_at' => $oldTimeStamp]);
+
+        // Fail the third payout
+        $this->updateFtaAndSource($payout3, Payout\Status::FAILED);
+
+        // Reverse the third payout (This happens at BAS fetch, so we shall mimic it via fixtures)
+        $this->fixtures->edit('payout', $payout3['id'], [
+            'reversed_at' => $oldTimeStamp,
+            'status'      => Payout\Status::REVERSED
+        ]);
+
+        // Create reversal for the third payout
+        // We shall not create any fee_recovery entry since that gets skipped during the failed->reversed status change
+        $this->fixtures->reversal->createPayoutReversal(
+            [
+                'merchant_id'   => '10000000000000',
+                'entity_id'     => $payout3['id'],
+                'entity_type'   => 'payout',
+                'balance_id'    => $this->balance->getId(),
+                'amount'        => $payout3['amount'],
+                'fee'           => 0,
+                'tax'           => 0,
+                'channel'       => 'rbl',
+            ]);
+
+        $this->fixtures->edit('contact', '1010101contact', ['type' => 'rzp_fees']);
+
+        $balanceId = $this->balance->getId();
+
+        $startTime = Carbon::create(2020,1,1)->getTimestamp();
+        $endTime   = Carbon::create(2020,1,8)->getTimestamp();
+
+        $data = & $this->testData[__FUNCTION__];
+
+        $data['request']['content'] = [
+            'balance_id'    => $balanceId,
+            'from'          => $startTime,
+            'to'            => $endTime,
+        ];
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+
+        $feeRecoveryPayout = $this->getDbLastEntity('payout');
+
+        // Moving this payout to initiated
+        $feeRecoveryPayout->setStatus(Payout\Status::INITIATED);
+        $feeRecoveryPayout->saveOrFail();
+
+        $feeRecoveryList = $this->getDbEntities('fee_recovery')->toArray();
+
+        // Assert count of fee Recovery Entities
+        $this->assertEquals(5, count($feeRecoveryList));
+
+        // Fee Recovery entity for initiated payout 1
+        $this->assertEquals($payout['id'], $feeRecoveryList[0]['entity_id']);
+        $this->assertEquals(FeeRecovery\Status::PROCESSING, $feeRecoveryList[0]['status']);
+        $this->assertEquals($feeRecoveryList[0]['type'], FeeRecovery\Type::DEBIT);
+        $this->assertEquals(1, $feeRecoveryList[0]['attempt_number']);
+        $this->assertEquals($feeRecoveryList[0]['recovery_payout_id'], $feeRecoveryPayout['id']);
+
+        // Fee Recovery entity for initiated payout 2
+        $this->assertEquals($payout2['id'], $feeRecoveryList[1]['entity_id']);
+        $this->assertEquals(FeeRecovery\Status::PROCESSING, $feeRecoveryList[1]['status']);
+        $this->assertEquals($feeRecoveryList[1]['type'], FeeRecovery\Type::DEBIT);
+        $this->assertEquals(1, $feeRecoveryList[1]['attempt_number']);
+        $this->assertEquals($feeRecoveryList[1]['recovery_payout_id'], $feeRecoveryPayout['id']);
+
+        // Fee Recovery entity for initiated payout 3
+        $this->assertEquals($payout3['id'], $feeRecoveryList[2]['entity_id']);
+        $this->assertEquals(FeeRecovery\Status::PROCESSING, $feeRecoveryList[2]['status']);
+        $this->assertEquals($feeRecoveryList[2]['type'], FeeRecovery\Type::DEBIT);
+        $this->assertEquals(1, $feeRecoveryList[2]['attempt_number']);
+        $this->assertEquals($feeRecoveryList[2]['recovery_payout_id'], $feeRecoveryPayout['id']);
+
+        // Fee Recovery entity for failed payout 3
+        $this->assertEquals($payout3['id'], $feeRecoveryList[3]['entity_id']);
+        $this->assertEquals(FeeRecovery\Status::PROCESSING, $feeRecoveryList[3]['status']);
+        $this->assertEquals(FeeRecovery\Type::CREDIT, $feeRecoveryList[3]['type']);
+        $this->assertEquals(1, $feeRecoveryList[3]['attempt_number']);
+        $this->assertEquals($feeRecoveryList[3]['recovery_payout_id'], $feeRecoveryPayout['id']);
+
+        // Fee Recovery entity for recovery payout (Corresponding to the rzp_fees payout)
+        $this->assertEquals($feeRecoveryPayout['id'], $feeRecoveryList[4]['entity_id']);
+        $this->assertEquals(FeeRecovery\Status::UNRECOVERED, $feeRecoveryList[4]['status']);
+        $this->assertEquals(0, $feeRecoveryList[4]['attempt_number']);
+        $this->assertNull($feeRecoveryList[4]['recovery_payout_id']);
+    }
+
+
     public function createVirtualBankingAccount()
     {
         $balanceAttributes = [

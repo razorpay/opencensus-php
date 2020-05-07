@@ -26,6 +26,26 @@ return [
         ],
     ],
 
+    'testCreateFeeRecoveryPayoutWithFailedToReversedCase' => [
+        'request'  => [
+            'url'    => '/payouts/fee_recovery',
+            'method' => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 1180,
+                'currency'        => 'INR',
+                'narration'       => 'Test Merchant Fund Transfer',
+                'purpose'         => 'rzp_fees',
+                'status'          => 'processing',
+                'mode'            => 'IFT',
+                'tax'             => 0,
+                'fees'            => 0,
+            ],
+        ],
+    ],
+
     'testCreateFeeRecoveryPayoutLowBalance' => [
         'request'  => [
             'url'    => '/payouts/fee_recovery',

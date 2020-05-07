@@ -366,7 +366,6 @@ class Repository extends Base\Repository
     {
         $payoutsIdColumn            = $this->dbColumn(Entity::ID);
         $payoutsFeesColumn          = $this->dbColumn(Entity::FEES);
-        $payoutsStatusColumn        = $this->dbColumn(Entity::STATUS);
         $payoutsFailedAtColumn      = $this->dbColumn(Entity::FAILED_AT);
         $payoutsBalanceIdColumn     = $this->dbColumn(Entity::BALANCE_ID);
         $payoutsInitiatedAtColumn   = $this->dbColumn(Entity::INITIATED_AT);
@@ -377,7 +376,6 @@ class Repository extends Base\Repository
                     ->where($payoutsBalanceIdColumn, $balanceId)
                     ->whereNotNull($payoutsInitiatedAtColumn)
                     ->whereBetween($payoutsFailedAtColumn, [$start, $end])
-                    ->where($payoutsStatusColumn, '=', Status::FAILED)
                     ->get();
     }
 
