@@ -769,6 +769,10 @@ class Gateway extends Base\Gateway
                 Payment\Method::WALLET,
             ], true) === true)
         {
+            if ($this->getGateway($input) === 'wallet_paypal')
+            {
+                return false;
+            }
             return true;
         }
 
