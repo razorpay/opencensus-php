@@ -52,7 +52,7 @@ export default class NewKey extends Component {
     const { apiKey: key } = this.props;
 
     return ajax({
-      url: 'keys/csv',
+      url: '/keys/csv',
       method: 'post',
       appendModeInQueryParam: true,
       data: {
