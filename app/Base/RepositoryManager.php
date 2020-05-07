@@ -76,6 +76,8 @@ use RZP\Base\Database\Connectors\MySqlConnector;
  * @property Models\Payment\Config\Repository                   $config
  * @property Models\IdempotencyKey\Repository                   $idempotency_key
  * @property Models\FeeRecovery\Repository                      $fee_recovery
+ * @property Models\VirtualVpaPrefix\Repository                 $virtual_vpa_prefix
+ * @property Models\VirtualVpaPrefixHistory\Repository          $virtual_vpa_prefix_history
  * @property Models\Merchant\Reminders\Repository               $merchant_reminders
  */
 class RepositoryManager extends Illuminate\Support\Manager

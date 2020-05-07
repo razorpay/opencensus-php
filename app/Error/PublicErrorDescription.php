@@ -317,6 +317,10 @@ class PublicErrorDescription
     const BAD_REQUEST_VIRTUAL_ACCOUNT_OPERATION_IN_PROGRESS                     = 'Request failed because another virtual account operation is in progress';
     const BAD_REQUEST_VIRTUAL_ACCOUNT_RECEIVER_ALREADY_PRESENT                  = 'Receiver type is already present for the virtual account';
 
+    // Virtual VPA Prefix
+    const BAD_REQUEST_VIRTUAL_VPA_PREFIX_UNAVAILABLE                            = 'This prefix is already in use. Please try another prefix.';
+    const BAD_REQUEST_VIRTUAL_VPA_PREFIX_NOT_ALLOWED                            = 'Prefix is not enabled for this merchant.';
+
     const BAD_REQUEST_ACCOUNT_CLOSED                                            = 'Bank Account is closed.';
     const BAD_REQUEST_ACCOUNT_NUMBER_MISMATCH                                   = 'Bank Account Number does not match.';
     const BAD_REQUEST_ACCOUNT_BLOCKED                                           = 'Bank Account is blocked.';

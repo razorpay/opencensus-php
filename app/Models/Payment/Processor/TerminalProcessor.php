@@ -199,6 +199,25 @@ class TerminalProcessor extends Base\Core
         return $this->selectTerminalForBankAccount($terminals, $bankTransfer->getPayeeAccount(), $log);
     }
 
+    public function getTerminalForUpiTransfer($merchantId = null) : Terminal\Entity
+    {
+        $merchantIds = array_filter([Account::SHARED_ACCOUNT, $merchantId]);
+
+        $terminals = $this->repo
+                          ->terminal
+                          ->getByTypeAndMerchantIds(Terminal\Type::UPI_TRANSFER, $merchantIds);
+
+        foreach ($terminals as $terminal)
+        {
+            if ($terminal->getMerchantId() === $merchantId)
+            {
+                return $terminal;
+            }
+        }
+
+        return $terminals->last();
+    }
+
     protected function selectTerminalForBankAccount(Base\PublicCollection $allTerminals, string $accountNumber, bool $log = false): Terminal\Entity
     {
         $matchingPrefixTerminals = $allTerminals->filter(function (Terminal\Entity $terminal) use ($accountNumber)

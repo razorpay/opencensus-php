@@ -1402,6 +1402,10 @@ final class FactoryData
             'merchant_id'       => '10000000000000',
         ]);
 
+        $factory(\RZP\Models\VirtualVpaPrefix\Entity::class, [
+            'id'                => $faker->uniqueid,
+            'terminal_id'       => 'VirtVpaShrdTrm',
+        ]);
 
         $factory(\RZP\Models\FeeRecovery\Entity::class, [
                 'entity_id'                => $faker->uniqueid,

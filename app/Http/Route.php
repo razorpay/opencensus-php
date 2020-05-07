@@ -387,6 +387,8 @@ final class Route
         'upi_transfer_process'                     => ['post',     'live/upi/callback/hdfc/upi_mindgate',            'UpiTransferController@processUpiTransferPayment'                   ],
         'upi_transfer_process_test'                => ['post',     'test/upi/callback/hdfc/upi_mindgate',            'UpiTransferController@processUpiTransferPayment'                   ],
         'payment_upi_transfer_fetch'               => ['get',      'payments/{id}/upi_transfer',                     'UpiTransferController@fetchForPayment'                             ],
+        'virtual_vpa_prefix_validate'              => ['get',      'virtual_vpa_prefixes/validate',                  'VirtualVpaPrefixController@validatePrefix'                         ],
+        'virtual_vpa_prefix_save'                  => ['post',     'virtual_vpa_prefixes',                           'VirtualVpaPrefixController@savePrefix'                             ],
         'webhook_create'                           => ['post',     'webhooks',                                       'MerchantController@postWebhook'                                    ],
         'webhook_edit'                             => ['put',      'webhooks/{id}',                                  'MerchantController@putWebhook'                                     ],
         'webhook_fetch'                            => ['get',      'webhooks/{id}',                                  'MerchantController@getWebhook'                                     ],
@@ -2546,6 +2548,10 @@ final class Route
         'fetch_payment_config',
         'create_payment_config',
         'update_payment_config',
+
+        // Virtual VPA Prefix
+        'virtual_vpa_prefix_validate',
+        'virtual_vpa_prefix_save',
     ];
 
     //
