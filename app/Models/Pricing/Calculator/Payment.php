@@ -496,8 +496,19 @@ class Payment extends Base
 
         if (count($feeBearersUnique) !== 1)
         {
+            $exceptionData = [];
+
+            foreach ($pricingRules as $rule)
+            {
+                $ruleData = [
+                    Pricing\Entity::ID          => $rule->getId(),
+                    Pricing\Entity::FEE_BEARER  => $rule->getFeeBearer(),
+                ];
+
+                array_push($exceptionData, $ruleData);
+            }
             throw new Exception\LogicException(
-                'Expected only one type of feebearer for all rules. Found: ' . $feeBearers);
+                'Expected only one type of feebearer for all rules', null, $exceptionData);
         }
 
         return $pricingRules[0]->getFeeBearer();

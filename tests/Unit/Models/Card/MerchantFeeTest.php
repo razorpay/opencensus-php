@@ -1128,6 +1128,72 @@ class MerchantFeeTest extends TestCase
         $this->assertGreaterThan($amount, $fee);
 
     }
+    public function testDynamicFeeBearerRuleSelectionWithMultipleFeeBearerException()
+    {
+        $plans = [
+            [
+                'plan_id'             => 'TestPlan1',
+                'plan_name'           => 'TestPlan1',
+                'payment_method'      => 'netbanking',
+                'org_id'              => '100000razorpay',
+                'type'                => 'pricing',
+                'feature'             => 'payment',
+                'fee_bearer'          => 'platform',
+            ],
+            [
+                'plan_id'             => 'TestPlan1',
+                'plan_name'           => 'TestPlan1',
+                'payment_method'      => 'netbanking',
+                'org_id'              => '100000razorpay',
+                'type'                => 'pricing',
+                'feature'             => 'esautomatic',
+                'fee_bearer'          => 'customer',
+            ],
+
+
+        ];
+
+        foreach ($plans as $plan)
+        {
+            $this->fixtures->create('pricing', $plan);
+        }
+
+        $merchantAttributes = [
+            'fee_bearer'        => 'dynamic',
+            'pricing_plan_id'   => 'TestPlan1',
+        ];
+
+        $this->fixtures->edit('merchant', '10000000000000', $merchantAttributes);
+
+        $this->fixtures->merchant->addFeatures(['es_automatic']);
+
+        // begin test
+        $paymentArray = $this->getDefaultPaymentEntityArray();
+
+        $paymentArray['amount'] = 1000;
+
+        $paymentArray['bank'] = 'hdfc';
+
+        $paymentArray[Payment\Entity::METHOD] = Payment\Method::NETBANKING;
+
+        $payment = new Payment\Entity($paymentArray);
+
+        $payment->setBaseAmount(1000);
+
+        $merchant = Merchant\Entity::find('10000000000000');
+
+        $payment->merchant()->associate($merchant);
+
+        $payment->associateTerminal($this->sharpTerminal);
+
+        $fee = (new Pricing\Fee);
+
+        $this->expectException(Exception\LogicException::class);
+
+        $this->expectExceptionMessage("Expected only one type of feebearer");
+
+        $fee->calculateMerchantFees($payment);
+    }
 
     public function testWalletRuleSelection()
     {
