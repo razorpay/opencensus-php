@@ -65,6 +65,8 @@ configure_dark(){
     echo "NBPLUS_PAYMENT_SERVICE_LIVE_URL=\"https://payments-nbplus-dark.razorpay.com/\"" >> ./environment/.env.production
     echo "NBPLUS_PAYMENT_SERVICE_TEST_URL=\"https://payments-nbplus-test-dark.razorpay.com/\"" >> ./environment/.env.production
     echo "CHECKOUT_URL=\"https://checkout-dark.razorpay.com\"" >> ./environment/.env.production
+    echo "TERMINALS_SERVICE_TEST_URL=\"https://terminals-dark-test.razorpay.com/\"" >> ./environment/.env.production
+    echo "TERMINALS_SERVICE_LIVE_URL=\"https://terminals-dark-live.razorpay.com/\"" >> ./environment/.env.production
 }
 
 run_migration_job(){
