@@ -1992,4 +1992,17 @@ class VirtualAccountTest extends TestCase
         $this->assertEquals($payment['notes'], ['key' => 'value']);
         $this->assertEquals('bank_transfer', $payment['method']);
     }
+
+    public function testFetchVirtualAccountPayments()
+    {
+        $virtualAccount = $this->createVirtualAccount();
+
+        $this->payVirtualAccount($virtualAccount['id'], ['amount' => 50]);
+
+        $response = $this->fetchVirtualAccountPayments();
+
+        $expectedResponse = $this->testData[__FUNCTION__];
+
+        $this->assertArraySelectiveEquals($expectedResponse, $response);
+    }
 }

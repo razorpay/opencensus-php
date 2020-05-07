@@ -237,11 +237,21 @@ trait VirtualAccountTrait
         return $response;
     }
 
-    private function fetchVirtualAccountPayments(string $id)
+    private function fetchVirtualAccountPayments(string $id = null)
     {
+        $url = '';
+        if ($id === null)
+        {
+            $url = '/payments?virtual_account=1';
+        }
+        else
+        {
+            $url = '/virtual_accounts/' . $id . '/payments';
+
+        }
         $request = [
-            'method'  => 'GET',
-            'url'     => '/virtual_accounts/' . $id . '/payments',
+            'method' => 'GET',
+            'url'    => $url,
         ];
 
         $this->ba->privateAuth();

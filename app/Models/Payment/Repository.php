@@ -1615,6 +1615,23 @@ class Repository extends Base\Repository
               ->where($virtualAccountIdCol, '=', $virtualAccountId);
     }
 
+    /**
+     * select `payments`.* from `payments` where `payments`.`merchant_id` = ?
+     * and `receiver_id` is not null
+     *
+     * @param $query
+     * @param $params
+     */
+    protected function addQueryParamVirtualAccount($query, $params)
+    {
+        if ($params[Entity::VIRTUAL_ACCOUNT] !== '1')
+        {
+            return;
+        }
+
+        $query->whereNotNull(Entity::RECEIVER_ID);
+    }
+
     protected function joinQueryBankTransfer($query)
     {
         $joins = $query->getQuery()->joins;

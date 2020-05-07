@@ -49,7 +49,8 @@ class Fetch extends BaseFetch
             Entity::VPA                          => 'sometimes|string|max:100',
             Terminal\Entity::GATEWAY_TERMINAL_ID => 'sometimes',
             Entity::ACQUIRER_DATA                => 'sometimes',
-            Entity::VIRTUAL_ACCOUNT_ID           => 'sometimes|string|max:17'
+            Entity::VIRTUAL_ACCOUNT_ID           => 'sometimes|string|max:17',
+            Entity::VIRTUAL_ACCOUNT              => 'sometimes|in:0,1',
         ],
         AuthType::PROXY_AUTH => [
             // @codingStandardsIgnoreLine
@@ -74,6 +75,7 @@ class Fetch extends BaseFetch
             self::EXPAND_EACH,
             Entity::NOTES,
             Entity::VIRTUAL_ACCOUNT_ID,
+            Entity::VIRTUAL_ACCOUNT,
         ],
         AuthType::PROXY_AUTH => [
             Entity::STATUS,
