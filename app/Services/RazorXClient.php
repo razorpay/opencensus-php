@@ -65,6 +65,7 @@ class RazorXClient
         'card_payments_gateway_routing_axis_migs',
         'card_payments_gateway_routing_mpgs',
         'card_payments_gateway_routing_first_data',
+        'card_payments_gateway_routing_first_data_mpi_blade',
         'card_payments_gateway_routing_amex',
     ];
 
