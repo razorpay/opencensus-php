@@ -892,6 +892,28 @@ class PayoutTest extends TestCase
         $this->assertEquals('Bulk Approving', $actionChecker['user_comment']);
     }
 
+    public function testBulkApprovePayoutWithNullComment()
+    {
+        $this->liveSetUp();
+
+        $workflow = $this->createPayoutWorkflowWithBankingUsersLiveMode();
+
+        $payout1 = $this->createPayoutWithWorkflow([], 'rzp_live_TheLiveAuthKey');
+        $payout2 = $this->createPayoutWithWorkflow([], 'rzp_live_TheLiveAuthKey');
+
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['content']['payout_ids'] = [$payout1['id'], $payout2['id']];
+
+        // Approve with Owner role user
+        $this->ba->proxyAuth('rzp_live_10000000000000', $this->ownerRoleUser->getId());
+
+        $this->startTest();
+
+        $actionChecker = $this->getDbLastEntity('action_checker', 'live');
+        $this->assertEquals(true, $actionChecker['approved']);
+        $this->assertNull($actionChecker['user_comment']);
+    }
+
     public function testBulkApprovePayoutWithoutComment()
     {
         $this->liveSetUp();
@@ -942,6 +964,36 @@ class PayoutTest extends TestCase
 
         $this->assertEquals(false, $actionChecker['approved']);
         $this->assertEquals('Rejecting', $actionChecker['user_comment']);
+    }
+
+    public function testRejectPayoutWithNullComment()
+    {
+        $this->liveSetUp();
+
+        $workflow = $this->createPayoutWorkflowWithBankingUsersLiveMode();
+
+        $payout = $this->createPayoutWithWorkflow([], 'rzp_live_TheLiveAuthKey');
+
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/payouts/' . $payout['id'] . '/reject';
+
+        $this->mockRazorxTreatment('yesbank', 'on');
+
+        $this->createWebhook(['events' => ['payout.rejected' => '1']], [], 'live');
+
+        $eventTestDataKey = 'testFiringOfWebhookOnRejectionOfPayoutEventData';
+
+        $this->setInfernoExpectations([$eventTestDataKey]);
+
+        // Approve with Owner role user
+        $this->ba->proxyAuth('rzp_live_10000000000000', $this->ownerRoleUser->getId());
+
+        $this->startTest();
+
+        $actionChecker = $this->getDbLastEntity('action_checker', 'live');
+
+        $this->assertEquals(false, $actionChecker['approved']);
+        $this->assertNull($actionChecker['user_comment']);
     }
 
     public function testRejectPayoutWithoutComment()

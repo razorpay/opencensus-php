@@ -387,6 +387,25 @@ return [
         ],
     ],
 
+    'testBulkApprovePayoutWithNullComment' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts/approve/bulk',
+            'content' => [
+                'payout_ids'   => [],
+                'token'        => 'BUIj3m2Nx2VvVj',
+                'otp'          => '0007',
+                'user_comment' => null
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'total_count' => 2,
+                'failed_ids'  => [],
+            ],
+        ],
+    ],
+
     'testBulkApprovePayoutWithoutComment' => [
         'request'  => [
             'method'  => 'POST',
@@ -413,6 +432,23 @@ return [
                 'token'        => 'BUIj3m2Nx2VvVj',
                 'otp'          => '1234',
                 'user_comment' => 'Rejecting',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'status' => 'rejected',
+            ],
+        ],
+    ],
+
+    'testRejectPayoutWithNullComment' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts/{id}/reject',
+            'content' => [
+                'token'        => 'BUIj3m2Nx2VvVj',
+                'otp'          => '1234',
+                'user_comment' =>  null,
             ],
         ],
         'response' => [

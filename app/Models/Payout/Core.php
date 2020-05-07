@@ -633,7 +633,7 @@ class Core extends Base\Core
                     Workflow\Action\Checker\Entity::APPROVED     => ($approve === true) ? 1 : 0, // 1 = true
                 ];
 
-                if ($userComment !== null)
+                if (empty($userComment) === false)
                 {
                     $actionCheckerCreateParams[Workflow\Action\Checker\Entity::USER_COMMENT] = $userComment;
                 }

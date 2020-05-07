@@ -161,14 +161,14 @@ class Validator extends Base\Validator
         Entity::PAYOUT_IDS . '.*'    => 'required|public_id|size:19',
         User\Entity::OTP             => 'required|filled|min:4',
         User\Entity::TOKEN           => 'required|unsigned_id',
-        ActionChecker::USER_COMMENT  => 'sometimes|string|max:255',
+        ActionChecker::USER_COMMENT  => 'sometimes|nullable|string|max:255',
         Entity::QUEUE_IF_LOW_BALANCE => 'sometimes|filled|boolean',
     ];
 
     protected static $bulkRejectRules = [
         Entity::PAYOUT_IDS          => 'required|array',
         Entity::PAYOUT_IDS . '.*'   => 'required|public_id|size:19',
-        ActionChecker::USER_COMMENT => 'sometimes|string|max:255',
+        ActionChecker::USER_COMMENT => 'sometimes|nullable|string|max:255',
     ];
 
     // Both regular and on demand payouts are validated through the merchantPayoutValidators.
