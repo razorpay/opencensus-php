@@ -69,7 +69,7 @@ class Processor extends VirtualAccount\Processor
             TraceCode::BANK_TRANSFER_PROCESS_DUPLICATE_UTR,
             [
                 'message'           => 'Duplicate UTR received',
-                'existing_transfer' => $duplicateBankTransfer->toArray(),
+                'existing_transfer' => $duplicateBankTransfer->toArrayTrace(),
                 'received_utr'      => $utr,
             ]
         );
@@ -267,7 +267,7 @@ class Processor extends VirtualAccount\Processor
 
         if (in_array($payeeAccount, $blockedAccounts, true) === true)
         {
-            throw new LogicException('Payment made to blocked account', null, $bankTransfer->toArray());
+            throw new LogicException('Payment made to blocked account', null, $bankTransfer->toArrayTrace());
         }
     }
 
@@ -356,7 +356,7 @@ class Processor extends VirtualAccount\Processor
             $this->trace->info(
                 TraceCode::VIRTUAL_ACCOUNT_UNEXPECTED_PAYMENT,
                 [
-                    'entity' => $bankTransfer->toArray(),
+                    'entity' => $bankTransfer->toArrayTrace(),
                 ]);
 
             return true;
@@ -436,7 +436,7 @@ class Processor extends VirtualAccount\Processor
                 $ex,
                 Trace::INFO,
                 TraceCode::BANK_TRANSFER_PAYER_BANK_ACCOUNT_SKIPPED,
-                $bankTransfer->toArray());
+                $bankTransfer->toArrayTrace());
         }
     }
 

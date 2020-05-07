@@ -74,7 +74,7 @@ class Core extends Base\Core
     {
         $this->trace->info(
             TraceCode::BANK_TRANSFER_PROCESSING,
-            $input
+            $this->removePiiDataForLogging($input)
         );
 
         $processor = new Processor();
@@ -193,7 +193,7 @@ class Core extends Base\Core
             $this->trace->info(
                 TraceCode::BANK_TRANSFER_PROCESSING_FAILED,
                 [
-                    'input' => $input
+                    'input' => $this->removePiiDataForLogging($input)
                 ]);
 
             return;
@@ -202,7 +202,7 @@ class Core extends Base\Core
         // Any non-trivial (non-empty request) exception is critical, as
         // bank transfers are never supposed to fail. Trace accordingly.
         $this->trace->traceException(
-            $ex, Trace::CRITICAL, TraceCode::BANK_TRANSFER_PROCESSING_FAILED, $input);
+            $ex, Trace::CRITICAL, TraceCode::BANK_TRANSFER_PROCESSING_FAILED, $this->removePiiDataForLogging($input));
 
         // Slack alerts are only for prod
         if ($this->isEnvironmentProduction() === false)
@@ -538,5 +538,19 @@ class Core extends Base\Core
         }
 
         $bankTransfer->edit($data, 'editBankTransfer');
+    }
+
+    public function removePiiDataForLogging($input)
+    {
+        $data = $input;
+        if (isset($data[Entity::PAYEE_ACCOUNT]) === true)
+        {
+            $payeeAccount                               = $data[Entity::PAYEE_ACCOUNT];
+            $data[Entity::PAYEE_ACCOUNT . '_prefix']     = substr($payeeAccount, 0, 8);
+            $data[Entity::PAYEE_ACCOUNT . '_descriptor'] = substr($payeeAccount, 8, strlen($payeeAccount));
+
+            unset($data[Entity::PAYEE_ACCOUNT]);
+        }
+        return $data;
     }
 }

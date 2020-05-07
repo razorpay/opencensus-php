@@ -67,7 +67,7 @@ class Service extends Base\Service
     {
         $this->trace->info(
             TraceCode::BANK_TRANSFER_PROCESS_REQUEST,
-            $input
+            $this->core->removePiiDataForLogging($input)
         );
 
         if (empty($provider) === false)

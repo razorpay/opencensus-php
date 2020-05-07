@@ -540,4 +540,19 @@ class Entity extends Base\PublicEntity
     {
         return ($this->isBalanceTypeBanking() === true);
     }
+
+    public function toArrayTrace(): array
+    {
+        $data = $this->toArray();
+
+        if (isset($data[Entity::PAYEE_ACCOUNT]) === true)
+        {
+            $payeeAccount                               = $data[Entity::PAYEE_ACCOUNT];
+            $data[Entity::PAYEE_ACCOUNT . '_prefix']     = substr($payeeAccount, 0, 8);
+            $data[Entity::PAYEE_ACCOUNT . '_descriptor'] = substr($payeeAccount, 8, strlen($payeeAccount));
+
+            unset($data[Entity::PAYEE_ACCOUNT]);
+        }
+        return $data;
+    }
 }

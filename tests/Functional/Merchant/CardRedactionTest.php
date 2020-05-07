@@ -954,6 +954,7 @@ class CardRedactionTest extends TestCase
 
     public function testPayerNameInExceptionData()
     {
+        $this->markTestSkipped();
         /** @var ApiTraceProcessor $trace */
         $trace = new ApiTraceProcessor($this->app);
 
@@ -1021,6 +1022,7 @@ class CardRedactionTest extends TestCase
 
     public function testPayerName()
     {
+        $this->markTestSkipped();
         /** @var ApiTraceProcessor $trace */
         $trace = new ApiTraceProcessor($this->app);
 
