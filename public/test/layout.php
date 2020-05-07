@@ -73,7 +73,6 @@ iframe {
 <div id="keys">
 ⌘ ⏎
 </div>
-<iframe></iframe>
 <div id="code">var test_key = 'rzp_test_1DP5mmOlF5G5ag';
 var live_key = 'rzp_live_ILgsfZCZoFIKMb';
 
@@ -107,7 +106,6 @@ if (localStorage.code) {
 }
 var flask = new CodeFlask;flask.run('#code',{language:'javascript'});
 var t = $('textarea');
-var i = $('iframe');
 var x = $('#target');
 
 t.setAttribute('spellcheck', 'false');
@@ -129,13 +127,35 @@ $('#keys').onclick = t.onkeypress = e => {
     source = 'checkout-dark.razorpay.com';
   }
 
+  // Remove existing iframes
+  var iframes = document.querySelectorAll('iframe');
+  if (iframes) {
+    for (var i = 0; i < iframes.length; i++) {
+      iframes[i].remove();
+    } 
+  }
+
+  // Create iframes
+  var i = document.createElement('iframe');
+  document.body.appendChild(i);
+
   if (e.type === 'click' || (e.code === "Enter" && (e.ctrlKey||e.metaKey||e.shiftKey||e.altKey))) {
     i.className = 'open';
     i.contentDocument.write(`
+      <script>
+        function attemptOpening () {
+          try {
+            Razorpay.open(options);
+          } catch (err) {
+            alert('Failed to execute code. Please ensure that it is valid!');
+            throw err;
+          }
+        }
+      <\/script>
       <script>${t.value}<\/script>
       <script>options['modal.onhidden']=_=>parent.i.className=""<\/script>
-      <script src="https://${source}/v1/checkout.js" onload="Razorpay.open(options)"><\/script>
-    `)
+      <script src="https://${source}/v1/checkout.js" onload="attemptOpening()"><\/script>
+    `);
     i.contentDocument.close();
   }
 }
