@@ -116,12 +116,15 @@ t.oninput = () => {
 }
 
 $('#keys').onclick = t.onkeypress = e => {
-  var isBeta = window.location.hostname.toLowerCase().indexOf('beta-api') >= 0;
+  var isStage = window.location.hostname.toLowerCase().indexOf('.stage.razorpay.') >= 0;
+  var isFunc = window.location.hostname.toLowerCase().indexOf('.func.razorpay.') >= 0;
   var isDark = window.location.hostname.toLowerCase().indexOf('api-dark') >= 0;
   var source = 'checkout.razorpay.com';
 
-  if (isBeta) {
+  if (isStage) {
     source = 'checkout.stage.razorpay.in';
+  } else if (isFunc) {
+    source = 'checkout.func.razorpay.in';
   } else if (isDark) {
     source = 'checkout-dark.razorpay.com';
   }
