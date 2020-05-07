@@ -358,6 +358,7 @@ class Name
     const UPDATE_TEST_MERCHANT_BALANCE        = 'update_test_merchant_balance';
     const VIEW_VIRTUAL_ACCOUNT                = 'view_virtual_account';
     const EDIT_MERCHANT_INTERNATIONAL         = 'edit_merchant_international';
+    const EDIT_MERCHANT_INTERNATIONAL_NEW     = 'edit_merchant_international_new';
     const UPLOAD_MERCHANT_DOCUMENT            = 'upload_merchant_document';
     const DELETE_MERCHANT_DOCUMENT            = 'delete_merchant_document';
     const UPDATE_MERCHANT_BANK_ACCOUNT_STATUS = 'merchant_bank_account_change_status';

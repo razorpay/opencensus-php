@@ -434,7 +434,7 @@ return [
                 'description' => 'Allow downloads of credit bureau reports of merchants',
                 'assignable'  => true,
             ],
-            Permission::EDIT_MERCHANT_INTERNATIONAL  => '',
+            Permission::EDIT_MERCHANT_INTERNATIONAL_NEW  => '',
             Permission::TOGGLE_TRANSACTION_HOLD_STATUS => '',
         ],
 

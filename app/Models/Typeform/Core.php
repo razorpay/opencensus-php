@@ -81,7 +81,7 @@ class Core extends Base\Core
     {
         $this->app['workflow']
             ->setEntityAndId($merchant->getEntity(), $merchant->getId())
-            ->setPermission(Permission\Name::EDIT_MERCHANT_INTERNATIONAL)
+            ->setPermission(Permission\Name::EDIT_MERCHANT_INTERNATIONAL_NEW)
             ->handle(null, $typeformWorkflowData);
 
         $this->trace->info(TraceCode::TYPEFORM_WORKFLOW_TRIGGERED,

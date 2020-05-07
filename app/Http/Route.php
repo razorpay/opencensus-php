@@ -3765,7 +3765,7 @@ final class Route
         'fetch_batch_actions'                       => Permission::ADMIN_BATCH_CREATE,
         'link_offline_device'                       => '*',
         'user_roles_mapping_bulk'                   => Permission::MAKE_API_CALL,
-        'consume_typeform_webhook'                  => Permission::EDIT_MERCHANT_INTERNATIONAL,
+        'consume_typeform_webhook'                  => Permission::EDIT_MERCHANT_INTERNATIONAL_NEW,
         'banking_account_create_admin'              => '*',
         'fetch_payment_config_admin'                => '*',
         'create_payment_config_admin'               => '*',
