@@ -1131,7 +1131,8 @@ class Gateway
         ],
         self::PAYTM => [
             Network::MC,
-            Network::VISA
+            Network::VISA,
+            Network::DICL,
         ],
         self::SHARP => [
             Network::MC,

@@ -1681,6 +1681,7 @@ class PaymentCreateTest extends TestCase
 
         $this->app->instance('gateway', $gateway);
     }
+
     public function testPaymentFailOnDinersAndDisableMerchant()
     {
         $this->markTestSkipped();
@@ -1710,6 +1711,32 @@ class PaymentCreateTest extends TestCase
         // checking whether diners card got disabled or not for the merchant
         $this->assertEquals(false, $entity->isCardNetworkEnabled('DICL'));
 
+    }
+
+     public function testDinersPaymentOnPaytm()
+    {
+        $this->fixtures->create('terminal:shared_paytm_terminal');
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+        // enabling the diners cards
+        $this->fixtures->merchant->enableCardNetworks('10000000000000',['dicl']);
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['card']['number'] = '30569309025904';
+
+        $response = $this->doAuthPayment($payment);
+
+        $this->assertArrayHasKey('razorpay_payment_id', $response);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['id'], $response['razorpay_payment_id']);
+
+        $this->assertEquals('authorized', $payment['status']);
+
+        $this->assertEquals('paytm', $payment['gateway']);
+
+        $this->assertEquals('1000PaytmTrmnl', $payment['terminal_id']);
     }
 
     public function testForRuPayPaymentOnHitachiTerminalModePurchase()
