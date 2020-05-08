@@ -417,6 +417,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::CREATED_AT,
         self::TRANSFER,
         self::ACCOUNT_ID,
+        self::FEE_BEARER,
     ];
 
     /**
@@ -460,6 +461,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::ERROR_STEP,
         self::ERROR_REASON,
         Terminal\Entity::GATEWAY_TERMINAL_ID,
+        self::FEE_BEARER,
     ];
 
     protected $publicCustomer = [
@@ -486,6 +488,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::ACQUIRER_DATA,
         self::ACCOUNT_ID,
         self::TERMINAL_ID,
+        self::FEE_BEARER,
         self::LATE_AUTHORIZED,
         self::DETAILED_REASON,
     ];
@@ -3002,6 +3005,43 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         }
 
         $array[self::ACCOUNT_ID] = Account\Entity::getSignedId($array[self::MERCHANT_ID]);
+    }
+
+    public function setPublicFeeBearerAttribute(array & $array)
+    {
+        unset($array[self::FEE_BEARER]);
+
+        $app = \App::getFacadeRoot();
+
+        $allowedProxyRoutes = [
+            'payment_fetch_by_id',
+        ];
+
+        $allowedAdminRoutes = [
+            'admin_fetch_entity_by_id',
+            'admin_fetch_entity_multiple',
+            'payment_verify',
+            'payment_verify_bulk',
+        ];
+
+        $route = $app['request.ctx']->getRoute();
+
+        if (($app['basicauth']->isProxyAuth() === true) and
+            (in_array($route, $allowedProxyRoutes) === true))
+        {
+            $array[self::FEE_BEARER] = $this->getFeeBearer();
+
+            return;
+        }
+
+        if (($app['basicauth']->isAdminAuth() === true) and
+            (in_array($route, $allowedAdminRoutes) === true))
+        {
+            $array[self::FEE_BEARER] = $this->getFeeBearer();
+
+            return;
+        }
+
     }
 
     public function associateTerminal($terminal)
