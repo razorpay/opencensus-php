@@ -229,6 +229,7 @@ return [
             'intnl_amt'        => 0,
             'domestic_amt'     => 500,
             'stan_id'          => '\'2325281332072961',
+            'tran_id'          => '\'2325281332072961',
             'upvalue'          => '\'2',
             'merchant_trackid' => '\'8sgT9BJLSH4tHO',
             'msf'              => 0.65000000000000002,

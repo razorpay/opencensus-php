@@ -186,6 +186,16 @@ class Entity extends Base\Entity
         return $this->getAttribute(self::REF);
     }
 
+    public function getGatewayTransactionId()
+    {
+        return $this->getAttribute(self::GATEWAY_TRANSACTION_ID);
+    }
+
+    public function setGatewayTransactionId($gatewayTransactionId)
+    {
+        $this->setAttribute(self::GATEWAY_TRANSACTION_ID, $gatewayTransactionId);
+    }
+
     public function setStatus($status)
     {
         $this->setAttribute(self::STATUS, $status);
