@@ -121,6 +121,9 @@ class CreateOrders extends Migration
                   ->nullable()
                   ->default(null);
 
+            $table->text(Order::PROVIDER_CONTEXT)
+                  ->nullable();
+
             // Adds created_at and updated_at columns to the table
             $table->integer(Order::CREATED_AT);
             $table->integer(Order::UPDATED_AT);

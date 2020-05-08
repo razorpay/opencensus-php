@@ -4932,6 +4932,12 @@ ALTER TABLE merchant_banks
     ADD INDEX merchant_banks_phonepe_index (phonepe);
 
 ALTER TABLE merchant_banks
+    ADD COLUMN phonepeswitch TINYINT(1) NOT NULL DEFAULT 0;
+
+ALTER TABLE orders
+    ADD COLUMN provider_context text DEFAULT NULL;
+
+ALTER TABLE merchant_banks
     ADD COLUMN paypal TINYINT(1) NOT NULL DEFAULT 0 AFTER olamoney,
     ADD INDEX merchant_banks_paypal_index (paypal);
 
