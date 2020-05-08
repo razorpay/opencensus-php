@@ -14,6 +14,13 @@ class TransferRecon extends Job
 
     protected $queueConfigKey = 'transfer_settlement';
 
+    /**
+     * if the job takes more time then it'll be terminated
+     *
+     * @var int
+     */
+    public $timeout = 900;
+
     public function __construct($settlementIds, string $mode)
     {
         parent::__construct($mode);
