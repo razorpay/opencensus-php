@@ -25,6 +25,7 @@ final class Shield
     const MERCHANT_ACTIVATED_AT        = 'merchant_activated_at';
     const ID                           = 'id';
     const AMOUNT                       = 'amount';
+    const BASE_AMOUNT                  = 'base_amount';
     const CURRENCY                     = 'currency';
     const RECURRING                    = 'recurring';
     const CONTACT                      = 'contact';

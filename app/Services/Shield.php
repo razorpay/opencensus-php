@@ -161,6 +161,8 @@ class Shield
     {
         $payloadDetails[ShieldConstants::ID]            = $payment->getId();
         $payloadDetails[ShieldConstants::AMOUNT]        = $payment->getAmount();
+        // BaseAmount is set in processCurrencyConversions (Payment/Processor/Authorize.php) before fraud check is initiated
+        $payloadDetails[ShieldConstants::BASE_AMOUNT]   = $payment->getBaseAmount();
         $payloadDetails[ShieldConstants::CURRENCY]      = $payment->getCurrency();
         $payloadDetails[ShieldConstants::RECURRING]     = $payment->isRecurring();
         $payloadDetails[ShieldConstants::CONTACT]       = $payment->getContact();
