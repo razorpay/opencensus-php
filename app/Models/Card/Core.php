@@ -139,6 +139,7 @@ class Core extends Base\Core
                     }
 
                     if (($card->iinRelation !== null) and
+                        ($card->isAmex() === false) and
                         ($card->isInternational() !== $card->iinRelation->isInternational()))
                     {
                         $card->setInternational($card->iinRelation->isInternational());

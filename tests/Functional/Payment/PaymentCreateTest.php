@@ -3404,4 +3404,43 @@ class PaymentCreateTest extends TestCase
 
         $this->assertEquals($payment['international'], false);
     }
+
+    public function testCreatePaymentAMEXExistingCardS2SPayment()
+    {
+        $this->ba->privateAuth();
+
+        $paymentArray = $this->getDefaultPaymentArray();
+
+        $paymentArray['card']['number'] = '555555555555558';
+        $paymentArray['card']['cvv'] = '5467';
+        $paymentArray['callback_url'] = $this->getLocalMerchantCallbackUrl();
+
+        $this->fixtures->merchant->addFeatures(['s2s']);
+        $this->fixtures->merchant->enableInternational();
+
+        $this->fixtures->iin->create([
+            'iin'     => '555555',
+            'country' => 'US',
+            'network' => 'American Express',
+        ]);
+
+        $response = $this->doS2SPrivateAuthPayment($paymentArray);
+
+        $this->assertArrayHasKey('razorpay_payment_id', $response);
+
+        $payment = $this->getLastEntity('payment', true );
+
+        $card = $this->getLastEntity('card', true);
+
+        $this->assertEquals($payment['international'], false);
+
+        $this->doS2SPrivateAuthPayment($paymentArray);
+
+        $payment = $this->getLastEntity('payment', true );
+
+        //Assert that second payment is using the existing card from previous payment
+        $this->assertEquals($payment['card_id'], $card['id']);
+
+        $this->assertEquals($payment['international'], false);
+    }
 }
