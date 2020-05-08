@@ -16,6 +16,7 @@ return [
         'axis_genius',
         'axis_migs',
         'billdesk',
+        'mpgs',
         'mpi_blade',
         'mpi_enstage',
         'card_fss',
