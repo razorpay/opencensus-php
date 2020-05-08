@@ -1515,18 +1515,9 @@ export default class ActivationWizard extends React.Component {
                 );
               } else if (this.isNeedsClarificationMode()) {
                 // **2. Alert: Need clarification
-                const clarificationMode = this.props.data.clarification_mode;
-                let subMsg;
-                if (clarificationMode.toLowerCase() === 'email') {
-                  subMsg =
-                    'Please check your mail and respond at the earliest.';
-                } else {
-                  subMsg = 'We will call you over phone for clarification.';
-                }
-
                 icon = 'i-warning';
                 Component = Alert.Warning;
-                msg = `There are issues with your activation form. ${subMsg}`;
+                msg = `There are issues with your activation form. Please check your mail and respond at the earliest.`;
                 secondaryMsg = (
                   <React.Fragment>
                     In case of any queries, please {ticketLink}
