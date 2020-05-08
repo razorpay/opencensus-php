@@ -281,6 +281,25 @@ class Constants
                 'role'  => ['owner'],
             ]
         ],
+        [
+            'title'       => '2 Step Verification',
+            'description' => 'Enable 2 step verification with SMS based OTP along with user credentials to add additional security to your account.',
+            'start_ts'    => 1588876200,
+            'end_ts'      => 1590172140,
+            'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/2fa.svg',
+            'buttons'     => [
+                [
+                    'type'  => 'button',
+                    'label' => 'Enable Now',
+                    'url'   => '/profile',
+                ],
+                [
+                    'type'  => 'primary-inverted',
+                    'label' => 'Know More',
+                    'url'   => 'https://razorpay.com/docs/payment-gateway/dashboard-guide/my-account/#set-up-two-factor-authentication',
+                ]
+            ],
+        ],
     ];
 
     public static function getNotifications(): array
