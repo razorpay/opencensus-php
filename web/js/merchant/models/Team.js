@@ -10,12 +10,9 @@ export default class MerchantUser extends GenericEntity {
     return this.makeGenericAjaxCall({
       url: this.resourceUrl,
     }).then(response => {
-      const currentUser = store.getState().session.user.user;
       return {
         data: {
-          items: (response.data || []).filter(
-            member => member.id !== currentUser.id
-          ),
+          items: response.data || [],
         },
       };
     });

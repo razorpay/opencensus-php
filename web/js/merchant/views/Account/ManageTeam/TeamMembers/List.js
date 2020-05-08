@@ -18,12 +18,18 @@ const actions = {
   value: member => <Actions member={member} />,
 };
 
-@connect(state => ({ ...state.team }), {
-  fetchAll,
-  unlockMember,
-  unverifyContact,
-  showNotification,
-})
+@connect(
+  state => ({
+    currentUser: state.session.user.user,
+    ...state.team,
+  }),
+  {
+    fetchAll,
+    unlockMember,
+    unverifyContact,
+    showNotification,
+  }
+)
 export default class MembersListContainer extends ListContainer {
   static contextTypes = {
     confirm: PropTypes.func,
@@ -51,8 +57,8 @@ export default class MembersListContainer extends ListContainer {
     value: member => (
       <>
         <p>{member.contact_mobile || '--'}</p>
-        {!!member.contact_mobile &&
-          member.contact_mobile_verified && (
+        {member.id !== this.props.currentUser.id &&
+          (!!member.contact_mobile && member.contact_mobile_verified) && (
             <RaiseContactMobileLost
               memberId={member.id}
               memberEmail={member.email}
