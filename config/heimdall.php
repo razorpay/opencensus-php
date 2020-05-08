@@ -370,6 +370,10 @@ return [
             Permission::SEND_NEWSLETTER                     => '',
             Permission::TRIGGER_DUMMY_ERROR                 => '',
             Permission::MAKE_API_CALL                       => '',
+            Permission::MAKE_ADMIN_API_CALL                 => [
+                'description'   => 'Permission to make raw admin API calls',
+                'assignable'    => true,
+            ],
             Permission::SCHEDULE_CREATE                     => '',
             Permission::SCHEDULE_FETCH                      => '',
             Permission::SCHEDULE_FETCH_MULTIPLE             => '',

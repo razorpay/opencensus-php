@@ -118,6 +118,7 @@ class Name
     const CREATE_GATEWAY_FILE                 = 'create_gateway_file';
     const UPDATE_CONFIG_KEY                   = 'update_config_key';
     const MAKE_API_CALL                       = 'make_api_call';
+    const MAKE_ADMIN_API_CALL                 = 'make_admin_api_call';
     const SCHEDULE_CREATE                     = 'schedule_create';
     const SCHEDULE_FETCH                      = 'schedule_fetch';
     const SCHEDULE_FETCH_MULTIPLE             = 'schedule_fetch_multiple';
