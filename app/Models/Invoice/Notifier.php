@@ -697,6 +697,7 @@ class Notifier extends Base\Core
                     'receipt'        => $receipt,
                     'expiry_date'    => $expireBy ?? '',
                     'min_amount_due' => ($this->invoice->getFirstPaymentMinAmount() ?? 0) / 100,
+                    'due_date'       => $this->invoice->getNotes()['due_date'] ?? '',
                 ];
 
                 break;
@@ -766,11 +767,12 @@ class Notifier extends Base\Core
                 $sender = 'RBLCRD';
                 $template = 'sms.custom_invoice.rbl_card_del_coll';
                 $params = [
-                    'receipt'        => $receipt,
-                    'invoice_link'   => $invoiceLink,
-                    'amount'         => $this->invoice->getAmount() / 100,
-                    'expiry_date'    => $expireBy ?? '',
-                    'min_amount_due' => ($this->invoice->getFirstPaymentMinAmount() ?? 0) / 100,
+                    'receipt'      			  => $receipt,
+                    'invoice_link'   		  => $invoiceLink,
+                    'amount'                  => $this->invoice->getAmount() / 100,
+                    'expiry_date'             => $expireBy ?? '',
+                    'min_amount_due'          => ($this->invoice->getFirstPaymentMinAmount() ?? 0) / 100,
+                    'current_statement_date'  => $this->invoice->getNotes()['current_statement_date'] ?? '',
                 ];
 
                 break;
@@ -826,11 +828,12 @@ class Notifier extends Base\Core
                 $template = 'sms.custom_invoice.rbl_hemant';
                 $sender   = 'RBLCRD';
                 $params = [
-                    'receipt'        => $receipt,
-                    'invoice_link'   => $invoiceLink,
-                    'amount'         => $this->invoice->getAmount() / 100,
-                    'expiry_date'    => $expireBy ?? '',
-                    'min_amount_due' => ($this->invoice->getFirstPaymentMinAmount() ?? 0) / 100,
+                    'receipt'       	      => $receipt,
+                    'invoice_link'            => $invoiceLink,
+                    'amount'                  => $this->invoice->getAmount() / 100,
+                    'expiry_date'             => $expireBy ?? '',
+                    'min_amount_due'          => ($this->invoice->getFirstPaymentMinAmount() ?? 0) / 100,
+                    'current_statement_date'  => $this->invoice->getNotes()['current_statement_date'] ?? '',
                 ];
 
                 break;
