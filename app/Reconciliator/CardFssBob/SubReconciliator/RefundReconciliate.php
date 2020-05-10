@@ -101,14 +101,24 @@ class RefundReconciliate extends SubReconciliator\RefundReconciliate
         return trim(str_replace("'", '', $row[$columnPgTranId] ?? null));
     }
 
+    /**
+     * As confirmed with Finops, we need to save ARN in
+     * onus and offus both the cases. Save rrn in place
+     * of ARN, Only when ARN is not available.
+     * @param array $row
+     * @return mixed|null
+     *
+     */
     protected function getArn(array $row)
     {
-        $columnOnusIndicator = array_first(ReconciliationFields::ONUS_INDICATOR, function ($col) use ($row)
-        {
-            return (empty($row[$col]) === false);
-        });
+        $arn = $row[ReconciliationFields::ARN] ?? null;
 
-        $onusIndicator = $row[$columnOnusIndicator] ?? '';
+        if (empty($arn) === false)
+        {
+            return $arn;
+        }
+
+        $this->reportMissingColumn($row, ReconciliationFields::ARN);
 
         $columnRrn = array_first(ReconciliationFields::RRN, function ($col) use ($row)
         {
@@ -122,12 +132,7 @@ class RefundReconciliate extends SubReconciliator\RefundReconciliate
             $this->reportMissingColumn($row, implode(',', ReconciliationFields::RRN));
         }
 
-        if (strtolower($onusIndicator) === self::ONUS_INDICATOR_VALUE)
-        {
-            return $rrn;
-        }
-
-        return null;
+        return $rrn;
     }
 
     protected function getReconRefundAmount(array $row)

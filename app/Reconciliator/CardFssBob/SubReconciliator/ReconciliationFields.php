@@ -96,6 +96,8 @@ class ReconciliationFields
 
     const RRN                        = ['retrieval_reference_number', 'retrievalreferencenumber'];
 
+    const ARN                        = 'arn';
+
     const TRACE_NO                   = ['system_trace_audit_number', 'systemtraceauditnumber'];
 
     const PG_PAYMENT_TRANSACTION_ID  = ['pg_payment_transaction_id', 'paymentgatewaypaymtranid'];
@@ -111,7 +113,12 @@ class ReconciliationFields
 
     const TRANSACTION_STATUS         = 'transaction_status';
 
+    //
     // This is the column order in 68 column fss_bob mis file
+    // Note : As udf 16 is always blank, replacing it to have arn,
+    // so that output file is still consistent with existing looker
+    // schema of 68 columns.
+    //
     const OLD_TO_NEW_FILE_MAPPING = [
         self::TRANSACTION_DATE,
         self::TRANSACTION_TIME,
@@ -178,7 +185,7 @@ class ReconciliationFields
         'udf_13',
         'udf_14',
         'udf_15',
-        'udf_16',
+        self::ARN,
         self::GATEWAY_SETTLED_DATE,
         self::TRANSACTION_STATUS,
     ];

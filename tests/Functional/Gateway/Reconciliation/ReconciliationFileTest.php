@@ -2996,20 +2996,68 @@ class ReconciliationFileTest extends TestCase
         //Test that gateway entity value is updated from response
         $updatedGatewayEnity = $this->getDbLastEntityToArray('card_fss');
 
-        $this->assertEquals('30-07-2018', $updatedGatewayEnity['postdate']);
+        $this->assertEquals('2018-07-30', $updatedGatewayEnity['postdate']);
 
         //Test We update payment reference2 from recon
         $paymentEnity = $this->getDbLastEntity('payment');
         $this->assertNotNull($paymentEnity['reference2']);
         $this->assertNotNull($paymentEnity['reference1']);
 
-        $gatewayFee = Helper::getIntegerFormattedAmount(abs($entries[0]['MSFAMOUNT']));
-        $gst = Helper::getIntegerFormattedAmount(abs($entries[0]['GST']));
+        $gatewayFee = Helper::getIntegerFormattedAmount(abs($entries[0]['msfamount']));
+        $gst = Helper::getIntegerFormattedAmount(abs($entries[0]['gst']));
 
         // Test that the gateway fee and tax sum is as expected
         $this->assertEquals( $gatewayFee + $gst, $transactionEntity->getGatewayFee());
 
         $this->assertEquals($gst, $transactionEntity->getGatewayServiceTax());
+
+        $this->assertBatchStatus(Status::PROCESSED);
+    }
+
+    public function testFssBobNewFormatRefundReconFile()
+    {
+        $this->fixtures->create('terminal:shared_fss_terminal', [
+            'gateway_acquirer' => 'barb',
+        ]);
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $this->doAuthAndCapturePayment($payment);
+
+        $payment = $this->getDbLastEntity('payment');
+
+        $this->refundPayment($payment->getPublicId());
+
+        $refund = $this->getDbLastEntity('refund');
+
+        $gatewayRefund = $this->getDbLastEntityToArray('card_fss');
+
+        $headers[] = ['Merchant Setttlment' => '  '];
+
+        $headers[] = ['From Settlement' => ' To Settlement', '31-08-2018' => '31-08-2018'];
+
+        $file = $this->writeToCsvFile($headers, 'MerchantSettlementTransactionListing');
+
+        $entries[] = $this->overrideFssBobReconNewFormat($gatewayRefund, $refund['id'], 'Refund');
+
+        $file = $this->writeToCsvFile($entries, 'MerchantSettlementTransactionListing', $file);
+
+        $this->runForFiles([$file], 'CardFssBob');
+
+        $refund = $this->getDbLastEntity('refund');
+
+        $this->assertEquals($entries[0]['arn'], $refund['reference1']);
+
+        $transactionEntity = $this->getLastEntity('transaction', true);
+
+        $this->assertNotNull($transactionEntity['reconciled_at']);
+        $this->assertNotNull($transactionEntity['reconciled_type']);
+
+        $this->assertNotNull($transactionEntity['settled_at']);
+
+        $gatewayRefund = $this->getDbLastEntityToArray('card_fss');
 
         $this->assertBatchStatus(Status::PROCESSED);
     }
@@ -3520,15 +3568,15 @@ class ReconciliationFileTest extends TestCase
     {
         $facade = $this->testData['facades']['testFssBobNewFormatRecon'];
 
-        $facade['TRANSACTIONAMOUNT'] = number_format($gatewayPayment['amount'] / 100, 2);
+        $facade['transactionamount'] = number_format($gatewayPayment['amount'] / 100, 2);
 
-        $facade['SETTLEMENTAMOUNT']  = $facade['TRANSACTIONAMOUNT'] / 100;
+        $facade['settlementamount']  = $facade['transactionamount'];
 
-        $facade['AUTHAPPROVALCODE']  = $gatewayPayment['auth'];
+        $facade['authapprovalcode']  = $gatewayPayment['auth'];
 
-        $facade['MERCHANTTRACKID']   = "''". $entityId;
+        $facade['merchanttrackid']   = "''". $entityId;
 
-        $facade['TRANSACTIONTYPE']   =  $transactionType;
+        $facade['transactiontype']   =  $transactionType;
 
         return $facade;
     }
