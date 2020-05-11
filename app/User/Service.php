@@ -213,6 +213,17 @@ class Service extends Base\Service
                 return [[$error], null];
             }
 
+            if (in_array('Captcha Failed', $error) === true)
+            {
+                return [['Captcha validation Failed, Please refresh page and try again.'], null];
+            }
+
+            //temporarily added and will be removed after the root cause is fixed.
+            if (in_array('No db records found.', $error) === true)
+            {
+                return [['Please delete cookies data. Refresh the page and try sign in again.'], null];
+            }
+
             return [['Incorrect email or password. To reset your password click on "Forgot Password" link.'], null];
         }
 
