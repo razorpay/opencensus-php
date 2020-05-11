@@ -41,6 +41,9 @@ class Type
     const PROMOTER_ADDRESS_URL           = 'promoter_address_url';
     const FORM_12A_URL                   = 'form_12a_url';
     const FORM_80G_URL                   = 'form_80g_url';
+    const MEMORANDUM_OF_ASSOCIATION      = 'memorandum_of_association';
+    const ARTICLE_OF_ASSOCIATION         = 'article_of_association';
+    const BOARD_RESOLUTION               = 'board_resolution';
 
     // For KYC service integration
     const PERSONAL_PAN                   = 'personal_pan';
@@ -84,7 +87,10 @@ class Type
         self::PROMOTER_PAN_URL,
         self::PROMOTER_ADDRESS_URL,
         self::FORM_12A_URL,
-        self::FORM_80G_URL
+        self::FORM_80G_URL,
+        self::MEMORANDUM_OF_ASSOCIATION,
+        self::ARTICLE_OF_ASSOCIATION,
+        self::BOARD_RESOLUTION,
     ];
 
     /**

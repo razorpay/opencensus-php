@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Merchant\Detail;
 
+use RZP\Models\Merchant\Document\Type;
+
 class RequiredFields
 {
     const MERCHANT_DEFAULT_FIELDS = [
@@ -23,7 +25,7 @@ class RequiredFields
         Entity::BUSINESS_DBA,
         Entity::BUSINESS_INTERNATIONAL,
         Entity::BUSINESS_NAME,
-        
+
         Entity::BUSINESS_PAN_URL,
         Entity::BUSINESS_PROOF_URL,
 
@@ -49,6 +51,12 @@ class RequiredFields
     const NGO_MERCHANT_FIELDS = [
         Entity::FORM_12A_URL,
         Entity::FORM_80G_URL,
+    ];
+
+    const BOARD_RESOLUTION_FIELDS = [
+        Type::MEMORANDUM_OF_ASSOCIATION,
+        Type::ARTICLE_OF_ASSOCIATION,
+        Type::BOARD_RESOLUTION,
     ];
 
     /**

@@ -22,6 +22,9 @@ class ActivationFields
         DocumentType::VOTER_ID_FRONT               => 'Voter Id Front Side',
         DocumentType::VOTER_ID_BACK                => 'Voter Id Back Side',
         DocumentType::CANCELLED_CHEQUE             => 'Cancelled Cheque',
+        DocumentType::ARTICLE_OF_ASSOCIATION       => 'Board Resolution for Authorization',
+        DocumentType::MEMORANDUM_OF_ASSOCIATION    => 'Board Resolution for Authorization',
+        DocumentType::BOARD_RESOLUTION             => 'Board Resolution for Authorization',
 
         DocumentType::SEBI_REGISTRATION_CERTIFICATE      => 'SEBI Registration Certificate',
         DocumentType::IRDAI_REGISTRATION_CERTIFICATE     => 'IRDAI Registration Certificate',
