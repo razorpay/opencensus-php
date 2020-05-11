@@ -30,7 +30,7 @@ class HolidayNotificationTest extends TestCase
                     Mockery::on(function ($data)
                         {
                             $testData = array(
-                                'subject' => 'Bank holiday : Settlement update');
+                                'subject' => 'Bank Holiday - Settlement Update');
 
                             $this->assertArraySelectiveEquals($testData, $data);
 
@@ -69,7 +69,7 @@ class HolidayNotificationTest extends TestCase
                     Mockery::on(function ($data)
                         {
                             $testData = array(
-                                'subject' => 'Bank holiday : Settlement update');
+                                'subject' => 'Bank Holiday - Settlement Update');
 
                             $this->assertArraySelectiveEquals($testData, $data);
 

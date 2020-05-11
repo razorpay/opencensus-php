@@ -90,7 +90,7 @@ class HolidayNotification
                 }
 
                 $mailer = new Newsletter(
-                    'Bank holiday : Settlement update',
+                    'Bank Holiday - Settlement Update',
                     $msg,
                     'holiday_notification');
 
