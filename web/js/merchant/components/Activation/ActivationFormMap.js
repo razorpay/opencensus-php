@@ -39,6 +39,7 @@ import {
   doesHaveAdditionalDocs,
   getAdditionalDocCount,
   isAdditonalDocRequired,
+  showForPrivatePublic,
 } from './ActivationUtils';
 
 import { ADDITIONAL_DOCS_LABEL_VALUE_MAP } from './Constants';
@@ -805,6 +806,56 @@ const uploadFields = [
           (activation.isNeedsClarificationMode() && activation.isOnKYCTab()))
       );
     },
+  },
+  {
+    name: 'board_resolution_collection',
+    label: 'Board Resolution',
+    _cmp: Input.File,
+    description: (
+      <>
+        Copy of document that identifies role of board members along with
+        meeting results and decisions
+      </>
+    ),
+    _when: showForPrivatePublic,
+  },
+  {
+    name: 'memorandum_of_association',
+    label: 'Memorandum of Association(MOA)',
+    _cmp: Input.File,
+    description: (
+      <span>
+        If you don’t have it handy, you can download MOA by logging into
+        Ministry of Corporate Affairs
+        <a
+          href="https://www.mca.gov.in/"
+          target="_blank"
+          onClick={() => trackLinkClick('www.mca.gov.in')}
+        >
+          &nbsp;website
+        </a>
+      </span>
+    ),
+    _when: showForPrivatePublic,
+  },
+  {
+    name: 'article_of_association',
+    label: 'Articles of Association(AOA)',
+    _cmp: Input.File,
+    description: (
+      <span>
+        If you don’t have it handy, you can download AOA by logging into
+        Ministry of Corporate Affairs
+        <a
+          href="https://www.mca.gov.in/"
+          target="_blank"
+          onClick={() => trackLinkClick('www.mca.gov.in')}
+        >
+          &nbsp;website
+        </a>
+      </span>
+    ),
+    _when: showForPrivatePublic,
   },
   {
     label: 'Additional DOC',

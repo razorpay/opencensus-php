@@ -50,6 +50,8 @@ const NGO = 7; // 'NGO'
 const TRUST = 9; // 'Trust'
 const SOCIETY = 10; // 'Society'
 const LLP = 6; // 'LLP'
+const PRIVATE = 4;
+const PUBLIC = 5;
 const ORG_BusinessTypes = [NGO, TRUST, SOCIETY];
 const UNREGISTERED_TYPES = {
   11: true,
@@ -113,6 +115,13 @@ function showForOrgs(activation) {
     selectedBusinessType &&
     ORG_BusinessTypes.indexOf(Number(selectedBusinessType)) !== -1
   );
+}
+
+function showForPrivatePublic(activation) {
+  const businessType =
+    activation.state.dirty.business_type || activation.props.data.business_type;
+
+  return businessType && [PUBLIC, PRIVATE].indexOf(Number(businessType)) !== -1;
 }
 
 function isActivatedUnreg(activation) {
@@ -357,4 +366,5 @@ export {
   getAdditionalDocCount,
   isAdditonalDocRequired,
   hasAPIL1Error,
+  showForPrivatePublic,
 };
