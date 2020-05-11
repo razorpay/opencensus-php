@@ -109,7 +109,7 @@ class ErrorCodeMapping
         'TECHNICAL_ERROR'                       => 'Payout failed. Contact support for help.',
         'TXN_REJECTED'                          => 'Payout failed. Contact support for help.',
         'MERCHANT_VALIDATION_ERROR'             => 'Invalid beneficiary details.',
-        'EXCEEDED_AMOUNT_LIMIT'                 => 'Payout failed. Contact support for help.',
+        'EXCEEDED_AMOUNT_LIMIT'                 => 'Transaction Amount greater than the limit supported by the beneficiary bank.',
         'DUPLICATE_TXN_PENDING'                 => 'Payout failed. Contact support for help.',
         'TXN_TIMEOUT'                           => 'Payout failed. Please reinitiate transfer after 30 min.',
         'TXN_REJECTED_BENE_BANK'                => 'Transaction not permitted to beneficiary account.',
