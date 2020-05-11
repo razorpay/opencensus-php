@@ -1841,4 +1841,31 @@ class OrderTest extends TestCase
 
         $this->assertEquals($config->getPublicId(), $response['checkout_config_id']);
     }
+
+
+    public function testRetrieveOrderPaymentsCard()
+    {
+        $order = $this->fixtures->create('order');
+
+        $this->ba->privateAuth();
+
+        $orders = $this->retrieveOrdersDefault();
+
+        //GIVEN
+        $receipt = $orders['items'][0]['receipt'];
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['order_id'] = 'order_' . $order['id'];
+        $payment['amount'] = $order['amount'];
+
+        $this->doAuthPayment($payment);
+
+        $this->ba->privateAuth();
+
+        $order = $this->retrieveOrdersDefault(['expand' => ['payments.card']]);
+
+        $this->assertEquals($order['items'][0]['id'], $order['items'][0]['payments']['items'][0]['order_id']);
+
+        $this->assertArrayHasKey('card', $order['items'][0]['payments']['items'][0]);
+    }
 }
