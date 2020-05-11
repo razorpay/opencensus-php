@@ -10,7 +10,6 @@ use RZP\Error\ErrorCode;
 use RZP\Models\VirtualAccount;
 use RZP\Exception\LogicException;
 use Razorpay\Trace\Logger as Trace;
-use RZP\Models\Terminal\Entity as Terminal;
 
 class Core extends Base\Core
 {
@@ -23,7 +22,7 @@ class Core extends Base\Core
         $this->mutex = $this->app['api.mutex'];
     }
 
-    public function processPayment(array $gatewayResponse, $terminals)
+    public function processPayment(array $gatewayResponse, $terminal)
     {
         $upiTransferInput = $gatewayResponse['upi_transfer_data'];
 
@@ -44,8 +43,6 @@ class Core extends Base\Core
 
         try
         {
-            $terminal = $this->filterTerminal($upiTransferInput, $terminals);
-
             $upiTransfer = (new Entity)->build($upiTransferInput);
 
             $this->mutex->acquireAndRelease(
@@ -91,37 +88,6 @@ class Core extends Base\Core
         }
     }
 
-    protected function filterTerminal($gatewayResponse, $terminals)
-    {
-        $payeeVpa = $gatewayResponse[GatewayResponseParams::PAYEE_VPA];
-
-        $selectedTerminals = $terminals->filter(function(Terminal $terminal) use ($payeeVpa) {
-            // We will filter the terminals which could possibly be used to make this vpa username.
-            return $terminal->isValidVirtualVpaForTerminal($payeeVpa);
-        });
-
-        if ($selectedTerminals->count() === 0)
-        {
-            // Count zero means none of the terminals could have created this vpa
-            // and this is an unexpected upi transfer. This case will only happen if we get request
-            // for root that is not allotted to us.
-            throw new LogicException('Should not have reached here');
-        }
-        if ($selectedTerminals->count() !== 1)
-        {
-            // If a VPA matches with 2 terminals that means this can be created from
-            // either of these and we should probably change the handle for 1 of the merchant
-            // to avoid such future cases.
-            $this->trace->error(
-                TraceCode::UPI_TRANSFER_TERMINAL_COUNT_GREATER_THEN_ONE,
-                [
-                    'terminal_ids' => $selectedTerminals->getIds()
-                ]
-            );
-        }
-
-        return $selectedTerminals->first();
-    }
     /**
      * Trace and send an alert to Slack.
      *

@@ -8,13 +8,14 @@ use RZP\Constants\Mode;
 use RZP\Models\Payment;
 use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
+use RZP\Models\Merchant\Account;
 use RZP\Gateway\Upi\Mindgate\ResponseFields;
 
 class Service extends Base\Service
 {
     protected $core;
 
-    protected $terminals;
+    protected $terminal;
 
     public function __construct()
     {
@@ -39,7 +40,7 @@ class Service extends Base\Service
         {
             $this->determineAndSetMode();
 
-            $this->terminals = $this->getTerminal($input);
+            $this->terminal = $this->getTerminal($input);
 
             $gatewayClass = $this->getGatewayClass($input, Payment\Gateway::UPI_MINDGATE);
 
@@ -47,7 +48,7 @@ class Service extends Base\Service
 
             $gatewayResponse = $gatewayClass->getUpiTransferData($gatewayResponse);
 
-            $valid = $this->core->processPayment($gatewayResponse, $this->terminals);
+            $valid = $this->core->processPayment($gatewayResponse, $this->terminal);
         }
         catch (\Exception $e)
         {
@@ -75,9 +76,7 @@ class Service extends Base\Service
 
         $gatewayClass = $this->app['gateway']->gateway($gateway);
 
-        $terminal = $this->terminals->first();
-
-        $gatewayClass->setGatewayParams($input, $this->mode, $terminal);
+        $gatewayClass->setGatewayParams($input, $this->mode, $this->terminal);
 
         return $gatewayClass;
     }
@@ -88,18 +87,28 @@ class Service extends Base\Service
 
         if (isset($gatewayRequest[ResponseFields::CALLBACK_RESPONSE_PGMID]) === true)
         {
+            //Earlier flow was,to create a new terminal with exactly same configs every time a merchant requests for a new custom prefix for virtual vpa
+            //From now on all the payment will go via single terminal.
             $terminalDetails[Terminal\Entity::GATEWAY_MERCHANT_ID] = $gatewayRequest[ResponseFields::CALLBACK_RESPONSE_PGMID];
+            $terminalDetails[Terminal\Entity::MERCHANT_ID]         = Account::SHARED_ACCOUNT;
+
+            $terminals = $this->repo->terminal->getByParams($terminalDetails);
+
+            if ($terminals->count() === 0)
+            {
+                unset($terminalDetails[Terminal\Entity::MERCHANT_ID]);
+
+                $terminals = $this->repo->terminal->getByParams($terminalDetails);
+            }
+
+            return $terminals->first();
         }
         else
         {
-            $terminalDetails[Terminal\Entity::UPI]     = true;
-            $terminalDetails[Terminal\Entity::GATEWAY] = Payment\Gateway::UPI_MINDGATE;
-            $terminalDetails[Terminal\Entity::TYPE]    = Terminal\Type::UPI_TRANSFER;
+            $terminal = (new  Payment\Processor\TerminalProcessor())->getTerminalForUpiTransfer();
         }
 
-        $terminals = $this->repo->terminal->getByParams($terminalDetails);
-
-        if ($terminals === null or sizeof($terminals) === 0)
+        if ($terminal === null)
         {
             throw new Exception\LogicException(
                 'Terminal should not be null here',
@@ -110,7 +119,7 @@ class Service extends Base\Service
             );
         }
 
-        return $terminals;
+        return $terminal;
     }
 
     /**
