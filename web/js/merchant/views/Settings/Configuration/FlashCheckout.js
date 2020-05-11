@@ -70,7 +70,6 @@ export default class FlashCheckout extends Component {
         this.props.showNotification({
           type: 'success',
           message: 'Your preference was saved',
-          hidePrevious: true,
         });
         this.setState({
           fcEnabled: enableFC,

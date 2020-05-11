@@ -7,6 +7,7 @@ export const showNotification = payload => {
   return {
     type: NOTIFICATION_SHOW,
     payload: {
+      hidePrevious: true,
       ...payload,
       id: +new Date(),
     },
