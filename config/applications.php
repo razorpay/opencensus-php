@@ -322,10 +322,11 @@ return [
     ],
 
     'razorx' => [
-        'mock'     => env('RAZORX_MOCK', false),
-        'url'      => env('RAZORX_URL'),
-        'username' => 'rzp_api',
-        'secret'   => env('RAZORX_SECRET'),
+        'mock'            => env('RAZORX_MOCK', false),
+        'url'             => env('RAZORX_URL'),
+        'username'        => 'rzp_api',
+        'secret'          => env('RAZORX_SECRET'),
+        'request_timeout' => env('RAZORX_REQUEST_TIMEOUT', 0.1),
     ],
 
     'user_2fa' => [

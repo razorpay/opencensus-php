@@ -10,8 +10,6 @@ use RZP\Http\Request\Requests;
 
 class RazorXClient
 {
-    const REQUEST_TIMEOUT   = 0.1; // 100 milliseconds
-
     const EVALUATE_URI      = 'evaluate';
 
     // Params required for evaluator API
@@ -55,6 +53,8 @@ class RazorXClient
 
     protected $env;
 
+    protected $requestTimeout;
+
     public static $whiteListedCardPs = [
         'card_payments_gateway_routing_hdfc',
         'card_payments_gateway_routing_hitachi',
@@ -84,12 +84,13 @@ class RazorXClient
 
     public function __construct($app)
     {
-        $this->trace   = $app['trace'];
-        $this->config  = $app['config']->get('applications.razorx');
-        $this->baseUrl = $this->config['url'];
-        $this->key     = $this->config['username'];
-        $this->secret  = $this->config['secret'];
-        $this->env     = $app['env'];
+        $this->trace          = $app['trace'];
+        $this->config         = $app['config']->get('applications.razorx');
+        $this->baseUrl        = $this->config['url'];
+        $this->key            = $this->config['username'];
+        $this->secret         = $this->config['secret'];
+        $this->env            = $app['env'];
+        $this->requestTimeout = $this->config['request_timeout'];
     }
 
     /**
@@ -321,8 +322,8 @@ class RazorXClient
         $headers = [];
 
         $options = [
-            'connect_timeout' => self::REQUEST_TIMEOUT,
-            'timeout' => self::REQUEST_TIMEOUT,
+            'connect_timeout' => $this->requestTimeout,
+            'timeout' => $this->requestTimeout,
             'auth'    => [$this->key, $this->secret],
         ];
 
