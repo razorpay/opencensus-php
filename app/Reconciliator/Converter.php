@@ -38,6 +38,12 @@ class Converter extends Base\Core
         RequestProcessor\Base::CARDLESS_EMI_FLEXMONEY,
     ];
 
+    const GATEWAY_WITH_COLUMN_REPLACE_CASES = [
+        RequestProcessor\Base::PAYZAPP => [
+            '%' => '_percentage',
+        ],
+    ];
+
     //
     // This is the list of gateways for which file is xlsx but comes with extension xls.
     // Maatwebsite not able to parse this file but spout is able to. Hence irrespective of extension,
@@ -290,9 +296,11 @@ class Converter extends Base\Core
 
                     // Enabling header normalization for limited gateways for now.
                     // Will migrate other gateways gradually.
-                    if(in_array($gateway,self::NORMALIZED_HEADER_GATEWAYS, true) === true)
+                    if (in_array($gateway,self::NORMALIZED_HEADER_GATEWAYS, true) === true)
                     {
                         //Normalizes the header values of file
+                        $this->modifyHeaderBeforeNormalization($columnHeaders);
+
                         $columnHeaders = $this->normalizeHeaders($columnHeaders);
                     }
 
@@ -553,6 +561,7 @@ class Converter extends Base\Core
 
             if ($rowIterator->key() === $startRow)
             {
+                $this->modifyHeaderBeforeNormalization($row);
                 $sheetHeaders = $this->normalizeHeaders($row);
             }
             else
@@ -610,6 +619,7 @@ class Converter extends Base\Core
             }
 
             // for each row, we check if it is header
+            $this->modifyHeaderBeforeNormalization($row);
             $probableSheetHeaders = $this->normalizeHeaders($row);
 
             $commonColumn = array_intersect($probableSheetHeaders, array_keys($keyColumnNames));
@@ -725,6 +735,7 @@ class Converter extends Base\Core
      */
     protected function setColumnHeaderIfApplicable($row, & $sheetContent)
     {
+        $this->modifyHeaderBeforeNormalization($row);
         $tempHeader = $this->normalizeHeaders($row);
 
         $keyColumnNames = $sheetContent['key_columns'];
@@ -781,6 +792,34 @@ class Converter extends Base\Core
         }
 
         return $totalLinesToRead;
+    }
+
+    /**
+     * For some gateways, we are getting special chars in file
+     * and thus during normalization of headers two column of
+     * MIS file getting mapped to same string.
+     * i.e For PayZapp, IGST and IGST% both get modified to igst,
+     * and thus data getting lost.
+     * Here we modify IGST% to IGST_percentage before sending the
+     * header for normalization, to avoid above issue.
+     * @param array $columnHeader
+     */
+    protected function modifyHeaderBeforeNormalization(array &$columnHeader)
+    {
+        if (in_array($this->gateway, array_keys(self::GATEWAY_WITH_COLUMN_REPLACE_CASES), true) === false)
+        {
+            return;
+        }
+
+        $specialChars = self::GATEWAY_WITH_COLUMN_REPLACE_CASES[$this->gateway];
+
+        foreach ($columnHeader as &$col)
+        {
+            foreach ($specialChars as $char => $replaceString)
+            {
+                $col = str_replace($char, $replaceString, $col);
+            }
+        }
     }
 
     /**

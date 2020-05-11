@@ -70,7 +70,7 @@ class Reconciliate extends Base\Reconciliate
             ReconHeaders::UTGST_PERCENTAGE_RENAME,
             ReconHeaders::CGSTCESS1,
             ReconHeaders::CGSTCESS2,
-            ReconHeaders::CGSTCESS2,
+            ReconHeaders::CGSTCESS3,
             ReconHeaders::SGSTCESS1,
             ReconHeaders::SGSTCESS2,
             ReconHeaders::SGSTCESS3,
