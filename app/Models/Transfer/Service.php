@@ -52,6 +52,8 @@ class Service extends Base\Service
         {
             try
             {
+                $startTime = microtime(true);
+
                 $setl = $this->repo->settlement->findOrFail($settlementId);
 
                 $merchantId = $setl->getMerchantId();
@@ -60,21 +62,30 @@ class Service extends Base\Service
 
                 if ($merchant->isLinkedAccount() === true)
                 {
-                    $transactions = $this->repo->transaction->fetchTransactionsForSettlementId($settlementId);
+                    $this->repo->transaction(function () use($settlementId)
+                    {
+                        $transactions = $this->repo->transaction->fetchTransactionsForSettlementIdCount($settlementId);
 
-                    if ($transactions->isEmpty() === false)
-                    {
-                        $this->updateSettlementIdInTransfer($transactions, $settlementId);
-                    }
-                    else
-                    {
-                        if ($this->isDebugEnabled() === true)
+                        $totalchunks = ceil($transactions / Constant::CHUNK);
+
+                        for ($chunk = 0; $chunk < $totalchunks; $chunk = $chunk + 1)
                         {
-                            $this->trace->info(TraceCode::RECIPIENT_SETTLEMENT_NO_TXNS_TO_UPDATE);
+                            $transactions = $this->repo->transaction->fetchTransactionsForSettlementId($settlementId, $chunk);
+
+                            $this->updateSettlementIdInTransfer($transactions, $settlementId);
+
                         }
-                        return;
-                    }
+                    });
+
                 }
+                $timeTaken = microtime(true) - $startTime;
+
+                $this->trace->info(
+                    TraceCode::RECIPIENT_SETTLEMENT_UPDATE_TIME_TAKEN,
+                    [
+                        'time_taken'   => $timeTaken,
+                        'settlementId' => $settlementId,
+                    ]);
             }
             catch (\Exception $ex)
             {
@@ -91,12 +102,8 @@ class Service extends Base\Service
 
     protected function updateSettlementIdInTransfer(\Illuminate\Support\Collection $transactions, $settlementId)
     {
-        $startTime = microtime(true);
-
         try
         {
-            $this->repo->transaction(function () use($transactions)
-            {
                 foreach ($transactions as $txn)
                 {
                     $settlementId = $txn->getSettlementId();
@@ -107,16 +114,6 @@ class Service extends Base\Service
 
                     $this->repo->saveOrFail($transfer);
                 }
-            });
-
-            $timeTaken = microtime(true) - $startTime;
-
-            $this->trace->info(
-                TraceCode::RECIPIENT_SETTLEMENT_UPDATE_TIME_TAKEN,
-                [
-                    'time_taken' => $timeTaken,
-                ]);
-
         }
         catch (\Throwable $ex)
         {
@@ -457,7 +454,7 @@ class Service extends Base\Service
                 '$settelementId' => $settelementId,
             ]
         );
-
+        
         $transfers =  $this->repo->transfer->updatetransfersWithSettelement($settelementId);
 
         $toalcount = $transfers->count();

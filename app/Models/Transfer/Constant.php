@@ -9,4 +9,6 @@ final class Constant
     const FETCH_STATUS = [Status::PROCESSED, Status::PARTIALLY_REVERSED, Status::REVERSED];
 
     const PAYMENT = 'payment';
+
+    const CHUNK = 500;
 }

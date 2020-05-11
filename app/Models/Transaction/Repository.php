@@ -12,6 +12,7 @@ use RZP\Base\BuilderEx;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
 use RZP\Constants\Table;
+use RZP\Models\Transfer\Constant;
 use RZP\Trace\TraceCode;
 use RZP\Models\Terminal;
 use RZP\Gateway\Billdesk;
@@ -1825,7 +1826,7 @@ class Repository extends Base\Repository
                     ->count();
     }
 
-    public function fetchTransactionsForSettlementId(string $setlId)
+    private function fetchTransactionsForSettlementIdQuery(string $setlId)
     {
         $paymentIdColumn      = $this->repo->payment->dbColumn(Entity::ID);
         $transferIdColumn     = $this->repo->payment->dbColumn(Payment\Entity::TRANSFER_ID);
@@ -1837,8 +1838,21 @@ class Repository extends Base\Repository
                     ->join(Table::PAYMENT, $entityIdColumn, '=', $paymentIdColumn)
                     ->where($settlementIdColumn, $setlId)
                     ->where($type, 'payment')
-                    ->whereNotNull($transferIdColumn)
-                    ->get();
+                    ->whereNotNull($transferIdColumn);
+    }
+
+    public function fetchTransactionsForSettlementIdCount(string $setlId)
+    {
+        return $this->fetchTransactionsForSettlementIdQuery($setlId)
+                    ->count();
+    }
+
+    public function fetchTransactionsForSettlementId(string $setlId, $skip = 0)
+    {
+          return $this->fetchTransactionsForSettlementIdQuery($setlId)
+                      ->skip($skip * Constant::CHUNK)
+                      ->take(Constant::CHUNK)
+                      ->get();
     }
 
     public function getTransactionBalanceType(string $transactionId)
