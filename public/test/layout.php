@@ -113,7 +113,7 @@ t.oninput = () => {
   localStorage.code = t.value
 }
 
-$('#keys').onclick = t.onkeypress = e => {
+$('#keys').onclick = t.onkeydown = e => {
   var isStage = window.location.hostname.toLowerCase().indexOf('.stage.razorpay.') >= 0;
   var isFunc = window.location.hostname.toLowerCase().indexOf('.func.razorpay.') >= 0;
   var isDark = window.location.hostname.toLowerCase().indexOf('api-dark') >= 0;
