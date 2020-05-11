@@ -12,21 +12,21 @@ class Repository extends Base\Repository
 
     public function getPrefixCount(string $prefix) : int
     {
-        return $this->newQuery()
+        return $this->newQueryWithConnection($this->getSlaveConnection())
                     ->where(Entity::PREFIX, $prefix)
                     ->count(Entity::PREFIX);
     }
 
     public function getMerchantIdCount(string $merchantId) : int
     {
-        return $this->newQuery()
+        return $this->newQueryWithConnection($this->getSlaveConnection())
                     ->where(Entity::MERCHANT_ID, $merchantId)
                     ->count(Entity::MERCHANT_ID);
     }
 
     public function fetchEntityByMerchantId(string $merchantId)
     {
-        return $this->newQuery()
+        return $this->newQueryWithConnection($this->getSlaveConnection())
                     ->where(Entity::MERCHANT_ID, $merchantId)
                     ->first();
     }
