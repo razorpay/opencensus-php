@@ -49,4 +49,13 @@ class EmiController extends Controller
 
         return ApiResponse::json($emiExcel);
     }
+
+    public function migrateToCardPS()
+    {
+        $input = Request::all();
+
+        $rows = $this->service()->migratetoCardPS();
+
+        return ApiResponse::json($rows);
+    }
 }

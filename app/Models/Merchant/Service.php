@@ -2915,7 +2915,7 @@ class Service extends Base\Service
     {
         $merchant = $this->repo->merchant->findOrFailPublic($id);
 
-        $emiPlan = $this->repo->emi_plan->findOrFailPublic($emiPlanId);
+        $emiPlan = $this->repo->emi_plan->handleFindOrFailPublic($emiPlanId);
 
         return $this->core()->enableEmiMerchantSubvention($merchant, $emiPlan, $input);
     }

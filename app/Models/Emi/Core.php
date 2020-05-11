@@ -2,7 +2,9 @@
 
 namespace RZP\Models\Emi;
 
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Base;
+use RZP\Trace\TraceCode;
 
 class Core extends Base\Core
 {
@@ -16,7 +18,19 @@ class Core extends Base\Core
 
         $emiPlan->generateId();
 
-        $this->repo->saveOrFail($emiPlan);
+        (new Migration)->handleMigration(Migration::CREATE, $emiPlan);
+
+        try
+        {
+            $this->repo->saveOrFail($emiPlan);
+        }
+        catch (\Exception $ex)
+        {
+            //If there is an error saving on api, this should delete the emi_plan on cps aswell.
+            (new Migration)->handleMigration(Migration::DELETE, $emiPlan);
+
+            throw $ex;
+        }
 
         return $emiPlan;
     }

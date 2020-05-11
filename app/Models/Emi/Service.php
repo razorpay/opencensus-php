@@ -4,10 +4,14 @@ namespace RZP\Models\Emi;
 
 use Carbon\Carbon;
 use RZP\Models\Base;
+use RZP\Constants;
+use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Models\Bank\IFSC;
 use RZP\Constants\Timezone;
 use RZP\Models\Merchant\Account;
+use Razorpay\Trace\Logger as Trace;
+use Illuminate\Support\Collection;
 
 class Service extends Base\Service
 {
@@ -138,7 +142,7 @@ class Service extends Base\Service
 
     public function fetch($id)
     {
-        $emiPlan = $this->repo->emi_plan->findOrFail($id);
+        $emiPlan = $this->repo->emi_plan->handleFindOrFail($id);
 
         return $emiPlan->toArrayAdmin();
     }
@@ -154,9 +158,35 @@ class Service extends Base\Service
     {
         $emiPlan = $this->repo->emi_plan->findOrFailPublic($id);
 
+        (new Migration)->handleMigration(Migration::DELETE, $emiPlan);
+
         $this->repo->emi_plan->deleteOrFail($emiPlan);
 
         return $emiPlan->toArrayAdmin();
+    }
+
+    //Fetches all plans from api and adds them to cps one by one.
+    public function migratetoCardPS()
+    {
+        $allPlans = $this->repo->emi_plan->fetchAllLivePlans();
+
+        $ids = [];
+
+        foreach($allPlans as $plan)
+        {
+            $response = (new Migration)->migrate(Migration::CREATE, $plan);
+
+            if($response != null && isset($response[Entity::ID]))
+            {
+                array_push($ids, $response[Entity::ID]);
+            }
+        }
+
+        return [
+            'api_count'         =>  count($allPlans),
+            'cps_success_count' =>  count($ids),
+            'success_ids'       =>  $ids,
+        ];
     }
 
     public function getEmiFiles(array $input)
@@ -351,9 +381,18 @@ class Service extends Base\Service
 
     private function fetchEmiPlans()
     {
-        $sharedEmiPlans = $this->repo->emi_plan->fetchEmiPlansByMerchantId(Account::SHARED_ACCOUNT);
+        if ((new Migration)->isCpsFetchEnabled() == true)
+        {
+            $sharedEmiPlans = $this->fetchEmiPlansFromCardPaymentsService(Account::SHARED_ACCOUNT);
 
-        $merchantEmiPlans = $this->repo->emi_plan->fetchEmiPlansByMerchantId($this->merchant->getId());
+            $merchantEmiPlans = $this->fetchEmiPlansFromCardPaymentsService($this->merchant->getId());
+        }
+        else
+        {
+            $sharedEmiPlans = $this->repo->emi_plan->fetchEmiPlansByMerchantId(Account::SHARED_ACCOUNT);
+
+            $merchantEmiPlans = $this->repo->emi_plan->fetchEmiPlansByMerchantId($this->merchant->getId());
+        }
 
         $issuers = [];
 
@@ -378,4 +417,14 @@ class Service extends Base\Service
         return $emiPlans;
     }
 
+    private function fetchEmiPlansFromCardPaymentsService($mid)
+    {
+        $input = [
+            Entity::MERCHANT_ID => $mid
+        ];
+
+        $plans = (new Migration)->handleMigration(Migration::QUERY, null, '', $input);
+
+        return (new Migration)->getEntityList($plans[Migration::EMI_PLANS]);
+    }
 }

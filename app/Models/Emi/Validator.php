@@ -68,7 +68,7 @@ class Validator extends Base\Validator
 
         $repo = App::getFacadeRoot()['repo'];
 
-        $existingEmis = $repo->emi_plan->fetch($params);
+        $existingEmis = $repo->emi_plan->handleFetch($params);
 
         $count = $existingEmis->count();
 

@@ -45,6 +45,10 @@ class CardPaymentService
     // admin path
     const ADMIN_PATH = 'admin/entities/';
 
+    // entities path
+    const ENTITIES_PATH = 'entities/';
+    const ENTITIES_PATH_V2 = '/v1/entitiesV2/';
+
     protected $baseUrl;
     protected $config;
     //protected $mozartConfig;
@@ -229,6 +233,48 @@ class CardPaymentService
         $path = self::ADMIN_PATH . $entityName . '/' . $id;
 
         return $this->sendRequest('GET', $path, $input);
+    }
+
+    public function create(string $entityName, $input)
+    {
+        $path = self::ENTITIES_PATH_V2 . $entityName;
+
+        return $this->sendRequest('POST', $path, $input);
+    }
+
+    public function get(string $entityName, $id)
+    {
+        $path = self::ENTITIES_PATH_V2 . $entityName . '/' . $id;
+
+        return $this->sendRequest('GET', $path);
+    }
+
+    public function query(string $entityName, $query)
+    {
+        $path = self::ENTITIES_PATH_V2 . $entityName . '/query' ;
+
+        return $this->sendRequest('POST', $path, $query);
+    }
+
+    public function update(string $entityName, string $id, $input)
+    {
+        $path = self::ENTITIES_PATH_V2 . $entityName . '/' . $id;
+
+        return $this->sendRequest('PUT', $path, $input);
+    }
+
+    public function delete(string $entityName, string $id)
+    {
+        $path = self::ENTITIES_PATH_V2 . $entityName . '/' . $id;
+
+        return $this->sendRequest('DELETE', $path, []);
+    }
+
+    public function emiPlanQuery(string $entityName, $query)
+    {
+        $path = '/v1/emi_plans/search' ;
+
+        return $this->sendRequest('POST', $path, $query);
     }
 
     public function sendRequest(string $method, string $url, array $data = [])
@@ -503,7 +549,7 @@ class CardPaymentService
 
     protected function isSuccessResponse($code, $responseBody)
     {
-        if ($code === 200)
+        if ($code === 200 || $code === 204)
         {
             return true;
         }

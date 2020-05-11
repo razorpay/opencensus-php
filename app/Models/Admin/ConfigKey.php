@@ -59,6 +59,7 @@ class ConfigKey
     const FTS_BENEFICIARY                       = self::PREFIX . 'fts_beneficiary';
 
     const CARD_PAYMENT_SERVICE_ENABLED          = self::PREFIX . 'card_payment_service_enabled';
+    const CARD_PAYMENT_SERVICE_EMI_FETCH        = self::PREFIX . 'card_payment_service_emi_fetch';
 
     const NB_PLUS_SERVICE_ENABLED               = self::PREFIX . 'nb_plus_service_enabled';
 

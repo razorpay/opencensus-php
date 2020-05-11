@@ -591,6 +591,7 @@ final class Route
         'razorx_dummy'                             => ['get',      'dummy/razorx',                                   'MerchantController@getDummyRazorX'                                 ],
         'emi_plan_add'                             => ['post',     'emi',                                            'EmiController@addEmiPlan'                                          ],
         'emi_plans_fetch_multiple'                 => ['get',      'emi',                                            'EmiController@fetchEmiPlans'                                       ],
+        'emi_plans_migrate'                        => ['get',      'emi/migration',                                  'EmiController@migrateToCardPS'                                       ],
         'emi_plan_fetch_by_id'                     => ['get',      'emi/{id}',                                       'EmiController@fetchEmiPlanById'                                    ],
         'emi_plan_delete'                          => ['delete',   'emi/{id}',                                       'EmiController@deleteEmiPlan'                                       ],
         'emi_generate_excel'                       => ['post',     'emi/generate/excel',                             'EmiController@generateEmiExcel'                                    ],
@@ -2624,6 +2625,7 @@ final class Route
     // of X-Admin-Token being passed.
     //
     public static $admin = [
+        'emi_plans_migrate',
         'payout_reject_admin',
         'd2c_create_csv_report',
         'offline_verification_service_get',
@@ -3419,6 +3421,7 @@ final class Route
         'payment_authorize_failed'                 => Permission::AUTHORIZE_PAYMENT,
         'iin_add'                                  => Permission::MANAGE_IINS,
         'emi_plan_add'                             => Permission::MANAGE_EMI_PLANS,
+        'emi_plans_migrate'                        => Permission::MANAGE_EMI_PLANS,
         'emi_generate_excel'                       => Permission::GENERATE_EMI_EXCEL,
         'dummy_critical_error'                     => Permission::TRIGGER_DUMMY_ERROR,
         'admin_lead_verify'                        => '*',

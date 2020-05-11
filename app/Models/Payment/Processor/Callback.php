@@ -440,7 +440,7 @@ trait Callback
         if(($payment->isMethod(Payment\Method::EMI) === true) and
             (in_array($payment->getGateway(), Payment\Gateway::$otpPostFormSubmitGateways, true) === true))
         {
-            $input['emi'] = $this->repo->emi_plan->findOrFail($payment->getEmiPlanId());
+            $input['emi'] = $this->repo->emi_plan->handleFindOrFail($payment->getEmiPlanId());
 
             $input['payment_analytics'] = $this->repo->payment_analytics->findForPayment($payment->getId())[0];
 

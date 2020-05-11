@@ -2,7 +2,9 @@
 
 namespace RZP\Models\Emi;
 
+use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Error\ErrorCode;
 use RZP\Models\Card\IIN;
 use RZP\Models\Card\Network;
 use RZP\Models\Merchant\Account;
@@ -33,23 +35,43 @@ class Repository extends Base\Repository
 
         $query = $this->newQuery()
                       ->where(Entity::DURATION, '=', $duration);
+
+        $cpsQuery = [
+            Entity::DURATION => $duration,
+        ];
+
         if ($bank)
         {
             $query->where(Entity::BANK, '=', $bank);
+
+            $cpsQuery[Entity::BANK] = $bank;
         }
         else if (($network === Network::AMEX) or ($network === Network::BAJAJ))
         {
             $query->where(Entity::NETWORK, '=', $network);
+
+            $cpsQuery[Entity::NETWORK] = $network;
         }
 
         if ($type !== null)
         {
             $query->where(Entity::TYPE, '=', $type);
+
+            $cpsQuery[Entity::TYPE] = $type;
         }
 
         $merchantIds = [$merchant->getId(), Account::SHARED_ACCOUNT];
 
         $query->whereIn(Entity::MERCHANT_ID, $merchantIds);
+
+        $cpsQuery[Migration::MERCHANT_IDS] = $merchantIds;
+
+        $cpsResp = (new Migration) -> handleMigration(Migration::EMI_QUERY, null, '', $cpsQuery);
+
+        if ($cpsResp != null)
+        {
+            return (new Migration)->getEntityList($cpsResp[Migration::EMI_PLANS]);
+        }
 
         return $query->get();
     }
@@ -72,21 +94,36 @@ class Repository extends Base\Repository
 
     public function fetchByParams(array $durations = [], string $bank = null, string $network = null, string $type = null)
     {
+        $cpsQuery = [];
+
         $query = $this->newQuery();
 
         if (empty($durations) === false)
         {
             $query->whereIn(Entity::DURATION, $durations);
+
+            $cpsQuery[Migration::DURATIONS] = $durations;
         }
 
         if (empty($bank) === false)
         {
             $query->where(Entity::BANK, $bank);
+
+            $cpsQuery[Entity::BANK] = $bank;
         }
 
         if (empty($network) === false)
         {
             $query->where(Entity::NETWORK, $network);
+
+            $cpsQuery[Entity::NETWORK] = $network;
+        }
+
+        $cpsResp = (new Migration) -> handleMigration(Migration::EMI_QUERY, null, '', $cpsQuery);
+
+        if ($cpsResp != null)
+        {
+            return (new Migration)->getEntityList($cpsResp[Migration::EMI_PLANS]);
         }
 
         if (empty($type) === false)
@@ -99,6 +136,16 @@ class Repository extends Base\Repository
 
     public function fetchDurationsByMerchantAndIssuer(string $merchantId, string $issuer)
     {
+        $cpsData = (new Migration)->handleMigration(Migration::EMI_QUERY,null, '', [
+            Migration::MERCHANT_IDS => [$merchantId, Account::SHARED_ACCOUNT],
+            Entity::BANK            => $issuer,
+        ]);
+
+        if($cpsData != null)
+        {
+            return (new Migration)->getDurationsArray($cpsData[Migration::EMI_PLANS]);
+        }
+
         return $this->newQuery()
             ->select(Entity::DURATION)
             ->whereIn(Entity::MERCHANT_ID, [$merchantId, Account::SHARED_ACCOUNT])
@@ -109,11 +156,93 @@ class Repository extends Base\Repository
 
     public function fetchDurationsByMerchantAndNetwork(string $merchantId, string $paymentNetwork)
     {
+        $cpsData = (new Migration)->handleMigration(Migration::EMI_QUERY,null, '', [
+            Migration::MERCHANT_IDS => [$merchantId, Account::SHARED_ACCOUNT],
+            Entity::NETWORK         => $paymentNetwork,
+        ]);
+
+        if($cpsData != null)
+        {
+            return (new Migration)->getDurationsArray($cpsData[Migration::EMI_PLANS]);
+        }
+
         return $this->newQuery()
             ->select(Entity::DURATION)
             ->whereIn(Entity::MERCHANT_ID, [$merchantId, Account::SHARED_ACCOUNT])
             ->where(Entity::NETWORK, '=', $paymentNetwork)
             ->pluck(Entity::DURATION)
             ->all();
+    }
+
+    public function fetchAllLivePlans()
+    {
+        return $this->newQuery()
+            ->get();
+    }
+
+    //Tries to filter plans based on params. If no plans are found empty collection
+    //is returned.
+    public function handleFetch($params)
+    {
+        $cpsData = (new Migration)->handleMigration(Migration::QUERY,null, '', $params);
+
+        if($cpsData != null)
+        {
+            return (new Migration)->getEntityList($cpsData[Migration::EMI_PLANS]);
+        }
+
+        return $this->fetch($params);
+    }
+
+    //Tries to find an emi plan based on the given id. If no plan is found it returns
+    //DB query exception.
+    public function handleFindOrFail($id)
+    {
+        if((new Migration)->isCpsFetchEnabled())
+        {
+            $cpsData = (new Migration)->migrationRequestHandler(Migration::FETCH,null, $id, null);
+
+            if($cpsData == null)
+            {
+                $e = array(
+                    'model' => 'emi_plans',
+                    'operation' => 'find',
+                    'attributes' => [
+                        'id' => $id,
+                    ]
+                );
+
+                $this->throwException($e);
+            }
+
+            return $cpsData;
+        }
+
+        return $this->findOrFail($id);
+    }
+
+    //Tries to find and emi plans based on the given id. If not plan is found it returns
+    //BAD_REQUEST_INVALID_ID exception.
+    public function handleFindOrFailPublic($id)
+    {
+        if((new Migration)->isCpsFetchEnabled())
+        {
+            $cpsData = (new Migration)->migrationRequestHandler(Migration::FETCH,null, $id, null);
+
+            if($cpsData == null)
+            {
+                $e = array(
+                    'model' => 'emi_plans',
+                    'attributes' => $id,
+                    'operation' => 'find');
+
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_INVALID_ID, null, $e);
+            }
+
+            return $cpsData;
+        }
+
+        return $this->findOrFailPublic($id);
     }
  }
