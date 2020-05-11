@@ -2617,6 +2617,8 @@ class Core extends Base\Core
         {
             unset($whitelistedDomains[$key]);
 
+            $whitelistedDomains = array_values($whitelistedDomains);
+
             $merchant->setWhitelistedDomains($whitelistedDomains);
         }
     }
@@ -3124,7 +3126,7 @@ class Core extends Base\Core
             }
         }
 
-        if((in_array(Constants::LIVE_SETTLEMENT_DEFAULT, $lists) === false) && 
+        if((in_array(Constants::LIVE_SETTLEMENT_DEFAULT, $lists) === false) &&
             (in_array(Constants::LIVE_SETTLEMENT_ON_DEMAND, $lists) === false))
         {
             if($merchant->isfeatureEnabled(Feature\Constants::ES_ON_DEMAND) === false)
