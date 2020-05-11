@@ -11,6 +11,7 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Payment\Method;
 use RZP\Models\VirtualAccount;
 use RZP\Models\VirtualAccount\Provider;
+use RZP\Models\Payment\Processor\TerminalProcessor;
 
 class Generator extends Base\Core
 {
@@ -32,7 +33,7 @@ class Generator extends Base\Core
 
     protected $handle;
 
-    protected $isSharedTerminal;
+    protected $isDescriptorEnabled;
 
     protected $options = [
         self::DESCRIPTOR => null,
@@ -54,7 +55,7 @@ class Generator extends Base\Core
         $this->options = array_merge($this->options, $input);
     }
 
-    protected function setConfigForVpa(Terminal\Entity $terminal)
+    protected function setConfigForVpa(Terminal\Entity $terminal, $merchantPrefix = null)
     {
         $this->trace->info(
             TraceCode::VIRTUAL_ACCOUNT_GENERATE_VPA_TERMINAL,
@@ -62,10 +63,12 @@ class Generator extends Base\Core
                 'terminalId' => $terminal->getId(),
             ]);
 
-        $this->root               = $terminal->getVirtualUpiRoot();
-        $this->merchantIdentifier = $terminal->getVirtualUpiMerchantPrefix();
-        $this->handle             = $terminal->getVirtualUpiHandle();
-        $this->isSharedTerminal   = $terminal->isShared();
+        $this->root                = $terminal->getVirtualUpiRoot();
+        $this->merchantIdentifier  = $merchantPrefix ?: $terminal->getVirtualUpiMerchantPrefix();
+        $this->handle              = $terminal->getVirtualUpiHandle();
+        //Custom descriptor was allowed only to merchants who have registered for custom prefix.
+        //Going forward all the merchants will be able to add custom descriptor.
+        $this->isDescriptorEnabled = true;
     }
 
     public function generate(VirtualAccount\Entity $virtualAccount): Entity
@@ -178,17 +181,6 @@ class Generator extends Base\Core
                     'descriptor'      => $descriptor,
                 ]);
         }
-
-        if ($this->isSharedTerminal === true)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'Descriptor cannot be used with your account.',
-                null,
-                [
-                    'options'     => $this->options,
-                    'merchant_id' => $this->merchant->getId(),
-                ]);
-        }
     }
 
     protected function buildVpaEntity(VirtualAccount\Entity $virtualAccount): Entity
@@ -204,7 +196,42 @@ class Generator extends Base\Core
 
     protected function setTerminalConfigsForVpa(Entity $vpa): Terminal\Entity
     {
-        $terminal = (new Provider())->getTerminalForMethod(Method::UPI, $vpa, null, $this->options);
+        $variant = 'off';
+        try
+        {
+            $variant = $this->app->razorx->getTreatment($this->merchant->getId(),
+                                                        Merchant\RazorxTreatment::VIRTUAL_VPA_PREFIX,
+                                                        $this->mode
+            );
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->info(TraceCode::RAZORX_REQUEST_FAILED);
+        }
+
+        if (strtolower($variant) === 'on')
+        {
+            $virtualVpaPrefix = $this->repo
+                ->virtual_vpa_prefix
+                ->fetchEntityByMerchantId($this->merchant->getId());
+
+            if ($virtualVpaPrefix !== null)
+            {
+                $terminal = $this->repo
+                    ->terminal
+                    ->getById($virtualVpaPrefix->getTerminalId());
+
+                $this->setConfigForVpa($terminal, $virtualVpaPrefix->getPrefix());
+
+                return $terminal;
+            }
+
+            $terminal = (new TerminalProcessor())->getTerminalForUpiTransfer();
+        }
+        else
+        {
+            $terminal = (new Provider())->getTerminalForMethod(Method::UPI, $vpa, null, $this->options);
+        }
 
         if ($terminal === null)
         {
@@ -316,7 +343,7 @@ class Generator extends Base\Core
         return [
             'prefix'              => $this->root . $this->merchantIdentifier,
             'handle'              => $this->handle,
-            'isDescriptorEnabled' => ($this->isSharedTerminal === false),
+            'isDescriptorEnabled' => $this->isDescriptorEnabled,
         ];
     }
 }

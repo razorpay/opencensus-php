@@ -395,4 +395,19 @@ trait VirtualAccountTrait
 
         return $response;
     }
+
+    private function savePrefix(string $prefix)
+    {
+        $content  = [
+            'prefix' => $prefix,
+        ];
+        $request  = [
+            'url'     => '/virtual_vpa_prefixes',
+            'method'  => 'post',
+            'content' => $content,
+        ];
+        $response = $this->makeRequestAndGetContent($request);
+
+        return $response;
+    }
 }

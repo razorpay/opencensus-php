@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Factory;
 
 use RZP\Models\Feature;
 use RZP\Models\BankTransfer;
+use RZP\Services\RazorXClient;
 use RZP\Models\Customer\Entity;
 use RZP\Models\Terminal\Type;
 use RZP\Models\Payment\Gateway;
@@ -2004,5 +2005,50 @@ class VirtualAccountTest extends TestCase
         $expectedResponse = $this->testData[__FUNCTION__];
 
         $this->assertArraySelectiveEquals($expectedResponse, $response);
+    }
+
+    public function testCreateVirtualAccountForVpaWithCustomPrefix()
+    {
+        $this->savePrefix('paytorazor');
+
+        $this->enableRazorXTreatmentForRazorX();
+
+        $response         = $this->createVirtualAccount([], false, null, null, true, 'virtualVpa');
+
+        $expectedResponse = $this->testData[__FUNCTION__];
+
+        $this->assertArraySelectiveEquals($expectedResponse, $response);
+    }
+
+    public function testCreateVirtualAccountForVpaWithDefaultPrefix()
+    {
+        $this->enableRazorXTreatmentForRazorX();
+
+        $response         = $this->createVirtualAccount([], false, null, null, true, 'virtualVpa');
+
+        $expectedResponse = $this->testData[__FUNCTION__];
+
+        $this->assertArraySelectiveEquals($expectedResponse, $response);
+    }
+
+    protected function enableRazorXTreatmentForRazorX()
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                           ->setConstructorArgs([$this->app])
+                           ->setMethods(['getTreatment'])
+                           ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+                          ->will($this->returnCallback(
+                              function($mid, $feature, $mode) {
+                                  if ($feature === 'virtual_vpa_prefix')
+                                  {
+                                      return 'on';
+                                  }
+
+                                  return 'off';
+                              }));
     }
 }
