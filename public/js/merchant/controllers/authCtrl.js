@@ -1426,7 +1426,7 @@ app
         const payload = {
           url: '/user/2fa/otp-verify',
           method: 'POST',
-          data,
+          data: data,
         };
 
         const request = $http(payload);
