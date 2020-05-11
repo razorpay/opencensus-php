@@ -1,11 +1,6 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { reduxForm, Field } from 'redux-form';
-import { Link } from 'react-router-dom';
-import AsyncButton from 'react-async-button';
 import Alert from 'common/ui/Forms/Alert';
-import InputField from 'common/ui/Forms/InputField';
-import { required } from 'common/utils/validators';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
 import { fetchCurrentBalance } from 'merchant/reducers/home';
 import {
@@ -14,11 +9,12 @@ import {
   getTicketStatus,
 } from 'merchant/reducers/profile';
 import { rupeesToPaise } from 'common/utils/rzp-utils';
-import fetchKeysAndCheckout from 'merchant/utils/fetchKeysAndCheckout';
 import addFunds from './model';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import AddFundsForm from 'merchant/views/Account/Balances/AddFundsForm';
 import Amount from 'common/ui/Amount';
+import { merchantFetch } from 'merchant/utils/ajax';
+import { loadCheckout } from 'merchant/utils/fetchKeysAndCheckout';
 @connect(
   state => ({
     ...state.session,
@@ -36,8 +32,6 @@ import Amount from 'common/ui/Amount';
   }
 )
 export default class AddFundsContainer extends Component {
-  key = null;
-
   constructor() {
     super(...arguments);
     this.state = {
@@ -54,42 +48,24 @@ export default class AddFundsContainer extends Component {
     this.props.fetchReserveBalance();
     this.props.getTicketStatus();
 
-    fetchKeysAndCheckout(
-      this.props.user.current,
-      key => {
-        this.key = key;
-
-        this.setState({
-          hasKeys: true,
-        });
-      },
-      error => {
-        this.setState({
-          status: {
-            type: 'warning',
-            message: (
-              <span>
-                API keys need to be generated before adding funds.{' '}
-                <span>
-                  Keys can be generated{' '}
-                  <Link to="/keys">
-                    <u>here.</u>
-                  </Link>
-                </span>
-              </span>
-            ),
-          },
-        });
-      }
-    );
+    // Loads checkout.js //
+    loadCheckout(window.api_host);
   }
+
+  fetchOrderId = data => {
+    return merchantFetch({
+      url: `orders`,
+      method: 'post',
+      data,
+    });
+  };
 
   addFunds(transaction) {
     this.setState({
       isSaving: true,
     });
     return addFunds(transaction)
-      .then(response => {
+      .then(_ => {
         this.setState({
           isSaving: false,
         });
@@ -110,11 +86,27 @@ export default class AddFundsContainer extends Component {
       });
   }
 
-  openCheckout = fieldProps => {
+  openCheckout = async fieldProps => {
     let user = this.props.user;
     let amountInPaise = rupeesToPaise(fieldProps.amountInINR);
+
+    try {
+      var { data: { id } } = await this.fetchOrderId({
+        amount: amountInPaise,
+        currency: 'INR',
+      });
+    } catch (e) {
+      this.setState({
+        status: {
+          type: 'error',
+          message: `An error occured - ${e.message}`,
+        },
+      });
+      return;
+    }
+
     let options = {
-      key: this.key,
+      order_id: id,
       amount: amountInPaise,
       description: fieldProps.description,
       amountInINR: fieldProps.amountInINR,
@@ -127,8 +119,10 @@ export default class AddFundsContainer extends Component {
         dashboard: true,
       },
       handler: function(transaction = {}) {
-        transaction.amount = amountInPaise;
-        this.addFunds(transaction);
+        this.addFunds({
+          amount: amountInPaise,
+          razorpay_payment_id: transaction.razorpay_payment_id,
+        });
       }.bind(this),
     };
 

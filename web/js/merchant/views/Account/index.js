@@ -1,6 +1,5 @@
 import { Route, NavLink } from 'react-router-dom';
 import ShowWhen from 'merchant/components/ShowWhen';
-
 import Profile from 'merchant/views/Account/Profile';
 import Balances from 'merchant/views/Account/Balances';
 import Credits from 'merchant/views/Account/Credits/List';
