@@ -1564,6 +1564,9 @@ final class Route
         'governor_delete_rule_group_v1'           => ['delete',   'namespaces/{namespace_id}/rule_chains/{rule_chain_id}/rule_groups/{rule_group_id}',                  'GovernorController@proxy'              ],
         'governor_update_rule_group_v1'           => ['put',      'namespaces/{namespace_id}/rule_chains/{rule_chain_id}/rule_groups/{rule_group_id}',                  'GovernorController@proxy'              ],
 
+        // Governor Proxy APIs New - Search
+        'governor_search_rules'                   => ['post',     'namespaces/{namespace_id}/rule_chains/{rule_chain_id}/search',                                       'GovernorController@proxy'              ],
+
         'banking_account_create'                  => ['post',     'banking_accounts',                                          'BankingAccountController@create'                           ],
         'banking_account_create_admin'            => ['post',     'banking_accounts_admin',                                    'BankingAccountController@create'                           ],
         'banking_account_activate'                => ['post',     'banking_accounts/{id}/activate',                            'BankingAccountController@activate'                         ],
@@ -3082,6 +3085,7 @@ final class Route
         'governor_delete_rule_group_v1',
         'governor_update_rule_group_v1',
         'governor_update_rule_v1',
+        'governor_search_rules',
         'banking_account_create_admin',
 
         // throttle settings routes
@@ -3725,6 +3729,7 @@ final class Route
         'governor_get_rule_group_v1'               => Permission::VIEW_GATEWAY_RULE,
         'governor_delete_rule_group_v1'            => Permission::DELETE_GATEWAY_RULE,
         'governor_update_rule_group_v1'            => Permission::EDIT_GATEWAY_RULE,
+        'governor_search_rules'                    => Permission::VIEW_GATEWAY_RULE,
 
 
         //Enable maker/checker for payouts

@@ -2,6 +2,7 @@
 
 namespace RZP\Services;
 
+use Requests_Hooks;
 use Requests_Session;
 
 use Requests;
@@ -415,7 +416,8 @@ class GovernorService
         $this->trace->info(TraceCode::GOVERNOR_SERVICE_REQUEST, $request);
 
         $request['options'] = [
-            'auth' => $auth
+            'auth' => $auth,
+            'hooks' => $this->getRequestHooks(),
         ];
 
         $response = $this->sendRawRequest($request);
@@ -425,5 +427,19 @@ class GovernorService
         $this->trace->info(TraceCode::GOVERNOR_SERVICE_RESPONSE, $parsedResponse ?? []);
 
         return $parsedResponse;
+    }
+
+    protected function getRequestHooks()
+    {
+        $hooks = new Requests_Hooks();
+
+        $hooks->register('curl.before_send', [$this, 'setCurlOptions']);
+
+        return $hooks;
+    }
+
+    public function setCurlOptions($curl)
+    {
+        curl_setopt( $curl, CURLOPT_HTTPHEADER, array('Expect:'));
     }
 }
