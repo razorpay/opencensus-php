@@ -72,7 +72,7 @@ class SourceUpdater
         {
             self::updatePayoutLink($payout);
 
-            self::updateVendorPayment($payout);
+//            self::updateVendorPayment($payout);
         }
     }
 
