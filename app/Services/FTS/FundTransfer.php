@@ -439,6 +439,12 @@ class FundTransfer extends Base
 
         $status        = Constants::STATUS_INITIATED;
 
+        if ((isset($responseBody[Constants::STATUS]) === true) and
+            (strtolower($responseBody[Constants::STATUS]) !== Constants::STATUS_CREATED))
+        {
+            $status = strtolower($responseBody[Constants::STATUS]);
+        }
+
         if (isset($responseBody[Constants::FUND_TRANSFER_ID]) === true)
         {
             $ftsTransferId = $responseBody[Constants::FUND_TRANSFER_ID];
@@ -513,12 +519,14 @@ class FundTransfer extends Base
 
         $sourceCore->updateEntityWithFtsTransferId($source, $fta->getFTSTransferId());
 
-        if (method_exists($sourceCore, 'updateStatusAfterFtaInitiated') === true)
+        if ($fta->getStatus() === FundTransferAttempt\Status::INITIATED)
         {
-            $sourceCore->updateStatusAfterFtaInitiated($source, $this->fta);
+            if (method_exists($sourceCore, 'updateStatusAfterFtaInitiated') === true)
+            {
+                $sourceCore->updateStatusAfterFtaInitiated($source, $this->fta);
+            }
         }
-
-        if ($fta->getStatus() === FundTransferAttempt\Status::FAILED)
+        else
         {
             (new FundTransferAttempt\Core)->updateSourceEntityByFta($fta);
         }
