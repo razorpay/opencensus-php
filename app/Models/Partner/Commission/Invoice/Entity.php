@@ -28,6 +28,9 @@ class Entity extends Base\PublicEntity
      */
     const PDF_PREFIX               = 'pdfs/commission/';
 
+    const LINE_ITEMS               = 'line_items';
+    const PDF                      = 'pdf';
+
     protected $entity = 'commission_invoice';
 
     protected $generateIdOnCreate = true;
@@ -47,6 +50,28 @@ class Entity extends Base\PublicEntity
         self::MONTH,
         self::YEAR,
         self::TNC,
+    ];
+
+    protected $public = [
+        self::ID,
+        self::MERCHANT_ID,
+        self::MONTH,
+        self::YEAR,
+        self::GROSS_AMOUNT,
+        self::TAX_AMOUNT,
+        self::STATUS,
+        self::NOTES,
+        self::TNC,
+        self::LINE_ITEMS,
+        self::PDF,
+    ];
+
+    protected $embeddedRelations = [
+        self::LINE_ITEMS,
+    ];
+
+    protected $publicSetters = [
+        self::PDF,
     ];
 
     public function merchant()
@@ -131,6 +156,16 @@ class Entity extends Base\PublicEntity
                     ->where(FileStore\Entity::TYPE, '=', FileStore\Type::COMMISSION_INVOICE)
                     ->latest()
                     ->first();
+    }
+
+    public function setPublicPdfAttribute(array & $array)
+    {
+        $pdf = $this->pdf();
+
+        if (empty($pdf) === false)
+        {
+            $array[self::PDF] = $pdf->toArrayPublic();
+        }
     }
 
     public function files()

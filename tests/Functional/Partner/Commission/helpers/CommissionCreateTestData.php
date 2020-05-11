@@ -32,6 +32,47 @@ return [
         ],
     ],
 
+    'testInvoiceFetch' => [
+        'request'  => [
+            'method'  => 'GET',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'merchant_id' => 'DefaultPartner',
+                'gross_amount' => 1770,
+                'tax_amount' => 270,
+                'status' => 'processed',
+                'line_items' => [
+                    [
+                        'name' => 'commission',
+                        'gross_amount' => 1770,
+                        'tax_amount' => 270,
+                        'taxable_amount' => 1500,
+                        'taxes' => [
+                            [
+                                'name' => 'CGST 9%',
+                                'rate' => 90000,
+                                'rate_type' => "percentage",
+                                'tax_amount' => 135,
+                            ],
+                            [
+                                'name' => 'SGST 9%',
+                                'rate' => 90000,
+                                'rate_type' => "percentage",
+                                'tax_amount' => 135,
+                            ]
+                        ],
+                    ],
+                ],
+                'pdf' => [
+                    'type' => 'commission_invoice',
+                    'bucket' => 'invoices',
+                ],
+            ],
+        ],
+    ],
+
     'testInvoiceGenerate' => [
         'request'  => [
             'method' => 'POST',

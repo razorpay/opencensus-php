@@ -149,6 +149,12 @@ class CommissionCreateTest extends TestCase
         $invoice = $this->getDbLastEntity('commission_invoice');
 
         $this->assertEquals('processed', $invoice['status']);
+
+        $testData = $this->testData['testInvoiceFetch'];
+
+        $testData['request']['url'] = '/commissions/invoice/' . $invoice->getId();
+
+        $this->runRequestResponseFlow($testData);
     }
 
     public function testCaptureCommission()

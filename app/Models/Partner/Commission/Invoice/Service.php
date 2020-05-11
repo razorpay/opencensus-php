@@ -23,15 +23,19 @@ class Service extends Base\Service
 
     public function fetch($id)
     {
-        $invoice = $this->repo->commission_invoice->findByIdAndMerchant($id, $this->merchant);
+        $params = [
+            'expand' => ['line_items', 'line_items.taxes'],
+        ];
 
-        return $invoice;
+        $invoice = $this->repo->commission_invoice->findByIdAndMerchant($id, $this->merchant, $params);
+
+        return $invoice->toArrayPublic();
     }
 
     public function fetchBulk(array $input)
     {
         $invoices = $this->repo->commission_invoice->fetch($input, $this->merchant->getId());
 
-        return $invoices;
+        return $invoices->toArrayPublic();
     }
 }
