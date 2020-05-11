@@ -84,6 +84,16 @@ return [
                             "value" =>
                                 [['60', '2' , '0.40']],
                         ],
+                        [
+                            "key" => "payment_interval_netbanking_bank_hdfc_create",
+                            "value" =>
+                                [['60', '2' , '0.05']],
+                        ],
+                        [
+                            "key" => "payment_interval_netbanking_bank_hdfc_resolve",
+                            "value" =>
+                                [['60', '2' , '0.40']],
+                        ],
                     ]
             ]
         ]

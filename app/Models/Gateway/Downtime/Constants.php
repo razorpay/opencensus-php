@@ -4,6 +4,7 @@
 namespace RZP\Models\Gateway\Downtime;
 
 
+use Razorpay\IFSC\Bank;
 use RZP\Gateway\Upi\Base\ProviderCode;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Card\Issuer;
@@ -181,6 +182,30 @@ class Constants
             'method' => Method::UPI,
             'key' => DowntimeDetection::PROVIDER,
             'value' => ProviderCode::YBL,
+        ],
+        [
+            'type' => DowntimeDetection::PAYMENT_INTERVAL,
+            'method' => Method::NETBANKING,
+            'key' => DowntimeDetection::BANK,
+            'value' => Bank::HDFC,
+        ],
+        [
+            'type' => DowntimeDetection::PAYMENT_INTERVAL,
+            'method' => Method::NETBANKING,
+            'key' => DowntimeDetection::BANK,
+            'value' => Bank::SBIN,
+        ],
+        [
+            'type' => DowntimeDetection::PAYMENT_INTERVAL,
+            'method' => Method::NETBANKING,
+            'key' => DowntimeDetection::BANK,
+            'value' => Bank::ALLA,
+        ],
+        [
+            'type' => DowntimeDetection::PAYMENT_INTERVAL,
+            'method' => Method::NETBANKING,
+            'key' => DowntimeDetection::BANK,
+            'value' => Bank::ICIC,
         ],
     ];
 

@@ -5,6 +5,7 @@ namespace RZP\Models\Gateway\Downtime;
 
 
 use App;
+use RZP\Models\Base\UniqueIdEntity;
 use \stdClass;
 use Carbon\Carbon;
 use Illuminate\Redis\RedisManager;
@@ -26,6 +27,11 @@ class DowntimeDetection
     protected $trace;
 
     /**
+     * @var RazorX
+     */
+    protected $razorx;
+
+    /**
      * @var RedisManager
      */
     protected $redis;
@@ -36,7 +42,11 @@ class DowntimeDetection
 
     const PROVIDER          = 'PROVIDER';
 
+    const BANK              = 'BANK';
+
     const METHOD            = 'METHOD';
+
+    const RAZORX_FEATURE    = 'downtime_detection';
 
     /**
      * Type of Downtime Check
@@ -55,6 +65,8 @@ class DowntimeDetection
         $app = App::getFacadeRoot();
 
         $this->trace   = $app['trace'];
+
+        $this->razorx  = $app['razorx'];
 
         $this->mode    = $app['rzp.mode'];
 
@@ -78,8 +90,6 @@ class DowntimeDetection
                     'setting_type'  => $settingType,
                 ]
             );
-
-            throw new Exception\LogicException('Gateway Downtime Configuration v2 missing.');
         }
 
         return $settings;
@@ -177,6 +187,12 @@ class DowntimeDetection
     {
         $to = Carbon::now();
 
+        $value = $this->razorx->getTreatment(UniqueIdEntity::generateUniqueId(), self::RAZORX_FEATURE, $this->mode);
+        if ($value !== 'on')
+        {
+            return;
+        }
+
         foreach (Constants::getAllJobTypes() as $job)
         {
             \RZP\Jobs\DowntimeDetection::dispatch(
@@ -230,6 +246,10 @@ class DowntimeDetection
                 if ($method === Method::CARD)
                 {
                     $payments = (new \RZP\Models\Payment\Repository())->fetchLastNPaymentsForDowntime($from->timestamp, $to->timestamp, $type, $key, $value, $minimumPayments);
+                }
+                else if ($method === Method::NETBANKING)
+                {
+                    $payments = (new \RZP\Models\Payment\Repository())->fetchLastNNetbankingPaymentsForDowntime($from->timestamp, $to->timestamp, $type, $key, $value, $minimumPayments);
                 }
                 else if ($method === Method::UPI)
                 {

@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Redis;
 use App;
 use Mockery;
 use Carbon\Carbon;
+use Razorpay\IFSC\Bank;
 use RZP\Error;
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
@@ -56,7 +57,7 @@ class GatewayDowntimeDetectionV2Test extends TestCase
         $this->app->instance('razorx', $razorxMock);
 
         $this->app->razorx->method('getTreatment')
-            ->willReturn('On');
+            ->willReturn('on');
 
         $this->fixtures->merchant->enableMethod(Account::TEST_ACCOUNT, Method::UPI);
 
@@ -96,6 +97,10 @@ class GatewayDowntimeDetectionV2Test extends TestCase
                 [['60', '2' , '0.05']]),
             'payment_interval_upi_provider_okhdfcbank_resolve' => json_encode(
                 [['60', '2' , '0.40']]),
+            'payment_interval_netbanking_bank_hdfc_create' => json_encode(
+                [['60', '2' , '0.05']]),
+            'payment_interval_netbanking_bank_hdfc_resolve' => json_encode(
+                [['60', '2' , '0.40']]),
         ];
     }
 
@@ -114,25 +119,6 @@ class GatewayDowntimeDetectionV2Test extends TestCase
             'exception' => [
                 'class'                 => 'RZP\Exception\GatewayErrorException',
                 'internal_error_code'   => Error\ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
-            ],
-        ];
-    }
-
-    protected function getErrorTestDataForUPI()
-    {
-        return [
-            'response'  => [
-                'content'     => [
-                    'error' => [
-                        'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                        'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_FAILED,
-                    ],
-                ],
-                'status_code' => 400,
-            ],
-            'exception' => [
-                'class'               => GatewayErrorException::class,
-                'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_FAILED
             ],
         ];
     }
@@ -205,7 +191,6 @@ class GatewayDowntimeDetectionV2Test extends TestCase
         $this->assertNull($this->redis->get('DOWNTIME_CREATED_success_rate_card_ISSUER_HDFC'));
     }
 
-
     public function testDowntimeDetectionForUpi()
     {
         $payment = $this->getDefaultUpiPaymentArray();
@@ -229,6 +214,27 @@ class GatewayDowntimeDetectionV2Test extends TestCase
         $this->assertNotNull($this->redis->get('DOWNTIME_CREATED_payment_interval_upi_PROVIDER_okhdfcbank'));
     }
 
+    public function testDowntimeDetectionForNetbanking()
+    {
+        $payment = $this->getDefaultNetbankingPaymentArray('HDFC');
+
+        $this->getFormViaCreateRoute($payment, 'gateway.gatewayPostForm');
+        $this->getFormViaCreateRoute($payment, 'gateway.gatewayPostForm');
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/gateway/downtimes/detection/cron',
+        ];
+
+        $this->ba->cronAuth();
+
+        Carbon::setTestNow(Carbon::now()->addSeconds(70));
+
+        $this->makeRequestAndGetContent($request);
+
+        $this->assertNotNull($this->redis->get('DOWNTIME_CREATED_payment_interval_netbanking_BANK_HDFC'));
+    }
+
     public function getAllJobTypes()
     {
         return [
@@ -243,6 +249,12 @@ class GatewayDowntimeDetectionV2Test extends TestCase
                 'method' => Method::UPI,
                 'key' => DowntimeDetection::PROVIDER,
                 'value' => ProviderCode::OKHDFCBANK,
+            ],
+            [
+                'type' => DowntimeDetection::PAYMENT_INTERVAL,
+                'method' => Method::NETBANKING,
+                'key' => DowntimeDetection::BANK,
+                'value' => Bank::HDFC,
             ],
         ];
     }

@@ -2030,6 +2030,43 @@ class Repository extends Base\Repository
             ->get();
     }
 
+    public function fetchLastNNetbankingPaymentsForDowntime($from, $to, $type, $key, $value, $limit)
+    {
+        $query = $this->newQueryWithConnection($this->getSlaveConnection())
+            ->select(Payment\Entity::CREATED_AT, Payment\Entity::AUTHORIZED_AT, Payment\Entity::STATUS, Payment\Entity::MERCHANT_ID);
+
+        $query = $query->where(Payment\Entity::METHOD, Method::NETBANKING);
+
+        if ($key == DowntimeDetection::BANK)
+        {
+            $query = $query->where(Payment\Entity::BANK, $value);
+        }
+        else
+        {
+            throw new Exception\LogicException(
+                'key should be bank for netbanking');
+        }
+
+        if ((empty($from) == false) and
+            (empty($to) == false))
+        {
+            $query = $query->whereBetween(Payment\Entity::CREATED_AT, array($from, $to));
+        }
+        else if (empty($from) == false)
+        {
+            $query = $query->where(Payment\Entity::CREATED_AT, '>' ,$from);
+        }
+
+        if ($type === DowntimeDetection::SUCCESS_RATE)
+        {
+            $query = $query->where( Payment\Entity::STATUS, '<>', Status::CREATED);
+        }
+
+        return $query->orderBy(Payment\Entity::CREATED_AT, 'desc')
+            ->limit($limit)
+            ->get();
+    }
+
     /**
      * Overriding newQuery to always have conditions for payment method
      * and bank in case of restricted orgs like SBI. For now this is a
