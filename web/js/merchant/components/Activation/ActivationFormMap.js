@@ -808,7 +808,7 @@ const uploadFields = [
     },
   },
   {
-    name: 'board_resolution_collection',
+    name: 'board_resolution',
     label: 'Board Resolution',
     _cmp: Input.File,
     description: (
