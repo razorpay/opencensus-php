@@ -165,7 +165,7 @@ class Validator extends Base\Validator
         'purpose'             => 'required_if:action,create_payout,create_payout_link|string|max:30|alpha_dash_space',
         'payout_id'           => 'required_if:action,approve_payout|public_id|size:19',
         'payout_total_amount' => 'required_if:action,approve_payout_bulk|integer|min:100',
-        'payout_count'        => 'required_if:action,approve_payout_bulk|integer|min:1',
+        'payout_count'        => 'required_if:action,approve_payout_bulk|integer|min:1'
     ];
 
     protected static $sendOtpWithContactRules = [

@@ -1444,6 +1444,11 @@ class BasicAuth
         return $this->internalApp;
     }
 
+    public function isVendorPaymentApp()
+    {
+        return $this->internalApp === 'vendor_payments';
+    }
+
     public function isDashboardApp()
     {
         return (in_array($this->getInternalApp(), ['dashboard', 'dashboard_guest'], true) === true);
@@ -1452,8 +1457,9 @@ class BasicAuth
     public function isInternalApp(): bool
     {
         return (($this->isDashboardApp() === true) or
+                ($this->isVendorPaymentApp() === true) or
                 (($this->isBatchApp() === true) and
-                    $this->request->headers->get(RequestHeader::X_Creator_Type) == 'user'));
+                 $this->request->headers->get(RequestHeader::X_Creator_Type) == 'user'));
     }
 
     public function isDebugApp()

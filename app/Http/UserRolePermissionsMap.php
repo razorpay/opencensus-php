@@ -92,6 +92,10 @@ class UserRolePermissionsMap
                  Permission::DELETE_MERCHANT_DOCUMENT,
                  Permission::UPDATE_MERCHANT_BANK_ACCOUNT_STATUS,
                  Permission::UPDATE_MERCHANT_2FA_SETTING,
+                 Permission::VIEW_VENDOR_PAYMENTS,
+                 Permission::CREATE_VENDOR_PAYMENTS,
+                 Permission::EDIT_VENDOR_PAYMENTS,
+                 Permission::CANCEL_VENDOR_PAYMENTS,
              ],
 
              BankingRole::ADMIN => [
@@ -167,6 +171,10 @@ class UserRolePermissionsMap
                  Permission::UPLOAD_MERCHANT_DOCUMENT,
                  Permission::DELETE_MERCHANT_DOCUMENT,
                  Permission::UPDATE_MERCHANT_BANK_ACCOUNT_STATUS,
+                 Permission::VIEW_VENDOR_PAYMENTS,
+                 Permission::CREATE_VENDOR_PAYMENTS,
+                 Permission::EDIT_VENDOR_PAYMENTS,
+                 Permission::CANCEL_VENDOR_PAYMENTS,
              ],
 
              BankingRole::FINANCE_L1 => [
@@ -232,6 +240,10 @@ class UserRolePermissionsMap
                  Permission::VIEW_WORKFLOW,
                  Permission::UPDATE_TEST_MERCHANT_BALANCE,
                  Permission::VIEW_VIRTUAL_ACCOUNT,
+                 Permission::VIEW_VENDOR_PAYMENTS,
+                 Permission::CREATE_VENDOR_PAYMENTS,
+                 Permission::EDIT_VENDOR_PAYMENTS,
+                 Permission::CANCEL_VENDOR_PAYMENTS,
              ],
 
              BankingRole::OPERATIONS => [
@@ -263,6 +275,13 @@ class UserRolePermissionsMap
                  Permission::DELETE_CONTACT,
                  Permission::CREATE_CONTACT_TYPE,
                  Permission::VIEW_VIRTUAL_ACCOUNT,
+                 /*
+                  * Following are the new permissions added for Vendor-Payments micro-service
+                  */
+                 Permission::VIEW_VENDOR_PAYMENTS,
+                 Permission::CREATE_VENDOR_PAYMENTS,
+                 Permission::EDIT_VENDOR_PAYMENTS,
+                 Permission::CANCEL_VENDOR_PAYMENTS,
              ],
 
              BankingRole::VIEW_ONLY => [
@@ -292,6 +311,7 @@ class UserRolePermissionsMap
                  Permission::UPDATE_USER_PROFILE,
                  Permission::ONBOARDING_PAYOUT_LINKS,
                  Permission::SUMMARY_PAYOUT_LINKS,
+                 Permission::VIEW_VENDOR_PAYMENTS,
              ],
         ];
 

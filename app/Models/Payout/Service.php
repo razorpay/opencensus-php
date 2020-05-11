@@ -54,7 +54,8 @@ class Service extends Base\Service
     public function fundAccountPayout(array $input): array
     {
         // Only allow access over strictly private auth, for proxy auth: OTP auth flow is mandated.
-        if ($this->auth->isStrictPrivateAuth() === false)
+        if (($this->auth->isStrictPrivateAuth() === false) and
+            (($this->auth->isPrivilegeAuth() === false) and (!$this->auth->isVendorPaymentApp())))
         {
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_FORBIDDEN);
         }

@@ -383,6 +383,12 @@ return [
         'api_token' => env('MYOPERATOR_API_TOKEN'),
     ],
 
+    'vendor_payments' => [
+        'url'    => env('VENDOR_PAYMENT_URL'),
+        'secret' => env('VENDOR_PAYMENT_INTERNAL_APP_SECRET'), // the secret used by the VP to call apis under internal auth
+        // this same secret is used as the passowrd to call APIs on the micro-service
+    ],
+
     'banking_service_url' => env('BANKING_SERVICE_URL', 'https://x.razorpay.com'),
 
     'payout_links' => [

@@ -73,6 +73,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYOUT_SOURCE_UPDATER_MISMATCH_EXPECTED_STATUS        = 'PAYOUT_SOURCE_UPDATER_MISMATCH_EXPECTED_STATUS';
     const PAYOUT_SOURCE_UPDATER_PROCESSING                      = 'PAYOUT_SOURCE_UPDATER_PROCESSING';
     const PAYOUT_SOURCE_UPDATER_QUEUE_PUSH                      = 'PAYOUT_SOURCE_UPDATER_QUEUE_PUSH';
+    const PAYOUT_LINK_PAYOUT_UPDATER_ERROR                      = 'PAYOUT_LINK_PAYOUT_UPDATER_ERROR';
+    const VENDOR_PAYMENT_PAYOUT_UPDATER_ERROR                   = 'VENDOR_PAYMENT_PAYOUT_UPDATER_ERROR';
     const PAYOUT_LINK_SHORT_URL_CREATED                         = 'PAYOUT_LINK_SHORT_URL_CREATED';
     const PAYOUT_LINK_SETTINGS_UPDATE                           = 'PAYOUT_LINK_SETTINGS_UPDATE';
     const PAYOUT_LINK_UN_HANDLED_PAYOUT_STATUS                  = 'PAYOUT_LINK_UN_HANDLED_PAYOUT_STATUS';
@@ -2160,6 +2162,11 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYOUT_CREATED                                        = 'PAYOUT_CREATED';
     const PAYOUT_CUSTOMER_OTP_REQUEST                           = 'PAYOUT_CUSTOMER_OTP_REQUEST';
 
+    const VENDOR_PAYMENT_REQUEST                                = 'VENDOR_PAYMENT_REQUEST';
+    const VENDOR_PAYMENT_RESPONSE                               = 'VENDOR_PAYMENT_RESPONSE';
+
+    const OTP_VERIFICATION_FAILED_VENDOR_PAYOUT                 = 'OTP_VERIFICATION_FAILED_VENDOR_PAYOUT';
+
     const QUEUED_PAYOUT_CREATED                                 = 'QUEUED_PAYOUT_CREATED';
     const PENDING_PAYOUT_CREATED                                = 'PENDING_PAYOUT_CREATED';
     const PAYOUT_REVERSAL_INITIATED                             = 'PAYOUT_REVERSAL_INITIATED';
@@ -2686,7 +2693,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const D2C_BUREAU_DETAILS_UPDATE                             = 'D2C_BUREAU_DETAILS_UPDATE';
     const LOS_D2C_BUREAU_REPORT_FETCH                           = 'LOS_D2C_BUREAU_REPORT_FETCH';
     const LOS_D2C_BUREAU_DETAILS_CREATE                         = 'LOS_D2C_BUREAU_DETAILS_CREATE';
-    CONST LOS_D2C_BUREAU_OTP_SUBMIT_REQUEST                     = 'LOS_D2C_BUREAU_OTP_SUBMIT_REQUEST';
+    const LOS_D2C_BUREAU_OTP_SUBMIT_REQUEST                     = 'LOS_D2C_BUREAU_OTP_SUBMIT_REQUEST';
     const D2C_BUREAU_REPORT_UPDATE                              = 'D2C_BUREAU_REPORT_UPDATE';
     const D2C_BUREAU_REPORT_DOWNLOAD_REQUEST                    = 'D2C_BUREAU_REPORT_DOWNLOAD_REQUEST';
     const D2C_BUREAU_CREATE_CSV_REPORT                          = 'D2C_BUREAU_CREATE_CSV_REPORT';

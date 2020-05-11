@@ -366,7 +366,9 @@ class Service extends Base\Service
 
     public function get(string $id): array
     {
-        if ($this->auth->isAdminAuth() === true)
+        if (($this->auth->isAdminAuth() === true) or
+            (($this->auth->isPrivilegeAuth() === true) and
+             ($this->auth->isVendorPaymentApp())))
         {
             $user = $this->repo->user->findOrFailPublic($id);
         }
@@ -473,7 +475,7 @@ class Service extends Base\Service
             {
                 $this->trace->info(TraceCode::USER_NOT_FOUND,
                     [
-                        "email" => $email
+                        'email' => $email
                     ]);
             }
             else

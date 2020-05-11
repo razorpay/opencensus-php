@@ -919,6 +919,7 @@ final class Route
         'upi_psp_allow'                            => ['post',     'upi/psp/allow',                                  'UpiController@postPspAllow'                                        ],
         'mock_event_tracker'                       => ['post',     'mock/track',                                     'MockLumberjackController@mockEventTrack'                           ],
         'payout_create'                            => ['post',     'payouts',                                        'PayoutController@postFundAccountPayout'                            ],
+        'payout_create_internal'                   => ['post',     'payouts_internal',                               'PayoutController@postFundAccountPayout'                            ],
         'payout_bulk_create'                       => ['post',     'payouts/bulk',                                   'PayoutController@createPayoutBulk'                                 ],
         'payout_create_with_otp'                   => ['post',     'payouts_with_otp',                               'PayoutController@postFundAccountPayoutWithOtp'                     ],
         'payout_approve_bulk'                      => ['post',     'payouts/approve/bulk',                           'PayoutController@bulkApproveFundAccountPayouts'                    ],
@@ -930,6 +931,7 @@ final class Route
         //       3. Allow normal admin rather than SuperAdmin to cancel payouts.
         'payout_reject_admin'                      => ['post',     'admin/payouts/{id}/reject',                      'PayoutController@postRejectFundAccountPayout'                      ],
         'payout_fetch_by_id'                       => ['get',      'payouts/{id}',                                   'PayoutController@getPayout'                                        ],
+        'payout_fetch_by_id_internal'              => ['get',      'payouts_internal/{id}',                          'PayoutController@getPayout'                                        ],
         'payout_fetch_multiple'                    => ['get',      'payouts',                                        'PayoutController@getPayouts'                                       ],
         'payout_retry'                             => ['post',     'payouts/{id}/retry',                             'PayoutController@postPayoutRetry'                                  ],
         'payout_purpose_get'                       => ['get',      'payouts/purposes',                               'PayoutController@getPurposes'                                      ],
@@ -938,6 +940,24 @@ final class Route
         'payouts_process_queued'                   => ['post',     'payouts/queued/process',                         'PayoutController@processDispatchForQueuedPayouts'                  ],
         'payouts_summary'                          => ['get',      'payouts/_meta/summary',                          'PayoutController@getSummary'                                       ],
         'payouts_workflow_summary'                 => ['get',      'payouts/_meta/workflows',                        'PayoutController@getWorkflowSummary'                               ],
+
+        //Vendor Payments
+        'vendor_payment_send_failure_email'        => ['post',      'vendor-payments/send-failure-email',             'VendorPaymentController@internalSendFailureEmail'                 ],
+        'vendor_payment_summary'                   => ['get',      'vendor-payments/_meta/summary',                  'VendorPaymentController@summary'                                  ],
+        'vendor_payment_contact_list'              => ['get',      'vendor-payments/contacts',                       'VendorPaymentController@listContacts'                              ],
+        'vendor_payment_invoice_upload'            => ['post',     'vendor-payments/upload-invoice',                 'VendorPaymentController@uploadInvoice'                             ],
+        'vendor_payment_invoice_get_signed_url'    => ['get',      'vendor-payments/invoice-signed-url/{file_id}',   'VendorPaymentController@getInvoiceSignedUrl'                       ],
+        'vendor_payment_contact_get'               => ['get',      'vendor-payments/contacts/{id}',                  'VendorPaymentController@getContact'                                ],
+        'vendor_payment_contact_create'            => ['post',     'vendor-payments/contacts',                       'VendorPaymentController@createContact'                             ],
+        'vendor_payment_contact_update'            => ['post',     'vendor-payments/contacts/{id}',                  'VendorPaymentController@updateContact'                             ],
+        'vendor_payment_create'                    => ['post',     'vendor-payments/',                               'VendorPaymentController@create'                                    ],
+        'vendor_payment_list'                      => ['get',      'vendor-payments/',                               'VendorPaymentController@list'                                      ],
+        'vendor_payment_get_by_id'                 => ['get',      'vendor-payments/{id}',                           'VendorPaymentController@get'                                       ],
+        'vendor_payment_verify_otp'                => ['post',     'vendor-payments/verify-otp',                     'VendorPaymentController@verifyOtp'                                 ],
+        'vendor_payment_execute'                   => ['post',     'vendor-payments/{id}/execute',                   'VendorPaymentController@executeVendorPayment'                      ],
+        'vendor_payment_get_tds_categories'        => ['get',      'vendor-payments/tds-categories',                 'VendorPaymentController@getTdsCategories'                          ],
+        'vendor_payment_edit'                      => ['post',     'vendor-payments/{id}/edit',                      'VendorPaymentController@edit'                                      ],
+        'vendor_payment_cancel'                    => ['post',     'vendor-payments/{id}/cancel',                    'VendorPaymentController@cancel'                                    ],
 
         // Payout Links
         'payout_links_fetch_multiple'              => ['get',       'payout-links',                                  'PayoutLinkController@list'                                         ],
@@ -1017,6 +1037,7 @@ final class Route
         'user_change_password'                     => ['put',      'users/password',                                 'UserController@changeUserPassword'                                 ],
         'user_edit_self'                           => ['patch',    'users',                                          'UserController@editSelf'                                           ],
         'user_fetch'                               => ['get',      'users/{id}',                                     'UserController@getUser'                                            ],
+        'user_fetch_internal'                      => ['get',      'users_internal/{id}',                            'UserController@getUser'                                            ],
         'user_access'                              => ['get',      'users/access',                                   'UserController@checkUserAccess'                                    ],
         'user_verify_second_factor_auth'           => ['post',     'users/2fa/verify',                               'UserController@verifyUserSecondFactorAuth'                         ],
         'user_resend_otp_2fa'                      => ['post',     'users/2fa/otp_resend',                           'UserController@resendOtp'                                          ],
@@ -1415,6 +1436,10 @@ final class Route
 
         // Banking Contact Routes
         'contact_get'                              => ['get',      'contacts/{id}',                                  'ContactController@get'                                             ],
+        'contact_get_internal'                     => ['get',      'contacts_internal/{id}',                         'ContactController@get'                                             ],
+        'contact_list_internal'                    => ['get',      'contacts_internal',                              'ContactController@list'                                             ],
+        'contact_create_internal'                  => ['post',      'contacts_internal',                             'ContactController@create'                                             ],
+        'contact_update_internal'                  => ['post',      'contacts_internal/{id}',                        'ContactController@update'                                             ],
         'contact_get_public'                       => ['get',      'contacts/{x_entity_id}/public',                  'ContactController@get'                                             ],
         'contact_list'                             => ['get',      'contacts',                                       'ContactController@list'                                            ],
         'contact_create'                           => ['post',     'contacts',                                       'ContactController@create'                                          ],
@@ -1436,6 +1461,7 @@ final class Route
         'admin_fetch_fund_account_validate'        => ['get',      'fund_accounts/validations/{merchantId}/{favId}', 'FundAccountValidationController@getFavByMerchantIdAndFavId'        ],
 
         'fund_account_get'                         => ['get',      'fund_accounts/{id}',                             'FundAccountController@get'                                         ],
+        'fund_account_get_internal'                => ['get',      'fund_accounts_internal/{id}',                    'FundAccountController@get'                                         ],
         'fund_account_list'                        => ['get',      'fund_accounts',                                  'FundAccountController@list'                                        ],
         'fund_account_create'                      => ['post',     'fund_accounts',                                  'FundAccountController@create'                                      ],
         'fund_account_create_public'               => ['post',     'fund_accounts/public',                           'FundAccountController@create'                                      ],
@@ -2021,6 +2047,16 @@ final class Route
     // If a route needs access from the Dashboard
     // Put it in the Admin Array instead
     public static $internal = [
+        'vendor_payment_send_failure_email',
+        'contact_get_internal',
+        'contact_list_internal',
+        'contact_update_internal',
+        'contact_create_internal',
+        'fund_account_get_internal',
+        'vendor_payment_verify_otp',
+        'payout_fetch_by_id_internal',
+        'payout_create_internal',
+        'user_fetch_internal',
         'los_d2c_bureau_report_fetch',
         'los_d2c_bureau_details_create',
         'los_d2c_bureau_details_otp_submit',
@@ -2558,6 +2594,22 @@ final class Route
         'fetch_payment_config',
         'create_payment_config',
         'update_payment_config',
+
+        // Vendor Payment Routes
+        'vendor_payment_summary',
+        'vendor_payment_get_tds_categories',
+        'vendor_payment_invoice_upload',
+        'vendor_payment_invoice_get_signed_url',
+        'vendor_payment_contact_list',
+        'vendor_payment_contact_get',
+        'vendor_payment_contact_create',
+        'vendor_payment_contact_update',
+        'vendor_payment_list',
+        'vendor_payment_get_by_id',
+        'vendor_payment_create',
+        'vendor_payment_edit',
+        'vendor_payment_cancel',
+        'vendor_payment_execute',
 
         // Virtual VPA Prefix
         'virtual_vpa_prefix_validate',
@@ -3860,6 +3912,21 @@ final class Route
         'payout_links_merchant_settings_get'           => Permission::DASHBOARD_PAYOUT_LINKS,
         'payout_links_merchant_settings_post'          => Permission::DASHBOARD_PAYOUT_LINKS,
         'payout_links_resend_notification'             => Permission::RESEND_PAYOUT_LINKS,
+        'vendor_payment_contact_list'                  => Permission::VIEW_CONTACT,
+        'vendor_payment_invoice_upload'                => Permission::CREATE_VENDOR_PAYMENTS,
+        'vendor_payment_invoice_get_signed_url'        => Permission::VIEW_VENDOR_PAYMENTS,
+        'vendor_payment_contact_get'                   => Permission::VIEW_CONTACT,
+        'vendor_payment_contact_create'                => Permission::CREATE_CONTACT,
+        'vendor_payment_contact_update'                => Permission::UPDATE_CONTACT,
+        'vendor_payment_create'                        => Permission::CREATE_VENDOR_PAYMENTS,
+        'vendor_payment_list'                          => Permission::VIEW_VENDOR_PAYMENTS,
+        'vendor_payment_get_by_id'                     => Permission::VIEW_VENDOR_PAYMENTS,
+        'vendor_payment_verify_otp'                    => Permission::CREATE_VENDOR_PAYMENTS,
+        'vendor_payment_execute'                       => Permission::CREATE_PAYOUT,
+        'vendor_payment_get_tds_categories'            => Permission::VIEW_VENDOR_PAYMENTS,
+        'vendor_payment_summary'                       => Permission::VIEW_VENDOR_PAYMENTS,
+        'vendor_payment_edit'                          => Permission::EDIT_VENDOR_PAYMENTS,
+        'vendor_payment_cancel'                        => Permission::CANCEL_VENDOR_PAYMENTS,
         'merchant_edit_config_logo'                    => Permission::MERCHANT_CONFIG_LOGO,
         'contact_get'                                  => Permission::VIEW_CONTACT,
         'contact_list'                                 => Permission::VIEW_CONTACT,
@@ -4076,6 +4143,20 @@ final class Route
      * Nothing here should be in private or admin auth
      */
     public static $internalApps = [
+        'vendor_payments' => [
+            'contact_get_internal',
+            'contact_list_internal',
+            'contact_update_internal',
+            'contact_create_internal',
+            'fund_account_get_internal',
+            'payout_fetch_by_id_internal',
+            'payout_create_internal',
+            'user_fetch_internal',
+            'vendor_payment_verify_otp',
+            'vendor_payment_send_failure_email',
+            'internal_merchant_fetch'
+        ],
+
         'dashboard' => [
             '*'
         ],
@@ -4547,6 +4628,20 @@ final class Route
         'enable_es_scheduled'                  => [Feature::ES_ON_DEMAND],
         'create_virtual_account_from_order'    => [Feature::OFFLINE_PAYMENTS],
         'payment_status_count'                 => [Feature::PAYMENT_STATUS_AGGREGATE],
+        'vendor_payment_get_tds_categories'    => [Feature::RX_VENDOR_PAYMENTS],
+        'vendor_payment_summary'               => [Feature::RX_VENDOR_PAYMENTS],
+        'vendor_payment_invoice_upload'        => [Feature::RX_VENDOR_PAYMENTS],
+        'vendor_payment_invoice_get_signed_url'=> [Feature::RX_VENDOR_PAYMENTS],
+        'vendor_payment_contact_list'          => [Feature::RX_VENDOR_PAYMENTS],
+        'vendor_payment_contact_get'           => [Feature::RX_VENDOR_PAYMENTS],
+        'vendor_payment_contact_create'        => [Feature::RX_VENDOR_PAYMENTS],
+        'vendor_payment_contact_update'        => [Feature::RX_VENDOR_PAYMENTS],
+        'vendor_payment_list'                  => [Feature::RX_VENDOR_PAYMENTS],
+        'vendor_payment_get_by_id'             => [Feature::RX_VENDOR_PAYMENTS],
+        'vendor_payment_create'                => [Feature::RX_VENDOR_PAYMENTS],
+        'vendor_payment_edit'                  => [Feature::RX_VENDOR_PAYMENTS],
+        'vendor_payment_cancel'                => [Feature::RX_VENDOR_PAYMENTS],
+        'vendor_payment_execute'               => [Feature::RX_VENDOR_PAYMENTS],
     ];
 
     /*
@@ -4782,6 +4877,21 @@ final class Route
         'payout_links_status_cors',
         'payout_update_pull_payout_status',
         'payout_links_customer_hosted_page',
+
+        'vendor_payment_contact_list',
+        'vendor_payment_invoice_upload',
+        'vendor_payment_contact_get',
+        'vendor_payment_contact_create',
+        'vendor_payment_contact_update',
+        'vendor_payment_create',
+        'vendor_payment_list',
+        'vendor_payment_get_by_id',
+        'vendor_payment_verify_otp',
+        'vendor_payment_execute',
+        'vendor_payment_summary',
+        'vendor_payment_get_tds_categories',
+        'vendor_payment_edit',
+        'vendor_payment_cancel',
 
         'payout_links_added_fund_accounts',
         'payout_links_added_fund_accounts_cors',

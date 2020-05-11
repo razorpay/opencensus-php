@@ -4,8 +4,11 @@ namespace RZP\Models\Payout;
 
 use App;
 use RZP\Trace\TraceCode;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Jobs\PayoutSourceUpdaterJob;
+use RZP\Models\Payout\Entity as PayoutEntity;
 use RZP\Models\PayoutLink\Core as PayoutLinkCore;
+use RZP\Models\PayoutLink\Entity as PayoutLinkEntity;
 
 /**
  * Class SourceUpdater
@@ -27,17 +30,10 @@ class SourceUpdater
     const DELAY = 5;
 
     public static function dispatchToQueue(string $mode,
-                                    Entity $payout,
-                                    string $previousStatus = null,
-                                    string $expectedCurrentStatus = null)
+                                           PayoutEntity $payout,
+                                           string $previousStatus = null,
+                                           string $expectedCurrentStatus = null)
     {
-        $payoutLink = $payout->payoutLink;
-
-        if ($payoutLink === null)
-        {
-            return;
-        }
-
         $trace = App::getFacadeRoot()['trace'];
 
         $trace->info(TraceCode::PAYOUT_SOURCE_UPDATER_QUEUE_PUSH,
@@ -72,12 +68,54 @@ class SourceUpdater
                 'previous_payout_status' => $previousPayoutStatus
             ]);
 
-        $payoutLink = $payout->payoutLink;
-
-        if (($payoutLink !== null) and
-            ($payout->getStatus() !== $previousPayoutStatus))
+        if ($payout->getStatus() !== $previousPayoutStatus)
         {
-            (new PayoutLinkCore())->payoutUpdateListener($payoutLink, $payout);
+            self::updatePayoutLink($payout);
+
+            self::updateVendorPayment($payout);
+        }
+    }
+
+    protected static function updatePayoutLink(PayoutEntity $payout)
+    {
+        try
+        {
+            if (($payout->payoutLink !== null))
+            {
+                (new PayoutLinkCore())->payoutUpdateListener($payout->payoutLink, $payout);
+            }
+        }
+        catch (\Exception $e)
+        {
+            $trace = App::getFacadeRoot()['trace'];
+
+            $trace->traceException($e,
+                                   Trace::ERROR,
+                                   TraceCode::PAYOUT_LINK_PAYOUT_UPDATER_ERROR,
+                                   [
+                                       'payout_id' => $payout->getPublicId(),
+                                   ]);
+        }
+    }
+
+    protected static function updateVendorPayment(PayoutEntity $payout)
+    {
+        try
+        {
+            $vendorPaymentService = App::getFacadeRoot()['vendor-payment'];
+
+            $vendorPaymentService->pushPayoutStatusUpdate($payout);
+        }
+        catch (\Exception $e)
+        {
+            $trace = App::getFacadeRoot()['trace'];
+
+            $trace->traceException($e,
+                                   Trace::ERROR,
+                                   TraceCode::VENDOR_PAYMENT_PAYOUT_UPDATER_ERROR,
+                                   [
+                                       'payout_id' => $payout->getPublicId(),
+                                   ]);
         }
     }
 }

@@ -119,6 +119,11 @@ class ApiServiceProvider extends BaseServiceProvider
             return new AwsInstance($app);
         });
 
+        $this->app->singleton('vendor-payment', function($app)
+        {
+            return new VendorPayment($app);
+        });
+
         $this->app->singleton('gateway', function($app)
         {
             return new GatewayManager($app);

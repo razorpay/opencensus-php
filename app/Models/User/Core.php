@@ -1057,6 +1057,7 @@ class Core extends Base\Core
      * @param Merchant\Entity $merchant
      * @param Entity $user
      * @param bool $mock
+     * @return array
      */
     public function verifyOtp(array $input, Merchant\Entity $merchant, Entity $user, bool $mock = false)
     {
@@ -1066,7 +1067,7 @@ class Core extends Base\Core
 
         $payload = array_only($payload, ['context', 'receiver', 'source']) + array_only($input, 'otp');
 
-        $this->app->raven->verifyOtp($payload, $mock);
+        return $this->app->raven->verifyOtp($payload, $mock);
     }
 
     /**
