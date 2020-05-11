@@ -556,7 +556,8 @@ export default class ActivationWizard extends React.Component {
     Object.keys(currentDirty).forEach(name => {
       if (
         currentDirty.hasOwnProperty(name) &&
-        FORM_TABS_NAMES[currentActive].indexOf(name) !== -1
+        FORM_TABS_NAMES[currentActive].indexOf(name) !== -1 &&
+        currentDirty[name] !== 'fakepath'
       ) {
         // Saving only the fields corresponding to currentActive tab.
         const fieldVal = currentDirty[name];
