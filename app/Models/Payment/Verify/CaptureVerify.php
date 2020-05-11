@@ -75,12 +75,17 @@ class CaptureVerify extends Verify
             {
                 $result = Result::TIMEOUT;
 
+                $timeoutThreshold = $this->getTimeoutThresholdForBlock($payment);
+
                 $this->checkForPreviousRequestErrorAndBlockGatewayIfApplicable($payment,
-                    self::GATEWAY_TIMEOUT_THRESHOLD,
+                    $timeoutThreshold,
                     self::GATEWAY_TIMEOUT_CACHE_KEY_PREFIX);
 
                 $this->trace->info(TraceCode::GATEWAY_REQUEST_TIMEOUT,
-                                   ['payment_id' => $payment->getId()]);
+                                   [
+                                       'payment_id' => $payment->getId(),
+                                        'gateway'    => $payment->getGateway()
+                                   ]);
             }
             else
             {
@@ -91,7 +96,10 @@ class CaptureVerify extends Verify
                     self::GATEWAY_REQUEST_ERROR_CACHE_KEY_PREFIX);
 
                 $this->trace->info(TraceCode::GATEWAY_REQUEST_ERROR,
-                                   ['payment_id' => $payment->getId()]);
+                                   [
+                                       'payment_id' => $payment->getId(),
+                                        'gateway'    => $payment->getGateway()
+                                   ]);
             }
 
             $this->updateVerifyBucket($payment, $filter, self::NEXT);

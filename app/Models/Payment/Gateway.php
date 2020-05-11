@@ -1324,6 +1324,13 @@ class Gateway
         self::ISG
     ];
 
+    // This is to configure the threshold used to block gateways if we get timeout errors in verify.
+    public static $verifyBlockThresholdGateways = [
+        self::UPI_AXIS       => 50,
+        self::UPI_ICICI      => 50,
+        self::UPI_MINDGATE   => 50,
+    ];
+
     /**
      * List of gateways that support recurring payments
      *
