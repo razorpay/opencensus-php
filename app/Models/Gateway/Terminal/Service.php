@@ -7,7 +7,7 @@ use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Mode;
-use RZP\Gateway\Base\Terminal;
+use RZP\Models\Terminal;
 use RZP\Constants\Environment;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Error\ErrorCode;
@@ -229,7 +229,8 @@ class Service extends Base\Service
             if (($terminal->getGateway() === $gateway) and
                 ($terminal->supportsCurrency($currency) === true) and
                 ($terminal->isDirectForMerchant() === true) and
-                ($terminal->getCategory() === $category))
+                ($terminal->getCategory() === $category) and
+                ($terminal->getStatus() === Terminal\Status::ACTIVATED))
             {
                 return true;
             }

@@ -164,7 +164,10 @@ class Selector extends Base\Core
 
         $allTerminals = array_filter($allTerminals, function ($terminal)
         {
-            return $terminal->isEnabled() === true;
+            $status = $terminal->getStatus();
+
+            return (($terminal->isEnabled() === true) and
+                    ($status === Status::ACTIVATED));
         });
 
         $verbose = $this->isVerboseLogEnabled();

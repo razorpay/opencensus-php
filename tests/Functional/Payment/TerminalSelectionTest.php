@@ -10,6 +10,7 @@ use RZP\Models\Payment;
 use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
+use RZP\Models\Terminal;
 use RZP\Services\RazorXClient;
 use RZP\Error\PublicErrorCode;
 use RZP\Gateway\Hitachi\Gateway;
@@ -1301,6 +1302,8 @@ class TerminalSelectionTest extends TestCase
 
         $selectedTerminalIds = array_pluck($selectedTerminals, 'id');
         $this->assertArraySelectiveEquals($expectedTerminalIds, $selectedTerminalIds);
+
+        return $selectedTerminalIds;
     }
 
     public function testHitachiTerminalCreationOnRun()
@@ -1587,6 +1590,196 @@ class TerminalSelectionTest extends TestCase
         $this->assertEquals(null, $terminal);
     }
 
+    public function testHitachiTerminalIsDisabledOnMerchantMccEdit()
+    {
+        $merchantId = $this->setUpMerchantForHitachiTerminalDisableTest();
+
+        $oldMccTerminal = $this->fixtures->create('terminal', $this->getTerminalCreateArrayForHitachiTerminalDisableTest([
+            'category'    => '1234',
+            'merchant_id' => $merchantId,
+        ]));
+
+        $this->assertTrue($oldMccTerminal->isEnabled());
+
+        $this->editMerchant($merchantId, ['category' => "4321"]);
+
+        $oldMccTerminal = $this->getEntityById('terminal', $oldMccTerminal['id'], true);
+
+        $this->assertFalse($oldMccTerminal['enabled']);
+
+        $this->assertEquals(Terminal\Status::DEACTIVATED, $oldMccTerminal[Terminal\Entity::STATUS]);
+
+        // start onboarding flow
+
+        $input = $this->getInputForHitachiTerminalTestOnMccUpdate($merchantId);
+
+        $options = new Options;
+        $selector = new Selector($input, $options);
+        $selectedTerminals = $selector->select();
+        $this->assertEquals(1, sizeof($selectedTerminals));
+
+        $terminal = $selectedTerminals[0];
+
+        $this->assertEquals('hitachi', $terminal->getGateway());
+        $this->assertEquals('38RR00000010001', $terminal->getGatewayMerchantId());
+        $this->assertEquals('38R10001', $terminal->getGatewayTerminalId());
+        $this->assertEquals('4321', $terminal->getCategory());
+    }
+
+    public function testHitachiTerminalNotDisabledIfMccNotEdited()
+    {
+        $merchantId = $this->setUpMerchantForHitachiTerminalDisableTest();
+
+        $terminal = $this->fixtures->create('terminal', $this->getTerminalCreateArrayForHitachiTerminalDisableTest([
+            'category'    => '1234',
+            'merchant_id' => $merchantId,
+        ]));
+
+        $this->assertTrue($terminal->isEnabled());
+
+        $this->editMerchant($merchantId, ['name' => "new name"]);
+
+        $terminal = $this->getEntityById('terminal', $terminal['id'], true);
+
+        $this->assertTrue($terminal['enabled']);
+
+        $this->assertEquals(Terminal\Status::ACTIVATED, $terminal[Terminal\Entity::STATUS]);
+    }
+
+    public function testHitachiTerminalMccEditBackAndForth()
+    {
+        $merchantId = $this->setUpMerchantForHitachiTerminalDisableTest();
+
+        // merchant category is 1234 initially
+
+        $terminalA = $this->fixtures->create('terminal', $this->getTerminalCreateArrayForHitachiTerminalDisableTest([
+            'category'    => '4321',
+            'merchant_id' => $merchantId,
+            'enabled'     => false,
+            'status'      => Terminal\Status::DEACTIVATED,
+        ]));
+
+        $terminalB = $this->fixtures->create('terminal', $this->getTerminalCreateArrayForHitachiTerminalDisableTest([
+            'category'    => '1234',
+            'merchant_id' => $merchantId,
+            'enabled'     => true,
+        ]));
+
+        $this->editMerchant($merchantId, ['category' => '4321']);
+
+        $this->assertFalse($this->getEntityById('terminal', $terminalA['id'], true)['enabled']);
+
+        $this->assertFalse($this->getEntityById('terminal', $terminalB['id'], true)['enabled']);
+
+        // start onboarding flow. assert new terminal doesnt get created.
+
+        $input = $this->getInputForHitachiTerminalTestOnMccUpdate($merchantId);
+
+        $options = new Options;
+        $selector = new Selector($input, $options);
+        $selectedTerminals = $selector->select();
+        $this->assertEquals(1, sizeof($selectedTerminals));
+
+        $terminal = $selectedTerminals[0];
+
+        $this->assertEquals('hitachi', $terminal->getGateway());
+        $this->assertEquals('38RR00000010001', $terminal->getGatewayMerchantId());
+        $this->assertEquals('38R10001', $terminal->getGatewayTerminalId());
+        $this->assertEquals('4321', $terminal->getCategory());
+        $this->assertNotEquals($terminalA['id'], $terminal->getId());
+        $this->assertNotEquals($terminalB['id'], $terminal->getId());
+    }
+
+    public function testHitachiTerminalSelectionWhenDisabledManually()
+    {
+        $merchantId = $this->setUpMerchantForHitachiTerminalDisableTest();
+
+        $terminal = $this->fixtures->create('terminal', $this->getTerminalCreateArrayForHitachiTerminalDisableTest([
+            'category'    => '1234',
+            'merchant_id' => $merchantId,
+            'enabled'     => true,
+        ]));
+
+        $this->ba->adminAuth();
+
+        $request = [
+          'url'      =>  '/terminals/' . $terminal['id'] . '/toggle',
+          'method'   => 'PUT',
+          'content'  => [
+              'toggle' => false,
+          ],
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $input = $this->getInputForHitachiTerminalTestOnMccUpdate($merchantId);
+
+        $options = new Options;
+        $selector = new Selector($input, $options);
+        $selectedTerminals = $selector->select();
+        $this->assertEquals(1, sizeof($selectedTerminals));
+
+        $terminal = $selectedTerminals[0];
+
+        $this->assertNull($terminal);
+    }
+
+    public function testHitachiTerminalMccMismatchIsNotDisabledOnMerchantMccEdit()
+    {
+        $merchantId = $this->setUpMerchantForHitachiTerminalDisableTest();
+
+        $oldMccTerminal = $this->fixtures->create('terminal', $this->getTerminalCreateArrayForHitachiTerminalDisableTest([
+            'category'    => '1234',
+            'merchant_id' => $merchantId
+        ]));
+
+        $unrelatedMccTerminal = $this->fixtures->create('terminal', $this->getTerminalCreateArrayForHitachiTerminalDisableTest([
+            'category'    => '9999',
+            'merchant_id' => $merchantId
+        ]));
+
+        $this->assertTrue($oldMccTerminal->isEnabled());
+
+        $this->assertTrue($unrelatedMccTerminal->isEnabled());
+
+        $this->editMerchant($merchantId, ['category' => "4321"]);
+
+        $this->assertFalse($this->getEntityById('terminal', $oldMccTerminal->getId(), true)['enabled']);
+
+        $this->assertTrue($this->getEntityById('terminal', $unrelatedMccTerminal->getId(), true)['enabled']);
+    }
+
+
+    public function testNonHitachiTerminalNotDisabledOnMccEdit()
+    {
+        $merchantId = $this->setUpMerchantForHitachiTerminalDisableTest();
+
+        $hitachiTerminal = $this->fixtures->create('terminal', $this->getTerminalCreateArrayForHitachiTerminalDisableTest([
+            'category'    => '1234',
+            'merchant_id' => $merchantId
+        ]));
+
+        $nonHitachiTerminal = $this->fixtures->create('terminal',  $defaults = [
+            "category"           => "1234",
+            "gateway"            => "hdfc",
+            "gateway_merchant_id"=> "10",
+            "gateway_terminal_id"=> "8",
+            "gateway_acquirer"   =>"ratn",
+            "mode"               => "3",
+            "enabled"            => true,
+        ]);
+
+        $this->assertTrue($this->getEntityById('terminal', $hitachiTerminal->getId(), true)['enabled']);
+
+        $this->assertTrue($this->getEntityById('terminal', $nonHitachiTerminal->getId(), true)['enabled']);
+
+        $this->editMerchant($merchantId, ['category' => '4321']);
+
+        $this->assertFalse($this->getEntityById('terminal', $hitachiTerminal->getId(), true)['enabled']);
+
+        $this->assertTrue($this->getEntityById('terminal', $nonHitachiTerminal->getId(), true)['enabled']);
+
+    }
     //should not create new terminal if already hitachi terminal exists
     public function testDuplicateHitachiTerminalCreationOnRun()
     {
@@ -1964,6 +2157,23 @@ class TerminalSelectionTest extends TestCase
         }, RuntimeException::class, 'Terminal should not be null');
     }
 
+    public function testTerminalSelectionWithNonActivatedTerminal()
+    {
+        $this->app['rzp.mode'] = Mode::TEST;
+
+        $selectedTerminals = $this->runTestCase([]);
+
+        $this->assertEquals(['1n25f6uN5S1Z5a'], $selectedTerminals);
+
+        $this->fixtures->edit('terminal', '1n25f6uN5S1Z5a', [
+            'status' => 'deactivated',
+        ]);
+
+        $selectedTerminals = $this->runTestCase([]);
+
+        $this->assertEquals([null], $selectedTerminals);
+    }
+
     protected function setUpPartnerAndGetSubMerchantId()
     {
         $factoryPath = base_path() . '/vendor/razorpay/oauth/database/factories';
@@ -2215,8 +2425,102 @@ class TerminalSelectionTest extends TestCase
         {
             $this->doAuthPayment($payment);
         },
-        BadRequestValidationFailureException::class,
-        'Intent flow is not supported for upi mandates.');
+            BadRequestValidationFailureException::class,
+            'Intent flow is not supported for upi mandates.');
+    }
+
+    protected function setUpMerchantForHitachiTerminalDisableTest()
+    {
+        $this->app['rzp.mode'] = Mode::TEST;
+
+        $merchantAttributes = [
+            'org_id'          => Org::RZP_ORG,
+            'activated'       => 1,
+            'live'            => 1,
+            'pricing_plan_id' => '1hDYlICobzOCYt',
+            'category'        => "1234",
+        ];
+
+        $merchant = $this->fixtures->on(Mode::LIVE)->create('merchant', $merchantAttributes);
+
+        $merchantDetailArray = [
+            'contact_name'                  => 'rzp',
+            'contact_email'                 => 'test@rzp.com',
+            'merchant_id'                   => $merchant['id'],
+            'business_operation_address'    => 'Koramangala',
+            'business_operation_state'      => 'KARNATAKA',
+            'business_operation_pin'        =>  560047,
+            'business_dba'                  => 'test',
+            'business_name'                 => 'rzp_test',
+            'business_operation_city'       => 'Bangalore',
+        ];
+
+        $this->fixtures->create('merchant_detail', $merchantDetailArray);
+
+        return $merchant['id'];
+    }
+
+    protected function editMerchant(string $merchantId, array $attributes)
+    {
+        $this->ba->adminAuth();
+
+        $request = [
+            'method'    => 'put',
+            'content'   => $attributes,
+            'url'       => "/merchants/" . $merchantId,
+        ];
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
+    protected function getInputForHitachiTerminalTestOnMccUpdate($merchantId)
+    {
+        $cardArray = [
+            'number'        => '4012001036275556',
+            'expiry_month'  => '1',
+            'expiry_year'   => '2035',
+            'cvv'           => '123',
+            'network'       => 'Visa',
+            'issuer'        => 'HDFC',
+            'name'          => 'Test',
+            'international' => false,
+        ];
+
+        $card = (new Card\Entity)->fill($cardArray);
+
+        $paymentArray = $this->getDefaultPaymentArray();
+        unset($paymentArray['card']);
+        $paymentArray['status'] = 'created';
+        $paymentArray['method'] = 'card';
+
+
+        $payment = (new Payment\Entity)->fill($paymentArray);
+        $payment->card = $card;
+
+        $merchant = Merchant\Entity::find($merchantId);
+
+        $payment->merchant()->associate($merchant);
+
+        return [
+            'payment'    => $payment,
+            'merchant'   => $payment->merchant,
+            ];
+
+    }
+
+    protected function getTerminalCreateArrayForHitachiTerminalDisableTest(array $attributes = [])
+    {
+        $defaults = [
+            "category"           => "1234",
+            "gateway"            => "hitachi",
+            "gateway_merchant_id"=> "10",
+            "gateway_terminal_id"=> "8",
+            "gateway_acquirer"   =>"ratn",
+            "mode"               => "3",
+            "enabled"            => true,
+        ];
+
+        return array_merge($defaults, $attributes);
     }
 
 }

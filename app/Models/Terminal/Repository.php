@@ -246,11 +246,12 @@ class Repository extends Base\Repository
         return $query->get();
     }
 
-    public function getNonFailedByParams(array $params)
+    public function getNonFailedNonDeactivatedByParams(array $params)
     {
         $query = $this->buildFetchByParamsQuery($params);
 
         return $query->where(Entity::STATUS, '!=', Status::FAILED)
+                     ->where(Entity::STATUS, '!=', Status::DEACTIVATED)
                      ->get();
     }
 

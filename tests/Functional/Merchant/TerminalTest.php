@@ -86,6 +86,47 @@ class TerminalTest extends TestCase
         $this->startTest();
     }
 
+    public function testAssignTerminalWhenDuplicateDeactivatedTerminalExist()
+    {
+        $merchant = $this->fixtures->create('merchant');
+
+        $url = '/merchants/'.$merchant->getKey().'/terminals';
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $terminalId = $this->startTest()['id'];
+
+        $terminalEntity = (new Terminal\Repository)->findOrFail($terminalId);
+
+        $terminalEntity->setStatus(Terminal\Status::DEACTIVATED);
+
+        $terminalEntity->saveOrFail();
+
+        $this->startTest();
+    }
+
+    public function testAssignTerminalWhenDuplicateDisabledTerminalExist()
+    {
+        $merchant = $this->fixtures->create('merchant');
+
+        $url = '/merchants/'.$merchant->getKey().'/terminals';
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $terminalId = $this->startTest()['id'];
+
+        $terminalEntity = (new Terminal\Repository)->findOrFail($terminalId);
+
+        (new Terminal\Core)->toggle($terminalEntity, false);
+
+
+        $request = $this->testData[__FUNCTION__]['request'];
+
+        $this->expectException(Exception\BadRequestException::class);
+
+        $this->expectExceptionMessage("A terminal for this gateway for this merchant already exists");
+
+        $this->makeRequestAndGetContent($request);
+    }
+
     public function testAssignBankAccountTerminal()
     {
         $merchant = $this->fixtures->create('merchant', ['id' => '100001Razorpay']);

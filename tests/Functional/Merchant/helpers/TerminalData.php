@@ -146,6 +146,51 @@ return [
         ]
     ],
 
+    'testAssignTerminalWhenDuplicateDeactivatedTerminalExist' => [
+        'request' => [
+            'content' => [
+                'gateway'                   => 'hitachi',
+                'gateway_acquirer'          => 'ratn',
+                'gateway_merchant_id'       => '12345',
+                'gateway_terminal_id'       => '12345678',
+                'category'                  => '4567',
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'gateway_acquirer'    => 'ratn',
+                'gateway_merchant_id' => '12345',
+                'gateway_terminal_id' => '12345678',
+                'category'            => '4567',
+                'enabled'             => true
+            ]
+        ]
+    ],
+
+    'testAssignTerminalWhenDuplicateDisabledTerminalExist' => [
+        'request' => [
+            'content' => [
+                'gateway'                   => 'hitachi',
+                'gateway_acquirer'          => 'ratn',
+                'gateway_merchant_id'       => '12345',
+                'gateway_terminal_id'       => '12345678',
+                'category'                  => '4567',
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'gateway_acquirer'    => 'ratn',
+                'gateway_merchant_id' => '12345',
+                'gateway_terminal_id' => '12345678',
+                'category'            => '4567',
+                'enabled'             => true
+            ]
+        ]
+    ],
+
+
     'testAssignHitachiBharatQrTerminal' => [
         'request' => [
             'content' => [

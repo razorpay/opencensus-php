@@ -288,7 +288,7 @@ class Core extends Base\Core
     {
         $params = [Entity::MERCHANT_ID => $terminal->getMerchantId()];
 
-        $existingTerminals = $this->repo->terminal->getNonFailedByParams($params);
+        $existingTerminals = $this->repo->terminal->getNonFailedNonDeactivatedByParams($params);
 
         $gateway = $terminal->getGateway();
 
@@ -470,6 +470,20 @@ class Core extends Base\Core
         return $this->getBanksForTerminal($terminal);
     }
 
+    public function processMerchantMccUpdate(Merchant\Entity $merchant, array $input)
+    {
+        $oldCategory = $merchant->getOriginalAttributesAgainstDirty()[Merchant\Entity::CATEGORY] ?? '';
+
+        $newCategory = $input[Merchant\Entity::CATEGORY] ?? '';
+
+        if ($oldCategory === $newCategory)
+        {
+            return;
+        }
+
+        $this->processMerchantMccUpdateForHitachiTerminals($merchant, $oldCategory);
+    }
+
     protected function validateExistingTerminalGatewayMerchantId(Entity $terminal, $gateway)
     {
         // Check no record with same 'gateway_merchant_id' exists
@@ -513,7 +527,7 @@ class Core extends Base\Core
 
     protected function checkIfExists($params, Entity $terminal, string $field = null)
     {
-        $existingTerminals = $this->repo->terminal->getNonFailedByParams($params);
+        $existingTerminals = $this->repo->terminal->getNonFailedNonDeactivatedByParams($params);
 
         // This check if this terminal is same as what
         // we are trying to edit
@@ -611,5 +625,38 @@ class Core extends Base\Core
 
         // If merchant's config is not set, use shared merchant's config
         return $config[Merchant\Account::SHARED_ACCOUNT];
+    }
+
+    protected function processMerchantMccUpdateForHitachiTerminals($merchant, $oldCategory)
+    {
+        $fetchParams = [
+            Entity::GATEWAY  => Payment\Gateway::HITACHI,
+            Entity::CATEGORY => $oldCategory,
+            Entity::ENABLED  => '1',
+            Entity::STATUS   => Status::ACTIVATED,
+        ];
+
+        if (strlen($oldCategory) === 4)
+        {
+            $hitachiDirectTerminalsToBeDisabled = $this->repo->terminal->fetch($fetchParams, $merchant->getId());
+
+            $this->repo->transaction(function() use (& $hitachiDirectTerminalsToBeDisabled) {
+                foreach ($hitachiDirectTerminalsToBeDisabled as $directTerminal)
+                {
+                    $directTerminal->setStatus(Status::DEACTIVATED);
+
+                    $directTerminal->setEnabled(false);
+
+                    $this->app['trace']->info(TraceCode::HITACHI_TERMINAL_EDIT_ON_MCC_EDIT, [
+                        Entity::ID         => $directTerminal->getId(),
+                        Entity::STATUS     => Status::DEACTIVATED,
+                        Entity::ENABLED    => false,
+                    ]);
+
+                    $this->repo->terminal->saveOrFail($directTerminal);
+                }
+            });
+
+        }
     }
 }

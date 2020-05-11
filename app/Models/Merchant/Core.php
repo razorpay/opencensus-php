@@ -16,6 +16,7 @@ use RZP\Models\User;
 use RZP\Jobs\EsSync;
 use RZP\Models\Batch;
 use RZP\Models\Partner;
+use RZP\Models\Terminal;
 use RZP\Models\Pricing;
 use RZP\Constants\Mode;
 use RZP\Models\Feature;
@@ -517,8 +518,14 @@ class Core extends Base\Core
 
         (new Methods\Core)->validateInternationalPricingForMerchant($merchant, $plan);
 
+
         $this->repo->transactionOnLiveAndTest(function() use ($merchant, $input)
         {
+            if (isset($input[Merchant\Entity::CATEGORY]) === true)
+            {
+                (new Terminal\Core)->processMerchantMccUpdate($merchant, $input);
+            }
+
             $merchantDetailCore = new Detail\Core;
             // This is used to sync fields transaction_report_email and website in merchant and merchantDetail
             $merchantDetailCore->syncToMerchantDetailFields($merchant, $input);
