@@ -167,6 +167,6 @@ class Constants
         "alumni@srmist.edu.in",
         "jayaganp@srmist.edu.in",
         "satyen.doshi@hdfcsec.com",
-        "test@razorpay.com"
+        "qa+dashboard@razorpay.com"
     ];
 }
