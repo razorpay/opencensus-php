@@ -308,6 +308,8 @@ trait Migrate
             'shouldSync' => false,
         ];
 
+        $terminal->setSyncStatus(SyncStatus::SYNC_SUCCESS);
+
         $this->repo->terminal->saveOrFail($terminal, $options);
     }
 
