@@ -81,11 +81,13 @@ class CaptureVerify extends Verify
                     $timeoutThreshold,
                     self::GATEWAY_TIMEOUT_CACHE_KEY_PREFIX);
 
-                $this->trace->info(TraceCode::GATEWAY_REQUEST_TIMEOUT,
-                                   [
-                                       'payment_id' => $payment->getId(),
-                                        'gateway'    => $payment->getGateway()
-                                   ]);
+                $this->trace->traceException($e,
+                                Trace::WARNING,
+                                TraceCode::GATEWAY_REQUEST_TIMEOUT,
+                                [
+                                    'payment_id' => $payment->getId(),
+                                    'gateway'    => $payment->getGateway()
+                                ]);
             }
             else
             {
@@ -95,11 +97,13 @@ class CaptureVerify extends Verify
                     self::GATEWAY_REQUEST_ERROR_THRESHOLD,
                     self::GATEWAY_REQUEST_ERROR_CACHE_KEY_PREFIX);
 
-                $this->trace->info(TraceCode::GATEWAY_REQUEST_ERROR,
-                                   [
-                                       'payment_id' => $payment->getId(),
-                                        'gateway'    => $payment->getGateway()
-                                   ]);
+                $this->trace->traceException($e,
+                                Trace::WARNING,
+                                TraceCode::GATEWAY_REQUEST_ERROR,
+                                [
+                                    'payment_id' => $payment->getId(),
+                                    'gateway'    => $payment->getGateway()
+                                ]);
             }
 
             $this->updateVerifyBucket($payment, $filter, self::NEXT);

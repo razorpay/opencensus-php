@@ -852,11 +852,13 @@ class Verify extends Base\Core
                     $timeoutThreshold,
                     self::GATEWAY_TIMEOUT_CACHE_KEY_PREFIX);
 
-                $this->trace->info(TraceCode::GATEWAY_REQUEST_TIMEOUT,
-                                   [
+                $this->trace->traceException($e,
+                                    Trace::WARNING,
+                                    TraceCode::GATEWAY_REQUEST_TIMEOUT,
+                                    [
                                        'payment_id' => $payment->getId(),
                                         'gateway'    => $payment->getGateway()
-                                   ]);
+                                    ]);
             }
             else
             {
@@ -866,11 +868,13 @@ class Verify extends Base\Core
                     self::GATEWAY_REQUEST_ERROR_THRESHOLD,
                     self::GATEWAY_REQUEST_ERROR_CACHE_KEY_PREFIX);
 
-                $this->trace->info(TraceCode::GATEWAY_REQUEST_ERROR,
-                                   [
+                $this->trace->traceException($e,
+                                    Trace::WARNING,
+                                    TraceCode::GATEWAY_REQUEST_ERROR,
+                                    [
                                        'payment_id' => $payment->getId(),
-                                        'gateway'    => $payment->getGateway()
-                                   ]);
+                                       'gateway'    => $payment->getGateway()
+                                    ]);
             }
 
             $this->updateVerifyBucket($payment, $filter, self::NEXT);
