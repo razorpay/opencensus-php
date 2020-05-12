@@ -3394,6 +3394,108 @@ class ReconciliationFileTest extends TestCase
         $this->assertEquals(1, $batch['failure_count']);
     }
 
+    /**
+     * Allowing recon for refunds which can be
+     * uniquely identified by it's paymentId and
+     * amount as we are not getting refund ID
+     * or any unique identifier for refund in the MIS file.
+     */
+    public function testAmexCombinedUniqueEntityRecon()
+    {
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_amex_terminal');
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $this->fixtures->merchant->enableMethod('10000000000000', 'amex');
+
+        $this->fixtures->merchant->enableCardNetworks('10000000000000', ['amex']);
+
+        $this->payment = $this->getDefaultPaymentArray();
+
+        $this->payment['card']['number'] = '341111111111111';
+
+        $this->payment['card']['cvv'] = '8888';
+
+        $this->fixtures->create(
+            'iin',
+            [
+                'iin' => 341111,
+                'network' => 'Amex',
+                'type' => 'credit',
+                'country' => null,
+            ]);
+
+        $payment = $this->getNewPaymentEntity(false, true);
+
+        $gatewayPayment = $this->getDbLastEntityToArray('amex');
+
+        $paymentData = $this->overrideAmexPayment($gatewayPayment);
+
+        $refund1 = $this->refundPayment($payment['id'], '10000');
+
+        $refund2 = $this->refundPayment($payment['id'], '20000');
+
+        $refund3 = $this->refundPayment($payment['id'], '20000');
+
+        $refundData1 = $this->overrideAmexRefund($gatewayPayment, $refund1['amount']);
+
+        $refundData2 = $this->overrideAmexRefund($gatewayPayment, $refund2['amount']);
+
+        $refundData3 = $this->overrideAmexRefund($gatewayPayment, $refund3['amount']);
+
+        // amex recon file contains 20 lines of extra data before the actual payment
+
+        // adding 20 rows with data before the actual row that has to be processed
+        for ($row_index = 1; $row_index < 20; $row_index++)
+        {
+            $entries[] = [];
+        }
+
+        $entries[] = array_keys($refundData1);
+
+        $entries[] = $paymentData;
+
+        $entries[] = $refundData1;
+
+        $entries[] = $refundData2;
+
+        $entries[] = $refundData3;
+
+        $file = $this->writeToExcelFile($entries, 'Submission_details10032018_023644' , 'files/settlement',
+                                        ['Sheet 1'], 'xls');
+
+        $this->runForFiles([$file], 'Amex');
+
+        $payment = $this->getEntityById('payment', PublicEntity::stripDefaultSign($payment['id']), true);
+        $refundEntity1 = $this->getEntityById('refund', PublicEntity::stripDefaultSign($refund1['id']), true);
+        $refundEntity2 = $this->getEntityById('refund', PublicEntity::stripDefaultSign($refund2['id']), true);
+        $refundEntity3 = $this->getEntityById('refund', PublicEntity::stripDefaultSign($refund3['id']), true);
+
+        $paymentTransaction  = $this->getEntityById('transaction', $payment['transaction_id'], true);
+        $updatedTransaction1 = $this->getEntityById('transaction', $refundEntity1['transaction_id'], true);
+        $updatedTransaction2 = $this->getEntityById('transaction', $refundEntity2['transaction_id'], true);
+        $updatedTransaction3 = $this->getEntityById('transaction', $refundEntity3['transaction_id'], true);
+
+        //
+        // One payment and one refund row get reconciled, other 2 refunds
+        // remain unreconciled, as we could not identify the refund uniquely.
+        //
+        $this->assertNotNull($paymentTransaction['reconciled_at']);
+        $this->assertNotNull($updatedTransaction1['reconciled_at']);
+
+        $this->assertNull($updatedTransaction2['reconciled_at']);
+        $this->assertNull($updatedTransaction3['reconciled_at']);
+
+        $batch = $this->getDbLastEntityToArray('batch');
+
+
+        $this->assertEquals(4, $batch['total_count']);
+        $this->assertEquals(2, $batch['success_count']);
+        $this->assertEquals(2, $batch['failure_count']);
+
+        $this->assertBatchStatus(Status::PARTIALLY_PROCESSED);
+    }
+
     public function testOnHoldToggle()
     {
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
@@ -3592,6 +3694,17 @@ class ReconciliationFileTest extends TestCase
         $facade['Rental agreement number'] = $gatewayPayment['vpc_ShopTransactionNo'];
 
         $facade['Merchant Account Number'] = 'razorpay amex';
+
+        return $facade;
+    }
+
+    private function overrideAmexRefund(array $gatewayPayment, $amount)
+    {
+        $facade = $this->overrideAmexPayment($gatewayPayment);
+
+        $facade['Type'] = 'Credit';
+
+        $facade['Charge amount'] = $amount/100;
 
         return $facade;
     }

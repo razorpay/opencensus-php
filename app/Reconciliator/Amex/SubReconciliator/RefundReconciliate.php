@@ -3,62 +3,47 @@
 namespace RZP\Reconciliator\Amex\SubReconciliator;
 
 use Carbon\Carbon;
-
-use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
 use RZP\Reconciliator\Base;
 use RZP\Models\Payment\Entity;
 
-class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
+class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
 {
-    const COLUMN_GATEWAY_PAYMENT_ID         = 'reference_number';
-    const COLUMN_AMOUNT                     = 'charge_amount';
+    const COLUMN_REFUND_AMOUNT              = 'charge_amount';
     const COLUMN_SETTLED_AT_DATE            = 'settlement_date';
-    const COLUMN_MERCHANT_ACCOUNT_NUMBER    = 'merchant_account_number';
     const COLUMN_CHARGE_REFERENCE_NUMBER    = 'charge_reference_number';
+    const COLUMN_GATEWAY_PAYMENT_ID         = 'reference_number';
 
-    /**
-     * In preprocessing step, we have replaced ref
-     * column to now contain actual payment ids.
-     *
-     * @param array $row
-     * @return mixed|null
-     */
-    protected function getPaymentId(array $row)
+    protected function getRefundId($row)
     {
-        return $row[self::COLUMN_GATEWAY_PAYMENT_ID] ?? null;
-    }
+        $refundId = null;
 
-    protected function validatePaymentAmountEqualsReconAmount(array $row)
-    {
-        if ($this->payment->getBaseAmount() !== $this->getReconPaymentAmount($row))
+        $paymentId = $row[self::COLUMN_GATEWAY_PAYMENT_ID];
+
+        $refundAmount = $this->getReconRefundAmount($row);
+
+        $refunds = $this->repo->refund->findForPaymentAndAmount($paymentId, $refundAmount);
+
+        if (count($refunds) === 1)
         {
-            $this->messenger->raiseReconAlert(
+            $refundId = $refunds[0]['id'];
+        }
+        else
+        {
+            $this->trace->info(
+                TraceCode::RECON_MISMATCH,
                 [
-                    'trace_code'      => TraceCode::RECON_INFO_ALERT,
-                    'info_code'       => Base\InfoCode::AMOUNT_MISMATCH,
-                    'payment_id'      => $this->payment->getId(),
-                    'expected_amount' => $this->payment->getBaseAmount(),
-                    'recon_amount'    => $this->getReconPaymentAmount($row),
-                    'currency'        => $this->payment->getCurrency(),
-                    'gateway'         => $this->gateway,
+                    'info_code'             => Base\InfoCode::RECON_UNIQUE_REFUND_NOT_FOUND,
+                    'payment_id'            => $paymentId,
+                    'refund_amount'         => $refundAmount,
+                    'refund_count'          => count($refunds),
+                    'gateway'               => $this->gateway,
+                    'batch_id'              => $this->batch->getId(),
                 ]);
-
-            return false;
         }
 
-        return true;
-    }
-
-    protected function getReconPaymentAmount(array $row)
-    {
-        return Base\SubReconciliator\Helper::getIntegerFormattedAmount($row[self::COLUMN_AMOUNT] ?? null);
-    }
-
-    protected function setAllowForceAuthorization(Payment\Entity $payment)
-    {
-        $this->allowForceAuthorization = true;
+        return $refundId;
     }
 
     /**
@@ -101,7 +86,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
                 [
                     'info_code'         => Base\InfoCode::INCORRECT_DATE_FORMAT,
                     'settled_at'        => $settledAt,
-                    'payment'           => $this->payment->getId(),
+                    'refund_id'         => $this->refund->getId(),
                     'gateway'           => $this->gateway,
                 ]);
         }

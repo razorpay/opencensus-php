@@ -198,6 +198,8 @@ class InfoCode
 
     const RECON_PROCESSED_BATCH_SUMMARY                 = 'RECON_PROCESSED_BATCH_SUMMARY';
 
+    const RECON_UNIQUE_REFUND_NOT_FOUND                 = 'RECON_UNIQUE_REFUND_NOT_FOUND';
+
     public static $fileBasedReconInfoCodes = [
         self::COLUMN_HEADER_MISMATCH,
         self::RECON_BLACKLISTED_COLUMNS_NOT_DEFINED,

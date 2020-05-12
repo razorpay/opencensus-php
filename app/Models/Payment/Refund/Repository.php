@@ -286,6 +286,13 @@ class Repository extends Base\Repository
                     ->with($relations)
                     ->firstOrFailPublic();
     }
+    public function findForPaymentAndAmount($paymentId, $amount)
+    {
+        return $this->newQuery()
+                    ->where(Refund\Entity::PAYMENT_ID, $paymentId)
+                    ->where(Refund\Entity::AMOUNT, $amount)
+                    ->get();
+    }
 
     public function fetchEntitiesForReport($merchantId, $from, $to, $count, $skip, $relations = [])
     {
