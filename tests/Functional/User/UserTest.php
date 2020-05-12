@@ -1415,6 +1415,46 @@ class UserTest extends TestCase
         $this->startTest();
     }
 
+    public function testVerifyEmailWithOtp()
+    {
+        $user = $this->fixtures->edit('user', UserFixture::MERCHANT_USER_ID,
+                                      [UserEntity::CONFIRM_TOKEN => 'testing123456789', UserEntity::EMAIL => 'abc@rzp.com']);
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+
+        $user = $this->getDbEntityById('user', UserFixture::MERCHANT_USER_ID);
+
+        $this->assertTrue($user->getConfirmedAttribute());
+    }
+
+    public function testVerifyEmailWithInvalidOtp()
+    {
+        $user = $this->fixtures->edit('user', UserFixture::MERCHANT_USER_ID,
+                                              [UserEntity::CONFIRM_TOKEN => 'testing123456789', UserEntity::EMAIL => 'abc@rzp.com']);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+
+        $this->assertTrue($user->getConfirmedAttribute()===false);
+    }
+
+    public function testVerifyEmailWithOtpAlreadyVerified()
+    {
+        $user = $this->fixtures->edit('user', UserFixture::MERCHANT_USER_ID,
+                                      [UserEntity::CONFIRM_TOKEN => NULL, UserEntity::EMAIL => 'abc@rzp.com']);
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+
+        $this->assertTrue($user->getConfirmedAttribute());
+    }
+
+
     public function testVerifyContactWithInvalidToken()
     {
         $this->markTestSkipped('Todo: Not possible with current implementation!');

@@ -778,6 +778,20 @@ class Service extends Base\Service
     }
 
     /**
+     * @param array $input
+     *
+     * @return array
+     */
+    public function verifyEmailWithOtp(array $input): array
+    {
+        $this->user->getValidator()->validateVerifyEmailWithOtpOperation($input);
+
+        $this->core()->verifyEmailWithOtp($input, $this->merchant, $this->user);
+
+        return $this->user->toArrayPublic();
+    }
+
+    /**
      * Change 2fa setting of user (enable/disable)
      *
      * @param array  $input

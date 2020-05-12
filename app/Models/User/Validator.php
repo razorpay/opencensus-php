@@ -419,6 +419,15 @@ class Validator extends Base\Validator
         $this->validateInput('verifyOtp', $input);
     }
 
+    public function validateVerifyEmailWithOtpOperation(array $input)
+    {
+        if ($this->entity->getConfirmedAttribute() === true)
+        {
+            throw new BadRequestValidationFailureException('User Email is already verified');
+        }
+        $this->validateInput('verifyOtp', $input);
+    }
+
     /**
      * @param  Merchant\Entity $merchant
      * @param  Entity          $user

@@ -965,6 +965,72 @@ return [
         ],
     ],
 
+    'testVerifyEmailWithOtp' => [
+        'request'  => [
+            'url'     => '/users/verify_email',
+            'method'  => 'POST',
+            'content' => [
+                'otp'   => '0007',
+                'token' => 'BUIj3m2Nx2VvVj',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id'        => 'MerchantUser01',
+                'email'     => 'abc@rzp.com',
+                'confirmed' => true,
+            ],
+        ],
+    ],
+
+    'testVerifyEmailWithInvalidOtp' => [
+        'request'   => [
+            'url'     => '/users/verify_email',
+            'method'  => 'POST',
+            'content' => [
+                'otp'   => '1234',
+                'token' => 'BUIj3m2Nx2VvVj',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_INCORRECT_OTP,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INCORRECT_OTP,
+        ],
+    ],
+
+
+    'testVerifyEmailWithOtpAlreadyVerified' => [
+        'request'   => [
+            'url'     => '/users/verify_email',
+            'method'  => 'POST',
+            'content' => [
+                'otp'   => '0007',
+                'token' => 'BUIj3m2Nx2VvVj',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_USER_EMAIL_ALREADY_VERIFIED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testSetAccountLock' => [
         'request'  => [
             'url'     => '/users-admin/account/{id}/lock',

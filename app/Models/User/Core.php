@@ -1051,6 +1051,28 @@ class Core extends Base\Core
     }
 
     /**
+     * @param array           $input
+     * @param Merchant\Entity $merchant
+     * @param Entity          $user
+     */
+    public function verifyEmailWithOtp(array $input, Merchant\Entity $merchant, Entity $user)
+    {
+        $this->verifyOtp($input + ['action' => 'verify_email'], $merchant, $user);
+
+        $this->trace->info(
+            TraceCode::USER_EMAIL_VERIFY_WITH_OTP,
+            [
+                'merchantId'      => $merchant->getId(),    
+            ]);
+
+        $this->confirm($user);
+
+        $data = $user->toArrayPublic();
+
+        $this->subscribeToMailingList($data);
+    }
+
+    /**
      * Verifies otp for given input(action, token & otp).
      *
      * @param array $input
@@ -1100,8 +1122,17 @@ class Core extends Base\Core
     protected function getTokenAndRavenOtpReqParams(array $input, Merchant\Entity $merchant, Entity $user): array
     {
         $token    = $input['token'] ?? Entity::generateUniqueId();
+
         $context  = sprintf('%s:%s:%s:%s', $merchant->getId(), $user->getId(), $input[Entity::ACTION], $token);
-        $receiver = $input[Entity::CONTACT_MOBILE] ?? $user->getContactMobile();
+
+        if ($input[Entity::ACTION] === 'verify_email')
+        {
+            $receiver = $user->getEmail();
+        }
+        else
+        {
+            $receiver = $input[Entity::CONTACT_MOBILE] ?? $user->getContactMobile();
+        }
         // Should have used api.user.{action} similar to post sms request to Raven. But in Raven otp.source is 10 char.
         $source   = 'api';
 

@@ -201,6 +201,13 @@ class UserController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function verifyEmailWithOtp()
+    {
+        $response = $this->service()->verifyEmailWithOtp($this->input);
+
+        return ApiResponse::json($response);
+    }
+
     public function resetUserPassword(string $id)
     {
         $input = Request::all();

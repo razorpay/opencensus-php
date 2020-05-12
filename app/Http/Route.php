@@ -1052,6 +1052,7 @@ final class Route
         // The order of the following routes is important. The one with action should be last
         'user_otp_create'                          => ['post',     'users/otp/send',                                 'UserController@sendOtp'                                            ],
         'user_verify_contact'                      => ['post',     'users/verify_contact',                           'UserController@verifyContactWithOtp'                               ],
+        'user_verify_email'                        => ['post',     'users/verify_email',                             'UserController@verifyEmailWithOtp'                                 ],
         'user_confirm'                             => ['put',      'users/{id}/confirm',                             'UserController@confirmUser'                                        ],
         'user_account_unlock'                      => ['put',      'users/account/{id}/{action}',                    'UserController@accountLockUnlock'                                  ],
         'user_merchant_mapping_action'             => ['put',      'users/{id}/{action}',                            'UserController@updateUserMaping'                                   ],
@@ -2276,6 +2277,7 @@ final class Route
         'user_otp_create',
         'user_2fa_change_setting',
         'user_verify_contact',
+        'user_verify_email',
         'user_verify_through_email',
         'payout_create_with_otp',
         // payouts approve reject routes
@@ -2532,6 +2534,7 @@ final class Route
         'user_edit_self',
         'user_otp_create',
         'user_verify_contact',
+        'user_verify_email',
         'payout_create_with_otp',
         'payout_approve_bulk',
         'payout_reject_bulk',
