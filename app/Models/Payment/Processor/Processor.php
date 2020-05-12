@@ -2662,6 +2662,11 @@ class Processor
             $this->validateOrderForUpiRecurring($this->order);
         }
 
+        if ($this->isOtmPayment($input) === true)
+        {
+            $this->validateOrderForUpiOtm($this->order);
+        }
+
         $this->order->getValidator()->validatePaymentCreation($payment);
 
         $this->order->setStatus(Order\Status::ATTEMPTED);
@@ -2703,6 +2708,16 @@ class Processor
         }
 
         $payment->setIntegrationMetadataUsingNotes($orderNotes);
+    }
+
+    protected function validateOrderForUpiOtm(Order\Entity $order)
+    {
+        if ($order->getPaymentCapture() === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_UPI_MANDATE_AUTO_CAPTURE_NOT_ALLOWED,
+                'order_id');
+        }
     }
 
     protected function validateOrderForUpiRecurring(Order\Entity $order)

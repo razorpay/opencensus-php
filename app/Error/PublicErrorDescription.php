@@ -1080,4 +1080,5 @@ class PublicErrorDescription
     const BAD_REQUEST_UPI_MANDATE_INVALID_EXECUTION_TIME                            = 'Execution only allowed between start time and end time';
     const BAD_REQUEST_UPI_END_TIME_OUT_OF_RANGE                                     = 'End time provided for upi mandate is out of range';
     const BAD_REQUEST_UPI_MANDATE_INTENT_NOT_SUPPORTED                              = 'Intent flow is not supported for upi mandates.';
+    const BAD_REQUEST_PAYMENT_UPI_MANDATE_AUTO_CAPTURE_NOT_ALLOWED                  = 'Auto capture is not allowed for upi mandates.';
 }

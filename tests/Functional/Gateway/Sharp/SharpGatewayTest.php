@@ -767,14 +767,12 @@ class SharpGatewayTest extends TestCase
 
         $payment['order_id'] = $order['id'];
 
-        $this->doAuthPaymentViaAjaxRoute($payment);
-
-        $payment = $this->getLastEntity('payment', true);
-
-        // Assert that even if the payment is set to be auto captured by order,
-        // dont auto capture, as it will execute the mandate right away as soon as
-        // it is authorized.
-        $this->assertSame('authorized', $payment['status']);
+        $this->makeRequestAndCatchException(function () use ($payment)
+        {
+            $this->doAuthPaymentViaAjaxRoute($payment);
+        },
+        Exception\BadRequestException::class,
+        'Auto capture is not allowed for upi mandates.');
     }
 
     public function testOtmInvalidEndTimeOutOfRange()
