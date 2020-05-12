@@ -89,6 +89,14 @@ class MerchantDetailTest extends OAuthTestCase
 
         $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id']);
 
+        $this->createDocumentEntities($merchantDetail[MerchantDetails::MERCHANT_ID],
+                                      [
+                                                         'address_proof_url',
+                                                         'business_pan_url',
+                                                         'business_proof_url',
+                                                         'promoter_address_url'
+                                                     ]);
+
         $this->mockHubSpotClient('trackL2ContactProperties');
 
         $this->startTest();
@@ -959,10 +967,17 @@ class MerchantDetailTest extends OAuthTestCase
      */
     public function testUnsupportedActivationFlow()
     {
-
         $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields', [
             MerchantDetails::ACTIVATION_FLOW => ActivationFlow::BLACKLIST
         ]);
+
+        $this->createDocumentEntities($merchantDetail[MerchantDetails::MERCHANT_ID],
+                                      [
+                                                         'address_proof_url',
+                                                         'business_pan_url',
+                                                         'business_proof_url',
+                                                         'promoter_address_url'
+                                                     ]);
 
         $this->ba->proxyAuth('rzp_test_' . $merchantDetail[MerchantDetails::MERCHANT_ID]);
 
@@ -1616,6 +1631,14 @@ class MerchantDetailTest extends OAuthTestCase
     {
         $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields', $input);
 
+        $this->createDocumentEntities($merchantDetail[MerchantDetails::MERCHANT_ID],
+                                      [
+                                          'address_proof_url',
+                                          'business_pan_url',
+                                          'business_proof_url',
+                                          'promoter_address_url'
+                                      ]);
+
         $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id']);
 
         $this->mockRazorX(__FUNCTION__, 'registered_onboarding_auto_kyc', 'on', $merchantDetail['merchant_id']);
@@ -1721,5 +1744,18 @@ class MerchantDetailTest extends OAuthTestCase
         $this->assertContains('memorandum_of_association', $requiredFields);
         $this->assertContains('article_of_association', $requiredFields);
         $this->assertContains('board_resolution', $requiredFields);
+    }
+
+
+    private function createDocumentEntities(string $merchantId, array $documentTypes)
+    {
+        $data = [
+            'document_types' => $documentTypes,
+            'attributes'     => [
+                'merchant_id'   => $merchantId,
+                'file_store_id' => 'abcdefgh12345',]
+        ];
+
+        $this->fixtures->create('merchant_document:multiple', $data);
     }
 }

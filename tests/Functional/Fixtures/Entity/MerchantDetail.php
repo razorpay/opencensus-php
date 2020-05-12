@@ -34,7 +34,10 @@ class MerchantDetail extends Base
 
         $this->fixtures->create('merchant_document:multiple',
                                 [
-                                    'document_types' => ['promoter_address_url',],
+                                    'document_types' => ['address_proof_url',
+                                                         'business_pan_url',
+                                                         'business_proof_url',
+                                                         'promoter_address_url'],
                                     'attributes'     => ['merchant_id' => $merchantDetail['merchant_id']]
                                 ]
         );

@@ -719,6 +719,8 @@ class ActivationTest extends OAuthTestCase
         $this->fixtures->on('test')->edit('merchant', $merchantId, $data);
         $this->fixtures->on('live')->edit('merchant', $merchantId, $data);
 
+        $this->createDocumentEntities($merchantId, ['address_proof_url', 'business_pan_url', 'business_proof_url', 'promoter_address_url']);
+
         $this->startTest();
         $testData = $this->testData['submitKyc'];
         $this->startTest($testData);
@@ -751,7 +753,9 @@ class ActivationTest extends OAuthTestCase
             'promoter_address_url' => null
         ];
 
-        $this->validatePOASubmission([Type::AADHAR_FRONT, Type::AADHAR_BACK], $merchantId, $attributes);
+        $documentTypesOtherThenPOA = ['address_proof_url', 'business_pan_url', 'business_proof_url'];
+
+        $this->validatePOASubmission([Type::AADHAR_FRONT, Type::AADHAR_BACK], $merchantId, $attributes, $documentTypesOtherThenPOA);
     }
 
     public function testPOASubmissionForRegisteredMerchantWithPassport()
@@ -764,7 +768,9 @@ class ActivationTest extends OAuthTestCase
             'promoter_address_url' => null
         ];
 
-        $this->validatePOASubmission([Type::PASSPORT_BACK, Type::PASSPORT_FRONT], $merchantId, $attributes);
+        $documentTypesOtherThenPOA = ['address_proof_url', 'business_pan_url', 'business_proof_url'];
+
+        $this->validatePOASubmission([Type::PASSPORT_BACK, Type::PASSPORT_FRONT], $merchantId, $attributes, $documentTypesOtherThenPOA);
     }
 
     public function testPOASubmissionForUnRegisteredMerchantWithVoterId()
@@ -790,7 +796,9 @@ class ActivationTest extends OAuthTestCase
             'promoter_address_url' => null
         ];
 
-        $this->validatePOASubmission([Type::VOTER_ID_FRONT, Type::VOTER_ID_BACK], $merchantId, $attributes);
+        $documentTypesOtherThenPOA = ['address_proof_url', 'business_pan_url', 'business_proof_url'];
+
+        $this->validatePOASubmission([Type::VOTER_ID_FRONT, Type::VOTER_ID_BACK], $merchantId, $attributes, $documentTypesOtherThenPOA);
     }
 
     public function testPOASubmissionForRegisteredMerchantWithPromoterAddress()
@@ -803,7 +811,9 @@ class ActivationTest extends OAuthTestCase
             'promoter_address_url' => null
         ];
 
-        $this->validatePOASubmission([Type::PROMOTER_ADDRESS_URL], $merchantId, $attributes);
+        $documentTypesOtherThenPOA = ['address_proof_url', 'business_pan_url', 'business_proof_url'];
+
+        $this->validatePOASubmission([Type::PROMOTER_ADDRESS_URL], $merchantId, $attributes, $documentTypesOtherThenPOA);
     }
 
     private function createPOACanSubmitData(array $attributes)
@@ -821,9 +831,18 @@ class ActivationTest extends OAuthTestCase
                                               ]);
     }
 
-    private function validatePOASubmission(array $documentTypes, string $merchantId = '1cXSLlUU8V9sXl', array $attributes = [])
+    private function validatePOASubmission(array $documentTypes,
+                                           string $merchantId = '1cXSLlUU8V9sXl',
+                                           array $attributes = [],
+                                           array $documentTypesOtherThenPOA = [])
     {
         $this->createPOACanSubmitData($attributes);
+
+        $this->fixtures->create('merchant_document:multiple',
+                                [
+                                    'document_types' => $documentTypesOtherThenPOA,
+                                    'attributes'     => ['merchant_id' => $merchantId]
+                                ]);
 
         $testSuit = 'validateCanSubmit';
 
@@ -2058,6 +2077,13 @@ class ActivationTest extends OAuthTestCase
                                                    'submitted'               => 1,
                                                    'activation_status'       => 'needs_clarification',
                                                    'submitted_at'            => now()->getTimestamp()]);
+        $this->createDocumentEntities($merchantDetail[MerchantDetails::MERCHANT_ID],
+                                      [
+                                        'address_proof_url',
+                                        'business_pan_url',
+                                        'business_proof_url',
+                                        'promoter_address_url'
+                                    ]);
 
         $this->ba->proxyAuth('rzp_test_' . $merchantDetail[MerchantDetails::MERCHANT_ID]);
 
@@ -2106,5 +2132,17 @@ class ActivationTest extends OAuthTestCase
         $pennyTestingAttemptRedisKey = DetailConstants::PENNY_TESTING_ATTEMPT_COUNT_REDIS_KEY_PREFIX . $merchantDetail->getId();
 
         $this->app['cache']->put($pennyTestingAttemptRedisKey, $count, DetailConstants::PENNY_TESTING_ATTEMPT_COUNT_TTL_IN_SEC);
+    }
+
+    private function createDocumentEntities(string $merchantId, array $documentTypes)
+    {
+        $data = [
+            'document_types' => $documentTypes,
+            'attributes'     => [
+                'merchant_id'   => $merchantId,
+                'file_store_id' => 'abcdefgh12345',]
+        ];
+
+        $this->fixtures->create('merchant_document:multiple', $data);
     }
 }

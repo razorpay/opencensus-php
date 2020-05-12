@@ -16,13 +16,14 @@ class MerchantDocument extends Base
         $documents = [];
 
         $documentTypes = $data['document_types'];
+
         $attributes    = $data['attributes'];
 
         foreach ($documentTypes as $documentType)
         {
             $attributes['document_type'] = $documentType;
 
-            $documents[] = $this->createEntityInTestAndLive('merchant_document', $attributes);
+            $documents[] = $this->create($attributes);
         }
 
         return $documents;

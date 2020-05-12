@@ -28,7 +28,7 @@ class MerchantDocumentTest Extends TestCase
     {
         $merchantDocument = $this->fixtures->create('merchant_document');
 
-        $this->fixtures->create('merchant_detail',['merchant_id' => '10000000000000']);
+        $this->fixtures->create('merchant_detail',['merchant_id' => '10000000000000','address_proof_url' => 'abcdefgh12345']);
 
         //request edited
         $request = $this->testData[__FUNCTION__]['request'];

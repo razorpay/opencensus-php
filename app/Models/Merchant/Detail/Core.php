@@ -2193,11 +2193,10 @@ class Core extends Base\Core
         {
             //
             // Add the key to the list of the required fields if:
-            //- key is not present in  merchant detail
-            //- and if the key that needs to be validated is not present in the merchant Document array
-            //
-            if (($this->isKeyNotInMerchantDetail($key, $merchantDetailsArr) === true) and
-                (array_key_exists($key, $documentsResponse) === false))
+            //- if key is document ;- check it only in merchant-documents
+            //- else check in merchant_details
+
+            if ($this->isKeyPresent($key, $merchantDetailsArr, $documentsResponse) === false)
             {
                 $requiredFields[] = $key;
             }
@@ -2306,5 +2305,22 @@ class Core extends Base\Core
         return [
             Detail\Constants::GSTIN_STATUS => $merchantDetail->getGstinVerificationStatus()
         ];
+    }
+
+    /**
+     * @param string $inputKey
+     * @param array  $merchantDetailsArr
+     * @param array  $documentsResponse
+     *
+     * @return bool
+     */
+    protected function isKeyPresent(string $inputKey, array $merchantDetailsArr, array $documentsResponse): bool
+    {
+        if (Document\Type::isValid($inputKey) === true)
+        {
+            return (array_key_exists($inputKey, $documentsResponse) === true);
+        }
+
+        return ($this->isKeyNotInMerchantDetail($inputKey, $merchantDetailsArr) === false);
     }
 }
