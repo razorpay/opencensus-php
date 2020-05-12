@@ -98,15 +98,15 @@ class TerminalOnboardingTest extends TestCase
     }
 
     // Terminals Service call api to enable PayPal on activation of PayPal onboarding terminal
-    public function testEnablePaypalMethodInternal()
-    {
-        $this->ba->appAuth();
-
-        $this->startTest();
-
-        $merchant = $this->getDbEntityById('merchant', '10000000000000');
-        $this->assertTrue($merchant->methods->isPaypalEnabled());
-    }
+//    public function testEnablePaypalMethodInternal()
+//    {
+//        $this->ba->appAuth();
+//
+//        $this->startTest();
+//
+//        $merchant = $this->getDbEntityById('merchant', '10000000000000');
+//        $this->assertTrue($merchant->methods->isPaypalEnabled());
+//    }
 
     public function testEnablePaypalMethodInternalWithWrongMerchantIdInInput()
     {

@@ -14,6 +14,8 @@ class PaypalGatewayTest extends TestCase
 
     public function setUp()
     {
+        $this->markTestSkipped();
+
         $this->testDataFilePath = __DIR__.'/PaypalGatewayTestData.php';
 
         parent::setUp();
