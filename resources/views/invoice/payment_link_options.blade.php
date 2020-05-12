@@ -7,6 +7,8 @@ $invoice_expire_by              = $invoice_data['expire_by'];
 $invoice_payments               = $invoice_data['payments'];
 $is_invoice_partial_payment     = $invoice_data['partial_payment'] === true;
 $invoice_status                 = $invoice_data['status'];
+$isExpired                      = $invoice_status === 'expired' or $invoice_expire_by <= time();
+$invoice_status                 = $isExpired ? 'expired' : $invoice_status;
 $customer_details               = $invoice_data['customer_details'];
 $checkout_options               = $data['options']['checkout'];
 $hostedpage_options             = $data['options']['hosted_page'];
@@ -16,7 +18,7 @@ $isHostedCheckout               = $hostedpage_options['enable_embedded_checkout'
     <!doctype html>
 <html>
 <head>
-    <title>{{{ $invoice_data['merchant_label'] }}} - Payment Link</title>
+    <title>{{{ $invoice_data['merchant_label'] }}} - Payment Link - {{ $invoice_data['id'] }}</title>
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta charset="utf-8">
     <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
@@ -26,10 +28,13 @@ $isHostedCheckout               = $hostedpage_options['enable_embedded_checkout'
 
     @if (isset($invoice_data))
         <meta property="og:title" content="Payment of {{$invoice_data['currency']}} {{amount_format_IN($invoice_data['amount'])}} requested by {{{ $invoice_data['merchant_label'] }}} for {{{ $invoice_data['description'] }}}">
-        <meta property="og:image" content="{{isset($data['merchant']['image']) ?  $data['merchant']['image'] : 'https://cdn.razorpay.com/static/assets/logo/rzp.png'}}">
 
-        <meta property="og:image:width" content="276px">
-        <meta property="og:image:height" content="276px">
+        @if (isset($data['merchant']['image']))
+            <meta property="og:image" content="{{$data['merchant']['image']}}">
+            <meta property="og:image:width" content="276px">
+            <meta property="og:image:height" content="276px">
+        @endif
+
         <meta property="og:description" content="Click on this link to pay to {{{ $invoice_data['merchant_label'] }}}">
     @endif
 
@@ -676,6 +681,10 @@ $isHostedCheckout               = $hostedpage_options['enable_embedded_checkout'
     var color = data.merchant.brand_color || '#168AFA';
     document.getElementById('chkout-header').style['background-color'] = color;
 
+    var curTimeStamp = Math.floor(new Date().getTime() / 1000);
+    var isExpireByTSStale = initialData.entityData.expire_by && initialData.entityData.expire_by <= curTimeStamp;
+
+    data.invoice.status = isExpireByTSStale ? 'expired' : data.invoice.status;
 
     toggleTrimDescription(true);
 
