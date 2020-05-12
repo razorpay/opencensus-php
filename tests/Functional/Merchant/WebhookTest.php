@@ -210,6 +210,41 @@ class WebhookTest extends TestCase
         $this->assertNotNull($response['id']);
     }
 
+    public function testCreateWebhookWithFeatureOnWithStork()
+    {
+        $this->fixtures->merchant->addFeatures([Feature\Constants::BANKING_STORK_MIGRATION]);
+
+        $createExpectedPayload = $this->testData['createRequestStorkProductPrimaryFeatureOn'];
+
+        $this->mockServiceStorkRequest(
+            function ($path, $payload) use ($createExpectedPayload)
+            {
+                $this->assertArraySelectiveEquals($createExpectedPayload, $payload);
+                return $this->getStorkGetResponseProductPrimary();
+            })->once();
+
+        $this->startTest();
+    }
+
+    public function testEditWebhookWithFeatureOnWithStork()
+    {
+        $webhook = $this->createWebhook();
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/webhooks/'.$webhook['id'];
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::BANKING_STORK_MIGRATION]);
+
+        $updateExpectedPayload = $this->testData['editRequestStorkProductPrimaryFeatureOn'];
+
+        $this->mockServiceStorkRequest(
+            function ($path, $payload) use ($updateExpectedPayload)
+            {
+                $this->assertArraySelectiveEquals($updateExpectedPayload, $payload);
+            })->once();
+
+        $this->startTest();
+    }
+
     public function testCreateWebhookForProductBankingWithStork()
     {
         $this->fixtures->merchant->addFeatures(['payout']);

@@ -332,6 +332,51 @@ return [
         ],
     ],
 
+    'testCreateWebhookWithFeatureOnWithStork' => [
+        'request' => [
+            'url'     => '/webhooks',
+            'content' => [
+                'url' => 'http://webhook.com',
+                'events' => [
+                    'payment.authorized' => '1',
+                ],
+            ],
+            'method' => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                'url' => 'http://webhook.com',
+                'events' => [
+                    'payment.authorized' => true,
+                ],
+                'active' => true,
+            ],
+        ]
+    ],
+
+    'testEditWebhookWithFeatureOnWithStork' => [
+        'request' => [
+            'url'       => '/webhooks',
+            'content' => [
+                'url' => 'http://webhook.com',
+                'events' => [
+                    'payment.authorized' => '0',
+                ],
+                'active' => true,
+            ],
+            'method' => 'put',
+        ],
+        'response' => [
+            'content' => [
+                'url' => 'http://webhook.com',
+                'events' => [
+                    'payment.authorized' => false,
+                ],
+                'active' => true,
+            ],
+        ]
+    ],
+
     'testEditWebhookWithFeatureOffStorkRequest' => [
         'request' => [
             'url'       => '/webhooks/3232',
@@ -378,6 +423,38 @@ return [
                 'active'    => true,
             ],
         ],
+    ],
+
+    'createRequestStorkProductPrimaryFeatureOn' => [
+        'webhook' => [
+            'id' => NULL,
+            'service' => "api-test",
+            'owner_id' => "10000000000000",
+            'owner_type' => "merchant",
+            'disabled' => FALSE,
+            'url' => "http://webhook.com",
+            'secret' => NULL,
+            'subscriptions' => [
+                [
+                    'eventmeta' => [
+                        'name' => "payment.authorized",
+                    ]
+                ]
+            ]
+        ]
+    ],
+
+    'editRequestStorkProductPrimaryFeatureOn' => [
+        'webhook' => [
+            'service' => "api-test",
+            'owner_id' => "10000000000000",
+            'owner_type' => "merchant",
+            'disabled' => FALSE,
+            'url' => "http://webhook.com",
+            'secret' => NULL,
+            'subscriptions' => [
+            ]
+        ]
     ],
 
     'storkCreateRequestBanking' => [

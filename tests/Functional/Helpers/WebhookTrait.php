@@ -177,6 +177,35 @@ trait WebhookTrait
         return $res;
     }
 
+    protected function getStorkGetResponseProductPrimary()
+    {
+        $res = new \Requests_Response();
+
+        $body =  [
+            'webhook' => [
+                'id'            => 'EZ4ezgl4124qKu',
+                'created_at'    => '2020-04-01T03:32:10Z',
+                'service'       => 'api-live',
+                'owner_id'      => '10000000000000',
+                'owner_type'    => 'merchant',
+                'context'       => '{"mode":"test"}',
+                'disabled_at'   => '1970-01-01T00:00:00Z',
+                'url'           => 'http://webhook.com',
+                'subscriptions' => [
+                    [
+                        'id'         => 'EZ4ezhzqgKNjxI',
+                        'created_at' => '2020-04-01T03:32:10Z',
+                        'eventmeta'  => ['name' => 'payment.authorized',],
+                    ],
+                ],
+            ],
+        ];
+
+        $res->body = json_encode($body);
+
+        return $res;
+    }
+
     protected function getStorkCreateResponse()
     {
         $res = new \Requests_Response();

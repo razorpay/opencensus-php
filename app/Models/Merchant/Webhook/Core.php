@@ -13,6 +13,7 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Product;
 use RZP\Base\RuntimeManager;
+use RZP\Models\Feature\Constants;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Event\Entity as EventEntity;
 use RZP\Mail\Merchant\Webhook as WebhookMail;
@@ -352,8 +353,10 @@ class Core extends Base\Core
             $this->upsertToStork($merchant, $webhook, Product::PRIMARY);
 
             // Copy webhook setting for X if business banking is ON for Merchant
+            // Don't write to X service on Stork if feature is ON
             // This will go away after complete rollout of webhook separation for X and PG
-            if ($merchant->isBusinessBankingEnabled() === true)
+            if (!$merchant->isFeatureEnabled(Constants::BANKING_STORK_MIGRATION) and
+                $merchant->isBusinessBankingEnabled() === true)
             {
                 $this->upsertToStork($merchant, $webhook, Product::BANKING);
             }
