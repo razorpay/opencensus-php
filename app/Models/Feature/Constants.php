@@ -140,6 +140,7 @@ class Constants
 
     const ENACH_INTERMEDIATE              = 'enach_intermediate';
     const SAVE_VPA                        = 'save_vpa';
+    const UPI_OTM                         = 'upi_otm';
 
     const PARTNER_ACTIVATE_MERCHANT       = 'partner_activate_merchant';
 
@@ -394,6 +395,7 @@ class Constants
         self::PHONEPE_INTENT,
         self::SAVE_VPA,
         self::DCC,
+        self::UPI_OTM,
     ];
 
     // TODO: Use this instead of allFeatures once in final code change pr
@@ -593,6 +595,7 @@ class Constants
         self::PAYMENT_STATUS_AGGREGATE        => true,
         self::SEND_PAYMENT_LATE_AUTH          => true,
         self::OVERRIDE_HITACHI_BLACKLIST      => true,
+        self::UPI_OTM                         => true,
     ];
 
     // Entity type constants

@@ -2308,6 +2308,11 @@ class Entity extends Base\PublicEntity
         return (($this->isSaveVpaEnabled() === true) and ($this->methods->isUpiEnabled() === true));
     }
 
+    public function isUpiOtmEnabled()
+    {
+        return $this->isFeatureEnabled(Feature\Constants::UPI_OTM);
+    }
+
     public static function hascustomerTransactionHistoryEnabled($merchantId)
     {
         return (in_array($merchantId, Merchant\Preferences::CUSTOMER_TRANSACTION_HISTORY_ENABLED_MID, true) === true);

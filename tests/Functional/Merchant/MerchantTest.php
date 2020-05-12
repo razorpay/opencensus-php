@@ -6878,5 +6878,17 @@ class MerchantTest extends TestCase
 
         $this->assertArrayHasKey('checkout_config', $response);
     }
+
+    public function testUpiOtmFeatureFlag()
+    {
+        $this->ba->publicAuth();
+
+        $this->fixtures->merchant->addFeatures(['upi_otm']);
+
+        $response = $this->getPreferences();
+
+        $this->assertArrayKeysExist($response['features'], ['upi_otm']);
+        $this->assertSame(true, $response['features']['upi_otm']);
+    }
 }
 
