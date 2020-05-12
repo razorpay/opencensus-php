@@ -19,7 +19,8 @@ export function createPaymentLink(payload) {
   let reqPayload = { ...payload };
   reqPayload.type = 'link';
 
-  reqPayload.amount *= 100;
+  reqPayload.amount = Math.round(reqPayload.amount * 100);
+
   reqPayload.expire_by &&
     (reqPayload.expire_by = Math.floor(reqPayload.expire_by / 1000));
 
