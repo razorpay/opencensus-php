@@ -27,8 +27,6 @@ class NegativeBalanceReminderProcessor extends ReminderProcessor
 
         $this->validateInput($input);
 
-        $channels = isset($input['channels']) === true ? $input['channels'] : ['email'];
-
         $reminderCount = isset($input['reminder_count']) === true ? $input['reminder_count'] : 1;
 
         $merchant = $this->repo->$entity->findOrFail($id);
@@ -57,11 +55,7 @@ class NegativeBalanceReminderProcessor extends ReminderProcessor
             $this->handleInvalidReminder();
         }
 
-        if(in_array('email', $channels))
-        {
-          (new NegativeReserveBalanceMailers)->sendNegativeBalanceBreachReminders($merchant,
-                                                $reminderCount, $balanceAmount);
-        }
+        (new NegativeReserveBalanceMailers)->sendNegativeBalanceBreachReminders($merchant, $reminderCount, $balanceAmount);
 
         $reminderEntity->setReminderCount($reminderCount);
 
@@ -82,8 +76,7 @@ class NegativeBalanceReminderProcessor extends ReminderProcessor
 
     protected function validateInput(array $input)
     {
-        if(empty($input['reminder_count']) or
-           empty($input['channels']))
+        if(empty($input['reminder_count']))
         {
             throw new BadRequestException(
                 ErrorCode::BAD_REQUEST_VALIDATION_FAILURE);

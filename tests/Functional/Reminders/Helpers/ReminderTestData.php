@@ -86,6 +86,21 @@ return [
         ]
     ],
 
+    'testSendNegativeBalanceReminderWithoutChannels' => [
+        'request' => [
+            'url' => '/reminders/send/test/merchant/negative_balance/100ghi000ghi00',
+            'method' => 'post',
+            'content' => [
+                'reminder_count' => 1,
+            ]
+        ],
+
+        'response' => [
+            'content' => [],
+            'status_code' => 200,
+        ]
+    ],
+
     'testSendNegativeBalanceReminderBalanceIsPositive' => [
         'request' => [
             'url' => '/reminders/send/test/merchant/negative_balance/100ghi000ghi00',
@@ -199,24 +214,4 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
-
-    'testSendNegativeBalanceReminderWithReminderCountWithoutChannels' => [
-        'request' => [
-            'url' => '/reminders/send/test/merchant/negative_balance/100ghi000ghi00',
-            'method' => 'post',
-            'content' => [
-                'reminder_count' => 1,
-            ]
-        ],
-
-        'response' => [
-            'content' => [],
-            'status_code' => 400,
-        ],
-
-        'exception' => [
-            'class'               => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
-        ],
-    ]
 ];

@@ -71,6 +71,32 @@ class ReminderTest extends TestCase
         $this->assertEquals(1, $nbReminder->getReminderCount());
     }
 
+    public function testSendNegativeBalanceReminderWithoutChannels()
+    {
+        Mail::fake();
+
+        $this->createNegativeBalanceReminder();
+        $this->startTest();
+
+        Mail::assertQueued(NegativeBalanceBreachReminder::class, function ($mail)
+        {
+            $viewData = $mail->viewData;
+
+            $this->assertEquals('test@razorpay.com', $viewData['email']);
+
+            $this->assertEquals('100ghi000ghi00', $viewData['merchant_id']);
+
+            $this->assertEquals('-10 INR' , $viewData['balance']);
+
+            $this->assertEquals('emails.merchant.negative_balance_breach_reminder', $mail->view);
+
+            return true;
+        });
+
+        $nbReminder = $this->getDbEntityById('merchant_reminders', '100mno000mno00');
+        $this->assertEquals(1, $nbReminder->getReminderCount());
+    }
+
     public function testSendNegativeBalanceReminderBalanceIsPositive()
     {
         Mail::fake();
@@ -121,17 +147,6 @@ class ReminderTest extends TestCase
     }
 
     public function testSendNegativeBalanceReminderWithoutReminderCountWithChannels()
-    {
-        Mail::fake();
-
-        $this->createNegativeBalanceReminder();
-        $this->startTest();
-
-        Mail::assertNotQueued(NegativeBalanceBreachReminder::class);
-
-    }
-
-    public function testSendNegativeBalanceReminderWithReminderCountWithoutChannels()
     {
         Mail::fake();
 
