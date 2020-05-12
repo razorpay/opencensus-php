@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\File;
 use Razorpay\Trace\Logger as Trace;
 
 use RZP\Constants\Environment;
+use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 
 class Config
@@ -23,6 +24,8 @@ class Config
     const WORKER_CONFIG         = 'worker';
 
     const ENABLE                = 'enable';
+
+    const TEST                  = 'test';
 
     const DISABLE               = 'disable';
 
@@ -163,8 +166,22 @@ class Config
             return false;
         }
 
+        $fileConfig = $this->getProxySqlConfig();
+
         // this is used to ramp up each server at a time.
-        return ($this->getProxySqlConfig() === self::ENABLE);
+        if ($fileConfig === self::ENABLE)
+        {
+            return true;
+        }
+
+        $mode = (empty($this->app['request.ctx']) === true) ? Mode::LIVE : $this->app['request.ctx']->getMode();
+
+        if (($fileConfig === self::TEST) && ($mode === Mode::TEST))
+        {
+            return true;
+        }
+
+        return false;
     }
 
     protected function getProxySqlConfig()
