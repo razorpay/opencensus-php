@@ -16,28 +16,44 @@ export const PL_EDIT_UPDATE_LIST = 'PL_EDIT_UPDATE_LIST';
 
 export const fetchPaymentLinks = params => {
   const user = store.getState().session.user;
-  let url;
+  let url, queryParams;
 
   if (user.isPaymentlinksV2Enabled) {
     url = 'payment_links';
 
-    params = transformPLListFilters_NewToOld(params);
+    queryParams = transformPLListFilters_NewToOld(params);
   } else {
     url = 'invoices';
+
+    const { id, ...restParams } = params;
+    queryParams = restParams;
+
+    if (id) {
+      url += `/${id}`;
+    }
   }
 
   const payload = merchantFetch({
     url,
-    params,
+    params: queryParams,
   }).then(resp => {
-    if (resp.data && user.isPaymentlinksV2Enabled) {
-      resp.data.items = resp.data.payment_links.map(paymentlink =>
-        transformPLDetails_NewToOld(paymentlink)
-      );
+    if (resp.data) {
+      if (user.isPaymentlinksV2Enabled) {
+        resp.data.items = resp.data.payment_links.map(paymentlink =>
+          transformPLDetails_NewToOld(paymentlink)
+        );
 
-      delete resp.data.payment_links;
+        delete resp.data.payment_links;
 
-      return resp;
+        return resp;
+      } else if (!resp.data.items) {
+        // Handling id case, otherwise it doesn't return items array but only details of the id
+        resp = {
+          data: {
+            items: [resp.data],
+          },
+        };
+      }
     }
 
     return resp;
