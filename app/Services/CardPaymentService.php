@@ -508,6 +508,9 @@ class CardPaymentService
        unset($traceResponse['data']['content']['vpc_AccessCode']);
        unset($traceResponse['data']['content']['vpc_CardExp']);
        unset($traceResponse['data']['content']['vpc_CardSecurityCode']);
+       unset($traceResponse['data']['content']['vpc_SubMerchant_Phone']);
+       unset($traceResponse['data']['content']['vpc_SubMerchant_Email']);
+       unset($traceResponse['data']['content']['vpc_SubMerchant_Street']);
 
        //Redacting fields for First_data
        unset($traceResponse['data']['content']['cvm']);
