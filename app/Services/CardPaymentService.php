@@ -349,7 +349,7 @@ class CardPaymentService
 
             $card = (new Card\Repository())->find($cardId);
 
-            if (is_null($card) === false)
+            if ((is_null($card) === false) and (is_null($card->iinRelation) === false))
             {
                 $data[self::INPUT][Entity::IIN] = $card->iinRelation->toArrayPublic();
             }
