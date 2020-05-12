@@ -839,9 +839,15 @@ class FundTransfer extends Base
         return true;
     }
 
-    public function initialize(string $ftaId)
+    public function initialize(string $ftaId): bool
     {
-        $this->fta = $this->FTACore->getFTAEntity($ftaId);
+        $this->fta = $this->FTACore->getFTAEntityWithIdAndStatus($ftaId, Constants::STATUS_CREATED);
+
+        //attempt with status created will only be sent to fts.
+        if (empty($this->fta) === true)
+        {
+            return false;
+        }
 
         $channel = $this->fta->getChannel();
 
@@ -902,6 +908,8 @@ class FundTransfer extends Base
         $this->amount = $this->source->getAmount()/100;
 
         $this->amount = round($this->amount, 2);
+
+        return true;
     }
 
     protected function isNeftRtgsSupportedTimings($mode)

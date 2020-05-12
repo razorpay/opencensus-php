@@ -379,9 +379,9 @@ class Core extends Base\Core
         return $this->app['beam']->beamPush($data, $timelines, $mailInfo, true);
     }
 
-    public function getFTAEntity(string $ftaId)
+    public function getFTAEntityWithIdAndStatus(string $ftaId, string $status)
     {
-        return $this->repo->fund_transfer_attempt->findOrFailPublic($ftaId);
+        return $this->repo->fund_transfer_attempt->findByIdWithStatus($ftaId, $status, null);
     }
 
     public function updateFTA(Entity $fta, $ftsTransferId, string $status = null, string $failureReason = null)
