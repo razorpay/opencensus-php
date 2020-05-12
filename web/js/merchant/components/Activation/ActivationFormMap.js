@@ -620,6 +620,12 @@ const uploadFields = [
       }
       return "Authorized Signatory's Address Proof";
     },
+    className: activation => {
+      if (!isUnregisteredBusiness(activation)) {
+        return 'Input--vTop';
+      }
+      return null;
+    },
     _name: 'address_proof',
     _cmp: Input.Select,
     options: Object.keys(ADDRESS_PROOF_TYPES).map(type => {

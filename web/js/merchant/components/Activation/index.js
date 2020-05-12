@@ -289,8 +289,9 @@ export default class ActivationWizard extends React.Component {
                   name: filename,
                 })
               );
-
-              this.markTabIfActive(DOCUMENT_UPLOAD_STEP);
+              if (!this.isOnKYCTab()) {
+                this.markTabIfActive(DOCUMENT_UPLOAD_STEP);
+              }
               this.updateFileInDirty(filename);
             });
         };
@@ -1792,6 +1793,10 @@ function ActivationField(field) {
     const error = rest.checkValidityFromAPI(this);
     if (!this.state.dirty[rest.name] && error) rest.propagatedError = error;
     else rest.propagatedError = '';
+  }
+
+  if (typeof rest.className === 'function') {
+    rest.className = rest.className(this);
   }
 
   return (
