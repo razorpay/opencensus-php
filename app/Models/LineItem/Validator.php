@@ -52,7 +52,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $createManyRules = [
-        Entity::LINE_ITEMS          => 'required|array|min:1|max:10',
+        Entity::LINE_ITEMS          => 'required|array|min:1|max:25',
         Entity::LINE_ITEMS . '.*'   => 'required|array',
     ];
 
