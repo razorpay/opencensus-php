@@ -4944,6 +4944,7 @@ final class Route
         //'bank_transfer_process_test',
         'banking_account_create',
         'banking_account_create_admin',
+        'banking_account_webhook_account_info',
 
         'fund_transfer_attempt_process',
         'on_demand_settlement',

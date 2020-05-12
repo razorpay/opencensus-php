@@ -84,6 +84,8 @@ class ApiTraceProcessor
         'debitAccountNo',
         'beneficiaryName',
         'beneficiaryContact',
+        'password',
+        'client_secret',
     ];
 
     public function __construct($app)

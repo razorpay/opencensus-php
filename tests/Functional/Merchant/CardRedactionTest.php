@@ -648,6 +648,48 @@ class CardRedactionTest extends TestCase
         $this->assertArraySelectiveEquals($expectedResponse, $updatedRecord);
     }
 
+    public function testScrubbingForBankingRoute()
+    {
+        /** @var ApiTraceProcessor $trace */
+        $trace = new ApiTraceProcessor($this->app);
+
+        $this->mockRouter('banking_account_webhook_account_info');
+
+        $record = [
+            'context' => [
+                'account_ifsc' => 'RATN0000057',
+                'account_number' => '758123260280',
+                "client_secret"  => "TSULZXMONAARZUQOOOXPERQQIFBXADANSPBZTPPUOEFEQELBVO",
+                'beneficiary_email' => 'qa.testing@razorpay.com',
+                'password' => "Welcome123",
+                'beneficiary_mobile' => "1234567890",
+                "details"    => [
+                    "client_id"      => "K7V3PG6JWHVOA5FVAUF6RGCZDE0W7DV7VVRN",
+                    "client_secret"  => "TSULZXMONAARZUQOOOXPERQQIFBXADANSPBZTPPUOEFEQELBVO",
+                ],
+            ]
+        ];
+
+        $updatedRecord =  $trace($record);
+
+        $expectedResponse = [
+            'context' => [
+                'account_ifsc' => 'SCRUBBED(11)',
+                'account_number' => 'SCRUBBED(12)',
+                "client_secret"  => "SCRUBBED(50)",
+                'beneficiary_email' => 'EMAIL_SCRUBBED(23)',
+                'password' => "SCRUBBED(10)",
+                'beneficiary_mobile' => "PHONE_NUMBER_SCRUBBED(10)",
+                "details"    => [
+                    "client_id"      => "K7V3PG6JWHVOA5FVAUF6RGCZDE0W7DV7VVRN",
+                    "client_secret"  => "SCRUBBED(50)",
+                ],
+            ]
+        ];
+
+        $this->assertArraySelectiveEquals($expectedResponse, $updatedRecord);
+    }
+
     public function testEmailCvvMobileForNonBankingRoute()
     {
         /** @var ApiTraceProcessor $trace */
@@ -844,7 +886,7 @@ class CardRedactionTest extends TestCase
     }
 
     // In this test first scrubbing is disabled and then enabled again
-    public function disablingAndEnablingRegex()
+    public function testDisablingAndEnablingRegex()
     {
         /** @var ApiTraceProcessor $trace */
         $trace = new ApiTraceProcessor($this->app);
