@@ -30,9 +30,23 @@ class ReportingController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function createFullConfig()
+    {
+        $data = $this->reportingService()->createFullConfig($this->input);
+
+        return ApiResponse::json($data);
+    }
+
     public function updateConfig(string $id)
     {
         $data = $this->reportingService()->editConfig($id, $this->input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function updateFullConfig(string $id)
+    {
+        $data = $this->reportingService()->editFullConfig($id, $this->input);
 
         return ApiResponse::json($data);
     }

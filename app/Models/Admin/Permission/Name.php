@@ -240,6 +240,7 @@ class Name
     const BANK_TRANSFER_INSERT                = 'bank_transfer_insert';
     const GET_SELF_SERVE_REPORT               = 'get_self_serve_report';
     const CREATE_SELF_SERVE_REPORT            = 'create_self_serve_report';
+    const REPORT_CONFIG_FULL_OPERATIONS       = 'report_config_full_operations';
     const CREATE_GATEWAY_DOWNTIME             = 'create_gateway_downtime';
     const VIEW_GATEWAY_DOWNTIME               = 'view_gateway_downtime';
     const UPDATE_GATEWAY_DOWNTIME             = 'update_gateway_downtime';

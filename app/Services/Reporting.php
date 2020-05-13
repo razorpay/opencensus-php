@@ -76,6 +76,11 @@ class Reporting implements ExternalService
         self::PARTNER,
     ];
 
+    const ADMIN_ROUTES_WITH_MERCHANT_REPORT_TYPE = [
+        'reporting_config_create_full',
+        'reporting_config_edit_full',
+    ];
+
     /**
      * @var array
      */
@@ -175,13 +180,7 @@ class Reporting implements ExternalService
             // Entity view in dashboard
             $headers[self::ADMIN_TOKEN_HEADER] = $adminToken;
 
-            // For non-merchant reports X_REPORT_TYPE should not be MERCHANT
-            // otherwise admins/banks will be able to download merchant reports.
-            // Admin auth will be used here
-            if (in_array($reportType, self::MERCHANT_REPORT_TYPES, true) === true)
-            {
-                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_REPORTING_ADMIN_NOT_ALLOWED_MERCHANT_REPORTS);
-            }
+            $this->failIfAdminTryingToDownloadMerchantReports($reportType);
 
             if ((empty($reportType) === false) and
                 (empty($consumer) === false))
@@ -239,6 +238,13 @@ class Reporting implements ExternalService
         return $this->createAndSendRequest(Requests::POST, self::CONFIG_PATH, $input);
     }
 
+    public function createFullConfig(array $input): array
+    {
+        $path = self::CONFIG_PATH . '/full';
+
+        return $this->createAndSendRequest(Requests::POST, $path, $input);
+    }
+
     public function fetchConfigMultiple(array $input): array
     {
         $configs = $this->createAndSendRequest(Requests::GET, self::CONFIG_PATH, $input);
@@ -256,6 +262,13 @@ class Reporting implements ExternalService
     public function editConfig(string $id, array $input): array
     {
         $path = self::CONFIG_PATH . '/' . $id;
+
+        return $this->createAndSendRequest(Requests::PATCH, $path, $input);
+    }
+
+    public function editFullConfig(string $id, array $input): array
+    {
+        $path = self::CONFIG_PATH . '/' . $id . '/full';
 
         return $this->createAndSendRequest(Requests::PATCH, $path, $input);
     }
@@ -1219,6 +1232,26 @@ class Reporting implements ExternalService
         {
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_REPORTING_OTHER_ORG_INVALID_REQUEST);
         }
+    }
+
+
+    private function failIfAdminTryingToDownloadMerchantReports(?string $reportType)
+    {
+        // For non-merchant reports X_REPORT_TYPE should not be MERCHANT
+        // otherwise admins/banks will be able to download merchant reports.
+        // Admin auth will be used here
+        $routeName = $this->app['api.route']->getCurrentRouteName();
+
+        // allowing only routes in this ADMIN_ROUTES_WITH_MERCHANT_REPORT_TYPE
+        // to contain X_REPORT_TYPE as MERCHANT_REPORT_TYPES
+        if (in_array($routeName, self::ADMIN_ROUTES_WITH_MERCHANT_REPORT_TYPE, true) === false)
+        {
+            if (in_array($reportType, self::MERCHANT_REPORT_TYPES, true) === true)
+            {
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_REPORTING_ADMIN_NOT_ALLOWED_MERCHANT_REPORTS);
+            }
+        }
+
     }
 
     // buildCaTransactionRawQueryParams is required to transform the config filters format
