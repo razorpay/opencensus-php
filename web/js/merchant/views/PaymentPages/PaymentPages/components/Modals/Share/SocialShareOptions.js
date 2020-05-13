@@ -12,6 +12,8 @@ function _shareMessage(title, description = '') {
     msg = msg.substring(0, 200) + '...';
   }
 
+  msg = window.encodeURIComponent(msg);
+
   return msg;
 }
 
