@@ -364,7 +364,11 @@ export default props => {
                       : () =>
                           paymentlink.expire_by ? (
                             <Time
-                              value={paymentlink.expire_by}
+                              value={
+                                isExpired
+                                  ? paymentlink.expired_at
+                                  : paymentlink.expire_by
+                              }
                               format="DD MMM YYYY, hh:mm a"
                             />
                           ) : (
