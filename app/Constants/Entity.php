@@ -238,6 +238,7 @@ class Entity
     const NETBANKING_SBI         = 'netbanking_sbi';
     const NETBANKING_KVB         = 'netbanking_kvb';
     const WALLET_PHONEPE         = 'wallet_phonepe';
+    const WALLET_PHONEPESWITCH   = 'wallet_phonepeswitch';
     const NETBANKING_CSB         = 'netbanking_csb';
     const NETBANKING_IBK         = 'netbanking_ibk';
     const NETBANKING_UBI         = 'netbanking_ubi';
@@ -599,6 +600,7 @@ class Entity
         self::BAJAJFINSERV           => \RZP\Gateway\Mozart::class,
         self::GOOGLE_PAY             => \RZP\Gateway\GooglePay::class,
         self::WALLET_PHONEPE         => \RZP\Gateway\Mozart::class,
+        self::WALLET_PHONEPESWITCH   => \RZP\Gateway\Mozart::class,
         self::WALLET_PAYPAL          => \RZP\Gateway\Mozart::class,
         self::UPI_AIRTEL             => \RZP\Gateway\Mozart::class,
         self::UPI_JUSPAY             => \RZP\Gateway\Mozart::class,

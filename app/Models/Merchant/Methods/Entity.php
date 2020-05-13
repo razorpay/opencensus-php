@@ -92,6 +92,7 @@ class Entity extends Base\PublicEntity
         self::PAYLATER,
         self::CARD_NETWORKS,
         self::PHONEPE,
+        self::PHONEPE_SWITCH,
         self::PAYPAL,
     ];
 
@@ -127,6 +128,7 @@ class Entity extends Base\PublicEntity
         self::PAYLATER,
         self::CARD_NETWORKS,
         self::PHONEPE,
+        self::PHONEPE_SWITCH,
         self::PAYPAL,
     ];
 
@@ -162,6 +164,7 @@ class Entity extends Base\PublicEntity
         self::CARDLESS_EMI,
         self::CARD_NETWORKS,
         self::PHONEPE,
+        self::PHONEPE_SWITCH,
         self::PAYLATER,
         self::PAYPAL,
     ];
@@ -201,6 +204,7 @@ class Entity extends Base\PublicEntity
         self::CARDLESS_EMI   => false,
         self::PAYLATER       => false,
         self::PHONEPE        => false,
+        self::PHONEPE_SWITCH => false,
         self::PAYPAL         => false,
     );
 
@@ -233,6 +237,7 @@ class Entity extends Base\PublicEntity
         self::CARDLESS_EMI   => false,
         self::PAYLATER       => false,
         self::PHONEPE        => false,
+        self::PHONEPE_SWITCH => false,
         self::PAYPAL         => false,
     );
 
@@ -275,6 +280,7 @@ class Entity extends Base\PublicEntity
         self::CARDLESS_EMI,
         self::PAYLATER,
         self::PHONEPE,
+        self::PHONEPE_SWITCH,
         self::PAYPAL,
     ];
 
@@ -306,6 +312,7 @@ class Entity extends Base\PublicEntity
         self::CARDLESS_EMI  => 'bool',
         self::PAYLATER      => 'bool',
         self::PHONEPE       => 'bool',
+        self::PHONEPE_SWITCH=> 'bool',
         self::PAYPAL        => 'bool',
     ];
 
@@ -423,6 +430,11 @@ class Entity extends Base\PublicEntity
     public function isOlamoneyEnabled()
     {
         return $this->getAttribute(self::OLAMONEY);
+    }
+
+    public function isPhonepeswitchEnabled()
+    {
+        return $this->getAttribute(self::PHONEPE_SWITCH);
     }
 
     public function isPhonepeEnabled()

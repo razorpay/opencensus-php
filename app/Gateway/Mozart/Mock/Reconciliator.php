@@ -553,6 +553,47 @@ class Reconciliator extends Base\Mock\PaymentReconciliator
 
         return $data;
     }
+    protected function wallet_phonepeswitch($input)
+    {
+        $this->fileExtension = FileStore\Format::CSV;
+
+        $this->fileToWriteName = 'Recon_' . Carbon::now(Timezone::IST)->format('dmY');
+
+        $data = [];
+
+        foreach ($input as $row)
+        {
+            $date = Carbon::createFromTimestamp(
+                $row['payment']['created_at'],
+                Timezone::IST)
+                ->format('d-m-Y');
+
+            $col = [
+                WalletPhonepe\ReconFields::PAYMENT_TYPE         => 'PAYMENT',
+                WalletPhonepe\ReconFields::RZP_ID               => $row['payment']['id'],
+                WalletPhonepe\ReconFields::ORDER_ID             => $row['payment']['id'],
+                WalletPhonepe\ReconFields::PHONEPE_ID           => $this->fetchFieldFromJsonData(
+                    $row['mozart']['raw'],
+                    'providerReferenceId'),
+                WalletPhonepe\ReconFields::FROM                 => $date,
+                WalletPhonepe\ReconFields::CREATION_DATE        => $date,
+                WalletPhonepe\ReconFields::TRANSACTION_DATE     => $date,
+                WalletPhonepe\ReconFields::SETTLEMENT_DATE      => $date,
+                WalletPhonepe\ReconFields::BANK_REFERENCE_NO    => 'N0000012345',
+                WalletPhonepe\ReconFields::AMOUNT               => $row['payment']['amount']/100,
+                WalletPhonepe\ReconFields::FEE                  => '0',
+                WalletPhonepe\ReconFields::IGST                 => '0',
+                WalletPhonepe\ReconFields::CGST                 => '0',
+                WalletPhonepe\ReconFields::SGST                 => '0',
+            ];
+
+            $this->content($col, 'col_payment_wallet_phonepeswitch_recon');
+
+            $data[] = $col;
+        }
+
+        return $data;
+    }
 
     public function generateReconciliation(array $input)
     {

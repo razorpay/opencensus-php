@@ -315,6 +315,35 @@ class VerifyData extends Base\Mock\Server
         return $response;
     }
 
+    public static function wallet_phonepeswitch($entities)
+    {
+        $response = [
+            'data' =>
+                [
+                    '_raw '                 => '',
+                    'code'                  => 'PAYMENT_SUCCESS',
+                    'amount'                => $entities['payment']['amount'],
+                    'merchantId'            => 'abc',
+                    "data_status"           => "SUCCESS",
+                    'payResponseCode'       => 'SUCCESS',
+                    'providerReferenceId'   => 'phonepeProviderRefId',
+                    'transactionId'         => $entities['payment']['id'],
+                    'paymentId'             => $entities['payment']['id'],
+                    'message'               => 'Your payment is successful.',
+                    'received'              => true,
+                    'status'                => 'verification_successful',
+                    'success'               => true
+                ],
+            'error'             => null,
+            'external_trace_id' => '',
+            'mozart_id'         => '',
+            'next'              => [],
+            'success'           => true,
+        ];
+
+        return $response;
+    }
+
     public static function getsimpl($entities)
     {
         $response = [

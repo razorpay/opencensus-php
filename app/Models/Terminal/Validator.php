@@ -110,6 +110,7 @@ class Validator extends Base\Validator
         Payment\Gateway::PAYTM,
         Payment\Gateway::BAJAJFINSERV,
         Payment\Gateway::WALLET_PHONEPE,
+        Payment\Gateway::WALLET_PHONEPESWITCH,
         Payment\Gateway::WALLET_PAYPAL,
         Payment\Gateway::UPI_AIRTEL,
         Payment\Gateway::ISG,
@@ -562,6 +563,13 @@ class Validator extends Base\Validator
         Entity::GATEWAY_MERCHANT_ID        => 'required|string',
     ];
 
+    protected static $walletPhonepeswitchTerminalRules = [
+        Entity::GATEWAY                    => 'required|in:wallet_phonepeswitch',
+        Entity::GATEWAY_SECURE_SECRET      => 'required|string',
+        Entity::GATEWAY_SECURE_SECRET2     => 'required|string',
+        Entity::GATEWAY_MERCHANT_ID        => 'required|string',
+    ];
+
     protected static $walletPaypalTerminalRules = [
         Entity::GATEWAY                                 => 'required|in:wallet_paypal',
         Entity::GATEWAY_MERCHANT_ID                     => 'required|string',
@@ -584,6 +592,12 @@ class Validator extends Base\Validator
     protected static $walletPhonepeEditTerminalRules = [
         Entity::GATEWAY_SECURE_SECRET      => 'sometimes|string',
         Entity::GATEWAY_ACCESS_CODE        => 'sometimes|string',
+        Entity::GATEWAY_MERCHANT_ID        => 'sometimes|string',
+    ];
+
+    protected static $walletPhonepeswitchEditTerminalRules = [
+        Entity::GATEWAY_SECURE_SECRET      => 'sometimes|string',
+        Entity::GATEWAY_SECURE_SECRET2     => 'sometimes|string',
         Entity::GATEWAY_MERCHANT_ID        => 'sometimes|string',
     ];
 

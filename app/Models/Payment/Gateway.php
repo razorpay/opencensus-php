@@ -93,18 +93,19 @@ class Gateway
 
     const CARD_FSS               = 'card_fss';
 
-    const WALLET_AIRTELMONEY = 'wallet_airtelmoney';
-    const WALLET_AMAZONPAY   = 'wallet_amazonpay';
-    const WALLET_FREECHARGE  = 'wallet_freecharge';
-    const WALLET_JIOMONEY    = 'wallet_jiomoney';
-    const WALLET_SBIBUDDY    = 'wallet_sbibuddy';
-    const WALLET_MPESA       = 'wallet_mpesa';
-    const WALLET_OLAMONEY    = 'wallet_olamoney';
-    const WALLET_OPENWALLET  = 'wallet_openwallet';
-    const WALLET_PAYUMONEY   = 'wallet_payumoney';
-    const WALLET_PAYZAPP     = 'wallet_payzapp';
-    const WALLET_PHONEPE     = 'wallet_phonepe';
-    const WALLET_PAYPAL      = 'wallet_paypal';
+    const WALLET_AIRTELMONEY        = 'wallet_airtelmoney';
+    const WALLET_AMAZONPAY          = 'wallet_amazonpay';
+    const WALLET_FREECHARGE         = 'wallet_freecharge';
+    const WALLET_JIOMONEY           = 'wallet_jiomoney';
+    const WALLET_SBIBUDDY           = 'wallet_sbibuddy';
+    const WALLET_MPESA              = 'wallet_mpesa';
+    const WALLET_OLAMONEY           = 'wallet_olamoney';
+    const WALLET_OPENWALLET         = 'wallet_openwallet';
+    const WALLET_PAYUMONEY          = 'wallet_payumoney';
+    const WALLET_PAYZAPP            = 'wallet_payzapp';
+    const WALLET_PHONEPE            = 'wallet_phonepe';
+    const WALLET_PHONEPESWITCH      = 'wallet_phonepeswitch';
+    const WALLET_PAYPAL             = 'wallet_paypal';
 
     const CARDLESS_EMI       = 'cardless_emi';
     const PAYLATER           = 'paylater';
@@ -702,6 +703,7 @@ class Gateway
         Payment\Gateway::MOBIKWIK,
         Payment\Gateway::NETBANKING_AIRTEL,
         Payment\Gateway::WALLET_MPESA,
+        Payment\Gateway::WALLET_PHONEPESWITCH,
         Payment\Gateway::ISG,
         Payment\Gateway::BILLDESK,
         Payment\Gateway::BT_YESBANK,
@@ -868,6 +870,7 @@ class Gateway
             self::WALLET_MPESA,
             self::WALLET_AMAZONPAY,
             self::WALLET_PHONEPE,
+            self::WALLET_PHONEPESWITCH,
             self::WALLET_PAYPAL,
         ],
 
@@ -1209,20 +1212,21 @@ class Gateway
     ];
 
     public static $walletToGatewayMap = [
-        Wallet::OLAMONEY    => Gateway::WALLET_OLAMONEY,
-        Wallet::PAYTM       => Gateway::PAYTM,
-        Wallet::MOBIKWIK    => Gateway::MOBIKWIK,
-        Wallet::PAYZAPP     => Gateway::WALLET_PAYZAPP,
-        Wallet::PAYUMONEY   => Gateway::WALLET_PAYUMONEY,
-        Wallet::AIRTELMONEY => Gateway::WALLET_AIRTELMONEY,
-        Wallet::FREECHARGE  => Gateway::WALLET_FREECHARGE,
-        Wallet::JIOMONEY    => Gateway::WALLET_JIOMONEY,
-        Wallet::SBIBUDDY    => Gateway::WALLET_SBIBUDDY,
-        Wallet::OPENWALLET  => Gateway::WALLET_OPENWALLET,
-        Wallet::MPESA       => Gateway::WALLET_MPESA,
-        Wallet::AMAZONPAY   => Gateway::WALLET_AMAZONPAY,
-        Wallet::PHONEPE     => Gateway::WALLET_PHONEPE,
-        Wallet::PAYPAL      => Gateway::WALLET_PAYPAL,
+        Wallet::OLAMONEY           => Gateway::WALLET_OLAMONEY,
+        Wallet::PAYTM              => Gateway::PAYTM,
+        Wallet::MOBIKWIK           => Gateway::MOBIKWIK,
+        Wallet::PAYZAPP            => Gateway::WALLET_PAYZAPP,
+        Wallet::PAYUMONEY          => Gateway::WALLET_PAYUMONEY,
+        Wallet::AIRTELMONEY        => Gateway::WALLET_AIRTELMONEY,
+        Wallet::FREECHARGE         => Gateway::WALLET_FREECHARGE,
+        Wallet::JIOMONEY           => Gateway::WALLET_JIOMONEY,
+        Wallet::SBIBUDDY           => Gateway::WALLET_SBIBUDDY,
+        Wallet::OPENWALLET         => Gateway::WALLET_OPENWALLET,
+        Wallet::MPESA              => Gateway::WALLET_MPESA,
+        Wallet::AMAZONPAY          => Gateway::WALLET_AMAZONPAY,
+        Wallet::PHONEPE            => Gateway::WALLET_PHONEPE,
+        Wallet::PHONEPE_SWITCH     => Gateway::WALLET_PHONEPESWITCH,
+        Wallet::PAYPAL             => Gateway::WALLET_PAYPAL,
     ];
 
     public static $upiToGatewayMap = [

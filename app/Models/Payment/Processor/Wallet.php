@@ -8,36 +8,38 @@ use RZP\Models\Payment;
 
 class Wallet
 {
-    const PAYTM       = 'paytm';
-    const PAYZAPP     = 'payzapp';
-    const MOBIKWIK    = 'mobikwik';
-    const PAYUMONEY   = 'payumoney';
-    const OLAMONEY    = 'olamoney';
-    const AIRTELMONEY = 'airtelmoney';
-    const AMAZONPAY   = 'amazonpay';
-    const FREECHARGE  = 'freecharge';
-    const JIOMONEY    = 'jiomoney';
-    const SBIBUDDY    = 'sbibuddy';
-    const OPENWALLET  = 'openwallet';
-    const MPESA       = 'mpesa';
-    const PHONEPE     = 'phonepe';
-    const PAYPAL      = 'paypal';
+    const PAYTM             = 'paytm';
+    const PAYZAPP           = 'payzapp';
+    const MOBIKWIK          = 'mobikwik';
+    const PAYUMONEY         = 'payumoney';
+    const OLAMONEY          = 'olamoney';
+    const AIRTELMONEY       = 'airtelmoney';
+    const AMAZONPAY         = 'amazonpay';
+    const FREECHARGE        = 'freecharge';
+    const JIOMONEY          = 'jiomoney';
+    const SBIBUDDY          = 'sbibuddy';
+    const OPENWALLET        = 'openwallet';
+    const MPESA             = 'mpesa';
+    const PHONEPE           = 'phonepe';
+    const PAYPAL            = 'paypal';
+    const PHONEPE_SWITCH    = 'phonepeswitch';
 
     public static $fullName = array(
-        self::MOBIKWIK      => 'Mobikwik',
-        self::OLAMONEY      => 'Olamoney (Postpaid + Wallet)',
-        self::PAYTM         => 'Paytm',
-        self::PAYUMONEY     => 'Payumoney',
-        self::PAYZAPP       => 'Payzapp',
-        self::AIRTELMONEY   => 'Airtelmoney',
-        self::FREECHARGE    => 'Freecharge',
-        self::JIOMONEY      => 'JioMoney',
-        self::SBIBUDDY      => 'SBI Buddy',
-        self::OPENWALLET    => 'RZP Open Wallet',
-        self::MPESA         => 'Vodafone mPesa',
-        self::AMAZONPAY     => 'AmazonPay',
-        self::PHONEPE       => 'PhonePe',
-        self::PAYPAL        => 'PayPal',
+        self::MOBIKWIK          => 'Mobikwik',
+        self::OLAMONEY          => 'Olamoney (Postpaid + Wallet)',
+        self::PAYTM             => 'Paytm',
+        self::PAYUMONEY         => 'Payumoney',
+        self::PAYZAPP           => 'Payzapp',
+        self::AIRTELMONEY       => 'Airtelmoney',
+        self::FREECHARGE        => 'Freecharge',
+        self::JIOMONEY          => 'JioMoney',
+        self::SBIBUDDY          => 'SBI Buddy',
+        self::OPENWALLET        => 'RZP Open Wallet',
+        self::MPESA             => 'Vodafone mPesa',
+        self::AMAZONPAY         => 'AmazonPay',
+        self::PHONEPE           => 'PhonePe',
+        self::PAYPAL            => 'PayPal',
+        self::PHONEPE_SWITCH    => 'PhonePe Switch',
     );
 
     public static $emailRequiredWallets = array(
@@ -68,6 +70,7 @@ class Wallet
         self::PAYUMONEY,
         self::PHONEPE,
         self::SBIBUDDY,
+        self::PHONEPE_SWITCH,
     );
 
     public static function exists($wallet)

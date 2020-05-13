@@ -764,19 +764,21 @@ class Gateway extends Base\Gateway
 
     public function immediateVerifyApplicable($input)
     {
-        if ( in_array($input['payment'][Payment\Entity::METHOD], [
-                Payment\Method::NETBANKING,
-                Payment\Method::WALLET,
-            ], true) === true)
-        {
-            if ($this->getGateway($input) === 'wallet_paypal')
-            {
-                return false;
-            }
-            return true;
-        }
+        $immediateVerifyEnabledMethods = [
+            Payment\Method::NETBANKING,
+            Payment\Method::WALLET,
+        ];
 
-        if (in_array($input['payment'][Payment\Entity::GATEWAY], Payment\Gateway::$immediateVerifyGateways, true) === true)
+        $immediateVerifyDisabledNetbankingWalletGateways = [
+        Payment\Gateway::WALLET_PHONEPESWITCH,
+        Payment\Gateway::WALLET_PAYPAL,
+    ];
+
+        if (((in_array($input['payment'][Payment\Entity::METHOD], $immediateVerifyEnabledMethods, true) === true)
+            and
+            (in_array($input['payment'][Payment\Entity::GATEWAY], $immediateVerifyDisabledNetbankingWalletGateways, true) === false))
+            or
+            (in_array($input['payment'][Payment\Entity::GATEWAY], Payment\Gateway::$immediateVerifyGateways, true) === true))
         {
             return true;
         }
@@ -1427,6 +1429,13 @@ class Gateway extends Base\Gateway
                 Action::CHECK_BALANCE   => Action::CHECKACCOUNT,
                 Action::PAY_INIT        => Action::CHECKACCOUNT,
                 Action::VERIFY          => Action::CHECKACCOUNT,
+            ],
+            Payment\Gateway::WALLET_PHONEPESWITCH  =>  [
+                Action::PAY_INIT        => null,
+                Action::PAY_VERIFY      => null,
+                Action::VERIFY          => null,
+                Action::REFUND          => null,
+                Action::VERIFY_REFUND   => null,
             ]
         ];
 
@@ -1557,7 +1566,14 @@ class Gateway extends Base\Gateway
                 Action::CHECK_BALANCE   => Action::CHECKACCOUNT,
                 Action::PAY_INIT        => Action::CHECKACCOUNT,
                 Action::VERIFY          => Action::CHECKACCOUNT,
-            ]
+            ],
+            Payment\Gateway::WALLET_PHONEPESWITCH  =>  [
+                Action::PAY_INIT        => null,
+                Action::PAY_VERIFY      => null,
+                Action::VERIFY          => null,
+                Action::REFUND          => null,
+                Action::VERIFY_REFUND   => null,
+            ],
         ];
 
         return $previousActionForData[$gateway][$this->action];
@@ -1841,6 +1857,7 @@ class Gateway extends Base\Gateway
             Payment\Gateway::UPI_CITI,
             Payment\Gateway::UPI_JUSPAY,
             Payment\Gateway::WALLET_PHONEPE,
+            Payment\Gateway::WALLET_PHONEPESWITCH,
             Payment\Gateway::WALLET_PAYPAL,
             Payment\Gateway::NETBANKING_UBI,
             Payment\Gateway::NETBANKING_YESB,

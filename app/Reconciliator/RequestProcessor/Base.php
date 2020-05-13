@@ -108,6 +108,7 @@ class Base extends Core
     const AMEX                   = 'Amex';
     const CARDLESS_EMI_FLEXMONEY = 'CardlessEmiFlexMoney';
     const PHONEPE                = 'Phonepe';
+    const PHONEPE_SWITCH         = 'Phonepeswitch';
     const PAYPAL                 = 'Paypal';
     const BAJAJFINSERV           = 'BajajFinserv';
     const GETSIMPL               = 'Getsimpl';
@@ -179,6 +180,7 @@ class Base extends Core
         self::AMEX                   => [],
         self::ISG                    => ['Helpdesk.Upiacquiring@kotak.com'],
         self::PHONEPE                => [],
+        self::PHONEPE_SWITCH         => [],
         self::PAYLATER_ICICI         => [],
         self::CARDLESS_EMI_FLEXMONEY => ['tejal.gangadhar@flexmoney.in', 'prahalad.rao@flexmoney.in'],
         self::PAYPAL                 => [],
@@ -286,6 +288,7 @@ class Base extends Core
         Gateway::WALLET_PAYUMONEY       => self::PAYUMONEY,
         Gateway::WALLET_PAYZAPP         => self::PAYZAPP,
         Gateway::WALLET_PHONEPE         => self::PHONEPE,
+        Gateway::WALLET_PHONEPESWITCH   => self::PHONEPE_SWITCH,
         Gateway::WALLET_PAYPAL          => self::PAYPAL,
         Gateway::GETSIMPL               => self::GETSIMPL,
         Gateway::CARDLESS_EMI           => [

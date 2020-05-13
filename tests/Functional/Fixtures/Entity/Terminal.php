@@ -3362,6 +3362,27 @@ class Terminal extends Base
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
+    public function createSharedPhonepeswitchTerminal(array $attributes = [])
+    {
+        $sharedMerchantAccount = \RZP\Models\Merchant\Account::SHARED_ACCOUNT;
+
+        $defaultValues = [
+            'id'                        => '1ShrdPhnpeSTrm',
+            'merchant_id'               => $sharedMerchantAccount,
+            'gateway'                   => 'wallet_phonepeswitch',
+            'card'                      => 0,
+            'netbanking'                => 0,
+            'shared'                    => 0,
+            'gateway_merchant_id'       => 'RazorpayPhonepe',
+            'gateway_secure_secret'     => 'secure_secret',
+            'gateway_secure_secret2'    => 'access_code',
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
     public function createSharedPaypalTerminal(array $attributes = [])
     {
         $sharedMerchantAccount = \RZP\Models\Merchant\Account::SHARED_ACCOUNT;

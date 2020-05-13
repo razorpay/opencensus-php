@@ -28,7 +28,7 @@ class PhonepeReconciliationTest extends TestCase
 
     private $sharedTerminal;
 
-    private $wallet = Wallet::PHONEPE;
+    protected $wallet = Wallet::PHONEPE;
 
     protected $method = Payment\Method::WALLET;
 
@@ -51,13 +51,13 @@ class PhonepeReconciliationTest extends TestCase
 
         $payment = $this->getDbLastEntity('payment');
 
-        $this->createMozartEntity($paymentId, $payment['amount'], 'wallet_phonepe');
+        $this->createMozartEntity($paymentId, $payment['amount'], $this->gateway);
 
-        $fileContents = $this->generateFile('phonepe', ['gateway' => 'wallet_phonepe']);
+        $fileContents = $this->generateFile($this->wallet, ['gateway' => $this->gateway]);
 
         $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
 
-        $this->reconcile( $uploadedFile,'Phonepe' );
+        $this->reconcile( $uploadedFile, studly_case($this->wallet));
 
         $gatewayEntity = $this->getDbLastEntity('mozart');
 
@@ -85,14 +85,16 @@ class PhonepeReconciliationTest extends TestCase
 
         $payment = $this->getDbLastEntity('payment');
 
-        $this->createMozartEntity($paymentId, $payment['amount'], 'wallet_phonepe');
+        $this->createMozartEntity($paymentId, $payment['amount'], $this->gateway);
 
         $this->refundPayment('pay_' . $paymentId);
 
         $this->mockReconContentFunction(
             function(& $content, $action = null)
             {
-                if ($action === 'col_payment_wallet_phonepe_recon')
+                $gatewayAction = 'col_payment_'.$this->gateway.'_recon';
+
+                if ($action === $gatewayAction)
                 {
                     $refund = $this->getDbLastEntityToArray('refund', 'test');
 
@@ -103,11 +105,11 @@ class PhonepeReconciliationTest extends TestCase
                 }
             });
 
-        $fileContents = $this->generateFile('phonepe', ['gateway' => 'wallet_phonepe']);
+        $fileContents = $this->generateFile($this->wallet, ['gateway' => $this->gateway]);
 
         $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
 
-        $this->reconcile( $uploadedFile, 'Phonepe');
+        $this->reconcile( $uploadedFile, studly_case($this->wallet));
 
         $response = $this->getLastEntity('batch', true);
 
@@ -134,12 +136,14 @@ class PhonepeReconciliationTest extends TestCase
 
         $payment = $this->getDbLastEntity('payment');
 
-        $this->createMozartEntity($paymentId, $payment['amount'], 'wallet_phonepe');
+        $this->createMozartEntity($paymentId, $payment['amount'], $this->gateway);
 
         $this->mockReconContentFunction(
             function(& $content, $action = '')
             {
-                if ($action === 'col_payment_wallet_phonepe_recon')
+                $gatewayAction = 'col_payment_'.$this->gateway.'_recon';
+
+                if ($action === $gatewayAction)
                 {
                     $content[ReconFields::FEE] = -1.0001;
                     $content[ReconFields::SGST] = -0.0001;
@@ -148,11 +152,11 @@ class PhonepeReconciliationTest extends TestCase
                 }
             });
 
-        $fileContents = $this->generateFile('phonepe', ['gateway' => 'wallet_phonepe']);
+        $fileContents = $this->generateFile($this->wallet, ['gateway' => $this->gateway]);
 
         $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
 
-        $this->reconcile( $uploadedFile,'Phonepe' );
+        $this->reconcile( $uploadedFile, studly_case($this->wallet));
 
         $gatewayEntity = $this->getDbLastEntity('mozart');
 
@@ -178,22 +182,24 @@ class PhonepeReconciliationTest extends TestCase
 
         $payment = $this->getDbLastEntity('payment');
 
-        $this->createMozartEntity($paymentId, $payment['amount'], 'wallet_phonepe');
+        $this->createMozartEntity($paymentId, $payment['amount'], $this->gateway);
 
         $this->mockReconContentFunction(
             function(& $content, $action = '')
             {
-                if ($action === 'col_payment_wallet_phonepe_recon')
+                $gatewayAction = 'col_payment_'.$this->gateway.'_recon';
+
+                if ($action === $gatewayAction)
                 {
                     $content[ReconFields::AMOUNT] = 1;
                 }
             });
 
-        $fileContents = $this->generateFile('phonepe', ['gateway' => 'wallet_phonepe']);
+        $fileContents = $this->generateFile($this->wallet, ['gateway' => $this->gateway]);
 
         $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
 
-        $this->reconcile( $uploadedFile,'Phonepe' );
+        $this->reconcile( $uploadedFile, studly_case($this->wallet));
 
         $transactionEntity = $this->getDbLastEntity('transaction');
 

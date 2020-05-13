@@ -2293,6 +2293,24 @@ return [
         ]
     ],
 
+    'testCreateWalletPhonepeSwitchTerminal'  => [
+        'request' => [
+            'content' => [
+                'gateway'                   => 'wallet_phonepeswitch',
+                'gateway_merchant_id'       => 'merchant_id',
+                'gateway_secure_secret'     => 'secure_secret',
+                'gateway_secure_secret2'    => 'access_code',
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content'  => [
+                'gateway_merchant_id'  => 'merchant_id',
+                'enabled'              => true,
+            ]
+        ]
+    ],
+
     'testCreateWalletPaypalTerminal'  => [
         'request' => [
             'content' => [

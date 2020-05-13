@@ -170,6 +170,42 @@ class PayInitData extends Base\Mock\Server
         return $response;
     }
 
+    public function wallet_phonepeswitch($entities)
+    {
+        $this->gateway = $entities['payment']['gateway'];
+
+        $url = $this->route->getUrlWithPublicAuth(
+            'mock_mozart_payment_post',
+            [
+                'gateway' => $entities['payment']['gateway'],
+                'paymentId' => $entities['payment']['id']
+            ]);
+
+        $response = [
+            'data' => [
+                '_raw'        => '',
+                'code'        => 'SUCCESS',
+                'redirectUrl' => 'phonepe://checkoutResolve?reservationId=R2003021518197620892086\u0026redirectUrl=https://zeta-api.razorpay.com/v1/callback/wallet_phonepeswitch',
+                'received'    => true,
+                'status'      => 'authorization_successfull',
+                'success'     => true
+            ],
+            'error'             => null,
+            'external_trace_id' => '',
+            'mozart_id'         => '',
+            'next'              => [
+                'redirect'      => [
+                    'content' => [],
+                    'method'  => 'post',
+                    'url'     => $url,
+                ]
+            ],
+            'success' => true
+        ];
+
+        return $response;
+    }
+
     public function upi_airtel($entities)
     {
         $response = [

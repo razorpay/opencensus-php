@@ -323,6 +323,26 @@ class Server extends Base\Mock\Server
         return $this->makePostResponse($request);
     }
 
+    protected function wallet_phonepeswitch($input)
+    {
+        $content = $input;
+
+        $paymentId = $content['paymentId'];
+
+        $this->content($content, 'authorize');
+
+        $publicId = $this->getSignedPaymentId($paymentId);
+
+        $url = $this->route->getPublicCallbackUrlWithHash($publicId);
+        $request = [
+            'url'          => $url,
+            'content'      => $content,
+            'method'       => 'post',
+        ];
+
+        return $this->makePostResponse($request);
+    }
+
     protected function wallet_paypal($input)
     {
         $content = [
