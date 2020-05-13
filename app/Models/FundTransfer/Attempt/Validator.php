@@ -6,6 +6,7 @@ use App;
 
 use RZP\Base;
 use RZP\Constants;
+use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Models\FundAccount;
@@ -139,6 +140,8 @@ class Validator extends Base\Validator
 
         $channel = $attempt->getChannel();
 
+        $app = App::getFacadeRoot();
+
         if ($attempt->hasMode() === false)
         {
             return;
@@ -148,7 +151,29 @@ class Validator extends Base\Validator
         {
             $cardIssuer = $attempt->card->getIssuer();
 
-            $app = App::getFacadeRoot();
+            $iin = $attempt->card->iinRelation;
+
+            if (empty($iin) === false)
+            {
+                $iinIssuer = $iin->getIssuer();
+
+                if ($iinIssuer !== $cardIssuer)
+                {
+                    $app['trace']->info(
+                        TraceCode::FTA_CARD_IIN_ISSUER_MISMATCH,
+                        [
+                            'fta_id'      => $attempt->getId(),
+                            'iin'         => $iin->getIin(),
+                            'card_id'     => $attempt->card->getId(),
+                            'card_issuer' => $cardIssuer,
+                            'iin_issuer'  => $iin->getIssuer(),
+                        ]
+                    );
+
+                    // IIN is source of truth
+                    $cardIssuer = $iinIssuer;
+                }
+            }
 
             $variant = $app->razorx->getTreatment(
                 $attempt->getMerchantId(),
@@ -161,6 +186,17 @@ class Validator extends Base\Validator
                 ($variant === 'on'))
             {
                 $cardIssuer = FundTransferAttemptConstants::DEFAULT_ISSUER;
+            }
+
+            //
+            // Issuer is being directly fetched from IIN entity
+            // If IIN entity is not present, then card issuer is null - this has been observed only in the case of
+            // Amex Cards. Hence, we are throwing error to check if any other cases have this issue where
+            // IIN is not present for the card
+            //
+            if (empty($cardIssuer) === true)
+            {
+                throw new BadRequestValidationFailureException("Issuer is null");
             }
 
             $networkCode = $attempt->card->getNetworkCode();

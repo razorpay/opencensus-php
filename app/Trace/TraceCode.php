@@ -986,6 +986,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const FTA_RECON_REPORT_FILE_CREATED                         = 'FTA_RECON_REPORT_FILE_CREATED';
     const FTA_RECON_REPORT_INITIATED                            = 'FTA_RECON_REPORT_INITIATED';
+    const FTA_CARD_IIN_ISSUER_MISMATCH                          = 'FTA_CARD_IIN_ISSUER_MISMATCH';
     const LOCKED_FUND_TRANSFER_ATTEMPTS                         = 'LOCKED_FUND_TRANSFER_ATTEMPTS';
     const SETTLEMENT_DELAYED_MF_CHECK                           = 'SETTLEMENT_DELAYED_MF_CHECK';
     const SETTLEMENT_REVERSE_FILE_SKIPPED                       = 'SETTLEMENT_REVERSE_FILE_SKIPPED';
