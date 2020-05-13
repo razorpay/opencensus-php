@@ -45,16 +45,9 @@ class FundTransfer extends BaseFundTransfer
         $this->FTACore->updateFTA($this->fta, $ftsTransferId, $responseBody[Constants::STATUS]);
     }
 
-    public function initialize(string $ftaId): bool
+    public function initialize(string $ftaId)
     {
-        $this->fta = $this->FTACore->getFTAEntityWithIdAndStatus($ftaId, Constants::STATUS_CREATED, null);
-
-        if (empty($this->fta) === true)
-        {
-            return false;
-        }
-
-        return true;
+        $this->fta = $this->FTACore->getFTAEntity($ftaId);
     }
 
     public function shouldAllowTransfersViaFts()

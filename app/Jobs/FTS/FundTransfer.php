@@ -54,20 +54,7 @@ class FundTransfer extends Job
 
             $transferService = App::getFacadeRoot()['fts_fund_transfer'];
 
-            $initializeSuccess = $transferService->initialize($this->ftaId);
-
-            if ($initializeSuccess === false) {
-
-                $this->trace->info(TraceCode::FTS_FUND_TRANSFER_INITIALISATION_FAILED,
-                    [
-                        'fta_id' => $this->ftaId,
-                    ]);
-
-                $this->delete();
-
-                return;
-
-            }
+            $transferService->initialize($this->ftaId);
 
             list($initiateTransfers, $reason) = $transferService->shouldAllowTransfersViaFts();
 
