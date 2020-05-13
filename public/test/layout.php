@@ -114,32 +114,32 @@ t.oninput = () => {
 }
 
 $('#keys').onclick = t.onkeydown = e => {
-  var isStage = window.location.hostname.toLowerCase().indexOf('.stage.razorpay.') >= 0;
-  var isFunc = window.location.hostname.toLowerCase().indexOf('.func.razorpay.') >= 0;
-  var isDark = window.location.hostname.toLowerCase().indexOf('api-dark') >= 0;
-  var source = 'checkout.razorpay.com';
-
-  if (isStage) {
-    source = 'checkout.stage.razorpay.in';
-  } else if (isFunc) {
-    source = 'checkout.func.razorpay.in';
-  } else if (isDark) {
-    source = 'checkout-dark.razorpay.com';
-  }
-
-  // Remove existing iframes
-  var iframes = document.querySelectorAll('iframe');
-  if (iframes) {
-    for (var i = 0; i < iframes.length; i++) {
-      iframes[i].remove();
-    } 
-  }
-
-  // Create iframes
-  var i = document.createElement('iframe');
-  document.body.appendChild(i);
-
   if (e.type === 'click' || (e.code === "Enter" && (e.ctrlKey||e.metaKey||e.shiftKey||e.altKey))) {
+    var isStage = window.location.hostname.toLowerCase().indexOf('.stage.razorpay.') >= 0;
+    var isFunc = window.location.hostname.toLowerCase().indexOf('.func.razorpay.') >= 0;
+    var isDark = window.location.hostname.toLowerCase().indexOf('api-dark') >= 0;
+    var source = 'checkout.razorpay.com';
+
+    if (isStage) {
+      source = 'checkout.stage.razorpay.in';
+    } else if (isFunc) {
+      source = 'checkout.func.razorpay.in';
+    } else if (isDark) {
+      source = 'checkout-dark.razorpay.com';
+    }
+
+    // Remove existing iframes
+    var iframes = document.querySelectorAll('iframe');
+    if (iframes) {
+      for (var i = 0; i < iframes.length; i++) {
+        iframes[i].remove();
+      } 
+    }
+
+    // Create iframes
+    var i = document.createElement('iframe');
+    document.body.appendChild(i);
+
     i.className = 'open';
     i.contentDocument.write(`
       <script>
