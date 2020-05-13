@@ -230,6 +230,11 @@ class Core extends Base\Core
             $data['upi_intent'] = true;
         }
 
+        if ($merchant->isFeatureEnabled(Constants::UPI_OTM) === true)
+        {
+            $data['upi_otm'] = true;
+        }
+
         if ($merchant->isFeatureEnabled(Constants::GOOGLE_PAY_CARDS) === true)
         {
             $data[Entity::GOOGLE_PAY_CARDS] = true;

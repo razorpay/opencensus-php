@@ -6887,6 +6887,8 @@ class MerchantTest extends TestCase
 
         $response = $this->getPreferences();
 
+        $this->assertArrayHasKey('upi_otm', $response['methods']);
+        $this->assertSame(true, $response['methods']['upi_otm']);
         $this->assertArrayKeysExist($response['features'], ['upi_otm']);
         $this->assertSame(true, $response['features']['upi_otm']);
     }
