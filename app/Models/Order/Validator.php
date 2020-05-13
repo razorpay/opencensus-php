@@ -51,6 +51,7 @@ class Validator extends Base\Validator
         Entity::FORCE_OFFER                        => 'filled|boolean',
         Entity::PARTIAL_PAYMENT                    => 'sometimes|boolean',
         Entity::CHECKOUT_CONFIG_ID                 => 'filled|size:14',
+        Entity::PHONEPE_SWITCH_CONTEXT             => 'sometimes|json|max:3000',
     ];
 
     protected static $createValidators = [

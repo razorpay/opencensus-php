@@ -246,6 +246,53 @@ return [
         ],
     ],
 
+    'testCreateOrderWithPhonepeSwitchContext' => [
+        'request' => [
+            'content' => [
+                'amount'                 => 50000,
+                'currency'               => 'INR',
+                'payment_capture'        => '1',
+                'receipt'                => 'merchant_txn_id',
+                'phonepe_switch_context' => "{\"transactionContext\":{\"orderContext\":{\"trackingInfo\":{\"type\":\"HTTPS\",\"url\":\"https://google.com\"}},\"fareDetails\":{\"payableAmount\":3900,\"totalAmount\":3900},\"cartDetails\":{\"cartItems\":[{\"quantity\":1,\"address\":{\"addressString\":\"TEST\",\"city\":\"TEST\",\"pincode\":\"TEST\",\"country\":\"TEST\",\"latitude\":1,\"longitude\":1},\"shippingInfo\":{\"deliveryType\":\"STANDARD\",\"time\":{\"timestamp\":1561540218,\"zoneOffSet\":\"+05:30\"}},\"category\":\"SHOPPING\",\"itemId\":\"1234567890\",\"price\":3900,\"itemName\":\"TEST\"}]}}}",
+            ],
+            'method'    => 'POST',
+            'url'       => '/orders',
+        ],
+        'response' => [
+            'content' => [
+                'amount'         => 50000,
+                'currency'       => 'INR',
+                'receipt'        => 'merchant_txn_id',
+            ],
+        ],
+    ],
+
+    'testCreateOrderWithInvalidPhonepeSwitchContext' => [
+        'request' => [
+            'content' => [
+                'amount'                 => 50000,
+                'currency'               => 'INR',
+                'payment_capture'        => '1',
+                'receipt'                => 'merchant_txn_id',
+                'phonepe_switch_context' => "transactionContext",
+            ],
+            'method'    => 'POST',
+            'url'       => '/orders',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The phonepe switch context must be a valid JSON string.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+        ],
+    ],
     'testCreateOrderWithoutReceipt' => [
         'request' => [
             'method'  => 'POST',

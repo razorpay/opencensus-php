@@ -137,6 +137,8 @@ class Entity extends Base\PublicEntity
     
     const PROVIDER_CONTEXT = 'provider_context';
 
+    const PHONEPE_SWITCH_CONTEXT = 'phonepe_switch_context';
+    
     protected $fillable = [
         self::DISCOUNT,
         self::AMOUNT,
@@ -171,6 +173,7 @@ class Entity extends Base\PublicEntity
         self::BANK                     => null,
         self::FORCE_OFFER              => null,
         self::CHECKOUT_CONFIG_ID       => null,
+        self::PROVIDER_CONTEXT         => null,
     ];
 
     protected $public = [
@@ -247,6 +250,7 @@ class Entity extends Base\PublicEntity
 
     protected static $generators = [
         self::FORCE_OFFER,
+        self::PROVIDER_CONTEXT,
     ];
 
     const ALLOWED_LINE_ITEM_TYPES = [
@@ -358,6 +362,22 @@ class Entity extends Base\PublicEntity
             (isset($input[Entity::FORCE_OFFER]) === false))
         {
             $this->setAttribute(self::FORCE_OFFER, false);
+        }
+    }
+
+    /**
+     * Save phonepe_switch_context value to provider_context if set.
+     *
+     * This is done because provider_context needs to be standardized later on
+     *
+     * @param  array $input
+     * @return null
+     */
+    protected function generateProviderContext($input)
+    {
+        if (isset($input[Entity::PHONEPE_SWITCH_CONTEXT]) === true)
+        {
+            $this->setAttribute(self::PROVIDER_CONTEXT, $input[self::PHONEPE_SWITCH_CONTEXT]);
         }
     }
 

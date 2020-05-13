@@ -51,6 +51,26 @@ class OrderTest extends TestCase
         return $order;
     }
 
+    public function testCreateOrderWithPhonepeSwitchContext()
+    {
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->startTest();
+
+        $order =  $this->getDbLastEntity('order');
+
+        $this->assertEquals($testData['request']['content']['phonepe_switch_context'], $order['provider_context']);
+    }
+
+    public function testCreateOrderWithInvalidPhonepeSwitchContext()
+    {
+        $this->startTest();
+
+        $order =  $this->getDbLastEntity('order');
+
+        $this->assertNull($order);
+    }
+
     public function testCreateOrderForNonRegisteredBusinessLessThanMaxAmount()
     {
         $merchantId = "10000000000000";
