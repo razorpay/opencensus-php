@@ -112,7 +112,7 @@ export const offerStatusMap = {
 
 export const internationalStatusMap = {
   'access-requested': 'bg-primary',
-  approved: 'label-success',
+  enabled: 'label-success',
 };
 
 const entityMap = {
