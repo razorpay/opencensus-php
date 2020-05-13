@@ -75,4 +75,11 @@ class FTSController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function initiateBulkFtsAttempts()
+    {
+        $response = $this->app['fts_fund_transfer']->initiateBulkFtsAttempts($this->input);
+
+        return ApiResponse::json($response);
+    }
 }

@@ -360,6 +360,7 @@ final class Route
         'fts_dashboard_alert'                      => ['post',     'fts/dashboard/alert',                            'FTSController@sendAlert'                                           ],
         'fts_dashboard_sa_mappings_create'         => ['post',     'fts/dashboard/source_account_mappings',          'FTSController@createSourceAccountMappings'                         ],
         'fts_dashboard_sa_mappings_delete'         => ['delete',   'fts/dashboard/source_account_mappings',          'FTSController@deleteSourceAccountMappings'                         ],
+        'fts_bulk_attempts_initiate'               => ['post',     'fts/initiate/attempts',                          'FTSController@initiateBulkFtsAttempts'                             ],
         'nodal_file_upload_retry'                  => ['post',     'nodal_file_upload/retry',                        'FundTransferAttemptController@nodalFileUploadThroughBeam',         ],
         'channel_health_check'                     => ['post',     'channel_health_check/{channel}',                 'FundTransferAttemptController@healthCheck',                        ],
         'set_channel_action'                       => ['put',      'set_channel/{channel}/{action}',                 'FundTransferAttemptController@setChannelState',                    ],
@@ -2261,6 +2262,7 @@ final class Route
         'retry_penny_testing_cron',
         'merchant_methods_edit_internal',
         'payment_links_bulk_expire',
+        'fts_bulk_attempts_initiate',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -4337,6 +4339,7 @@ final class Route
             'payment_links_bulk_expire',
             'fee_recovery_payout_process',
             'webhook_stork_create_banking_bulk',
+            'fts_bulk_attempts_initiate',
         ],
 
         'subscriptions' => [

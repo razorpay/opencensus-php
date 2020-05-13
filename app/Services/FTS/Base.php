@@ -72,6 +72,8 @@ class Base
 
     const SOURCE_ACCOUNT_MAPPING = '/source_account_mappings';
 
+    const FUND_TRANSFER_ATTEMPTS_INITIATE_URI = '/attempts/process';
+
     // Headers
     const ACCEPT        = 'Accept';
     const ADMIN_EMAIL   = 'admin_email';

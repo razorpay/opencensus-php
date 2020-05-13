@@ -1113,4 +1113,12 @@ class FundTransfer extends Base
             Requests::DELETE,
             $input);
     }
+
+    public function initiateBulkFtsAttempts(array $input)
+    {
+        return $this->createAndSendRequest(
+            parent::FUND_TRANSFER_ATTEMPTS_INITIATE_URI,
+            Requests::POST,
+            $input);
+    }
 }
