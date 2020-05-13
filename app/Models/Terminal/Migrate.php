@@ -310,12 +310,20 @@ trait Migrate
 
         $terminal->setSyncStatus(SyncStatus::SYNC_SUCCESS);
 
+        $data = ["terminal_id" => $terminal->getId()];
+
+        $this->trace->info(TraceCode::TERMINALS_SERVICE_SYNC_SUCCESS, $data);
+
         $this->repo->terminal->saveOrFail($terminal, $options);
     }
 
     protected function processMigrateTerminalFailure(Entity $terminal)
     {
         $terminal->setSyncStatus(SyncStatus::SYNC_FAILED);
+
+        $data = ["terminal_id" => $terminal->getId()];
+
+        $this->trace->info(TraceCode::TERMINALS_SERVICE_SYNC_FAILED, $data);
 
         throw new Exception\IntegrationException('terminals service field mismatch');
     }

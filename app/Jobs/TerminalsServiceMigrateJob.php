@@ -7,6 +7,12 @@ use RZP\Models\Terminal;
 
 class TerminalsServiceMigrateJob extends Job
 {
+
+    /**
+     * @var int
+     */
+    public $timeout = 100;
+
     protected $terminalId;
 
     protected $service;
@@ -32,6 +38,8 @@ class TerminalsServiceMigrateJob extends Job
 
         try
         {
+            $this->delete();
+
             $this->trace->info(TraceCode::TERMINALS_SERVICE_MIGRATE_JOB_STARTED, $data);
 
             (new Terminal\Service)->migrateTerminalCreateOrUpdate($this->terminalId);
@@ -55,10 +63,6 @@ class TerminalsServiceMigrateJob extends Job
 
 
             $this->trace->error(TraceCode::TERMINALS_SERVICE_MIGRATE_JOB_FAILED, $data);
-        }
-        finally
-        {
-            $this->delete();
         }
     }
 }

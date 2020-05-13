@@ -64,10 +64,15 @@ class Repository extends Base\Repository
             unset($options['shouldSync']);
         }
 
-        $entity = $this->transaction(function () use (& $entity, $options, $shouldSync)
+        if ($shouldSync === false)
         {
-                if ($shouldSync === true)
-                {
+            parent::saveOrFail($entity, $options);
+
+        }
+        else
+        {
+            $entity = $this->transaction(function () use (& $entity, $options, $shouldSync) {
+                if ($shouldSync === true) {
                     $entity->setSyncStatus(SyncStatus::NOT_SYNCED);
                 }
 
@@ -75,8 +80,7 @@ class Repository extends Base\Repository
                 // id gets created on save
                 parent::saveOrFail($entity, $options);
 
-                if (Terminal\Service::shouldMigrateTerminal($shouldSync) === true)
-                {
+                if (Terminal\Service::shouldMigrateTerminal($shouldSync) === true) {
                     $entity = (new Terminal\Service)->migrateTerminalCreateOrUpdate($entity->getId());
 
                     $entity->setSyncStatus(SyncStatus::SYNC_SUCCESS);
@@ -86,7 +90,8 @@ class Repository extends Base\Repository
 
                 return $entity;
 
-        });
+            });
+        }
 
         return $entity;
     }

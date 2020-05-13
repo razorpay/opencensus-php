@@ -572,7 +572,6 @@ class Service extends Base\Service
 
         $terminal = $this->repo->transaction(function () use ($terminal, $client) {
 
-
             $this->repo->terminal->lockForUpdateAndReload($terminal);
 
             if ($terminal->isSyncStatusSuccess() === true)
