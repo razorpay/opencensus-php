@@ -682,7 +682,7 @@ $isHostedCheckout               = $hostedpage_options['enable_embedded_checkout'
     document.getElementById('chkout-header').style['background-color'] = color;
 
     var curTimeStamp = Math.floor(new Date().getTime() / 1000);
-    var isExpireByTSStale = initialData.entityData.expire_by && initialData.entityData.expire_by <= curTimeStamp;
+    var isExpireByTSStale = data.invoice.expire_by && data.invoice.expire_by <= curTimeStamp;
 
     data.invoice.status = isExpireByTSStale ? 'expired' : data.invoice.status;
 
