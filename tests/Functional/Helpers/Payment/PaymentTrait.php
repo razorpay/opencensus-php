@@ -917,7 +917,7 @@ trait PaymentTrait
         return $content;
     }
 
-    protected function refund($params)
+    protected function refund($params, $data = [])
     {
         $this->ba->privateAuth();
 
@@ -926,7 +926,15 @@ trait PaymentTrait
             'url'       => '/refunds',
             'content'   => $params);
 
-        return $this->makeRequestAndGetContent($request);
+        $refund = $this->makeRequestAndGetContent($request);
+
+        // TODO: remove merchant id check
+        if (Payment\Gateway::isScroogeGatewayAndMerchant($this->gateway) === true)
+        {
+            $this->scroogeRefund($refund, $data);
+        }
+
+        return $refund;
     }
 
     protected function refundPayment($id, $amount = null, $data = [], $reversals = [], $reverseAll = false, $auth = [])

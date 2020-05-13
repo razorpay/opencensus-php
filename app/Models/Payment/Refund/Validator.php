@@ -37,6 +37,7 @@ class Validator extends Base\Validator
         'notes'         => 'sometimes|notes',
         'amount'        => 'sometimes|integer',
         'receipt'       => 'sometimes|string|max:40',
+        'speed'         => 'sometimes|filled|in:optimum,normal',
     ];
 
     protected static $minAmountCheckRules = [
