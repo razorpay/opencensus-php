@@ -344,6 +344,16 @@ class PricingTest extends TestCase
         $this->assertContains('Unable to add rule to plan', $response['error']['description']);
     }
 
+    public function testAddPricingRuleEarlySalary()
+    {
+        $content = $this->createPricingPlan();
+
+        $testData['request']['url'] = '/pricing/'. $content['id'] . '/rule';
+
+        $this->startTest($testData);
+    }
+
+
     public function testUpdatePricingPlanRule()
     {
         $content = $this->createPricingPlan2();

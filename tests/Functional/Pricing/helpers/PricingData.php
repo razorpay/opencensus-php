@@ -1479,6 +1479,26 @@ return [
         ]
     ],
 
+    'testAddPricingRuleEarlySalary' => [
+        'request' => [
+            'content' => [
+                'payment_method'      => 'cardless_emi',
+                'payment_issuer'      => 'earlysalary',
+                'percent_rate'        => 1000,
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'plan_name'           => 'TestPlan1',
+                'payment_method'      => 'cardless_emi',
+                'payment_issuer'      => 'earlysalary',
+                'percent_rate'        => 1000,
+            ],
+        ],
+    ],
+
+
     'testUpdatePricingPlanRule' => [
         'request' => [
             'content' => [
