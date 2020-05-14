@@ -488,4 +488,14 @@ class EventCode
         'group' => 'payment_page',
         'name'  => 'payment_page.created',
     ];
+
+    const VIRTUAL_ACCOUNT_CREATED = [
+        'group' => 'virtual_account',
+        'name'  => 'virtual_account.created',
+    ];
+
+    const VIRTUAL_ACCOUNT_CLOSED = [
+        'group' => 'virtual_account',
+        'name'  => 'virtual_account.closed',
+    ];
 }

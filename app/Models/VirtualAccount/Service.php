@@ -10,6 +10,7 @@ use RZP\Models\Base;
 use RZP\Models\Order;
 use RZP\Constants\Mode;
 use RZP\Models\Payment;
+use RZP\Diag\EventCode;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
@@ -58,6 +59,8 @@ class Service extends Base\Service
             TraceCode::VIRTUAL_ACCOUNT_CREATED,
             $virtualAccount->toArrayPublic()
         );
+
+        $this->pushVaEventToDataLake($virtualAccount, EventCode::VIRTUAL_ACCOUNT_CREATED);
 
         return $virtualAccount->toArrayPublic();
     }
@@ -192,6 +195,8 @@ class Service extends Base\Service
                 $this->core->close($virtualAccount);
 
                 $success++;
+
+                $this->pushVaEventToDataLake($virtualAccount, EventCode::VIRTUAL_ACCOUNT_CLOSED, 'cron');
             }
             catch (\Exception $ex)
             {
@@ -224,6 +229,8 @@ class Service extends Base\Service
                                ->findByPublicIdAndMerchant($id, $this->merchant);
 
         $virtualAccount = $this->core->close($virtualAccount);
+
+        $this->pushVaEventToDataLake($virtualAccount, EventCode::VIRTUAL_ACCOUNT_CLOSED);
 
         return $virtualAccount->toArrayPublic();
     }
@@ -639,5 +646,30 @@ class Service extends Base\Service
         $this->trace->info(TraceCode::VIRTUAL_ACCOUNT_BULK_CLOSE_FOR_BANKING_RESPONSE, $response);
 
         return $response;
+    }
+
+    protected function pushVaEventToDataLake(Entity $virtualAccount, array $eventCode, string $source = '')
+    {
+        $properties = ['source' => 'api'];
+
+        if ($source !== '')
+        {
+            $properties['source'] = $source;
+        }
+        else if ($this->auth->isDashboardApp() === true)
+        {
+            $properties['source'] = 'dashboard';
+        }
+        else if ($this->app['request.ctx']->getRoute() === 'virtual_account_order_create')
+        {
+            $properties['source'] = 'checkout';
+        }
+
+        $this->app['diag']->trackVirtualAccountEvent(
+            $eventCode,
+            $virtualAccount,
+            null,
+            $properties
+        );
     }
 }
