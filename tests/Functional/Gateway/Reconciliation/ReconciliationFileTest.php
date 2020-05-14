@@ -5,11 +5,12 @@ use Queue;
 use RZP\Jobs;
 use Carbon\Carbon;
 use RZP\Models\Batch;
-use RZP\Models\Currency\Currency;
 use RZP\Models\Payment;
 use RZP\Constants\Timezone;
 use RZP\Models\Batch\Status;
+use RZP\Services\Mock\Scrooge;
 use RZP\Models\Payment\Refund;
+use RZP\Models\Currency\Currency;
 use RZP\Models\Base\PublicEntity;
 use Illuminate\Http\UploadedFile;
 use RZP\Tests\Functional\TestCase;
@@ -142,30 +143,63 @@ class ReconciliationFileTest extends TestCase
         $this->fixtures->merchant->addFeatures('charge_at_will');
 
         // Recurring authorised payment
-        $refund1 = $this->getNewRefundEntity(true);
-        $gatewayPayment1 = $this->getDbLastEntityToArray('first_data');
+        $payment1 = $this->getNewPaymentEntity(false, true);
+        $refund1 = $this->refundPayment($payment1['id']);
 
+        $payment1['gateway_transaction_id'] = '00123';
         $this->assertNull($refund1['acquirer_data']['arn']);
 
-        $entries[] = $this->overrideFirstDataRefund($gatewayPayment1);
+        $entries[] = $this->overrideFirstDataRefund($payment1);
 
         // Recurring authorised payment
-        $refund2 = $this->getNewRefundEntity(true);
-        $gatewayPayment2 = $this->getDbLastEntityToArray('first_data');
-
+        $payment2 = $this->getNewPaymentEntity(false, true);
+        $refund2 = $this->refundPayment($payment2['id']);
+        $payment2['gateway_transaction_id'] = '456';
         $this->assertNull($refund2['acquirer_data']['arn']);
 
-        $entries[] = $this->overrideFirstDataRefund($gatewayPayment2);
+        $entries[] = $this->overrideFirstDataRefund($payment2);
 
         $file = $this->writeToExcelFile($entries, 'first_data');
 
+        $scroogeResponse = [
+            'data' => [
+                ltrim($entries[0]['ft_no'], '0') => [
+                    'payment_id'     => PublicEntity::stripDefaultSign($payment1['id']),
+                    'refund_id'      => PublicEntity::stripDefaultSign($refund1['id'])
+                ],
+                $entries[1]['ft_no'] => [
+                    'payment_id'     => PublicEntity::stripDefaultSign($payment2['id']),
+                    'refund_id'      => PublicEntity::stripDefaultSign($refund2['id'])
+                ]
+            ]
+        ];
+
+        $scroogeMock = $this->getMockBuilder(Scrooge::class)
+                            ->setConstructorArgs([$this->app])
+                            ->setMethods(['getRefundsFromPaymentIdAndGatewayId'])
+                            ->getMock();
+
+        $this->app->instance('scrooge', $scroogeMock);
+
+        $this->app->scrooge->method('getRefundsFromPaymentIdAndGatewayId')->willReturn($scroogeResponse);
+
         $this->runForFiles([$file], 'FirstData');
 
-        $updatedTransaction1 = $this->getDbEntityById('transaction', $refund1['transaction_id'])->toArrayAdmin();
+        $updatedTransaction1 = $this->getDbEntity(
+            'transaction',
+            [
+                'type'      => 'refund',
+                'entity_id' => PublicEntity::stripDefaultSign($refund1['id'])
+            ])->toArray();
 
         $this->assertNotNull($updatedTransaction1['reconciled_at']);
 
-        $updatedTransaction2 = $this->getDbEntityById('transaction', $refund2['transaction_id'])->toArrayAdmin();
+        $updatedTransaction2 = $this->getDbEntity(
+        'transaction',
+        [
+            'type'      => 'refund',
+            'entity_id' => PublicEntity::stripDefaultSign($refund2['id'])
+        ])->toArray();
 
         $this->assertNotNull($updatedTransaction2['reconciled_at']);
 
@@ -1621,7 +1655,7 @@ class ReconciliationFileTest extends TestCase
     {
         $facade = $this->testData['facades']['first_data'];
 
-        $facade[FDPaymentRecon::COLUMN_CAPS_PAYMENT_ID] = strtoupper(PublicEntity::stripDefaultSign($payment['id']));
+        $facade[FDPaymentRecon::COLUMN_RZP_ENTITY_ID] = strtoupper(PublicEntity::stripDefaultSign($payment['id']));
         $facade[FDPaymentRecon::COLUMN_AUTH_CODE]       = random_integer(6);
         $facade[FDPaymentRecon::COLUMN_ARN]             = str_random(24);
 
@@ -1632,7 +1666,7 @@ class ReconciliationFileTest extends TestCase
     {
         $facade = $this->testData['facades']['first_data'];
 
-        $facade[FDPaymentRecon::COLUMN_CAPS_PAYMENT_ID]                = strtoupper(PublicEntity::stripDefaultSign($payment['id']));
+        $facade[FDPaymentRecon::COLUMN_RZP_ENTITY_ID]                  = strtoupper(PublicEntity::stripDefaultSign($payment['id']));
         $facade[FDPaymentRecon::COLUMN_AUTH_CODE]                      = random_integer(6);
         $facade[FDPaymentRecon::COLUMN_ARN]                            = str_random(24);
         $facade[FDPaymentRecon::COLUMN_CURRENCY]                       = 'USD';
@@ -1777,8 +1811,6 @@ class ReconciliationFileTest extends TestCase
         $facade = $this->overrideFirstDataPayment($payment, $forceOverride);
 
         $facade['transaction_type'] = 'REFUND (CREDIT)';
-
-        $facade['session_id_aspd'] = $payment['caps_payment_id'];
 
         $facade['ft_no'] = $payment['gateway_transaction_id'];
 

@@ -5,7 +5,9 @@ namespace RZP\Reconciliator\FirstData;
 use RZP\Reconciliator\Base;
 use RZP\Models\Payment\Entity;
 use RZP\Models\Payment\Gateway;
+use RZP\Reconciliator\FirstData\SubReconciliator\RefundReconciliate;
 use RZP\Reconciliator\FirstData\SubReconciliator\PaymentReconciliate;
+use RZP\Reconciliator\FirstData\SubReconciliator\CombinedReconciliate;
 
 class Reconciliate extends Base\Reconciliate
 {
@@ -13,6 +15,8 @@ class Reconciliate extends Base\Reconciliate
     // FirstData is sending a summary file with name razorpay_templet26_21may180_summary.xls.
     //
     const SUMMARY = 'summary';
+    // Const sent as a param to scrooge in preprocess step, to fetch refund id from it's api.
+    const RZP_REFERENCE_KEY = 'gateway_transaction_id';
 
     /**
      * Figures out what kind of reconciliation is it
@@ -58,8 +62,13 @@ class Reconciliate extends Base\Reconciliate
      * We want to replace CapsPaymentID by actual
      * payment_id for all rows (in bulk, for better
      * performance) before hand and then proceed to
-     * reconcile row by row.
+     * reconcile row by row. For refund rows, we send
+     * payment_id and gateway_transaction_id to a
+     * scrooge api, which returns us refund ids, which
+     * get populated in this column only.
+     *
      * @param array $fileContents
+     * @throws \RZP\Exception\BadRequestValidationFailureException
      */
     protected function preProcessFileContents(array &$fileContents)
     {
@@ -67,10 +76,10 @@ class Reconciliate extends Base\Reconciliate
 
         foreach ($fileContents as $row)
         {
-            if ((empty($row[PaymentReconciliate::COLUMN_CAPS_PAYMENT_ID]) === false) and
-              (Entity::verifyUniqueId($row[PaymentReconciliate::COLUMN_CAPS_PAYMENT_ID], false) === true))
+            if ((empty($row[PaymentReconciliate::COLUMN_RZP_ENTITY_ID]) === false) and
+              (Entity::verifyUniqueId($row[PaymentReconciliate::COLUMN_RZP_ENTITY_ID], false) === true))
             {
-                $capsPaymentIds[] = $row[PaymentReconciliate::COLUMN_CAPS_PAYMENT_ID];
+                $capsPaymentIds[] = $row[PaymentReconciliate::COLUMN_RZP_ENTITY_ID];
             }
         }
 
@@ -83,13 +92,73 @@ class Reconciliate extends Base\Reconciliate
             $capsKeyPaymentIdValue[strtoupper($paymentId)] = $paymentId;
         }
 
-        foreach ($fileContents as &$fileContent)
+        foreach ($fileContents as &$row)
         {
-            if (empty($fileContent[PaymentReconciliate::COLUMN_CAPS_PAYMENT_ID]) === false)
+            if (empty($row[PaymentReconciliate::COLUMN_RZP_ENTITY_ID]) === false)
             {
-                $capsPaymentId = $fileContent[PaymentReconciliate::COLUMN_CAPS_PAYMENT_ID];
-                $fileContent[PaymentReconciliate::COLUMN_CAPS_PAYMENT_ID] = $capsKeyPaymentIdValue[$capsPaymentId] ?? $capsPaymentId;
+                $capsPaymentId = $row[PaymentReconciliate::COLUMN_RZP_ENTITY_ID];
+                $row[PaymentReconciliate::COLUMN_RZP_ENTITY_ID] = $capsKeyPaymentIdValue[$capsPaymentId] ?? $capsPaymentId;
             }
         }
+
+        $refundsArray = [];
+
+        foreach ($fileContents as &$row)
+        {
+            if ($this->getReconTypeForRow($row) === Base\Reconciliate::REFUND)
+            {
+                $txnId = $row[RefundReconciliate::GATEWAY_TRANSACTION_ID];
+                $refundsArray[$txnId] = $row[PaymentReconciliate::COLUMN_RZP_ENTITY_ID];
+            }
+        }
+
+        $request = $this->buildRequestForScrooge($refundsArray);
+
+        if (count($request) > 0)
+        {
+            $responses = $this->getRefundIdFromScrooge($request, Gateway::FIRST_DATA, self::RZP_REFERENCE_KEY);
+
+            foreach ($fileContents as &$row)
+            {
+                if ($this->getReconTypeForRow($row) === Base\Reconciliate::REFUND)
+                {
+                    $txnId = ltrim($row[RefundReconciliate::GATEWAY_TRANSACTION_ID], '0');
+                    foreach ($responses as $response)
+                    {
+                        if (empty($response['data'][$txnId]) === false)
+                        {
+                            $row[PaymentReconciliate::COLUMN_RZP_ENTITY_ID] = $response['data'][$txnId]['refund_id'];
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private function getReconTypeForRow($row)
+    {
+        if (isset($row[CombinedReconciliate::COLUMN_TXN_TYPE]) === false)
+        {
+            return null;
+        }
+
+        $txnType = $row[CombinedReconciliate::COLUMN_TXN_TYPE];
+
+        return CombinedReconciliate::TRANSACTION_TYPE_TO_RECONCILIATION_TYPE_MAP[$txnType] ?? CombinedReconciliate::NA;
+    }
+
+    private function buildRequestForScrooge(array $input)
+    {
+        $request = [];
+
+        foreach ($input as $key => $value)
+        {
+            $request[] = [
+                'payment_id'      => $value,
+                'reference_value' => ltrim($key, '0'),
+            ];
+        }
+
+        return $request;
     }
 }

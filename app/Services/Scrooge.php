@@ -56,6 +56,7 @@ class Scrooge
         'refresh_fta_modes'                  => 'fta_modes_refresh',
         'fetch_instant_refunds_modes'        => 'fetch/instant_refund_mode_configs',
         'instant-refunds-decisioning-helper' => 'instant-refunds-decisioning-helper',
+        'fetch-from-gateway-reference-value' => 'fetch_from_gateway_reference_value',
     ];
 
     // Headers
@@ -382,6 +383,15 @@ class Scrooge
         return [
             'mode' => null
         ];
+    }
+
+    /**
+     * @param array $input
+     * @return array
+     */
+    public function getRefundsFromPaymentIdAndGatewayId(array $input)
+    {
+        return $this->sendRequest(self::RefundsBaseURL . '/' . self::URLS['fetch-from-gateway-reference-value'], Requests::POST, $input);
     }
 
     /**
