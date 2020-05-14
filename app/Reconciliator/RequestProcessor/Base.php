@@ -189,7 +189,7 @@ class Base extends Core
         self::BAJAJFINSERV           => ['remiecftransactions@bizsupportc.com'],
         self::YES_BANK               => ['yesacquirer@insolutionsglobal.com'],
         self::HDFC_DEBIT_EMI         => ['emailintimation@hdfcbank.com'],
-        self::UPI_JUSPAY             => ['upisupport@axisbank.com'],
+        self::UPI_JUSPAY             => ['crs.upimerchantsettlement@axisbank.com'],
 
         // Used when someone from the team needs to send the
         // reconciliation file via mail for reconciliation.
