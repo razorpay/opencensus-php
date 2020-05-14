@@ -222,14 +222,4 @@ class Scrooge extends BaseScrooge
 
         return $scroogeResponse;
     }
-
-    public function getRefundsFromPaymentIdAndGatewayId(array $input)
-    {
-        $scroogeResponse = [
-            'data'      => [],
-            'exception' => [],
-        ];
-
-        return $scroogeResponse;
-    }
 }

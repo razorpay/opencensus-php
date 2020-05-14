@@ -6,6 +6,7 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Bank\IFSC;
 use RZP\Reconciliator\Base;
 use RZP\Models\Currency\Currency;
+use Razorpay\Spine\Exception\DbQueryException;
 use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
 
 class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
@@ -15,7 +16,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
      ******************/
 
     // comm_amount (commission amount) maps to gateway fee
-    const COLUMN_RZP_ENTITY_ID                  = 'session_id_aspd';
+    const COLUMN_CAPS_PAYMENT_ID                = 'session_id_aspd';
     const COLUMN_GATEWAY_FEE                    = 'comm_amount';
     const COLUMN_CARD_CATEGORY                  = 'card_category';
     const COLUMN_CARD_TRIVIA                    = 'card_type';
@@ -37,7 +38,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
      */
     protected function getPaymentId(array $row)
     {
-        return $row[self::COLUMN_RZP_ENTITY_ID] ?? null;
+        return $row[self::COLUMN_CAPS_PAYMENT_ID] ?? null;
     }
 
     /**
