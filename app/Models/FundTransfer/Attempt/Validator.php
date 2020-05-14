@@ -72,6 +72,7 @@ class Validator extends Base\Validator
         Entity::BANK_STATUS_CODE     => 'sometimes|string',
         Entity::GATEWAY_REF_NO       => 'sometimes|string',
         Entity::GATEWAY_ERROR_CODE   => 'sometimes|string',
+        Entity::CHANNEL              => 'sometimes|string',
     ];
 
     protected  static $ftsFundTransferRules = [

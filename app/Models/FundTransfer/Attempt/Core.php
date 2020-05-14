@@ -630,6 +630,7 @@ class Core extends Base\Core
             'is_fts'                   => $fta->getIsFTS(),
             'bank_status_code'         => $fta->getBankStatusCode(),
             'failure_reason'           => $fta->getFailureReason(),
+            'channel'                  => $fta->getChannel(),
             Entity::GATEWAY_ERROR_CODE => $gatewayErrorCode,
         ] + $extraInfo;
 
@@ -783,6 +784,10 @@ class Core extends Base\Core
 
         if (empty($input[Entity::GATEWAY_REF_NO]) === false) {
             $fta->setGatewayRefNo($input[Entity::GATEWAY_REF_NO]);
+        }
+
+        if (empty($input[Entity::CHANNEL]) === false) {
+            $fta->setChannel($input[Entity::CHANNEL]);
         }
 
         return $fta;

@@ -363,6 +363,11 @@ class Entity extends Base\PublicEntity
 
     // ------------------------------- setters ---------------------------------
 
+    public function setChannel($channel)
+    {
+        $this->setAttribute(self::CHANNEL, $channel);
+    }
+
     public function setRemarks($remarks)
     {
         $this->setAttribute(self::REMARKS, $remarks);
