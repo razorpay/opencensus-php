@@ -130,6 +130,7 @@ class Validator extends Base\Validator
     protected static $editCpsResponseRules = [
         Entity::AUTH_TYPE               => 'sometimes|nullable|string',
         Entity::AUTHENTICATION_GATEWAY  => 'sometimes|nullable|string',
+        Entity::REFERENCE2              => 'sometimes|nullable|string',
     ];
 
     protected static $editRules = [
