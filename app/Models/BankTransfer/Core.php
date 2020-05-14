@@ -79,8 +79,6 @@ class Core extends Base\Core
 
         $processor = new Processor();
 
-        $oldMutexKey = sprintf(self::MUTEX_KEY, $input[Entity::REQ_UTR], $input[Entity::PAYER_IFSC]);
-
         $mutexKey = sprintf(self::MUTEX_KEY, $input[Entity::REQ_UTR], $input[Entity::PAYEE_ACCOUNT]);
 
         $bankTransfer = null;
@@ -90,17 +88,6 @@ class Core extends Base\Core
         try
         {
             $bankTransfer = $this->create($input, $provider);
-
-            $oldMutexAcquired = $this->mutex->acquire($oldMutexKey, 60, 10, 200, 400);
-
-            if ($oldMutexAcquired === false)
-            {
-                throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_OPERATION_IN_PROGRESS,
-                    null,
-                    ['resource' => $oldMutexKey]
-                );
-            }
 
             $this->mutex->acquireAndRelease(
                 $mutexKey,
@@ -114,14 +101,10 @@ class Core extends Base\Core
                 200,
                 400);
 
-            $this->mutex->release($oldMutexKey);
-
             $paymentSuccess = true;
         }
         catch (\Throwable $ex)
         {
-            $this->mutex->release($oldMutexKey);
-
             $paymentSuccess = false;
 
             return $this->alertException($ex, $input);
