@@ -341,11 +341,7 @@ export default class Content extends Component {
             component={Settings}
             additionalCondition={user => user.isAllowedView('webhooks')}
           />
-          <ShowWhenRoute
-            path="/reminders"
-            component={Settings}
-            additionalCondition={user => user.isRemindersEnabled}
-          />
+          <ShowWhenRoute path="/reminders" component={Settings} />
           <ShowWhenRoute
             path="/applications"
             component={Settings}

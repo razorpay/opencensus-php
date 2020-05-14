@@ -462,10 +462,6 @@ export default class User {
     );
   }
 
-  get isRemindersEnabled() {
-    return this.getExpStatus('reminders');
-  }
-
   get isAsyncReportsEnabled() {
     return this.getExpStatus('async_reports');
   }

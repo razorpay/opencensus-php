@@ -225,11 +225,9 @@ export default class CreateNewContainer extends React.Component {
 
     this.state = {
       dirty: {
-        reminder_enable:
-          props.user.isRemindersEnabled &&
-          props.paymentLinksRemindersSettings.isEnabled
-            ? '1'
-            : '0', // 1 => selected
+        reminder_enable: props.paymentLinksRemindersSettings.isEnabled
+          ? '1'
+          : '0', // 1 => selected
       }, // Initialize with no edits in dirty. Object is maintained to keep dirty data of each tab separately.
       _name: {
         // Object, cuz dirty is also object
@@ -357,11 +355,9 @@ export default class CreateNewContainer extends React.Component {
           isLoading: false,
           dirty: {
             ...this.state.dirty,
-            reminder_enable:
-              this.props.user.isRemindersEnabled &&
-              this.props.paymentLinksRemindersSettings.isEnabled
-                ? '1'
-                : '0', // 1 => selected
+            reminder_enable: this.props.paymentLinksRemindersSettings.isEnabled
+              ? '1'
+              : '0', // 1 => selected
           },
         });
       })
@@ -382,10 +378,6 @@ export default class CreateNewContainer extends React.Component {
     const searchQuery = getURLQueryParams(this.props.location.search);
     if (searchQuery.duplicate_id) {
       promiseList.push(this.fetchIfIntentDuplicate(searchQuery.duplicate_id));
-    }
-
-    if (!this.props.user.isRemindersEnabled) {
-      return Promise.all(promiseList);
     }
 
     if (!this.props.reminders.reminders.items.length) {

@@ -238,58 +238,56 @@ export default props => {
                   <CustomerDetails paymentlink={paymentlink} />
                 </EntityDetailRow>
 
-                {user.isRemindersEnabled &&
-                  isPaymentLinksRemindersEnabled && (
-                    <EntityDetailRow label="Reminders">
-                      <React.Fragment>
-                        <span>
-                          <Input.Check
-                            name="auto_reminders"
-                            fieldLabel="Send auto reminders"
-                            checked={isRemindersEnabled}
-                            disabled={
-                              !isContactDetailsAvl ||
-                              isPaymentLinkClosed ||
-                              isAutoRemindersUpdating
-                            }
-                            onChange={onChangeSendAutoReminder}
-                            autoRender
-                          />
-                          {!isContactDetailsAvl && (
-                            <Popover theme="dark" align="bottom">
-                              <PopoverBody>
-                                No contact details present for reminders to be
-                                sent
-                              </PopoverBody>
-                            </Popover>
-                          )}
-                        </span>
-
-                        {isContactDetailsAvl && (
-                          <ReminderStepsDetails
-                            isRemindersEnabled={isRemindersEnabled}
-                            nextReminders={nextReminders}
-                            isAutoRemindersUpdating={isAutoRemindersUpdating}
-                            isPaymentLinkClosed={isPaymentLinkClosed}
-                          />
+                {isPaymentLinksRemindersEnabled && (
+                  <EntityDetailRow label="Reminders">
+                    <React.Fragment>
+                      <span>
+                        <Input.Check
+                          name="auto_reminders"
+                          fieldLabel="Send auto reminders"
+                          checked={isRemindersEnabled}
+                          disabled={
+                            !isContactDetailsAvl ||
+                            isPaymentLinkClosed ||
+                            isAutoRemindersUpdating
+                          }
+                          onChange={onChangeSendAutoReminder}
+                          autoRender
+                        />
+                        {!isContactDetailsAvl && (
+                          <Popover theme="dark" align="bottom">
+                            <PopoverBody>
+                              No contact details present for reminders to be
+                              sent
+                            </PopoverBody>
+                          </Popover>
                         )}
-                      </React.Fragment>
-                    </EntityDetailRow>
-                  )}
+                      </span>
 
-                {user.isRemindersEnabled &&
-                  !isPaymentLinksRemindersEnabled && (
-                    <EntityDetailRow label="Reminders">
-                      <div class="Input-content">
-                        Reminders are not set for payment links.
-                        <br />
-                        Set it up{' '}
-                        <Link target="_blank" to="/reminders">
-                          here
-                        </Link>
-                      </div>
-                    </EntityDetailRow>
-                  )}
+                      {isContactDetailsAvl && (
+                        <ReminderStepsDetails
+                          isRemindersEnabled={isRemindersEnabled}
+                          nextReminders={nextReminders}
+                          isAutoRemindersUpdating={isAutoRemindersUpdating}
+                          isPaymentLinkClosed={isPaymentLinkClosed}
+                        />
+                      )}
+                    </React.Fragment>
+                  </EntityDetailRow>
+                )}
+
+                {!isPaymentLinksRemindersEnabled && (
+                  <EntityDetailRow label="Reminders">
+                    <div class="Input-content">
+                      Reminders are not set for payment links.
+                      <br />
+                      Set it up{' '}
+                      <Link target="_blank" to="/reminders">
+                        here
+                      </Link>
+                    </div>
+                  </EntityDetailRow>
+                )}
 
                 <EntityDetailRow
                   label="Receipt No."

@@ -21,7 +21,6 @@ import { fetchReminders } from 'merchant/reducers/reminders';
     return {
       user: state.session.user,
       reminders: state.reminders.reminders,
-      isRemindersEnabled: state.session.user.isRemindersEnabled,
     };
   },
   {
@@ -103,13 +102,11 @@ export default class extends React.Component {
           </div>
         </div>
 
-        {this.props.isRemindersEnabled && (
-          <div class="form-group send-links-form">
-            <label class="m-r">Reminders</label>
+        <div class="form-group send-links-form">
+          <label class="m-r">Reminders</label>
 
-            {this.renderRemindersFormFields()}
-          </div>
-        )}
+          {this.renderRemindersFormFields()}
+        </div>
 
         <p class="m-t">
           <i class="i i-info-circle m-r" />

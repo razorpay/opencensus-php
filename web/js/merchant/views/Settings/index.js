@@ -102,11 +102,9 @@ export default class Settings extends Component {
             </NavLink>
           </ShowWhen>
 
-          <ShowWhen additionalCondition={user => user.isRemindersEnabled}>
-            <NavLink to="/reminders" onClick={() => analyticsGoTo('Reminders')}>
-              Reminders
-            </NavLink>
-          </ShowWhen>
+          <NavLink to="/reminders" onClick={() => analyticsGoTo('Reminders')}>
+            Reminders
+          </NavLink>
 
           <ShowWhen
             featureEnabled="Oauth"
@@ -129,11 +127,7 @@ export default class Settings extends Component {
               />
             )}
           />
-          <ShowWhenRoute
-            path="/reminders"
-            component={Reminders}
-            additionalCondition={user => user.isRemindersEnabled}
-          />
+          <Route path="/reminders" component={Reminders} />
           <Switch>
             <Route exact path="/applications" component={Applications} />
             <Route exact path="/applications/new" component={ApplicationsNew} />

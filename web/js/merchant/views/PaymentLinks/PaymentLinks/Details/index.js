@@ -92,10 +92,6 @@ export default class PaymentLinkDetails extends Component {
   };
 
   fetchPLRemindersList = (id = this.props.id) => {
-    if (!this.props.user.isRemindersEnabled) {
-      return;
-    }
-
     const promiseList = [];
 
     if (!this.props.reminders.reminders.items.length) {
@@ -447,10 +443,7 @@ export default class PaymentLinkDetails extends Component {
             });
           }
 
-          if (
-            d.hasOwnProperty('expire_by') &&
-            this.props.user.isRemindersEnabled
-          ) {
+          if (d.hasOwnProperty('expire_by')) {
             this.fetchDataForPaymentLink();
           }
 

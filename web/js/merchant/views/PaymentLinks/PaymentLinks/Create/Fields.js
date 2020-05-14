@@ -264,10 +264,7 @@ export default [
     _cmp: Input.Check,
     label: 'Reminders',
     _when: function(form) {
-      return (
-        form.props.user.isRemindersEnabled &&
-        form.props.paymentLinksRemindersSettings.isEnabled
-      );
+      return form.props.paymentLinksRemindersSettings.isEnabled;
     },
     _autoRenderImpure: true,
   },
@@ -276,7 +273,6 @@ export default [
     _cmp: () => <ReminderNotEnabled />,
     _when: function(form) {
       return (
-        form.props.user.isRemindersEnabled &&
         !form.props.paymentLinksRemindersSettings.isEnabled &&
         form.state._name.hasNoExpiry === '0'
       );
@@ -289,7 +285,6 @@ export default [
     },
     _when: function(form) {
       return (
-        form.props.user.isRemindersEnabled &&
         !form.props.paymentLinksRemindersSettings.isEnabled &&
         form.state._name.hasNoExpiry === '1'
       );
