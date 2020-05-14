@@ -100,7 +100,7 @@ class Action
     {
         $inputTrace = $input;
 
-        unset($inputTrace['notes']);
+        unset($inputTrace['notes'], $inputTrace['contact'], $inputTrace['email']);
 
         $this->trace->debug(TraceCode::PAYMENT_NEW_REQUEST, $inputTrace);
     }
