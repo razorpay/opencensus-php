@@ -139,6 +139,22 @@ class BatchMicroService
         {
             $userId = $this->app['request']->header(RequestHeader::X_DASHBOARD_USER_ID, null);
 
+            $headers = [
+                'X-Entity-Id'    => $merchant->getId(),
+                'mode'           => $this->mode,
+                'X-Creator-Id'   => $userId,
+                'X-Creator-Type' => 'user',
+            ];
+
+            $admin = $this->app['basicauth']->getAdmin();
+
+            if ($admin !== null)
+            {
+                $headers['X-Creator-Type'] = 'admin';
+
+                $header['X-Creator-Id']    = $admin->getId();
+            }
+
             $response = $this->client->request(Requests::POST, $relativeUri, [
                 'multipart' =>
                     $multipartData,
@@ -146,12 +162,7 @@ class BatchMicroService
                     $this->username,
                     $this->secret
                 ],
-                'headers'   => [
-                    'X-Entity-Id'    => $merchant->getId(),
-                    'mode'           => $this->mode,
-                    'X-Creator-Id'   => $userId,
-                    'X-Creator-Type' => 'user',
-                ],
+                'headers'   => $headers,
             ]);
         }
         catch (ConnectException $connectException)
