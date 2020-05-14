@@ -22,7 +22,7 @@ return [
         'request'  => [
             'method'  => 'PUT',
             'content' => [
-                'action' => 'approved',
+                'action' => 'under_review',
             ],
         ],
         'response' => [
@@ -42,7 +42,7 @@ return [
                 'merchant_id' => 'DefaultPartner',
                 'gross_amount' => 1770,
                 'tax_amount' => 270,
-                'status' => 'processed',
+                'status' => 'under_review',
                 'line_items' => [
                     [
                         'name' => 'commission',

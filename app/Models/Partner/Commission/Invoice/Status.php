@@ -10,20 +10,24 @@ class Status
     const APPROVED  = 'approved';
     const PROCESSED = 'processed';
 
+    const UNDER_REVIEW = 'under_review';
+
     const VALID_STATUSES = [
         self::ISSUED,
         self::APPROVED,
         self::PROCESSED,
+        self::UNDER_REVIEW,
     ];
 
     const ALLOWED_NEXT_STATUSES_MAPPING = [
-        self::ISSUED    => [self::APPROVED],
-        self::APPROVED  => [self::PROCESSED],
-        self::PROCESSED => [],
+        self::ISSUED       => [self::UNDER_REVIEW],
+        self::UNDER_REVIEW => [self::APPROVED],
+        self::APPROVED     => [self::PROCESSED],
+        self::PROCESSED    => [],
     ];
 
     const ALLOWED_STATUSES_FOR_MERCHANT = [
-        self::APPROVED
+        self::UNDER_REVIEW
     ];
 
     public static function isValidStateTransition(string $current, string $next)

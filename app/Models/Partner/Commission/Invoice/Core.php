@@ -84,24 +84,30 @@ class Core extends Base\Core
 
     public function changeInvoiceStatus(Entity $invoice, $input)
     {
-        // check for approved only for merchant request and not after workflow approval
-        if ($this->app['api.route']->isWorkflowExecuteOrApproveCall() === false)
-        {
-            (new Validator())->validateMerchantToAllowChangeAction($input[Entity::ACTION]);
+        $merchant = $invoice->merchant;
 
-            $invoice->setStatus($input[Entity::ACTION]);
+        // check for approved only for merchant request and not after workflow approval
+        if ($this->app['api.route']->isWorkflowExecuteOrApproveCall() === true)
+        {
+            $invoice->setStatus(Status::APPROVED);
 
             $this->repo->saveOrFail($invoice);
 
             CommissionInvoiceAction::dispatch($this->mode, $invoice->getStatus(), $invoice->getId());
+
+            // clear on Hold For Partner after workflow is approved
+            (new Commission\Core)->clearOnHoldForPartner($merchant, [Commission\Constants::INVOICE_ID => $invoice->getId()]);
+
+            return ['success' => 'true'];
         }
 
-        $merchant = $invoice->merchant;
+        (new Validator())->validateMerchantToAllowChangeAction($input[Entity::ACTION]);
+
+        $invoice->setStatus($input[Entity::ACTION]);
+
+        $this->repo->saveOrFail($invoice);
 
         $this->triggerWorkflowActionIfApplicable($invoice, $merchant);
-
-        // clear on Hold For Partner after triggering workflow.
-        (new Commission\Core)->clearOnHoldForPartner($merchant, [Commission\Constants::INVOICE_ID => $invoice->getId()]);
 
         return ['success' => 'true'];
     }
@@ -140,7 +146,7 @@ class Core extends Base\Core
 
             $newInvoice = clone $invoice;
 
-            $newInvoice->setStatus(Status::PROCESSED);
+            $newInvoice->setStatus(Status::APPROVED);
 
             $this->app['workflow']->setPermission($routePermission)->handle($newInvoice, $invoice);
         }

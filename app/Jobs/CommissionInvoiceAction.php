@@ -82,11 +82,6 @@ class CommissionInvoiceAction extends Job
         (new Invoice\Core)->sendCommissionMail($this->invoice);
     }
 
-    protected function handleProcessed()
-    {
-
-    }
-
     protected function getHandlerForJobEvent(): string
     {
         $handler = 'handle' . studly_case($this->event);
