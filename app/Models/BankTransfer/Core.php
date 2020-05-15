@@ -9,6 +9,7 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Order;
 use RZP\Models\Payment;
+use RZP\Diag\EventCode;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
@@ -119,6 +120,8 @@ class Core extends Base\Core
             }
 
             (new VirtualAccount\Metric())->pushPaymentMetrics(Constants\Entity::BANK_TRANSFER, $isExpected, $paymentSuccess);
+
+            $this->pushBankTransferSourceToLake($bankTransfer);
         }
 
         return true;
@@ -521,6 +524,81 @@ class Core extends Base\Core
         }
 
         $bankTransfer->edit($data, 'editBankTransfer');
+    }
+
+    protected function pushBankTransferSourceToLake($bankTransfer)
+    {
+        if ($bankTransfer === null)
+        {
+            return;
+        }
+
+        $routeName = $this->app['api.route']->getCurrentRouteName();
+
+        $properties = [];
+
+        switch ($routeName)
+        {
+            case 'bank_transfer_process':
+                $properties = [
+                    'source'        => 'callback',
+                    'request_from'  => 'bank',
+                ];
+
+                break;
+
+            case 'bank_transfer_process_rbl':
+                $properties = [
+                    'source'        => 'callback',
+                    'request_from'  => 'bank',
+                ];
+
+                break;
+
+            case 'bank_transfer_process_rbl_internal':
+                $properties = [
+                    'source'        => 'file',
+                    'request_from'  => 'bank',
+                ];
+
+                break;
+
+            case 'bank_transfer_process_icici':
+                $properties = [
+                    'source'        => 'file',
+                    'request_from'  => 'bank',
+                ];
+
+                break;
+
+            case 'bank_transfer_insert':
+                $properties = [
+                    'source'        => 'admin_dashboard',
+                    'request_from'  => 'admin',
+                ];
+
+                break;
+
+            case 'batch_create_admin':
+                $properties = [
+                    'source'        => 'file',
+                    'request_from'  => 'admin',
+                ];
+
+                break;
+
+            default:
+                break;
+        }
+
+        $properties['gateway'] = $bankTransfer->getGateway();
+
+        $this->app['diag']->trackBankTransferEvent(
+            EventCode::BANK_TRANSFER_REQUEST,
+            $bankTransfer,
+            null,
+            $properties
+        );
     }
 
     public function removePiiDataForLogging($input)

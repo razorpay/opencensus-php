@@ -239,6 +239,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::TRANSACTION_REFERENCE);
     }
 
+    public function getGateway()
+    {
+        return $this->getAttribute(self::GATEWAY);
+    }
+
     public function toArrayPublic()
     {
         $app = \App::getFacadeRoot();

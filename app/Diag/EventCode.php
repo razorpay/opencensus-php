@@ -489,6 +489,16 @@ class EventCode
         'name'  => 'payment_page.created',
     ];
 
+    const BANK_TRANSFER_REQUEST = [
+        'group' => 'bank_transfer',
+        'name'  => 'bank_transfer.request',
+    ];
+
+    const UPI_TRANSFER_REQUEST = [
+        'group' => 'upi_transfer',
+        'name'  => 'upi_transfer.request',
+    ];
+
     const VIRTUAL_ACCOUNT_CREATED = [
         'group' => 'virtual_account',
         'name'  => 'virtual_account.created',

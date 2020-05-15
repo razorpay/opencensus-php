@@ -5,6 +5,7 @@ namespace RZP\Models\UpiTransfer;
 use Config;
 use RZP\Constants;
 use RZP\Models\Base;
+use RZP\Diag\EventCode;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\VirtualAccount;
@@ -85,6 +86,8 @@ class Core extends Base\Core
             }
 
             (new VirtualAccount\Metric())->pushPaymentMetrics(Constants\Entity::UPI_TRANSFER, $isExpected, $paymentSuccess);
+
+            $this->pushUpiTransferSourceToLake($upiTransfer);
         }
     }
 
@@ -123,5 +126,26 @@ class Core extends Base\Core
         $payeeVpa = $input['payee_vpa'];
 
         $input['payee_vpa'] = strtolower($payeeVpa);
+    }
+
+    protected function pushUpiTransferSourceToLake($upiTransfer)
+    {
+        if ($upiTransfer === null)
+        {
+            return;
+        }
+
+        $properties = [
+            'source'        => 'callback',
+            'request_from'  => 'bank',
+            'gateway'       => $upiTransfer->getGateway(),
+        ];
+
+        $this->app['diag']->trackUpiTransferEvent(
+            EventCode::UPI_TRANSFER_REQUEST,
+            $upiTransfer,
+            null,
+            $properties
+        );
     }
 }
