@@ -72,7 +72,6 @@ class Stork
         {
             case self::WEBHOOK:
                 $path ='/twirp/rzp.stork.webhook.v1.WebhookAPI/List';
-                $input[self::SERVICE] = $this->service;
                 break;
             default:
                 throw new BadRequestValidationFailureException('Invalid entity name');
