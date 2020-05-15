@@ -4,7 +4,6 @@ import { withRouter, Link } from 'react-router-dom';
 
 import { toggleMobileMenu } from 'merchantLA/reducers/app';
 import MainNavLink from 'merchant_common/components/MainNavLink';
-import { areReportsStillDownloading } from 'merchantLA/reducers/reports';
 
 const RZPLogoFullPNG = 'https://cdn.razorpay.com/logo_invert.svg';
 
@@ -17,15 +16,6 @@ const RZPLogoFullPNG = 'https://cdn.razorpay.com/logo_invert.svg';
   { toggleMobileMenu }
 )
 export default class Sidebar extends Component {
-  constructor(props) {
-    super(props);
-
-    //reference store data to update UI of sidebar navs
-    this.state = {
-      isReportsPending: areReportsStillDownloading(props.currentReportList),
-    };
-  }
-
   // currently active routes in tabbed containers
   // populated with initial values
   routes = {
@@ -36,22 +26,11 @@ export default class Sidebar extends Component {
     account: '/profile',
   };
 
-  componentWillReceiveProps(nextProps) {
-    if (this.props.currentReportList !== nextProps.currentReportList) {
-      this.setState({
-        isReportsPending: areReportsStillDownloading(
-          nextProps.currentReportList
-        ),
-      });
-    }
-  }
-
   hideSidebar() {
     return this.props.showMobileMenu && this.props.toggleMobileMenu();
   }
 
   render() {
-    const { isReportsPending } = this.state;
     let { user, logoURL, showMobileMenu } = this.props;
     let routes = this.routes;
     let isMerchant = !!user.current;
@@ -97,7 +76,6 @@ export default class Sidebar extends Component {
                     label="Reports"
                     icon="i i-books text-danger"
                     to="/reports"
-                    isPending={isReportsPending}
                   />
                   <MainNavLink
                     label="Account Settings"

@@ -1,9 +1,43 @@
-import Reportsx from 'merchant_common/containers/Reports';
-import store from 'merchantLA/store';
-import * as data from 'merchantLA/containers/Reports/data';
-import * as modelActions from 'merchantLA/reducers/reports';
-import * as ga from './ga';
+import { connect } from 'react-redux';
 
-const Reports = Reportsx(store, { data, modelActions, ga });
+import Reports from 'merchant_common/containers/ReportsAsync/Home';
 
-export default Reports;
+import { pickProps, uniqueArray } from 'common/utils/rzp-utils';
+
+import {
+  fetchLogs,
+  createLog,
+  loadMore,
+  pollLog,
+} from 'merchantLA/reducers/reports/logs';
+
+import { fetchConfigs } from 'merchantLA/reducers/reports/configs';
+
+const mapStateToProps = state => {
+  const sessionUser = state.session.user;
+
+  const { email, contact_email, transaction_report_email } = sessionUser;
+
+  const emailReportOptions = [
+    email,
+    contact_email,
+    ...(transaction_report_email ? transaction_report_email.split(',') : []),
+  ];
+
+  return {
+    ...state.reports,
+    user: pickProps(sessionUser, ['current']),
+    emailReportOptions: uniqueArray(emailReportOptions),
+    mode: state.session.moide,
+    showSelectAccount: false,
+    onlyDailyOptionsInReferredAccounts: false,
+  };
+};
+
+export default connect(mapStateToProps, {
+  fetchLogs,
+  fetchConfigs,
+  createLog,
+  loadMore,
+  pollLog,
+})(Reports);

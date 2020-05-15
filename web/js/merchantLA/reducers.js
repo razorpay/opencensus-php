@@ -13,6 +13,7 @@ import settlementReducer from 'merchantLA/reducers/settlements/details';
 import transferReducer from 'merchantLA/reducers/marketplace/transfer';
 import reversalReducer from 'merchantLA/reducers/marketplace/reversal';
 import creditsReducer from 'merchantLA/reducers/credits';
+import reportsReducer from 'merchantLA/reducers/reports/home';
 import {
   batchesReducer,
   batchDetailsReducer,
@@ -24,7 +25,6 @@ import {
   transfersReducer,
 } from 'merchantLA/reducers/collection';
 
-import { reportsReducer } from 'merchantLA/reducers/reports';
 
 export default combineReducers({
   modal: modalReducer,
