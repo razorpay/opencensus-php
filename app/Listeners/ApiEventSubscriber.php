@@ -1475,7 +1475,14 @@ class ApiEventSubscriber extends Base\Core
             Merchant\RazorxTreatment::WEBHOOK_EVENT_VIA_STORK,
             $this->getMode());
 
-        $this->shouldDispatchEventToStork = (strtolower($variant) === 'on');
+        if ($this->app->runningUnitTests())
+        {
+            $this->shouldDispatchEventToStork = (strtolower($variant) === 'on');
+        }
+        else
+        {
+            $this->shouldDispatchEventToStork = ((strtolower($variant) === 'on') or (strtolower($variant) === 'control'));
+        }
     }
 
     /**
