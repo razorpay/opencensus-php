@@ -934,7 +934,7 @@ class Core extends Base\Core
             {
                 $bas = $this->repo->banking_account_statement->fetchByUtrForPayout($payout)->first();
             }
-            else
+            if ($bas === null)
             {
                 $bas = $this->repo->banking_account_statement->fetchByCmsRefNumForPayout($payout)->first();
             }
@@ -1360,7 +1360,7 @@ class Core extends Base\Core
         {
             $bas = $this->repo->banking_account_statement->fetchByUtrForPayout($payout)->first();
         }
-        else
+        if ($bas === null)
         {
             $bas = $this->repo->banking_account_statement->fetchByCmsRefNumForPayout($payout)->first();
         }
