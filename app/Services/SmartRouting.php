@@ -221,10 +221,21 @@ class SmartRouting
     {
         $method = $request['method'];
 
+        $data = $request['content'];
+
+        $payment = $data['payment'];
+
         $retryCount = 0;
 
         while (true)
         {
+            $this->trace->info(
+                TraceCode::SMART_ROUTING_RETRY,
+                [
+                    'retry_count' => $retryCount,
+                    'payment_id'  => $payment['id']
+                ]);
+
             try
             {
                 if ($method === 'POST' or $method === 'PUT')
@@ -264,6 +275,11 @@ class SmartRouting
                 }
                 else
                 {
+                    $this->trace->error(
+                        TraceCode::SMART_ROUTING_RETRY,
+                        [
+                            'data'    => $e->getData()
+                        ]);
                     throw $e;
                 }
             }
