@@ -4,10 +4,6 @@ namespace RZP\Reconciliator\FirstData\SubReconciliator;
 
 use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Base;
-use RZP\Gateway\FirstData;
-use RZP\Exception\LogicException;
-use RZP\Models\Base\PublicEntity;
-use Razorpay\Spine\Exception\DbQueryException;
 
 class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
 {
@@ -15,75 +11,21 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
      * Row Header Names
      ******************/
 
-    // session_id_aspd maps to caps_payment_id
     const GATEWAY_TRANSACTION_ID = 'ft_no';
-    const COLUMN_CAPS_PAYMENT_ID = 'session_id_aspd';
+    const COLUMN_RZP_ENTITY_ID   = 'session_id_aspd';
     const COLUMN_REFUND_AMOUNT   = 'transaction_amt';
     const COLUMN_ARN             = 'arn_no';
 
     /**
-     * Gets refund Id from gateway entity
-     * using helper function.
+     * Refund id has been set in rzp_entity_id
+     * column, while preprocessing in reconciliate.
      *
      * @param array   $row
      * @return string $refundId
      */
     protected function getRefundId($row)
     {
-
-        //
-        // For first_data, some rows contain entries with different gateway_transaction_id
-        // than what was received in the api response. In such cases, we mark the row as
-        // successfully processed.
-        //
-        try
-        {
-            $refund = $this->getGatewayRefundFromGatewayTxnId($row);
-        }
-        catch (DbQueryException $ex)
-        {
-            $this->trace->info(
-                TraceCode::RECON_MISMATCH,
-                [
-                    'info_code'             => Base\InfoCode::REFUND_ABSENT,
-                    'payment_reference_id'  => $row[self::COLUMN_CAPS_PAYMENT_ID] ?? null,
-                    'gateway'               => $this->gateway
-                ]);
-
-            $this->setFailUnprocessedRow(false);
-
-            return null;
-        }
-
-        if ($refund->getAction() === FirstData\Action::REVERSE)
-        {
-            $this->trace->info(
-                TraceCode::RECON_INFO,
-                [
-                    'info_code' => 'REVERSE_ENTITY_FOUND',
-                    'message'   => 'Reversal entity. Skipping.',
-                    'row'       => $row,
-                    'gateway'   => $this->gateway
-                ]);
-
-            $this->setFailUnprocessedRow(false);
-
-            return null;
-        }
-
-        return $refund->getRefundId();
-    }
-
-    /**
-     * Gets payment id from gateway entity
-     * using helper function.
-     *
-     * @param array   $row
-     * @return string $paymentId
-     */
-    protected function getPaymentId(array $row)
-    {
-        return $this->getGatewayRefundFromGatewayTxnId($row)->getPaymentId() ?? null;
+        return $row[self::COLUMN_RZP_ENTITY_ID];
     }
 
     /**
@@ -111,89 +53,6 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
     }
 
     /**
-     * Helper function to return FirstData gateway entity
-     * This will be used by getRefundId & getPaymentId
-     *
-     * The payment id in the file is under column 'SESSION ID ASPD'.
-     * However, the id is sometimes capitalized, sometimes not,
-     * whereas the ids in our database are case sensitive.
-     * So we compare ('SESSION ID ASPD') to 'caps_payment_id' of FirstData
-     *
-     * @param array $row
-     *
-     * @return FirstData\Entity $payment
-     * @internal param string $refundId
-     *
-     */
-    protected function getGatewayRefundFromGatewayTxnId(array $row)
-    {
-        $capsPaymentId = $row[self::COLUMN_CAPS_PAYMENT_ID];
-
-        //
-        // doing this because sometimes the session_id (payment_id) is all caps,
-        // sometimes it's not. Since, we are searching with caps_payment_id in
-        // our DB, we capitalize the session_id always, to ensure we always get
-        // caps_payment_id.
-        //
-        $capsPaymentId = strtoupper($capsPaymentId);
-
-        $gatewayTxnId = $row[self::GATEWAY_TRANSACTION_ID];
-
-        //
-        // The MIS files have gateway txn id as `000065367447799`
-        // but in DB, we store them without leading zeroes.
-        // hence removing them before querying.
-        //
-        $gatewayTxnId = ltrim($gatewayTxnId, '0');
-
-        //
-        // The broad assumption here is that these ids will not collide
-        // The mathematical probability is very low (not zero though)!
-        //
-        $refund = $this->repo->first_data
-                             ->findRefundForGateway(
-                                    $capsPaymentId, $gatewayTxnId);
-
-        return $refund;
-    }
-
-    protected function getGatewayRefund(string $refundId)
-    {
-        try
-        {
-            $gatewayEntities = $this->repo->first_data->findSuccessfulRefundByRefundId($refundId);
-        }
-        catch (LogicException $e)
-        {
-            //
-            // Sometimes we get multiple gateway entities in the above
-            // query to DB, and there we throw Logic Exception.
-            // To avoid abrupt termination of batch processing, just trace it here and
-            // return gateway refund as null, so that the remaining rows can be processed.
-            //
-
-            $this->trace->debug(
-                TraceCode::GATEWAY_REFUND_ENTITY_FETCH_ERROR,
-                [
-                    'message'   => $e->getMessage(),
-                    'refund_id' => $refundId,
-                    'gateway'   => $this->gateway,
-                ]);
-
-            return null;
-        }
-
-        if ($gatewayEntities->count() === 0)
-        {
-            return null;
-        }
-
-        $refundEntity = $gatewayEntities->first();
-
-        return $refundEntity;
-    }
-
-    /**
      * Fetches ARN for given rows
      *
      * @param array   $row
@@ -209,18 +68,6 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
         $arn = $row[self::COLUMN_ARN];
 
         return $arn;
-    }
-
-    /**
-     * Sets ARN in gateway entity
-     *
-     * @param string       $arn
-     * @param PublicEntity $gatewayRefund
-     * @return void
-     */
-    protected function setArnInGateway(string $arn, PublicEntity $gatewayRefund)
-    {
-        $gatewayRefund->setArnNo($arn);
     }
 
     /**

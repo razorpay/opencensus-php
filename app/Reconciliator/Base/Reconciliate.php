@@ -14,9 +14,9 @@ use RZP\Models\FileStore;
 use Razorpay\Trace\Logger;
 use RZP\Reconciliator\Service;
 use RZP\Reconciliator\Messenger;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Reconciliator\Orchestrator;
 use RZP\Reconciliator\FileProcessor;
-use RZP\Reconciliator\RequestProcessor;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 use RZP\Reconciliator\Base\Foundation\SubReconciliate;
 
@@ -34,6 +34,10 @@ class Reconciliate extends Base\Core
     const COMBINED       = 'combined';
     const MANUAL         = 'manual';
     const EMANDATE_DEBIT = 'emandate_debit';
+
+    // Before sending requests to scrooge api, we
+    // need to break them into chunks of this size
+    const SCROOGE_CHUNK_SIZE = 1000;
 
     public static $forceAuthorizedPayments = [];
 
@@ -1047,5 +1051,44 @@ class Reconciliate extends Base\Core
     protected function preProcessFileContents(array &$fileContents)
     {
         return;
+    }
+
+    protected function getRefundIdFromScrooge(array $input, $gateway, $referenceKey)
+    {
+        $responses = [];
+
+        foreach (array_chunk($input, self::SCROOGE_CHUNK_SIZE) as $chunks)
+        {
+            try {
+                $request = [
+                    'gateway'       => $gateway,
+                    'reference_key' => $referenceKey,
+                    'query_data'    => $chunks,
+                ];
+
+                $scroogeResponse = $this->app['scrooge']->getRefundsFromPaymentIdAndGatewayId($request);
+
+                foreach ($scroogeResponse['body']['data'] as $key => $value)
+                {
+                    $responses[$key] = $value;
+                }
+            }
+            catch (\Exception $e)
+            {
+                $this->trace->traceException(
+                    $e,
+                    Trace::ERROR,
+                    TraceCode::REFUND_RECON_SCROOGE_CALL_FAILED,
+                    [
+                        'info_code'     => InfoCode::REFUND_RECON_SCROOGE_JOB_FAILURE_EXCEPTION,
+                        'gateway'       => $gateway,
+                        'reference_key' => $referenceKey,
+                        'batch_id'      => $this->messenger->batch->getId(),
+                    ]
+                );
+            }
+        }
+
+        return $responses;
     }
 }
