@@ -3432,6 +3432,13 @@ class PaymentCreateTest extends TestCase
         $this->assertEquals($payment['international'], false);
     }
 
+    public function testCreatePaymentNormalMerchantWithAccountId()
+    {
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($testData);
+    }
+
     public function testCreatePaymentAMEXExistingCardS2SPayment()
     {
         $this->ba->privateAuth();

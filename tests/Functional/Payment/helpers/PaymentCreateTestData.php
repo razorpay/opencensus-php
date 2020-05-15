@@ -608,5 +608,41 @@ return [
             ]
         ]
     ],
-]
+],
+    'testCreatePaymentNormalMerchantWithAccountId' => [
+        'request' => [
+            'url' => '/payments',
+            'method' => 'POST',
+            'content' => [
+                    "amount"=> 32000,
+	                "currency"=> "INR",
+	                "card"=>[
+                        "number"=>"4111111111111111",
+		                "name"=>"HarshilMathur",
+		                "cvv"=>"123",
+		                "expiry_month"=>12,
+		                "expiry_year"=>23
+		                    ],
+	                "contact"=> "9597364430",
+	                "method" => "card",
+	                "email"=>"harshil@razorpay.com"
+            ],
+            'server' => [
+                'HTTP_' . \RZP\Http\RequestHeader::X_RAZORPAY_ACCOUNT => '10000000000000',
+                ]
+         ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Account id is not required with credentials',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'   => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => 'BAD_REQUEST_PARTNER_ACCOUNT_ID_NOT_REQUIRED',
+        ]
+    ],
 ];

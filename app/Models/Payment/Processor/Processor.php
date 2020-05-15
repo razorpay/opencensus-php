@@ -300,6 +300,8 @@ class Processor
     {
         try
         {
+            $this->checkIfAccountIdSetWithNormalMerchant();
+
             $startTime = microtime(true);
 
             $this->setMethodForInput($input);
@@ -371,6 +373,20 @@ class Processor
             $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_CREATE_REQUEST_PROCESSED, $payment, $e);
 
             throw $e;
+        }
+    }
+
+    private function checkIfAccountIdSetWithNormalMerchant()
+    {
+        $keyRegex = '/^rzp_(test|live)_(partner)/';
+
+        $validPartnerKey = (preg_match($keyRegex, $this->ba->getPublicKey(), $matches) === 1);
+
+        if (($validPartnerKey === false) and
+            (empty($this->ba->getAccountId()) === false))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PARTNER_ACCOUNT_ID_NOT_REQUIRED);
         }
     }
 
