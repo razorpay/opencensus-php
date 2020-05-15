@@ -97,6 +97,30 @@ export default props => {
                   </EntityDetailRow>
                 )}
 
+                {payment.error_source && (
+                  <EntityDetailRow label="Error Source">
+                    <Definition>
+                      <span>{payment.error_source}</span>
+                    </Definition>
+                  </EntityDetailRow>
+                )}
+
+                {payment.error_step && (
+                  <EntityDetailRow label="Error Step">
+                    <Definition>
+                      <span>{payment.error_step}</span>
+                    </Definition>
+                  </EntityDetailRow>
+                )}
+
+                {payment.error_reason && (
+                  <EntityDetailRow label="Error Reason">
+                    <Definition>
+                      <span>{payment.error_reason}</span>
+                    </Definition>
+                  </EntityDetailRow>
+                )}
+
                 <ShowWhen apiFeatureEnabled="Marketplace">
                   <EntityDetailRow label="Transfer">
                     <PaymentTransfers
