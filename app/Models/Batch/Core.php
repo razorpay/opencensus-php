@@ -57,6 +57,10 @@ class Core extends Base\Core
 
         $ufhFile = $processor->storeInputFileAndSaveBatchWithSettings($input);
 
+        if ((isset($input['type']) === true) and ($input['type'] === Type::RECONCILIATION))
+        {
+            $input['file_id'] = $ufhFile->getPublicId();
+        }
         // Get the type. If type is migrated redirect to Batch MicroService.
 
         if ($processor->shouldSendToBatchService())

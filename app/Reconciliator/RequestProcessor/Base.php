@@ -24,6 +24,7 @@ class Base extends Core
     const ATTACHMENT_HYPHEN_PREFIX      = 'attachment-';
     const SOURCE                        = 'source';
     const MANUAL_RECON_FILE             = 'manual_recon_file';
+    const SUB_TYPE                      = 'sub_type';
 
     /**
      * Type of request processor

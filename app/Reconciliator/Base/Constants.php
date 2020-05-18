@@ -68,4 +68,11 @@ class Constants
         Constants::AUTH_CODE,
         Constants::GATEWAY_TRANSACTION_ID,
     ];
+
+    // Fields being used in batch recon request flow
+    const BATCH_ID               = 'batch_id';
+    const SOURCE                 = 'source';
+    const GATEWAY                = 'gateway';
+    const SUB_TYPE               = 'sub_type';
+    const SHEET_NAME             = 'sheet_name';
 }

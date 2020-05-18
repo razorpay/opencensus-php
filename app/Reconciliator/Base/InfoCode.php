@@ -46,6 +46,8 @@ class InfoCode
 
     const UNKNOWN_RECON_TYPE                            = 'UNKNOWN_RECON_TYPE';
 
+    const RECON_FILE_SKIPPED_DUE_TO_UNKNOWN_RECON_TYPE  = 'RECON_FILE_SKIPPED_DUE_TO_UNKNOWN_RECON_TYPE';
+
     const RECON_TYPE_NOT_FOUND                          = 'RECON_TYPE_NOT_FOUND';
 
     const GATEWAY_PAYMENT_ABSENT                        = 'GATEWAY_PAYMENT_ABSENT';

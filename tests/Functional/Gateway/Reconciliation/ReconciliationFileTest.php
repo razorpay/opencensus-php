@@ -4,11 +4,13 @@ namespace RZP\Tests\Functional\Gateway\Reconciliation;
 use Queue;
 use RZP\Jobs;
 use Carbon\Carbon;
+
 use RZP\Models\Batch;
 use RZP\Models\Payment;
 use RZP\Constants\Timezone;
 use RZP\Models\Batch\Status;
 use RZP\Services\Mock\Scrooge;
+use RZP\Services\RazorXClient;
 use RZP\Models\Payment\Refund;
 use RZP\Models\Currency\Currency;
 use RZP\Models\Base\PublicEntity;
@@ -2009,7 +2011,12 @@ class ReconciliationFileTest extends TestCase
         return $facade;
     }
 
-    protected function runForFiles(array $files, string $gateway, array $forceUpdate = [], array $forceAuthorizePayments = [], $manualFile = false)
+    protected function runForFiles(array $files,
+                                   string $gateway,
+                                   array $forceUpdate = [],
+                                   array $forceAuthorizePayments = [],
+                                   $manualFile = false,
+                                   $response = null)
     {
         $this->ba->appAuth();
 
@@ -2044,6 +2051,12 @@ class ReconciliationFileTest extends TestCase
             }
         }
 
+        if (empty($response) === false)
+        {
+            // Add response in testdata
+            $testData['response'] = $response;
+        }
+
         $this->runRequestResponseFlow($testData);
     }
 
@@ -2071,6 +2084,26 @@ class ReconciliationFileTest extends TestCase
         $gatewayPayment = $this->getDbLastEntityPublic('payment');
 
         return $gatewayPayment;
+    }
+
+    protected function mockRazorx()
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                           ->setConstructorArgs([$this->app])
+                           ->setMethods(['getTreatment'])
+                           ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+                          ->will($this->returnCallback(function ($mid, $feature, $mode)
+                          {
+                              if ($feature === 'batch_service_reconciliation_migration')
+                              {
+                                  return 'on';
+                              }
+                              return 'off';
+                          }));
     }
 
     public function testHitachiReconPaymentFile()
@@ -2101,6 +2134,21 @@ class ReconciliationFileTest extends TestCase
         $this->assertTrue($updatedPayment1['gateway_captured']);
 
         $this->assertBatchStatus(Status::PROCESSED);
+    }
+
+    // Test that recon batch create request sent to batch service and
+    // batch is getting created on batch service side.
+    public function testHitachiReconFileForwardToBatchService()
+    {
+        $this->mockRazorX();
+
+        $entries[] = $this->testData['facades']['hitachi'];
+
+        $response = $this->testData['batch_service_response'];
+
+        $file = $this->writeToExcelFile($entries, 'hitachi');
+
+        $this->runForFiles([$file], 'Hitachi', [], [], false, $response);
     }
 
     // Tests Hitachi international payment recon

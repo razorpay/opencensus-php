@@ -2,7 +2,9 @@
 
 namespace RZP\Models\Batch\Processor;
 
+use RZP\Reconciliator\Base\InfoCode;
 use RZP\Reconciliator\Metrics\Metric;
+use RZP\Reconciliator\Base\Reconciliate;
 use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\HttpFoundation\File\MimeType\MimeTypeGuesser;
 use Symfony\Component\HttpFoundation\File\MimeType\FileBinaryMimeTypeGuesser;
@@ -14,6 +16,7 @@ use RZP\Models\FileStore;
 use RZP\Base\RuntimeManager;
 use RZP\Reconciliator\Converter;
 use RZP\Reconciliator\FileProcessor;
+use RZP\Reconciliator\Base\Constants;
 use RZP\Reconciliator\RequestProcessor;
 use RZP\Reconciliator\Base\Foundation\ScroogeReconciliate;
 
@@ -221,6 +224,49 @@ class Reconciliation extends Base
         // entries at the time of saving the input file.
         //
         return [];
+    }
+
+    public function addSettingsIfRequired(& $input)
+    {
+        $forceAuthorize = $input[Batch\Entity::CONFIG][RequestProcessor\Base::FORCE_AUTHORIZE] ?? [];
+
+        $forceUpdate = $input[Batch\Entity::CONFIG][RequestProcessor\Base::FORCE_UPDATE] ?? [];
+
+        $gateway = $this->batch->getGateway();
+
+        $gatewayReconciliatorClassName = 'RZP\\Reconciliator' . '\\' . $gateway . '\\' . 'Reconciliate';
+
+        $gatewayReconciliator = new $gatewayReconciliatorClassName($gateway);
+
+        $filename = $input['file']->getFilename();
+
+        $subType = $gatewayReconciliator->getReconciliationTypeFromFileName($filename);
+
+        //
+        // If sub_type is NA or null etc, we can not forward the
+        // request to batch service, so better to throw exception.
+        //
+        if ((in_array($subType, Reconciliate::VALID_RECON_TYPES, true) === false))
+        {
+            $this->trace->info(
+                TraceCode::RECON_CRITICAL_ALERT,
+                [
+                    'info_code'             => InfoCode::RECON_FILE_SKIPPED_DUE_TO_UNKNOWN_RECON_TYPE,
+                    'reconciliation_type'   => $subType,
+                    'file_name'             => $filename,
+                    'gateway'               => $gateway,
+                ]);
+
+            throw new Exception\ReconciliationException(
+                'Unable to figure out the reconciliation type. Skipping this file. Please check the filename.');
+        }
+
+        $input[Batch\Entity::CONFIG][Constants::GATEWAY]                        = $gateway;
+        $input[Batch\Entity::CONFIG][Constants::SUB_TYPE]                       = $subType;
+        $input[Batch\Entity::CONFIG][RequestProcessor\Base::FORCE_AUTHORIZE]    = $forceAuthorize;
+        $input[Batch\Entity::CONFIG][RequestProcessor\Base::FORCE_UPDATE]       = $forceUpdate;
+
+        $this->trace->info(TraceCode::RECON_BATCH_SERVICE_INPUT_CONFIG, $input);
     }
 
     protected function performPreProcessingActions()

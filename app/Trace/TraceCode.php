@@ -280,6 +280,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const GATEWAY_REFUND_STATUS_UNKNOWN_SUCCESS                 = 'GATEWAY_REFUND_STATUS_UNKNOWN_SUCCESS';
     const GATEWAY_ABSENT_REFUND_RETRY_FAILED                    = 'GATEWAY_ABSENT_REFUND_RETRY_FAILED';
     const RECON_FILE_LINK_NOT_FOUND                             = 'RECON_FILE_LINK_NOT_FOUND';
+    const RECON_BATCH_SERVICE_INPUT_CONFIG                      = 'RECON_BATCH_SERVICE_INPUT_CONFIG';
     const GATEWAY_ENTITIES_COUNT_UNEXPECTED                     = 'GATEWAY_ENTITIES_COUNT_UNEXPECTED';
     const GATEWAY_ENTITY_UNEXPECTED_ACTION                      = 'GATEWAY_ENTITY_UNEXPECTED_ACTION';
     const CHANGING_FILE_PERMISSION                              = 'CHANGING_FILE_PERMISSION';
@@ -2433,6 +2434,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const GET_BATCHES_IGNORE_COUNT_SKIP                         = 'GET_BATCHES_IGNORE_COUNT_SKIP';
     const BATCH_SERVICE_MULTIPART_PAYLOAD                       = 'BATCH_SERVICE_MULTIPART_PAYLOAD';
     const BATCH_ADD_PRICING_RULE_REQUEST                        = 'BATCH_ADD_PRICING_RULE_REQUEST';
+    const BATCH_SERVICE_CREATED_RESPONSE                        = 'BATCH_SERVICE_CREATED_RESPONSE';
     const BATCH_PRICING_PLAN_REPLICATE_REQUEST                  = 'BATCH_PRICING_PLAN_REPLICATE_REQUEST';
     const BATCH_SEND_MAIL_REQUEST                               = 'BATCH_SEND_MAIL_REQUEST';
     const BATCH_SEND_MAIL_CONFIG                                = 'BATCH_SEND_MAIL_CONFIG';

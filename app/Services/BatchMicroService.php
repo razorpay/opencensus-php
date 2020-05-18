@@ -118,6 +118,8 @@ class BatchMicroService
 
         $batchResponse[Batch\Entity::TYPE] = $input[Batch\Entity::TYPE];
 
+        $this->trace->info(TraceCode::BATCH_SERVICE_CREATED_RESPONSE, ['response' => $batchResponse]);
+
         return $batchResponse;
     }
 

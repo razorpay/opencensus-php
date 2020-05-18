@@ -295,6 +295,7 @@ class Type
         self::ECOLLECT_RBL,
         self::REPORT,
         self::ADMIN_BATCH,
+        self::RECONCILIATION,
         self::BANK_TRANSFER_EDIT,
     ];
 

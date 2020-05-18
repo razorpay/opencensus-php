@@ -759,4 +759,33 @@ return [
             'content' => [],
         ]
     ],
+
+    'batch_service_response' => [
+        'content' => [
+            'entity' => "collection",
+            'count'  => 1,
+            'admin'  => TRUE,
+            'items'  => [
+                [
+                    'id'                => "C3fzDCb4hA4F6b",
+                    'created_at'        => 1551782255,
+                    'updated_at'        =>  1551782255,
+                    'entity_id'         => "C28Q0mJgoSfWC1",
+                    'name'              =>  0,
+                    'batch_type_id'     => "payment_link", //As type is hardcoded in batch service mock response
+                    'is_scheduled'      =>  FALSE,
+                    'upload_count'      =>  0,
+                    'total_count'       =>  3,
+                    'failure_count'     =>  0,
+                    'success_count'     =>  0,
+                    'amount'            =>  0,
+                    'attempts'          =>  0,
+                    'status'            => "CREATED",
+                    'processed_amount'  => 0,
+                    'entity'            => "batch",
+                    'admin'             => TRUE,
+                ]
+            ]
+        ]
+    ],
 ];
