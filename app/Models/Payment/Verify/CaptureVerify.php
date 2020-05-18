@@ -138,38 +138,6 @@ class CaptureVerify extends Verify
                     ]
                 );
             }
-
-            // Raise an alert if current bucket is greater than equal to 4
-            // and error result is error or unknown.
-            // Otherwise raise an alert if verify bucket is last bucket
-            if ((($payment->getVerifyBucket() >= 4) and
-                (($result === Result::ERROR) or
-                 ($result === Result::UNKNOWN))) or
-                (($payment->getVerifyBucket() == 9) and
-                 ($result !== Result::SUCCESS)))
-            {
-
-                // Raise an alert on slack for failed captured payment verification
-                $message = 'Captured payment verification failed';
-
-                $slackArray = [
-                    'payment_id'    => $payment->getId(),
-                    'verified_at'   => $payment->getVerifyAt(),
-                    'verify_bucket' => $payment->getVerifyBucket(),
-                    'gateway'       => $payment->getGateway(),
-                    'status'        => $payment->getStatus(),
-                    'result'        => $result,
-                    'verify_action' => $action,
-                ];
-
-                $this->slack->queue(
-                    $message,
-                    $slackArray,
-                    [
-                        'channel' => $this->slackChannel,
-                    ]
-                );
-            }
         }
 
         return $result;
