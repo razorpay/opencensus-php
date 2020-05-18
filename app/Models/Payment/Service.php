@@ -1610,9 +1610,17 @@ class Service extends Base\Service
                 // get logged by global handler because it's not a critical
                 // exception but in this context it really shouldn't have
                 // occurred.
-                $traceData = $e->getData();
+                $traceData = [];
+
+                // Not all exception are of type base exception, so getData wont be available for them,
+                // adding that check.
+                if ($e instanceof Exception\BaseException)
+                {
+                    $traceData = $e->getData();
+                }
+
                 // adding extra data, in case the exception does not have enough info
-                $traceData = array_merge([], $traceData ?? [],
+                $traceData = array_merge([], $traceData,
                     [
                         'meta' => [
                             'payment_id' => $payment->getId(),
