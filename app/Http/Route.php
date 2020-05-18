@@ -3833,6 +3833,7 @@ final class Route
         'unclaimed_merchant_poc_update'                     => '*',
         'merchant_poc_update_with_time'                     => '*',
         'merchant_poc_update'                               => '*',
+        'create_submerchant_user'                           => '*',
 
         'fetch_merchant_balance_configs'                    => '*',
         'get_merchant_balance_config'                       => '*',

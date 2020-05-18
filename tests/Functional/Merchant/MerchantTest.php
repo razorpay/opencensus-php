@@ -4742,6 +4742,8 @@ class MerchantTest extends TestCase
 
     public function testFullyManagedInviteSubMerchantToManageDash()
     {
+        Mail::fake();
+
         $this->fixtures->create('merchant',[
             'id'     => '10000000000040',
             'email'  => 'test@razorpay.com',

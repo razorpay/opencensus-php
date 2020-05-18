@@ -2871,6 +2871,8 @@ class Service extends Base\Service
 
         $isAggregatorPartner = $partnerMerchant->isAggregatorPartner();
 
+        $isFullyManagedPartner = $partnerMerchant->isFullyManagedPartner();
+
         $subEmailIsSameAsPartner = ($subMerchant->getEmail() === $partnerMerchant->getEmail());
 
         $subMerchantHasLessThanTwoOwners = ($subMerchant->owners()->count() < 2);
@@ -2878,16 +2880,16 @@ class Service extends Base\Service
         $inviteEmailSameAsSelf = ($input[User\Entity::EMAIL] === $subMerchant->getEmail());
 
         //
-        // In case of a partner of type `aggregator`(only) having created a sub-merchant
+        // In case of a partner of type `aggregator` or `fully_managed` having created a sub-merchant
         // without providing email explicitly, we want to provide the ability to create
         // an owner for the sub-merchant, with an email, later.
         // In both old aggregator and partners flow, we never expect the total number of
         // owners for a merchant to be greater than 2 (1 for partner and 1 for sub-merchant).
         //
-        // If the sub-merchant email is changed later then the invite may stil need to be
+        // If the sub-merchant email is changed later then the invite may still need to be
         // sent for login but that should only be to the merchant email.
         //
-        if (($isAggregatorPartner === true) and
+        if ((($isAggregatorPartner === true) or ($isFullyManagedPartner === true)) and
             (($subEmailIsSameAsPartner or $inviteEmailSameAsSelf) === true) and
             ($subMerchantHasLessThanTwoOwners === true))
         {
