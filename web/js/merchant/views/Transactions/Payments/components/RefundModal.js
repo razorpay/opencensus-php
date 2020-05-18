@@ -361,8 +361,7 @@ export default class RefundModal extends Component {
     const { data } = this.props.current_balance;
 
     // let amount = payment.amount;
-    let amount = Number(payable_amount) * 100;
-
+    let amount = rupeesToPaise(payable_amount);
     let balance = data.balance;
 
     if (this.props.current_balance.loading === true) {
