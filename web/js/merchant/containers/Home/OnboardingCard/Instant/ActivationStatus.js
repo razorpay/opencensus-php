@@ -159,8 +159,8 @@ export default class ActivationCard extends Component {
               onClick={() => {
                 track.fillKyc();
                 tracking.trackEvent(
-                  window.rzpQ.onbr().initiated('act.form_fill', {
-                    clickSource: 'Dashboard_Banner',
+                  window.rzpQ.onbr().initiated('kyc.form_fill', {
+                    clickSource: 'Dashboard_CTA',
                   })
                 );
               }}

@@ -75,10 +75,12 @@ const MerchantDetails = ({
   isWebsiteInWorkflow,
   onWebsiteAdd,
 }) => {
-  const activationName =
-    !user.showInstantActivation || !user.instantActivation.isL1Submitted
-      ? 'Activation'
-      : 'KYC';
+  let activationName = 'KYC';
+  let trackerName = 'kyc.form_fill';
+  if (!user.showInstantActivation || !user.instantActivation.isL1Submitted) {
+    activationName = 'Activation';
+    trackerName = 'act.form_fill';
+  }
 
   const handleEditWebsite = () => {
     tracking.trackEvent(
@@ -199,7 +201,7 @@ const MerchantDetails = ({
                 to={'/activation'}
                 onClick={() => {
                   tracking.trackEvent(
-                    window.rzpQ.onbr().initiated('kyc.form_fill', {
+                    window.rzpQ.onbr().initiated(trackerName, {
                       clickSource: 'My_Account',
                     })
                   );

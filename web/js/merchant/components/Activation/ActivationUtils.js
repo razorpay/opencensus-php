@@ -14,8 +14,6 @@ import {
 } from './Constants';
 
 function handleInstantActivationSuccess(props) {
-  props.tracking.trackEvent(window.rzpQ.onbr().initiated('act.submit_form'));
-
   if (props.user.business_type == 11) {
     const { poi_verification_status } = props.user;
     if (poi_verification_status == 'verified') {

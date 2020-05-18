@@ -1,8 +1,9 @@
 import { Link } from 'react-router-dom';
 
 import ModalHeader from 'common/ui/ModalHeader';
+import RTracking from 'react-tracking';
 
-export default ({ user, switchToTestMode, closeModal }) => {
+const KYCAlertModal = ({ user, switchToTestMode, closeModal, tracking }) => {
   if (user.activation_status === 'under_review') {
     return (
       <div class="MarketPlace--KYC-UnderReview-Modal">
@@ -36,7 +37,14 @@ export default ({ user, switchToTestMode, closeModal }) => {
           <Link
             to={'/activation'}
             class="btn btn-primary btn-block"
-            onClick={closeModal}
+            onClick={() => {
+              tracking.trackEvent(
+                window.rzpQ.onbr().initiated('kyc.form_fill', {
+                  clickSource: 'Route',
+                })
+              );
+              closeModal();
+            }}
           >
             Fill KYC Form
           </Link>
@@ -45,3 +53,7 @@ export default ({ user, switchToTestMode, closeModal }) => {
     </div>
   );
 };
+
+export default RTracking(() => {
+  window.rzpQ.component('WelcomeModal');
+})(KYCAlertModal);

@@ -17,7 +17,11 @@ const SOURCE_RAZORPAY_X = 'x';
 
 @withRouter
 @RTracking(() => window.rzpQ.component('ActivationContainer'))
-@connect(state => ({ user: state.session.user, session: state.session }))
+@connect(state => ({
+  user: state.session.user,
+  session: state.session,
+  current_tab_name: state.activationWizard.current_tab_name,
+}))
 export default class ActivationContainer extends Component {
   constructor(props) {
     super(props);
@@ -144,7 +148,16 @@ export default class ActivationContainer extends Component {
   }
 
   handleCloseActivationForm = e => {
-    this.props.tracking.trackEvent(window.rzpQ.onbr().dropped('act.form_fill'));
+    const isL1Submitted = this.props.user.instantActivation.isL1Submitted;
+    let eventName = 'act.form_fill';
+    if (isL1Submitted) {
+      eventName = 'kyc.form_fill';
+    }
+    this.props.tracking.trackEvent(
+      window.rzpQ.onbr().dropped(eventName, {
+        clickSource: this.props.current_tab_name,
+      })
+    );
 
     this.sendEventsForSubMerchantView(
       window.rzpQ

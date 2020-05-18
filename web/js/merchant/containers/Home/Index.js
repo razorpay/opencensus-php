@@ -809,6 +809,11 @@ export default class HomeContainer extends Component {
                       action: 'Close_Popup',
                     })
                   );
+                  tracking.trackEvent(
+                    window.rzpQ.onbr().initiated('act.popup', {
+                      clickSource: 'Close',
+                    })
+                  );
                 }}
               >
                 <ModalContent>
@@ -821,11 +826,6 @@ export default class HomeContainer extends Component {
                     onActivate={() => {
                       trackActivateAccount();
                       onFirstStepClose();
-                      tracking.trackEvent(
-                        window.rzpQ.onbr().initiated('act.form_fill', {
-                          clickSource: 'First_Login_Popup',
-                        })
-                      );
                     }}
                   />
                 </ModalContent>
@@ -844,7 +844,9 @@ export default class HomeContainer extends Component {
             }}
             onGoToDashboard={() => {
               tracking.trackEvent(
-                window.rzpQ.onbr().initiated('act.whitelist_popup_action')
+                window.rzpQ.onbr().initiated('act.whitelist_popup_action', {
+                  actions: 'Go to Dashboard',
+                })
               );
               iaActivations.trackGoToDashboard();
               this.closeOnboardingStep();
@@ -894,18 +896,20 @@ export default class HomeContainer extends Component {
             onClose={() => {
               iaActivations.trackCloseKYCDetails();
               tracking.trackEvent(
-                window.rzpQ.dropped('act.greylist_popup_action')
+                window.rzpQ.onbr().dropped('act.greylist_popup_action')
               );
               hideKYCDetailsModal();
             }}
             onGiveDetails={() => {
               iaActivations.trackGiveKYCDetails();
               tracking.trackEvent(
-                window.rzpQ.onbr().initiated('act.greylist_popup_action')
+                window.rzpQ.onbr().initiated('act.greylist_popup_action', {
+                  actions: 'Give Details',
+                })
               );
               tracking.trackEvent(
                 window.rzpQ.onbr().initiated('kyc.form_fill', {
-                  clickSource: 'Greylist_Popup',
+                  actions: 'GreyList Popup',
                 })
               );
               hideKYCDetailsModal();

@@ -5,8 +5,10 @@ import ShowWhen from 'merchant/components/ShowWhen';
 import LocalStorageService from 'common/utils/localStorage';
 import Banner from 'common/ui/Banner';
 import { trackLinkClick } from './ga';
+import RTracking from 'react-tracking';
 
 @connect(state => state.session)
+@RTracking(() => window.rzpQ.component('TestModeBanner'))
 export default class TestModeBanner extends Component {
   switchToLiveMode = () => {
     const { user } = this.props;
@@ -18,7 +20,7 @@ export default class TestModeBanner extends Component {
   };
 
   render() {
-    let { user, mode } = this.props;
+    let { user, mode, tracking } = this.props;
 
     if (mode === 'live') {
       return null;
@@ -42,7 +44,12 @@ export default class TestModeBanner extends Component {
                 {' '}
                 <Link
                   to="/activation"
-                  onClick={() => trackLinkClick('Go To - Activation Form')}
+                  onClick={() => {
+                    trackLinkClick('Go To - Activation Form');
+                    tracking.trackEvent(
+                      window.rzpQ.onbr().initiated('kyc.form_fill')
+                    );
+                  }}
                 >
                   Activate your account
                 </Link>{' '}

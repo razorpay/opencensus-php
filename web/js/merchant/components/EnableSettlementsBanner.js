@@ -14,7 +14,7 @@ const EnableSettlementsBanner = props => (
         onClick={() => {
           props.tracking.trackEvent(
             window.rzpQ.onbr().initiated('kyc.form_fill', {
-              clickSource: 'EnableSettlementsBanner',
+              clickSource: props.source ? props.source : '',
             })
           );
         }}

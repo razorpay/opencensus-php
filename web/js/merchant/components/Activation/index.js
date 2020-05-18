@@ -30,6 +30,7 @@ import mainFormTabsContent, {
   mainFormTabs,
   mainFormFieldNamesMeta,
   getBusinessTypeOptions,
+  tabToEventNames,
 } from './ActivationFormMap';
 import accountFormTabsContent, {
   accountFormTabs,
@@ -47,6 +48,7 @@ import {
 import {
   submitL1Form,
   submitL1FormSuccess,
+  setCurrentTab,
 } from 'merchant/reducers/activationWizard';
 import User from 'merchant/models/User';
 import { showNotification } from 'merchant_common/reducers/notifications';
@@ -114,6 +116,7 @@ const SAVE_BUTTON_DISABLED_STEPS = [BUSINESS_DETAILS_STEP];
     submitL1Form,
     submitL1FormSuccess,
     showKYCStatusModal,
+    setCurrentTab,
   }
 )
 @RTracking(() => window.rzpQ.component('ActivationWizard'))
@@ -157,17 +160,18 @@ export default class ActivationWizard extends React.Component {
       }
     }
 
-    this.formName =
+    this.formName = 'Activation Form';
+    this.formDescription = 'Complete and submit the form to accept payments.';
+    this.trackingType = 'act';
+    if (
       props.user.showInstantActivation &&
       props.user.instantActivation.isL1Submitted
-        ? 'KYC Form'
-        : 'Activation Form';
-
-    this.formDescription =
-      props.user.showInstantActivation &&
-      props.user.instantActivation.isL1Submitted
-        ? 'Complete and submit the form to enable settlements.'
-        : 'Complete and submit the form to accept payments.';
+    ) {
+      this.formName = 'KYC Form';
+      this.formDescription =
+        'Complete and submit the form to enable settlements.';
+      this.trackingType = 'kyc';
+    }
   }
   isNeedsClarificationMode() {
     return this.props.data.activation_status === 'needs_clarification';
@@ -271,11 +275,6 @@ export default class ActivationWizard extends React.Component {
 
         a.onChange = (file, progressTracker) => {
           const filename = a.getName ? a.getName(this) : a.name;
-          tracking.trackEvent(
-            window.rzpQ.onbr().initiated(`kyc.upload_document_${filename}`, {
-              name: filename,
-            })
-          );
 
           return props
             .saveFile(filename, file, progressTracker, a.uploadAs || null)
@@ -377,6 +376,9 @@ export default class ActivationWizard extends React.Component {
     }
 
     this.state.activeTab = firstInValid;
+    this.props.setCurrentTab({
+      tab_name: mainFormTabs[firstInValid],
+    });
   }
 
   markTabIfActive(updatedTabId) {
@@ -401,9 +403,11 @@ export default class ActivationWizard extends React.Component {
     const currenActiveTab = this.state.activeTab;
     const tracker = () =>
       this.props.tracking.trackEvent(
-        window.rzpQ.onbr().initiated('kyc.save_modifications', {
-          clickSource: 'save',
-        })
+        window.rzpQ
+          .onbr()
+          .initiated(`${this.trackingType}.save_modifications`, {
+            clickSource: 'save',
+          })
       );
     let callBack =
       onAction &&
@@ -427,9 +431,11 @@ export default class ActivationWizard extends React.Component {
     const currenActiveTab = this.state.activeTab;
     const tracker = () =>
       this.props.tracking.trackEvent(
-        window.rzpQ.onbr().initiated('kyc.save_modifications', {
-          clickSource: 'save-next',
-        })
+        window.rzpQ
+          .onbr()
+          .initiated(`${this.trackingType}.save_modifications`, {
+            clickSource: 'save-next',
+          })
       );
     let callBack =
       onAction &&
@@ -474,7 +480,7 @@ export default class ActivationWizard extends React.Component {
     const currentActiveTab = this.state.activeTab;
     const tracker = () =>
       this.props.tracking.trackEvent(
-        window.rzpQ.onbr().initiated('kyc.nav_action', {
+        window.rzpQ.onbr().initiated(`${this.trackingType}.nav_action`, {
           clickSource: mainFormTabs[tabId],
         })
       );
@@ -500,22 +506,20 @@ export default class ActivationWizard extends React.Component {
   };
 
   //newActiveTab = null -> clicked on Save btn / 'Submit Form' tab
-  @RTracking((props, state) => {
+  trackFieldsChange = currentActive => {
     try {
-      const activation = { props, state };
-      const { tracking } = props;
-      if (isL1Completed(activation)) {
-        const fields = trackDiffInFormFields(props.data, state.dirty);
-        return fields.forEach(field =>
-          tracking.trackEvent(
-            window.rzpQ.onbr().initiated('kyc.provide_details', {
-              ...field,
-            })
-          )
-        );
-      }
+      const { tracking } = this.props;
+      let eventName = this.trackingType + '.' + tabToEventNames[currentActive];
+      const fields = trackDiffInFormFields(this.props.data, this.state.dirty);
+      return fields.forEach(field =>
+        tracking.trackEvent(
+          window.rzpQ.onbr().initiated(eventName, {
+            ...field,
+          })
+        )
+      );
     } catch (err) {}
-  })
+  };
   goto = async (newActiveTab, cb) => {
     if (this.state.showSubmitLayer) {
       // Hide only if it's already visible. To handle if the person has clicked on 'Submit Form' to save dirty data, then submit layer should still be shown.
@@ -538,6 +542,9 @@ export default class ActivationWizard extends React.Component {
 
     this.setState({
       activeTab: newActiveTab,
+    });
+    this.props.setCurrentTab({
+      tab_name: mainFormTabs[newActiveTab],
     });
 
     const shouldSave = Object.keys(this.state.dirty).length ? true : null;
@@ -605,6 +612,8 @@ export default class ActivationWizard extends React.Component {
 
     /* Following is api call and post response handling */
     const savingDataOfWhichTab = { ...reqData };
+
+    this.trackFieldsChange(currentActive);
 
     this.props.save(reqData).then(data => {
       if (this.unMounted) {
@@ -885,15 +894,16 @@ export default class ActivationWizard extends React.Component {
   trackSubmitL1 = data => {
     const { tracking } = this.props;
     try {
-      isPresent(data) &&
-        Object.keys(data).forEach(dataKey =>
+      const fields = trackDiffInFormFields(this.props.data, this.state.dirty);
+      fields &&
+        fields.forEach(field =>
           tracking.trackEvent(
-            window.rzpQ.onbr().initiated('act.provide_act_details', {
-              value: data[dataKey],
-              name: dataKey,
+            window.rzpQ.onbr().initiated('act.business_details', {
+              ...field,
             })
           )
         );
+      tracking.trackEvent(window.rzpQ.onbr().initiated('act.submit_form'));
     } catch (e) {}
   };
 
@@ -1037,6 +1047,9 @@ export default class ActivationWizard extends React.Component {
   }
 
   submitForm = () => {
+    this.props.tracking.trackEvent(
+      window.rzpQ.onbr().initiated('kyc.submit_form')
+    );
     return this.props.submitForm().then(data => {
       if (data.errors) {
         // Track session for any error on submission (non-LA account)

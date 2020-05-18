@@ -292,7 +292,7 @@ export default class SettlementsListContainer extends ListContainer {
           </header>
 
           {showInstantActivation && mode === 'live' && !isSubmitted ? (
-            <EnableSettlementsBanner />
+            <EnableSettlementsBanner source="Settlements" />
           ) : (
             <TestModeBanner />
           )}

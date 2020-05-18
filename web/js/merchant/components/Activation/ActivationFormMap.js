@@ -926,6 +926,15 @@ export const mainFormTabs = [
   'Documents Upload',
 ];
 
+export const tabToEventNames = [
+  'contact_info',
+  'business_overview',
+  'business_details',
+  'bank_account_details',
+  'documents_upload',
+  'needs_clarification',
+];
+
 // Tabs content
 const tabsData = [
   contactFields,

@@ -39,6 +39,7 @@ import rolesList from 'merchant/helpers/permissions/roles-list';
 
 import initChat from 'merchant/components/Support/chat';
 import RTracking from 'react-tracking';
+import qs from 'query-string';
 
 @withRouter
 @connect(
@@ -59,25 +60,41 @@ import RTracking from 'react-tracking';
 )
 @RTracking(
   ({ user, mode }) => {
-    const u = {
-      email: user.user.email,
-      id: user.user.id,
-      mid: user.current,
-      role: user.role,
-      business_type: user.business_type,
-      activated: user.activated,
-    };
     let utm = null;
     let gclid = null; //Google click id, analytics will try to capture and save to cookie if present.
+    let browser_details = {};
+    const query = qs.parse(window.location.search);
+    let source = 'pg';
+    let u = {};
+    if (user && user.user) {
+      u = {
+        email_id: user.user.email,
+        user_id: user.user.id,
+        mid: user.current,
+        user_role: user.role,
+        business_type: user.business_type,
+        activation_status: user.activated,
+      };
+    }
+    if (query.merchant) {
+      source = query.merchant;
+    }
     if (typeof window.analytics !== 'undefined') {
       utm = analytics.utils.getLandingParams();
       gclid = analytics.utils.getCookie('gclid');
+      if (typeof analytics.utils.getBrowserDetails !== 'undefined') {
+        browser_details = analytics.utils.getBrowserDetails();
+      }
     }
     return window.rzpQ.component('Home', {
-      user: u,
+      ...u,
       utm_params: utm,
       gclid,
       mode,
+      source,
+      reffering_url: document.referrer,
+      url: document.location.href,
+      ...browser_details,
     });
   },
   {

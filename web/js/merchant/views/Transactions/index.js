@@ -165,7 +165,7 @@ export default class TransactionsContainer extends Component {
           ) : null}
         </header>
         {showInstantActivation && !isSubmitted && mode === 'live' ? (
-          <EnableSettlementsBanner />
+          <EnableSettlementsBanner source={pathname.substr(1)} />
         ) : (
           <TestModeBanner />
         )}
