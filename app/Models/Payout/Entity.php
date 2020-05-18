@@ -137,6 +137,10 @@ class Entity extends Base\PublicEntity
 
     const PAYOUT_MODE     = 'payout_mode';
 
+    // Used for Queued Payout Processing
+    const BALANCE_IDS     = 'balance_ids';
+    const BALANCE_IDS_NOT = 'balance_ids_not';
+
     // Relations
     const USER            = 'user';
     const CUSTOMER        = 'customer';

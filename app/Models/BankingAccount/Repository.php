@@ -180,4 +180,18 @@ class Repository extends Base\Repository
                 ->whereRaw(Table::BANKING_ACCOUNT.'.'.Entity::ID.' = '.Table::ADMIN_AUDIT_MAP.'.'.Entity::ENTITY_ID);
         });
     }
+
+    public function getBalanceIdsWhereGatewayBalanceUpdatedRecently($previousCronTime)
+    {
+        $balanceIdColumn = $this->dbColumn(Entity::BALANCE_ID);
+        $updatedAtColumn = $this->dbColumn(Entity::UPDATED_AT);
+
+        return $this->newQuery()
+                    ->select($balanceIdColumn)
+                    ->where($updatedAtColumn, '>=', $previousCronTime)
+                    ->distinct()
+                    ->get()
+                    ->pluck(Entity::BALANCE_ID)
+                    ->toArray();
+    }
 }
