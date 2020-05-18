@@ -1917,9 +1917,16 @@ trait PaymentTrait
 
             $values = [];
             $method = $request['method'];
+            $gateway = $this->decryptGatewayText($content['gateway']);
 
             if (($method === 'post') and
                 (isset($request['content'])))
+            {
+                $values = $request['content'];
+            }
+            if (($method === 'get') and
+                (isset($request['content'])) and
+                (Payment\Gateway::isGatewaySupportingGetRedirectForm($gateway)) === true)
             {
                 $values = $request['content'];
             }

@@ -8,6 +8,7 @@ use Response;
 use Request;
 use App;
 use View;
+use Crypt;
 
 use RZP\Models\Feature\Constants as Feature;
 use RZP\Constants\Entity as E;
@@ -475,6 +476,16 @@ class PaymentCreateController extends Controller
                 }
                 else if ($data['request']['method'] === 'get')
                 {
+                    if (isset($data['gateway']) === true)
+                    {
+                        list($gateway, $time) = explode('__', \Crypt::decrypt($data['gateway']));
+
+                        if (Payment\Gateway::isGatewaySupportingGetRedirectForm($gateway) === true)
+                        {
+                            return $this->redirectToGatewayGetForm($data);
+                        }
+                    }
+
                     $response = \Redirect::away($data['request']['url']);
                     $response->headers->set('X-gateway', $data['gateway']);
 
@@ -802,6 +813,18 @@ class PaymentCreateController extends Controller
 
         return View::make('gateway.gatewayPostForm')
                    ->with('data', $postFormData);
+    }
+
+    protected function redirectToGatewayGetForm($data)
+    {
+        $merchant = $this->app['basicauth']->getMerchant();
+        $postFormData = $data;
+        $postFormData['theme']['color'] = $merchant->getBrandColorElseDefault();
+        $postFormData['name'] = $merchant->getBillingLabel();
+        $postFormData['nobranding'] = $merchant->isFeatureEnabled(Feature::PAYMENT_NOBRANDING);
+
+        return View::make('gateway.gatewayGetForm')
+            ->with('data', $postFormData);
     }
 
     protected function redirectToPaymentPostForm($data)

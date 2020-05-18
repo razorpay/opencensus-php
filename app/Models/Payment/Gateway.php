@@ -1722,6 +1722,16 @@ class Gateway
         IFSC::SCBL => Gateway::NETBANKING_SCB,
     ];
 
+    /**
+     * List of gateways which support html get methods for browser redirection using form.
+     *
+     * @var array
+     */
+    public static $gatewaysSupportingGetRedirectForm = [
+        Gateway::ATOM,
+        Gateway::NETBANKING_CORPORATION,
+        Gateway::NETBANKING_KVB,
+    ];
 
     /**
      * List of gateways which support netbanking, either in test or live mode.
@@ -2118,6 +2128,11 @@ class Gateway
     public static function isMethodSupported($method, $gateway)
     {
         return (in_array($gateway, self::$methodMap[$method]));
+    }
+
+    public static function isGatewaySupportingGetRedirectForm($gateway)
+    {
+        return (in_array($gateway, self::$gatewaysSupportingGetRedirectForm, true));
     }
 
     /**

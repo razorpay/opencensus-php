@@ -41,11 +41,7 @@ class Gateway extends Base\Gateway
 
         $content = $this->getAuthRequestDataAndCreateGatewayPayment($input);
 
-        $content = urldecode(http_build_query($content));
-
-        $request = $this->getStandardRequestArray([], 'get');
-
-        $request['url'] .= '?' . $content;
+        $request = $this->getStandardRequestArray($content, 'get');
 
         $this->traceGatewayPaymentRequest($request, $input);
 
