@@ -6,7 +6,6 @@ use Queue;
 use Carbon\Carbon;
 
 use RZP\Models\Admin;
-use RZP\Models\Payout;
 use RZP\Constants\Timezone;
 use RZP\Models\Pricing\Fee;
 use RZP\Services\Mock\Mozart;
@@ -250,8 +249,6 @@ class RblPayoutTest extends TestCase
 
         $this->mockMozartResponseForFetchingBalanceFromRblGateway(500);
 
-        sleep(1);
-
         $request = [
             'method'  => 'POST',
             'url'     => '/payouts',
@@ -274,28 +271,25 @@ class RblPayoutTest extends TestCase
 
         $this->fixtures->edit('banking_account', 'xba00000000000', [
             'balance_last_fetched_at' => $oldDateTime->getTimestamp(),
-        ]);
+        ] );
 
-        $summary = $this->makePayoutSummaryRequest();
-
-        // Assert that there is a payout in queued state with amount 2000000.
-        $this->assertEquals(1, $summary['bacc_xba00000000000'][Payout\Status::QUEUED]['count']);
-        $this->assertEquals(2000000, $summary['bacc_xba00000000000'][Payout\Status::QUEUED]['total_amount']);
-
-        // Add enough balance to allow the payout to get processed
         $this->mockMozartResponseForFetchingBalanceFromRblGateway(50000);
 
         $dispatchResponse = $this->dispatchQueuedPayouts();
 
         $balanceId = $this->bankingBalance->getId();
 
-        $this->assertEquals($dispatchResponse['balance_id_list'][0], $balanceId);
+        $expectedResponse = [
+            $balanceId => [
+                'original_balance'         => 5000000,
+                'balance_remaining'        => 3000000,
+                'total_payout_count'       => 1,
+                'dispatched_payout_count'  => 1,
+                'dispatched_payout_amount' => 2000000,
+            ]
+        ];
 
-        $updatedSummary = $this->makePayoutSummaryRequest();
-
-        // Assert that there are no payouts in queued state.
-        $this->assertEquals(0, $updatedSummary['bacc_xba00000000000'][Payout\Status::QUEUED]['count']);
-        $this->assertEquals(0, $updatedSummary['bacc_xba00000000000'][Payout\Status::QUEUED]['total_amount']);
+        $this->assertArraySelectiveEquals($dispatchResponse, $expectedResponse);
     }
 
     protected function createPendingPayoutAndApprovePayoutUptoSecondLevel(int $gatewayBalance, $queueFlag = 1)

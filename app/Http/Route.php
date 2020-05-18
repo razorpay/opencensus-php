@@ -940,7 +940,7 @@ final class Route
         'payout_purpose_get'                       => ['get',      'payouts/purposes',                               'PayoutController@getPurposes'                                      ],
         'payout_purpose_post'                      => ['post',     'payouts/purposes',                               'PayoutController@postPurpose'                                      ],
         'payout_fetch_reversals'                   => ['get',      'payouts/{id}/reversals',                         'PayoutController@getPayoutReversal'                                ],
-        'payouts_process_queued'                   => ['post',     'payouts/queued/process',                         'PayoutController@processInitiateForQueuedPayouts'                  ],
+        'payouts_process_queued'                   => ['post',     'payouts/queued/process',                         'PayoutController@processDispatchForQueuedPayouts'                  ],
         'payouts_summary'                          => ['get',      'payouts/_meta/summary',                          'PayoutController@getSummary'                                       ],
         'payouts_workflow_summary'                 => ['get',      'payouts/_meta/workflows',                        'PayoutController@getWorkflowSummary'                               ],
 

@@ -97,7 +97,9 @@ class Repository extends Base\Repository
     }
 
     public function fetchQueuedPayouts(array $merchantIdsWhitelist = [],
-                                       array $merchantIdsBlacklist = [])
+                                       array $merchantIdsBlacklist = [],
+                                       int $from = null,
+                                       int $to = null)
     {
         $query = $this->newQuery()
                       ->with(['balance', 'merchant', 'merchant.org'])
@@ -113,60 +115,18 @@ class Repository extends Base\Repository
             $query->whereNotIn(Entity::MERCHANT_ID, $merchantIdsBlacklist);
         }
 
-        return $query->limit(self::QUEUED_PAYOUTS_FETCH_LIMIT)
-                     ->get();
-    }
-
-    /**
-     * Fetch Balance Ids for all payouts that got queued since the last process-queued-payouts cron ran
-     *
-     * @param $previousCronTime
-     *
-     * @return mixed
-     */
-    public function getBalanceIdsWherePayoutsQueuedRecently($previousCronTime)
-    {
-        $queuedAtColumn = $this->dbColumn(Entity::QUEUED_AT);
-        $balanceIdColumn = $this->dbColumn(Entity::BALANCE_ID);
-
-        return $this->newQuery()
-                    ->select($balanceIdColumn)
-                    ->where($queuedAtColumn, '>=', $previousCronTime)
-                    ->distinct()
-                    ->get()
-                    ->pluck(Entity::BALANCE_ID)
-                    ->toArray();
-    }
-
-    public function fetchQueuedPayoutsForBalanceId(string $balanceId,
-                                                   $offset = 0)
-    {
-        $statusColumn = $this->dbColumn(Entity::STATUS);
-        $balanceIdColumn = $this->dbColumn(Entity::BALANCE_ID);
-
-        $query = $this->newQuery()
-                      ->with(['balance', 'merchant', 'merchant.org'])
-                      ->where($statusColumn, '=', Status::QUEUED)
-                      ->where($balanceIdColumn, '=', $balanceId);
-
-        if ($offset !== 0)
+        if (empty($from) === false)
         {
-            $query->offset($offset);
+            $query->where(Entity::CREATED_AT, '>', $from);
+        }
+
+        if (empty($to) === false)
+        {
+            $query->where(Entity::CREATED_AT, '<', $to);
         }
 
         return $query->limit(self::QUEUED_PAYOUTS_FETCH_LIMIT)
                      ->get();
-    }
-
-    public function fetchCountOfQueuedPayoutsForBalance(string $balanceId)
-    {
-        $statusColumn = $this->dbColumn(Entity::STATUS);
-        $balanceIdColumn = $this->dbColumn(Entity::BALANCE_ID);
-
-        return $this->newQuery()
-                    ->where($statusColumn, '=', Status::QUEUED)
-                    ->where($balanceIdColumn, '=', $balanceId)
-                    ->count();
     }
 
     public function fetchPayoutsWithUtrNotNull($from, $to, $merchantId)

@@ -108,9 +108,6 @@ class ConfigKey
     const PHONE_NUMBER_REGEX_FOR_REDACTING      = self::PREFIX . 'phone_number_regex_for_redacting';
     const CVV_REGEX_FOR_REDACTING               = self::PREFIX . 'cvv_regex_for_redacting';
 
-    const RX_QUEUED_PAYOUTS_PAGINATION          = self::PREFIX . 'rx_queued_payouts_pagination';
-    const RX_QUEUED_PAYOUTS_CRON_LAST_RUN_AT    = self::PREFIX . 'rx_queued_payouts_cron_last_run_at';
-
     const PUBLIC_KEYS = [
         self::TERMINAL_SELECTION_LOG_VERBOSE,
         self::PRICING_RULE_SELECTION_LOG_VERBOSE,
@@ -163,8 +160,6 @@ class ConfigKey
         self::EMAIL_REGEX_FOR_REDACTING,
         self::PHONE_NUMBER_REGEX_FOR_REDACTING,
         self::CVV_REGEX_FOR_REDACTING,
-        self::RX_QUEUED_PAYOUTS_PAGINATION,
-        self::RX_QUEUED_PAYOUTS_CRON_LAST_RUN_AT,
     ];
 
     public static function isSensitive(string $key)

@@ -296,27 +296,4 @@ class Repository extends Base\Repository
                     ->merchantIdAndType($merchantId, Type::BANKING)
                     ->firstOrFailPublic();
     }
-
-    /**
-     * Fetch Id for balances of type banking where balance has updated since the last process-queued-payouts cron ran
-     *
-     * @param $previousCronTime
-     *
-     * @return mixed
-     */
-    public function getBankingBalanceIdsWhereBalanceUpdatedRecently($previousCronTime)
-    {
-        $idColumn = $this->dbColumn(Entity::ID);
-        $typeColumn = $this->dbColumn(Entity::TYPE);
-        $updatedAtColumn = $this->dbColumn(Entity::UPDATED_AT);
-
-        return $this->newQuery()
-                    ->select($idColumn)
-                    ->where($updatedAtColumn, '>=', $previousCronTime)
-                    ->where($typeColumn, '=', Type::BANKING)
-                    ->distinct()
-                    ->get()
-                    ->pluck(Entity::ID)
-                    ->toArray();
-    }
 }

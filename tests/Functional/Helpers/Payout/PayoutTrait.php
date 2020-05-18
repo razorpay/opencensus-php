@@ -48,40 +48,6 @@ trait PayoutTrait
         return json_decode($response->getContent(), true);
     }
 
-    protected function dispatchQueuedPayoutsWithBlacklist(string $balanceId)
-    {
-        $request = [
-            'method'  => 'POST',
-            'url'     => '/payouts/queued/process',
-            'content' => [
-                'balance_ids_not' => [$balanceId]
-            ]
-        ];
-
-        $this->ba->cronAuth();
-
-        $response = $this->sendRequest($request);
-
-        return json_decode($response->getContent(), true);
-    }
-
-    protected function dispatchQueuedPayoutsWithWhitelist(string $balanceId)
-    {
-        $request = [
-            'method'  => 'POST',
-            'url'     => '/payouts/queued/process',
-            'content' => [
-                'balance_ids' => [$balanceId]
-            ]
-        ];
-
-        $this->ba->cronAuth();
-
-        $response = $this->sendRequest($request);
-
-        return json_decode($response->getContent(), true);
-    }
-
     protected function mockMozartResponseForFetchingBalanceFromRblGateway($amount): void
     {
         $this->app->forgetInstance('mozart');

@@ -112,8 +112,6 @@ class Validator extends Base\Validator
         ConfigKey::EMAIL_REGEX_FOR_REDACTING          => 'filled|string',
         ConfigKey::PHONE_NUMBER_REGEX_FOR_REDACTING   => 'filled|string',
         ConfigKey::CVV_REGEX_FOR_REDACTING            => 'filled|string',
-        ConfigKey::RX_QUEUED_PAYOUTS_PAGINATION       => 'array',
-        ConfigKey::RX_QUEUED_PAYOUTS_CRON_LAST_RUN_AT => 'filled|integer',
     ];
 
     protected static $setRedisKeysRules = [

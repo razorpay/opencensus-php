@@ -552,7 +552,7 @@ return [
         ],
     ],
 
-    'testCreateAndProcessQueuedPayout' => [
+    'testCreateQueuedPayout' => [
         'request' => [
             'method'    => 'POST',
             'url'       => '/payouts',
@@ -3217,6 +3217,10 @@ return [
         'request'  => [
             'method'    => 'POST',
             'url'       => '/payouts/queued/process',
+            'content'   => [
+                'merchant_ids'      => ['10000000000000'],
+                'merchant_ids_not'  => [],
+            ]
         ],
         'response' => [
             'content' => [
@@ -3228,6 +3232,10 @@ return [
         'request'  => [
             'method'    => 'POST',
             'url'       => '/payouts/queued/process',
+            'content'   => [
+                'merchant_ids'      => ['10000000000000'],
+                'merchant_ids_not'  => [],
+            ]
         ],
         'response' => [
             'content' => [

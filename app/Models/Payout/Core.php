@@ -8,7 +8,6 @@ use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Constants;
 use RZP\Models\Base;
-use RZP\Models\Admin;
 use DeepCopy\DeepCopy;
 use RZP\Models\Payment;
 use RZP\Models\Pricing;
@@ -33,7 +32,6 @@ use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Admin\Permission;
 use RZP\Models\Currency\Currency;
 use Razorpay\Trace\Logger as Trace;
-use RZP\Jobs\QueuedPayoutsInitiate;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Exception\BadRequestException;
 use RZP\Models\BankingAccountStatement;
@@ -474,30 +472,19 @@ class Core extends Base\Core
         return $merchantBankingAccount;
     }
 
-    /**
-     * Function dispatches all applicable payouts(where balance is enough to process the payout) for a given Balance Id
-     *
-     * @param string $balanceId
-     *
-     * @return array
-     * @throws BadRequestException
-     */
-    public function processDispatchForQueuedPayouts(string $balanceId)
+    public function processDispatchForQueuedPayouts(Base\PublicCollection $queuedPayouts)
     {
-        return $this->mutex->acquireAndRelease(
-            'process_queued_payouts_' . $balanceId,
-            function() use ($balanceId)
+        $grouped = $queuedPayouts->groupBy(Entity::BALANCE_ID);
+
+        $traceData = [];
+
+        foreach ($grouped as $balanceId => $payouts)
         {
-            $queuedPayoutsPaginationData = $this->getQueuedPayoutsPaginationData();
-
-            $offset = $queuedPayoutsPaginationData[$balanceId] ?? 0;
-
-            $queuedPayouts = $this->repo->payout->fetchQueuedPayoutsForBalanceId($balanceId, $offset);
-
-            $summary = [];
+            // We get balance via payout since we would have already fetched balance entity
+            // when fetching the payouts list. Avoiding an extra DB query here by doing this.
 
             /** @var Merchant\Balance\Entity $balanceEntity */
-            $balanceEntity = $this->repo->balance->findOrFailById($balanceId);
+            $balanceEntity = $payouts->first()->balance;
 
             // In case of current accounts(direct), balance in balance entity is stale since in our system we create
             // transactions only when we fetch account statement from bank.So for current account we can't use balance
@@ -522,35 +509,23 @@ class Core extends Base\Core
                 }
             }
 
-            $totalQueuedPayouts = $this->repo->payout->fetchCountOfQueuedPayoutsForBalance($balanceId);
+            $dispatchedData = $this->dispatchApplicablePayouts($balanceAmount, $payouts);
 
-            $dispatchedData = $this->dispatchApplicablePayouts($balanceAmount, $queuedPayouts);
-
-            $dispatchedPayoutCount = $dispatchedData['dispatched_payout_count'];
-
-            $this->updateOffsetForBalance($balanceId,
-                                          $offset,
-                                          $queuedPayoutsPaginationData,
-                                          $dispatchedPayoutCount,
-                                          $totalQueuedPayouts);
-
-            $summary[$balanceId] = [
-                'original_balance'         => $balanceAmount,
-                'balance_remaining'        => $dispatchedData['balance_remaining'],
-                'total_payout_count'       => count($queuedPayouts),
-                'dispatched_payout_count'  => $dispatchedPayoutCount,
-                'dispatched_payout_amount' => ($balanceAmount - $dispatchedData['balance_remaining']),
+            $traceData[$balanceId] = [
+                'original_balance'          => $balanceAmount,
+                'balance_remaining'         => $dispatchedData['balance_remaining'],
+                'total_payout_count'        => count($payouts),
+                'dispatched_payout_count'   => $dispatchedData['dispatched_payout_count'],
+                'dispatched_payout_amount'  => ($balanceAmount - $dispatchedData['balance_remaining']),
             ];
+        }
 
-            $this->trace->info(
-                TraceCode::PAYOUT_DISPATCH_SUMMARY,
-                $summary
-            );
+        $this->trace->info(
+            TraceCode::PAYOUT_DISPATCH_SUMMARY,
+            $traceData
+        );
 
-            return $summary;
-        },
-        300,
-        ErrorCode::BAD_REQUEST_QUEUED_PAYOUT_INITIATE_ANOTHER_OPERATION_IN_PROGRESS);
+        return $traceData;
     }
 
     public function processQueuedPayout(string $payoutId): Entity
@@ -849,38 +824,6 @@ class Core extends Base\Core
                 Trace::ERROR,
                 TraceCode::PAYOUT_QUEUE_DISPATCH_FAILED,
                 $data);
-        }
-    }
-
-    public function dispatchBalanceIdsForQueuedPayouts(array $balanceIdList)
-    {
-        foreach ($balanceIdList as $balanceId)
-        {
-            $traceInfo = [
-                'balance_id' => $balanceId
-            ];
-
-            try
-            {
-                $this->trace->info(TraceCode::PAYOUT_QUEUED_INITIATE_DISPATCH_JOB, $traceInfo);
-
-                QueuedPayoutsInitiate::dispatch($this->mode, $balanceId);
-
-                $this->trace->info(TraceCode::PAYOUT_QUEUED_INITIATE_DISPATCH_COMPLETE, $traceInfo);
-            }
-            catch (\Throwable $e)
-            {
-                // If the dispatch fails due to any reason, cron will
-                // pick up these payouts again and attempt to dispatch.
-
-                $data = $traceInfo + [ 'message' => $e->getMessage() ];
-
-                $this->trace->traceException(
-                    $e,
-                    Trace::ERROR,
-                    TraceCode::PAYOUT_QUEUED_INITIATE_DISPATCH_FAILED,
-                    $data);
-            }
         }
     }
 
@@ -1729,46 +1672,5 @@ class Core extends Base\Core
             },
             self::PAYOUT_MUTEX_LOCK_TIMEOUT,
             ErrorCode::BAD_REQUEST_PAYOUT_ALREADY_BEING_PROCESSED);
-    }
-
-    protected function getQueuedPayoutsPaginationData()
-    {
-        $queuedPayoutsPaginationData = (new Admin\Service)->getConfigKey(
-            [
-                'key' => Admin\ConfigKey::RX_QUEUED_PAYOUTS_PAGINATION
-            ]);
-
-        return $queuedPayoutsPaginationData;
-    }
-
-    protected function updateOffsetForBalance(string $balanceId,
-                                              $currentOffset,
-                                              $queuedPayoutsPaginationData,
-                                              $dispatchedPayoutCount,
-                                              $totalQueuedPayouts)
-    {
-        // If offset is not 0, we shall add it to the redis array for offset values
-        if ($currentOffset + Repository::QUEUED_PAYOUTS_FETCH_LIMIT <= $totalQueuedPayouts - $dispatchedPayoutCount)
-        {
-            $updatedOffset = $currentOffset + Repository::QUEUED_PAYOUTS_FETCH_LIMIT - $dispatchedPayoutCount;
-
-            $queuedPayoutsPaginationData[$balanceId] = $updatedOffset;
-        }
-
-        //
-        // If offset is 0 (merchant has less than 5000 payouts, then we'll remove the offset value from redis)
-        // Very few merchants use queued payouts and even fewer would have more than 5000 queued payouts.
-        // It makes no sense in storing the offset 0 for all merchants on every cron run.
-        // So, we shall only store it for merchants with more than 0 payouts. Unset it for the rest
-        //
-        else
-        {
-            unset($queuedPayoutsPaginationData[$balanceId]);
-        }
-
-        (new Admin\Service)->setConfigKeys(
-            [
-                Admin\ConfigKey::RX_QUEUED_PAYOUTS_PAGINATION => $queuedPayoutsPaginationData
-            ]);
     }
 }
