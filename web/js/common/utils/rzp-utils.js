@@ -223,7 +223,6 @@ export const pickProps = (source, keys) => {
 
 export const rupeesToPaise = amount => {
   amount = (Number(amount) * 100).toFixed(0);
-
   return Number(amount);
 };
 

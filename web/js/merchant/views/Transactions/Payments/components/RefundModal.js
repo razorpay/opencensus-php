@@ -268,7 +268,7 @@ export default class RefundModal extends Component {
       Number(props.amount) >= 1
     ) {
       this.props
-        .fetchRefundFee(this.props.payment, props.amount * 100)
+        .fetchRefundFee(this.props.payment, rupeesToPaise(props.amount))
         .then(() => {
           this.context
             .confirm({
