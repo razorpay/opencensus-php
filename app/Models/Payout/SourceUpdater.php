@@ -4,6 +4,7 @@ namespace RZP\Models\Payout;
 
 use App;
 use RZP\Trace\TraceCode;
+use RZP\Models\Feature\Constants;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Jobs\PayoutSourceUpdaterJob;
 use RZP\Models\Payout\Entity as PayoutEntity;
@@ -100,6 +101,14 @@ class SourceUpdater
 
     protected static function updateVendorPayment(PayoutEntity $payout)
     {
+        // check if vendor payment is updated for this merchant
+        $isFeatureEnabled = $payout->merchant->isFeatureEnabled(Constants::RX_VENDOR_PAYMENTS);
+
+        if ($isFeatureEnabled === false)
+        {
+            return;
+        }
+
         try
         {
             $vendorPaymentService = App::getFacadeRoot()['vendor-payment'];
