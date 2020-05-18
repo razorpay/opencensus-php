@@ -1600,7 +1600,7 @@ class Service extends Base\Service
 
                 // Now Just continue
             }
-            catch (\Exception $e)
+            catch (\Throwable $e)
             {
                 // @note: If payment refund fails due to any reason
                 // other than expected ones, we should log it as an error
@@ -1616,7 +1616,13 @@ class Service extends Base\Service
                 // adding that check.
                 if ($e instanceof Exception\BaseException)
                 {
-                    $traceData = $e->getData();
+                    $traceData = $e->getData() ?? [];
+                }
+
+                // Resetting in case the trace data is not array.
+                if (is_array($traceData) === false)
+                {
+                    $traceData = [];
                 }
 
                 // adding extra data, in case the exception does not have enough info
