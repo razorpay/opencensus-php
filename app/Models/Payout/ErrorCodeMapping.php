@@ -141,7 +141,7 @@ class ErrorCodeMapping
         'VALIDATION_ERROR_PENDING'              => 'Payout failed. Contact support for help.',
         'AUTHENTICATION_FAILED'                 => 'Payout failed. Contact support for help.',
         'RETURNED'                              => 'Payout failed. Contact support for help.',
-        'REQUEST_NOT_FOUND'                     => 'Payout failed. Contact support for help.',
+        'REQUEST_NOT_FOUND'                     => 'Payout failed. Please reinitiate transfer after 30 min.',
         'PBANK_CBS_REJECTED'                    => 'Issue at partner bank. Reinitiate transfer after 30 min',
         'INVALID_IFSC'                          => 'IFSC Code is Not Valid. Please check and retry.',
         'MERCHANT_INVALID_TXN_DETAILS'          => 'Narration provided is not supported. Please check and retry.',
