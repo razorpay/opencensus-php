@@ -1355,6 +1355,7 @@ class Gateway
         Gateway::ENACH_NPCI_NETBANKING,
         Gateway::UPI_MINDGATE,
         Gateway::NACH_CITI,
+        Gateway::AMEX,
     ];
 
     public static $recurringCardNetworks = [
