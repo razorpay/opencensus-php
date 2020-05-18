@@ -214,7 +214,6 @@ class Verify extends Base\Core
     protected $mutex;
     protected $redis;
     protected $slack;
-    protected $slackChannel;
     protected $route;
 
     public function __construct()
@@ -228,8 +227,6 @@ class Verify extends Base\Core
         $this->slack = $this->app['slack'];
 
         $this->route = $this->app['api.route']->getCurrentRouteName();
-
-        $this->slackChannel = Config::get('slack.channels.tech_logs_verify');
     }
 
     /**
@@ -634,8 +631,6 @@ class Verify extends Base\Core
 
         $this->trace->info(TraceCode::VERIFY_PROCESSED_SUMMARY, $summary);
 
-        $this->notifyInSlack($resultSet, $summary);
-
         return $summary;
     }
 
@@ -735,35 +730,6 @@ class Verify extends Base\Core
         ];
 
         return array_merge($processedResults, $result);
-    }
-
-    /** Notify Processed Data in slack
-     *
-     * @param array $resultSet        raw result array
-     * @param array $summary processed result array
-     * @return void
-     */
-    protected function notifyInSlack(array $resultSet, array $summary)
-    {
-        $total = array_sum($resultSet);
-
-        if (($total !== 0) and
-            (($resultSet[Result::SUCCESS] > self::LOGGING_THRESHOLD) or
-             ($total !== $resultSet[Result::SUCCESS])))
-        {
-            // Drop all false values (NULL, 0, "", [])
-            $slackArray = array_filter($summary);
-
-            $message = 'Payment verify result';
-
-            $this->slack->queue(
-                $message,
-                $slackArray,
-                [
-                    'channel' => $this->slackChannel
-                ]
-            );
-        }
     }
 
     public function verifyPayment(Payment\Entity $payment, string $filter = null, array $gatewayData = null)

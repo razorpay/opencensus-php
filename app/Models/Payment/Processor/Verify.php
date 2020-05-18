@@ -136,27 +136,6 @@ trait Verify
         $this->repo->saveOrFail($payment);
     }
 
-    protected function notifyInSlack(array $data)
-    {
-        $message = 'Payment verification failed.';
-
-        // Use the message from $data if it has one
-        if (isset($data['message']))
-        {
-            $message = $data['message'];
-            unset($data['message']);
-        }
-
-        $this->app['slack']->queue(
-            $message,
-            $data,
-            [
-                'color'   => 'bad',
-                'icon'    => ':boom:',
-                'channel' => Config::get('slack.channels.tech_logs_verify')
-            ]);
-    }
-
     protected function updateErrorInPaymentFromGatewayIfApplicable($payment, $data)
     {
         if (empty($data['error']) === true)
