@@ -20,6 +20,15 @@ class ReconciliatorController extends Controller
         return ApiResponse::generateResponse($response);
     }
 
+    public function postBulkReconciliationViaBatchService()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->reconcileViaBatchService($input);
+
+        return ApiResponse::json($response);
+    }
+
     public function postReconciliateCancelledTransactions($gateway)
     {
         $input = Request::all();

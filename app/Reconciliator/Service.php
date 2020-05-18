@@ -11,11 +11,14 @@ use RZP\Models\Batch;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Http\RequestHeader;
 use RZP\Models\Transaction;
 use RZP\Models\Payment\Refund;
 use RZP\Reconciliator\Base\InfoCode;
 use RZP\Reconciliator\Base\Constants;
 use RZP\Reconciliator\RequestProcessor;
+use RZP\Models\Batch\Processor\Reconciliation;
+use RZP\Reconciliator\Base\Foundation\SubReconciliate;
 use RZP\Reconciliator\Base\Foundation\ScroogeReconciliate;
 
 class Service extends Base\Service
@@ -365,11 +368,165 @@ class Service extends Base\Service
     }
 
     /**
+     * This method is called when recon request comes
+     * in small chunks from batch service.
+     *
+     * @param array $input
+     * @return mixed
+     * @throws Exception\LogicException
+     */
+    public function reconcileViaBatchService(array $input)
+    {
+        $this->trace->info(TraceCode::RECON_REQUEST_VIA_BATCH_SERVICE, $input);
+
+        $input = $this->preProcessBatchInput($input);
+
+        $processor = new Reconciliation();
+
+        $result = $processor->batchProcessEntries($input);
+
+        $response = $this->formatResult($result);
+
+        return $response;
+    }
+
+    /**
+     * This method is help to restructure the input for the reconciliation
+     * This will restructure the input as per normal reconciliation request input
+     * @param array $entries
+     * @return mixed
+     */
+    protected function preProcessBatchInput(array $entries)
+    {
+        $forceUpdate = [];
+        $forceAuthorize = [];
+
+        $config = [
+            RequestProcessor\Base::GATEWAY  => $entries[0][Constants::GATEWAY],
+            RequestProcessor\Base::SOURCE   => $entries[0][Constants::SOURCE],
+            RequestProcessor\Base::SUB_TYPE => $entries[0][Constants::SUB_TYPE],
+            FileProcessor::SHEET_NAME       => $entries[0][Constants::SHEET_NAME] ?? null,
+            Constants::BATCH_ID             => $this->app['request']->header(RequestHeader::X_Batch_Id) ?? null,
+        ];
+
+        if (isset($entries[0][RequestProcessor\Base::FORCE_UPDATE]) === true)
+        {
+            $forceUpdate = $entries[0][RequestProcessor\Base::FORCE_UPDATE];
+        }
+
+        if (isset($entries[0][RequestProcessor\Base::FORCE_AUTHORIZE]) === true)
+        {
+            $forceAuthorize = $entries[0][RequestProcessor\Base::FORCE_AUTHORIZE];
+        }
+
+        foreach ($entries as &$entry)
+        {
+            unset($entry[Constants::GATEWAY]);
+            unset($entry[Constants::SOURCE]);
+            unset($entry[Constants::SUB_TYPE]);
+            unset($entry[Constants::SHEET_NAME]);
+            unset($entry[Constants::BATCH_ID]);
+            unset($entry[RequestProcessor\Base::FORCE_AUTHORIZE]);
+            unset($entry[RequestProcessor\Base::FORCE_UPDATE]);
+        }
+
+        //
+        // Batch service modifies the `Amount` column to 'Amount (In Paise)'
+        // So need to change it back, preserving column order.
+        //
+        if (isset($entries[0][Constants::COLUMN_BATCH_AMOUNT]) === true)
+        {
+            $this->changeColumnName($entries, Constants::COLUMN_BATCH_AMOUNT , Constants::COLUMN_API_AMOUNT);
+        }
+
+        $this->normalizeEntries($entries, $config[Constants::GATEWAY]);
+
+        $input[0] = $entries;
+
+        $input[0][Reconciliation::EXTRA_DETAILS] = [
+            Reconciliation::FILE_DETAILS => [
+                FileProcessor::SHEET_NAME => $config[FileProcessor::SHEET_NAME],
+            ],
+            Reconciliation::INPUT_DETAILS => [
+                RequestProcessor\Base::FORCE_UPDATE    => $forceUpdate,
+                RequestProcessor\Base::FORCE_AUTHORIZE => $forceAuthorize
+            ],
+            Batch\Entity::CONFIG => $config,
+            Reconciliation::BATCH_SERVICE_RECON_REQUEST => true,
+        ];
+
+        return $input;
+    }
+
+   protected function changeColumnName(array &$entries, string $oldKey, string $newKey)
+   {
+        foreach ($entries as $index => &$row)
+        {
+            $columns = array_keys($row);
+
+            $columns[array_search($oldKey, $columns)] = $newKey;
+
+            $row = array_combine($columns, $row);
+        }
+    }
+
+    protected function normalizeEntries(array &$entries, string $gateway)
+    {
+        // normalize header
+        $converter = new Converter($gateway);
+
+        foreach ($entries as &$row)
+        {
+            $normalizedHeader = $converter->normalizeHeaders(array_keys($row));
+
+            $row = array_combine_pad($normalizedHeader, $row);
+        }
+    }
+
+    /**
+     * Format the result in proper response,
+     * adds required status_code etc
+     *
+     * @param array $result
+     * @return mixed
+     */
+    protected function formatResult(array $result)
+    {
+        $reconRows = new Base\PublicCollection;
+
+        foreach ($result as $row)
+        {
+            $isFailed = $this->getReconStatus($row);
+
+            $row[Constants::HTTP_STATUS_CODE]   = ($isFailed === true) ? 400 : 200;
+
+            $idempotentId = $row[Constants::IDEMPOTENT_ID];
+
+            // move this idempotent_id column to end
+            unset($row[Constants::IDEMPOTENT_ID]);
+
+            $row[Constants::IDEMPOTENT_ID] = $idempotentId;
+
+            $reconRows->push($row);
+        }
+
+        $this->trace->info(TraceCode::RECON_RESPONSE, $reconRows->toArrayWithItems());
+
+        return $reconRows->toArrayWithItems();
+    }
+
+    protected function getReconStatus(array $row)
+    {
+        return ($row[SubReconciliate::RECON_STATUS] === Constants::RECON_PUBLIC_DESCRIPTIONS[InfoCode::RECON_FAILED]);
+    }
+
+    /**
      * @param array $response
+     * @param bool $shouldUpdateBatchSummary
      * @return array
      * @throws \Throwable
      */
-    public function reconcileRefundsAfterScroogeRecon(array $response)
+    public function reconcileRefundsAfterScroogeRecon(array $response , bool $shouldUpdateBatchSummary = true)
     {
         $batchId        =  $response[ScroogeReconciliate::BATCH_ID] ?? null;
         $chunkNumber    = $response[ScroogeReconciliate::CHUNK_NUMBER] ?? 1;
@@ -498,7 +655,10 @@ class Service extends Base\Service
             'failures'              => $failures,
         ];
 
-        $this->updateScroogeBatchSummary($batchId, $data);
+        if ($shouldUpdateBatchSummary === true)
+        {
+            $this->updateScroogeBatchSummary($batchId, $data);
+        }
 
         $this->trace->info(
             TraceCode::REFUND_RECON_SCROOGE_CHUNK_MARK_RECONCILED,

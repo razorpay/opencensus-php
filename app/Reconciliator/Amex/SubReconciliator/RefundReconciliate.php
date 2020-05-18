@@ -39,7 +39,7 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
                     'refund_amount'         => $refundAmount,
                     'refund_count'          => count($refunds),
                     'gateway'               => $this->gateway,
-                    'batch_id'              => $this->batch->getId(),
+                    'batch_id'              => $this->batchId,
                 ]);
         }
 

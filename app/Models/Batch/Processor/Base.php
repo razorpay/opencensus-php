@@ -127,19 +127,22 @@ class Base extends BaseModel\Core
 
     protected $ignoreHeaders = false;
 
-    public function __construct(Batch\Entity $batch)
+    public function __construct(Batch\Entity $batch = null)
     {
         parent::__construct();
 
         $this->mutex            = $this->app['api.mutex'];
         $this->batch            = $batch;
-        $this->merchant         = $batch->merchant;
-        $this->settingsAccessor = Settings\Accessor::for($this->batch, Settings\Module::BATCH);
 
-        $this->app['basicauth']->setMerchant($this->merchant);
+        if($batch !== null)
+        {
+            $this->merchant = $batch->merchant;
+            $this->settingsAccessor = Settings\Accessor::for($this->batch, Settings\Module::BATCH);
+            $this->app['basicauth']->setMerchant($this->merchant);
 
-        // Indicates that the request is being executed by a batch upload flow
-        $this->app['basicauth']->setBatch($batch);
+            // Indicates that the request is being executed by a batch upload flow
+            $this->app['basicauth']->setBatch($batch);
+        }
 
     }
 

@@ -75,4 +75,12 @@ class Constants
     const GATEWAY                = 'gateway';
     const SUB_TYPE               = 'sub_type';
     const SHEET_NAME             = 'sheet_name';
+
+    // Batch services uses this column name for Amount
+    const COLUMN_BATCH_AMOUNT    = 'Amount (In Paise)';
+    const COLUMN_API_AMOUNT      = 'Amount';
+
+    // Used in batch response
+    const HTTP_STATUS_CODE       = 'http_status_code';
+    const IDEMPOTENT_ID          = 'idempotent_id';
 }

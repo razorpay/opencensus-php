@@ -17,6 +17,8 @@ use RZP\Reconciliator\Messenger;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Reconciliator\Orchestrator;
 use RZP\Reconciliator\FileProcessor;
+use RZP\Reconciliator\RequestProcessor;
+use RZP\Models\Batch\Processor\Reconciliation;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 use RZP\Reconciliator\Base\Foundation\SubReconciliate;
 
@@ -129,6 +131,8 @@ class Reconciliate extends Base\Core
 
     protected $gateway;
 
+    protected $batchId;
+
     /**
      * This variable indicates if we are in reconciliation code flow.
      * Currently this flag is being used to skip checksum validation
@@ -196,10 +200,13 @@ class Reconciliate extends Base\Core
      * @param array $allFilesContents
      * @param Batch\Processor\Reconciliation $batchProcessor
      * @param string $source
+     * @return array
      */
     public function startReconciliationV2(array $allFilesContents, Batch\Processor\Reconciliation $batchProcessor, string $source)
     {
         $batch = $batchProcessor->batch;
+
+        $this->batchId = $batch ? $batch->getId() : null;
 
         $this->messenger->batch = $batch;
 
@@ -209,7 +216,19 @@ class Reconciliate extends Base\Core
 
             $extraDetails = $fileContents[Orchestrator::EXTRA_DETAILS];
 
-            $reconciliationType = $this->getReconciliationType($fileContents[Orchestrator::EXTRA_DETAILS]);
+            // Check if this call is coming from batch service and set batch id accordingly
+            if (isset($fileContents[Orchestrator::EXTRA_DETAILS][Reconciliation::BATCH_SERVICE_RECON_REQUEST]) === true)
+            {
+                $reconciliationType = $fileContents[Orchestrator::EXTRA_DETAILS][Batch\Entity::CONFIG][RequestProcessor\Base::SUB_TYPE];
+
+                $this->batchId = $fileContents[Orchestrator::EXTRA_DETAILS][Batch\Entity::CONFIG][Constants::BATCH_ID];
+            }
+            else
+            {
+                $reconciliationType = $this->getReconciliationType($fileContents[Orchestrator::EXTRA_DETAILS]);
+
+                $this->updateBatchWithReconciliationType($batch, $reconciliationType, $extraDetails);
+            }
 
             // If unable to get the reconciliation type, just continue on to the next file.
             // An alert is raised in the function getReconciliationType in case of this.
@@ -219,8 +238,6 @@ class Reconciliate extends Base\Core
             }
 
             $this->preProcessFileContents($fileContents);
-
-            $this->updateBatchWithReconciliationType($batch, $reconciliationType, $extraDetails);
 
             $this->setSubReconciliator($reconciliationType, $batch);
 
@@ -233,8 +250,8 @@ class Reconciliate extends Base\Core
             catch (\Throwable $e)
             {
                 $tracePayload = [
-                    'gateway'   => $batch->getGateway(),
-                    'batch_id'  => $batch->getId(),
+                    'gateway'   => $this->gateway,
+                    'batch_id'  => $this->batchId
                 ];
 
                 $this->trace->traceException($e, Logger::CRITICAL, TraceCode::BATCH_PROCESSING_ERROR, $tracePayload);
@@ -243,8 +260,8 @@ class Reconciliate extends Base\Core
                     [
                         'trace_code' => TraceCode::BATCH_PROCESSING_ERROR,
                         'message'    => $e->getMessage(),
-                        'gateway'    => $batch->getGateway(),
-                        'batch_id'   => $batch->getId(),
+                        'gateway'    => $this->gateway,
+                        'batch_id'   => $this->batchId,
                     ]);
             }
             finally
@@ -258,18 +275,24 @@ class Reconciliate extends Base\Core
                             'count'      => count(self::$forceAuthorizedPayments),
                             'gateway'    => $this->gateway,
                             'payments'   => self::$forceAuthorizedPayments,
-                            'batch_id'   => $batch->getId()
+                            'batch_id'   => $this->batchId
                         ]);
                 }
 
                 $data = $batchProcessor->getReconBatchOutputData();
 
-                $this->setBatchFailureSummary($batch, $data);
+                $this->setBatchFailureSummary($data, $batch);
 
-                // Create the output file
+                // Create the output file, and modify the $data array (passing by reference here)
                 $this->generateReconOutputFile($batch, $data, $extraDetails);
 
                 self::$isReconRunning = false;
+
+                // Return the response to be sent back to batch service
+                if (isset($extraDetails[Reconciliation::BATCH_SERVICE_RECON_REQUEST]) === true)
+                {
+                    return $data;
+                }
             }
         }
 
@@ -277,10 +300,13 @@ class Reconciliate extends Base\Core
         // For batches having scrooge refunds, we send batch processed summary
         // when last chunk of scrooge response gets processed
         //
-        if ($batchProcessor->hasScroogeRefunds() === false)
+        if (($batchProcessor->hasScroogeRefunds() === false) and
+            (isset($extraDetails[Reconciliation::BATCH_SERVICE_RECON_REQUEST]) === false))
         {
             $this->traceBatchProcessingSummary($batch);
         }
+
+        return [];
     }
 
     /**
@@ -291,16 +317,15 @@ class Reconciliate extends Base\Core
      * @param Batch\Entity $batch
      * @param array $data
      * @param array $extraDetails
+     * @return array|void
      */
-    protected function generateReconOutputFile(Batch\Entity $batch, array $data, array $extraDetails)
+    protected function generateReconOutputFile(Batch\Entity $batch = null, array &$data, array $extraDetails)
     {
-        $batchId = $batch->getId();
-
-        $attempt = $batch->getAttempts();
+        $attempt = $batch ? $batch->getAttempts() : 1;
 
         $success = true;
 
-        $this->getOutputWithRemovedBlackListedColumns($data, $batchId, $attempt, $success);
+        $this->getOutputWithRemovedBlackListedColumns($data, $this->batchId, $attempt, $success);
 
         if ($success === false)
         {
@@ -308,7 +333,7 @@ class Reconciliate extends Base\Core
                 TraceCode::RECON_INFO,
                 [
                     'info_code' => InfoCode::RECON_OUTPUT_FILE_GENERATION_SKIPPED,
-                    'batch_id'  => $batchId,
+                    'batch_id'  => $this->batchId,
                     'gateway'   => $this->gateway,
                 ]
             );
@@ -316,11 +341,11 @@ class Reconciliate extends Base\Core
             return;
         }
 
-        $fileDetails =  $this->getOutputFileNameAndFilePath($extraDetails, $batchId, $attempt, $data);
+        $fileDetails = $this->getOutputFileNameAndFilePath($extraDetails, $attempt, $data);
 
         foreach ($fileDetails as $fileDetail)
         {
-            $this->uploadReconOutputFiles($batch, $fileDetail);
+            $this->uploadReconOutputFiles($fileDetail, $batch);
         }
     }
 
@@ -361,12 +386,11 @@ class Reconciliate extends Base\Core
      * using gateway, sheet name and batch attempts
      *
      * @param array $extraDetails
-     * @param $batchId
      * @param $attempt int
      * @param $outputData array
      * @return array
      */
-    protected function getOutputFileNameAndFilePath(array $extraDetails, $batchId, $attempt, $outputData)
+    protected function getOutputFileNameAndFilePath(array $extraDetails, $attempt, &$outputData)
     {
         $sheetName = null;
 
@@ -375,20 +399,29 @@ class Reconciliate extends Base\Core
         // name different, else the previous sheet output file will be replaced by current one.
         // So here we are putting the sheet name to create filename in case of excel files.
         //
-        if ($extraDetails[FileProcessor::FILE_DETAILS][FileProcessor::FILE_TYPE] === FileProcessor::EXCEL)
+        if (empty($extraDetails[FileProcessor::FILE_DETAILS][FileProcessor::SHEET_NAME]) === false)
         {
             $sheetName = $extraDetails[FileProcessor::FILE_DETAILS][FileProcessor::SHEET_NAME];
 
             $sheetName = '_' . strtolower(str_replace(' ', '_', $sheetName));
         }
 
-        $analyticsOutputFileName = $batchId . $sheetName . self::OUTPUT_FILE_SUFFIX;
+        $analyticsOutputFileName = $this->batchId . $sheetName . self::OUTPUT_FILE_SUFFIX;
 
-        $transactionsFileName = $batchId . $sheetName . self::TRANSACTIONS_FILE_SUFFIX;
+        $strDate = Carbon::now(Timezone::IST)->format('ymdHis');
+
+        $transactionsFileName = $this->batchId . $sheetName . '_' . $strDate . self::TRANSACTIONS_FILE_SUFFIX;
 
         $dirPath = self::RECONCILIATION_OUTPUT . DIRECTORY_SEPARATOR . $this->gateway;
 
-        $reconciliationType = $this->getReconciliationType($extraDetails);
+        if (isset($extraDetails[Reconciliation::BATCH_SERVICE_RECON_REQUEST]) === true)
+        {
+            $reconciliationType = $extraDetails[Batch\Entity::CONFIG][RequestProcessor\Base::SUB_TYPE];
+        }
+        else
+        {
+            $reconciliationType = $this->getReconciliationType($extraDetails);
+        }
 
         $dirPathForTransaction = self::RECONCILIATION_OUTPUT . DIRECTORY_SEPARATOR . self::TRANSACTION;
 
@@ -413,15 +446,7 @@ class Reconciliate extends Base\Core
 
         $txnFileDetails = $this->createTransactionsOutputFile($outputData, $transactionsFileName);
 
-        $analyticsFileDetails = $this->createAnalyticsOutputFile($outputData, $analyticsOutputFileName);
-
-        return [
-            [
-                'file_name' => $outputFileName,
-                'file_path' => $analyticsFileDetails['filepath'] ?? null,
-                'count'     => $analyticsFileDetails['count'] ?? null,
-                'suffix'    => self::OUTPUT_FILE_SUFFIX
-            ],
+        $fileDetails = [
             [
                 'file_name' => $txnFileName,
                 'file_path' => $txnFileDetails['filepath'] ?? null,
@@ -429,6 +454,22 @@ class Reconciliate extends Base\Core
                 'suffix'    => self::TRANSACTIONS_FILE_SUFFIX
             ]
         ];
+
+        // Batch service will be generating output files for recon request coming from them
+        // So generate this output only when this flag is not set.
+        if (isset($extraDetails[Reconciliation::BATCH_SERVICE_RECON_REQUEST]) === false)
+        {
+            $analyticsFileDetails = $this->createAnalyticsOutputFile($outputData, $analyticsOutputFileName);
+
+            $fileDetails[] =  [
+                'file_name' => $outputFileName,
+                'file_path' => $analyticsFileDetails['filepath'] ?? null,
+                'count'     => $analyticsFileDetails['count'] ?? null,
+                'suffix'    => self::OUTPUT_FILE_SUFFIX
+            ];
+        }
+
+        return $fileDetails;
     }
 
     /**
@@ -516,9 +557,8 @@ class Reconciliate extends Base\Core
      *
      * @param Batch\Entity $batch
      * @param array $fileDetails
-     * @throws \RZP\Exception\LogicException
      */
-    protected function uploadReconOutputFiles(Batch\Entity $batch, array $fileDetails)
+    protected function uploadReconOutputFiles(array $fileDetails, Batch\Entity $batch = null)
     {
         $fileName = $fileDetails['file_name'];
 
@@ -549,7 +589,7 @@ class Reconciliate extends Base\Core
             TraceCode::RECON_INFO,
             [
                 'info_code' => $infoCode,
-                'batch_id'  => $batch->getId(),
+                'batch_id'  => $this->batchId,
                 'row_count' => $count,
                 'file_name' => $fileName,
             ]
@@ -559,21 +599,44 @@ class Reconciliate extends Base\Core
 
         $extension = FileStore\Format::CSV;
 
-        $creator->localFilePath($filePath)
-                ->mime(FileStore\Format::VALID_EXTENSION_MIME_MAP[$extension][0])
-                ->name($fileName)
-                ->extension($extension)
-                ->type($type)
-                ->entity($batch)
-                ->additionalParameters(['ACL' => 'bucket-owner-full-control'])
-                ->save();
+        try
+        {
+            $creator->localFilePath($filePath)
+                    ->mime(FileStore\Format::VALID_EXTENSION_MIME_MAP[$extension][0])
+                    ->name($fileName)
+                    ->extension($extension)
+                    ->type($type)
+                    ->additionalParameters(['ACL' => 'bucket-owner-full-control']);
 
-        $fileStoreEntity = $creator->get();
+            // $batch object is null when request comes from Batch Service
+            if ($batch !== null)
+            {
+                $creator->entity($batch);
+            }
 
+            $fileStoreEntity = $creator->save()->get();
+        }
+        catch (\Exception $ex)
+        {
+            $this->trace->info(
+                TraceCode::RECON_OUTPUT_FILE_CREATION_FAILED,
+                [
+                    'file_name' => $fileName,
+                    'batch_id'  => $this->batchId,
+                    'gateway'   => $this->gateway,
+                ]);
+
+            // Delete local file and return.
+            (new FileProcessor)->deleteFileLocally($filePath);
+
+            return;
+        }
+
+        // File uploaded successfully
         $traceData = [
             'file_id'   => $fileStoreEntity['id'],
             'file_name' => $fileStoreEntity['name'],
-            'batch_id'  => $batch->getId(),
+            'batch_id'  => $this->batchId,
             'gateway'   => $this->gateway,
         ];
 
@@ -592,7 +655,7 @@ class Reconciliate extends Base\Core
      * @param Batch\Entity $batch
      * @param $data
      */
-    protected function setBatchFailureSummary(Batch\Entity $batch, &$data)
+    protected function setBatchFailureSummary(&$data, Batch\Entity $batch = null)
     {
         $failureSummary = [];
 
@@ -620,7 +683,7 @@ class Reconciliate extends Base\Core
             $row[SubReconciliate::RECON_STATUS] = $statusDescription;
         }
 
-        if (empty($failureSummary)  === false)
+        if ((empty($failureSummary) === false) and ($batch !== null))
         {
             $batch->setFailureReason(json_encode($failureSummary));
         }
@@ -986,7 +1049,7 @@ class Reconciliate extends Base\Core
                 //
                 // We do not want to push already reconciled txn again, so excluded.
                 //
-                $this->unsetColumns($row);
+                $this->unsetTxnFileRelatedColumns($row);
 
                 continue;
             }
@@ -1017,7 +1080,7 @@ class Reconciliate extends Base\Core
 
             $transactionsData[] = $txn;
 
-            $this->unsetColumns($row);
+            $this->unsetTxnFileRelatedColumns($row);
         }
 
         return $transactionsData;
@@ -1027,7 +1090,7 @@ class Reconciliate extends Base\Core
      * Unsets the transaction file related additional field
      * @param array $outputRow
      */
-    protected function unsetColumns(array &$outputRow)
+    protected function unsetTxnFileRelatedColumns(array &$outputRow)
     {
         foreach (SubReconciliate::TXN_FILE_ADDITIONAL_FIELDS as $field)
         {

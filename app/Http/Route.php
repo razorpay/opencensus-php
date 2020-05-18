@@ -565,6 +565,7 @@ final class Route
         'emandate_debit_reconcile'                 => ['post',     'emandate/debit/reconcile/{gateway}',             'EMandateController@postReconcileDebitFile'                         ],
 
         'reconciliate'                             => ['post',     'reconciliate',                                   'ReconciliatorController@postReconciliation'                        ],
+        'reconciliate_via_batch_service'           => ['post',     'reconciliate/batch_service/bulk',                'ReconciliatorController@postBulkReconciliationViaBatchService'     ],
         'recon_fetch_batchs_files_multiple'        => ['get',      'reconciliate/batches',                           'ReconciliatorController@getReconBatches'],
         'recon_fetch_files_count'                  => ['get',      'reconciliate/files',                             'ReconciliatorController@getReconFiles'],
         'refunds_reconcile_bulk'                   => ['post',     'reconciliate/refunds/bulk',                      'ReconciliatorController@postBulkRefundsReconciliation'             ],
@@ -2558,6 +2559,7 @@ final class Route
         'invoice_update_billing_period',
         'bulk_invoice_create',
         'payout_bulk_create',
+        'reconciliate_via_batch_service',
         'fund_account_bulk_create',
         'bulk_contact_create',
         'banking_account_create',
@@ -4491,6 +4493,7 @@ final class Route
             'bulk_contact_create',
             'bulk_submerchant_assign',
             'payout_bulk_create',
+            'reconciliate_via_batch_service',
             'fund_account_bulk_create',
             'bulk_contact_create',
             'partner_submerchant_map',

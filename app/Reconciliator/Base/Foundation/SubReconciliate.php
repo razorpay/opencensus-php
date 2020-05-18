@@ -10,6 +10,7 @@ use RZP\Models\Payment;
 use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Entity;
+use Razorpay\Trace\Logger;
 use RZP\Reconciliator\Core;
 use RZP\Constants\Timezone;
 use RZP\Reconciliator\Messenger;
@@ -17,6 +18,7 @@ use RZP\Exception\LogicException;
 use RZP\Models\Base\PublicEntity;
 use RZP\Reconciliator\Orchestrator;
 use RZP\Reconciliator\Base\InfoCode;
+use RZP\Reconciliator\Base\Constants;
 use RZP\Reconciliator\RequestProcessor;
 use RZP\Models\Transaction\ReconciledType;
 use RZP\Models\Payment\Entity as PaymentEntity;
@@ -148,6 +150,13 @@ class SubReconciliate extends Base\Core
     protected $batch;
 
     /**
+     * In case of recon request via Batch service, we do not have
+     * the batch object, so we use this variable for batch_id in logs.
+     * @var mixed|null
+     */
+    protected $batchId;
+
+    /**
      * @var array This array will contain MIS row and
      * corresponding reconciliation status and error
      * msg in any. later an output file will be created.
@@ -163,6 +172,8 @@ class SubReconciliate extends Base\Core
         $this->gateway = $gateway;
 
         $this->batch = $batch;
+
+        $this->batchId = $batch ? $batch->getId() : null;
 
         $this->core = new Core;
 
@@ -242,6 +253,11 @@ class SubReconciliate extends Base\Core
         $this->setExtraDetails($fileContents[Orchestrator::EXTRA_DETAILS]);
         unset($fileContents[Orchestrator::EXTRA_DETAILS]);
 
+        if (empty($this->batchId) === true)
+        {
+            $this->batchId = $this->extraDetails[Batch\Entity::CONFIG][Constants::BATCH_ID] ?? null;
+        }
+
         try
         {
             foreach ($fileContents as $row)
@@ -262,11 +278,29 @@ class SubReconciliate extends Base\Core
 
                     $this->setSummaryCount(self::FAILURES_SUMMARY, $identifier);
 
-                    throw $ex;
+                    if (empty($extraDetails[Batch\Processor\Reconciliation::BATCH_SERVICE_RECON_REQUEST]) === true)
+                    {
+                        throw $ex;
+                    }
+
+                    //
+                    // For Recon request coming from batch service,
+                    // we don't want to terminate batch processing,
+                    // so just trace the exception and proceed to next row
+                    //
+                    $tracePayload = [
+                        'gateway'   => $this->gateway,
+                        'batch_id'  => $this->batchId,
+                    ];
+
+                    $this->trace->traceException($ex, Logger::ALERT, TraceCode::RECON_ROW_PROCESSING_ERROR, $tracePayload);
                 }
                 finally
                 {
-                    $batch->incrementProcessedCount();
+                    if ($batch !== null)
+                    {
+                        $batch->incrementProcessedCount();
+                    }
                 }
             }
         }
@@ -289,6 +323,8 @@ class SubReconciliate extends Base\Core
                         'data'              => static::$scroogeReconciliate,
                         'source'            => $this->source,
                         'force_update_arn'  => $forceUpdateArn,
+                        'gateway'           => $this->gateway,
+                        'batch_id'          => $this->batchId,
                     ]
                 );
 
@@ -301,7 +337,10 @@ class SubReconciliate extends Base\Core
                 static::$scroogeReconciliate = [];
             }
 
-            $this->updateBatchWithSummary($batch);
+            if ($batch !== null)
+            {
+                $this->updateBatchWithSummary($batch);
+            }
         }
     }
 

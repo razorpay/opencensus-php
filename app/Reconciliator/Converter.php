@@ -833,7 +833,7 @@ class Converter extends Base\Core
      * @param $headers array
      * @return array
      */
-    protected function normalizeHeaders(array $headers)
+    public function normalizeHeaders(array $headers)
     {
         $normalized = [];
 

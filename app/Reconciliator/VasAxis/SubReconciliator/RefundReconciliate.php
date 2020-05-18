@@ -61,7 +61,7 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
                         'info_code'              => Base\InfoCode::UNEXPECTED_REFUND,
                         'refund_reference_id'    => $row[self::COLUMN_RRN],
                         'gateway'                => $this->gateway,
-                        'batch_id'               => $this->batch->getId(),
+                        'batch_id'               => $this->batchId,
                     ]);
             }
         }

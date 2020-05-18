@@ -168,7 +168,7 @@ class NetbankingServiceRecon extends PaymentReconciliate
             ],
             'mode'       => $this->mode,
             'gateway'    => $this->gateway,
-            'batch_id'   => $this->batch->getId(),
+            'batch_id'   => $this->batchId,
         ];
 
         NetbankingRecon::dispatch($data);

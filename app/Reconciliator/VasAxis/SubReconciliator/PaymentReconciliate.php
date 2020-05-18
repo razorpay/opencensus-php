@@ -124,7 +124,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
                             'info_code'              => Base\InfoCode::UNEXPECTED_PAYMENT,
                             'payment_reference_id'   => $row[self::COLUMN_RRN],
                             'gateway'                => $this->gateway,
-                            'batch_id'               => $this->batch->getId(),
+                            'batch_id'               => $this->batchId,
                         ]
                     );
                 }
@@ -159,7 +159,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
                 'infoCode'                  => Base\InfoCode::RECON_UNEXPECTED_PAYMENT_CREATE_INITIATED,
                 'rrn'                       => $rrn,
                 'gateway'                   => $this->gateway,
-                'batch_id'                  => $this->batch->getId(),
+                'batch_id'                  => $this->batchId,
             ]);
 
         try
@@ -178,7 +178,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
                         'rrn'       => $rrn,
                         'response'  => $response,
                         'gateway'   => $this->gateway,
-                        'batch_id'  => $this->batch->getId(),
+                        'batch_id'  => $this->batchId,
                     ]);
             }
             else
@@ -194,7 +194,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
                         'payment_id'    => $paymentId,
                         'rrn'           => $rrn,
                         'gateway'       => $this->gateway,
-                        'batch_id'      => $this->batch->getId(),
+                        'batch_id'      => $this->batchId,
                     ]);
             }
         }
@@ -207,7 +207,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
                 [
                     'rrn'       => $rrn,
                     'gateway'   => $this->gateway,
-                    'batch_id'  => $this->batch->getId(),
+                    'batch_id'  => $this->batchId,
                 ]
             );
         }
@@ -234,7 +234,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
                     'message'   => 'MIS rows says International, not creating payment.',
                     'rrn'       => $input[self::COLUMN_RRN],
                     'gateway'   => $this->gateway,
-                    'batch_id'  => $this->batch->getId(),
+                    'batch_id'  => $this->batchId,
 
                 ]);
 

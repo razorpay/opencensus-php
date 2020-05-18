@@ -1432,6 +1432,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const RECON_INFO_ALERT                                      = 'RECON_INFO_ALERT';
     const RECON_CRITICAL_ALERT                                  = 'RECON_CRITICAL_ALERT';
     const RECON_REQUEST                                         = 'RECON_REQUEST';
+    const RECON_REQUEST_VIA_BATCH_SERVICE                       = 'RECON_REQUEST_VIA_BATCH_SERVICE';
     const RECON_FILE_ROW                                        = 'RECON_FILE_ROW';
     const RECON_MANUAL_FILE_ROW                                 = 'RECON_MANUAL_FILE_ROW';
     const RECON_FILE_DETAILS                                    = 'RECON_FILE_DETAILS';
@@ -1449,6 +1450,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const RECON_BATCH_ANALYTICS_OUTPUT_FILE                     = 'RECON_BATCH_ANALYTICS_OUTPUT_FILE';
     const RECON_BATCH_TXN_FILE                                  = 'RECON_BATCH_TXN_FILE';
     const RECON_BATCH_TXN_FILE_DATA_EMPTY                       = 'RECON_BATCH_TXN_FILE_DATA_EMPTY';
+    const RECON_OUTPUT_FILE_CREATION_FAILED                     = 'RECON_OUTPUT_FILE_CREATION_FAILED';
+    const RECON_INVALID_REQUEST                                 = 'RECON_INVALID_REQUEST';
 
     //Trace code for Transaction Migration
     const TRANSACTION_MIGRATION_TAX_MISTMATCH                   = 'TRANSACTION_MIGRATION_TAX_MISTMATCH';
@@ -1472,12 +1475,14 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const RETRY_ALLOWED_FOR_IN_PROCESSING_BATCH                 = 'RETRY_ALLOWED_FOR_IN_PROCESSING_BATCH';
     const BATCH_PROCESSING_ENTRY                                = 'BATCH_PROCESSING_ENTRY';
     const BATCH_PROCESSING_ERROR                                = 'BATCH_PROCESSING_ERROR';
+    const RECON_ROW_PROCESSING_ERROR                            = 'RECON_ROW_PROCESSING_ERROR';
     const BATCH_PROCESS_ASYNC                                   = 'BATCH_PROCESS_ASYNC';
     const BATCH_PROCESS_ENTRIES_CLEANED                         = 'BATCH_PROCESS_ENTRIES_CLEANED';
     const BATCH_RETRY_OUTPUT_FILE                               = 'BATCH_RETRY_OUTPUT_FILE';
     const BATCH_JOB_RECEIVED                                    = 'BATCH_JOB_RECEIVED';
     const BATCH_JOB_HANDLED                                     = 'BATCH_JOB_HANDLED';
     const BATCH_JOB_ERROR                                       = 'BATCH_JOB_ERROR';
+    const RECON_RESPONSE                                        = 'RECON_RESPONSE';
     const IRCTC_BATCH_JOB_RECEIVED                              = 'IRCTC_BATCH_JOB_RECEIVED';
     const IRCTC_BATCH_JOB_ERROR                                 = 'IRCTC_BATCH_JOB_ERROR';
     const IRCTC_REFUND_AMOUNT_MISMATCH                          = 'IRCTC_REFUND_AMOUNT_MISMATCH';
@@ -2988,6 +2993,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
         self::RECON_INFO_ALERT                                      => 'Info alert raised for reconciliation',
         self::RECON_CRITICAL_ALERT                                  => 'Critical alert raised for reconciliation',
         self::RECON_REQUEST                                         => 'Request made for reconciliation',
+        self::RECON_INVALID_REQUEST                                 => 'Invalid Recon Request',
         self::RECON_FILE_ROW                                        => 'Row in the reconciliation file that is being reconciled',
         self::RECON_FILE_DETAILS                                    => 'Details of all the files collected in the request',
         self::IIN_INSERT_FAILED                                     => 'Inserting into Iin failed for given Iin',
@@ -3007,6 +3013,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
         self::BATCH_UPLOAD_FILE                                     => 'Uploaded batch file',
         self::BATCH_ALREADY_PROCESSED                               => 'Batch File already processed',
         self::BATCH_PROCESSING_ERROR                                => 'Error in processing batch',
+        self::RECON_ROW_PROCESSING_ERROR                            => 'Error in processing the recon row',
         self::EMANDATE_RECON_FORCE_AUTH_RESPONSE                    => 'response received for force auth of emandate recon',
         self::FEATURE_DELETE_REQUEST                                => 'Feature delete request initiated',
         self::FEATURE_MIGRATION_EXCEPTION                           => 'Exception while creating features for merchant',

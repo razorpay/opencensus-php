@@ -16,6 +16,7 @@ use RZP\Models\Currency\Currency;
 use RZP\Models\Base\PublicEntity;
 use Illuminate\Http\UploadedFile;
 use RZP\Tests\Functional\TestCase;
+use RZP\Reconciliator\Base\Constants;
 use RZP\Reconciliator\Base\Reconciliate;
 use RZP\Gateway\Mpi\Blade\Mock\CardNumber;
 use RZP\Exception\GatewayRequestException;
@@ -1955,6 +1956,22 @@ class ReconciliationFileTest extends TestCase
         return array_merge($facade, $forceOverride);
     }
 
+    // Needed for Batch service recon flow test, where we get raw
+    // row data, with un-normalized headers
+    private function overrideHitachiPaymentUnnormalized(array $payment, array $forceOverride = [])
+    {
+        $facade = $this->testData['facades']['hitachi_un_normalized'];
+        $facade['Transaction type']         = '00';
+        $facade['Invoice Number']           = $payment['payment_id'];
+        $facade['Amount (In Paise)']        = intval($payment['amount'] / 100);
+        $facade['Auth ID']                  = $payment['pAuthID'];
+        $facade['ARN']                      = str_random(24);
+        $facade['Tran Currency Code']       = '356';
+        $facade[Constants::IDEMPOTENT_ID]   = 'batch_' . str_random(14);
+
+        return array_merge($facade, $forceOverride);
+    }
+
     private function overrideHitachiPaymentManualReconFile(array $payment)
     {
         $row = [
@@ -1976,6 +1993,17 @@ class ReconciliationFileTest extends TestCase
         $facade['message_type'] = '0220';
         $facade['transaction_type'] = '20';
         $facade[HitachiRefundRecon::COLUMN_REFUND_ID] = $payment['refund_id'];
+
+        return $facade;
+    }
+
+    private function overrideHitachiRefundUnnormalized(array $payment, array $forceOverride = [])
+    {
+        $facade = $this->overrideHitachiPaymentUnnormalized($payment, $forceOverride);
+
+        $facade['Message type']     = '0220';
+        $facade['Transaction type'] = '20';
+        $facade['Invoice Number']   = $payment['refund_id'];
 
         return $facade;
     }
@@ -2060,6 +2088,17 @@ class ReconciliationFileTest extends TestCase
         $this->runRequestResponseFlow($testData);
     }
 
+    public function runWithData($entries)
+    {
+        $this->ba->batchAuth();
+
+        $testData = $this->testData['bulk_reconcile_via_batch_service'];
+
+        $testData['request']['content']= $entries;
+
+        $this->runRequestResponseFlow($testData);
+    }
+
     public function createUploadedFile(string $url): UploadedFile
     {
         $mime = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
@@ -2084,6 +2123,79 @@ class ReconciliationFileTest extends TestCase
         $gatewayPayment = $this->getDbLastEntityPublic('payment');
 
         return $gatewayPayment;
+    }
+
+    public function testHitachiReconViaBatchServiceRoute()
+    {
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+        $this->fixtures->create('terminal:shared_hitachi_terminal');
+        $this->fixtures->merchant->addFeatures('charge_at_will');
+
+        $this->payment['card']['number'] = CardNumber::VALID_ENROLL_NUMBER;
+
+        $payment1 = $this->getNewPaymentEntity(false,true);
+
+        $gatewayPayment1 = $this->getLastEntity('hitachi', true);
+
+        $entries[] = $this->overrideHitachiPaymentUnnormalized($gatewayPayment1, ['Auth ID' => $payment1['reference2']]);
+
+        $payment2 = $this->getNewPaymentEntity(false,true);
+
+        $gatewayPayment2 = $this->getLastEntity('hitachi', true);
+
+        $entries[] = $this->overrideHitachiPaymentUnnormalized($gatewayPayment2, ['Auth ID' => $payment2['reference2']]);
+
+        $refund1 = $this->getNewRefundEntity(true);
+
+        $gatewayPayment1 = $this->getDbLastEntityToArray('hitachi');
+
+        $this->assertNull($refund1['reference1']);
+
+        $entries[] = $this->overrideHitachiRefundUnnormalized($gatewayPayment1);
+
+        // add metadata info to each row
+        foreach ($entries as $key => $entry)
+        {
+            $entry[Constants::GATEWAY]      = 'Hitachi';
+            $entry[Constants::SUB_TYPE]     = 'combined';
+            $entry[Constants::SOURCE]       = 'manual';
+            $entry[Constants::SHEET_NAME]   = 'sheet0';
+            $entry[Constants::BATCH_ID]     = 'EnIgGTCfjAhCBK';
+
+            $entries[$key] = $entry;
+        }
+
+        $this->runWithData($entries);
+
+        $updatedPayment1 = $this->getEntityById('payment', $payment1['id'], true);
+
+        $this->assertEquals($entries[0]['ARN'], $updatedPayment1['reference1']);
+
+        $this->assertEquals($entries[0]['Auth ID'], $updatedPayment1['reference2']);
+
+        $updatedTransaction1 = $this->getEntityById('transaction', $updatedPayment1['transaction_id'], true);
+
+        $this->assertNotNull($updatedTransaction1['reconciled_at']);
+
+        $updatedPayment2 = $this->getEntityById('payment', $payment2['id'], true);
+
+        $this->assertEquals($entries[1]['ARN'], $updatedPayment2['reference1']);
+
+        $this->assertEquals($entries[1]['Auth ID'], $updatedPayment2['reference2']);
+
+        $updatedTransaction2 = $this->getEntityById('transaction', $updatedPayment2['transaction_id'], true);
+
+        $this->assertNotNull($updatedTransaction2['reconciled_at']);
+
+        $this->assertTrue($updatedPayment2['gateway_captured']);
+
+        $updatedRefund1 = $this->getDbEntityById('refund', $refund1['id'])->toArrayAdmin();
+
+        $this->assertEquals($entries[2]['ARN'], $updatedRefund1['reference1']);
+
+        $updatedTransaction3 = $this->getEntityById('transaction', $updatedRefund1['transaction_id'], true);
+
+        $this->assertNotNull($updatedTransaction3['reconciled_at']);
     }
 
     protected function mockRazorx()

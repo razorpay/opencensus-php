@@ -66,7 +66,7 @@ class ScroogeRefundRecon extends Job
 
             if (isset($response['body']['response']) === true)
             {
-                (new Service)->reconcileRefundsAfterScroogeRecon($response['body']['response']);
+                (new Service)->reconcileRefundsAfterScroogeRecon($response['body']['response'], $this->data[ScroogeReconciliate::SHOULD_UPDATE_BATCH_SUMMARY]);
             }
 
             $this->trace->info(

@@ -15,6 +15,7 @@ use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
 use RZP\Base\RuntimeManager;
 use RZP\Reconciliator\Converter;
+use RZP\Reconciliator\Orchestrator;
 use RZP\Reconciliator\FileProcessor;
 use RZP\Reconciliator\Base\Constants;
 use RZP\Reconciliator\RequestProcessor;
@@ -25,6 +26,10 @@ class Reconciliation extends Base
     const EXTRA_DETAILS = 'extra_details';
     const FILE_DETAILS  = 'file_details';
     const INPUT_DETAILS = 'input_details';
+
+    // Flag to indicate if this recon request
+    // has come from batch service
+    const BATCH_SERVICE_RECON_REQUEST = 'batch_service_recon_request';
 
     /**
      * Lock wait timeout for reconciliation batch entity
@@ -40,12 +45,14 @@ class Reconciliation extends Base
      */
     protected $gatewayReconciliator;
 
-    public function __construct(Batch\Entity $batch)
+    public function __construct(Batch\Entity $batch = null)
     {
         parent::__construct($batch);
 
-        $this->converter = new Converter($batch->getGateway());
-
+        if ($batch !== null)
+        {
+            $this->converter = new Converter($batch->getGateway());
+        }
         $this->registerMimeTypeGuesser();
     }
 
@@ -142,11 +149,17 @@ class Reconciliation extends Base
 
         $source = $this->scroogeDispatchData['source'] ?? 'unknown';
 
+        $gateway = $this->scroogeDispatchData['gateway'];
+
+        $batchId = $this->scroogeDispatchData['batch_id'];
+
         (new ScroogeReconciliate)->callRefundReconcileFunctionOnScrooge(
                                                                             $data,
                                                                             $forceUpdateArn,
                                                                             $this->batch,
-                                                                            $source
+                                                                            $source,
+                                                                            $gateway,
+                                                                            $batchId
                                                                         );
     }
 
@@ -174,6 +187,13 @@ class Reconciliation extends Base
 
     protected function saveInputFile(File $file): FileStore\Creator
     {
+        // If this recon request is to be sent to batch service then
+        // it should be uploaded to batch service bucket
+        if ($this->shouldSendToBatchService())
+        {
+            return parent::saveInputFile($file);
+        }
+
         $this->trace->info(TraceCode::BATCH_UPLOADING_FILE, $this->batch->toArrayTrace());
 
         // We need the original file name with extension while moving the recon file
@@ -318,8 +338,7 @@ class Reconciliation extends Base
     /**
      * We call the gateway's reconciliator class with
      * the file entries obtained by parsing the file
-     *
-     * @param   array       $entries
+     * @param array $entries
      */
     protected function processEntries(array & $entries)
     {
@@ -336,6 +355,31 @@ class Reconciliation extends Base
         $dimensions = Metric::getFileProcessingMetricDimension($gateway, $source);
 
         $this->trace->histogram(Metric::RECON_MIS_FILE_PROCESSING_TIME_SECONDS, $processingTime, $dimensions);
+    }
+
+    /**
+     * We call the gateway's reconciliator class with
+     * the recon inputs from batch service
+     * @param array $entries
+     * @return mixed
+     */
+    public function batchProcessEntries(array $entries)
+    {
+        $gateway = $entries[0][Orchestrator::EXTRA_DETAILS][Batch\Entity::CONFIG][Constants::GATEWAY];
+
+        $source = $entries[0][Orchestrator::EXTRA_DETAILS][Batch\Entity::CONFIG][Constants::SOURCE];
+
+        $batchId = $entries[0][Orchestrator::EXTRA_DETAILS][Batch\Entity::CONFIG][Constants::BATCH_ID];
+
+        $gatewayReconciliatorClassName = 'RZP\\Reconciliator' . '\\' . $gateway . '\\' . 'Reconciliate';
+
+        $this->gatewayReconciliator = new $gatewayReconciliatorClassName($gateway);
+
+        $response = $this->gatewayReconciliator->startReconciliationV2($entries, $this, $source);
+
+        $this->scroogeDispatch();
+
+        return $response;
     }
 
     protected function postProcessEntries(array & $entries)

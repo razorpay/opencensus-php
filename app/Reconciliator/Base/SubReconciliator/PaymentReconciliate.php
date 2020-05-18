@@ -191,9 +191,10 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
                 [
                     'trace_code'    => TraceCode::RECON_FAILURE,
                     'message'       => 'Unable to perform one of the reconciliation actions -> ' . $ex->getMessage(),
-                    'row'           => $row,
+                    'payment_id'    => $paymentId,
                     'extra_details' => $this->extraDetails,
-                    'gateway'       => $this->gateway
+                    'gateway'       => $this->gateway,
+                    'batch_id'      => $this->batchId,
                 ]);
 
             $this->trace->traceException($ex);
@@ -359,7 +360,7 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
             ],
             'mode'       => $this->mode,
             'gateway'    => $this->gateway,
-            'batch_id'   => $this->batch->getId(),
+            'batch_id'   => $this->batchId,
         ];
 
         CardsPaymentRecon::dispatch($data);
@@ -987,7 +988,8 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
                     [
                         'info_code'  => Base\InfoCode::PAYMENT_TRANSACTION_ABSENT,
                         'payment_id' => $paymentId,
-                        'gateway'    => $this->gateway
+                        'gateway'    => $this->gateway,
+                        'batch_id'   => $this->batchId,
                     ]);
             }
         }
@@ -1008,7 +1010,8 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
                     'info_code'  => Base\InfoCode::PAYMENT_ABSENT,
                     'message'    => 'Payment not found in DB. -> ' . $ex->getCode(),
                     'payment_id' => $paymentId,
-                    'gateway'    => $this->gateway
+                    'gateway'    => $this->gateway,
+                    'batch_id'   => $this->batchId,
                 ]);
         }
     }
@@ -1437,7 +1440,8 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
                     'amount'              => $this->payment->getAmount(),
                     'gateway_fee'         => $gatewayFee,
                     'gateway_service_tax' => $gatewayServiceTax,
-                    'gateway'             => $this->gateway
+                    'gateway'             => $this->gateway,
+                    'batch_id'            => $this->batchId
                 ]);
         }
     }
@@ -1460,7 +1464,8 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
                     'amount'              => $this->payment->getAmount(),
                     'gateway_fee'         => $gatewayFee,
                     'gateway_service_tax' => $gatewayServiceTax,
-                    'gateway'             => $this->gateway
+                    'gateway'             => $this->gateway,
+                    'batch_id'            => $this->batchId,
                 ]);
         }
     }
@@ -1492,7 +1497,8 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
                     'amount'              => $this->payment->getAmount(),
                     'gateway_fee'         => $gatewayFee,
                     'gateway_service_tax' => $gatewayServiceTax,
-                    'gateway'             => $this->gateway
+                    'gateway'             => $this->gateway,
+                    'batch_id'            => $this->batchId,
                 ]);
         }
     }
@@ -1506,7 +1512,8 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
                 'info_code'   => 'IIN_CREATE',
                 'card_id'     => $this->payment->card->getId(),
                 'payment_id'  => $this->payment->getId(),
-                'gateway'     => $this->gateway
+                'gateway'     => $this->gateway,
+                'batch_id'    => $this->batchId,
             ]);
 
         $reconCardType = null;
@@ -1634,7 +1641,8 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
                     'amount'                    => $this->payment->getAmount(),
                     'db_reference_number'       => $dbReference1,
                     'recon_reference_number'    => $reference1,
-                    'gateway'                   => $this->gateway
+                    'gateway'                   => $this->gateway,
+                    'batch_id'                  => $this->batchId,
                 ]);
 
             return;
@@ -1679,7 +1687,8 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
                     'amount'                    => $this->payment->getAmount(),
                     'db_reference_number'       => $dbReference2,
                     'recon_reference_number'    => $reference2,
-                    'gateway'                   => $this->gateway
+                    'gateway'                   => $this->gateway,
+                    'batch_id'                  => $this->batchId,
                 ]);
 
             return;
@@ -1700,12 +1709,13 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
                 [
                     'trace_code'                => TraceCode::RECON_MISMATCH,
                     'info_code'                 => $infoCode,
-                    'message'                   => 'Reference16 is not null',
+                    'message'                   => 'Reference16 is not same as in recon',
                     'payment_id'                => $this->payment->getId(),
                     'amount'                    => $this->payment->getAmount(),
                     'db_reference_number'       => $dbReference16,
                     'recon_reference_number'    => $reference16,
-                    'gateway'                   => $this->gateway
+                    'gateway'                   => $this->gateway,
+                    'batch_id'                  => $this->batchId,
                 ]);
             return;
         }
@@ -1730,7 +1740,8 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
                 'info_code'         => Base\InfoCode::GATEWAY_CAPTURED_NOT_SET,
                 'payment_id'        => $this->payment->getId(),
                 'payment_refunded'  => ($this->payment->getRefundStatus() !== null),
-                'gateway'           => $this->gateway
+                'gateway'           => $this->gateway,
+                'batch_id'          => $this->batchId,
             ]);
 
         $this->payment->setGatewayCaptured(true);
@@ -1762,7 +1773,8 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
                         'trace_code'    => TraceCode::RECON_FAILURE,
                         'failure_code'  => Base\InfoCode::PAYMENT_TRANSACTION_ABSENT,
                         'row_details'   => $rowDetails,
-                        'gateway'       => $this->gateway
+                        'gateway'       => $this->gateway,
+                        'batch_id'      => $this->batchId,
                     ]);
 
                 $this->setRowReconStatusAndError(Base\InfoCode::RECON_FAILED, Base\InfoCode::RECON_RECORD_GATEWAY_FEE_TRANSACTION_ABSENT);
@@ -1846,7 +1858,8 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
                     [
                         'info_code'     => Base\InfoCode::PAYMENT_TRANSACTION_ABSENT,
                         'row_details'   => $rowDetails,
-                        'gateway'       => $this->gateway
+                        'gateway'       => $this->gateway,
+                        'batch_id'      => $this->batchId,
                     ]);
 
                 return;
@@ -1908,7 +1921,8 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
                         'is_hdfc_dicl'                      => $isHDFCDICL,
                         'is_not_captured_but_authorized'    => $isNotCapturedButAuthorized,
                         'payment_id'                        => $this->payment->getId(),
-                        'gateway'                           => $this->gateway
+                        'gateway'                           => $this->gateway,
+                        'batch_id'                          => $this->batchId,
                     ]);
 
                 $this->trace->traceException($ex);
@@ -1930,7 +1944,8 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
                 'info_code'     => 'PAYMENT_TRANSACTION_CREATE',
                 'message'       => 'Attempting to create payment transaction in recon',
                 'payment_id'    => $this->payment->getId(),
-                'gateway'       => $this->gateway
+                'gateway'       => $this->gateway,
+                'batch_id'      => $this->batchId,
             ]);
 
         //
@@ -1993,6 +2008,7 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
                         'recon_gateway_fee' => $reconGatewayFee,
                         'api_gateway_fee'   => $currentGatewayFee,
                         'gateway'           => $this->gateway,
+                        'batch_id'          => $this->batchId,
                     ]);
 
                 $this->setRowReconStatusAndError(Base\InfoCode::RECON_FAILED, Base\InfoCode::GATEWAY_FEE_MISMATCH);
@@ -2030,6 +2046,7 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
                         'recon_gateway_service_tax'  => $reconGatewayServiceTax,
                         'api_gateway_service_tax'    => $currentGatewayServiceTax,
                         'gateway'                    => $this->gateway,
+                        'batch_id'                   => $this->batchId,
                     ]);
 
                 $this->setRowReconStatusAndError(Base\InfoCode::RECON_FAILED, Base\InfoCode::GATEWAY_SERVICE_TAX_MISMATCH);
@@ -2294,7 +2311,8 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
                     'expected_amount'   => $paymentEntityAmount,
                     'recon_amount'      => $reconPaymentAmount,
                     'currency'          => $this->payment->getCurrency(),
-                    'gateway'           => $this->gateway
+                    'gateway'           => $this->gateway,
+                    'batch_id'          => $this->batchId,
                 ]);
 
             return false;
@@ -2351,7 +2369,8 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
                     'amount'                    => $this->payment->getAmount(),
                     'db_reference_number'       => $dbReferenceNumber,
                     'recon_reference_number'    => $referenceNumber,
-                    'gateway'                   => $this->gateway
+                    'gateway'                   => $this->gateway,
+                    'batch_id'                  => $this->batchId,
                 ]);
 
             return;
@@ -2388,7 +2407,8 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
                     'amount'                    => $this->payment->getAmount(),
                     'db_reference_number'       => $dbGatewayTransactionId,
                     'recon_reference_number'    => $gatewayTransactionId,
-                    'gateway'                   => $this->gateway
+                    'gateway'                   => $this->gateway,
+                    'batch_id'                  => $this->batchId,
                 ]);
 
             return;
@@ -2425,7 +2445,8 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
                     'amount'                    => $this->payment->getAmount(),
                     'db_reference_number'       => $dbGatewayPaymentId,
                     'recon_reference_number'    => $gatewayPaymentId,
-                    'gateway'                   => $this->gateway
+                    'gateway'                   => $this->gateway,
+                    'batch_id'                  => $this->batchId,
                 ]);
 
             return;
@@ -2462,7 +2483,8 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
                 'amount'              => $this->payment->getAmount(),
                 'gateway_fee'         => $gatewayFee,
                 'gateway_service_tax' => $gatewayServiceTax,
-                'gateway'             => $this->gateway
+                'gateway'             => $this->gateway,
+                'batch_id'            => $this->batchId,
             ]);
     }
 

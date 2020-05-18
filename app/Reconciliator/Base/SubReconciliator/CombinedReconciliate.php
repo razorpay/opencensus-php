@@ -6,6 +6,7 @@ use App;
 
 use RZP\Models\Batch;
 use RZP\Trace\TraceCode;
+use Razorpay\Trace\Logger;
 use RZP\Reconciliator\Base;
 use RZP\Reconciliator\Orchestrator;
 use RZP\Reconciliator\RequestProcessor;
@@ -117,14 +118,20 @@ class CombinedReconciliate extends Base\Foundation\SubReconciliate
      *
      * @param array $fileContents input file contents
      * @param Batch\Processor\Base $batchProcessor
-     * @throws ReconciliationException
+     * @throws \RZP\Exception\LogicException
      */
     public function startReconciliationV2(array $fileContents, Batch\Processor\Base $batchProcessor)
     {
         $batch = $batchProcessor->batch;
 
         $extraDetails = $fileContents[Orchestrator::EXTRA_DETAILS];
+
         unset($fileContents[Orchestrator::EXTRA_DETAILS]);
+
+        if (empty($this->batchId) === true)
+        {
+            $this->batchId = $extraDetails[Batch\Entity::CONFIG][Base\Constants::BATCH_ID] ?? null;
+        }
 
         try
         {
@@ -138,7 +145,7 @@ class CombinedReconciliate extends Base\Foundation\SubReconciliate
                         [
                             'info_code' => Base\InfoCode::RECON_SKIP_REMAINING_FILE,
                             'gateway'   => $this->gateway,
-                            'batch_id'  => $this->batch->getId(),
+                            'batch_id'  => $this->batchId,
                         ]);
 
                     break;
@@ -182,7 +189,8 @@ class CombinedReconciliate extends Base\Foundation\SubReconciliate
                                 'trace_code'    => TraceCode::RECON_PARSE_ERROR,
                                 'message'       => $message,
                                 'extra_details' => $extraDetails,
-                                'gateway'       => $this->gateway
+                                'gateway'       => $this->gateway,
+                                'batch_id'      => $this->batchId,
                             ]);
 
                         //
@@ -194,7 +202,8 @@ class CombinedReconciliate extends Base\Foundation\SubReconciliate
                         throw new ReconciliationException(
                             'Did not get the reconciliation type for the row in combined reconciliation.',
                             [
-                                'row' => $row,
+                                'row'       => $row,
+                                'batch_id'  => $this->batchId,
                             ]);
                     }
 
@@ -225,15 +234,29 @@ class CombinedReconciliate extends Base\Foundation\SubReconciliate
 
                     $this->setSummaryCount(self::FAILURES_SUMMARY, $identifier);
 
+                    if (empty($extraDetails[Batch\Processor\Reconciliation::BATCH_SERVICE_RECON_REQUEST]) === true)
+                    {
+                        throw $ex;
+                    }
+
                     //
-                    // Throw the exception because we do not want to process the
-                    // remaining file, as something is wrong with this file.
+                    // For Recon request coming from batch service,
+                    // we don't want to terminate batch processing,
+                    // so just trace the exception and proceed to next row
                     //
-                    throw $ex;
+                    $tracePayload = [
+                        'gateway'   => $this->gateway,
+                        'batch_id'  => $this->batchId,
+                    ];
+
+                    $this->trace->traceException($ex, Logger::ALERT, TraceCode::RECON_ROW_PROCESSING_ERROR, $tracePayload);
                 }
                 finally
                 {
-                    $batch->incrementProcessedCount();
+                    if ($batch !== null)
+                    {
+                        $batch->incrementProcessedCount();
+                    }
                 }
             }
         }
@@ -283,6 +306,8 @@ class CombinedReconciliate extends Base\Foundation\SubReconciliate
                         'data'              => static::$scroogeReconciliate,
                         'source'            => $this->source,
                         'force_update_arn'  => $forceUpdateArn,
+                        'gateway'           => $this->gateway,
+                        'batch_id'          => $this->batchId,
                     ]
                 );
 
@@ -298,7 +323,10 @@ class CombinedReconciliate extends Base\Foundation\SubReconciliate
 
             $this->updateCombinedSummaryCount();
 
-            $this->updateBatchWithSummary($batch);
+            if ($batch !== null)
+            {
+                $this->updateBatchWithSummary($batch);
+            }
         }
     }
 

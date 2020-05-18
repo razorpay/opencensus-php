@@ -56,7 +56,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
                     'column_utr'    => $row[self::COLUMN_UTR] ?? null,
                     'column_rrn'    => $row[self::COLUMN_RRN_NUMBER] ?? null,
                     'gateway'       => $this->gateway,
-                    'batch_id'      => $this->batch->getId(),
+                    'batch_id'      => $this->batchId,
                 ]);
 
             $this->setFailUnprocessedRow(true);
@@ -153,7 +153,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
                 'utr'           => $row[self::COLUMN_UTR],
                 'payee_account' => $row[self::COLUMN_PAYEE_ACCOUNT],
                 'gateway'       => $this->gateway,
-                'batch_id'      => $this->batch->getId(),
+                'batch_id'      => $this->batchId,
             ]);
 
         $this->app['slack']->queue(
@@ -203,7 +203,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
                     'recon_amount'    => $this->getReconPaymentAmount($row),
                     'currency'        => $this->payment->getCurrency(),
                     'gateway'         => $this->gateway,
-                    'batch_id'        => $this->batch->getId(),
+                    'batch_id'        => $this->batchId,
                 ]);
 
             return false;

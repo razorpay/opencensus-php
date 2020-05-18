@@ -383,6 +383,37 @@ return [
             'tran_currency_code'    => '356',
         ],
 
+        'hitachi_un_normalized' => [
+            'Merchant ID'           => '38RR00000033428',
+            'Terminal ID'           => '38R33428',
+            'Merchant Name'         => 'Passport Consultancy Pune',
+            'Message type'          => '0220',
+            'PAN'                   => '459200******3858',
+            'Transaction type'      => '00',
+            'Amount (In Paise)'     => '4000.00',
+            'Date/Time'             => '2018-03-05 23:50:00',
+            'Retr Ref Nr'           => '933123386569',
+            'Auth ID'               => '780990',
+            'Response Code'         => '00',
+            'Invoice Number'        => 'EovyGkEkiOHDeQ',
+            'Interchange Type'      => 'VISA',
+            'Tran Reversed'         => 'N',
+            'ISSETTLED'             => 'S',
+            '3DS Auth RC'           => 'Y',
+            '3DS Enroll'            => 'Y',
+            'STAN'                  => '311873',
+            'FEE_AMOUNT'            => '0.00',
+            'MCC'                   => '7392',
+            'pos_entry_mode'        => '012',
+            'Credit_debit'          => 'D',
+            'card_product'          => 'F',
+            'CardCountry'           => 'IN',
+            'Tran Currency Code'    => '356',
+            'PurchaseID'            => '',
+            'ARN'                   => '74110750133021393865694',
+            'idempotent_id'         => 'batch_EAAABBaaBBccc',
+        ],
+
         'hitachi_unexpected_payment_create' => [
             'pan'                   => '479947******7011',
             'stan'                  => 579123,
@@ -786,6 +817,21 @@ return [
                     'admin'             => TRUE,
                 ]
             ]
+        ]
+    ],
+
+    'bulk_reconcile_via_batch_service' => [
+        'request' => [
+            'url'     => '/reconciliate/batch_service/bulk',
+            'method'  => 'post',
+            'server' => [
+                'HTTP_X_Batch_Id' => "C0zv9I46W4wiOq",
+                'mode'            =>  'live',
+                'X-Entity-Id'     =>  'MID'
+            ],
+        ],
+        'response' => [
+            'content' => [],
         ]
     ],
 ];

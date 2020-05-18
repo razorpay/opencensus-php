@@ -144,7 +144,8 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
                     'message'       => 'Unable to perform one of the reconciliation actions -> ' . $ex->getMessage(),
                     'refund_id'     => $refundId,
                     'extra_details' => $this->extraDetails,
-                    'gateway'       => $this->gateway
+                    'gateway'       => $this->gateway,
+                    'batch_id'      => $this->batchId,
                 ]);
 
             $this->trace->traceException($ex);
@@ -286,7 +287,8 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
                     'expected_column'   => $amountColumn,
                     'currency'          => $this->payment->getCurrency(),
                     'payment_id'        => $this->payment->getId(),
-                    'gateway'           => $this->gateway
+                    'gateway'           => $this->gateway,
+                    'batch_id'          => $this->batchId,
                 ]);
 
             return false;
@@ -367,7 +369,8 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
                     'info_code'  => Base\InfoCode::REFUND_PAYMENT_FAILED,
                     'payment_id' => $this->payment->getId(),
                     'amount'     => $this->payment->getAmount(),
-                    'gateway'    => $this->gateway
+                    'gateway'    => $this->gateway,
+                    'batch_id'   => $this->batchId,
                 ]);
 
             return false;
@@ -386,7 +389,8 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
                 'info_code'         => Base\InfoCode::MIS_FILE_REFUND_FAILED,
                 'refund_id'         => $this->refund->getId(),
                 'refund_status'     => $this->refund->getStatus(),
-                'gateway'           => $this->gateway
+                'gateway'           => $this->gateway,
+                'batch_id'          => $this->batchId,
             ]);
 
             return false;
@@ -435,7 +439,8 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
                         'refund_id'     => $this->refund->getId(),
                         'payment_id'    => $this->refund->payment->getId(),
                         'amount'        => $this->refund->getAmount(),
-                        'gateway'       => $this->gateway
+                        'gateway'       => $this->gateway,
+                        'batch_id'      => $this->batchId,
                     ]);
 
                 $this->setRowReconStatusAndError(Base\InfoCode::RECON_FAILED, Base\InfoCode::REFUND_TRANSACTION_ABSENT);
@@ -516,7 +521,8 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
                     'info_code'  => Base\InfoCode::REFUND_PAYMENT_ABSENT,
                     'refund_id'  => $refundId,
                     'amount'     => $refund->getAmount(),
-                    'gateway'    => $this->gateway
+                    'gateway'    => $this->gateway,
+                    'batch_id'   => $this->batchId,
                 ]);
 
             $this->setRowReconStatusAndError(Base\InfoCode::RECON_FAILED, Base\InfoCode::REFUND_PAYMENT_ABSENT);
@@ -586,6 +592,7 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
                     'info_code'     => Base\InfoCode::REFUND_ABSENT,
                     'refund_id'     => $refundId,
                     'gateway'       => $this->gateway,
+                    'batch_id'      => $this->batchId,
                 ]);
 
             $this->setRowReconStatusAndError(Base\InfoCode::RECON_FAILED,  Base\InfoCode::REFUND_ABSENT);
@@ -667,7 +674,8 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
                     'recon_amount'      => $reconRefundAmount,
                     'payment_id'        => $this->payment->getId(),
                     'currency'          => $this->payment->getCurrency(),
-                    'gateway'           => $this->gateway
+                    'gateway'           => $this->gateway,
+                    'batch_id'          => $this->batchId,
                 ]);
 
             return false;
@@ -764,7 +772,8 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
                         'payment_id'    => $this->payment->getId(),
                         'refund_id'     => $refund->getId(),
                         'refund_status' => $refund->getStatus(),
-                        'gateway'       => $this->gateway
+                        'gateway'       => $this->gateway,
+                        'batch_id'      => $this->batchId,
                     ]);
             }
 
@@ -821,6 +830,7 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
                             'refund_arn'    => $currentArn,
                             'recon_arn'     => $reconArn,
                             'gateway'       => $this->gateway,
+                            'batch_id'      => $this->batchId,
                         ]);
 
                     return;
@@ -988,7 +998,8 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
                     'payment_amount'            => $this->payment->getAmount(),
                     'db_reference_number'       => $dbGatewayTransactionId,
                     'recon_reference_number'    => $gatewayTransactionId,
-                    'gateway'                   => $this->gateway
+                    'gateway'                   => $this->gateway,
+                    'batch_id'                  => $this->batchId,
                 ]);
 
             return;
@@ -1027,7 +1038,8 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
                     'payment_amount'            => $this->payment->getAmount(),
                     'db_reference_number'       => $dbReferenceNumber,
                     'recon_reference_number'    => $referenceNumber,
-                    'gateway'                   => $this->gateway
+                    'gateway'                   => $this->gateway,
+                    'batch_id'                  => $this->batchId,
                 ]);
 
             return;

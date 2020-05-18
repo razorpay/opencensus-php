@@ -128,7 +128,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
                         'info_code'            => Base\InfoCode::UNEXPECTED_PAYMENT,
                         'payment_reference_id' => $referenceNumber,
                         'gateway'              => $this->gateway,
-                        'batch_id'             => $this->batch->getId(),
+                        'batch_id'             => $this->batchId,
                     ]);
             }
         }
@@ -176,7 +176,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
                 'gateway_payment_id'        => $callbackInput['merchantTransactionId'],
                 'unexpected_payment_ref_id' => $input[self::UNEXPECTED_PAYMENT_REF_ID],
                 'gateway'                   => $this->gateway,
-                'batch_id'                  => $this->batch->getId(),
+                'batch_id'                  => $this->batchId,
             ]);
 
         try
@@ -195,7 +195,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
                         'rrn'                   => $rrn,
                         'gateway_payment_id'    => $callbackInput['merchantTransactionId'],
                         'gateway'               => $this->gateway,
-                        'batch_id'              => $this->batch->getId(),
+                        'batch_id'              => $this->batchId,
                     ]);
             }
             else
@@ -207,7 +207,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
                         'rrn'                   => $rrn,
                         'gateway_payment_id'    => $callbackInput['merchantTransactionId'],
                         'gateway'               => $this->gateway,
-                        'batch_id'              => $this->batch->getId(),
+                        'batch_id'              => $this->batchId,
                     ]);
             }
         }
@@ -221,7 +221,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
                     'rrn'                       => $rrn,
                     'gateway_payment_id'        => $callbackInput['merchantTransactionId'],
                     'gateway'                   => $this->gateway,
-                    'batch_id'                  => $this->batch->getId(),
+                    'batch_id'                  => $this->batchId,
                 ]
             );
         }
