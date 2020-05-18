@@ -18,6 +18,13 @@ class ScroogeRefundRetry extends Job
         'NO_DATA_FOUND'
     ];
 
+    /**
+     * Scrooge refund retry job timeout at 180 seconds
+     * 80 seconds each for verify and refund calls.
+     * 20 seconds of buffer
+     */
+    public $timeout = 180;
+
     protected $trace;
 
     protected $data;
