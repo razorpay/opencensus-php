@@ -7,8 +7,8 @@ use Mail;
 use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Mail\Transaction\Adjustment;
+use RZP\Tests\Traits\TestsWebhookEvents;
 use RZP\Mail\Banking\YesbankLoadViaAdjustment;
-use RZP\Tests\Functional\Helpers\WebhookTrait;
 use RZP\Tests\Functional\Fixtures\Entity\User;
 use RZP\Tests\Functional\Helpers\MocksDnsTrait;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
@@ -20,8 +20,8 @@ class AdjustmentTest extends TestCase
 {
     use RequestResponseFlowTrait;
     use DbEntityFetchTrait;
-    use WebhookTrait;
     use MocksDnsTrait;
+    use TestsWebhookEvents;
 
     public function setUp()
     {
@@ -595,27 +595,14 @@ class AdjustmentTest extends TestCase
 
         $this->app->forgetInstance('basicauth');
 
-        $request = array(
-            'url'     => '/webhooks',
-            'method'  => 'post',
-            'content' => array('url'    => 'http://webhook.com/v1/dummy/route',
-                               'events' => ['transaction.created' => '1']),
-            'server'  => ['HTTP_X-Request-Origin' => \Config::get('applications.banking_service_url')]);
-
-        $this->ba->proxyAuth("rzp_test_100abc000abc00");
-
-        $this->makeRequestAndGetContent($request);
-
-        $this->app->forgetInstance('basicauth');
-
         $admin = $this->ba->getAdmin();
 
-        $this->fixtures->admin->edit($admin['id'], ['allow_all_merchants' => true]);
+        $this->fixtures->on('test')->admin->edit($admin['id'], ['allow_all_merchants' => true]);
 
         $this->ba->adminProxyAuth('100abc000abc00', 'rzp_test_100abc000abc00');
 
         $eventTestDataKey = 'testTransactionCreatedWebhookFiringAndMailOnAdjustmentCreateForBankingBalanceData';
-        $this->setInfernoExpectations([$eventTestDataKey]);
+        $this->expectWebhookEventWithContents('transaction.created', $eventTestDataKey);
 
         $response = $this->startTest();
 
@@ -714,27 +701,14 @@ class AdjustmentTest extends TestCase
 
         $this->app->forgetInstance('basicauth');
 
-        $request = array(
-            'url'     => '/webhooks',
-            'method'  => 'post',
-            'content' => array('url'    => 'http://webhook.com/v1/dummy/route',
-                               'events' => ['transaction.created' => '1']),
-            'server'  => ['HTTP_X-Request-Origin' => \Config::get('applications.banking_service_url')]);
-
-        $this->ba->proxyAuth("rzp_test_100abc000abc00");
-
-        $this->makeRequestAndGetContent($request);
-
-        $this->app->forgetInstance('basicauth');
-
         $admin = $this->ba->getAdmin();
 
-        $this->fixtures->admin->edit($admin['id'], ['allow_all_merchants' => true]);
+        $this->fixtures->on('test')->admin->edit($admin['id'], ['allow_all_merchants' => true]);
 
         $this->ba->adminProxyAuth('100abc000abc00', 'rzp_test_100abc000abc00');
 
         $eventTestDataKey = 'testTransactionCreatedWebhookFiringAndMailOnNegativeAdjustmentCreateForBankingBalanceData';
-        $this->setInfernoExpectations([$eventTestDataKey]);
+        $this->expectWebhookEventWithContents('transaction.created', $eventTestDataKey);
 
         $response = $this->startTest();
 
@@ -833,27 +807,14 @@ class AdjustmentTest extends TestCase
 
         $this->app->forgetInstance('basicauth');
 
-        $request = array(
-            'url'     => '/webhooks',
-            'method'  => 'post',
-            'content' => array('url'    => 'http://webhook.com/v1/dummy/route',
-                               'events' => ['transaction.created' => '1']),
-            'server'  => ['HTTP_X-Request-Origin' => \Config::get('applications.banking_service_url')]);
-
-        $this->ba->proxyAuth("rzp_test_100abc000abc00");
-
-        $this->makeRequestAndGetContent($request);
-
-        $this->app->forgetInstance('basicauth');
-
         $admin = $this->ba->getAdmin();
 
-        $this->fixtures->admin->edit($admin['id'], ['allow_all_merchants' => true]);
+        $this->fixtures->on('test')->admin->edit($admin['id'], ['allow_all_merchants' => true]);
 
         $this->ba->adminProxyAuth('100abc000abc00', 'rzp_test_100abc000abc00');
 
         $eventTestDataKey = 'testTransactionCreatedWebhookFiringAndMailOnAdjustmentCreateForBankingBalanceRazorxControlData';
-        $this->setInfernoExpectations([$eventTestDataKey]);
+        $this->expectWebhookEventWithContents('transaction.created', $eventTestDataKey);
 
         $response = $this->startTest();
 
@@ -952,27 +913,14 @@ class AdjustmentTest extends TestCase
 
         $this->app->forgetInstance('basicauth');
 
-        $request = array(
-            'url'     => '/webhooks',
-            'method'  => 'post',
-            'content' => array('url'    => 'http://webhook.com/v1/dummy/route',
-                               'events' => ['transaction.created' => '1']),
-            'server'  => ['HTTP_X-Request-Origin' => \Config::get('applications.banking_service_url')]);
-
-        $this->ba->proxyAuth("rzp_test_100abc000abc00");
-
-        $this->makeRequestAndGetContent($request);
-
-        $this->app->forgetInstance('basicauth');
-
         $admin = $this->ba->getAdmin();
 
-        $this->fixtures->admin->edit($admin['id'], ['allow_all_merchants' => true]);
+        $this->fixtures->on('test')->admin->edit($admin['id'], ['allow_all_merchants' => true]);
 
         $this->ba->adminProxyAuth('100abc000abc00', 'rzp_test_100abc000abc00');
 
         $eventTestDataKey = 'testTransactionCreatedWebhookFiringAndMailOnNegativeAdjustmentCreateForBankingBalanceRazorxControlData';
-        $this->setInfernoExpectations([$eventTestDataKey]);
+        $this->expectWebhookEventWithContents('transaction.created', $eventTestDataKey);
 
         $response = $this->startTest();
 

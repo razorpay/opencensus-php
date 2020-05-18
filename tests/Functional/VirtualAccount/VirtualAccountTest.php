@@ -13,12 +13,12 @@ use RZP\Services\RazorXClient;
 use RZP\Models\Customer\Entity;
 use RZP\Models\Terminal\Type;
 use RZP\Models\Payment\Gateway;
-use RZP\Models\Merchant\Webhook;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Merchant\FeeBearer;
 use RZP\Models\VirtualAccount\Core;
 use RZP\Models\VirtualAccount\Status;
 use RZP\Exception\BadRequestException;
+use RZP\Tests\Traits\TestsWebhookEvents;
 use RZP\Tests\Functional\Helpers\MocksDnsTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
@@ -34,6 +34,7 @@ class VirtualAccountTest extends TestCase
     protected $t2;
     use PaymentTrait;
     use MocksDnsTrait;
+    use TestsWebhookEvents;
     use VirtualAccountTrait;
     use DbEntityFetchTrait;
     use TestsBusinessBanking;
@@ -1419,84 +1420,44 @@ class VirtualAccountTest extends TestCase
 
     public function testWebhookVirtualAccountCreated()
     {
-        $this->createWebhook(
-            [
-                'events' => [
-                    'virtual_account.created' => '1',
-                ]
-            ]);
+        $expectedEvent = $this->testData[__FUNCTION__]['event'];
+        $this->expectWebhookEventWithContents('virtual_account.created', $expectedEvent);
 
-        $testData = $this->testData[__FUNCTION__];
-
-        $this->mockInfernoFire(function ($data) use ($testData)
-        {
-            $data['event'] = json_decode($data['event'], true);
-
-            $this->assertEquals('virtual_account.created', $data['event']['event']);
-
-            $this->assertArraySelectiveEquals($testData, $data);
-
-            return true;
-        });
-
-        $virtualAccount = $this->createVirtualAccount();
+        $this->createVirtualAccount();
     }
 
     public function testWebhookVirtualAccountCredited()
     {
         $virtualAccount = $this->createVirtualAccount();
 
-        $this->createWebhook(
-            [
-                'events' => [
-                    'virtual_account.credited' => '1',
-                ]
-            ]);
-
-        $testData = $this->testData[__FUNCTION__];
-
-        $this->mockInfernoFire(function ($data) use ($testData)
-        {
-            $data['event'] = json_decode($data['event'], true);
-
-            $this->assertEquals('virtual_account.credited', $data['event']['event']);
-
-            $this->assertArraySelectiveEquals($testData, $data);
-
-            $paymentArray = $data['event']['payload']['payment']['entity'];
-            $this->assertArrayNotHasKey('terminal_id', $paymentArray);
-
-            return true;
-        });
+        $expectedEvent = $this->testData[__FUNCTION__]['event'];
+        $this->expectWebhookEvent(
+            'virtual_account.credited',
+            function (array $event) use ($expectedEvent)
+            {
+                $this->assertArraySelectiveEquals($expectedEvent, $event);
+                $paymentArray = $event['payload']['payment']['entity'];
+                $this->assertArrayNotHasKey('terminal_id', $paymentArray);
+            }
+        );
 
         $this->payVirtualAccount($virtualAccount['id']);
     }
 
     public function testWebhookVirtualAccountCreditedForBharatQr()
     {
-        $this->createWebhook(
-            [
-                'events' => [
-                    'virtual_account.credited' => '1',
-                ]
-            ]);
+        $expectedEvent = $this->testData[__FUNCTION__]['event'];
+        $this->expectWebhookEvent(
+            'virtual_account.credited',
+            function (array $event) use ($expectedEvent)
+            {
+                $this->assertArraySelectiveEquals($expectedEvent, $event);
 
-        $testData = $this->testData[__FUNCTION__];
-
-        $this->mockInfernoFire(function ($data) use ($testData)
-        {
-            $data['event'] = json_decode($data['event'], true);
-
-            $this->assertEquals('virtual_account.credited', $data['event']['event']);
-
-            $this->assertArraySelectiveEquals($testData, $data);
-
-            // Virtual account credited webhook contains bank_tranfer
-            // entity if applicable, but never bharat_qr entity.
-            $this->assertArrayNotHasKey('bharat_qr', $data['event']['payload']);
-
-            return true;
-        });
+                // Virtual account credited webhook contains bank_tranfer
+                // entity if applicable, but never bharat_qr entity.
+                $this->assertArrayNotHasKey('bharat_qr', $event['payload']);
+            }
+        );
 
         $this->testFetchPaymentsForVirtualAccountForQrCode();
     }
@@ -1505,26 +1466,8 @@ class VirtualAccountTest extends TestCase
     {
         $virtualAccount = $this->createVirtualAccount();
 
-        $this->createWebhook(
-            [
-                'events' => [
-                    'virtual_account.closed' => '1',
-                ]
-            ]
-        );
-
-        $testData = $this->testData[__FUNCTION__];
-
-        $this->mockInfernoFire(function ($data) use ($testData)
-        {
-            $data['event'] = json_decode($data['event'], true);
-
-            $this->assertEquals('virtual_account.closed', $data['event']['event']);
-
-            $this->assertArraySelectiveEquals($testData, $data);
-
-            return true;
-        });
+        $expectedEvent = $this->testData[__FUNCTION__]['event'];
+        $this->expectWebhookEventWithContents('virtual_account.closed', $expectedEvent);
 
         $this->closeVirtualAccount($virtualAccount['id']);
     }
@@ -1702,19 +1645,6 @@ class VirtualAccountTest extends TestCase
         $response = $this->startTest();
     }
 
-    protected function mockInfernoFire(Closure $closure)
-    {
-        $inferno = Mockery::mock(Webhook\Inferno::class, [])->makePartial();
-
-        $inferno->shouldReceive('fire')
-                ->once()
-                ->with(
-                    Mockery::type('RZP\Jobs\WebHook'),
-                    Mockery::on($closure));
-
-        $this->app->instance('webhook.inferno', $inferno);
-    }
-
     protected function getTagMappedValues(string $qrString)
     {
         $tlvArray = [];
@@ -1775,25 +1705,8 @@ class VirtualAccountTest extends TestCase
 
     public function testWebhookVirtualAccountCreatedForVpa()
     {
-        $this->createWebhook(
-            [
-                'events' => [
-                    'virtual_account.created' => '1',
-                ]
-            ]);
-
-        $testData = $this->testData[__FUNCTION__];
-
-        $this->mockInfernoFire(function ($data) use ($testData)
-        {
-            $data['event'] = json_decode($data['event'], true);
-
-            $this->assertEquals('virtual_account.created', $data['event']['event']);
-
-            $this->assertArraySelectiveEquals($testData, $data);
-
-            return true;
-        });
+        $expectedEvent = $this->testData[__FUNCTION__]['event'];
+        $this->expectWebhookEventWithContents('virtual_account.created', $expectedEvent);
 
         $this->createVirtualAccount([], false, null, null, true,'virtualVpa');
     }

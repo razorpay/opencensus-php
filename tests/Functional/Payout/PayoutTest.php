@@ -27,6 +27,7 @@ use RZP\Models\FundTransfer\Attempt;
 use RZP\Mail\Banking\LowBalanceAlert;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\Webhook\Event;
+use RZP\Tests\Traits\TestsWebhookEvents;
 use RZP\Models\BankingAccount\Gateway\Rbl;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Mail\Transaction\Payout as PayoutMail;
@@ -51,6 +52,7 @@ class PayoutTest extends TestCase
     use PayoutTrait;
     use WebhookTrait;
     use MocksDnsTrait;
+    use TestsWebhookEvents;
 
     private $checkerRoleUser;
 
@@ -949,11 +951,9 @@ class PayoutTest extends TestCase
 
         $this->mockRazorxTreatment('yesbank', 'on');
 
-        $this->createWebhook(['events' => ['payout.rejected' => '1']], [], 'live');
-
         $eventTestDataKey = 'testFiringOfWebhookOnRejectionOfPayoutEventData';
 
-        $this->setInfernoExpectations([$eventTestDataKey]);
+        $this->expectWebhookEventWithContents('payout.rejected', $eventTestDataKey);
 
         // Approve with Owner role user
         $this->ba->proxyAuth('rzp_live_10000000000000', $this->ownerRoleUser->getId());
@@ -979,11 +979,9 @@ class PayoutTest extends TestCase
 
         $this->mockRazorxTreatment('yesbank', 'on');
 
-        $this->createWebhook(['events' => ['payout.rejected' => '1']], [], 'live');
-
         $eventTestDataKey = 'testFiringOfWebhookOnRejectionOfPayoutEventData';
 
-        $this->setInfernoExpectations([$eventTestDataKey]);
+        $this->expectWebhookEventWithContents('payout.rejected', $eventTestDataKey);
 
         // Approve with Owner role user
         $this->ba->proxyAuth('rzp_live_10000000000000', $this->ownerRoleUser->getId());
@@ -1009,11 +1007,9 @@ class PayoutTest extends TestCase
 
         $this->mockRazorxTreatment('yesbank', 'on');
 
-        $this->createWebhook(['events' => ['payout.rejected' => '1']], [], 'live');
-
         $eventTestDataKey = 'testFiringOfWebhookOnRejectionOfPayoutEventData';
 
-        $this->setInfernoExpectations([$eventTestDataKey]);
+        $this->expectWebhookEventWithContents('payout.rejected', $eventTestDataKey);
 
         // Approve with Owner role user
         $this->ba->proxyAuth('rzp_live_10000000000000', $this->ownerRoleUser->getId());
@@ -1041,11 +1037,10 @@ class PayoutTest extends TestCase
 
         $this->mockRazorxTreatment('yesbank', 'on');
 
-        $this->createWebhook(['events' => ['payout.rejected' => '1']], [], 'live');
-
         $eventTestDataKey = 'testFiringOfWebhookOnRejectionOfPayoutEventData';
 
-        $this->setInfernoExpectations([$eventTestDataKey, $eventTestDataKey]);
+        $this->expectWebhookEventWithContents('payout.rejected', $eventTestDataKey);
+        $this->expectWebhookEventWithContents('payout.rejected', $eventTestDataKey);
 
         // Approve with Owner role user
         $this->ba->proxyAuth('rzp_live_10000000000000', $this->ownerRoleUser->getId());
@@ -1071,11 +1066,10 @@ class PayoutTest extends TestCase
 
         $this->mockRazorxTreatment('yesbank', 'on');
 
-        $this->createWebhook(['events' => ['payout.rejected' => '1']], [], 'live');
-
         $eventTestDataKey = 'testFiringOfWebhookOnRejectionOfPayoutEventData';
 
-        $this->setInfernoExpectations([$eventTestDataKey, $eventTestDataKey]);
+        $this->expectWebhookEventWithContents('payout.rejected', $eventTestDataKey);
+        $this->expectWebhookEventWithContents('payout.rejected', $eventTestDataKey);
 
         // Approve with Owner role user
         $this->ba->proxyAuth('rzp_live_10000000000000', $this->ownerRoleUser->getId());
@@ -2340,8 +2334,6 @@ class PayoutTest extends TestCase
 
         $fta = $this->getDbLastEntity('fund_transfer_attempt');
 
-        $this->createWebhook(['events' => ['payout.updated' => '1']]);
-
         $eventTestDataKey = 'testFiringOfWebhookOnUpdationOfUtrEventData';
 
         $this->fixtures->edit(
@@ -2359,7 +2351,7 @@ class PayoutTest extends TestCase
                 'utr'    => null,
             ]);
 
-        $this->setInfernoExpectations([$eventTestDataKey]);
+        $this->expectWebhookEventWithContents('payout.updated', $eventTestDataKey);
 
         $this->ba->appAuth();
 
@@ -2409,8 +2401,6 @@ class PayoutTest extends TestCase
 
         $utr = $payout->getUtr();
 
-        $this->createWebhook(['events' => ['payout.updated' => '1']]);
-
         $this->fixtures->edit(
             'payout',
             $payout['id'],
@@ -2418,7 +2408,7 @@ class PayoutTest extends TestCase
                 'status' => Payout\Status::PROCESSED,
             ]);
 
-        $this->setInfernoExpectations([]);
+        $this->dontExpectWebhookEvent('payout.updated');
 
         $this->ba->appAuth();
 
@@ -2832,11 +2822,9 @@ class PayoutTest extends TestCase
 
         $this->mockRazorxTreatment('yesbank', 'on');
 
-        $this->createWebhook(['events' => ['payout.pending' => '1']], [], 'live');
-
         $eventTestDataKey = 'testFiringOfWebhookOnCreationOfPendingPayoutEventData';
 
-        $this->setInfernoExpectations([$eventTestDataKey]);
+        $this->expectWebhookEventWithContents('payout.pending', $eventTestDataKey);
 
         $workflow = $this->setupWorkflowForLiveMode();
 
@@ -3266,11 +3254,9 @@ class PayoutTest extends TestCase
 
         $this->mockRazorxTreatment('yesbank', 'on');
 
-        $this->createWebhook(['events' => ['payout.rejected' => '1']], [], 'live');
-
         $eventTestDataKey = 'testFiringOfWebhookOnRejectionOfPayoutEventData';
 
-        $this->setInfernoExpectations([$eventTestDataKey]);
+        $this->expectWebhookEventWithContents('payout.rejected', $eventTestDataKey);
 
         $this->fixtures->on('live')->create('admin', [
             'id' => 'RzrpySprAdmnId',

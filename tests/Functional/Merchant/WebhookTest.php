@@ -19,7 +19,7 @@ use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Merchant\FeeBearer;
 use RZP\Models\FundTransfer\Attempt;
-use RZP\Models\Merchant\Webhook\Inferno;
+use RZP\Tests\Traits\TestsWebhookEvents;
 use Illuminate\Database\Eloquent\Factory;
 use Http\Discovery\MessageFactoryDiscovery;
 use RZP\Mail\Merchant\Webhook as WebhookMail;
@@ -46,6 +46,7 @@ class WebhookTest extends TestCase
     use AttemptReconcileTrait;
     use MocksDnsTrait;
     use WebhookTrait;
+    use TestsWebhookEvents;
     use DbEntityFetchTrait;
     use PartnerTrait;
 
@@ -575,52 +576,23 @@ class WebhookTest extends TestCase
 
     public function testWebhookEventData()
     {
-        $this->createWebhook();
-
-        $testData = $this->testData[__FUNCTION__];
-
-        $this->app['webhook.inferno']->setClient($this->app['httplug']->driver('mock'));
-
-        $messageFactory = MessageFactoryDiscovery::find();
-
-        $client = $this->app['webhook.inferno']->getClient();
-
-        $response = $messageFactory->createResponse(200);
-        $client->addResponse($response);
+        $this->expectWebhookEventWithContents('payment.authorized', __FUNCTION__);
 
         $this->doAuthPayment();
-
-        $request = $client->getRequests()[0];
-
-        $this->assertEquals(['Razorpay-Webhook/v1'], $request->getHeader('User-Agent'));
-        $this->assertEquals(['application/json'], $request->getHeader('Content-Type'));
-        $this->assertEquals('http://webhook.com/v1/dummy/route', (string) $request->getUri());
-
-        $body = (string) $request->getBody();
-        $decodedBody = json_decode($body, true);
-
-        $this->assertArraySelectiveEquals($testData, $decodedBody);
     }
 
     public function testInvoicePaidWebhookEventData()
     {
-        $this->createWebhook(['events' => ['invoice.paid' => '1']]);
+        $expectedEvent = $this->testData[__FUNCTION__]['event'];
 
-        $testData = $this->testData[__FUNCTION__];
-
-        $this->mockInfernoFire(function ($data) use ($testData)
-        {
-            $data['event'] = json_decode($data['event'], true);
-
-            $this->assertArraySelectiveEquals($testData, $data);
-            $this->assertArrayHasKey('webhook_id', $data);
-            $this->assertArrayHasKey('created_at', $data['event']);
-
-            $paymentArray = $data['event']['payload']['payment']['entity'];
-            $this->assertArrayNotHasKey('terminal_id', $paymentArray);
-
-            return true;
-        });
+        $this->expectWebhookEvent(
+            'invoice.paid',
+            function (array $event) use ($expectedEvent)
+            {
+                $this->assertArraySelectiveEquals($expectedEvent, $event);
+                $this->assertArrayNotHasKey('terminal_id', $event['payload']['payment']['entity']);
+            }
+        );
 
         $order = $this->fixtures->create('order',
                     [
@@ -664,30 +636,11 @@ class WebhookTest extends TestCase
             $partnerId
         );
 
-        $this->fixtures->create('webhook',
-        [
-            'entity_type' => 'application',
-            'entity_id'   => '10000000000App',
-            'url'         => 'https://www.razorpay.co.in',
-            'events'      => [
-                'invoice.paid' => '1'
-            ]
-        ]);
+        $expectedEvent = $this->testData['testInvoicePaidWebhookEventData']['event'];
 
-        $testData = $this->testData['testInvoicePaidWebhookEventData'];
+        $expectedEvent['payload']['payment']['entity']['terminal_id'] = 'term_1n25f6uN5S1Z5a';
 
-        $testData['event']['payload']['payment']['entity']['terminal_id'] = 'term_1n25f6uN5S1Z5a';
-
-        $this->mockInfernoFire(function ($data) use ($testData)
-        {
-            $data['event'] = json_decode($data['event'], true);
-
-            $this->assertArraySelectiveEquals($testData, $data);
-            $this->assertArrayHasKey('webhook_id', $data);
-            $this->assertArrayHasKey('created_at', $data['event']);
-
-            return true;
-        });
+        $this->expectWebhookEventWithContents('invoice.paid', $expectedEvent);
 
         $order = $this->fixtures->create('order',
                     [
@@ -713,20 +666,9 @@ class WebhookTest extends TestCase
      */
     public function testInvoiceWithoutCustomerDetailsPaidWebhookEventData()
     {
-        $this->createWebhook(['events' => ['invoice.paid' => '1']]);
+        $expectedEvent = $this->testData[__FUNCTION__]['event'];
 
-        $testData = $this->testData[__FUNCTION__];
-
-        $this->mockInfernoFire(function ($data) use ($testData)
-        {
-            $data['event'] = json_decode($data['event'], true);
-
-            $this->assertArraySelectiveEquals($testData, $data);
-            $this->assertArrayHasKey('webhook_id', $data);
-            $this->assertArrayHasKey('created_at', $data['event']);
-
-            return true;
-        });
+        $this->expectWebhookEventWithContents('invoice.paid', $expectedEvent);
 
         $order = $this->fixtures->create('order',
                     [
@@ -754,22 +696,17 @@ class WebhookTest extends TestCase
 
     public function testInvoicePaidWebhookEventDataWithOrderAndWithoutInvoice()
     {
-        $this->createWebhook(['events' => ['order.paid' => '1', 'invoice.paid' => '1']]);
-
-        $testData = $this->testData[__FUNCTION__];
+        $expectedEvent = $this->testData[__FUNCTION__]['event'];
 
         // This webhook will be called for order.paid event.
-        $this->mockInfernoFire(function ($data) use ($testData)
-        {
-            $data['event'] = json_decode($data['event'], true);
-
-            $this->assertArraySelectiveEquals($testData, $data);
-            $this->assertArrayHasKey('webhook_id', $data);
-            $this->assertArrayHasKey('created_at', $data['event']);
-            $this->assertArrayNotHasKey('invoice', $data['event']);
-
-            return true;
-        });
+        $this->expectWebhookEvent(
+            'order.paid',
+            function (array $event) use ($expectedEvent)
+            {
+                $this->assertArraySelectiveEquals($expectedEvent, $event);
+                $this->assertArrayNotHasKey('invoice', $event['payload']);
+            }
+        );
 
         $order = $this->fixtures->create('order', ['amount' => 50000, 'receipt' => 'random']);
 
@@ -779,35 +716,6 @@ class WebhookTest extends TestCase
         $payment['amount']   = $order->getAmount();
 
         $this->doAuthAndCapturePayment($payment);
-    }
-
-    public function testInvoicePaidWebhookEventNotEnabled()
-    {
-        $this->createWebhook(['events' => ['order.paid' => "1"]]);
-
-        $inferno = $this->mockInferno();
-
-        // It should be called only once - for order.paid
-        $inferno->shouldReceive('fire')
-                ->once();
-
-        $this->app->instance('webhook.inferno', $inferno);
-
-        $order = $this->fixtures->create('order',
-                    [
-                        'id'              => '100000000order',
-                        'receipt'         => 'random',
-                        'payment_capture' => true,
-                    ]);
-
-        $this->fixtures->create('invoice');
-
-        $payment = $this->getDefaultPaymentArray();
-
-        $payment['order_id'] = $order->getPublicId();
-        $payment['amount']   = $order->getAmount();
-
-        $this->doAuthPayment($payment);
     }
 
     public function testCreateWebhookWithEventWhenFeatureNotEnabled()
@@ -862,8 +770,6 @@ class WebhookTest extends TestCase
     {
         $translatedWebhookBody = 'sample translated webhook body';
 
-        $webhookSecret = 'sample_secret';
-
         // mark as partner
         $partnerId     = '100000Razorpay';
         $client        = $this->setUpPartnerMerchantAppAndGetClient('dev', [], $partnerId);
@@ -883,15 +789,6 @@ class WebhookTest extends TestCase
                  ->orderBy('created_at', 'desc')
                  ->first();
 
-        // create partner webhook
-        $this->createMerchantWebhook(
-            [
-                'events'      => ['payment.authorized' => "1"],
-                'secret'      => $webhookSecret,
-                'entity_type' => 'application',
-                'entity_id'   => $app->id,
-            ]);
-
         // create setting for translation url
         $this->ba->adminAuth();
         $this->fixtures->edit('admin', 'RzrpySprAdmnId', ['allow_all_merchants' => 1]);
@@ -905,44 +802,25 @@ class WebhookTest extends TestCase
 
         $payment  = $this->getDefaultPaymentArray();
 
-        // mock mozart webhook translate and inferno requests
+        // mock mozart webhook translate requests
         $this->mockMozartWebhookTranslateRequest(function ($path, $content) use ($translatedWebhookBody) {
 
             return [
                 'content'   => $translatedWebhookBody,
                 'headers'   => ['request-id' => ['12345678']],
             ];
-        });
+        }, 2);
 
-        $webhookFired = [];
-
-        $this->mockInfernoMakeRequest(function ($request) use (& $webhookFired)
-        {
-            $webhookFired = $request;
-
-            return $this->getStandardWebhookResponse();
-        });
+        $this->expectWebhookEvent(
+            'payment.authorized',
+            function ($body) use ($translatedWebhookBody)
+            {
+                $this->assertEquals($translatedWebhookBody, $body);
+            }
+        );
 
         // make payment on submerchant
         $this->doPartnerAuthPayment($payment, $client->getId(), $submerchantId);
-
-        /*
-         * these asserts cannot be inside the mockInfernoMakeRequest closure because
-         * if assert fails, then exception is thrown. However, the exception is caught and not rethrown
-         * by inferno. this leads to all assert failures failing silently.
-         */
-        $this->assertEquals($translatedWebhookBody, $webhookFired['content']);
-
-        $this->assertEquals('12345678', $webhookFired['headers']['request-id'][0]);
-
-        $this->assertEquals(
-            hash_hmac('sha256', $translatedWebhookBody, $webhookSecret),
-            $webhookFired['headers']['X-Razorpay-Signature']);
-
-        // to assert that express service does not modify the original url, method etc
-        $this->assertEquals('http://webhook.com/v1/dummy/route', $webhookFired['url']);
-
-        $this->assertEquals('post', $webhookFired['method']);
     }
 
     public function testWebhookEventWithExpressTranslationNotEnabled()
@@ -960,32 +838,18 @@ class WebhookTest extends TestCase
 
     public function testWebhookPaymentCreatedForJsonp()
     {
-        $this->fixtures->merchant->addFeatures(['payment_created_webhook']);
-
-        $this->createWebhook(['events'      => ['payment.created' => "1"]]);
-
-        $inferno = $this->mockInferno();
+        $this->expectWebhookEvent('payment.created');
 
         $payment = $this->getDefaultPaymentArray();
-
-        $inferno->shouldReceive('fire')
-            ->once();
 
         $this->doAuthAndCapturePayment($payment);
     }
 
     public function testWebhookPaymentCreatedForAuth()
     {
-        $this->fixtures->merchant->addFeatures(['payment_created_webhook']);
-
-        $this->createWebhook(['events'      => ['payment.created' => "1"]]);
-
-        $inferno = $this->mockInferno();
+        $this->expectWebhookEvent('payment.created');
 
         $payment = $this->getDefaultPaymentArray();
-
-        $inferno->shouldReceive('fire')
-            ->once();
 
         $this->doAuthPayment($payment);
     }
@@ -1006,14 +870,7 @@ class WebhookTest extends TestCase
 
     public function testWebhookPaymentCreatedForAjax()
     {
-        $this->fixtures->merchant->addFeatures(['payment_created_webhook']);
-
-        $this->createWebhook(['events'      => ['payment.created' => "1"]]);
-
-        $inferno = $this->mockInferno();
-
-        $inferno->shouldReceive('fire')
-            ->once();
+        $this->expectWebhookEvent('payment.created');
 
         $this->gateway = 'upi_hulk';
 
@@ -1030,16 +887,9 @@ class WebhookTest extends TestCase
 
     public function testWebhookPaymentCreatedForCheckout()
     {
-        $this->fixtures->merchant->addFeatures(['payment_created_webhook']);
-
-        $this->createWebhook(['events'      => ['payment.created' => "1"]]);
-
-        $inferno = $this->mockInferno();
+        $this->expectWebhookEvent('payment.created');
 
         $payment = $this->getDefaultPaymentArray();
-
-        $inferno->shouldReceive('fire')
-            ->once();
 
         $this->doAuthPaymentViaCheckoutRoute($payment);
     }
@@ -1048,18 +898,11 @@ class WebhookTest extends TestCase
     {
         $this->fixtures->merchant->addFeatures(['s2s']);
 
-        $this->fixtures->merchant->addFeatures(['payment_created_webhook']);
-
-        $this->createWebhook(['events'      => ['payment.created' => "1"]]);
-
         $this->ba->privateAuth();
 
         $this->mockCardVault();
 
-        $inferno = $this->mockInferno();
-
-        $inferno->shouldReceive('fire')
-            ->once();
+        $this->expectWebhookEvent('payment.created');
 
         $this->doS2SPrivateAuthPayment();
     }
@@ -1072,38 +915,20 @@ class WebhookTest extends TestCase
 
         $this->fixtures->pricing->editDefaultPlan(['fee_bearer' => FeeBearer::CUSTOMER]);
 
-        $this->fixtures->merchant->addFeatures(['payment_created_webhook']);
-
-        $this->createWebhook(['events'      => ['payment.created' => "1"]]);
-
         $this->ba->privateAuth();
 
         $this->mockCardVault();
 
-        $inferno = $this->mockInferno();
-
-        $inferno->shouldReceive('fire')
-            ->never();
+        $this->dontExpectAnyWebhookEvent();
 
         $this->createAndGetFeesForPayment();
     }
 
     public function testOrderPaidWebhookEventData()
     {
-        $this->createWebhook(['events' => ['order.paid' => "1"]]);
+        $expectedEvent = $this->testData[__FUNCTION__]['event'];
 
-        $testData = $this->testData[__FUNCTION__];
-
-        $this->mockInfernoFire(function ($data) use ($testData)
-        {
-            $data['event'] = json_decode($data['event'], true);
-
-            $this->assertArraySelectiveEquals($testData, $data);
-            $this->assertArrayHasKey('webhook_id', $data);
-            $this->assertArrayHasKey('created_at', $data['event']);
-
-            return true;
-        });
+        $this->expectWebhookEventWithContents('order.paid', $expectedEvent);
 
         $order = $this->fixtures->create('order', ['amount' => 50000, 'receipt' => 'random']);
 
@@ -1116,315 +941,9 @@ class WebhookTest extends TestCase
 
     public function testOrderPaidWebhookEventDataWithoutOrder()
     {
-        $this->createWebhook(['events' => ['order.paid' => "1"]]);
-
-        $inferno = $this->mockInferno();
-
-        $inferno->shouldReceive('fire')
-                ->never();
-
-        $this->app->instance('webhook.inferno', $inferno);
+        $this->dontExpectWebhookEvent('order.paid');
 
         $this->doAuthAndCapturePayment();
-    }
-
-    public function testAppAndMerchantWebhook()
-    {
-        $this->fixtures->create('merchant_access_map');
-
-        // 1 app and 1 merchant webhook. Should fire 2.
-        $this->createApplicationWebhook('10000000000App', false);
-
-        $this->createMerchantWebhook();
-
-        $eventDataKeys = ['testMerchantWebhookData', 'testAppWebhookData'];
-
-        $this->setClientTriggerAndVerifyRequests($eventDataKeys);
-    }
-
-    public function testAppWebhookWithInactiveMerchantWebhook()
-    {
-        $this->fixtures->create('merchant_access_map');
-
-        // 1 active app webhook
-        $this->createApplicationWebhook('10000000000App', false);
-
-        $input = ['active' => 0];
-
-        // 1 inactive merchant webhook. Should fire 1.
-        $this->createMerchantWebhook($input);
-
-        $eventDataKeys = ['testAppWebhookData'];
-
-        $this->setClientTriggerAndVerifyRequests($eventDataKeys);
-    }
-
-    public function testMerchantWebhookWithInactiveAppWebhook()
-    {
-        $this->fixtures->create('merchant_access_map');
-
-        $input = ['active' => 0];
-
-        // 1 inactive app webhook and active merchant webhook. Should fire 1.
-        $this->createApplicationWebhook('10000000000App', false, $input);
-
-        $this->createMerchantWebhook();
-
-        $eventDataKeys = ['testMerchantWebhookData'];
-
-        $this->setClientTriggerAndVerifyRequests($eventDataKeys);
-    }
-
-    public function testMultipleAppWebhooks()
-    {
-        $this->fixtures->create('merchant_access_map');
-
-        $this->fixtures->create('merchant_access_map', ['entity_id' => '10000000001App']);
-
-        // 2 active app webhooks. Should fire 2.
-        $this->createApplicationWebhook('10000000000App', false);
-
-        $input = ['url' => 'http://exampleapp.com/v1/dummy/route'];
-
-        $this->createApplicationWebhook('10000000001App', false, $input);
-
-        $eventDataKeys = ['testAppWebhookData', 'testApp2WebhookData'];
-
-        $this->setClientTriggerAndVerifyRequests($eventDataKeys);
-    }
-
-    public function testMultipleAppWebhooksWithInactiveWebhook()
-    {
-        $this->fixtures->create('merchant_access_map');
-
-        $this->fixtures->create('merchant_access_map', ['entity_id' => '10000000001App']);
-
-        // 1 active and 1 inactive app webhook. Should fire 1.
-        $this->createApplicationWebhook('10000000000App', false);
-
-        $input = ['active' => 0, 'url' => 'http://exampleapp.com/v1/dummy/route'];
-
-        $this->createApplicationWebhook('10000000001App', false, $input);
-
-        $eventDataKeys = ['testAppWebhookData'];
-
-        $this->setClientTriggerAndVerifyRequests($eventDataKeys);
-    }
-
-    public function testWebhookShouldNotFireWhenInactive()
-    {
-        $webhook = $this->createWebhook();
-
-        $this->fixtures->edit('webhook', $webhook['id'], ['active' => 0]);
-
-        $inferno = $this->mockInferno();
-
-        $inferno->shouldNotReceive('fire');
-
-        $this->doAuthPayment();
-    }
-
-    public function testAppWebhookShouldNotFireWhenInactive()
-    {
-        $this->fixtures->create('merchant_access_map');
-
-        $input = ['active' => 0];
-
-        // 1 inactive app webhook and 1 inactive merchant webhook. Should fire 0.
-        $webhook = $this->fixtures->create('webhook', $input);
-
-        $this->createApplicationWebhook('10000000000App', false, $input);
-
-        $inferno = $this->mockInferno();
-
-        $inferno->shouldNotReceive('fire');
-
-        $this->doAuthPayment();
-    }
-
-    public function testWebhookResetLastSuccessfulAtAfterSuccessfulFiring()
-    {
-        $webhook = $this->createWebhook();
-
-        $lastSuccessfulAt = time() - (23 * 3600);
-
-        $this->fixtures->edit(
-            'webhook', $webhook['id'], ['last_successful_at' => $lastSuccessfulAt, 'active' => 1]);
-
-        $this->mockInfernoWithResponseStatusCode(200);
-
-        $this->doAuthPayment();
-
-        $webhook = $this->getLastEntity('webhook', true);
-
-        // In case it takes 3 seconds to make the mock request.
-        $this->assertGreaterThan((time() - (3)), $webhook['last_successful_at']);
-        $this->assertNotEquals($lastSuccessfulAt, $webhook['last_successful_at']);
-        $this->assertEquals(true, $webhook['active']);
-    }
-
-    public function testWebhookResponseStatusCodes()
-    {
-        $this->createWebhook();
-
-        // Webhook response with status code 200
-        $inferno = $this->mockInfernoWithResponseStatusCode(200);
-
-        // Is considered a success
-        $inferno->shouldReceive('sendRequest')
-                ->once()
-                ->andReturn(false);
-
-        $this->doAuthPayment();
-
-        // Webhook response with status code 204
-        $inferno = $this->mockInfernoWithResponseStatusCode(204);
-
-        // Is also considered a success
-        $inferno->shouldReceive('sendRequest')
-                ->once()
-                ->andReturn(false);
-
-        $this->doAuthPayment();
-
-        // Webhook response with status code 200
-        $inferno = $this->mockInfernoWithResponseStatusCode(400);
-
-        // Is not considered a success
-        $inferno->shouldReceive('sendRequest')
-                ->once()
-                ->andReturn(true);
-
-        $this->doAuthPayment();
-    }
-
-    public function testExceptionOnWebhookFire()
-    {
-        $webhook = $this->createWebhook(['secret' => 'test_secret']);
-
-        $testData = $this->testData[__FUNCTION__];
-
-        $this->mockInfernoMakeRequest(function ($request) use ($testData, $webhook)
-        {
-            $response = $this->getStandardWebhookResponse('400');
-
-            $requestObj = $this->getStandardWebhookRequest($request);
-
-            throw new ClientErrorException('Bad Request', $requestObj, $response);
-        });
-
-        $inferno = $this->app['webhook.inferno'];
-
-        $inferno->shouldReceive('sendEmail')
-                ->with(Mockery::type('object'), 'failure')
-                ->andReturn(false);
-
-        $this->doAuthPayment();
-    }
-
-    public function testWebhookHittingTheDefinedRoute()
-    {
-        $this->markTestSkipped();
-
-        $webhook = $this->createWebhook();
-
-        $this->doAuthPayment();
-    }
-
-    public function testWebhookEventDataJustBeforeFiring()
-    {
-        $this->createWebhook();
-
-        $testData = $this->testData[__FUNCTION__];
-
-        $this->mockInfernoMakeRequest(function ($request) use ($testData)
-        {
-            $request['content'] = json_decode($request['content'], true);
-            $this->assertArraySelectiveEquals($testData, $request);
-            $response = $this->getStandardWebhookResponse();
-
-            return $response;
-        });
-
-        $this->doAuthPayment();
-    }
-
-    public function testWebhookFailureEmail()
-    {
-        Mail::fake();
-
-        $webhook = $this->createWebhook();
-        $inferno = $this->mockInferno();
-
-        $inferno->shouldReceive('sendRequest')
-                ->once()
-                ->andReturn(true);
-
-        $this->doAuthPayment();
-
-        Mail::assertSent(WebhookMail::class);
-    }
-
-    public function testSecretValueInWebhookEventDataJustBeforeFiring()
-    {
-        $webhook = $this->createWebhook(['secret' => 'test_secret']);
-
-        $testData = $this->testData[__FUNCTION__];
-
-        $this->mockInfernoMakeRequest(function ($request) use ($testData, $webhook)
-        {
-            $request['content'] = json_decode($request['content'], true);
-
-            $this->assertArraySelectiveEquals($testData, $request);
-
-            $this->assertArrayHasKey('X-Razorpay-Signature', $request['headers']);
-
-            $this->assertNotNull($request['headers']['X-Razorpay-Signature']);
-
-            $response = $this->getStandardWebhookResponse();
-
-            return $response;
-        });
-
-        $this->doAuthPayment();
-    }
-
-    public function testGenerateHmac()
-    {
-        $payload = 'a';
-        $secret = 'b';
-
-        $expectedValue = hash_hmac('sha256', $payload, $secret);
-
-        $actualValue = Inferno::generateHMAC($payload, $secret);
-
-        $this->assertEquals($expectedValue, $actualValue);
-    }
-
-    public function testGenerateHmacWithNullSecret()
-    {
-        $payload = 'a';
-        $actualValue = Inferno::generateHMAC($payload, null);
-
-        $this->assertNull($actualValue);
-    }
-
-    public function testGenerateHmacWithNonStringPayload()
-    {
-        $secret = 'a';
-        $payload = ['a' => 'b'];
-
-        try
-        {
-            Inferno::generateHMAC($payload, $secret);
-        }
-        catch(\Exception $ex)
-        {
-            $this->assertEquals($ex->getCode(), 0);
-
-            return;
-        }
-        self::fail();
     }
 
     /**
@@ -1452,29 +971,30 @@ class WebhookTest extends TestCase
 
         $this->createTransferEntity($payment, $account3);
 
-        $this->createWebhook(
-            [
-                'events' => [
-                    'settlement.processed' => '1',
-                ]
-            ]);
+        $expectedEvent = $this->testData[__FUNCTION__]['event'];
 
-        $testData = $this->testData[__FUNCTION__];
-
-        $this->mockInfernoFire(function ($data) use ($testData)
-        {
-            $data['event'] = json_decode($data['event'], true);
-
-            $this->assertArrayHasKey('account_id', $data['event']);
-            // Asserts that the account_id in event payload is one of the linked accounts.
-            $this->assertContains($data['event']['account_id'], ['acc_10000000000002', 'acc_10000000000003']);
-
-            $this->assertEquals('settlement.processed', $data['event']['event']);
-
-            $this->assertArraySelectiveEquals($testData, $data);
-
-            return true;
-        }, 2);
+        // Expects settlement.processed on account with id acc_10000000000002.
+        $this->expectWebhookEvent(
+            'settlement.processed',
+            function (array $event) use ($expectedEvent)
+            {
+                $this->assertArrayHasKey('account_id', $event);
+                $this->assertEquals('acc_10000000000002', $event['account_id']);
+                $this->assertEquals('settlement.processed', $event['event']);
+                $this->assertArraySelectiveEquals($expectedEvent, $event);
+            }
+        );
+        // Expects settlement.processed on account with id acc_10000000000003.
+        $this->expectWebhookEvent(
+            'settlement.processed',
+            function (array $event) use ($expectedEvent)
+            {
+                $this->assertArrayHasKey('account_id', $event);
+                $this->assertEquals('acc_10000000000003', $event['account_id']);
+                $this->assertEquals('settlement.processed', $event['event']);
+                $this->assertArraySelectiveEquals($expectedEvent, $event);
+            }
+        );
 
         $this->initiateSettlements($channel);
 
@@ -1509,15 +1029,13 @@ class WebhookTest extends TestCase
 
         $this->reconcileSettlementsForChannel($setlFile, $channel, true);
 
-        $this->mockInfernoFire(function () { }, 0);
+        $this->dontExpectAnyWebhookEvent();
 
         $this->reconcileEntitiesForChannel($channel);
     }
 
     public function testRefundSpeedChangedWebhookEventData()
     {
-        $this->createWebhook(['events' => ['refund.speed_changed' => '1']]);
-
         $payment = $this->defaultAuthPayment();
         $payment = $this->capturePayment($payment['id'], $payment['amount']);
 
@@ -1542,18 +1060,15 @@ class WebhookTest extends TestCase
 
         $this->fixtures->pricing->createInstantRefundsPricingPlan();
 
-        $testData = $this->testData[__FUNCTION__];
-
-        $this->mockInfernoFire(function ($data) use ($testData)
-        {
-            $data['event'] = json_decode($data['event'], true);
-
-            $this->assertArraySelectiveEquals($testData, $data);
-            $this->assertArrayHasKey('webhook_id', $data);
-            $this->assertArrayHasKey('created_at', $data['event']);
-
-            return true;
-        });
+        $expectedEvent = $this->testData[__FUNCTION__]['event'];
+        $this->expectWebhookEvent(
+            'refund.speed_changed',
+            function (array $event) use ($expectedEvent)
+            {
+                $this->assertArraySelectiveEquals($expectedEvent, $event);
+                $this->assertArrayHasKey('created_at', $event);
+            }
+        );
 
         // Adding specific amount to refund - this is meant to test failed refunds on scrooge -
         // in which case we have reversal of refund transactions as well
@@ -1564,20 +1079,8 @@ class WebhookTest extends TestCase
     {
         $this->fixtures->merchant->addFeatures(['show_refund_public_status']);
 
-        $this->createWebhook(['events' => ['refund.failed' => '1']]);
-
-        $testData = $this->testData[__FUNCTION__];
-
-        $this->mockInfernoFire(function ($data) use ($testData)
-        {
-            $data['event'] = json_decode($data['event'], true);
-
-            $this->assertArraySelectiveEquals($testData, $data);
-            $this->assertArrayHasKey('webhook_id', $data);
-            $this->assertArrayHasKey('created_at', $data['event']);
-
-            return true;
-        });
+        $expectedEvent = $this->testData[__FUNCTION__]['event'];
+        $this->expectWebhookEventWithContents('refund.failed', $expectedEvent);
 
         $payment = $this->defaultAuthPayment();
         $payment = $this->capturePayment($payment['id'], $payment['amount']);
@@ -1622,8 +1125,6 @@ class WebhookTest extends TestCase
 
     public function testRefundProcessedInstantWebhookEventData()
     {
-        $this->createWebhook(['events' => ['refund.processed' => '1']]);
-
         $this->fixtures->pricing->createInstantRefundsPricingPlan();
 
         $payment = $this->defaultAuthPayment();
@@ -1653,18 +1154,8 @@ class WebhookTest extends TestCase
             return $content;
         });
 
-        $testData = $this->testData[__FUNCTION__];
-
-        $this->mockInfernoFire(function ($data) use ($testData)
-        {
-            $data['event'] = json_decode($data['event'], true);
-
-            $this->assertArraySelectiveEquals($testData, $data);
-            $this->assertArrayHasKey('webhook_id', $data);
-            $this->assertArrayHasKey('created_at', $data['event']);
-
-            return true;
-        });
+        $expectedEvent = $this->testData[__FUNCTION__]['event'];
+        $this->expectWebhookEventWithContents('refund.processed', $expectedEvent);
 
         // Adding specific amount to refund - this is meant to test processed instant refunds on scrooge -
         $this->refundPayment($payment['id'], 3471, ['speed' => 'optimum', 'is_fta' => true]);
@@ -1672,8 +1163,6 @@ class WebhookTest extends TestCase
 
     public function testRefundProcessedNormalWebhookEventData()
     {
-        $this->createWebhook(['events' => ['refund.processed' => '1']]);
-
         $payment = $this->defaultAuthPayment();
         $payment = $this->capturePayment($payment['id'], $payment['amount']);
 
@@ -1692,26 +1181,14 @@ class WebhookTest extends TestCase
             return $content;
         });
 
-        $testData = $this->testData[__FUNCTION__];
-
-        $this->mockInfernoFire(function ($data) use ($testData)
-        {
-            $data['event'] = json_decode($data['event'], true);
-
-            $this->assertArraySelectiveEquals($testData, $data);
-            $this->assertArrayHasKey('webhook_id', $data);
-            $this->assertArrayHasKey('created_at', $data['event']);
-
-            return true;
-        });
+        $expectedEvent = $this->testData[__FUNCTION__]['event'];
+        $this->expectWebhookEventWithContents('refund.processed', $expectedEvent);
 
         $this->refundPayment($payment['id']);
     }
 
     public function testRefundCreatedWebhookEventData()
     {
-        $this->createWebhook(['events' => ['refund.created' => '1']]);
-
         $payment = $this->defaultAuthPayment();
         $payment = $this->capturePayment($payment['id'], $payment['amount']);
 
@@ -1730,113 +1207,10 @@ class WebhookTest extends TestCase
             return $content;
         });
 
-        $testData = $this->testData[__FUNCTION__];
-
-        $this->mockInfernoFire(function ($data) use ($testData)
-        {
-            $data['event'] = json_decode($data['event'], true);
-
-            $this->assertArraySelectiveEquals($testData, $data);
-            $this->assertArrayHasKey('webhook_id', $data);
-            $this->assertArrayHasKey('created_at', $data['event']);
-
-            return true;
-        });
+        $expectedEvent = $this->testData[__FUNCTION__]['event'];
+        $this->expectWebhookEventWithContents('refund.created', $expectedEvent);
 
         $this->refundPayment($payment['id']);
-    }
-
-    public function testRefundCreatedWebhookForAggregatorModel()
-    {
-        // To test refund.created webhook for an parent merchant whose child merchant will initiate a refund.
-        // Creating an aggregator merchant and sub merchant
-
-        Mail::fake();
-
-        $this->fixtures->merchant->edit('10000000000000', ['partner_type' => 'aggregator']);
-
-        $app = $this->createOAuthApplication(['merchant_id' => '10000000000000', 'type' => 'partner']);
-
-        $client = $this->getAppClientByEnv($app, 'dev');
-
-        $this->createApplicationWebhook($app->getId(), false);
-
-        $webhookId = $this->getDBLastEntity('webhook')->toArray()['id'];
-
-        $this->fixtures->webhook->edit($webhookId, ['events' => ['refund.created' => '1']]);
-
-        $configAttributes = [
-            PartnerConfig\Entity::DEFAULT_PLAN_ID => Pricing::DEFAULT_PRICING_PLAN_ID,
-        ];
-
-        $this->createConfigForPartnerApp($app->getId(), null, $configAttributes);
-
-        $this->ba->proxyAuth('rzp_test_10000000000000');
-
-        $this->startTest($this->testData['testCreateSubMerchantByAggregatorWithEmail']);
-
-        Mail::assertQueued(CreateSubMerchantPartnerMail::class, function ($mail)
-        {
-            return $mail->hasTo('test@razorpay.com');
-        });
-
-        Mail::assertQueued(CreateSubMerchantAffiliateMail::class, function ($mail)
-        {
-            $data = $mail->viewData;
-
-            $this->assertEquals('org_100000razorpay', $data['org']['id']);
-
-            return $mail->hasTo('testsub@razorpay.com', 'Submerchant');
-        });
-
-        $submerchant = $this->getLastEntity('merchant', true);
-
-        $this->fixtures->user->getMerchantUserMapping($submerchant['id'], 'MerchantUser01');
-
-        // Child merchant payment
-        $this->ba->partnerAuth($submerchant['id'], 'rzp_test_partner_' . $client->getId(), $client->getSecret());
-
-        $this->fixtures->create('terminal', [
-            'enabled' => true,
-            'merchant_id' => $submerchant['id'],
-            'mc_mpan' => '1234567890123456',
-            'visa_mpan' => '9876543210123456',
-            'rupay_mpan' => '1234123412341234',
-            'notes'     => 'some notes'
-        ]);
-
-        $payment = $this->defaultAuthPayment();
-
-        $this->ba->privateAuth('rzp_test_partner_' . $client->getId(), $client->getSecret());
-
-        $request = array(
-            'method'  => 'POST',
-            'url'     => '/payments/' . $payment['id'] . '/capture',
-            'content' => array('amount' => $payment['amount']));
-
-        $content = $this->makeRequestAndGetContent($request);
-
-        $this->assertArrayHasKey('amount', $content);
-        $this->assertArrayHasKey('status', $content);
-
-        $this->assertEquals($content['status'], 'captured');
-
-        $testData = $this->testData[__FUNCTION__];
-
-        $this->mockInfernoFire(function ($data) use ($testData)
-        {
-            $data['event'] = json_decode($data['event'], true);
-
-            $this->assertArraySelectiveEquals($testData, $data);
-            $this->assertArrayHasKey('webhook_id', $data);
-            $this->assertArrayHasKey('created_at', $data['event']);
-
-            return true;
-        });
-
-        // Child merchant initiates the refund
-
-        $this->refundPayment($payment['id'], $payment['amount']/2, [], [], false, ['key' => 'rzp_test_partner_' . $client->getId(), 'secret' => $client->getSecret()]);
     }
 
     public function testTerminalOnboardingCreationWebhook()
@@ -1914,18 +1288,8 @@ class WebhookTest extends TestCase
 
         $this->ba->cronAuth();
 
-        $testData = $this->testData[__FUNCTION__ . 'Data'];
-
-        $this->mockInfernoFire(function ($data) use ($testData)
-        {
-            $this->assertEquals('terminal.created', $data['event_name']);
-            $this->assertArrayHasKey('webhook_id', $data);
-
-            $data['event'] = json_decode($data['event'], true);
-            $this->assertArraySelectiveEquals($testData, $data);
-
-            return true;
-        });
+        $expectedEvent = $this->testData[__FUNCTION__.'Data']['event'];
+        $this->expectWebhookEventWithContents('terminal.created', $expectedEvent);
 
         $this->startTest();
     }
@@ -1968,17 +1332,6 @@ class WebhookTest extends TestCase
             '10000000000000'
         );
 
-        // Adding merchant 10000000000000 's appId (10000000000App) in webhook entity_id
-        $this->fixtures->create('webhook',
-            [
-                'entity_type' => 'application',
-                'entity_id'   => '10000000000App',
-                'url'         => 'https://www.razorpay.co.in',
-                'events'      => [
-                    'terminal.activated' => '1'
-                ]
-            ]);
-
         $terminal = $this->fixtures->create('terminal',
             [
                 'merchant_id' => $subMerchantId,
@@ -1999,18 +1352,8 @@ class WebhookTest extends TestCase
 
         $this->ba->cronAuth();
 
-        $testData = $this->testData[__FUNCTION__ . 'Data'];
-
-        $this->mockInfernoFire(function ($data) use ($testData)
-        {
-            $this->assertEquals('terminal.activated', $data['event_name']);
-            $this->assertArrayHasKey('webhook_id', $data);
-
-            $data['event'] = json_decode($data['event'], true);
-            $this->assertArraySelectiveEquals($testData, $data);
-
-            return true;
-        });
+        $expectedEvent = $this->testData[__FUNCTION__.'Data']['event'];
+        $this->expectWebhookEventWithContents('terminal.activated', $expectedEvent);
 
         $this->startTest();
     }
@@ -2057,17 +1400,6 @@ class WebhookTest extends TestCase
             '10000000000000'
         );
 
-        // Adding merchant 10000000000000 's appId (10000000000App) in webhook entity_id
-        $this->fixtures->create('webhook',
-            [
-                'entity_type' => 'application',
-                'entity_id'   => '10000000000App',
-                'url'         => 'https://www.razorpay.co.in',
-                'events'      => [
-                    'terminal.failed' => '1'
-                ]
-            ]);
-
         $terminal = $this->fixtures->create('terminal',
             [
                 'merchant_id' => $subMerchantId,
@@ -2085,18 +1417,8 @@ class WebhookTest extends TestCase
 
         $this->ba->cronAuth();
 
-        $testData = $this->testData[__FUNCTION__ . 'Data'];
-
-        $this->mockInfernoFire(function ($data) use ($testData)
-        {
-            $this->assertEquals('terminal.failed', $data['event_name']);
-            $this->assertArrayHasKey('webhook_id', $data);
-
-            $data['event'] = json_decode($data['event'], true);
-            $this->assertArraySelectiveEquals($testData, $data);
-
-            return true;
-        });
+        $expectedEvent = $this->testData[__FUNCTION__.'Data']['event'];
+        $this->expectWebhookEventWithContents('terminal.failed', $expectedEvent);
 
         $this->startTest();
     }
@@ -2139,17 +1461,6 @@ class WebhookTest extends TestCase
             '10000000000000'
         );
 
-        // Adding merchant 10000000000000 's appId (10000000000App) in webhook entity_id
-        $this->fixtures->create('webhook',
-            [
-                'entity_type' => 'application',
-                'entity_id'   => '10000000000App',
-                'url'         => 'https://www.razorpay.co.in',
-                'events'      => [
-                    'terminal.failed' => '1'
-                ]
-            ]);
-
         $terminal = $this->fixtures->create('terminal',
             [
                 'merchant_id' => $subMerchantId,
@@ -2170,18 +1481,8 @@ class WebhookTest extends TestCase
 
         $this->ba->cronAuth();
 
-        $testData = $this->testData[__FUNCTION__ . 'Data'];
-
-        $this->mockInfernoFire(function ($data) use ($testData)
-        {
-            $this->assertEquals('terminal.failed', $data['event_name']);
-            $this->assertArrayHasKey('webhook_id', $data);
-
-            $data['event'] = json_decode($data['event'], true);
-            $this->assertArraySelectiveEquals($testData, $data);
-
-            return true;
-        });
+        $expectedEvent = $this->testData[__FUNCTION__.'Data']['event'];
+        $this->expectWebhookEventWithContents('terminal.failed', $expectedEvent);
 
         $this->startTest();
     }
@@ -2212,17 +1513,6 @@ class WebhookTest extends TestCase
             '10000000000000'
         );
 
-        // Adding merchant 10000000000000 's appId (10000000000App) in webhook entity_id
-        $this->fixtures->create('webhook',
-            [
-                'entity_type' => 'application',
-                'entity_id'   => '10000000000App',
-                'url'         => 'https://www.razorpay.co.in',
-                'events'      => [
-                    'terminal.activated' => '1'
-                ]
-            ]);
-
         $terminal = $this->fixtures->create('terminal',
             [
                 'merchant_id' => $subMerchantId,
@@ -2239,25 +1529,15 @@ class WebhookTest extends TestCase
 
         $this->ba->adminAuth();
 
-        $testData = $this->testData[__FUNCTION__ . 'Data'];
-
-        $this->mockInfernoFire(function ($data) use ($testData)
-        {
-            $this->assertEquals('terminal.activated', $data['event_name']);
-            $this->assertArrayHasKey('webhook_id', $data);
-
-            $data['event'] = json_decode($data['event'], true);
-            $this->assertArraySelectiveEquals($testData, $data);
-
-            return true;
-        });
+        $expectedEvent = $this->testData[__FUNCTION__.'Data']['event'];
+        $this->expectWebhookEventWithContents('terminal.activated', $expectedEvent);
 
         $this->testData[__FUNCTION__]['request']['content'] = [
             'terminal_ids' => [$terminal->getId()] ,
             'attributes'   => ['status' => 'activated', 'enabled' => true]
         ];
 
-        $this->startTest(); 
+        $this->startTest();
     }
 
     public function testWebhookDeactivate()
@@ -2311,72 +1591,6 @@ class WebhookTest extends TestCase
             ]);
     }
 
-    protected function mockInfernoWithResponseStatusCode($statusCode, $method = 'makeRequest')
-    {
-        $inferno = $this->mockInferno();
-
-        $response = $this->getStandardWebhookResponse($statusCode);
-
-        $inferno->shouldReceive($method)
-                ->andReturn($response);
-
-        return $inferno;
-    }
-
-    protected function mockInferno()
-    {
-        $class = \RZP\Models\Merchant\Webhook\Inferno::class;
-
-        $inferno = Mockery::mock($class, [])->makePartial();
-
-        $this->app->instance('webhook.inferno', $inferno);
-
-        return $inferno;
-    }
-
-    protected function mockInfernoMakeRequest(Closure $closure, $times = 1)
-    {
-        $inferno = $this->mockInferno();
-
-        $inferno->shouldReceive('makeRequest')
-                ->times($times)
-                ->with(Mockery::type('array'))
-                ->andReturnUsing($closure);
-
-        $this->app->instance('webhook.inferno', $inferno);
-    }
-
-    protected function mockInfernoFire(Closure $closure, $times = 1)
-    {
-        $inferno = $this->mockInferno();
-
-        $inferno->shouldReceive('fire')
-                ->times($times)
-                ->with(
-                    Mockery::type('RZP\Jobs\WebHook'),
-                    Mockery::on($closure));
-
-        $this->app->instance('webhook.inferno', $inferno);
-    }
-
-    protected function getStandardWebhookResponse($statusCode = 200): ResponseInterface
-    {
-        $response = new \GuzzleHttp\Psr7\Response($statusCode);
-
-        return $response;
-    }
-
-    protected function getStandardWebhookRequest(array $requestData): RequestInterface
-    {
-        $request = new \GuzzleHttp\Psr7\Request(
-            $requestData['method'],
-            $requestData['url'],
-            $requestData['headers'],
-            $requestData['content']);
-
-        return $request;
-    }
-
     protected function createApplicationWebhook(
         string $appId,
         bool $defaultMerchant = true,
@@ -2405,15 +1619,6 @@ class WebhookTest extends TestCase
         $input = array_merge($input, $params);
 
         $this->fixtures->create('webhook', $input);
-    }
-
-    protected function setClientTriggerAndVerifyRequests(array $eventDataKeys)
-    {
-        $client = $this->setInfernoMockClient();
-
-        $this->doAuthPayment();
-
-        $this->verifyRequestsData($client, $eventDataKeys);
     }
 
     protected function addOAuthTag(string $merchantId = '10000000000000')

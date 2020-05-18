@@ -6,8 +6,6 @@ use DB;
 use Mail;
 use Event;
 use Redis;
-use Closure;
-use Mockery;
 use Carbon\Carbon;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Cache\Events\CacheHit;
@@ -30,7 +28,6 @@ use RZP\Models\Pricing;
 use RZP\Models\Transaction;
 use RZP\Models\BankingAccount;
 use RZP\Services\RazorXClient;
-use RZP\Models\Merchant\Webhook;
 use RZP\Mail\User\MappedToAccount;
 use RZP\Mail\Merchant\EsEnabledNotify;
 use RZP\Models\Settlement\Channel;
@@ -39,6 +36,7 @@ use RZP\Tests\Functional\TestCase;
 use Illuminate\Support\Facades\Queue;
 use RZP\Exception\BadRequestException;
 use RZP\Models\User\Core as UserCore;
+use RZP\Tests\Traits\TestsWebhookEvents;
 use RZP\Models\Merchant\Document\Source;
 use RZP\Models\User\Entity as UserEntity;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
@@ -72,6 +70,7 @@ class MerchantTest extends TestCase
     use DbEntityFetchTrait;
     use CreatesInvoice;
     use PartnerTrait;
+    use TestsWebhookEvents;
 
     const CAPITAL_SUPPORT_EMAIL = 'capital.support@razorpay.com';
 
@@ -1342,22 +1341,6 @@ class MerchantTest extends TestCase
     {
         $merchant = $this->getLastEntity('merchant', true);
 
-        $webhookInput = [
-            'merchant_id' => $merchant['id'],
-            'url'         => 'http://webhook.com/v1/dummy/route',
-            'events'      => ['account.suspended' => '1'],
-        ];
-
-        $this->fixtures->create('webhook', $webhookInput);
-
-        $webhookData = [];
-        $this->mockInfernoSendRequest(function ($request, $entity) use (& $webhookData)
-        {
-            $webhookData = $request;
-
-            return false;
-        });
-
         $this->setAdminForInternalAuth();
 
         $this->ba->adminAuth('test', $this->authToken, 'org_'.$this->org->id);
@@ -1366,37 +1349,13 @@ class MerchantTest extends TestCase
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
+        $this->expectWebhookEvent('account.suspended');
+
         $this->startTest();
-
-        $webhookData['content'] = json_decode($webhookData['content'], true);
-
-        $this->assertEquals('account.suspended', $webhookData['content']['event']);
 
         $merchant = $this->getEntityById('merchant', $merchant['id'], true);
 
         $this->assertNotNull($merchant['suspended_at']);
-    }
-
-    protected function mockInferno()
-    {
-        $class = Webhook\Inferno::class;
-
-        $inferno = Mockery::mock($class, [])->makePartial();
-
-        $this->app->instance('webhook.inferno', $inferno);
-
-        return $inferno;
-    }
-
-    protected function mockInfernoSendRequest(Closure $closure, $times = 1)
-    {
-        $inferno = $this->mockInferno();
-
-        $inferno->shouldReceive('sendRequest')
-                ->times($times)
-                ->andReturnUsing($closure);
-
-        $this->app->instance('webhook.inferno', $inferno);
     }
 
     public function testMerchantSuspendForAlreadySuspendedMerchant()

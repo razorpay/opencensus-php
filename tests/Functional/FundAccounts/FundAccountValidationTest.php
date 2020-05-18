@@ -8,6 +8,7 @@ use RZP\Models\Feature;
 use RZP\Jobs\FaVpaValidation;
 use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
+use RZP\Tests\Traits\TestsWebhookEvents;
 use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Models\FundAccount\Validation\Entity;
 use RZP\Tests\Functional\Helpers\WebhookTrait;
@@ -28,6 +29,7 @@ class FundAccountValidationTest extends TestCase
     use AttemptTrait;
     use MocksDnsTrait;
     use FundAccountTrait;
+    use TestsWebhookEvents;
     use DbEntityFetchTrait;
     use TestsBusinessBanking;
     use AttemptReconcileTrait;
@@ -304,24 +306,9 @@ class FundAccountValidationTest extends TestCase
 
     public function testWebhookFundAccountValidationCompleted()
     {
-        $this->createWebhook([
-            'events' => [
-                'fund_account.validation.completed' => '1',
-            ]
-        ]);
+        $expectedEvent = $this->testData[__FUNCTION__]['event'];
+        $this->expectWebhookEventWithContents('fund_account.validation.completed', $expectedEvent);
 
-        $testData = $this->testData[__FUNCTION__];
-
-        $this->mockInfernoFire(function ($data) use ($testData)
-        {
-            $data['event'] = json_decode($data['event'], true);
-
-            $this->assertEquals('fund_account.validation.completed', $data['event']['event']);
-
-            $this->assertArraySelectiveEquals($testData, $data);
-
-            return true;
-        });
 
         $this->createValidationWithFundAccountEntity();
     }

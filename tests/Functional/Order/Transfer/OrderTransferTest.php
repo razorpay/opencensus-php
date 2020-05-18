@@ -2,15 +2,13 @@
 
 namespace RZP\Tests\Functional\Order\Transfers;
 
-use Mockery;
-use Closure;
 use Carbon\Carbon;
 use RZP\Models\Transfer;
 use RZP\Constants\Timezone;
 use RZP\Services\RazorXClient;
-use RZP\Models\Merchant\Webhook;
 use RZP\Tests\Functional\TestCase;
 use RZP\Error\PublicErrorDescription;
+use RZP\Tests\Traits\TestsWebhookEvents;
 use RZP\Tests\Functional\Helpers\MocksDnsTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -20,6 +18,7 @@ class OrderTransferTest extends TestCase
     use MocksDnsTrait;
     use PaymentTrait;
     use DbEntityFetchTrait;
+    use TestsWebhookEvents;
 
     public function setUp()
     {
@@ -122,25 +121,8 @@ class OrderTransferTest extends TestCase
 
     public function testWebhookOrderTransferProcessed()
     {
-        $this->createWebhook(
-            [
-                'events' => [
-                    'transfer.processed' => '1',
-                ]
-            ]);
-
-        $testData = $this->testData[__FUNCTION__];
-
-        $this->mockInfernoFire(function($data) use ($testData)
-        {
-            $data['event'] = json_decode($data['event'], true);
-
-            $this->assertEquals('transfer.processed', $data['event']['event']);
-
-            $this->assertArraySelectiveEquals($testData, $data);
-
-            return true;
-        });
+        $expectedEvent = $this->testData[__FUNCTION__]['event'];
+        $this->expectWebhookEventWithContents('transfer.processed', $expectedEvent);
 
         $this->testProcessOrderTransfers();
     }
@@ -220,18 +202,4 @@ class OrderTransferTest extends TestCase
 
         return $payment;
     }
-
-    protected function mockInfernoFire(Closure $closure, $times = 1)
-    {
-        $inferno = Mockery::mock(Webhook\Inferno::class, [])->makePartial();
-
-        $inferno->shouldReceive('fire')
-                ->once()
-                ->with(
-                    Mockery::type('RZP\Jobs\WebHook'),
-                    Mockery::on($closure));
-
-        $this->app->instance('webhook.inferno', $inferno);
-    }
-
 }

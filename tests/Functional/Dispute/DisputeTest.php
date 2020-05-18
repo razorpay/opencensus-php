@@ -10,8 +10,8 @@ use RZP\Models\Dispute\Phase;
 use RZP\Models\Dispute\Entity;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Dispute\Reason\Network;
+use RZP\Tests\Traits\TestsWebhookEvents;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
-use RZP\Tests\Functional\Helpers\WebhookTrait;
 use RZP\Tests\Functional\Helpers\MocksDnsTrait;
 use RZP\Models\Dispute\Entity as DisputeEntity;
 use RZP\Models\Admin\Admin\Entity as AdminEntity;
@@ -25,9 +25,9 @@ use RZP\Mail\Dispute\Admin\SubmittedAdmin as DisputeSubmittedForAdminMail;
 
 class DisputeTest extends TestCase
 {
-    use WebhookTrait;
     use PaymentTrait;
     use MocksDnsTrait;
+    use TestsWebhookEvents;
 
     protected $payment = null;
 
@@ -221,8 +221,6 @@ class DisputeTest extends TestCase
     {
         $this->setupMockDns();
 
-        $this->createWebhook(['events' => ['payment.dispute.created' => '1']]);
-
         $payment = $this->doAuthAndCapturePayment();
 
         $paymentId = $payment['id'];
@@ -231,7 +229,7 @@ class DisputeTest extends TestCase
 
         $eventTestDataKey = 'testDisputeCreatedWebhookEventData';
 
-        $this->setInfernoExpectations([$eventTestDataKey]);
+        $this->expectWebhookEventWithContents('payment.dispute.created', $eventTestDataKey);
 
         $this->testData[$eventTestDataKey]['payload']['dispute']['entity']['payment_id'] = $paymentId;
 
@@ -399,13 +397,11 @@ class DisputeTest extends TestCase
 
     public function testDisputeEditWon()
     {
-        $this->createWebhook(['events' => ['payment.dispute.won' => '1', 'payment.dispute.lost' => '1']]);
-
         $data = $this->updateEditTestData();
 
         $eventTestDataKey = 'testDisputeWonEventData';
 
-        $this->setInfernoExpectations([$eventTestDataKey]);
+        $this->expectWebhookEventWithContents('payment.dispute.won', $eventTestDataKey);
 
         $this->runRequestResponseFlow($data);
 
@@ -416,13 +412,11 @@ class DisputeTest extends TestCase
 
     public function testDisputeEditWonPostDeduct()
     {
-        $this->createWebhook(['events' => ['payment.dispute.won' => '1', 'payment.dispute.lost' => '1']]);
-
         $data = $this->updateEditTestData(['deduct_at_onset' => 1, 'amount' => 1000000]);
 
         $eventTestDataKey = 'testDisputeWonEventPostDeductData';
 
-        $this->setInfernoExpectations([$eventTestDataKey]);
+        $this->expectWebhookEventWithContents('payment.dispute.won', $eventTestDataKey);
 
         $this->runRequestResponseFlow($data);
 
@@ -433,13 +427,11 @@ class DisputeTest extends TestCase
 
     public function testDisputeEditClose()
     {
-        $this->createWebhook(['events' => ['payment.dispute.won' => '1', 'payment.dispute.closed' => '1']]);
-
         $data = $this->updateEditTestData();
 
         $eventTestDataKey = 'testDisputeClosedEventData';
 
-        $this->setInfernoExpectations([$eventTestDataKey]);
+        $this->expectWebhookEventWithContents('payment.dispute.closed', $eventTestDataKey);
 
         $this->runRequestResponseFlow($data);
 
@@ -458,8 +450,6 @@ class DisputeTest extends TestCase
 
     public function testDisputeEditDeductOnLost()
     {
-        $this->createWebhook(['events' => ['payment.dispute.created' => '1', 'payment.dispute.lost' => '1']]);
-
         $data = $this->updateEditTestData();
 
         $txn = $this->getLastEntity('transaction', true);
@@ -470,7 +460,7 @@ class DisputeTest extends TestCase
 
         $eventTestDataKey = 'testDisputeLostEventData';
 
-        $this->setInfernoExpectations([$eventTestDataKey]);
+        $this->expectWebhookEventWithContents('payment.dispute.lost', $eventTestDataKey);
 
         $this->runRequestResponseFlow($data);
 
@@ -991,13 +981,11 @@ class DisputeTest extends TestCase
 
     public function testDisputeEditLostWithoutDeduction()
     {
-        $this->createWebhook(['events' => ['payment.dispute.created' => '1', 'payment.dispute.lost' => '1']]);
-
         $data = $this->updateEditTestData();
 
         $eventTestDataKey = 'testDisputeEditLostWithoutDeductionEventData';
 
-        $this->setInfernoExpectations([$eventTestDataKey]);
+        $this->expectWebhookEventWithContents('payment.dispute.lost', $eventTestDataKey);
 
         $this->runRequestResponseFlow($data);
 

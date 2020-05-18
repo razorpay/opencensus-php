@@ -6,8 +6,8 @@ use Carbon\Carbon;
 
 use RZP\Models\Payment\Gateway;
 use RZP\Tests\Functional\TestCase;
+use RZP\Tests\Traits\TestsWebhookEvents;
 use RZP\Tests\Functional\Helpers\MocksDnsTrait;
-use RZP\Tests\Functional\Helpers\WebhookTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 /**
@@ -16,8 +16,8 @@ use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 class PaymentDowntimeTest extends TestCase
 {
     use PaymentTrait;
-    use WebhookTrait;
     use MocksDnsTrait;
+    use TestsWebhookEvents;
 
     public function setUp()
     {
@@ -676,7 +676,7 @@ class PaymentDowntimeTest extends TestCase
         $this->assertEquals($downtime['issuer'], 'SBIN');
         $this->assertEquals($downtime['status'], 'started');
 
-        $this->setInfernoExpectations(['testPaymentDowntimeStartedWebhook']);
+        $this->expectWebhookEventWithContents('payment.downtime.started', 'testPaymentDowntimeStartedWebhook');
 
         $this->activateDowntimes('started');
     }
@@ -714,7 +714,7 @@ class PaymentDowntimeTest extends TestCase
 
         $this->activateDowntimes('started');
 
-        $this->setInfernoExpectations(['testPaymentDowntimeResolvedWebhook']);
+        $this->expectWebhookEventWithContents('payment.downtime.resolved', 'testPaymentDowntimeResolvedWebhook');
 
         // 90 minutes elapsed
         Carbon::setTestNow(Carbon::now()->addMinutes(90));
