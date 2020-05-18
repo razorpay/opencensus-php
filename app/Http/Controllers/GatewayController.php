@@ -20,6 +20,7 @@ use RZP\Models\Payment\Gateway;
 use Exception as BaseException;
 use RZP\Models\Gateway\Downtime;
 use RZP\Gateway\Mozart as Mozart;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Gateway\Upi\Base as BaseUpi;
 use RZP\Gateway\Upi\Base\ProviderCode;
 use RZP\Jobs\DynamicNetBankingUrlUpdater;
@@ -1262,6 +1263,58 @@ class GatewayController extends Controller
 
         return ApiResponse::json([
             'stats' => $data
+        ]);
+    }
+
+    protected function storeFirstDataPares()
+    {
+        $input = Request::all();
+
+        if ((isset($input['gateway_merchant_id']) === false) or
+            (isset($input['payment_id']) === false) or
+            (isset($input['paRes']) === false))
+        {
+            $this->trace->error(TraceCode::GATEWAY_RAW_PARES_RESPONSE_REDIS_FAILURE, [
+                'message' => 'validation failed for mandatory fields'
+            ]);
+
+            return ApiResponse::json([
+                'status' => false,
+                'message' => 'validation failed for mandatory fields',
+            ]);
+        }
+
+        $str = $input['gateway_merchant_id'] . '|' . $input['payment_id'] . '|' .
+            $input['paRes'];
+
+        $key = \RZP\Gateway\FirstData\Gateway::PARES_DATA_CACHE_KEY . $input['payment_id'];
+
+        $success = true;
+
+        try
+        {
+            $this->app['cache']->put($key, $str, 60 * 25); // 1 day 1 hour
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::CRITICAL,
+                TraceCode::GATEWAY_RAW_PARES_RESPONSE_REDIS_FAILURE,
+                ['key' => $key]);
+
+            $success = false;
+        }
+
+        $this->trace->info(TraceCode::GATEWAY_RAW_PARES_RESPONSE, [
+            'payment_id' => $input['payment_id'],
+            'pares' => $input['paRes'],
+            'store_id' => $input['gateway_merchant_id'],
+        ]);
+
+        return ApiResponse::json([
+            'status' => $success,
+            'payment_id' => $input['payment_id'],
         ]);
     }
 }

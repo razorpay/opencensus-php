@@ -69,6 +69,7 @@ return [
     'mozart' => [
         'mock'      => env('MOZART_MOCK', false),
         'url'       => env('MOZART_URL'),
+        'secret'    => env('MOZART_PASSWORD'),
         'password'  => env('MOZART_PASSWORD'),
         'username'  => env('MOZART_USERNAME'),
 

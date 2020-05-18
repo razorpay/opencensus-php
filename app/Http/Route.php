@@ -557,6 +557,7 @@ final class Route
         'gateway_payment_callback_canara_get'      => ['get',      'gateway/netbanking_canara/callback',             'GatewayController@callbackCanara'                                  ],
         'gateway_payment_callback_amazonpay'       => ['get',      'gateway/wallet_amazonpay/callback/{ajax?}',      'GatewayController@callbackAmazonpay'                               ],
         'gateway_payment_callback_amazonpay_post'  => ['post',     'gateway/wallet_amazonpay/callback/{ajax?}',      'GatewayController@callbackAmazonpay'                               ],
+        'gateway_first_data_pares_store'           => ['post',     'gateway/first_data/store_pares',                 'GatewayController@storeFirstDataPares'                             ],
         'geoip_update'                             => ['post',     'geoip/update',                                   'AdminController@updateGeoIps'                                      ],
         'gateway_payment_callback_upi_airtel'      => ['post',     'gateway/upi_airtel/callback',                    'GatewayController@callbackUpiAirtel'                               ],
 
@@ -2055,6 +2056,7 @@ final class Route
     // If a route needs access from the Dashboard
     // Put it in the Admin Array instead
     public static $internal = [
+        'gateway_first_data_pares_store',
         'vendor_payment_send_failure_email',
         'contact_get_internal',
         'contact_list_internal',
@@ -4540,6 +4542,10 @@ final class Route
             'merchant_methods_edit_internal',
             'terminal_fetch_by_id_internal'
         ],
+
+        'mozart' => [
+            'gateway_first_data_pares_store'
+        ]
     ];
 
     //

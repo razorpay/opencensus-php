@@ -2289,7 +2289,8 @@ class Processor
         if (($action === Action::CALLBACK) and
             (isset($input['payment']) === true) and
             ($input['payment'][Payment\Entity::GATEWAY] === Payment\Gateway::FIRST_DATA) and
-            ($input['payment'][Payment\Entity::AUTHENTICATION_GATEWAY] === Payment\Gateway::MPI_BLADE))
+            ($input['payment'][Payment\Entity::AUTHENTICATION_GATEWAY] === Payment\Gateway::MPI_BLADE) and
+            ($input['payment'][Payment\Entity::CPS_ROUTE]) !== Payment\Entity::CARD_PAYMENT_SERVICE)
         {
 
             $str = $input['terminal'][Terminal\Entity::GATEWAY_MERCHANT_ID] . '|' . $input['payment']['id'] . '|' .
