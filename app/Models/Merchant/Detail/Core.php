@@ -2147,9 +2147,10 @@ class Core extends Base\Core
         $merchantDetails = $this->repo->merchant_detail->findByPublicId($merchantId);
 
         // check that all require fields are present for calling external api
+        // changed to empty on $merchantDetails->getAttribute($field) because fields value could be empty string eg. do_not_have_gstin
         foreach ($requiredFields as $field)
         {
-            if ((isset($input[$field]) === false) and $merchantDetails->getAttribute($field) === null)
+            if ((isset($input[$field]) === false) and empty($merchantDetails->getAttribute($field)) === true)
             {
                 return false;
             }
@@ -2243,7 +2244,7 @@ class Core extends Base\Core
     {
         if (((new Merchant\Core())->isAutoKycEnabled($merchantDetails, $merchant) === false) or
             ((array_key_exists(Entity::GSTIN, $input) === true) and
-             ($input[Entity::GSTIN] === null)))
+             (empty($input[Entity::GSTIN]) === true)))
         {
             $merchantDetails->setgstinVerificationStatus(null);
 
