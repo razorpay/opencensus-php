@@ -81,6 +81,7 @@ class BankCodes
     const IFSC_MUBL = 'MUBL0000001';
     const IFSC_NKGS = 'NKGS0000096';
     const IFSC_NNSB = 'NNSB0128012';
+    const IFSC_NSPB = 'NSPB0000001';
     const IFSC_NTBL = 'NTBL0BAR075';
     const IFSC_ORBC = 'ORBC0100001';
     // const IFSC_ORCB = '';
