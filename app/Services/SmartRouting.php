@@ -224,7 +224,13 @@ class SmartRouting
 
         $data = $request['content'];
 
-        $payment = $data['payment'];
+        $payment_id = "";
+
+        if (isset($data['payment']) === true)
+        {
+            $payment = $data['payment'];
+            $payment_id = $payment['id'];
+        }
 
         $retryCount = 0;
 
@@ -234,7 +240,7 @@ class SmartRouting
                 TraceCode::SMART_ROUTING_RETRY,
                 [
                     'retry_count' => $retryCount,
-                    'payment_id'  => $payment['id']
+                    'payment_id'  => $payment_id
                 ]);
 
             try
