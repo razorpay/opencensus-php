@@ -2367,29 +2367,29 @@ class MerchantTest extends TestCase
         $this->assertArrayHasKey('epaylater', $response['methods']['paylater']);
     }
 
-//    public function testGetCheckoutPreferencesForPaypalCurrency()
-//    {
-//        $this->fixtures->merchant->enablePaypal();
-//
-//        $this->fixtures->create('terminal:paypal_usd_terminal');
-//
-//        $response = $this->getPreferences(null, 'USD');
-//
-//        $this->assertEquals(true, $response['methods']['wallet']['paypal']);
-//    }
+    public function testGetCheckoutPreferencesForPaypalCurrency()
+    {
+        $this->fixtures->merchant->enablePaypal();
 
-//    public function testGetCheckoutPreferencesForPaypalCurrencyWithOrder()
-//    {
-//        $order = $this->fixtures->order->createWalletInternationalOrder();
-//
-//        $this->fixtures->merchant->enablePaypal();
-//
-//        $this->fixtures->create('terminal:paypal_usd_terminal');
-//
-//        $response = $this->getPreferences($order->getPublicId(), 'INR');
-//
-//        $this->assertEquals(true, $response['methods']['wallet']['paypal']);
-//    }
+        $this->fixtures->create('terminal:paypal_usd_terminal');
+
+        $response = $this->getPreferences(null, 'USD');
+
+        $this->assertEquals(true, $response['methods']['wallet']['paypal']);
+    }
+
+    public function testGetCheckoutPreferencesForPaypalCurrencyWithOrder()
+    {
+        $order = $this->fixtures->order->createWalletInternationalOrder();
+
+        $this->fixtures->merchant->enablePaypal();
+
+        $this->fixtures->create('terminal:paypal_usd_terminal');
+
+        $response = $this->getPreferences($order->getPublicId(), 'INR');
+
+        $this->assertEquals(true, $response['methods']['wallet']['paypal']);
+    }
 
     public function testGetCheckoutPreferencesWithInactiveEmiSubventionOffer()
     {

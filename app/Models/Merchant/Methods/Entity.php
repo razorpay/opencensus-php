@@ -330,8 +330,7 @@ class Entity extends Base\PublicEntity
 
     public function isPaypalEnabled()
     {
-        return false;
-        //return $this->getAttribute(self::PAYPAL);
+        return $this->getAttribute(self::PAYPAL);
     }
 
     public function isDebitCardEnabled()
