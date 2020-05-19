@@ -44,6 +44,8 @@ class Validator extends Base\Validator
 
     const APPROVE_PAYOUT_RULES = 'approve_payout';
 
+    const PROCESS_QUEUED_PAYOUTS_INITIATE = 'process_queued_payouts_initiate';
+
     //
     // This is required for build. Currently, build does not
     // accept ruleName as a parameter. Hence, this list needs
@@ -169,6 +171,11 @@ class Validator extends Base\Validator
         Entity::PAYOUT_IDS          => 'required|array',
         Entity::PAYOUT_IDS . '.*'   => 'required|public_id|size:19',
         ActionChecker::USER_COMMENT => 'sometimes|nullable|string|max:255',
+    ];
+
+    protected static $processQueuedPayoutsInitiateRules = [
+        Entity::BALANCE_IDS     => 'sometimes|array',
+        Entity::BALANCE_IDS_NOT => 'sometimes|array',
     ];
 
     // Both regular and on demand payouts are validated through the merchantPayoutValidators.

@@ -2,12 +2,15 @@
 
 namespace RZP\Models\Payout;
 
+use Carbon\Carbon;
+
 use RZP\Exception;
 use RZP\Constants;
 use RZP\Error\Error;
 use RZP\Models\Base;
 use RZP\Models\User;
 use RZP\Models\Card;
+use RZP\Models\Admin;
 use RZP\Models\Payout;
 use RZP\Models\Contact;
 use RZP\Models\Pricing;
@@ -18,6 +21,7 @@ use RZP\Models\Merchant;
 use RZP\Models\Admin\Org;
 use RZP\Models\FundAccount;
 use RZP\Http\RequestHeader;
+use RZP\Constants\Timezone;
 use RZP\Models\Admin\Permission;
 use RZP\Models\Feature\Constants as Features;
 use RZP\Models\Payout\BatchHelper as PayoutBatchHelper;
@@ -414,17 +418,64 @@ class Service extends Base\Service
         return $completeSummary;
     }
 
+    public function processInitiateForQueuedPayouts(array $input)
+    {
+        (new Validator)->validateInput(Validator::PROCESS_QUEUED_PAYOUTS_INITIATE, $input);
+
+        $balanceIdsWhitelist = $input[Entity::BALANCE_IDS] ?? [];
+        $balanceIdsBlacklist = $input[Entity::BALANCE_IDS_NOT] ?? [];
+
+        $prevCronTime = $this->getProcessQueuedPayoutsCronLastRunAt();
+        $currentTime  = Carbon::now(Timezone::IST)->getTimestamp();
+
+        $balanceIdsWhereBalanceUpdatedRecently = $this->repo
+                                                      ->balance
+                                                      ->getBankingBalanceIdsWhereBalanceUpdatedRecently($prevCronTime);
+
+        $balanceIdsWhereGatewayBalanceUpdatedRecently = $this->repo
+                                                             ->banking_account
+                                                             ->getBalanceIdsWhereGatewayBalanceUpdatedRecently($prevCronTime);
+
+        $balanceIdsWherePayoutsCreatedRecently = $this->repo
+                                                      ->payout
+                                                      ->getBalanceIdsWherePayoutsQueuedRecently($prevCronTime);
+
+        $balanceIdList = array_unique(array_merge($balanceIdsWhereBalanceUpdatedRecently,
+                                                  $balanceIdsWherePayoutsCreatedRecently,
+                                                  $balanceIdsWhereGatewayBalanceUpdatedRecently));
+
+        if (empty($balanceIdsWhitelist) === false)
+        {
+            $balanceIdList = array_values(array_intersect($balanceIdList, $balanceIdsWhitelist));
+        }
+
+        if (empty($balanceIdsBlacklist) === false)
+        {
+            $balanceIdList = array_values(array_diff($balanceIdList, $balanceIdsBlacklist));
+        }
+
+        $this->core->dispatchBalanceIdsForQueuedPayouts($balanceIdList);
+
+        // Updating the Redis key only after the cron has ran successfully.
+        $this->setProcessQueuedPayoutsCronLastRunAt($currentTime);
+
+        return ['balance_id_list' => $balanceIdList];
+    }
+
+    /**
+     * TODO : Remove this code. Has been kept here for backward compatibility
+     *
+     * @param array $input
+     *
+     * @return array
+     */
     public function processDispatchForQueuedPayouts(array $input)
     {
         $merchantIdsWhitelist = $input['merchant_ids'] ?? [];
         $merchantIdsBlacklist = $input['merchant_ids_not'] ?? [];
-        $from                 = $input['from'] ?? null;
-        $to                   = $input['to'] ?? null;
 
         $queuedPayouts = $this->repo->payout->fetchQueuedPayouts($merchantIdsWhitelist,
-                                                                 $merchantIdsBlacklist,
-                                                                 $from,
-                                                                 $to);
+                                                                 $merchantIdsBlacklist);
 
         $summary = $this->core->processDispatchForQueuedPayouts($queuedPayouts);
 
@@ -863,5 +914,33 @@ class Service extends Base\Service
         }
 
         return $input;
+    }
+
+    protected function getProcessQueuedPayoutsCronLastRunAt()
+    {
+        $adminService = new Admin\Service;
+
+        $prevCronTime = $adminService->getConfigKey(
+            [
+                'key' => Admin\ConfigKey::RX_QUEUED_PAYOUTS_CRON_LAST_RUN_AT
+            ]);
+
+        // If the key isn't set, we shall run it from time 0. In that case, we shall run the cron
+        // for all merchants (ignoring the micro optimizations) which isn't that big an issue
+        if (empty($prevCronTime) === true)
+        {
+            return 0;
+        }
+
+        return $prevCronTime;
+    }
+
+    protected function setProcessQueuedPayoutsCronLastRunAt($currentTime)
+    {
+        $adminService = new Admin\Service;
+
+        $adminService->setConfigKeys([
+                                         Admin\ConfigKey::RX_QUEUED_PAYOUTS_CRON_LAST_RUN_AT => $currentTime
+                                     ]);
     }
 }

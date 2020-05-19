@@ -100,7 +100,7 @@ return [
 
     'testProcessQueuedPayoutFeeRecoveryCreated' => [
         'request'  => [
-            'url'    => '/payouts/queued/process',
+            'url'    => '/payouts/queued/process/new',
             'method' => 'POST',
         ],
         'response' => [

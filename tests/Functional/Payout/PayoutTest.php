@@ -602,6 +602,96 @@ class PayoutTest extends TestCase
         $this->assertEquals($pendingSummarySecondAccount['total_amount'],12345);
     }
 
+    /**
+     * This test checks for 4 things:
+     *      1. Creation of queued payouts
+     *      2. Payouts remaining queued if low balance
+     *      3. Payouts getting processed if enough balance
+     *      4. Pagination in processing of queued payouts
+     */
+    public function testCreateAndProcessQueuedPayout()
+    {
+        // Setting the redis config as empty initially
+        (new Admin\Service)->setConfigKeys([Admin\ConfigKey::RX_QUEUED_PAYOUTS_PAGINATION => []]);
+
+        $balanceId = $this->bankingBalance->getId();
+
+        $this->createBankingAccount(['balance_id' => $balanceId]);
+
+        $bankingAccount = $this->getDbLastEntity('banking_account');
+
+        $currentBalance = $this->getDbLastEntity('balance');
+
+        $response = $this->startTest();
+
+        $newBalance = $this->getDbLastEntity('balance');
+
+        // Since we created queued payouts, hence balance shouldn't change
+        $this->assertEquals($currentBalance->getBalance(), $newBalance->getBalance());
+
+        $txn = $this->getDbEntity('transaction', ['entity_id' => substr($response['id'], 5)]);
+
+        $this->assertNull($txn);
+
+        $fta = $this->getDbEntity('fund_transfer_attempt', ['source_id' => substr($response['id'], 5)]);
+
+        $this->assertNull($fta);
+
+        // Create 2 more queued payouts
+        $this->startTest();
+        $this->startTest();
+
+        $summary1 = $this->makePayoutSummaryRequest();
+
+        // Assert that there are 2 payouts in queued state.
+        $this->assertEquals(3, $summary1[$bankingAccount->getPublicId()][Payout\Status::QUEUED]['count']);
+        $this->assertEquals(30000003, $summary1[$bankingAccount->getPublicId()][Payout\Status::QUEUED]['total_amount']);
+
+        $dispatchResponse = $this->dispatchQueuedPayouts();
+        $this->assertEquals($dispatchResponse['balance_id_list'][0], $currentBalance['id']);
+
+        $summary2 = $this->makePayoutSummaryRequest();
+
+        // Assert that there are still 2 payouts in queued state since there wasn't enough balance to process them
+        $this->assertEquals(3, $summary2[$bankingAccount->getPublicId()][Payout\Status::QUEUED]['count']);
+        $this->assertEquals(30000003, $summary2[$bankingAccount->getPublicId()][Payout\Status::QUEUED]['total_amount']);
+
+        // Add enough balance to process only one queued payout
+        $this->fixtures->balance->edit($newBalance['id'], ['balance' => 11000000]);
+
+        $dispatchResponse = $this->dispatchQueuedPayouts();
+        $this->assertEquals($dispatchResponse['balance_id_list'][0], $currentBalance['id']);
+
+        $updatedSummary = $this->makePayoutSummaryRequest();
+
+        // Assert that there is only one payout in queued state. The other one got processed.
+        $this->assertEquals(2, $updatedSummary[$bankingAccount->getPublicId()][Payout\Status::QUEUED]['count']);
+        $this->assertEquals(20000002, $updatedSummary[$bankingAccount->getPublicId()][Payout\Status::QUEUED]['total_amount']);
+
+        // Add enough balance to process only all queued payouts
+        $this->fixtures->balance->edit($newBalance['id'], ['balance' => 99000000]);
+
+        // Set offset = 1 for this balance ID
+        (new Admin\Service)->setConfigKeys([Admin\ConfigKey::RX_QUEUED_PAYOUTS_PAGINATION => [
+            $newBalance['id'] => 1
+        ]]);
+
+        $dispatchResponse = $this->dispatchQueuedPayouts();
+        $this->assertEquals($dispatchResponse['balance_id_list'][0], $currentBalance['id']);
+
+        $summary2 = $this->makePayoutSummaryRequest();
+
+        // Assert that only one payout got processed even though there was enough balance to process both.
+        // This is because offset was set to 1.
+        $this->assertEquals(1, $summary2[$bankingAccount->getPublicId()][Payout\Status::QUEUED]['count']);
+        $this->assertEquals(10000001, $summary2[$bankingAccount->getPublicId()][Payout\Status::QUEUED]['total_amount']);
+
+        $offsetData = (new Admin\Service)->getConfigKey(['key' => Admin\ConfigKey::RX_QUEUED_PAYOUTS_PAGINATION]);
+
+        // Assert that offset has been set back to 0
+        $this->assertEmpty($offsetData);
+    }
+
     public function testCreateQueuedPayout()
     {
         $balanceId = $this->bankingBalance->getId();
@@ -635,7 +725,7 @@ class PayoutTest extends TestCase
         $this->assertEquals(2, $summary[$bankingAccountId]['queued']['count']);
         $this->assertEquals(20000002, $summary[$bankingAccountId]['queued']['total_amount']);
 
-        $dispatchResponse = $this->dispatchQueuedPayouts();
+        $dispatchResponse = $this->dispatchQueuedPayoutsOld();
 
         $this->assertEquals(2, $dispatchResponse[$newBalance['id']]['total_payout_count']);
         $this->assertEquals(10000000, $dispatchResponse[$newBalance['id']]['balance_remaining']);
@@ -645,7 +735,7 @@ class PayoutTest extends TestCase
 
         $this->fixtures->balance->edit($newBalance['id'], ['balance' => 11000000]);
 
-        $dispatchResponse = $this->dispatchQueuedPayouts();
+        $dispatchResponse = $this->dispatchQueuedPayoutsOld();
 
         $this->assertEquals(2, $dispatchResponse[$newBalance['id']]['total_payout_count']);
         $this->assertEquals(998229, $dispatchResponse[$newBalance['id']]['balance_remaining']);
@@ -660,6 +750,165 @@ class PayoutTest extends TestCase
         $fta = $this->getDbEntity('fund_transfer_attempt', ['source_id' => substr($response['id'], 5)]);
 
         $this->assertNotNull($fta);
+    }
+
+    public function testProcessQueuedPayoutWhereMerchantBlacklisted()
+    {
+        $secondBankingBalance = $this->createDirectBankingBalance();
+
+        $balanceId1 = $this->bankingBalance->getId();
+        $balanceId2 = $secondBankingBalance['id'];
+
+        // Creating 2 banking accounts. First for the existing bankingBalance and second for the secondBankingBalance
+
+        $bankingAccountAttributes = [
+            'id'                    =>  'ABCde1234ABCde',
+            'account_number'        =>  '2224440041626905',
+            'balance_id'            =>  $balanceId1,
+            'account_type'          =>  'nodal',
+        ];
+
+        $bankingAccount = $this->createBankingAccount($bankingAccountAttributes);
+
+        $secondBankingAccountAttributes = [
+            'id'                    =>  'DEcba4321DEcba',
+            'account_number'        =>  '2224440041626906',
+            'balance_id'            =>  $balanceId2,
+            'account_type'          =>  'current',
+        ];
+
+        $secondBankingAccount = $this->createBankingAccount($secondBankingAccountAttributes);
+
+        // Create two queued payouts
+
+        $firstQueuedPayoutAttributes = [
+            'account_number'        =>  '2224440041626905',
+            'amount'                =>  20000099,
+            'queue_if_low_balance'  =>  1,
+        ];
+
+        $this->createQueuedOrPendingPayout($firstQueuedPayoutAttributes);
+
+        $secondQueuedPayoutAttributes = [
+            'account_number'        =>  '2224440041626906',
+            'amount'                =>  30000099,
+            'queue_if_low_balance'  =>  1,
+        ];
+
+        $this->createQueuedOrPendingPayout($secondQueuedPayoutAttributes);
+
+        $summary1 = $this->makePayoutSummaryRequest();
+
+        // Assert that there are 1 payout each in queued state for both balances.
+        $this->assertEquals(1, $summary1[$bankingAccount->getPublicId()][Payout\Status::QUEUED]['count']);
+        $this->assertEquals(20000099, $summary1[$bankingAccount->getPublicId()][Payout\Status::QUEUED]['total_amount']);
+        $this->assertEquals(1, $summary1[$secondBankingAccount->getPublicId()][Payout\Status::QUEUED]['count']);
+        $this->assertEquals(30000099, $summary1[$secondBankingAccount->getPublicId()][Payout\Status::QUEUED]['total_amount']);
+
+        // Add enough balance for both balanceIds so that the payouts can go through
+        $this->fixtures->edit('balance', $balanceId1,[
+            'balance'       => 50000099,
+            'updated_at'    => Carbon::now()->getTimestamp()
+        ]);
+
+        $this->fixtures->edit('balance', $balanceId2,[
+            'balance'       => 50000099,
+            'updated_at'    => Carbon::now()->getTimestamp()
+        ]);
+
+        $dispatchResponse = $this->dispatchQueuedPayoutsWithBlacklist($balanceId1);
+
+        // Assert that we only attempted processing the queued payout for balance2. Since Balance 1 was blacklisted
+        $this->assertEquals(1, count($dispatchResponse));
+        $this->assertEquals($balanceId2, $dispatchResponse['balance_id_list'][0]);
+
+        $summary2 = $this->makePayoutSummaryRequest();
+
+        // Assert that there are 1 payout each in queued state for both balances.
+        $this->assertEquals(1, $summary2[$bankingAccount->getPublicId()][Payout\Status::QUEUED]['count']);
+        $this->assertEquals(20000099, $summary2[$bankingAccount->getPublicId()][Payout\Status::QUEUED]['total_amount']);
+        $this->assertEquals(0, $summary2[$secondBankingAccount->getPublicId()][Payout\Status::QUEUED]['count']);
+        $this->assertEquals(0, $summary2[$secondBankingAccount->getPublicId()][Payout\Status::QUEUED]['total_amount']);
+    }
+
+
+    public function testProcessQueuedPayoutWhereMerchantWhitelisted()
+    {
+        $secondBankingBalance = $this->createDirectBankingBalance();
+
+        $balanceId1 = $this->bankingBalance->getId();
+        $balanceId2 = $secondBankingBalance['id'];
+
+        // Creating 2 banking accounts. First for the existing bankingBalance and second for the secondBankingBalance
+
+        $bankingAccountAttributes = [
+            'id'                    =>  'ABCde1234ABCde',
+            'account_number'        =>  '2224440041626905',
+            'balance_id'            =>  $balanceId1,
+            'account_type'          =>  'nodal',
+        ];
+
+        $bankingAccount = $this->createBankingAccount($bankingAccountAttributes);
+
+        $secondBankingAccountAttributes = [
+            'id'                    =>  'DEcba4321DEcba',
+            'account_number'        =>  '2224440041626906',
+            'balance_id'            =>  $balanceId2,
+            'account_type'          =>  'current',
+        ];
+
+        $secondBankingAccount = $this->createBankingAccount($secondBankingAccountAttributes);
+
+        // Create two queued payouts
+
+        $firstQueuedPayoutAttributes = [
+            'account_number'        =>  '2224440041626905',
+            'amount'                =>  20000099,
+            'queue_if_low_balance'  =>  1,
+        ];
+
+        $this->createQueuedOrPendingPayout($firstQueuedPayoutAttributes);
+
+        $secondQueuedPayoutAttributes = [
+            'account_number'        =>  '2224440041626906',
+            'amount'                =>  30000099,
+            'queue_if_low_balance'  =>  1,
+        ];
+
+        $this->createQueuedOrPendingPayout($secondQueuedPayoutAttributes);
+
+        $summary1 = $this->makePayoutSummaryRequest();
+
+        // Assert that there are 1 payout each in queued state for both balances.
+        $this->assertEquals(1, $summary1[$bankingAccount->getPublicId()][Payout\Status::QUEUED]['count']);
+        $this->assertEquals(20000099, $summary1[$bankingAccount->getPublicId()][Payout\Status::QUEUED]['total_amount']);
+        $this->assertEquals(1, $summary1[$secondBankingAccount->getPublicId()][Payout\Status::QUEUED]['count']);
+        $this->assertEquals(30000099, $summary1[$secondBankingAccount->getPublicId()][Payout\Status::QUEUED]['total_amount']);
+
+        // Add enough balance for both balanceIds so that the payouts can go through
+        $this->fixtures->edit('balance', $balanceId1,[
+            'balance'       => 50000099,
+            'updated_at'    => Carbon::now()->getTimestamp()
+        ]);
+
+        $this->fixtures->edit('balance', $balanceId2,[
+            'balance'       => 50000099,
+            'updated_at'    => Carbon::now()->getTimestamp()
+        ]);
+
+        $dispatchResponse = $this->dispatchQueuedPayoutsWithWhitelist($balanceId1);
+
+        // Assert that we only attempted processing the queued payout for balance1. Since only Balance 1 is whitelisted
+        $this->assertEquals(1, count($dispatchResponse));
+        $this->assertEquals($balanceId1, $dispatchResponse['balance_id_list'][0]);
+
+        $summary2 = $this->makePayoutSummaryRequest();
+
+        // Assert that there are 1 payout each in queued state for both balances.
+        $this->assertEquals(0, $summary2[$bankingAccount->getPublicId()][Payout\Status::QUEUED]['count']);
+        $this->assertEquals(0, $summary2[$bankingAccount->getPublicId()][Payout\Status::QUEUED]['total_amount']);
+        $this->assertEquals(1, $summary2[$secondBankingAccount->getPublicId()][Payout\Status::QUEUED]['count']);
+        $this->assertEquals(30000099, $summary2[$secondBankingAccount->getPublicId()][Payout\Status::QUEUED]['total_amount']);
     }
 
     public function testCreatePayoutToInactiveFundAccount()
@@ -1907,34 +2156,6 @@ class PayoutTest extends TestCase
         }
     }
 
-    protected function makePayoutSummaryRequest()
-    {
-        $request = [
-            'method'  => 'GET',
-            'url'     => '/payouts/_meta/summary',
-        ];
-
-        $this->ba->proxyAuth();
-
-        $response = $this->sendRequest($request);
-
-        return json_decode($response->getContent(), true);
-    }
-
-    protected function dispatchQueuedPayouts()
-    {
-        $request = [
-            'method'  => 'POST',
-            'url'     => '/payouts/queued/process',
-        ];
-
-        $this->ba->cronAuth();
-
-        $response = $this->sendRequest($request);
-
-        return json_decode($response->getContent(), true);
-    }
-
     public function testRxPayoutForSlaExpiry(): array
     {
         $this->markTestSkipped('Failing due to payouts blocked, to be fixed later');
@@ -2664,11 +2885,6 @@ class PayoutTest extends TestCase
 
         $this->ba->cronAuth();
 
-        $data = & $this->testData[__FUNCTION__];
-
-        $data['request']['content']['from'] = $currentTime - 10;
-        $data['request']['content']['to'] = $currentTime + 10;
-
         $this->startTest();
 
         // Assert first payout still queued
@@ -2749,11 +2965,6 @@ class PayoutTest extends TestCase
                               ['balance_last_fetched_at' => $oldDateTime->getTimestamp()]);
 
         $this->ba->cronAuth();
-
-        $data = & $this->testData[__FUNCTION__];
-
-        $data['request']['content']['from'] = $currentTime - 10;
-        $data['request']['content']['to'] = $currentTime + 10;
 
         $this->startTest();
 
@@ -2877,9 +3088,9 @@ class PayoutTest extends TestCase
                 }
 
                 return new \Requests_Response();
-            })->times(4);
+            })->times(7);
 
-        $this->testCreateQueuedPayout();
+        $this->testCreateAndProcessQueuedPayout();
     }
 
     public function testFiringOfWebhookPayoutStatusUpdateWithStork()

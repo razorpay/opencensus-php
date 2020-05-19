@@ -1574,23 +1574,19 @@ class RblBankingAccountStatementTest extends TestCase
 
         sleep(1);
 
-        $queuedPayout = $this->createQueuedOrPendingPayout($queuedPayoutAttributes, 'rzp_test_TheTestAuthKey');
+        $balance = $this->getDbLastEntity('balance');
+
+        $this->createQueuedOrPendingPayout($queuedPayoutAttributes, 'rzp_test_TheTestAuthKey');
 
         $this->testLatestBalanceWhenBalanceFetchCronRunsAfterBankingAccountStatementCron(70);
 
-        $actualOutput = $this->dispatchQueuedPayouts();
+        $response = $this->dispatchQueuedPayouts();
 
-        $expectedOutput = [
-            $this->bankingBalance->getId() => [
-                'original_balance'         => 7000,
-                'balance_remaining'        => 1000,
-                'total_payout_count'       => 1,
-                'dispatched_payout_count'  => 1,
-                'dispatched_payout_amount' => 6000,
-            ]
-        ];
+        $this->assertEquals($balance['id'], $response['balance_id_list'][0]);
 
-        $this->assertArraySelectiveEquals($expectedOutput, $actualOutput);
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->assertNotEquals('queued', $payout['status']);
     }
 
     public function testLastFetchedAtEqualsBalanceUpdatedAtInitially()
@@ -2159,23 +2155,19 @@ class RblBankingAccountStatementTest extends TestCase
             'queue_if_low_balance'  =>  1,
         ];
 
-        $queuedPayout = $this->createQueuedOrPendingPayout($queuedPayoutAttributes, 'rzp_test_TheTestAuthKey');
+        $balance = $this->getDbLastEntity('balance');
+
+        $this->createQueuedOrPendingPayout($queuedPayoutAttributes, 'rzp_test_TheTestAuthKey');
 
         $this->testLatestBalanceWhenBalanceFetchCronRunsBeforeBankingAccountStatementCron(50);
 
-        $actualOutput = $this->dispatchQueuedPayouts();
+        $response = $this->dispatchQueuedPayouts();
 
-        $expectedOutput = [
-            $this->bankingBalance->getId() => [
-                'original_balance'         => 11355,
-                'balance_remaining'        => 355,
-                'total_payout_count'       => 1,
-                'dispatched_payout_count'  => 1,
-                'dispatched_payout_amount' => 11000,
-            ]
-        ];
+        $this->assertEquals($balance['id'], $response['balance_id_list'][0]);
 
-        $this->assertArraySelectiveEquals($expectedOutput, $actualOutput);
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->assertNotEquals('queued', $payout['status']);
     }
 
     public function testFetchStatementByTransactionIdForRbl()

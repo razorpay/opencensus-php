@@ -136,6 +136,20 @@ class PayoutController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function processInitiateForQueuedPayouts()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->processInitiateForQueuedPayouts($input);
+
+        return ApiResponse::json($data);
+    }
+
+    /**
+     * TODO : Remove this code. Has been kept here for backward compatibility
+     *
+     * @return mixed
+     */
     public function processDispatchForQueuedPayouts()
     {
         $input = Request::all();
