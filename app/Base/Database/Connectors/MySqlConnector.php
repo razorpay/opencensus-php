@@ -41,23 +41,6 @@ class MySqlConnector extends BaseMySqlConnector
     {
         $socketConnection = (empty($config['unix_socket']) === false);
 
-        if ($socketConnection === true)
-        {
-            $this->app['trace']->info(
-                TraceCode::PROXY_SQL_CONNECTION_STARTING,
-                [
-                    'name'  => $config['name'],
-                ]);
-        }
-        else
-        {
-            $this->app['trace']->info(
-                TraceCode::PROXY_SQL_NOT_ENABLED,
-                [
-                    'name'  => $config['name'],
-                ]);
-        }
-
         try
         {
             $connection = parent::connect($config);
