@@ -269,6 +269,7 @@ class AdminFetch
                     Fetch::TYPE   => Fetch::TYPE_ARRAY,
                     Fetch::VALUES => [
                         'payment_link',
+                        'reconciliation',
                     ],
                 ],
             ],
@@ -2621,7 +2622,7 @@ class AdminFetch
                 'attempt_number'        => [],
                 'reference_number'      => [],
             ],
-            
+
             Entity::BANK_TRANSFER_HISTORY => [
                 'bank_transfer_id' => [
                     Fetch::LABEL => 'Bank Transfer ID',
