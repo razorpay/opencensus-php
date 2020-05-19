@@ -1062,7 +1062,7 @@ class Core extends Base\Core
         $this->trace->info(
             TraceCode::USER_EMAIL_VERIFY_WITH_OTP,
             [
-                'merchantId'      => $merchant->getId(),    
+                'merchantId'      => $merchant->getId(),
             ]);
 
         $this->confirm($user);

@@ -162,6 +162,15 @@ class UserController extends Controller
         return $data;
     }
 
+    public function postResendVerificationOtp()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->resendVerificationOtp($input);
+
+        return $data;
+    }
+
     public function postResetPasswordByEmail()
     {
         $input = Request::all();

@@ -150,6 +150,7 @@ class Validator extends Base\Validator
         Entity::MEDIUM        => 'sometimes|filled|in:sms,email',
         Entity::ACTION        => 'required|filled|in:'
                                  . 'verify_contact,'
+                                 . 'verify_email,'
                                  . 'create_payout,'
                                  . 'create_payout_link,'
                                  . 'create_payout_batch,'
@@ -180,6 +181,10 @@ class Validator extends Base\Validator
         Entity::TOKEN           => 'required|unsigned_id',
         Entity::ACTION          => 'sometimes|filled|in:bureau_verify',
         Entity::CONTACT_MOBILE  => 'required_if:action,bureau_verify|max:15',
+    ];
+
+    protected static $resendOtpRules = [
+        Entity::TOKEN           => 'sometimes|unsigned_id',
     ];
 
     protected static $teamManagementValidators = [
@@ -407,6 +412,31 @@ class Validator extends Base\Validator
         {
             throw new BadRequestValidationFailureException('Contact mobile is not verified');
         }
+
+        if (($action === 'verify_email') and
+            ($medium !== 'email'))
+        {
+            throw new BadRequestValidationFailureException('Email must be the medium for verifying Email');
+        }
+
+        if (($action === 'verify_email') and
+            ($user->getConfirmedAttribute() === true))
+        {
+            throw new BadRequestValidationFailureException('Email is already verified');
+        }
+
+        if (($medium === 'email') and
+            ($user->getEmail() === null))
+        {
+            throw new BadRequestValidationFailureException('Email does not Exist');
+        }
+
+        if (($medium === 'email') and
+            ($action !== 'verify_email') and
+            ($user->getConfirmedAttribute() === false))
+        {
+            throw new BadRequestValidationFailureException('Contact Email is not verified');
+        }
     }
 
     public function validateVerifyContactWithOtpOperation(array $input)
@@ -421,12 +451,14 @@ class Validator extends Base\Validator
 
     public function validateVerifyEmailWithOtpOperation(array $input)
     {
-        if ($this->entity->getConfirmedAttribute() === true)
-        {
-            throw new BadRequestValidationFailureException('User Email is already verified');
-        }
         $this->validateInput('verifyOtp', $input);
     }
+
+    public function validateResendEmailWithOtpOperation(array $input)
+    {
+        $this->validateInput('resendOtp', $input);
+    }
+
 
     /**
      * @param  Merchant\Entity $merchant

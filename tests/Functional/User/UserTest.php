@@ -93,6 +93,49 @@ class UserTest extends TestCase
         $this->assertNotNull($row);
     }
 
+    public function testRegisterWithOtp()
+    {
+        Mail::fake();
+
+        $this->enableRazorXTreatmentForRazorX();
+
+        $adminId = Org::MAKER_ADMIN;
+
+        $formData = json_decode(
+            '{
+                "merchant_name":"name",
+                "contact_name":"contact",
+                "contact_email":"leademail@razorpay.com",
+                "dba_name":"dbaname"
+            }',
+            true
+        );
+
+        $adminLead = $this->fixtures->create('admin_lead', ['admin_id' => $adminId, 'form_data' => $formData]);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['merchant_invitation'] = $adminLead['token'];
+
+        $this->ba->appAuth();
+
+        $this->mockHubSpotClient('trackSignupEvent');
+
+        $response = $this->startTest();
+
+        $merchant = $this->getLastEntity('merchant', true);
+
+        $row = DB::table('merchant_map')
+                 ->where('merchant_id', '=', $merchant['id'])
+                 ->where('entity_id', '=', $adminId)
+                 ->where('entity_type', '=', 'admin')
+                 ->first();
+
+        $this->assertNotNull($row);
+
+        $this->assertArrayHasKey('token', $response);
+    }
+
     protected function mockHubSpotClient($methodName)
     {
         $hubSpotMock = $this->getMockBuilder(HubspotClient::class)
@@ -1133,6 +1176,49 @@ class UserTest extends TestCase
         });
     }
 
+    public function testResendOtpVerificationMail()
+    {
+        Mail::fake();
+
+        $user = $this->fixtures->edit('user', UserFixture::MERCHANT_USER_ID,
+                                      [UserEntity::CONFIRM_TOKEN => 'testing123456789',
+                                       UserEntity::EMAIL => 'abc@rzp.com']);
+
+        $merchant = $this->fixtures->create('merchant',
+                                                   ['id'    => '10000000000002',
+                                                    'email' => 'abc@rzp.com']);
+
+        $mappingData = [
+            'user_id'     => $user->getId(),
+            'merchant_id' => $merchant->getId(),
+            'role'        => 'owner',
+            'product'     => 'primary',
+        ];
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $this->ba->proxyAuth();
+
+        $response=$this->startTest();
+
+        $this->assertNotEmpty($response['token']);
+
+        Mail::assertQueued(Otp::class, function ($mail)
+        {
+            $this->assertEquals('verify_email', $mail->input['action']);
+
+            $this->assertNotEmpty($mail->user);
+
+            $this->assertNotEmpty($mail->otp);
+
+            $this->assertEquals('emails.user.otp_email_verify', $mail->view);
+
+            return true;
+        });
+    }
+
     public function testPasswordResetMail()
     {
         Mail::fake();
@@ -1945,4 +2031,5 @@ class UserTest extends TestCase
 
         $this->assertEquals($testData['request']['content']['contact_mobile'], $userDb['contact_mobile']);
     }
+
 }

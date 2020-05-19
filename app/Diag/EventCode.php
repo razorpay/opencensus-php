@@ -369,9 +369,19 @@ class EventCode
         'name'  => 'signup.resend_verification_email.success',
     ];
 
+    const SIGNUP_RESEND_VERIFICATION_EMAIL_OTP_SUCCESS = [
+        'group' => 'onboarding',
+        'name'  => 'signup.resend_verification_email_otp.success',
+    ];
+
     const SIGNUP_SEND_VERIFICATION_EMAIL_SUCCESS = [
         'group' => 'onboarding',
         'name'  => 'signup.send_verification_email.success',
+    ];
+
+    const SIGNUP_SEND_VERIFICATION_EMAIL_OTP_SUCCESS = [
+        'group' => 'onboarding',
+        'name'  => 'signup.send_verification_email_otp.success',
     ];
 
     const SIGNUP_APPLY_COUPON_CODE_SUCCESS = [

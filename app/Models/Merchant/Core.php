@@ -3321,4 +3321,13 @@ class Core extends Base\Core
 
         return $batchActions;
     }
+
+    public function isEmailVerificationViaOtpRazorxEnabled(string $merchantId, $mode = null): bool
+    {
+        $mode = $mode ?? $this->mode;
+
+        $status = $this->app['razorx']->getTreatment($merchantId, Merchant\RazorxTreatment::EMAIL_VERIFICATION_USING_OTP, $mode);
+
+        return (strtolower($status) === 'on');
+    }
 }

@@ -163,7 +163,7 @@ class Service extends Base\Service
         if (empty($referrer) === false)
         {
             $tagInputData = [
-                'tags' => ['ref-'.$referrer],
+                'tags' => ['ref-' . $referrer],
             ];
 
             (new Merchant\Service)->addTags($merchantData['id'], $tagInputData);
@@ -179,15 +179,66 @@ class Service extends Base\Service
 
         $user = $this->repo->user->findOrFailPublic($userData['id']);
 
-        $this->sendConfirmationMail($user);
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantData['id']);
 
-        (new Core)->trackOnboardingEvent($user->getEmail(), EventCode::SIGNUP_SEND_VERIFICATION_EMAIL_SUCCESS);
+        $data = $this->sendConfirmationMailIfApplicable($user, $merchant);
 
-        return [
-            'id'    => $merchantData['id'],
-            'name'  => $merchantData['name'],
-            'email' => $userData['email'],
-        ];
+        return $data;
+    }
+
+    /**
+     * @param Entity          $user
+     * @param Merchant\Entity $merchant
+     *
+     * @return array
+     */
+    protected function sendConfirmationMailIfApplicable(Entity $user, Merchant\Entity $merchant)
+    {
+        $requestOriginProduct = $this->auth->getRequestOriginProduct();
+
+        $response = [];
+
+        // If User is New Signed up and
+        // Already Not confirmed and not razorx check is true and product is PG.
+        if ((new Merchant\Core)->isEmailVerificationViaOtpRazorxEnabled($merchant->getId()) === true and
+            ($requestOriginProduct !== Product::BANKING) and ($user->getConfirmedAttribute() === false))
+        {
+            $data = $this->sendOtpEmailVerification($merchant, $user);
+
+            (new Core)->trackOnboardingEvent($user->getEmail(),
+                                             EventCode::SIGNUP_SEND_VERIFICATION_EMAIL_OTP_SUCCESS);
+
+            // Add the response of token from Raven Service
+            $response['token'] = $data['token'];
+        }
+        else
+        {
+            $this->sendConfirmationMail($user);
+
+            (new Core)->trackOnboardingEvent($user->getEmail(),
+                                             EventCode::SIGNUP_SEND_VERIFICATION_EMAIL_SUCCESS);
+        }
+
+        $response['id']    = $merchant->getId();
+        $response['name']  = $merchant->getName();
+        $response['email'] = $user->getEmail();
+
+        return $response;
+    }
+
+    protected function sendOtpEmailVerification(Merchant\Entity $merchant, Entity $user, array $merchantData = [])
+    {
+        $merchantData['medium'] = 'email';
+
+        $merchantData['action'] = 'verify_email';
+
+        $this->trace->info(
+            TraceCode::USER_EMAIL_OTP_SEND,
+            [
+                'merchantId'      => $merchant->getId(),
+            ]);
+
+        return $this->core()->sendOtp($merchantData, $merchant, $user);
     }
 
     /**
@@ -457,7 +508,47 @@ class Service extends Base\Service
 
         $data = $this->sendConfirmationMail($user);
 
-        (new Core)->trackOnboardingEvent($user->getEmail(), EventCode::SIGNUP_RESEND_VERIFICATION_EMAIL_SUCCESS);
+        (new Core)->trackOnboardingEvent($user->getEmail(),
+                                         EventCode::SIGNUP_RESEND_VERIFICATION_EMAIL_SUCCESS);
+
+        return $data;
+    }
+
+    /**
+     *  * Resend verification mail with OTP for not confirmed user.
+     * @param $input
+     *
+     * @return mixed
+     */
+    public function resendVerificationOtp($input)
+    {
+        $this->user->getValidator()->validateResendEmailWithOtpOperation($input);
+
+        $dashboardHeaders = $this->auth->getDashboardHeaders();
+
+        $merchant = $this->auth->getMerchant();
+
+        $merchantData = [];
+
+        $user = $this->repo->user->findOrFailPublic($dashboardHeaders['user_id']);
+
+        if (empty($input['token']) === false)
+        {
+            $merchantData['token'] = $input['token'];
+        }
+
+        if ($user->getConfirmedAttribute() === false)
+        {
+            $data = $this->sendOtpEmailVerification($merchant, $user, $merchantData);
+        }
+        else
+        {
+            // if user is already confirmed then sending confirm as true.
+            return ['confirm' => true];
+        }
+
+        (new Core)->trackOnboardingEvent($user->getEmail(),
+                                         EventCode::SIGNUP_RESEND_VERIFICATION_EMAIL_OTP_SUCCESS);
 
         return $data;
     }
@@ -784,11 +875,15 @@ class Service extends Base\Service
      */
     public function verifyEmailWithOtp(array $input): array
     {
-        $this->user->getValidator()->validateVerifyEmailWithOtpOperation($input);
+        if ($this->user->getConfirmedAttribute() === false)
+        {
+            $this->user->getValidator()->validateVerifyEmailWithOtpOperation($input);
 
-        $this->core()->verifyEmailWithOtp($input, $this->merchant, $this->user);
+            $this->core()->verifyEmailWithOtp($input, $this->merchant, $this->user);
+        }
+        $response['user'] = $this->user->toArrayPublic();
 
-        return $this->user->toArrayPublic();
+        return $response;
     }
 
     /**

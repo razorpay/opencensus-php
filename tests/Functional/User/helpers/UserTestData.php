@@ -50,6 +50,24 @@ return [
         ],
     ],
 
+    'testRegisterWithOtp'  => [
+        'request'  => [
+            'url'     => '/users/register',
+            'method'  => 'POST',
+            'content' => [
+                'email'                 => 'abc@rzp.com',
+                'password'              => 'hello123',
+                'password_confirmation' => 'hello123',
+                'captcha_disable'       => 'DISABLE_THE_CAPTCHA_YOU_SHALL',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'email' => 'abc@rzp.com',
+            ],
+        ],
+    ],
+
     'testGet' => [
         'request' => [
             'url'    => '/users/id',
@@ -651,6 +669,21 @@ return [
         ],
     ],
 
+    'testResendOtpVerificationMail' => [
+        'request' => [
+            'url'     => '/users/resend-verification-otp',
+            'method'  => 'post',
+            'content' => [
+                'token'=>'BUIj3m2Nx2VvVj'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                "token" => 'BUIj3m2Nx2VvVj',
+            ],
+        ],
+    ],
+
     'testPasswordResetMail' => [
         'request' => [
             'url'     => '/users/reset-password',
@@ -976,9 +1009,11 @@ return [
         ],
         'response' => [
             'content' => [
-                'id'        => 'MerchantUser01',
-                'email'     => 'abc@rzp.com',
-                'confirmed' => true,
+                'user' => [
+                    'id'        => 'MerchantUser01',
+                    'email'     => 'abc@rzp.com',
+                    'confirmed' => true,
+                ]
             ],
         ],
     ],
@@ -1007,9 +1042,8 @@ return [
         ],
     ],
 
-
     'testVerifyEmailWithOtpAlreadyVerified' => [
-        'request'   => [
+        'request'  => [
             'url'     => '/users/verify_email',
             'method'  => 'POST',
             'content' => [
@@ -1017,17 +1051,14 @@ return [
                 'token' => 'BUIj3m2Nx2VvVj',
             ],
         ],
-        'response'  => [
-            'content'     => [
-                'error' => [
-                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_USER_EMAIL_ALREADY_VERIFIED,
-                ],
+        'response' => [
+            'content' => [
+                'user' => [
+                    'id'        => 'MerchantUser01',
+                    'email'     => 'abc@rzp.com',
+                    'confirmed' => true,
+                ]
             ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
 
