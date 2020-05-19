@@ -64,6 +64,8 @@ class Entity extends Base\PublicEntity
         self::TNC,
         self::LINE_ITEMS,
         self::PDF,
+        self::CREATED_AT,
+        self::UPDATED_AT,
     ];
 
     protected $embeddedRelations = [

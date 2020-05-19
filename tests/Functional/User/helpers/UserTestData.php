@@ -1265,6 +1265,7 @@ return [
             ],
             'server'  => [
                 'HTTP_X-Dashboard-User-id' => '',
+                'HTTP_X-Request-Origin'         => 'https://dashboard.razorpay.com',
             ],
         ],
         'response'  => [

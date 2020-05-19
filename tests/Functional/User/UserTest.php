@@ -1744,15 +1744,9 @@ class UserTest extends TestCase
 
         $this->fixtures->merchant->setRestricted(true, $merchantIds[0]);
 
-        $mappingData = [
-            'user_id'     => $user['id'],
-            'merchant_id' => $merchantIds[0],
-            'role'        => 'manager',
-        ];
+        $user2 = $this->fixtures->user->createUserForMerchant($merchantIds[0],[],'manager');
 
-        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
-
-        $this->ba->proxyAuth('rzp_test_' . $merchantIds[0], $user['id'], 'manager');
+        $this->ba->proxyAuth('rzp_test_' . $merchantIds[0], $user2['id']);
 
         $this->startTest();
     }

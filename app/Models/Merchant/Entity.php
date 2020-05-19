@@ -2252,14 +2252,35 @@ class Entity extends Base\PublicEntity
 
     public function users()
     {
+        /**
+         * order of users
+         * 1. owner user with same email as the merchant
+         * 2. other owner users
+         * 3. other users
+         */
+        $sql = "CASE WHEN email=? AND role='owner' THEN 0
+                     WHEN role='owner' THEN 1
+                     else 2 END";
+
         //
         // The foreign key should be specified explicitly as it otherwise fetches from the
         // entity name by appending '_id' to it. When this code is called from Account\Entity,
         // it tries to look for account_id and crashes.
         //
-        return $this->belongsToMany(User\Entity::class, Table::MERCHANT_USERS, self::MERCHANT_ID)
-                    ->withPivot([User\Entity::ROLE, User\Entity::PRODUCT])
-                    ->orderBy(self::NAME);
+        $query = $this->belongsToMany(User\Entity::class, Table::MERCHANT_USERS, self::MERCHANT_ID)
+                    ->withPivot([User\Entity::ROLE, User\Entity::PRODUCT]);
+
+        // if the merchant entity is already loaded with data
+        if (empty($this->attributes[self::EMAIL]) === false)
+        {
+            $query->orderByRaw($sql, [$this->getEmail()]);
+        }
+        else
+        {
+            $query->orderBy(self::NAME);
+        }
+
+        return $query;
     }
 
     public function invitations()
