@@ -3,6 +3,7 @@
 namespace RZP\Services;
 
 
+use Razorpay\Trace\Logger as Trace;
 use RZP\Exception;
 use RZP\Trace\TraceCode;
 use RZP\Http\Request\Requests;
@@ -263,7 +264,8 @@ class SmartRouting
                 if (($retryCount < self::MAX_RETRY_COUNT) and
                     (curl_errno($e->getData()) === CURLE_OPERATION_TIMEDOUT))
                 {
-                    $this->trace->info(
+                    $this->trace->traceException($e,
+                        Trace::ERROR,
                         TraceCode::SMART_ROUTING_RETRY,
                         [
                             'message' => $e->getMessage(),

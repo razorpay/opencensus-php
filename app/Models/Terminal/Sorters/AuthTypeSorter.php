@@ -8,6 +8,7 @@ use RZP\Models\Payment;
 use RZP\Models\Terminal;
 use RZP\Models\Feature;
 use RZP\Models\Card\Network;
+use RZP\Trace\TraceCode;
 
 class AuthTypeSorter extends Terminal\Sorter
 {
@@ -52,8 +53,21 @@ class AuthTypeSorter extends Terminal\Sorter
 
             foreach ($terminals as $key => $terminal)
             {
-                if (($terminal->isAuthTypeEnabled($authType, $networkCode) === true) and
-                    ($this->filterOtpAuthType($payment, $terminal, $authType) === true))
+                $authTypeEnabled = $terminal->isAuthTypeEnabled($authType, $networkCode);
+
+                $filterOtpAuthTypeBool = $this->filterOtpAuthType($payment, $terminal, $authType);
+
+                $this->trace->info(
+                    TraceCode::SMART_ROUTING_AUTH_FILTER,
+                    [
+                        'payment_id'           => $payment['id'],
+                        'terminal_id'          => $terminal['id'],
+                        'auth_type_enabled'    => $authTypeEnabled,
+                        'filter_otp_auth_type' => $filterOtpAuthTypeBool
+                    ]);
+
+                if (($authTypeEnabled === true) and
+                    ($filterOtpAuthTypeBool === true))
                 {
                     $orderedTerminals[] = $terminal;
 
@@ -61,6 +75,13 @@ class AuthTypeSorter extends Terminal\Sorter
                 }
             }
         }
+
+        $this->trace->info(
+            TraceCode::SMART_ROUTING_AUTH_FILTER,
+            [
+                'payment_id'           => $payment['id'],
+                'terminals_output'     => count($orderedTerminals)
+            ]);
 
         return $orderedTerminals;
     }
@@ -78,7 +99,16 @@ class AuthTypeSorter extends Terminal\Sorter
             (($payment->card->iinRelation->supports(Card\IIN\Flow::OTP) === true) or
              ($payment->card->iinRelation->supports(Card\IIN\Flow::IVR) === true)))
         {
-            return (Payment\Gateway::isOnlyAuthorizationGateway($terminal->getGateway()) === true);
+            $onlyAuthGateway = (Payment\Gateway::isOnlyAuthorizationGateway($terminal->getGateway()) === true);
+
+            $this->trace->info(
+                TraceCode::SMART_ROUTING_AUTH_FILTER,
+                [
+                    'payment_id'        => $payment['id'],
+                    'terminal_id'       => $terminal['id'],
+                    'only_auth_gateway' => $onlyAuthGateway
+                ]);
+            return $onlyAuthGateway;
         }
 
         // headless check

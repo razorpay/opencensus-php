@@ -579,7 +579,13 @@ class Selector extends Base\Core
 
             $sortedTerminals = $sorterObj->sort($sortedTerminals, $verbose);
 
+            //temporarily setting verbose true here
+
+            $verbose = true;
+
             $this->traceTerminals($sortedTerminals, 'Terminals after ' . $sorter, $verbose);
+
+            $verbose = false;
         }
 
         $this->traceTerminals($sortedTerminals, 'Terminals after sorting', true);
