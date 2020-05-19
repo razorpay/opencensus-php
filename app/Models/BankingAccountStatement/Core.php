@@ -14,10 +14,12 @@ use RZP\Models\External;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Models\Reversal;
+use RZP\Constants\Timezone;
 use RZP\Models\Transaction;
 use RZP\Models\BankingAccount;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Mail\BankingAccount\StatementMail;
+use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\Admin\Service as AdminService;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use RZP\Jobs\BankingAccountStatement as BankingAccountStatementJob;
@@ -365,6 +367,17 @@ class Core extends Base\Core
 
     protected function saveAccountStatement(array $bankTransaction, Merchant\Entity $merchant)
     {
+        $bankPostedDate = $bankTransaction[Entity::POSTED_DATE];
+        $bankTxnChannel = $bankTransaction[Entity::CHANNEL];
+        $bankTxnId      = $bankTransaction[Entity::BANK_TRANSACTION_ID];
+
+        $this->trace->info(TraceCode::BANKING_ACCOUNT_STATEMENT_TRANSACTION_BEING_SAVED,
+            [
+                'bank_txn_id'           => $bankTxnId,
+                'bank_txn_posted_date'  => $bankPostedDate,
+                'bank_txn_channel'      => $bankTxnChannel,
+            ]);
+
         $this->repo->transaction(function () use ($bankTransaction, $merchant) {
 
             $basEntity = (new Entity)->build($bankTransaction);
@@ -445,7 +458,7 @@ class Core extends Base\Core
             // If a payout is found, then we will also check if it has is marked
             // reversed, if not we will update the payout as reversed
             //
-            $existingPayout = $this->fetchExistingPayoutIfPresent($basEntity);
+            $existingPayout = $this->fetchExistingPayoutForAccountStatement($basEntity);
 
             if ($existingPayout === null)
             {
@@ -486,7 +499,7 @@ class Core extends Base\Core
 
     protected function processPayout(Entity $basEntity)
     {
-        $payout = $this->fetchExistingPayoutIfPresent($basEntity);
+        $payout = $this->fetchExistingPayoutForAccountStatement($basEntity);
 
         if ($payout === null)
         {
@@ -551,7 +564,8 @@ class Core extends Base\Core
      * @return mixed
      * @throws Exception\LogicException
      */
-    protected function fetchExistingPayoutIfPresent(Entity $basEntity)
+
+    protected function fetchExistingPayoutForAccountStatement(Entity $basEntity)
     {
         $payouts = new Base\Collection;
 
@@ -559,55 +573,137 @@ class Core extends Base\Core
 
         $utr = $basEntity->getUtr();
 
-        //
-        // We first try to retrieve the payout from UTR, present in the description.
-        //
-        // In case of payouts
-        // - IMPS is the most common mode
-        // - UTR retrieval is supported only for IMPS.
-        // - We do not know the mode via BAS entity. If we did, we could
-        //   fetch using UTR or bank_transaction_id depending on the mode.
-        // Due to the above two reasons, we try to fetch a payout using UTR first.
-        //
         if (empty($utr) === false)
         {
-            $payout = $this->repo->payout->fetchFromReturnUtr($utr, $basEntity->getAmount(), $balance->getId());
-
-            if ($payout != null)
+            if ($basEntity->getType() === Type::CREDIT)
             {
-               return $payout;
+                /** @var Base\Collection $payouts */
+                $payouts = $this->repo->payout->fetchFromReturnUtr($utr, $basEntity->getAmount(), $balance->getId());
+
+                if ($payouts->count() === 1)
+                {
+                    return $payouts->first();
+                }
+
+                // TODO: remove unique constraint from utr fields in db .
+                // https://razorpay.atlassian.net/browse/RX-2390
+                if ($payouts->count() > 1)
+                {
+                    throw new Exception\LogicException(
+                        'Too many payouts found after scrapping via return utr',
+                        ErrorCode::SERVER_ERROR_TOO_MANY_PAYOUTS_FOUND_VIA_RETURN_UTR,
+                        [
+                            'bas_id'        => $basEntity->getId(),
+                            'balance_id'    => $balance->getId(),
+                            'utr'           => $utr,
+                            'count'         => $payouts->count()
+                        ]);
+                }
             }
 
             $payouts = $this->repo->payout->fetchFromUtr($utr, $basEntity->getAmount(), $balance->getId());
+
+            $unlinkedPayouts = [];
+
+            foreach ($payouts as $payout)
+            {
+                if ($payout->getTransactionId() !== null)
+                {
+                    $data = [
+                        'channel'   => $basEntity->getChannel(),
+                        'amount'    => $basEntity->getAmount(),
+                        'payout_id' => $payout->getId(),
+                    ];
+
+                    $this->trace->error(TraceCode::BANKING_ACCOUNT_STATEMENT_FETCH_DUPLICATE_UTR, [
+                        'data'  => $data,
+                    ]);
+
+                    $operation = 'duplicate UTR in account statement fetch for a linked payout';
+
+                    (new SlackNotification)->send(
+                                                $operation,
+                                                $data,
+                                                null,
+                                                1,
+                                                'rx_ca_rbl_alerts');
+                }
+                else
+                {
+                    $unlinkedPayouts[] = $payout;
+                }
+            }
+
+            if (count($unlinkedPayouts) === 1)
+            {
+                return $unlinkedPayouts[0];
+            }
+            // RBL has confirmed that UTR will be unique across all transactions
+            // of RBL and so we not process this account statement record
+            if (count($unlinkedPayouts) > 1)
+            {
+                throw new Exception\LogicException(
+                    'Too many unlinked payouts found after utr match',
+                    ErrorCode::SERVER_ERROR_TOO_MANY_PAYOUTS_FOUND_VIA_UTR,
+                    [
+                        'bas_id'        => $basEntity->getId(),
+                        'balance_id'    => $balance->getId(),
+                        'utr'           => $utr,
+                        'count'         => $payouts->count()
+                    ]);
+            }
         }
 
-        //
-        // If either the UTR is not present in the description or if we were not able
-        // to retrieve any payouts using the UTR, we try with bank_transaction_id
-        //
         if ($payouts->count() === 0)
         {
             $bankTxnId = $basEntity->getBankTransactionId();
 
-            $payouts = $this->repo->payout->fetchFromCmsRefNumber($bankTxnId,
-                                                                  $basEntity->getAmount(),
-                                                                  $balance->getId());
+            $bankTimeBeforePostedDate = Carbon::createFromTimestamp(
+                                                        $basEntity->getPostedDate(), Timezone::IST)
+                                                        ->subHours(4)
+                                                        ->getTimestamp();
+
+            $payouts = $this->repo->payout->fetchUnlinkedPayoutsFromCmsRefNumberWithinTimeRangeForIFT(
+                                                                                       $bankTxnId,
+                                                                                       $basEntity->getPostedDate(),
+                                                                                       $bankTimeBeforePostedDate,
+                                                                                       $basEntity->getAmount(),
+                                                                                       $balance->getId());
         }
 
-        //
-        // Finally, if the search with either UTR or with bank_transaction_id gave more
-        // results than 1, it means our logic is wrong and needs to be re-looked at.
-        //
+        if ($payouts->count() === 1)
+        {
+            return $payouts->first();
+        }
+
         if ($payouts->count() > 1)
         {
             throw new Exception\LogicException(
-                'Too many payouts found for the given criteria',
-                ErrorCode::SERVER_ERROR_TOO_MANY_PAYOUTS_FOUND,
+                'Too many unlinked payouts found after scrapping via cms ref number for IFT',
+                ErrorCode::SERVER_ERROR_TOO_MANY_PAYOUTS_FOUND_VIA_CMS_REF_NO_FOR_IFT,
                 [
                     'bas_id'        => $basEntity->getId(),
                     'balance_id'    => $balance->getId(),
                     'utr'           => $utr,
                     'count'         => $payouts->count()
+                ]);
+        }
+
+        $payouts = $this->repo->payout->fetchUnlinkedPayoutsFromCmsRefNumber(
+                                                                        $bankTxnId,
+                                                                        $basEntity->getAmount(),
+                                                                        $balance->getId());
+
+        if ($payouts->count() > 1)
+        {
+            throw new Exception\LogicException(
+                'Too many unlinked payouts found after scrapping via cms ref number for non IFT',
+                ErrorCode::SERVER_ERROR_TOO_MANY_PAYOUTS_FOUND_VIA_CMS_REF_NO_FOR_NON_IFT,
+                [
+                    'bas_id'        => $basEntity->getId(),
+                    'balance_id'    => $balance->getId(),
+                    'utr'           => $utr,
+                    'count'         => $payouts->count(),
                 ]);
         }
 

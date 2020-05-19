@@ -53,7 +53,12 @@ class Entity extends Base\PublicEntity
 
     const CREDIT_REGEX = '/^(RTGS\/|NEFT\/|R-)(.*?)(\/|-)/';
 
-    const DEBIT_REGEX = '/^(.*?)-/';
+    // sample IMPS - 010617021414-QCREDIT 234412
+    const IMPS_DEBIT_REGEX = '/^(.*?)-/';
+
+    // sample NEFT - NEFT/000119662132/maYANK SHARMA
+    // sample RTGS - RTGS/UTIBH20106341692/RAZORPAY SOFTWARE PRIVATE LI
+    const NEFT_RTGS_DEBIT_REGEX = '/^(RTGS\/|NEFT\/)(.*?)(\/)/';
 
     protected static $sign = 'bas';
 
@@ -323,13 +328,26 @@ class Entity extends Base\PublicEntity
     {
         $description = $this->getDescription();
 
-        $regex = ($this->isTypeCredit() === true) ? self::CREDIT_REGEX : self::DEBIT_REGEX;
+        if ($this->isTypeCredit() === true)
+        {
+            $regex = self::CREDIT_REGEX;
+        }
+        else
+        {
+            $regex = self::IMPS_DEBIT_REGEX;
+
+            if ($this->isNeftOrRtgs($description) === true)
+            {
+                $regex = self::NEFT_RTGS_DEBIT_REGEX;
+            }
+        }
 
         $match = preg_match($regex, $description, $matches);
 
         if ($match === 1)
         {
-            $match = ($regex === self::CREDIT_REGEX) ? $matches[2] : $matches[1];
+            $match = (($regex === self::CREDIT_REGEX) or
+                     ($regex === self::NEFT_RTGS_DEBIT_REGEX)) ? $matches[2] : $matches[1];
         }
 
         // Could be an empty string match
@@ -339,5 +357,19 @@ class Entity extends Base\PublicEntity
         }
 
         return null;
+    }
+
+    protected function isNeftOrRtgs(string  $description)
+    {
+        $regex = self::NEFT_RTGS_DEBIT_REGEX;
+
+        $match = preg_match($regex, $description, $matches);
+
+        if ($match === 1)
+        {
+            return true;
+        }
+
+        return false;
     }
 }

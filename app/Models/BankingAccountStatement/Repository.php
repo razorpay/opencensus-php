@@ -2,11 +2,16 @@
 
 namespace RZP\Models\BankingAccountStatement;
 
+use Carbon\Carbon;
+
+use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Models\Payout;
 use RZP\Models\Reversal;
 use RZP\Error\ErrorCode;
+use RZP\Constants\Timezone;
 use RZP\Exception\LogicException;
+use RZP\Models\Settlement\SlackNotification;
 
 class Repository extends Base\Repository
 {
@@ -37,7 +42,53 @@ class Repository extends Base\Repository
         $query = $this->newQuery()
                       ->where(Entity::UTR, $payout->getUtr());
 
-        return $this->fetchForPayout($query, $payout);
+        $basEntities = $this->fetchForPayout($query, $payout);
+
+        $externalLinkedBas = [];
+
+        /** @var Entity $basEntity */
+        foreach ($basEntities as $basEntity)
+        {
+            $source = $basEntity->source;
+
+            if ($source->getEntity() === Constants\Entity::EXTERNAL)
+            {
+                $externalLinkedBas[] = $source;
+            }
+        }
+
+        if (count($externalLinkedBas) === 1)
+        {
+            return $externalLinkedBas[0];
+        }
+
+        else if (count($externalLinkedBas) > 1)
+        {
+            $operation = 'Multiple BAS entities with same UTR';
+
+            $data = [
+                'channel'   => $payout->getChannel(),
+                'amount'    => $payout->getAmount(),
+                'payout_id' => $payout->getId(),
+            ];
+
+            (new SlackNotification)->send(
+                $operation,
+                $data,
+                null,
+                1,
+                'rx_ca_rbl_alerts');
+
+            throw new LogicException(
+                'Found too many bas entities when fetched by UTR',
+                ErrorCode::SERVER_ERROR_MULTIPLE_BAS_FOR_REFERENCE_BY_UTR,
+                [
+                    'payout_id'         => $payout->getId(),
+                    'count'             => $basEntities->count(),
+                ]);
+        }
+
+        return null;
     }
 
     public function fetchByCmsRefNumForPayout(Payout\Entity $payout)
@@ -49,7 +100,66 @@ class Repository extends Base\Repository
         $query = $this->newQuery()
                       ->where(Entity::BANK_TRANSACTION_ID, $cmsRefNumber);
 
-        return $this->fetchForPayout($query, $payout);
+        $basEntities = $this->fetchForPayout($query, $payout);
+
+        // for IFT mode
+        if ($payout->getMode() === Payout\Mode::IFT)
+        {
+            $payoutInitiatedAt = $payout->getInitiatedAt();
+
+            $filteredBasEntities = [];
+
+            foreach ($basEntities as $basEntity)
+            {
+                /** @var Entity $basEntity */
+                $postedDate = $basEntity->getPostedDate();
+
+                $bankTimeBeforePostedDate = Carbon::createFromTimestamp($postedDate, Timezone::IST)
+                                                  ->subHours(4)
+                                                  ->getTimestamp();
+
+                if (($payoutInitiatedAt > $bankTimeBeforePostedDate) and
+                    ($payoutInitiatedAt < $postedDate))
+                {
+                    $filteredBasEntities[] = $basEntity;
+                }
+            }
+
+            if (count($filteredBasEntities) === 1)
+            {
+                return $filteredBasEntities[0];
+            }
+            elseif (count($filteredBasEntities) > 1)
+            {
+                throw new LogicException(
+                    'Found too many bas entities when fetch by cms reference number(mode IFT)',
+                    ErrorCode::SERVER_ERROR_MULTIPLE_BAS_FOR_REFERENCE_BY_CMS_REF_NO_FOR_IFT,
+                    [
+                        'payout_id'         => $payout->getId(),
+                        'count'             => $basEntities->count(),
+                    ]);
+            }
+
+        }
+        else // for modes other than IFT
+        {
+            if ($basEntities->count() === 1)
+               {
+                return $basEntities->first();
+               }
+            else if ($basEntities->count() > 1)
+            {
+                throw new LogicException(
+                    'Found too many bas entities when fetch by cms reference number ',
+                    ErrorCode::SERVER_ERROR_MULTIPLE_BAS_FOR_REFERENCE_BY_CMS_REF_NO_FOR_NON_IFT,
+                    [
+                        'payout_id'         => $payout->getId(),
+                        'count'             => $basEntities->count(),
+                    ]);
+            }
+        }
+
+        return null;
     }
 
     public function fetchByUtrForReversal(Reversal\Entity $reversal)
@@ -65,7 +175,22 @@ class Repository extends Base\Repository
                         })
                       ->where(Entity::CREATED_AT, '>=', $payout->getCreatedAt());
 
-        return $this->fetchForReversal($query, $reversal);
+        /** @var Base\PublicCollection $basEntities */
+        $basEntities = $this->fetchForReversal($query, $reversal);
+
+        // skipping the checks of finding more than 1 external linked bas
+        if ($basEntities->count() > 1)
+        {
+            throw new LogicException(
+                'Found too many bas entities of type credit when fetched by reversal UTR or payout UTR',
+                ErrorCode::SERVER_ERROR_MULTIPLE_BAS_FOR_REFERENCE_BY_REVERSAL_UTR,
+                [
+                    'payout_id'         => $reversal->getId(),
+                    'count'             => $basEntities->count(),
+                ]);
+        }
+
+        return $basEntities;
     }
 
     public function fetchByCmsRefNumForReversal(Reversal\Entity $reversal)
@@ -79,7 +204,20 @@ class Repository extends Base\Repository
                       ->where(Entity::BANK_TRANSACTION_ID, $cmsRefNumber)
                       ->where(Entity::CREATED_AT, '>=', $payout->getCreatedAt());
 
-        return $this->fetchForReversal($query, $reversal);
+        $basEntities = $this->fetchForReversal($query, $reversal);
+
+        if ($basEntities->count() > 1)
+        {
+            throw new LogicException(
+                'Found too many bas entities of type credit when fetched by cms reference number ',
+                ErrorCode::SERVER_ERROR_MULTIPLE_BAS_FOR_REFERENCE_BY_REVERSAL_CMS_REF_NO,
+                [
+                    'reversal_id'       => $reversal->getId(),
+                    'count'             => $basEntities->count(),
+                ]);
+        }
+
+        return $basEntities;
     }
 
     protected function fetchForReversal($query, Reversal\Entity $reversal)
@@ -95,17 +233,6 @@ class Repository extends Base\Repository
                              ->where(Entity::CHANNEL, $reversal->getChannel())
                              ->get();
 
-        if ($basEntities->count() > 1)
-        {
-            throw new LogicException(
-                'Found too many bas entities for a given reference',
-                ErrorCode::SERVER_ERROR_MULTIPLE_BAS_FOR_REFERENCE,
-                [
-                    'payout_id'         => $reversal->getId(),
-                    'count'             => $basEntities->count(),
-                ]);
-        }
-
         return $basEntities;
     }
 
@@ -116,17 +243,6 @@ class Repository extends Base\Repository
                              ->where(Entity::ACCOUNT_NUMBER, $payout->balance->getAccountNumber())
                              ->where(Entity::CHANNEL, $payout->getChannel())
                              ->get();
-
-        if ($basEntities->count() > 1)
-        {
-            throw new LogicException(
-                'Found too many bas entities for a given reference',
-                ErrorCode::SERVER_ERROR_MULTIPLE_BAS_FOR_REFERENCE,
-                [
-                    'payout_id'         => $payout->getId(),
-                    'count'             => $basEntities->count(),
-                ]);
-        }
 
         return $basEntities;
     }

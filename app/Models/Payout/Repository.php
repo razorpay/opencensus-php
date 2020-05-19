@@ -2,8 +2,6 @@
 
 namespace RZP\Models\Payout;
 
-use RZP\Constants\Table;
-use RZP\Constants\Product;
 use Illuminate\Database\Query\JoinClause;
 
 use RZP\Exception;
@@ -23,6 +21,7 @@ use RZP\Constants\Entity as E;
 use RZP\Models\Workflow\Action;
 use RZP\Models\User\BankingRole;
 use RZP\Models\Merchant\Balance;
+use RZP\Models\FundTransfer\Mode;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\Workflow\Action\Checker;
 
@@ -68,7 +67,7 @@ class Repository extends Base\Repository
                     ->where(Entity::BALANCE_ID, $balanceId)
                     ->where(Entity::AMOUNT, $amount)
                     ->where(Entity::RETURN_UTR, $utr)
-                    ->first();
+                    ->get();
     }
 
     public function fetchFromCmsRefNumber($cmsRefNumber, $amount, $balanceId)
@@ -83,6 +82,8 @@ class Repository extends Base\Repository
 
         $payoutsBalanceColumn = $this->repo->payout->dbColumn(Entity::BALANCE_ID);
 
+        $payoutModeColumn = $this->repo->payout->dbColumn(Entity::MODE);
+
         $payoutsAmountColumn = $this->repo->payout->dbColumn(Entity::AMOUNT);
 
         $payoutAttrs = $this->dbColumn('*');
@@ -93,6 +94,64 @@ class Repository extends Base\Repository
                     ->where($payoutsBalanceColumn, $balanceId)
                     ->where($ftaCmsRefNumColumn, $cmsRefNumber)
                     ->where($payoutsAmountColumn, $amount)
+                    ->whereNotIn($payoutModeColumn, [Mode::IFT])
+                    ->get();
+    }
+
+    public function fetchUnlinkedPayoutsFromCmsRefNumber($cmsRefNumber, $amount, $balanceId)
+    {
+        $ftaTable           = $this->repo->fund_transfer_attempt->getTableName();
+        $ftaSourceIdColumn  = $this->repo->fund_transfer_attempt->dbColumn(Attempt\Entity::SOURCE_ID);
+        $ftaCmsRefNumColumn = $this->repo->fund_transfer_attempt->dbColumn(Attempt\Entity::CMS_REF_NO);
+
+        $payoutsIdColumn            = $this->repo->payout->dbColumn(Entity::ID);
+        $payoutsBalanceColumn       = $this->repo->payout->dbColumn(Entity::BALANCE_ID);
+        $payoutModeColumn           = $this->repo->payout->dbColumn(Entity::MODE);
+        $payoutsAmountColumn        = $this->repo->payout->dbColumn(Entity::AMOUNT);
+        $payoutsTransactionIdColumn = $this->repo->payout->dbColumn(Entity::TRANSACTION_ID);
+
+        $payoutAttrs = $this->dbColumn('*');
+
+        return $this->newQuery()
+                    ->select($payoutAttrs)
+                    ->join($ftaTable, $payoutsIdColumn, '=', $ftaSourceIdColumn)
+                    ->where($payoutsBalanceColumn, $balanceId)
+                    ->where($ftaCmsRefNumColumn, $cmsRefNumber)
+                    ->where($payoutsAmountColumn, $amount)
+                    ->whereNull($payoutsTransactionIdColumn)
+                    ->whereNotIn($payoutModeColumn, [Mode::IFT])
+                    ->get();
+    }
+
+    public function fetchUnlinkedPayoutsFromCmsRefNumberWithinTimeRangeForIFT(
+                                            $cmsRefNumber,
+                                            $txnDateTime,
+                                            $txnDateTimeBefore,
+                                            $amount,
+                                            $balanceId)
+    {
+        $ftaTable           = $this->repo->fund_transfer_attempt->getTableName();
+        $ftaSourceIdColumn  = $this->repo->fund_transfer_attempt->dbColumn(Attempt\Entity::SOURCE_ID);
+        $ftaCmsRefNumColumn = $this->repo->fund_transfer_attempt->dbColumn(Attempt\Entity::CMS_REF_NO);
+
+        $payoutsIdColumn            = $this->repo->payout->dbColumn(Entity::ID);
+        $payoutsBalanceColumn       = $this->repo->payout->dbColumn(Entity::BALANCE_ID);
+        $payoutInitiatedAtColumn    = $this->repo->payout->dbColumn(Payout\Entity::INITIATED_AT);
+        $payoutsAmountColumn        = $this->repo->payout->dbColumn(Entity::AMOUNT);
+        $payoutsMethodColumn        = $this->repo->payout->dbColumn(Entity::MODE);
+        $payoutsTransactionIdColumn = $this->repo->payout->dbColumn(Entity::TRANSACTION_ID);
+
+        $payoutAttrs = $this->dbColumn('*');
+
+        return $this->newQuery()
+                    ->select($payoutAttrs)
+                    ->join($ftaTable, $payoutsIdColumn, '=', $ftaSourceIdColumn)
+                    ->where($payoutsBalanceColumn, $balanceId)
+                    ->where($ftaCmsRefNumColumn, $cmsRefNumber)
+                    ->where($payoutsAmountColumn, $amount)
+                    ->where($payoutsMethodColumn, Mode::IFT)
+                    ->whereNull($payoutsTransactionIdColumn)
+                    ->whereBetween($payoutInitiatedAtColumn, [$txnDateTimeBefore, $txnDateTime])
                     ->get();
     }
 
