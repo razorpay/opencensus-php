@@ -787,7 +787,7 @@ class Core extends Base\Core
         }
 
         if (empty($input[Entity::CHANNEL]) === false) {
-            $fta->setChannel($input[Entity::CHANNEL]);
+            $fta->setChannel(strtolower($input[Entity::CHANNEL]));
         }
 
         return $fta;
