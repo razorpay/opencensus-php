@@ -6,6 +6,8 @@ class Constants
 {
     const CTA           = 'cta';
 
+    const PAGE          = 'page';
+
     const WEBSITE       = 'website';
 
     const FC_SOURCE     = 'fc_source';
@@ -45,7 +47,7 @@ class Constants
     const MS_CLKID = 'msclkid';
 
     public static $clickIdentifier = [
-        self::WEBSITE,
+        self::PAGE,
         self::GC_LID,
         self::FB_CLID,
         self::MS_CLKID
