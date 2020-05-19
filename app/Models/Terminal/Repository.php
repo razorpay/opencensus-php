@@ -468,6 +468,13 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function getByTerminalIds(array $ids)
+    {
+        return $this->newQuery()
+                    ->whereIn(Entity::ID, $ids)
+                    ->get();
+    }
+
     public function getTpvTerminalIdsForGateway($gateway)
     {
         $tpvCategories = Category::getTPVCategories();
@@ -614,10 +621,15 @@ class Repository extends Base\Repository
 
     public function fetchForSyncToTerminalsService(array $input)
     {
-        return $this->newQuery()
-                    ->where(Entity::SYNC_STATUS, '=', SyncStatus::getValueForSyncStatusString($input[Entity::SYNC_STATUS]))
-                    ->limit($input['count'])
-                    ->get();
+        $query = $this->newQuery()
+                      ->where(Entity::SYNC_STATUS, '=', SyncStatus::getValueForSyncStatusString($input[Entity::SYNC_STATUS]));
+
+        if (isset($input['gateway']) === true){
+            $query = $query->where(Entity::GATEWAY, '=', $input['gateway']);
+        }
+
+        return $query->limit($input['count'])
+                     ->get();
     }
 
     public function fetchTerminalsForActivation($count)

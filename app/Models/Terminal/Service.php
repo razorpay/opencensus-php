@@ -82,7 +82,7 @@ class Service extends Base\Service
 
     // This is used when merchant dashboard fetches terminals via proxy auth
     public function proxyGetTerminals(string $mid, array $input)
-    {        
+    {
         $params = $input;
 
         $params[Entity::MERCHANT_ID] = $mid;
@@ -90,18 +90,18 @@ class Service extends Base\Service
         $terminals = $this->repo->terminal->getByParams($params);
 
         // If no terminal exist for wallet_paypal, fetch from terminals service
-        if ( ($terminals->count() === 0) and 
+        if ( ($terminals->count() === 0) and
             ( (isset($input['gateway']) === true))  and ($input['gateway'] === Payment\Gateway::WALLET_PAYPAL) )
         {
             $data =  $this ->app['terminals_service']->getTerminalsByMerchantIdAndGateway($mid, Payment\Gateway::WALLET_PAYPAL);
 
             $arrayPublic = $this->terminalsServiceDataToArrayPublic($data);
-                        
+
             return $arrayPublic;
         }
 
         return $terminals->toArrayPublic();
-    }    
+    }
 
     public function deleteTerminal($mid, $tid)
     {
@@ -409,7 +409,7 @@ class Service extends Base\Service
         // Although core will run individual validations for gateway, the terminal belongs to, currently we want to allow only, tatus update using bulkupdate api
         // so adding this custom validation to allow only status update, this can be updated to allow more attributes to be updated
         $validator->validateInput('updateTerminalsBulkAttributes', $input['attributes']);
-        
+
         $enabled = $input['attributes']['enabled'];
 
         unset($input['attributes']['enabled']);
@@ -456,11 +456,11 @@ class Service extends Base\Service
                     else if ($input['attributes'][Entity::STATUS] === Status::ACTIVATED)
                     {
                         $terminalOnboardingDetail->setStatus(TerminalOnboardingDetail\Status::ACTIVATED);
-                        
+
                         $app['events']->fire('api.terminal.activated', ['main' => $terminal]);
                     }
-                    
-                    $terminalOnboardingDetail->save();    
+
+                    $terminalOnboardingDetail->save();
                 }
 
                 $successCount++;
@@ -493,7 +493,7 @@ class Service extends Base\Service
         );
 
         return $response;
-    } 
+    }
 
     public function terminalsMigrateCron(array $input)
     {
@@ -501,9 +501,18 @@ class Service extends Base\Service
 
         $failureCount = 0;
 
-        $validator = (new Terminal\Validator)->validateInput('migrate_terminals_cron', $input);
+        (new Terminal\Validator)->validateInput('migrate_terminals_cron', $input);
 
-        $terminals = $this->repo->terminal->fetchForSyncToTerminalsService($input);
+        if (isset($input["ids"]) === true)
+        {
+            $ids = $input["ids"];
+
+            $terminals = $this->repo->terminal->getByTerminalIds($ids);
+        }
+        else
+        {
+            $terminals = $this->repo->terminal->fetchForSyncToTerminalsService($input);
+        }
 
         foreach ($terminals as $terminal)
         {
