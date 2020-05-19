@@ -13,7 +13,7 @@ use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\Admin\Permission\Name as Permission;
 
-final class Route
+class Route
 {
     protected static $apiRoutes = [
         // Dev routes
@@ -4972,6 +4972,8 @@ final class Route
         'on_demand_settlement',
     ];
 
+    public static $routesWithV2Prefix = [];
+
     /**
      * @var Router
      */
@@ -5212,7 +5214,26 @@ final class Route
         {
             foreach (self::$$group as $routeName)
             {
-                $this->addRoute($routeName);
+                //ignores the routes which are explicitly specified to have v2 prefix.
+                if (in_array($routeName, self::$routesWithV2Prefix, true) === false)
+                {
+                    $this->addRoute($routeName);
+                }
+            }
+        }
+    }
+
+    public function addV2RouteGroups($groups)
+    {
+        foreach ($groups as $group)
+        {
+            foreach (self::$$group as $routeName)
+            {
+                //only adds the routes which are explicitly specified to have v2 prefix.
+                if (in_array($routeName, self::$routesWithV2Prefix, true) === true)
+                {
+                    $this->addRoute($routeName);
+                }
             }
         }
     }

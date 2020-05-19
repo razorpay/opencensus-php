@@ -25,6 +25,22 @@ class RouteServiceProvider extends ServiceProvider
     protected $namespace = 'RZP\Http\Controllers';
 
     /**
+     * Route groups which are to be added for api
+     *
+     * @var array
+     */
+    protected $apiRoutes = [
+        'public',
+        'publicCallback',
+        'direct',
+        'admin',
+        'internal',
+        'private',
+        'proxy',
+        'device'
+    ];
+
+    /**
      * Define your route model bindings, pattern filters, etc.
      */
     public function boot()
@@ -102,6 +118,13 @@ class RouteServiceProvider extends ServiceProvider
                 $this->mapApiRoutes($router);
             });
 
+        $routeGroupGlobalParams['prefix'] = 'v2';
+        $router->group(
+            $routeGroupGlobalParams,
+            function ($router)
+            {
+                $this->mapApiV2Routes($router);
+            });
 
         $routeGroupP2pParams = [
             'prefix'        => 'v1/upi',
@@ -128,14 +151,17 @@ class RouteServiceProvider extends ServiceProvider
         $router->group(
             [],
             function($router) {
-                $this->route->addRouteGroups(['public',
-                                              'publicCallback',
-                                              'direct',
-                                              'admin',
-                                              'internal',
-                                              'private',
-                                              'proxy',
-                                              'device']);
+                $this->route->addRouteGroups($this->apiRoutes);
+            }
+        );
+    }
+
+    protected function mapApiV2Routes(Router $router)
+    {
+        $router->group(
+            [],
+            function($router) {
+                $this->route->addV2RouteGroups($this->apiRoutes);
             }
         );
     }
