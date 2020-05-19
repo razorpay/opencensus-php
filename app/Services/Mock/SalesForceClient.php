@@ -3,6 +3,9 @@
 namespace RZP\Services\Mock;
 
 use RZP\Models\Merchant;
+use RZP\Http\RequestHeader;
+use RZP\Jobs\SalesforceRequestJob;
+
 
 use RZP\Services\SalesForceClient as BaseSalesForceClient;
 
@@ -13,12 +16,12 @@ class SalesForceClient extends BaseSalesForceClient
         return $input;
     }
 
-    public function sendPreSignupDetails(array $input, Merchant\Entity $merchant)
+    protected function dispatchRequestJob($url, $payload, $traceCodeRequest, $traceCodeResponse, $traceCodeError)
     {
         return;
     }
 
-    public function captureInterestOfPrimaryMerchantInBanking(Merchant\Entity $merchant)
+    protected function createAndSendRequest(array $request)
     {
         return;
     }

@@ -147,7 +147,7 @@ class SalesForceClient
             'merchant_id'      => $merchant->getId(),
             'email'            => $merchant->getEmail(),
             'name'             => $merchant->getName(),
-            'business_banking' => $merchant->isBusinessBankingEnabled()
+            'business_banking' => (int)$merchant->isBusinessBankingEnabled()
         ];
 
         $keyMap = [
@@ -206,24 +206,29 @@ class SalesForceClient
         return $response;
     }
 
-    public function captureInterestOfPrimaryMerchantInBanking(Merchant\Entity $merchant)
+    public function payloadGenerationForInterestOfPrimaryMerchantInBanking(Merchant\Entity $merchant)
     {
-        $url = $this->generateUrlForMerchantUpsert();
-
-        $payload = [
+        return [
             [
                 "merchant_id"       => $merchant->getId(),
                 "name"              => $merchant->getName(),
                 "email"             => $merchant->getEmail(),
-                "activated"         => $merchant->isActivated(),
+                "activated"         => (int)$merchant->isActivated(),
                 "signup_date"       => epoch_format($merchant->getCreatedAt(), self::DATE_FORMAT),
                 "business_name"     => $merchant->merchantDetail->getBusinessName(),
                 "contact_name"      => $merchant->merchantDetail->getContactName(),
-                "business_banking"  => $merchant->isBusinessBankingEnabled(),
+                "business_banking"  => (int)$merchant->isBusinessBankingEnabled(),
                 "submission_date"   => date(self::DATE_FORMAT),
                 "submitted"         => 1,
             ]
         ];
+    }
+
+    public function captureInterestOfPrimaryMerchantInBanking(Merchant\Entity $merchant)
+    {
+        $url = $this->generateUrlForMerchantUpsert();
+
+        $payload = $this->payloadGenerationForInterestOfPrimaryMerchantInBanking($merchant);
 
         $this->dispatchRequestJob($url,
                                   $payload,
