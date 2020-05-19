@@ -19,6 +19,7 @@ use App\MerchantDetails;
 use App\Providers\GenericUser;
 use App\Session as SessionTable;
 use App\Merchant\GenericMerchant;
+use Razorpay\Api\Errors\ErrorCode;
 use Lcobucci\JWT\Signer\Hmac\Sha256;
 use Illuminate\Contracts\Cache\Store;
 use Illuminate\Foundation\Application;
@@ -170,6 +171,42 @@ class Service extends Base\Service
     public function postResendOtp(array $input)
     {
         return $this->requestApiWithBasicSession($input, 'users/2fa/otp_resend', 'POST');
+    }
+
+    public function verifyEmailOtp($input)
+    {
+        $request = new \App\Admin\ApiRequestAny(['client_type' => 'merchant']);
+
+        list($error, $data) = $request->processInput($input)->send('users/verify_email', 'POST');
+
+        if (empty($error) === false)
+        {
+            throw new BadRequestError(
+                $error[0],
+                ErrorCode::BAD_REQUEST_ERROR,
+                400
+            );
+        }
+
+        return [$error, $data];
+    }
+
+    public function resendEmailOtp($input)
+    {
+        $request = new \App\Admin\ApiRequestAny(['client_type' => 'merchant']);
+
+        list($error, $data) = $request->processInput($input)->send('users/resend-verification-otp', 'POST');
+
+        if (empty($error) === false)
+        {
+            throw new \Razorpay\Api\Errors\BadRequestError(
+                $error[0],
+                \Razorpay\Api\Errors\ErrorCode::BAD_REQUEST_ERROR,
+                400
+            );
+        }
+
+        return [$error, $data];
     }
 
     /**

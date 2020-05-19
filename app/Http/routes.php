@@ -71,6 +71,8 @@ Route::group(['middleware' => ['web']], function () {
     Route::group(['middleware' => 'auth:user', 'prefix' => 'user'], function()
     {
         Route::post('/pre_signup', 'MerchantController@postSignup');
+        Route::post('/verify_email', 'UserController@verifyEmailOtp');
+        Route::post('/resend_email_otp', 'UserController@resendEmailOtp');
         Route::post('/resend', 'MerchantController@postResendConfirmation');
         Route::get('/keepalive', 'UserController@getKeepAlive');
         Route::get('/logout', 'UserController@getLogout');

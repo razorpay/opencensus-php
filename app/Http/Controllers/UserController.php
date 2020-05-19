@@ -271,6 +271,24 @@ class UserController extends Controller
         return AppResponse::jsonResponse($error);
     }
 
+    public function resendEmailOtp()
+    {
+        $input = Input::all();
+
+        list($error, $data) = (new User\Service)->resendEmailOtp($input);
+
+        return AppResponse::jsonResponse($error, $data);
+    }
+
+    public function verifyEmailOtp()
+    {
+        $input = Input::all();
+
+        list($error, $data) = (new User\Service)->verifyEmailOtp($input);
+
+        return AppResponse::jsonResponse($error, $data);
+    }
+
     public function getUserDetailsV2()
     {
         list($error, $data) = (new User\Service)->getUserDetails();
