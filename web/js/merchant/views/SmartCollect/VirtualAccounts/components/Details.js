@@ -1,6 +1,8 @@
 import { connect } from 'react-redux';
+import { Link } from 'react-router-dom';
 import Amount from 'common/ui/Amount';
 import Banner from 'common/ui/Banner';
+import Button from 'common/new-ui/Button';
 import Time from 'common/ui/Time';
 import Spinner from 'common/ui/Spinner';
 import Alert from 'common/ui/Forms/Alert';
@@ -115,6 +117,9 @@ export default class extends React.Component {
       bankAccount2,
       upiAddress,
     });
+
+    const showTestPaymentBtn =
+      mode === 'test' && virtualaccount.status === 'active';
 
     return (
       <div class="content-wrapper content-sm txn-details">
@@ -250,20 +255,32 @@ export default class extends React.Component {
                   </button>
                 ) : null}
 
+                {showTestPaymentBtn && (
+                  <Banner class="VA-test-payment">
+                    <Button onClick={onMakeTestPaymentClick}>
+                      Make a Test Payment
+                    </Button>
+
+                    <div>
+                      <strong>Test Mode:</strong> Make a test payment to this
+                      virtual acocunt.
+                    </div>
+                  </Banner>
+                )}
+
                 <hr />
 
                 <div>
-                  {mode === 'test' && virtualaccount.status === 'active' ? (
-                    <button
-                      class="btn btn-link pull-right"
-                      onClick={onMakeTestPaymentClick}
-                    >
-                      Make a Test Payment
-                    </button>
-                  ) : null}
-
                   <p class="text-muted" style={{ lineHeight: '35px' }}>
                     Payments to this account - {va_payments.length} payments
+                    <Link
+                      class="pull-right"
+                      to={`/smartcollect/payments/?virtual_account_id=${
+                        virtualaccount.id
+                      }`}
+                    >
+                      View All Payments
+                    </Link>
                   </p>
 
                   <Table

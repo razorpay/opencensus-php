@@ -1,0 +1,69 @@
+import { connect } from 'react-redux';
+import { Route, Switch, NavLink } from 'react-router-dom';
+
+import { RZPFeatures } from 'merchant/helpers/data';
+
+import {
+  handleProductQuickGuide,
+  getCurrentProductOnBoardingDetails,
+} from 'merchant/reducers/onboarding';
+
+import TestModeBanner from 'merchant/components/TestModeBanner';
+
+import OnBoarding from './OnBoarding';
+import QuickGuide from './QuickGuide';
+import PaymentsList from './Payments/List';
+import VirtualAccountsList from './VirtualAccounts/List';
+
+@connect(
+  state => {
+    return {
+      VAProductOnBoarding: getCurrentProductOnBoardingDetails(
+        state,
+        RZPFeatures.VA
+      ),
+    };
+  },
+  {
+    handleProductQuickGuide,
+  }
+)
+export default class SmartCollectContainer extends React.Component {
+  render() {
+    const { isQuickGuideOpen, showOnboarding } = this.props.VAProductOnBoarding;
+
+    if (showOnboarding) {
+      return <OnBoarding />;
+    }
+
+    const className =
+      this.props.location.pathname.includes('virtualaccounts') && 'active';
+
+    return (
+      <div class="SmartCollect-Container">
+        <tabbed-container>
+          {isQuickGuideOpen && <QuickGuide />}
+
+          <header id="smart-collect-header">
+            <NavLink to="/smartcollect/virtualaccounts" class={className}>
+              Virtual Accounts
+            </NavLink>
+            <NavLink to="/smartcollect/payments">Payments</NavLink>
+          </header>
+
+          <TestModeBanner />
+
+          <content>
+            <Switch>
+              <Route
+                path={['/smartcollect/virtualaccounts', '/virtualaccounts']}
+                component={VirtualAccountsList}
+              />
+              <Route path="/smartcollect/payments" component={PaymentsList} />
+            </Switch>
+          </content>
+        </tabbed-container>
+      </div>
+    );
+  }
+}

@@ -4,7 +4,7 @@ const baseUrl = {
   pay: '/payments/',
   rfnd: '/refunds/',
   order: '/orders/',
-  va: '/virtualaccounts/',
+  va: '/smartcollect/virtualaccounts/',
   plan: '/plans/',
   sub: '/subscriptions/',
   trf: '/route/transfers/',

@@ -68,7 +68,7 @@ export default function MerchantNavLinks(props) {
       <MainNavLink
         label="Smart Collect"
         icon="i i-account-balance text-danger"
-        to="/virtualaccounts"
+        to={routes.smartCollect}
         additionalCondition={user => user.isAllowedView('virtual_accounts')}
       />
 

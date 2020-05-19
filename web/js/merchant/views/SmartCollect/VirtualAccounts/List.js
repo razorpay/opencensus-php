@@ -29,11 +29,10 @@ import TakeATourButton from 'merchant/components/QuickGuide/TakeATourButton';
 import VirtualAccountsListFilter from 'merchant/views/SmartCollect/VirtualAccounts/components/ListFilter';
 
 import ListContainer from 'merchant/containers/ListContainer';
-import TestModeBanner from 'merchant/components/TestModeBanner';
 
-import OnBoarding, { getIsAllowedResetVAOnBoarding } from './OnBoarding';
+import { getIsAllowedResetVAOnBoarding } from '../OnBoarding';
 
-import QuickGuide, { getVAQuickGuideIsClosed } from './QuickGuide';
+import { getVAQuickGuideIsClosed } from '../QuickGuide';
 
 import EmptyList from 'merchant/components/EmptyList';
 
@@ -137,71 +136,54 @@ export default class VirtualAccountsListContainer extends ListContainer {
   };
 
   render() {
-    const { isQuickGuideOpen, showOnboarding } = this.props.VAProductOnBoarding;
-
-    if (showOnboarding) {
-      return <OnBoarding />;
-    }
-
     return (
-      <React.Fragment>
-        <tabbed-container>
-          {isQuickGuideOpen && <QuickGuide />}
+      <div class="content-wrapper">
+        <HeaderAction>
+          <div class="btn-toolbar">
+            <TakeATourButton feature={RZPFeatures.VA} />
 
-          <header id="#va-header">
-            <NavLink to="/virtualaccounts">Virtual Accounts</NavLink>
+            <DocsLink url="https://razorpay.com/docs/smart-collect/" />
 
-            <HeaderAction>
-              <div class="btn-toolbar">
-                <TakeATourButton feature={RZPFeatures.VA} />
+            <ShowWhen
+              additionalCondition={user =>
+                user.isAllowedEdit('virtual_accounts')
+              }
+            >
+              <NavLink
+                class="btn btn-primary"
+                to="/smartcollect/virtualaccounts/new"
+              >
+                <i class="i i-plus" />
+                <span>Create Virtual Account</span>
+              </NavLink>
+            </ShowWhen>
+          </div>
+        </HeaderAction>
 
-                <DocsLink url="https://razorpay.com/docs/smart-collect/" />
+        <VirtualAccountsListFilter
+          form="virtualAccountsListFilter"
+          count={this.state.count}
+          onSubmit={this.search}
+          onSearchAnalytics={this.onSearchAnalytics}
+          onClearAnalytics={this.onClearAnalytics}
+        />
 
-                <ShowWhen
-                  additionalCondition={user =>
-                    user.isAllowedEdit('virtual_accounts')
-                  }
-                >
-                  <NavLink class="btn btn-primary" to="/virtualaccounts/new">
-                    <i class="i i-plus" />
-                    <span>Create Virtual Account</span>
-                  </NavLink>
-                </ShowWhen>
-              </div>
-            </HeaderAction>
-          </header>
-
-          <TestModeBanner />
-
-          <content>
-            <div class="content-wrapper">
-              <VirtualAccountsListFilter
-                form="virtualAccountsListFilter"
-                count={this.state.count}
-                onSubmit={this.search}
-                onSearchAnalytics={this.onSearchAnalytics}
-                onClearAnalytics={this.onClearAnalytics}
-              />
-
-              <DataTable
-                title="Virtual Accounts"
-                columns={[
-                  virtualAccountId,
-                  accountDescription,
-                  amountPaid,
-                  status,
-                  createdAt,
-                ]}
-                count={this.state.count}
-                skip={this.state.skip}
-                paginate={this.paginate}
-                EmptyComponent={EmptyComponent}
-                {...this.props}
-              />
-            </div>
-          </content>
-        </tabbed-container>
-      </React.Fragment>
+        <DataTable
+          title="Virtual Accounts"
+          columns={[
+            virtualAccountId,
+            accountDescription,
+            amountPaid,
+            status,
+            createdAt,
+          ]}
+          count={this.state.count}
+          skip={this.state.skip}
+          paginate={this.paginate}
+          EmptyComponent={EmptyComponent}
+          {...this.props}
+        />
+      </div>
     );
   }
 }

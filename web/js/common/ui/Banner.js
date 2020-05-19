@@ -18,7 +18,7 @@ import { Link } from 'react-router-dom';
  * <Banner message="my message" cta="Action" ctaUrl="http://example.com/"/>
  */
 
-export default ({ children, cta, ctaUrl, ctaOnClick }) => {
+export default ({ children, cta, ctaUrl, ctaOnClick, className }) => {
   let getCtaElement = null,
     hasCta = true;
 
@@ -49,7 +49,7 @@ export default ({ children, cta, ctaUrl, ctaOnClick }) => {
     }
   }
 
-  const classNames = ['alert', 'alert-warning', 'rzp-banner'];
+  const classNames = ['alert', 'alert-warning', 'rzp-banner', className];
 
   return (
     <div className={classNames.join(' ')}>

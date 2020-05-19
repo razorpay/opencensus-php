@@ -188,3 +188,10 @@ export const commissionsAggregateReducer = makeCollectionReducer(
 export const fetchInvitations = params =>
   fetchAll(params, Invitation, 'INVITATIONS');
 export const invitationsReducer = makeActionCollectionReducer('INVITATIONS');
+
+// Smart Collect
+export const fetchSmartCollectPayments = params => {
+  params.virtual_account = 1;
+  return fetchAll(params, Payment, 'SC_PAYMENTS');
+};
+export const smartCollectPaymentsReducer = makeCollectionReducer('SC_PAYMENTS');

@@ -5,24 +5,21 @@ export default ({ showBatchIdFilter, ...props }) => {
   return (
     <ListFilter {...props}>
       <div class="form-group list-filter-item">
+        <label>Virtual Account Id</label>
+        <Field
+          name="virtual_account_id"
+          component="input"
+          class="form-control input-sm"
+        />
+      </div>
+
+      <div class="form-group list-filter-item">
         <label>Payment Id</label>
         <Field name="id" component="input" class="form-control input-sm" />
       </div>
 
-      {/* used in emndate payments */}
-      {showBatchIdFilter && (
-        <div class="form-group list-filter-item">
-          <label>Batch Id</label>
-          <Field
-            name="batch_id"
-            component="input"
-            class="form-control input-sm"
-          />
-        </div>
-      )}
-
       <div class="form-group list-filter-item">
-        <label>Status</label>
+        <label>Payment Status</label>
         <Field name="status" component="select" class="form-control input-sm">
           <option value="">All</option>
           <option value="authorized">Authorized</option>
@@ -30,16 +27,6 @@ export default ({ showBatchIdFilter, ...props }) => {
           <option value="refunded">Refunded</option>
           <option value="failed">Failed</option>
         </Field>
-      </div>
-
-      <div class="form-group list-filter-item">
-        <label>Email</label>
-        <Field
-          name="email"
-          component="input"
-          type="email"
-          class="form-control input-sm"
-        />
       </div>
 
       <div class="form-group list-filter-item">
@@ -58,8 +45,6 @@ export default ({ showBatchIdFilter, ...props }) => {
           class="form-control input-sm"
         />
       </div>
-
-      {props.addonAfter}
     </ListFilter>
   );
 };

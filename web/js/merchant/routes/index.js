@@ -91,6 +91,7 @@ const entityDetailsMap = {
 
   '/route/payments/:id': { component: PaymentsDetails },
   '/route/accounts/:id': { component: AccountDetailsNew },
+  '/smartcollect/virtualaccounts/:id': { component: VirtualAccountDetails },
   '/virtualaccounts/:id': { component: VirtualAccountDetails },
   '/plans/new': { component: PlanNew },
   '/plans/:id': { component: PlanDetails },
@@ -182,6 +183,9 @@ const entityModalsMap = {
   },
   '/subscriptions/:id(sub_.+)/edit': {
     component: UpdateSubscriptionLink,
+  },
+  '/smartcollect/virtualaccounts/new': {
+    component: VirtualAccountCreate,
   },
   '/virtualaccounts/new': {
     component: VirtualAccountCreate,

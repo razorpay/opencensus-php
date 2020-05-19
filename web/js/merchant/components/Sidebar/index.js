@@ -41,6 +41,7 @@ const BASE_ROUTES = {
   subscriptions: '/subscriptions',
   chargeAtWill: '/recurring_payments',
   partnerDashboard: '/submerchants',
+  smartCollect: '/smartcollect/virtualaccounts',
 };
 
 @withRouter

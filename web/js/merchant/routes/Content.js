@@ -24,7 +24,7 @@ import ReportsAsync from 'merchant/views/ReportsAsync/Home';
 
 import MyAccount from 'merchant/views/Account';
 import Settings from 'merchant/views/Settings';
-import VirtualAccounts from 'merchant/views/SmartCollect/VirtualAccounts/List';
+import SmartCollect from 'merchant/views/SmartCollect/Index';
 import Support from 'merchant/components/Support';
 import Offers from 'merchant/views/Offers';
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
@@ -281,8 +281,8 @@ export default class Content extends Component {
           />
 
           <ShowWhenRoute
-            path="/virtualaccounts"
-            component={VirtualAccounts}
+            path={['/smartcollect', '/virtualaccounts']}
+            component={SmartCollect}
             additionalCondition={user => user.isAllowedView('virtual_accounts')}
           />
 
