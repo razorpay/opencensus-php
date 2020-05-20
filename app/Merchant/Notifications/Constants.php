@@ -184,7 +184,7 @@ class Constants
                 [
                     'type'  => 'primary-inverted',
                     'label' => 'Know More',
-                    'url'   => 'https://razorpay.com/instant-refunds/',
+                    'url'   => 'https://razorpay.com/docs/payment-gateway/refunds/#setting-the-default-speed-of-refunds',
                 ]
             ]
         ],
