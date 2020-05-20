@@ -35,10 +35,10 @@ export default class LogList extends React.PureComponent {
   };
 
   render() {
-    const { loading, items, allConfigs, ...props } = this.props;
+    const { pending, items, allConfigs, ...props } = this.props;
     return (
       <div class="LogList">
-        {loading ? (
+        {pending && items.length < 1 ? (
           <div className="page-spinner-container">
             <Spinner />
           </div>
@@ -60,16 +60,28 @@ export default class LogList extends React.PureComponent {
             ))}
           </>
         )}
-        {!loading &&
-          5 <= items.length &&
-          items.length < 10 && (
-            <div class="LoadMore">
-              <button onClick={props.onLoadMoreClick} class="btn btn-link">
-                Load More
-              </button>
-            </div>
-          )}
+        {items.length > 1 && (
+          <div className="LoadMore">
+            <LoadMoreAction
+              onLoadMoreClick={props.onLoadMoreClick}
+              pending={pending}
+              allFetched={props.allFetched}
+            />
+          </div>
+        )}
       </div>
     );
   }
+}
+
+function LoadMoreAction({ onLoadMoreClick, pending, allFetched }) {
+  if (pending) return <em>Loading more requests...</em>;
+
+  if (allFetched) return <em>Nothing more to load</em>;
+
+  return (
+    <button onClick={onLoadMoreClick} class="btn btn-link">
+      Load More
+    </button>
+  );
 }

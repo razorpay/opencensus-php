@@ -11,7 +11,6 @@ import {
 const PARTNER_LOGS = 'PARTNER_LOGS';
 const MERCHANT_LOGS = 'MERCHANT_LOGS';
 
-const getLoadMoreActionName = entity => entity + '_LOAD_MORE';
 const getPollLogActionName = entity => entity + '_POLLING';
 const getLogCreateActionName = entity =>
   `${entity.substring(0, entity.length - 1)}_CREATE`;
@@ -19,39 +18,23 @@ const getLogCreateActionName = entity =>
 const partnerLogFetchAction = getFetchActionName(PARTNER_LOGS);
 const merchantLogFetchAction = getFetchActionName(MERCHANT_LOGS);
 
-const merchantLogLoadMoreAction = getLoadMoreActionName(MERCHANT_LOGS);
-
 const merchantReportPollLogAction = getPollLogActionName(MERCHANT_LOGS);
 const partnerReportPollLogAction = getPollLogActionName(PARTNER_LOGS);
 
 const merchantReportLogCreateAction = getLogCreateActionName(MERCHANT_LOGS);
 const partnerReportLogCreateAction = getLogCreateActionName(PARTNER_LOGS);
 
-const filterSameObjects = (state, action) => {
-  const existingIds = state.items.map(({ id }) => id);
-  const newObjects = action.payload.data.items.filter(
-    ({ id }) => !existingIds.includes(id)
-  );
-  return {
-    ...state,
-    items: [...newObjects, ...state.items],
-  };
-};
+const handleFetchLogsPending = state => ({
+  error: null,
+  pending: true,
+  items: state.items,
+});
 
-const handleFetchLogsPending = (state, action, initialState) =>
-  state.items.length > 0 ? { ...state } : { ...initialState };
-
-const handleFetchLogsSuccess = (state, action) => {
-  const firstFetch = state.items.length < 1;
-
-  return firstFetch
-    ? listFetchSuccessState(state, action)
-    : filterSameObjects(state, action);
-};
-
-const handleLoadMoreLogsSuccess = (state, action) => ({
+const handleFetchLogsSuccess = (state, action) => ({
   ...state,
+  pending: false,
   items: [...state.items, ...action.payload.data.items],
+  allFetched: action.payload.data.count < 5,
 });
 
 const appendEntityIfNotDuplicated = (state, action) =>
@@ -77,22 +60,10 @@ export const merchantLogListReducer = makeActionCollectionReducer(
   {
     [`${merchantLogFetchAction}::PENDING`]: handleFetchLogsPending,
     [`${merchantLogFetchAction}::SUCCESS`]: handleFetchLogsSuccess,
-    [`${merchantLogLoadMoreAction}::SUCCESS`]: handleLoadMoreLogsSuccess,
     [`${merchantReportPollLogAction}::SUCCESS`]: updateEntityInList,
     [`${merchantReportLogCreateAction}::SUCCESS`]: appendEntityIfNotDuplicated,
   }
 );
-
-// Actions
-export const loadMoreMerchantLogs = params => ({
-  type: getLoadMoreActionName(MERCHANT_LOGS),
-  payload: new Log({ reportType: 'merchant' }).fetchAll(params),
-});
-
-export const loadMorePartnerLogs = params => ({
-  type: getLoadMoreActionName(PARTNER_LOGS),
-  payload: new Log({ reportType: 'partner' }).fetchAll(params),
-});
 
 const createLog = reportType => {
   const actionName = `${reportType.toUpperCase()}_LOG_CREATE`;

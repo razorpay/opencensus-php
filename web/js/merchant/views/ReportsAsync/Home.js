@@ -6,7 +6,6 @@ import { pickProps, uniqueArray } from 'common/utils/rzp-utils';
 import {
   fetchMerchantReportLogs as fetchLogs,
   createMerchantReportLog as createLog,
-  loadMoreMerchantLogs as loadMore,
   pollMerchantReportLog as pollLog,
 } from 'merchant/reducers/reports/logs';
 
@@ -56,7 +55,6 @@ export default connect(mapStateToProps, {
   fetchConfigs,
   fetchAccounts,
   createLog,
-  loadMore,
   pollLog,
 })(Reports);
 

@@ -80,7 +80,8 @@ export default class ReportHome extends React.PureComponent {
   };
 
   onLoadMoreLogs = () => {
-    this.props.loadMore({ count: 5, skip: 5 });
+    const { logs } = this.props;
+    this.props.fetchLogs({ count: 5, skip: logs.items.length });
   };
 
   render() {
