@@ -52,4 +52,16 @@ return [
             ],
         ],
     ],
+
+    'testTimestampsOnGetRefundApi' => [
+        'request' => [
+            'method'  => 'get',
+            'url'     => '/refunds/',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'refund',
+            ],
+        ],
+    ],
 ];

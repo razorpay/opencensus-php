@@ -24,6 +24,8 @@ use RZP\Jobs\BulkScroogeVerifyRefund;
 use RZP\Jobs\BulkRefund as BulkRefundJob;
 use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Models\Admin\Service as AdminService;
+use RZP\Models\Reversal\Entity as ReversalEntity;
+use RZP\Models\Payment\Refund\Core as RefundCore;
 use RZP\Models\Payment\Refund\Speed as RefundSpeed;
 use RZP\Models\Payment\Refund\Entity as RefundEntity;
 use RZP\Models\Payment\Refund\Constants as RefundConstants;
@@ -308,7 +310,7 @@ class Service extends Base\Service
     {
         $refundArray = $this->repo->refund->fetchAndReturnPublicArray($id, $this->merchant);
 
-        // Adding `processed_at` and `speed_change_time` params only for feature enabled dashboard merchants
+        // Adding `processed_at`, `failed_at`, `speed_change_time` params only for dashboard
         if ($this->app['basicauth']->isProxyAuth() === true)
         {
             $this->addParamsForDashboard($refundArray);
@@ -2687,9 +2689,14 @@ class Service extends Base\Service
 
             $refund = $this->repo->refund->find($refundId);
 
+            // Adds Speed change timestamp when refunds speed transitioned from instant to normal
+            $this->addSpeedChangeTime($refundArray, $refund);
+
+            // Adds Processed At timestamp based on refund status and merchant type
             $this->addProcessedAtTime($refundArray, $refund);
 
-            $this->addSpeedChangeTime($refundArray, $refund);
+            // Adding failed at time only when refund status shown to merchant is failed
+            $this->addFailedAtTime($refundArray, $refund);
         }
         catch(\Throwable $exception)
         {
@@ -2699,22 +2706,112 @@ class Service extends Base\Service
                 TraceCode::REFUND_ADD_DASHBOARD_PARAMS_FAILED,
                 [
                     'refund_id' => $refundId,
-                ]);
+                ]
+            );
         }
     }
 
     protected function addProcessedAtTime(array &$refundArray, Entity $refund)
     {
-        if ($refund->getSpeedProcessed() === RefundSpeed::INSTANT)
+        $refundArray[Entity::PROCESSED_AT] = NULL;
+
+        // Adding actual timestamps only when status is processed
+        if ((isset($refundArray[Entity::STATUS]) === false) or ($refundArray[Entity::STATUS] !== Status::PROCESSED))
         {
-            $refundArray[Entity::PROCESSED_AT] = $refund->getProcessedAt();
+            return;
+        }
+
+        switch ($refund->getSpeedDecisioned())
+        {
+            // For optimum refunds :
+            // i) if speed_processed is normal, it can mean that the refund has failed instant attempt and now
+            //    its in the normal refund flow making attempt to gateway. So for
+            //      public Status Merchants : processed_at is actual processed_at value
+            //      Other Merchants : processed_at is created_at
+            // ii) if speed_processed is not normal, it can mean that the refund is still under processing
+            //     or was processed instantly. In either case we show actual processed at to merchant
+            case Speed::OPTIMUM :
+                if ($refund->getSpeedProcessed() === Speed::NORMAL)
+                {
+                    $speedChangeTime = $refundArray[RefundConstants::SPEED_CHANGE_TIME] ?? NULL;
+
+                    $refundArray[Entity::PROCESSED_AT] =
+                        (RefundCore::isRefundsPublicStatusMerchant($this->merchant->getId()) === true) ?
+                            $this->getProcessedAtForPublicStatusMerchant($refund) :
+                            $speedChangeTime;
+                }
+                else
+                {
+                    $refundArray[Entity::PROCESSED_AT] = $refund->getProcessedAt();
+                }
+
+                break;
+
+            // For instant refunds :
+            //  All Merchants : processed_at is actual processed_at value
+            case Speed::INSTANT :
+                $refundArray[Entity::PROCESSED_AT] = $refund->getProcessedAt();
+
+                break;
+
+            // For normal refunds :
+            //  public Status Merchants : processed_at is actual processed_at value
+            //  Other Merchants : processed_at is created_at
+            case Speed::NORMAL :
+                $refundArray[Entity::PROCESSED_AT] =
+                    (RefundCore::isRefundsPublicStatusMerchant($this->merchant->getId()) === true) ?
+                        $this->getProcessedAtForPublicStatusMerchant($refund) :
+                        $refund->getCreatedAt();
+
+                break;
+        }
+    }
+
+    protected function getProcessedAtForPublicStatusMerchant(Entity $refund)
+    {
+        $processedAt = $refund->getProcessedAt();
+
+        if (RefundCore::fetchPublicStatusFromScrooge($this->merchant->getId()) === true)
+        {
+            $publicProcessedAt = $refund->getCreatedAt() + RefundConstants::SCROOGE_PUBLIC_STATUS_TO_PROCESSED_TIME;
+
+            if (($processedAt === NULL) or
+                ($processedAt > $publicProcessedAt))
+            {
+                $processedAt = $publicProcessedAt;
+            }
+        }
+
+        return $processedAt;
+    }
+
+    protected function addFailedAtTime(array &$refundArray, Entity $refund)
+    {
+        // Adding failed at only when status is failed
+        if ((isset($refundArray[Entity::STATUS]) === true) and ($refundArray[Entity::STATUS] === Status::FAILED))
+        {
+            $reversals = $this->fetchReversalOfRefund($refund->getId());
+
+            $failedAt = null;
+
+            foreach ($reversals as $reversal)
+            {
+                if ($reversal->getAmount() === $refund->getAmount())
+                {
+                    $failedAt = $reversal->getCreatedAt();
+
+                    break;
+                }
+            }
+
+            $refundArray[RefundConstants::FAILED_AT] = $failedAt;
         }
     }
 
     protected function addSpeedChangeTime(array &$refundArray, Entity $refund)
     {
         if (($refund->getSpeedDecisioned() === RefundSpeed::OPTIMUM) and
-            ($refund->getSpeedProcessed() !== RefundSpeed::INSTANT))
+            ($refund->getSpeedProcessed() === RefundSpeed::NORMAL))
         {
             $queryParams = [
                 RefundConstants::SPEED_CHANGE_TIME => 1,
@@ -2725,6 +2822,7 @@ class Service extends Base\Service
             $scroogeResponseCode = $scroogeResponse[RefundConstants::RESPONSE_CODE];
 
             if ((in_array($scroogeResponseCode, [200, 201, 204], true) === false) or
+                (isset($scroogeResponse[RefundConstants::RESPONSE_BODY]) === false) or
                 (isset($scroogeResponse[RefundConstants::RESPONSE_BODY][RefundConstants::SPEED_CHANGE_TIME]) === false))
             {
                 throw new Exception\RuntimeException('Unexpected response received from scrooge service');
@@ -2774,6 +2872,24 @@ class Service extends Base\Service
         }
 
         return true;
+    }
+
+    /**
+     * @param string $refundId
+     * @return Base\PublicCollection
+     * @throws Exception\BadRequestValidationFailureException
+     * @throws Exception\InvalidArgumentException
+     */
+    public function fetchReversalOfRefund(string $refundId)
+    {
+        $merchantId = $this->merchant->getId();
+
+        $input = [
+            ReversalEntity::ENTITY_ID => $refundId,
+            ReversalEntity::ENTITY_TYPE => Constants\Entity::REFUND
+        ];
+
+        return $this->repo->reversal->fetch($input, $merchantId);
     }
 
     /**

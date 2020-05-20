@@ -5,12 +5,8 @@ namespace RZP\Tests\Functional\Refund;
 use RZP\Models\Pricing\Fee;
 use RZP\Services\Scrooge;
 use RZP\Error\ErrorCode;
-use RZP\Models\Payment\Method;
-use RZP\Models\Payment\Gateway;
-use RZP\Models\Merchant\Account;
-use RZP\Tests\Functional\TestCase;
 use RZP\Models\Payment\Refund;
-use RZP\Tests\Functional\Fixtures\Entity\Terminal;
+use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
@@ -18,6 +14,11 @@ class RefundStatusTest extends TestCase
 {
     use PaymentTrait;
     use DbEntityFetchTrait;
+
+    const PROCESSING_DELAY            = 3600;
+    const TIMESTAMP_FAILED_AT         = '2082738600';
+    const TIMESTAMP_PROCESSED_AT      = '2082738599';
+    const TIMESTAMP_SPEED_CHANGE_TIME = '2082738598';
 
     public function setUp()
     {
@@ -746,4 +747,692 @@ class RefundStatusTest extends TestCase
         $this->fail();
     }
 
+    // These timestamps come in proxy route for refund get api
+    public function testTimestampsOnGetRefundApi()
+    {
+        $payment = $this->defaultAuthPayment();
+        $payment = $this->capturePayment($payment['id'], $payment['amount']);
+
+        $card = $this->getDbLastEntity('card');
+
+        $iin = $this->getDbEntityById('iin', $card['iin']);
+
+        $this->assertEquals($iin['type'], 'credit');
+
+        $this->assertEquals($iin['issuer'], 'HDFC');
+
+        $this->fixtures->card->edit($payment['card_id'], ['vault_token' => 'XXXXXXXXXXX']);
+
+        $this->fixtures->pricing->createInstantRefundsPricingPlan();
+
+        $this->gateway = 'hdfc';
+
+        // Adding IMPS pricing as well to assert that the extra pricing rule is not affecting those refunds
+        // without a mode decisioned
+        $this->fixtures->pricing->createInstantRefundsModeLevelPricingPlan();
+
+        // Adding specific amount to refund - this is meant to test successful instant refunds on scrooge -
+        $refund = $this->refundPayment($payment['id'], 3471, ['speed' => 'optimum', 'is_fta' => true]);
+
+        $this->assertEquals('rfnd_', substr($refund['id'], 0, 5));
+
+        $this->mockScroogeToTestTimestampsOnGetRefundApi($refund);
+
+        // public refund id
+        $this->testData[__FUNCTION__]['request']['url'] = '/refunds/' . $refund['id'];
+
+        $refund = $this->getDbLastEntity('refund');
+
+        $this->assertDefaultMerchantTypeCases(__FUNCTION__, $refund);
+
+        // Snapdeal like merchants
+        $this->assertApiPublicStatusMerchantTypeCases(__FUNCTION__, $refund);
+
+        // Flipkart like merchants
+        $this->assertScroogePublicStatusMerchantTypeCases(__FUNCTION__, $refund);
+    }
+
+    protected function assertDefaultMerchantTypeCases($caller, $refund)
+    {
+        $merchantId = "100000000000X1";
+
+        $this->fixtures->merchant->createAccount($merchantId, false);
+
+        $this->fixtures->refund->edit($refund['id'], ['merchant_id' => $merchantId]);
+        $this->fixtures->payment->edit($refund['payment_id'], ['merchant_id' => $merchantId]);
+
+        $user = $this->fixtures->user->createUserForMerchant($merchantId);
+
+        $this->ba->proxyAuth('rzp_test_'.$merchantId, $user['id']);
+
+        $data = [
+            'instant_processing' => [
+                'db_updates' => [
+                    Refund\Entity::STATUS           => Refund\Status::CREATED,
+                    Refund\Entity::SPEED_REQUESTED  => Refund\Speed::OPTIMUM,
+                    Refund\Entity::SPEED_DECISIONED => Refund\Speed::OPTIMUM,
+                    Refund\Entity::SPEED_PROCESSED  => null,
+                    Refund\Entity::PROCESSED_AT     => null,
+                ],
+                'asserts' => [
+                    Refund\Entity::STATUS       => Refund\Status::PROCESSING,
+                    Refund\Entity::PROCESSED_AT => null,
+                ],
+                'unsets' => [
+                    Refund\Constants::SPEED_CHANGE_TIME,
+                    Refund\Constants::FAILED_AT,
+                ]
+            ],
+            'instant_processed' => [
+                'db_updates' => [
+                    Refund\Entity::STATUS           => Refund\Status::PROCESSED,
+                    Refund\Entity::SPEED_REQUESTED  => Refund\Speed::OPTIMUM,
+                    Refund\Entity::SPEED_DECISIONED => Refund\Speed::OPTIMUM,
+                    Refund\Entity::SPEED_PROCESSED  => Refund\Speed::INSTANT,
+                    Refund\Entity::PROCESSED_AT     => self::TIMESTAMP_PROCESSED_AT,
+                ],
+                'asserts' => [
+                    Refund\Entity::STATUS       => Refund\Status::PROCESSED,
+                    Refund\Entity::PROCESSED_AT => self::TIMESTAMP_PROCESSED_AT,
+                ],
+                'unsets' => [
+                    Refund\Constants::SPEED_CHANGE_TIME,
+                    Refund\Constants::FAILED_AT,
+                ]
+            ],
+            'instant_failed_normal_processed' => [
+                'db_updates' => [
+                    Refund\Entity::STATUS           => Refund\Status::PROCESSED,
+                    Refund\Entity::SPEED_REQUESTED  => Refund\Speed::OPTIMUM,
+                    Refund\Entity::SPEED_DECISIONED => Refund\Speed::OPTIMUM,
+                    Refund\Entity::SPEED_PROCESSED  => Refund\Speed::NORMAL,
+                    Refund\Entity::PROCESSED_AT     => self::TIMESTAMP_PROCESSED_AT,
+                ],
+                'asserts' => [
+                    Refund\Entity::STATUS               => Refund\Status::PROCESSED,
+                    Refund\Entity::PROCESSED_AT         => self::TIMESTAMP_SPEED_CHANGE_TIME,
+                    Refund\Constants::SPEED_CHANGE_TIME => self::TIMESTAMP_SPEED_CHANGE_TIME,
+                ],
+                'unsets' => [
+                    Refund\Constants::FAILED_AT,
+                ]
+            ],
+            'instant_failed_normal_processing' => [
+                'db_updates' => [
+                    Refund\Entity::STATUS           => Refund\Status::CREATED,
+                    Refund\Entity::SPEED_REQUESTED  => Refund\Speed::OPTIMUM,
+                    Refund\Entity::SPEED_DECISIONED => Refund\Speed::OPTIMUM,
+                    Refund\Entity::SPEED_PROCESSED  => Refund\Speed::NORMAL,
+                    Refund\Entity::PROCESSED_AT     => null,
+                ],
+                'asserts' => [
+                    Refund\Entity::STATUS               => Refund\Status::PROCESSED,
+                    Refund\Entity::PROCESSED_AT         => self::TIMESTAMP_SPEED_CHANGE_TIME,
+                    Refund\Constants::SPEED_CHANGE_TIME => self::TIMESTAMP_SPEED_CHANGE_TIME,
+                ],
+                'unsets' => [
+                    Refund\Constants::FAILED_AT,
+                ]
+            ],
+            'optimum_requested_normal_decisioned_processed' => [
+                'db_updates' => [
+                    Refund\Entity::STATUS           => Refund\Status::PROCESSED,
+                    Refund\Entity::SPEED_REQUESTED  => Refund\Speed::OPTIMUM,
+                    Refund\Entity::SPEED_DECISIONED => Refund\Speed::NORMAL,
+                    Refund\Entity::SPEED_PROCESSED  => Refund\Speed::NORMAL,
+                    Refund\Entity::PROCESSED_AT     => self::TIMESTAMP_PROCESSED_AT,
+                ],
+                'asserts' => [
+                    Refund\Entity::STATUS               => Refund\Status::PROCESSED,
+                    Refund\Entity::PROCESSED_AT         => $refund[Refund\Entity::CREATED_AT],
+                ],
+                'unsets' => [
+                    Refund\Constants::SPEED_CHANGE_TIME,
+                    Refund\Constants::FAILED_AT,
+                ]
+            ],
+            'optimum_requested_normal_decisioned_processing' => [
+                'db_updates' => [
+                    Refund\Entity::STATUS           => Refund\Status::CREATED,
+                    Refund\Entity::SPEED_REQUESTED  => Refund\Speed::OPTIMUM,
+                    Refund\Entity::SPEED_DECISIONED => Refund\Speed::NORMAL,
+                    Refund\Entity::SPEED_PROCESSED  => Refund\Speed::NORMAL,
+                    Refund\Entity::PROCESSED_AT     => null,
+                ],
+                'asserts' => [
+                    Refund\Entity::STATUS               => Refund\Status::PROCESSED,
+                    Refund\Entity::PROCESSED_AT         => $refund[Refund\Entity::CREATED_AT],
+                ],
+                'unsets' => [
+                    Refund\Constants::SPEED_CHANGE_TIME,
+                    Refund\Constants::FAILED_AT,
+                ]
+            ],
+            'normal_processing' => [
+                'db_updates' => [
+                    Refund\Entity::STATUS           => Refund\Status::CREATED,
+                    Refund\Entity::SPEED_REQUESTED  => Refund\Speed::NORMAL,
+                    Refund\Entity::SPEED_DECISIONED => Refund\Speed::NORMAL,
+                    Refund\Entity::SPEED_PROCESSED  => Refund\Speed::NORMAL,
+                    Refund\Entity::PROCESSED_AT     => null,
+                ],
+                'asserts' => [
+                    Refund\Entity::STATUS       => Refund\Status::PROCESSED,
+                    Refund\Entity::PROCESSED_AT => $refund[Refund\Entity::CREATED_AT],
+                ],
+                'unsets' => [
+                    Refund\Constants::SPEED_CHANGE_TIME,
+                    Refund\Constants::FAILED_AT,
+                ]
+            ],
+            'normal_processed' => [
+                'db_updates' => [
+                    Refund\Entity::STATUS           => Refund\Status::PROCESSED,
+                    Refund\Entity::SPEED_REQUESTED  => Refund\Speed::NORMAL,
+                    Refund\Entity::SPEED_DECISIONED => Refund\Speed::NORMAL,
+                    Refund\Entity::SPEED_PROCESSED  => Refund\Speed::NORMAL,
+                    Refund\Entity::PROCESSED_AT     => self::TIMESTAMP_PROCESSED_AT,
+                ],
+                'asserts' => [
+                    Refund\Entity::STATUS       => Refund\Status::PROCESSED,
+                    Refund\Entity::PROCESSED_AT => $refund[Refund\Entity::CREATED_AT],
+                ],
+                'unsets' => [
+                    Refund\Constants::SPEED_CHANGE_TIME,
+                    Refund\Constants::FAILED_AT,
+                ]
+            ],
+        ];
+
+        $this->helperExecuteTestTimestampsOnGetRefundApi($refund, $data, $caller);
+    }
+
+    protected function assertApiPublicStatusMerchantTypeCases($caller, $refund)
+    {
+        $merchantId = 'CBcPtPwFgpjdUp';
+
+        $this->fixtures->merchant->createAccount($merchantId, false);
+
+        $this->fixtures->refund->edit($refund['id'], ['merchant_id' => $merchantId]);
+        $this->fixtures->payment->edit($refund['payment_id'], ['merchant_id' => $merchantId]);
+
+        $user = $this->fixtures->user->createUserForMerchant($merchantId);
+
+        $this->ba->proxyAuth('rzp_test_'.$merchantId, $user['id']);
+
+        $data = [
+            'instant_processing' => [
+                'db_updates' => [
+                    Refund\Entity::STATUS           => Refund\Status::CREATED,
+                    Refund\Entity::SPEED_REQUESTED  => Refund\Speed::OPTIMUM,
+                    Refund\Entity::SPEED_DECISIONED => Refund\Speed::OPTIMUM,
+                    Refund\Entity::SPEED_PROCESSED  => null,
+                    Refund\Entity::PROCESSED_AT     => null,
+                ],
+                'asserts' => [
+                    Refund\Entity::STATUS       => Refund\Status::PROCESSING,
+                    Refund\Entity::PROCESSED_AT => null,
+                ],
+                'unsets' => [
+                    Refund\Constants::SPEED_CHANGE_TIME,
+                    Refund\Constants::FAILED_AT,
+                ]
+            ],
+            'instant_processed' => [
+                'db_updates' => [
+                    Refund\Entity::STATUS           => Refund\Status::PROCESSED,
+                    Refund\Entity::SPEED_REQUESTED  => Refund\Speed::OPTIMUM,
+                    Refund\Entity::SPEED_DECISIONED => Refund\Speed::OPTIMUM,
+                    Refund\Entity::SPEED_PROCESSED  => Refund\Speed::INSTANT,
+                    Refund\Entity::PROCESSED_AT     => self::TIMESTAMP_PROCESSED_AT,
+                ],
+                'asserts' => [
+                    Refund\Entity::STATUS       => Refund\Status::PROCESSED,
+                    Refund\Entity::PROCESSED_AT => self::TIMESTAMP_PROCESSED_AT,
+                ],
+                'unsets' => [
+                    Refund\Constants::SPEED_CHANGE_TIME,
+                    Refund\Constants::FAILED_AT,
+                ]
+            ],
+            'instant_failed_normal_processed' => [
+                'db_updates' => [
+                    Refund\Entity::STATUS           => Refund\Status::PROCESSED,
+                    Refund\Entity::SPEED_REQUESTED  => Refund\Speed::OPTIMUM,
+                    Refund\Entity::SPEED_DECISIONED => Refund\Speed::OPTIMUM,
+                    Refund\Entity::SPEED_PROCESSED  => Refund\Speed::NORMAL,
+                    Refund\Entity::PROCESSED_AT     => self::TIMESTAMP_PROCESSED_AT,
+                ],
+                'asserts' => [
+                    Refund\Entity::STATUS               => Refund\Status::PROCESSED,
+                    Refund\Entity::PROCESSED_AT         => self::TIMESTAMP_PROCESSED_AT,
+                    Refund\Constants::SPEED_CHANGE_TIME => self::TIMESTAMP_SPEED_CHANGE_TIME,
+                ],
+                'unsets' => [
+                    Refund\Constants::FAILED_AT,
+                ]
+            ],
+            'instant_failed_normal_processing' => [
+                'db_updates' => [
+                    Refund\Entity::STATUS           => Refund\Status::CREATED,
+                    Refund\Entity::SPEED_REQUESTED  => Refund\Speed::OPTIMUM,
+                    Refund\Entity::SPEED_DECISIONED => Refund\Speed::OPTIMUM,
+                    Refund\Entity::SPEED_PROCESSED  => Refund\Speed::NORMAL,
+                    Refund\Entity::PROCESSED_AT     => null,
+                ],
+                'asserts' => [
+                    Refund\Entity::STATUS               => Refund\Status::PROCESSING,
+                    Refund\Entity::PROCESSED_AT         => null,
+                    Refund\Constants::SPEED_CHANGE_TIME => self::TIMESTAMP_SPEED_CHANGE_TIME,
+                ],
+                'unsets' => [
+                    Refund\Constants::FAILED_AT,
+                ]
+            ],
+            'optimum_requested_normal_decisioned_processed' => [
+                'db_updates' => [
+                    Refund\Entity::STATUS           => Refund\Status::PROCESSED,
+                    Refund\Entity::SPEED_REQUESTED  => Refund\Speed::OPTIMUM,
+                    Refund\Entity::SPEED_DECISIONED => Refund\Speed::NORMAL,
+                    Refund\Entity::SPEED_PROCESSED  => Refund\Speed::NORMAL,
+                    Refund\Entity::PROCESSED_AT     => self::TIMESTAMP_PROCESSED_AT,
+                ],
+                'asserts' => [
+                    Refund\Entity::STATUS               => Refund\Status::PROCESSED,
+                    Refund\Entity::PROCESSED_AT         => self::TIMESTAMP_PROCESSED_AT,
+                ],
+                'unsets' => [
+                    Refund\Constants::SPEED_CHANGE_TIME,
+                    Refund\Constants::FAILED_AT,
+                ]
+            ],
+            'optimum_requested_normal_decisioned_processing' => [
+                'db_updates' => [
+                    Refund\Entity::STATUS           => Refund\Status::CREATED,
+                    Refund\Entity::SPEED_REQUESTED  => Refund\Speed::OPTIMUM,
+                    Refund\Entity::SPEED_DECISIONED => Refund\Speed::NORMAL,
+                    Refund\Entity::SPEED_PROCESSED  => Refund\Speed::NORMAL,
+                    Refund\Entity::PROCESSED_AT     => null,
+                ],
+                'asserts' => [
+                    Refund\Entity::STATUS               => Refund\Status::PROCESSING,
+                    Refund\Entity::PROCESSED_AT         => null,
+                ],
+                'unsets' => [
+                    Refund\Constants::SPEED_CHANGE_TIME,
+                    Refund\Constants::FAILED_AT,
+                ]
+            ],
+            'normal_processing' => [
+                'db_updates' => [
+                    Refund\Entity::STATUS           => Refund\Status::CREATED,
+                    Refund\Entity::SPEED_REQUESTED  => Refund\Speed::NORMAL,
+                    Refund\Entity::SPEED_DECISIONED => Refund\Speed::NORMAL,
+                    Refund\Entity::SPEED_PROCESSED  => Refund\Speed::NORMAL,
+                    Refund\Entity::PROCESSED_AT     => null,
+                ],
+                'asserts' => [
+                    Refund\Entity::STATUS       => Refund\Status::PROCESSING,
+                    Refund\Entity::PROCESSED_AT => null,
+                ],
+                'unsets' => [
+                    Refund\Constants::SPEED_CHANGE_TIME,
+                    Refund\Constants::FAILED_AT,
+                ]
+            ],
+            'normal_processed' => [
+                'db_updates' => [
+                    Refund\Entity::STATUS           => Refund\Status::PROCESSED,
+                    Refund\Entity::SPEED_REQUESTED  => Refund\Speed::NORMAL,
+                    Refund\Entity::SPEED_DECISIONED => Refund\Speed::NORMAL,
+                    Refund\Entity::SPEED_PROCESSED  => Refund\Speed::NORMAL,
+                    Refund\Entity::PROCESSED_AT     => self::TIMESTAMP_PROCESSED_AT,
+                ],
+                'asserts' => [
+                    Refund\Entity::STATUS       => Refund\Status::PROCESSED,
+                    Refund\Entity::PROCESSED_AT => self::TIMESTAMP_PROCESSED_AT,
+                ],
+                'unsets' => [
+                    Refund\Constants::SPEED_CHANGE_TIME,
+                    Refund\Constants::FAILED_AT,
+                ]
+            ],
+        ];
+
+        $this->helperExecuteTestTimestampsOnGetRefundApi($refund, $data, $caller);
+    }
+
+    protected function assertScroogePublicStatusMerchantTypeCases($caller, $refund)
+    {
+        $merchantId = '9hefgkvGhT18Q9';
+
+        $this->fixtures->merchant->createAccount($merchantId, false);
+
+        $this->fixtures->refund->edit($refund['id'], ['merchant_id' => $merchantId]);
+        $this->fixtures->payment->edit($refund['payment_id'], ['merchant_id' => $merchantId]);
+
+        $reversalAttributes = [
+            'entity_id'   => $refund->getId(),
+            'entity_type' => 'refund',
+            'amount'      => $refund->getAmount(),
+            'merchant_id' => $merchantId,
+            'fee'         => 0,
+            'tax'         => 0,
+            'created_at'  => self::TIMESTAMP_FAILED_AT,
+            'updated_at'  => self::TIMESTAMP_FAILED_AT,
+        ];
+
+        $this->fixtures->reversal->createReversalWithoutTransaction($reversalAttributes);
+
+        $user = $this->fixtures->user->createUserForMerchant($merchantId);
+
+        $this->ba->proxyAuth('rzp_test_'.$merchantId, $user['id']);
+
+        $data = [
+            'instant_processing' => [
+                'db_updates' => [
+                    Refund\Entity::STATUS           => Refund\Status::CREATED,
+                    Refund\Entity::SPEED_REQUESTED  => Refund\Speed::OPTIMUM,
+                    Refund\Entity::SPEED_DECISIONED => Refund\Speed::OPTIMUM,
+                    Refund\Entity::SPEED_PROCESSED  => null,
+                    Refund\Entity::PROCESSED_AT     => null,
+                ],
+                'asserts' => [
+                    Refund\Entity::STATUS       => Refund\Status::PROCESSING,
+                    Refund\Entity::PROCESSED_AT => null,
+                ],
+                'unsets' => [
+                    Refund\Constants::SPEED_CHANGE_TIME,
+                    Refund\Constants::FAILED_AT,
+                ]
+            ],
+            'instant_processed' => [
+                'db_updates' => [
+                    Refund\Entity::STATUS           => Refund\Status::PROCESSED,
+                    Refund\Entity::SPEED_REQUESTED  => Refund\Speed::OPTIMUM,
+                    Refund\Entity::SPEED_DECISIONED => Refund\Speed::OPTIMUM,
+                    Refund\Entity::SPEED_PROCESSED  => Refund\Speed::INSTANT,
+                    Refund\Entity::PROCESSED_AT     => self::TIMESTAMP_PROCESSED_AT,
+                ],
+                'asserts' => [
+                    Refund\Entity::STATUS       => Refund\Status::PROCESSED,
+                    Refund\Entity::PROCESSED_AT => self::TIMESTAMP_PROCESSED_AT,
+                ],
+                'unsets' => [
+                    Refund\Constants::SPEED_CHANGE_TIME,
+                    Refund\Constants::FAILED_AT,
+                ]
+            ],
+            'instant_failed_normal_processed_before_allowed_processing_delay' => [
+                'db_updates' => [
+                    Refund\Entity::STATUS           => Refund\Status::PROCESSED,
+                    Refund\Entity::SPEED_REQUESTED  => Refund\Speed::OPTIMUM,
+                    Refund\Entity::SPEED_DECISIONED => Refund\Speed::OPTIMUM,
+                    Refund\Entity::SPEED_PROCESSED  => Refund\Speed::NORMAL,
+                    Refund\Entity::PROCESSED_AT     => $refund[Refund\Entity::CREATED_AT] + self::PROCESSING_DELAY,
+                ],
+                'asserts' => [
+                    Refund\Entity::STATUS               => Refund\Status::PROCESSED,
+                    Refund\Entity::PROCESSED_AT         => $refund[Refund\Entity::CREATED_AT] + self::PROCESSING_DELAY,
+                    Refund\Constants::SPEED_CHANGE_TIME => self::TIMESTAMP_SPEED_CHANGE_TIME,
+                ],
+                'unsets' => [
+                    Refund\Constants::FAILED_AT,
+                ]
+            ],
+            'instant_failed_normal_processed_after_allowed_processing_delay' => [
+                'db_updates' => [
+                    Refund\Entity::STATUS           => Refund\Status::PROCESSED,
+                    Refund\Entity::SPEED_REQUESTED  => Refund\Speed::OPTIMUM,
+                    Refund\Entity::SPEED_DECISIONED => Refund\Speed::OPTIMUM,
+                    Refund\Entity::SPEED_PROCESSED  => Refund\Speed::NORMAL,
+                    Refund\Entity::PROCESSED_AT     => self::TIMESTAMP_PROCESSED_AT,
+                ],
+                'asserts' => [
+                    Refund\Entity::STATUS               => Refund\Status::PROCESSED,
+                    Refund\Entity::PROCESSED_AT         => $refund[Refund\Entity::CREATED_AT] + Refund\Constants::SCROOGE_PUBLIC_STATUS_TO_PROCESSED_TIME,
+                    Refund\Constants::SPEED_CHANGE_TIME => self::TIMESTAMP_SPEED_CHANGE_TIME,
+                ],
+                'unsets' => [
+                    Refund\Constants::FAILED_AT,
+                ]
+            ],
+            'instant_failed_normal_processing' => [
+                'db_updates' => [
+                    Refund\Entity::STATUS           => Refund\Status::CREATED,
+                    Refund\Entity::SPEED_REQUESTED  => Refund\Speed::OPTIMUM,
+                    Refund\Entity::SPEED_DECISIONED => Refund\Speed::OPTIMUM,
+                    Refund\Entity::SPEED_PROCESSED  => Refund\Speed::NORMAL,
+                    Refund\Entity::PROCESSED_AT     => null,
+                ],
+                'asserts' => [
+                    Refund\Entity::STATUS               => Refund\Status::PROCESSING,
+                    Refund\Entity::PROCESSED_AT         => null,
+                    Refund\Constants::SPEED_CHANGE_TIME => self::TIMESTAMP_SPEED_CHANGE_TIME,
+                ],
+                'unsets' => [
+                    Refund\Constants::FAILED_AT,
+                ]
+            ],
+            'optimum_requested_normal_decisioned_processed_before_allowed_processing_delay' => [
+                'db_updates' => [
+                    Refund\Entity::STATUS           => Refund\Status::PROCESSED,
+                    Refund\Entity::SPEED_REQUESTED  => Refund\Speed::OPTIMUM,
+                    Refund\Entity::SPEED_DECISIONED => Refund\Speed::NORMAL,
+                    Refund\Entity::SPEED_PROCESSED  => Refund\Speed::NORMAL,
+                    Refund\Entity::PROCESSED_AT     => $refund[Refund\Entity::CREATED_AT] + self::PROCESSING_DELAY,
+                ],
+                'asserts' => [
+                    Refund\Entity::STATUS               => Refund\Status::PROCESSED,
+                    Refund\Entity::PROCESSED_AT         => $refund[Refund\Entity::CREATED_AT] + self::PROCESSING_DELAY,
+                ],
+                'unsets' => [
+                    Refund\Constants::SPEED_CHANGE_TIME,
+                    Refund\Constants::FAILED_AT,
+                ]
+            ],
+            'optimum_requested_normal_decisioned_processed_after_allowed_processing_delay' => [
+                'db_updates' => [
+                    Refund\Entity::STATUS           => Refund\Status::PROCESSED,
+                    Refund\Entity::SPEED_REQUESTED  => Refund\Speed::OPTIMUM,
+                    Refund\Entity::SPEED_DECISIONED => Refund\Speed::NORMAL,
+                    Refund\Entity::SPEED_PROCESSED  => Refund\Speed::NORMAL,
+                    Refund\Entity::PROCESSED_AT     => self::TIMESTAMP_PROCESSED_AT,
+                ],
+                'asserts' => [
+                    Refund\Entity::STATUS               => Refund\Status::PROCESSED,
+                    Refund\Entity::PROCESSED_AT         => $refund[Refund\Entity::CREATED_AT] + Refund\Constants::SCROOGE_PUBLIC_STATUS_TO_PROCESSED_TIME,
+                ],
+                'unsets' => [
+                    Refund\Constants::SPEED_CHANGE_TIME,
+                    Refund\Constants::FAILED_AT,
+                ]
+            ],
+            'optimum_requested_normal_decisioned_processing' => [
+                'db_updates' => [
+                    Refund\Entity::STATUS           => Refund\Status::CREATED,
+                    Refund\Entity::SPEED_REQUESTED  => Refund\Speed::OPTIMUM,
+                    Refund\Entity::SPEED_DECISIONED => Refund\Speed::NORMAL,
+                    Refund\Entity::SPEED_PROCESSED  => Refund\Speed::NORMAL,
+                    Refund\Entity::PROCESSED_AT     => null,
+                ],
+                'asserts' => [
+                    Refund\Entity::STATUS               => Refund\Status::PROCESSING,
+                    Refund\Entity::PROCESSED_AT         => null,
+                ],
+                'unsets' => [
+                    Refund\Constants::SPEED_CHANGE_TIME,
+                    Refund\Constants::FAILED_AT,
+                ]
+            ],
+            'normal_processing' => [
+                'db_updates' => [
+                    Refund\Entity::STATUS           => Refund\Status::CREATED,
+                    Refund\Entity::SPEED_REQUESTED  => Refund\Speed::NORMAL,
+                    Refund\Entity::SPEED_DECISIONED => Refund\Speed::NORMAL,
+                    Refund\Entity::SPEED_PROCESSED  => Refund\Speed::NORMAL,
+                    Refund\Entity::PROCESSED_AT     => null,
+                ],
+                'asserts' => [
+                    Refund\Entity::STATUS       => Refund\Status::PROCESSING,
+                    Refund\Entity::PROCESSED_AT => null,
+                ],
+                'unsets' => [
+                    Refund\Constants::SPEED_CHANGE_TIME,
+                    Refund\Constants::FAILED_AT,
+                ]
+            ],
+            'normal_processed_before_allowed_processing_delay' => [
+                'db_updates' => [
+                    Refund\Entity::STATUS           => Refund\Status::PROCESSED,
+                    Refund\Entity::SPEED_REQUESTED  => Refund\Speed::NORMAL,
+                    Refund\Entity::SPEED_DECISIONED => Refund\Speed::NORMAL,
+                    Refund\Entity::SPEED_PROCESSED  => Refund\Speed::NORMAL,
+                    Refund\Entity::PROCESSED_AT     => $refund[Refund\Entity::CREATED_AT] + self::PROCESSING_DELAY,
+                ],
+                'asserts' => [
+                    Refund\Entity::STATUS       => Refund\Status::PROCESSED,
+                    Refund\Entity::PROCESSED_AT => $refund[Refund\Entity::CREATED_AT] + self::PROCESSING_DELAY,
+                ],
+                'unsets' => [
+                    Refund\Constants::SPEED_CHANGE_TIME,
+                    Refund\Constants::FAILED_AT,
+                ]
+            ],
+            'normal_processed_after_allowed_processing_delay' => [
+                'db_updates' => [
+                    Refund\Entity::STATUS           => Refund\Status::PROCESSED,
+                    Refund\Entity::SPEED_REQUESTED  => Refund\Speed::NORMAL,
+                    Refund\Entity::SPEED_DECISIONED => Refund\Speed::NORMAL,
+                    Refund\Entity::SPEED_PROCESSED  => Refund\Speed::NORMAL,
+                    Refund\Entity::PROCESSED_AT     => self::TIMESTAMP_PROCESSED_AT,
+                ],
+                'asserts' => [
+                    Refund\Entity::STATUS       => Refund\Status::PROCESSED,
+                    Refund\Entity::PROCESSED_AT => $refund[Refund\Entity::CREATED_AT] + Refund\Constants::SCROOGE_PUBLIC_STATUS_TO_PROCESSED_TIME,
+                ],
+                'unsets' => [
+                    Refund\Constants::SPEED_CHANGE_TIME,
+                    Refund\Constants::FAILED_AT,
+                ]
+            ],
+            'normal_failed' => [
+                'db_updates' => [
+                    Refund\Entity::STATUS           => Refund\Status::REVERSED,
+                    Refund\Entity::SPEED_REQUESTED  => Refund\Speed::NORMAL,
+                    Refund\Entity::SPEED_DECISIONED => Refund\Speed::NORMAL,
+                    Refund\Entity::SPEED_PROCESSED  => Refund\Speed::NORMAL,
+                    Refund\Entity::PROCESSED_AT     => null,
+                ],
+                'asserts' => [
+                    Refund\Entity::STATUS       => Refund\Status::FAILED,
+                    Refund\Entity::PROCESSED_AT => null,
+                    Refund\Constants::FAILED_AT => self::TIMESTAMP_FAILED_AT,
+                ],
+                'unsets' => [
+                    Refund\Constants::SPEED_CHANGE_TIME,
+                ]
+            ],
+            'optimum_requested_normal_decisioned_failed' => [
+                'db_updates' => [
+                    Refund\Entity::STATUS           => Refund\Status::REVERSED,
+                    Refund\Entity::SPEED_REQUESTED  => Refund\Speed::OPTIMUM,
+                    Refund\Entity::SPEED_DECISIONED => Refund\Speed::NORMAL,
+                    Refund\Entity::SPEED_PROCESSED  => Refund\Speed::NORMAL,
+                    Refund\Entity::PROCESSED_AT     => null,
+                ],
+                'asserts' => [
+                    Refund\Entity::STATUS               => Refund\Status::FAILED,
+                    Refund\Entity::PROCESSED_AT         => null,
+                    Refund\Constants::FAILED_AT         => self::TIMESTAMP_FAILED_AT,
+                ],
+                'unsets' => [
+                    Refund\Constants::SPEED_CHANGE_TIME,
+                ]
+            ],
+            'instant_failed_normal_failed' => [
+                'db_updates' => [
+                    Refund\Entity::STATUS           => Refund\Status::REVERSED,
+                    Refund\Entity::SPEED_REQUESTED  => Refund\Speed::OPTIMUM,
+                    Refund\Entity::SPEED_DECISIONED => Refund\Speed::OPTIMUM,
+                    Refund\Entity::SPEED_PROCESSED  => Refund\Speed::NORMAL,
+                    Refund\Entity::PROCESSED_AT     => null,
+                ],
+                'asserts' => [
+                    Refund\Entity::STATUS               => Refund\Status::FAILED,
+                    Refund\Entity::PROCESSED_AT         => null,
+                    Refund\Constants::FAILED_AT         => self::TIMESTAMP_FAILED_AT,
+                    Refund\Constants::SPEED_CHANGE_TIME => self::TIMESTAMP_SPEED_CHANGE_TIME,
+                ],
+                'unsets' => []
+            ],
+            'instant_failed' => [
+                'db_updates' => [
+                    Refund\Entity::STATUS           => Refund\Status::REVERSED,
+                    Refund\Entity::SPEED_REQUESTED  => Refund\Speed::OPTIMUM,
+                    Refund\Entity::SPEED_DECISIONED => Refund\Speed::OPTIMUM,
+                    Refund\Entity::SPEED_PROCESSED  => null,
+                    Refund\Entity::PROCESSED_AT     => null,
+                ],
+                'asserts' => [
+                    Refund\Entity::STATUS               => Refund\Status::FAILED,
+                    Refund\Entity::PROCESSED_AT         => null,
+                    Refund\Constants::FAILED_AT         => self::TIMESTAMP_FAILED_AT,
+                ],
+                'unsets' => [
+                    Refund\Constants::SPEED_CHANGE_TIME,
+                ]
+            ],
+        ];
+
+        $this->helperExecuteTestTimestampsOnGetRefundApi($refund, $data, $caller);
+    }
+
+    protected function helperExecuteTestTimestampsOnGetRefundApi($refund, $data, $caller)
+    {
+        foreach ($data as $z=>$subTest) {
+            $this->assertArrayHasKey('db_updates', $subTest);
+            $this->assertArrayHasKey('unsets', $subTest);
+            $this->assertArrayHasKey('asserts', $subTest);
+
+            foreach ($subTest['db_updates'] as $field=>$value)
+            {
+                $this->fixtures->refund->edit($refund['id'], [$field => $value]);
+            }
+
+            $response = $this->runRequestResponseFlow($this->testData[$caller]);
+
+            foreach ($subTest['asserts'] as $key=>$value)
+            {
+                $this->assertEquals($value, $response[$key]);
+            }
+
+            foreach ($subTest['unsets'] as $unsetKeys)
+            {
+                $this->assertFalse(isset($response[$unsetKeys]));
+            }
+        }
+    }
+
+    protected function mockScroogeToTestTimestampsOnGetRefundApi($refund)
+    {
+        $scroogeMock = $this->getMockBuilder(Scrooge::class)
+                            ->setConstructorArgs([$this->app])
+                            ->setMethods(['getPublicRefund'])
+                            ->getMock();
+
+        $this->app->instance('scrooge', $scroogeMock);
+
+        $scroogeResponse = [
+            'code' => 200,
+            'body' => [
+                'speed_change_time'  => self::TIMESTAMP_SPEED_CHANGE_TIME,
+            ]
+        ];
+
+        $this->app->scrooge->expects($this->any())
+                           ->method('getPublicRefund')
+                           ->with($refund['id'], ['speed_change_time' => 1])
+                           ->willReturn($scroogeResponse);
+    }
 }

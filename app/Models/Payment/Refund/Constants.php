@@ -94,17 +94,23 @@ class Constants
     const SCROOGE_BASE_AMOUNT = 'base_amount';
 
     // Fetch Entities Related Constants
-    const EXTRA_DATA = 'extra_data';
+    const EXTRA_DATA          = 'extra_data';
     const SCROOGE_MERCHANT_ID = 'merchant_id';
 
-    const DISPATCH_DELAY_TIME = 'dispatch_delay_time';
     const DISPATCH_BATCH_SIZE = 5;
+    const DISPATCH_DELAY_TIME = 'dispatch_delay_time';
 
     // Dashboard related constants
     // Some constants are named not make complete sense,
     // basically to avoid user understanding the feature when inspected on dashboard
+    const FAILED_AT            = 'failed_at';
     const REFUND_STATUS_FILTER = 'rs_filter';
 
     // Scrooge skip verify flag
     const SCROOGE_SKIP_REFUND_VERIFY = 'skip_refund_verify';
+
+    // For flipkart like cases we show refunds as processed after 48 hours
+    // even if it is not actually processed and config is stored in scrooge
+    // Todo : Fetch such public status values/configs from scrooge
+    const SCROOGE_PUBLIC_STATUS_TO_PROCESSED_TIME = 172800;
 }

@@ -100,15 +100,19 @@ class Merchant extends Base
         $apiBalance = $this->createEntityInTestAndLive('balance', ['id' => Account::ATOM_ACCOUNT, 'balance' => '1000000', 'merchant_id' => Account::ATOM_ACCOUNT]);
     }
 
-    public function createAccount($merchantId)
+    public function createAccount($merchantId, $addKeys = true)
     {
         $apiMerchant = $this->fixtures->create('merchant', ['id' => $merchantId]);
         $apiBalance = $this->createEntityInTestAndLive('balance', ['id' => $merchantId, 'balance' => '1000000', 'merchant_id' => $merchantId]);
 
         $this->fixtures->on('test')->create('terminal', ['id' => $merchantId, 'merchant_id' => $merchantId]);
         $this->fixtures->on('live')->create('terminal', ['id' => $merchantId, 'merchant_id' => $merchantId]);
-        $this->fixtures->on('test')->create('key', ['merchant_id' => $merchantId, 'id' => $merchantId], 'test');
-        $this->fixtures->on('live')->create('key', ['merchant_id' => $merchantId, 'id' => $merchantId], 'live');
+
+        if ($addKeys === true) {
+            $this->fixtures->on('test')->create('key', ['merchant_id' => $merchantId, 'id' => $merchantId], 'test');
+            $this->fixtures->on('live')->create('key', ['merchant_id' => $merchantId, 'id' => $merchantId], 'live');
+        }
+
         $this->fixtures->on('test')->create('bank_account', ['merchant_id' => $merchantId, 'entity_id' => $merchantId]);
 
         $this->fixtures->on('test')->create('merchant:add_payment_banks', ['merchant_id' => $merchantId]);

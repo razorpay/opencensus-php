@@ -1198,17 +1198,16 @@ class Entity extends Base\PublicEntity
 
         $response[self::STATUS] = $publicStatusMap[$refundStatus] ?? Status::PENDING;
 
-            // Adding speed and other related params only for Card Transfer Feature enabled merchants
-            $callScroogeForSpeed = true;
+        $callScroogeForSpeed = true;
 
-            // If speed_processed is already populated in the refund entity - we need not call scrooge
+        // If speed_processed is already populated in the refund entity - we need not call scrooge
         if (empty($this->getSpeedProcessed()) === false)
         {
             $response[self::SPEED_PROCESSED] = $this->getSpeedProcessed();
 
             $callScroogeForSpeed = false;
         }
-            // Populating default values in case scrooge does not return proper response
+        // Populating default values in case scrooge does not return proper response
         else if ($this->isRefundSpeedInstant() === true)
         {
             $response[self::SPEED_PROCESSED] = Speed::INSTANT;
