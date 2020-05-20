@@ -183,12 +183,14 @@ class Repository extends Base\Repository
 
     public function getBalanceIdsWhereGatewayBalanceUpdatedRecently($previousCronTime)
     {
+        $statusColumn    = $this->dbColumn(Entity::STATUS);
         $balanceIdColumn = $this->dbColumn(Entity::BALANCE_ID);
         $updatedAtColumn = $this->dbColumn(Entity::UPDATED_AT);
 
         return $this->newQuery()
                     ->select($balanceIdColumn)
                     ->where($updatedAtColumn, '>=', $previousCronTime)
+                    ->where($statusColumn, '=', Status::ACTIVATED)
                     ->distinct()
                     ->get()
                     ->pluck(Entity::BALANCE_ID)
