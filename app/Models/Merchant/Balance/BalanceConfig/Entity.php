@@ -15,7 +15,9 @@ use RZP\Models\Merchant\Balance\Type;
  */
 class Entity extends Base\PublicEntity
 {
+    //5k
     const DEFAULT_MAX_NEGATIVE = 500000;
+    //5 lakhs
     const CUSTOM_MAX_NEGATIVE  = 50000000;
 
     // For current account on X for RBL , while processing of account statement , closing balance may be negative

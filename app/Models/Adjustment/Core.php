@@ -60,12 +60,6 @@ class Core extends Base\Core
             [$balance, $sendReserveBalanceMail] = (new Balance\Core)->createOrFetchReserveBalance($merchant,
                                                                         $balanceType, $this->mode);
 
-            if ($balance->getBalance() + $amount > Validator::MAX_RESERVE_BALANCE_AMOUNT)
-            {
-                throw new Exception\BadRequestValidationFailureException(
-                    'Reserve Balance Amount should be less than or equal to '
-                    . Validator::MAX_RESERVE_BALANCE_AMOUNT);
-            }
         }
         else
         {

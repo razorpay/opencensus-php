@@ -24,7 +24,9 @@ class Validator extends Base\Validator
     // However, there is no lower limit on reserve balance.
     // Also, in case the user wants to withdraw from his reserve balance,
     // we can support that by negative adjustment to reserve balance.
-    const MAX_RESERVE_BALANCE_AMOUNT = 5000000; //50,000INR
+
+//    We are removing upper limit for Reserve balance
+//    const MAX_RESERVE_BALANCE_AMOUNT = 50000000; //5,00,000 INR
 
     protected static $createRules = [
         Entity::AMOUNT        => 'required|integer',
@@ -99,14 +101,6 @@ class Validator extends Base\Validator
             {
                 throw new Exception\BadRequestValidationFailureException(
                     'Amount should be passed for reserve balance.');
-            }
-
-            // Validate the maximum limit on Reserve Balance Amount.
-            if ($input[Entity::AMOUNT] > self::MAX_RESERVE_BALANCE_AMOUNT)
-            {
-                throw new Exception\BadRequestValidationFailureException(
-                    'Reserve Balance Amount should be less than or equal to '
-                    . self::MAX_RESERVE_BALANCE_AMOUNT);
             }
         }
     }

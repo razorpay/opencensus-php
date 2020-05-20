@@ -28,34 +28,6 @@ return [
         ]
     ],
 
-    'testCreateReserveBalanceInvalidAmount' => [
-        'request' => [
-            'url' => '/adjustments',
-            'method' => 'POST',
-            'content' => [
-                'amount'        =>  6000000,
-                'type'          =>  'reserve_primary',
-                'merchant_id'   =>  '100abc000abc00',
-                'currency'      =>  'INR',
-                'description'   =>  'reserve_primary balance add'
-            ]
-        ],
-        'response' => [
-            'content' => [
-                'error' => [
-                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Reserve Balance Amount should be less than or equal to '
-                        .Validator::MAX_RESERVE_BALANCE_AMOUNT,
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class' => RZP\Exception\BadRequestValidationFailureException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
-        ],
-    ],
-
     'testCreateReservePrimaryBalance' => [
         'request' => [
             'url' => '/adjustments',
@@ -164,62 +136,6 @@ return [
                 'description'   => 'reserve_primary balance add',
             ],
         ]
-    ],
-
-    'testAddReserveBalanceInvalidMaxLimit' => [
-        'request' => [
-            'url' => '/adjustments',
-            'method' => 'POST',
-            'content' => [
-                'amount'        =>  1000000,
-                'type'          =>  'reserve_primary',
-                'merchant_id'   =>  '100xyz000xyz00',
-                'currency'      =>  'INR',
-                'description'   =>  'reserve_primary balance add'
-            ]
-        ],
-        'response' => [
-            'content' => [
-                'error' => [
-                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Reserve Balance Amount should be less than or equal to '
-                        .Validator::MAX_RESERVE_BALANCE_AMOUNT,
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class' => RZP\Exception\BadRequestValidationFailureException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
-        ],
-    ],
-
-    'testAddReserveBalanceInvalidMaxLimitRazorxControl' => [
-        'request' => [
-            'url' => '/adjustments',
-            'method' => 'POST',
-            'content' => [
-                'amount'        =>  1000000,
-                'type'          =>  'reserve_primary',
-                'merchant_id'   =>  '100xyz000xyz00',
-                'currency'      =>  'INR',
-                'description'   =>  'reserve_primary balance add'
-            ]
-        ],
-        'response' => [
-            'content' => [
-                'error' => [
-                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Reserve Balance Amount should be less than or equal to '
-                        .Validator::MAX_RESERVE_BALANCE_AMOUNT,
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class' => RZP\Exception\BadRequestValidationFailureException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
-        ],
     ],
 
     'testCreateNegativeAdjustmentWithLowBalance' => [

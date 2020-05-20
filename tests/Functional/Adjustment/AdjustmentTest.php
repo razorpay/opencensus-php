@@ -381,64 +381,6 @@ class AdjustmentTest extends TestCase
         Mail::assertNotQueued(ReserveBalanceActivateMail::class);
     }
 
-    public function testAddReserveBalanceInvalidMaxLimit()
-    {
-        Mail::fake();
-
-        $razorxMock = $this->getMockBuilder(RazorXClient::class)
-            ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
-            ->getMock();
-
-        $this->app->instance('razorx', $razorxMock);
-
-        $this->app->razorx->method('getTreatment')
-            ->willReturn('on');
-
-        $this->createFixtures('100xyz000xyz00');
-
-        $this->fixtures->create(
-            'balance',
-            [
-                'id'            => '100def000def00',
-                'balance'       => 4500000,
-                'type'          => 'reserve_primary',
-                'merchant_id'   => '100xyz000xyz00'
-            ]
-        );
-
-        $this->startTest();
-    }
-
-    public function testAddReserveBalanceInvalidMaxLimitRazorxControl()
-    {
-        Mail::fake();
-
-        $razorxMock = $this->getMockBuilder(RazorXClient::class)
-            ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
-            ->getMock();
-
-        $this->app->instance('razorx', $razorxMock);
-
-        $this->app->razorx->method('getTreatment')
-            ->willReturn('control');
-
-        $this->createFixtures('100xyz000xyz00');
-
-        $this->fixtures->create(
-            'balance',
-            [
-                'id'            => '100def000def00',
-                'balance'       => 4500000,
-                'type'          => 'reserve_primary',
-                'merchant_id'   => '100xyz000xyz00'
-            ]
-        );
-
-        $this->startTest();
-    }
-
     public function testCreateNegativeAdjustmentWithLowBalance()
     {
         Mail::fake();
@@ -523,11 +465,6 @@ class AdjustmentTest extends TestCase
         $balance = $this->getDbEntity('balance', ['id' => '100def000def00']);
 
         $this->assertEquals(1000, $balance['balance']);
-    }
-
-    public function testCreateReserveBalanceInvalidAmount()
-    {
-        $this->startTest();
     }
 
     public function testCreateAdjustmentFromBatchRoute()
