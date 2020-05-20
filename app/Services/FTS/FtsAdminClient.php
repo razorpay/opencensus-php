@@ -79,7 +79,7 @@ class FtsAdminClient extends Base
     public function getChannelHealthEvents(array $input)
     {
         return $this->createAndSendRequest(
-            parent::FTS_ALERT_URI,
+            parent::CHANNEL_HEALTH_EVENT,
             Requests::GET,
             $input)['body'][self::CHANNEL_HEALTH_EVENTS];
     }

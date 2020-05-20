@@ -66,9 +66,9 @@ class Base
 
     const FUND_TRANSFER_ATTEMPTS_STATUS_FETCH = '/transfers/status';
 
-    const FTS_ALERT_URI = '/alert';
-
     const SOURCE_ACCOUNT = '/source_account';
+
+    const CHANNEL_HEALTH_EVENT = '/channel_health_events';
 
     const SOURCE_ACCOUNT_MAPPING = '/source_account_mappings';
 

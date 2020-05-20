@@ -55,9 +55,16 @@ class FTSController extends Controller
         return ApiResponse::json($response);
     }
 
-    public function sendAlert()
+    public function createChannelHealth()
     {
-        $response = $this->app['fts_fund_transfer']->sendAlert($this->input);
+        $response = $this->app['fts_fund_transfer']->createChannelHealth($this->input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function deleteChannelHealth()
+    {
+        $response = $this->app['fts_fund_transfer']->deleteChannelHealth($this->input);
 
         return ApiResponse::json($response);
     }
