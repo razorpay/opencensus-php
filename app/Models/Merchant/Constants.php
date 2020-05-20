@@ -65,6 +65,11 @@ final class Constants
 
     const ALL_SETTLEMENT_DEFAULT                  = 'all_settlement_default';
 
+    // Instant Refunds Pricing Fetch related constants
+    const RULES                     = 'rules';
+    const CUSTOM_PRICING            = 'custom_pricing';
+    const MAX_RULES_TO_BE_DISPLAYED = 6;
+
     public static $EntityBatchActionSettingParams = [
         self::BATCH_ACTION,
         self::IDEMPOTENT_ID,

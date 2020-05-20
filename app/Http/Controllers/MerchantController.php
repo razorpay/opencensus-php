@@ -763,6 +763,13 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function getInstantRefundsPricingForMerchant()
+    {
+        $data = $this->service()->getInstantRefundsPricingForMerchant();
+
+        return ApiResponse::json($data);
+    }
+
     public function enableScheduledEs()
     {
         $data = $this->service()->enableScheduledEs();

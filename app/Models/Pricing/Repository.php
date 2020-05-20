@@ -176,6 +176,18 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function getPricingRulesByPlanIdProductAndFeatureWithoutOrgId(string $id,
+                                                                         string $product,
+                                                                         string $feature)
+    {
+        return $this->newQuery()
+                    ->where(Pricing\Entity::PLAN_ID, '=', $id)
+                    ->where(Pricing\Entity::TYPE, Pricing\Type::PRICING)
+                    ->where(Pricing\Entity::PRODUCT, $product)
+                    ->where(Pricing\Entity::FEATURE, '=', $feature)
+                    ->get();
+    }
+
     public function getMerchantPricingPlan($merchant)
     {
         $pricingPlanId = $merchant->getPricingPlanId();

@@ -1865,6 +1865,352 @@ class Service extends Base\Service
         return $finalSchedulePricing->toArrayPublic();
     }
 
+    public function getInstantRefundsPricingForMerchant(): array
+    {
+        // Merchant's pricing plan id
+        $pricingPlanId = $this->merchant->getPricingPlanId();
+
+        //
+        // To decide whether to display pricing on the merchant dashboard -
+        // There are some pricing plan variations which cannot be displayed the merchant dashboard
+        // as per the current design
+        // These include :
+        // 1. Pricing plan has more than 6 rules for Instant Refunds
+        // 2. Instant Refunds mode level pricing plan
+        // 3. Pricing is not consistent across methods for Instant Refunds
+        // 4. Pricing is defined on percent rate for Instant Refunds
+        //
+        $isCustomPricingPlan = false;
+
+        $instantRefundsPricingRules = $this->repo->pricing->getPricingRulesByPlanIdProductAndFeatureWithoutOrgId(
+            $pricingPlanId,
+            Product::PRIMARY,
+            PricingFeature::REFUND
+        );
+
+        // While fetching default pricing rules
+        $pricingMethod = Payment\Method::CARD;
+
+        //
+        // Merchant does not have merchant specific pricing for Instant Refunds, default pricing plan is applied and
+        // hence we can display default pricing plan
+        //
+        if ($instantRefundsPricingRules->isEmpty() === true)
+        {
+            $instantRefundsDefaultPricingRules = $this->repo->pricing->getInstantRefundsDefaultPricingPlanForMethod(
+                PricingFeature::REFUND,
+                $pricingMethod,
+                $this->merchant,
+                Product::PRIMARY
+            );
+
+            $finalRulesToBeFormatted = $instantRefundsDefaultPricingRules;
+        }
+        else
+        {
+            //
+            // Merchant has merchant specific pricing rules -
+            // we need to figure out if its a complex pricing plan which cannot be shown on merchant dashboard
+            //
+            [$isCustomPricingPlan, $pricingMethod] = $this->isComplexInstantRefundsPricing($instantRefundsPricingRules);
+
+            $finalRulesToBeFormatted = $instantRefundsPricingRules->where(Pricing\Entity::PAYMENT_METHOD, $pricingMethod);
+        }
+
+        $formattedRules = $isCustomPricingPlan ? [] : $this->getFormattedInstantRefundsPricingPlan($finalRulesToBeFormatted);
+
+        //
+        // If rules are more than 6, we cannot display on the merchant dashboard as per current design,
+        // hence treating it as complex / custom pricing
+        //
+        if (count($formattedRules) > Constants::MAX_RULES_TO_BE_DISPLAYED)
+        {
+            $isCustomPricingPlan = true;
+
+            $formattedRules = [];
+        }
+
+        $result = [
+            Constants::CUSTOM_PRICING => $isCustomPricingPlan,
+            Constants::RULES          => $formattedRules,
+        ];
+
+        return $result;
+    }
+
+    protected function getFormattedInstantRefundsPricingPlan($instantRefundsPricingRules): array
+    {
+        $fieldsToExpose = [
+            Pricing\Entity::AMOUNT_RANGE_MIN,
+            Pricing\Entity::AMOUNT_RANGE_MAX,
+            Pricing\Entity::FIXED_RATE,
+        ];
+
+        //
+        // array_values - to avoid numeric keys being present in the map
+        //
+        $filtered = array_values($instantRefundsPricingRules->map->only($fieldsToExpose)->toArray());
+
+        if ($this->isInstantRefundsPricingAmountRangeActive($instantRefundsPricingRules) === false)
+        {
+            $filtered = $this->getInstantRefundsPricingInDefaultSlabs($filtered);
+        }
+
+        return array_sort_recursive($filtered);
+    }
+
+    protected function isComplexInstantRefundsPricing($instantRefundsPricingRules)
+    {
+        if ($this->isInstantRefundsModeLevelPricing($instantRefundsPricingRules) === true)
+        {
+            return [true, null];
+        }
+
+        if ($this->isInstantRefundsPercentageRatePricing($instantRefundsPricingRules) === true)
+        {
+            return [true, null];
+        }
+
+        $uniqueMethods = array_unique($instantRefundsPricingRules->pluck(Pricing\Entity::PAYMENT_METHOD)->toArray());
+
+        if ($this->isInstantRefundsDefaultMethodPricing($uniqueMethods) === true)
+        {
+            // If distinct - pricing is not complex
+            if ($this->isInstantRefundsDefaultMethodPricingDistinct($instantRefundsPricingRules) === true)
+            {
+                return [false, null];
+            }
+
+            //
+            // If duplicate rules are present - we may not be able to display rules on the merchant dashboard
+            // Hence, complex
+            //
+            return [true, null];
+        }
+
+        if ($this->isInstantRefundsPricingConsistentAcrossMethods($instantRefundsPricingRules, $uniqueMethods) === true)
+        {
+            //
+            // Pricing has been defined consistently for all the methods
+            // hence picking card
+            //
+            return [false, Payment\Method::CARD];
+        }
+
+        //
+        // Pricing is complex and cannot be displayed on the merchant dashboard
+        //
+        return [true, null];
+    }
+
+    /**
+     * @param $instantRefundsPricingRules
+     * @return bool
+     */
+    protected function isInstantRefundsModeLevelPricing($instantRefundsPricingRules) : bool
+    {
+        $modes = $instantRefundsPricingRules->pluck(Pricing\Entity::PAYMENT_METHOD_TYPE)->toArray();
+
+        //
+        // If the distinct mode is not null, it is considered as mode level pricing
+        //
+        if (!((count(array_unique($modes)) === 1) and
+            (end($modes) === null)))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * @param $instantRefundsPricingRules
+     * @return bool
+     */
+    protected function isInstantRefundsPercentageRatePricing($instantRefundsPricingRules) : bool
+    {
+        $percentRateRules = $instantRefundsPricingRules->pluck(Pricing\Entity::PERCENT_RATE)->toArray();
+
+        //
+        // If the distinct percent rate is not empty (0), it is considered as percentage rate pricing
+        //
+        if (!((count(array_unique($percentRateRules)) === 1) and
+            (empty(end($percentRateRules)) === true)))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * @param $uniqueMethods
+     * @return bool
+     */
+    protected function isInstantRefundsDefaultMethodPricing($uniqueMethods) : bool
+    {
+        //
+        // If the distinct method is null, it is considered as default method all pricing
+        //
+        if ((count($uniqueMethods) === 1) and
+            (end($uniqueMethods) === null))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Checks if there are any duplicate rules in the default method instant refunds pricing plan
+     *
+     * @param $instantRefundsPricingRules
+     * @return bool
+     */
+    protected function isInstantRefundsDefaultMethodPricingDistinct($instantRefundsPricingRules) : bool
+    {
+        //
+        // These are the fields to compare for check for duplicacy
+        //
+        $fieldsToCompare = [
+            Pricing\Entity::PAYMENT_METHOD_TYPE,
+            Pricing\Entity::AMOUNT_RANGE_MIN,
+            Pricing\Entity::AMOUNT_RANGE_MAX,
+        ];
+
+        $rulesToCompare = array_sort_recursive($instantRefundsPricingRules->map->only($fieldsToCompare)->toArray());
+
+        $distinctRules = [];
+
+        // Identifying distinct rules
+        foreach ($rulesToCompare as $ruleToCompare)
+        {
+            if (in_array($ruleToCompare, $distinctRules, true) === false)
+            {
+                $distinctRules[] = $ruleToCompare;
+            }
+        }
+
+        // Is distinct
+        if (count($distinctRules) === count($rulesToCompare))
+        {
+            return true;
+        }
+
+        // Duplicate rules found
+        return false;
+    }
+
+    /**
+     * If instant refunds pricing is defined method wise, this function checks and validates
+     * if pricing has been defined consistently for all the supported instant refunds methods
+     *
+     * @param $instantRefundsPricingRules
+     * @param $uniqueMethods
+     * @return bool
+     */
+    protected function isInstantRefundsPricingConsistentAcrossMethods($instantRefundsPricingRules, $uniqueMethods) : bool
+    {
+        // Fields to compare for consistency
+        $fieldsToCompare = [
+            Pricing\Entity::PAYMENT_METHOD_TYPE,
+            Pricing\Entity::AMOUNT_RANGE_MIN,
+            Pricing\Entity::AMOUNT_RANGE_MAX,
+            Pricing\Entity::FIXED_RATE,
+        ];
+
+        $instantRefundSupportedMethods = Payment\Method::INSTANT_REFUND_SUPPORTED_METHODS;
+
+        $instantRefundPricingMethods = array_merge(
+            $instantRefundSupportedMethods,
+            [null]
+        );
+
+        $allRules = [];
+
+        //
+        // Checking if pricing is defined for all the supported instant refunds pricing methods
+        //
+        if ((array_diff($uniqueMethods, $instantRefundSupportedMethods) === array_diff($instantRefundSupportedMethods, $uniqueMethods)) or
+            (array_diff($uniqueMethods, $instantRefundPricingMethods) === array_diff($instantRefundPricingMethods, $uniqueMethods)))
+        {
+            $grouped = $instantRefundsPricingRules->groupBy(Pricing\Entity::PAYMENT_METHOD);
+
+            foreach ($grouped as $key => $group)
+            {
+                $groupRules = array_sort_recursive($group->map->only($fieldsToCompare)->toArray());
+
+                if (in_array($groupRules, array_values($allRules), true) === false)
+                {
+                    $allRules[$key] = $groupRules;
+                }
+            }
+
+            // If there is only 1 set of rules - it means pricing has been defined consistently across all the required methods
+            if (count($allRules) === 1)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * @param $instantRefundsPricingRules
+     * @return bool
+     */
+    protected function isInstantRefundsPricingAmountRangeActive($instantRefundsPricingRules) : bool
+    {
+        $amountRangeActive = $instantRefundsPricingRules->pluck(Pricing\Entity::AMOUNT_RANGE_ACTIVE)->toArray();
+
+        if ((count(array_unique($amountRangeActive)) === 1) and
+            (end($amountRangeActive) === false))
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * @param $filteredRules
+     * @return array
+     */
+    protected function getInstantRefundsPricingInDefaultSlabs($filteredRules)
+    {
+        $instantRefundsDefaultPricingSlabs = [
+            [
+                Pricing\Entity::AMOUNT_RANGE_MIN => 0,
+                Pricing\Entity::AMOUNT_RANGE_MAX => 100000,
+            ],
+            [
+                Pricing\Entity::AMOUNT_RANGE_MIN => 100000,
+                Pricing\Entity::AMOUNT_RANGE_MAX => 2500000,
+            ],
+            [
+                Pricing\Entity::AMOUNT_RANGE_MIN => 2500000,
+                Pricing\Entity::AMOUNT_RANGE_MAX => 4294967295,
+            ],
+        ];
+
+        $fixedRate = $filteredRules[0][Pricing\Entity::FIXED_RATE];
+
+        $filtered = [];
+
+        //
+        // Super imposing the fixed rate into the default slabs
+        //
+        foreach ($instantRefundsDefaultPricingSlabs as $instantRefundsDefaultPricingSlab)
+        {
+            $instantRefundsDefaultPricingSlab[Pricing\Entity::FIXED_RATE] = $fixedRate;
+
+            $filtered[] = $instantRefundsDefaultPricingSlab;
+        }
+
+        return $filtered;
+    }
+
     /**
      * Add a merchant to OnDemandEnabledMailingList mailing lists and remove from OnDemandNotEnabledMailingList.
      *
