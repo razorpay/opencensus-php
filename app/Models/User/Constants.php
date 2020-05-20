@@ -171,6 +171,6 @@ class Constants
         "satyen.doshi@hdfcsec.com",
         "qa+dashboard@razorpay.com",
         "qa+uiautomation@razorpay.com",
-        "qa+rzp@razorpay.com",
+        "qa+rzp@razorpay.com"
     ];
 }
