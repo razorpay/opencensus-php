@@ -1162,7 +1162,7 @@ export default class ActivationWizard extends React.Component {
      * Step 2: If user marks no GSTIN from radio box
      * */
     if (stateName === 'has_gstin' && fieldValue === '1') {
-      sideEffectFieldsToUpdate.gstin = null;
+      sideEffectFieldsToUpdate.gstin = '';
     } else if (stateName === 'has_url' && fieldValue === '1') {
       sideEffectFieldsToUpdate.business_website = '';
     }
