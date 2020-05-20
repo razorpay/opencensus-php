@@ -17,17 +17,16 @@ export default class RefundStatusTimeline extends React.Component {
           mode: `Normal Refund`,
           timeStamp: refund.created_at,
         });
-        mileStones.push({
-          status: 'processed',
-          mode: 'Normal Refund',
-          timeStamp: refund.created_at,
-        });
       } else {
         mileStones.push({
           status: 'processing',
           mode: `Instant Refund`,
           timeStamp: refund.created_at,
         });
+
+        let speedChangeTime = refund.speed_change_time
+          ? refund.speed_change_time
+          : refund.created_at;
 
         mileStones.push(
           {
@@ -45,25 +44,27 @@ export default class RefundStatusTimeline extends React.Component {
                 </span>
               </div>
             ),
-            timeStamp: refund.speed_change_time
-              ? refund.speed_change_time
-              : refund.created_at,
+            timeStamp: speedChangeTime,
           },
           {
             status: 'processing',
             mode: `Normal Refund`,
-            timeStamp: refund.speed_change_time
-              ? refund.speed_change_time
-              : refund.created_at,
+            timeStamp: speedChangeTime,
           }
         );
-
+      }
+      if (refund.status === 'processed') {
         mileStones.push({
           status: 'processed',
-          mode: `Normal Refund`,
-          timeStamp: refund.speed_change_time
-            ? refund.speed_change_time
-            : refund.created_at,
+          mode: 'Normal Refund',
+          timeStamp: refund.processed_at,
+        });
+      }
+      if (refund.status === 'failed') {
+        mileStones.push({
+          status: 'failed',
+          mode: 'Normal Refund',
+          timeStamp: refund.failed_at,
         });
       }
     }
@@ -90,6 +91,13 @@ export default class RefundStatusTimeline extends React.Component {
         mode: `Instant Refund`,
         timeStamp: refund.created_at,
       });
+      if (refund.status === 'failed') {
+        mileStones.push({
+          status: 'failed',
+          mode: 'Instant Refund',
+          timeStamp: refund.failed_at,
+        });
+      }
     }
 
     return mileStones.reverse();

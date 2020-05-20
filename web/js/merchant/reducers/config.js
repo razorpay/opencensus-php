@@ -7,9 +7,14 @@ const MERCHANT_LOGO_UPLOADED = 'MERCHANT_LOGO_UPLOADED';
 const CONFIG_SAVE = 'CONFIG_SAVE';
 const FEATURES_SAVE = 'FEATURES_SAVE';
 const GET_ONBOARDING_STATUS = 'GET_ONBOARDING_STATUS';
+const FETCH_REFUND_PRICING = 'FETCH_REFUND_PRICING';
 
 export const fetchConfigAjax = () => {
   return merchantFetch('account/config');
+};
+
+export const FetchRefundPricing = () => {
+  return merchantFetch('instant_refunds/pricing');
 };
 
 export const fetchFeaturesAjax = (currentUserId, mode) => {
@@ -41,6 +46,14 @@ export const fetchConfig = () => {
     payload: fetchConfigAjax(),
   };
 };
+
+export const fetchRefundPricing = () => {
+  return {
+    type: FETCH_REFUND_PRICING,
+    payload: FetchRefundPricing(),
+  };
+};
+
 export const fetchOnboardingStatus = gateway => {
   let params = {
     url: `proxy/merchant/terminals?gateway=${gateway}`,
@@ -89,6 +102,13 @@ export const getOnboardingStatus = gateway => {
   };
 };
 
+export const getRefundPricing = gateway => {
+  return {
+    type: GET_ONBOARDING_STATUS,
+    payload: fetchOnboardingStatus(gateway),
+  };
+};
+
 export const uploadLogo = (file, fieldName) => {
   let formData = new FormData();
   formData.append(fieldName, file);
@@ -131,6 +151,7 @@ const normalizeConfig = config => {
 let initialState = {
   loading: true,
   error: null,
+  refund_pricing: { rules: [], custom_pricing: true },
   config: {},
   features: [],
   paypal_terminals: [],
@@ -145,6 +166,13 @@ export default function(state = initialState, action) {
       return merge(state, {
         loading: false,
         features: action.payload.data.features,
+        error: null,
+      });
+
+    case `${FETCH_REFUND_PRICING}::SUCCESS`:
+      return merge(state, {
+        loading: false,
+        refund_pricing: action.payload.data,
         error: null,
       });
 

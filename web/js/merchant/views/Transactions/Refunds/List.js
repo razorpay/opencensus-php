@@ -44,36 +44,6 @@ export default class RefundsListContainer extends ListContainer {
     });
   };
 
-  popupIfSettle() {
-    if (this.props.location.hash === '#instantrefunds') {
-      this.resetHash();
-      this.enableInstantRefunds();
-    }
-  }
-
-  resetHash = () => {
-    this.props.history.push({
-      pathname: this.props.history.location.pathname,
-      hash: '',
-    });
-  };
-
-  enableInstantRefunds = () => {
-    window.rzpAnalytics({
-      eventCategory: 'Dashboard - Instant Refund',
-      eventAction: 'Enable Now',
-      eventLabel: `Announcement | Enable Now`,
-    });
-    this.props.openModal({
-      component: <EnableInstantRefundsModal openedFrom={'Announcement'} />,
-      size: 'small',
-    });
-  };
-
-  componentDidUpdate() {
-    this.popupIfSettle();
-  }
-
   render() {
     const columns = [refundId, paymentId, amount, createdAt];
     columns.push(status);

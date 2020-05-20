@@ -65,9 +65,9 @@ export default class EnableInstantRefundsModal extends Component {
     super(...arguments);
     this.state = {
       errors: null,
-      instantChecked: this.props.default_refund_speed === 'optimum',
-      instant_fee: {},
+      show_breakup: false,
     };
+    this.analytics = { learn_more: false };
   }
 
   enableInstantRefunds = () => {
@@ -77,20 +77,35 @@ export default class EnableInstantRefundsModal extends Component {
     } else {
       label = `${this.props.openedFrom} | Didn't hover on Pricing | Yes Enable`;
     }
-    window.rzpAnalytics({
-      eventCategory: 'Dashboard - Instant Refund',
-      eventAction: 'Yes Enable',
-      eventLabel: label,
-    });
     this.props
       .updateConfig({
-        default_refund_speed: 'optimum',
+        default_refund_speed: this.props.speed,
       })
       .then(() => {
         this.props.showNotification({
           type: 'success',
-          message: 'Instant Refunds Activated Successfully',
+          message: `${
+            this.props.speed === 'normal' ? 'Normal' : 'Instant'
+          } Refunds Activated Successfully`,
         });
+        window.rzpAnalytics({
+          eventCategory: 'Dashboard - Instant Refund',
+          eventAction: `Enable ${
+            this.props.speed === 'normal' ? 'Normal' : 'Instant'
+          } Refund`,
+          eventLabel: `${
+            this.props.pricing.custom_pricing
+              ? ' | Custom Pricing'
+              : ' | Normal Pricing'
+          }${this.state.show_breakup ? ' | Show Pricing' : ''}
+            ${this.analytics.learn_more ? ' | Learn More' : ''}
+            ${
+              this.props.speed === 'normal'
+                ? ' | Enable Normal Refund'
+                : ' | Enable Instant Refund'
+            }`,
+        });
+        this.props.updated();
         this.props.closeModal();
       })
       .catch(({ errors }) => {
@@ -102,9 +117,22 @@ export default class EnableInstantRefundsModal extends Component {
   };
 
   render() {
+    let rules;
+    rules = this.props.pricing.rules;
     return (
-      <div>
-        <ModalHeader title="Are you sure you want to enable Instant Refund?" />
+      <div class="enable-instant-refund-modal">
+        <ModalHeader
+          onCloseClick={this.props.closeModal}
+          title={
+            <div>
+              {this.props.speed !== 'normal' ? (
+                <i class="i i-instant-refund" />
+              ) : null}{' '}
+              Enable {this.props.speed === 'normal' ? 'Normal' : 'Instant'}{' '}
+              Refund
+            </div>
+          }
+        />
         <div class="modal-body" style={{ paddingBottom: 0 }}>
           <div>
             <React.Fragment>
@@ -113,65 +141,185 @@ export default class EnableInstantRefundsModal extends Component {
                 class="change-default-refund-speed"
               >
                 <div>
-                  Your payment will be refunded instantly at a minimal fee.
+                  {this.props.speed == 'normal' ? (
+                    <p>
+                      Your customers will receive their refunds in 5-7 days. The
+                      default refund speed for all your refunds will be set to
+                      `normal`
+                    </p>
+                  ) : (
+                    <p>
+                      Your customers will receive refunds instantly. The default
+                      refund speed for all your refunds will be set to `optimum`{' '}
+                    </p>
+                  )}
                   &nbsp;
-                  {!showWhenUtil({
-                    featureEnabled: 'card_transfer_refund',
-                  }) ? (
-                    <span>
-                      <i class="i i-info-circle" />
-                      <Popover
-                        onMouseOver={() => (this.hovered = true)}
-                        theme="dark"
-                        align="bottom"
-                        parentQuerySelector={`.Modal--small`}
-                      >
-                        <PopoverBody>
-                          <div class="instant-breakup">
-                            <div class="flex">
-                              <div class="w50 text-left">Refund Amount</div>
-                              <div class="w50 text-right">Fee Amount</div>
-                            </div>
-                            <hr
-                              style={{
-                                margin: 0,
-                                marginBottom: '5px',
-                                marginTop: '5px',
-                              }}
-                            />
-                            <div class="flex">
-                              <div class="w50 text-left">1-1000 INR</div>
-                              <div class="w50 text-right">
-                                <Amount value={499} currency={'INR'} />
-                              </div>
-                            </div>
-                            <div class="flex">
-                              <div class="w50 text-left">1001-25000 INR</div>
-                              <div class="w50 text-right">
-                                <Amount value={999} currency={'INR'} />
-                              </div>
-                            </div>
-                            <div class="flex">
-                              <div style={{ width: '60%' }} class="text-left">
-                                25001 and above (INR)
-                              </div>
-                              <div style={{ width: '40%' }} class="text-right">
-                                <Amount value={1999} currency={'INR'} />
-                              </div>
-                            </div>
+                  {this.props.speed !== 'normal' ? (
+                    <div class="panel panel-default refund-fee-structure">
+                      <div class="panel-heading">
+                        <div class="flex">
+                          <div style={{ color: '#515978', width: '60%' }}>
+                            Minimal fee on each refund
                           </div>
-                        </PopoverBody>
-                      </Popover>
-                    </span>
+                          <div class="w50 text-right" style={{ width: '40%' }}>
+                            <span
+                              onClick={() => {
+                                const show_breakup = this.state.show_breakup;
+                                this.setState({ show_breakup: !show_breakup });
+                              }}
+                              class="show-fee-struct"
+                            >
+                              <b>
+                                {this.state.show_breakup ? 'Hide' : 'Show'}{' '}
+                                Pricing
+                              </b>{' '}
+                              <i
+                                class={`i action-arrow i-chevron-${
+                                  this.state.show_breakup ? 'up' : 'down'
+                                }`}
+                              >
+                                {' '}
+                              </i>{' '}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                      {this.state.show_breakup ? (
+                        <Fragment>
+                          <div
+                            class="panel-body"
+                            style={{ paddingBottom: '8px' }}
+                          >
+                            {!this.props.pricing.custom_pricing ? (
+                              <div class="instant-breakup">
+                                <div class="flex">
+                                  <div
+                                    style={{ marginBottom: '5px' }}
+                                    class="w50 text-left t-heading"
+                                  >
+                                    Refund Amount
+                                  </div>
+                                  <div
+                                    style={{ marginBottom: '5px' }}
+                                    class="w50 text-right t-heading"
+                                  >
+                                    Processing Fees
+                                  </div>
+                                </div>
+                                {rules.map((r, i) => (
+                                  <div key={i} class="flex">
+                                    <div
+                                      class="text-left amt"
+                                      style={{ flexGrow: 1 }}
+                                    >
+                                      ₹{' '}
+                                      {i > 0
+                                        ? r.amount_range_min / 100 + 1
+                                        : r.amount_range_min / 100}{' '}
+                                      {i == rules.length - 1 ? 'and' : '-'}{' '}
+                                      {i == rules.length - 1
+                                        ? `above`
+                                        : r.amount_range_max / 100}{' '}
+                                    </div>
+                                    <div
+                                      class="text-right"
+                                      style={{ flexGrow: 1 }}
+                                    >
+                                      <Amount
+                                        value={r.fixed_rate}
+                                        currency={'INR'}
+                                        parentQuerySelector={`.Modal--small`}
+                                      />
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            ) : (
+                              <div class="flex">
+                                <div style={{ color: '#515978' }}>
+                                  To know your pricing, please{' '}
+                                  <a>
+                                    <strong
+                                      class="pointer"
+                                      onClick={() => {
+                                        window.rzpAnalytics({
+                                          eventCategory:
+                                            'Dashboard - Instant Refund',
+                                          eventAction: 'Contact Support',
+                                          eventLabel: `Fee Modal | Contact Support`,
+                                        });
+                                        raiseTicket();
+                                      }}
+                                      style={{ color: '#0B70E7' }}
+                                    >
+                                      contact support
+                                    </strong>
+                                  </a>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                          {/* <div
+                            class="panel-footer grey text-center"
+                            style={{
+                              background: '#fff',
+                              padding: '10px 0',
+                              fontSize: '13px',
+                            }}
+                          >
+                           We charge{' '}
+                            <Amount
+                              value={1000}
+                              currency={'INR'}
+                              parentQuerySelector={`.Modal--small`}
+                            />{' '}
+                            fees for Debit Card refunds
+                          </div> */}
+                        </Fragment>
+                      ) : null}
+                    </div>
                   ) : null}
                 </div>
               </div>
             </React.Fragment>
           </div>
-          <div class="confirm-note">
-            <div>
-              In settings page you will have option to switch to normal refund
-            </div>
+          <div class="confirm-note-info">
+            {this.props.speed == 'normal' ? (
+              <div>
+                You can still issue instant refunds either from the Dashboard or
+                using the refund API. To know more,{' '}
+                <a
+                  href="https://razorpay.com/docs/payment-gateway/refunds/#using-the-dashboard"
+                  target="_blank"
+                >
+                  <strong
+                    onClick={() => (this.analytics.learn_more = true)}
+                    class="pointer"
+                    style={{ color: '#0B70E7' }}
+                  >
+                    &nbsp; click here
+                  </strong>
+                </a>
+              </div>
+            ) : (
+              <div>
+                You can still issue normal refunds either from the Dashboard or
+                using the refund API. To know more,{' '}
+                <a
+                  href="https://razorpay.com/docs/payment-gateway/refunds/#using-the-dashboard"
+                  target="_blank"
+                >
+                  <strong
+                    onClick={() => (this.analytics.learn_more = true)}
+                    class="pointer"
+                    style={{ color: '#0B70E7' }}
+                  >
+                    {' '}
+                    &nbsp; click here
+                  </strong>
+                </a>
+              </div>
+            )}
           </div>
         </div>
         <div>
@@ -179,21 +327,14 @@ export default class EnableInstantRefundsModal extends Component {
             class="Modal__actions"
             style={{ padding: '20px', paddingTop: 0 }}
           >
-            <div class="row flex">
-              <div class="w50" style={{ margin: '0 5px' }}>
-                <button
-                  class="btn btn-default btn-block"
-                  onClick={this.props.closeModal}
-                >
-                  No Don't!
-                </button>
-              </div>
-              <div class="w50" style={{ margin: '0 5px' }}>
+            <div class="row flex" style={{ marginBottom: '5px' }}>
+              <div class="w100" class="change-default-speed-btn">
                 <button
                   class="btn btn-primary btn-block"
                   onClick={this.enableInstantRefunds}
                 >
-                  Yes, Enable
+                  Enable {this.props.speed == 'normal' ? 'Normal' : 'Instant'}{' '}
+                  Refund
                 </button>
               </div>
             </div>
@@ -203,3 +344,21 @@ export default class EnableInstantRefundsModal extends Component {
     );
   }
 }
+
+const raiseTicket = () => {
+  if (window.rzpTicketSystem) {
+    const rzpTicketSystem = window.rzpTicketSystem;
+    rzpTicketSystem.setPrefill('#request', ['merchant', 'other']);
+    rzpTicketSystem.openModal('#ticket');
+    setTimeout(() => {
+      rzpTicketSystem.modal.next();
+    }, 0);
+    setTimeout(() => {
+      var el = document.getElementsByName('request-description')[0];
+      el.value =
+        'Hello Team,\n' +
+        'I’d like to know my custom pricing for instant refunds.';
+      el.focus();
+    }, 1000);
+  }
+};

@@ -105,7 +105,7 @@ export default class PaymentDetailsContainer extends Component {
                                   this.props.refund.speed_processed.slice(1)
                                 : 'Instant'}
                             </span>
-                            {!showWhenUtil({
+                            {/* {!showWhenUtil({
                               featureEnabled: 'disable_instant_refunds',
                             }) &&
                             (this.props.refund.speed_processed === 'instant' ||
@@ -116,6 +116,7 @@ export default class PaymentDetailsContainer extends Component {
                                 style={{
                                   fontSize: '20px',
                                   paddingTop: '10px',
+                                  paddingBottom: '10px',
                                 }}
                               >
                                 <p
@@ -126,16 +127,18 @@ export default class PaymentDetailsContainer extends Component {
                                 >
                                   Process all refunds Instantly
                                 </p>
-                                <button
-                                  onClick={this.enableInstantRefunds}
-                                  style={{ marginTop: '15px' }}
-                                  class="btn btn-outline"
-                                >
-                                  Enable Now
-                                  <i class="i i-chevron-right" />
-                                </button>
+                                <Link to={`/config#instantrefunds`}>
+                                  <button
+                                    onClick={this.enableInstantRefunds}
+                                    style={{ marginTop: '15px' }}
+                                    class="btn btn-outline"
+                                  >
+                                    Enable Now
+                                    <i class="i i-chevron-right" />
+                                  </button>
+                                </Link>
                               </div>
-                            ) : null}
+                            ) : null} */}
                           </Fragment>
                         </Fragment>
                       );
@@ -179,12 +182,6 @@ export default class PaymentDetailsContainer extends Component {
       eventCategory: 'Dashboard - Instant Refund',
       eventAction: 'Enable Now',
       eventLabel: `Refund detail page | Enable Now`,
-    });
-    this.props.openModal({
-      component: (
-        <EnableInstantRefundsModal openedFrom={'Refund detail page'} />
-      ),
-      size: 'small',
     });
   };
 }

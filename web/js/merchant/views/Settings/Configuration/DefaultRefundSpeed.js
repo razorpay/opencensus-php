@@ -9,16 +9,27 @@ import Popover, { PopoverTitle, PopoverBody } from 'common/ui/Popover';
 import { updateConfig } from 'merchant/reducers/config';
 import { showWhenUtil } from 'merchant/components/ShowWhen';
 import Amount from 'common/ui/Amount';
+import EnableInstantRefundsModal from 'merchant/views/Transactions/Payments/components/EnableInstantRefundsModal';
+import { openModal, closeModal } from 'merchant_common/reducers/modals';
+import InstantRefundFee from 'merchant/views/Transactions/Payments/components/InstantRefundFee';
+import { fetchRefundPricing } from 'merchant/reducers/config';
 
 @connect(
   state => {
     return {
       user: state.session.user,
+      refund_pricing: state.config.refund_pricing,
       features: state.config.features,
       default_refund_speed: state.config.config.default_refund_speed,
     };
   },
-  { updateFeatures, showNotification, updateConfig }
+  {
+    updateFeatures,
+    showNotification,
+    updateConfig,
+    openModal,
+    fetchRefundPricing,
+  }
 )
 export default class DefaultRefundSpeed extends Component {
   static contextTypes = {
@@ -37,6 +48,25 @@ export default class DefaultRefundSpeed extends Component {
     });
   };
   hovered = false;
+
+  componentDidMount() {
+    this.props.fetchRefundPricing();
+  }
+
+  changeDefaultRefundSpeed = speed => {
+    this.props.openModal({
+      component: (
+        <EnableInstantRefundsModal
+          pricing={this.props.refund_pricing}
+          updated={() => this.updateDefaultRefundSpeed(speed)}
+          speed={speed}
+          openedFrom={'Announcement'}
+        />
+      ),
+      size: 'small',
+    });
+  };
+
   checkDefaultRefundSpeed = speed => {
     if (speed === 'optimum') {
       let label;
@@ -51,85 +81,7 @@ export default class DefaultRefundSpeed extends Component {
         eventLabel: label,
       });
     }
-    this.context
-      .confirm({
-        header: `Are you sure you want to enable ${
-          speed === 'normal' ? 'normal' : 'instant'
-        } refund?`,
-        affirmativeLabel: 'Yes, Enable',
-        message: () => (
-          <React.Fragment>
-            <div
-              style={{ margin: '10px 0' }}
-              class="change-default-refund-speed"
-            >
-              {speed == 'optimum' ? (
-                <div>
-                  Your payment will be refunded instantly at a minimal fee.
-                  &nbsp;
-                  {!showWhenUtil({
-                    featureEnabled: 'card_transfer_refund',
-                  }) ? (
-                    <span>
-                      <i class="i i-info-circle" />
-                      <Popover
-                        theme="dark"
-                        align="bottom"
-                        onMouseOver={() => (this.hovered = true)}
-                        parentQuerySelector={`.Modal--confirm`}
-                      >
-                        <PopoverBody>
-                          <div class="instant-breakup">
-                            <div class="flex">
-                              <div class="w50 text-left">Refund Amount</div>
-                              <div class="w50 text-right">Fee Amount</div>
-                            </div>
-                            <hr
-                              style={{
-                                margin: 0,
-                                marginBottom: '5px',
-                                marginTop: '5px',
-                              }}
-                            />
-                            <div class="flex">
-                              <div class="w50 text-left">1-1000 INR</div>
-                              <div class="w50 text-right">
-                                <Amount value={499} currency={'INR'} />
-                              </div>
-                            </div>
-                            <div class="flex">
-                              <div class="w50 text-left">1001-25000 INR</div>
-                              <div class="w50 text-right">
-                                <Amount value={999} currency={'INR'} />
-                              </div>
-                            </div>
-                            <div class="flex">
-                              <div style={{ width: '60%' }} class="text-left">
-                                25001 and above (INR)
-                              </div>
-                              <div style={{ width: '40%' }} class="text-right">
-                                <Amount value={1999} currency={'INR'} />
-                              </div>
-                            </div>
-                          </div>
-                        </PopoverBody>
-                      </Popover>
-                    </span>
-                  ) : null}
-                </div>
-              ) : (
-                <div>Your payment will be refunded in 5-7 days*.</div>
-              )}
-            </div>
-          </React.Fragment>
-        ),
-        affirmativePendingLabel: 'Updating...',
-        abortLabel: "No, don't!",
-        action: () => {
-          this.updateDefaultRefundSpeed(speed);
-        },
-      })
-      .catch(() => {});
+    this.changeDefaultRefundSpeed(speed);
   };
 
   updateDefaultRefundSpeed = speed => {
@@ -139,10 +91,6 @@ export default class DefaultRefundSpeed extends Component {
       })
       .then(r => {
         if (r.data) {
-          this.props.showNotification({
-            type: 'success',
-            message: 'Default Refund Speed Updated Successfully',
-          });
           this.setState({
             default_refund_speed: speed,
           });
@@ -161,13 +109,28 @@ export default class DefaultRefundSpeed extends Component {
 
   render() {
     return (
-      <div class="panel panel-default refund-panel">
-        <div class="panel-heading">
+      <div
+        id="default-refund-container"
+        class="panel panel-default refund-panel"
+      >
+        <div class="panel-heading pl10" style={{ paddingTop: 0 }}>
           <span class="title">
             Default Refund Speed{' '}
             <a
               class="highlight know-more"
               target="_blank"
+              href="https://razorpay.com/docs/payment-gateway/refunds/#setting-the-default-speed-of-refunds"
+            >
+              Know more
+              <i class="i i-external-link" style={{ marginLeft: '5px' }} />
+            </a>
+            <a
+              class="highlight know-more"
+              target="_blank"
+              style={{
+                borderLeft: '1px solid rgba(22, 47, 86, 0.1)',
+                paddingLeft: '9px',
+              }}
               href="https://razorpay.com/docs/payment-gateway/instant-refunds/api"
             >
               API Reference Guide
@@ -176,7 +139,7 @@ export default class DefaultRefundSpeed extends Component {
           </span>
         </div>
 
-        <div class="panel-body">
+        <div class="panel-body" style={{ paddingBottom: '6px' }}>
           <div class="row">
             <div class="col-sm-6 p5">
               <div
@@ -185,7 +148,7 @@ export default class DefaultRefundSpeed extends Component {
                 }`}
               >
                 <h4>
-                  Normal Refund
+                  <b>Normal Refund</b>
                   <input
                     type="radio"
                     class="radio-pointer"
@@ -198,16 +161,18 @@ export default class DefaultRefundSpeed extends Component {
                     }}
                   />
                 </h4>
-                <p>Your payment will be refunded in 5-7 days*.</p>
+                <p>Your customer will get refunds in 5-7 days.</p>
                 <br />
                 <span class="refunds-speed-tag">
-                  Normal Speed &nbsp;
+                  NORMAL SPEED &nbsp;
                   <span>
                     <i class="i i-help" />
-                    <Popover align="right" theme="dark">
+                    <Popover align="bottom" theme="dark">
                       <PopoverBody>
                         <div style={{ textAlign: 'left' }}>
-                          Your refund speed in API is normal
+                          All your refund API calls will have speed set to
+                          `normal` by default unless it is set to `optimum`
+                          explicitly
                         </div>
                       </PopoverBody>
                     </Popover>
@@ -220,20 +185,12 @@ export default class DefaultRefundSpeed extends Component {
                 class={`refund-panel-col ${
                   this.state.default_refund_speed == 'optimum' ? 'active' : ''
                 }`}
+                id="instant-refund-panel-col"
               >
                 <h4>
-                  <i class="i i-instant-refund" />Instant Refund
-                  <a
-                    class="highlight know-more"
-                    target="_blank"
-                    href="https://razorpay.com/instant-refunds/"
-                  >
-                    Know more
-                    <i
-                      class="i i-external-link"
-                      style={{ marginLeft: '5px' }}
-                    />
-                  </a>
+                  <i class="i i-instant-refund" />
+                  <b>Instant Refund</b>
+
                   {!showWhenUtil({
                     featureEnabled: 'disable_instant_refunds',
                   }) ? (
@@ -250,30 +207,40 @@ export default class DefaultRefundSpeed extends Component {
                     />
                   ) : null}
                 </h4>
-                {!showWhenUtil({
-                  featureEnabled: 'disable_instant_refunds',
-                }) ? (
-                  <p>
-                    Your payment will be refunded instantly at minimal fee*.
-                  </p>
-                ) : (
-                  <p>
-                    Instant refunds feature is disabled as per your request.
-                  </p>
-                )}
+                <p>
+                  At a{' '}
+                  <strong
+                    class="pointer"
+                    onClick={() => {
+                      this.props.openModal({
+                        component: (
+                          <InstantRefundFee
+                            pricing={this.props.refund_pricing}
+                          />
+                        ),
+                        size: 'small',
+                      });
+                    }}
+                    style={{ color: '#528ff0' }}
+                  >
+                    minimal fee
+                  </strong>, your customer will get refunds instantly.
+                </p>
 
                 <br />
                 {!showWhenUtil({
                   featureEnabled: 'disable_instant_refunds',
                 }) ? (
                   <span class="refunds-speed-tag">
-                    Optimum Speed &nbsp;
+                    OPTIMUM SPEED &nbsp;
                     <span>
                       <i class="i i-help" />
-                      <Popover align="right" theme="dark">
+                      <Popover align="bottom" theme="dark">
                         <PopoverBody>
                           <div style={{ textAlign: 'left' }}>
-                            Your refund speed in API is optimum
+                            All your refund API calls will have speed set to
+                            `optimum` by default unless it is set to `normal`
+                            explicitly{' '}
                           </div>
                         </PopoverBody>
                       </Popover>
@@ -284,12 +251,22 @@ export default class DefaultRefundSpeed extends Component {
                     {' '}
                     To enable it, please{' '}
                     <a
+                      onClick={() => {
+                        raiseTicket();
+                        window.rzpAnalytics({
+                          eventCategory: 'Dashboard - Instant Refund',
+                          eventAction: 'Contact Support',
+                          eventLabel: `Setting Page | Contact Support`,
+                        });
+                      }}
                       class="highlight know-more"
                       style={{ marginLeft: 0 }}
-                      target="_blank"
-                      href="https://razorpay.com/support/#request"
+                      // target="_blank"
+                      // href="https://razorpay.com/support/#request"
                     >
-                      contact support
+                      <strong style={{ color: '#528ff0' }}>
+                        contact support
+                      </strong>
                     </a>
                   </p>
                 )}
@@ -301,3 +278,19 @@ export default class DefaultRefundSpeed extends Component {
     );
   }
 }
+
+const raiseTicket = () => {
+  if (window.rzpTicketSystem) {
+    const rzpTicketSystem = window.rzpTicketSystem;
+    rzpTicketSystem.setPrefill('#request', ['merchant', 'other']);
+    rzpTicketSystem.openModal('#ticket');
+    setTimeout(() => {
+      rzpTicketSystem.modal.next();
+    }, 0);
+    setTimeout(() => {
+      var el = document.getElementsByName('request-description')[0];
+      el.value = 'Hello Team,\n' + 'I’d like to enable Instant Refund feature';
+      el.focus();
+    }, 1000);
+  }
+};

@@ -60,20 +60,32 @@ export default class CongfigurationContainer extends Component {
     this.popupIfSettle();
   }
 
-  popupIfSettle() {
+  popupIfSettle = () => {
     if (this.props.location.hash === '#paypalonboard') {
       this.resetHash();
-      setTimeout(this.scrollIntoView, 1000);
+      setTimeout(() => this.scrollIntoView('paypal-auto-onboarding'), 1000);
     }
-  }
+    if (this.props.location.hash === '#instantrefunds') {
+      setTimeout(() => {
+        this.scrollIntoView('default-refund-container');
+        const el = document.getElementById('instant-refund-panel-col');
+        if (el) {
+          el.style.border = '1px solid #528ff0';
+          setTimeout(() => {
+            el.style.border = '1px solid #ebeff0';
+          }, 2000);
+        }
+      }, 1000);
+    }
+  };
 
-  scrollIntoView() {
-    const el = document.getElementById('paypal-onboard');
+  scrollIntoView = id => {
+    const el = document.getElementById(id);
     if (el) {
       el.scrollIntoView();
       el.click();
     }
-  }
+  };
 
   resetHash = () => {
     this.props.history.push({

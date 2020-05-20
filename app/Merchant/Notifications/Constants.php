@@ -179,7 +179,7 @@ class Constants
                 [
                     'type'  => 'button',
                     'label' => 'Enable Now',
-                    'url'   => '/refunds#instantrefunds',
+                    'url'   => '/config#instantrefunds',
                 ],
                 [
                     'type'  => 'primary-inverted',

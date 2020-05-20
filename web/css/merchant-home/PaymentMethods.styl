@@ -96,15 +96,84 @@
 .refunds-overflow-box {
   margin: 0px -40px 0 -40px;
   border: 1px solid rgba(173, 188, 201, 0.17);
-  padding: 10px;
+  padding: 23px 18px;
   box-shadow: 0px 2px 6px rgba(62, 71, 84, 0.13);
   border-radius: 2px;
   background-color: #fff;
   padding-bottom: 15px;
 
+  .InputField {
+    input {
+      border-left: 0 !important;
+    }
+  }
+
+  .add-comment-div {
+    margin-top: 20px;
+    margin-bottom: 10px;
+  }
+
   .text-danger, .help-block {
     text-align: left;
     margin-top: 10px;
+  }
+
+  /* Chrome, Safari, Edge, Opera */
+  input::-webkit-outer-spin-button, input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  /* Firefox */
+  input[type=number] {
+    -moz-appearance: textfield;
+    border-top-right-radius: 3px !important;
+    border-bottom-right-radius: 3px !important;
+    border-left: 0 !important;
+  }
+
+  .input-group-addon {
+    border-top-left-radius: 3px;
+    border-bottom-left-radius: 3px;
+
+    &.focussed {
+      background: rgba(82, 143, 240, 0.17);
+      border-left-color: #528ff0;
+      border-bottom-color: #528ff0;
+      border-top-color: #528ff0;
+      border-right-color: transparent;
+      border-right: 0 !important;
+
+      & + div {
+        input {
+          border-top: 1px solid #528ff0 !important;
+          border-right: 1px solid #528ff0 !important;
+          border-bottom: 1px solid #528ff0 !important;
+        }
+      }
+    }
+
+    &.error {
+      background: rgba(240, 79, 80, 0.1);
+      border-left-color: #F04F50;
+      border-bottom-color: #F04F50;
+      border-top-color: #F04F50;
+      border-right-color: transparent;
+
+      & + div {
+        input {
+          border-top: 1px solid #F04F50 !important;
+          border-right: 1px solid #F04F50 !important;
+          border-bottom: 1px solid #F04F50 !important;
+        }
+      }
+    }
+  }
+
+  .refund-amt-input {
+    font-size: 16px;
+    padding-top: 2px;
+    color: #0d2366;
   }
 
   .route-transfer-checkbox {
@@ -119,7 +188,12 @@
   div.low-funds {
     width: 100%;
     padding: 10px;
-    margin: 5px;
+    padding-bottom: 0;
+    margin-bottom: 15px;
+    // margin: 5px;
+    padding-left: 0;
+    margin-left: 0;
+    margin-top: -7px;
   }
 }
 
@@ -129,9 +203,11 @@
   display: block !important;
 }
 
-.instand-refund-check {
-  background: #F7F8FA;
+.instant-refund-check {
+  background: rgba(173, 188, 201, 0.1);
   padding: 10px;
+  margin-top: 30px;
+  border-radius: 3px;
 
   label {
     padding-left: 0;
@@ -145,6 +221,10 @@
     float: right;
     color: #7B8199;
   }
+}
+
+.instant-refund-check.focussed {
+  background: rgb(237, 244, 254);
 }
 
 .instant-refund-breakup-para {
@@ -161,14 +241,29 @@
 }
 
 .refund-panel {
+  padding: 10px;
+  padding-top: 15px;
+
   .refunds-speed-tag {
     background-color: #EBEFF2;
     color: #7B8199;
-    padding: 5px;
+    border-radius: 3px;
+    font-weight: 600;
+    padding: 5px 10px;
+    font-size: 12px;
+
+    .i-help {
+      position: relative;
+      top: -1px;
+    }
   }
 
   .p5 {
     padding: 5px;
+  }
+
+  .pl10 {
+    padding-left: 10px !important;
   }
 
   p {
@@ -177,7 +272,19 @@
 
   .refund-panel-col {
     border: 1px solid #EBEFF0;
-    padding: 10px;
+    padding: 20px;
+    padding-top: 10px;
+    padding-bottom: 19px;
+    p;
+    border-radius: 3px;
+
+    .radio-pointer {
+      width: 30px;
+      height: 30px;
+      margin-top: -2px;
+      float: right;
+      margin-right: -5px;
+    }
 
     .refund-speed-change-permission {
       float: right;
@@ -193,18 +300,24 @@
     i.i-instant-refund {
       font-size: 18px;
       position: relative;
-      bottom: 3px;
+      bottom: 2px;
       margin-right: 5px;
     }
 
     &.active {
       background: #F8FAFF;
+      border: 1px solid #528FF0;
     }
+
+    padding-left: 12px;
+    padding-top: 5px !important;
+    padding-right: 12px;
+    border-radius: 3px !important;
   }
 
   .know-more {
     font-size: 13px;
-    margin-left: 9px;
+    margin-left: 10px;
   }
 
   .panel-heading {
@@ -215,12 +328,22 @@
   }
 }
 
+.route-transfer-check-container {
+  i.i-check:before, .icon.i-check:after {
+    content: none;
+  }
+}
+
 .instant-refund-check-container {
   padding-left: 25px;
 
   input[name=instant_refund] {
     cursor: pointer;
   }
+}
+
+.route-transfer-check {
+  margin-right: 8px !important;
 }
 
 .refunds-enable-overflow-box {
@@ -320,4 +443,78 @@
     margin-right: 10px;
     margin-left: 5px;
   }
+}
+
+.change-default-speed-btn {
+  margin: 0px 5px;
+  width: 100%;
+  padding: 0 12px;
+  margin-top: 5px;
+}
+
+.refund-fee-structure {
+  border-radius: 3px;
+
+  .amt {
+    color: grey;
+    margin: 5px 0;
+    font-size: 12px;
+  }
+
+  .panel-heading {
+    background: #fff;
+    padding-right: 0;
+    padding: 10px;
+    font-size: 13px;
+    padding-left: 8px;
+    padding-right: 8px;
+    font-size: 13px;
+  }
+
+  .panel-body {
+    padding-top: 10px;
+    padding-left: 8px;
+    padding-right: 8px;
+    font-size: 13px;
+  }
+
+  .action-arrow {
+    font-size: 20px;
+    position: absolute;
+    right: -8px;
+    top: 0px;
+  }
+
+  .show-fee-struct {
+    color: rgb(82, 143, 240);
+    position: relative;
+    margin-right: 5px;
+    cursor: pointer;
+    padding-right: 11px;
+  }
+
+  .t-heading {
+    color: #515978;
+    font-weight: 700;
+  }
+}
+
+div.enable-instant-refund-modal, div.instant-refund-fee-modal {
+  i.i-instant-refund {
+    margin-right: 5px;
+    position: relative;
+    top: -1px;
+  }
+
+  .modal-title {
+    color: '#515978';
+  }
+
+  .modal-body {
+    padding-top: 0;
+  }
+}
+
+.refund-fee-structure {
+  border-radius: 3px;
 }

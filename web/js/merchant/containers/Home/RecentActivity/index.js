@@ -131,10 +131,6 @@ export default class RecentActivity extends Component {
       eventAction: 'Enable Now',
       eventLabel: `Recent Activity | Enable Now`,
     });
-    this.props.openModal({
-      component: <EnableInstantRefundsModal openedFrom={'Recent Activity'} />,
-      size: 'small',
-    });
   };
 
   render() {
@@ -231,12 +227,14 @@ export default class RecentActivity extends Component {
               <div class="pull-left main-page-process-instantly">
                 <p>
                   <i class="i i-instant-refund" /> Process all refunds instantly
-                  <button
-                    onClick={this.enableInstantRefunds}
-                    class="btn btn-outline"
-                  >
-                    <b>Enable Now</b>
-                  </button>
+                  <Link to={`/config#instantrefunds`}>
+                    <button
+                      onClick={this.enableInstantRefunds}
+                      class="btn btn-outline"
+                    >
+                      <b>Enable Now</b>
+                    </button>
+                  </Link>
                 </p>
               </div>
             ) : null}
