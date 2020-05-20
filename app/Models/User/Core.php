@@ -279,7 +279,8 @@ class Core extends Base\Core
 
         $enable2FAExpForUser = $this->is2FAForUserEnabled($user);
 
-        if (($enable2FAExpForUser === false) or ($validate2fa === false))
+        if (($enable2FAExpForUser === false) or ($validate2fa === false) or
+            ((empty($input[Entity::APP]) === false) and ($input[Entity::APP] === 'android')))
         {
             return $this->get($user);
         }
