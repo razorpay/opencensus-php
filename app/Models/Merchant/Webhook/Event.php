@@ -519,11 +519,11 @@ class Event
         self::ACCOUNT_PAYMENTS_DISABLED         => Feature\Constants::SUBMERCHANT_ONBOARDING,
         self::PAYOUT_PENDING                    => Feature\Constants::PAYOUT,
         self::PAYMENT_CREATED                   => Feature\Constants::PAYMENT_CREATED_WEBHOOK,
-        self::PAYOUT_LINK_ISSUED                => Feature\Constants::X_PAYOUT_LINKS,
-        self::PAYOUT_LINK_ATTEMPTED             => Feature\Constants::X_PAYOUT_LINKS,
-        self::PAYOUT_LINK_PROCESSED             => Feature\Constants::X_PAYOUT_LINKS,
-        self::PAYOUT_LINK_PROCESSING            => Feature\Constants::X_PAYOUT_LINKS,
-        self::PAYOUT_LINK_CANCELLED             => Feature\Constants::X_PAYOUT_LINKS,
+        self::PAYOUT_LINK_ISSUED                => Feature\Constants::PAYOUT,
+        self::PAYOUT_LINK_ATTEMPTED             => Feature\Constants::PAYOUT,
+        self::PAYOUT_LINK_PROCESSED             => Feature\Constants::PAYOUT,
+        self::PAYOUT_LINK_PROCESSING            => Feature\Constants::PAYOUT,
+        self::PAYOUT_LINK_CANCELLED             => Feature\Constants::PAYOUT,
     ];
 
     /**

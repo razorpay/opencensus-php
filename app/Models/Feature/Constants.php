@@ -327,11 +327,6 @@ class Constants
     const X_PRO_INVITE  = 'x_pro_invite';
 
     /*
-     * This is a feature flag to enable Payout-Links V1+(Dashboard access) for merchants.
-     */
-    const X_PAYOUT_LINKS  = 'x_payout_links';
-
-    /*
      * This is a feature flag to enable Vendor Payment
      */
     const RX_VENDOR_PAYMENTS  = 'rx_vendor_payments';
@@ -546,7 +541,6 @@ class Constants
         self::PAYOUT_TO_CARDS                 => true,
         self::PAYMENT_ONHOLD                  => true,
         self::X_PRO_INVITE                    => true,
-        self::X_PAYOUT_LINKS                  => true,
         self::RX_VENDOR_PAYMENTS              => true,
         self::GOOGLE_PAY_OMNICHANNEL          => true,
         self::TERMINAL_ONBOARDING             => true,
@@ -723,11 +717,6 @@ class Constants
         self::X_PRO_INVITE              => [
             'feature'       => self::X_PRO_INVITE,
             'display_name'  => 'Razorpay X Pro Invite',
-            'documentation' => '',
-        ],
-        self::X_PAYOUT_LINKS              => [
-            'feature'       => self::X_PAYOUT_LINKS,
-            'display_name'  => 'Razorpay X - Payout Links',
             'documentation' => '',
         ],
         self::RX_VENDOR_PAYMENTS              => [
