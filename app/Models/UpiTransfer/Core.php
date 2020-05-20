@@ -103,22 +103,6 @@ class Core extends Base\Core
 
         $this->trace->traceException(
             $ex, Trace::CRITICAL, TraceCode::UPI_TRANSFER_PAYMENT_PROCESSING_FAILED, $input);
-
-        // Slack alerts are only for prod
-        if ($this->isEnvironmentProduction() === false)
-        {
-            return;
-        }
-
-        $this->app['slack']->queue(
-            TraceCode::UPI_TRANSFER_PAYMENT_PROCESSING_FAILED,
-            array_merge($input, ['message' => $ex->getMessage()]),
-            [
-                'channel'  => Config::get('slack.channels.upi_transfer_logs'),
-                'username' => 'Scrooge',
-                'icon'     => ':x:'
-            ]
-        );
     }
 
     protected function convertPayeeVpaToLower(array & $input)
