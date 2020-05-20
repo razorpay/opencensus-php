@@ -368,6 +368,12 @@ class Generator extends Base\Core
         }
 
         //
+        // Separate here as build did not have any context on subscription
+        // Max Line item Count Considers Subscription ID to give max
+        //
+        $validator->validateLineItemsCount();
+
+        //
         // This is being done so that we can do associations
         // without saving the invoice. Also, to generate a shortUrl,
         // we need the invoice ID.

@@ -94,7 +94,7 @@ class Validator extends Base\Validator
         Entity::TYPE                     => 'filled|string|max:16|custom',
         Entity::CUSTOMER                 => 'sometimes|array',
         Entity::CUSTOMER_ID              => 'sometimes|public_id|size:19|nullable',
-        Entity::LINE_ITEMS               => 'sometimes|sequential_array|min:1|custom',
+        Entity::LINE_ITEMS               => 'sometimes|sequential_array|min:1',
         Entity::PARTIAL_PAYMENT          => 'filled|boolean',
         Entity::FIRST_PAYMENT_MIN_AMOUNT => 'sometimes|mysql_unsigned_int|nullable|min_amount',
         Entity::AMOUNT                   => 'filled|mysql_unsigned_int',
@@ -132,7 +132,7 @@ class Validator extends Base\Validator
         Entity::TYPE                     => 'filled|string|max:16|custom',
         Entity::CUSTOMER                 => 'sometimes|array',
         Entity::CUSTOMER_ID              => 'sometimes|public_id|size:19|nullable',
-        Entity::LINE_ITEMS               => 'sometimes|sequential_array|min:1|custom',
+        Entity::LINE_ITEMS               => 'sometimes|sequential_array|min:1',
         Entity::PARTIAL_PAYMENT          => 'filled|boolean',
         Entity::FIRST_PAYMENT_MIN_AMOUNT => 'sometimes|mysql_unsigned_int|nullable|min_amount',
         Entity::AMOUNT                   => 'filled|mysql_unsigned_int|min_amount',
@@ -163,7 +163,7 @@ class Validator extends Base\Validator
         Entity::TYPE                     => 'filled|string|max:16|custom',
         Entity::CUSTOMER                 => 'sometimes|array',
         Entity::CUSTOMER_ID              => 'sometimes|public_id|size:19|nullable',
-        Entity::LINE_ITEMS               => 'sometimes|sequential_array|min:1|custom',
+        Entity::LINE_ITEMS               => 'sometimes|sequential_array|min:1',
         Entity::PARTIAL_PAYMENT          => 'filled|boolean',
         Entity::FIRST_PAYMENT_MIN_AMOUNT => 'sometimes|mysql_unsigned_int|nullable|min_amount',
         Entity::AMOUNT                   => 'filled|mysql_unsigned_int',
@@ -974,15 +974,19 @@ class Validator extends Base\Validator
 
     /**
      * Given a line items count validates that it is within limit.
-     * @see validateLineItems & validateMaxAllowedLineItems.
+     * @see validateLineItems
      * @param int $lineItemsCount
      * @throws BadRequestValidationFailureException
      */
-    public function validateLineItemsCount(int $lineItemsCount)
+    public function validateLineItemsCount(int $lineItemsCount = -1)
     {
         $invoice             = $this->entity;
         $merchant            = $invoice->merchant;
         $maxAllowedLineItems = $this->getMaxAllowedLineItemsForMerchant($merchant);
+
+        if ($lineItemsCount === -1) {
+            $lineItemsCount = $invoice->lineItems()->count();
+        }
 
         if ($lineItemsCount > $maxAllowedLineItems)
         {
@@ -1001,6 +1005,11 @@ class Validator extends Base\Validator
 
     protected function getMaxAllowedLineItemsForMerchant(Merchant\Entity $merchant): int
     {
+        if ($this->entity->getSubscriptionId() !== null ) {
+            // Allow self::MAX_ALLOWED_LINE_ITEMS_EXPERIMENTAL for subscription type invoice
+            return self::MAX_ALLOWED_LINE_ITEMS_EXPERIMENTAL;
+        }
+
         $variant = app()->razorx->getTreatment(
             $merchant->getId(),
             Merchant\RazorxTreatment::INV_INCREASED_LINE_ITEMS_CAP,
