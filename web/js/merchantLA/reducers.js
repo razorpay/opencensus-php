@@ -25,7 +25,6 @@ import {
   transfersReducer,
 } from 'merchantLA/reducers/collection';
 
-
 export default combineReducers({
   modal: modalReducer,
   slider: sliderReducer,
