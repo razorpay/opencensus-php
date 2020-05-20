@@ -7,6 +7,7 @@ use RZP\Models\Payment;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
+use RZP\Services\NbPlus\Netbanking;
 use RZP\Models\Gateway\File\Processor\FileHandler;
 use RZP\Gateway\Mozart\NetbankingCub\RefundFields;
 
@@ -35,7 +36,7 @@ class Cub extends Base
             $date = Carbon::createFromTimestamp($row['payment']['created_at'], Timezone::IST)->format('d/m/Y');
 
             $formattedData[] = [
-                RefundFields::BANK_REFERENCE_ID   => $this->fetchBankPaymentId($row['gateway']['raw']),
+                RefundFields::BANK_REFERENCE_ID   => $this->fetchBankPaymentId($row),
                 RefundFields::PAYMENT_ID          => $row['payment']['id'],
                 RefundFields::TRANSACTION_AMOUNT  => number_format($row['payment']['amount'] / 100, 2, '.', ''),
                 RefundFields::TRANSACTION_DATE    => $date,
@@ -58,8 +59,11 @@ class Cub extends Base
 
     protected function fetchBankPaymentId($data)
     {
-        $dataArray = json_decode($data, true);
+        if ($data['payment']['cps_route'] === Payment\Entity::NB_PLUS_SERVICE)
+        {
+            return $data['gateway'][Netbanking::BANK_TRANSACTION_ID]; // payment through nbplus service
+        }
 
-        return $dataArray['bank_payment_id'];
+        return $data['gateway']['data']['bank_payment_id'];
     }
 }

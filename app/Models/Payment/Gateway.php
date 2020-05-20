@@ -2559,6 +2559,7 @@ class Gateway
         $gateways = [
             self::ATOM,
             self::NETBANKING_CSB,
+            self::NETBANKING_CUB,
         ];
 
         return (in_array($gateway, $gateways, true));

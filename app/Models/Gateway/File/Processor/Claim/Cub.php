@@ -10,7 +10,7 @@ use RZP\Gateway\Base\Action;
 use RZP\Models\Gateway\File\Processor\FileHandler;
 use RZP\Gateway\Mozart\NetbankingCub\ClaimFields;
 
-class Cub extends Base
+class Cub extends NetbankingBase
 {
     use FileHandler;
 
@@ -31,7 +31,7 @@ class Cub extends Base
             $formattedData[] = [
                 ClaimFields::PAYMENT_ID         => $row['payment']['id'],
                 ClaimFields::TRANSACTION_AMOUNT => number_format($row['payment']['amount'] / 100, 2, '.', ''),
-                ClaimFields::BANK_REFERENCE_ID  => $this->fetchBankPaymentId($row['gateway']['raw']),
+                ClaimFields::BANK_REFERENCE_ID  => $this->fetchBankPaymentId($row),
                 ClaimFields::TRANSACTION_DATE   => $date,
             ];
         }
@@ -57,8 +57,11 @@ class Cub extends Base
 
     protected function fetchBankPaymentId($data)
     {
-        $dataArray = json_decode($data, true);
+        if ($data['payment']['cps_route'] === Payment\Entity::NB_PLUS_SERVICE)
+        {
+            return $data['gateway']['bank_transaction_id'];
+        }
 
-        return $dataArray['bank_payment_id'];
+        return $data['gateway']['data']['bank_payment_id'];
     }
 }
