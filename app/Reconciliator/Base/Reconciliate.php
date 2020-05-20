@@ -410,7 +410,14 @@ class Reconciliate extends Base\Core
 
         $strDate = Carbon::now(Timezone::IST)->format('ymdHis');
 
-        $transactionsFileName = $this->batchId . $sheetName . '_' . $strDate . self::TRANSACTIONS_FILE_SUFFIX;
+        //
+        // We want to make txn file name unique so as to avoid being replaced at s3 location.
+        // Even in 1 second duration, we get multiple requests (from batch service for the
+        // same Batch_ID) and thus timestamp is not enough, adding random string of 5 chars
+        // to avoid same file name and replace issue.
+        // i.e. reconciliation_output/transaction/EsDLvEJBSefq0H_sheet0_200519175324_8VwXt_transactions_file
+        //
+        $transactionsFileName = $this->batchId . $sheetName . '_' . $strDate . '_' . str_random(5) . self::TRANSACTIONS_FILE_SUFFIX;
 
         $dirPath = self::RECONCILIATION_OUTPUT . DIRECTORY_SEPARATOR . $this->gateway;
 

@@ -173,6 +173,11 @@ class Validator extends Base\Core
     // Max allowed file size - 35M (30*1024*1024).
     const MAX_FILE_SIZE = 36700160;
 
+    // For batch service migrated gateways,
+    // keeping max size = 55 MB (i.e 55*1024*1024)
+    // As per batch team, their max limit is 60 MB currently.
+    const MAX_FILE_SIZE_FOR_BATCH_SERVICE = 57671680;
+
     const FORCE_UPDATE_ALLOWED = [
         RequestProcessor\Base::REFUND_ARN,
         RequestProcessor\Base::PAYMENT_ARN,
@@ -713,10 +718,11 @@ class Validator extends Base\Core
      * Validates if the file size is within the limits and
      * validates if extension and mime type combination is as expected.
      *
-     * @param $fileDetails
+     * @param array $fileDetails
+     * @param bool $forwardToBatchService
      * @return bool true if validation in successful, otherwise, false.
      */
-    public function validateFile(array $fileDetails)
+    public function validateFile(array $fileDetails, bool $forwardToBatchService)
     {
         // Extensions are in uppercase sometimes.
         $extension = strtolower($fileDetails['extension']);
@@ -724,7 +730,7 @@ class Validator extends Base\Core
         $fileSize = $fileDetails['size'];
 
         if (($this->validateExtensionMimeType($extension, $mimeType) === true) and
-            ($this->validateFileSize($fileSize) === true))
+            ($this->validateFileSize($fileSize, $forwardToBatchService) === true))
         {
             return true;
         }
@@ -792,9 +798,11 @@ class Validator extends Base\Core
         return true;
     }
 
-    protected function validateFileSize(int $fileSize)
+    protected function validateFileSize(int $fileSize, bool $forwardToBatchService)
     {
-        if ($fileSize > self::MAX_FILE_SIZE)
+        $maxAllowedFileSize = ($forwardToBatchService === true) ? self::MAX_FILE_SIZE_FOR_BATCH_SERVICE : self::MAX_FILE_SIZE;
+
+        if ($fileSize > $maxAllowedFileSize)
         {
             return false;
         }

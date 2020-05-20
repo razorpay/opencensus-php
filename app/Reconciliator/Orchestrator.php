@@ -4,6 +4,7 @@ namespace RZP\Reconciliator;
 
 use App;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Reconciliator\Base\Constants;
 use Symfony\Component\HttpFoundation\File\File;
 
 use RZP\Exception;
@@ -233,8 +234,14 @@ class Orchestrator extends Base\Core
             return true;
         }
 
+        // Validate file size based on whether this recon
+        // request will be forwarded to batch service.
+        $variant = $this->app->razorx->getTreatment($this->gateway, Constants::BATCH_SERVICE_RECONCILIATION_MIGRATION, $this->mode);
+
+        $forwardToBatchService = ($variant === 'on');
+
         // Validates the file type, size, etc..
-        $validate = $this->validator->validateFile($fileDetails);
+        $validate = $this->validator->validateFile($fileDetails, $forwardToBatchService);
 
         if ($validate === false)
         {

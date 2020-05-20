@@ -83,4 +83,7 @@ class Constants
     // Used in batch response
     const HTTP_STATUS_CODE       = 'http_status_code';
     const IDEMPOTENT_ID          = 'idempotent_id';
+
+    // Batch service feature name
+    const BATCH_SERVICE_RECONCILIATION_MIGRATION = 'batch_service_reconciliation_migration';
 }

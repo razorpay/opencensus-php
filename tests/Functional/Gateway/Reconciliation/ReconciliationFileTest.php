@@ -2210,7 +2210,7 @@ class ReconciliationFileTest extends TestCase
         $this->app->razorx->method('getTreatment')
                           ->will($this->returnCallback(function ($mid, $feature, $mode)
                           {
-                              if ($feature === 'batch_service_reconciliation_migration')
+                              if ($feature === Constants::BATCH_SERVICE_RECONCILIATION_MIGRATION)
                               {
                                   return 'on';
                               }
