@@ -7,6 +7,7 @@ use RZP\Gateway\Netbanking;
 use RZP\Gateway\Enach\Citi;
 use RZP\Models\Customer\Token;
 use RZP\Models\Payment\Gateway;
+use RZP\Models\Batch\Processor\Nach\ErrorCodes\RegisterErrorCodes;
 
 class NachCiti extends Base
 {
@@ -23,10 +24,11 @@ class NachCiti extends Base
         $umrn = $entry[Batch\Header::CITI_NACH_REGISTER_UMRN];
 
         return [
-            self::GATEWAY_TOKEN    => $umrn,
-            self::TOKEN_STATUS     => $status,
-            self::TOKEN_ERROR_CODE => $this->getTokenErrorMessage($gatewayTokenStatus, $entry),
-            self::PAYMENT_ID       => $paymentId,
+            self::GATEWAY_TOKEN         => $umrn,
+            self::TOKEN_STATUS          => $status,
+            self::PAYMENT_ID            => $paymentId,
+            self::TOKEN_ERROR_CODE      => $this->getTokenErrorMessage($gatewayTokenStatus, $entry),
+            self::GATEWAY_ERROR_CODE    => $entry[Batch\Header::CITI_NACH_REGISTER_REMARKS],
         ];
     }
 
@@ -59,5 +61,15 @@ class NachCiti extends Base
         {
             return $entry[Batch\Header::CITI_NACH_REGISTER_REMARKS] ?? 'FAILED';
         }
+    }
+
+    protected function getApiErrorCode(array $content): string
+    {
+        return RegisterErrorCodes::getRegisterInternalErrorCode($content[self::GATEWAY_ERROR_CODE]);
+    }
+
+    protected function getGatewayErrorDesc(array $content): string
+    {
+        return RegisterErrorCodes::getRegisterPublicErrorDescription($content[self::GATEWAY_ERROR_CODE]);
     }
 }

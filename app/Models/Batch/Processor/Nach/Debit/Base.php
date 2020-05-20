@@ -6,6 +6,7 @@ use RZP\Exception;
 use RZP\Models\Batch;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
+use RZP\Error\PublicErrorDescription;
 use RZP\Models\Payment\Processor\Processor;
 use RZP\Models\Batch\Processor\Emandate\Base as BaseProcessor;
 
@@ -18,6 +19,7 @@ class Base extends BaseProcessor
     const GATEWAY_PAYMENT_ID    = 'gateway_payment_id';
     const GATEWAY_ERROR_CODE    = 'gateway_error_code';
     const GATEWAY_ERROR_MESSAGE = 'gateway_error_message';
+    const INTERNAL_ERROR_CODE   = 'internal_error_code';
 
     protected function processEntry(array &$entry)
     {
@@ -126,7 +128,7 @@ class Base extends BaseProcessor
         $e = new Exception\GatewayErrorException(
             $errorCode,
             $content[self::GATEWAY_ERROR_CODE] ?? null,
-            $content[self::GATEWAY_ERROR_MESSAGE] ?? null,
+            $this->getGatewayErrorDesc($content) ?? null,
             [
                 'payment_id' => $payment->getId(),
                 'gateway'    => $this->gateway,
@@ -140,6 +142,11 @@ class Base extends BaseProcessor
     protected function getApiErrorCode(array $content): string
     {
         return ErrorCode::BAD_REQUEST_PAYMENT_FAILED;
+    }
+
+    protected function getGatewayErrorDesc(array $content): string
+    {
+        return PublicErrorDescription::BAD_REQUEST_PAYMENT_FAILED;
     }
 
     public function getOutputFileHeadings(): array

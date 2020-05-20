@@ -1,0 +1,269 @@
+<?php
+
+namespace RZP\Models\Batch\Processor\Nach\ErrorCodes;
+
+use RZP\Error\PublicErrorDescription;
+use RZP\Error\ErrorCode;
+
+class RegisterErrorCodes
+{
+    const C003 = 'Account Closed or Frozen or Inopertive';
+    const M041 = 'Account blocked';
+    const M037 = 'Account closed';
+    const M042 = 'Account description does not tally';
+    const M007 = 'Alterations require drawers authentication';
+    const M024 = 'Amount in words and figures differ';
+    const M034 = 'Amount of EMI more than limit allowed for the acct';
+    const M008 = 'Company FOR stamp required';
+    const M035 = 'Corporate name mismatch';
+    const M079 = 'DATA MISMATCH Debit Type and Signature';
+    const M076 = 'DATA MISMATCH Frequency and Period';
+    const M077 = 'DATA MISMATCH Frequency and Signature';
+    const M078 = 'DATA MISMATCH Period and Signature';
+    const M072 = 'Data Mismatch with Mandate';
+    const NCFE = 'Default forced not acknowledge acceptance reason';
+    const M006 = 'Drawers authority to operate account not received';
+    const M003 = 'Drawers signature differs';
+    const M004 = 'Drawers signature required';
+    const M005 = 'Drawers signature to operate account not received';
+    const M065 = 'Fixed or Maximum option not specified on mandate';
+    const M061 = 'Frequency of payment not mentioned on mandate';
+    const M027 = 'Image not clear';
+    const M063 = 'Invalid Bank Name';
+    const M060 = 'Invalid Frequency';
+    const M033 = 'Invalid monthly EMI amount. Full loan amt mentioned';
+    const M073 = 'Mandate Incomplete';
+    const M009 = 'Mandate in Old Format';
+    const M030 = 'Mandate registration not allowed for CC PF PPF act';
+    const M058 = 'Name of beneficiary not provided or not legible';
+    const M043 = 'Nature of debit not allowed in account type';
+    const M038 = 'No such account';
+    const M031 = 'Not a CBS Act no.or Old Act no.RepresentwithCBS no';
+    const C002 = 'On Corporate request';
+    const C001 = 'On Customer request';
+    const M011 = 'Payment stopped by attachment order';
+    const M012 = 'Payment stopped by court order';
+    const M062 = 'Period of validity not mentioned or invalid end da';
+    const M020 = 'REJECTED DUE TO DUPLICATE UMRN';
+    const M032 = 'Rejected as per customer confirmation';
+    const M086 = 'SP_Customer identifier mismatch';
+    const M087 = 'SP_Incorrect amount';
+    const M010 = 'Start Date is Mandatory';
+    const NCEX = 'TAT Expired';
+    const M013 = 'Withdrawal stopped owing to death of account holder';
+    const M015 = 'Withdrawal stopped owing to insolvency of account';
+    const M014 = 'Withdrawal stopped owing to lunacy of account holder';
+    const M026 = 'Instrument contains extraneous matter';
+    const M021 = 'Instrument outdated or stale';
+    const M022 = 'Instrument undated or without proper data';
+    const M036 = 'Invalid Payer Account No';
+    const M056 = 'Payer not maintaining Balance';
+    const M025 = 'Wrongly delivered or not drawn on us';
+    const C005 = 'Account inoperative';
+    const M057 = 'Account Holder Mismatch with CBS';
+    const M090 = 'Aadhaar Number mismatch in X509cert and bank CBS';
+    const M093 = 'Aadhaar not mapped to account number';
+    const M055 = 'Account Inoperative';
+    const C004 = 'Account frozen';
+    const M068 = 'Account type in mandate is different from CBS';
+    const M074 = 'Data mismatch with image_account number';
+    const M075 = 'Data mismatch with image_account type';
+    const M080 = 'Data mismatch with image_amount';
+    const M084 = 'Data mismatch with image_debtor bank name';
+    const M082 = 'Data mismatch with image_end date';
+    const M085 = 'Data mismatch with image_more than one field';
+    const M083 = 'Data mismatch with image_payer name';
+    const M081 = 'Data mismatch with image_start date';
+    const M050 = 'Drawers signature illegible in mandate form';
+    const M049 = 'Drawers signature not updated in Bank CBS';
+    const M066 = 'Joint signature required';
+    const M052 = 'Mandate Not Registered_Minor Account';
+    const M051 = 'Mandate Not Registered_NRE Account';
+    const M053 = 'Mandate registration not allowed for PF account';
+    const M054 = 'Mandate registration not allowed for PPF account';
+    const M019 = 'Refer to the branch_KYC not completed';
+    const M067 = 'Thumb print in CBS but cust sign in mand viceversa';
+    const M091 = 'eSign Signature is tampered or corrupt';
+    const M092 = 'Signed Content does not tally with data mandate';
+    const M002 = 'Drawers signature illegible';
+    const M071 = 'Property Seal required';
+
+    protected static $registerErrorCodeDescMappings = [
+        self::C003 => 'Account mentioned on the mandate is closed to the destination bank\'s end',
+        self::M041 => 'Account no mentioned on the mandate is blocked at the destination banks end',
+        self::M037 => 'Account mentioned on the mandate is closed to the destination bank\'s end',
+        self::M042 => 'Account details mentioned on the mandate do not tally with the account details at the destination bank',
+        self::M007 => 'Alteration on the mandate requires counter signature',
+        self::M024 => 'Amount mentioned on the mandate differs in words and figures',
+        self::M034 => 'EMI amount mentioned on the mandate is greater that than the max amount limit set for the mandate',
+        self::M008 => 'Company stamp required on the mandate for corporate accounts',
+        self::M035 => 'Name mentioned o the mandate is different from the name maintained at the banks end.',
+        self::M079 => 'Incorrect debit type/multiple option & signature mismatch',
+        self::M076 => 'Incorrect frequency/multiple frequencies selected',
+        self::M077 => 'Incorrect frequency/multiple frequencies selected & signature mismatch',
+        self::M078 => 'Incorrect frequency/multiple frequencies selected & signature mismatch',
+        self::M072 => 'Mismatch between the scanned image & supporting data. Mandate with rejection have to be reuploaded',
+        self::M006 => 'Drawee does not have the authority to provide debit instructions at the bank',
+        self::M003 => 'Signature on the mandate differs as against the signature maintained',
+        self::M004 => 'No signature on the mandate',
+        self::M005 => 'Drawee does not have the authority to provide debit instructions at the bank',
+        self::M065 => 'Fixed or Maximum option not specified on mandate',
+        self::M061 => 'Frequency of debit not selected',
+        self::M027 => 'Image of the mandate not clear. This can be re-uploaded',
+        self::M063 => 'Invalid Bank name mentioned on the mandate',
+        self::M060 => 'Frequency of debit not selected/multiple frequencies selected',
+        self::M033 => 'Amount mentioned on the mandate pertains to full loan amount instead of EMI',
+        self::M073 => 'Mandate not filled completely',
+        self::M009 => 'Mandate in Old Format',
+        self::M030 => 'particular banks does not facilitate processing for CC (Cash Credit)/ PFF / PF and OD account.',
+        self::M058 => 'Name of beneficiary not provided or not legible',
+        self::M043 => 'ACH debits not allowed in the account type like CC',
+        self::M038 => 'Account no mentioned on the mandate is not available with the bank',
+        self::M031 => 'Mandate amended with change in account no',
+        self::C002 => 'Mandate cancelled on corporate request',
+        self::C001 => 'Mandate cancelled on customer request / This reject reason completely depends on customer confirmation.',
+        self::M011 => 'Payment stopped by attachment order',
+        self::M012 => 'Mandate cannot be accepted as all payments stopped by court from the said account',
+        self::M062 => 'End date/until cancelled not mentioned on the mandate',
+        self::M020 => 'Mandate rejected as duplicate UMRN received',
+        self::M032 => 'Mandate rejected due to customer request',
+        self::M086 => 'The customer identifier mentioned on the mandate does not match with the identifier available with the bank',
+        self::M087 => 'The amount mentioned on the mandate is incorrect. i.e. full loan amount mentioned in place of EMI',
+        self::M010 => 'Start date not mentioned on the mandate',
+        self::NCEX => 'This reason is to be used as a default reason in case no action is taken on the mandate within the TAT of 5 days',
+        self::M013 => 'NO further debits to the account can happen due to death of account holder.',
+        self::M015 => 'No further debits to account can happen due to insolvency',
+        self::M014 => 'NO further debits to the account can happen due to lunacy of account holder.',
+        self::C005 => 'No one is operating account or account has been closed',
+        self::M057 => 'Account holder name is mismatch in core banking system.For such cases client needs to share fresh mandate with correct account holder name which is maintained in bank system.',
+        self::M090 => 'Aadhar no mismatch with core bank system.',
+        self::M093 => 'Aadhar no not linked to account no',
+        self::M055 => 'No one is operating account or account has been closed',
+        self::M026 => 'Mandate cancelled as Account Closed or Frozen or Inopertive as per customer request.',
+        self::C004 => 'Mandate cancelled as Account Closed or Frozen or Inopertive as per customer request.',
+        self::M068 => 'Account type mentioned on mandate is different from core banking system',
+        self::M074 => 'Account No mentioned on mandate and registered account no is different.',
+        self::M075 => 'Account type mentioned on mandate and registered account type is different.',
+        self::M080 => 'Amount mentioned on mandate and registered amount is different.',
+        self::M084 => 'Bank name mentioned on mandate and registered bank name is different.',
+        self::M082 => 'End Date mentioned on mandate and registered End Date is different.',
+        self::M085 => 'Multiple fields selected.',
+        self::M083 => 'Account holder name mentioned on mandate and registered Account holder name is different.',
+        self::M081 => 'Start date mentioned on mandate and registered start date is different.',
+        self::NCFE => 'This reason is to be used when the mandate is rejected due to bank not validating the same within the defined TAT.',
+        self::M050 => 'Drawers signature is unreadable on mandate/ Signature not clear on mandate.',
+        self::M049 => 'Drawers signature not updated in corporate banking system.',
+        self::M021 => 'Mandate should be presented as per the frequency mentioned on it',
+        self::M066 => 'Joint Account holders signature require',
+        self::M056 => 'Require Average Quarterly balance',
+        self::M052 => 'Account belongs to a minor and hence mandate cannot be registered',
+        self::M051 => 'Account belongs to a NRE and hence mandate cannot be registered',
+        self::M022 => 'Mandate with same details already registered under ECS and hence cannot be registered under ACH',
+        self::M053 => 'Mandate registration not allowed for PF /particular banks does not facilitate processing for PF and account.',
+        self::M054 => 'Mandate registration not allowed for PPF /particular banks does not facilitate processing for PPF and account.',
+        self::M036 => 'Mandate amended with change in account no',
+        self::M025 => 'Category code mismatch',
+        self::M019 => 'Incomplete KYC documents submitted',
+        self::M067 => 'In core bank system, thumb print is maintained. However, signature is affixed on mandate.',
+        self::M091 => 'Signature maintained at bank system is corrupted.',
+        self::M092 => 'Signature Mismatch',
+        self::M002 => 'Illegible drawer signature. Please note that this reason would soon be discontinued',
+        self::M071 => 'Company round stamp required',
+    ];
+
+    protected static $registerInternalErrorCodeMappings = [
+        self::C003 => ErrorCode::BAD_REQUEST_PAYMENT_ACCOUNT_WITHDRAWAL_FROZEN,
+        self::C004 => ErrorCode::BAD_REQUEST_PAYMENT_ACCOUNT_WITHDRAWAL_FROZEN,
+        self::M041 => ErrorCode::BAD_REQUEST_PAYMENT_ACCOUNT_WITHDRAWAL_FROZEN,
+        self::M037 => ErrorCode::BAD_REQUEST_PAYMENT_ACCOUNT_WITHDRAWAL_FROZEN,
+        self::M042 => ErrorCode::BAD_REQUEST_PAYMENT_INVALID_WITHDRAWER_DATA,
+        self::M007 => ErrorCode::BAD_REQUEST_AUTHENTICATION_FAILED,
+        self::M024 => ErrorCode::BAD_REQUEST_PAYMENT_WORDS_FIGURE_DIFFERS,
+        self::M034 => ErrorCode::BAD_REQUEST_PAYMENT_EMI_LIMIT_EXCEED,
+        self::M008 => ErrorCode::BAD_REQUEST_COMPANY_FOR_STAMP_MISSING,
+        self::M035 => ErrorCode::BAD_REQUEST_CORPORATE_NAME_MISMATCH,
+        self::M079 => ErrorCode::BAD_REQUEST_PAYMENT_INVALID_WITHDRAWER_DATA,
+        self::M076 => ErrorCode::BAD_REQUEST_PAYMENT_INVALID_WITHDRAWER_DATA,
+        self::M077 => ErrorCode::BAD_REQUEST_PAYMENT_INVALID_WITHDRAWER_DATA,
+        self::M078 => ErrorCode::BAD_REQUEST_PAYMENT_INVALID_WITHDRAWER_DATA,
+        self::M072 => ErrorCode::BAD_REQUEST_MANDATE_DATA_MISMATCH,
+        self::M006 => ErrorCode::BAD_REQUEST_PAYMENT_INVALID_WITHDRAWER_DATA,
+        self::M003 => ErrorCode::BAD_REQUEST_MISMATCH_SIGNATURE,
+        self::M004 => ErrorCode::BAD_REQUEST_MISSING_SIGNATURE,
+        self::M005 => ErrorCode::BAD_REQUEST_AUTHENTICATION_FAILED,
+        self::M065 => ErrorCode::BAD_REQUEST_INVALID_TRANSACTION_AMOUNT,
+        self::M061 => ErrorCode::BAD_REQUEST_INVALID_FREQ,
+        self::M027 => ErrorCode::BAD_REQUEST_UNCLEAR_IMAGE,
+        self::M063 => ErrorCode::BAD_REQUEST_INVALID_BANK_ACCOUNT,
+        self::M060 => ErrorCode::BAD_REQUEST_INVALID_FREQ,
+        self::M033 => ErrorCode::BAD_REQUEST_PAYMENT_EMI_LIMIT_EXCEED,
+        self::M073 => ErrorCode::BAD_REQUEST_MANDATE_INCOMPLETE,
+        self::M009 => ErrorCode::BAD_REQUEST_MANDATE_OLD_FORMAT,
+        self::M030 => ErrorCode::BAD_REQUEST_PAYOUTS_NOT_ALLOWED_CURRENTLY,
+        self::M058 => ErrorCode::BAD_REQUEST_INVALID_ACCOUNT_HOLDER_NAME,
+        self::M043 => ErrorCode::BAD_REQUEST_PAYMENT_INVALID_DEBIT_TYPE,
+        self::M038 => ErrorCode::BAD_REQUEST_INVALID_BANK_ACCOUNT,
+        self::M031 => ErrorCode::ACCOUNT_NUMBER_AMENDED,
+        self::C002 => ErrorCode::CANCELLED_ON_CORPORATE_REQUEST,
+        self::C001 => ErrorCode::CANCELLED_ON_CUSTOMER_REQUEST,
+        self::M011 => ErrorCode::PAYMENT_STOPPED,
+        self::M012 => ErrorCode::PAYMENT_STOPPED,
+        self::M062 => ErrorCode::BAD_REQUEST_PAYMENT_INVALID_PERIOD_SIGN,
+        self::M020 => ErrorCode::BAD_REQUEST_DUPLICATE_UMRN,
+        self::M032 => ErrorCode::CUSTOMER_REJECTED_PAYMENT,
+        self::M086 => ErrorCode::BAD_REQUEST_INVALID_ACCOUNT_HOLDER_NAME,
+        self::M087 => ErrorCode::BAD_REQUEST_INVALID_TRANSACTION_AMOUNT,
+        self::NCEX => ErrorCode::BAD_REQUEST_PAYMENT_TIMED_OUT,
+        self::NCFE => ErrorCode::BAD_REQUEST_PAYMENT_TIMED_OUT,
+        self::M010 => ErrorCode::BAD_REQUEST_PAYMENT_INVALID_PERIOD_SIGN,
+        self::M013 => ErrorCode::BAD_REQUEST_PAYMENT_ACCOUNT_WITHDRAWAL_FROZEN,
+        self::M014 => ErrorCode::BAD_REQUEST_PAYMENT_ACCOUNT_WITHDRAWAL_FROZEN,
+        self::M015 => ErrorCode::BAD_REQUEST_PAYMENT_ACCOUNT_WITHDRAWAL_FROZEN,
+        self::C005 => ErrorCode::BAD_REQUEST_ACCOUNT_CLOSED,
+        self::M057 => ErrorCode::MANDATE_USER_MISMATCH,
+        self::M090 => ErrorCode::MANDATE_USER_MISMATCH,
+        self::M093 => ErrorCode::BAD_REQUEST_EMANDATE_AADHAAR_NOT_MAPPED,
+        self::M055 => ErrorCode::BAD_REQUEST_ACCOUNT_CLOSED,
+        self::M026 => ErrorCode::CANCELLED_ON_CUSTOMER_REQUEST,
+        self::M068 => ErrorCode::BAD_REQUEST_MANDATE_DATA_MISMATCH,
+        self::M074 => ErrorCode::BAD_REQUEST_MANDATE_DATA_MISMATCH,
+        self::M075 => ErrorCode::BAD_REQUEST_MANDATE_DATA_MISMATCH,
+        self::M080 => ErrorCode::BAD_REQUEST_MANDATE_DATA_MISMATCH,
+        self::M081 => ErrorCode::BAD_REQUEST_MANDATE_DATA_MISMATCH,
+        self::M082 => ErrorCode::BAD_REQUEST_MANDATE_DATA_MISMATCH,
+        self::M084 => ErrorCode::BAD_REQUEST_MANDATE_DATA_MISMATCH,
+        self::M085 => ErrorCode::BAD_REQUEST_EXTRA_FIELDS_PROVIDED,
+        self::M083 => ErrorCode::MANDATE_USER_MISMATCH,
+        self::M050 => ErrorCode::BAD_REQUEST_MISMATCH_SIGNATURE,
+        self::M049 => ErrorCode::BAD_REQUEST_MISMATCH_SIGNATURE,
+        self::M021 => ErrorCode::BAD_REQUEST_INVALID_FREQ,
+        self::M066 => ErrorCode::BAD_REQUEST_MISSING_SIGNATURE,
+        self::M056 => ErrorCode::BAD_REQUEST_PAYMENT_ACCOUNT_INSUFFICIENT_BALANCE,
+        self::M052 => ErrorCode::BAD_REQUEST_RESTRICTED_USER_CANNOT_PERFORM_ACTION,
+        self::M051 => ErrorCode::BAD_REQUEST_RESTRICTED_USER_CANNOT_PERFORM_ACTION,
+        self::M022 => ErrorCode::BAD_REQUEST_CUSTOMER_ALREADY_EXISTS,
+        self::M053 => ErrorCode::BAD_REQUEST_PAYMENT_ACCOUNT_WITHDRAWAL_FROZEN,
+        self::M054 => ErrorCode::BAD_REQUEST_PAYMENT_ACCOUNT_WITHDRAWAL_FROZEN,
+        self::M036 => ErrorCode::BAD_REQUEST_INVALID_BANK_ACCOUNT,
+        self::M025 => ErrorCode::BAD_REQUEST_INVALID_SUBCATEGORY,
+        self::M019 => ErrorCode::BAD_REQUEST_PAYMENT_KYC_PENDING,
+        self::M067 => ErrorCode::BAD_REQUEST_MISMATCH_SIGNATURE,
+        self::M091 => ErrorCode::BAD_REQUEST_SIGNATURE_ERROR,
+        self::M092 => ErrorCode::BAD_REQUEST_MISMATCH_SIGNATURE,
+        self::M002 => ErrorCode::BAD_REQUEST_MISMATCH_SIGNATURE,
+        self::M071 => ErrorCode::BAD_REQUEST_COMPANY_FOR_STAMP_MISSING,
+
+    ];
+
+    public static function getRegisterPublicErrorDescription($errCode)
+    {
+        $defaultErrorDesc = PublicErrorDescription::BAD_REQUEST_PAYMENT_FAILED;
+
+        return self::$registerErrorCodeDescMappings[$errCode] ?? $defaultErrorDesc;
+    }
+
+    public static function getRegisterInternalErrorCode($errCode)
+    {
+        return self::$registerInternalErrorCodeMappings[$errCode] ?? ErrorCode::BAD_REQUEST_EMANDATE_REGISTRATION_FAILED;
+    }
+}

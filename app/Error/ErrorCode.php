@@ -717,6 +717,7 @@ class ErrorCode
     const BAD_REQUEST_SUBSCRIPTION_PAYMENT_PARAMS_MISSING                           = 'BAD_REQUEST_SUBSCRIPTION_PAYMENT_PARAMS_MISSING';
     const BAD_REQUEST_CARDLESS_EMI_USER_DOES_NOT_EXIST                              = 'BAD_REQUEST_CARDLESS_EMI_USER_DOES_NOT_EXIST';
     const BAD_REQUEST_EMI_DURATION_NOT_VALID                                        = 'BAD_REQUEST_EMI_DURATION_NOT_VALID';
+    const BAD_REQUEST_PAYMENT_EMI_LIMIT_EXCEED                                      = 'BAD_REQUEST_PAYMENT_EMI_LIMIT_EXCEED';
     const BAD_REQUEST_RECURRING_TOKEN_EXPIRED                                       = 'BAD_REQUEST_RECURRING_TOKEN_EXPIRED';
     const BAD_REQUEST_CARDHOLDER_STOPPED_WITHDRAWALS                                = 'BAD_REQUEST_CARDHOLDER_STOPPED_WITHDRAWALS';
     const BAD_REQUEST_PAYMENT_CARD_WITHDRAWAL_LIMITS_EXCEEDED                       = 'BAD_REQUEST_PAYMENT_CARD_WITHDRAWAL_LIMITS_EXCEEDED';
@@ -1124,12 +1125,38 @@ class ErrorCode
     const BAD_REQUEST_TOKEN_NOT_FOUND                                               = 'BAD_REQUEST_TOKEN_NOT_FOUND';
     const BAD_REQUEST_PAYMENT_KYC_PENDING                                           = 'BAD_REQUEST_PAYMENT_KYC_PENDING';
     const BAD_REQUEST_PAYMENT_INVALID_WITHDRAWER_DATA                               = 'BAD_REQUEST_PAYMENT_INVALID_WITHDRAWER_DATA';
+    const BAD_REQUEST_PAYMENT_INVALID_DEBIT_TYPE                                    = 'BAD_REQUEST_PAYMENT_INVALID_DEBIT_TYPE';
+    const BAD_REQUEST_PAYMENT_INVALID_FREQ_PERIOD                                   = 'BAD_REQUEST_PAYMENT_INVALID_FREQ_PERIOD';
+    const BAD_REQUEST_PAYMENT_INVALID_FREQ_SIGN                                     = 'BAD_REQUEST_PAYMENT_INVALID_FREQ_SIGN';
+    const BAD_REQUEST_PAYMENT_INVALID_PERIOD_SIGN                                   = 'BAD_REQUEST_PAYMENT_INVALID_PERIOD_SIGN';
+    const BAD_REQUEST_MANDATE_DATA_MISMATCH                                         = 'BAD_REQUEST_MANDATE_DATA_MISMATCH';
+    const BAD_REQUEST_DRAWER_NOT_AUTHORIZED                                         = 'BAD_REQUEST_DRAWER_NOT_AUTHORIZED';
+    const BAD_REQUEST_MISMATCH_SIGNATURE                                            = 'BAD_REQUEST_MISMATCH_SIGNATURE';
+    const BAD_REQUEST_MISSING_SIGNATURE                                             = 'BAD_REQUEST_MISSING_SIGNATURE';
+    const BAD_REQUEST_INVALID_FREQ                                                  = 'BAD_REQUEST_INVALID_FREQ';
+    const BAD_REQUEST_UNCLEAR_IMAGE                                                 = 'BAD_REQUEST_UNCLEAR_IMAGE';
+    const BAD_REQUEST_INVALID_BANK_NAME                                             = 'BAD_REQUEST_INVALID_BANK_NAME';
+    const BAD_REQUEST_MANDATE_INCOMPLETE                                            = 'BAD_REQUEST_MANDATE_INCOMPLETE';
+    const BAD_REQUEST_MANDATE_OLD_FORMAT                                            = 'BAD_REQUEST_MANDATE_OLD_FORMAT';
+    const ACCOUNT_NUMBER_AMENDED                                                    = 'ACCOUNT_NUMBER_AMENDED';
+    const CANCELLED_ON_CORPORATE_REQUEST                                            = 'CANCELLED_ON_CORPORATE_REQUEST';
+    const CANCELLED_ON_CUSTOMER_REQUEST                                             = 'CANCELLED_ON_CUSTOMER_REQUEST';
+    const PAYMENT_STOPPED                                                           = 'PAYMENT_STOPPED';
+    const BAD_REQUEST_DUPLICATE_UMRN                                                = 'BAD_REQUEST_DUPLICATE_UMRN';
+    const CUSTOMER_REJECTED_PAYMENT                                                 = 'CUSTOMER_REJECTED_PAYMENT';
+    const CUSTOMER_INSOLVENT                                                        = 'CUSTOMER_INSOLVENT';
+    const MANDATE_USER_MISMATCH                                                     = 'MANDATE_USER_MISMATCH';
+    const CUSTOMER_DENIED                                                           = 'CUSTOMER_DENIED';
+
     const BAD_REQUEST_PAYMENT_ACCOUNT_WITHDRAWAL_FROZEN                             = 'BAD_REQUEST_PAYMENT_ACCOUNT_WITHDRAWAL_FROZEN';
     const BAD_REQUEST_PAYMENT_INVALID_ACCOUNT                                       = 'BAD_REQUEST_PAYMENT_INVALID_ACCOUNT';
     const BAD_REQUEST_PAYMENT_CANCELLED_AT_EMANDATE_REGISTRATION                    = 'BAD_REQUEST_PAYMENT_CANCELLED_AT_EMANDATE_REGISTRATION';
     const BAD_REQUEST_INVALID_ACCOUNT_HOLDER_NAME                                   = 'BAD_REQUEST_INVALID_ACCOUNT_HOLDER_NAME';
     const BAD_REQUEST_PAYMENT_CANCELLED_BY_CUSTOMER                                 = 'BAD_REQUEST_PAYMENT_CANCELLED_BY_CUSTOMER';
     const BAD_REQUEST_PAYMENT_ACCOUNT_MAX_LIMIT_EXCEEDED                            = 'BAD_REQUEST_PAYMENT_ACCOUNT_MAX_LIMIT_EXCEEDED';
+    const BAD_REQUEST_PAYMENT_WORDS_FIGURE_DIFFERS                                  = 'BAD_REQUEST_PAYMENT_WORDS_FIGURE_DIFFERS';
+    const BAD_REQUEST_COMPANY_FOR_STAMP_MISSING                                     = 'BAD_REQUEST_COMPANY_FOR_STAMP_MISSING';
+    const BAD_REQUEST_CORPORATE_NAME_MISMATCH                                       = 'BAD_REQUEST_CORPORATE_NAME_MISMATCH';
 
     const BAD_REQUEST_EMANDATE_AMOUNT_LIMIT_EXCEEDED                                = 'BAD_REQUEST_EMANDATE_AMOUNT_LIMIT_EXCEEDED';
     const BAD_REQUEST_EMANDATE_REGISTRATION_FAILED                                  = 'BAD_REQUEST_EMANDATE_REGISTRATION_FAILED';

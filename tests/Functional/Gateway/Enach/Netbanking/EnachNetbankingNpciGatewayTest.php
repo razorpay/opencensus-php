@@ -588,7 +588,7 @@ class EnachNetbankingNpciGatewayTest extends TestCase
 
         $fileStatuses = [
             'status'     => '1',
-            'error_code' => '',
+            'error_code' => '00',
             'error_desc' => '',
         ];
 
@@ -624,7 +624,7 @@ class EnachNetbankingNpciGatewayTest extends TestCase
 
         $fileStatuses = [
             'status'     => '0',
-            'error_code' => '',
+            'error_code' => '09',
             'error_desc' => '',
         ];
 
@@ -637,7 +637,7 @@ class EnachNetbankingNpciGatewayTest extends TestCase
         $payment = $this->getDbEntityById('payment', $payment['id']);
 
         $this->assertEquals('failed', $payment['status']);
-        $this->assertEquals('BAD_REQUEST_PAYMENT_FAILED', $payment['internal_error_code']);
+        $this->assertEquals('GATEWAY_ERROR_REQUEST_ERROR', $payment['internal_error_code']);
 
         $enach = $this->getDbEntities('enach', ['payment_id' => $payment['id']])->first()->toArray();
 
@@ -652,7 +652,7 @@ class EnachNetbankingNpciGatewayTest extends TestCase
 
         $fileStatuses = [
             'status'     => '3',
-            'error_code' => '',
+            'error_code' => '00',
             'error_desc' => '',
         ];
 
@@ -851,7 +851,7 @@ class EnachNetbankingNpciGatewayTest extends TestCase
         $this->fixtures->stripSign($paymentId);
 
         $data = '56       RAZORPAY SOFTWARE PVT LTD                             000000000                           000005000000000000000020001701202047642224498136619848   NACH00000000013149000000000000000000CITI000PIGW000018003                          00000000227
-67         10                  ABIJITO GUHA                            17012020        RAZORPAY SOFTWARE PV             000000030000047642224504081750481'. $status['status'] .'00HDFC00024971111111111111                      CITI000PIGWNACH00000000013149CTTATAAIAA' . $paymentId . '      10 000000000000000HDFC0000000010936518
+67         10                  ABIJITO GUHA                            17012020        RAZORPAY SOFTWARE PV             000000030000047642224504081750481'. $status['status'] . $status['error_code']. 'HDFC00024971111111111111                      CITI000PIGWNACH00000000013149CTTATAAIAA' . $paymentId . '      10 000000000000000HDFC0000000010936518
 ';
 
         $name = 'temp.txt';
@@ -914,7 +914,7 @@ class EnachNetbankingNpciGatewayTest extends TestCase
 
         $fileStatuses = [
             'status'     => '1',
-            'error_code' => '',
+            'error_code' => '00',
             'error_desc' => '',
         ];
 

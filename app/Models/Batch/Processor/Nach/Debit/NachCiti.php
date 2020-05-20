@@ -21,14 +21,14 @@ class NachCiti extends Base
 
         $paymentId       = substr($row[Headings::TRANSACTION_REFERENCE], 10, 14);
         $accountNumber   = $row[Headings::BENEFICIARY_BANK_ACCOUNT_NUMBER];
-        $rejectionReason = $row[Headings::REASON_CODE];
+        $rejectionCode   = $row[Headings::REASON_CODE];
         $status          = $row[Headings::FLAG];
         $amount          = $row[Headings::AMOUNT];
 
         return [
             self::PAYMENT_ID            => $paymentId,
             self::ACCOUNT_NUMBER        => $accountNumber,
-            self::GATEWAY_ERROR_MESSAGE => $rejectionReason,
+            self::GATEWAY_ERROR_CODE    => $rejectionCode,
             self::GATEWAY_RESPONSE_CODE => $status,
             self::AMOUNT                => $amount,
         ];
@@ -137,9 +137,11 @@ class NachCiti extends Base
                 null,
                 null,
                 [
-                    'payment_id' => $payment->getId(),
-                    'token_id' => $token->getId(),
-                    'gateway' => 'netbanking_sbi'
+                    'payment_id'        => $payment->getId(),
+                    'token_id'          => $token->getId(),
+                    'payment'           => $payment->isCreated(),
+                    'gateway'           => $payment->getGateway(),
+                    'recurring_type'    => $payment->getRecurringType()
                 ]);
         }
 
@@ -173,7 +175,7 @@ class NachCiti extends Base
     {
         return [
             EnachEntity::STATUS        => $parsedData[self::GATEWAY_RESPONSE_CODE],
-            EnachEntity::ERROR_MESSAGE => $parsedData[self::GATEWAY_ERROR_MESSAGE],
+            EnachEntity::ERROR_MESSAGE => $this->getGatewayErrorDesc($parsedData),
         ];
     }
 
@@ -184,6 +186,11 @@ class NachCiti extends Base
 
     protected function getApiErrorCode(array $content): string
     {
-        return ErrorCode::getDebitPublicErrorCode($content);
+        return ErrorCode::getDebitInternalErrorCode($content);
+    }
+
+    protected function getGatewayErrorDesc(array $content): string
+    {
+        return ErrorCode::getDebitPublicErrorDescription($content[self::GATEWAY_ERROR_CODE]);
     }
 }

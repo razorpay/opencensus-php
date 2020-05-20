@@ -209,11 +209,14 @@ class NachGatewayTest extends TestCase
         $payment = $this->getDbLastEntity('payment');
 
         $this->assertEquals('captured', $payment['status']);
+        $this->assertEmpty($payment['internal_error_code'], "Payment should not have some Error Code");
+        $this->assertEmpty($payment['error_description'], "Payment should not have some Error Reason");
 
         $token = $this->getDbLastEntityToArray('token');
 
         $this->assertNotNull($token['gateway_token']);
         $this->assertEquals('confirmed', $token['recurring_status']);
+        $this->assertEmpty($token['recurring_failure_reason'], "Token should not have some Error Reason");
     }
 
     public function testGatewayFailureRegistrationResponseFile()
@@ -234,6 +237,8 @@ class NachGatewayTest extends TestCase
         $payment = $this->getEntityById('payment', $payment['id'], true);
 
         $this->assertEquals('failed', $payment['status']);
+        $this->assertStringStartsWith("BAD_REQUEST_", $payment['internal_error_code']);
+        $this->assertNotEmpty($payment['error_description'], "Payment should have some Error Reason");
 
         $token = $this->getDbLastEntityToArray('token');
 
@@ -311,11 +316,14 @@ class NachGatewayTest extends TestCase
         $payment = $this->getEntityById('payment', $payment['id'], true);
 
         $this->assertEquals('created', $payment['status']);
+        $this->assertEmpty($payment['internal_error_code'], "Payment should not have some Error Code");
+        $this->assertEmpty($payment['error_description'], "Payment should not have some Error Reason");
 
         $token = $this->getDbLastEntityToArray('token');
 
         $this->assertNull($token['gateway_token']);
         $this->assertEquals('initiated', $token['recurring_status']);
+        $this->assertEmpty($token['recurring_failure_reason'], "Token should not have some Error Reason");
     }
 
     public function testGatewayInitialRegistrationResponseFilePendingFromBankResponse()
@@ -336,11 +344,14 @@ class NachGatewayTest extends TestCase
         $payment = $this->getEntityById('payment', $payment['id'], true);
 
         $this->assertEquals('created', $payment['status']);
+        $this->assertEmpty($payment['internal_error_code'], "Payment should not have some Error Code");
+        $this->assertEmpty($payment['error_description'], "Payment should not have some Error Reason");
 
         $token = $this->getDbLastEntityToArray('token');
 
         $this->assertNull($token['gateway_token']);
         $this->assertEquals('initiated', $token['recurring_status']);
+        $this->assertEmpty($token['recurring_failure_reason'], "Token should not have some Error Reason");
     }
 
     protected function createRecurringNachPayment()

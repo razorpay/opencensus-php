@@ -3,6 +3,7 @@
 namespace RZP\Gateway\Enach\Citi;
 
 use RZP\Error\ErrorCode;
+use RZP\Error\PublicErrorDescription;
 
 class ErrorCodes
 {
@@ -158,7 +159,7 @@ class ErrorCodes
         self::DE99 => 'Too many mark pending returns',
     ];
 
-    protected static $debitPublicErrorCodeMappings = [
+    protected static $debitInternalErrorCodeMappings = [
         self::DE01 => ErrorCode::BAD_REQUEST_ACCOUNT_CLOSED,
         self::DE02 => ErrorCode::BAD_REQUEST_PAYMENT_INVALID_ACCOUNT,
         self::DE03 => ErrorCode::BAD_REQUEST_PAYMENT_INVALID_WITHDRAWER_DATA,
@@ -233,12 +234,19 @@ class ErrorCodes
         self::DE99 => ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
     ];
 
-    public static function getDebitPublicErrorCode(array $row)
+    public static function getDebitInternalErrorCode(array $row)
     {
-        $errorCode = $row[self::GATEWAY_ERROR_MESSAGE] ?? '';
+        $errorCode = $row[self::GATEWAY_ERROR_CODE] ?? '';
 
         $defaultErrorCode = ErrorCode::BAD_REQUEST_PAYMENT_FAILED;
 
-        return self::$debitPublicErrorCodeMappings[$errorCode] ?? $defaultErrorCode;
+        return self::$debitInternalErrorCodeMappings[$errorCode] ?? $defaultErrorCode;
+    }
+
+    public static function getDebitPublicErrorDescription($errCode)
+    {
+        $defaultErrorDesc = PublicErrorDescription::BAD_REQUEST_PAYMENT_FAILED;
+
+        return self::$debitErrorCodeDescMappings[$errCode] ?? $defaultErrorDesc;
     }
 }

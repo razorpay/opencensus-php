@@ -10,9 +10,11 @@ use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Customer\Token;
 use RZP\Gateway\Enach\Citi\Status;
+use RZP\Error\PublicErrorDescription;
 use RZP\Models\SubscriptionRegistration;
 use RZP\Models\Payment\Processor\Processor;
 use RZP\Models\Batch\Processor\Nach\Base as BaseProcessor;
+
 
 abstract class Base extends BaseProcessor
 {
@@ -26,7 +28,7 @@ abstract class Base extends BaseProcessor
     const GATEWAY_REGISTRATION_STATUS = 'gateway_registration_status';
     const GATEWAY_ERROR_CODE          = 'gateway_error_code';
     const GATEWAY_ERROR_MESSAGE       = 'gateway_error_message';
-    const GATEWAY_ERROR_DESCRIPTION   = 'gateway_error_description';
+    const INTERNAL_ERROR_CODE         = 'internal_error_code';
     // Stored in token entity
     const TOKEN_ERROR_CODE            = 'token_error_code';
     /**
@@ -122,7 +124,7 @@ abstract class Base extends BaseProcessor
         $e = new Exception\GatewayErrorException(
             $errorCode,
             $content[self::GATEWAY_ERROR_CODE] ?? null,
-            $content[self::GATEWAY_ERROR_MESSAGE] ?? null,
+            $this->getGatewayErrorDesc($content),
             [
                 'payment_id' => $payment->getId(),
                 'gateway'    => $this->gateway,
@@ -136,6 +138,11 @@ abstract class Base extends BaseProcessor
     protected function getApiErrorCode(array $content): string
     {
         return ErrorCode::BAD_REQUEST_PAYMENT_FAILED;
+    }
+
+    protected function getGatewayErrorDesc(array $content): string
+    {
+        return PublicErrorDescription::BAD_REQUEST_PAYMENT_FAILED;
     }
 
     protected function processAuthorizedPayment(Payment\Entity $payment)
