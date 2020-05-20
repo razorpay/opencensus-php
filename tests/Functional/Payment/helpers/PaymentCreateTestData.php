@@ -200,6 +200,9 @@ return [
                 'error' => [
                     'code' => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_CARD_INTERNATIONAL_NOT_ALLOWED,
+                    'reason' => 'international_transaction_not_allowed',
+                    'source' => 'business',
+                    'step'   => 'payment_initiation'
                 ],
             ],
             'status_code' => 400,

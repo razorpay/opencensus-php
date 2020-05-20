@@ -26,8 +26,8 @@ GATEWAY_ERROR_INVALID_JSON,Invalid payment format,server_error,Technical,interna
 GATEWAY_ERROR_INVALID_TRANSACTION,Invalid transaction,server_error,Technical,internal,System Retry,payment_initiation,I
 GATEWAY_ERROR_TRANSACTION_TYPE_NOT_SUPPORTED,Transaction type is not not supported,server_error,Technical,internal,System Retry,payment_initiation,I
 GATEWAY_ERROR_AGGREGATOR_DOWN,Aggregator not available,payment_timed_out,Technical,gateway,System Retry,payment_authorization,I
-BAD_REQUEST_PAYMENT_TIMED_OUT_AT_GATEWAY,The request was received, but a timeout occurred at the payment processor.,payment_timed_out,Technical,gateway,System Retry,payment_authorization,I
-GATEWAY_ERROR_REQUEST_TIMEOUT,The request was received, but a timeout occurred at the payment processor.,payment_timed_out,Technical,gateway,System Retry,payment_authentication,I
+BAD_REQUEST_PAYMENT_TIMED_OUT_AT_GATEWAY,The request was received but a timeout occurred at the payment processor.,payment_timed_out,Technical,gateway,System Retry,payment_authorization,I
+GATEWAY_ERROR_REQUEST_TIMEOUT,The request was received but a timeout occurred at the payment processor.,payment_timed_out,Technical,gateway,System Retry,payment_authentication,I
 GATEWAY_ERROR_ACQUIRER_UNAVAILABLE,Payment Timed Out,gateway_technical_error,Technical,gateway,System Retry,payment_authentication,I
 GATEWAY_ERROR_GENERIC_ERROR,Technical Error,gateway_technical_error,Technical,gateway,System Retry,payment_authorization,I
 GATEWAY_ERROR_SUPPORT_FAILED,Technical Error,gateway_technical_error,Technical,gateway,System Retry,payment_authorization,I
@@ -63,7 +63,7 @@ BAD_REQUEST_PAYMENT_AMEX_3DSECURE_AUTH_FAILED,The card is not enrolled for Ameri
 BAD_REQUEST_PAYMENT_CARD_WITHDRAWAL_LIMITS_EXCEEDED,The customer has exceeded the balance or credit limit available on their card.,transaction_limit_exceeded,Business,customer,Card limit exceeded - Retry with another card or payment method,payment_authorization,D
 BAD_REQUEST_CARD_DAILY_LIMIT_REACHED,The customer has exceeded the balance or credit limit available on their card.,transaction_daily_limit_exceeded,Business,customer,Card limit exceeded - Retry with another card or payment method,payment_authorization,D
 BAD_REQUEST_PAYMENT_ACCOUNT_INSUFFICIENT_BALANCE,The customer has exceeded the balance or credit limit available on their card.,insufficient_funds,Business,customer,Insufficient balance - Retry with another card or payment method,payment_authorization,D
-BAD_REQUEST_PAYMENT_CARD_INTERNATIONAL_NOT_ALLOWED,International cards are not allowed for this transaction,international_transaction_blocked_on_card,Business,customer,Retry with domestic card,payment_authorization,D
+BAD_REQUEST_PAYMENT_CARD_INTERNATIONAL_NOT_ALLOWED,International cards are not allowed for this transaction,international_transaction_not_allowed,Business,business,Retry with domestic card,payment_initiation,D
 BAD_REQUEST_PAYMENT_CARD_DECLINED,Card Payment Declined,card_declined,Technical,issuer_bank,Retry with another card,payment_authorization,D
 GATEWAY_ERROR_BANK_NOT_SUPPORTED_BY_SWITCH,The card does not support this type of purchase.,server_error,Business,internal,,payment_authorization,I
 GATEWAY_ERROR_INVALID_RESPONSE,Invalid response received by gateway,gateway_technical_error,Technical,gateway,Check with merchant/ gateway,payment_authorization,D
@@ -77,7 +77,7 @@ BAD_REQUEST_UNABLE_TO_AUTHORIZE_PAYMENT,Unable to authorize payment,card_decline
 BAD_REQUEST_PAYMENT_NOT_AUTHORIZED,Payment not Authorized,card_declined,Technical,issuer_bank,Retry with another card,payment_authorization,N
 BAD_REQUEST_PAYMENT_AMOUNT_TOO_HIGH_DECLINED_BY_ISSUER,Payment amount too high for the customer,transaction_limit_exceeded,Business,customer,Retry with another card with higher limit,payment_authorization,D
 BAD_REQUEST_PAYMENT_DECLINED_BY_BANK,Declined by Bank,card_declined,Business,issuer_bank,Retry with another card,payment_authorization,N
-BAD_REQUEST_PAYMENT_DECLINED_CONTACT_ISSUING_BANK,Payment declined, contact issuing bank.,card_declined,Technical,issuer_bank,Retry with another card,payment_authorization,N
+BAD_REQUEST_PAYMENT_DECLINED_CONTACT_ISSUING_BANK,Payment declined contact issuing bank.,card_declined,Technical,issuer_bank,Retry with another card,payment_authorization,N
 BAD_REQUEST_PAYMENT_CARD_ISSUING_BANK_NOT_PERMITTING_PAYMENT,Payment not permitted by Issuing Bank,card_declined,Business,issuer_bank,Retry with another card,payment_authorization,N
 BAD_REQUEST_PAYMENT_DECLINED_BY_BANK_DUE_TO_BLOCKED_CARD,Blocked card,debit_instrument_blocked,Business,customer,Retry with another card,payment_authorization,D
 BAD_REQUEST_CARD_FROZEN,Card frozen,debit_instrument_blocked,Business,customer,Retry with another card,payment_authorization,D
@@ -94,12 +94,12 @@ BAD_REQUEST_PAYMENT_PIN_INCORRECT,The PIN entered is incorrect,incorrect_pin,Bus
 BAD_REQUEST_PAYMENT_CARD_INVALID_PIN,The PIN entered is incorrect,incorrect_pin,Business,customer,Retry with correct details/ another card,payment_authentication,D
 BAD_REQUEST_PAYMENT_CARD_INVALID_CVV,The CVV entered is incorrect,incorrect_cvv,Business,customer,Retry with correct details/ another card,payment_authentication,D
 BAD_REQUEST_PAYMENT_CARD_EXPIRED,The card has expired,card_expired,Business,customer,Retry with any other valid card,payment_authentication,D
-BAD_REQUEST_PAYMENT_TIMED_OUT,The request was received, but a timeout occurred at the payment processor.,payment_timed_out,Technical,customer,Please try again in some time,payment_authentication,I
+BAD_REQUEST_PAYMENT_TIMED_OUT,The request was received but a timeout occurred at the payment processor.,payment_timed_out,Technical,customer,Please try again in some time,payment_authentication,I
 GATEWAY_ERROR_PAYMENT_AUTHENTICATION_ERROR,Customer authentication failed due to incorrect details,authentication_failed,Technical,customer,Retry with correct details/ another card,payment_authentication,I
 BAD_REQUEST_AUTHENTICATION_FAILED,Customer authentication failed due to incorrect details,authentication_failed,Technical,customer,Retry with correct details/ another card,payment_authentication,I
 GATEWAY_ERROR_AUTHENTICATION_NOT_AVAILABLE,Customer authentication failed due to incorrect details,bank_technical_error,Technical,issuer_bank,Retry with correct details/ another card,payment_authentication,D
-BAD_REQUEST_CARD_ISSUER_INVALID,The card, or account the card is connected to, is invalid.,incorrect_card_details,Business,customer,Retry with another card,payment_authentication,D
-GATEWAY_ERROR_PAYMENT_BIN_CHECK_FAILED,The card, or account the card is connected to, is invalid.,card_number_invalid,Business,customer,Retry with another card,payment_authentication,D
+BAD_REQUEST_CARD_ISSUER_INVALID,The card or account the card is connected to is invalid.,incorrect_card_details,Business,customer,Retry with another card,payment_authentication,D
+GATEWAY_ERROR_PAYMENT_BIN_CHECK_FAILED,The card or account the card is connected to is invalid.,card_number_invalid,Business,customer,Retry with another card,payment_authentication,D
 GATEWAY_ERROR_CARD_INVALID_NUMBER,The card number is incorrect.,card_number_invalid,Business,customer,Retry with correct details/ another card,payment_authentication,D
 GATEWAY_ERROR_INVALID_CARD_TYPE,The card does not support this type of purchase.,card_type_invalid,Business,customer,Retry with correct details/ another card,payment_authentication,D
 GATEWAY_ERROR_CARD_INVALID_CVV,Invalid CVV,incorrect_cvv,Business,customer,Retry with correct details/ another card,payment_authentication,D

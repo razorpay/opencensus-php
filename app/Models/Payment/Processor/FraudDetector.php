@@ -40,6 +40,7 @@ trait FraudDetector
         {
             $data = [
                 'payment_id' => $payment->getPublicId(),
+                'method'     => $payment->getMethod(),
                 'risk_score' => $riskScore,
             ];
 
@@ -171,6 +172,7 @@ trait FraudDetector
             {
                 $data = [
                     'payment_id' => $payment->getPublicId(),
+                    'method'     => $payment->getMethod(),
                     'risk_data'  => $riskData,
                 ];
 

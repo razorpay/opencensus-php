@@ -1229,6 +1229,7 @@ trait Authorize
                 null,
                 [
                     'payment_id'        => $payment->getId(),
+                    'method'            => $payment->getMethod(),
                     'subscription_id'   => $payment->getSubscriptionId(),
                 ]);
         }
@@ -1281,6 +1282,8 @@ trait Authorize
                 [
                     'subscription_id' => $subscription->getId(),
                     'status' => $subscription->getStatus(),
+                    'payment_id' => $payment->getPublicId(),
+                    'method'     => $payment->getMethod(),
                 ]);
         }
     }
@@ -1545,7 +1548,9 @@ trait Authorize
                 ErrorCode::BAD_REQUEST_URL_NOT_FOUND,
                 null,
                 [
-                    'payment_id' => $payment->getId()
+                    'payment_id' => $payment->getId(),
+                    'method'     => $payment->getMethod(),
+
                 ]);
         }
     }
@@ -1564,7 +1569,12 @@ trait Authorize
                     ($payment->card->iinRelation->supports(IIN\Flow::PIN) === false))
                 {
                     throw new Exception\BadRequestValidationFailureException(
-                        'The pin authentication type is not applicable on the given card');
+                        'The pin authentication type is not applicable on the given card',
+                    null,
+                        [
+                            'payment_id' => $payment->getPublicId(),
+                            'method'     => $payment->getMethod(),
+                        ]);
                 }
                 break;
 
@@ -1580,7 +1590,11 @@ trait Authorize
                       ($payment->card->iinRelation->supports(IIN\Flow::IVR) === false))))
                 {
                     throw new Exception\BadRequestValidationFailureException(
-                        'The otp authentication type is not applicable on the given card');
+                        'The otp authentication type is not applicable on the given card',null,
+                        [
+                            'payment_id' => $payment->getPublicId(),
+                            'method'     => $payment->getMethod(),
+                        ]);
                 }
 
                 break;
@@ -1590,7 +1604,11 @@ trait Authorize
                 if (Payment\Gateway::isDirectDebitSupported($payment->card->getNetworkCode()) === false)
                 {
                     throw new Exception\BadRequestValidationFailureException(
-                        'The skip authentication type is not applicable on the given card');
+                        'The skip authentication type is not applicable on the given card',null,
+                        [
+                            'payment_id' => $payment->getPublicId(),
+                            'method'     => $payment->getMethod(),
+                        ]);
                 }
                 break;
         }
@@ -1618,6 +1636,7 @@ trait Authorize
                 null,
                 [
                     'payment_id'    => $payment->getId(),
+                    'method'        => $payment->getMethod()
                 ]);
         }
 
@@ -1735,6 +1754,7 @@ trait Authorize
                     null,
                     [
                         'payment_id' => $payment->getId(),
+                        'method'     => $payment->getMethod(),
                         'auth_type' => $authType
                     ]);
         }
@@ -2650,7 +2670,11 @@ trait Authorize
         if ($merchant->isInternational() === false)
         {
             $e = new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_CARD_INTERNATIONAL_NOT_ALLOWED);
+                ErrorCode::BAD_REQUEST_PAYMENT_CARD_INTERNATIONAL_NOT_ALLOWED, null,
+            [
+                'payment_id' => $payment->getPublicId(),
+                'method'     => $payment->getMethod()
+            ]);
 
             $this->updatePaymentAuthFailedAndThrowException($e);
         }
@@ -2669,6 +2693,7 @@ trait Authorize
         {
             $data = [
                 'payment_id' => $payment->getPublicId(),
+                'method'     => $payment->getMethod(),
                 'card_id'    => $card->getId(),
             ];
 
@@ -5817,7 +5842,11 @@ trait Authorize
             ($merchantMethods->isNetbankingEnabled() === false))
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_NETBANKING_NOT_ENABLED_FOR_MERCHANT
+                ErrorCode::BAD_REQUEST_PAYMENT_NETBANKING_NOT_ENABLED_FOR_MERCHANT,null,
+                [
+                    'payment_id'   => $payment->getPublicId(),
+                    'method'       => $payment->getMethod()
+                ]
             );
         }
 
@@ -5840,6 +5869,7 @@ trait Authorize
                 [
                     'custom_properties' => $customProperties,
                     'payment_id'        => $payment->getId(),
+                    'method'            => $payment->getMethod()
                 ]);
         }
     }
