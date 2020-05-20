@@ -10,8 +10,10 @@ use RZP\Mail\BankingAccount\XProActivation;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Mail\BankingAccount\StatusNotifications\Created;
+use RZP\Mail\BankingAccount\StatusNotifications\Rejected;
 use RZP\Mail\BankingAccount\StatusNotifications\Processed;
 use RZP\Mail\BankingAccount\StatusNotifications\Cancelled;
+use RZP\Mail\BankingAccount\StatusNotifications\Activated;
 use RZP\Mail\BankingAccount\StatusNotifications\Processing;
 use RZP\Mail\BankingAccount\StatusNotifications\Unserviceable;
 
@@ -229,6 +231,8 @@ class BankingAccountTest extends TestCase
 
     public function testActivate()
     {
+        Mail::fake();
+
         $attribute = ['activation_status' => 'activated'];
 
         $merchantDetail = $this->fixtures->create('merchant_detail', $attribute);
@@ -334,6 +338,8 @@ class BankingAccountTest extends TestCase
         $this->assertEquals($scheduleTask['entity_id'], $balance['id']);
         $this->assertEquals($scheduleTask['entity_type'], 'balance');
         $this->assertEquals($scheduleTask['schedule_id'], $schedule['id']);
+
+        Mail::assertQueued(Activated::class);
     }
 
     public function testActivateFailedDueToFtsFailure()
@@ -447,6 +453,8 @@ class BankingAccountTest extends TestCase
 
     public function testUpdateBankingAccountStatusAsProcessed()
     {
+        Mail::fake();
+
         $attribute = ['activation_status' => 'activated'];
 
         $merchantDetail = $this->fixtures->create('merchant_detail', $attribute);
@@ -476,6 +484,8 @@ class BankingAccountTest extends TestCase
             ]);
 
         $this->startTest($dataToReplace);
+
+        Mail::assertQueued(Processed::class);
     }
 
     public function testUpdateBankingAccountStatusAsProcessedFailed()
@@ -530,6 +540,8 @@ class BankingAccountTest extends TestCase
 
     public function testUpdateBankingAccountToUnserviceable()
     {
+        Mail::fake();
+
         $bankingAccount = $this->createBankingAccount();
 
         $this->fixtures->edit('banking_account',
@@ -552,6 +564,8 @@ class BankingAccountTest extends TestCase
         $bankingAccount = $this->getDbLastEntity('banking_account');
 
         $this->assertEquals(RZP\Models\BankingAccount\Status::UNSERVICEABLE, $bankingAccount->getStatus());
+
+        Mail::assertQueued(Unserviceable::class);
     }
 
     public function testUpdateBankingAccountToInitiated()
@@ -926,6 +940,8 @@ class BankingAccountTest extends TestCase
 
     public function testUpdatedStatusFromProcessingToRejected()
     {
+        Mail::fake();
+
         $bankingAccount = $this->createBankingAccount();
 
         $this->fixtures->edit('banking_account',
@@ -948,6 +964,8 @@ class BankingAccountTest extends TestCase
         $bankingAccount = $this->getDbLastEntity('banking_account');
 
         $this->assertEquals(RZP\Models\BankingAccount\Status::REJECTED, $bankingAccount->getStatus());
+
+        Mail::assertQueued(Rejected::class);
     }
 
     public function testUpdateBankingAccountDetails()

@@ -105,6 +105,8 @@ class Service extends Base\Service
 
         $bankingAccount = $this->core->activate($bankingAccount, $input, $admin);
 
+        $this->core->notifyMerchantAboutUpdatedStatus($bankingAccount);
+
         return $bankingAccount->toArrayPublic();
     }
 
