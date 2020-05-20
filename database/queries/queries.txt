@@ -5742,3 +5742,6 @@ ALTER TABLE merchant_details
 ALTER TABLE transactions
     CHANGE reference10 posted_at BIGINT UNSIGNED DEFAULT NULL;
     ADD INDEX transactions_balance_idposted_at_index  (`balance_id`, `posted_at`);
+
+ALTER TABLE pricing
+    MODIFY COLUMN payment_method VARCHAR(255) DEFAULT NULL;

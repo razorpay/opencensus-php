@@ -32,8 +32,8 @@ class Validator extends Base\Validator
         Entity::GATEWAY                 => 'sometimes',
         Entity::PROCURER                => 'sometimes|nullable|in:razorpay,merchant',
         Entity::PLAN_NAME               => 'sometimes',
-        Entity::PAYMENT_METHOD          => 'required|string',
-        Entity::PAYMENT_METHOD_TYPE     => 'sometimes_if:payment_method,card,emandate,fund_transfer,nach|nullable',
+        Entity::PAYMENT_METHOD          => 'required_unless:feature,refund|nullable|string',
+        Entity::PAYMENT_METHOD_TYPE     => 'sometimes|nullable',
         Entity::PAYMENT_METHOD_SUBTYPE  => 'sometimes_if:payment_method,card,emandate,fund_transfer|nullable',
         Entity::PAYMENT_NETWORK         => 'sometimes|nullable|string',
         Entity::PAYMENT_ISSUER          => 'sometimes_if:payment_method,card,emi,emandate,cardless_emi,paylater,nach|nullable|alpha|max:255',
@@ -73,8 +73,10 @@ class Validator extends Base\Validator
         'addPlanRuleAmountRange',
         'addPlanRuleFeature',
         'addPlanRulePricingMethod',
+        'addPlanRulePricingMethodType',
         'addPlanRuleMinAndMaxFee',
         'addPlanRulePayoutFundTransfer',
+        'addPlanRuleRefund',
         // Skipped for now as it blocks the creation of 0-pricing rules.
         // 'addPlanRuleBankTransfer',
     ];
@@ -144,6 +146,45 @@ class Validator extends Base\Validator
                 Payment\Method::validateEsMethod($method);
 
                 break;
+
+            case Pricing\Feature::REFUND:
+                Payment\Refund\Validator::validateInstantRefundPricingMethod($method);
+
+                break;
+        }
+    }
+
+    protected function validateAddPlanRulePricingMethodType(array $input)
+    {
+        // Valid pricing methods for which Payment method type can be added
+        $validPricingMethods = [
+            Payment\Method::CARD,
+            Payment\Method::EMANDATE,
+            Payout\Method::FUND_TRANSFER,
+            Payment\Method::NACH
+        ];
+
+        if ($input[Entity::FEATURE] === Feature::REFUND)
+        {
+            // Valid pricing methods for which payment method type can be added (in refunds case - mode)
+            $validPricingMethods = [
+                null,
+                Payment\Method::CARD,
+                Payment\Method::UPI,
+                Payment\Method::NETBANKING,
+            ];
+        }
+
+        if (empty($input[Entity::PAYMENT_METHOD_TYPE]) === false)
+        {
+            $pricingMethod = $input[Entity::PAYMENT_METHOD];
+
+            if (in_array($pricingMethod, $validPricingMethods, true) === false)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'The payment method type field may be sent only when payment method is ' .
+                    implode('/', $validPricingMethods));
+            }
         }
     }
 
@@ -193,18 +234,26 @@ class Validator extends Base\Validator
         // Check that payment_method_type is not defined when mode is net-banking
         if ($input[Entity::PAYMENT_METHOD] === Payment\Method::NETBANKING)
         {
-            $fields = array(
-                Entity::PAYMENT_METHOD_TYPE,
-                Entity::PAYMENT_ISSUER);
-
-            foreach ($fields as $field)
+            // Allowing payment_method_type to be set when refund is the feature and method is netbanking
+            if ($input[Entity::FEATURE] === Feature::REFUND)
             {
-                if (isset($input[$field]) and
-                    $input[$field] !== null)
+                $this->validateRefundMode($input);
+            }
+            else
+            {
+                $fields = array(
+                    Entity::PAYMENT_METHOD_TYPE,
+                    Entity::PAYMENT_ISSUER);
+
+                foreach ($fields as $field)
                 {
-                    throw new Exception\BadRequestException(
-                        ErrorCode::BAD_REQUEST_PRICING_FIELD_NOT_REQUIRED_FOR_NB,
-                        $field);
+                    if (isset($input[$field]) and
+                        $input[$field] !== null)
+                    {
+                        throw new Exception\BadRequestException(
+                            ErrorCode::BAD_REQUEST_PRICING_FIELD_NOT_REQUIRED_FOR_NB,
+                            $field);
+                    }
                 }
             }
         }
@@ -216,29 +265,7 @@ class Validator extends Base\Validator
         {
             if ($input[Entity::FEATURE] === Feature::REFUND)
             {
-                if (isset($input[Entity::PAYMENT_METHOD_TYPE]) === true)
-                {
-                    $mode = $input[Entity::PAYMENT_METHOD_TYPE];
-
-                    $validModes = [
-                        FundTransfer\Mode::NEFT,
-                        FundTransfer\Mode::IMPS,
-                        FundTransfer\Mode::RTGS,
-                        FundTransfer\Mode::UPI,
-                        FundTransfer\Mode::IFT,
-                    ];
-
-                    if (in_array($mode, $validModes, true) === false)
-                    {
-                        throw new Exception\BadRequestValidationFailureException(
-                            'Refund mode should be NEFT/IMPS/RTGS/IFT/UPI',
-                            'mode',
-                            [
-                                'mode'  => $mode,
-                                'input' => $input,
-                            ]);
-                    }
-                }
+                $this->validateRefundMode($input);
             }
             else
             {
@@ -388,6 +415,20 @@ class Validator extends Base\Validator
                 throw new Exception\BadRequestValidationFailureException(
                     'Payment network for bank should be a valid bank name');
             }
+        }
+    }
+
+    protected function validateAddPlanRuleRefund($input)
+    {
+        if ($input[Entity::FEATURE] === Feature::REFUND)
+        {
+            if (empty($input[Entity::PERCENT_RATE]) === false)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'Percentage rate pricing is not allowed for ' . $input[Entity::FEATURE]);
+            }
+
+            $this->validateRefundMode($input);
         }
     }
 
@@ -755,6 +796,68 @@ class Validator extends Base\Validator
                 $message,
                 'fee_bearer',
                 $data);
+        }
+    }
+
+    protected function validateRefundMode($input)
+    {
+        if ($input[Entity::FEATURE] === Feature::REFUND)
+        {
+            if (isset($input[Entity::PAYMENT_METHOD_TYPE]) === true)
+            {
+                $mode = $input[Entity::PAYMENT_METHOD_TYPE];
+
+                $method = $input[Entity::PAYMENT_METHOD];
+
+                $validModes = [
+                    FundTransfer\Mode::NEFT,
+                    FundTransfer\Mode::IMPS,
+                    FundTransfer\Mode::RTGS,
+                    FundTransfer\Mode::UPI,
+                    FundTransfer\Mode::IFT,
+                ];
+
+                switch ($method)
+                {
+                    case Payment\Method::CARD :
+                        $validModes = [
+                            FundTransfer\Mode::UPI,
+                            FundTransfer\Mode::NEFT,
+                            FundTransfer\Mode::IMPS
+                        ];
+
+                        break;
+
+                    case Payment\Method::UPI :
+                        $validModes = [
+                            FundTransfer\Mode::UPI,
+                        ];
+
+                        break;
+
+                    case Payment\Method::NETBANKING:
+                        $validModes = [
+                            FundTransfer\Mode::NEFT,
+                            FundTransfer\Mode::IMPS,
+                            FundTransfer\Mode::RTGS,
+                            FundTransfer\Mode::IFT,
+                        ];
+
+                        break;
+                }
+
+                if (in_array($mode, $validModes, true) === false)
+                {
+                    throw new Exception\BadRequestValidationFailureException(
+                        'Refund mode should be ' . implode('/', $validModes),
+                        'mode',
+                        [
+                            'mode'  => $mode,
+                            'input' => $input,
+                        ]
+                    );
+                }
+            }
         }
     }
 }

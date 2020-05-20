@@ -454,6 +454,27 @@ class Pricing extends Base
         return $rows;
     }
 
+    public function createInstantRefundsPricingPlanWithDefaultMethodNull()
+    {
+        $pricingPlanId = self::DEFAULT_PRICING_PLAN_ID;
+
+        $rows = [
+            [
+                'id'                  => '1zE3CYqf1zbxaE',
+                'plan_id'             => $pricingPlanId,
+                'plan_name'           => 'testDefaultPlan',
+                'feature'             => 'refund',
+                'fixed_rate'          => 546,
+                'amount_range_active' => 1,
+                'amount_range_min'    => 100,
+                'amount_range_max'    => 50000,
+                'org_id'              => '100000razorpay',
+            ],
+        ];
+
+        $this->addPricingRulesToDb($rows);
+    }
+
     public function createDefaultPlan()
     {
         $rows = $this->getDefultPlanArray();

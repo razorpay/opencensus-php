@@ -317,7 +317,8 @@ return [
                         'idempotency_key'   => 'batch_DZtFGiJXmcdLfn',
                         'success'           => false,
                         'error' => [
-                            'description'   => 'The payment method type field may be sent only when payment method is card',
+                            'description'   => 'The payment method type field may be sent only ' .
+                                'when payment method is card/emandate/fund_transfer/nach',
                             'code'          => 'BAD_REQUEST_VALIDATION_FAILURE'
                         ]
                     ],
@@ -2892,7 +2893,8 @@ return [
                 'payment_method_type' => 'IMPS',
                 'payment_network'     => 'MAES',
                 'payment_issuer'      => 'HDFC',
-                'percent_rate'        => 1000,
+                'percent_rate'        => 0,
+                'fixed_rate'          => 100,
                 'international'       => 0,
                 'amount_range_active' => '0',
                 'amount_range_min'    => null,
@@ -2908,13 +2910,150 @@ return [
                 'payment_method_type' => 'IMPS',
                 'payment_network'     => 'MAES',
                 'payment_issuer'      => 'HDFC',
-                'percent_rate'        => 1000,
+                'percent_rate'        => 0,
+                'fixed_rate'          => 100,
                 'international'       => false,
                 'amount_range_active' => false,
                 'amount_range_min'    => null,
                 'amount_range_max'    => null,
                 'feature'             => 'refund',
             ],
+        ],
+    ],
+    'testAddPricingPlanRuleWithFeatureRefundWithPercentRate' => [
+        'request' => [
+            'content' => [
+                'payment_method'      => 'card',
+                'payment_method_type' => 'IMPS',
+                'payment_network'     => 'MAES',
+                'payment_issuer'      => 'HDFC',
+                'percent_rate'        => 100,
+                'fixed_rate'          => 100,
+                'international'       => 0,
+                'amount_range_active' => '0',
+                'amount_range_min'    => null,
+                'amount_range_max'    => null,
+                'feature'             => 'refund',
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Percentage rate pricing is not allowed for refund',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+    'testAddPricingPlanRuleWithFeatureRefundAndPaymentMethodNullValid' => [
+        'request' => [
+            'content' => [
+                'feature'             => 'refund',
+                'payment_method'      => null,
+                'payment_method_type' => 'IMPS',
+                'percent_rate'        => 0,
+                'fixed_rate'          => 100,
+                'amount_range_active' => '0',
+                'amount_range_min'    => null,
+                'amount_range_max'    => null,
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'plan_name'           => 'TestPlan1',
+                'payment_method'      => null,
+                'payment_method_type' => 'IMPS',
+                'payment_network'     => null,
+                'payment_issuer'      => null,
+                'percent_rate'        => 0,
+                'fixed_rate'          => 100,
+                'amount_range_active' => false,
+                'amount_range_min'    => null,
+                'amount_range_max'    => null,
+                'feature'             => 'refund',
+            ],
+        ],
+    ],
+
+    'testAddPricingPlanRuleWithFeatureRefundAndPaymentMethodAbsentValid' => [
+        'request' => [
+            'content' => [
+                'feature'             => 'refund',
+                'payment_method_type' => 'IMPS',
+                'percent_rate'        => 0,
+                'fixed_rate'          => 100,
+                'amount_range_active' => '0',
+                'amount_range_min'    => null,
+                'amount_range_max'    => null,
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'plan_name'           => 'TestPlan1',
+                'payment_method'      => null,
+                'payment_method_type' => 'IMPS',
+                'payment_network'     => null,
+                'payment_issuer'      => null,
+                'percent_rate'        => 0,
+                'fixed_rate'          => 100,
+                'amount_range_active' => false,
+                'amount_range_min'    => null,
+                'amount_range_max'    => null,
+                'feature'             => 'refund',
+            ],
+        ],
+    ],
+
+    'testAddPricingWithPaymentMethodNullInvalid' => [
+        'request' => [
+            'content' => [
+                'feature'             => 'payment',
+                'payment_method'      => null,
+                'payment_method_type' => 'IMPS',
+                'percent_rate'        => 0,
+                'fixed_rate'          => 100,
+                'amount_range_active' => '0',
+                'amount_range_min'    => null,
+                'amount_range_max'    => null,
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The payment method field is required unless feature is in refund.'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testAddPricingRefundModes' => [
+        'request' => [
+            'content' => [
+                'payment_method'      => null,
+                'payment_method_type' => 'IMPS',
+                'percent_rate'        => 0,
+                'fixed_rate'          => 100,
+                'amount_range_active' => '0',
+                'amount_range_min'    => null,
+                'amount_range_max'    => null,
+                'feature'             => 'refund'
+            ],
+            'method' => 'POST'
         ],
     ],
 

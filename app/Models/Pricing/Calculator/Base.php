@@ -250,11 +250,7 @@ abstract class Base extends BaseModel\Core
         $orgId    = $this->entity->merchant->org->getId();
         $product  = $this->product;
 
-        $filters = [
-            [Pricing\Entity::PRODUCT,        $product,   false, null],
-            [Pricing\Entity::FEATURE,        $feature,   false, null],
-            [Pricing\Entity::PAYMENT_METHOD, $method,    false, null],
-        ];
+        $filters = $this->getBasicPricingRuleFilters($product, $feature, $method);
 
         $rules = $this->applyFiltersOnRules($pricing, $filters);
 
@@ -464,6 +460,17 @@ abstract class Base extends BaseModel\Core
         $rule = $pricing[0];
 
         return $rule;
+    }
+
+    protected function getBasicPricingRuleFilters($product, $feature, $method) : array
+    {
+        $filters = [
+            [Pricing\Entity::PRODUCT,        $product,   false, null],
+            [Pricing\Entity::FEATURE,        $feature,   false, null],
+            [Pricing\Entity::PAYMENT_METHOD, $method,    false, null],
+        ];
+
+        return $filters;
     }
 
     /**

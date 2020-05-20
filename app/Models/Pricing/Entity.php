@@ -183,6 +183,16 @@ class Entity extends Base\PublicEntity
             $input[self::AMOUNT_RANGE_MIN] = null;
             $input[self::AMOUNT_RANGE_MAX] = null;
         }
+
+        //
+        // payment method can be null by default for refunds
+        //
+        if ((empty($input[self::FEATURE]) === false) and
+            ($input[self::FEATURE] === Feature::REFUND) and
+            (empty($input[self::PAYMENT_METHOD]) === true))
+        {
+            $input[self::PAYMENT_METHOD] = null;
+        }
     }
 
     public function build(array $input = array())

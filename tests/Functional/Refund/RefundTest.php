@@ -4423,4 +4423,63 @@ class RefundTest extends TestCase
         $this->assertEquals(708, $refund['fee']);
         $this->assertEquals(108, $refund['tax']);
     }
+
+    public function testPaymentInstantRefundFeeWithMethodIndependentPricingDefined()
+    {
+        $payment = $this->defaultAuthPayment();
+        $payment = $this->capturePayment($payment['id'], $payment['amount']);
+
+        $card = $this->getDbLastEntity('card');
+
+        $iin = $this->getDbEntityById('iin', $card['iin']);
+
+        $this->assertEquals($iin['type'], 'credit');
+
+        $this->assertEquals($iin['issuer'], 'HDFC');
+
+        $this->fixtures->card->edit($payment['card_id'], ['vault_token' => 'XXXXXXXXXXX']);
+
+        $this->gateway = 'hdfc';
+
+        $this->fixtures->pricing->createInstantRefundsPricingPlanWithDefaultMethodNull();
+
+        $this->fixtures->pricing->createInstantRefundsDefaultPricingplan();
+
+        // Adding specific amount to refund - this is meant to test successful instant refunds on scrooge -
+        $refundFee = $this->paymentRefundFetchFee($payment['id'], 3471);
+
+        $this->assertEquals(644, $refundFee['fee']);
+        $this->assertEquals(98, $refundFee['tax']);
+    }
+
+    public function testPaymentInstantRefundFeeWithMethodIndependentAndMethodPricingDefined()
+    {
+        $payment = $this->defaultAuthPayment();
+        $payment = $this->capturePayment($payment['id'], $payment['amount']);
+
+        $card = $this->getDbLastEntity('card');
+
+        $iin = $this->getDbEntityById('iin', $card['iin']);
+
+        $this->assertEquals($iin['type'], 'credit');
+
+        $this->assertEquals($iin['issuer'], 'HDFC');
+
+        $this->fixtures->card->edit($payment['card_id'], ['vault_token' => 'XXXXXXXXXXX']);
+
+        $this->gateway = 'hdfc';
+
+        $this->fixtures->pricing->createInstantRefundsPricingPlanWithDefaultMethodNull();
+
+        $this->fixtures->pricing->createInstantRefundsDefaultPricingplan();
+
+        $this->fixtures->pricing->createInstantRefundsPricingPlan();
+
+        // Adding specific amount to refund - this is meant to test successful instant refunds on scrooge -
+        $refundFee = $this->paymentRefundFetchFee($payment['id'], 3471);
+
+        // Most relevant rule is being picked.
+        $this->assertEquals(118, $refundFee['fee']);
+        $this->assertEquals(18, $refundFee['tax']);
+    }
 }

@@ -542,4 +542,19 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestValidationFailureException('The id format is invalid.', 'id');
         }
     }
+
+    public static function validateInstantRefundPricingMethod($method)
+    {
+        if ((empty($method) === false) and
+            (in_array($method, Payment\Method::INSTANT_REFUND_SUPPORTED_METHODS, true) === false))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Refund method should be ' . implode('/', Payment\Method::INSTANT_REFUND_SUPPORTED_METHODS),
+                'method',
+                [
+                    'method' => $method,
+                ]
+            );
+        }
+    }
 }

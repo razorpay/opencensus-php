@@ -43,7 +43,8 @@ class CreatePricing extends Migration
             $table->string(Pricing::PROCURER)
                   ->nullable();
 
-            $table->string(Pricing::PAYMENT_METHOD);
+            $table->string(Pricing::PAYMENT_METHOD)
+                  ->nullable();
 
             $table->string(Pricing::PAYMENT_METHOD_TYPE)
                   ->nullable();

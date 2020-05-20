@@ -177,4 +177,16 @@ class Refund extends Base
                 'message'     => $message,
             ]);
     }
+
+    protected function getBasicPricingRuleFilters($product, $feature, $method) : array
+    {
+        // Allowing default method - null
+        $filters = [
+            [Pricing\Entity::PRODUCT,        $product,   false, null],
+            [Pricing\Entity::FEATURE,        $feature,   false, null],
+            [Pricing\Entity::PAYMENT_METHOD, $method,    true,  null],
+        ];
+
+        return $filters;
+    }
 }

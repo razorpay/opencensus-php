@@ -4,8 +4,11 @@ namespace RZP\Tests\Functional\Merchant;
 
 use Event;
 
+use RZP\Exception;
 use RZP\Models\Pricing;
+use RZP\Error\ErrorCode;
 use RZP\Models\Transaction;
+use RZP\Error\PublicErrorCode;
 use RZP\Constants\Entity as E;
 use RZP\Tests\Functional\TestCase;
 use Illuminate\Cache\Events\CacheHit;
@@ -1816,5 +1819,170 @@ class PricingTest extends TestCase
         $testData['request']['url'] = '/pricing/'. $content['id'] . '/rule';
 
         $this->startTest($testData);
+    }
+
+    public function testAddPricingPlanRuleWithFeatureRefundWithPercentRate()
+    {
+        $this->ba->adminAuth();
+
+        $content = $this->createPricingPlan();
+
+        $testData['request']['url'] = '/pricing/'. $content['id'] . '/rule';
+
+        $this->startTest($testData);
+    }
+
+    public function testAddPricingPlanRuleWithFeatureRefundAndPaymentMethodNullValid()
+    {
+        $this->ba->adminAuth();
+
+        $content = $this->createPricingPlan();
+
+        $testData['request']['url'] = '/pricing/'. $content['id'] . '/rule';
+
+        $this->startTest($testData);
+    }
+
+    public function testAddPricingPlanRuleWithFeatureRefundAndPaymentMethodAbsentValid()
+    {
+        $this->ba->adminAuth();
+
+        $content = $this->createPricingPlan();
+
+        $testData['request']['url'] = '/pricing/'. $content['id'] . '/rule';
+
+        $this->startTest($testData);
+    }
+
+    public function testAddPricingWithPaymentMethodNullInvalid()
+    {
+        // Payment method should not be null for any feature except refund
+
+        $this->ba->adminAuth();
+
+        $content = $this->createPricingPlan();
+
+        $testData['request']['url'] = '/pricing/'. $content['id'] . '/rule';
+
+        foreach (Pricing\Feature::FEATURE_LIST as $feature)
+        {
+            if ($feature !== 'refund')
+            {
+                $testData['request']['content']['feature'] = $feature;
+
+                $this->startTest($testData);
+            }
+        }
+    }
+
+    public function testAddPricingRefundModes()
+    {
+        $allModes = [
+            'IMPS',
+            'RTGS',
+            'UPI',
+            'IFT',
+            'NEFT',
+            'invalid',
+            'test',
+        ];
+
+        $validModesMap = [
+            null   => [
+                'NEFT',
+                'IMPS',
+                'RTGS',
+                'UPI',
+                'IFT',
+            ],
+            'card' => [
+                'UPI',
+                'NEFT',
+                'IMPS',
+            ],
+            'upi' => [
+                'UPI',
+            ],
+            'netbanking' => [
+                'NEFT',
+                'IMPS',
+                'RTGS',
+                'IFT',
+            ],
+        ];
+
+        $validResponse = [
+            'response' => [
+                'content' => [
+                    'fixed_rate'          => 100,
+                    'percent_rate'        => 0,
+                    'amount_range_active' => false,
+                    'amount_range_min'    => null,
+                    'amount_range_max'    => null,
+                    'feature'             => 'refund',
+                ],
+            ],
+        ];
+
+        $invalidResponse = [
+            'response' => [
+                'content' => [
+                    'error' => [
+                        'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                        'description' => 'The payment method field is required unless feature is in refund.'
+                    ],
+                ],
+                'status_code' => 400,
+            ],
+            'exception' => [
+                'class'               => Exception\BadRequestValidationFailureException::class,
+                'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+            ],
+        ];
+
+        $this->ba->adminAuth();
+
+        $content = $this->createPricingPlan();
+
+        $testData['request']['url'] = '/pricing/'. $content['id'] . '/rule';
+
+        foreach ($allModes as $mode)
+        {
+            foreach ($validModesMap as $method => $validModes)
+            {
+                $testData['request']['content']['payment_method'] = $method;
+
+                $testData['request']['content']['payment_method_type'] = $mode;
+
+                if (in_array($mode, $validModes, true) === true)
+                {
+                    $testData['response'] = $validResponse['response'];
+
+                    if (empty($method) === false)
+                    {
+                        $testData['response']['content']['payment_method'] = $method;
+                    }
+                    else
+                    {
+                        unset($testData['response']['content']['payment_method']);
+                    }
+
+                    $testData['response']['content']['payment_method_type'] = $mode;
+                }
+                else
+                {
+                    $testData['response'] = $invalidResponse['response'];
+
+                    $testData['exception'] = $invalidResponse['exception'];
+
+                    $testData['response']['content']['error']['description'] = 'Refund mode should be ' . implode('/', $validModes);
+                }
+
+                $this->startTest($testData);
+
+                unset($testData['response']);
+                unset($testData['exception']);
+            }
+        }
     }
 }
