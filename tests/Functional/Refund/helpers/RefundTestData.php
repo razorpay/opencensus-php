@@ -824,7 +824,7 @@ return [
         ],
     ],
 
-    'testRefundWithNegativeBalance' => [
+    'testRefundWithZeroBalanceWithReserveBalanceCrossingThreshold' => [
         'request' => [
         ],
         'response' => [
@@ -836,22 +836,16 @@ return [
         ],
     ],
 
-    'testRefundWithNegativeBalanceCrossingThreshold' => [
-        'request'   => [
+    'testRefundWithNegativeBalance' => [
+        'request' => [
         ],
         'response' => [
             'content' => [
-                'error' => [
-                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Bad request'
-                ],
+                'entity' => 'refund',
+                'amount' => 50000,
+                'currency' => 'INR',
             ],
-            'status_code' => 400,
-            ],
-        'exception' => [
-            'class'                 => 'RZP\Exception\BadRequestException',
-            'internal_error_code'   => ErrorCode::BAD_REQUEST_NEGATIVE_BALANCE_BREACHED
-        ]
+        ],
     ],
 
     'testRefundWithNegativeBalanceMultipleBreach' => [
@@ -878,22 +872,16 @@ return [
         ],
     ],
 
-    'testRefundWithNegativeBalanceAndReserveBalanceCrossThreshold' => [
-        'request'   => [
+    'testRefundWithReserveBalance' => [
+        'request' => [
         ],
         'response' => [
             'content' => [
-                'error' => [
-                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Bad request'
-                ],
+                'entity' => 'refund',
+                'amount' => 50000,
+                'currency' => 'INR',
             ],
-            'status_code' => 400,
         ],
-        'exception' => [
-            'class'                 => 'RZP\Exception\BadRequestException',
-            'internal_error_code'   => ErrorCode::BAD_REQUEST_NEGATIVE_BALANCE_BREACHED
-        ]
     ],
 
     'testRefundWithZeroRefundCredits' => [
@@ -938,24 +926,6 @@ return [
         ],
     ],
 
-    'testRefundWithNegativeRefundCreditsCrossingThreshold' => [
-        'request'   => [
-        ],
-        'response' => [
-            'content' => [
-                'error' => [
-                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Bad request'
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'                 => 'RZP\Exception\BadRequestException',
-            'internal_error_code'   => ErrorCode::BAD_REQUEST_NEGATIVE_BALANCE_BREACHED
-        ]
-    ],
-
     'testRefundWithNegativeRefundCreditsAndReserveBalance' => [
         'request' => [
         ],
@@ -966,24 +936,6 @@ return [
                 'currency' => 'INR',
             ],
         ],
-    ],
-
-    'testRefundWithNegativeRefundCreditsAndReserveBalanceCrossThreshold' => [
-        'request'   => [
-        ],
-        'response' => [
-            'content' => [
-                'error' => [
-                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Bad request'
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'                 => 'RZP\Exception\BadRequestException',
-            'internal_error_code'   => ErrorCode::BAD_REQUEST_NEGATIVE_BALANCE_BREACHED
-        ]
     ],
 
     'testRefundWithZeroBalanceInternationalCurrency' => [
@@ -1010,24 +962,6 @@ return [
         ],
     ],
 
-    'testRefundWithNegativeBalanceAndInternationalCurrencyCrossingThreshold' => [
-        'request'   => [
-        ],
-        'response' => [
-            'content' => [
-                'error' => [
-                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Bad request'
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'                 => 'RZP\Exception\BadRequestException',
-            'internal_error_code'   => ErrorCode::BAD_REQUEST_NEGATIVE_BALANCE_BREACHED
-        ]
-    ],
-
     'testRefundWithNegativeRefundCreditsAndInternationalCurrency' => [
         'request' => [
         ],
@@ -1040,43 +974,7 @@ return [
         ],
     ],
 
-    'testRefundWithNegativeRefundCreditsAndInternationalCurrencyCrossingThreshold' => [
-        'request'   => [
-        ],
-        'response' => [
-            'content' => [
-                'error' => [
-                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Bad request'
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'                 => 'RZP\Exception\BadRequestException',
-            'internal_error_code'   => ErrorCode::BAD_REQUEST_NEGATIVE_BALANCE_BREACHED
-        ]
-    ],
-
     'testRefundWithNegativeAndReserveBalanceAndInternationalCurrency' => [
-        'request'   => [
-        ],
-        'response' => [
-            'content' => [
-                'error' => [
-                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Bad request'
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'                 => 'RZP\Exception\BadRequestException',
-            'internal_error_code'   => ErrorCode::BAD_REQUEST_NEGATIVE_BALANCE_BREACHED
-        ]
-    ],
-
-    'testRefundWithNegativeAndReserveBalanceAndInternationalCurrencyCrossingThreshold' => [
         'request'   => [
         ],
         'response' => [

@@ -33,6 +33,8 @@ class Entity extends Base\PublicEntity
         self::REMINDER_STATUS,
         self::REMINDER_NAMESPACE,
         self::REMINDER_COUNT,
+        self::CREATED_AT,
+        self::UPDATED_AT,
     ];
 
     protected $public = [
@@ -41,6 +43,8 @@ class Entity extends Base\PublicEntity
         self::REMINDER_STATUS,
         self::REMINDER_NAMESPACE,
         self::REMINDER_COUNT,
+        self::CREATED_AT,
+        self::UPDATED_AT,
     ];
 
     protected $defaults = [

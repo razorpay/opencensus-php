@@ -39,6 +39,16 @@ class Core extends Base\Core
         ],
     ];
 
+    const RESERVE_FLOWS = [
+        Type::PRIMARY => [
+            Transaction\Type::PAYMENT,
+            Transaction\Type::TRANSFER,
+            Transaction\Type::REFUND,
+        ],
+        Type::BANKING => [],
+        Type::COMMISSION => [],
+    ];
+
     const NEGATIVE_BALANCE_ALLOWED_PAYMENT_METHODS = [
         Payment\Method::EMANDATE,
         Payment\Method::NACH,
@@ -412,7 +422,14 @@ class Core extends Base\Core
 
         if (in_array($txnType, $negativeAllowedFlows) === false)
         {
-            return 0;
+            if (in_array($txnType, self::RESERVE_FLOWS[$balanceType]) === false)
+            {
+                return 0;
+            }
+            else
+            {
+                return $reserveAmount;
+            }
         }
 
         $maxNegative = (new BalanceConfig\Core)->getMaxNegativeAmountManualForBalanceId($balance->getId());

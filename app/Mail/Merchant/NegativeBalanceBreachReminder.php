@@ -28,7 +28,8 @@ class NegativeBalanceBreachReminder extends Mailable
 
     protected function addRecipients()
     {
-        $this->to($this->data['email'], $this->data['cc']);
+        $this->to($this->data['email']);
+        $this->cc($this->data['cc']);
 
         return $this;
     }

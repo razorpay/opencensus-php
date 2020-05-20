@@ -564,6 +564,20 @@ return [
         ]
     ],
 
+    'testTransferInsufficientBalanceWithNegativeAndReserveBalance' => [
+        'response' => [
+            'content' => [
+                'entity'            =>'transfer',
+                'source'            =>'acc_10000000000000',
+                'recipient'         =>'acc_10000000000001',
+                'amount'            =>1000,
+                'currency'          =>"INR",
+                'amount_reversed'   =>0
+            ],
+            'status_code' => 200,
+        ]
+    ],
+
     'testTransferInsufficientBalanceWithReserveBalance' => [
         'response' => [
             'content' => [
@@ -571,6 +585,20 @@ return [
                 'source'            =>'acc_10000000000000',
                 'recipient'         =>'acc_10000000000001',
                 'amount'            =>1000,
+                'currency'          =>"INR",
+                'amount_reversed'   =>0
+            ],
+            'status_code' => 200,
+        ]
+    ],
+
+    'testTransferInsufficientBalanceWithNegativeBalanceCrossingThreshold' => [
+        'response' => [
+            'content' => [
+                'entity'            =>'transfer',
+                'source'            =>'acc_10000000000000',
+                'recipient'         =>'acc_10000000000001',
+                'amount'            =>10000,
                 'currency'          =>"INR",
                 'amount_reversed'   =>0
             ],
@@ -598,11 +626,25 @@ return [
                 'entity'            =>'transfer',
                 'source'            =>'acc_10000000000000',
                 'recipient'         =>'acc_10000000000001',
+                'amount'            => 1000,
+                'currency'          =>"INR",
+                'amount_reversed'   =>0
+            ],
+            'status_code' => 200,
+        ]
+    ],
+
+    'testTransferWithFeeInsufficientBalanceWithNegativeAndReserveBalance' => [
+        'response' => [
+            'content' => [
+                'entity'            =>'transfer',
+                'source'            =>'acc_10000000000000',
+                'recipient'         =>'acc_10000000000001',
                 'amount'            =>1000,
                 'currency'          =>"INR",
                 'amount_reversed'   =>0
             ],
             'status_code' => 200,
         ]
-    ]
+    ],
 ];
