@@ -17,6 +17,15 @@ class Reconciliate extends Base\Reconciliate
         'upi_sett_razorpay',
         ];
 
+    const UNUSED_COLUMNS = [
+        'surcharge',
+        'tax',
+        'debit_amount',
+        'mdr_tax',
+        'merchant_id',
+        'unq_cust_id',
+    ];
+
     protected function getTypeName($fileName)
     {
         $type = null;
@@ -47,5 +56,25 @@ class Reconciliate extends Base\Reconciliate
         }
 
         return false;
+    }
+
+    //
+    // In the new format file, we are getting 6 extra columns that
+    // we do not use in recon, also these new appended columns will
+    // create issue in output file (looker dashboard), so need
+    // to unset these columns
+    //
+    protected function preProcessFileContents(array &$fileContents)
+    {
+        foreach ($fileContents as &$row)
+        {
+            foreach (self::UNUSED_COLUMNS as $col)
+            {
+                if (isset($row[$col]) === true)
+                {
+                    unset($row[$col]);
+                }
+            }
+        }
     }
 }

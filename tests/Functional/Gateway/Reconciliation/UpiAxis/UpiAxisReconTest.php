@@ -110,6 +110,17 @@ class UpiAxisReconTest extends TestCase
         $this->createFileAndReconcile('Razorpay Software Pvt Ltd.xlsx', $entries);
     }
 
+    public function testUpiAxisPaymentFileV2()
+    {
+        $this->payment = $this->getDefaultUpiPaymentArray();
+
+        $upiEntity = $this->getNewAxisUpiEntity('10000000000000', 'upi_axis');
+
+        $entries[] = $this->overrideNewUpiAxisPayment($upiEntity, 'upi_axis_payment_format_v2');
+
+        $this->createFileAndReconcile('Razorpay Software Pvt Ltd.xlsx', $entries);
+    }
+
     public function testUpiAxisUnexpectedPaymentFile()
     {
         $this->payment = $this->getDefaultPaymentArray();
@@ -268,9 +279,9 @@ class UpiAxisReconTest extends TestCase
         return $facade;
     }
 
-    protected function overrideNewUpiAxisPayment(array $upiEntity)
+    protected function overrideNewUpiAxisPayment(array $upiEntity, $format = 'upiAxisNew')
     {
-        $facade = $this->testData['upiAxisNew'];
+        $facade = $this->testData[$format];
 
         $facade['ORDERID'] = $upiEntity['payment_id'];
 
