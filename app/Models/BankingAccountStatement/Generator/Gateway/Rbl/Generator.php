@@ -27,7 +27,7 @@ abstract class Generator extends Base
      */
     protected $data = null;
 
-    const DATE_FORMAT = 'd/m/Y';
+    const DATE_FORMAT = 'Y/m/d';
 
     public function __construct(string $accountNumber, string $channel, int $fromDate, int $toDate)
     {
@@ -160,10 +160,10 @@ abstract class Generator extends Base
 
             TransactionLineItem::VALUE_DATE          => $formattedTransactionDate,
 
-            TransactionLineItem::BALANCE             => (float) $statement->getBalance() / 100
+            TransactionLineItem::BALANCE             => $this->getFormattedAmount($statement->getBalance()),
         ];
 
-        $transactionAmount = (float) $statement->getAmount() / 100;
+        $transactionAmount = $this->getFormattedAmount($statement->getAmount());
 
         if ($statement->isDebit() === true)
         {
@@ -198,7 +198,7 @@ abstract class Generator extends Base
 
         if(empty($line3) === false)
         {
-            $line2 = $line2 . ',' . $line3;
+            $line2 = $line2 . ' ' . $line3;
         }
 
         return $line2;
@@ -232,13 +232,21 @@ abstract class Generator extends Base
         $toDate = Carbon::createFromTimestamp($this->toDate, Timezone::IST)
                         ->format(self::DATE_FORMAT);
 
-        $statementPeriod = $fromDate . ' - ' . $toDate;
+        $fromDate =  str_replace('/', '-', $fromDate);
+
+        $toDate =  str_replace('/', '-', $toDate);
+
+        $statementPeriod = $fromDate . ' to ' . $toDate;
 
         $ifscCode = $bankingAccount->getAccountIfsc();
 
         $bankInformation = (new BankInfo)->getBankInformation($ifscCode);
 
         $customerAddressL2 =  $this->getAddressLine2($bankingAccount);
+
+        $homeBranchName = sprintf('%s(%s)',
+                                  $bankInformation->branch,
+                                  substr($bankInformation->ifsc, -4));
 
         $accountOwnerInfo = [
             AccountOwnerInfo::ACCOUNT_NAME         => $bankingAccount->getBeneficiaryName(),
@@ -255,9 +263,9 @@ abstract class Generator extends Base
 
             AccountOwnerInfo::STATEMENT_PERIOD     => $statementPeriod,
 
-            AccountOwnerInfo::SANCTION_LIMIT       => Statement::SANCTION_LIMIT,
+            AccountOwnerInfo::SANCTION_LIMIT       => $this->getFormattedAmount(Statement::SANCTION_LIMIT),
 
-            AccountOwnerInfo::DRAWING_POWER        => Statement::DRAWING_POWER,
+            AccountOwnerInfo::DRAWING_POWER        => $this->getFormattedAmount(Statement::DRAWING_POWER),
 
             AccountOwnerInfo::BRANCH_TIMINGS       => Statement::BRANCH_TIMINGS,
 
@@ -269,9 +277,11 @@ abstract class Generator extends Base
 
             AccountOwnerInfo::CUSTOMER_ADDRESS_PIN => $bankingAccount->getBeneficiaryPin(),
 
+            AccountOwnerInfo::CUSTOMER_COUNTRY     => $bankingAccount->getBeneficiaryCountry(),
+
             AccountOwnerInfo::CUSTOMER_MOBILE      => $bankingAccount->getBeneficiaryMobile(),
 
-            AccountOwnerInfo::CUSTOMER_EMAIL       => $bankingAccount->getBeneficiaryEmail(),
+            AccountOwnerInfo::CUSTOMER_EMAIL       => strtoupper($bankingAccount->getBeneficiaryEmail()),
 
             AccountOwnerInfo::CUSTOMER_CIF_ID      => $bankingAccount->getInternalReferenceNumber(),
 
@@ -279,7 +289,7 @@ abstract class Generator extends Base
 
             AccountOwnerInfo::ACCOUNT_OPENING_DATE => $accountOpeningDate,
 
-            AccountOwnerInfo::HOME_BRANCH_NAME     => $bankInformation->getBankName(),
+            AccountOwnerInfo::HOME_BRANCH_NAME     => $homeBranchName,
 
             AccountOwnerInfo::HOME_BRANCH_ADDRESS  => $bankInformation->address,
 

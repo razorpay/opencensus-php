@@ -362,11 +362,11 @@ class RblBankingAccountStatementTest extends TestCase
 
         $effectiveBalanceCell = 'B38';
 
-        $expectedOpeningBalance = 214.5;
+        $expectedOpeningBalance = 'INR 214.50';
 
-        $expectedClosingBalance = 113.55;
+        $expectedClosingBalance = 'INR 113.55';
 
-        $expectedEffectiveBalance = 113.55;
+        $expectedEffectiveBalance = 'INR 113.55';
 
         $fileName = storage_path(self::MOCK_UFH_BASE_LOCATION) .
                     '/2224440041626905_946684800_' .

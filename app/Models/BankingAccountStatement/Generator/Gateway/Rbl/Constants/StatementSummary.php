@@ -17,5 +17,5 @@ class StatementSummary
     const DEBIT_COUNT                     = 'debit_count';
     const CREDIT_COUNT                    = 'credit_count';
     const STATEMENT_GENERATED_DATE        = 'statement_generated_date';
-    const STATEMENT_GENERATED_DATE_FORMAT = 'd/m/Y H:i';
+    const STATEMENT_GENERATED_DATE_FORMAT = 'd/m/Y g:i A';
 }

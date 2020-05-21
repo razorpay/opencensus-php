@@ -10,6 +10,7 @@ class AccountOwnerInfo
     const CUSTOMER_CITY        = 'customer_city';
     const CUSTOMER_STATE       = 'customer_state';
     const CUSTOMER_ADDRESS_PIN = 'customer_address_pin';
+    const CUSTOMER_COUNTRY     = 'customer_country';
     const CUSTOMER_MOBILE      = 'customer_mobile';
     const CUSTOMER_EMAIL       = 'customer_email';
     const CUSTOMER_CIF_ID      = 'customer_cif_id';
