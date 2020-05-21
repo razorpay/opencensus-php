@@ -295,7 +295,7 @@ class Entity extends Base\PublicEntity
 
     protected function getEventsAttribute()
     {
-        $events = $this->attributes[self::EVENTS];
+        $events = $this->attributes[self::EVENTS] ?? [];
 
         $enabledEvents = Event::getEnabledEvents($events, Event::$bitPosition);
 

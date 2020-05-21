@@ -28,6 +28,47 @@ return [
         ]
     ],
 
+    'testCreateWebhookWithTerminalEvents' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/webhooks',
+            'content' => [
+                'url'    => 'http://webhook.com',
+                'events' => [
+                    'terminal.created' => '1',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'url'    => 'http://webhook.com',
+                'active' => true,
+                'events' => [
+                    // Todo: Because of some bug following is not returned after post request.
+                    // 'terminal.created' => true,
+                ],
+            ],
+        ],
+    ],
+
+    'testCreateWebhookWithTerminalEventsExpectedPayloadToStork' => [
+        'webhook' => [
+            'service'       => "api-test",
+            'owner_id'      => "10000000000000",
+            'owner_type'    => "merchant",
+            'disabled'      => false,
+            'url'           => "http://webhook.com",
+            'secret'        => null,
+            'subscriptions' => [
+                [
+                    'eventmeta' => [
+                        'name' => "terminal.created",
+                    ],
+                ],
+            ],
+        ],
+    ],
+
     'testEditDisableWebhookOnPrivateAuth' => [
         'request' => [
             'url' => '/webhooks',

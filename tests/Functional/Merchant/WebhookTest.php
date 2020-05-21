@@ -87,6 +87,31 @@ class WebhookTest extends TestCase
         $this->assertEquals(true, $webhook['disable_on_failure']);
     }
 
+    public function testCreateWebhookWithTerminalEvents()
+    {
+        // Sets expectation for request to stork.
+        $expectedPayloadToStork = $this->testData[__FUNCTION__.'ExpectedPayloadToStork'];
+        // Todo: Double check if mockServiceStorkRequest func works. Test seems to be passing even with assertion failures.
+        $this->mockServiceStorkRequest(
+            function ($path, $payload) use ($expectedPayloadToStork)
+            {
+                $this->assertSame('/twirp/rzp.stork.webhook.v1.WebhookAPI/Update', $path);
+                $this->assertArraySelectiveEquals($expectedPayloadToStork, $payload);
+                return new \Requests_Response;
+            }
+        )->once();
+
+        // Creates webhooks with events around terminal module.
+        // These events are stored in events2 column of webhooks table.
+        // The api interface is same but logic behind is bit different and so having test for this specific scenario.
+        $this->fixtures->merchant->addFeatures(['terminal_onboarding']);
+        $response = $this->startTest();
+
+        // Todo: Because of some bug posted events are not returned and hence asserting like below.
+        $webhook = $this->getDbEntityById('webhook', $response['id']);
+        $this->assertTrue($webhook->getEvents()['terminal.created']);
+    }
+
     public function testCreateWebhookWhenAlreadyCreated()
     {
         $this->fixtures->create('webhook');
