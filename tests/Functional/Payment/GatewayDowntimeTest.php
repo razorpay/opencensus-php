@@ -1377,7 +1377,6 @@ class GatewayDowntimeTest extends TestCase
                 'gateway' => 'upi_mindgate',
                 'method' => 'upi',
                 'source' => 'doppler',
-                'psp' => 'bhim',
                 'reason_code' => 'ISSUER_DOWN',
                 'begin' => strval(Carbon::now()->subMinutes(60)->timestamp)
             ],
@@ -1392,7 +1391,7 @@ class GatewayDowntimeTest extends TestCase
 
         $response = $this->makeRequestAndGetContent($request);
 
-        $this->assertEquals($response['psp'], 'bhim');
+        $this->assertEquals($response['method'], 'upi');
     }
 
     public function testDopplerDowntimeCreation()

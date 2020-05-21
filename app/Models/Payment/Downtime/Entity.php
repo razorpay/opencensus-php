@@ -23,6 +23,7 @@ class Entity extends Base\PublicEntity
     const TYPE       = 'type';
     const NETWORK    = 'network';
     const AUTH_TYPE  = 'auth_type';
+    const VPA_HANDLE = 'vpa_handle';
 
     const CREATED_AT = 'created_at';
     const UPDATED_AT = 'updated_at';
@@ -50,6 +51,7 @@ class Entity extends Base\PublicEntity
         self::TYPE,
         self::NETWORK,
         self::AUTH_TYPE,
+        self::VPA_HANDLE,
     ];
 
     protected $visible = [
@@ -64,6 +66,7 @@ class Entity extends Base\PublicEntity
         self::ISSUER,
         self::TYPE,
         self::NETWORK,
+        self::VPA_HANDLE,
         self::AUTH_TYPE,
         self::INSTRUMENT,
         self::CREATED_AT,
@@ -83,6 +86,7 @@ class Entity extends Base\PublicEntity
         // self::TYPE,
         // self::NETWORK,
         // self::AUTH_TYPE,
+        self::VPA_HANDLE,
         self::INSTRUMENT,
         self::CREATED_AT,
         self::UPDATED_AT,

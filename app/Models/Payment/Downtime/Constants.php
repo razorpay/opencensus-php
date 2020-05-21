@@ -14,6 +14,7 @@ class Constants
         Method::CARD       => Entity::NETWORK,
         Method::NETBANKING => Entity::ISSUER,
         Method::WALLET     => Entity::ISSUER,
+        Method::UPI        => Entity::VPA_HANDLE,
     ];
 
     // List of active UPI gateways that are being used

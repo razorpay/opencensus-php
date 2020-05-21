@@ -19,6 +19,7 @@ class Entity extends Base\PublicEntity
     const NETWORK       = 'network';
     const METHOD        = 'method';
     const PSP           = 'psp';
+    const VPA_HANDLE    = 'vpa_handle';
     const BEGIN         = 'begin';
     const END           = 'end';
     const TERMINAL_ID   = 'terminal_id';
@@ -54,6 +55,7 @@ class Entity extends Base\PublicEntity
         self::NETWORK,
         self::METHOD,
         self::PSP,
+        self::VPA_HANDLE,
         self::SOURCE
     ];
 
@@ -66,6 +68,7 @@ class Entity extends Base\PublicEntity
         self::NETWORK,
         self::METHOD,
         self::PSP,
+        self::VPA_HANDLE,
         self::SOURCE,
         self::BEGIN,
         self::END,
@@ -83,6 +86,7 @@ class Entity extends Base\PublicEntity
         self::GATEWAY,
         self::METHOD,
         self::PSP,
+        self::VPA_HANDLE,
         self::ISSUER,
         self::ACQUIRER,
         self::NETWORK,
@@ -112,6 +116,7 @@ class Entity extends Base\PublicEntity
         self::TERMINAL_ID   => null,
         self::CARD_TYPE     => self::UNKNOWN,
         self::PSP           => null,
+        self::VPA_HANDLE    => null,
         self::NETWORK       => self::UNKNOWN,
         self::END           => null,
         self::COMMENT       => null,

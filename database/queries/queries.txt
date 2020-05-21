@@ -5745,3 +5745,9 @@ ALTER TABLE transactions
 
 ALTER TABLE pricing
     MODIFY COLUMN payment_method VARCHAR(255) DEFAULT NULL;
+
+ALTER TABLE payment_downtimes
+    Add COLUMN vpa_handle VARCHAR(255) DEFAULT NULL;
+
+ALTER TABLE gateway_downtimes
+    Add COLUMN vpa_handle VARCHAR(255) DEFAULT NULL AFTER method;

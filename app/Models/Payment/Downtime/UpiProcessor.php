@@ -18,7 +18,12 @@ class UpiProcessor extends BaseProcessor
 
         if ($this->impliesUpiDowntime($gatewayDowntimes) === true)
         {
-            $this->createPaymentDowntime($gatewayDowntimes);
+            $vpaList = $this->getApplicableVpaList($gatewayDowntimes);
+
+            foreach ($vpaList as $vpa)
+            {
+                $this->createPaymentDowntime($gatewayDowntimes, $vpa);
+            }
         }
 
         if ($gatewayDowntimes->isEmpty() === true)
@@ -53,9 +58,9 @@ class UpiProcessor extends BaseProcessor
         return false;
     }
 
-    protected function createPaymentDowntime(Collection $gatewayDowntimes): Entity
+    protected function createPaymentDowntime(Collection $gatewayDowntimes, $vpa = null): Entity
     {
-        $input = $this->getPaymentDowntimeCreationArray($gatewayDowntimes);
+        $input = $this->getPaymentDowntimeCreationArray($gatewayDowntimes, $vpa);
 
         $downtime = $this->getDuplicate($input);
 
@@ -71,28 +76,34 @@ class UpiProcessor extends BaseProcessor
         return $downtime;
     }
 
-    protected function getPaymentDowntimeCreationArray(Collection $gatewayDowntimes): array
+    protected function getPaymentDowntimeCreationArray(Collection $gatewayDowntimes, $vpa = null): array
     {
-        list($begin, $end) = $this->calculateDowntimePeriod($gatewayDowntimes);
+        list($begin, $end) = $this->calculateDowntimePeriod($gatewayDowntimes, $vpa);
 
         $scheduled = $this->calculateDowntimeScheduled($gatewayDowntimes);
 
         $severity = $this->calculateDowntimeSeverity($gatewayDowntimes);
 
         $input = [
-            Entity::METHOD    => $this->method,
-            Entity::BEGIN     => $begin,
-            Entity::END       => $end,
-            Entity::STATUS    => Status::SCHEDULED,
-            Entity::SCHEDULED => $scheduled,
-            Entity::SEVERITY  => $severity,
+            Entity::METHOD      => $this->method,
+            Entity::BEGIN       => $begin,
+            Entity::END         => $end,
+            Entity::STATUS      => Status::SCHEDULED,
+            Entity::SCHEDULED   => $scheduled,
+            Entity::SEVERITY    => $severity,
+            Entity::VPA_HANDLE  => $vpa,
         ];
 
         return $input;
     }
 
-    protected function calculateDowntimePeriod(Collection $gatewayDowntimes): array
+    protected function calculateDowntimePeriod(Collection $gatewayDowntimes, $vpa = null): array
     {
+        if( isset($vpa) === true)
+        {
+            $gatewayDowntimes = $gatewayDowntimes->where(GatewayDowntime::VPA_HANDLE, '=', $vpa);
+        }
+
         $gatewayDowntimeMaxStart = $gatewayDowntimes->max(GatewayDowntime::BEGIN);
 
         $gatewayDowntimeMinEnd = $gatewayDowntimes->filter(function ($downtime) {
@@ -100,5 +111,14 @@ class UpiProcessor extends BaseProcessor
         })->min(GatewayDowntime::END);
 
         return [$gatewayDowntimeMaxStart, $gatewayDowntimeMinEnd];
+    }
+
+    protected function getApplicableVpaList(Collection $gatewayDowntimes): array
+    {
+        $gatewaydowntimes = $gatewayDowntimes->unique(GatewayDowntime::VPA_HANDLE);
+
+        $vpa = $gatewaydowntimes->pluck(GatewayDowntime::VPA_HANDLE)->toArray();
+
+        return $vpa;
     }
 }

@@ -46,6 +46,9 @@ class CreatePaymentDowntimes extends Migration
             $table->char(PaymentDowntime::NETWORK, 10)
                   ->nullable();
 
+            $table->string(PaymentDowntime::VPA_HANDLE, 255)
+                  ->nullable();
+
             $table->char(PaymentDowntime::AUTH_TYPE, 10)
                   ->nullable();
 

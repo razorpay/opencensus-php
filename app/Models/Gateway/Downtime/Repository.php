@@ -21,6 +21,7 @@ class Repository extends Base\Repository
         Entity::END         => 'required_with:begin|integer',
         Entity::PARTIAL     => 'sometimes|bool',
         Entity::SOURCE      => 'sometimes|string|max:30',
+        Entity::VPA_HANDLE  => 'sometimes|string|max:255',
     );
 
     // These are admin allowed params to search on.
@@ -33,6 +34,7 @@ class Repository extends Base\Repository
         Entity::END         => 'required_with:begin|integer',
         Entity::PARTIAL     => 'sometimes|bool',
         Entity::SOURCE      => 'sometimes|string|max:30',
+        Entity::VPA_HANDLE  => 'sometimes|string|max:255',
     );
 
     const KEY_OPERATOR_MAP = [
@@ -43,6 +45,7 @@ class Repository extends Base\Repository
         Entity::SOURCE      => '=',
         Entity::TERMINAL_ID => '=',
         Entity::NETWORK     => '=',
+        Entity::VPA_HANDLE  => '=',
     ];
 
     const UNIQUE_KEYS = [
@@ -51,6 +54,7 @@ class Repository extends Base\Repository
         Entity::METHOD,
         Entity::SOURCE,
         Entity::NETWORK,
+        Entity::VPA_HANDLE,
     ];
 
     public function saveOrFail($entity, array $options = [])
