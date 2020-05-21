@@ -1445,6 +1445,10 @@ class Validator extends Base\Validator
             Gateway::CARDLESS_EMI,
         ];
 
+        $PurchaseOnlyGateway = [
+            Gateway::WALLET_PAYPAL,
+        ];
+
         $cardGatewaysWithPurchaseSupport = [
             Gateway::MPGS,
         ];
@@ -1454,11 +1458,20 @@ class Validator extends Base\Validator
 
         $isAuthCaptureOnlyGateway = (in_array($gateway, $authCaptureOnly, true));
 
+        $isPurchaseOnlyGateway = (in_array($gateway, $PurchaseOnlyGateway, true));
+
         if ((($isFirstDataNon3DS === true) or ($isNonCardNonMockGateway === true)) and
             ($mode !== Mode::PURCHASE))
         {
             throw new Exception\BadRequestValidationFailureException(
                 'FirstData Non-3DS terminals must be in Purchase mode',
+                Entity::GATEWAY);
+        }
+        else if (($isPurchaseOnlyGateway === true) and
+            ($mode !== Mode::PURCHASE))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                $input['gateway'] . ' terminals must be in Purchase mode',
                 Entity::GATEWAY);
         }
         else if (($isAuthCaptureOnlyGateway === true) and
@@ -1472,6 +1485,7 @@ class Validator extends Base\Validator
                  ($isNonCardNonMockGateway === false) and
                  ($isAuthCaptureOnlyGateway === false) and
                  ($isPurchaseSupportedCardGateway === false) and
+                 ($isPurchaseOnlyGateway === false) and
                  ($mode !== Mode::DUAL))
         {
             throw new Exception\BadRequestValidationFailureException(

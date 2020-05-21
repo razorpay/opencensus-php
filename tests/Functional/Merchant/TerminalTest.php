@@ -904,6 +904,21 @@ class TerminalTest extends TestCase
         $this->startTest();
     }
 
+    public function testTerminalModePurchaseSuccess()
+    {
+        $this->startTest();
+    }
+
+    public function testPaypalTerminalModeNotPurchase()
+    {
+        $this->startTest();
+    }
+
+    public function testTerminalModePurchaseError()
+    {
+        $this->startTest();
+    }
+
     public function testTerminalModePurchaseFailure()
     {
         $this->startTest();
@@ -1331,7 +1346,7 @@ class TerminalTest extends TestCase
             'attempts'          => 0,
             'verify_bucket'     => 0,
         ]);
-        
+
         $this->testData[__FUNCTION__]['request']['content'] = [
             'terminal_ids'  =>  [
                 $terminal['id'], $terminal2['id'], 'notexisttermid'
@@ -1373,7 +1388,7 @@ class TerminalTest extends TestCase
         $this->assertEquals($updatedTerminalOnboardingDetail['status'], 'activated');
         $this->assertEquals($updatedTerminal2['status'], 'activated');
         $this->assertEquals($updatedTerminalOnboardingDetail2['status'], 'activated');
-    } 
+    }
 
 
     public function testQueryCacheforTerminals()

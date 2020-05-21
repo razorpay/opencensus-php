@@ -1434,6 +1434,83 @@ return [
         ],
     ],
 
+    'testTerminalModePurchaseSuccess' => [
+        'request' => [
+            'url' => '/merchants/100000Razorpay/terminals',
+            'content' => [
+                'gateway'                   => 'wallet_paypal',
+                'gateway_merchant_id'       => 'randommerchantid',
+                'mode'                      => Terminal\Mode::PURCHASE,
+                'type'                      => [
+                    'non_recurring' => '1',
+                    'direct_settlement_with_refund' => '1',
+                ],
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => []
+        ],
+    ],
+
+    'testPaypalTerminalModeNotPurchase' => [
+        'request' => [
+            'url' => '/merchants/100000Razorpay/terminals',
+            'content' => [
+                'gateway'                   => 'wallet_paypal',
+                'gateway_merchant_id'       => 'randommerchantid',
+                'mode'                      => Terminal\Mode::DUAL,
+                'type'                      => [
+                    'non_recurring' => '1',
+                    'direct_settlement_with_refund' => '1',
+                ],
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'wallet_paypal terminals must be in Purchase mode',
+                ]
+            ],
+            'status_code'   => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testTerminalModePurchaseError' => [
+        'request' => [
+            'url' => '/merchants/100000Razorpay/terminals',
+            'content' => [
+                'gateway'                   => 'getsimpl',
+                'gateway_merchant_id'       => 'randommerchantid',
+                'mode'                      => Terminal\Mode::PURCHASE,
+                'type'                      => [
+                    'non_recurring' => '1',
+                    'direct_settlement_with_refund' => '1',
+                ],
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'getsimpl terminals must be in Dual mode',
+                ]
+            ],
+            'status_code'   => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testTerminalModePurchaseFailure' => [
         'request' => [
             'url' => '/merchants/100000Razorpay/terminals',
@@ -2862,7 +2939,7 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_MPAN_FOR_NETWORK
         ],
     ],
-    
+
     // Used in all cases
     'testTerminalOnboardingCreationCron'    =>  [
         'request' => [
