@@ -6,6 +6,36 @@ use RZP\Error\PublicErrorDescription;
 use RZP\Exception\BadRequestException;
 
 return [
+    'testWebhooksEnabled' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/webhooks',
+            'content' => [
+                'url'    => 'https://www.example.com',
+                'events' => [
+                    'payout.created'         => '1',
+                    'payout_link.attempted'  => '1',
+                    'payout_link.issued'     => '1',
+                    'payout_link.cancelled'  => '1',
+                    'payout_link.processed'  => '1',
+                    'payout_link.processing' => '1'
+                ]
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'url'    => 'https://www.example.com',
+                'events' => [
+                    'payout_link.issued'     => true,
+                    'payout_link.processing' => true,
+                    'payout_link.processed'  => true,
+                    'payout_link.attempted'  => true,
+                    'payout_link.cancelled'  => true
+                ]
+            ]
+        ]
+    ],
+
     'testPayoutLinkFetchExpandsByUser' => [
         'request'  => [
             'method'  => 'GET',
@@ -14,7 +44,62 @@ return [
             ]
         ],
         'response' => [
+            'content' => []]
+
+    ],
+
+    'testWebhooksUpdate' => [
+        'request'  => [
+            'method'  => 'PUT',
+            'url'     => '/webhooks',
             'content' => [
+                'url'    => 'https://www.example.com',
+                'events' => [
+                    'payout_link.attempted'  => '0',
+                    'payout_link.issued'     => '0',
+                ]
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'url'    => 'https://www.example.com',
+                'events' => [
+                    'payout_link.issued'     => false,
+                    'payout_link.processing' => true,
+                    'payout_link.processed'  => true,
+                    'payout_link.attempted'  => false,
+                    'payout_link.cancelled'  => true
+                ]
+            ]
+        ]
+    ],
+
+    'testWebhooksEnabledPartial' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/webhooks',
+            'content' => [
+                'url'    => 'https://www.example.com',
+                'events' => [
+                    'payout.created' => '1',
+                    'payout_link.attempted'  => '1',
+                    'payout_link.issued'     => '0',
+                    'payout_link.cancelled'  => '1',
+                    'payout_link.processed'  => '0',
+                    'payout_link.processing' => '1'
+                ]
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'url'    => 'https://www.example.com',
+                'events' => [
+                    'payout_link.issued'     => false,
+                    'payout_link.processing' => true,
+                    'payout_link.processed'  => false,
+                    'payout_link.attempted'  => true,
+                    'payout_link.cancelled'  => true
+                ]
             ]
         ]
     ],

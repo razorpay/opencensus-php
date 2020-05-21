@@ -144,6 +144,11 @@ class Authorization
         $this->addProxyAuthHeaders($merchantUser);
     }
 
+    public function addXOriginHeader()
+    {
+        $this->appHeaders['X-Request-Origin'] = \Config::get('applications.banking_service_url');
+    }
+
     public function hostedAuth($user = 'rzp_test_10000000000000', $merchantUser = null)
     {
         $this->appAuth($user, \Config::get('applications.hosted')['secret']);

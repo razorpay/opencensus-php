@@ -96,6 +96,53 @@ class PayoutLinkTest extends TestCase
         $this->config = App::getFacadeRoot()['config'];
     }
 
+    public function testWebhooksEnabled()
+    {
+        $this->ba->proxyAuth();
+
+        $this->ba->addXOriginHeader();
+
+        $this->startTest();
+
+        $newWebhook = $this->getDbEntity('webhook',['merchant_id' => '10000000000000']);
+
+        $events2Value = $newWebhook->getAttributes()['events2'];
+
+        $this->assertEquals(31, $events2Value);
+
+        return $newWebhook;
+    }
+
+    public function testWebhooksUpdate()
+    {
+        $newWebhook = $this->testWebhooksEnabled();
+
+        $this->ba->proxyAuth();
+
+        $this->ba->addXOriginHeader();
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/webhooks/' . $newWebhook->getId();
+
+        $this->startTest();
+
+        $events2Value = $this->getDbEntity('webhook',['merchant_id' => '10000000000000'])->getAttributes()['events2'];
+
+        $this->assertEquals(22, $events2Value);
+    }
+
+    public function testWebhooksEnabledPartial()
+    {
+        $this->ba->proxyAuth();
+
+        $this->ba->addXOriginHeader();
+
+        $this->startTest();
+
+        $events2Value = $this->getDbEntity('webhook',['merchant_id' => '10000000000000'])->getAttributes()['events2'];
+
+        $this->assertEquals(14, $events2Value);
+    }
+
     public function testExceptionOnCreatePayoutLinkWithoutOtpOnProxyAuth()
     {
         $this->ba->proxyAuth();
@@ -1602,7 +1649,9 @@ class PayoutLinkTest extends TestCase
     {
         if ($payoutLink->user !== null)
         {
-            $this->testData[$funcName]['response']['content']['timeline'][0]['created_by'] = $payoutLink->user->getName();
+            $this->testData[$funcName]['response']['content']['timeline'][0]['created_by'] =
+                $payoutLink->user->getName();
+
         }
         else
         {
