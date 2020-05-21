@@ -452,8 +452,6 @@ class Core extends Base\Core
             // The function below, uses isDirty() and hence must be called before saveOrFail over merchantDetails
             $this->autoUpdateMerchantCategoryDetailsIfApplicable($merchantDetails, $merchant);
 
-            $this->autoUpdateMerchantActivationFlows($merchant);
-
             $this->updateToDefaultDepartmentVolumeIfApplicable($merchantDetails);
 
             $this->updateLegalEntity($input, $merchant);
@@ -503,6 +501,8 @@ class Core extends Base\Core
      */
     protected function processInstantActivation(Merchant\Entity $merchant, Entity $merchantDetails)
     {
+        $this->autoUpdateMerchantActivationFlows($merchant);
+
         if (BusinessType::isUnregisteredBusiness($merchantDetails->getBusinessType()) === true)
         {
             if ($this->canProcessInstantActivation($merchantDetails) === true)
