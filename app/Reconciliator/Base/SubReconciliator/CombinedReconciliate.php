@@ -133,6 +133,8 @@ class CombinedReconciliate extends Base\Foundation\SubReconciliate
             $this->batchId = $extraDetails[Batch\Entity::CONFIG][Base\Constants::BATCH_ID] ?? null;
         }
 
+        $this->messenger->batchId = $this->batchId;
+
         try
         {
             foreach ($fileContents as $row)
@@ -209,8 +211,11 @@ class CombinedReconciliate extends Base\Foundation\SubReconciliate
 
                     $subReconciliatorObject = $this->getSubReconciliatorObject($entityType, $batch);
 
-                    // As we are creating subRecon object again here, need to set the source for it
+                    // As we are creating subRecon object again here, need to
+                    // set the source and messenger batchId for it
                     $subReconciliatorObject->setSource($this->source);
+
+                    $subReconciliatorObject->messenger->batchId = $this->batchId;
 
                     $this->repo->transactionOnLiveAndTest(function() use ($subReconciliatorObject, $row, $extraDetails)
                     {
@@ -276,7 +281,7 @@ class CombinedReconciliate extends Base\Foundation\SubReconciliate
                         'skipped_rows'  => count($this->skippedRows),
                         'total_rows'    => count($fileContents),
                         'gateway'       => $this->gateway,
-                        'batch_id'      => $batch->getId(),
+                        'batch_id'      => $this->batchId,
                     ]
                 );
             }

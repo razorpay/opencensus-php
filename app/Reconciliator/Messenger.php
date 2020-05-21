@@ -13,6 +13,13 @@ class Messenger
 
     public $batch;
 
+    /**
+     * For recon request coming from batch service,
+     * we do not have batch object,  so we will use
+     * this $batchId variable in traces.
+     */
+    public $batchId;
+
     protected $skipSlack = false;
 
     const TXN_ALERT       = 'txn_alert';
@@ -49,7 +56,7 @@ class Messenger
         //
         if (empty($data['batch_id']) === true)
         {
-            $data['batch_id'] = (empty($this->batch) === false) ? $this->batch->getId() : null;
+            $data['batch_id'] = (empty($this->batch) === false) ? $this->batch->getId() : $this->batchId;
         }
 
         if ($this->shouldSkipSlack($data) === true)

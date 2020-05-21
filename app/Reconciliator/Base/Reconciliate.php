@@ -210,6 +210,8 @@ class Reconciliate extends Base\Core
 
         $this->messenger->batch = $batch;
 
+        $this->messenger->batchId = $this->batchId;
+
         foreach ($allFilesContents as $fileContents)
         {
             self::$isReconRunning = true;
@@ -222,6 +224,8 @@ class Reconciliate extends Base\Core
                 $reconciliationType = $fileContents[Orchestrator::EXTRA_DETAILS][Batch\Entity::CONFIG][RequestProcessor\Base::SUB_TYPE];
 
                 $this->batchId = $fileContents[Orchestrator::EXTRA_DETAILS][Batch\Entity::CONFIG][Constants::BATCH_ID];
+
+                $this->messenger->batchId = $this->batchId;
             }
             else
             {
@@ -1153,7 +1157,7 @@ class Reconciliate extends Base\Core
                         'info_code'     => InfoCode::REFUND_RECON_SCROOGE_JOB_FAILURE_EXCEPTION,
                         'gateway'       => $gateway,
                         'reference_key' => $referenceKey,
-                        'batch_id'      => $this->messenger->batch->getId(),
+                        'batch_id'      => $this->batchId,
                     ]
                 );
             }

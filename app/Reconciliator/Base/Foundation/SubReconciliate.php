@@ -258,6 +258,8 @@ class SubReconciliate extends Base\Core
             $this->batchId = $this->extraDetails[Batch\Entity::CONFIG][Constants::BATCH_ID] ?? null;
         }
 
+        $this->messenger->batchId = $this->batchId;
+
         try
         {
             foreach ($fileContents as $row)

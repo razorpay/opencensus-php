@@ -88,7 +88,7 @@ class Reconciliate extends Base\Reconciliate
                     'info_code'             => Base\InfoCode::PAYMENT_ABSENT,
                     'payment_reference_id'  => $ref,
                     'gateway'               => $this->gateway,
-                    'batch_id'              => $this->messenger->batch->getId(),
+                    'batch_id'              => $this->batchId,
                 ]);
         }
 
