@@ -83,7 +83,21 @@ class TestCase extends ParentTestCase
         // tests, mock the redis facade and the connection methods are not
         // available for the mock object in tearDown.
         //
-        Redis::connection()->flushdb();
+
+        $this->flushCache();
+    }
+
+    public function flushCache()
+    {
+        Redis::connection()->flushall();
+
+        foreach ($this->config->get('database.redis.clusters') as $cluster => $config)
+        {
+            foreach (Redis::connection($cluster)->getConnection() as $node)
+            {
+                $node->executeCommand(new \Predis\Command\ServerFlushDatabase());
+            }
+        }
     }
 
     public function tearDown()

@@ -315,7 +315,11 @@ return array(
 
     'redis' => [
 
-        'cluster' => false,
+        'client' => 'predis',
+
+        'options' => [
+            'cluster' => env('REDIS_CLUSTER', 'redis'),
+        ],
 
         'default' => [
             'host'     => env('REDIS_LABS_HOST'),
@@ -347,6 +351,18 @@ return array(
             'read_write_timeout' => 1,
             'persistent' => true,
         ],
+
+        'clusters' => [
+            'query_cache_redis' => [
+                [
+                    'host'     => env('QUERY_CACHE_REDIS_HOST'),
+                    'port'     => env('QUERY_CACHE_REDIS_PORT'),
+                    'timeout'  => 1,
+                    'read_write_timeout' => 1,
+                    'persistent' => true,
+                ]
+            ],
+        ]
     ],
 
     /*

@@ -82,6 +82,7 @@ steps:
         from_secret: git_token
       REDIS_HOST: redis
       REDIS_LABS_HOST: redis
+      QUERY_CACHE_REDIS_HOST: redis
       RZP_API:
         from_secret: rzp_api
     when:
@@ -118,6 +119,7 @@ steps:
         from_secret: git_token
       REDIS_HOST: redis2
       REDIS_LABS_HOST: redis2
+      QUERY_CACHE_REDIS_HOST: redis2
       RZP_API:
         from_secret: rzp_api
     depends_on:
@@ -158,6 +160,7 @@ steps:
         from_secret: git_token
       REDIS_HOST: redis3
       REDIS_LABS_HOST: redis3
+      QUERY_CACHE_REDIS_HOST: redis3
       RZP_API:
         from_secret: rzp_api
     when:
@@ -196,6 +199,7 @@ steps:
         from_secret: git_token
       REDIS_HOST: redis4
       REDIS_LABS_HOST: redis4
+      QUERY_CACHE_REDIS_HOST: redis4
       RZP_API:
         from_secret: rzp_api
     when:
@@ -234,6 +238,7 @@ steps:
         from_secret: git_token
       REDIS_HOST: redis5
       REDIS_LABS_HOST: redis5
+      QUERY_CACHE_REDIS_HOST: redis5
       RZP_API:
         from_secret: rzp_api
     when:
@@ -277,6 +282,7 @@ steps:
         from_secret: git_token
       REDIS_HOST: redis5
       REDIS_LABS_HOST: redis5
+      QUERY_CACHE_REDIS_HOST: redis5
       RZP_API:
         from_secret: rzp_api
     when:
@@ -315,6 +321,7 @@ steps:
         from_secret: git_token
       REDIS_HOST: redis6
       REDIS_LABS_HOST: redis6
+      QUERY_CACHE_REDIS_HOST: redis6
       RZP_API:
         from_secret: rzp_api
     when:
@@ -353,6 +360,7 @@ steps:
         from_secret: git_token
       REDIS_HOST: redis7
       REDIS_LABS_HOST: redis7
+      QUERY_CACHE_REDIS_HOST: redis7
       RZP_API:
         from_secret: rzp_api
     when:
@@ -391,6 +399,7 @@ steps:
         from_secret: git_token
       REDIS_HOST: redis8
       REDIS_LABS_HOST: redis8
+      QUERY_CACHE_REDIS_HOST: redis8
       RZP_API:
         from_secret: rzp_api
     when:
@@ -429,6 +438,7 @@ steps:
         from_secret: git_token
       REDIS_HOST: redis9
       REDIS_LABS_HOST: redis9
+      QUERY_CACHE_REDIS_HOST: redis9
       RZP_API:
         from_secret: rzp_api
     when:

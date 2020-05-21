@@ -54,6 +54,8 @@ services:
       DB_UPI_PAYMENTS_MOCKED: "false"
       REDIS_HOST: api_cache
       REDIS_LABS_HOST: api_cache
+      QUERY_CACHE_REDIS_HOST: redis-cluster
+      QUERY_CACHE_REDIS_PORT: 7000
       SECURE_REDIS_HOST: api_cache
       QUEUE_REDIS_HOST: api_cache
       CACHE_DRIVER: redis
@@ -109,3 +111,12 @@ services:
       - 29102:9102
       - 29125:9125/udp
     command: ["--statsd.mapping-config=/tmp/statsd_mapping.yml"]
+
+  redis-cluster:
+    image: grokzen/redis-cluster
+    container_name: redis-cluster
+    ports:
+      - '7000-7050:7000-7050'
+      - '5000-5010:5000-5010'
+    environment:
+      - REDIS_CLUSTER_IP=0.0.0.0
