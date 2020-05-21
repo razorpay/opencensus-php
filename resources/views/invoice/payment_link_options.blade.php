@@ -7,7 +7,7 @@ $invoice_expire_by              = $invoice_data['expire_by'];
 $invoice_payments               = $invoice_data['payments'];
 $is_invoice_partial_payment     = $invoice_data['partial_payment'] === true;
 $invoice_status                 = $invoice_data['status'];
-$isExpired                      = $invoice_status === 'expired' or $invoice_expire_by <= time();
+$isExpired                      = $invoice_status === 'expired' or ($invoice_expire_by <= time() and $invoice_status === 'issued');
 $invoice_status                 = $isExpired ? 'expired' : $invoice_status;
 $customer_details               = $invoice_data['customer_details'];
 $checkout_options               = $data['options']['checkout'];
@@ -684,7 +684,9 @@ $isHostedCheckout               = $hostedpage_options['enable_embedded_checkout'
     var curTimeStamp = Math.floor(new Date().getTime() / 1000);
     var isExpireByTSStale = data.invoice.expire_by && data.invoice.expire_by <= curTimeStamp;
 
-    data.invoice.status = isExpireByTSStale ? 'expired' : data.invoice.status;
+    if (data.invoice.status === 'issued' && isExpireByTSStale) {
+        data.invoice.status = 'expired';
+    }
 
     toggleTrimDescription(true);
 
