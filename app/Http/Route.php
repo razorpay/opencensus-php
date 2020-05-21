@@ -1306,6 +1306,7 @@ class Route
         'reporting_schedule_list'                  => ['get',      'reporting/schedules',                            'ReportingController@listSchedule'                                  ],
         'reporting_schedule_create'                => ['post',     'reporting/schedules',                            'ReportingController@createSchedule'                                ],
         'reporting_schedule_delete'                => ['delete',   'reporting/schedules/{id}',                       'ReportingController@deleteSchedule'                                ],
+        'reporting_consumer_restrictions'          => ['get',      'reporting/consumer_restrictions',                'ReportingController@getConsumerRestrictions'                       ],
         'reporting_proxy'                          => ['any',      'reporting/{path?}',                              'ReportingController@proxy'                                         ],
         'reporting_log_create_admin'               => ['post',     'admin-reporting/logs',                           'ReportingController@createLog'                                     ],
         'reporting_config_get_admin'               => ['get',      'admin-reporting/configs/{id}',                   'ReportingController@getConfig'                                     ],
@@ -2476,6 +2477,7 @@ class Route
         'reporting_schedule_list',
         'reporting_schedule_create',
         'reporting_schedule_delete',
+        'reporting_consumer_restrictions',
         'reporting_proxy',
         'ufh_get_file_signed_url',
         'pincode_get',
@@ -4034,6 +4036,7 @@ class Route
         'user_update_contact'                          => '*',
         'user_verify_through_email'                    => '*',
         'merchant_bank_account_change_status'          => '*',
+        'reporting_consumer_restrictions'              => '*',
 
         // This should go away after the fix
         // https://razorpay.atlassian.net/browse/RX-1701

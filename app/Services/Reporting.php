@@ -42,6 +42,7 @@ class Reporting implements ExternalService
     const ADMIN_LOG_PATH        = '/v1/admin-logs';
     const SCHEDULE_PATH         = '/v1/schedules';
     const LOG_PATH_FOR_MERCHANT = '/v1/merchant/logs';
+    const RESTRICTIONS_PATH     = '/v1/consumer_restrictions';
 
     const SCHEDULE_PREFIX = 'sched_';
 
@@ -515,6 +516,13 @@ class Reporting implements ExternalService
         $headers = $this->fetchHeadersFromInput($input);
 
         return $this->createAndSendRequest(Requests::GET, self::LOG_PATH, $input, $headers);
+    }
+
+    public function getConsumerRestrictions(): array
+    {
+        $path = self::RESTRICTIONS_PATH;
+
+        return $this->createAndSendRequest(Requests::GET, $path);
     }
 
     // TODO: Add filter based upon feature/tags for admin calls

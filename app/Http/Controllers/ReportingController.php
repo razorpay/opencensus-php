@@ -114,6 +114,13 @@ class ReportingController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function getConsumerRestrictions()
+    {
+        $data = $this->reportingService()->getConsumerRestrictions();
+
+        return ApiResponse::json($data);
+    }
+
     public function proxy($path)
     {
         $method = Request::method();
