@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Payment\Transfers;
 
 use RZP\Models\Merchant\FeeBearer;
+use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Payment\Transfers\TransferTrait;
@@ -45,6 +46,37 @@ class PaymentMarketplaceTransferTest extends TestCase
         $testData = $this->testData[__FUNCTION__];
 
         $this->ba->privateAuth();
+
+        $this->setRequestData($testData['request']);
+
+        $this->sendRequest($testData['request']);
+
+        $this->startTest();
+
+        $transferEntities = $this->getEntities('transfer', [],true);
+
+        $this->assertEquals($this->payment['id'], $transferEntities['items'][0]['source']);
+        $this->assertEquals($this->payment['id'], $transferEntities['items'][1]['source']);
+    }
+
+    public function testTransfersPaymentAsyc()
+    {
+        $this->fixtures->merchant->addFeatures(['marketplace']);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->ba->privateAuth();
+
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx
+            ->method('getTreatment')
+            ->willReturn('on');
 
         $this->setRequestData($testData['request']);
 

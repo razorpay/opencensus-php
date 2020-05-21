@@ -454,7 +454,7 @@ class Service extends Base\Service
                 '$settelementId' => $settelementId,
             ]
         );
-        
+
         $transfers =  $this->repo->transfer->updatetransfersWithSettelement($settelementId);
 
         $toalcount = $transfers->count();
@@ -524,7 +524,7 @@ class Service extends Base\Service
                     ]
                 );
 
-                Jobs\OrderTransferProcess::dispatch($this->mode, $payment);
+                Jobs\TransferProcess::dispatch($this->mode, $payment->getId());
 
                 array_push($transferOrderIds, $orderId);
             }

@@ -123,4 +123,6 @@ final class RazorxTreatment
     const FORWARD_PASSPORT_TO_SUBSCRIPTIONS = 'forward_passport_to_subscriptions';
 
     const VIRTUAL_VPA_PREFIX = 'virtual_vpa_prefix';
+
+    const PAYMENT_TRANSFER_ASYNC = 'payment_transfer_async';
 }

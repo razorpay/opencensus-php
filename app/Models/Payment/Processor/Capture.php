@@ -1069,7 +1069,7 @@ trait Capture
                     'input' => $input,
                 ]);
 
-            Jobs\OrderTransferProcess::dispatch($this->mode, $payment);
+            Jobs\TransferProcess::dispatch($this->mode, $payment->getId());
         }
         catch (\Throwable $e)
         {

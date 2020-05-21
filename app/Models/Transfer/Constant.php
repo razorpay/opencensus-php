@@ -11,4 +11,6 @@ final class Constant
     const PAYMENT = 'payment';
 
     const CHUNK = 500;
+
+    const ORDER ='order';
 }

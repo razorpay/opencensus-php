@@ -311,7 +311,7 @@ return [
         'live'       => env('AWS_TRANSFER_SETTLEMENT_LIVE_QUEUE'),
     ],
     //order transfers queue
-    'order_transfer' => [
+    'transfer_process' => [
         'test'       => env('AWS_ORDER_TRANSFER_TEST_QUEUE'),
         'live'       => env('AWS_ORDER_TRANSFER_LIVE_QUEUE'),
     ],
