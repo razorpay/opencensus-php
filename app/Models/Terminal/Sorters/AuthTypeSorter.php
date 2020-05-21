@@ -24,6 +24,13 @@ class AuthTypeSorter extends Terminal\Sorter
 
         $preferredAuthentications = $payment->getMetadata(Payment\Entity::PREFERRED_AUTH);
 
+        $this->trace->info(
+            TraceCode::SMART_ROUTING_AUTH_FILTER,
+            [
+                'payment_id'         => $payment['id'],
+                'preferred_auth'     => $preferredAuthentications
+            ]);
+
         // No need to sort unless the method is either card or EMI.
         // or preferredAuthentications is empty.
         if (($payment->isMethodCardOrEmi() === false) or
@@ -75,13 +82,6 @@ class AuthTypeSorter extends Terminal\Sorter
                 }
             }
         }
-
-        $this->trace->info(
-            TraceCode::SMART_ROUTING_AUTH_FILTER,
-            [
-                'payment_id'           => $payment['id'],
-                'terminals_output'     => count($orderedTerminals)
-            ]);
 
         return $orderedTerminals;
     }
