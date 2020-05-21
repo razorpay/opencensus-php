@@ -419,6 +419,19 @@ class GatewayController extends Controller
     public function callbackKotak()
     {
         $inputMsg = Request::get('msg');
+
+        // This is a temporary hack to identify encrypted and non encrypted requests as non encrypted requests will be a '|' seperated string
+        // whereas encrypted string will be a base64 encoded string which should have no '|' 
+
+        if (substr_count($inputMsg,'|') === 0)
+        {
+            $gateway = $this->app['gateway']->gateway('netbanking_kotak');
+
+            $response = $gateway->preProcessServerCallback($inputMsg);
+
+            $inputMsg = $response['decrypted_string'];
+        }
+
         $input = explode('|', $inputMsg);
 
         $app = \App::getFacadeRoot();

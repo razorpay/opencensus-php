@@ -825,7 +825,7 @@ return [
     'testCreateTerminalWithNetworkCategory' => [
         'request' => [
             'content' => [
-                'gateway' => 'netbanking_kotak',
+                'gateway' => 'netbanking_hdfc',
                 'gateway_merchant_id' => '12345',
                 'gateway_terminal_id' => '12345678',
                 'gateway_terminal_password' => '12345678',
@@ -841,7 +841,7 @@ return [
                 'gateway_terminal_id' => '12345678',
                 'category'            => '4567',
                 'enabled'             => true,
-                'enabled_banks'       => ['KKBK'],
+                'enabled_banks'       => ['HDFC'],
             ]
         ]
     ],
@@ -1053,7 +1053,7 @@ return [
     'testCreateDirectSettlemtTerminal' => [
         'request' => [
             'content' => [
-                'gateway'                   => 'netbanking_kotak',
+                'gateway'                   => 'netbanking_hdfc',
                 'gateway_merchant_id'       => '12345',
                 'gateway_merchant_id2'      => '12345678',
                 'gateway_terminal_password' => '12345678',
@@ -1077,7 +1077,7 @@ return [
     'testCreateDirectSettlementTerminalValidationFailure' => [
         'request' => [
             'content' => [
-                'gateway'                   => 'netbanking_kotak',
+                'gateway'                   => 'netbanking_hdfc',
                 'gateway_merchant_id'       => '12345',
                 'gateway_merchant_id2'      => '12345678',
                 'gateway_terminal_password' => '12345678',
@@ -1108,7 +1108,7 @@ return [
     'testCreateTerminalWithMerchantProcurer' => [
         'request' => [
             'content' => [
-                'gateway'                   => 'netbanking_kotak',
+                'gateway'                   => 'netbanking_hdfc',
                 'gateway_merchant_id'       => '12345',
                 'gateway_merchant_id2'      => '12345678',
                 'gateway_terminal_password' => '12345678',

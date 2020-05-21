@@ -66,6 +66,22 @@ class Gateway extends Base\Gateway
 
         $content = ['msg' => implode('|', $content)];
 
+        if ($this->isEncryptedFlowTerminal())
+        {
+            $merchantId = $this->getMerchantId();
+
+            $contentString = implode('|', $content);
+
+            $masterKey = $this->getEncryptionSecret();
+
+            $encryptedString = $this->getRsaCrypter($masterKey)->encryptString($contentString);
+
+            $content = [
+                'msg'        => $encryptedString,
+                'merchantId' => $merchantId,
+            ];
+        }
+
         $request = $this->getStandardRequestArray($content);
 
         if ($this->mock === true)
@@ -152,6 +168,17 @@ class Gateway extends Base\Gateway
         return $this->getCallbackResponseData($input, $acquirerData);
     }
 
+    public function preProcessServerCallback($input): array
+    {
+        $masterKey = $this->getDecryptionSecret();
+
+        $decryptedString = $this->getRsaCrypter($masterKey)->decryptString($input);
+
+        $response['decrypted_string'] = $decryptedString;
+
+        return $response;
+    }
+
     public function verify(array $input)
     {
         parent::verify($input);
@@ -223,6 +250,12 @@ class Gateway extends Base\Gateway
         $inputHash = $content['Checksum'];
 
         unset($content['Checksum']);
+
+        //This is done because there is a extra '|' that has to be appended at then end of hash string.
+        if (($this->action === Action::VERIFY) and ($this->isEncryptedFlowTerminal()))
+        {
+            $content['FieldToAppendExtraPipe'] = '';
+        }
 
         $expectedHash = $this->getHashOfArray($content);
 
@@ -372,6 +405,13 @@ class Gateway extends Base\Gateway
     {
         $str = $this->getStringToHash($content, '|');
 
+        if($this->isEncryptedFlowTerminal())
+        {
+            $str = $str . '|';
+
+            return $str . $this->getHashOfString($str);
+        }
+
         return $str . '|' . $this->getHashOfString($str);
     }
 
@@ -383,7 +423,19 @@ class Gateway extends Base\Gateway
         }
         else
         {
-            return 'OSRAZOR';
+            return 'OSKOTAK';
+        }
+    }
+
+    protected function getMerchantId()
+    {
+        if ($this->mode === Mode::LIVE)
+        {
+            return $this->getLiveMerchantId();
+        }
+        elseif ($this->mode === Mode::TEST)
+        {
+            return $this->getTestMerchantId();
         }
     }
 
@@ -413,6 +465,13 @@ class Gateway extends Base\Gateway
 
     protected function getHashOfString($str)
     {
+        if($this->isEncryptedFlowTerminal())
+        {
+            $key = $this->getSecret();
+
+            return (hash_hmac('sha256', $str, $key));
+        }
+
         $str = $str . '|' . $this->getSecret();
 
         return (string)(crc32($str));
@@ -422,7 +481,27 @@ class Gateway extends Base\Gateway
     {
         $str = $this->getStringToHash($content, '|');
 
+        // Authorize and callback have the checksum in uppercase.
+        if ((($this->action === Action::AUTHORIZE) or
+             ($this->action === Action::CALLBACK)) and
+             ($this->isEncryptedFlowTerminal()))
+        {
+            return strtoupper($this->getHashOfString($str));
+        }
+
         return $this->getHashOfString($str);
+    }
+
+    protected function isEncryptedFlowTerminal()
+    {
+        // TODO: remove this method when all the terminals are migrated to the new encrypted flow
+
+        if ($this->input['terminal']->getAccountType() === 'enc')
+        {
+            return true;
+        }
+
+        return false;
     }
 
     protected function verifyCallback(array $input, $gatewayPayment)
@@ -490,6 +569,11 @@ class Gateway extends Base\Gateway
         return new AESCrypto($masterKey);
     }
 
+    public function getRsaCrypter($masterKey)
+    {
+        return new RSACrypto($masterKey);
+    }
+
     protected function getEncryptionSecret()
     {
         $key = null;
@@ -499,6 +583,9 @@ class Gateway extends Base\Gateway
             case Mode::TEST:
                 switch ($this->action)
                 {
+                    case Action::AUTHORIZE:
+                        $key = 'kotak_encrypt_secret';
+                        break;
                     case Action::VERIFY:
                         $key = 'test_encrypt_hash_secret';
                         break;
@@ -507,6 +594,9 @@ class Gateway extends Base\Gateway
             case Mode::LIVE:
                 switch ($this->action)
                 {
+                    case Action::AUTHORIZE:
+                        $key = 'kotak_encrypt_secret';
+                        break;
                     case Action::VERIFY:
                         $key = 'live_encrypt_hash_secret';
                         break;
@@ -515,6 +605,11 @@ class Gateway extends Base\Gateway
         }
 
         return $this->config[$key] ?? '';
+    }
+
+    protected function getDecryptionSecret()
+    {
+        return $this->config['kotak_decrypt_secret'];
     }
 
     protected function getTestSecret()

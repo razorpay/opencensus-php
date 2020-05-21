@@ -645,6 +645,9 @@ return [
         'live_encrypt_hash_secret'  => env('NETBANKING_KOTAK_GATEWAY_LIVE_ENCRYPT_HASH_SECRET'),
         'test_encrypt_hash_secret'  => env('NETBANKING_KOTAK_GATEWAY_TEST_ENCRYPT_HASH_SECRET'),
 
+        'kotak_decrypt_secret'      => env('NETBANKING_KOTAK_GATEWAY_DECRYPT_SECRET'),
+        'kotak_encrypt_secret'      => env('NETBANKING_KOTAK_GATEWAY_ENCRYPT_SECRET'),
+
         'test_verify_hash_secret'   => env('NETBANKING_KOTAK_GATEWAY_TEST_VERIFY_HASH_SECRET'),
 
         'test_token_client_id'      => env('NETBANKING_KOTAK_GATEWAY_TEST_TOKEN_CLIENT_ID'),

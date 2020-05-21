@@ -35,6 +35,7 @@ class NetbankingKotakGatewayTest extends TestCase
 
         $terminalAttrs = [
             'id'               => 'DrctNbKtkTrmnl',
+            'account_type'     => 'enc',
         ];
 
         $this->fixtures->create(

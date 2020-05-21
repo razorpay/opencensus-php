@@ -941,6 +941,14 @@ class Validator extends Base\Validator
         Entity::TYPE                        => 'sometimes|array',
     ];
 
+    protected static $netbankingKotakTerminalRules = [
+        Entity::GATEWAY                 => 'required|in:netbanking_kotak',
+        Entity::GATEWAY_MERCHANT_ID     => 'required|string',
+        Entity::TYPE                    => 'sometimes|array',
+        Entity::TPV                     => 'sometimes|in:0,1,2',
+        Entity::ACCOUNT_TYPE            => 'sometimes|string',
+    ];
+
     protected static $netbankingKotakEditTerminalRules = [
         Entity::GATEWAY_MERCHANT_ID     => 'sometimes|string',
         Entity::GATEWAY_MERCHANT_ID2    => 'sometimes|string',
@@ -948,6 +956,7 @@ class Validator extends Base\Validator
         Entity::NETWORK_CATEGORY        => 'sometimes|string|max:30',
         Entity::TPV                     => 'sometimes|in:0,1,2',
         Entity::TYPE                    => 'sometimes|array',
+        Entity::ACCOUNT_TYPE            => 'sometimes|string',
     ];
 
     protected static $netbankingSbiEditTerminalRules = [
