@@ -6,6 +6,8 @@ const FEATURES_FETCH = 'FEATURES_FETCH';
 const MERCHANT_LOGO_UPLOADED = 'MERCHANT_LOGO_UPLOADED';
 const CONFIG_SAVE = 'CONFIG_SAVE';
 const FEATURES_SAVE = 'FEATURES_SAVE';
+const FETCH_LATE_AUTH_CONFIG = 'FETCH_LATE_AUTH_CONFIG';
+const CREATE_LATE_AUTH_CONFIG = 'CREATE_LATE_AUTH_CONFIG';
 const GET_ONBOARDING_STATUS = 'GET_ONBOARDING_STATUS';
 const FETCH_REFUND_PRICING = 'FETCH_REFUND_PRICING';
 
@@ -148,12 +150,39 @@ const normalizeConfig = config => {
   return config;
 };
 
+export const fetchLateAuthConfig = () => {
+  return {
+    type: FETCH_LATE_AUTH_CONFIG,
+    payload: merchantFetch('payment/config/late_auth'),
+  };
+};
+
+export const createLateAuthConfig = (payload, method) => {
+  return {
+    type: CREATE_LATE_AUTH_CONFIG,
+    payload: merchantFetch({
+      url: `payment/config`,
+      method: method,
+      data: payload,
+    }),
+  };
+};
+
 let initialState = {
   loading: true,
   error: null,
   refund_pricing: { rules: [], custom_pricing: true },
   config: {},
   features: [],
+  lateAuthConfig: {
+    loading: true,
+    data: {},
+    error: null,
+  },
+  createdLateAuthConfig: {
+    data: {},
+    error: null,
+  },
   paypal_terminals: [],
 };
 
@@ -181,6 +210,32 @@ export default function(state = initialState, action) {
         loading: false,
         error: action.payload.errors,
         ...initialState,
+      });
+
+    case `${FETCH_LATE_AUTH_CONFIG}::SUCCESS`:
+      return set(state, 'lateAuthConfig', {
+        loading: false,
+        data: action.payload.data,
+        error: null,
+      });
+
+    case `${FETCH_LATE_AUTH_CONFIG}::ERROR`:
+      return set(state, 'lateAuthConfig', {
+        loading: false,
+        data: {},
+        error: action.payload.errors,
+      });
+
+    case `${CREATE_LATE_AUTH_CONFIG}::SUCCESS`:
+      return set(state, 'createdLateAuthConfig', {
+        data: action.payload.data,
+        error: null,
+      });
+
+    case `${CREATE_LATE_AUTH_CONFIG}::ERROR`:
+      return set(state, 'createdLateAuthConfig', {
+        data: {},
+        error: action.payload.errors,
       });
 
     case `${CONFIG_FETCH}::SUCCESS`:

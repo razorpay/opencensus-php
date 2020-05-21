@@ -8,6 +8,7 @@ import DefaultRefundSpeed from './DefaultRefundSpeed';
 import CheckoutTheme from './CheckoutTheme';
 import EmailNotifications from './EmailNotifications';
 import InternationalConfig from './InternationalConfig';
+import PaymentSettings from './PaymentSettings';
 import PaypalOnboarding from './PaypalOnboarding';
 import { showWhenUtil } from 'merchant/components/ShowWhen';
 
@@ -108,6 +109,7 @@ export default class CongfigurationContainer extends Component {
             {this.props.user.isOrgAllowedFunctionality('flashcheckout') && (
               <FlashCheckout />
             )}
+            {/* <PaymentSettings /> */}
             {this.props.user.isActivated &&
             this.props.mode === 'live' &&
             config.fee_bearer !== 'customer' &&

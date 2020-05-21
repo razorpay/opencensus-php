@@ -14,6 +14,7 @@ const PAYMENT_RESET = 'PAYMENT_RESET';
 const PAYMENT_TRANSFER = 'PAYMENT_TRANSFER';
 const CURRENT_BALANCE_FETCH = 'CURRENT_BALANCE_FETCH';
 const FETCH_REFUND_FEE = 'FETCH_REFUND_FEE';
+const MERCHANT_MANUAL_PAYMENT_ACTION = 'MERCHANT_MANUAL_PAYMENT_ACTION';
 
 export const fetchItem = id => {
   let payment = new Payment();
@@ -112,6 +113,13 @@ export const fetchRefundFee = (payment, amount) => {
   };
 };
 
+export const fetchMerchantManualAction = payment_id => {
+  return {
+    type: MERCHANT_MANUAL_PAYMENT_ACTION,
+    payload: merchantFetch(`payment/${payment_id}/merchant/actions`),
+  };
+};
+
 let initialState = {
   loading: true,
   payment: {
@@ -149,6 +157,11 @@ let initialState = {
   },
   upiTransfer: {
     loading: false,
+    details: {},
+    error: null,
+  },
+  merchantManualAction: {
+    loading: true,
     details: {},
     error: null,
   },
@@ -320,6 +333,22 @@ export default function(state = initialState, action) {
         loading: false,
         error: action.payload.errors,
         data: initialState.current_balance.data,
+      });
+
+    case `${MERCHANT_MANUAL_PAYMENT_ACTION}::SUCCESS`:
+      return merge(state, {
+        merchantManualAction: {
+          loading: false,
+          details: action.payload.data,
+          error: null,
+        },
+      });
+
+    case `${MERCHANT_MANUAL_PAYMENT_ACTION}::ERROR`:
+      return set(state, 'merchantManualAction', {
+        loading: false,
+        details: {},
+        error: action.payload.errors,
       });
 
     case `${PAYMENT_RESET}`:
