@@ -228,18 +228,10 @@ return array(
         ],
 
         'payments_upi_live' => [
-            'read'  => [
-                'host'     => env('SLAVE_DB_UPI_PAYMENTS_LIVE_HOST'),
-                'port'     => env('SLAVE_DB_UPI_PAYMENTS_LIVE_PORT'),
-                'username' => env('SLAVE_DB_UPI_PAYMENTS_LIVE_USERNAME'),
-                'password' => env('SLAVE_DB_UPI_PAYMENTS_LIVE_PASSWORD'),
-            ],
-            'write' => [
-                'host'     => env('DB_UPI_PAYMENTS_LIVE_HOST'),
-                'port'     => env('DB_UPI_PAYMENTS_LIVE_PORT'),
-                'username' => env('DB_UPI_PAYMENTS_LIVE_USERNAME'),
-                'password' => env('DB_UPI_PAYMENTS_LIVE_PASSWORD'),
-            ],
+            'host'     => env('DB_UPI_PAYMENTS_LIVE_HOST'),
+            'port'     => env('DB_UPI_PAYMENTS_LIVE_PORT'),
+            'username' => env('DB_UPI_PAYMENTS_LIVE_USERNAME'),
+            'password' => env('DB_UPI_PAYMENTS_LIVE_PASSWORD'),
             'sticky'    => true,
             'database'  => env('DB_UPI_PAYMENTS_LIVE_DATABASE'),
             'driver'    => env('DB_UPI_PAYMENTS_LIVE_DRIVER'),
@@ -252,18 +244,10 @@ return array(
         ],
 
         'payments_upi_test' => [
-            'read'  => [
-                'host'     => env('SLAVE_DB_UPI_PAYMENTS_TEST_HOST'),
-                'port'     => env('SLAVE_DB_UPI_PAYMENTS_TEST_PORT'),
-                'username' => env('SLAVE_DB_UPI_PAYMENTS_TEST_USERNAME'),
-                'password' => env('SLAVE_DB_UPI_PAYMENTS_TEST_PASSWORD'),
-            ],
-            'write' => [
-                'host'     => env('DB_UPI_PAYMENTS_TEST_HOST'),
-                'port'     => env('DB_UPI_PAYMENTS_TEST_PORT'),
-                'username' => env('DB_UPI_PAYMENTS_TEST_USERNAME'),
-                'password' => env('DB_UPI_PAYMENTS_TEST_PASSWORD'),
-            ],
+            'host'     => env('DB_UPI_PAYMENTS_TEST_HOST'),
+            'port'     => env('DB_UPI_PAYMENTS_TEST_PORT'),
+            'username' => env('DB_UPI_PAYMENTS_TEST_USERNAME'),
+            'password' => env('DB_UPI_PAYMENTS_TEST_PASSWORD'),
             'sticky'    => true,
             'database'  => env('DB_UPI_PAYMENTS_TEST_DATABASE'),
             'driver'    => env('DB_UPI_PAYMENTS_TEST_DRIVER'),
