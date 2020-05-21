@@ -211,6 +211,8 @@ class Entity extends Base\PublicEntity
 
     protected $casts = [
         self::AMOUNT => 'int',
+        self::SEND_SMS => 'bool',
+        self::SEND_EMAIL => 'bool',
     ];
 
     protected $defaults = [

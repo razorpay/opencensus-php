@@ -96,6 +96,16 @@ class PayoutLinkTest extends TestCase
         $this->config = App::getFacadeRoot()['config'];
     }
 
+    public function testBoolCastingInPayoutLinkNotification()
+    {
+        $payoutLink = $this->testCreatePayoutLinkPassesWithoutOtpWhenPrivateAuth();
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/payout-links/' . $payoutLink['id'];
+
+        // running GET on this should return casted values of send_email and send_sms
+        $this->startTest();
+    }
+
     public function testWebhooksEnabled()
     {
         $this->ba->proxyAuth();
@@ -191,7 +201,7 @@ class PayoutLinkTest extends TestCase
 
         $this->addAccountNumberParameter(__FUNCTION__);
 
-        $this->startTest();
+        return $this->startTest();
     }
 
     public function testExceptionWhenSendSmsEnabledWithNoPhoneInContact()

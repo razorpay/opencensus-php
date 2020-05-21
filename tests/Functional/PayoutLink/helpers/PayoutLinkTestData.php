@@ -328,10 +328,12 @@ return [
                 'contact'     => [
                     'name'       => 'cskdsds',
                     'email'      => 'dsknlds@gmail.com',
-                    'contact'    => ''
+                    'contact'    => '1231231231'
                 ],
                 'notes'       => ['hi' => 'hello'],
-                'receipt'     => 'Test Payout Receipt'
+                'receipt'     => 'Test Payout Receipt',
+                'send_email' => 1,
+                'send_sms' => 1
             ]
         ],
         'response' => [
@@ -429,6 +431,20 @@ return [
         'response' => [
             'content' => [
             ],
+        ]
+    ],
+
+    'testBoolCastingInPayoutLinkNotification' => [
+        'request'  => [
+            'method'  => 'GET',
+            'url'     => '/payout-links/',
+            'content' => []
+        ],
+        'response' => [
+            'content' => [
+                'send_sms'       => true,
+                'send_email'     => true
+            ]
         ]
     ],
 
