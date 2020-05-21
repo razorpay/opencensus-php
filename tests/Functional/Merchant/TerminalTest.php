@@ -127,6 +127,47 @@ class TerminalTest extends TestCase
         $this->makeRequestAndGetContent($request);
     }
 
+    public function testAssignTerminalWhenDuplicateTerminalExist()
+    {
+        $merchant = $this->fixtures->create('merchant');
+
+        $this->fixtures->create('terminal', [
+            'merchant_id'           => $merchant->getId(),
+            'gateway'               => 'hdfc',
+            'category'              => '1234',
+            'gateway_merchant_id'   => '1234567',
+            'gateway_acquirer'      => 'hdfc',
+            'international'         => true,
+        ]);
+
+        $url = '/merchants/'.$merchant->getId().'/terminals';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
+    public function testAssignTerminalWhenDuplicateTerminalExistHitachiGateway()
+    {
+        $merchant = $this->fixtures->create('merchant');
+
+        $this->fixtures->create('terminal', [
+            'merchant_id'               => $merchant->getId(),
+            'gateway'                   => 'hitachi',
+            'gateway_acquirer'          => 'ratn',
+            'gateway_merchant_id'       => '12345',
+            'gateway_terminal_id'       => '12345678',
+            'category'                  => '4321',
+            'international'             => true,
+        ]);
+
+        $url = '/merchants/'.$merchant->getId().'/terminals';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
     public function testAssignBankAccountTerminal()
     {
         $merchant = $this->fixtures->create('merchant', ['id' => '100001Razorpay']);

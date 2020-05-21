@@ -190,6 +190,53 @@ return [
         ]
     ],
 
+    'testAssignTerminalWhenDuplicateTerminalExist' => [
+        'request' => [
+            'content' => [
+                'gateway'                   => 'hdfc',
+                'category'                  => '4321',
+                'gateway_merchant_id'       => '1234567',
+                'gateway_terminal_id'       => '87654321',
+                'gateway_terminal_password' => 'password',
+                'gateway_acquirer'          => 'hdfc',
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'     => \RZP\Exception\BadRequestException::class,
+            'message'   => 'A terminal for this gateway for this merchant already exists',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_TERMINAL_EXISTS_FOR_GATEWAY,
+
+        ],
+    ],
+
+    'testAssignTerminalWhenDuplicateTerminalExistHitachiGateway' => [
+        'request' => [
+            'content' => [
+                'gateway'                   => 'hitachi',
+                'gateway_acquirer'          => 'ratn',
+                'gateway_merchant_id'       => '54321',
+                'gateway_terminal_id'       => '12345678',
+                'category'                  => '1234',
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'gateway_acquirer'    => 'ratn',
+                'gateway_merchant_id' => '54321',
+                'gateway_terminal_id' => '12345678',
+                'category'            => '1234',
+                'enabled'             => true
+            ]
+        ]
+    ],
 
     'testAssignHitachiBharatQrTerminal' => [
         'request' => [

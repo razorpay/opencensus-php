@@ -1248,7 +1248,34 @@ class Validator extends Base\Validator
         Entity::ENABLED              => 'required_with:status',
     ];
 
-    protected static $matchAttributes = [
+    // A gateway is automatic iff terminals for this gateway are created
+    // automatically(during payments flow, via API etc).
+    // all gateways that are not automatic are classified as manual gateways
+    // manual gateways terminals can only be created via dashboard by ops
+    // automatic gateway terminals can optionally be created via dasbhoard by ops
+    protected static $automaticGateways = [
+        Gateway::HITACHI,
+        Gateway::WORLDLINE,
+    ];
+
+    protected static $manualGatewayMatchAttributes = [
+        Entity::GATEWAY,
+        Entity::GATEWAY_ACQUIRER,
+        Entity::EMI,
+        Entity::EMI_DURATION,
+        Entity::TYPE,
+        Entity::CURRENCY,
+        Entity::EMI_SUBVENTION,
+        Entity::INTERNATIONAL,
+        Entity::VPA,
+        Entity::PROCURER,
+        Entity::MC_MPAN,
+        Entity::VISA_MPAN,
+        Entity::RUPAY_MPAN,
+        Entity::ACCOUNT_TYPE,
+    ];
+
+    protected static $automaticGatewayMatchAttributes = [
         Entity::GATEWAY,
         Entity::GATEWAY_ACQUIRER,
         Entity::EMI,
@@ -1581,8 +1608,8 @@ class Validator extends Base\Validator
 
     protected function matchGatewayForNewTerminal(Entity $new, Entity $existing)
     {
-        $newMatch = array_only($new->toArray(), self::$matchAttributes);
-        $existingMatch = array_only($existing->toArray(), self::$matchAttributes);
+        $newMatch = array_only($new->toArray(), $this->getMatchAttributes($new));
+        $existingMatch = array_only($existing->toArray(), $this->getMatchAttributes($existing));
 
         // Need to sort the keys to ensure we can use strict check in the below condition.
         ksort($newMatch);
@@ -1662,6 +1689,18 @@ class Validator extends Base\Validator
         }
 
         return null;
+    }
+
+    protected function getMatchAttributes(Entity $entity)
+    {
+        $gateway = $entity->getGateway();
+
+        if (in_array($gateway, self::$automaticGateways) === true)
+        {
+            return self::$automaticGatewayMatchAttributes;
+        }
+
+        return self::$manualGatewayMatchAttributes;
     }
 
     protected static function validateBank($attribute, $value)
