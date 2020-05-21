@@ -671,6 +671,13 @@ class Validator extends Base\Validator
         Entity::TPV                        => 'sometimes|in:0,1',
     ];
 
+    protected static $netbankingSvcTerminalRules = [
+        Entity::GATEWAY                    => 'required|in:netbanking_svc',
+        Entity::GATEWAY_MERCHANT_ID        => 'required|string',
+        Entity::TYPE                       => 'sometimes|array',
+        Entity::TPV                        => 'sometimes|in:0,1,2',
+    ];
+
     protected static $netbankingCubEditTerminalRules = [
         Entity::GATEWAY                    => 'sometimes|in:netbanking_cub',
         Entity::GATEWAY_MERCHANT_ID        => 'sometimes|string',

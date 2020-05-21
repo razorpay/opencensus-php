@@ -2572,7 +2572,7 @@ return [
         'response' => [
             'content' => [
                 'entity' => 'collection',
-                'count' => 31,
+                'count' => 30,
                 'items' => [
                     [
                         'method' => 'netbanking',
@@ -2677,13 +2677,6 @@ return [
                         'severity' => 'low',
                         'instrument' => [
                             'issuer' => 'SURY',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
-                            'issuer' => 'SVCB',
                         ],
                     ],
                     [
@@ -2804,7 +2797,7 @@ return [
         'response' => [
             'content' => [
                 'entity' => 'collection',
-                'count' => 32,
+                'count' => 31,
                 'items' => [
                     [
                         'method' => 'netbanking',
@@ -2916,13 +2909,6 @@ return [
                         'severity' => 'low',
                         'instrument' => [
                             'issuer' => 'SURY',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
-                            'issuer' => 'SVCB',
                         ],
                     ],
                     [
@@ -3261,7 +3247,6 @@ return [
                                 'NESF',
                                 'NKGS',
                                 'SURY',
-                                'SVCB',
                                 'SYNB',
                                 'TBSB',
                                 'TJSB',

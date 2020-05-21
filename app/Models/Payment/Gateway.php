@@ -73,6 +73,7 @@ class Gateway
     const NETBANKING_CANARA      = 'netbanking_canara';
     const NETBANKING_YESB        = 'netbanking_yesb';
     const NETBANKING_KVB         = 'netbanking_kvb';
+    const NETBANKING_SVC         = 'netbanking_svc';
     const NACH_CITI              = 'nach_citi';
     const PAYTM                  = 'paytm';
     const SHARP                  = 'sharp';
@@ -838,6 +839,7 @@ class Gateway
             self::NETBANKING_VIJAYA,
             self::NETBANKING_YESB,
             self::NETBANKING_KVB,
+            self::NETBANKING_SVC,
         ],
 
         //
@@ -1294,6 +1296,7 @@ class Gateway
         self::ENACH_NPCI_NETBANKING,
         self::NETBANKING_CBI,
         self::HDFC_DEBIT_EMI,
+        self::NETBANKING_SVC,
     ];
 
     public static $captureVerifyEnabled = [
@@ -1660,6 +1663,7 @@ class Gateway
         Netbanking::PUNB_R => Gateway::NETBANKING_PNB,
         Netbanking::BARB_R => Gateway::NETBANKING_BOB,
         IFSC::KVBL         => Gateway::NETBANKING_KVB,
+        IFSC::SVCB         => Gateway::NETBANKING_SVC,
         IFSC::SBBJ         => Gateway::NETBANKING_SBI,
         IFSC::SBHY         => Gateway::NETBANKING_SBI,
         IFSC::SBMY         => Gateway::NETBANKING_SBI,
@@ -2554,12 +2558,22 @@ class Gateway
         return (in_array($gateway, $gateways, true));
     }
 
+    public static function gatewaysAlwaysRoutedThroughNbplusService($gateway)
+    {
+        $gateways = [
+            self::NETBANKING_SVC,
+        ];
+
+        return (in_array($gateway, $gateways, true));
+    }
+
     public static function isNbPlusServiceGateway($gateway)
     {
         $gateways = [
             self::ATOM,
             self::NETBANKING_CSB,
             self::NETBANKING_CUB,
+            self::NETBANKING_SVC,
         ];
 
         return (in_array($gateway, $gateways, true));

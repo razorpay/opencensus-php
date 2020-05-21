@@ -112,6 +112,7 @@ class Netbanking
         IFSC::IBKL,
         IFSC::SIBL,
         IFSC::KVBL,
+        IFSC::SVCB,
         self::PUNB_R,
         self::BARB_R,
         IFSC::SBBJ,
@@ -618,6 +619,12 @@ class Netbanking
             ],
             'tpv'   => [
                 IFSC::KVBL,
+            ],
+        ],
+
+        Gateway::NETBANKING_SVC => [
+            'retail' => [
+                IFSC::SVCB,
             ],
         ],
     ];

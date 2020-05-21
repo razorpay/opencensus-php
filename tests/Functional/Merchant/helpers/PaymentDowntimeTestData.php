@@ -124,7 +124,7 @@ return [
                         'scheduled'  => false,
                         'severity'   => 'low',
                         'instrument' => [
-                            'bank' => 'SVCB'
+                            'bank' => 'ABPB'
                         ],
                     ],
                 ],

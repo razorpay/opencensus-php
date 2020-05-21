@@ -1312,6 +1312,13 @@ class Processor
     {
         if ($this->isNbPlusServiceConfigEnabled() === true)
         {
+            if (Payment\Gateway::gatewaysAlwaysRoutedThroughNbplusService($payment->getGateway()))
+            {
+                $this->setPaymentService($payment, 'nbplusps');
+
+                return;
+            }
+
             $variant = $this->getRazorxVariant($payment, self::NB_PLUS_PAYMENTS_PREFIX);
 
             $this->setPaymentService($payment, $variant);

@@ -34,6 +34,7 @@ class Service
       Payment\Gateway::ATOM           => Payment\Method::NETBANKING,
       Payment\Gateway::NETBANKING_CSB => Payment\Method::NETBANKING,
       Payment\Gateway::NETBANKING_CUB => Payment\Method::NETBANKING,
+      Payment\Gateway::NETBANKING_SVC => Payment\Method::NETBANKING,
     ];
 
     protected $baseUrl;

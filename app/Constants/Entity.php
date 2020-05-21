@@ -237,6 +237,7 @@ class Entity
     const NETBANKING_RBL         = 'netbanking_rbl';
     const NETBANKING_SBI         = 'netbanking_sbi';
     const NETBANKING_KVB         = 'netbanking_kvb';
+    const NETBANKING_SVC         = 'netbanking_svc';
     const WALLET_PHONEPE         = 'wallet_phonepe';
     const WALLET_PHONEPESWITCH   = 'wallet_phonepeswitch';
     const NETBANKING_CSB         = 'netbanking_csb';

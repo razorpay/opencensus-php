@@ -1259,6 +1259,7 @@ class DatabaseSeeder extends Seeder
         $this->createCardlessEmiTerminal();
         $this->createPayLaterTerminal();
         $this->createNetbankingKvbTerminal();
+        $this->createNetbankingSvcTerminal();
     }
 
     protected function createNetbankingCorporationTerminals()
@@ -2676,6 +2677,21 @@ class DatabaseSeeder extends Seeder
                 'gateway_secure_secret' => Crypt::encrypt('test_secure_secret'),
                 'created_at'            => time(),
                 'updated_at'            => time(),
+            ]
+        );
+    }
+
+    protected function createNetbankingSvcTerminal()
+    {
+        DB::table(Table::TERMINAL)->insert(
+            [
+                'id'                    => Terminal\Shared::NETBANKING_SVC_TERMINAL,
+                'merchant_id'           => Account::TEST_ACCOUNT,
+                'gateway'               => Gateway::NETBANKING_SVC,
+                'netbanking'            => '1',
+                'gateway_merchant_id'   => 'netbanking_svc_merchant_id',
+                'created_at'            => time(),
+                'updated_at'            => time()
             ]
         );
     }
