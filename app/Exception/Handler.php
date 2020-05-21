@@ -329,6 +329,13 @@ class Handler extends ExceptionHandler
             $stack = array_slice($stack, 0, 5);
         }
 
+        if ($exception instanceof \PDOException)
+        {
+            $stack = null;
+
+            $previous = null;
+        }
+
         $traceData = array(
             'class'     => get_class($exception),
             'code'      => $exception->getCode(),
@@ -369,6 +376,11 @@ class Handler extends ExceptionHandler
             $publicError['exception'] = $this->getExceptionData($exception);
 
             $publicError['data'] = $this->getDataArrayPropertyFromException($exception);
+
+            if($exception instanceof \PDOException)
+            {
+                unset($publicError['exception']['trace'], $publicError['exception']['previous']);
+            }
         }
 
         return ApiResponse::generateResponse($publicError, $httpStatusCode);
