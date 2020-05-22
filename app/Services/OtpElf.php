@@ -106,12 +106,22 @@ class OtpElf
             'timeout' => 20
         ];
 
+        $traceContent = $content;
+
+        //Removing card number and cvv from trace for firstdata rupay redirect request
+        // TODO :: Find a better way to do this
+        if (isset($traceContent['request']['content']) === true)
+        {
+            unset($traceContent['request']['content']['cardnumber']);
+            unset($traceContent['request']['content']['cvm']);
+        }
+
         $this->trace->info(
             TraceCode::OTPELF_REQUEST,
             [
                 'url' => $url,
                 'method'  => $method,
-                'content' => $content,
+                'content' => $traceContent,
                 'headers' => $headers,
                 'options' => $options
             ]);
