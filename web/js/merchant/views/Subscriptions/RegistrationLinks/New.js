@@ -506,6 +506,7 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
       case 1: {
         return (
           <PaymentDetailsForm
+            showAmountField={this.props.user.isEmandateNonzeroAmountEnabled}
             amount={formFields.amount}
             accountType={formFields.accountType}
             avlblMethods={this.state.avlblMethods}

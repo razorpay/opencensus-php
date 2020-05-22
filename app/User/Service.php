@@ -1023,7 +1023,8 @@ class Service extends Base\Service
             'rx_webhook_migration_april_alert',
             'registered_onboarding_auto_kyc',
             'virtual_vpa_prefix',
-            'pl_batch_reminders'
+            'pl_batch_reminders',
+            'emandate_nonzero_amount'
         ];
 
         $experimentsResults = $merchantService->getBulkTreatment($features);

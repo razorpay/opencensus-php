@@ -547,6 +547,10 @@ export default class User {
     return this.getExpStatus('virtual_vpa_prefix');
   }
 
+  get isEmandateNonzeroAmountEnabled() {
+    return this.getExpStatus('emandate_nonzero_amount');
+  }
+
   get isSellerAppRole() {
     const userRole = this.userRole;
     return (

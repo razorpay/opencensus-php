@@ -7,6 +7,7 @@ import { checkIfAmount } from './utils';
 
 export default props => {
   const {
+    showAmountField,
     amount,
     accountType,
     isNachFormAval,
@@ -41,6 +42,8 @@ export default props => {
 
       {isEmandatePayment && (
         <Emandate
+          amount={amount}
+          showAmountField={showAmountField}
           emandateBanks={emandateBanks}
           skipBankDetails={skipBankDetails}
           bankName={bankName}
