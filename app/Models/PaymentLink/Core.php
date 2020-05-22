@@ -588,20 +588,23 @@ class Core extends Base\Core
 
         $invoice = $order->invoice;
 
-        $response = [];
-
-        if(empty($invoice) === false) {
-
-            $invoiceId = $invoice->getPublicId();
-
-            $receipt = $invoice->getReceipt();
-
-            $response = [
-                'invoice_id' => $invoiceId,
-                'receipt'    => $receipt,
-            ];
-
+        if(empty($invoice) === true)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_ERROR,
+                null,
+                null,
+                'Receipt is not generated for this payment');
         }
+
+        $invoiceId = $invoice->getPublicId();
+
+        $receipt = $invoice->getReceipt();
+
+        $response = [
+            'invoice_id' => $invoiceId,
+            'receipt'    => $receipt,
+        ];
 
         return $response;
     }
@@ -620,8 +623,10 @@ class Core extends Base\Core
                 ErrorCode::BAD_REQUEST_ERROR,
             null,
             null,
-            'Recept not preset');
+            'Receipt is not generated for this payment');
         }
+
+        (new Validator)->validateInput('save_receipt_if_present', $input);
 
         if(isset($input[Invoice\Entity::RECEIPT]) === true)
         {
@@ -638,6 +643,41 @@ class Core extends Base\Core
 
         return $invoiceCore->sendNotification($invoice, Invoice\NotifyMedium::EMAIL);
 
+    }
+
+    public function saveReceiptForPaymentAndGeneratePdf(string $paymentId, array $input)
+    {
+        $payment = $this->repo->payment->findByPublicIdAndMerchant($paymentId, $this->merchant);
+
+        $order = $payment->order;
+
+        $invoice = $order->invoice;
+
+        if(empty($invoice) === true)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_ERROR,
+                null,
+                null,
+                'Receipt is not generated for this payment');
+        }
+
+        (new Validator)->validateInput('save_receipt', $input);
+
+        if(isset($input[Invoice\Entity::RECEIPT]) === true)
+        {
+            $receipt = $input[Invoice\Entity::RECEIPT];
+
+            $invoice->setAttribute(Invoice\Entity::RECEIPT, $receipt);
+
+            $this->repo->invoice->save($invoice);
+        }
+
+        $invoiceCore = new Invoice\Core();
+
+        $invoice->setRelation('entity', $invoice->entity);
+
+        return $invoiceCore->createInvoicePdf($invoice);
     }
 
     protected function addAdditionalDataToSettings(array & $settings, Entity $paymentLink)

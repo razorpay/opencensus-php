@@ -216,4 +216,13 @@ class PaymentLinkController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function saveReceiptForPayment(string $paymentId)
+    {
+        $input = Request::all();
+
+        $response = $this->service()->saveReceiptForPayment($paymentId, $input);
+
+        return ApiResponse::json($response);
+    }
 }

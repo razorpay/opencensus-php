@@ -197,6 +197,11 @@ class Service extends Base\Service
         return $this->core->sendReceipt($paymentId, $input);
     }
 
+    public function saveReceiptForPayment(string $paymentId, array $input)
+    {
+        return $this->core->saveReceiptForPaymentAndGeneratePdf($paymentId, $input);
+    }
+
     protected function getPaymentLinkAndSetModeAndMerchant(string $id)
     {
         $paymentPage = null;

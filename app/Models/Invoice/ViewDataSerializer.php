@@ -269,6 +269,7 @@ class ViewDataSerializer extends Base\Core
     {
         $cin           = $this->merchant->getCompanyCin();
         $gstin         = $this->merchant->getGstin();
+        $pan           = optional($this->merchant->merchantDetail)->getPan();
         $hasCinOrGstin = (($cin !== null) or ($gstin !== null));
 
         $partner = $this->merchant->getNonPurePlatformPartner();
@@ -295,6 +296,7 @@ class ViewDataSerializer extends Base\Core
             'image'                            => $this->getMerchantLogo($partner),
             'brand_color'                      => $this->getMerchantBrandColor($partner),
             'brand_text_color'                 => $this->getMerchantBrandTextColor($partner),
+            'pan'                              => $pan,
             'cin'                              => $cin,
             'gstin'                            => $gstin,
             'has_cin_or_gstin'                 => $hasCinOrGstin,

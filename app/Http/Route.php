@@ -712,6 +712,8 @@ class Route
         'payment_page_set_receipt_details'         => ['post',     'payment_pages/{id}/receipt',                     'PaymentLinkController@setReceiptDetails'                           ],
         'payment_page_get_invoice_details'         => ['get',      'payment_pages/{payment_id}/receipt',             'PaymentLinkController@getInvoiceDetails'                           ],
         'payment_page_send_receipt'                => ['post',     'payment_pages/{payment_id}/send_receipt',        'PaymentLinkController@sendReceipt'                                 ],
+        'payment_page_save_receipt_for_payment'    => ['post',     'payment_pages/{payment_id}/save_receipt',        'PaymentLinkController@saveReceiptForPayment'                       ],
+
         // end of payment page section
         // payment link service end points
         'payment_links_service_hosted_page'        => ['get,post', 'hosted/payment_links/{path?}',                   'PlinkController@sendRequest'                                       ],
@@ -2518,6 +2520,7 @@ class Route
         'payment_page_set_receipt_details',
         'payment_page_get_invoice_details',
         'payment_page_send_receipt',
+        'payment_page_save_receipt_for_payment',
         'submerchants_fetch',
         'submerchants_fetch_multiple',
         'webhook_fire',

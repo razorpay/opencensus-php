@@ -1586,17 +1586,17 @@ return [
             'url'       => '/payment_pages/pl_100000000000pl/receipt',
             'method'    => 'post',
             'content'   => [
-                'receipt_enable' => true,
-                'selected_input_field' => 'email',
-                'custom_serial_number' => true,
+                'enable_receipt' => true,
+                'selected_udf_field' => 'email',
+                'enable_custom_serial_number' => true,
             ]
         ],
         'response'  => [
             'status_code'   => 200,
             'content'       => [
-                'receipt_enable'    => '1',
-                'selected_input_field' => 'email',
-                'custom_serial_number' => '1',
+                'enable_receipt'    => '1',
+                'selected_udf_field' => 'email',
+                'enable_custom_serial_number' => '1',
             ]
         ]
     ],
@@ -1610,9 +1610,9 @@ return [
         'response'  => [
             'status_code'   => 200,
             'content'       => [
-                'receipt_enable'    => '1',
-                'selected_input_field' => 'email',
-                'custom_serial_number' => '1',
+                'enable_receipt'    => '1',
+                'selected_udf_field' => 'email',
+                'enable_custom_serial_number' => '1',
             ]
         ]
     ],

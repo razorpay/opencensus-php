@@ -5,6 +5,7 @@ namespace RZP\Models\PaymentLink;
 use Carbon\Carbon;
 
 use RZP\Base;
+use RZP\Models\Invoice;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
@@ -137,7 +138,17 @@ class Validator extends Base\Validator
         Entity::RECEIPT_ENABLE       => 'sometimes|boolean',
         Entity::SELECTED_INPUT_FIELD => 'sometimes|string|custom',
         Entity::CUSTOM_SERIAL_NUMBER => 'sometimes|boolean',
+        Entity::ENABLE_80G_DETAILS   => 'sometimes|boolean',
     ];
+
+    protected static $saveReceiptRules = [
+       Invoice\Entity::RECEIPT => 'required|string|min:1|max:40',
+    ];
+
+    protected static $saveReceiptIfPresentRules = [
+        Invoice\Entity::RECEIPT => 'sometimes|string|min:1|max:40',
+    ];
+
 
     public function validateLineItems(string $attribute, $value)
     {
@@ -490,7 +501,7 @@ class Validator extends Base\Validator
         $this->validateInput('setInvoiceDetails', $input);
     }
 
-    public function validateSelectedInputField(string $attribute,string $value)
+    public function validateSelectedUdfField(string $attribute,string $value)
     {
         $udfSchemaClass = new UdfSchema($this->entity);
 
