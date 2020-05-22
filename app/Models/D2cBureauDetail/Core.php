@@ -56,11 +56,25 @@ class Core extends Base\Core
             Entity::STATUS          => Status::CREATED,
         ];
 
-        if(count($data) !== 0)
+        if (empty($data) === false)
         {
-            $input = $data['data'] + [
-                Entity::STATUS => Status::CREATED
-            ];
+            $state = null;
+
+            if ((strlen($data[Entity::STATE]) === 2) and
+                (IndianStates::stateValueExist($data[Entity::STATE])))
+            {
+                $state = strtoupper($data[Entity::STATE]);
+            }
+            else
+            {
+                $state = IndianStates::getStateCode($data[Entity::STATE]);
+            }
+
+            $data[Entity::STATE] = $state;
+
+            $input = $data + [
+                    Entity::STATUS => Status::CREATED
+                ];
         }
 
         /** @var Entity $ownerDetails */

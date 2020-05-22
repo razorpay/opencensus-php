@@ -192,7 +192,7 @@ return [
     ],
 
     'los' => [
-        'secret' => env('LOS_SECRET'),
+        'secret' => env('LOS_PASSWORD'),
     ],
 
     'bharatqr' => [

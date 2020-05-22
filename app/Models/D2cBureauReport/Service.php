@@ -4,6 +4,7 @@ namespace RZP\Models\D2cBureauReport;
 
 use Carbon\Carbon;
 
+use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Base;
 use RZP\Models\User;
 use RZP\Models\Merchant;
@@ -61,6 +62,25 @@ class Service extends Base\Service
         $bureauReport->edit($input);
 
         $this->repo->saveOrFail($bureauReport);
+
+        return $bureauReport->toArrayForDashboard();
+    }
+
+    public function fetchReport($id)
+    {
+        $bureauReport = $this->repo->d2c_bureau_report->findByPublicId($id);
+
+        return $bureauReport->toArrayForDashboard();
+    }
+
+    public function fetchReportForLos($input)
+    {
+        if (empty($input[Entity::MERCHANT_ID]) === true)
+        {
+            throw new BadRequestValidationFailureException('merchant_id is required', Entity::MERCHANT_ID, null);
+        }
+
+        $bureauReport = $this->repo->d2c_bureau_report->findByParams($input);
 
         return $bureauReport->toArrayForDashboard();
     }

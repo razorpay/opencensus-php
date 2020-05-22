@@ -89,7 +89,11 @@ class Entity extends Base\PublicEntity
 
     public function toArrayForDashboard()
     {
-        return $this->makeVisible([self::SCORE, self::REPORT])->toArrayPublic();
+        $report = $this->makeVisible([self::SCORE, self::REPORT])->toArrayPublic();
+
+        $report[self::REPORT] = json_decode($report[self::REPORT]);
+
+        return $report;
     }
 
     public function setCsvReportFileId($fileId)

@@ -44,7 +44,7 @@ class Validator extends Base\Validator
         Entity::EMAIL               => 'required|email',
         Entity::ADDRESS             => 'required|string|max:255',
         Entity::CITY                => 'required|string|max:255',
-        Entity::STATE               => 'required|string|size:2',
+        Entity::STATE               => 'required|string',
         Entity::PINCODE             => 'required|max:15',
         Entity::PAN                 => 'required|pan',
     ];

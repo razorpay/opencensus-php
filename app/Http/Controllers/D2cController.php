@@ -17,6 +17,15 @@ class D2cController extends Controller
         return ApiResponse::json($entity);
     }
 
+    public function createReportForLos()
+    {
+        $input = Request::all();
+
+        $entity = $this->service(Entity::D2C_BUREAU_DETAIL)->createReportForLos($input);
+
+        return ApiResponse::json($entity);
+    }
+
     public function fetchD2cCSVReport()
     {
         $response = $this->service(Entity::D2C_BUREAU_REPORT)->getCsvReport();
@@ -35,7 +44,16 @@ class D2cController extends Controller
 
     public function fetchReport(string $id)
     {
-        $response = $this->service(Entity::D2C_BUREAU_DETAIL)->fetchReport($id);
+        $response = $this->service(Entity::D2C_BUREAU_REPORT)->fetchReport($id);
+
+        return ApiResponse::json($response);
+    }
+
+    public function fetchReportForLos()
+    {
+        $input = Request::all();
+
+        $response = $this->service(Entity::D2C_BUREAU_REPORT)->fetchReportForLos($input);
 
         return ApiResponse::json($response);
     }

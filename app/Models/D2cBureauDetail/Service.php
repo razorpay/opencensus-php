@@ -86,6 +86,8 @@ class Service extends Base\Service
             $this->app['basicauth']->setMerchant($this->merchant);
 
             $this->user = $this->repo->user->findOrFail($input[Entity::USER_ID]);
+
+            $input = $input['data'];
         }
 
         $this->trace->info(TraceCode::D2C_BUREAU_DETAILS_UPDATE, [
@@ -117,17 +119,6 @@ class Service extends Base\Service
                           ->validate();
 
         return $bureauDetail->toArrayPublic();
-    }
-
-    public function fetchReport($id): array
-    {
-        $this->trace->info(TraceCode::LOS_D2C_BUREAU_REPORT_FETCH, [
-            'id'    => $id,
-        ]);
-
-        $bureauDetail = $this->repo->d2c_bureau_detail->findByPublicId($id);
-
-        return $this->bureauReport->getReport($bureauDetail)->toArrayForDashboard();
     }
 
     public function getReportWithOtp($id, array $input): array
@@ -203,6 +194,55 @@ class Service extends Base\Service
             });
         },
         120);
+    }
+
+    public function createReportForLos($input)
+    {
+        if ((empty($input[Entity::MERCHANT_ID]) === true) or
+            (empty($input[Entity::USER_ID]) === true))
+            {
+                throw new Exception\BadRequestValidationFailureException('user_id & merchant_id are required');
+            }
+
+        $this->merchant = $this->repo->merchant->findOrFail($input[Entity::MERCHANT_ID]);
+
+        $this->app['basicauth']->setMerchant($this->merchant);
+
+        $this->user = $this->repo->user->findOrFail($input[Entity::USER_ID]);
+
+        $data = $input['d2c_bureau_detail'];
+
+        $merchantDetails = $this->merchant->merchantDetail;
+
+        (new JitValidator)->rules(Validator::$afterPatchRules)
+                          ->caller($this)
+                          ->input($data)
+                          ->strict(false)
+                          ->validate();
+
+        $bureauDetail = $this->core()->getOrCreate($merchantDetails, $this->merchant, $this->user, $data);
+
+        $this->user->validateInput('verifyOtp', [
+            'otp'               => $input['otp'],
+            'token'             => $input['token'],
+            'action'            => 'bureau_verify',
+            'contact_mobile'    => $bureauDetail->getContactMobile(),
+        ]);
+
+        return $this->mutex->acquireAndRelease($bureauDetail->getId(), function () use ($bureauDetail, $input)
+        {
+            (new User\Core)->verifyOtp([
+                'otp'               => $input['otp'],
+                'token'             => $input['token'],
+                'action'            => 'bureau_verify',
+                'contact_mobile'    => $bureauDetail->getContactMobile(),
+            ], $this->merchant, $this->user);
+
+            $this->core()->updateStatusVerified($bureauDetail);
+
+            return $this->bureauReport->getReport($bureauDetail, $this->merchant, $this->user)
+                ->toArrayForDashboard();
+        }, 120);
     }
 
     private function removeFeature()

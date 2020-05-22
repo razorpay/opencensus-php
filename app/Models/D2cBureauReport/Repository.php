@@ -26,4 +26,26 @@ class Repository extends Base\Repository
                     ->whereNull(Entity::CSV_REPORT_UFH_FILE_ID)
                     ->get();
     }
+
+    public function findByParams(array $input)
+    {
+        $query = $this->newQuery();
+
+        if (isset($input[Entity::MERCHANT_ID]) === true)
+        {
+            $query->where(Entity::MERCHANT_ID, $input[Entity::MERCHANT_ID]);
+        }
+
+        if (isset($input['d2c_bureau_report_id']) === true)
+        {
+            $query->where(Entity::ID, $input['d2c_bureau_report_id']);
+        }
+
+        if (isset($input[Entity::USER_ID]) === true)
+        {
+            $query->where(Entity::USER_ID, $input[Entity::USER_ID]);
+        }
+
+        return $query->get()->last();
+    }
 }
