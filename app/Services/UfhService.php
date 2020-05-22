@@ -114,7 +114,7 @@ class UfhService
     public function uploadFileAndGetUrl(UploadedFile $file,
                                         string $storageFileName,
                                         string $type,
-                                        Entity $entity,
+                                        $entity,
                                         array $metadata = []): array
     {
         $ext = strtolower($file->getClientOriginalExtension());
@@ -127,12 +127,21 @@ class UfhService
             self::FILE          => fopen($movedFile->getPathname(), 'r'),
             self::NAME          => $storageFileName,
             self::TYPE          => $type,
-            self::ENTITY_ID     => $entity->getId(),
-            self::ENTITY_TYPE   => $entity->getEntityName(),
             self::STORE         => $this->getStoreForEnv(),
             self::DISPLAY_NAME  => pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME),
             self::METADATA      => $metadata,
         ];
+
+        if (($entity instanceof Entity) === true)
+        {
+            $requestData[self::ENTITY_ID]   = $entity->getId();
+            $requestData[self::ENTITY_TYPE] = $entity->getEntityName();
+        }
+        else
+        {
+            $requestData[self::ENTITY_ID]   = $entity[self::ID] ?? null;
+            $requestData[self::ENTITY_TYPE] = $entity[self::TYPE] ?? null;
+        }
 
         $this->trace->info(
             TraceCode::AWS_FILE_UPLOAD,

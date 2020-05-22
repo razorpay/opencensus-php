@@ -1327,6 +1327,8 @@ class Route
         // TODO: Should change to just /signed_url (No 'get' and underscore)
         'ufh_get_file_signed_url'                  => ['get',      'ufh/file/{fileId}/get-signed-url',               'UfhController@getSignedUrl'                                        ],
         'ufh_get_file_signed_url_admin'            => ['get',      'admin-ufh/file/{fileId}/get-signed-url',         'UfhController@getSignedUrl'                                        ],
+        'ufh_admin_upload_file'                    => ['post',     'admin-ufh/file/upload',                          'UfhController@uploadFileAndGetUrl'                                 ],
+        'ufh_upload_file'                          => ['post',     'ufh/files/upload',                               'UfhController@uploadFileAndGetUrl'                                 ],
 
         'razorx_route'                             => ['any',      'service/razorx',                                 'RazorxController@sendRequest'                                      ],
         'merchant_razorx_evaluate'                 => ['get',      'razorx/evaluate/{featureFlag}',                  'MerchantController@getRazorxTreatment'                             ],
@@ -2347,6 +2349,7 @@ class Route
     ];
 
     public static $proxy = [
+        'ufh_upload_file',
         'los_service',
         'user_fetch_for_merchant',
         'send_email_for_pl_service',
@@ -2655,6 +2658,7 @@ class Route
     public static $admin = [
         'los_service_admin',
         'emi_plans_migrate',
+        'ufh_admin_upload_file',
         'payout_reject_admin',
         'd2c_create_csv_report',
         'offline_verification_service_get',
@@ -3242,6 +3246,7 @@ class Route
     ];
 
     public static $routePermission = [
+        'ufh_admin_upload_file'                    => '*',
         'los_service_admin'                        => Permission::LOANS_EDIT,
         'payout_reject_admin'                      => Permission::REJECT_PAYOUT,
         'offline_verification_service_get'         => Permission::OFFLINE_VERIFICATION_SERVICE_VIEW,

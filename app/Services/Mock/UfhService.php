@@ -18,7 +18,7 @@ class UfhService extends BaseUfhClient
                                         UploadedFile $file,
                                         string $storageFileName,
                                         string $type,
-                                        Entity $entity,
+                                        $entity,
                                         array $metadata = []): array
     {
         $ext = $file->getClientOriginalExtension();
@@ -39,11 +39,20 @@ class UfhService extends BaseUfhClient
             'file'          => fopen($pathName, 'r'),
             'name'          => $storageFileName,
             'type'          => $type,
-            'entity_id'     => $entity->getPublicId(),
-            'entity_type'   => $entity->getEntityName(),
             'store'         => $this->getStoreForEnv(),
             'metadata'      => $metadata,
         ];
+
+        if (($entity instanceof Entity) === true)
+        {
+            $requestData[self::ENTITY_ID]   = $entity->getPublicId();
+            $requestData[self::ENTITY_TYPE] = $entity->getEntityName();
+        }
+        else
+        {
+            $requestData[self::ENTITY_ID]   = $entity[self::ID] ?? null;
+            $requestData[self::ENTITY_TYPE] = $entity[self::TYPE] ?? null;
+        }
 
         $this->trace->info(
             TraceCode::AWS_FILE_UPLOAD,

@@ -2,16 +2,34 @@
 
 namespace RZP\Http\Controllers;
 
+use Request;
 use ApiResponse;
 
 use RZP\Models\Merchant\Account;
 use Razorpay\Ufh\Client as UfhClient;
+use RZP\Services\UfhService;
 
 class UfhController extends Controller
 {
+    // key for entity data array sent in Upload File request
+    const ENTITY = 'entity';
+
     public function getSignedUrl(string $fileId)
     {
         $response = $this->ufhClient()->getSignedUrl($fileId, []);
+
+        return ApiResponse::json($response);
+    }
+
+    public function uploadFileAndGetUrl()
+    {
+        $input = Request::all();
+
+        $response = $this->app['ufh.service']->uploadFileAndGetUrl($input['file'],
+                                                $input[UfhService::NAME],
+                                                $input[UfhService::TYPE],
+                                                $input[self::ENTITY],
+                                                $input[UfhService::METADATA]);
 
         return ApiResponse::json($response);
     }
