@@ -896,6 +896,10 @@ trait Authorize
     {
         $this->repo->saveOrFail($payment);
 
+        $id = $payment->getPublicId();
+
+        $request['url'] = $this->route->getUrlWithPublicAuthInQueryParam('payment_get_status', ['id' => $id]);
+
         $response = [
             'version'               => 1,
             'type'                  => 'application',

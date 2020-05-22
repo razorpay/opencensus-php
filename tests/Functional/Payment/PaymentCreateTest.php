@@ -264,6 +264,17 @@ class PaymentCreateTest extends TestCase
         $this->assertEquals($payment['authentication_gateway'], 'google_pay');
 
         $this->assertEquals($payment['cps_route'], 0);
+        
+        $this->checkPaymentStatus($payment['id'], 'created');
+    }
+
+    protected function checkPaymentStatus($id, $expectedStatus)
+    {
+        $response = $this->getPaymentStatus($id);
+
+        $status = $response['status'];
+
+        $this->assertEquals($expectedStatus, $status);
     }
 
     public function testCreateGooglePayCardPaymentInvalidCurrency()

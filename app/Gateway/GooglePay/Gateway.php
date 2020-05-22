@@ -15,7 +15,7 @@ class Gateway extends Base\Gateway
 
     public $mozartClass = 'RZP\Gateway\Mozart\Gateway';
 
-    const GATEWAY_NAME            = 'razorpay';
+    const GATEWAY_NAME            = 'razorpayindia';
     const PAYMENT_TYPE            = 'CARD';
     const PAYMENT_TOKEN_TYPE      = 'PAYMENT_GATEWAY';
     const PRICE_STATUS            = 'FINAL';
@@ -275,11 +275,12 @@ class Gateway extends Base\Gateway
         ];
 
         return [
-                'apiVersion' => '1.0',
+                'apiVersion'            => 2,
+                'apiVersionMinor'       => 0,
                 'allowedPaymentMethods' => [
                     $paymentDetail
                 ],
-                'transactionInfo' => $transactionInfo,
+                'transactionInfo'       => $transactionInfo,
             ];
     }
 }

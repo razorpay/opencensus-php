@@ -1800,13 +1800,12 @@ class Processor
 
         $payment = $this->retrieve($id);
 
-        $order = $this->getOrderForPayment($payment);
-
         $gateway = $payment->getGateway();
 
         // If the gateway is not async we just give a generic
         // error to not leak information
-        if (Payment\Gateway::supportsAsync($gateway) === false)
+        if ((Payment\Gateway::supportsAsync($gateway) === false) and
+            ($payment->getAuthenticationGateway() !== Payment\Gateway::GOOGLE_PAY))
         {
             // Throw exception of invalid id
             throw new Exception\BadRequestException(
@@ -1833,7 +1832,10 @@ class Processor
                 Payment\Entity::STATUS => Payment\Status::CREATED
             ];
 
-            $this->setUpiStatus($payment->getPublicId(), $response);
+            if ($payment->getMethod() === Payment\Method::UPI)
+            {
+                $this->setUpiStatus($payment->getPublicId(), $response);
+            }
 
             return $response;
         }
