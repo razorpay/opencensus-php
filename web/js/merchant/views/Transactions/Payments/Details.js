@@ -339,6 +339,7 @@ export default class PaymentDetailsContainer extends Component {
           isRoleAllowedEdit={this.props.user.isAllowedEdit('payments')}
           viewSettlementOverview={this.viewSettlementOverview}
           config={config}
+          user={this.props.user}
         />
 
         <ShowWhen

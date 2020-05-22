@@ -1,6 +1,6 @@
 import ajax, { merchantFetch } from 'merchant/utils/ajax';
-
 import { set, merge } from 'common/utils/immutable';
+import store from 'merchant/store';
 
 const BANK_ACCOUNT_FETCH = 'BANK_ACCOUNT_FETCH';
 const GST_FETCH = 'GST_FETCH';
@@ -167,6 +167,36 @@ export const getTicketStatus = () => {
     payload: merchantFetch('fd/reserve_balance/tickets/status'),
   };
 };
+
+// {"text_80g_12a":"some text","image_url_80g":"some_url"}
+export function set80gMerchantDetails(params) {
+  return merchantFetch({
+    url: 'payment_pages/merchant_details', // 80G details are stored in settings table corresponding to MID. So, `payment_pages/` might change later
+    method: 'post',
+    data: params,
+    headers: {
+      'content-type': 'application/json',
+    },
+  });
+}
+
+export function get80gMerchantDetails() {
+  const currentUser = store.getState().session.user.user;
+
+  // 80G details are stored in settings table corresponding to MID. So, `payment_pages/` might change later
+  return merchantFetch(`payment_pages/merchant_details/${currentUser.id}`);
+}
+
+export function upload80gSignatoryImage(file) {
+  const fd = new FormData();
+  fd.append('images[0]', file);
+
+  return merchantFetch({
+    url: 'payment_pages/images', // Currently, same route is used as payment_pages, however would be changed later.
+    method: 'post',
+    data: fd,
+  });
+}
 
 let initialState = {
   invitations: [],

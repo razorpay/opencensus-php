@@ -61,6 +61,8 @@ export default class Staged extends React.Component {
       onCloseClick,
       showStagedFileStatus,
       isDocPreUploaded,
+      preUploadedImgFileUrl,
+      removeFileButtonLabel,
     } = this.props;
 
     const loader = this.getProgress();
@@ -79,8 +81,14 @@ export default class Staged extends React.Component {
         <div class="Dropzone-content-desc">
           {isDocPreUploaded ? (
             <p class="Dropzone-content-desc--primary text-success">
-              <i class="i i-check" />
-              File Already Uploaded
+              {preUploadedImgFileUrl ? (
+                <img src={preUploadedImgFileUrl} height="48" />
+              ) : (
+                <>
+                  <i class="i i-check" />
+                  File Already Uploaded
+                </>
+              )}
             </p>
           ) : (
             <React.Fragment>
@@ -98,9 +106,14 @@ export default class Staged extends React.Component {
         </div>
         {!isDisabled &&
           onCloseClick &&
-          currentStatus !== 'process' && (
+          currentStatus !== 'process' &&
+          (removeFileButtonLabel ? (
+            <span class="btn-link Dropzone-close" onClick={onCloseClick}>
+              {removeFileButtonLabel}
+            </span>
+          ) : (
             <span class="icon i-close Dropzone-close" onClick={onCloseClick} />
-          )}
+          ))}
 
         <div class="Loader">
           <div

@@ -179,3 +179,56 @@ export function _prepareTemplate(paymentPageEntity) {
 
   return templateOverrides;
 }
+
+/**************/
+
+export function setReceiptDetails(id, params) {
+  return merchantFetch({
+    url: `payment_pages/${id}/receipt`,
+    method: 'post',
+    data: params,
+    headers: {
+      'content-type': 'application/json',
+    },
+  });
+}
+
+export function getReceiptDetails(paymentId) {
+  return merchantFetch({
+    url: `payment_pages/${paymentId}/receipt`,
+  });
+}
+
+export function sendReceipt(paymentId, receipt) {
+  const reqPayload = {};
+
+  if (receipt) {
+    reqPayload.receipt = receipt;
+  }
+
+  return merchantFetch({
+    url: `payment_pages/${paymentId}/send_receipt`,
+    method: 'post',
+    data: reqPayload,
+    headers: {
+      'content-type': 'application/json',
+    },
+  });
+}
+
+export function saveReceipt(paymentId, receipt) {
+  const reqPayload = {};
+
+  if (receipt) {
+    reqPayload.receipt = receipt;
+  }
+
+  return merchantFetch({
+    url: `payment_pages/${paymentId}/save_receipt`,
+    method: 'post',
+    data: reqPayload,
+    headers: {
+      'content-type': 'application/json',
+    },
+  });
+}

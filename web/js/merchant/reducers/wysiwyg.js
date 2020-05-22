@@ -24,6 +24,7 @@ const UPDATE_IN_FORM_ITEMS = 'UPDATE_IN_FORM_ITEMS';
 const ADD_IN_FORM_ITEMS = 'ADD_IN_FORM_ITEMS';
 const MARK_DATA_SAVED = 'MARK_DATA_SAVED';
 const REORDER_FORM_ITEMS = 'REORDER_FORM_ITEMS';
+const UPDATE_RECEIPT_DETAILS = 'UPDATE_RECEIPT_DETAILS';
 
 export const isFormItemOfTypeAmount = formItem =>
   formItem.hasOwnProperty('item');
@@ -93,6 +94,11 @@ export const markDataSaved = _ => ({
   type: MARK_DATA_SAVED,
 });
 
+export const updateReceiptDetails = data => ({
+  type: UPDATE_RECEIPT_DETAILS,
+  payload: data,
+});
+
 let initialState = {
   paymentPageEntity: {
     currency: 'INR', // Initialising with INR currency
@@ -102,6 +108,12 @@ let initialState = {
         email: FIXED_FIELDS.email.name, // email key in form to be used in prefill checkout
         phone: FIXED_FIELDS.phone.name, // phone key in form to be used in prefill checkout
       },
+    },
+    receipt: {
+      enable_receipt: '1',
+      selected_udf_field: '',
+      enable_custom_serial_number: '0', // Default is automatic receipt
+      enable_80g_details: '0',
     },
   },
   payment_page_id: null,
@@ -127,25 +139,20 @@ export default function(state = initialState, action) {
     case `${FETCH_ENTITY}::SUCCESS`: {
       const entityData = { ...action.payload.data };
 
-      /*
-      *
-      *  Normalize expire_by for FE consumption
-      *
-      * */
+      // 1. Normalize expire_by for FE consumption
       if (entityData.expire_by) {
         entityData.expire_by *= 1000;
       }
 
+      // 2.
       entityData.settings.allow_social_share =
         entityData.settings.allow_social_share === '1';
 
+      // 3.
       entityData.settings.allow_multiple_units =
         entityData.settings.allow_multiple_units === '1';
 
-      let formItems;
-
-      const udfSchema = JSON.parse(entityData.settings.udf_schema);
-
+      // 4.
       entityData.payment_page_items.forEach(pi => {
         // While creation/editing, all amounts are converted to Paisa (or smaller unit)
 
@@ -162,8 +169,9 @@ export default function(state = initialState, action) {
         }
       });
 
-      // 1-1. If intention while fetching is to duplicate, then remove id for each of payment page item
+      // 5. If intention while fetching is to duplicate, then delete existing entity specific data
       if (action.isIntentDuplicate) {
+        // 5-1. Remove id for each of payment page item
         entityData.payment_page_items.forEach(fi => {
           // Removing payment_page_id is enough since removing/adding id for items is handled in handleSavePublish. However, this is just for sanity.
 
@@ -171,7 +179,17 @@ export default function(state = initialState, action) {
           delete fi.payment_link_id;
           delete fi.item.id;
         });
+
+        // 5-2.
+        delete entityData.id;
+
+        // 5-3.
+        delete entityData.slug;
       }
+
+      // 6.
+      let formItems;
+      const udfSchema = JSON.parse(entityData.settings.udf_schema);
 
       formItems = [].concat(udfSchema).concat(entityData.payment_page_items);
 
@@ -182,15 +200,16 @@ export default function(state = initialState, action) {
         return Number(positionA) - Number(positionB);
       });
 
-      // 2. If intention while fetching is to duplicate, then delete entity id
-      if (action.isIntentDuplicate) {
-        delete entityData.id;
-      }
+      // 7. Currently, receipt settings are mixed with settings, and in scattered form, hence consolidating
+      const receiptSettings = {
+        enable_receipt: entityData.settings.enable_receipt || '1',
+        selected_udf_field: entityData.settings.selected_udf_field || '',
+        enable_custom_serial_number:
+          entityData.settings.enable_custom_serial_number || '0',
+        enable_80g_details: entityData.settings.enable_80g_details || '0',
+      };
 
-      // 3. If intention while fetching is to duplicate, then remove slug as well
-      if (action.isIntentDuplicate) {
-        delete entityData.slug;
-      }
+      entityData.receipt = receiptSettings;
 
       const storeState = {
         paymentPageEntity: entityData,
@@ -271,6 +290,14 @@ export default function(state = initialState, action) {
       return {
         ...state,
         isPageDirty: false,
+      };
+
+    case UPDATE_RECEIPT_DETAILS:
+      return {
+        ...state,
+        paymentPageEntity: merge(state.paymentPageEntity, {
+          receipt: action.payload,
+        }),
       };
 
     case REORDER_FORM_ITEMS:

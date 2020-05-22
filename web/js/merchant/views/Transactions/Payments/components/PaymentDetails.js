@@ -14,6 +14,7 @@ import PaymentMethod from 'merchant/views/Transactions/Payments/components/Payme
 import PaymentRefund from 'merchant/views/Transactions/Payments/components/PaymentRefund';
 import PaymentTransfers from 'merchant/views/Transactions/Payments/components/PaymentTransfers.js';
 import PaymentDisputes from './PaymentDisputes';
+import PaymentReceipt from './PaymentReceipt';
 import ContentToggler from 'common/ui/Toggler/ContentToggler';
 import SettlementOverview from './SettlementOverview';
 
@@ -32,6 +33,7 @@ export default props => {
     isRoleAllowedEdit,
     viewSettlementOverview,
     config,
+    user,
   } = props;
 
   return (
@@ -219,6 +221,10 @@ export default props => {
                       ))
                     : '--'}
                 </EntityDetailRow>
+
+                {user.isPaymentPageReceiptsEnabled && (
+                  <PaymentReceipt payment={payment} />
+                )}
 
                 {config.settlement_ux_revamp &&
                   payment.transaction && (

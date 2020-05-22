@@ -11,10 +11,13 @@ import {
   updateInFormItems,
   isFormItemOfTypeAmount,
   reorderFormItems,
+  updateReceiptDetails,
 } from 'merchant/reducers/wysiwyg';
 import { constructFieldSchema } from './UDF/helpers';
 import { constructAmountField } from './Amount/helpers';
 import { sortableContainer, sortableElement } from 'react-sortable-hoc';
+
+import { showNotification } from 'merchant_common/reducers/notifications';
 
 const Sortable_UDFDisplayField = sortableElement(UDFDisplayField);
 const Sortable_AmountDisplayField = sortableElement(AmountDisplayField);
@@ -81,6 +84,8 @@ class SortableFormItemsList extends React.Component {
   deleteInFormItems,
   updateInFormItems,
   reorderFormItems,
+  updateReceiptDetails,
+  showNotification,
 })
 @RTracking(() => window.rzpQ.component('wysiwyg_view'))
 export default class View extends React.PureComponent {
@@ -109,6 +114,39 @@ export default class View extends React.PureComponent {
         totalAmountItems: curPaymentPageEntity.payment_page_items.length,
       });
     }
+
+    // Perform sanity check for input field in Receipt settings
+    if (this.isUDFTouched) {
+      this.resetUDFTouched();
+
+      const formItems = this.props.FORM_ITEMS;
+      const receipt = curPaymentPageEntity.receipt;
+
+      if (receipt.selected_udf_field) {
+        const validFormItem = formItems.find(field => {
+          const isFieldStillPresent =
+            !field.hasOwnProperty('entity') &&
+            field.name === receipt.selected_udf_field;
+
+          return isFieldStillPresent;
+        });
+
+        if (!validFormItem) {
+          // Update Receipt settings
+
+          this.props.showNotification({
+            type: 'info',
+            message:
+              'Your input field is modified. Update your Receipt Settings.',
+          });
+
+          this.props.updateReceiptDetails({
+            ...receipt,
+            selected_udf_field: '', // Only modify this key in receipt
+          });
+        }
+      }
+    }
   }
 
   onSubmitAmountField = (formData, indexInFormItems) => {
@@ -133,6 +171,7 @@ export default class View extends React.PureComponent {
   };
 
   onDeleteUDFItem = indexInFormItems => {
+    this.setUDFTouched();
     this.props.deleteInFormItems(indexInFormItems);
   };
 
@@ -163,11 +202,21 @@ export default class View extends React.PureComponent {
       });
     }
 
+    this.setUDFTouched();
+
     this.props.updateInFormItems({
       formItem: fieldSchema,
       index: indexInFormItems,
     });
   };
+
+  setUDFTouched() {
+    this.isUDFTouched = true;
+  }
+
+  resetUDFTouched() {
+    this.isUDFTouched = false;
+  }
 
   validateSameTitleExists = (title, fieldSelfIndex) => {
     const allFieldsTitles = this.props.FORM_ITEMS.map(f => {

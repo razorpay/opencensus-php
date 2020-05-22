@@ -42,7 +42,6 @@ export default ({
         data-name="token_expiry_date"
         onBlur={onBlurElement}
         defaultValue={mandateExpireAt ? moment(mandateExpireAt, 'X') : null}
-        disabled={!!Number(tokenHasNoExpiry)}
       />
     </Input.Group>
 

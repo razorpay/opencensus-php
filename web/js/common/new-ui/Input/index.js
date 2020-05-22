@@ -144,7 +144,7 @@ export class Description extends React.Component {
 
     if (this.props.text) {
       return (
-        <div class="Input-desc">
+        <div class={classList('Input-desc', this.props.className)}>
           {typeof text === 'function' ? text() : text}
         </div>
       );

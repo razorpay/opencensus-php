@@ -12,9 +12,15 @@ import FormSection from './FormSection';
 
 import TemplatesMask from './Templates';
 import PPSettingsView from 'merchant/views/PaymentPages/PaymentPages/components/Modals/Settings';
+import PaymentReceipt from 'merchant/views/PaymentPages/PaymentPages/components/Modals/PaymentReceipt';
 import Success from 'merchant/views/PaymentPages/PaymentPages/components/Modals/Success';
 import PPShareView from 'merchant/views/PaymentPages/PaymentPages/components/Modals/Share';
-import { createPaymentPage, editPaymentPage, sendLink } from '../model';
+import {
+  createPaymentPage,
+  editPaymentPage,
+  sendLink,
+  setReceiptDetails,
+} from '../model';
 
 import { autoPrefixUrls, getURLQueryParams } from 'common/utils/rzp-utils';
 
@@ -25,6 +31,7 @@ import {
   markDataSaved,
   updateTemplateType,
   isFormItemOfTypeAmount,
+  updateReceiptDetails,
 } from 'merchant/reducers/wysiwyg';
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
@@ -63,6 +70,7 @@ const ERROR = {
     closeModal,
     openModal,
     updateTemplateType,
+    updateReceiptDetails,
   }
 )
 @RTracking(() => window.rzpQ.component('PaymentPagesWysiwyg'))
@@ -95,6 +103,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
         isPageLoadError: null,
         isTemplatesViewOpened: false,
         isSettingsOpened: false,
+        isPageReceiptModalOpened: false,
       });
 
       if (!nextProps.id) {
@@ -347,6 +356,10 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
     });
   };
 
+  handleSavePaymentReceipt = data => {
+    this.props.updateReceiptDetails(data);
+  };
+
   // Handles both Create and Edit payment page.
   @RTracking(() =>
     window.rzpQ.onbr().success('dash.pp_action', {
@@ -371,6 +384,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
       settings,
       expire_by,
       slug,
+      receipt,
     } = paymentPageEntity;
 
     // Remove Email and Phone in all cases before sending to API.
@@ -537,6 +551,11 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
       );
     }
 
+    // Make call parallel to main call
+    if (isEditExistingId) {
+      this.saveReceiptSettings(this.props.id, receipt);
+    }
+
     return requestAPIPromise
       .then(resp => {
         if (resp.data) {
@@ -546,6 +565,11 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
           const entityId = resp.data.id;
 
           this.props.history.push(`/paymentpages/${entityId}/edit`);
+
+          if (!isEditExistingId) {
+            this.saveReceiptSettings(entityId, receipt);
+          }
+
           this.openSuccessView(
             entityId,
             resp.data.short_url,
@@ -584,6 +608,23 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
       });
   };
 
+  saveReceiptSettings = (entityId, receipt) => {
+    const requestAPIPromiseForReceipt = setReceiptDetails(entityId, receipt);
+
+    return requestAPIPromiseForReceipt
+      .then(res => {
+        if (!res || !res.success) {
+          throw new Error(resp.errors);
+        }
+      })
+      .catch(err => {
+        this.props.showNotification({
+          type: 'error',
+          message: 'Receipt settings could not be saved. Please try again.',
+        });
+      });
+  };
+
   handleIntroClose = () => {
     this.setState({ isTemplatesViewOpened: false });
 
@@ -601,9 +642,20 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
     });
   };
 
+  togglePageReceiptModal = () => {
+    this.setState({
+      isPageReceiptModalOpened: !this.state.isPageReceiptModalOpened,
+    });
+  };
+
   render() {
     const { isPageReady, isPageLoadError } = this.state;
-    const { paymentPageEntity, id: payment_page_id, user } = this.props;
+    const {
+      paymentPageEntity,
+      id: payment_page_id,
+      user,
+      FORM_ITEMS,
+    } = this.props;
     let isAllowedToSubmit, actionBtns, themeColor;
 
     const merchantData = {
@@ -617,13 +669,20 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
 
       actionBtns = (
         <React.Fragment>
+          {user.isPaymentPageReceiptsEnabled && (
+            <Button.Transparent
+              type="button"
+              style={{ color: '#fff' }}
+              onClick={this.togglePageReceiptModal}
+            >
+              <span class="badge bg-success hidden-xs m-r">New</span>
+              <span>Payment Receipts</span>
+            </Button.Transparent>
+          )}
+
           <Button.Transparent
             type="button"
             style={{ color: '#fff' }}
-            disabled={
-              paymentPageEntity.id &&
-              typeof paymentPageEntity.title === 'undefined'
-            }
             onClick={this.togglePageSettings}
           >
             Page Settings
@@ -704,6 +763,15 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
             handleAction={this.handleSaveSettings}
             isNew={this.props.id}
             isTestMode={this.props.mode.toLowerCase() === 'test'}
+          />
+        )}
+
+        {this.state.isPageReceiptModalOpened && (
+          <PaymentReceipt
+            paymentPageEntity={paymentPageEntity}
+            formItems={FORM_ITEMS}
+            handleClose={this.togglePageReceiptModal}
+            handleSave={this.handleSavePaymentReceipt}
           />
         )}
 

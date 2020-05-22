@@ -46,6 +46,14 @@ export default class FileUpload extends React.Component {
     };
   }
 
+  componentDidUpdate(prevProps) {
+    if (prevProps.defaultValue !== this.props.defaultValue) {
+      this.setState({
+        isDocPreUploaded: !!this.props.defaultValue,
+      });
+    }
+  }
+
   updateFile = file => {
     // check if file type is allowed
     if (this.isFileAllowed(file)) {
@@ -80,6 +88,8 @@ export default class FileUpload extends React.Component {
           this.setState({ stagedFileStatus: 'success' });
         }
       });
+    } else {
+      this.setState({ stagedFileStatus: null }); // Reset if not promise
     }
   }
 
@@ -239,6 +249,8 @@ export default class FileUpload extends React.Component {
       showFileSize,
       size,
       dropZoneCavityClassName,
+      imgFilePreviewUrl,
+      removeFileButtonLabel,
     } = this.props;
     let { isDocPreUploaded } = this.state;
 
@@ -338,6 +350,8 @@ export default class FileUpload extends React.Component {
                 showStagedFileStatus={showStagedFileStatus}
                 name={`name-${index}`}
                 size={size}
+                preUploadedImgFileUrl={imgFilePreviewUrl}
+                removeFileButtonLabel={removeFileButtonLabel}
               >
                 {renderStagedChildren(index)}
               </Staged>

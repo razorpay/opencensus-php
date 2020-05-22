@@ -562,6 +562,10 @@ export default class User {
     return this.getExpStatus('support_call') && this.isActivated;
   }
 
+  get isPaymentPageReceiptsEnabled() {
+    return this.getExpStatus('enable_payment_page_receipt');
+  }
+
   // This is for new payment links microservice.
   // If enabled, then all the apis before sending data, and after fetching/receiving data must transform its data, as FE operate on old structure until 100% rollout.
   get isPaymentlinksV2Enabled() {

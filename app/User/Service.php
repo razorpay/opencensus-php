@@ -1024,6 +1024,7 @@ class Service extends Base\Service
             'registered_onboarding_auto_kyc',
             'virtual_vpa_prefix',
             'pl_batch_reminders',
+            'enable_payment_page_receipt',
             'emandate_nonzero_amount'
         ];
 

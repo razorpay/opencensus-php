@@ -77,7 +77,7 @@ export default class BatchUpload extends Component {
               >
                 <a href={this.props.docUrl} target="_blank">
                   DOCUMENTATION &nbsp;
-                  <i class="i i-new-tab-link" />
+                  <i class="i i-external-link" />
                 </a>
               </ShowWhen>
             </small>
