@@ -195,6 +195,9 @@ return [
         'secret' => env('ECOM_WEBHOOK_SECRET'),
     ],
 
+    'perfios' => [
+        'secret' => env('FINANCIAL_DATA_SERVICE_PERFIOS_WEBHOOK_SECRET'),
+    ],
     'los' => [
         'secret' => env('LOS_PASSWORD'),
     ],
@@ -525,6 +528,13 @@ return [
             'url'           => env('TERMINALS_SERVICE_TEST_URL'),
         ],
 
+    ],
+
+    'financial_data_service' => [
+        'url'           => env('APP_FINANCIAL_DATA_SERVICE_URL'),
+        'username'      => 'api',
+        'secret'        => env('APP_FINANCIAL_DATA_SERVICE_SECRET'),
+        'timeout'       => env('APP_FINANCIAL_DATA_SERVICE_TIMEOUT', 60),
     ],
 
     'typeform' => [

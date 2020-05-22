@@ -2488,6 +2488,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const CREDITNOTE_APPLIED                                    = 'CREDITNOTE_APPLIED';
     const CREDITNOTE_INVOICE_CREATE_REQUEST                     = 'CREDITNOTE_INVOICE_CREATE_REQUEST';
 
+    // Razorpay Capital
+    // Finanancial Data Service
+    const FINANCIAL_DATA_SERVICE_PROXY_REQUEST                  = 'FINANCIAL_DATA_SERVICE_PROXY_REQUEST';
+
     // capital integration for activation
     const CAPITAL_INTEGRATION_ERROR                             = 'CAPITAL_INTEGRATION_ERROR';
     const CAPITAL_INTEGRATION_API_REQUEST                       = 'CAPITAL_INTEGRATION_API_REQUEST';

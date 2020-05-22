@@ -812,6 +812,14 @@ return [
             ]
         ],
 
+        // Razorpay Capital
+        PermissionCategory::RAZORPAY_CAPITAL => [
+            Permission::FINANCIAL_DATA_SERVICE => [
+                'description' => 'Allow access to Financial Data Service routes from dashboard',
+                'assignable'  => true,
+            ],
+        ],
+
         // RazorpayX
         PermissionCategory::RAZORPAYX_BANKING => [
             Permission::BANKING_UPDATE_ACCOUNT => [

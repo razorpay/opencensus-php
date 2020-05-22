@@ -375,6 +375,9 @@ class Name
     const UPDATE_MERCHANT_2FA_SETTING         = 'update_merchant_2fa_setting';
     const CREATE_WEBHOOK_STORK_BANKING_BULK  = 'create_webhook_stork_banking_bulk';
 
+    // Permissions for Financial Data Service - Razorpay Capital
+    const FINANCIAL_DATA_SERVICE              = 'financial_data_service';
+
     public static $actionMap = [
         Merchant\Action::ARCHIVE                            => self::EDIT_MERCHANT_ARCHIVE,
         Merchant\Action::UNARCHIVE                          => self::EDIT_MERCHANT_UNARCHIVE,

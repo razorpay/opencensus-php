@@ -1717,6 +1717,12 @@ class Route
         'entity_bulk_update'                      => ['post',      'entities/bulk-update',                                         'MerchantController@merchantsBulkUpdate'                    ],
         'fetch_batch_actions'                     => ['get',       'batch_actions',                                          'MerchantController@getBatchActions'                        ],
         'fetch_batch_action_entities'             => ['get',       'batch_action_entities',                                  'MerchantController@getBatchActionEntities'                 ],
+
+        // Razorpay Capital
+        // Financial Data Service Routes
+        'financial_data_service'                  => ['any',      'financial_data_service/admin/{path?}',                      'FinancialDataServiceController@handleAny'                         ],
+        'financial_data_service_perfios_webhook'  => ['post',     'financial_data_service/webhook/perfios/update_status',      'FinancialDataServiceController@handlePerfiosWebhook'              ],
+
         'update_wait_timeout'                     => ['post',      'db/wait_timeout',                                        'AdminController@setWaitTimeout'                 ],
         'consume_typeform_webhook'                => ['post',      'typeform/webhook_consumption',                                  'TypeformController@webhookConsumption'          ],
 
@@ -2269,6 +2275,11 @@ class Route
         'merchant_poc_update',
         'merchant_poc_update_with_time',
         'unclaimed_merchant_poc_update',
+
+        // Razorpay Capital
+        // Financial Data Service
+        'financial_data_service_perfios_webhook',
+
         'internal_merchant_fetch',
         'terminal_fetch_by_id_internal',
         'terminal_migrate_cron',
@@ -3226,6 +3237,9 @@ class Route
         'fetch_batch_actions',
         'fetch_batch_action_entities',
 
+        // Razorpay Capital
+        // Financial Data Service
+        'financial_data_service',
         'merchant_locked_balance_update',
 
         'merchant_balance_fetch_admin',
@@ -3889,6 +3903,10 @@ class Route
 
         'fetch_batch_action_entities'               => Permission::ADMIN_BATCH_CREATE,
         'fetch_batch_actions'                       => Permission::ADMIN_BATCH_CREATE,
+
+        // Razorpay Capital
+        // Financial Data Service
+        'financial_data_service'                    => Permission::FINANCIAL_DATA_SERVICE,
         'link_offline_device'                       => '*',
         'user_roles_mapping_bulk'                   => Permission::MAKE_API_CALL,
         'consume_typeform_webhook'                  => Permission::EDIT_MERCHANT_INTERNATIONAL_NEW,
@@ -4571,6 +4589,11 @@ class Route
             '*'
         ],
 
+        // Razorpay Capital
+        // Financial Data Service
+        'perfios' => [
+            'financial_data_service_perfios_webhook',
+        ],
         'settlement_service' => [
             'create_settlement_entry',
         ],
