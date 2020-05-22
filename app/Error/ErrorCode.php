@@ -319,6 +319,17 @@ class ErrorCode
     const GATEWAY_ERROR_TERMINAL_ENABLE_FAILED                                      = 'GATEWAY_ERROR_TERMINAL_ENABLE_FAILED';
     const GATEWAY_ERROR_AUTHENTICATION_FAILED                                       = 'GATEWAY_ERROR_AUTHENTICATION_FAILED';
 
+    const BAD_REQUEST_ACTION_CANCELLED                                              = 'BAD_REQUEST_ACTION_CANCELLED';
+    const BAD_REQUEST_ITEM_NOT_FOUND                                                = 'BAD_REQUEST_ITEM_NOT_FOUND';
+    const BAD_REQUEST_ITEM_ALREADY_EXISTS                                           = 'BAD_REQUEST_ITEM_ALREADY_EXISTS';
+    const BAD_REQUEST_OUT_OF_RANGE                                                  = 'BAD_REQUEST_OUT_OF_RANGE';
+    const BAD_REQUEST_ACTION_ABORTED                                                = 'GATEWAY_ERROR_ACTION_ABORTED';
+    const BAD_REQUEST_RESOURCE_EXHAUSTED                                            = 'BAD_REQUEST_RESOURCE_EXHAUSTED';
+    const BAD_REQUEST_FAILED_PRECONDITION                                           = 'BAD_REQUEST_FAILED_PRECONDITION';
+    const BAD_REQUEST_DEADLINE_EXCEEDED                                             = 'BAD_REQUEST_DEADLINE_EXCEEDED';
+
+    const SERVER_ERROR_ACTION_UNIMPLEMENTED                                         = 'SERVER_ERROR_ACTION_UNIMPLEMENTED';
+    const SERVER_ERROR_SERVICE_UNAVAILABLE                                          = 'SERVER_ERROR_SERVICE_UNAVAILABLE';
     const BAD_REQUEST_VENDOR_PAYMENT_MICRO_SERVICE_FAILED                           = 'BAD_REQUEST_VENDOR_PAYMENT_MICRO_SERVICE_FAILED';
 
     const BAD_REQUEST_PAYOUTS_NOT_ALLOWED_CURRENTLY                                 = 'BAD_REQUEST_PAYOUTS_NOT_ALLOWED_CURRENTLY';
@@ -1395,6 +1406,8 @@ class ErrorCode
     const SERVER_ERROR_SUBSCRIPTION_SERVICE_FAILURE                                 = 'SERVER_ERROR_SUBSCRIPTION_SERVICE_FAILURE';
     const SERVER_ERROR_OFFLINE_VERIFICATION_SERVICE_TIMEOUT                         = 'SERVER_ERROR_OFFLINE_VERIFICATION_SERVICE_TIMEOUT';
     const SERVER_ERROR_OFFLINE_VERIFICATION_SERVICE_FAILURE                         = 'SERVER_ERROR_OFFLINE_VERIFICATION_SERVICE_FAILURE';
+    const GATEWAY_ERROR_LOAN_ORIGINATION_SYSTEM_TIMEOUT                             = 'GATEWAY_ERROR_LOAN_ORIGINATION_SYSTEM_TIMEOUT';
+    const GATEWAY_ERROR_LOAN_ORIGINATION_SYSTEM_FAILURE                             = 'GATEWAY_ERROR_LOAN_ORIGINATION_SYSTEM_FAILURE';
     const BAD_REQUEST_MERCHANT_IS_NOT_PARTNER                                       = 'BAD_REQUEST_MERCHANT_IS_NOT_PARTNER';
     const BAD_REQUEST_MERCHANT_IS_ALREADY_PARTNER                                   = 'BAD_REQUEST_MERCHANT_IS_ALREADY_PARTNER';
     const BAD_REQUEST_ACCESS_NOT_ALLOWED_FOR_RESELLER                               = 'BAD_REQUEST_ACCESS_NOT_ALLOWED_FOR_RESELLER';

@@ -835,6 +835,11 @@ return [
         ],
 
         PermissionCategory::RAZORPAY_CAPITAL => [
+            Permission::LOANS_EDIT => [
+                'description' => 'Allow access to capital-los service routes/actions from dashboard',
+                'assignable'  => true,
+            ],
+
             Permission::OFFLINE_VERIFICATION_SERVICE_VIEW => [
                 'description' => 'Allow read access to Offline Verification Service routes/actions from dashboard',
                 'assignable'  => true,

@@ -8,6 +8,7 @@ use RZP\Exception;
 use Illuminate\Support;
 use RZP\Trace\TraceCode;
 use RZP\Services\DowntimeMetric;
+use RZP\Error\Twirp\ErrorCodeMap;
 use RZP\Models\Feature\Constants;
 
 class Error extends Support\Fluent
@@ -67,6 +68,27 @@ class Error extends Support\Fluent
         $this->app = App::getFacadeRoot();
 
         $this->trace = $this->app['trace'];
+    }
+
+    public static function fromTwirpResponse($twirpResponse): Error
+    {
+        if ((isset($twirpResponse['code']) === false) || (isset($twirpResponse['msg']) === false))
+        {
+            throw new Exception\InvalidArgumentException('invalid twirp response.', $twirpResponse);
+        }
+
+        $twirpErrorCode = $twirpResponse['code'];
+        $description    = $twirpResponse['msg'];
+        $data           = isset($twirpResponse['meta']) ? $twirpResponse['meta'] : null;
+
+        $errorCode = ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE;
+
+        if (isset(ErrorCodeMap::$twirpErrorCodeMap[$twirpErrorCode]) === true)
+        {
+            $errorCode = ErrorCodeMap::$twirpErrorCodeMap[$twirpErrorCode];
+        }
+
+        return new Error($errorCode, $description, null, $data);
     }
 
     public function fill($code, $desc = null, $field = null, $data = null, $internalDesc = null)

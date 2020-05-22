@@ -646,6 +646,9 @@ class Route
         'offline_verification_service_patch'       => ['patch',    'offline_verification/service/{path?}',           'OfflineVerificationController@handleAny'                           ],
         'offline_verification_service_delete'      => ['delete',   'offline_verification/service/{path?}',           'OfflineVerificationController@handleAny'                           ],
         'offline_verification_webhook'             => ['post',     'offline_verification/webhook/v1/ecom_update_status', 'OfflineVerificationController@handleWebhook'                   ],
+        'los_service'                              => ['any',      'los/service/{path?}',                            'LOSController@handleProxyRequests'                                 ],
+        'los_service_admin'                        => ['any',      'los/admin/{path?}',                              'LOSController@handleAdminRequests'                                 ],
+        'leegality_webhook'                        => ['post',     'leegality/webhook',                              'LOSController@handleLeegalityWebhook'                              ],
         'reminder_admin'                           => ['any',      'reminders/admin/{path?}',                        'RemindersController@remindersAdmin'                                ],
         'reminder_next_run'                        => ['get',      'reminders/next_run/{entity}/{id}/{namespace?}',  'RemindersController@remindersNextRun'                              ],
         'invoice_create'                           => ['post',     'invoices',                                       'InvoiceController@createInvoice'                                   ],
@@ -2064,6 +2067,7 @@ class Route
     // If a route needs access from the Dashboard
     // Put it in the Admin Array instead
     public static $internal = [
+        'leegality_webhook',
         'gateway_first_data_pares_store',
         'vendor_payment_send_failure_email',
         'contact_get_internal',
@@ -2343,6 +2347,7 @@ class Route
     ];
 
     public static $proxy = [
+        'los_service',
         'user_fetch_for_merchant',
         'send_email_for_pl_service',
         'oauth_token_create',
@@ -2648,6 +2653,7 @@ class Route
     // of X-Admin-Token being passed.
     //
     public static $admin = [
+        'los_service_admin',
         'emi_plans_migrate',
         'payout_reject_admin',
         'd2c_create_csv_report',
@@ -3236,6 +3242,7 @@ class Route
     ];
 
     public static $routePermission = [
+        'los_service_admin'                        => Permission::LOANS_EDIT,
         'payout_reject_admin'                      => Permission::REJECT_PAYOUT,
         'offline_verification_service_get'         => Permission::OFFLINE_VERIFICATION_SERVICE_VIEW,
         'offline_verification_service_post'        => Permission::OFFLINE_VERIFICATION_SERVICE_EDIT,
@@ -4423,6 +4430,10 @@ class Route
         'los'  => [
             'los_d2c_bureau_details_create',
             'los_d2c_bureau_report_fetch',
+        ],
+
+        'leegality' => [
+            'leegality_webhook',
         ],
 
         // BharatQR routes are not authenticated

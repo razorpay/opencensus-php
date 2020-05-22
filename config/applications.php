@@ -195,6 +195,10 @@ return [
         'secret' => env('LOS_PASSWORD'),
     ],
 
+    'leegality' => [
+        'secret' => env('LEEGALITY_WEBHOOK_SECRET')
+    ],
+
     'bharatqr' => [
         'secret' => env('BHARAT_QR_SECRET'),
     ],
@@ -364,6 +368,13 @@ return [
         'url'      => env('APP_SUBSCRIPTIONS_URL'),
         'username' => 'rzp',
         'secret'   => env('APP_SUBSCRIPTIONS_SECRET'),
+    ],
+
+    'loan_origination_system' => [
+        'url'           => env('APP_LOAN_ORIGINATION_SYSTEM_URL'),
+        'username'      => 'key',
+        'secret'        => env('APP_LOAN_ORIGINATION_SYSTEM_SECRET'),
+        'timeout'       => env('APP_LOAN_ORIGINATION_SYSTEM_TIMEOUT', 60),
     ],
 
     'offline_verification' => [

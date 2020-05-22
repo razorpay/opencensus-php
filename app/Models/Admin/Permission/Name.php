@@ -293,6 +293,9 @@ class Name
     const OFFLINE_VERIFICATION_SERVICE_VIEW   = 'offline_verification_service_view';
     const OFFLINE_VERIFICATION_SERVICE_EDIT   = 'offline_verification_service_edit';
 
+    // Permission to access capital-los service
+    const LOANS_EDIT                          = 'loans_edit';
+
     const CREATE_PAYOUT_BULK                  = 'create_payout_bulk';
     const APPROVE_PAYOUT_BULK                 = 'approve_payout_bulk';
     const REJECT_PAYOUT_BULK                  = 'reject_payout_bulk';
