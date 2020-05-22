@@ -10,19 +10,24 @@ class CombinedReconciliate extends Base\SubReconciliator\CombinedReconciliate
     /*******************
      * Row Header Names
      *******************/
-    const COLUMN_REFUND_DATE  =  'refundadjusteddate';
+    const COLUMN_PAYMENT      = 'payout initiated';
+    const COLUMN_REFUND       = 'refund adjusted';
+    const COLUMN_STATUS       = 'status';
+    const COLUMN_USER_EMAIL   = 'useremail';
 
-    const VALUE_REFUND_DATE   = 'None';
-
-    const COLUMN_USER_EMAIL = 'useremail';
+    const TRANSACTION_TYPE_TO_RECONCILIATION_TYPE_MAP = [
+        self::COLUMN_PAYMENT => BaseReconciliate::PAYMENT,
+        self::COLUMN_REFUND  => BaseReconciliate::REFUND,
+    ];
 
     const BLACKLISTED_COLUMNS = [
         self::COLUMN_USER_EMAIL,
     ];
 
     /**
-     * There is no column defining whether the row is refund or payment
-     * Hence we check the value of 'COLUMN_REFUND_AMOUNT'
+     * After a brief discussion with gateway owner for
+     * mobikwik from finops, have changed the logic for
+     * getting recon type for row.
      *
      * @param $row array
      *
@@ -30,21 +35,13 @@ class CombinedReconciliate extends Base\SubReconciliator\CombinedReconciliate
      */
     protected function getReconciliationTypeForRow($row)
     {
-        if (isset($row[self::COLUMN_REFUND_DATE]) === false)
+        if (isset($row[self::COLUMN_STATUS]) === false)
         {
             return null;
         }
 
-        //
-        // Disabling refund recon for mobikwik because we have to
-        // find a way to handle partial refund and failed refunds.
-        // The information given in mobikwik recon file is not sufficient enough.
-        //
-        if ($row[self::COLUMN_REFUND_DATE] !== self::VALUE_REFUND_DATE)
-        {
-            return self::NA;
-        }
+        $txnType = strtolower($row[self::COLUMN_STATUS]);
 
-        return BaseReconciliate::PAYMENT;
+        return self::TRANSACTION_TYPE_TO_RECONCILIATION_TYPE_MAP[$txnType] ?? null;
     }
 }

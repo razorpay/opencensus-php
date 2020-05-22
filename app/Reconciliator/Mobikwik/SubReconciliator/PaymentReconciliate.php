@@ -24,13 +24,6 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
      */
     protected function getPaymentId(array $row)
     {
-        $paymentId = $this->getColumnPaymentId($row);
-
-        return $paymentId;
-    }
-
-    protected function getColumnPaymentId(array $row)
-    {
         $paymentId = null;
 
         if (empty($row[self::COLUMN_PAYMENT_ID]) === false)

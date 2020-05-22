@@ -4,7 +4,6 @@ namespace RZP\Tests\Functional\Gateway\Reconciliation;
 use Queue;
 use RZP\Jobs;
 use Carbon\Carbon;
-
 use RZP\Models\Batch;
 use RZP\Models\Payment;
 use RZP\Constants\Timezone;
@@ -2039,6 +2038,17 @@ class ReconciliationFileTest extends TestCase
         return $facade;
     }
 
+    private function overrideMobikwikRefund(array $payment, $refundAmount)
+    {
+        $facade = $this->overrideMobikwikPayment($payment);
+
+        $facade['Status']       = 'Refund adjusted';
+
+        $facade['RefundAmount'] = $refundAmount;
+
+        return $facade;
+    }
+
     protected function runForFiles(array $files,
                                    string $gateway,
                                    array $forceUpdate = [],
@@ -2077,12 +2087,6 @@ class ReconciliationFileTest extends TestCase
             {
                 $testData['request']['content'][Base::FORCE_AUTHORIZE][] = $forceAuthorizePayment;
             }
-        }
-
-        if (empty($response) === false)
-        {
-            // Add response in testdata
-            $testData['response'] = $response;
         }
 
         $this->runRequestResponseFlow($testData);
@@ -2948,6 +2952,67 @@ class ReconciliationFileTest extends TestCase
         $this->assertNotNull($updatedTransaction['reconciled_type']);
 
         $this->assertBatchStatus(Status::PROCESSED);
+    }
+
+    public function testMobikwikCombinedUniqueEntityRecon()
+    {
+        $this->fixtures->create('terminal:shared_mobikwik_terminal');
+
+        $gatewayPayment = $this->getNewWalletEntity('10000000000000', 'mobikwik');
+
+        $paymentData = $this->overrideMobikwikPayment($gatewayPayment);
+
+        $refund1 = $this->refundPayment($gatewayPayment['id'], '10000');
+
+        $refund2 = $this->refundPayment($gatewayPayment['id'], '20000');
+
+        $refund3 = $this->refundPayment($gatewayPayment['id'], '20000');
+
+        $refundData1 = $this->overrideMobikwikRefund($gatewayPayment, $refund1['amount']/100);
+
+        $refundData2 = $this->overrideMobikwikRefund($gatewayPayment, $refund2['amount']/100);
+
+        $refundData3 = $this->overrideMobikwikRefund($gatewayPayment, $refund3['amount']/100);
+
+        $entries[] = $paymentData;
+
+        $entries[] = $refundData1;
+
+        $entries[] = $refundData2;
+
+        $entries[] = $refundData3;
+
+        $file = $this->writeToCsvFile($entries, 'mobikwik');
+
+        $this->runForFiles([$file], 'Mobikwik');
+
+        $updatedPayment = $this->getEntityById('payment', $gatewayPayment['id'], true);
+        $refundEntity1 = $this->getEntityById('refund', PublicEntity::stripDefaultSign($refund1['id']), true);
+        $refundEntity2 = $this->getEntityById('refund', PublicEntity::stripDefaultSign($refund2['id']), true);
+        $refundEntity3 = $this->getEntityById('refund', PublicEntity::stripDefaultSign($refund3['id']), true);
+
+        $paymentTransaction  = $this->getEntityById('transaction', $updatedPayment['transaction_id'], true);
+        $updatedTransaction1 = $this->getEntityById('transaction', $refundEntity1['transaction_id'], true);
+        $updatedTransaction2 = $this->getEntityById('transaction', $refundEntity2['transaction_id'], true);
+        $updatedTransaction3 = $this->getEntityById('transaction', $refundEntity3['transaction_id'], true);
+
+        //
+        // One payment and one refund row get reconciled, other 2 refunds
+        // remain unreconciled, as we could not identify the refund uniquely.
+        //
+        $this->assertNotNull($paymentTransaction['reconciled_at']);
+        $this->assertNotNull($updatedTransaction1['reconciled_at']);
+
+        $this->assertNull($updatedTransaction2['reconciled_at']);
+        $this->assertNull($updatedTransaction3['reconciled_at']);
+
+        $batch = $this->getDbLastEntityToArray('batch');
+
+        $this->assertEquals(4, $batch['total_count']);
+        $this->assertEquals(2, $batch['success_count']);
+        $this->assertEquals(2, $batch['failure_count']);
+
+        $this->assertBatchStatus(Status::PARTIALLY_PROCESSED);
     }
 
     public function testHdfcBharatQrReconPayment()

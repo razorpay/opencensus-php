@@ -474,7 +474,9 @@ return [
             'TxnAmount'             => '500',
             'ServiceTax'            => 'NA',
             'IGST'                  => '2.02',
-            'RefundAdjustedDate'    => 'None'
+            'RefundAdjustedDate'    => 'None',
+            'Status'                => 'Payout initiated',
+            'RefundAmount'          => '0',
         ],
 
         'testFssBobRecon' => [
