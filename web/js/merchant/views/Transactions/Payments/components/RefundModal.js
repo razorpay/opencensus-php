@@ -469,11 +469,13 @@ export default class RefundModal extends Component {
                   <span>
                     {!refund_check_disabled ? (
                       <Fragment>
-                        <i class="i i-help" />
+                        <i
+                          class="i i-help"
+                          onMouseEnter={() => (this.analytics.hovered = true)}
+                        />
                         <Popover
                           theme="dark"
                           align="bottom"
-                          onMouseOver={() => (this.analytics.hovered = true)}
                           parentQuerySelector={`.Modal--small`}
                         >
                           <PopoverBody>
@@ -554,13 +556,15 @@ export default class RefundModal extends Component {
                   &nbsp; will be deducted
                   <React.Fragment>
                     <div style={{ display: 'inline', marginLeft: '5px' }}>
-                      <i class="i i-info-circle" />
-                      <Popover
-                        theme="dark"
-                        align="bottom"
+                      <i
                         onMouseEnter={() =>
                           (this.analytics.hover_breakup = true)
                         }
+                        class="i i-info-circle"
+                      />
+                      <Popover
+                        theme="dark"
+                        align="bottom"
                         parentQuerySelector={`.Modal--small`}
                       >
                         <PopoverBody>
