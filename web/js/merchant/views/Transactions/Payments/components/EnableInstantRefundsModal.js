@@ -95,8 +95,8 @@ export default class EnableInstantRefundsModal extends Component {
           } Refund`,
           eventLabel: `${
             this.props.pricing.custom_pricing
-              ? ' | Custom Pricing'
-              : ' | Normal Pricing'
+              ? ' Custom Pricing'
+              : ' Normal Pricing'
           }${this.state.show_breakup ? ' | Show Pricing' : ''}
             ${this.analytics.learn_more ? ' | Learn More' : ''}
             ${

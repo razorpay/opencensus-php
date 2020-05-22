@@ -70,11 +70,6 @@ export default class DefaultRefundSpeed extends Component {
   checkDefaultRefundSpeed = speed => {
     if (speed === 'optimum') {
       let label;
-      if (this.hovered) {
-        label = `Setting Enable IR | Checked Pricing | Yes Enable`;
-      } else {
-        label = `Setting Enable IR | Didn't checked Pricing | Yes Enable`;
-      }
       window.rzpAnalytics({
         eventCategory: 'Dashboard - Instant Refund',
         eventAction: 'Yes Enable',

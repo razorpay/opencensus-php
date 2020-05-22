@@ -220,12 +220,17 @@ export default class RefundModal extends Component {
       .refundPayment(payment, data)
       .then(() => {
         const default_speed = this.props.default_refund_speed;
-        const checked = this.instant_refund || this.state.instantChecked;
         const label = `${partial ? 'Partial' : 'Full'} Refund${
           this.analytics.hovered ? ' | Hover Tooltip' : ''
         }${this.analytics.hover_breakup ? ' | Hover Breakup Tooltip' : ''}${
           this.analytics.comment ? ' | Add Comment' : ''
-        }${checked ? ' | Checked Checkbox' : ' | Unchecked Checkbox'}${
+        }${
+          this.analytics.check_box !== null
+            ? this.analytics.check_box == true
+              ? ' | Checked Checkbox'
+              : ' | Unchecked Checkbox'
+            : ''
+        }${
           default_speed === 'normal'
             ? ' | Default Speed Normal'
             : ' | Default Speed Instant'
@@ -308,7 +313,6 @@ export default class RefundModal extends Component {
                     <span>
                       <i class="i i-help" />
                       <Popover
-                        // onMouseOver={() => (this.analytics.hovered = true)}
                         theme="dark"
                         align="bottom"
                         parentQuerySelector={`.Modal--confirm`}
@@ -418,6 +422,7 @@ export default class RefundModal extends Component {
     hovered: false,
     hover_breakup: false,
     comment: false,
+    check_box: null,
   };
   showInstantRefund = (payment, isInstantDisabled) => {
     const instant_refund_supported =
@@ -553,7 +558,7 @@ export default class RefundModal extends Component {
                       <Popover
                         theme="dark"
                         align="bottom"
-                        onMouseOver={() =>
+                        onMouseEnter={() =>
                           (this.analytics.hover_breakup = true)
                         }
                         parentQuerySelector={`.Modal--small`}
@@ -651,6 +656,7 @@ export default class RefundModal extends Component {
   };
 
   onInstantRefundCheckboxClick = e => {
+    this.analytics.check_box = e.target.checked;
     window.rzpAnalytics({
       eventCategory: 'Dashboard - Payments',
       eventAction: e.target.value
