@@ -156,6 +156,8 @@ class ErrorCodeMapping
         'BATCH_LIMIT_EXHAUSTED'                 => 'Temporary Issue at Partner bank. Reinitiate transfer after 30 min.',
         'BBANK_OFFLINE'                         => 'NPCI or Beneficiary bank systems are offline. Reinitiate transfer after 30 min.',
         'Invalid_PSP'                           => 'Invalid Beneficiary PSP. Please check and retry.',
+        'BENE_PSP_OFFLINE'                      => 'Beneficiary PSP is down. Please retry after 30 min.',
+        'NPCI_TIMEOUT_FAILURE'                  => 'Timeout between NPCI and beneficiary bank. Please retry after 30 min.',
     ];
 
     public static function getErrorMessageFromBankResponseCode(Entity $payout, string $bankStatusCode = null)
