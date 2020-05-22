@@ -140,6 +140,13 @@ class Entity extends Base\PublicEntity
                 $instrument[self::WALLET] = $this->getIssuer();
                 break;
 
+            case Method::UPI:
+                $vpaHandle = $this->getVpaHandle();
+                if( isset($vpaHandle) === true){
+                    $instrument[self::VPA_HANDLE] = $vpaHandle;
+                }
+                break;
+
             default:
                 break;
         }
@@ -189,6 +196,11 @@ class Entity extends Base\PublicEntity
     public function getEnd()
     {
         return $this->getAttribute(self::END);
+    }
+
+    public function getVpaHandle()
+    {
+        return $this->getAttribute(self::VPA_HANDLE);
     }
 
     public function getStatusByTime()
