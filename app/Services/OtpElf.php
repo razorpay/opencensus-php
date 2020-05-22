@@ -116,6 +116,11 @@ class OtpElf
             unset($traceContent['request']['content']['cvm']);
         }
 
+        if (isset($traceContent['request']['data']['otp']) === true)
+        {
+            $traceContent['request']['data']['otp'] = str_repeat('x', strlen($traceContent['request']['data']['otp']));
+        }
+
         $this->trace->info(
             TraceCode::OTPELF_REQUEST,
             [
