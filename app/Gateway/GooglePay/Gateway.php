@@ -8,7 +8,6 @@ use RZP\Gateway\Base;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
-use RZP\Gateway\GooglePay\RequestFields;
 
 class Gateway extends Base\Gateway
 {
@@ -55,27 +54,92 @@ class Gateway extends Base\Gateway
 
     public function preProcessServerCallback($data): array
     {
-        (new Validator)->validateInput('google_pay_card_authorization', $data);
+        $validator = new Validator();
+
+        $validator->validateInput('google_pay_card_authorization', $data);
+
+        $this->trace->info(TraceCode::GATEWAY_DECRYPT_MOZART_REQUEST,
+            [
+                'mozart_request' => $data[RequestFields::TOKEN],
+            ]);
 
         $response = $this->decryptData($data[RequestFields::TOKEN]);
 
-        if (isset($response['data']['decryptedMessage']) === true)
-        {
-            $data[RequestFields::TOKEN] = $response['data']['decryptedMessage'];
+        $this->trace->info(TraceCode::GATEWAY_DECRYPT_MOZART_RESPONSE,
+            [
+                'mozart_response' => $response,
+            ]);
 
-            return $data;
+        if (isset($response['data']['decryptedMessage']) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_DECRYPTION_FAILED);
         }
 
-        $this->trace->error(
-            TraceCode::GATEWAY_DECRYPTION_FAILED,
-            [
-                'gateway'       => 'google_pay',
-                'response'      => $response,
-            ]
-        );
+        $this->validateRequest($validator, $response);
 
-        throw new Exception\BadRequestException(
-            ErrorCode::BAD_REQUEST_DECRYPTION_FAILED);
+        $data[RequestFields::TOKEN] = $response['data']['decryptedMessage'];
+
+        return $data;
+    }
+
+    protected function validateRequest($validator, $response)
+    {
+        $validator->validateInput('google_pay_decrypted_message', $response['data']);
+
+        $decryptedMessage = $response['data']['decryptedMessage'];
+
+        $currentMilliSecond = millitime();
+
+        if ($decryptedMessage[RequestFields::SIGNING_KEY_EXPIRY] <= $currentMilliSecond)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_SIGNING_KEY_EXPIRED);
+        }
+
+        if ($decryptedMessage[RequestFields::MESSAGE_EXPIRY] <= $currentMilliSecond)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MESSAGE_EXPIRED);
+        }
+    }
+
+    public function validateCallbackRequest($input, $payment)
+    {
+        if (is_null($payment) === true)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_NOT_FOUND);
+        }
+
+        // Convert Rupee to Paise.
+        $inputAmount = $this->getFormattedAmount($input[RequestFields::AMOUNT]);
+
+        if ($payment->getAmount() !== $inputAmount)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_AMOUNT_MISMATCH);
+        }
+
+        if (($input[RequestFields::TOKEN][RequestFields::MERCHANT_ID] !== $payment->getMerchantId()))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_ID_DOES_NOT_MATCH);
+        }
+
+        if ($payment->getStatus() !== Payment\Status::CREATED)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCESSED);
+        }
+    }
+
+    protected function getFormattedAmount($amount)
+    {
+        $amount = str_replace(',', '', $amount);
+
+        $amountToBeFormatted = floatval($amount) * 100;
+
+        return abs(intval(number_format($amountToBeFormatted, 2, '.', '')));
     }
 
     public function verify(array $input)
@@ -105,26 +169,7 @@ class Gateway extends Base\Gateway
 
         if ($payment->getAuthenticationGateway() === Payment\Gateway::GOOGLE_PAY)
         {
-            $status = $payment->getStatus();
-
-            switch($status)
-            {
-                case Payment\Status::CAPTURED:
-                    $response['STATUS'] = 'CAPTURED';
-                    break;
-                case Payment\Status::AUTHORIZED:
-                    $response['STATUS'] = 'SUCCESS';
-                    break;
-                case Payment\Status::CREATED:
-                    $response['STATUS'] = 'CREATED';
-                    break;
-                case Payment\Status::FAILED:
-                    $response['STATUS'] = 'FAILED';
-                    break;
-                case Payment\Status::REFUNDED:
-                    $response['STATUS'] = 'REFUNDED';
-                    break;
-            }
+            $response['status'] = $payment->getStatus();
         }
         else
         {
@@ -196,16 +241,12 @@ class Gateway extends Base\Gateway
 
         $payment = (new Payment\Repository())->findOrFail($id);
 
-        if ($payment->getStatus() === Payment\Status::AUTHORIZED)
+        if ($payment->getStatus() !== Payment\Status::FAILED)
         {
-            return ['status' => 'SUCCESS'];
-        }
-        else if ($payment->getStatus() === Payment\Status::CAPTURED)
-        {
-            return ['status' => 'CAPTURED'];
+            return ['status' => $payment->getStatus()];
         }
 
-        return ['status' => 'FAILED'];
+        throw new Exception\BadRequestException($payment->getErrorCode());
     }
 
     protected function getGooglePayBundle($payment)

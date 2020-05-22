@@ -770,26 +770,42 @@ class Server extends Base\Mock\Server
         $signature = $data['signature'];
 
         $decryptedMessage = [
-            'paymentMethod' => 'TOKENIZED_CARD',
-            'version'       => '1.0',
-            'paymentMethodDetails' => [
-                'dpan'            => '4444333322221111',
-                'expirationMonth' => '10',
-                'expirationYear'  => '2021',
-                'authMethod'      => '3DS',
-                '3dsCryptogram'   => 'AAAAAA',
-                '3dsEciIndicator' => 'eci indicator',
-            ],
+            'signingKeyExpiration' => '1986519021673',
+            'messageExpiration' => '1977862000000',
+            'messageId' => 'some-message-id',
             'gatewayMerchantId' => '10000000000000',
-            'messageId'         => 'some message id',
-            'messageExpiration' => '1492343123',
+            'paymentMethod' => 'CARD',
+            'paymentMethodDetails' => [
+                'expirationMonth' => 10,
+                '3dsEciIndicator' => 'eci indicator',
+                '3dsCryptogram' => 'AAAAAA...',
+                'authMethod' => 'CRYPTOGRAM_3DS',
+                'pan' => '4444333322221111',
+                'expirationYear' => 2020,
+            ]
+        ];
+
+        $decryptedMessage2 = [
+            'signingKeyExpiration' => '1986519021673',
+            'messageExpiration' => '1977862000000',
+            'messageId' => 'some-message-id',
+            'gatewayMerchantId' => '10000000000000',
+            'paymentMethod' => 'CARD',
+            'paymentMethodDetails' => [
+                'expirationMonth' => 10,
+                '3dsEciIndicator' => 'eci indicator',
+                '3dsCryptogram' => 'AAAAAA...',
+                'authMethod' => 'CRYPTOGRAM_3DS',
+                'pan' => '4532948024710971',
+                'expirationYear' => 2020,
+            ]
         ];
 
         $responseBody = [];
 
         switch ($signature)
         {
-            Case "MEQCID2npCOWMBWTr5hfCzT2cou0UcZou3drDTA8wC3eXi78AiAhJefYECEw6AnyWbpTbOhwXQ1fSEQMiOxXkOJtmrw5sg==":
+            Case "MEYCIQDVSnPca+hhBAtksD3mLOVrOaCr30Sd0VAFBpQdiCSboAIhAI5U+rQPCIpP7ouvEfoH15omHhN7znRHASDqV2HdOQCY":
                 $responseBody = [
                     'data' => [
                         '_raw'             => '',
@@ -802,16 +818,31 @@ class Server extends Base\Mock\Server
                     'success'           => true,
                 ];
                 break;
-            Case "MEQCID2npCOWMBWTr5hfCzT2cou0UcZou3drDTA8wC3eXi78AiAhJefYECEw6AnyWbpTbOhwXQ1fSEQMiOxXkOJtmrw5sg==2":
+            Case "MEYCIQDVSnPca+hhBAtksD3mLOVrOaCr30Sd0VAFBpQdiCSboAIhAI5U+rQPCIpP7ouvEfoH15omHhN7znRHASDqV2HdOQCY==2":
                 $responseBody = [
                     'data' => [
                         '_raw'             => '',
+                        'decryptedMessage' => $decryptedMessage2,
                     ],
                     'error'             => [],
                     'external_trace_id' => '',
                     'mozart_id'         => 'blfq216r1gunssphbs01',
                     'next'              => null,
-                    'success'           => false,
+                    'success'           => true,
+                ];
+                break;
+            Case "MEYCIQDVSnPca+hhBAtksD3mLOVrOaCr30Sd0VAFBpQdiCSboAIhAI5U+rQPCIpP7ouvEfoH15omHhN7znRHASDqV2HdOQCY==3":
+                $decryptedMessage['messageExpiration'] = '1117862000000';
+                $responseBody = [
+                    'data' => [
+                        '_raw'             => '',
+                        'decryptedMessage' => $decryptedMessage,
+                    ],
+                    'error'             => [],
+                    'external_trace_id' => '',
+                    'mozart_id'         => 'blfq216r1gunssphbs01',
+                    'next'              => null,
+                    'success'           => true,
                 ];
                 break;
         }

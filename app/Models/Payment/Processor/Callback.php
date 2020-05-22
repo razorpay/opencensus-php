@@ -666,7 +666,7 @@ trait Callback
 
         $cardNumber         = $data[GooglePay\RequestFields::TOKEN][GooglePay\RequestFields::METHOD_DETAILS][GooglePay\RequestFields::CARD_NUMBER];
         $expirationMonth    = $data[GooglePay\RequestFields::TOKEN][GooglePay\RequestFields::METHOD_DETAILS][GooglePay\RequestFields::CARD_EXPIRY_MONTH];
-        $expirationYear     = $data[GooglePay\RequestFields::TOKEN][GooglePay\RequestFields::METHOD_DETAILS][GooglePay\RequestFields::CARD_EXPIRT_YEAR];
+        $expirationYear     = $data[GooglePay\RequestFields::TOKEN][GooglePay\RequestFields::METHOD_DETAILS][GooglePay\RequestFields::CARD_EXPIRY_YEAR];
 
         $merchantId         = $data[GooglePay\RequestFields::TOKEN][GooglePay\RequestFields::MERCHANT_ID];
         $merchant           = (new Merchant\Repository)->findOrFail($merchantId);

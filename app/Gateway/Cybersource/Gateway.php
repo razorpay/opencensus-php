@@ -415,11 +415,12 @@ class Gateway extends Base\Gateway
 
     public function formatDataForMozartForTokenization($input)
     {
-        $verifyContent['commerce_indicator']     = $this->getCommerceIndicator($input, []);
-        $verifyContent['eci']                    = $this->getEci($input);
+        $verifyContent['commerce_indicator']     = $this->getCommerceIndicatorForTokenFlow($input);
+        $verifyContent['eci']                    = $this->getEciForTokenFlow($input);
         $verifyContent['cavv']                   = $input['gateway'][GooglePay\RequestFields::TOKEN][GooglePay\RequestFields::METHOD_DETAILS]
                                                     [GooglePay\RequestFields::CRYPTOGRAM_3DS];
         $verifyContent['xid']                    = $verifyContent['cavv'];
+        $verifyContent['network']                = strtolower($input['gateway']['network']);
 
         $data['authenticate_verify']             = $verifyContent;
         $data['card_number']                     = $input['gateway'][GooglePay\RequestFields::TOKEN][GooglePay\RequestFields::METHOD_DETAILS]
@@ -427,17 +428,29 @@ class Gateway extends Base\Gateway
         return $data;
     }
 
-    protected function getEci($input)
+    protected function getCommerceIndicatorForTokenFlow($input)
     {
-        $network = $input['card']['network_code'];
+        $network = strtolower($input['gateway']['network']);
 
         switch ($network)
         {
-            Case Card\Network::VISA:
+            Case 'visa':
+                return 'internet';
+            Case 'mastercard':
+            default:
+                return 'spa';
+        }
+    }
+
+    protected function getEciForTokenFlow($input)
+    {
+        $network = strtolower($input['gateway']['network']);
+
+        switch ($network)
+        {
+            Case 'visa':
                 return '7';
-            Case Card\Network::RUPAY:
-                return '05';
-            Case Card\Network::MC:
+            Case 'mastercard':
             default:
                 return '2';
         }

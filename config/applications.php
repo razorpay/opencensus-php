@@ -22,6 +22,10 @@ return [
         'secret'    => env('MOCK_GATEWAY_SECRET'),
     ],
 
+    'express' => [
+        'secret'    => env('EXPRESS_SECRET'),
+    ],
+
     'cron' => [
         'secret'    => env('CRON_PASSWORD'),
     ],

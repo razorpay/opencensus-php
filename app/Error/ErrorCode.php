@@ -411,6 +411,10 @@ class ErrorCode
     const BAD_REQUEST_PAYOUT_INVALID_MODE                                           = 'BAD_REQUEST_PAYOUT_INVALID_MODE';
     const BAD_REQUEST_PAYOUT_MODE_NOT_SUPPORTED                                     = 'BAD_REQUEST_PAYOUT_MODE_NOT_SUPPORTED';
     const BAD_REQUEST_DECRYPTION_FAILED                                             = 'BAD_REQUEST_DECRYPTION_FAILED';
+    const BAD_REQUEST_SIGNING_KEY_EXPIRED                                           = 'BAD_REQUEST_SIGNING_KEY_EXPIRED';
+    const BAD_REQUEST_MESSAGE_EXPIRED                                               = 'BAD_REQUEST_MESSAGE_EXPIRED';
+    const BAD_REQUEST_MERCHANT_ID_DOES_NOT_MATCH                                    = 'BAD_REQUEST_MERCHANT_ID_DOES_NOT_MATCH';
+    const BAD_REQUEST_AMOUNT_MISMATCH                                               = 'BAD_REQUEST_AMOUNT_MISMATCH';
     const BAD_REQUEST_REQUIRED_PERMISSION_NOT_FOUND                                 = 'BAD_REQUEST_REQUIRED_PERMISSION_NOT_FOUND';
     const BAD_REQUEST_QUEUED_PAYOUT_INITIATE_ANOTHER_OPERATION_IN_PROGRESS          = 'BAD_REQUEST_QUEUED_PAYOUT_INITIATE_ANOTHER_OPERATION_IN_PROGRESS';
 

@@ -62,6 +62,10 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_FAILED                                            = 'Payment failed';
     const BAD_REQUEST_BQR_PAYMENT_FAILED                                        = 'Payment failed';
     const BAD_REQUEST_DECRYPTION_FAILED                                         = 'Decryption failed';
+    const BAD_REQUEST_SIGNING_KEY_EXPIRED                                       = 'The signing key has expired';
+    const BAD_REQUEST_MESSAGE_EXPIRED                                           = 'The payload has expired';
+    const BAD_REQUEST_MERCHANT_ID_DOES_NOT_MATCH                                = 'Gateway Merchant Id does not match of the payment';
+    const BAD_REQUEST_AMOUNT_MISMATCH                                           = 'The amount does not match with payment amount';
     const BAD_REQUEST_PAYMENT_CANCELLED_BY_USER                                 = 'Payment processing cancelled by user';
     const BAD_REQUEST_PAYMENT_CANCELLED_BY_PRESSING_BACK_ON_ANDROID             = 'Payment processing cancelled by pressing back button on android';
     const BAD_REQUEST_PAYMENT_CANCELLED_AT_LOGIN_SCREEN                         = 'Payment processing cancelled by customer at login screen';

@@ -847,9 +847,11 @@ class VerifyTest extends TestCase
 
         (new Payment\Repository)->saveOrFail($payment);
 
+        $this->ba->expressAuth();
+
         $request = array(
             'url'     => '/gateway/google_pay/verify',
-            'method'  => 'get',
+            'method'  => 'post',
             'content' => [
                 'pgTransactionRefId' => 'pay_' . $payment['id']
             ],
@@ -857,7 +859,7 @@ class VerifyTest extends TestCase
 
         $response = $this->makeRequestAndGetContent($request);
 
-        $this->assertEquals($response['STATUS'], 'SUCCESS');
+        $this->assertEquals($response['status'], 'authorized');
     }
 
     public function testVerifyGooglePayCardPaymentNotFound()
@@ -869,9 +871,11 @@ class VerifyTest extends TestCase
 
         (new Payment\Repository)->saveOrFail($payment);
 
+        $this->ba->expressAuth();
+
         $request = array(
             'url'     => '/gateway/google_pay/verify',
-            'method'  => 'get',
+            'method'  => 'post',
             'content' => [
                 'pgTransactionRefId' => 'pay_10000000000000',
             ],
@@ -897,9 +901,11 @@ class VerifyTest extends TestCase
 
         (new Payment\Repository)->saveOrFail($payment);
 
+        $this->ba->expressAuth();
+
         $request = array(
             'url'     => '/gateway/google_pay/verify',
-            'method'  => 'get',
+            'method'  => 'post',
             'content' => [
                 'pgTransactionRefId' => 'pay_' . $payment['id'],
             ],

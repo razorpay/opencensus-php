@@ -16,6 +16,7 @@ use RZP\Constants\Timezone;
 use RZP\Models\Payment\Entity;
 use RZP\Services\RazorXClient;
 use RZP\Models\Currency\Currency;
+use RZP\Tests\Functional\Partner\Constants;
 use RZP\Models\Merchant\FeeBearer;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Payment\UpiMetadata;
@@ -226,6 +227,8 @@ class PaymentCreateTest extends TestCase
 
     public function testCreateGooglePayCardPayment()
     {
+        $this->enableCpsConfig();
+
         $order = $this->fixtures->create('order');
 
         $googlePayPaymentCreateRequestData = $this->testData['googlePayPaymentCreateRequestData'];
@@ -259,6 +262,35 @@ class PaymentCreateTest extends TestCase
         $payment = $this->getLastEntity('payment', true);
 
         $this->assertEquals($payment['authentication_gateway'], 'google_pay');
+
+        $this->assertEquals($payment['cps_route'], 0);
+    }
+
+    public function testCreateGooglePayCardPaymentInvalidCurrency()
+    {
+        $googlePayPaymentCreateRequestData = $this->testData['googlePayPaymentCreateRequestData'];
+        $checkoutId = UniqueIdEntity::generateUniqueIdWithCheckDigit();
+
+        $googlePayPaymentCreateRequestData['amount'] = 5000;
+        $googlePayPaymentCreateRequestData['currency'] = 'USD';
+        $googlePayPaymentCreateRequestData['_']['checkout_id'] = $checkoutId;
+
+        $this->fixtures->create('terminal',
+            [
+                'merchant_id' => '10000000000000',
+                'gateway'     => 'cybersource',
+            ]
+        );
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::GOOGLE_PAY_CARDS]);
+        $this->fixtures->merchant->edit(Constants::DEFAULT_MERCHANT_ID, ['convert_currency' => 1]);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($testData, function() use ($googlePayPaymentCreateRequestData)
+        {
+            $this->doAuthPayment($googlePayPaymentCreateRequestData);
+        });
     }
 
     public function testCreateGooglePayCardS2SPayment()

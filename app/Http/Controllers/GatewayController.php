@@ -162,6 +162,8 @@ class GatewayController extends Controller
 
             $payment = $paymentRepo->findOrFail($paymentId);
 
+            $gateway->validateCallbackRequest($input, $payment);
+
             $gatewayDriver = $payment->getGateway();
         }
         else
@@ -361,7 +363,6 @@ class GatewayController extends Controller
             case Gateway::UPI_MINDGATE:
             case Gateway::UPI_SBI:
             case Gateway::UPI_AXIS:
-            case Gateway::GOOGLE_PAY:
                 $data = $this->processServerCallbackWithGatewayResponse($input, $gateway);
                 break;
 
@@ -1048,17 +1049,24 @@ class GatewayController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function verifyPayment($gateway)
+    public function authorizePayment()
     {
         $gatewayInput = Request::all();
 
-        $data = [];
+        $gateway = Gateway::GOOGLE_PAY;
 
-        switch($gateway)
-        {
-            case Payment\Gateway::GOOGLE_PAY:
-                $data = $this->app['gateway']->call($gateway, Action::VERIFY, $gatewayInput, null, null);
-        }
+        $data = $this->processServerCallbackWithGatewayResponse($gatewayInput, $gateway);
+
+        return ApiResponse::json($data);
+    }
+
+    public function verifyPaymentStatus()
+    {
+        $gatewayInput = Request::all();
+
+        $gateway = Gateway::GOOGLE_PAY;
+
+        $data = $this->app['gateway']->call($gateway, Action::VERIFY, $gatewayInput, null, null);
 
         return ApiResponse::json($data);
     }

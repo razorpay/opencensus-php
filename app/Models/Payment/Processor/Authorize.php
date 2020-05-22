@@ -1148,6 +1148,10 @@ trait Authorize
                         throw new Exception\BadRequestValidationFailureException(
                             'Google Pay Cards not enabled for merchant.');
                     }
+                    if ($payment->getCurrency() !== Currency\Currency::INR)
+                    {
+                        throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_CURRENCY_NOT_SUPPORTED);
+                    }
                     break;
             }
         }

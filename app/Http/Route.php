@@ -548,6 +548,8 @@ class Route
         'gateway_payment_callback_kotak'           => ['get',      'gateway/netbanking_kotak/callback',              'GatewayController@callbackKotak'                                   ],
         'gateway_payment_static_callback_get'      => ['get',      'gateway/{method}/{gateway}/callback/{mode}',     'GatewayController@staticCallbackGateway'                           ],
         'gateway_payment_static_callback_post'     => ['post',     'gateway/{method}/{gateway}/callback/{mode}',     'GatewayController@staticCallbackGateway'                           ],
+        'payment_authorize_google_pay_cards'       => ['post',     'gateway/google_pay/authorize',                   'GatewayController@authorizePayment'                                ],
+        'payment_verify_google_pay_cards'          => ['post',     'gateway/google_pay/verify',                      'GatewayController@verifyPaymentStatus'                             ],
         'gateway_payment_callback_kotak_cancel'    => ['post',     'gateway/netbanking_kotak/callback',              'GatewayController@callbackKotakCancel'                             ],
         'gateway_emandate_callback_npci_nb'        => ['post',     'gateway/emandate_npci_nb/callback',              'GatewayController@callbackEmandateNpciNb'                          ],
         'gateway_payment_callback_corporation'     => ['get',      'gateway/netbanking_corporation/callback',        'GatewayController@callbackCorporation'                             ],
@@ -757,8 +759,6 @@ class Route
         'gateway_create_rule'                      => ['post',     'gateway/rules',                                  'GatewayController@createGatewayRule'                               ],
         'gateway_update_rule'                      => ['patch',    'gateway/rules/{id}',                             'GatewayController@updateGatewayRule'                               ],
         'gateway_delete_rule'                      => ['delete',   'gateway/rules/{id}',                             'GatewayController@deleteGatewayRule'                               ],
-        'gateway_payment_verify_get'               => ['get',      'gateway/{gateway}/verify',                       'GatewayController@verifyPayment'                                   ],
-        'gateway_payment_verify_post'              => ['post',     'gateway/{gateway}/verify',                       'GatewayController@verifyPayment'                                   ],
         'gateway_file_create'                      => ['post',     'gateway/files',                                  'GatewayFileController@createGatewayFile'                           ],
         'gateway_file_retry'                       => ['post',     'gateway/files/{id}/retry',                       'GatewayFileController@retryGatewayFile'                            ],
         'gateway_file_acknowledge'                 => ['post',     'gateway/files/{id}/acknowledge',                 'GatewayFileController@acknowledgeGatewayFile'                      ],
@@ -2155,6 +2155,8 @@ class Route
         'payment_update_on_hold',
         'payment_verify_all',
         'payment_verify_multiple',
+        'payment_authorize_google_pay_cards',
+        'payment_verify_google_pay_cards',
         'reconciliate',
         'refund_create_gateway_record',
         'refund_gateway_refunded_txns',
@@ -4110,8 +4112,6 @@ class Route
         'gateway_payment_callback_canara_post',
         'gateway_payment_callback_amazonpay',
         'gateway_payment_callback_amazonpay_post',
-        'gateway_payment_verify_get',
-        'gateway_payment_verify_post',
         'terminal_onboard_callback',
         'mailgun_webhook',
         'gateway_downtime_source_webhook',
@@ -4252,6 +4252,11 @@ class Route
 
         'dashboard_internal' => [
             'admin_oauth_authenticate',
+        ],
+
+        'express' => [
+            'payment_authorize_google_pay_cards',
+            'payment_verify_google_pay_cards',
         ],
 
         'cron' => [
