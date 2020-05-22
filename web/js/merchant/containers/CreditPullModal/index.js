@@ -130,7 +130,12 @@ export default class CreditPullModal extends Component {
         return Promise.all([this.sendReqForOtp(mobile), merchant]);
       })
       .then(
-        ([{ data: { token } }, { id: merchantId, contact_mobile: mobile }]) => {
+        ([
+          {
+            data: { token },
+          },
+          { id: merchantId, contact_mobile: mobile },
+        ]) => {
           this.openVerify(token, merchantId, mobile);
         }
       )
@@ -233,7 +238,7 @@ export default class CreditPullModal extends Component {
       component: (
         <CreditPullSuccess
           score={score}
-          report={JSON.parse(report)}
+          report={report}
           maxLoan={maxLoan}
           reportId={reportId}
         />
