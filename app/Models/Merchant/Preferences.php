@@ -129,6 +129,17 @@ class Preferences
     const MID_ICICI_PRUDENTIAL      = 'DyP8dTjuXkgcAA';
     const MID_SCRIP_BOX             = 'E8D4A78IIz4SAB';
     const MID_RBL_HEMANT            = 'EgquGKAHJNz0oD';
+    const MID_RBL_BANK              = 'Er3H2qzJ3EVt4u';
+    const MID_RBL_BANK_LTD          = 'Er4CQHti6YfgOG';
+    const MID_RBL_BANK_1            = 'Er3owFcMpDfMvD';
+
+    const MID_CLIX_CAPITAL            = 'AxEq4Z2U8Gd8vH';
+    const MID_CLIX_CAPITAL_SERVICES   = 'Bkeuzp5jlMNhzD';
+    const MID_CLIX_CAPITAL_SERVICES_1 = 'Bkeu2nWxjx9HaZ';
+    const MID_CLIX_CAPITAL_SERVICES_2 = 'BkeuOuZR4CAI4P';
+    const MID_CLIX_HOUSING_FINANCE    = 'DdURgPS1iee3jc';
+    const MID_CLIX_FINANCE            = 'DdUJZmctBydK1m';
+    const MID_CLIX_FINANCE_1          = 'DdU3RrefV6jkck';
 
     const MID_NSDL_MERCHANTS        = 'Anjg29UHP4PlvQ';
     const MID_AIRTEL                = 'AqUQQH9neAMkUG';

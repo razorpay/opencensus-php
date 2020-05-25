@@ -838,6 +838,61 @@ class Notifier extends Base\Core
 
                 break;
 
+            case Preferences::MID_RBL_BANK:
+                $template = 'sms.custom_invoice.rbl_bank';
+                $sender   = 'RBLCRD';
+                $params = [
+                    'receipt'       	      => $receipt,
+                    'invoice_link'            => $invoiceLink,
+                    'amount'                  => $this->invoice->getAmount() / 100,
+                    'min_amount_due'          => ($this->invoice->getFirstPaymentMinAmount() ?? 0) / 100,
+                    'due_date'                => $this->invoice->getNotes()['due_date'] ?? '',
+                ];
+
+                break;
+
+            case Preferences::MID_RBL_BANK_LTD:
+                $template = 'sms.custom_invoice.rbl_bank_ltd';
+                $sender   = 'RBLCRD';
+                $params = [
+                    'receipt'       	      => $receipt,
+                    'invoice_link'            => $invoiceLink,
+                    'amount'                  => $this->invoice->getAmount() / 100,
+                    'min_amount_due'          => ($this->invoice->getFirstPaymentMinAmount() ?? 0) / 100,
+                ];
+
+                break;
+
+            case Preferences::MID_RBL_BANK_1:
+                $template = 'sms.custom_invoice.rbl_bank_1';
+                $sender   = 'RBLCRD';
+                $params = [
+                    'receipt'       	      => $receipt,
+                    'invoice_link'            => $invoiceLink,
+                    'amount'                  => $this->invoice->getAmount() / 100,
+                    'min_amount_due'          => ($this->invoice->getFirstPaymentMinAmount() ?? 0) / 100,
+                    'due_date'                => $this->invoice->getNotes()['due_date'] ?? '',
+                ];
+
+                break;
+
+            case Preferences::MID_CLIX_CAPITAL:
+            case Preferences::MID_CLIX_CAPITAL_SERVICES:
+            case Preferences::MID_CLIX_CAPITAL_SERVICES_1:
+            case Preferences::MID_CLIX_CAPITAL_SERVICES_2:
+            case Preferences::MID_CLIX_HOUSING_FINANCE:
+            case Preferences::MID_CLIX_FINANCE:
+            case Preferences::MID_CLIX_FINANCE_1:
+                $template = 'sms.custom_invoice.clix_capital';
+                $sender   = 'RZRPAY';
+                $params = [
+                    'invoice_link'            => $invoiceLink,
+                    'amount'                  => $this->invoice->getAmount() / 100,
+                    'billing_label'           => $this->invoice->merchant->getBillingLabel(),
+                ];
+
+                break;
+
             case Preferences::MID_LENDING_KART:
                 $sender = 'LDKART';
 
