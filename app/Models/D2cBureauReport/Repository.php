@@ -31,17 +31,14 @@ class Repository extends Base\Repository
     {
         $query = $this->newQuery();
 
-        if (isset($input[Entity::MERCHANT_ID]) === true)
-        {
-            $query->where(Entity::MERCHANT_ID, $input[Entity::MERCHANT_ID]);
-        }
+        $query->where(Entity::MERCHANT_ID, $input[Entity::MERCHANT_ID]);
 
-        if (isset($input['d2c_bureau_report_id']) === true)
+        if (empty($input['d2c_bureau_report_id']) === false)
         {
             $query->where(Entity::ID, $input['d2c_bureau_report_id']);
         }
 
-        if (isset($input[Entity::USER_ID]) === true)
+        if (empty($input[Entity::USER_ID]) === false)
         {
             $query->where(Entity::USER_ID, $input[Entity::USER_ID]);
         }

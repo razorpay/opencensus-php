@@ -75,12 +75,24 @@ class Service extends Base\Service
 
     public function fetchReportForLos($input)
     {
+        $this->trace->info(TraceCode::LOS_D2C_BUREAU_REPORT_FETCH, $input);
+
         if (empty($input[Entity::MERCHANT_ID]) === true)
         {
             throw new BadRequestValidationFailureException('merchant_id is required', Entity::MERCHANT_ID, null);
         }
 
+        if (empty($input['d2c_bureau_report_id']) === false)
+        {
+            $input['d2c_bureau_report_id'] = Entity::verifyIdAndStripSign($input['d2c_bureau_report_id']);
+        }
+
         $bureauReport = $this->repo->d2c_bureau_report->findByParams($input);
+
+        if ($bureauReport === null)
+        {
+            throw new BadRequestValidationFailureException('no report found for '. json_encode($input));
+        }
 
         return $bureauReport->toArrayForDashboard();
     }
