@@ -4,12 +4,8 @@ namespace RZP\Base\Database;
 
 use App;
 
-use Illuminate\Support\Facades\File;
-use Razorpay\Trace\Logger as Trace;
-
-use RZP\Constants\Environment;
 use RZP\Constants\Mode;
-use RZP\Trace\TraceCode;
+use RZP\Constants\Environment;
 
 class Config
 {
@@ -17,7 +13,7 @@ class Config
 
     const PROXY_SQL_CONFIG      = 'proxy_sql_unix_socket';
 
-    const PROXY_SQL_ENABLE      = 'proxy_sql_enable';
+    const PROXY_SQL_ENABLE      = 'PROXY_SQL_ENABLE';
 
     const IS_WORKER_POD         = 'is_worker_pod';
 
@@ -147,61 +143,24 @@ class Config
             return false;
         }
 
-        if ($this->app->environment(Environment::AUTOMATION) === true)
-        {
-            return true;
-        }
-
-        if ($this->app->environment(Environment::PRODUCTION) === false)
-        {
-            return false;
-        }
-
         // this is kept to rollback at later stage
         // we can just change env and re deploy to disable proxysql.
-        $proxySqlEnable = $this->app['config']->get(self::DATABASE_CONFIG . '.' . self::PROXY_SQL_ENABLE);
+        // values of PROXY_SQL_ENABLE can be disable, test and enable
+        $proxySqlEnable = env(self::PROXY_SQL_ENABLE, self::DISABLE);
 
-        if ($proxySqlEnable ===  false)
-        {
-            return false;
-        }
-
-        $fileConfig = $this->getProxySqlConfig();
-
-        // this is used to ramp up each server at a time.
-        if ($fileConfig === self::ENABLE)
+        if ($proxySqlEnable === self::ENABLE)
         {
             return true;
         }
 
         $mode = (empty($this->app['request.ctx']) === true) ? Mode::LIVE : $this->app['request.ctx']->getMode();
 
-        if (($fileConfig === self::TEST) && ($mode === Mode::TEST))
+        if (($proxySqlEnable === self::TEST) && ($mode === Mode::TEST))
         {
             return true;
         }
 
         return false;
-    }
-
-    protected function getProxySqlConfig()
-    {
-        try
-        {
-            $value = File::get(base_path() . '/database/proxy_sql', true);
-            $value = preg_replace('/\s+/', ' ', $value);
-            $value = preg_replace('/\s+/', '', $value);
-            return $value;
-        }
-        catch(\Throwable $ex)
-        {
-            $this->app['trace']->traceException(
-                $ex,
-                Trace::WARNING,
-                TraceCode::DB_PROXY_SQL_FILE_READ_FAILED);
-
-            return self::DISABLE;
-        }
     }
 }
 
