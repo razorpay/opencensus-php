@@ -4784,7 +4784,11 @@ class Route
         'payout_create' => [
                 IdempotencyKey\Entity::SOURCE_TYPE  => Entity::PAYOUT,
                 IdempotencyKey\Entity::HEADER_KEY   => RequestHeader::X_PAYOUT_IDEMPOTENCY,
-            ]
+            ],
+        'payout_create_internal' => [
+            IdempotencyKey\Entity::SOURCE_TYPE  => Entity::PAYOUT,
+            IdempotencyKey\Entity::HEADER_KEY   => RequestHeader::X_PAYOUT_IDEMPOTENCY,
+        ]
     ];
 
     /**

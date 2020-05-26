@@ -81,8 +81,12 @@ class MerchantIdempotencyHandler
         //
         // Handling this only for strictly private auth requests for now.
         // Will explore handling this for others as well, later.
+        // Update:
+        // Vendor Payments app will be using Idempotency feature to
+        // to make sure multiple payouts for the same req are not created.
         //
-        if ($this->basicauth->isStrictPrivateAuth() === false)
+        if (($this->basicauth->isStrictPrivateAuth() === false) and
+            ($this->basicauth->isVendorPaymentApp() === false))
         {
             return $next($request);
         }
@@ -226,7 +230,8 @@ class MerchantIdempotencyHandler
         // We were able to create the idempotency entity but before we could save the entity_id or the entity itself,
         // the request failed. The app could have crashed or the DB connection could have broken or could happen because
         // of any other reason. In that case, the idempotency entity will be saved without the entity details or it will
-        // have entity details but the actual entity itself won't be saved. We will then treat it as a brand new request.
+        // have entity details but the actual entity itself won't be saved. We will then treat it as a brand new
+        // request.
         //
         if (empty($responseEntity) === true)
         {
