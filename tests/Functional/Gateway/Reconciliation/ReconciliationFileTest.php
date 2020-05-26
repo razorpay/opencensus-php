@@ -1412,6 +1412,70 @@ class ReconciliationFileTest extends TestCase
         $this->assertBatchStatus(Status::PROCESSED);
     }
 
+    public function testAtomCombinedUniqueEntityRecon()
+    {
+        $this->fixtures->create('terminal:shared_atom_terminal');
+
+        $payment = $this->getDefaultNetbankingPaymentArray();
+
+        $payment = $this->doAuthAndCapturePayment($payment);
+
+        $gatewayPayment = $this->getLastEntity('atom', true);
+
+        $paymentData = $this->overrideAtomPayment($gatewayPayment);
+
+        $refund1 = $this->refundPayment($payment['id'], '10000');
+
+        $refund2 = $this->refundPayment($payment['id'], '20000');
+
+        $refund3 = $this->refundPayment($payment['id'], '20000');
+
+        $refundData1 = $this->overrideAtomRefund($gatewayPayment, $refund1['amount']/100);
+
+        $refundData2 = $this->overrideAtomRefund($gatewayPayment, $refund2['amount']/100);
+
+        $refundData3 = $this->overrideAtomRefund($gatewayPayment, $refund3['amount']/100);
+
+        $entries[] = $paymentData;
+
+        $entries[] = $refundData1;
+
+        $entries[] = $refundData2;
+
+        $entries[] = $refundData3;
+
+        $file = $this->writeToCsvFile($entries, 'settlementReport');
+
+        $this->runForFiles([$file], 'Atom');
+
+        $payment = $this->getEntityById('payment', PublicEntity::stripDefaultSign($payment['id']), true);
+        $refundEntity1 = $this->getEntityById('refund', PublicEntity::stripDefaultSign($refund1['id']), true);
+        $refundEntity2 = $this->getEntityById('refund', PublicEntity::stripDefaultSign($refund2['id']), true);
+        $refundEntity3 = $this->getEntityById('refund', PublicEntity::stripDefaultSign($refund3['id']), true);
+
+        $paymentTransaction  = $this->getEntityById('transaction', $payment['transaction_id'], true);
+        $updatedTransaction1 = $this->getEntityById('transaction', $refundEntity1['transaction_id'], true);
+        $updatedTransaction2 = $this->getEntityById('transaction', $refundEntity2['transaction_id'], true);
+        $updatedTransaction3 = $this->getEntityById('transaction', $refundEntity3['transaction_id'], true);
+
+        //
+        // One payment and one refund row get reconciled, other 2 refunds
+        // remain unreconciled, as we could not identify the refund uniquely.
+        //
+        $this->assertNotNull($paymentTransaction['reconciled_at']);
+        $this->assertNotNull($updatedTransaction1['reconciled_at']);
+
+        $this->assertNull($updatedTransaction2['reconciled_at']);
+        $this->assertNull($updatedTransaction3['reconciled_at']);
+
+        $batch = $this->getDbLastEntityToArray('batch');
+
+        $this->assertEquals(4, $batch['total_count']);
+        $this->assertEquals(2, $batch['success_count']);
+        $this->assertEquals(2, $batch['failure_count']);
+
+        $this->assertBatchStatus(Status::PARTIALLY_PROCESSED);
+    }
     //For success case of Bill desk reconciliation
     public function testBillDeskReconRefundFileFailure()
     {
@@ -1927,6 +1991,16 @@ class ReconciliationFileTest extends TestCase
         $facade['Settlement Date']                            = Carbon::createFromTimestamp($gatewayPayment['created_at'], Timezone::IST)->format('d-M-Y h:i:s');
         $facade['Txn Date']                                   = Carbon::createFromTimestamp($gatewayPayment['created_at'], Timezone::IST)->format('d-M-Y h:i:s');
         $facade['Refund Status']                              = '';
+
+        return $facade;
+    }
+
+    private function overrideAtomRefund(array $gatewayPayment, $refundAmount)
+    {
+        $facade = $this->overrideAtomPayment($gatewayPayment);
+
+        $facade['Txn State']        = 'Full Refund';
+        $facade['Gross Txn Amount'] = $refundAmount;
 
         return $facade;
     }
