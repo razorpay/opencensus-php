@@ -778,13 +778,16 @@ class Core extends Base\Core
         {
             return;
         }
+
+        $merchant = $paymentLink->merchant;
+
         $invoiceCreateInput = $this->getInvoiceCreateInput($paymentLink, $payment);
 
         $invoiceCore = (new Invoice\Core());
 
         $invoice = $invoiceCore->create(
             $invoiceCreateInput,
-            $this->merchant,
+            $merchant,
             null,
             null,
             $paymentLink,
@@ -794,13 +797,22 @@ class Core extends Base\Core
         $invoice->setStatus(Invoice\Status::PAID);
 
         $this->repo->save($invoice);
+
+        $customSerialNumberEnabled = $paymentLink->isCustomSerialNumberEnabled();
+
+        $shouldSendEmail = $customSerialNumberEnabled ? false : true;
+
+        if ($shouldSendEmail === true)
+        {
+            $invoice->setRelation('entity', $invoice->entity);
+
+            return $invoiceCore->sendNotification($invoice, Invoice\NotifyMedium::EMAIL);
+        }
     }
 
     protected function getInvoiceCreateInput(Entity $paymentLink, Payment\Entity $payment): array
     {
         $type = Invoice\Type::INVOICE;
-
-        $smsNotify = 0;
 
         $order = $payment->order;
 
@@ -818,14 +830,12 @@ class Core extends Base\Core
 
         $customSerialNumberEnabled = $paymentLink->isCustomSerialNumberEnabled();
 
-        $emailNotify = $customSerialNumberEnabled ? 0 : 1;
-
         $receipt = $customSerialNumberEnabled ? null : $payment->getPublicId();
 
         $input = [
             IE::TYPE                => $type,
-            IE::EMAIL_NOTIFY        => $emailNotify,
-            IE::SMS_NOTIFY          => $smsNotify,
+            IE::EMAIL_NOTIFY        => 0,
+            IE::SMS_NOTIFY          => 0,
             IE::CUSTOMER            => $customer,
             IE::LINE_ITEMS          => $lineItems,
             IE::COMMENT             => is_string($comment) ? $comment : null,
