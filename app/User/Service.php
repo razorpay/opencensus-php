@@ -1025,7 +1025,8 @@ class Service extends Base\Service
             'virtual_vpa_prefix',
             'pl_batch_reminders',
             'enable_payment_page_receipt',
-            'emandate_nonzero_amount'
+            'emandate_nonzero_amount',
+            'allow_yesbank_va_on_x',
         ];
 
         $experimentsResults = $merchantService->getBulkTreatment($features);
