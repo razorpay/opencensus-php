@@ -7,30 +7,27 @@
 
 #### Pre-requisites
 
-##### Install [composer](https://getcomposer.org/download/), php7 and phpunit
+##### Install PHP, composer
+If you have both PHP and composer already installed, go to *Verfiy installation* step.
 
 First install Brew on your MAC
 
 - Setup Brew: `ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"`
 - `brew update`
-- `brew tap homebrew/dupes`
-- `brew tap homebrew/php`
-- Install PHP 7.1.+ `brew install php@7.1`
+- Install PHP 7.2.+ `brew install php@7.2`
 - Finally, install composer: `brew install composer`
 
-Now if you run `$ php -v`, you will get `PHP 5.5` or something.
-This is the default PHP version that is shipped with OSX and cannot be removed.
-You just need to edit your path to ensure that `PHP 7.1` is picked up.
+###### Verify installation
+- Run `$ php -v`, and check if php 7.2+ is picked up. If a lower version is picked up, adjust the path.
+     - Unlink any old versions of php using `brew unlink php@<old_version_here>`
+     - Link the path to 7.2 `brew link php@7.2`
+- Run `php -info | grep -i GMP` to check if `php-gmp` extension is installed. Installing php using the above command gets gmp installed with it. If not, run `$ brew install gmp` and re-run php info command.
 
-Unlink any old versions of php using `brew unlink ${version}` and use `brew link php@7.1` to link the path to 7.1. 
-
-Note - check if php-gmp extension is installed by `php -info | grep "GMP"`. Installing php using the above command gets gmp installed with it.
-
-To debug any issue with any package, you can run `brew info php70` etc.
-
-Also, if you are getting seemingly unrelated errors, make sure to update bash/zsh: `brew upgrade bash` and `brew upgrade zsh`.
-
-If everything is setup correctly, running `$ php -v` should give you 7.1.+.
+###### Debug installation quirks
+    1. To debug any issue with any package, you can run `brew info php@<version>`.
+    2. If you are getting seemingly unrelated errors, make sure to update bash/zsh: `brew upgrade bash` and `brew upgrade zsh`.
+    3. If `brew install php@7.2` fails due to any permission issues, run
+        `sudo chown -R $(whoami) <parent dir of problematic directory>` and retry installation.
 
 Note: We will use the phpunit that comes along with composer. We do not explicitly need phpunit to be installed for the docker setup.
 
@@ -56,7 +53,7 @@ Ensure that you have a dockerhub user that is added to the Razorpay Organization
  - Admin Contact: `nemo@razorpay.com`
 
 ###### Mac Users
-Run Docker for Mac while signed-in as this user. If it still says access denied while pulling docker images, login via the console as well using docker login.
+Run Docker for Mac while signed-in as this user. If it still says access denied while pulling docker images, login via the console as well using `docker login`.
 
 ###### Linux Users
 use the `docker login` command to sign-in with the aforementioned dockerhub user.
