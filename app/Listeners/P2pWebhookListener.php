@@ -9,7 +9,7 @@ use RZP\Jobs;
 use RZP\Models\Event;
 use RZP\Trace\TraceCode;
 use RZP\Models\P2p\Transaction;
-use RZP\Models\Merchant\Webhook;
+use RZP\Models\Merchant\Webhook\Stork;
 
 class P2pWebhookListener extends P2pListener
 {
@@ -23,54 +23,23 @@ class P2pWebhookListener extends P2pListener
     {
         parent::handle($event);
 
-        $webhook = $this->getWebhook();
-
-        if (empty($webhook) === true)
+        $eventPayload = $this->event->getWebhookPaylaod();
+        if (empty($eventPayload) === true)
         {
             return;
         }
 
-        $payload = $this->event->getWebhookPaylaod();
-
-        if (empty($payload) === true)
-        {
-            return;
-        }
-
-        $data = $this->getWebhookData($payload, $webhook);
-
-        $this->app['trace']->info(TraceCode::WEBHOOK_DISPATCH, $data);
-
-        Jobs\WebHook::dispatch($data)->using([$this->event->getName()]);
-    }
-
-    protected function getWebhookData(array $payload, Webhook\Entity $webhook): array
-    {
-        $eventFired = $this->event->getName();
-        $merchant   = $this->getMerchant();
-        $entity     = $this->event->getEntity();
-
-        $attributes = array(
-            Event\Entity::EVENT      => $eventFired,
-            Event\Entity::CONTAINS   => array_keys($payload),
-            Event\Entity::CREATED_AT => $entity->getUpdatedAt(),
-        );
-
-        $event = new Event\Entity($attributes);
-
-        $event->setPayload($payload);
-
-        $event->merchant()->associate($merchant);
-
-        $data = [
-            'mode'       => $this->getMode(),
-            'event'      => json_encode($event->toArrayPublic()),
-            'event_name' => $eventFired,
-            'webhook_id' => $webhook->getId(),
-            // Refer Inferno's eventQueuedAt.
-            'queued_at'  => millitime(),
+        // Prepares Event\Entity.
+        $eventAttrs = [
+            Event\Entity::EVENT      => $this->event->getName(),
+            Event\Entity::CONTAINS   => array_keys($eventPayload),
+            Event\Entity::CREATED_AT => $this->event->getEntity()->getUpdatedAt(),
         ];
+        $event = new Event\Entity($eventAttrs);
+        $event->setPayload($eventPayload);
+        $event->merchant()->associate($this->getMerchant());
 
-        return $data;
+        // Invokes fail safe stork's processor on event.
+        (new Stork)->processEventSafe($event, $this->getMode());
     }
 }

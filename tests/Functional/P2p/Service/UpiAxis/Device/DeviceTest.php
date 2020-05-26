@@ -4,6 +4,7 @@ namespace RZP\Tests\P2p\Service\UpiAxis\Device;
 
 use RZP\Models\P2p\Device;
 use RZP\Gateway\P2p\Upi\Axis\Fields;
+use RZP\Tests\Traits\TestsWebhookEvents;
 use RZP\Tests\P2p\Service\UpiAxis\TestCase;
 use RZP\Tests\P2p\Service\Base\Traits\EventsTrait;
 use RZP\Tests\P2p\Service\Base\Traits\TransactionTrait;
@@ -12,6 +13,7 @@ class DeviceTest extends TestCase
 {
     use TransactionTrait;
     use EventsTrait;
+    use TestsWebhookEvents;
 
     public function testInitiateVerification()
     {
@@ -53,7 +55,20 @@ class DeviceTest extends TestCase
 
     public function testVerificationEvents()
     {
-        $this->setEventsForMerchant();
+        $this->expectWebhookEvent(
+            'customer.verification.completed',
+            function(array $event)
+            {
+                $this->assertArraySubset([
+                    'customer_id'   => 'cust_ArzpLocalCust1',
+                    'contact'       => '919742417121',
+                    'entity'        => 'device',
+                ], $event['payload']);
+
+                $this->assertStringStartsWith('device_', $event['payload']['id']);
+                $this->assertArrayNotHasKey('auth_token', $event['payload']);
+            }
+        );
 
         $this->mockRaven();
 
@@ -88,18 +103,6 @@ class DeviceTest extends TestCase
                     'app_name'      => 'Bajaj Finserv MARKETS',
                 ],
             ], $input);
-        });
-
-        $this->assertWebhookContent(function($content)
-        {
-            $this->assertArraySubset([
-                'customer_id'   => 'cust_ArzpLocalCust1',
-                'contact'       => '919742417121',
-                'entity'        => 'device',
-            ], $content['payload']);
-
-            $this->assertStringStartsWith('device_', $content['payload']['id']);
-            $this->assertArrayNotHasKey('auth_token', $content['payload']);
         });
     }
 

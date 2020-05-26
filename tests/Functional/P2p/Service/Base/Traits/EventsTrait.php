@@ -5,52 +5,12 @@ namespace RZP\Tests\P2p\Service\Base\Traits;
 use Mockery;
 use Http\Mock\Client;
 use GuzzleHttp\Psr7\Request;
-use RZP\Tests\Functional\Fixtures\Entity\Webhook;
-use RZP\Tests\Functional\Helpers\WebhookTrait;
 
 trait EventsTrait
 {
-    use WebhookTrait;
-
-    /**
-     * @var Client
-     */
-    protected $mockedWebhookClient;
-
     protected $mockedRavenRequest;
 
     protected $mockedRemindersRequest;
-
-    protected function setEventsForMerchant()
-    {
-        (new Webhook())->create([
-            'url'       => 'https://www.example.com',
-            'secret'    => 'notsosecret',
-        ]);
-
-        $this->mockedWebhookClient = $this->setInfernoMockClient();
-    }
-
-    protected function assertWebhookContent(
-        callable $contentHandler,
-        callable $headersHandler = null,
-        int $index = 0)
-    {
-        $request = $this->getWebhookMockedRequest($index);
-
-        $content = $request->getBody()->getContents();
-
-        $contentHandler(json_decode($content, true));
-
-        if (is_callable($headersHandler))
-        {
-            $headers = $request->getHeaders();
-
-            $headersHandler($headers);
-        }
-
-        return $request;
-    }
 
     protected function mockRaven()
     {
@@ -106,14 +66,5 @@ trait EventsTrait
         $this->assertSame($method, $this->mockedRavenRequest[1]);
 
         $inputHandler($this->mockedRavenRequest[2]);
-    }
-
-    /**
-     * @param int $index
-     * @return Request
-     */
-    protected function getWebhookMockedRequest(int $index)
-    {
-        return $this->mockedWebhookClient->getRequests()[$index];
     }
 }

@@ -2,16 +2,33 @@
 
 namespace RZP\Tests\P2p\Service\UpiAxis\Vpa;
 
+use RZP\Tests\Traits\TestsWebhookEvents;
 use RZP\Tests\P2p\Service\Base\Traits\EventsTrait;
 use RZP\Tests\P2p\Service\UpiAxis\TestCase;
 
 class VpaEventTest extends TestCase
 {
     use EventsTrait;
+    use TestsWebhookEvents;
 
     public function testVpaCreated()
     {
-        $this->setEventsForMerchant();
+        $this->expectWebhookEvent(
+            'customer.vpa.created',
+            function (array $event)
+            {
+                $this->assertArraySubset([
+                    'entity'    => 'vpa',
+                    'active'    => true,
+                    'default'   => false,
+                    'bank_account' => [
+                        'id'     => 'ba_ALC01bankAc002',
+                        'entity' => 'bank_account',
+
+                    ]
+                ], $event['payload']);
+            }
+        );
 
         $helper = $this->getVpaHelper();
 
@@ -26,32 +43,10 @@ class VpaEventTest extends TestCase
         $content = $this->handleSdkRequest($request);
 
         $helper->createVpa($request['callback'], $content);
-
-        $this->assertWebhookContent(function($content)
-        {
-            $this->assertSame('customer.vpa.created', $content['event']);
-
-            $this->assertArraySubset([
-                'entity'    => 'vpa',
-                'active'    => true,
-                'default'   => false,
-                'bank_account' => [
-                    'id'     => 'ba_ALC01bankAc002',
-                    'entity' => 'bank_account',
-
-                ]
-            ], $content['payload']);
-
-        }, function ($headers)  {
-            $this->assertNotNull($headers['X-Razorpay-Signature'][0]);
-            $this->assertSame('www.example.com', $headers['Host'][0]);
-        });
     }
 
     public function testVpaCreateFailed()
     {
-        $this->setEventsForMerchant();
-
         $helper = $this->getVpaHelper();
 
         $this->withFailureResponse($helper, function($error)
@@ -67,7 +62,7 @@ class VpaEventTest extends TestCase
             'username' => '9999999999',
         ]);
 
-        $this->assertEmpty($this->mockedWebhookClient->getRequests());
+        $this->dontExpectAnyWebhookEvent();
     }
 }
 

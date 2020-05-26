@@ -9,17 +9,34 @@ use RZP\Models\P2p\Transaction\Flow;
 use RZP\Models\P2p\Transaction\Entity;
 use RZP\Models\P2p\Transaction\Status;
 use RZP\Tests\P2p\Service\Base\Traits;
+use RZP\Tests\Traits\TestsWebhookEvents;
 use RZP\Tests\P2p\Service\UpiAxis\TestCase;
 use RZP\Models\P2p\Transaction\UpiTransaction;
 
 class TransactionEventTest extends TestCase
 {
+    use TestsWebhookEvents;
     use Traits\EventsTrait;
     use Traits\TransactionTrait;
 
     public function testPayCompleted()
     {
-        $this->setEventsForMerchant();
+        $this->expectWebhookEvent(
+            'customer.transaction.completed',
+            function(array $event)
+            {
+                $this->assertArraySubset([
+                    'type'                  => 'pay',
+                    'flow'                  => 'debit',
+                    'status'                => 'completed',
+                    'is_pending_collect'    => false,
+                ], $event['payload']);
+
+                $this->assertNotNull($event['payload']['upi']['ref_id']);
+                $this->assertNotNull($event['payload']['upi']['rrn']);
+                $this->assertNotNull($event['payload']['upi']['network_transaction_id']);
+            }
+        );
 
         $helper = $this->getTransactionHelper();
 
@@ -28,33 +45,31 @@ class TransactionEventTest extends TestCase
         $content = $this->handleSdkRequest($coproto);
 
         $helper->authorizeTransaction($coproto['callback'], $content);
-
-        $this->assertWebhookContent(function($content)
-        {
-            $this->assertSame('customer.transaction.completed', $content['event']);
-
-            $this->assertArraySubset([
-                'type'                  => 'pay',
-                'flow'                  => 'debit',
-                'status'                => 'completed',
-                'is_pending_collect'    => false,
-            ], $content['payload']);
-
-            $this->assertNotNull($content['payload']['upi']['ref_id']);
-            $this->assertNotNull($content['payload']['upi']['rrn']);
-            $this->assertNotNull($content['payload']['upi']['network_transaction_id']);
-
-        }, function($headers)
-        {
-            $this->assertNotNull($headers['X-Razorpay-Signature'][0]);
-            $this->assertSame('www.example.com', $headers['Host'][0]);
-        });
-
     }
 
     public function testPendingCollectWebhook()
     {
-        $this->setEventsForMerchant();
+        $this->expectWebhookEvent(
+            'customer.transaction.created',
+            function(array $event)
+            {
+                $this->assertArraySubset([
+                    'customer_id'           => 'cust_ArzpLocalCust1',
+                    'type'                  => 'collect',
+                    'flow'                  => 'debit',
+                    'status'                => 'requested',
+                    'is_pending_collect'    => true,
+                ], $event['payload']);
+
+                $this->assertNotNull($event['payload']['upi']['ref_id']);
+                $this->assertNotNull($event['payload']['upi']['rrn']);
+                $this->assertNotNull($event['payload']['upi']['network_transaction_id']);
+                $this->assertArrayNotHasKey('bank_account', $event['payload']['payer']);
+                $this->assertArrayNotHasKey('bank_account', $event['payload']['payee']);
+                $this->assertSame('ALC01custVpa03@razoraxis', $event['payload']['payer']['address']);
+                $this->assertSame('random@mypsp', $event['payload']['payee']['address']);
+            }
+        );
 
         $helper = $this->getTransactionHelper();
 
@@ -77,32 +92,6 @@ class TransactionEventTest extends TestCase
         $request = $this->mockSdk()->callback();
         $response = $helper->callback($this->gateway, $request);
         $this->assertTrue($response['success']);
-
-        $this->assertWebhookContent(function($content)
-        {
-            $this->assertSame('customer.transaction.created', $content['event']);
-
-            $this->assertArraySubset([
-                'customer_id'           => 'cust_ArzpLocalCust1',
-                'type'                  => 'collect',
-                'flow'                  => 'debit',
-                'status'                => 'requested',
-                'is_pending_collect'    => true,
-            ], $content['payload']);
-
-            $this->assertNotNull($content['payload']['upi']['ref_id']);
-            $this->assertNotNull($content['payload']['upi']['rrn']);
-            $this->assertNotNull($content['payload']['upi']['network_transaction_id']);
-            $this->assertArrayNotHasKey('bank_account', $content['payload']['payer']);
-            $this->assertArrayNotHasKey('bank_account', $content['payload']['payee']);
-            $this->assertSame('ALC01custVpa03@razoraxis', $content['payload']['payer']['address']);
-            $this->assertSame('random@mypsp', $content['payload']['payee']['address']);
-
-        }, function($headers)
-        {
-            $this->assertNotNull($headers['X-Razorpay-Signature'][0]);
-            $this->assertSame('www.example.com', $headers['Host'][0]);
-        });
     }
 
     public function testPendingCollectNotification()
@@ -150,7 +139,7 @@ class TransactionEventTest extends TestCase
 
     public function testIncomingPay()
     {
-        $this->setEventsForMerchant();
+        $this->expectWebhookEvent('customer.transaction.completed');
 
         $helper = $this->getTransactionHelper();
 
@@ -169,16 +158,25 @@ class TransactionEventTest extends TestCase
         $request = $this->mockSdk()->callback();
         $response = $helper->callback($this->gateway, $request);
         $this->assertTrue($response['success']);
-
-        $this->assertWebhookContent(function($content)
-        {
-            $this->assertSame('customer.transaction.completed', $content['event']);
-        });
     }
 
     public function testIncomingPayFailed()
     {
-        $this->setEventsForMerchant();
+        $this->expectWebhookEvent(
+            'customer.transaction.failed',
+            function(array $event)
+            {
+                $this->assertArraySubset([
+                    'type'      => 'pay',
+                    'flow'      => 'credit',
+                    'status'    => 'failed'
+                ], $event['payload']);
+
+                $this->assertNotNull($event['payload']['upi']['ref_id']);
+                $this->assertNotNull($event['payload']['upi']['rrn']);
+                $this->assertNotNull($event['payload']['upi']['network_transaction_id']);
+            }
+        );
 
         $helper = $this->getTransactionHelper();
 
@@ -199,26 +197,6 @@ class TransactionEventTest extends TestCase
         $request = $this->mockSdk()->callback();
         $response = $helper->callback($this->gateway, $request);
         $this->assertTrue($response['success']);
-
-        $this->assertWebhookContent(function($content)
-        {
-            $this->assertSame('customer.transaction.failed', $content['event']);
-
-            $this->assertArraySubset([
-                'type'      => 'pay',
-                'flow'      => 'credit',
-                'status'    => 'failed'
-            ], $content['payload']);
-
-            $this->assertNotNull($content['payload']['upi']['ref_id']);
-            $this->assertNotNull($content['payload']['upi']['rrn']);
-            $this->assertNotNull($content['payload']['upi']['network_transaction_id']);
-
-        }, function($headers)
-        {
-            $this->assertNotNull($headers['X-Razorpay-Signature'][0]);
-            $this->assertSame('www.example.com', $headers['Host'][0]);
-        });
     }
 
     public function testEducationSms()
