@@ -2295,6 +2295,58 @@ return [
         ]
     ],
 
+    'testBulkTerminalUpdateForBulkBankRemoveMethod' => [
+        'request' => [
+            'url'   => '/terminals/banks/bulk',
+            'content' => [
+                'banks'                    => ['ANDB', 'BKID', 'MAHB', 'CNRB', 'CIUB', 'DLXB', 'IDIB', 'IOBA'],
+                'action'                   => 'remove',
+                'terminal_ids'             => ['100000EbsTrmnl', '1000AtomShared'],
+            ],
+            'method' => 'PUT'
+        ],
+        'response' => [
+            'content' => [
+                '100000EbsTrmnl' => [
+                    'JAKA'   => 'Jammu and Kashmir Bank',
+                    'KARB'   => 'Karnataka Bank',
+                    'LAVB_R' => 'Lakshmi Vilas Bank - Retail Banking',
+                    'PSIB'   => 'Punjab & Sind Bank',
+                    'PUNB_R' => 'Punjab National Bank - Retail Banking',
+                    'SRCB'   => 'Saraswat Co-operative Bank',
+                    'UCBA'   => 'UCO Bank',
+                    'UBIN'   => 'Union Bank of India',
+                    'UTBI'   => 'PNB (Erstwhile-United Bank of India)',
+                    'VIJB'   => 'Vijaya Bank',
+                    'YESB'   => 'Yes Bank'
+                ],
+                '1000AtomShared' => [
+                    'KARB'   => 'Karnataka Bank',
+                    'KVBL'   => 'Karur Vysya Bank',
+                    'LAVB_R' => 'Lakshmi Vilas Bank - Retail Banking',
+                    'PSIB'   => 'Punjab & Sind Bank',
+                    'PUNB_R' => 'Punjab National Bank - Retail Banking',
+                    'SRCB'   => 'Saraswat Co-operative Bank',
+                    'SIBL'   => 'South Indian Bank',
+                    'SBIN'   => 'State Bank of India',
+                    'SBBJ'   => 'State Bank of Bikaner and Jaipur',
+                    'SBHY'   => 'State Bank of Hyderabad',
+                    'SBMY'   => 'State Bank of Mysore',
+                    'STBP'   => 'State Bank of Patiala',
+                    'SBTR'   => 'State Bank of Travancore',
+                    'SCBL'   => 'Standard Chartered Bank',
+                    'TMBL'   => 'Tamilnadu Mercantile Bank',
+                    'UCBA'   => 'UCO Bank',
+                    'UBIN'   => 'Union Bank of India',
+                    'UTBI'   => 'PNB (Erstwhile-United Bank of India)',
+                    'VIJB'   => 'Vijaya Bank',
+                ],
+                'success' => true,
+            ]
+        ]
+
+    ],
+
     'testBulkTerminalUpdateForBankAddMethod' => [
         'request' => [
             'content' => [
@@ -2315,6 +2367,87 @@ return [
                 'success'             => true
             ]
         ]
+    ],
+
+    'testBulkTerminalUpdateForBulkBankAddMethod' => [
+        'request' => [
+            'url'     => '/terminals/banks/bulk',
+            'content' => [
+                'banks'                    => ['BKID', 'JAKA', 'KARB', 'LAVB_R', 'PSIB'],
+                'action'                   => 'add',
+                'terminal_ids'             => ['100000EbsTrmnl', '1000AtomShared'],
+            ],
+            'method' => 'PUT'
+        ],
+        'response' => [
+            'content' => [
+                '1000AtomShared' => [
+                    'BKID'   => 'Bank of India',
+                    'JAKA'   => 'Jammu and Kashmir Bank',
+                    'KARB'   => 'Karnataka Bank',
+                    'LAVB_R' => 'Lakshmi Vilas Bank - Retail Banking',
+                    'PSIB'   => 'Punjab & Sind Bank',
+                ],
+                '100000EbsTrmnl' => [
+                    'BKID'   => 'Bank of India',
+                    'JAKA'   => 'Jammu and Kashmir Bank',
+                    'KARB'   => 'Karnataka Bank',
+                    'LAVB_R' => 'Lakshmi Vilas Bank - Retail Banking',
+                    'PSIB'   => 'Punjab & Sind Bank',
+                ],
+                'success'             => true
+            ]
+        ]
+    ],
+
+    'testBulkTerminalUpdateBulkBankAddRemoveInvalidBank' => [
+        'request' => [
+            'url'     => '/terminals/banks/bulk',
+            'content' => [
+                'banks'                    => ['JAKA', 'KARB', 'ZZZZ',  'LAVB_R', 'PSIB'],
+                'terminal_ids'             => ['100000EbsTrmnl', '1000AtomShared'],
+            ],
+            'method'  => 'PUT'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    "description" => "Invalid bank name in input: ZZZZ",
+                ],
+            ],
+            'status_code' => '400'
+        ],
+        'exception' => [
+            'class'                 => \RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code'   => 'BAD_REQUEST_VALIDATION_FAILURE',
+        ],
+
+    ],
+
+    'testBulkTerminalUpdateForBankAndBanksShouldFail' => [
+        'request' => [
+            'url'     => '/terminals/banks/bulk',
+            'content' => [
+                'bank'                     => 'SBIN',
+                'banks'                    => ['BKID', 'JAKA', 'KARB', 'LAVB_R', 'PSIB'],
+                'action'                   => 'add',
+                'terminal_ids'             => ['100000EbsTrmnl', '1000AtomShared'],
+            ],
+            'method' => 'PUT'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'description' => "'banks' and 'bank' should not be sent at the same time",
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => \RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => 'BAD_REQUEST_VALIDATION_FAILURE',
+        ]
+
     ],
 
     'testBulkTerminalUpdateForUnsupportedBankAddMethod' => [

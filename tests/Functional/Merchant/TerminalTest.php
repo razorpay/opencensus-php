@@ -1265,6 +1265,31 @@ class TerminalTest extends TestCase
         $this->assertArrayNotHasKey('ANDB', $response[$ebsTermId]);
     }
 
+    public function testBulkTerminalUpdateForBulkBankRemoveMethod()
+    {
+        $this->fixtures->create('terminal:multiple_netbanking_terminals');
+
+        $this->ba->adminAuth();
+
+        $response = $this->startTest();
+
+        $banksToBeRemoved = $this->testData[__FUNCTION__]['request']['content']['banks'];
+
+        foreach([Shared::ATOM_RAZORPAY_TERMINAL, Shared::EBS_RAZORPAY_TERMINAL] as $terminalId)
+        {
+            $terminal = (new Terminal\Repository)->getById($terminalId);
+
+            $enabledBanks = $terminal->getEnabledBanks();
+
+            foreach($banksToBeRemoved as $bank)
+            {
+                $this->assertArrayNotHasKey($bank, $enabledBanks);
+
+                $this->assertArrayNotHasKey($bank, $enabledBanks);
+            }
+        }
+    }
+
     public function testBulkTerminalUpdateForBankAddMethod()
     {
         $url = '/terminals/banks/bulk';
@@ -1284,6 +1309,56 @@ class TerminalTest extends TestCase
         $this->startTest();
 
     }
+
+    public function testBulkTerminalUpdateForBulkBankAddMethod()
+    {
+        $this->fixtures->create('terminal:multiple_netbanking_terminals');
+
+        $this->fixtures->terminal->setEnabledBanks(Shared::ATOM_RAZORPAY_TERMINAL);
+
+        $this->fixtures->terminal->setEnabledBanks(Shared::EBS_RAZORPAY_TERMINAL);
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testBulkTerminalUpdateBulkBankAddRemoveInvalidBank()
+    {
+        $this->fixtures->create('terminal:multiple_netbanking_terminals');
+
+        $beforeEnabledBanks = [
+            Shared::ATOM_RAZORPAY_TERMINAL => (new Terminal\Repository)->getById(Shared::ATOM_RAZORPAY_TERMINAL)->getEnabledBanks(),
+            Shared::EBS_RAZORPAY_TERMINAL  =>(new Terminal\Repository)->getById(Shared::EBS_RAZORPAY_TERMINAL)->getEnabledBanks(),
+        ];
+
+        foreach(['add', 'remove'] as $action)
+        {
+            $this->testData[__FUNCTION__]['request']['content']['action'] = $action;
+
+            $this->ba->adminAuth();
+
+            $this->startTest();
+        }
+
+        $afterEnabledBanks = [
+            Shared::ATOM_RAZORPAY_TERMINAL => (new Terminal\Repository)->getById(Shared::ATOM_RAZORPAY_TERMINAL)->getEnabledBanks(),
+            Shared::EBS_RAZORPAY_TERMINAL  =>(new Terminal\Repository)->getById(Shared::EBS_RAZORPAY_TERMINAL)->getEnabledBanks(),
+        ];
+
+        $this->assertEquals($beforeEnabledBanks, $afterEnabledBanks);
+    }
+
+    /*
+     * Asserting that if both bank and banks are sent, then it should fail
+     */
+    public function testBulkTerminalUpdateForBankAndBanksShouldFail()
+    {
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
 
     public function testBulkTerminalUpdateForUnsupportedBankAddMethod()
     {

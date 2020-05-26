@@ -338,13 +338,23 @@ class Service extends Base\Service
 
         $action = $input['action'];
 
+        $banks = [];
+
+        if (isset($input[Entity::BANK]) === true)
+        {
+            array_push($banks, $input[Entity::BANK]);
+        }
+
+        if (isset($input['banks']) === true)
+        {
+            $banks = $input['banks'];
+        }
+
         try
         {
             $ids = $input['terminal_ids'];
 
             $terminals = $this->repo->terminal->findMany($ids);
-
-            $bank = $input['bank'];
 
             foreach ($terminals as $terminal)
             {
@@ -354,7 +364,7 @@ class Service extends Base\Service
 
                 $oldBanksList = array_keys($enabledBanks);
 
-                $newBanksList = $this->getNewBankList($oldBanksList, $bank, $action);
+                $newBanksList = $this->getNewBankList($oldBanksList, $banks, $action);
 
                 //update database only if required
                 if (count($oldBanksList) != count($newBanksList))
@@ -538,22 +548,25 @@ class Service extends Base\Service
      * Add/Remove bank from the oldEnabledBankList adn return the newList.
      *
      * @param  array    $oldList
-     * @param  string    $bank
+     * @param  array    $banks
      * @param  string    $action
      *
      * @return array
      */
-    protected function getNewBankList(array $oldList, string $bank, string $action): array
+    protected function getNewBankList(array $oldList, array $banks, string $action): array
     {
-        $index = array_search($bank, $oldList);
+        foreach ($banks as $bank)
+        {
+            $index = array_search($bank, $oldList);
 
-        if ($index === false and $action === 'add')
-        {
-            array_push($oldList, $bank);
-        }
-        else if ($index !== false and $action === 'remove')
-        {
-            unset($oldList[$index]);
+            if ($index === false and $action === 'add')
+            {
+                array_push($oldList, $bank);
+            }
+            else if ($index !== false and $action === 'remove')
+            {
+                unset($oldList[$index]);
+            }
         }
         return array_values($oldList);
     }

@@ -132,6 +132,10 @@ class Validator extends Base\Validator
         Entity::TPV,
     ];
 
+    protected static $updateTerminalsBankValidators = [
+        'updateTerminalsBankAndBanksShouldNotBePresentTogether'
+    ];
+
     protected static $reassignRules = [
         Entity::MERCHANT_ID                => 'required|alpha_num|size:14',
     ];
@@ -1179,7 +1183,8 @@ class Validator extends Base\Validator
     protected static $updateTerminalsBankRules = [
         Entity::TERMINAL_IDS                => 'required|array',
         Entity::ACTION                      => 'required|string|in:add,remove',
-        Entity::BANK                        => 'required|string|custom',
+        Entity::BANK                        => 'required_without:banks|string|custom',
+        'banks'                             => 'required_without:bank|array|custom',
     ];
 
     protected static $bajajfinservTerminalRules = [
@@ -1677,6 +1682,18 @@ class Validator extends Base\Validator
         }
     }
 
+    public function validateUpdateTerminalsBankAndBanksShouldNotBePresentTogether($input)
+    {
+        if ((isset($input['banks']) === true) and
+            (isset($input[Entity::BANK]) === true))
+        {
+            $message = "'banks' and 'bank' should not be sent at the same time";
+
+
+            throw new Exception\BadRequestValidationFailureException($message);
+        }
+    }
+
     protected static function getMethod($input)
     {
         if (empty($input[Entity::CARD]) === false)
@@ -1720,7 +1737,7 @@ class Validator extends Base\Validator
 
         return null;
     }
-
+  
     protected function getMatchAttributes(Entity $entity)
     {
         $gateway = $entity->getGateway();
@@ -1732,7 +1749,15 @@ class Validator extends Base\Validator
 
         return self::$manualGatewayMatchAttributes;
     }
-
+  
+    protected static function validateBanks($attribute, array $value)
+    {
+        foreach ($value as $bank)
+        {
+            self::validateBank($attribute, $bank);
+        }
+    }
+  
     protected static function validateBank($attribute, $value)
     {
         if (Bank\IFSC::exists($value) === false)
