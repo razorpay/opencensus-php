@@ -210,6 +210,106 @@ class ReconciliationFileTest extends TestCase
         $this->assertBatchStatus(Status::PROCESSED);
     }
 
+    public function testFirstdataCombinedReconFileViaBatchServiceRoute()
+    {
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+        $this->fixtures->create('terminal:shared_first_data_terminal');
+        $this->fixtures->create('terminal:shared_first_data_recurring_terminals');
+        $this->fixtures->merchant->addFeatures('charge_at_will');
+
+        // Recurring authorised payment
+        $payment1 = $this->getNewPaymentEntity(false, true);
+        $this->assertNull($payment1['reference1']);
+
+        $refund1 = $this->refundPayment($payment1['id']);
+        $this->assertNull($refund1['acquirer_data']['arn']);
+
+        // Recurring authorised payment 2
+        $payment2 = $this->getNewPaymentEntity(false, true);
+        $this->assertNull($payment2['reference1']);
+
+        $refund2 = $this->refundPayment($payment2['id']);
+        $this->assertNull($refund2['acquirer_data']['arn']);
+
+        // Add these 2 payments and 2 refunds in entries array
+        $entries[] = $this->overrideFirstDataPayment($payment1);
+        $entries[] = $this->overrideFirstDataRefund($payment1);
+        $entries[] = $this->overrideFirstDataPayment($payment2);
+        $entries[] = $this->overrideFirstDataRefund($payment2);
+
+        $scroogeResponse = [
+            'body' => [
+                'data' => [
+                    ltrim($entries[1]['ft_no'], '0') => [
+                        'payment_id'     => PublicEntity::stripDefaultSign($payment1['id']),
+                        'refund_id'      => PublicEntity::stripDefaultSign($refund1['id'])
+                    ],
+                    $entries[3]['ft_no'] => [
+                        'payment_id'     => PublicEntity::stripDefaultSign($payment2['id']),
+                        'refund_id'      => PublicEntity::stripDefaultSign($refund2['id'])
+                    ]
+                ]
+            ]
+        ];
+
+        $scroogeMock = $this->getMockBuilder(Scrooge::class)
+                            ->setConstructorArgs([$this->app])
+                            ->setMethods(['getRefundsFromPaymentIdAndGatewayId'])
+                            ->getMock();
+
+        $this->app->instance('scrooge', $scroogeMock);
+
+        $this->app->scrooge->method('getRefundsFromPaymentIdAndGatewayId')->willReturn($scroogeResponse);
+
+        // add metadata info to each row
+        foreach ($entries as $key => $entry)
+        {
+            $entry[Constants::GATEWAY]          = 'FirstData';
+            $entry[Constants::SUB_TYPE]         = 'combined';
+            $entry[Constants::SOURCE]           = 'manual';
+            $entry[Constants::SHEET_NAME]       = 'sheet0';
+            $entry[Constants::IDEMPOTENT_ID]    = 'batch_' . str_random(14);
+
+            $entries[$key] = $entry;
+        }
+
+        $this->runWithData($entries);
+
+        // Assert that payments got reconciled
+        $updatedPayment1 = $this->getDbEntityById('payment' ,$payment1['id']);
+        $this->assertEquals($entries[0][FDPaymentRecon::COLUMN_ARN], $updatedPayment1['reference1']);
+        $this->assertTrue($updatedPayment1['gateway_captured']);
+
+        $updatedPayment2 = $this->getDbEntityById('payment' ,$payment2['id']);
+        $this->assertEquals($entries[2][FDPaymentRecon::COLUMN_ARN], $updatedPayment2['reference1']);
+        $this->assertTrue($updatedPayment2['gateway_captured']);
+
+        $paymentTransaction1 = $this->getDbEntityById('transaction', $updatedPayment1['transaction_id'])->toArrayAdmin();
+        $this->assertNotNull($paymentTransaction1['reconciled_at']);
+
+        $paymentTransaction2 = $this->getDbEntityById('transaction', $updatedPayment2['transaction_id'])->toArrayAdmin();
+        $this->assertNotNull($paymentTransaction2['reconciled_at']);
+
+        // Assert that refunds got reconciled
+        $refundTransaction1 = $this->getDbEntity(
+            'transaction',
+            [
+                'type'      => 'refund',
+                'entity_id' => PublicEntity::stripDefaultSign($refund1['id'])
+            ])->toArray();
+
+        $this->assertNotNull($refundTransaction1['reconciled_at']);
+
+        $refundTransaction2 = $this->getDbEntity(
+            'transaction',
+            [
+                'type'      => 'refund',
+                'entity_id' => PublicEntity::stripDefaultSign($refund2['id'])
+            ])->toArray();
+
+        $this->assertNotNull($refundTransaction2['reconciled_at']);
+    }
+
     public function testFirstDataReconNonInrPaymentFile()
     {
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
@@ -1880,7 +1980,7 @@ class ReconciliationFileTest extends TestCase
 
         $facade['transaction_type'] = 'REFUND (CREDIT)';
 
-        $facade['ft_no'] = $payment['gateway_transaction_id'];
+        $facade['ft_no'] = $payment['gateway_transaction_id'] ?? str_random(12);
 
         return $facade;
     }
