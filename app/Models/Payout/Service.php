@@ -422,15 +422,16 @@ class Service extends Base\Service
     {
         (new Validator)->validateInput(Validator::PROCESS_QUEUED_PAYOUTS_INITIATE, $input);
 
-        $this->trace->info(TraceCode::PAYOUT_QUEUED_PROCESSING_INITIATED, [
-            'input' => $input
-        ]);
-
         $balanceIdsWhitelist = $input[Entity::BALANCE_IDS] ?? [];
         $balanceIdsBlacklist = $input[Entity::BALANCE_IDS_NOT] ?? [];
 
         $prevCronTime = $this->getProcessQueuedPayoutsCronLastRunAt();
         $currentTime  = Carbon::now(Timezone::IST)->getTimestamp();
+
+        $this->trace->info(TraceCode::PAYOUT_QUEUED_PROCESSING_INITIATED, [
+            'last_cron_run_at'  => $prevCronTime,
+            'input'             => $input,
+        ]);
 
         $balanceIdsWhereBalanceUpdatedRecently = $this->repo
                                                       ->balance
@@ -464,7 +465,9 @@ class Service extends Base\Service
         $this->setProcessQueuedPayoutsCronLastRunAt($currentTime);
 
         $this->trace->info(TraceCode::PAYOUT_QUEUED_PROCESSING_COMPLETED, [
-            'balance_id_list' => $balanceIdList
+            'old_cron_run_at' => $prevCronTime,
+            'new_cron_run_at' => $currentTime,
+            'balance_id_list' => $balanceIdList,
         ]);
 
         return ['balance_id_list' => $balanceIdList];
