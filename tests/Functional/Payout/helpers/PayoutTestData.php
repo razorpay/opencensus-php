@@ -3739,7 +3739,7 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'UPI is not a valid mode for issuer default_issuer',
+                    'description' => 'UPI is not a valid mode for issuer AMEX',
                 ]
             ],
             'status_code' => 400,

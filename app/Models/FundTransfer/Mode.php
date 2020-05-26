@@ -250,6 +250,11 @@ class Mode
         if ((isset($supportedModes) === false) or
             (in_array($mode, $supportedModes, true) === false))
         {
+            if ($issuer === Attempt\Constants::DEFAULT_ISSUER)
+            {
+                throw new BadRequestValidationFailureException("$mode is not a valid mode for issuer AMEX");
+            }
+
             throw new BadRequestValidationFailureException("$mode is not a valid mode for issuer $issuer");
         }
     }
