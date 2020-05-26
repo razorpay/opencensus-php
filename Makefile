@@ -3,6 +3,7 @@ SHELL = /bin/sh
 DOCKER = docker
 DOCKER_RMI = docker rmi
 DOCKER_RM = docker rm
+DOCKER_STOP = docker stop
 DOCKER_EXEC = docker exec
 DOCKER_COMPOSE = docker-compose
 
@@ -12,6 +13,7 @@ DOCKER_IMAGES_API = $(shell docker images razorpay:api -q -a)
 DOCKER_PS_API_IMG = $(shell docker ps|grep "razorpay:api"|head -n 1|cut -d ' ' -f1)
 DOCKER_PS_API_ALL = $(shell docker ps|grep "razorpay:api"|cut -d ' ' -f1)
 DOCKER_PS_ALL_API_ALL = $(shell docker ps|grep "razorpay:api\|api_db\|_cache\|elasticsearch"|cut -d ' ' -f1)
+DOCKER_PS_REDIS_CLUSTER_CONTAINER_ID =  $(shell docker ps|grep "api-redis-cluster"|cut -d ' ' -f1)
 
 #Files used
 DOCKER_DEV_COMPOSE_FILE = docker-compose.dev.yml
@@ -50,6 +52,10 @@ build: clean
 	@echo "\n===================="
 	@echo "Container build Setup Complete. You may now execute 'docker ps' to see if things are up"
 	docker ps
+
+redis-cluster:
+	if [ "x$(DOCKER_PS_REDIS_CLUSTER_CONTAINER_ID)" != x ]; then $(DOCKER_STOP) $(DOCKER_PS_REDIS_CLUSTER_CONTAINER_ID); $(DOCKER_RM) $(DOCKER_PS_REDIS_CLUSTER_CONTAINER_ID); fi
+	$(DOCKER) run -e IP=0.0.0.0 -p 7000-7050:7000-7050 -p 5000-5010:5000-5010 -d grokzen/redis-cluster:5.0.9
 
 clean:
 	$(DOCKER_COMPOSE) -f $(DOCKER_DEV_COMPOSE_FILE) down --remove-orphans

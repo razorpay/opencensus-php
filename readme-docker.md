@@ -50,7 +50,7 @@ Now Log out and log back in once after last step.
 
 ##### Login to Dockerhub
 Ensure that you have a dockerhub user that is added to the Razorpay Organization.
- - Admin Contact: `nemo@razorpay.com`
+ - Admin Contact: `nemo@razorpay.com`, @giri : `giridaran.manivannan@razorpay.com`
 
 ###### Mac Users
 Run Docker for Mac while signed-in as this user. If it still says access denied while pulling docker images, login via the console as well using `docker login`.
@@ -67,11 +67,6 @@ export GIT_TOKEN
 ```
 or,
 add it to your `.bashrc`/`.bash_profile`
-
-##### Setup docker env vars
-create environment/env.php based on environment/env.sample.php
-It should return 'dev_docker', for which should be created as environment/.env.dev\_docker (use .env.defaults as template)
-
 
 ##### Optional configurations
 Note: By default API will run on port 28080 and mysql on 23306. In case you wish to change these params or other ports like for elasticsearch, please modify `docker-compose.dev.yml`
@@ -104,6 +99,15 @@ to run the app locally.
 
 You should be able to access the app at:
 `http://api.razorpay.in:28080/`
+
+In case you usually run `make build` for test setup and run tests outside of api container, then
+redis-cluster which spins up by default won't work. It returns the docker's internal IPs for nodes which are not
+accessible outside of docker. For this you need to run one extra cmd `make redis-cluster`. This will
+stop the redis cluster started by docker-compose and run another redis-cluster which returns node IPs of host.
+This also means now your server running inside docker can't access rest of nodes of redis-cluster since they now return host IPs.
+
+In case you want to run tests outside of docker & server inside docker, then you should uncomment last container in docker-compose.dev.yml
+After doing so, `make build` will start 2 redis-clusters running in docker setup. one just for running tests (accessible outside of docker @ 0.0.0.0:7000) & one for serving web requests.
 
 #### Shutting down/Pausing the container
 
