@@ -3878,7 +3878,7 @@ class Processor
                 'version'    => 1,
                 'payment_id' => $payment->getPublicId(),
                 'method'     => 'paylater',
-                'gateway'    => 'getsimpl',
+                'gateway'    => $this->getEncryptedGatewayText(Payment\Gateway::GETSIMPL),
                 'amount'     => $payment->getFormattedAmount(),
                 'request'    => [
                     'url'     => $url,
