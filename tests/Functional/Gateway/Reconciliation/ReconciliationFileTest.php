@@ -2040,7 +2040,6 @@ class ReconciliationFileTest extends TestCase
         $facade['Auth ID']                  = $payment['pAuthID'];
         $facade['ARN']                      = str_random(24);
         $facade['Tran Currency Code']       = '356';
-        $facade[Constants::IDEMPOTENT_ID]   = 'batch_' . str_random(14);
 
         return array_merge($facade, $forceOverride);
     }
@@ -2234,11 +2233,11 @@ class ReconciliationFileTest extends TestCase
         // add metadata info to each row
         foreach ($entries as $key => $entry)
         {
-            $entry[Constants::GATEWAY]      = 'Hitachi';
-            $entry[Constants::SUB_TYPE]     = 'combined';
-            $entry[Constants::SOURCE]       = 'manual';
-            $entry[Constants::SHEET_NAME]   = 'sheet0';
-            $entry[Constants::BATCH_ID]     = 'EnIgGTCfjAhCBK';
+            $entry[Constants::GATEWAY]          = 'Hitachi';
+            $entry[Constants::SUB_TYPE]         = 'combined';
+            $entry[Constants::SOURCE]           = 'manual';
+            $entry[Constants::SHEET_NAME]       = 'sheet0';
+            $entry[Constants::IDEMPOTENT_ID]    = 'batch_' . str_random(14);
 
             $entries[$key] = $entry;
         }

@@ -9,6 +9,7 @@ use RZP\Models\Batch\Status;
 use RZP\Models\VirtualAccount;
 use RZP\Models\Base\PublicEntity;
 use RZP\Tests\Functional\TestCase;
+use RZP\Reconciliator\Base\Constants;
 use RZP\Tests\Functional\Batch\BatchTestTrait;
 use RZP\Tests\Functional\Helpers\Reconciliator\ReconTrait;
 
@@ -85,6 +86,73 @@ class UpiHdfcReconTest extends TestCase
         $this->assertEquals($entries[1]['Txn ref no. (RRN)'], $upiEntity2['npci_reference_id']);
     }
 
+    public function testUpiHdfcReconPaymentFileViaBatchServiceRoute()
+    {
+        $this->fixtures->create('terminal:shared_upi_mindgate_terminal');
+
+        $this->payment = $this->getDefaultUpiPaymentArray();
+
+        $payments = $this->getEntities('payment', [], true);
+
+        foreach ($payments['items'] as $payment)
+        {
+            $this->assertNull($payment['reference16']);
+        }
+
+        $upiEntity1 = $this->getNewUpiEntity('10000000000000', 'upi_mindgate');
+
+        $upiEntity2 = $this->getNewUpiEntity('10000000000000', 'upi_mindgate');
+
+        $entries[] = $this->overrideUpiHdfcPayment($upiEntity1);
+
+        $row = $this->overrideUpiHdfcPayment($upiEntity2);
+
+        // Change the settlement date format for this row, to test
+        // that this format is being parsed correctly without error.
+        $row['Settlement Date'] = '08/19/2018';
+
+        $entries[] = $row;
+
+        // add metadata info to each row
+        foreach ($entries as $key => $entry)
+        {
+            $entry[Constants::GATEWAY]          = 'UpiHdfc';
+            $entry[Constants::SUB_TYPE]         = 'payment';
+            $entry[Constants::SOURCE]           = 'manual';
+            $entry[Constants::SHEET_NAME]       = 'sheet0';
+            $entry[Constants::IDEMPOTENT_ID]    = 'batch_' . str_random(14);
+
+            $entries[$key] = $entry;
+        }
+
+        $this->runWithData($entries);
+
+        $payments = $this->getEntities('payment', [], true);
+
+        foreach ($payments['items'] as $payment)
+        {
+            $this->assertNotNull($payment['reference16']);
+
+            $this->assertEquals($entries[1]['Txn ref no. (RRN)'], $payment['reference16']);
+        }
+
+        $updatedPayment1 = $this->getDbEntityById('payment', $upiEntity1['payment_id']);
+        $updatedPayment2 = $this->getDbEntityById('payment', $upiEntity2['payment_id']);
+
+        $transactionEntity1 = $this->getDbEntityById('transaction', $updatedPayment1['transaction_id']);
+        $transactionEntity2 = $this->getDbEntityById('transaction', $updatedPayment2['transaction_id']);
+
+        $this->assertNotNull($transactionEntity1['reconciled_at']);
+        $this->assertNotNull($transactionEntity2['reconciled_at']);
+
+        $this->assertNotNull($transactionEntity1['gateway_settled_at']);
+        $this->assertNotNull($transactionEntity2['gateway_settled_at']);
+
+        $upiEntity2 = $this->getDbLastEntityToArray('upi');
+
+        $this->assertEquals($entries[1]['Txn ref no. (RRN)'], $upiEntity2['npci_reference_id']);
+    }
+
     public function testUpiHdfcRefundFile()
     {
         $this->fixtures->create('terminal:shared_upi_mindgate_terminal');
@@ -116,6 +184,59 @@ class UpiHdfcReconTest extends TestCase
         $this->reconcile($uploadedFile, 'UpiHdfc');
 
         $this->assertBatchStatus(Status::PROCESSED);
+
+        $transactionEntity = $this->getDbLastEntity('transaction');
+
+        $this->assertNotNull($transactionEntity['reconciled_at']);
+
+        $this->assertNotNull($transactionEntity['gateway_settled_at']);
+
+        $upiEntity = $this->getDbLastEntityToArray('upi');
+
+        $this->assertEquals($entries[0]['Customer Ref No.'], $upiEntity['npci_reference_id']);
+
+        $updatedRefund = $this->getDbLastEntityToArray('refund');
+
+        $this->assertEquals($entries[0]['Customer Ref No.'], $updatedRefund['reference1']);
+
+        $this->assertEquals('processed', $updatedRefund['status']);
+    }
+
+    public function testUpiHdfcReconRefundFileViaBatchServiceRoute()
+    {
+        $this->fixtures->create('terminal:shared_upi_mindgate_terminal');
+
+        $this->payment = $this->getDefaultUpiPaymentArray();
+
+        $upiEntityPayment = $this->getNewUpiEntity('10000000000000', 'upi_mindgate');
+
+        $paymentId = $upiEntityPayment['payment_id'];
+
+        $this->capturePayment('pay_' . $paymentId, 50000 );
+
+        $this->createUpiHdfcRefund($paymentId, 50000);
+
+        $upiEntityRefund = $this->getDbLastEntityToArray('upi');
+
+        $refund = $this->getDbLastEntityToArray('refund');
+
+        $this->assertNull($refund['reference1']);
+
+        $entries[] = $this->overrideUpiHdfcRefund($paymentId, $upiEntityRefund);
+
+        // add metadata info to each row
+        foreach ($entries as $key => $entry)
+        {
+            $entry[Constants::GATEWAY]          = 'UpiHdfc';
+            $entry[Constants::SUB_TYPE]         = 'refund';
+            $entry[Constants::SOURCE]           = 'manual';
+            $entry[Constants::SHEET_NAME]       = 'sheet0';
+            $entry[Constants::IDEMPOTENT_ID]    = 'batch_' . str_random(14);
+
+            $entries[$key] = $entry;
+        }
+
+        $this->runWithData($entries);
 
         $transactionEntity = $this->getDbLastEntity('transaction');
 
@@ -416,6 +537,19 @@ class UpiHdfcReconTest extends TestCase
 
         $facade['New Refund Order ID'] = $upiEntity['refund_id'];
 
+        $facade['Transaction Amount'] = ($upiEntity['amount'] / 100);
+
         return $facade;
+    }
+
+    public function runWithData($entries)
+    {
+        $this->ba->batchAuth();
+
+        $testData = $this->testData['bulk_reconcile_via_batch_service'];
+
+        $testData['request']['content']= $entries;
+
+        $this->runRequestResponseFlow($testData);
     }
 }

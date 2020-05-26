@@ -35,4 +35,19 @@ return [
         'Settlement Status'    => 'Reconciled',
         'New Refund Order ID'  => 'ABCD1234ABCD12',
     ],
+
+    'bulk_reconcile_via_batch_service' => [
+        'request' => [
+            'url'     => '/reconciliate/batch_service/bulk',
+            'method'  => 'post',
+            'server' => [
+                'HTTP_X_Batch_Id' => "C0zv9I46W4wiOq",
+                'mode'            =>  'live',
+                'X-Entity-Id'     =>  'MID'
+            ],
+        ],
+        'response' => [
+            'content' => [],
+        ]
+    ],
 ];
