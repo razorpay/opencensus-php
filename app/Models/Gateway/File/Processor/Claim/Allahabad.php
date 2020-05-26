@@ -3,9 +3,8 @@
 namespace RZP\Models\Gateway\File\Processor\Claim;
 
 use RZP\Models\Payment;
-use RZP\Models\Base\PublicCollection;
 
-class Allahabad extends Base
+class Allahabad extends NetbankingBase
 {
     const GATEWAY = Payment\Gateway::NETBANKING_ALLAHABAD;
 

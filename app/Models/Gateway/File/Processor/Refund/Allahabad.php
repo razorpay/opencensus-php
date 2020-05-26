@@ -10,6 +10,7 @@ use RZP\Models\Bank\IFSC;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
 use RZP\Constants\Mode as RZPMode;
+use RZP\Services\NbPlus\Netbanking;
 use RZP\Constants\Entity as ConstantsEntity;
 use RZP\Models\Gateway\File\Processor\FileHandler;
 
@@ -42,6 +43,15 @@ class Allahabad extends Base
 
             $refundDate = $this->createDateFormat($row['refund']['created_at']);
 
+            if($row['payment']['cps_route'] === Payment\Entity::NB_PLUS_SERVICE)
+            {
+                $bankRefId = $row['gateway'][Netbanking::BANK_TRANSACTION_ID]; // payment through nbplus service
+            }
+            else
+            {
+                $bankRefId = $row['gateway']['bank_payment_id'];
+            }
+
             $formattedData[] = [
                 'PID'                   => self::PAYEE_ID,
                 'Bank Id'               => self::BANK_CODE,
@@ -49,7 +59,7 @@ class Allahabad extends Base
                 'Txn Date'              => $txnDate,
                 'Refund Date'           => $refundDate,
                 'Bank Merchant Code'    => $this->getMerchantId($row[ConstantsEntity::TERMINAL]),
-                'Bank Ref No.'          => $row['gateway']['bank_payment_id'],
+                'Bank Ref No.'          => $bankRefId,
                 'PGI Reference No.'     => $row['payment']['id'],
                 'Txn Amount'            => $this->formatAmount($row['payment']['amount'] / 100),
                 'Refund'                => $this->formatAmount($row['refund']['amount'] / 100),

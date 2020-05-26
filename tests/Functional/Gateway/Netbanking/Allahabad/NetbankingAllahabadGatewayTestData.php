@@ -1,9 +1,10 @@
 <?php
 
+use Carbon\Carbon;
 use RZP\Error\ErrorCode;
+use RZP\Constants\Timezone;
 use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
-use RZP\Exception\PaymentVerificationException;
 
 return [
     'testPayment' => [
@@ -176,4 +177,37 @@ return [
         'reference1'      => null,
         'received'        => true,
     ],
+
+    'testNetbankingAllahabadCombinedFile' => [
+        'request' => [
+            'content' => [
+                'type'     => 'combined',
+                'targets'  => ['allahabad'],
+                'begin'    => Carbon::today(Timezone::IST)->getTimestamp(),
+                'end'      => Carbon::tomorrow(Timezone::IST)->getTimestamp()
+            ],
+            'url' => '/gateway/files',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count' => 1,
+                'admin' => true,
+                'items' => [
+                    [
+                        'status'              => 'file_sent',
+                        'scheduled'           => true,
+                        'partially_processed' => false,
+                        'attempts'            => 1,
+                        'sender'              => 'refunds@razorpay.com',
+                        'type'                => 'combined',
+                        'target'              => 'allahabad',
+                        'entity'              => 'gateway_file',
+                        'admin'               => true
+                    ],
+                ]
+            ]
+        ]
+    ]
 ];

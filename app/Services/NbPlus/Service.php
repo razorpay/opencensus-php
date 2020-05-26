@@ -31,10 +31,11 @@ class Service
     const ADMIN_PATH = 'admin/entities/';
 
     const GATEWAY_TO_METHOD_MAP = [
-      Payment\Gateway::ATOM           => Payment\Method::NETBANKING,
-      Payment\Gateway::NETBANKING_CSB => Payment\Method::NETBANKING,
-      Payment\Gateway::NETBANKING_CUB => Payment\Method::NETBANKING,
-      Payment\Gateway::NETBANKING_SVC => Payment\Method::NETBANKING,
+      Payment\Gateway::ATOM                 => Payment\Method::NETBANKING,
+      Payment\Gateway::NETBANKING_CSB       => Payment\Method::NETBANKING,
+      Payment\Gateway::NETBANKING_CUB       => Payment\Method::NETBANKING,
+      Payment\Gateway::NETBANKING_SVC       => Payment\Method::NETBANKING,
+      Payment\Gateway::NETBANKING_ALLAHABAD => Payment\Method::NETBANKING
     ];
 
     protected $baseUrl;
