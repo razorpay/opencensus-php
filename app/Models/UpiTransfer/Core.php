@@ -122,10 +122,9 @@ class Core extends Base\Core
         $properties = [
             'source'        => 'callback',
             'request_from'  => 'bank',
-            'gateway'       => $upiTransfer->getGateway(),
         ];
 
-        $this->app['diag']->trackUpiTransferEvent(
+        $this->app['diag']->trackUpiTransferRequestEvent(
             EventCode::UPI_TRANSFER_REQUEST,
             $upiTransfer,
             null,

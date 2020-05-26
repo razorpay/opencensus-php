@@ -3,16 +3,17 @@
 namespace RZP\Models\VirtualAccount;
 
 use Carbon\Carbon;
-use RZP\Base\BuilderEx;
 use RZP\Models\Vpa;
 use RZP\Models\Base;
 use RZP\Models\Customer;
 use RZP\Models\Merchant;
+use RZP\Error\ErrorCode;
 use RZP\Models\BankAccount;
 use RZP\Models\BankTransfer;
 use RZP\Constants\Entity as Constants;
 use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Models\Base\Traits\HasBalance;
+use RZP\Exception\BadRequestException;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
@@ -345,6 +346,15 @@ class Entity extends Base\PublicEntity
     public function updateWithBankTransfer(BankTransfer\Entity $bankTransfer)
     {
         $paidAmount = $bankTransfer->payment->getAdjustedAmountWrtCustFeeBearer();
+
+        if ($paidAmount < 0)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_BANK_TRANSFER_FEE_CALCULATED_GREATER_THAN_PAYMENT_AMOUNT,
+                BankTransfer\Entity::AMOUNT,
+                $bankTransfer->getAmount()
+            );
+        }
 
         $this->incrementAmountPaid($paidAmount);
         $this->incrementAmountReceived($paidAmount);

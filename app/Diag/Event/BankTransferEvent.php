@@ -26,8 +26,30 @@ class BankTransferEvent extends Event
         if ($bankTransfer !== null)
         {
             $properties['bank_transfer'] = [
-                'id' => $bankTransfer->getId(),
+                'id'        => $bankTransfer->getId(),
+                'gateway'   => $bankTransfer->getGateway(),
             ];
         }
+    }
+
+    public function addCustomProperties()
+    {
+        $bankTransfer = $this->entity;
+
+        if ($bankTransfer === null)
+        {
+            return;
+        }
+
+        $merchant = $bankTransfer->merchant;
+
+        $customProperties = [
+            'utr'               => $bankTransfer->getUtr(),
+            'payee_account'     => $bankTransfer->getPayeeAccount(),
+            'merchant_id'       => ($merchant !== null) ? $merchant->getId() : null,
+            'merchant_name'     => ($merchant !== null) ? $merchant->getName() : null,
+        ];
+
+        $this->customProperties += $customProperties;
     }
 }

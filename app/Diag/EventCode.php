@@ -499,6 +499,16 @@ class EventCode
         'name'  => 'payment_page.created',
     ];
 
+    const VIRTUAL_ACCOUNT_CREATED = [
+        'group' => 'virtual_account',
+        'name'  => 'virtual_account.created',
+    ];
+
+    const VIRTUAL_ACCOUNT_CLOSED = [
+        'group' => 'virtual_account',
+        'name'  => 'virtual_account.closed',
+    ];
+
     const BANK_TRANSFER_REQUEST = [
         'group' => 'bank_transfer',
         'name'  => 'bank_transfer.request',
@@ -509,13 +519,13 @@ class EventCode
         'name'  => 'upi_transfer.request',
     ];
 
-    const VIRTUAL_ACCOUNT_CREATED = [
-        'group' => 'virtual_account',
-        'name'  => 'virtual_account.created',
+    const BANK_TRANSFER_UNEXPECTED_PAYMENT = [
+        'group' => 'bank_transfer',
+        'name'  => 'bank_transfer.unexpected_payment',
     ];
 
-    const VIRTUAL_ACCOUNT_CLOSED = [
-        'group' => 'virtual_account',
-        'name'  => 'virtual_account.closed',
+    const UPI_TRANSFER_UNEXPECTED_PAYMENT = [
+        'group' => 'upi_transfer',
+        'name'  => 'upi_transfer.unexpected_payment',
     ];
 }

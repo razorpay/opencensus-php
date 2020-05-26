@@ -5,7 +5,6 @@ namespace RZP\Models\BankTransfer;
 use Config;
 
 use RZP\Constants;
-use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Order;
 use RZP\Models\Payment;
@@ -591,9 +590,7 @@ class Core extends Base\Core
                 break;
         }
 
-        $properties['gateway'] = $bankTransfer->getGateway();
-
-        $this->app['diag']->trackBankTransferEvent(
+        $this->app['diag']->trackBankTransferRequestEvent(
             EventCode::BANK_TRANSFER_REQUEST,
             $bankTransfer,
             null,

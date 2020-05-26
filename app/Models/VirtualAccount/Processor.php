@@ -3,12 +3,15 @@
 namespace RZP\Models\VirtualAccount;
 
 use App;
+use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Models\Payment;
+use RZP\Diag\EventCode;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Models\VirtualAccount;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Error\PublicErrorDescription;
 use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
 
 abstract class Processor extends Base\Core
@@ -29,6 +32,10 @@ abstract class Processor extends Base\Core
      * @var PaymentProcessor
      */
     protected $paymentProcessor;
+
+    const VIRTUAL_ACCOUNT_PAYMENT_AMOUNT_DOES_NOT_MATCH_ORDER_AMOUNT = 'VIRTUAL_ACCOUNT_PAYMENT_AMOUNT_DOES_NOT_MATCH_ORDER_AMOUNT';
+
+    const VIRTUAL_ACCOUNT_NOT_FOUND = 'VIRTUAL_ACCOUNT_NOT_FOUND';
 
     public function __construct()
     {
@@ -182,6 +189,11 @@ abstract class Processor extends Base\Core
             $this->trace->traceException($e, Trace::INFO,
                 TraceCode::VIRTUAL_ACCOUNT_FAILED_FOR_ORDER, ['input' => $input]);
 
+            if ($e->getMessage() === PublicErrorDescription::BAD_REQUEST_PAYMENT_ORDER_AMOUNT_MISMATCH)
+            {
+                $this->pushVaPaymentFailedDueToOrderAmountMismatchEventToLake($input, $e);
+            }
+
             $this->createPaymentWithoutOrder($input, $gatewayData);
         }
     }
@@ -296,6 +308,8 @@ abstract class Processor extends Base\Core
                 TraceCode::VIRTUAL_ACCOUNT_CLOSED_PAYMENT_REROUTED,
                 $entity->toArray());
 
+            $this->pushVaPaymentFailedDueToClosedVaEventToLake($entity);
+
             return true;
         }
 
@@ -317,5 +331,61 @@ abstract class Processor extends Base\Core
         }
 
         return false;
+    }
+
+    protected function pushVaPaymentFailedDueToOrderAmountMismatchEventToLake(array $input, \Exception $ex)
+    {
+        $method = $input[Payment\Entity::METHOD];
+
+        $receiverType = $input[Payment\Entity::RECEIVER]['type'];
+
+        $properties = [
+            'error'                     => self::VIRTUAL_ACCOUNT_PAYMENT_AMOUNT_DOES_NOT_MATCH_ORDER_AMOUNT,
+            Payment\Entity::RECEIVER    => $input[Payment\Entity::RECEIVER],
+            Payment\Entity::ORDER_ID    => $input[Payment\Entity::ORDER_ID],
+        ];
+
+        if (($method === Payment\Method::BANK_TRANSFER) and
+            ($receiverType === Receiver::BANK_ACCOUNT))
+        {
+            $this->app['diag']->trackBankTransferEvent(
+                EventCode::BANK_TRANSFER_UNEXPECTED_PAYMENT,
+                null,
+                $ex,
+                $properties
+            );
+        }
+        else if (($method === Payment\Method::UPI) and
+                 ($receiverType === Receiver::VPA))
+        {
+            $this->app['diag']->trackUpiTransferEvent(
+                EventCode::UPI_TRANSFER_UNEXPECTED_PAYMENT,
+                null,
+                $ex,
+                $properties
+            );
+        }
+    }
+
+    protected function pushVaPaymentFailedDueToClosedVaEventToLake($entity)
+    {
+        if ($entity->getEntityName() === Constants\Entity::BANK_TRANSFER)
+        {
+            $this->app['diag']->trackBankTransferEvent(
+                EventCode::BANK_TRANSFER_UNEXPECTED_PAYMENT,
+                $entity,
+                null,
+                ['error' => self::VIRTUAL_ACCOUNT_NOT_FOUND]
+            );
+        }
+        else if ($entity->getEntityName() === Constants\Entity::UPI_TRANSFER)
+        {
+            $this->app['diag']->trackUpiTransferEvent(
+                EventCode::UPI_TRANSFER_UNEXPECTED_PAYMENT,
+                $entity,
+                null,
+                ['error' => self::VIRTUAL_ACCOUNT_NOT_FOUND]
+            );
+        }
     }
 }

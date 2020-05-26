@@ -4,6 +4,7 @@ namespace RZP\Models\UpiTransfer;
 
 use RZP\Models\Base;
 use RZP\Models\Payment;
+use RZP\Diag\EventCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\VirtualAccount;
 use RZP\Models\Currency\Currency;
@@ -50,32 +51,47 @@ class Processor extends VirtualAccount\Processor
 
     protected function processPayment(Base\PublicEntity $upiTransfer)
     {
-        $this->repo->transaction(
-            function() use ($upiTransfer) {
+        try
+        {
+            $this->repo->transaction(
+                function() use ($upiTransfer) {
 
-                $paymentInput = $this->getPaymentArray($upiTransfer);
+                    $paymentInput = $this->getPaymentArray($upiTransfer);
 
-                $this->callbackData[Payment\Entity::TERMINAL_ID] = $this->getTerminal()->getId();
+                    $this->callbackData[Payment\Entity::TERMINAL_ID] = $this->getTerminal()->getId();
 
-                $this->createPayment($paymentInput, $this->callbackData);
+                    $this->createPayment($paymentInput, $this->callbackData);
 
-                $payment = $this->getPaymentProcessor()->getPayment();
+                    $payment = $this->getPaymentProcessor()->getPayment();
 
-                $upiTransfer->payment()->associate($payment);
+                    $upiTransfer->payment()->associate($payment);
 
-                $upiTransfer->virtualAccount()->associate($this->virtualAccount);
+                    $upiTransfer->virtualAccount()->associate($this->virtualAccount);
 
-                $this->repo->saveOrFail($upiTransfer);
+                    $this->repo->saveOrFail($upiTransfer);
 
-                $this->updateVirtualAccount($upiTransfer);
+                    $this->updateVirtualAccount($upiTransfer);
 
-                return $payment;
-            }
-        );
+                    return $payment;
+                }
+            );
 
-        $this->refundOrCapturePayment($upiTransfer);
+            $this->refundOrCapturePayment($upiTransfer);
 
-        return $upiTransfer;
+            return $upiTransfer;
+        }
+        catch (\Exception $ex)
+        {
+            $this->app['diag']->trackUpiTransferEvent(
+                EventCode::UPI_TRANSFER_UNEXPECTED_PAYMENT,
+                $upiTransfer,
+                $ex,
+                ['error' => $ex->getMessage()]
+            );
+
+            throw $ex;
+        }
+
     }
 
     protected function getVirtualAccountFromEntity(Base\PublicEntity $entity)
@@ -141,6 +157,13 @@ class Processor extends VirtualAccount\Processor
                         Entity::BANK_REFERENCE => $upiTransfer->getBankReference(),
                     ],
                 ]);
+
+            $this->app['diag']->trackUpiTransferEvent(
+                EventCode::UPI_TRANSFER_UNEXPECTED_PAYMENT,
+                $upiTransfer,
+                null,
+                ['error' => self::VIRTUAL_ACCOUNT_NOT_FOUND]
+            );
 
             return true;
         }

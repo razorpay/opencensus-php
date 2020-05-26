@@ -26,8 +26,30 @@ class UpiTransferEvent extends Event
         if ($upiTransfer !== null)
         {
             $properties['upi_transfer'] = [
-                'id' => $upiTransfer->getId(),
+                'id'        => $upiTransfer->getId(),
+                'gateway'   => $upiTransfer->getGateway(),
             ];
         }
+    }
+
+    public function addCustomProperties()
+    {
+        $upiTransfer = $this->entity;
+
+        if ($upiTransfer === null)
+        {
+            return;
+        }
+
+        $merchant = $upiTransfer->merchant;
+
+        $customProperties = [
+            'tr'                => $upiTransfer->getTr(),
+            'payee_vpa'         => $upiTransfer->getPayeeVpa(),
+            'merchant_id'       => ($merchant !== null) ? $merchant->getId() : null,
+            'merchant_name'     => ($merchant !== null) ? $merchant->getName() : null,
+        ];
+
+        $this->customProperties += $customProperties;
     }
 }

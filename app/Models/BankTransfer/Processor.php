@@ -10,6 +10,7 @@ use Carbon\Carbon;
 
 use RZP\Models\Base;
 use RZP\Models\Payment;
+use RZP\Diag\EventCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\BankAccount;
 use RZP\Constants\Timezone;
@@ -143,27 +144,48 @@ class Processor extends VirtualAccount\Processor
         assertTrue($this->virtualAccount->isBalanceTypePrimary(), 'Attempted processing VA payment incorrectly!');
         assertTrue($this->repo->isTransactionActive(), 'Attempted processing VA payment without transaction!');
 
-        // Prepares payment input and creates payment and its transaction etc.
-        $paymentInput = $this->getPaymentArray($bankTransfer);
+        $paymentInput = [];
 
-        $terminal = (new TerminalProcessor())->getTerminalForBankTransfer($bankTransfer);
+        try
+        {
+            // Prepares payment input and creates payment and its transaction etc.
+            $paymentInput = $this->getPaymentArray($bankTransfer);
 
-        $gatewayData[Payment\Entity::TERMINAL_ID] = $terminal->getId();
+            $terminal = (new TerminalProcessor())->getTerminalForBankTransfer($bankTransfer);
 
-        $this->createPayment($paymentInput, $gatewayData);
+            $gatewayData[Payment\Entity::TERMINAL_ID] = $terminal->getId();
 
-        $payment = $this->getPaymentProcessor()->getPayment();
+            $this->createPayment($paymentInput, $gatewayData);
 
-        $bankTransfer->payment()->associate($payment);
+            $payment = $this->getPaymentProcessor()->getPayment();
 
-        $this->createAndAssociatePayerBankAccount($bankTransfer);
+            $bankTransfer->payment()->associate($payment);
 
-        $this->repo->saveOrFail($bankTransfer);
+            $this->createAndAssociatePayerBankAccount($bankTransfer);
 
-        // Updates virtual account's stats.
-        $this->virtualAccount->updateWithBankTransfer($bankTransfer);
+            $this->repo->saveOrFail($bankTransfer);
 
-        $this->repo->saveOrFail($this->virtualAccount);
+            // Updates virtual account's stats.
+            $this->virtualAccount->updateWithBankTransfer($bankTransfer);
+
+            $this->repo->saveOrFail($this->virtualAccount);
+        }
+        catch (Exception $ex)
+        {
+            $this->app['diag']->trackBankTransferEvent(
+                EventCode::BANK_TRANSFER_UNEXPECTED_PAYMENT,
+                $bankTransfer,
+                $ex,
+                array_filter(
+                    [
+                        'error'                     => $ex->getMessage(),
+                        Payment\Entity::ORDER_ID    => isset($paymentInput[Payment\Entity::ORDER_ID]) ? $paymentInput[Payment\Entity::ORDER_ID] : null,
+                    ]
+                )
+            );
+
+            throw $ex;
+        }
     }
 
     protected function processPaymentForBanking(Entity $bankTransfer)
@@ -358,6 +380,13 @@ class Processor extends VirtualAccount\Processor
                 [
                     'entity' => $bankTransfer->toArrayTrace(),
                 ]);
+
+            $this->app['diag']->trackBankTransferEvent(
+                EventCode::BANK_TRANSFER_UNEXPECTED_PAYMENT,
+                $bankTransfer,
+                null,
+                ['error' => self::VIRTUAL_ACCOUNT_NOT_FOUND]
+            );
 
             return true;
         }
