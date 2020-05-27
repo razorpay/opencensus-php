@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Settlement;
 
 use Mail;
+use Config;
 use Carbon\Carbon;
 use RZP\Models\Merchant;
 use RZP\Constants\Entity;
@@ -1561,7 +1562,7 @@ class SettlementTest extends TestCase
 
         $this->assertArraySelectiveEquals($expected, $adj);
     }
-    
+
     public function testSettlementAccountTransferOnHold()
     {
         $now = Carbon::create(2018, 8, 14, 10, 0, 0, Timezone::IST);
@@ -2466,5 +2467,59 @@ class SettlementTest extends TestCase
         $this->assertEquals(1, $settlement['is_new_service']);
 
         $this->assertEquals('setl_'. $content['settlement_id'], $settlement['id']);
+    }
+
+    public function testGetGlobalConfigFetchWithPartnerBankAccount()
+    {
+        $partnerBankAccount = $this->createPlatformMerchantsAndSubmerchants();
+
+        $this->assertNotNull($partnerBankAccount);
+
+        $this->createConfigForPartnerApp(
+            Partner\Constants::DEFAULT_NON_PLATFORM_APP_ID,
+            null,
+            [PartnerConfig\Entity::SETTLE_TO_PARTNER => true]);
+
+        $this->ba->appAuth('rzp_test', Config::get('applications.settlements_service')['secret']);
+
+        $this->fixtures->edit('merchant', Partner\Constants::DEFAULT_NON_PLATFORM_SUBMERCHANT_ID, [
+            'activated'    => 1,
+            'activated_at' => Carbon::now(Timezone::IST)->timestamp,
+
+        ]);
+
+        $result = $this->getGlobalConfig(Partner\Constants::DEFAULT_NON_PLATFORM_SUBMERCHANT_ID);
+
+        $this->assertEquals($partnerBankAccount->getId(), $result['partner_bank_account']);
+        $this->assertEquals(true, $result['active']);
+        $this->assertNull($result['parent']);
+    }
+
+    public function testGetGlobalConfigFetchWithParent()
+    {
+        $factoryPath = base_path() . '/vendor/razorpay/oauth/database/factories';
+
+        $this->app->make(Factory::class)->load($factoryPath);
+
+        $this->createPurePlatFormMerchantAndSubMerchant();
+
+        $this->fixtures->create('feature', [
+            'name'        => 'aggregate_settlement',
+            'entity_id'   => Partner\Constants::DEFAULT_PLATFORM_MERCHANT_ID,
+            'entity_type' => 'merchant',
+        ]);
+
+        $this->fixtures->edit('merchant', Partner\Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID, [
+            'activated'    => 1,
+            'activated_at' => Carbon::now(Timezone::IST)->timestamp,
+        ]);
+
+        $this->ba->appAuth('rzp_test', Config::get('applications.settlements_service')['secret']);
+
+        $result = $this->getGlobalConfig(Partner\Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID);
+
+        $this->assertEquals(Partner\Constants::DEFAULT_PLATFORM_MERCHANT_ID, $result['parent']);
+        $this->assertEquals(true, $result['active']);
+        $this->assertNull($result['partner_bank_account']);
     }
 }

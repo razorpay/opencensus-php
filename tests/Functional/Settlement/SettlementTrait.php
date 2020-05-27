@@ -259,6 +259,16 @@ trait SettlementTrait
         return $content;
     }
 
+    protected function getGlobalConfig(string $merchantId)
+    {
+        $request = [
+            'url' => '/merchant/'. $merchantId . '/configs',
+            'method' => 'GET'
+        ];
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
     protected function getSettlementDetails(string $id)
     {
         $request = [

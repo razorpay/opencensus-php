@@ -619,6 +619,7 @@ class Route
         'reports_public_entity'                    => ['get',      'reports/{entity}',                               'MerchantController@getPublicEntityReport'                          ],
         'reports_public_entity_file'               => ['get',      'reports/{entity}/file',                          'MerchantController@getPublicEntityReportUrl'                       ],
         'reports_refund_irctc'                     => ['get',      'reports/refund/irctc',                           'MerchantController@getIrctcRefundReport'                           ],
+        'get_global_config'                        => ['get',      'merchant/{mid}/configs',                         'MerchantController@getGlobalMerchantConfigs'                       ],
         'customer_create'                          => ['post',     'customers',                                      'CustomerController@createLocalCustomer'                            ],
         'customer_update'                          => ['put',      'customers/{id}',                                 'CustomerController@updateCustomer'                                 ],
         'customer_fetch_by_id'                     => ['get',      'customers/{id}',                                 'CustomerController@getCustomer'                                    ],
@@ -2287,6 +2288,7 @@ class Route
         'terminal_service_sync_delete',
         'virtual_account_batch_migrate_yesbank',
         'create_settlement_entry',
+        'get_global_config',
         'update_admin_through_batch',
         'merchant_create_terminal_internal',
         'retry_penny_testing_cron',
@@ -4596,8 +4598,10 @@ class Route
         'perfios' => [
             'financial_data_service_perfios_webhook',
         ],
-        'settlement_service' => [
+
+        'settlements_service' => [
             'create_settlement_entry',
+            'get_global_config',
         ],
 
         'terminals_service' => [

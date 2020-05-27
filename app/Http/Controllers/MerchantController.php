@@ -1627,4 +1627,11 @@ class MerchantController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function getGlobalMerchantConfigs($mid)
+    {
+        $response = $this->service()->getGlobalMerchantConfigs($mid);
+
+        return ApiResponse::json($response);
+    }
 }

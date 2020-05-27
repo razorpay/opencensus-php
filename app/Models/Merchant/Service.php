@@ -49,6 +49,7 @@ use RZP\Services\SalesForceClient;
 use RZP\Error\PublicErrorDescription;
 use RZP\Mail\Merchant\EsEnabledNotify;
 use RZP\Models\Merchant\Webhook\Stork;
+use RZP\Models\Settlement\SettlementTrait;
 use RZP\Constants\Entity as EntityConstants;
 use RZP\Mail\Base\Constants as MailConstants;
 use RZP\Models\Schedule\Task as ScheduleTask;
@@ -64,6 +65,7 @@ use RZP\Models\Merchant\Balance\BalanceConfig\Service as BalanceConfigService;
 class Service extends Base\Service
 {
     use Notify;
+    use SettlementTrait;
 
     const COUPON_RESPONSE = 'apply_coupon';
     const OAUTH_MAIL      = 'oauth_mail';
@@ -4495,5 +4497,25 @@ class Service extends Base\Service
         $batchAction = (new Core())->getBatchActions();
 
         return $batchAction;
+    }
+
+    /**
+     * getGlobalMerchantConfigs: used to return global configs to the settlement service which are not stored in the
+     * settlement service e.g. ActivationStatus, PartnerSettlementConfig, ParentDetails(for Aggregate settlement)
+     *
+     * @param string $mid
+     * @return array
+     */
+    public function getGlobalMerchantConfigs(string $mid)
+    {
+        $merchant = $this->repo->merchant->findOrFail($mid);
+
+        $merchantSettleToPartner = $this->core()->getPartnerBankAccountIdsForSubmerchants([$mid]);
+
+        return [
+            "active"               => $merchant->isActivated(),
+            "parent"               => $this->settlementToPartner($mid),
+            "partner_bank_account" => isset($merchantSettleToPartner[$mid]) ? $merchantSettleToPartner[$mid] : null,
+        ];
     }
 }

@@ -279,6 +279,10 @@ return [
         ]
     ],
 
+    'settlements_service' => [
+        'secret'            => env('SETTLEMENTS_SERVICE_SECRET'),
+    ],
+
     //
     // Configuration for one of the internal applications allowed
     // access to select routes of APIs.
