@@ -47,5 +47,9 @@ class TransferRecon extends Job
                     'message'    => $e->getMessage(),
                 ]);
         }
+        finally
+        {
+            $this->delete();
+        }
     }
 }
