@@ -372,6 +372,14 @@ class Constants
 
     const SEND_PAYMENT_LATE_AUTH         = 'send_payment_late_auth';
 
+    /*
+     * This feature will be used to pass the transacting gateway merchant id in payment
+     * create request by cred to select transacting merchant terminals
+     */
+    const CHARGE_ACCOUNT                 = 'charge_account';
+
+    const TRANSACTION_ON_HOLD            = 'transaction_on_hold';
+
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
         self::SUBSCRIPTIONS,
@@ -590,6 +598,8 @@ class Constants
         self::SEND_PAYMENT_LATE_AUTH          => true,
         self::OVERRIDE_HITACHI_BLACKLIST      => true,
         self::UPI_OTM                         => true,
+        self::CHARGE_ACCOUNT                  => true,
+        self::TRANSACTION_ON_HOLD             => true,
     ];
 
     // Entity type constants
