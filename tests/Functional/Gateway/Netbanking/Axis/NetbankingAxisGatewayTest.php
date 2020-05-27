@@ -50,32 +50,6 @@ class NetbankingAxisGatewayTest extends TestCase
         $this->assertEquals($gatewayMerchantId, $gatewayEntity['reference1']);
     }
 
-    public function testPaymentWithEncryptionKeySwitch()
-    {
-        $this->mockServerContentFunction(function (&$content, $action = null)
-        {
-            if ($action === 'test_encryption')
-            {
-                $content['currently_using'] = $content['old_encrypted'];
-            }
-        });
-
-        $this->doAuthPayment($this->payment);
-
-        $payment = $this->getLastEntity('payment', true);
-
-        $this->assertTestResponse($payment, 'testPayment');
-
-        $gatewayEntity = $this->getLastEntity('netbanking', true);
-
-        $this->assertArraySelectiveEquals(
-            $this->testData['testPaymentNetbankingEntity'], $gatewayEntity);
-
-        $gatewayMerchantId = $this->terminal->getGatewayMerchantId();
-
-        $this->assertEquals($gatewayMerchantId, $gatewayEntity['reference1']);
-    }
-
     public function testAmountTampering()
     {
         $this->mockServerContentFunction(function (&$content, $action = null)

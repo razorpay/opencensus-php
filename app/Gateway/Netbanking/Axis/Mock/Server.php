@@ -151,22 +151,6 @@ class Server extends Base\Mock\Server
 
         $encryptedString = urlencode($crypto->encryptString($query));
 
-        $oldHashSecret = $this->config['test_hash_secret'];
-
-        $crypto = new AESCrypto($oldHashSecret);
-
-        $oldEncryptedString = $crypto->encryptString($query);
-
-        $encryptedStrings = [
-            'old_encrypted'   => $oldEncryptedString,
-            'new_encrypted'   => $encryptedString,
-            'currently_using' => $encryptedString,
-        ];
-
-        $this->content($encryptedStrings, 'test_encryption');
-
-        $encryptedString = $encryptedStrings['currently_using'];
-
         $response[ResponseFields::ENCRYPTED_STRING] = $encryptedString;
 
         return $response;

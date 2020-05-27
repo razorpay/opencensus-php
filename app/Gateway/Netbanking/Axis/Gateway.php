@@ -441,10 +441,8 @@ class Gateway extends Base\Gateway
         return $crypto->encryptString($stringToEncrypt);
     }
 
-    public function getEncryptor($useOldKey = false): AESCrypto
+    public function getEncryptor(): AESCrypto
     {
-        $this->useOldKey = $useOldKey;
-
         $masterKey = $this->getSecret();
 
         return new AESCrypto($masterKey);
@@ -500,35 +498,6 @@ class Gateway extends Base\Gateway
         $decryptedString = $crypto->decryptString($encryptedString);
 
         parse_str($decryptedString, $response);
-
-        // After deployment, the callbacks will be using the new key to decrypt
-        // which will fail. So, falling back to the old key so that those with decryption failures
-        // fallback to using the old one and after a day we'll remove this.
-        if (($decryptedString === false) or
-            (isset($response[RequestFields::MERCHANT_REFERENCE]) === false))
-        {
-            $crypto = $this->getEncryptor(true);
-
-            $encryptedString = $input['gateway'][ResponseFields::ENCRYPTED_STRING];
-
-            $decryptedString = $crypto->decryptString($encryptedString);
-
-            parse_str($decryptedString, $response);
-
-            if (($decryptedString === false) or
-                (isset($response[RequestFields::MERCHANT_REFERENCE]) === false))
-            {
-                throw new Exception\GatewayErrorException(
-                    ErrorCode::GATEWAY_ERROR_RESPONSE_ENCRYPTION_FAILED,
-                    null,
-                    null,
-                    [
-                        'encrypted_data' => $encryptedString,
-                        'gateway'        => 'netbanking_axis',
-                        'payment_id'     => $input['payment']['id']
-                    ]);
-            }
-        }
 
         $this->checkDecryptionFailure($encryptedString, $response, $input);
 
@@ -803,11 +772,6 @@ class Gateway extends Base\Gateway
                 return $this->config['verify_live_hash_secret'];
             }
 
-            if ($this->useOldKey === true)
-            {
-                return $this->config['live_hash_secret'];
-            }
-
             return $this->config['live_hash_secret_new'];
         }
         else if ($this->isCorporateBanking() === true)
@@ -836,11 +800,6 @@ class Gateway extends Base\Gateway
             if ($this->action === Action::VERIFY)
             {
                 return $this->config['verify_test_hash_secret'];
-            }
-
-            if ($this->useOldKey === true)
-            {
-                return $this->config['test_hash_secret'];
             }
 
             return $this->config['test_hash_secret_new'];
