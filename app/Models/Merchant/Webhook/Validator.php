@@ -36,6 +36,7 @@ class Validator extends Base\Validator
     protected static $editValidators = [
         'events',
         'url',
+        'secret',
     ];
 
     // Refer: http://www-archive.mozilla.org/projects/netlib/PortBanning.html#portlist
@@ -212,6 +213,19 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestValidationFailureException(
                 'Invalid event name/names: ' . implode(', ', $extraEvents),
                 Entity::EVENTS);
+        }
+    }
+
+    protected function validateSecret(array $input)
+    {
+        $isSecretEmpty = empty($this->entity->getSecret());
+        $isSecretBeingSetToEmpty = array_key_exists(Entity::SECRET, $input) && empty($input[Entity::SECRET]);
+
+        if (($isSecretEmpty === false) && $isSecretBeingSetToEmpty)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Secret cannot be set to empty',
+                Entity::SECRET);
         }
     }
 
