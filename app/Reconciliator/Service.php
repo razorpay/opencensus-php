@@ -761,11 +761,14 @@ class Service extends Base\Service
                 'File details are empty.');
         }
 
+        $gateway = $requestProcessor->getGateway();
+
         $this->trace->info(
             TraceCode::RECON_FILE_DETAILS,
-            $reconDetails[RequestProcessor\Base::FILE_DETAILS]);
-
-        $gateway = $requestProcessor->getGateway();
+            [
+                'file_details'  => $reconDetails[RequestProcessor\Base::FILE_DETAILS],
+                'gateway'       => $gateway
+            ]);
 
         $gatewayReconciliator = $requestProcessor->getGatewayReconciliator();
 
