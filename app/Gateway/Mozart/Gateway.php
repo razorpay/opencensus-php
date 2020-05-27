@@ -1550,7 +1550,6 @@ class Gateway extends Base\Gateway
                 Action::PAY_VERIFY  =>  null,
                 Action::VERIFY      =>  Action::AUTHORIZE,
             ],
-
             Payment\Gateway::GETSIMPL   =>  [
                 Action::CHECKACCOUNT    =>  null,
                 Action::PAY_INIT        =>  null,

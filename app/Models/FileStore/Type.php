@@ -98,6 +98,8 @@ class Type
 
     const KVB_NETBANKING_CLAIM              = 'kvb_netbanking_claim';
 
+    const SVC_NETBANKING_REFUND             = 'svc_netbanking_refund';
+
     const SCB_NETBANKING_CLAIM              = 'scb_netbanking_claim';
 
     const SCB_NETBANKING_REFUND             = 'scb_netbanking_refund';
@@ -243,6 +245,7 @@ class Type
             self::AXIS_NETBANKING_CLAIMS,
             self::KVB_NETBANKING_REFUND,
             self::KVB_NETBANKING_CLAIM,
+            self::SVC_NETBANKING_REFUND,
             self::SCB_NETBANKING_CLAIM,
             self::SCB_NETBANKING_REFUND,
             self::AIRTELMONEY_WALLET_REFUND,
@@ -376,6 +379,7 @@ class Type
         self::CBI_NETBANKING_REFUND,
         self::KVB_NETBANKING_REFUND,
         self::KVB_NETBANKING_CLAIM,
+        self::SVC_NETBANKING_REFUND,
         self::SCB_NETBANKING_CLAIM,
         self::SCB_NETBANKING_REFUND,
         self::CUB_NETBANKING_CLAIM,
@@ -463,6 +467,7 @@ class Type
             self::AXIS_CYBERSOURCE_FAILED_REFUND,
             self::HDFC_FSS_FAILED_REFUND,
             self::OBC_NETBANKING_REFUND,
+            self::SVC_NETBANKING_REFUND,
         ],
 
         self::INVOICE_BUCKET_CONFIG => [

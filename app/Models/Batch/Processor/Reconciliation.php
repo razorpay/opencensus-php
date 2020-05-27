@@ -421,6 +421,8 @@ class Reconciliation extends Base
 
         $inputFileDetails = $this->getInputFileDetails($filePath);
 
+        $this->gatewayReconciliator->getDecryptedFile($inputFileDetails);
+
         $fileType = $inputFileDetails[FileProcessor::FILE_TYPE];
 
         if ($fileType === FileProcessor::EXCEL)

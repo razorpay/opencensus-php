@@ -120,6 +120,7 @@ class Netbanking
         IFSC::SBMY,
         IFSC::STBP,
         IFSC::SBTR,
+        IFSC::SVCB,
     ];
 
     protected static $selfCorp = [
@@ -642,7 +643,6 @@ class Netbanking
         IFSC::DBSS,
         IFSC::JSBP,
         IFSC::NKGS,
-        IFSC::SVCB,
         IFSC::SYNB,
         IFSC::TNSC,
         IFSC::HDFC,

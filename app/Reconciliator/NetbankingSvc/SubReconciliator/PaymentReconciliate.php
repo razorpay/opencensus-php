@@ -1,0 +1,47 @@
+<?php
+
+namespace RZP\Reconciliator\NetbankingSvc\SubReconciliator;
+
+use RZP\Reconciliator\Base;
+use RZP\Models\Payment\Status;
+use RZP\Reconciliator\NetbankingSvc\Reconciliate;
+
+class PaymentReconciliate extends Base\SubReconciliator\NetbankingServiceRecon
+{
+    const BLACKLISTED_COLUMNS = [];
+    const COLUMN_PAYMENT_AMOUNT = Reconciliate::PAYMENT_AMOUNT;
+
+    protected function getPaymentId(array $row)
+    {
+        return $row[Reconciliate::PAYMENT_ID] ?? null;
+    }
+
+    protected function getReferenceNumber($row)
+    {
+        return $row[Reconciliate::BANK_REFERENCE_NUMBER] ?? null;
+    }
+
+    protected function getGatewayAmount(array $row)
+    {
+        return Base\SubReconciliator\Helper ::getIntegerFormattedAmount($row[Reconciliate::PAYMENT_AMOUNT]);
+    }
+
+    protected function getReconPaymentStatus(array $row)
+    {
+        $status = $row[Reconciliate::PAYMENT_STATUS];
+
+        if ($status === Reconciliate::PAYMENT_SUCCESS)
+        {
+            return Status::AUTHORIZED;
+        }
+        else
+        {
+            return Status::FAILED;
+        }
+    }
+
+    protected function getGatewayPaymentDate($row)
+    {
+        return $row[Reconciliate::PAYMENT_DATE] ?? null;
+    }
+}

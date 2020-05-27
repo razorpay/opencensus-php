@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\Helpers\Reconciliator;
 use Excel;
 use Mockery;
 use RZP\Models\Merchant;
+use RZP\Models\FileStore;
 use Illuminate\Http\UploadedFile;
 use RZP\Models\Base\PublicEntity;
 use RZP\Reconciliator\RequestProcessor\Base;
@@ -162,6 +163,24 @@ trait ReconTrait
         );
 
         return $excel->string('xlsx');
+    }
+
+    protected function createFile($content, string $type = FileStore\Type::MOCK_RECONCILIATION_FILE, string $store = FileStore\Store::S3)
+    {
+        $creator = new FileStore\Creator;
+
+        $creator->extension(FileStore\Format::TXT)
+            ->content($content)
+            ->name('testReconFile')
+            ->sheetName('Sheet 1')
+            ->store($store)
+            ->type($type)
+            ->headers(true)
+            ->save();
+
+        $file = $creator->get();
+
+        return ['local_file_path' => $file['local_file_path']];
     }
 
     protected function getNewUpiEntity($merchantId, $gateway, $mockServer = null)

@@ -634,6 +634,11 @@ return [
         'IV'                     => env('NETBANKING_CANARA_GATEWAY_IV'),
     ],
 
+    'netbanking_svc' => [
+        'encryption_key'         => env('NETBANKING_SVC_ENCRYPTION_KEY'),
+        'encryption_iv'          => env('NETBANKING_SVC_ENCRYPTION_IV'),
+    ],
+
     'netbanking_obc' => [
         'test_merchant_id'       => env('NETBANKING_OBC_GATEWAY_TEST_MERCHANT_ID'),
         'test_hash_secret'       => env('NETBANKING_OBC_GATEWAY_TEST_HASH_SECRET'),

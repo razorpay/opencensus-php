@@ -763,6 +763,11 @@ class Reconciliate extends Base\Core
         return ',';
     }
 
+    public function getDecryptedFile(array & $fileDetails)
+    {
+        return $fileDetails;
+    }
+
     /**
      * Thus can be overridden from the child class.
      * If not overriden, it fetches the mapping from FileProcessor::FILE_TYPES_MAPPINGS

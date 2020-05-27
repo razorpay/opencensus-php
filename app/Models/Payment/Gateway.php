@@ -694,6 +694,7 @@ class Gateway
         Payment\Gateway::NETBANKING_EQUITAS,
         Payment\Gateway::NETBANKING_IBK,
         Payment\Gateway::NETBANKING_CSB,
+        Payment\Gateway::NETBANKING_SVC,
         Payment\Gateway::UPI_SBI,
         Payment\Gateway::NETBANKING_HDFC,
         Payment\Gateway::PAYSECURE,
@@ -738,6 +739,7 @@ class Gateway
         Payment\Gateway::NETBANKING_HDFC        => 1577097000,
         Payment\Gateway::NETBANKING_KOTAK       => 1578479400,
         Payment\Gateway::NETBANKING_CSB         => 1588694400,
+        Payment\Gateway::NETBANKING_SVC         => 1578479400,
     ];
 
     public static $channels = [
@@ -1669,6 +1671,7 @@ class Gateway
         IFSC::SBMY         => Gateway::NETBANKING_SBI,
         IFSC::STBP         => Gateway::NETBANKING_SBI,
         IFSC::SBTR         => Gateway::NETBANKING_SBI,
+        IFSC::SVCB         => Gateway::NETBANKING_SVC,
     ];
 
     /**
@@ -1725,6 +1728,7 @@ class Gateway
         IFSC::YESB => Gateway::NETBANKING_YESB,
         IFSC::KVBL => Gateway::NETBANKING_KVB,
         IFSC::SCBL => Gateway::NETBANKING_SCB,
+        IFSC::SVCB => Gateway::NETBANKING_SVC,
     ];
 
     /**

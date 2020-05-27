@@ -72,6 +72,7 @@ class Base extends Core
     const NETBANKING_YESB        = 'NetbankingYesb';
     const NETBANKING_CUB         = 'NetbankingCub';
     const NETBANKING_IBK         = 'NetbankingIbk';
+    const NETBANKING_SVC         = 'NetbankingSvc';
     const NETBANKING_RBL         = 'NetbankingRbl';
     const NETBANKING_CSB         = 'NetbankingCsb';
     const NETBANKING_IDFC        = 'NetbankingIdfc';
@@ -161,6 +162,7 @@ class Base extends Core
         self::NETBANKING_HDFC        => [],
         self::NETBANKING_SBI         => ['fssrecon.inbdau@sbi.co.in'],
         self::NETBANKING_KVB         => ['atmcashtally@kvbmail.com', 'lakshmim@kvbmail.com'],
+        self::NETBANKING_SVC         => ['netbanking@svcbank.com', 'kavishwarrk@svcbank.com', 'nirmalvb@svcbank.com'],
         self::JIOMONEY               => [],
         self::EBS                    => [],
         self::FIRST_DATA             => ['customer.care@icici.mailserv.in'],
@@ -245,6 +247,7 @@ class Base extends Core
         Gateway::NETBANKING_CANARA      => self::NETBANKING_CANARA,
         Gateway::NETBANKING_SBI         => self::NETBANKING_SBI,
         Gateway::NETBANKING_KVB         => self::NETBANKING_KVB,
+        Gateway::NETBANKING_SVC         => self::NETBANKING_SVC,
         Gateway::PAYTM                  => self::PAYTM,
         Gateway::UPI_MINDGATE           => self::UPI_HDFC,
         Gateway::UPI_SBI                => self::UPI_SBI,

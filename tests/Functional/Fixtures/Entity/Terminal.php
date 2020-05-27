@@ -102,6 +102,7 @@ class Terminal extends Base
         $this->createSharedCardlessEmiTerminal();
         $this->createSharedNetbankingKvbTerminal();
         $this->createSharedNetbankingKvbTpvTerminal();
+        $this->createSharedNetbankingSvcTerminal();
     }
 
     public function createBharatQrIsgTerminal()
@@ -3530,6 +3531,24 @@ class Terminal extends Base
             'gateway_secure_secret'      => 'NotUsedAsOfNow',
             'vpa'                        => 'some@abfspay',
             'upi'                        =>  1
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->create($attributes);
+    }
+
+    public function createSharedNetbankingSvcTerminal(array $attributes = [])
+    {
+
+        $merchantId = Account::TEST_ACCOUNT;
+
+        $defaultValues = [
+            TerminalEntity::ID                  => Shared::NETBANKING_SVC_TERMINAL,
+            TerminalEntity::MERCHANT_ID         => $merchantId,
+            TerminalEntity::GATEWAY             => Gateway::NETBANKING_SVC,
+            TerminalEntity::GATEWAY_MERCHANT_ID => 'netbanking_svc_merchant_id',
+            TerminalEntity::NETBANKING          => 1,
         ];
 
         $attributes = array_merge($defaultValues, $attributes);
