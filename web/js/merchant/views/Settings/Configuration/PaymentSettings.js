@@ -6,38 +6,11 @@ import {
   createLateAuthConfig,
 } from 'merchant/reducers/config';
 import { showNotification } from 'merchant_common/reducers/notifications';
-import ShowWhen from 'merchant/components/ShowWhen';
-import Popover, { PopoverTitle, PopoverBody } from 'common/ui/Popover';
-import Input from 'common/new-ui/Input';
 import * as ModalActions from 'merchant_common/reducers/modals';
-import CaptureInitiation from 'merchant/views/Settings/Configuration/PaymentCaptureComponents/CaptureInitiation';
-
-const CONSTANTS = {
-  capture_mode_options: [
-    { label: '', name: '' },
-    { label: 'Auto Capture', name: 1 },
-    { label: 'Manual Capture', name: 0 },
-  ],
-
-  timeout_action_options: [
-    { label: '', name: '' },
-    { label: 'Normal Refund', name: 'normal' },
-    { label: 'Instant Refund', name: 'optimum' },
-    {
-      label: 'Manual Capture or Refund',
-      name: 'default',
-    },
-  ],
-
-  capture_setting_descriptions: [
-    'Payments will be captured by Razorpay automatically',
-    'Payments have to be captured manually by you via the API or the dashboard',
-  ],
-  automatic_capture_descriptions: [
-    'All payments authorised within 5 days of creation will be captured automatically',
-    'Setup capture timeout according to your business needs. Payments authorised within timeout will be captured and others will be refunded to your customers',
-  ],
-};
+import CaptureSettingsModal from 'merchant/views/Settings/Configuration/PaymentCaptureComponents/CaptureSettingsModal';
+import AutomaticCaptureModal from 'merchant/views/Settings/Configuration/PaymentCaptureComponents/AutomaticCaptureModal';
+import PaymentsCaptureConfigurationModal from 'merchant/views/Settings/Configuration/PaymentCaptureComponents/PaymentsCaptureConfigurationModal';
+import HorizontalTimeline from 'merchant/views/Settings/Configuration/PaymentCaptureComponents/HorizontalTimeline';
 
 @connect(
   state => {
@@ -64,12 +37,34 @@ export default class PaymentSettings extends Component {
       capture_mode: '',
       timeout_action: '',
       authorisation_timeout: '',
-      doesConfigExist: false,
+      lateConfigExist: null,
+      timelineItems: [
+        {
+          title: 'Payment Creation',
+          time: 'T',
+          description: 'Payments captured automatically',
+        },
+        {
+          title: 'Auto Capture Timeout',
+          time: 'T+60 min',
+          description: 'Payments captured manually',
+        },
+        {
+          title: 'Manual Capture Timeout',
+          time: 'T+2 days',
+          description: 'Payments are refunded with optimum speed',
+        },
+        {
+          title: '5 days',
+          time: 'T+5 days',
+          description: '',
+        },
+      ],
     };
   }
 
   componentDidMount() {
-    this.props.fetchLateAuthConfig();
+    // this.props.fetchLateAuthConfig();
   }
 
   componentWillReceiveProps(nextProps) {
@@ -92,35 +87,13 @@ export default class PaymentSettings extends Component {
     }
   }
 
-  handleCaptureMode = e => {
+  handleCreateLateAuthConfig = (body, authType) => {
+    console.log(body, authType);
+    this.props.closeModal();
     this.setState({
-      capture_mode: e.target.value,
+      lateConfigExist: authType,
     });
-  };
-
-  handleTimeoutAction = e => {
-    this.setState({
-      timeout_action: e.target.value,
-    });
-  };
-
-  handleAuthorisationTimeout = e => {
-    this.setState({
-      authorisation_timeout: e.target.value,
-    });
-  };
-
-  isSaveDisabled = () => {
-    if (
-      this.state.capture_mode.toString() &&
-      this.state.timeout_action.toString() &&
-      this.state.authorisation_timeout.toString()
-    )
-      return false;
-    else return true;
-  };
-
-  handleSave = () => {
+    return;
     let method = '';
 
     let payload = {
@@ -152,14 +125,14 @@ export default class PaymentSettings extends Component {
       };
     }
 
-    this.props.createLateAuthConfig(payload, method).then(res => {
-      this.props.showNotification({
-        type: 'success',
-        message: this.state.doesConfigExist
-          ? 'Config updated successfully'
-          : 'Config created successfully',
-      });
-    });
+    // this.props.createLateAuthConfig(payload, method).then(() => {
+    //   this.props.showNotification({
+    //     type: 'success',
+    //     message: this.state.doesConfigExist
+    //       ? 'Config updated successfully'
+    //       : 'Config created successfully',
+    //   });
+    // });
   };
 
   validateCaptureTimeout = () => {
@@ -176,30 +149,68 @@ export default class PaymentSettings extends Component {
     this.props.openModal({
       size: 'small',
       component: (
-        <CaptureInitiation
+        <CaptureSettingsModal
           closeModal={this.props.closeModal}
-          header="Capture Settings"
           handleDone={this.handleCaptureInitiationDone}
-          sectionTitles={['Automatic Capture', 'Manual Capture']}
-          sectionDescriptions={CONSTANTS.capture_setting_descriptions}
         />
       ),
     });
   };
 
-  handleCaptureInitiationDone = () => {
+  handleCaptureInitiationDone = selectedLateAuthType => {
     this.props.closeModal();
     this.props.openModal({
       size: 'small',
       component: (
-        <CaptureInitiation
+        <AutomaticCaptureModal
           closeModal={this.props.closeModal}
-          header="Automatic Capture"
-          sectionTitles={[
-            'Capture all payments automatically',
-            'Setup custom timeout',
-          ]}
-          sectionDescriptions={CONSTANTS.automatic_capture_descriptions}
+          handleDone={this.automaticCaptureDone}
+          handleBack={this.automaticCaptureBack}
+          selectedLateAuthType={selectedLateAuthType}
+        />
+      ),
+    });
+  };
+
+  automaticCaptureDone = (authType, configureTime) => {
+    if (configureTime) {
+      // open configuration modal
+      authType === 'automatic'
+        ? this.handleAutomaticCaptureClick()
+        : this.handleManualCaptureClick();
+    } else {
+      // set default config for that auth-type
+      // make api call here
+      this.handleCreateLateAuthConfig({}, authType);
+    }
+  };
+
+  automaticCaptureBack = () => {
+    this.props.closeModal();
+    this.configureNow();
+  };
+
+  handleAutomaticCaptureClick = () => {
+    this.props.openModal({
+      size: 'small',
+      component: (
+        <PaymentsCaptureConfigurationModal
+          captureType="automatic"
+          closeModal={this.props.closeModal}
+          createLateAuthConfig={this.handleCreateLateAuthConfig}
+        />
+      ),
+    });
+  };
+
+  handleManualCaptureClick = () => {
+    this.props.openModal({
+      size: 'small',
+      component: (
+        <PaymentsCaptureConfigurationModal
+          captureType="manual"
+          closeModal={this.props.closeModal}
+          createLateAuthConfig={this.handleCreateLateAuthConfig}
         />
       ),
     });
@@ -219,34 +230,82 @@ export default class PaymentSettings extends Component {
           </span>
         </div>
 
-        <div class="panel-body payment-settings">
-          <div class="description">
-            Payments must be captured once they get authorised or else payments
-            will be auto refunded to customers. Set defualt capture and auto
-            refund settings to control your payments better.
-          </div>
-          <button
-            class="btn btn-primary"
-            onClick={this.configureNow}
-            style={{ marginTop: '15px' }}
-          >
-            Configure Now
-          </button>
+        <div class="panel-body payment-capture-panel">
+          {this.state.lateConfigExist && (
+            <div class="payment-capture-panel-row">
+              <div class="panel-content">
+                <div
+                  class={`left-panel ${
+                    this.state.lateConfigExist === 'automatic'
+                      ? 'is-active'
+                      : ''
+                  }`}
+                  style={{ marginRight: '5px' }}
+                >
+                  <div class="panel-header">
+                    <h4>
+                      <b>Automatic Capture</b>
+                    </h4>
+                    <input
+                      type="radio"
+                      checked={this.state.lateConfigExist === 'automatic'}
+                      onClick={() => {
+                        this.handleCaptureInitiationDone('automatic');
+                      }}
+                    />
+                  </div>
+                  <div class="panel-description">
+                    <p>Payments will be captured automatically</p>
+                  </div>
+                </div>
+                <div
+                  class={`right-panel ${
+                    this.state.lateConfigExist === 'manual' ? 'is-active' : ''
+                  }`}
+                  style={{ marginLeft: '5px' }}
+                >
+                  <div class="panel-header">
+                    <h4>
+                      <b>Manual Capture</b>
+                    </h4>
+                    <input
+                      type="radio"
+                      checked={this.state.lateConfigExist === 'manual'}
+                      onClick={() => {
+                        this.handleCaptureInitiationDone('manual');
+                      }}
+                    />
+                  </div>
+                  <div class="panel-description">
+                    <p>Capture the payments manually</p>
+                  </div>
+                </div>
+              </div>
+              <div class="description">
+                All payments authorised within 5 days of creation will be
+                captured automatically.
+              </div>
+              <HorizontalTimeline timelineItems={this.state.timelineItems} />
+            </div>
+          )}
+          {this.state.lateConfigExist === null && (
+            <>
+              <div class="description">
+                Payments must be captured once they get authorised or else
+                payments will be auto refunded to customers. Set default capture
+                and auto refund settings to control your payments better.
+              </div>
+              <button
+                class="btn btn-primary"
+                onClick={this.configureNow}
+                style={{ marginTop: '15px' }}
+              >
+                Configure Now
+              </button>
+            </>
+          )}
         </div>
       </div>
     );
   }
 }
-
-const InfoLabel = () => {
-  return (
-    <>
-      Capture Timeout <i class="i i-info-circle" />
-      <Popover align="top" theme="dark">
-        <PopoverBody>
-          Payments outside this timeout will be considered as late authorised.
-        </PopoverBody>
-      </Popover>
-    </>
-  );
-};

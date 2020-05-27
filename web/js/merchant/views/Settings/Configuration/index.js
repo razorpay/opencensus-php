@@ -122,7 +122,7 @@ export default class CongfigurationContainer extends Component {
               <PaypalOnboarding />
             ) : null}
             <DefaultRefundSpeed />
-            {/* temporarily hide internationalization for test mode due to inconsistency in db */}
+
             {this.props.mode === 'live' && <InternationalConfig />}
             <EmailNotifications form="configForm" onSave={this.saveConfig} />
           </div>
