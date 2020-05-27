@@ -3,9 +3,9 @@
 namespace RZP\Services;
 
 use RZP;
-use Redis;
 use Swift_Mailer;
 use Razorpay\OAuth\Application;
+use Illuminate\Support\Facades\Redis;
 use Illuminate\Database\Connection;
 use Http\Mock\Client as MockHttplug;
 use Illuminate\Database\Eloquent\Relations\Relation;
@@ -559,11 +559,11 @@ class ApiServiceProvider extends BaseServiceProvider
     {
         $this->app->singleton('redisdualwrite', function($app)
         {
-            $lockMock = $app['config']->get('services.mutex.mock');
+            $lockMock = $app['config']->get('applications.redisdualwrite.skip_dual_write');
 
             if ($lockMock === true)
             {
-                return new Mock\Mutex($app);
+                return Redis::Connection();
             }
 
             return new RedisDualWrite($app);
@@ -626,11 +626,9 @@ class ApiServiceProvider extends BaseServiceProvider
                 return new Mock\Mutex($app);
             }
 
-            // this is still required for testing,
-            // until we move redis_labs config as default connection
             $mutex = new Mutex($app);
 
-            $mutex->setRedisClient(Redis::Connection());
+            $mutex->setRedisClient($this->app['redisdualwrite']);
 
             return $mutex;
         });

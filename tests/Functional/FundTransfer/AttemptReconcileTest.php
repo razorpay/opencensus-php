@@ -349,7 +349,7 @@ class AttemptReconcileTest extends TestCase
     {
         $this->createDataForChannel(Channel::AXIS, Attempt\Type::SETTLEMENT, 1, Attempt\Type::SETTLEMENT);
 
-        $redisMock = $this->getMockBuilder(Redis::class)->setMethods(['hGetAll'])
+        $redisMock = $this->getMockBuilder(Redis::class)->setMethods(['hGetAll', 'get', 'del', 'set', 'ttl'])
             ->getMock();
 
         Redis::shouldReceive('connection')

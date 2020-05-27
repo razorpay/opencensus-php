@@ -103,7 +103,7 @@ class MutexTest extends TestCase
 
     public function testCaptureRequestWithException()
     {
-        $redisMock = $this->getMockBuilder(Redis::class)->setMethods(['get', 'set', 'setex'])
+        $redisMock = $this->getMockBuilder(Redis::class)->setMethods(['get', 'set', 'setex', 'del'])
                           ->getMock();
 
         Redis::shouldReceive('connection')

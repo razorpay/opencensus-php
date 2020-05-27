@@ -2093,6 +2093,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     // redis dual write
     const REDIS_DUAL_WRITE_STORE_ERROR                          = 'REDIS_DUAL_WRITE_STORE_ERROR';
     const REDIS_DUAL_WRITE_READ_ERROR                           = 'REDIS_DUAL_WRITE_READ_ERROR';
+    const REDIS_DUAL_WRITE_TTL_READ_ERROR                       = 'REDIS_DUAL_WRITE_TTL_READ_ERROR';
     const REDIS_DUAL_WRITE_DELETE_ERROR                         = 'REDIS_DUAL_WRITE_DELETE_ERROR';
     const REDIS_DUAL_WRITE_BACKUP_ERROR                         = 'REDIS_DUAL_WRITE_BACKUP_ERROR';
 

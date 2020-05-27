@@ -345,7 +345,17 @@ return array(
                     'persistent' => true,
                 ]
             ],
-        ]
+
+            'mutex_redis' => [
+                [
+                    'host'     => env('MUTEX_REDIS_HOST'),
+                    'port'     => env('MUTEX_REDIS_PORT'),
+                    'timeout'  => 1,
+                    'read_write_timeout' => 1,
+                    'persistent' => true,
+                ]
+            ],
+        ],
     ],
 
     /*

@@ -130,6 +130,11 @@ return [
         'scrooge_secret'    => env('SCROOGE_SECRET'),
     ],
 
+    'redisdualwrite' => [
+        'redislab_cache_read'      => env('REDISLABS_CACHE_READ'),
+        'skip_dual_write'          => env('SKIP_DUAL_WRITE'),
+    ],
+
     'card_vault' => [
         'mock'      => env('CARD_VAULT_MOCK', false),
         'key'       => env('CARD_VAULT_KEY'),
@@ -165,8 +170,8 @@ return [
     ],
 
     'redisdualwrite' => [
-        'elastic_cache_read'        => env('ELASTIC_CACHE_READ'),
-        'skip_dual_write'           => env('SKIP_DUAL_WRITE'),
+        'redislab_cache_read'      => env('REDISLABS_CACHE_READ'),
+        'skip_dual_write'          => env('SKIP_DUAL_WRITE'),
     ],
 
     'maxmind' => [
