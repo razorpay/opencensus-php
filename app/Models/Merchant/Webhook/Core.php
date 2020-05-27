@@ -150,6 +150,89 @@ class Core extends Base\Core
     }
 
     /**
+     * Reads webhooks from api and stork, attempts to reconcile.
+     * For now: Helps with updating missing secret in api records.
+     *
+     * Sample payload-
+     * {
+     *   "dry_run": false,
+     *   "webhook_ids": [
+     *     "Ad3K7rDLkTWbJK",
+     *     "EvGK2kr7jqlvPo"
+     *   ]
+     * }
+     *
+     * @param  array  $input - Should contain webhook_ids to reconcile, dry_run.
+     * @return array         - List of webhooks that (will be/have been) reconciled.
+     */
+    public function webhookStorkRecon(array $input): array
+    {
+        RuntimeManager::setMemoryLimit('1024M');
+        RuntimeManager::setTimeLimit(1000);
+
+        $dryRun = $input["dry_run"] ?? false;
+        $webhookIDs = $input["webhook_ids"];
+
+        $idsWithMismatch = [];
+
+        $apiWebhooks = $this->repo->webhook->findManyOrFailPublic($webhookIDs);
+        $stork = new Stork;
+
+        // Fetch stork webhook entries for all valid webhooks queried.
+        foreach ($apiWebhooks as $index => $apiWebhook)
+        {
+            try
+            {
+                $fetchedWebhooks = $stork->listWithSecret($apiWebhook);
+                foreach ($fetchedWebhooks['webhooks'] as $fw)
+                {
+                    // Stork might have multiple webhooks per merchant/service.
+                    // IDs should match for webhooks created via API
+                    if ($fw['id'] === $apiWebhook[Entity::ID])
+                    {
+                        $apiWebhooks[$index]['stork_data'] = $fw;
+                        break;
+                    }
+                }
+            }
+            catch (\Throwable $e)
+            {
+                $this->trace->traceException($e);
+            }
+        }
+
+        // Build a set of all webhooks with secret mismatch
+        foreach ($apiWebhooks as $apiWebhook)
+        {
+            $mismatch = ($apiWebhook[Entity::SECRET] ?? null) !== ($apiWebhook['stork_data']['secret'] ?? null);
+
+            // Maintain a list of webhooks to update (webhooks with secret mismatch).
+            if ($mismatch === true)
+            {
+                $idsWithMismatch[] = $apiWebhook[Entity::ID];
+            }
+        }
+
+        // Update only if dry_run is false, else simply return webhook info.
+        if ($dryRun === false)
+        {
+            foreach ($apiWebhooks as $apiWebhook)
+            {
+                if (in_array($apiWebhook[Entity::ID], $idsWithMismatch) === true)
+                {
+                    $updateInput[Entity::SECRET] = $apiWebhook['stork_data']['secret'];
+                    unset($apiWebhook['stork_data']);
+
+                    $apiWebhook->edit($updateInput);
+                    $this->repo->saveOrFail($apiWebhook);
+                }
+            }
+        }
+
+        return $webhooksWithMismatch;
+    }
+
+    /**
      * Read webhook from id
      * Then deactivate the webhook and sends a deactivation email to merchant.
      * @param string $id

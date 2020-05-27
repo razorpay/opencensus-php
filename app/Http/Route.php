@@ -401,6 +401,7 @@ class Route
         'webhook_stork_migrate'                    => ['post',     'webhooks/migrate/stork',                         'WebhookController@webhookStorkMigrate'                             ],
         'webhook_stork_create_banking_bulk'        => ['post',     'webhooks/create/stork/banking/bulk',             'WebhookController@webhookStorkCreateBankingBulk'                   ],
         'webhook_deactivate'                       => ['post',     'webhooks/{id}/deactivate',                       'WebhookController@webhookDeactivate'                               ],
+        'admin_webhook_recon'                      => ['post',     'admin/webhooks/recon',                           'WebhookController@webhookStorkRecon'                               ],
         'merchant_create_key'                      => ['post',     'keys',                                           'KeyController@postCreateKeys'                                      ],
         'merchant_fetch_keys'                      => ['get',      'keys',                                           'KeyController@getKeys'                                             ],
         'merchant_replace_key'                     => ['put',      'keys/{id}',                                      'KeyController@putKeys'                                             ],
@@ -3262,6 +3263,9 @@ class Route
 
         // Banking webhook Stork
         'webhook_stork_create_banking_bulk',
+
+        // API<->Stork webhook recon route
+        'admin_webhook_recon',
     ];
 
     public static $routePermission = [
@@ -3417,6 +3421,7 @@ class Route
         'admin_change_password'                    => '*',
         'admin_get_file'                           => '*',
         'admin_post_stork'                         => Permission::STORK_WRITE_OPERATION,
+        'admin_webhook_recon'                      => Permission::STORK_WRITE_OPERATION,
         'invitation_fetch'                         => '*',
         'pricing_create_plan'                      => Permission::CREATE_PRICING_PLAN,
         'merchant_get_pricing'                     => Permission::VIEW_MERCHANT_PRICING,

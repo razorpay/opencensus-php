@@ -59,6 +59,17 @@ class WebhookController extends Controller
     }
 
     /**
+     * @see Webhook\Service::webhookStorkRecon()
+     * @return mixed
+     */
+    public function webhookStorkRecon()
+    {
+        $data = $this->service()->webhookStorkRecon($this->input);
+
+        return ApiResponse::json($data);
+    }
+
+    /**
      *
      * @return mixed
      */

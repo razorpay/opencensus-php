@@ -207,6 +207,27 @@ class Stork
     }
 
     /**
+     * @param Entity $webhook
+     *
+     * @return array
+     * @throws \RZP\Exception\ServerErrorException
+     */
+    public function listWithSecret(Entity $webhook)
+    {
+        $this->service->init($webhook->merchant->getConnectionName(), $this->product);
+
+        $res = $this->service->request(
+            '/twirp/rzp.stork.webhook.v1.WebhookAPI/ListWithSecret',
+            [
+                self::SERVICE    => $this->service->service,
+                self::OWNER_ID   => $webhook->getEntityId() ?: $webhook->getMerchantId(),
+                self::OWNER_TYPE => $webhook->getEntityType() ?: E::MERCHANT,
+            ]);
+
+        return json_decode($res->body, true) ?: [];
+    }
+
+    /**
      * @param Merchant\Entity $merchant
      *
      * @return array
