@@ -65,6 +65,15 @@ class SalesforceClientTest extends TestCase
             'contact_name'  => 'Dummy contact Name'
         ]);
 
+        $this->fixtures->create('merchant_attribute',
+            [
+                'merchant_id' => $merchant->getId(),
+                'product'     => 'banking',
+                'group'       => 'onboarding',
+                'type'        => 'merchant_onboarding_category',
+                'value'       => 'self_serve'
+            ]);
+
         $payload = $this->salesforceClient->payloadGenerationForInterestOfPrimaryMerchantInBanking($merchant);
 
         $this->assertBooleanValuesAsInt($payload);

@@ -145,6 +145,7 @@ class Entity
     const SUBSCRIPTION_REGISTRATION  = 'subscription_registration';
     const BANKING_ACCOUNT_STATEMENT  = 'banking_account_statement';
     const MERCHANT_FRESHDESK_TICKETS = 'merchant_freshdesk_tickets';
+    const MERCHANT_ATTRIBUTE         = 'merchant_attribute';
     const TERMINAL_ONBOARDING_DETAIL = 'terminal_onboarding_detail';
     const PAYMENT_META               = 'payment_meta';
 
@@ -518,6 +519,7 @@ class Entity
         self::OFFLINE_DEVICE            => \RZP\Models\Offline\Device::class,
         self::PAYMENT_META              => \RZP\Models\Payment\PaymentMeta::class,
         self::UPI_METADATA              => \RZP\Models\Payment\UpiMetadata::class,
+        self::MERCHANT_ATTRIBUTE        => \RZP\Models\Merchant\Attribute::class,
 
         // gateways
         self::EBS                    => \RZP\Gateway\Ebs::class,

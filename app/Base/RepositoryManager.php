@@ -45,6 +45,7 @@ use RZP\Base\Database\Connectors\MySqlConnector;
  * @property Models\Reversal\Repository                         $reversal
  * @property Models\Payout\Repository                           $payout
  * @property Models\Merchant\Detail\Repository                  $merchant_detail
+ * @property Models\Merchant\Attribute\Repository               $merchant_attribute
  * @property Models\BankingAccount\Repository                   $banking_account
  * @property Models\BankingAccount\Detail\Repository            $banking_account_detail
  * @property Models\Item\Repository                             $item

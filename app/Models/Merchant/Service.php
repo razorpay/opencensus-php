@@ -111,6 +111,11 @@ class Service extends Base\Service
 
         $merchantData = $this->saveMerchantAndApplyCoupon($merchant, $input);
 
+        if ($this->auth->isProductBanking())
+        {
+            $this->assignOnboardingCategoryForBankingMerchant($merchant);
+        }
+
         return $merchantData;
     }
 
@@ -4038,7 +4043,7 @@ class Service extends Base\Service
         $merchant = $this->auth->getMerchant();
 
         $isProductBanking = (($product === Product::BANKING) or
-                             ($this->auth->getRequestOriginProduct() === Product::BANKING));
+                             ($this->auth->isProductBanking()));
 
         $isMerchantBankingEnabled = $merchant->isBusinessBankingEnabled();
 
@@ -4059,6 +4064,8 @@ class Service extends Base\Service
 
                 return;
             }
+
+            $this->assignOnboardingCategoryForBankingMerchant($merchant);
         }
 
         $this->repo->transactionOnLiveAndTest(function() use ($product)
@@ -4190,6 +4197,26 @@ class Service extends Base\Service
         );
 
         return $result;
+    }
+
+    protected function assignOnboardingCategoryForBankingMerchant(Entity $merchant)
+    {
+        // don't want to disrupt signup flow because of this.
+        try
+        {
+            (new Attribute\Core)->createMerchantOnboardingCategoryAttribute($merchant, Product::BANKING);
+        }
+        catch(\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::MERCHANT_ONBOARDING_CATEGORY_ASSIGN_FAILED,
+                [
+                    'message'      => $e->getMessage(),
+                    'merchant_id'  => $merchant->getId(),
+                ]);
+        }
     }
 
     protected function enableBusinessBankingIfApplicable(Entity $merchant, bool $captureEvent = false)

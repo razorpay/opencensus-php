@@ -2582,4 +2582,12 @@ class Entity extends Base\PublicEntity
 
         $app['events']->fire($event, $eventPayload);
     }
+
+    public function getBankingOnboardingCategory(): string
+    {
+        $merchantAttribute = (new Attribute\Core)
+            ->fetchMerchantOnboardingCategoryAttribute($this, Product::BANKING);
+
+        return $merchantAttribute->getValue();
+    }
 }

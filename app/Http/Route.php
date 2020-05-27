@@ -427,6 +427,8 @@ class Route
         'merchant_get_rejection_reasons'           => ['get',      'merchant/activation/rejection_reasons',          'MerchantController@getRejectionReasons'                            ],
         'merchant_batches'                         => ['post',     'merchant/{id}/batches',                          'MerchantController@createBatches'                                  ],
         'merchant_payout_mail'                     => ['post',     'merchant/payout/mail',                           'MerchantController@sendPayoutMail'                                 ],
+        'merchants_update_onboarding_category_to_normal_cron'
+                                                   => ['post',     'merchants/update_onboarding_category_to_normal', 'MerchantController@postUpdateSelfServeBankingMerchantsToNormal'    ],
         'pricing_create_plan'                      => ['post',     'pricing',                                        'PricingController@postCreatePlan'                                  ],
         'pricing_get_plans'                        => ['get',      'pricing',                                        'PricingController@getPlans'                                        ],
         'pricing_get_merchant_plans'               => ['get',      'pricing/merchants',                              'PricingController@getMerchantPricingPlans'                         ],
@@ -3261,11 +3263,16 @@ class Route
         'update_payment_config_admin',
         'admin_fetch_fund_account_validate',
 
+
         // Banking webhook Stork
         'webhook_stork_create_banking_bulk',
+        
+        // Merchant attribute
+        'merchants_update_onboarding_category_to_normal_cron',
 
         // API<->Stork webhook recon route
         'admin_webhook_recon',
+
     ];
 
     public static $routePermission = [
@@ -3926,10 +3933,14 @@ class Route
 
         'fee_recovery_payout_admin'                 => Permission::PROCESS_FEE_RECOVERY,
         'fee_recovery_payout_schedule_task'         => Permission::ASSIGN_FEE_RECOVERY_SCHEDULE,
+
         'fee_recovery_manual_update'                => Permission::PROCESS_FEE_RECOVERY,
 
         // copy API setting to RX on stork
         'webhook_stork_create_banking_bulk'        => Permission::CREATE_WEBHOOK_STORK_BANKING_BULK,
+
+        // Merchant Attribute
+        'merchants_update_onboarding_category_to_normal_cron'     => '*',
     ];
 
     public static $bankingRoutePermissions = [

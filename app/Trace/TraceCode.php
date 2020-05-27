@@ -1271,6 +1271,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_ACTIVATED_AT_OUT_OF_SYNC                     = 'MERCHANT_ACTIVATED_AT_OUT_OF_SYNC';
 
     const MERCHANT_PAYOUT_SKIPPED                               = 'MERCHANT_PAYOUT_SKIPPED';
+    const MERCHANT_ONBOARDING_CATEGORY_ASSIGN_FAILED            = 'MERCHANT_ONBOARDING_CATEGORY_ASSIGN_FAILED';
 
     const PRICING_PLAN_CREATE_ATTEMPT                           = 'PRICING_PLAN_CREATE_ATTEMPT';
     const PRICING_PLAN_CREATE_SUCCESS                           = 'PRICING_PLAN_CREATE_SUCCESS';
@@ -2523,6 +2524,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SALESFORCE_PARTNER_TYPE_RESPONSE                      = 'SALESFORCE_PARTNER_TYPE_RESPONSE';
     const SALESFORCE_PARTNER_TYPE_EXCEPTION                     = 'SALESFORCE_PARTNER_TYPE_EXCEPTION';
     const SALESFORCE_FAILED_TO_DISPATCH_JOB                     = 'SALESFORCE_FAILED_TO_DISPATCH_JOB';
+    const SALESFORCE_X_ONBOARDING_CATEGORY_UPDATE_REQUEST       = 'SALESFORCE_X_ONBOARDING_CATEGORY_UPDATE_REQUEST';
+    const SALESFORCE_X_ONBOARDING_CATEGORY_UPDATE_RESPONSE      = 'SALESFORCE_X_ONBOARDING_CATEGORY_UPDATE_RESPONSE';
+    const SALESFORCE_X_ONBOARDING_CATEGORY_UPDATE_ERROR         = 'SALESFORCE_X_ONBOARDING_CATEGORY_UPDATE_ERROR';
 
 
     // Banking account
@@ -2935,6 +2939,12 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     //Exception message while scrubbing user sensitive details in banking routes.
     const KEYS_BASED_SCRUBBING_BANKING_INFO_FAILURE_EXCEPTION = 'KEYS_BASED_SCRUBBING_BANKING_INFO_FAILURE_EXCEPTION';
+
+    // Merchant Attribute
+    const MERCHANT_ATTRIBUTE_EVENT                      = 'MERCHANT_ATTRIBUTE_EVENT';
+    const MERCHANT_ATTRIBUTE_CREATE                     = 'MERCHANT_ATTRIBUTE_CREATE';
+    const MERCHANT_ATTRIBUTE_BULK_UPDATE_REQUEST        = 'MERCHANT_ATTRIBUTE_BULK_UPDATE_REQUEST';
+    const MERCHANT_ATTRIBUTE_BULK_UPDATE                = 'MERCHANT_ATTRIBUTE_BULK_UPDATE';
 
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',

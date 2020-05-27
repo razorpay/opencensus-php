@@ -1416,5 +1416,14 @@ final class FactoryData
                 'description'              => null
             ]
         );
+
+        $factory(\RZP\Models\Merchant\Attribute\Entity::class, [
+            'id'                 => $faker->uniqueid,
+            'merchant_id'        => '10000000000000',
+            'product'            => 'banking',
+            'group'              => 'onboarding',
+            'type'               => 'merchant_onboarding_mechanism',
+            'value'              => 'normal',
+        ]);
     }
 }

@@ -1105,7 +1105,7 @@ class MerchantController extends Controller
      * returns merchant info along with merchant_details, to be used by internal apps
      */
     public function internalGetMerchant(string $merchantId)
-    {      
+    {
         $response = $this->service()->internalGetMerchant($merchantId);
 
         return ApiResponse::json($response);
@@ -1631,6 +1631,22 @@ class MerchantController extends Controller
     public function getGlobalMerchantConfigs($mid)
     {
         $response = $this->service()->getGlobalMerchantConfigs($mid);
+
+        return ApiResponse::json($response);
+    }
+
+    // Merchant Attribute
+    /**
+     * For banking merchants, after a certain number of days(passed in input) of belonging to
+     * "self_serve" onboarding category, they need to be moved to "normal" category in the
+     * situation that they have not completed onboarding (atleast 1 payout)
+     * @return mixed
+     */
+    public function postUpdateSelfServeBankingMerchantsToNormal()
+    {
+        $input = Request::all();
+
+        $response = $this->service(E::MERCHANT_ATTRIBUTE)->updateSelfServeBankingMerchantsToNormal($input);
 
         return ApiResponse::json($response);
     }

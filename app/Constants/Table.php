@@ -129,6 +129,7 @@ class Table
     const SUBSCRIPTION_REGISTRATION  = 'subscription_registrations';
     const MERCHANT_FRESHDESK_TICKETS = 'merchant_freshdesk_tickets';
     const TERMINAL_ONBOARDING_DETAIL = 'terminal_onboarding_details';
+    const MERCHANT_ATTRIBUTE         = 'merchant_attributes';
 
     const D2C_BUREAU_DETAIL         = 'd2c_bureau_details';
     const D2C_BUREAU_REPORT         = 'd2c_bureau_reports';

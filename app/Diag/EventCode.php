@@ -499,6 +499,18 @@ class EventCode
         'name'  => 'payment_page.created',
     ];
 
+
+    // Onboarding Attribute Events
+    const MERCHANT_ONBOARDING_CATEGORY_SET = [
+        'group' => 'onboarding',
+        'name'  => 'merchant_onboarding_category.set'
+    ];
+
+    const MERCHANT_ONBOARDING_CATEGORY_UPDATE = [
+        'group' => 'onboarding',
+        'name'  => 'merchant_onboarding_category.update'
+    ];
+
     const VIRTUAL_ACCOUNT_CREATED = [
         'group' => 'virtual_account',
         'name'  => 'virtual_account.created',
@@ -507,6 +519,7 @@ class EventCode
     const VIRTUAL_ACCOUNT_CLOSED = [
         'group' => 'virtual_account',
         'name'  => 'virtual_account.closed',
+
     ];
 
     const BANK_TRANSFER_REQUEST = [

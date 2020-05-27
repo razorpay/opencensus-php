@@ -11,6 +11,7 @@ use Requests_Exception;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Http\RequestHeader;
+use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Jobs\SalesforceRequestJob;
 use Razorpay\Trace\Logger as Trace;
 
@@ -31,6 +32,12 @@ class SalesForceClient
     protected $config;
 
     protected $trace;
+
+    /**
+     * BasicAuth entity
+     * @var BasicAuth
+     */
+    protected $auth;
 
     // Constants
 
@@ -56,6 +63,8 @@ class SalesForceClient
     public function __construct($app)
     {
         $this->trace = $app['trace'];
+
+        $this->auth = $app['basicauth'];
 
         $this->config = $app['config']->get('applications.salesforce');
 
@@ -150,6 +159,11 @@ class SalesForceClient
             'business_banking' => (int)$merchant->isBusinessBankingEnabled()
         ];
 
+        if ($this->auth->isProductBanking())
+        {
+            $data['x_onboarding_category'] = $merchant->getBankingOnboardingCategory();
+        }
+
         $keyMap = [
             'business_name'      => 'business_name',
             'business_type'      => 'business_type',
@@ -210,16 +224,17 @@ class SalesForceClient
     {
         return [
             [
-                "merchant_id"       => $merchant->getId(),
-                "name"              => $merchant->getName(),
-                "email"             => $merchant->getEmail(),
-                "activated"         => (int)$merchant->isActivated(),
-                "signup_date"       => epoch_format($merchant->getCreatedAt(), self::DATE_FORMAT),
-                "business_name"     => $merchant->merchantDetail->getBusinessName(),
-                "contact_name"      => $merchant->merchantDetail->getContactName(),
-                "business_banking"  => (int)$merchant->isBusinessBankingEnabled(),
-                "submission_date"   => date(self::DATE_FORMAT),
-                "submitted"         => 1,
+                "merchant_id"            => $merchant->getId(),
+                "name"                   => $merchant->getName(),
+                "email"                  => $merchant->getEmail(),
+                "activated"              => (int)$merchant->isActivated(),
+                "signup_date"            => epoch_format($merchant->getCreatedAt(), self::DATE_FORMAT),
+                "business_name"          => $merchant->merchantDetail->getBusinessName(),
+                "contact_name"           => $merchant->merchantDetail->getContactName(),
+                "business_banking"       => (int)$merchant->isBusinessBankingEnabled(),
+                "x_onboarding_category"  => $merchant->getBankingOnboardingCategory(),
+                "submission_date"        => date(self::DATE_FORMAT),
+                "submitted"              => 1,
             ]
         ];
     }
@@ -235,6 +250,36 @@ class SalesForceClient
                                   TraceCode::SALESFORCE_INTEREST_IN_X_REQUEST,
                                   TraceCode::SALESFORCE_INTEREST_IN_X_RESPONSE,
                                   TraceCode::SALESFORCE_INTEREST_IN_X_ERROR);
+    }
+
+    public function updateChangeInBankingMerchantOnboardingCategory(array $merchantEntities, string $newValue)
+    {
+        $url = $this->generateUrlForMerchantUpsert();
+
+        $payload = [];
+
+        foreach($merchantEntities as $merchant)
+        {
+            $merchantPayload = [
+                [
+                    "merchant_id"            => $merchant->getId(),
+                    "name"                   => $merchant->getName(),
+                    "email"                  => $merchant->getEmail(),
+                    "activated"              => (int)$merchant->isActivated(),
+                    "business_name"          => $merchant->merchantDetail->getBusinessName(),
+                    "contact_name"           => $merchant->merchantDetail->getContactName(),
+                    "business_banking"       => (int)$merchant->isBusinessBankingEnabled(),
+                    "x_onboarding_category"  => $newValue
+                ]
+            ];
+            array_push($payload, $merchantPayload);
+        }
+
+        $this->dispatchRequestJob($url,
+            $payload,
+            TraceCode::SALESFORCE_X_ONBOARDING_CATEGORY_UPDATE_REQUEST,
+            TraceCode::SALESFORCE_X_ONBOARDING_CATEGORY_UPDATE_RESPONSE,
+            TraceCode::SALESFORCE_X_ONBOARDING_CATEGORY_UPDATE_ERROR);
     }
 
     protected function parseAccessToken($response)
