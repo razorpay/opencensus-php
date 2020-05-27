@@ -27,6 +27,7 @@ class Lambda extends Base
     // bucket for newly added gateways under sftp automation.
     const SFTP_BUCKET_GATEWAYS = [
         Base::VAS_AXIS,
+        Base::UPI_AXIS,
     ];
 
     public function process(array $input): array
