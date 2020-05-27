@@ -1711,35 +1711,70 @@ class TerminalTest extends TestCase
         $this->assertEquals('100000razorpay', $terminal['org_id']);
     }
 
-    public function testAssignTerminalWithNoAccountTypeAttribute()
+    public function testAssignTerminalWithNoAccountTypeAttribute($channel = 'bt_icici')
     {
-        $merchant = $this->testAssignTerminalWithDifferentAccountTypeAttribute();
+        $merchant = $this->testAssignTerminalWithDifferentAccountTypeAttribute($channel);
 
         $url = '/merchants/' . $merchant->getKey() . '/terminals';
         $this->testData[__FUNCTION__]['request']['url'] = $url;
+        $this->testData[__FUNCTION__]['request']['content']['gateway'] = $channel;
         $this->testData[__FUNCTION__]['request']['content']['gateway_merchant_id'] = '9999';
 
         $this->startTest();
     }
 
-    public function testAssignTerminalWithDifferentAccountTypeAttribute()
+    public function testAssignTerminalWithNoAccountTypeAttributeForYesbank()
+    {
+        $this->testAssignTerminalWithNoAccountTypeAttribute('bt_yesbank');
+    }
+
+    public function testAssignTerminalWithDifferentAccountTypeAttributeForYesbank()
+    {
+        $this->testAssignTerminalWithDifferentAccountTypeAttribute('bt_yesbank');
+    }
+
+    public function testAssignTerminalWithDifferentAccountTypeAttribute($gateway = 'bt_icici')
     {
         $merchant = $this->fixtures->create('merchant');
 
         $url = '/merchants/' . $merchant->getKey() . '/terminals';
         $this->testData[__FUNCTION__]['request']['url'] = $url;
+        $this->testData[__FUNCTION__]['request']['content']['gateway'] = $gateway;
+        $this->testData[__FUNCTION__]['request']['content']['gateway_merchant_id'] = '2323';
+        $this->testData[__FUNCTION__]['request']['content']['account_type'] = 'current';
+
+        $this->testData[__FUNCTION__]['response']['content']['gateway'] = $gateway;
+        $this->testData[__FUNCTION__]['response']['content']['gateway_merchant_id'] = '2323';
+        $this->testData[__FUNCTION__]['response']['content']['account_type'] = 'current';
 
         $this->startTest();
 
         $url = '/merchants/' . $merchant->getKey() . '/terminals';
         $this->testData[__FUNCTION__]['request']['url'] = $url;
+        $this->testData[__FUNCTION__]['request']['content']['gateway'] = $gateway;
         $this->testData[__FUNCTION__]['request']['content']['gateway_merchant_id'] = '9999';
-        $this->testData[__FUNCTION__]['response']['content']['gateway_merchant_id'] = '9999';
         $this->testData[__FUNCTION__]['request']['content']['account_type'] = 'nodal';
+
+        $this->testData[__FUNCTION__]['response']['content']['gateway'] = $gateway;
+        $this->testData[__FUNCTION__]['response']['content']['gateway_merchant_id'] = '9999';
+        $this->testData[__FUNCTION__]['response']['content']['account_type'] = 'nodal';
 
         $this->startTest();
 
         return $merchant;
+    }
+
+    public function testAssignTerminalWithDifferentAccountTypeAttributeForKotak()
+    {
+        $merchant = $this->fixtures->create('merchant');
+
+        $url = '/merchants/' . $merchant->getKey() . '/terminals';
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+        $this->testData[__FUNCTION__]['request']['content']['gateway'] = 'bt_kotak';
+        $this->testData[__FUNCTION__]['request']['content']['gateway_merchant_id'] = '2323';
+        $this->testData[__FUNCTION__]['request']['content']['account_type'] = 'current';
+
+        $this->startTest();
     }
 
     public function testTerminalFetchByIdAppAuth()

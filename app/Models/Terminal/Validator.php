@@ -1102,6 +1102,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_MERCHANT_ID2        => 'sometimes|string',
         Entity::TYPE                        => 'required|array',
         Entity::BANK_TRANSFER               => 'required|boolean|in:1',
+        Entity::ACCOUNT_TYPE                => 'sometimes|string',
     ];
 
     protected static $btKotakTerminalRules = [

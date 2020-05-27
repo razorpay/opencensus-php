@@ -3358,8 +3358,6 @@ return [
     'testAssignTerminalWithNoAccountTypeAttribute' => [
         'request'   => [
             'content'   => [
-                'gateway'                   => 'bt_icici',
-                'gateway_merchant_id'       => '2323',
                 'bank_transfer'             => '1',
                 'type'                      => [
                     'business_banking'  => '1',
@@ -3385,10 +3383,7 @@ return [
     'testAssignTerminalWithDifferentAccountTypeAttribute' => [
         'request'   => [
             'content'   => [
-                'gateway'                   => 'bt_icici',
-                'gateway_merchant_id'       => '2323',
                 'bank_transfer'             => '1',
-                'account_type'              => 'current',
                 'type'                      => [
                     'business_banking'  => '1',
                     'non_recurring'     => '1',
@@ -3402,6 +3397,32 @@ return [
                 'enabled'                   =>  true
             ]
         ]
+    ],
+
+    'testAssignTerminalWithDifferentAccountTypeAttributeForKotak' => [
+        'request'   => [
+            'content'   => [
+                'bank_transfer'             => '1',
+                'type'                      => [
+                    'business_banking'  => '1',
+                    'non_recurring'     => '1',
+                    'numeric_account'   => '1',
+                ],
+            ]
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'account_type is/are not required and should not be sent',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\ExtraFieldsException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_EXTRA_FIELDS_PROVIDED,
+        ],
     ],
 
     'testTerminalFetchByIdAppAuth' => [
