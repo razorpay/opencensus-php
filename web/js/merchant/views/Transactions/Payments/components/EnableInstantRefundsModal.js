@@ -72,11 +72,6 @@ export default class EnableInstantRefundsModal extends Component {
 
   enableInstantRefunds = () => {
     let label;
-    if (this.hovered) {
-      label = `${this.props.openedFrom} | Hover on Pricing | Yes Enable`;
-    } else {
-      label = `${this.props.openedFrom} | Didn't hover on Pricing | Yes Enable`;
-    }
     this.props
       .updateConfig({
         default_refund_speed: this.props.speed,
@@ -88,22 +83,31 @@ export default class EnableInstantRefundsModal extends Component {
             this.props.speed === 'normal' ? 'Normal' : 'Instant'
           } Refunds Activated Successfully`,
         });
+        label = `${
+          this.props.speed !== 'normal'
+            ? this.props.pricing.custom_pricing
+              ? 'Custom Pricing'
+              : 'Normal Pricing'
+            : ''
+        }${this.state.show_breakup ? ' | Show Pricing' : ''}${
+          this.analytics.learn_more ? ' | Learn More' : ''
+        }${
+          this.props.speed === 'normal'
+            ? ` ${
+                this.props.speed !== 'normal' ||
+                this.state.show_breakup ||
+                this.analytics.learn_more
+                  ? '|'
+                  : ''
+              } Enable Normal Refund`
+            : ' | Enable Instant Refund'
+        }`;
         window.rzpAnalytics({
           eventCategory: 'Dashboard - Instant Refund',
           eventAction: `Enable ${
             this.props.speed === 'normal' ? 'Normal' : 'Instant'
           } Refund`,
-          eventLabel: `${
-            this.props.pricing.custom_pricing
-              ? ' Custom Pricing'
-              : ' Normal Pricing'
-          }${this.state.show_breakup ? ' | Show Pricing' : ''}
-            ${this.analytics.learn_more ? ' | Learn More' : ''}
-            ${
-              this.props.speed === 'normal'
-                ? ' | Enable Normal Refund'
-                : ' | Enable Instant Refund'
-            }`,
+          eventLabel: label,
         });
         this.props.updated();
         this.props.closeModal();
@@ -291,12 +295,16 @@ export default class EnableInstantRefundsModal extends Component {
                 <a
                   href="https://razorpay.com/docs/payment-gateway/refunds/#using-the-dashboard"
                   target="_blank"
+                  onClick={() => {
+                    window.rzpAnalytics({
+                      eventCategory: 'Dashboard - Instant Refund',
+                      eventAction: `Enable Normal Refund`,
+                      eventLabel: `Learn More | Enable Normal Refund`,
+                    });
+                    this.analytics.learn_more = true;
+                  }}
                 >
-                  <strong
-                    onClick={() => (this.analytics.learn_more = true)}
-                    class="pointer"
-                    style={{ color: '#0B70E7' }}
-                  >
+                  <strong class="pointer" style={{ color: '#0B70E7' }}>
                     &nbsp; click here
                   </strong>
                 </a>
@@ -308,12 +316,16 @@ export default class EnableInstantRefundsModal extends Component {
                 <a
                   href="https://razorpay.com/docs/payment-gateway/refunds/#using-the-dashboard"
                   target="_blank"
+                  onClick={() => {
+                    window.rzpAnalytics({
+                      eventCategory: 'Dashboard - Instant Refund',
+                      eventAction: `Enable Instant Refund`,
+                      eventLabel: `Learn More | Enable Instant Refund`,
+                    });
+                    this.analytics.learn_more = true;
+                  }}
                 >
-                  <strong
-                    onClick={() => (this.analytics.learn_more = true)}
-                    class="pointer"
-                    style={{ color: '#0B70E7' }}
-                  >
+                  <strong class="pointer" style={{ color: '#0B70E7' }}>
                     {' '}
                     &nbsp; click here
                   </strong>

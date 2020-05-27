@@ -115,7 +115,7 @@ export default class RefundModal extends Component {
       instantChecked:
         !showWhenUtil({ featureEnabled: 'disable_instant_refunds' }) &&
         this.props.default_refund_speed == 'optimum',
-      instant_fee: {},
+      instant_fee: { fee: 0, tax: 0 },
     };
   }
 
@@ -220,6 +220,9 @@ export default class RefundModal extends Component {
       .refundPayment(payment, data)
       .then(() => {
         const default_speed = this.props.default_refund_speed;
+        const is_normal = default_speed === 'normal';
+        const is_instant = default_speed !== 'normal';
+        const is_unchecked = this.analytics.check_box == false;
         const label = `${partial ? 'Partial' : 'Full'} Refund${
           this.analytics.hovered ? ' | Hover Tooltip' : ''
         }${this.analytics.hover_breakup ? ' | Hover Breakup Tooltip' : ''}${
@@ -235,11 +238,39 @@ export default class RefundModal extends Component {
             ? ' | Default Speed Normal'
             : ' | Default Speed Instant'
         }`;
-        window.rzpAnalytics({
-          eventCategory: 'Dashboard - Instant Refund',
-          eventAction: `Issue ${partial ? 'Partial' : 'Full'} Refund`,
-          eventLabel: label,
-        });
+        if (
+          (partial && this.analytics.comment && is_normal) ||
+          (partial && this.analytics.comment && is_instant) ||
+          (partial && this.analytics.check_box && is_normal) ||
+          (partial &&
+            this.analytics.hovered &&
+            this.analytics.check_box &&
+            is_normal) ||
+          (partial && is_unchecked && is_instant) ||
+          (partial &&
+            this.analytics.hover_breakup &&
+            is_unchecked &&
+            is_instant) ||
+          // now instant case
+          (!partial && this.analytics.comment && is_normal) ||
+          (!partial && this.analytics.comment && is_instant) ||
+          (!partial && this.analytics.check_box && is_normal) ||
+          (!partial &&
+            this.analytics.hovered &&
+            this.analytics.check_box &&
+            is_normal) ||
+          (!partial && is_unchecked && is_instant) ||
+          (!partial &&
+            this.analytics.hover_breakup &&
+            is_unchecked &&
+            is_instant)
+        ) {
+          window.rzpAnalytics({
+            eventCategory: 'Dashboard - Instant Refund',
+            eventAction: `Issue ${partial ? 'Partial' : 'Full'} Refund`,
+            eventLabel: label,
+          });
+        }
         this.props.showNotification({
           type: 'success',
           message: 'Payment refunded',
@@ -471,7 +502,9 @@ export default class RefundModal extends Component {
                       <Fragment>
                         <i
                           class="i i-help"
-                          onMouseEnter={() => (this.analytics.hovered = true)}
+                          onMouseEnter={() => {
+                            this.analytics.hovered = true;
+                          }}
                         />
                         <Popover
                           theme="dark"
@@ -557,9 +590,9 @@ export default class RefundModal extends Component {
                   <React.Fragment>
                     <div style={{ display: 'inline', marginLeft: '5px' }}>
                       <i
-                        onMouseEnter={() =>
-                          (this.analytics.hover_breakup = true)
-                        }
+                        onMouseEnter={() => {
+                          this.analytics.hover_breakup = true;
+                        }}
                         class="i i-info-circle"
                       />
                       <Popover

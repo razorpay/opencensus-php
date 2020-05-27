@@ -67,6 +67,11 @@ export default class CongfigurationContainer extends Component {
       setTimeout(() => this.scrollIntoView('paypal-auto-onboarding'), 1000);
     }
     if (this.props.location.hash === '#instantrefunds') {
+      window.rzpAnalytics({
+        eventCategory: 'Dashboard - Instant Refund',
+        eventAction: 'Enable Now',
+        eventLabel: `Announcement | Enable Now`,
+      });
       setTimeout(() => {
         this.scrollIntoView('default-refund-container');
         const el = document.getElementById('instant-refund-panel-col');
