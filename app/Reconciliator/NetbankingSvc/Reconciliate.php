@@ -66,7 +66,7 @@ class Reconciliate extends Base\Reconciliate
 
         $aes = new AESCrypto(AES::MODE_CBC, $masterKey, base64_decode($iv));
 
-        $decryptedString = $aes->decryptString(hex2bin($encryptedData));
+        $decryptedString = $aes->decryptString(hex2bin(trim($encryptedData)));
 
        file_put_contents($filePath, $decryptedString);
     }
