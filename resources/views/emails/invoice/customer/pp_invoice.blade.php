@@ -1,7 +1,7 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
 <html style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;"><body style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;"><div style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;">
 
-    @extends('emails.invoice.notification')
+    @extends('emails.invoice.pp_notification')
 
     @php
         $status    = $invoice['status'];
@@ -76,7 +76,7 @@
             <tr style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;">
                 <td class="text-center" style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121; text-align: center;">
                     <h2 style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; margin: 0; font-size: 20px; line-height: 24px; color: {{ $merchant['brand_text_color'] }};">
-                        {{ $invoice['type_label'] }} from {{$merchant['name']}}
+                        Payment Receipt from {{$merchant['name']}}
                     </h2>
                 </td>
             </tr>
@@ -87,10 +87,10 @@
                             @if ($custom_labels['receipt_number'] ?? false)
                                 {{ $custom_labels['receipt_number'] }}: {{$invoice['receipt']}}
                             @else
-                                {{ $invoice['type_label'] }} Receipt: {{$invoice['receipt']}}
+                                Transaction Reference: {{$invoice['receipt']}}
                             @endif
                         @else
-                            {{ $invoice['type_label'] }} Id: {{$invoice['id']}}
+                            Transaction Id: {{$invoice['id']}}
                         @endif
                     </div>
                 </td>

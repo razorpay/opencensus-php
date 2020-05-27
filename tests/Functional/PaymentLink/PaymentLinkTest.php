@@ -827,8 +827,6 @@ class PaymentLinkTest extends TestCase
 
         $this->assertEquals($invoice->getAttribute(Invoice\Entity::COMMENT), 'success');
 
-        $this->assertEquals($invoice->getEmailStatus(), Invoice\NotifyStatus::SENT);
-
         $this->assertEquals($invoice->getReceipt(), $payment['id']);
 
         $this->assertLineItems($invoice->lineItems->toArray(), $order->lineItems->toArray());

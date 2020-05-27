@@ -165,7 +165,11 @@ class Base extends Mailable
 
         if(empty($this->data['pp_invoice']) === false)
         {
-            $template = static::SUBJECT_TEMPLATES['pp_invoice'];
+            $appendText = "Payment receipt for your successful transaction on ";
+
+            $template = $this->data['invoice'][C\Entity::PAYMENT_PAGE]['title'] ?? static::SUBJECT_TEMPLATES['pp_invoice'];
+
+            $template = $appendText.$template;
 
             $args = [];
         }
