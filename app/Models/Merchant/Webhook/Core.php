@@ -175,7 +175,7 @@ class Core extends Base\Core
 
         $idsWithMismatch = [];
 
-        $apiWebhooks = $this->repo->webhook->findManyOrFailPublic($webhookIDs);
+        $apiWebhooks = $this->repo->webhook->findMultipleByIds($webhookIDs);
         $stork = new Stork;
 
         // Fetch stork webhook entries for all valid webhooks queried.
@@ -229,7 +229,7 @@ class Core extends Base\Core
             }
         }
 
-        return $webhooksWithMismatch;
+        return $idsWithMismatch;
     }
 
     /**
