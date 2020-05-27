@@ -50,6 +50,8 @@ class Entity extends Base\PublicEntity
     const PHONEPE_SWITCH    = 'phonepeswitch';
     const PAYPAL            = 'paypal';
     const GOOGLE_PAY_CARDS  = 'google_pay_cards';
+    const CRED              = 'cred';
+
 
     const METHODS           = 'methods';
 
@@ -94,6 +96,8 @@ class Entity extends Base\PublicEntity
         self::PHONEPE,
         self::PHONEPE_SWITCH,
         self::PAYPAL,
+        self::CRED,
+
     ];
 
     protected $visible = [
@@ -130,6 +134,7 @@ class Entity extends Base\PublicEntity
         self::PHONEPE,
         self::PHONEPE_SWITCH,
         self::PAYPAL,
+        self::CRED,
     ];
 
     protected $public = [
@@ -167,6 +172,7 @@ class Entity extends Base\PublicEntity
         self::PHONEPE_SWITCH,
         self::PAYLATER,
         self::PAYPAL,
+        self::CRED,
     ];
 
     //
@@ -206,6 +212,7 @@ class Entity extends Base\PublicEntity
         self::PHONEPE        => false,
         self::PHONEPE_SWITCH => false,
         self::PAYPAL         => false,
+        self::CRED           => false,
     );
 
     public static $defaultPaymentMethodsForSubmerchantByPartner = array(
@@ -239,6 +246,7 @@ class Entity extends Base\PublicEntity
         self::PHONEPE        => false,
         self::PHONEPE_SWITCH => false,
         self::PAYPAL         => false,
+        self::CRED         => false,
     );
 
     protected $wallets = array(
@@ -282,6 +290,8 @@ class Entity extends Base\PublicEntity
         self::PHONEPE,
         self::PHONEPE_SWITCH,
         self::PAYPAL,
+        self::CRED,
+
     ];
 
     // Casts the attributes to native types
@@ -314,6 +324,7 @@ class Entity extends Base\PublicEntity
         self::PHONEPE       => 'bool',
         self::PHONEPE_SWITCH=> 'bool',
         self::PAYPAL        => 'bool',
+        self::CRED          => 'bool',
     ];
 
     public function merchant()
@@ -506,6 +517,11 @@ class Entity extends Base\PublicEntity
     public function isCardlessEmiEnabled()
     {
         return $this->getAttribute(self::CARDLESS_EMI);
+    }
+
+    public function isCredEnabled()
+    {
+        return $this->getAttribute(self::CRED);
     }
 
     public function isPayLaterEnabled()
@@ -724,6 +740,11 @@ class Entity extends Base\PublicEntity
     }
 
     public function setRupayCard(int $value)
+    {
+        $this->setCardNetwork(Network::RUPAY, $value);
+    }
+
+    public function setCred(int $value)
     {
         $this->setCardNetwork(Network::RUPAY, $value);
     }

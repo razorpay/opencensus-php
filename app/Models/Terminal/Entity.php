@@ -80,6 +80,7 @@ class Entity extends Base\PublicEntity
     const NOTES                         = 'notes';
     const SYNC_STATUS                   = 'sync_status';
     const MPAN                          = 'mpan';
+    const CRED                          = 'cred';
 
     // Used for allowing gateway level changes for corporate netbanking payments.
     const CORPORATE                     = 'corporate';
@@ -186,6 +187,7 @@ class Entity extends Base\PublicEntity
         self::VIRTUAL_UPI_HANDLE,
         self::SYNC_STATUS,
         self::ACCOUNT_TYPE,
+        self::CRED,
     ];
 
     protected $public = [
@@ -252,6 +254,7 @@ class Entity extends Base\PublicEntity
         self::VIRTUAL_UPI_MERCHANT_PREFIX,
         self::VIRTUAL_UPI_HANDLE,
         self::CARDLESS_EMI,
+        self::CRED,
         self::PAYLATER,
         self::MPAN,
         self::ACCOUNT_TYPE,
@@ -314,6 +317,7 @@ class Entity extends Base\PublicEntity
         self::USED                       => false,
         self::EMI_SUBVENTION             => null,
         self::CARDLESS_EMI               => 0,
+        self::CRED                       => 0,
         self::PAYLATER                   => 0,
         self::STATUS                     => Status::ACTIVATED,
         self::NOTES                      => null,
@@ -347,6 +351,7 @@ class Entity extends Base\PublicEntity
         self::USED                      => 'boolean',
         self::ENABLED_BANKS             => 'array',
         self::CARDLESS_EMI              => 'boolean',
+        self::CRED                      => 'boolean',
         self::PAYLATER                  => 'boolean',
         self::DIRECT                    => 'boolean',
     ];
@@ -626,6 +631,11 @@ class Entity extends Base\PublicEntity
     public function isCardlessEmiEnabled()
     {
         return $this->getAttribute(self::CARDLESS_EMI);
+    }
+
+    public function isCredMethodEnabled()
+    {
+        return $this->getAttribute(self::CRED);
     }
 
     public function isPayLaterEnabled()
