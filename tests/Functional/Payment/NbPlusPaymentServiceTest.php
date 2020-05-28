@@ -32,7 +32,6 @@ class NbPlusPaymentServiceTest extends TestCase
         'merchant',
         'cps_route',
         'merchant_detail',
-        'gateway_config',
         'method_data',
     ];
 
@@ -43,13 +42,19 @@ class NbPlusPaymentServiceTest extends TestCase
         'merchant',
         'cps_route',
         'merchant_detail',
-        'gateway_config',
         'method_data'
     ];
+
+    const PREPROCESS_CALLBACK_INPUT = [
+        'gateway_data'
+    ];
+
     /**
      * @var array
      */
-    private $terminal;
+    protected $terminal;
+
+    protected $bank;
 
     public function setUp()
     {
@@ -75,6 +80,8 @@ class NbPlusPaymentServiceTest extends TestCase
 
         $this->terminal = $this->fixtures->create('terminal:shared_atom_terminal');
 
+        $this->bank = "IDIB";
+
         $this->enableNbPlusConfig();
 
         // This may be made generic when there are more than just netbanking methods migrated to new service
@@ -85,19 +92,26 @@ class NbPlusPaymentServiceTest extends TestCase
 
     public function testAuthorize()
     {
-        $paymentArray = $this->getDefaultNetbankingPaymentArray();
+        $paymentArray = $this->getDefaultNetbankingPaymentArray($this->bank);
 
         $this->mockServerRequestFunction(function (&$content, $action = null)
         {
-            $this->assertEquals(Payment\Gateway::ATOM, $content[NbPlusPaymentService\Request::GATEWAY]);
+            $assertContent = $content;
+
+            unset($assertContent['input']['gateway_config']);
+
+            $this->assertEquals($this->terminal->getGateway(), $content[NbPlusPaymentService\Request::GATEWAY]);
 
             switch ($action)
             {
                 case NbPlusPaymentService\Action::AUTHORIZE:
-                    $this->assertArrayKeysExist($content[NbPlusPaymentService\Request::INPUT], self::AUTHORIZE_ACTION_INPUT);
+                    $this->assertArrayKeysExist($assertContent[NbPlusPaymentService\Request::INPUT], self::AUTHORIZE_ACTION_INPUT);
                     break;
                 case NbPlusPaymentService\Action::CALLBACK:
-                    $this->assertArrayKeysExist($content[NbPlusPaymentService\Request::INPUT], self::CALLBACK_ACTION_INPUT);
+                    $this->assertArrayKeysExist($assertContent[NbPlusPaymentService\Request::INPUT], self::CALLBACK_ACTION_INPUT);
+                    break;
+                case NbPlusPaymentService\Action::PREPROCESS_CALLBACK:
+                    $this->assertArrayKeysExist($assertContent[NbPlusPaymentService\Request::INPUT], self::PREPROCESS_CALLBACK_INPUT);
             }
         });
 
@@ -120,7 +134,7 @@ class NbPlusPaymentServiceTest extends TestCase
 
     public function testVerify()
     {
-        $paymentArray = $this->getDefaultNetbankingPaymentArray();
+        $paymentArray = $this->getDefaultNetbankingPaymentArray($this->bank);
 
         $response = $this->doAuthPayment($paymentArray);
 
@@ -312,7 +326,7 @@ class NbPlusPaymentServiceTest extends TestCase
             ];
         });
 
-        $paymentArray = $this->getDefaultNetbankingPaymentArray();
+        $paymentArray = $this->getDefaultNetbankingPaymentArray($this->bank);
 
         $this->makeRequestAndCatchException(
             function() use ($paymentArray)

@@ -35,7 +35,8 @@ class Service
       Payment\Gateway::NETBANKING_CSB       => Payment\Method::NETBANKING,
       Payment\Gateway::NETBANKING_CUB       => Payment\Method::NETBANKING,
       Payment\Gateway::NETBANKING_SVC       => Payment\Method::NETBANKING,
-      Payment\Gateway::NETBANKING_ALLAHABAD => Payment\Method::NETBANKING
+      Payment\Gateway::NETBANKING_ALLAHABAD => Payment\Method::NETBANKING,
+      Payment\Gateway::NETBANKING_KVB       => Payment\Method::NETBANKING,
     ];
 
     protected $baseUrl;
@@ -208,6 +209,7 @@ class Service
             'terminal.gateway_access_code'  => 'content.input.terminal.gateway_access_code',
             'gateway.data'                  => 'content.input.gateway',
             'gateway.callback_url'          => 'content.input.callbackUrl',
+            'gateway.static_callback_data'  => 'content.input.gateway_data',
         ];
 
         $requestTrace = [];

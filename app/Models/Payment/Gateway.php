@@ -1574,6 +1574,18 @@ class Gateway
     ];
 
     /**
+     * List of gateways which give static callback where we do not validate
+     * payment callback hash
+     *
+     * @var array
+     *
+     * @todo: Add all static callback gateways here once migrated to new flow to handle static callback.
+     */
+    public static $staticCallbackGateways = [
+        Gateway::NETBANKING_KVB,
+    ];
+
+    /**
      * List of gateways which support S2S mandate callbacks.
      *
      * @var array
@@ -1953,6 +1965,11 @@ class Gateway
         }
 
         return false;
+    }
+
+    public static function isStaticCallbackGateway($gateway)
+    {
+        return in_array($gateway, self::$staticCallbackGateways, true);
     }
 
     /**
@@ -2579,6 +2596,7 @@ class Gateway
             self::NETBANKING_CUB,
             self::NETBANKING_SVC,
             self::NETBANKING_ALLAHABAD,
+            self::NETBANKING_KVB,
         ];
 
         return (in_array($gateway, $gateways, true));

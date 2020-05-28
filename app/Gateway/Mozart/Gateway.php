@@ -1876,7 +1876,6 @@ class Gateway extends Base\Gateway
     {
         $fullyEncryptedInputGateways = [
           Payment\Gateway::NETBANKING_YESB,
-          Payment\Gateway::NETBANKING_KVB,
         ];
 
         return in_array($gateway, $fullyEncryptedInputGateways, true);

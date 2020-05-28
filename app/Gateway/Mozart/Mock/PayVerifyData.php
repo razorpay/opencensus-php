@@ -138,7 +138,7 @@ class PayVerifyData extends Base\Mock\Server
             'data'              => [
                 '_raw'            => 'dummy_raw_value',
                 'paymentId'       => $entities['gateway']['redirect']['paymentId'],
-                'bank_payment_id' => '999999',
+                'bank_payment_id' => '1234',
                 'amount'          => $entities['gateway']['redirect']['amount'],
                 'status'          => 'callback_successful',
             ],

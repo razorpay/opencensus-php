@@ -13,19 +13,6 @@ use RZP\Tests\Functional\Payment\NbPlusPaymentServiceTest;
 
 class NbplusNetbankingCsbGatewayTest extends NbPlusPaymentServiceTest
 {
-    /**
-     * @var array
-     */
-    private $terminal;
-    /**
-     * @var string
-     */
-    private $bank;
-    /**
-     * @var array
-     */
-    private $payment;
-
     public function setUp()
     {
         $this->testDataFilePath = __DIR__ . '/NetbankingCsbGatewayTestData.php';

@@ -20,6 +20,7 @@ class Response
     const GATEWAY_REFERENCE_NUMBER = 'gateway_reference_number';
     const STATUS                   = 'status';
     const ACCOUNT_INFO             = 'account_info';
+    const PAYMENT_ID               = 'payment_id';
 
     // verify
     const GATEWAY_STATUS = 'gateway_status';

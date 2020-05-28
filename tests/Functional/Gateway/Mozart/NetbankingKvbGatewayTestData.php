@@ -25,7 +25,7 @@ return [
             'merchant_order_id'   => 'random order id',
         ],
         'acquirer_data' => [
-            'bank_transaction_id' => '999999'
+            'bank_transaction_id' => '1234'
         ],
         'gateway'           => 'netbanking_kvb',
         'signed'            => false,

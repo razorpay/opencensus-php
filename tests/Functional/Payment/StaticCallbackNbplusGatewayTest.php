@@ -1,0 +1,36 @@
+<?php
+
+namespace RZP\Tests\Functional\Payment;
+
+class StaticCallbackNbplusGatewayTest extends NbPlusPaymentServiceTest
+{
+    public function setUp()
+    {
+        $this->testDataFilePath =  'Functional/Gateway/Mozart/NetbankingKvbGatewayTestData.php';
+
+        parent::setUp();
+
+        $this->bank = 'KVBL';
+
+        $this->terminal = $this->fixtures->create('terminal:shared_netbanking_kvb_terminal');
+    }
+
+    protected function runPaymentCallbackFlowForGateway($response, $gateway, &$callback = null)
+    {
+        list ($url, $method, $content) = $this->getDataForGatewayRequest($response, $callback);
+
+        $response = $this->mockCallbackFromGateway($url, $method, $content);
+
+        $data = array(
+            'url' => $response->headers->get('location'),
+            'method' => 'get');
+
+        $response = $this->sendRequest($data);
+
+        $data = $this->getPaymentJsonFromCallback($response->getContent());
+
+        $response->setContent($data);
+
+        return $response;
+    }
+}

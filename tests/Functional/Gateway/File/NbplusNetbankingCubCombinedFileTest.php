@@ -14,19 +14,6 @@ use RZP\Tests\Functional\Payment\NbPlusPaymentServiceTest;
 
 class NbplusNetbankingCubCombinedFileTest extends NbPlusPaymentServiceTest
 {
-    /**
-     * @var array
-     */
-    private $terminal;
-    /**
-     * @var string
-     */
-    private $bank;
-    /**
-     * @var array
-     */
-    private $payment;
-
     public function setUp()
     {
         $this->testDataFilePath = __DIR__ . '/helpers/NetbankingCubCombinedFileTestData.php';

@@ -18,19 +18,6 @@ use RZP\Tests\Functional\Payment\NbPlusPaymentServiceTest;
 
 class NetbankingSvcCombinedFileTest extends NbPlusPaymentServiceTest
 {
-    /**
-     * @var array
-     */
-    private $terminal;
-    /**
-     * @var string
-     */
-    private $bank;
-    /**
-     * @var array
-     */
-    private $payment;
-
     public function setUp()
     {
         $this->testDataFilePath = __DIR__ . '/helpers/NetbankingSvcCombinedFileTestData.php';

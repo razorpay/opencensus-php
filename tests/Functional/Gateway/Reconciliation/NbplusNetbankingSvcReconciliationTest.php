@@ -20,15 +20,6 @@ class NbplusNetbankingSvcReconciliationTest extends NbPlusPaymentServiceTest
 {
     use ReconTrait;
 
-    /**
-     * @var array
-     */
-    private $terminal;
-    /**
-     * @var array
-     */
-    private $payment;
-
     public function setUp()
     {
         $this->testDataFilePath = __DIR__ . '/NbplusNetbankingReconciliationTestData.php';
@@ -37,7 +28,9 @@ class NbplusNetbankingSvcReconciliationTest extends NbPlusPaymentServiceTest
 
         $this->terminal = $this->fixtures->create('terminal:shared_netbanking_svc_terminal');
 
-        $this->payment = $this->getDefaultNetbankingPaymentArray(IFSC::SVCB);
+        $this->bank = 'SVCB';
+
+        $this->payment = $this->getDefaultNetbankingPaymentArray($this->bank);
     }
 
     public function testSvcSuccessRecon()

@@ -9,7 +9,9 @@ use ApiResponse;
 use RZP\Exception;
 use RZP\Models\Admin;
 use RZP\Models\QrCode;
+use RZP\Constants\Mode;
 use RZP\Models\Payment;
+use RZP\Services\NbPlus;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger;
@@ -377,39 +379,7 @@ class GatewayController extends Controller
     {
         $input = Request::all();
 
-        $data = [];
-
-        $trace = $this->app['trace'];
-
-        $trace->info(
-            TraceCode::GATEWAY_PAYMENT_S2S_CALLBACK,
-            [
-                'input'     => $input,
-                'body'      => Request::getContent(),
-                'headers'   => Request::header(),
-                'gateway'   => $gateway,
-            ]);
-
-        switch ($method)
-        {
-            case Payment\Method::NETBANKING:
-                $data = $this->staticCallbackNetbanking($input, $gateway,$mode);
-                return $data;
-        }
-
-        return null;
-    }
-
-    public function staticCallbackNetbanking($input, $gateway, $mode)
-    {
-        switch ($gateway)
-        {
-            case Gateway::NETBANKING_KVB:
-            $data = $this->callbackKvbbank($input, $mode);
-            return $data;
-        }
-
-        return null;
+        return $this->preProcessStaticCallback($gateway, $input, $mode);
     }
 
     public function callbackKotakCancel()
@@ -422,7 +392,7 @@ class GatewayController extends Controller
         $inputMsg = Request::get('msg');
 
         // This is a temporary hack to identify encrypted and non encrypted requests as non encrypted requests will be a '|' seperated string
-        // whereas encrypted string will be a base64 encoded string which should have no '|' 
+        // whereas encrypted string will be a base64 encoded string which should have no '|'
 
         if (substr_count($inputMsg,'|') === 0)
         {
@@ -686,39 +656,6 @@ class GatewayController extends Controller
         return Redirect::to($url);
     }
 
-    public function callbackKvbbank($input, $mode)
-    {
-        $this->app['trace']->info(
-            TraceCode::NETBANKING_PAYMENT_CALLBACK,
-            [
-                'gateway'          => 'netbanking_kvb',
-                'encrypted_string' => $input
-            ]
-        );
-
-        $gateway = $this->app['gateway']->gateway(Gateway::NETBANKING_KVB);
-
-        $response = $gateway->preProcessServerCallback($input, Gateway::NETBANKING_KVB, $mode);
-
-        $paymentId = $gateway->getPaymentIdFromServerCallback($response, Gateway::NETBANKING_KVB);
-
-        $mode = $this->app['repo']->determineLiveOrTestModeForEntity($paymentId, 'payment');
-
-        $this->app['config']->set('database.default', $mode);
-
-        $payment = $this->app['repo']->payment->findOrFail($paymentId);
-
-        $publicKey = $this->getMerchantKeyForPayment($payment, $mode);
-
-        $publicPaymentId = $payment->getPublicId();
-
-        $url = $this->route->getPublicCallbackUrlWithHash($publicPaymentId, $publicKey);
-
-        $url = $url . '?' . http_build_query(['preProcessServerCallbackResponse' => json_encode($response)]);
-
-        return Redirect::to($url);
-    }
-
     public function callbackEmandateNpciNb()
     {
         $input = Request::all();
@@ -769,6 +706,85 @@ class GatewayController extends Controller
         $inputMsg = http_build_query($input);
 
         $url = $url . '?' . $inputMsg;
+
+        return Redirect::to($url);
+    }
+
+    protected function preProcessStaticCallback($gateway, $input, $mode)
+    {
+        $currentRoute = $this->route->getCurrentRouteName();
+
+        if (($gateway === null) or
+            (Gateway::isStaticCallbackGateway($gateway) === false))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_GATEWAY,
+                null,
+                [
+                    'gateway' => $gateway
+                ]
+            );
+        }
+
+        if (($input === '') or
+            ($input === null))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_RESPONSE_BODY,
+                null,
+                [
+                    'input' => $input
+                ]
+            );
+        }
+
+        if ((($currentRoute === 'gateway_payment_static_callback_get') or
+            ($currentRoute === 'gateway_payment_static_callback_post')) and
+            (isset($mode) === false) or
+            (Mode::exists($mode)) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::GATEWAY_ERROR_INVALID_MODE
+            );
+        }
+
+        $this->app['trace']->info(
+            TraceCode::GATEWAY_PAYMENT_CALLBACK,
+            [
+                'gateway'          => $gateway,
+                'callback_data'    => $input,
+                'mode'             => $mode,
+            ]
+        );
+
+        $paymentId = $this->callGatewayPreprocessCallback($gateway, $input, $mode);
+
+        $paymentMode = $this->repo->determineLiveOrTestModeForEntity($paymentId, 'payment');
+
+        if ($paymentMode !== $mode)
+        {
+            $this->app['rzp.mode'] = $paymentMode;
+
+            $this->app['trace']->info(
+                TraceCode::GATEWAY_PAYMENT_MODE_MISMATCH,
+                [
+                    'bank_mode'    => $mode,
+                    'payment_mode' => $paymentMode,
+                ]
+            );
+        }
+
+        $this->config->set('database.default', $paymentMode);
+
+        $payment = $this->repo->payment->findOrFail($paymentId);
+
+        $publicKey = $this->getMerchantKeyForPayment($payment, $paymentMode);
+
+        $publicPaymentId = $payment->getPublicId();
+
+        $url = $this->route->getPublicCallbackUrlWithHash($publicPaymentId, $publicKey);
+
+        $url = $url . '?' . http_build_query($input);
 
         return Redirect::to($url);
     }
@@ -1285,6 +1301,48 @@ class GatewayController extends Controller
         return ApiResponse::json([
             'stats' => $data
         ]);
+    }
+
+    protected function callGatewayPreprocessCallback($gatewayName, $input, $mode)
+    {
+        $variant = null;
+
+        $mode = ($mode === null) ? Mode::LIVE : $mode;
+
+        $this->app['rzp.mode'] = $mode;
+
+        if (Gateway::isNbPlusServiceGateway($gatewayName) === true)
+        {
+            $featureFlag = Payment\Processor\Processor::NB_PLUS_PAYMENTS_PREFIX . '_' . $gatewayName;
+
+            $variant = $this->app->razorx->getTreatment($this->app['request']->getTaskId(), $featureFlag, $mode);
+
+            if (strtolower($variant) === 'nbplusps')
+            {
+                $inputData['gateway_data'] = $input;
+
+                try
+                {
+                    return $this->app['nbplus.payments']->action($gatewayName, Nbplus\Action::PREPROCESS_CALLBACK, $inputData);
+                }
+                catch (\Exception $e)
+                {
+                    $this->trace->info(TraceCode::NBPLUS_PAYMENT_SERVICE_ERROR,
+                        [
+                            'message'   => 'Unable to make request to nbplus service',
+                            'gateway'   => $gatewayName,
+                            'exception' => $e->getMessage(),
+                            'action'    => NbPlus\Action::PREPROCESS_CALLBACK,
+                        ]);
+                }
+            }
+        }
+
+        $gateway = $this->app['gateway']->gateway($gatewayName);
+
+        $response = $gateway->preProcessServerCallback($input, $gatewayName, $mode);
+
+        return $gateway->getPaymentIdFromServerCallback($response, $gatewayName);
     }
 
     protected function storeFirstDataPares()

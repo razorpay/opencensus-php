@@ -5,10 +5,15 @@ namespace RZP\Services\Mock\NbPlus;
 use App;
 use Requests_Response;
 
+use RZP\Models\Payment;
 use RZP\Services\NbPlus\Netbanking as NetbankingBase;
 
 class Netbanking extends NetbankingBase
 {
+    static $staticCallbackRouteMap = [
+        Payment\Gateway::NETBANKING_KVB => 'gateway_payment_static_callback_post',
+    ];
+
     public function sendRawRequest($request)
     {
         $action  = camel_case(explode('/', $request['url'])[1]);
@@ -55,6 +60,13 @@ class Netbanking extends NetbankingBase
 
     protected function authorize($input)
     {
+        $gateway = $this->gateway;
+
+        if (Payment\Gateway::isStaticCallbackGateway($gateway) === true)
+        {
+            return $this->staticGatewayAuthorize($input, $gateway);
+        }
+
         return [
             'response' => [
                 'data' => [
@@ -100,6 +112,16 @@ class Netbanking extends NetbankingBase
         ];
     }
 
+    protected function preprocessCallback($input)
+    {
+        return [
+            'response' => [
+                'payment_id' => $input['input']['gateway_data']['paymentId'],
+            ],
+            'error' => null
+        ];
+    }
+
     public function content(& $content, $action = '')
     {
         return $content;
@@ -108,6 +130,34 @@ class Netbanking extends NetbankingBase
     public function request(& $content, $action = '')
     {
         return $content;
+    }
+
+    protected function staticGatewayAuthorize($input, $gateway)
+    {
+        return [
+            'response' => [
+                'data' => [
+                    'next' => [
+                        'redirect' => [
+                            'url' => $this->app['api.route']->getUrlWithPublicAuth(
+                                self::$staticCallbackRouteMap[$gateway],
+                                [
+                                    'method'    => $input['input']['payment']['method'],
+                                    'gateway'   => $input['gateway'],
+                                    'mode'      => 'test',
+                                    'paymentId' => $input['input']['payment']['id'],
+                                    'amount'    => number_format($input['input']['payment']['amount'] / 100, 2, '.', ''),
+                                ]),
+                            'method' => 'get',
+                            'content' => [
+                                'encdata' => 'dummy_response_data',
+                            ]
+                        ]
+                    ]
+                ]
+            ],
+            'error' => null
+        ];
     }
 
     protected function makeJsonResponse(array $content)

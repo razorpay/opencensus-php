@@ -61,7 +61,7 @@ class Netbanking extends Service
             Request::INPUT   => $input
         ];
 
-        $method = $input[Entity::PAYMENT][Payment\Entity::METHOD];
+        $method = Payment\Method::NETBANKING;
 
         $response = $this->sendRequest('POST', 'action/' . $action . '/' . $method, $content);
 
@@ -78,6 +78,10 @@ class Netbanking extends Service
 
             case Action::CALLBACK:
                 $returnData = $this->getCallbackResponseData($response);
+                break;
+
+            case Action::PREPROCESS_CALLBACK:
+                $returnData = $response[Response::PAYMENT_ID];
                 break;
 
             case Action::VERIFY:

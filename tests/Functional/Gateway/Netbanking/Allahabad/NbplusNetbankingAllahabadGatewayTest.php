@@ -14,15 +14,6 @@ use RZP\Tests\Functional\Payment\NbPlusPaymentServiceTest;
 
 class NbplusNetbankingAllahabadGatewayTest extends NbPlusPaymentServiceTest
 {
-    /**
-     * @var array
-     */
-    private $terminal;
-    /**
-     * @var array
-     */
-    private $payment;
-
     public function setUp()
     {
         $this->testDataFilePath = __DIR__ . '/NetbankingAllahabadGatewayTestData.php';
@@ -31,7 +22,9 @@ class NbplusNetbankingAllahabadGatewayTest extends NbPlusPaymentServiceTest
 
         $this->terminal = $this->fixtures->create('terminal:shared_netbanking_allahabad_terminal');
 
-        $this->payment = $this->getDefaultNetbankingPaymentArray('ALLA');
+        $this->bank = 'ALLA';
+
+        $this->payment = $this->getDefaultNetbankingPaymentArray($this->bank);
     }
 
     public function testNetbankingAllahabadCombinedFile()
