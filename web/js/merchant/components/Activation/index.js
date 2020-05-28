@@ -683,7 +683,9 @@ export default class ActivationWizard extends React.Component {
       } else {
         cb && cb(true);
 
-        updateHubSpotContactsProperties(reqData);
+        const prefix = isL1Completed(this) ? 'l2_' : 'l1_';
+
+        updateHubSpotContactsProperties(reqData, {}, prefix);
 
         const latestDirty = { ...this.state.dirty };
         Object.keys(savingDataOfWhichTab).forEach(key => {
