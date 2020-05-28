@@ -37,18 +37,18 @@ class TransferProcess extends Job
     {
         parent::handle();
 
-        $this->payment = $this->CheckforBackWardCompatile($this->payment);;
-
         $this->trace->info(
             TraceCode::TRANSFER_PROCESS_QUEUE,
             [
-                'payment_id'   => $this->payment->getPublicId(),
+                'payment_id'   => $this->payment,
                 'transfermode' => $this->transferMode
             ]
         );
 
         try
         {
+            $this->payment = $this->getPaymentEntity($this->payment);
+
             $transfer = null;
 
             if ($this->transferMode === Transfer\Constant::ORDER)
@@ -57,10 +57,23 @@ class TransferProcess extends Job
             }
             else
             {
-                 $transfer = new Transfer\PaymentTransfer($this->payment);
+                $transfer = new Transfer\PaymentTransfer($this->payment);
             }
 
             $transfer->process();
+
+        }catch (\Exception $ex)
+        {
+            $this->trace->traceException(
+                $ex,
+                null,
+                TraceCode::TRANSFER_FAILURE,
+                [
+                    'message'     => 'transfer failed',
+                    'payment_id'   => $this->payment,
+                    'transfermode' => $this->transferMode,
+                ]
+            );
         }
         finally
         {
@@ -68,33 +81,14 @@ class TransferProcess extends Job
         }
     }
 
-    private  function CheckforBackWardCompatile($payment)
+    private  function getPaymentEntity($paymentId)
     {
-         $app = App::getFacadeRoot();
+        $app = App::getFacadeRoot();
 
-         $this->repo = $app['repo'];
-
-        $paymentId = null;
+        $this->repo = $app['repo'];
 
         try
         {
-            if ($payment instanceof Payment\Entity)
-            {
-                $this->trace->info(
-                    TraceCode::TRANSFER_MESSAGE_OLD_FORMAT,
-                    [
-                        'payment_id'   => $this->payment->getPublicId(),
-                        'transfermode' => $this->transferMode
-                    ]
-                );
-
-                $paymentId = $payment->getId();
-
-            } else
-            {
-                $paymentId = $payment;
-            }
-
             return $this->repo->payment->findOrFailPublic($paymentId);
         }
         catch (\Exception $ex)
@@ -104,13 +98,13 @@ class TransferProcess extends Job
                 null,
                 TraceCode::TRANSFER_PROCESS_PAYMENT_ID_NOT_FOUND,
                 [
-                    'message'     => 'paymentId not found, deleting the message from queue',
-                    'payment_id'   => $this->payment->getPublicId(),
+                    'message'     => 'paymentId not found',
+                    'payment_id'   => $this->payment,
                     'transfermode' => $this->transferMode,
                 ]
             );
 
-            $this->delete();
+            throw $ex;
         }
     }
 }

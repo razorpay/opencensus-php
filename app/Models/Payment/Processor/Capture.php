@@ -1053,23 +1053,33 @@ trait Capture
 
             $orderId = $payment->getApiOrderId();
 
-            $this->repo
-                 ->transfer
-                 ->updateTransferStatusBySourceTypeAndId(Constants\Entity::ORDER, $orderId, Transfer\Status::PENDING);
-
+           $transferscount =  $this->repo
+                                    ->transfer
+                                    ->updateTransferStatusBySourceTypeAndId(Constants\Entity::ORDER, $orderId, Transfer\Status::PENDING);
             $input = [
-                'order_id'   => $orderId,
-                'payment_id' => $payment->getId(),
-                'mode'       => $this->mode,
+                'order_id'    => $orderId,
+                'payment_id'  => $payment->getId(),
+                'mode'        => $this->mode,
             ];
 
-            $this->trace->info(
-                TraceCode::ORDER_TRANSFER_PROCESS_SQS_PUSH_INIT,
-                [
-                    'input' => $input,
-                ]);
+           if($transferscount > 0)
+           {
+               $this->trace->info(
+                   TraceCode::ORDER_TRANSFER_PROCESS_SQS_PUSH_INIT,
+                   [
+                       'input' => $input,
+                   ]);
 
-            Jobs\TransferProcess::dispatch($this->mode, $payment->getId());
+               Jobs\TransferProcess::dispatch($this->mode, $payment->getId());
+           }
+           else
+           {
+               $this->trace->info(
+                   TraceCode::NO_TRANSFERS_FOR_ORDERS,
+                   [
+                       'input' => $input,
+                   ]);
+           }
         }
         catch (\Throwable $e)
         {
