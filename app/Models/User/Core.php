@@ -158,22 +158,6 @@ class Core extends Base\Core
         }
     }
 
-    protected function is2FAForUserEnabled(Entity $user): bool
-    {
-        $loginExp = $this->app->razorx->getTreatment(
-                                $user->getId(),
-                                Merchant\RazorxTreatment::SECOND_FACTOR_AUTH_LOGIN_EXP,
-                                $this->mode
-                            );
-
-        if (strtolower($loginExp) !== 'on')
-        {
-            return false;
-        }
-
-        return true;
-    }
-
     protected function restrictUserToOneRolePerMerchantAndProduct(Entity $user): bool
     {
         $oneRoleExp = $this->app->razorx->getTreatment(
@@ -277,9 +261,7 @@ class Core extends Base\Core
 
         $user = $this->getUserByEmailAndVerifyPassword($input[Entity::EMAIL], $input[Entity::PASSWORD]);
 
-        $enable2FAExpForUser = $this->is2FAForUserEnabled($user);
-
-        if (($enable2FAExpForUser === false) or ($validate2fa === false) or
+        if ($validate2fa === false or
             ((empty($input[Entity::APP]) === false) and ($input[Entity::APP] === 'android')))
         {
             return $this->get($user);

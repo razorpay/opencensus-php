@@ -39,7 +39,6 @@ final class RazorxTreatment
     const WEBHOOK_EVENT_VIA_STORK = 'webhook_event_via_stork';
 
     const SECOND_FACTOR_AUTH_PROJECT_EXP   = 'second_factor_auth_project';
-    const SECOND_FACTOR_AUTH_LOGIN_EXP     = 'second_factor_auth_login';
 
     const SELLER_APP_PL_BATCH_UPLOAD_EXPERIMENT = 'sellerapp_PL_batch_upload';
 
