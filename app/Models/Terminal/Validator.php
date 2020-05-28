@@ -70,6 +70,7 @@ class Validator extends Base\Validator
         Entity::VIRTUAL_UPI_ROOT            => 'required_if:type.upi_transfer,1|string',
         Entity::VIRTUAL_UPI_MERCHANT_PREFIX => 'sometimes_if:type.upi_transfer,1|string',
         Entity::ACCOUNT_TYPE                => 'sometimes|string',
+        Entity::CRED                        => 'sometimes|string',
     ];
 
     protected static $editTerminalGateways = [
@@ -1160,6 +1161,23 @@ class Validator extends Base\Validator
         Entity::GATEWAY_MERCHANT_ID2        => 'sometimes|string',
         Entity::TYPE                        => 'sometimes|array',
         Entity::GATEWAY_TERMINAL_PASSWORD   => 'sometimes',
+    ];
+
+    protected static $credTerminalRules = [
+        Entity::GATEWAY                     => 'required|in:cred',
+        Entity::GATEWAY_MERCHANT_ID         => 'required|string',
+        Entity::GATEWAY_MERCHANT_ID2        => 'sometimes|string',
+        Entity::CRED                        => 'required|boolean|in:1',
+        Entity::TYPE                        => 'sometimes|array',
+        Entity::GATEWAY_SECURE_SECRET       => 'required',
+    ];
+
+    protected static $credEditTerminalRules = [
+        Entity::GATEWAY_MERCHANT_ID         => 'required|string',
+        Entity::GATEWAY_MERCHANT_ID2        => 'sometimes|string',
+        Entity::CRED                        => 'required|boolean|in:1',
+        Entity::TYPE                        => 'sometimes|array',
+        Entity::GATEWAY_SECURE_SECRET       => 'required',
     ];
 
     protected static $paylaterTerminalRules = [

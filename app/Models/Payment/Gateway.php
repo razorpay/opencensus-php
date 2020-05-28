@@ -112,6 +112,7 @@ class Gateway
     const PAYLATER           = 'paylater';
     const GETSIMPL           = 'getsimpl';
     const PAYLATER_ICICI     = 'paylater_icici';
+    const CRED               = 'cred';
 
     const ACQUIRER_HDFC         = 'hdfc';
     const ACQUIRER_ICIC         = 'icic';
@@ -300,6 +301,7 @@ class Gateway
         self::UPI_ICICI,
         self::UPI_MINDGATE,
         self::UPI_AXIS,
+        self::CRED,
     ];
 
     /**
@@ -345,6 +347,7 @@ class Gateway
         Payment\Gateway::CARDLESS_EMI,
         Payment\Gateway::PAYTM,
         Payment\Gateway::PAYSECURE,
+        Payment\Gateway::CRED,
     ];
 
     // Bank such as Netbanking Canara enforces to send fee in request.
@@ -909,6 +912,10 @@ class Gateway
         Method::PAYLATER => [
             self::PAYLATER,
         ],
+
+        Method::CRED => [
+            self::CRED,
+        ],
     ];
 
     const CARD_GATEWAYS_LIVE = [
@@ -1286,6 +1293,7 @@ class Gateway
         self::WALLET_MPESA,
         self::CARDLESS_EMI,
         self::PAYLATER,
+        self::CRED
     ];
 
     public static $verifyDisabled = [

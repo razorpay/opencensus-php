@@ -1025,6 +1025,23 @@ return [
         ],
     ],
 
+    'testCreateCredTerminal' => [
+        'request' => [
+            'url' => '/merchants/100000Razorpay/terminals',
+            'content' => [
+                'gateway'                  => 'cred',
+                'gateway_merchant_id'      => '12344',
+                'gateway_secure_secret'    => '12345',
+                'cred'                     =>  1,
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+            ]
+        ],
+    ],
+
     'testCreatePaytmCardTerminal' => [
         'request' => [
             'content' => [
