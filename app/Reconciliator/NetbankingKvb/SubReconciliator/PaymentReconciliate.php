@@ -9,7 +9,7 @@ use RZP\Models\Base\PublicEntity;
 use RZP\Gateway\Mozart\NetbankingKvb\ReconFields;
 use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
 
-class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
+class PaymentReconciliate extends Base\SubReconciliator\NetbankingServiceRecon
 {
     const BLACKLISTED_COLUMNS   = [];
     const COLUMN_PAYMENT_AMOUNT = ReconFields::PAYMENT_AMOUNT;

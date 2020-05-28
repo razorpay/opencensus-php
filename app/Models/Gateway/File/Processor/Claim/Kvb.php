@@ -3,13 +3,15 @@
 namespace RZP\Models\Gateway\File\Processor\Claim;
 
 use Carbon\Carbon;
+
 use RZP\Models\Payment;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
 use RZP\Gateway\Base\Action;
+use RZP\Services\NbPlus\Netbanking;
 use RZP\Gateway\Mozart\NetbankingKvb\ClaimFields;
 
-class Kvb extends Base
+class Kvb extends NetbankingBase
 {
     const FILE_NAME = 'KVB_STATUS_';
     const EXTENSION = FileStore\Format::XLSX;
@@ -33,9 +35,9 @@ class Kvb extends Base
                 ClaimFields::MERCHANT_CODE         => "RAZORPAY",
                 ClaimFields::TRANSACTION_DATE      => $date,
                 ClaimFields::PAYMENT_ID            => $row['payment']['id'],
-                ClaimFields::ACCOUNT_NUMBER        => $row['gateway']['data']['account_number'],
+                ClaimFields::ACCOUNT_NUMBER        => $this->fetchBankAccountNumber($row),
                 ClaimFields::PAYMENT_AMOUNT        => $this->getFormattedAmount($row['payment']['amount']),
-                ClaimFields::BANK_REFERENCE_NUMBER => $row['gateway']['data']['bank_payment_id'],
+                ClaimFields::BANK_REFERENCE_NUMBER => $this->fetchBankPaymentId($row),
                 ClaimFields::STATUS                => $this->getstatus($row['payment']),
             ];
         }
@@ -58,6 +60,26 @@ class Kvb extends Base
     protected function fetchGatewayEntities($paymentIds)
     {
         return $this->repo->mozart->fetchByPaymentIdsAndAction($paymentIds, Action::AUTHORIZE);
+    }
+
+    protected function fetchBankPaymentId($data)
+    {
+        if ($data['payment']['cps_route'] === Payment\Entity::NB_PLUS_SERVICE)
+        {
+            return $data['gateway'][Netbanking::BANK_TRANSACTION_ID]; // payment through nbplus service
+        }
+
+        return $data['gateway']['data']['bank_payment_id'];
+    }
+
+    protected function fetchBankAccountNumber($data)
+    {
+        if ($data['payment']['cps_route'] === Payment\Entity::NB_PLUS_SERVICE)
+        {
+            return $data['gateway'][Netbanking::BANK_ACCOUNT_NUMBER]; // payment through nbplus service
+        }
+
+        return $data['gateway']['data']['account_number'];
     }
 
     protected function getStatus($payment)

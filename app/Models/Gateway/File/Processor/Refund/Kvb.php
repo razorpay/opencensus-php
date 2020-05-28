@@ -3,11 +3,12 @@
 namespace RZP\Models\Gateway\File\Processor\Refund;
 
 use Carbon\Carbon;
+
 use RZP\Models\Payment;
 use RZP\Models\FileStore;
 use RZP\Models\Bank\IFSC;
 use RZP\Constants\Timezone;
-use RZP\Models\Base\PublicCollection;
+use RZP\Services\NbPlus\Netbanking;
 use RZP\Gateway\Mozart\NetbankingKvb\RefundFields;
 use RZP\Models\Gateway\File\Processor\FileHandler;
 
@@ -38,11 +39,11 @@ class Kvb extends Base
                 RefundFields::SR_NO                 => $count++,
                 RefundFields::TRANSACTION_DATE      => $transactionDate,
                 RefundFields::REFUND_DATE           => $refundDate,
-                RefundFields::BANK_REFERENCE_NUMBER => $row['gateway']['data']['bank_payment_id'],
+                RefundFields::BANK_REFERENCE_NUMBER => $this->fetchBankPaymentId($row),
                 RefundFields::PGI_REFERENCE_NO      => $row['payment']['id'],
                 RefundFields::PAYMENT_AMOUNT        => $this->getFormattedAmount($row['payment']['amount']),
                 RefundFields::REFUND_AMOUNT         => $this->getFormattedAmount($row['refund']['amount']),
-                RefundFields::ACCOUNT_NUMBER        => $row['gateway']['data']['account_number'],
+                RefundFields::ACCOUNT_NUMBER        => $this->fetchBankAccountNumber($row),
             ];
         }
 
@@ -59,5 +60,25 @@ class Kvb extends Base
     protected function getFormattedAmount($amount): String
     {
         return number_format($amount / 100, 2, '.', '');
+    }
+
+    protected function fetchBankPaymentId($data)
+    {
+        if ($data['payment']['cps_route'] === Payment\Entity::NB_PLUS_SERVICE)
+        {
+            return $data['gateway'][Netbanking::BANK_TRANSACTION_ID]; // payment through nbplus service
+        }
+
+        return $data['gateway']['data']['bank_payment_id'];
+    }
+
+    protected function fetchBankAccountNumber($data)
+    {
+        if ($data['payment']['cps_route'] === Payment\Entity::NB_PLUS_SERVICE)
+        {
+            return $data['gateway'][Netbanking::BANK_ACCOUNT_NUMBER]; // payment through nbplus service
+        }
+
+        return $data['gateway']['data']['account_number'];
     }
 }

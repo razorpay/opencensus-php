@@ -51,7 +51,8 @@ class Netbanking extends NetbankingBase
         {
             $response['items'][$paymentId] = [
                 'gateway_transaction_id' => str_random(),
-                'bank_transaction_id'    => str_random()
+                'bank_transaction_id'    => str_random(),
+                'bank_account_number'    => str_random(),
             ];
         }
 
