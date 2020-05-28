@@ -117,6 +117,118 @@ return [
         ],
     ],
 
+    'testCreateFundAccountBankAccountWithEmptyArray' => [
+        'request'  => [
+            'content' => [
+                'account_type' => 'bank_account',
+                'contact_id'   => 'cont_1000000contact',
+                'bank_account'      => [],
+            ],
+            'url'     => '/fund_accounts',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content'   => [
+                'error' => [
+                    'code'  => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'   =>  'The ifsc field is required.',
+                ],
+            ],
+            'status_code'   => 400,
+        ],
+        'exception' => [
+            'class' => Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testCreateFundAccountBankAccountWithInvalidName' => [
+        'request'  => [
+            'content' => [
+                'account_type' => 'bank_account',
+                'contact_id'   => 'cont_1000000contact',
+                'bank_account'      => [
+                    'ifsc'           => 'SBIN0007105',
+                    'name'           => 'Ami',
+                    'account_number' => '111000111'
+                ],
+            ],
+            'url'     => '/fund_accounts',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content'   => [
+                'error' => [
+                    'code'  => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'   =>  'The name must be between 4 and 120 characters.',
+                ],
+            ],
+            'status_code'   => 400,
+        ],
+        'exception' => [
+            'class' => Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testCreateFundAccountBankAccountWithInvalidIfsc' => [
+        'request'  => [
+            'content' => [
+                'account_type' => 'bank_account',
+                'contact_id'   => 'cont_1000000contact',
+                'bank_account'      => [
+                    'ifsc'           => '0007105',
+                    'name'           => 'Amit',
+                    'account_number' => '111000111'
+                ],
+            ],
+            'url'     => '/fund_accounts',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content'   => [
+                'error' => [
+                    'code'  => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'   =>  'The ifsc must be 11 characters.',
+                ],
+            ],
+            'status_code'   => 400,
+        ],
+        'exception' => [
+            'class' => Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testCreateFundAccountBankAccountWithInvalidAccountNumber' => [
+        'request'  => [
+            'content' => [
+                'account_type' => 'bank_account',
+                'contact_id'   => 'cont_1000000contact',
+                'bank_account'      => [
+                    'ifsc'           => 'SBIN0007105',
+                    'name'           => 'Amit M',
+                    'account_number' => '0'
+                ],
+            ],
+            'url'     => '/fund_accounts',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content'   => [
+                'error' => [
+                    'code'  => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'   =>  'The account number must be between 5 and 35 characters.',
+                ],
+            ],
+            'status_code'   => 400,
+        ],
+        'exception' => [
+            'class' => Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testCreateFundAccountBankAccountPublic' => [
         'request'  => [
             'content' => [
@@ -1621,6 +1733,91 @@ return [
         'exception' => [
             'class'               => Exception\BadRequestValidationFailureException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testCreateCardFundAccountWithNameAsNumeric' => [
+        'request'   => [
+            'content'  => [
+                'account_type'  => 'card',
+                'contact_id'    => 'cont_1000000contact',
+                'card'  => [
+                    'name'  => 998,
+                    'number'  => '1234432112344321',
+                ],
+            ],
+            'url'   => '/fund_accounts',
+            'method'   => 'POST'
+        ],
+        'response'  => [
+            'content'   => [
+                'error' => [
+                    'code'  => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'   => 'The card.name format is invalid.',
+                ],
+            ],
+            'status_code'   => 400,
+        ],
+        'exception' => [
+            'class' => Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testCreateCardFundAccountWithNameAsAlphanumeric' => [
+        'request'  => [
+            'content' => [
+                'account_type' => 'card',
+                'contact_id'   => 'cont_1000000contact',
+                'card' => [
+                    'name' => 'shk g7799',
+                    'number' => '4111111111111111',
+                    'expiry_month' => 4,
+                    'expiry_year' => 2025
+                ]
+            ],
+            'url'     => '/fund_accounts',
+            'method'  => 'POST'
+        ],
+        'response'  => [
+            'content'   => [
+                'error' => [
+                    'code'  => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'   => 'The card.name format is invalid.',
+                ],
+            ],
+            'status_code'   => 400,
+        ],
+        'exception' => [
+            'class' => Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testCreateCardFundAccountWithSpecialCharName' => [
+        'request'  => [
+            'content' => [
+                'account_type' => 'card',
+                'contact_id'   => 'cont_1000000contact',
+                'card' => [
+                    'name' => 'Mr. asd fg',
+                    'number' => '4111111111111111',
+                    'expiry_month' => 4,
+                    'expiry_year' => 2025
+                ]
+            ],
+            'url'     => '/fund_accounts',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'entity'       => 'fund_account',
+                'account_type' => 'card',
+                'contact_id'   => 'cont_1000000contact',
+                'card'      => [
+                ],
+            ],
+            'status_code' => 201
         ],
     ],
 

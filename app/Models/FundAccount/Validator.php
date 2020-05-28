@@ -36,11 +36,12 @@ class Validator extends Base\Validator
         Entity::ACCOUNT_TYPE                        => 'required|string|custom',
         Entity::VPA                                 => 'sometimes|custom',
         Entity::BANK_ACCOUNT                        => 'sometimes|custom',
-        Entity::CARD                                => 'sometimes|associative_array|custom',
+        Entity::CARD                                => 'sometimes|required|associative_array|custom',
         // This is required to even create the card because we need to fill a
         // dummy cvv and that requires network and that requires card number.
         // The other card details are validated as part of card creation.
         Entity::CARD . '.' . Card\Entity::NUMBER    => 'required_with:card|numeric|luhn|digits_between:12,19',
+        Entity::CARD . '.' . Card\Entity::NAME      => 'sometimes:card|regex:([a-zA-Z-.\' ]+$)|max:100',
         Entity::IDEMPOTENCY_KEY                     => 'sometimes|string',
     ];
 
@@ -157,6 +158,6 @@ class Validator extends Base\Validator
 
     public function validateBankAccount($attribute, $value)
     {
-        (new BankAccount\Validator())->setStrictFalse()->validateInput('create', $value);
+        (new BankAccount\Validator())->setStrictFalse()->validateInput('addFundAccountBankAccount', $value);
     }
 }

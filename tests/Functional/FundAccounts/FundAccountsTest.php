@@ -69,6 +69,34 @@ class FundAccountsTest extends TestCase
         Queue::assertPushed(CreateAccount::class);
     }
 
+    public function testCreateFundAccountBankAccountWithEmptyArray()
+    {
+        $this->fixtures->create('contact', ['id' => '1000000contact']);
+
+        $this->startTest();
+    }
+
+    public function testCreateFundAccountBankAccountWithInvalidAccountNumber()
+    {
+        $this->fixtures->create('contact', ['id' => '1000000contact']);
+
+        $this->startTest();
+    }
+
+    public function testCreateFundAccountBankAccountWithInvalidName()
+    {
+        $this->fixtures->create('contact', ['id' => '1000000contact']);
+
+        $this->startTest();
+    }
+
+    public function testCreateFundAccountBankAccountWithInvalidIfsc()
+    {
+        $this->fixtures->create('contact', ['id' => '1000000contact']);
+
+        $this->startTest();
+    }
+
     public function testCreateFundAccountBankAccountPublic()
     {
         $this->ba->publicAuth();
@@ -150,6 +178,28 @@ class FundAccountsTest extends TestCase
         $this->assertArraySelectiveEquals($expectedCardAttrs, $card);
 
         Queue::assertPushed(CreateAccount::class);
+    }
+
+    public function testCreateCardFundAccountWithNameAsAlphanumeric()
+    {
+        $this->fixtures->create('contact', ['id' => '1000000contact']);
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_TO_CARDS, Feature\Constants::S2S]);
+
+        $this->mockCardVault();
+
+        $this->startTest();
+    }
+
+    public function testCreateCardFundAccountWithSpecialCharName()
+    {
+        $this->fixtures->create('contact', ['id' => '1000000contact']);
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_TO_CARDS, Feature\Constants::S2S]);
+
+        $this->mockCardVault();
+
+        $this->startTest();
     }
 
     public function testCreateCardBeneficiaryVerified()
@@ -579,6 +629,13 @@ class FundAccountsTest extends TestCase
         $this->fixtures->create('contact', ['id' => '1000000contact']);
 
         $this->fixtures->merchant->removeFeatures(['payout_to_cards']);
+
+        $this->startTest();
+    }
+
+    public function testCreateCardFundAccountWithNameAsNumeric()
+    {
+        $this->fixtures->create('contact', ['id' => '1000000contact']);
 
         $this->startTest();
     }
