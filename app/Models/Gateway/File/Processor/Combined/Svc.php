@@ -57,6 +57,9 @@ class Svc extends Base
         $amount['refunds'] = number_format($amount['refunds'] / 100, 2, '.', '');
         $amount['claims']  = number_format($amount['claims'] / 100, 2, '.', '');
 
+        $fromDate = Carbon::createFromTimestamp($this->gatewayFile->getBegin(), Timezone::IST)->format('d.m.Y');
+        $toDate = Carbon::createFromTimestamp($this->gatewayFile->getEnd(), Timezone::IST)->format('d.m.Y');
+
         $date = Carbon::yesterday(Timezone::IST)->format('d.m.Y');
 
         $config = $this->app['config']->get('nodal.axis');
@@ -81,6 +84,8 @@ class Svc extends Base
             'count'       => $count,
             'refundsFile' => $refundsFile,
             'date'        => $date,
+            'from'        => $fromDate,
+            'to'          => $toDate,
             'account'     => $account,
             'rzpEmailId'  => $emailIds,
             'emails'      => $this->gatewayFile->getRecipients(),

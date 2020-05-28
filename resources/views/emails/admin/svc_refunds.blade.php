@@ -30,7 +30,7 @@
                                 <tbody>
                                 <tr style="border: 1px solid grey">
                                     <td style="border: 1px solid grey; text-align: center">1</td>
-                                    <td style="border: 1px solid grey">Transaction  for {{{$date}}} to {{{$date}}}</td>
+                                    <td style="border: 1px solid grey">Transaction  for {{{$from}}} to {{{$to}}}</td>
                                     <td style="border: 1px solid grey; text-align: center">{{{$amount['claims']}}}</td>
                                     <td style="border: 1px solid grey; text-align: center">{{{$count['claims']}}}</td>
                                 </tr>
