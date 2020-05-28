@@ -25,6 +25,8 @@ class Provider
     const ICICI     = 'icici';
     const RBL       = 'rbl';
 
+    const UPI_ICICI = 'upi_icici';
+
     /*
      * Dashboard acts as a mock bank account
      * provider, and it's been used to run test.
@@ -109,6 +111,10 @@ class Provider
         self::RBL => [
             '*',
         ]
+    ];
+
+    const VPA_HANDLE = [
+        self::UPI_ICICI => 'icici',
     ];
 
     public static function getBankCode(string $provider)

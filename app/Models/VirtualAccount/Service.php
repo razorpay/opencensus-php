@@ -672,4 +672,35 @@ class Service extends Base\Service
             $properties
         );
     }
+
+    public function ecollectValidateVpa(string $vpa)
+    {
+        $this->trace->info(
+            TraceCode::VIRTUAL_ACCOUNT_ECOLLECT_VALIDATE_VPA_PROCESSING,
+            [
+                'vpaUsername' => $vpa,
+            ]);
+
+        $this->determineAndSetMode();
+
+        $vpa = $this->repo->vpa->findByAddress($vpa);
+
+        $response['valid'] = ($vpa !== null);
+        if ($vpa !== null)
+        {
+            $response['merchantName'] = $vpa->merchant->getBillingLabel();
+        }
+
+        return $response;
+    }
+
+    protected function determineAndSetMode()
+    {
+        $routeName = $this->app['api.route']->getCurrentRouteName();
+
+        // Gets mode per route and sets application & db mode.
+        $mode = str_contains($routeName, 'test') ? Mode::TEST : Mode::LIVE;
+
+        $this->app['basicauth']->setModeAndDbConnection($mode);
+    }
 }

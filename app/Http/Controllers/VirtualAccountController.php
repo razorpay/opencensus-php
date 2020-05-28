@@ -4,6 +4,10 @@ namespace RZP\Http\Controllers;
 
 use Request;
 use ApiResponse;
+use Lib\Formatters\Xml;
+use RZP\Trace\TraceCode;
+use RZP\Models\Payment\Gateway;
+use RZP\Models\VirtualAccount\Provider;
 
 class VirtualAccountController extends Controller
 {
@@ -104,5 +108,70 @@ class VirtualAccountController extends Controller
         $data = $this->service()->bulkCloseForBanking($input);
 
         return ApiResponse::json($data);
+    }
+
+    public function validateVpa(string $gateway, string $vpaRoot)
+    {
+        $requestContent = Request::getContent();
+
+        $this->trace->info(
+            TraceCode::VIRTUAL_ACCOUNT_ECOLLECT_VALIDATE_VPA,
+            [
+                'request' => $requestContent,
+            ]
+        );
+
+        $response = null;
+        $vpa      = '';
+
+        switch ($gateway)
+        {
+            case Gateway::UPI_ICICI:
+            {
+                $input = (array) simplexml_load_string($requestContent);
+
+                $vpa = $vpaRoot . '.' . $input['SubscriberId'] . '@' . Provider::VPA_HANDLE[$gateway];
+
+                break;
+            }
+        }
+
+        $data = $this->service()->ecollectValidateVpa($vpa);
+
+        switch ($gateway)
+        {
+            case Gateway::UPI_ICICI:
+            {
+                $responseArray = [
+                    'ActCode' => 1,
+                    'Message' => 'INVALID',
+                ];
+
+                $valid = $data['valid'];
+
+                if ($valid === true)
+                {
+                    $responseArray['CustName'] = $data['merchantName'];
+                    $responseArray['ActCode']  = (int) $valid;
+                    $responseArray['Message']  = 'VALID';
+                    $responseArray['TxnId']    = $input['TxnId'];
+                }
+
+                $xml = Xml::create('XML', $responseArray);
+
+                $response = \Response::make($xml);
+
+                $response->headers->set('Content-Type', 'application/xml; charset=UTF-8');
+                $response->headers->set('Cache-Control', 'no-cache');
+
+                break;
+            }
+            default:
+            {
+                $response = ApiResponse::json($data);
+            }
+        }
+
+        return $response;
     }
 }
