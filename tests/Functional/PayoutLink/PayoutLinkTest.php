@@ -5,7 +5,6 @@ namespace RZP\Tests\Functional\PayoutLink;
 use App;
 use Mail;
 use Mockery;
-use Closure;
 use Exception;
 use RZP\Models\Payout;
 use RZP\Models\Settings;
@@ -21,8 +20,8 @@ use RZP\Tests\Functional\TestCase;
 use RZP\Mail\PayoutLink\CustomerOtp;
 use RZP\Exception\BadRequestException;
 use RZP\Models\PayoutLink\TokenService;
+use RZP\Tests\Traits\TestsWebhookEvents;
 use RZP\Services\Elfin\Service as ElfinService;
-use RZP\Tests\Functional\Helpers\WebhookTrait;
 use RZP\Models\PayoutLink\Entity as PayoutLink;
 use RZP\Tests\Functional\Helpers\MocksDnsTrait;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
@@ -38,7 +37,7 @@ class PayoutLinkTest extends TestCase
     use DbEntityFetchTrait;
     use EntityActionTrait;
     use MocksDnsTrait;
-    use WebhookTrait;
+    use TestsWebhookEvents;
 
     protected $config;
 
@@ -674,10 +673,7 @@ class PayoutLinkTest extends TestCase
     {
         self::markTestSkipped('Skipping this till feature storing is resolved');
 
-        $this->createWebhook(['events' => ['payout_link.cancelled' => '1']],
-                             ['HTTP_X-Request-Origin' => $this->config['applications.banking_service_url']]);
-
-        $this->setInfernoExpectations(['PayoutLinkCancelledWebHook']);
+        $this->expectWebhookEventWithContents('payout_link.cancelled', 'PayoutLinkCancelledWebHook');
 
         $payoutLink = $this->fixtures->create('payout_link',
                                               [
@@ -990,12 +986,9 @@ class PayoutLinkTest extends TestCase
                                     'merchant_id' => $this->contact->merchant->getId()
                                 ]);
 
-        $this->createWebhook(['events' => ['payout_link.processing' => '1']],
-                             ['HTTP_X-Request-Origin' => $this->config['applications.banking_service_url']]);
-
         $this->setUrl(__FUNCTION__, $payoutLink->getPublicId(), self::INITIATE);
 
-        $this->setInfernoExpectations(['PayoutLinkProcessingWebHook']);
+        $this->expectWebhookEventWithContents('payout_link.processing', 'PayoutLinkProcessingWebHook');
 
         $this->ba->noAuth();
 
@@ -1027,6 +1020,8 @@ class PayoutLinkTest extends TestCase
                                     'merchant_id' => $this->contact->merchant->getId()
                                 ]);
 
+        $this->expectWebhookEventWithContents('payout_link.attempted', 'PayoutLinkAttemptedWebHook');
+
         $this->startTest();
 
         $payout = $payoutLink->payouts()->first();
@@ -1035,10 +1030,6 @@ class PayoutLinkTest extends TestCase
 
         $payout->save();
 
-        $this->createWebhook(['events' => ['payout_link.attempted' => '1']],
-                             ['HTTP_X-Request-Origin' => $this->config['applications.banking_service_url']]);
-
-        $this->setInfernoExpectations(['PayoutLinkAttemptedWebHook']);
 
         (new Payout\Core)->updateStatusAfterFtaRecon($payout, [
             'fta_status'        => 'failed',
@@ -1070,14 +1061,11 @@ class PayoutLinkTest extends TestCase
                                     'merchant_id' => $this->contact->merchant->getId()
                                 ]);
 
+        $this->expectWebhookEventWithContents('payout_link.processed', 'PayoutLinkProcessedWebHook');
+
         $this->setUrl(__FUNCTION__, $payoutLink->getPublicId(), self::INITIATE);
 
         $this->startTest();
-
-        $this->createWebhook(['events' => ['payout_link.processed' => '1']],
-                             ['HTTP_X-Request-Origin' => $this->config['applications.banking_service_url']]);
-
-        $this->setInfernoExpectations(['PayoutLinkProcessedWebHook']);
 
         $payout = $payoutLink->payouts()->first();
 
@@ -1233,10 +1221,7 @@ class PayoutLinkTest extends TestCase
     {
         self::markTestSkipped('Skipping this till feature storing is resolved');
 
-        $this->createWebhook(['events' => ['payout_link.issued' => '1']],
-                             ['HTTP_X-Request-Origin' => $this->config['applications.banking_service_url']]);
-
-        $this->setInfernoExpectations(['PayoutLinkIssuedWebHook']);
+        $this->expectWebhookEventWithContents('payout_link.issued', 'PayoutLinkIssuedWebHook');
 
         $this->fixtures->create('fund_account:bank_account',
                                 [
@@ -1623,18 +1608,6 @@ class PayoutLinkTest extends TestCase
         $this->setUrl(__FUNCTION__, $payoutLink->getPublicId(), self::RESEND_NOTIFICATION);
 
         $this->startTest();
-    }
-    protected function mockInfernoFire(Closure $closure)
-    {
-        $inferno = Mockery::mock(Webhook\Inferno::class, [])->makePartial();
-
-        $inferno->shouldReceive('fire')
-                ->once()
-                ->with(
-                    Mockery::type('RZP\Jobs\WebHook'),
-                    Mockery::on($closure));
-
-        $this->app->instance('webhook.inferno', $inferno);
     }
 
     protected function mockRedisSuccess($funcName, $payoutLinkId)

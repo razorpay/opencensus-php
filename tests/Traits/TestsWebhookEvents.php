@@ -105,12 +105,16 @@ trait TestsWebhookEvents
     }
 
     /**
+     * Do not use this function. It makes tests brittle.
      * @return void
      */
     protected function dontExpectAnyWebhookEvent()
     {
         $this->storkMock = $this->storkMock ?: $this->createStorkMock();
-        $this->storkMock->shouldNotReceive('request');
+
+        $this->storkMock
+            ->shouldNotReceive('request')
+            ->with('/twirp/rzp.stork.webhook.v1.WebhookAPI/ProcessEvent', Mockery::any());
     }
 
     /**

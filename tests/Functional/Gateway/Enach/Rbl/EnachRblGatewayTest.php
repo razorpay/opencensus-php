@@ -5,8 +5,6 @@ namespace RZP\Tests\Functional\Gateway\Enach\Rbl;
 use Mail;
 use Excel;
 use Cache;
-use Closure;
-use Mockery;
 use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Constants\Entity;
@@ -15,13 +13,13 @@ use RZP\Models\Payment\Status;
 use RZP\Models\Customer\Token;
 use RZP\Models\Payment\Refund;
 use RZP\Models\Payment\Gateway;
-use RZP\Models\Merchant\Webhook;
 use RZP\Models\Feature\Constants;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Settlement\Channel;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Error\PublicErrorDescription;
+use RZP\Tests\Traits\TestsWebhookEvents;
 use RZP\Models\Payment\Entity as Payment;
 use RZP\Exception\GatewayTimeoutException;
 use RZP\Mail\Gateway\EMandate\Base as Email;
@@ -40,6 +38,7 @@ class EnachRblGatewayTest extends TestCase
     use AttemptTrait;
     use MocksDnsTrait;
     use TransactionTrait;
+    use TestsWebhookEvents;
     use DbEntityFetchTrait;
     use AttemptReconcileTrait;
 
@@ -1374,19 +1373,6 @@ class EnachRblGatewayTest extends TestCase
         return $this->submitPaymentCallbackRequest($request);
     }
 
-    protected function mockInfernoFire(Closure $closure)
-    {
-        $inferno = Mockery::mock(Webhook\Inferno::class, [])->makePartial();
-
-        $inferno->shouldReceive('fire')
-                ->once()
-                ->with(
-                    Mockery::type('RZP\Jobs\WebHook'),
-                    Mockery::on($closure));
-
-        $this->app->instance('webhook.inferno', $inferno);
-    }
-
     protected function createEmandatePayment($amount = 0, $recurringType = 'initial')
     {
         $order = $this->fixtures->create('order:emandate_order', [
@@ -1420,21 +1406,10 @@ class EnachRblGatewayTest extends TestCase
     {
         list($payment, $token, $order) = $this->createEmandatePayment();
 
-        $this->createWebhook(['events' => ['token.confirmed' => '1']]);
-
-        $testData = $this->testData['tokenWebhookData'];
-
         if ($webhook === true)
         {
-            $this->mockInfernoFire(function($data) use ($testData) {
-                $data['event'] = json_decode($data['event'], true);
-
-                $this->assertEquals('token.confirmed', $data['event']['event']);
-
-                $this->assertArraySelectiveEquals($testData, $data);
-
-                return true;
-            });
+            $expectedEvent = $this->testData['tokenWebhookData']['event'];
+            $this->expectWebhookEventWithContents('token.confirmed', $expectedEvent);
         }
 
         $gatewayEntity = $this->getLastEntity('enach', true);

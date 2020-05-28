@@ -2,10 +2,6 @@
 
 namespace RZP\Tests\Functional\Helpers\FundAccount;
 
-use Closure;
-use Mockery;
-
-use RZP\Models\Merchant\Webhook;
 use RZP\Models\FundAccount\Entity as FundAccount;
 use RZP\Models\FundAccount\Validation\Entity as Validation;
 use RZP\Services\RazorXClient;
@@ -52,20 +48,6 @@ trait FundAccountValidationTrait
 
         return $response;
     }
-
-    protected function mockInfernoFire(Closure $closure)
-    {
-        $inferno = Mockery::mock(Webhook\Inferno::class, [])->makePartial();
-
-        $inferno->shouldReceive('fire')
-                ->once()
-                ->with(
-                    Mockery::type('RZP\Jobs\WebHook'),
-                    Mockery::on($closure));
-
-        $this->app->instance('webhook.inferno', $inferno);
-    }
-
 
     protected function getDefaultFAVFundAccountArray(string $fundAccountId)
     {
