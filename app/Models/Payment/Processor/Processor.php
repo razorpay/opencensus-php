@@ -2294,7 +2294,7 @@ class Processor
 
             try
             {
-                $this->app['cache']->put($key, $str, 60 * 25); // 1 day 1 hour
+                $this->app['cache_dual_write']->put($key, $str, 60 * 25); // 1 day 1 hour
             }
             catch (\Throwable $e)
             {

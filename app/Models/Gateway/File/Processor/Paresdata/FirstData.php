@@ -39,7 +39,7 @@ class FirstData extends Base
     {
         parent::__construct();
 
-        $this->cache = $this->app['cache'];
+        $this->cache = $this->app['cache_dual_write'];
 
         RuntimeManager::setMemoryLimit('4096M');
 

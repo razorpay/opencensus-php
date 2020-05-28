@@ -135,6 +135,11 @@ return [
         'skip_dual_write'          => env('SKIP_DUAL_WRITE'),
     ],
 
+    'cache_dual_write' => [
+        'cluster_cache_read'        => env('CLUSTER_CACHE_READ'),
+        'cache_skip_dual_write'     => env('CACHE_SKIP_DUAL_WRITE'),
+    ],
+
     'card_vault' => [
         'mock'      => env('CARD_VAULT_MOCK', false),
         'key'       => env('CARD_VAULT_KEY'),

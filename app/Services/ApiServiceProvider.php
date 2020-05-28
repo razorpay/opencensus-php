@@ -305,6 +305,8 @@ class ApiServiceProvider extends BaseServiceProvider
 
         $this->registerRedisDualWrite();
 
+        $this->registerCacheDualWrite();
+
         $this->registerApiMutex();
 
         $this->registerMaxMind();
@@ -567,6 +569,21 @@ class ApiServiceProvider extends BaseServiceProvider
             }
 
             return new RedisDualWrite($app);
+        });
+    }
+
+    protected function registerCacheDualWrite()
+    {
+        $this->app->singleton('cache_dual_write', function($app)
+        {
+            $skipDualWrite = $app['config']->get('applications.cache_dual_write.cache_skip_dual_write');
+
+            if ($skipDualWrite === true)
+            {
+                return $app['cache'];
+            }
+
+            return new CacheDualWrite($app);
         });
     }
 
