@@ -11,6 +11,7 @@ use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger;
 use RZP\Jobs\WebhookEvent;
 use RZP\Constants\Product;
+use RZP\Constants\Timezone;
 use RZP\Constants\Entity as E;
 
 /**
@@ -291,18 +292,29 @@ class Stork
 
     protected function serializeWebhook(Entity $webhook): array
     {
+        $isActive = $webhook->hasAttribute(Entity::ACTIVE) ? $webhook->isActive() : true;
 
-        return [
+        $serialized = [
             'id'            => $webhook->getId(),
             'service'       => $this->service->service,
             'owner_id'      => $webhook->getEntityId() ?: $webhook->getMerchantId(),
             'owner_type'    => $webhook->getEntityType() ?: E::MERCHANT,
-            'disabled'      => $webhook->isActive() === false,
+            'disabled'      => $isActive === false,
             'url'           => $webhook->getUrl(),
             'secret'        => $webhook->getSecret(),
             'subscriptions' => ($this->product === Product::PRIMARY) ? $this->getPrimaryProductSubscriptions($webhook)
                                                                      : $this->getBankingProductSubscriptions($webhook),
         ];
+
+        // The created_at attribute should be same in api and stork. This is dual write expectation.
+        // Webhooks for X are being written to stork 'only'. The entity $webhook is a dummy one.
+        $createdAt = $webhook->hasAttribute(Entity::CREATED_AT) ? $webhook->getCreatedAt() : null;
+        if ($createdAt !== null)
+        {
+            $serialized['created_at'] = Carbon::createFromTimestamp($createdAt, Timezone::IST)->toIso8601ZuluString();
+        }
+
+        return $serialized;
     }
 
     protected function getBankingProductSubscriptions(Entity $webhook)

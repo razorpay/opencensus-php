@@ -482,6 +482,9 @@ class Core extends Base\Core
         // Upsert for X
         else if ($product === Product::BANKING)
         {
+            // $webhook is being mutated assuming it is local copy.
+            $webhook = clone $webhook;
+
             // This will return multiple webhooks but currently only one is supported for X
             $storkResponse = $stork->fetchMultiple($merchant);
 

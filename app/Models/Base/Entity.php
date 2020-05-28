@@ -116,7 +116,7 @@ class Entity extends \RZP\Base\EloquentEx
         return false;
     }
 
-    protected function hasAttribute($key)
+    public function hasAttribute($key): bool
     {
         return (array_key_exists($key, $this->attributes) === true);
     }
