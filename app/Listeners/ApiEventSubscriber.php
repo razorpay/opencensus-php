@@ -23,7 +23,6 @@ use RZP\Models\PaymentLink;
 use RZP\Models\FundAccount;
 use RZP\Models\Transaction;
 use RZP\Models\Terminal;
-use RZP\Services\RazorXClient;
 use RZP\Models\Customer\Token;
 use RZP\Models\VirtualAccount;
 use RZP\Models\Payment\Downtime;
@@ -121,9 +120,11 @@ class ApiEventSubscriber extends Base\Core
     ];
 
     /**
-     * @var boolean|null
+     * Razorx ramp has been removed and this variable is always set to true.
+     * This change will follow more cleanup.
+     * @var boolean
      */
-    protected $shouldDispatchEventToStork;
+    protected $shouldDispatchEventToStork = true;
 
     public function __construct()
     {
@@ -196,7 +197,6 @@ class ApiEventSubscriber extends Base\Core
         // isWebhookEnabledForEvent() again to actually set those variables
         // before proceeding with fall back of existing flow.
         //
-        $this->setShouldDispatchEventToStork();
         $this->webhookEnabledForEvent = (($this->shouldDispatchEventToStork === true) or
             ($this->isWebhookEnabledForEvent($this->mainEntity) === true));
 
@@ -1461,37 +1461,6 @@ class ApiEventSubscriber extends Base\Core
         }
 
         return $payload;
-    }
-
-    protected function setShouldDispatchEventToStork()
-    {
-        // 1. Starts using stork for tests. A lot many tests is expected to fail.
-        // 2. Fixes tests by asserting webhook events being dispatched instead of actual webhook being received.
-        // 3. Removes below razorx check and always use stork for all envs. More code cleanup will follow.
-        if ($this->app->runningUnitTests())
-        {
-            $this->shouldDispatchEventToStork = true;
-            return;
-        }
-
-        $merchantId = $this->getMerchantFromEntity($this->mainEntity)->getId();
-
-        /** @var RazorXClient $razorxService */
-        $razorxService = app('razorx');
-
-        $variant = $razorxService->getCachedTreatment(
-            $merchantId,
-            Merchant\RazorxTreatment::WEBHOOK_EVENT_VIA_STORK,
-            $this->getMode());
-
-        if ($this->app->runningUnitTests())
-        {
-            $this->shouldDispatchEventToStork = (strtolower($variant) === 'on');
-        }
-        else
-        {
-            $this->shouldDispatchEventToStork = ((strtolower($variant) === 'on') or (strtolower($variant) === 'control'));
-        }
     }
 
     /**
