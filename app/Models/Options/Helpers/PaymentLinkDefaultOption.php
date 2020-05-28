@@ -54,7 +54,7 @@ class PaymentLinkDefaultOption implements DefaultOption
                             'emi' => "1",
                             'upi_intent' => "0",
                             'qr' => "1",
-							'bank_transfer' => "0"
+                            'bank_transfer' => "0"
                         ),
                     'features' =>
                         array (
@@ -100,6 +100,8 @@ class PaymentLinkDefaultOption implements DefaultOption
                             'partial_amount_description' => 'Pay some now and the remaining later',
                             'full_amount_label' => 'Pay in full'
                         ),
+                    'config' =>
+                        array ()
                 ),
             'order' =>
                 array (

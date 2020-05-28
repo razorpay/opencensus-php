@@ -840,7 +840,8 @@ $isHostedCheckout               = $hostedpage_options['enable_embedded_checkout'
                 method: $checkout_options.method,
                 hidden: $checkout_options.hidden,
                 modal: $checkout_options.modal,
-                partial_payment: $checkout_options.partial_payment
+                partial_payment: $checkout_options.partial_payment,
+                config: $checkout_options.config
 
                 // : Labels in checkout
                 // name: $checkout_options.label.business_slug || invoiceObj.merchant_label,
