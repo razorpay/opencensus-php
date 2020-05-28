@@ -6,7 +6,9 @@ use View;
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
 use RZP\Models\Bank\BankInfo;
+use RZP\Models\Merchant\Balance;
 use RZP\Models\Currency\Currency;
+use RZP\Models\BankingAccount\Channel;
 use RZP\Models\BankingAccount\Entity as BankingAccountEntity;
 use RZP\Models\BankingAccountStatement\Generator\Gateway\Base;
 use RZP\Models\Transaction\Statement\Entity as StatementEntity;
@@ -118,7 +120,7 @@ abstract class Generator extends Base
             }
         }
 
-        $statementGeneratedDate = Carbon::createFromTimestamp(Carbon::now()->getTimestamp(), Timezone::IST)
+        $statementGeneratedDate = Carbon::createFromTimestamp($this->getLastUpdatedAt($bankingAccount), Timezone::IST)
                                         ->format(StatementSummary::STATEMENT_GENERATED_DATE_FORMAT);
 
         $statementSummary = [
@@ -303,5 +305,29 @@ abstract class Generator extends Base
         ];
 
         return $accountOwnerInfo;
+    }
+
+    public function getLastUpdatedAt(BankingAccountEntity $bankingAccount)
+    {
+        /** @var Balance\Entity $balance
+         * in case of CA ,banking account entity is created first and balance entity is only created when current account
+         * of merchant is activated
+         */
+        $balance = optional($bankingAccount->balance);
+
+        // if it is of direct type rbl account , we will return when was account statement last fetched at
+        // else return current time i.e when pdf or statement is being generated
+        if (($balance->isAccountTypeDirect() === true) and
+            ($balance->isTypeBanking() === true) and
+            ($balance->getChannel() === Channel::RBL))
+        {
+            $lastUpdatedAt = $balance->getLastFetchedAtAttribute();
+        }
+        else
+        {
+            $lastUpdatedAt = Carbon::now()->getTimestamp();
+        }
+
+        return $lastUpdatedAt;
     }
 }
