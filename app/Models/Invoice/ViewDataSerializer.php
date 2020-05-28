@@ -596,16 +596,24 @@ class ViewDataSerializer extends Base\Core
             $ppMerchantSettings = Settings\Accessor::for($this->merchant, Settings\Module::PAYMENT_LINK)
                 ->all();
 
-            $text80G = $ppMerchantSettings[PaymentLink\Entity::TEXT_80G_12A] ?? null;
+            $details80g = [];
 
-            $imageURL80G = $ppMerchantSettings[PaymentLink\Entity::IMAGE_URL_80G] ?? null;
+            $enable80g = Settings\Accessor::for($externalEntity, Settings\Module::PAYMENT_LINK)
+                ->get(PaymentLink\Entity::ENABLE_80G_DETAILS);
 
-            $details80g = [
-                'text'      => $text80G,
-                'image_url' => $imageURL80G,
-            ];
+            if ($enable80g !== null && $enable80g == "1")
+            {
+                $text80G = $ppMerchantSettings[PaymentLink\Entity::TEXT_80G_12A] ?? null;
 
-            $details80g = array_filter($details80g);
+                $imageURL80G = $ppMerchantSettings[PaymentLink\Entity::IMAGE_URL_80G] ?? null;
+
+                $details80g = [
+                    'text'      => $text80G,
+                    'image_url' => $imageURL80G,
+                ];
+
+                $details80g = array_filter($details80g);
+            }
 
             $title = $externalEntity->getAttribute(PaymentLink\Entity::TITLE);
 
