@@ -605,14 +605,32 @@ class Core extends Base\Core
 
             $unlinkedPayouts = [];
 
+            if ($basEntity->getType() === Type::CREDIT)
+            {
+                if ($payouts->count() === 1)
+                {
+                    return $payouts->first();
+                }
+                else if ($payouts->count() > 1)
+                {
+                    $this->trace->error(TraceCode::BANKING_ACCOUNT_STATEMENT_FETCH_DUPLICATE_UTR_TYPE_CREDIT, [
+                        'payout_ids' => $payouts->getQueueableIds(),
+                        'bas_id'     => $basEntity->getId(),
+                        'channel'    => $basEntity->getChannel(),
+                        'amount'     => $basEntity->getAmount(),
+                    ]);
+                }
+            }
+
             foreach ($payouts as $payout)
             {
                 if ($payout->getTransactionId() !== null)
                 {
                     $data = [
-                        'channel'   => $basEntity->getChannel(),
-                        'amount'    => $basEntity->getAmount(),
-                        'payout_id' => $payout->getId(),
+                        'channel'                  => $basEntity->getChannel(),
+                        'amount'                   => $basEntity->getAmount(),
+                        'current_payout_id'        => $payout->getId(),
+                        'payout_ids_with_same_utr' => $payouts->getQueueableIds(),
                     ];
 
                     $this->trace->error(TraceCode::BANKING_ACCOUNT_STATEMENT_FETCH_DUPLICATE_UTR, [
