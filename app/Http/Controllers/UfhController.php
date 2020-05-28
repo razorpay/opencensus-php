@@ -29,7 +29,7 @@ class UfhController extends Controller
                                                 $input[UfhService::NAME],
                                                 $input[UfhService::TYPE],
                                                 $input[self::ENTITY],
-                                                $input[UfhService::METADATA]);
+                                                []);
 
         return ApiResponse::json($response);
     }
