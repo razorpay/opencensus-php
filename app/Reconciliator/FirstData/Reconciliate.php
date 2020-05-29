@@ -84,6 +84,11 @@ class Reconciliate extends Base\Reconciliate
             }
         }
 
+        if (count($capsPaymentIds) === 0)
+        {
+            return;
+        }
+
         $paymentIds = $this->repo->payment->fetchPaymentIdsbyCapsPaymentIds($capsPaymentIds, Gateway::FIRST_DATA);
 
         $capsKeyPaymentIdValue = [];
