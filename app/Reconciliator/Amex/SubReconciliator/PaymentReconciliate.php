@@ -27,7 +27,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
      */
     protected function getPaymentId(array $row)
     {
-        return $row[self::COLUMN_GATEWAY_PAYMENT_ID] ?? null;
+        return trim($row[self::COLUMN_GATEWAY_PAYMENT_ID] ?? null);
     }
 
     protected function validatePaymentAmountEqualsReconAmount(array $row)

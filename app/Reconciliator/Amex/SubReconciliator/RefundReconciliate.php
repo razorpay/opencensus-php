@@ -19,7 +19,7 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
     {
         $refundId = null;
 
-        $paymentId = $row[self::COLUMN_GATEWAY_PAYMENT_ID];
+        $paymentId = trim($row[self::COLUMN_GATEWAY_PAYMENT_ID] ?? null);
 
         $refundAmount = $this->getReconRefundAmount($row);
 
