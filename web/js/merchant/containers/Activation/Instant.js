@@ -243,8 +243,16 @@ export default class ActivationWizard extends React.Component {
       accountId: this.props.accountId,
     })
       .then(response => {
+        this.props.updateActivationData(response.data);
+        this.setState({
+          dirty: {
+            ...this.state.dirty,
+            promoter_pan: '',
+          },
+        });
         const { poi_verification_status } = response.data;
         let has_pan_error = poi_verification_status === 'incorrect_details';
+
         if (this.onActivationSuccess) {
           if (!has_pan_error) {
             return this.onActivationSuccess(response);
@@ -275,13 +283,7 @@ export default class ActivationWizard extends React.Component {
             .routeActions()
             .success('route.linked_account.activate_account.business_details')
         );
-        // this.props.updateActivationData(response.data);
-        this.setState({
-          dirty: {
-            ...this.state.dirty,
-            promoter_pan: '',
-          },
-        });
+
         if (!has_pan_error) {
           return this.props.history.replace('/');
         }
