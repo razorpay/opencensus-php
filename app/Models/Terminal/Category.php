@@ -37,6 +37,20 @@ class Category
     const LOGISTICS       = 'logistics';
     const OTHERS          = 'others';
 
+    // newly added categories
+    const FINANCIAL_SERVICES      = 'financial_services';
+    const FOOD_AND_BEVERAGE       = 'food_and_beverage';
+    const HEALTHCARE              = 'healthcare';
+    const IT_AND_SOFTWARE         = 'it_and_software';
+    const MEDIA_AND_ENTERTAINMENT = 'media_and_entertainment';
+    const MONEY_TRANSFER          = 'money_transfer';
+    const NOT_FOR_PROFIT          = 'not_for_profit';
+    const REAL_ESTATE             = 'real_estate';
+    const RECHARGES               = 'recharges';
+    const SERVICES                = 'services';
+    const SOCIAL                  = 'social';
+    const TRANSPORT               = 'transport';
+
     /**
      * Categories mapped to invalid will not find an
      * appropriate category to override. Only the category

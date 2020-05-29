@@ -38,7 +38,7 @@ class BusinessSubCategoryMetaData
         Sub::ACCOUNTING                    => [
             Merchant::CATEGORY                      => '8931',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::ACCOUNTING],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::FINANCIAL_SERVICES,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::BLACKLIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
@@ -49,7 +49,7 @@ class BusinessSubCategoryMetaData
         Sub::AD_AND_MARKETING              => [
             Merchant::CATEGORY                      => '7311',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::AD_AND_MARKETING],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::SERVICES,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::GREYLIST,
@@ -71,7 +71,7 @@ class BusinessSubCategoryMetaData
         Sub::ALCOHOL                       => [
             Merchant::CATEGORY                      => '5813',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::ALCOHOL],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::FOOD_AND_BEVERAGE,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::BLACKLIST,
             self::EMI_ACTIVATION                    => ActivationFlow::BLACKLIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::BLACKLIST,
@@ -115,7 +115,7 @@ class BusinessSubCategoryMetaData
         Sub::BETTING                       => [
             Merchant::CATEGORY                      => '7801',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::BETTING],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::FINANCIAL_SERVICES,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::BLACKLIST,
             self::EMI_ACTIVATION                    => ActivationFlow::BLACKLIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::BLACKLIST,
@@ -126,7 +126,7 @@ class BusinessSubCategoryMetaData
         Sub::BILL_AND_RECHARGE_AGGREGATORS => [
             Merchant::CATEGORY                      => '4814',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::BILL_AND_RECHARGE_AGGREGATORS],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::RECHARGES,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::GREYLIST,
             self::EMI_ACTIVATION                    => ActivationFlow::GREYLIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::GREYLIST,
@@ -148,7 +148,7 @@ class BusinessSubCategoryMetaData
         Sub::BROADBAND                     => [
             Merchant::CATEGORY                      => '4899',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::BROADBAND],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::SERVICES,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
@@ -159,7 +159,7 @@ class BusinessSubCategoryMetaData
         Sub::BUS                           => [
             Merchant::CATEGORY                      => '4131',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::BUS],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::TRANSPORT,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
@@ -170,7 +170,7 @@ class BusinessSubCategoryMetaData
         Sub::CABLE                         => [
             Merchant::CATEGORY                      => '4899',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::CABLE],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::SERVICES,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
@@ -181,7 +181,7 @@ class BusinessSubCategoryMetaData
         Sub::CAB_HAILING                   => [
             Merchant::CATEGORY                      => '4121',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::CAB_HAILING],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::TRANSPORT,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
@@ -192,7 +192,7 @@ class BusinessSubCategoryMetaData
         Sub::CATERING                      => [
             Merchant::CATEGORY                      => '5811',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::CATERING],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::FOOD_AND_BEVERAGE,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
@@ -214,7 +214,7 @@ class BusinessSubCategoryMetaData
         Sub::CHARITY                       => [
             Merchant::CATEGORY                      => '8398',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::CHARITY],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::NOT_FOR_PROFIT,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::GREYLIST,
             self::EMI_ACTIVATION                    => ActivationFlow::GREYLIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::BLACKLIST,
@@ -225,7 +225,7 @@ class BusinessSubCategoryMetaData
         Sub::CLINIC                        => [
             Merchant::CATEGORY                      => '8062',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::CLINIC],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::HEALTHCARE,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::GREYLIST,
@@ -269,7 +269,7 @@ class BusinessSubCategoryMetaData
         Sub::CONSULTING                    => [
             Merchant::CATEGORY                      => '7392',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::CONSULTING],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::SERVICES,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::GREYLIST,
@@ -280,7 +280,7 @@ class BusinessSubCategoryMetaData
         Sub::CONSULTING_AND_OUTSOURCING    => [
             Merchant::CATEGORY                      => '7392',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::CONSULTING_AND_OUTSOURCING],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::IT_AND_SOFTWARE,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::GREYLIST,
             self::EMI_ACTIVATION                    => ActivationFlow::GREYLIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::GREYLIST,
@@ -291,7 +291,7 @@ class BusinessSubCategoryMetaData
         Sub::CONTENT_AND_PUBLISHING        => [
             Merchant::CATEGORY                      => '2741',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::CONTENT_AND_PUBLISHING],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::MEDIA_AND_ENTERTAINMENT,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
@@ -302,7 +302,7 @@ class BusinessSubCategoryMetaData
         Sub::COOPERATIVES                  => [
             Merchant::CATEGORY                      => '6012',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::COOPERATIVES],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::FINANCIAL_SERVICES,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::GREYLIST,
             self::EMI_ACTIVATION                    => ActivationFlow::BLACKLIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::GREYLIST,
@@ -335,7 +335,7 @@ class BusinessSubCategoryMetaData
         Sub::COWORKING                     => [
             Merchant::CATEGORY                      => '6513',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::COWORKING],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::HOUSING,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::GREYLIST,
@@ -346,7 +346,7 @@ class BusinessSubCategoryMetaData
         Sub::CROWDFUNDING                  => [
             Merchant::CATEGORY                      => '6050',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::CROWDFUNDING],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::FINANCIAL_SERVICES,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::GREYLIST,
             self::EMI_ACTIVATION                    => ActivationFlow::BLACKLIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::GREYLIST,
@@ -379,7 +379,7 @@ class BusinessSubCategoryMetaData
         Sub::DAY_CARE                      => [
             Merchant::CATEGORY                      => '8351',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::DAY_CARE],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::PVT_EDUCATION,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
@@ -390,7 +390,7 @@ class BusinessSubCategoryMetaData
         Sub::DEVELOPER                     => [
             Merchant::CATEGORY                      => '6513',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::DEVELOPER],
-            Merchant::CATEGORY2                     => Category::HOUSING,
+            Merchant::CATEGORY2                     => Category::REAL_ESTATE,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::GREYLIST,
             self::EMI_ACTIVATION                    => ActivationFlow::GREYLIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::GREYLIST,
@@ -401,7 +401,7 @@ class BusinessSubCategoryMetaData
         Sub::DIETICIAN                     => [
             Merchant::CATEGORY                      => '7298',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::DIETICIAN],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::HEALTHCARE,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::GREYLIST,
@@ -445,7 +445,7 @@ class BusinessSubCategoryMetaData
         Sub::DTH                           => [
             Merchant::CATEGORY                      => '4899',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::DTH],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::SERVICES,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
@@ -467,7 +467,7 @@ class BusinessSubCategoryMetaData
         Sub::EDUCATIONAL                   => [
             Merchant::CATEGORY                      => '8398',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::EDUCATIONAL],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::NOT_FOR_PROFIT,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::GREYLIST,
             self::EMI_ACTIVATION                    => ActivationFlow::GREYLIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::GREYLIST,
@@ -489,7 +489,7 @@ class BusinessSubCategoryMetaData
         Sub::ELECTRICITY                   => [
             Merchant::CATEGORY                      => '4900',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::ELECTRICITY],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::UTILITIES,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
@@ -522,7 +522,7 @@ class BusinessSubCategoryMetaData
         Sub::ESPORTS                       => [
             Merchant::CATEGORY                      => '5816',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::ESPORTS],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::GAMING,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::GREYLIST,
             self::EMI_ACTIVATION                    => ActivationFlow::BLACKLIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::GREYLIST,
@@ -533,7 +533,7 @@ class BusinessSubCategoryMetaData
         Sub::EVENT_PLANNING                => [
             Merchant::CATEGORY                      => '8999',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::EVENT_PLANNING],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::SERVICES,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::GREYLIST,
@@ -544,7 +544,7 @@ class BusinessSubCategoryMetaData
         Sub::FACILITY_MANAGEMENT           => [
             Merchant::CATEGORY                      => '7349',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::FACILITY_MANAGEMENT],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::SERVICES,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::GREYLIST,
@@ -555,7 +555,7 @@ class BusinessSubCategoryMetaData
         Sub::FANTASY_SPORTS                => [
             Merchant::CATEGORY                      => '5816',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::FANTASY_SPORTS],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::GAMING,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::GREYLIST,
             self::EMI_ACTIVATION                    => ActivationFlow::BLACKLIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::GREYLIST,
@@ -577,7 +577,7 @@ class BusinessSubCategoryMetaData
         Sub::FINANCIAL_ADVISOR             => [
             Merchant::CATEGORY                      => '8931',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::FINANCIAL_ADVISOR],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::FINANCIAL_SERVICES,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::GREYLIST,
             self::EMI_ACTIVATION                    => ActivationFlow::BLACKLIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::GREYLIST,
@@ -588,7 +588,7 @@ class BusinessSubCategoryMetaData
         Sub::FITNESS                       => [
             Merchant::CATEGORY                      => '7298',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::FITNESS],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::SERVICES,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::GREYLIST,
@@ -599,7 +599,7 @@ class BusinessSubCategoryMetaData
         Sub::FOOD_COURT                    => [
             Merchant::CATEGORY                      => '5814',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::FOOD_COURT],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::FOOD_AND_BEVERAGE,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
@@ -632,7 +632,7 @@ class BusinessSubCategoryMetaData
         Sub::GAME_DEVELOPER                => [
             Merchant::CATEGORY                      => '5816',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::GAME_DEVELOPER],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::GAMING,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::GREYLIST,
             self::EMI_ACTIVATION                    => ActivationFlow::BLACKLIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::GREYLIST,
@@ -643,7 +643,7 @@ class BusinessSubCategoryMetaData
         Sub::GAMING_MARKETPLACE            => [
             Merchant::CATEGORY                      => '5816',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::GAMING_MARKETPLACE],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::GAMING,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::GREYLIST,
             self::EMI_ACTIVATION                    => ActivationFlow::BLACKLIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::GREYLIST,
@@ -654,7 +654,7 @@ class BusinessSubCategoryMetaData
         Sub::GAS                           => [
             Merchant::CATEGORY                      => '4900',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::GAS],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::UTILITIES,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
@@ -665,7 +665,7 @@ class BusinessSubCategoryMetaData
         Sub::GET_RICH_SCHEMES              => [
             Merchant::CATEGORY                      => '7361',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::GET_RICH_SCHEMES],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::SERVICES,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::BLACKLIST,
             self::EMI_ACTIVATION                    => ActivationFlow::BLACKLIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::BLACKLIST,
@@ -698,7 +698,7 @@ class BusinessSubCategoryMetaData
         Sub::HEALTH_COACHING               => [
             Merchant::CATEGORY                      => '7298',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::HEALTH_COACHING],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::SERVICES,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::GREYLIST,
@@ -731,7 +731,7 @@ class BusinessSubCategoryMetaData
         Sub::HOSPITAL                      => [
             Merchant::CATEGORY                      => '8062',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::HOSPITAL],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::HEALTHCARE,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::GREYLIST,
@@ -742,7 +742,7 @@ class BusinessSubCategoryMetaData
         Sub::IAAS                          => [
             Merchant::CATEGORY                      => '5817',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::IAAS],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::IT_AND_SOFTWARE,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::GREYLIST,
             self::EMI_ACTIVATION                    => ActivationFlow::GREYLIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::GREYLIST,
@@ -764,7 +764,7 @@ class BusinessSubCategoryMetaData
         Sub::INTERIOR_DESIGN_AND_ARCHITECT => [
             Merchant::CATEGORY                      => '8911',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::INTERIOR_DESIGN_AND_ARCHITECT],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::SERVICES,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::GREYLIST,
@@ -775,7 +775,7 @@ class BusinessSubCategoryMetaData
         Sub::INTERNET_PROVIDER             => [
             Merchant::CATEGORY                      => '4816',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::INTERNET_PROVIDER],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::SERVICES,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
@@ -786,7 +786,7 @@ class BusinessSubCategoryMetaData
         Sub::LAB                           => [
             Merchant::CATEGORY                      => '8071',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::LAB],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::HEALTHCARE,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::GREYLIST,
@@ -797,7 +797,7 @@ class BusinessSubCategoryMetaData
         Sub::LEGAL                         => [
             Merchant::CATEGORY                      => '8111',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::LEGAL],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::SERVICES,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::GREYLIST,
@@ -819,7 +819,7 @@ class BusinessSubCategoryMetaData
         Sub::MATCHMAKING                   => [
             Merchant::CATEGORY                      => '7273',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::MATCHMAKING],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::SOCIAL,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::GREYLIST,
             self::EMI_ACTIVATION                    => ActivationFlow::GREYLIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::BLACKLIST,
@@ -830,7 +830,7 @@ class BusinessSubCategoryMetaData
         Sub::MESSAGING                     => [
             Merchant::CATEGORY                      => '4821',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::MESSAGING],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::SOCIAL,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::GREYLIST,
             self::EMI_ACTIVATION                    => ActivationFlow::GREYLIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::GREYLIST,
@@ -841,7 +841,7 @@ class BusinessSubCategoryMetaData
         Sub::MOVERS_AND_PACKERS            => [
             Merchant::CATEGORY                      => '4214',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::MOVERS_AND_PACKERS],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::LOGISTICS,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
@@ -852,7 +852,7 @@ class BusinessSubCategoryMetaData
         Sub::MULTI_LEVEL_MARKETING         => [
             Merchant::CATEGORY                      => '5964',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::MULTI_LEVEL_MARKETING],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::FINANCIAL_SERVICES,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::BLACKLIST,
             self::EMI_ACTIVATION                    => ActivationFlow::BLACKLIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::BLACKLIST,
@@ -863,7 +863,7 @@ class BusinessSubCategoryMetaData
         Sub::MULTIPLEX                     => [
             Merchant::CATEGORY                      => '7832',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::MULTIPLEX],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::MEDIA_AND_ENTERTAINMENT,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
@@ -874,7 +874,7 @@ class BusinessSubCategoryMetaData
         Sub::MUSIC_STREAMING               => [
             Merchant::CATEGORY                      => '5815',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::MUSIC_STREAMING],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::MEDIA_AND_ENTERTAINMENT,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::GREYLIST,
             self::EMI_ACTIVATION                    => ActivationFlow::GREYLIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::GREYLIST,
@@ -907,7 +907,7 @@ class BusinessSubCategoryMetaData
         Sub::NEIGHBOURHOOD_NETWORK         => [
             Merchant::CATEGORY                      => '8699',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::NEIGHBOURHOOD_NETWORK],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::SOCIAL,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::GREYLIST,
             self::EMI_ACTIVATION                    => ActivationFlow::GREYLIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::GREYLIST,
@@ -918,7 +918,7 @@ class BusinessSubCategoryMetaData
         Sub::NEWS                          => [
             Merchant::CATEGORY                      => '5994',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::NEWS],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::MEDIA_AND_ENTERTAINMENT,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
@@ -940,7 +940,7 @@ class BusinessSubCategoryMetaData
         Sub::ONLINE_CASINO                 => [
             Merchant::CATEGORY                      => '7801',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::ONLINE_CASINO],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::FINANCIAL_SERVICES,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::BLACKLIST,
             self::EMI_ACTIVATION                    => ActivationFlow::BLACKLIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::BLACKLIST,
@@ -951,7 +951,7 @@ class BusinessSubCategoryMetaData
         Sub::ONLINE_FOOD_ORDERING          => [
             Merchant::CATEGORY                      => '5811',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::ONLINE_FOOD_ORDERING],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::FOOD_AND_BEVERAGE,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
@@ -973,7 +973,7 @@ class BusinessSubCategoryMetaData
         Sub::PAAS                          => [
             Merchant::CATEGORY                      => '5817',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::PAAS],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::IT_AND_SOFTWARE,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::GREYLIST,
             self::EMI_ACTIVATION                    => ActivationFlow::GREYLIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::GREYLIST,
@@ -984,7 +984,7 @@ class BusinessSubCategoryMetaData
         Sub::PENSION_FUND                  => [
             Merchant::CATEGORY                      => '6012',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::PENSION_FUND],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::FINANCIAL_SERVICES,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::GREYLIST,
             self::EMI_ACTIVATION                    => ActivationFlow::BLACKLIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::GREYLIST,
@@ -995,7 +995,7 @@ class BusinessSubCategoryMetaData
         Sub::PERSONAL                      => [
             Merchant::CATEGORY                      => '8398',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::PERSONAL],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::NOT_FOR_PROFIT,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::GREYLIST,
             self::EMI_ACTIVATION                    => ActivationFlow::GREYLIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::GREYLIST,
@@ -1039,7 +1039,7 @@ class BusinessSubCategoryMetaData
         Sub::PROFESSIONAL_NETWORK          => [
             Merchant::CATEGORY                      => '8699',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::PROFESSIONAL_NETWORK],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::SOCIAL,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::GREYLIST,
             self::EMI_ACTIVATION                    => ActivationFlow::GREYLIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::GREYLIST,
@@ -1050,7 +1050,7 @@ class BusinessSubCategoryMetaData
         Sub::REALESTATE_CLASSIFIEDS        => [
             Merchant::CATEGORY                      => '6513',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::REALESTATE_CLASSIFIEDS],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::SERVICES,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::GREYLIST,
@@ -1061,7 +1061,7 @@ class BusinessSubCategoryMetaData
         Sub::RELIGIOUS                     => [
             Merchant::CATEGORY                      => '8661',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::RELIGIOUS],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::NOT_FOR_PROFIT,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::GREYLIST,
             self::EMI_ACTIVATION                    => ActivationFlow::BLACKLIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::GREYLIST,
@@ -1094,7 +1094,7 @@ class BusinessSubCategoryMetaData
         Sub::REPAIR_AND_CLEANING           => [
             Merchant::CATEGORY                      => '7531',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::REPAIR_AND_CLEANING],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::SERVICES,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
@@ -1105,7 +1105,7 @@ class BusinessSubCategoryMetaData
         Sub::RESTAURANT                    => [
             Merchant::CATEGORY                      => '5812',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::RESTAURANT],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::FOOD_AND_BEVERAGE,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
@@ -1116,7 +1116,7 @@ class BusinessSubCategoryMetaData
         Sub::RESTAURANT_SEARCH_AND_BOOKING => [
             Merchant::CATEGORY                      => '7299',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::RESTAURANT_SEARCH_AND_BOOKING],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::FOOD_AND_BEVERAGE,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
@@ -1127,7 +1127,7 @@ class BusinessSubCategoryMetaData
         Sub::RWA                           => [
             Merchant::CATEGORY                      => '7349',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::RWA],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::HOUSING,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::GREYLIST,
@@ -1138,7 +1138,7 @@ class BusinessSubCategoryMetaData
         Sub::SAAS                          => [
             Merchant::CATEGORY                      => '5817',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::SAAS],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::IT_AND_SOFTWARE,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::GREYLIST,
             self::EMI_ACTIVATION                    => ActivationFlow::GREYLIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::GREYLIST,
@@ -1171,7 +1171,7 @@ class BusinessSubCategoryMetaData
         Sub::SERVICE_CENTRE                => [
             Merchant::CATEGORY                      => '5511',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::SERVICE_CENTRE],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::SERVICES,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
@@ -1182,7 +1182,7 @@ class BusinessSubCategoryMetaData
         Sub::SERVICES_CLASSIFIEDS          => [
             Merchant::CATEGORY                      => '7311',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::SERVICES_CLASSIFIEDS],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::SERVICES,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::GREYLIST,
@@ -1204,7 +1204,7 @@ class BusinessSubCategoryMetaData
         Sub::SOCIAL_NETWORK                => [
             Merchant::CATEGORY                      => '8641',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::SOCIAL_NETWORK],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::SOCIAL,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::GREYLIST,
             self::EMI_ACTIVATION                    => ActivationFlow::GREYLIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::GREYLIST,
@@ -1215,7 +1215,7 @@ class BusinessSubCategoryMetaData
         Sub::SPACE_RENTAL                  => [
             Merchant::CATEGORY                      => '6513',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::SPACE_RENTAL],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::REAL_ESTATE,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::GREYLIST,
@@ -1248,7 +1248,7 @@ class BusinessSubCategoryMetaData
         Sub::TECHNICAL_SUPPORT             => [
             Merchant::CATEGORY                      => '7379',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::TECHNICAL_SUPPORT],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::IT_AND_SOFTWARE,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::BLACKLIST,
             self::EMI_ACTIVATION                    => ActivationFlow::BLACKLIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::BLACKLIST,
@@ -1259,7 +1259,7 @@ class BusinessSubCategoryMetaData
         Sub::TELECOM                       => [
             Merchant::CATEGORY                      => '4814',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::TELECOM],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::RECHARGES,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
@@ -1270,7 +1270,7 @@ class BusinessSubCategoryMetaData
         Sub::TICKETING                     => [
             Merchant::CATEGORY                      => '7832',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::TICKETING],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::MEDIA_AND_ENTERTAINMENT,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::GREYLIST,
@@ -1303,7 +1303,7 @@ class BusinessSubCategoryMetaData
         Sub::TRAIN_AND_METRO               => [
             Merchant::CATEGORY                      => '4112',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::TRAIN_AND_METRO],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::TRANSPORT,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
@@ -1336,7 +1336,7 @@ class BusinessSubCategoryMetaData
         Sub::VIDEO_ON_DEMAND               => [
             Merchant::CATEGORY                      => '5815',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::VIDEO_ON_DEMAND],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::MEDIA_AND_ENTERTAINMENT,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::GREYLIST,
             self::EMI_ACTIVATION                    => ActivationFlow::GREYLIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::GREYLIST,
@@ -1347,7 +1347,7 @@ class BusinessSubCategoryMetaData
         Sub::WATER                         => [
             Merchant::CATEGORY                      => '4900',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::WATER],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::UTILITIES,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
@@ -1358,7 +1358,7 @@ class BusinessSubCategoryMetaData
         Sub::WAREHOUSING                   => [
             Merchant::CATEGORY                      => '4225',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::WAREHOUSING],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::ECOMMERCE,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
@@ -1380,7 +1380,7 @@ class BusinessSubCategoryMetaData
         Sub::WEB_DEVELOPMENT               => [
             Merchant::CATEGORY                      => '7372',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::WEB_DEVELOPMENT],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::IT_AND_SOFTWARE,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::GREYLIST,
             self::EMI_ACTIVATION                    => ActivationFlow::GREYLIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::GREYLIST,
@@ -1404,7 +1404,7 @@ class BusinessSubCategoryMetaData
         Sub::CONSTRUCTION_SERVICES                              => [
             Merchant::CATEGORY                      => '1520',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::CONSTRUCTION_SERVICES],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::SERVICES,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::GREYLIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::GREYLIST,
@@ -1459,7 +1459,7 @@ class BusinessSubCategoryMetaData
         Sub::ARCHITECTURAL_SERVICES                             => [
             Merchant::CATEGORY                      => '0780',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::ARCHITECTURAL_SERVICES],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::SERVICES,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
@@ -1470,7 +1470,7 @@ class BusinessSubCategoryMetaData
         Sub::CAR_WASHES                                         => [
             Merchant::CATEGORY                      => '7542',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::CAR_WASHES],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::SERVICES,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
@@ -1492,7 +1492,7 @@ class BusinessSubCategoryMetaData
         Sub::MOTOR_HOME_RENTALS                                 => [
             Merchant::CATEGORY                      => '7519',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::MOTOR_HOME_RENTALS],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::SERVICES,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::GREYLIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::GREYLIST,
@@ -1569,7 +1569,7 @@ class BusinessSubCategoryMetaData
         Sub::STENOGRAPHIC_AND_SECRETARIAL_SUPPORT_SERVICES      => [
             Merchant::CATEGORY                      => '7339',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::STENOGRAPHIC_AND_SECRETARIAL_SUPPORT_SERVICES],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::SERVICES,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
@@ -1580,7 +1580,7 @@ class BusinessSubCategoryMetaData
         Sub::CHIROPRACTORS                                      => [
             Merchant::CATEGORY                      => '8041',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::CHIROPRACTORS],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::HEALTHCARE,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
@@ -1613,7 +1613,7 @@ class BusinessSubCategoryMetaData
         Sub::AUTOMOTIVE_SERVICE_SHOPS                           => [
             Merchant::CATEGORY                      => '7538',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::AUTOMOTIVE_SERVICE_SHOPS],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::SERVICES,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
@@ -1624,7 +1624,7 @@ class BusinessSubCategoryMetaData
         Sub::SHOE_REPAIR_SHOPS                                  => [
             Merchant::CATEGORY                      => '7251',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::SHOE_REPAIR_SHOPS],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::SERVICES,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
@@ -1635,7 +1635,7 @@ class BusinessSubCategoryMetaData
         Sub::TELECOMMUNICATION_SERVICE                          => [
             Merchant::CATEGORY                      => '4813',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::TELECOMMUNICATION_SERVICE],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::SERVICES,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
@@ -1657,7 +1657,7 @@ class BusinessSubCategoryMetaData
         Sub::FINES                                              => [
             Merchant::CATEGORY                      => '9222',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::FINES],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::SERVICES,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
@@ -1668,7 +1668,7 @@ class BusinessSubCategoryMetaData
         Sub::CRUISE_LINES                                       => [
             Merchant::CATEGORY                      => '4411',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::CRUISE_LINES],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::TRANSPORT,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::GREYLIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::GREYLIST,
@@ -1701,7 +1701,7 @@ class BusinessSubCategoryMetaData
         Sub::SECURITY_AGENCIES                                  => [
             Merchant::CATEGORY                      => '7393',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::SECURITY_AGENCIES],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::SERVICES,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
@@ -1712,7 +1712,7 @@ class BusinessSubCategoryMetaData
         Sub::TYPE_SETTING_AND_ENGRAVING_SERVICES                => [
             Merchant::CATEGORY                      => '2791',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::TYPE_SETTING_AND_ENGRAVING_SERVICES],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::SERVICES,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
@@ -1745,7 +1745,7 @@ class BusinessSubCategoryMetaData
         Sub::SMALL_APPLIANCE_REPAIR_SHOPS                       => [
             Merchant::CATEGORY                      => '7629',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::SMALL_APPLIANCE_REPAIR_SHOPS],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::SERVICES,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
@@ -1756,7 +1756,7 @@ class BusinessSubCategoryMetaData
         Sub::PHOTOGRAPHY_LABS                                   => [
             Merchant::CATEGORY                      => '7395',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::PHOTOGRAPHY_LABS],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::SERVICES,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
@@ -1778,7 +1778,7 @@ class BusinessSubCategoryMetaData
         Sub::DRY_CLEANERS                                       => [
             Merchant::CATEGORY                      => '7216',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::DRY_CLEANERS],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::SERVICES,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
@@ -1789,7 +1789,7 @@ class BusinessSubCategoryMetaData
         Sub::ELECTRONIC_REPAIR_SHOPS                            => [
             Merchant::CATEGORY                      => '7622',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::ELECTRONIC_REPAIR_SHOPS],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::SERVICES,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
@@ -1800,7 +1800,7 @@ class BusinessSubCategoryMetaData
         Sub::VIDEO_GAME_ARCADES                                 => [
             Merchant::CATEGORY                      => '7994',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::VIDEO_GAME_ARCADES],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::MEDIA_AND_ENTERTAINMENT,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
@@ -1833,7 +1833,7 @@ class BusinessSubCategoryMetaData
         Sub::CLEANING_AND_SANITATION_SERVICES                   => [
             Merchant::CATEGORY                      => '2842',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::CLEANING_AND_SANITATION_SERVICES],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::SERVICES,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
@@ -1855,7 +1855,7 @@ class BusinessSubCategoryMetaData
         Sub::VIDEO_TAPE_PRODUCTION_AND_DISTRIBUTION             => [
             Merchant::CATEGORY                      => '7829',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::VIDEO_TAPE_PRODUCTION_AND_DISTRIBUTION],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::MEDIA_AND_ENTERTAINMENT,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
@@ -1866,7 +1866,7 @@ class BusinessSubCategoryMetaData
         Sub::OSTEOPATHS                                         => [
             Merchant::CATEGORY                      => '8031',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::OSTEOPATHS],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::HEALTHCARE,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
@@ -1888,7 +1888,7 @@ class BusinessSubCategoryMetaData
         Sub::NURSING_CARE_FACILITIES                            => [
             Merchant::CATEGORY                      => '8050',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::NURSING_CARE_FACILITIES],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::SERVICES,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
@@ -1899,7 +1899,7 @@ class BusinessSubCategoryMetaData
         Sub::DIRECT_MARKETING                                   => [
             Merchant::CATEGORY                      => '5969',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::DIRECT_MARKETING],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::SERVICES,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::BLACKLIST,
             self::EMI_ACTIVATION                    => ActivationFlow::BLACKLIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::BLACKLIST,
@@ -1910,7 +1910,7 @@ class BusinessSubCategoryMetaData
         Sub::AUTOMOBILE_ASSOCIATIONS_AND_CLUBS                  => [
             Merchant::CATEGORY                      => '8675',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::AUTOMOBILE_ASSOCIATIONS_AND_CLUBS],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::SOCIAL,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
@@ -1921,7 +1921,7 @@ class BusinessSubCategoryMetaData
         Sub::VETERINARY_SERVICES                                => [
             Merchant::CATEGORY                      => '0742',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::VETERINARY_SERVICES],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::SERVICES,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
@@ -1943,7 +1943,7 @@ class BusinessSubCategoryMetaData
         Sub::AFFLIATED_AUTO_RENTAL                              => [
             Merchant::CATEGORY                      => '3351',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::AFFLIATED_AUTO_RENTAL],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::SERVICES,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
@@ -1954,7 +1954,7 @@ class BusinessSubCategoryMetaData
         Sub::ALIMONY_AND_CHILD_SUPPORT                          => [
             Merchant::CATEGORY                      => '9211',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::ALIMONY_AND_CHILD_SUPPORT],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::SERVICES,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
@@ -1965,7 +1965,7 @@ class BusinessSubCategoryMetaData
         Sub::AIRPORT_FLYING_FIELDS                              => [
             Merchant::CATEGORY                      => '4582',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::AIRPORT_FLYING_FIELDS],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::SERVICES,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
@@ -1976,7 +1976,7 @@ class BusinessSubCategoryMetaData
         Sub::TIRE_RETREADING_AND_REPAIR_SHOPS                   => [
             Merchant::CATEGORY                      => '7534',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::TIRE_RETREADING_AND_REPAIR_SHOPS],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::SERVICES,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
@@ -1987,7 +1987,7 @@ class BusinessSubCategoryMetaData
         Sub::TELEVISION_CABLE_SERVICES                          => [
             Merchant::CATEGORY                      => '4899',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::TELEVISION_CABLE_SERVICES],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::SERVICES,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
@@ -1998,7 +1998,7 @@ class BusinessSubCategoryMetaData
         Sub::RECREATIONAL_AND_SPORTING_CAMPS                    => [
             Merchant::CATEGORY                      => '7032',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::RECREATIONAL_AND_SPORTING_CAMPS],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::SERVICES,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
@@ -2053,7 +2053,7 @@ class BusinessSubCategoryMetaData
         Sub::MEDICAL_EQUIPMENT_AND_SUPPLY_STORES                => [
             Merchant::CATEGORY                      => '5047',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::MEDICAL_EQUIPMENT_AND_SUPPLY_STORES],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::HEALTHCARE,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::BLACKLIST,
@@ -2064,7 +2064,7 @@ class BusinessSubCategoryMetaData
         Sub::AGRICULTURAL_COOPERATIVES                          => [
             Merchant::CATEGORY                      => '0763',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::AGRICULTURAL_COOPERATIVES],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::SERVICES,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::GREYLIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::GREYLIST,
@@ -2108,7 +2108,7 @@ class BusinessSubCategoryMetaData
         Sub::CARPENTRY_CONTRACTORS                              => [
             Merchant::CATEGORY                      => '1750',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::CARPENTRY_CONTRACTORS],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::SERVICES,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
@@ -2119,7 +2119,7 @@ class BusinessSubCategoryMetaData
         Sub::MONEYSEND_FUNDING                                  => [
             Merchant::CATEGORY                      => '6538',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::MONEYSEND_FUNDING],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::FINANCIAL_SERVICES,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::GREYLIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::BLACKLIST,
@@ -2130,7 +2130,7 @@ class BusinessSubCategoryMetaData
         Sub::WRECKING_AND_SALVAGING_SERVICES                    => [
             Merchant::CATEGORY                      => '5935',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::WRECKING_AND_SALVAGING_SERVICES],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::SERVICES,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::GREYLIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::GREYLIST,
@@ -2141,7 +2141,7 @@ class BusinessSubCategoryMetaData
         Sub::AUTOMOBILE_TOWING_SERVICES                         => [
             Merchant::CATEGORY                      => '7549',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::AUTOMOBILE_TOWING_SERVICES],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::SERVICES,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
@@ -2152,7 +2152,7 @@ class BusinessSubCategoryMetaData
         Sub::POLITICAL_ORGANIZATIONS                            => [
             Merchant::CATEGORY                      => '8651',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::POLITICAL_ORGANIZATIONS],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::SOCIAL,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::GREYLIST,
             self::EMI_ACTIVATION                    => ActivationFlow::BLACKLIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::BLACKLIST,
@@ -2174,7 +2174,7 @@ class BusinessSubCategoryMetaData
         Sub::BARBER_AND_BEAUTY_SHOPS                            => [
             Merchant::CATEGORY                      => '7230',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::BARBER_AND_BEAUTY_SHOPS],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::SERVICES,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::BLACKLIST,
@@ -2196,7 +2196,7 @@ class BusinessSubCategoryMetaData
         Sub::VIDEO_TAPE_RENTAL_STORES                           => [
             Merchant::CATEGORY                      => '7841',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::VIDEO_TAPE_RENTAL_STORES],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::SERVICES,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
@@ -2218,7 +2218,7 @@ class BusinessSubCategoryMetaData
         Sub::GOLF_COURSES                                       => [
             Merchant::CATEGORY                      => '7992',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::GOLF_COURSES],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::MEDIA_AND_ENTERTAINMENT,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
@@ -2229,7 +2229,7 @@ class BusinessSubCategoryMetaData
         Sub::MISCELLANEOUS_REPAIR_SHOPS                         => [
             Merchant::CATEGORY                      => '7699',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::MISCELLANEOUS_REPAIR_SHOPS],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::SERVICES,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
@@ -2240,7 +2240,7 @@ class BusinessSubCategoryMetaData
         Sub::MOTOR_HOMES_AND_PARTS                              => [
             Merchant::CATEGORY                      => '5592',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::MOTOR_HOMES_AND_PARTS],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::ECOMMERCE,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
@@ -2251,7 +2251,7 @@ class BusinessSubCategoryMetaData
         Sub::DEBT_MARRIAGE_PERSONAL_COUNSELING_SERVICE          => [
             Merchant::CATEGORY                      => '7277',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::DEBT_MARRIAGE_PERSONAL_COUNSELING_SERVICE],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::SERVICES,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
@@ -2295,7 +2295,7 @@ class BusinessSubCategoryMetaData
         Sub::AIR_CONDITIONING_AND_REFRIGERATION_REPAIR_SHOPS    => [
             Merchant::CATEGORY                      => '7623',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::AIR_CONDITIONING_AND_REFRIGERATION_REPAIR_SHOPS],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::SERVICES,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
@@ -2317,7 +2317,7 @@ class BusinessSubCategoryMetaData
         Sub::TAILORS                                            => [
             Merchant::CATEGORY                      => '5697',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::TAILORS],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::SERVICES,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
@@ -2405,7 +2405,7 @@ class BusinessSubCategoryMetaData
         Sub::MASSAGE_PARLORS                                    => [
             Merchant::CATEGORY                      => '7297',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::MASSAGE_PARLORS],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::SERVICES,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::GREYLIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::GREYLIST,
@@ -2416,7 +2416,7 @@ class BusinessSubCategoryMetaData
         Sub::HORSE_OR_DOG_RACING                                => [
             Merchant::CATEGORY                      => '7802',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::HORSE_OR_DOG_RACING],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::SERVICES,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::BLACKLIST,
             self::EMI_ACTIVATION                    => ActivationFlow::BLACKLIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::BLACKLIST,
@@ -2427,7 +2427,7 @@ class BusinessSubCategoryMetaData
         Sub::CREDIT_REPORTING_AGENCIES                          => [
             Merchant::CATEGORY                      => '7321',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::CREDIT_REPORTING_AGENCIES],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::SERVICES,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::GREYLIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::GREYLIST,
@@ -2449,7 +2449,7 @@ class BusinessSubCategoryMetaData
         Sub::PARKING_LOTS_AND_GARAGES                           => [
             Merchant::CATEGORY                      => '7523',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::PARKING_LOTS_AND_GARAGES],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::SERVICES,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
@@ -2471,7 +2471,7 @@ class BusinessSubCategoryMetaData
         Sub::HEATING_AND_PLUMBING_CONTRACTORS                   => [
             Merchant::CATEGORY                      => '1711',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::HEATING_AND_PLUMBING_CONTRACTORS],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::SERVICES,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
@@ -2482,7 +2482,7 @@ class BusinessSubCategoryMetaData
         Sub::AQUARIUMS_DOLPHINARIUMS_AND_SEAQUARIUMS            => [
             Merchant::CATEGORY                      => '7998',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::AQUARIUMS_DOLPHINARIUMS_AND_SEAQUARIUMS],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::TRAVEL_AGENCY,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
@@ -2493,7 +2493,7 @@ class BusinessSubCategoryMetaData
         Sub::ELECTRICAL_CONTRACTORS                             => [
             Merchant::CATEGORY                      => '1731',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::ELECTRICAL_CONTRACTORS],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::SERVICES,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
@@ -2504,7 +2504,7 @@ class BusinessSubCategoryMetaData
         Sub::WIRE_TRANSFERS_AND_MONEY_ORDERS                    => [
             Merchant::CATEGORY                      => '4829',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::WIRE_TRANSFERS_AND_MONEY_ORDERS],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::FINANCIAL_SERVICES,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::GREYLIST,
             self::EMI_ACTIVATION                    => ActivationFlow::BLACKLIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::BLACKLIST,
@@ -2515,7 +2515,7 @@ class BusinessSubCategoryMetaData
         Sub::CARPET_AND_UPHOLSTERY_CLEANING_SERVICES            => [
             Merchant::CATEGORY                      => '7217',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::CARPET_AND_UPHOLSTERY_CLEANING_SERVICES],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::SERVICES,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
@@ -2570,7 +2570,7 @@ class BusinessSubCategoryMetaData
         Sub::ROOFING_AND_METAL_WORK_CONTRACTORS                 => [
             Merchant::CATEGORY                      => '1761',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::ROOFING_AND_METAL_WORK_CONTRACTORS],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::SERVICES,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
@@ -2581,7 +2581,7 @@ class BusinessSubCategoryMetaData
         Sub::INTERNET_SERVICE_PROVIDERS                         => [
             Merchant::CATEGORY                      => '4816',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::INTERNET_SERVICE_PROVIDERS],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::SERVICES,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::GREYLIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::BLACKLIST,
@@ -2636,7 +2636,7 @@ class BusinessSubCategoryMetaData
         Sub::LAUNDRY_SERVICES                                   => [
             Merchant::CATEGORY                      => '7210',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::LAUNDRY_SERVICES],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::SERVICES,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
@@ -2658,7 +2658,7 @@ class BusinessSubCategoryMetaData
         Sub::PODIATRISTS_AND_CHIROPODISTS                       => [
             Merchant::CATEGORY                      => '8049',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::PODIATRISTS_AND_CHIROPODISTS],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::HEALTHCARE,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
@@ -2669,7 +2669,7 @@ class BusinessSubCategoryMetaData
         Sub::TAX_PREPARATION_SERVICES                           => [
             Merchant::CATEGORY                      => '7276',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::TAX_PREPARATION_SERVICES],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::FINANCIAL_SERVICES,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
@@ -2702,7 +2702,7 @@ class BusinessSubCategoryMetaData
         Sub::BRIDGE_AND_ROAD_TOLLS                              => [
             Merchant::CATEGORY                      => '4784',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::BRIDGE_AND_ROAD_TOLLS],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::TRANSPORT,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
@@ -2779,7 +2779,7 @@ class BusinessSubCategoryMetaData
         Sub::TIMESHARES                                         => [
             Merchant::CATEGORY                      => '7012',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::TIMESHARES],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::TRAVEL_AGENCY,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::GREYLIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::BLACKLIST,
@@ -2790,7 +2790,7 @@ class BusinessSubCategoryMetaData
         Sub::MASONRY_CONTRACTORS                                => [
             Merchant::CATEGORY                      => '1740',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::MASONRY_CONTRACTORS],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::SERVICES,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
@@ -2801,7 +2801,7 @@ class BusinessSubCategoryMetaData
         Sub::EXTERMINATING_AND_DISINFECTING_SERVICES            => [
             Merchant::CATEGORY                      => '7342',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::EXTERMINATING_AND_DISINFECTING_SERVICES],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::SERVICES,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
@@ -2834,7 +2834,7 @@ class BusinessSubCategoryMetaData
         Sub::AMBULANCE_SERVICES                                 => [
             Merchant::CATEGORY                      => '4119',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::AMBULANCE_SERVICES],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::SERVICES,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
@@ -2845,7 +2845,7 @@ class BusinessSubCategoryMetaData
         Sub::FUNERAL_SERVICES_AND_CREMATORIES                   => [
             Merchant::CATEGORY                      => '7261',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::FUNERAL_SERVICES_AND_CREMATORIES],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::SERVICES,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
@@ -2856,7 +2856,7 @@ class BusinessSubCategoryMetaData
         Sub::BOWLING_ALLEYS                                     => [
             Merchant::CATEGORY                      => '7933',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::BOWLING_ALLEYS],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::MEDIA_AND_ENTERTAINMENT,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
@@ -2867,7 +2867,7 @@ class BusinessSubCategoryMetaData
         Sub::METAL_SERVICE_CENTRES                              => [
             Merchant::CATEGORY                      => '5051',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::METAL_SERVICE_CENTRES],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::SERVICES,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
@@ -2878,7 +2878,7 @@ class BusinessSubCategoryMetaData
         Sub::COPYING_AND_BLUEPRINTING_SERVICES                  => [
             Merchant::CATEGORY                      => '7338',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::COPYING_AND_BLUEPRINTING_SERVICES],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::SERVICES,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
@@ -2889,7 +2889,7 @@ class BusinessSubCategoryMetaData
         Sub::DRAPERY_AND_WINDOW_COVERINGS_STORES                => [
             Merchant::CATEGORY                      => '5714',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::DRAPERY_AND_WINDOW_COVERINGS_STORES],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::ECOMMERCE,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
@@ -2988,7 +2988,7 @@ class BusinessSubCategoryMetaData
         Sub::AUTOMOBILE_RENTALS                                  => [
             Merchant::CATEGORY                      => '7512',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::AUTOMOBILE_RENTALS],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::TRANSPORT,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::BLACKLIST,
@@ -2999,7 +2999,7 @@ class BusinessSubCategoryMetaData
         Sub::FREIGHT_TRANSPORT                                  => [
             Merchant::CATEGORY                      => '4011',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::FREIGHT_TRANSPORT],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::TRANSPORT,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::GREYLIST,
@@ -3010,7 +3010,7 @@ class BusinessSubCategoryMetaData
         Sub::FUEL_DISPENSERS                                    => [
             Merchant::CATEGORY                      => '5542',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::FUEL_DISPENSERS],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::SERVICES,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::GREYLIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::GREYLIST,
@@ -3021,7 +3021,7 @@ class BusinessSubCategoryMetaData
         Sub::TRUCK_AND_UTILITY_TRAILER_RENTALS                  => [
             Merchant::CATEGORY                      => '7513',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::TRUCK_AND_UTILITY_TRAILER_RENTALS],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::TRANSPORT,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
@@ -3032,7 +3032,7 @@ class BusinessSubCategoryMetaData
         Sub::BILLIARD_AND_POOL_ESTABLISHMENTS                   => [
             Merchant::CATEGORY                      => '7932',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::BILLIARD_AND_POOL_ESTABLISHMENTS],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::MEDIA_AND_ENTERTAINMENT,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::GREYLIST,
@@ -3043,7 +3043,7 @@ class BusinessSubCategoryMetaData
         Sub::LOTTERY                                            => [
             Merchant::CATEGORY                      => '7800',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::LOTTERY],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::FINANCIAL_SERVICES,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::BLACKLIST,
             self::EMI_ACTIVATION                    => ActivationFlow::BLACKLIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::BLACKLIST,
@@ -3054,7 +3054,7 @@ class BusinessSubCategoryMetaData
         Sub::WELDING_REPAIR                                     => [
             Merchant::CATEGORY                      => '7692',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::WELDING_REPAIR],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::SERVICES,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
@@ -3076,7 +3076,7 @@ class BusinessSubCategoryMetaData
         Sub::AMUSEMENT_PARKS_AND_CIRCUSES                       => [
             Merchant::CATEGORY                      => '7996',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::AMUSEMENT_PARKS_AND_CIRCUSES],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::MEDIA_AND_ENTERTAINMENT,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
@@ -3087,7 +3087,7 @@ class BusinessSubCategoryMetaData
         Sub::MOBILE_HOME_DEALERS                                => [
             Merchant::CATEGORY                      => '5271',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::MOBILE_HOME_DEALERS],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::SERVICES,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::GREYLIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::GREYLIST,
@@ -3131,7 +3131,7 @@ class BusinessSubCategoryMetaData
         Sub::TAX_PAYMENTS                                       => [
             Merchant::CATEGORY                      => '9311',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::TAX_PAYMENTS],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::FINANCIAL_SERVICES,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
@@ -3153,7 +3153,7 @@ class BusinessSubCategoryMetaData
         Sub::DENTISTS_AND_ORTHODONTISTS                         => [
             Merchant::CATEGORY                      => '8021',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::DENTISTS_AND_ORTHODONTISTS],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::HEALTHCARE,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
@@ -3186,7 +3186,7 @@ class BusinessSubCategoryMetaData
         Sub::CONCRETE_WORK_CONTRACTORS                          => [
             Merchant::CATEGORY                      => '1771',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::CONCRETE_WORK_CONTRACTORS],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::SERVICES,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
@@ -3208,7 +3208,7 @@ class BusinessSubCategoryMetaData
         Sub::OPHTHALMOLOGISTS                                   => [
             Merchant::CATEGORY                      => '8042',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::OPHTHALMOLOGISTS],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::HEALTHCARE,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
@@ -3219,7 +3219,7 @@ class BusinessSubCategoryMetaData
         Sub::BOAT_RENTALS                                       => [
             Merchant::CATEGORY                      => '4457',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::BOAT_RENTALS],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::SERVICES,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
@@ -3230,7 +3230,7 @@ class BusinessSubCategoryMetaData
         Sub::PERSONAL_SHOPPERS_AND_SHOPPING_CLUBS               => [
             Merchant::CATEGORY                      => '7278',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::PERSONAL_SHOPPERS_AND_SHOPPING_CLUBS],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::SERVICES,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
@@ -3252,7 +3252,7 @@ class BusinessSubCategoryMetaData
         Sub::DOOR_TO_DOOR_SALES                                 => [
             Merchant::CATEGORY                      => '5963',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::DOOR_TO_DOOR_SALES],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::SERVICES,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::GREYLIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::BLACKLIST,
@@ -3274,7 +3274,7 @@ class BusinessSubCategoryMetaData
         Sub::TRAVEL_RELATED_DIRECT_MARKETING                    => [
             Merchant::CATEGORY                      => '5962',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::TRAVEL_RELATED_DIRECT_MARKETING],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::SERVICES,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::BLACKLIST,
             self::EMI_ACTIVATION                    => ActivationFlow::BLACKLIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::BLACKLIST,
@@ -3285,7 +3285,7 @@ class BusinessSubCategoryMetaData
         Sub::LOTTERY_AND_BETTING                                => [
             Merchant::CATEGORY                      => '7995',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::LOTTERY_AND_BETTING],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::FINANCIAL_SERVICES,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::BLACKLIST,
             self::EMI_ACTIVATION                    => ActivationFlow::BLACKLIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::BLACKLIST,
@@ -3296,7 +3296,7 @@ class BusinessSubCategoryMetaData
         Sub::DIGITAL_GOODS                                      => [
             Merchant::CATEGORY                      => '5818',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::DIGITAL_GOODS],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::FINANCIAL_SERVICES,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::GREYLIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::GREYLIST,
@@ -3318,7 +3318,7 @@ class BusinessSubCategoryMetaData
         Sub::COUNTRY_AND_ATHLETIC_CLUBS                         => [
             Merchant::CATEGORY                      => '7997',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::COUNTRY_AND_ATHLETIC_CLUBS],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::SOCIAL,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
@@ -3329,7 +3329,7 @@ class BusinessSubCategoryMetaData
         Sub::BANDS_ORCHESTRAS_AND_MISCELLANEOUS_ENTERTAINERS    => [
             Merchant::CATEGORY                      => '7929',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::BANDS_ORCHESTRAS_AND_MISCELLANEOUS_ENTERTAINERS],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::SERVICES,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
@@ -3340,7 +3340,7 @@ class BusinessSubCategoryMetaData
         Sub::FURNITURE_REPAIR_AND_REFINISHING                   => [
             Merchant::CATEGORY                      => '7641',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::FURNITURE_REPAIR_AND_REFINISHING],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::SERVICES,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
@@ -3362,7 +3362,7 @@ class BusinessSubCategoryMetaData
         Sub::DIRECT_MARKETING_AND_SUBSCRIPTION_MERCHANTS        => [
             Merchant::CATEGORY                      => '5968',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::DIRECT_MARKETING_AND_SUBSCRIPTION_MERCHANTS],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::SERVICES,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::BLACKLIST,
             self::EMI_ACTIVATION                    => ActivationFlow::BLACKLIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::BLACKLIST,
@@ -3373,7 +3373,7 @@ class BusinessSubCategoryMetaData
         Sub::TYPEWRITER_STORES_SALES_SERVICE_AND_RENTALS        => [
             Merchant::CATEGORY                      => '5978',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::TYPEWRITER_STORES_SALES_SERVICE_AND_RENTALS],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::SERVICES,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
@@ -3384,7 +3384,7 @@ class BusinessSubCategoryMetaData
         Sub::DIRECT_MARKETING_INSURANCE_SERVICES                => [
             Merchant::CATEGORY                      => '5960',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::DIRECT_MARKETING_INSURANCE_SERVICES],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::SERVICES,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::BLACKLIST,
             self::EMI_ACTIVATION                    => ActivationFlow::BLACKLIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::BLACKLIST,
@@ -3395,7 +3395,7 @@ class BusinessSubCategoryMetaData
         Sub::BUSINESS_SERVICES                                  => [
             Merchant::CATEGORY                      => '7399',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::BUSINESS_SERVICES],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::SERVICES,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::GREYLIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::GREYLIST,
@@ -3406,7 +3406,7 @@ class BusinessSubCategoryMetaData
         Sub::TICKET_AGENCIES                                    => [
             Merchant::CATEGORY                      => '7922',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::TICKET_AGENCIES],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::MEDIA_AND_ENTERTAINMENT,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::BLACKLIST,
@@ -3417,7 +3417,7 @@ class BusinessSubCategoryMetaData
         Sub::AIRCRAFT_AND_FARM_EQUIPMENT_DEALERS                => [
             Merchant::CATEGORY                      => '5599',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::AIRCRAFT_AND_FARM_EQUIPMENT_DEALERS],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::ECOMMERCE,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::GREYLIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::GREYLIST,
@@ -3439,7 +3439,7 @@ class BusinessSubCategoryMetaData
         Sub::COURIER_SERVICES                                   => [
             Merchant::CATEGORY                      => '4215',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::COURIER_SERVICES],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::LOGISTICS,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
@@ -3461,7 +3461,7 @@ class BusinessSubCategoryMetaData
         Sub::INBOUND_TELEMARKETING_MERCHANTS                    => [
             Merchant::CATEGORY                      => '5967',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::INBOUND_TELEMARKETING_MERCHANTS],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::SERVICES,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::BLACKLIST,
             self::EMI_ACTIVATION                    => ActivationFlow::BLACKLIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::BLACKLIST,
@@ -3483,7 +3483,7 @@ class BusinessSubCategoryMetaData
         Sub::RECREATION_SERVICES                                => [
             Merchant::CATEGORY                      => '7999',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::RECREATION_SERVICES],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::SERVICES,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
@@ -3505,7 +3505,7 @@ class BusinessSubCategoryMetaData
         Sub::SWIMMING_POOLS                                     => [
             Merchant::CATEGORY                      => '5996',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::SWIMMING_POOLS],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::MEDIA_AND_ENTERTAINMENT,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
@@ -3516,7 +3516,7 @@ class BusinessSubCategoryMetaData
         Sub::OUTBOUND_TELEMARKETING_MERCHANTS                   => [
             Merchant::CATEGORY                      => '5966',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::OUTBOUND_TELEMARKETING_MERCHANTS],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::SERVICES,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::BLACKLIST,
             self::EMI_ACTIVATION                    => ActivationFlow::BLACKLIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::BLACKLIST,
@@ -3527,7 +3527,7 @@ class BusinessSubCategoryMetaData
         Sub::PUBLIC_WAREHOUSING                                 => [
             Merchant::CATEGORY                      => '4225',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::PUBLIC_WAREHOUSING],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::ECOMMERCE,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
@@ -3538,7 +3538,7 @@ class BusinessSubCategoryMetaData
         Sub::CLOTHING_RENTAL_STORES                             => [
             Merchant::CATEGORY                      => '7296',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::CLOTHING_RENTAL_STORES],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::SERVICES,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
@@ -3549,7 +3549,7 @@ class BusinessSubCategoryMetaData
         Sub::TRANSPORTATION                                     => [
             Merchant::CATEGORY                      => '4111',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::TRANSPORTATION],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::TRANSPORT,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
@@ -3571,7 +3571,7 @@ class BusinessSubCategoryMetaData
         Sub::HEALTH_PRACTITIONERS_MEDICAL_SERVICES              => [
             Merchant::CATEGORY                      => '8099',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::HEALTH_PRACTITIONERS_MEDICAL_SERVICES],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::HEALTHCARE,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
@@ -3604,7 +3604,7 @@ class BusinessSubCategoryMetaData
         Sub::TESTING_LABORATORIES                               => [
             Merchant::CATEGORY                      => '8734',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::TESTING_LABORATORIES],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::HEALTHCARE,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
@@ -3615,7 +3615,7 @@ class BusinessSubCategoryMetaData
         Sub::DOCTORS                                            => [
             Merchant::CATEGORY                      => '8011',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::DOCTORS],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::HEALTHCARE,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
@@ -3626,7 +3626,7 @@ class BusinessSubCategoryMetaData
         Sub::CONTRACTORS                                        => [
             Merchant::CATEGORY                      => '1799',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::CONTRACTORS],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::SERVICES,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
@@ -3637,7 +3637,7 @@ class BusinessSubCategoryMetaData
         Sub::TRANSPORTATION_SERVICES                            => [
             Merchant::CATEGORY                      => '4789',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::TRANSPORTATION_SERVICES],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::TRANSPORT,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
@@ -3648,7 +3648,7 @@ class BusinessSubCategoryMetaData
         Sub::ATMS                                               => [
             Merchant::CATEGORY                      => '6011',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::ATMS],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::FINANCIAL_SERVICES,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::GREYLIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::BLACKLIST,
@@ -3670,7 +3670,7 @@ class BusinessSubCategoryMetaData
         Sub::ELECTRIC_RAZOR_STORES                              => [
             Merchant::CATEGORY                      => '5997',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::ELECTRIC_RAZOR_STORES],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::ECOMMERCE,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
@@ -3692,7 +3692,7 @@ class BusinessSubCategoryMetaData
         Sub::SERVICE_STATIONS                                   => [
             Merchant::CATEGORY                      => '5541',
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::SERVICE_STATIONS],
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::SERVICES,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::BLACKLIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::WHITELIST,
@@ -3712,7 +3712,7 @@ class BusinessSubCategoryMetaData
     {
         return [
             Merchant::CATEGORY                      => '5399',
-            Merchant::CATEGORY2                     => Category::OTHERS,
+            Merchant::CATEGORY2                     => Category::ECOMMERCE,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::GREYLIST,
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::BLACKLIST,
             self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 2500000,
