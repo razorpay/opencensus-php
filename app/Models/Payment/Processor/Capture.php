@@ -1236,7 +1236,8 @@ trait Capture
             throw new Exception\LogicException('The invoice is already paid.');
         }
 
-        $invoice->updateStatusPostCapture();
+        $invoice->updateStatusPostCapture($payment);
+
 
         $isPartialPayment = ($invoice->getAmount() !== $payment->getAmount());
         $dimensions = $invoice->getMetricDimensions(['is_partial_payment' => (int) $isPartialPayment]);

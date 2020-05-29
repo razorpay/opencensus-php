@@ -954,8 +954,23 @@ class Entity extends Base\PublicEntity
         return ($this->getType() === Type::INVOICE);
     }
 
-    public function isFullyPaid()
+   public function isFullyPaid(Payment\Entity $payment)
     {
+        // PAYAPPS-1541 : mark PL as paid if offer was applied
+        if ($this->getType() === Type::LINK)
+        {
+            if($payment->discount !== null)
+            {
+                $discount = $payment->discount->getAmount();
+
+                // logic : paid amount + offer discount amount = PL amount
+                if (($payment->getAmount() + $discount) === $this->getAmount())
+                {
+                    return true;
+                }
+            }
+        }
+
         return ($this->getAmount() === $this->getAmountPaid());
     }
 
@@ -1239,9 +1254,9 @@ class Entity extends Base\PublicEntity
      * Updates invoice status post capture.
      * If all amount has been paid, move to PAID else PARTIALLY_PAID.
      */
-    public function updateStatusPostCapture()
+    public function updateStatusPostCapture(Payment\Entity $payment)
     {
-        $newStatus = ($this->isFullyPaid() === true) ?
+        $newStatus = ($this->isFullyPaid($payment) === true) ?
                         Status::PAID : Status::PARTIALLY_PAID;
 
         $this->setStatus($newStatus);

@@ -633,6 +633,16 @@ class Checkout
             $order = $this->setOrGetOrder($input[Payment\Entity::ORDER_ID], $merchant);
         }
 
+        elseif (isset($input[Payment\Entity::INVOICE_ID]) === true)
+        {
+            $invoiceEntity = $this->repo->invoice->findByPublicIdAndMerchant($input[Payment\Entity::INVOICE_ID], $merchant);
+
+            if ($invoiceEntity->getOrderId() !== null)
+            {
+                $order = $this->setOrGetOrder('order_'.$invoiceEntity->getOrderId(), $merchant);
+            }
+        }
+
         if (($order !== null) and
             ($order->hasOffers() === true))
         {

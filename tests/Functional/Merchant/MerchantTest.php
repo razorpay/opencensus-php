@@ -6839,6 +6839,7 @@ class MerchantTest extends TestCase
         $this->assertArrayHasKey('checkout_config', $response);
     }
 
+
     public function testUpiOtmFeatureFlag()
     {
         $this->ba->publicAuth();
@@ -6851,6 +6852,30 @@ class MerchantTest extends TestCase
         $this->assertSame(true, $response['methods']['upi_otm']);
         $this->assertArrayKeysExist($response['features'], ['upi_otm']);
         $this->assertSame(true, $response['features']['upi_otm']);
+    }
+
+    public function testGetCheckoutPreferencesForInvoiceWithOffer()
+    {
+        $this->ba->publicAuth();
+
+        $offer1 = $this->fixtures->create('offer:live_card', ['iins' => ['401200']]);
+        $offer2 = $this->fixtures->create('offer:live_card', ['iins' => ['401200']]);
+
+        $order = $this->fixtures->order->createWithOffers([
+            $offer1,
+            $offer2,
+        ]);
+
+        $invoice = $this->fixtures->create('invoice', ["order_id" => $order->getId()]);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['invoice_id'] = $invoice->getPublicId();
+
+        $response = $this->runRequestResponseFlow($testData);
+
+        $this->assertArrayHasKey('offers', $response);
+
     }
 }
 

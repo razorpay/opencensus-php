@@ -5937,4 +5937,33 @@ return [
             ],
         ],
     ],
+
+    'testGetCheckoutPreferencesForInvoiceWithOffer' => [
+        'request' => [
+            'url'     => '/preferences',
+            'method'  => 'get',
+            'content' => [
+                'invoice_id' => null,
+                'currency' => 'INR',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'offers' => [
+                    [
+                        'name' => 'Test Offer',
+                        'payment_method' => 'card',
+                        'payment_network' => 'VISA',
+                        'issuer' => 'HDFC',
+                    ],
+                    [
+                        'name' => 'Test Offer',
+                        'payment_method' => 'card',
+                        'payment_network' => 'VISA',
+                        'issuer' => 'HDFC',
+                    ]
+                ]
+            ],
+        ],
+    ],
 ];

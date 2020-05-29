@@ -718,7 +718,7 @@ $isHostedCheckout               = $hostedpage_options['enable_embedded_checkout'
     }
 
     // Invoice full paid
-    if (data.invoice.amount_due === 0 && data.invoice.status === 'paid') {
+    if (data.invoice.status === 'paid') {
         fullPaid();
     }
     // Invoice cancelled/expired
