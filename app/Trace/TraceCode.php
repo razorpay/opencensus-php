@@ -2952,6 +2952,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_ATTRIBUTE_BULK_UPDATE_REQUEST        = 'MERCHANT_ATTRIBUTE_BULK_UPDATE_REQUEST';
     const MERCHANT_ATTRIBUTE_BULK_UPDATE                = 'MERCHANT_ATTRIBUTE_BULK_UPDATE';
 
+    const PAYMENTS_BULK_FETCH = 'PAYMENTS_BULK_FETCH';
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
         self::PAYMENT_CREATED                                       => 'New payment created',

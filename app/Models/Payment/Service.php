@@ -1079,6 +1079,8 @@ class Service extends Base\Service
     {
         $merchantId = $this->merchant->getId();
 
+        $this->addInputTrace($input);
+
         $payments = $this->repo->payment->fetch($input, $merchantId, true);
 
         return $payments->toArrayPublic();
@@ -1183,6 +1185,14 @@ class Service extends Base\Service
                 }
             }
         }
+    }
+
+    protected function addInputTrace(array $input)
+    {
+        $this->trace->info(TraceCode::PAYMENTS_BULK_FETCH, [
+            'filters'     => $input,
+            'merchant_id' => $this->merchant->getId(),
+        ]);
     }
 
     protected function addDashboardFlagInstantRefundSupport(array &$entity, $payment)
