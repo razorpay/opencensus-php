@@ -1660,21 +1660,4 @@ return [
             ],
         ],
     ],
-
-    'testBoardResolutionDocuments' => [
-        'request'  => [
-            'url'    => '/merchant/activation',
-            'method' => 'GET'
-        ],
-        'response' => [
-            'content' => [
-                'verification' => [
-                    'status'          => 'disabled',
-                    'disabled_reason' => 'required_fields',
-                    'required_fields' => [
-                    ],
-                ],
-            ],
-        ],
-    ],
 ];

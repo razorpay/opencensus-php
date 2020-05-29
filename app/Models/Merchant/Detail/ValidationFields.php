@@ -167,16 +167,6 @@ class ValidationFields
         ],
     ];
 
-    const PRIVATE_PUBLIC_REGISTERED_GROUP = [
-        BusinessCategory::FINANCIAL_SERVICES => self::FINANCIAL_SERVICE_FIELDS,
-        BusinessCategory::EDUCATION          => self::EDUCATION_OPTIONAL_FIELDS,
-        BusinessCategory::TOURS_AND_TRAVEL   => self::TOURS_AND_TRAVEL_OPTIONAL_FIELDS,
-        self::DEFAULT                        => [
-            self::REQUIRED_FIELDS           => [RequiredFields::REGISTERED_BUSINESS_FIELDS, RequiredFields::BOARD_RESOLUTION_FIELDS],
-            self::SELECTIVE_REQUIRED_FIELDS => [SelectiveRequiredFields::REGISTERED_POA_FIELDS]
-        ],
-    ];
-
     const NGO_FIELD_GROUP = [
         BusinessCategory::FINANCIAL_SERVICES => self::FINANCIAL_SERVICE_FIELDS,
         BusinessCategory::EDUCATION          => self::EDUCATION_OPTIONAL_FIELDS,
@@ -199,8 +189,8 @@ class ValidationFields
         BusinessType::OTHER                  => self::DEFAULT_REGISTERED_GROUP,
         BusinessType::PARTNERSHIP            => self::DEFAULT_REGISTERED_GROUP,
         BusinessType::PROPRIETORSHIP         => self::DEFAULT_REGISTERED_GROUP,
-        BusinessType::PUBLIC_LIMITED         => self::PRIVATE_PUBLIC_REGISTERED_GROUP,
-        BusinessType::PRIVATE_LIMITED        => self::PRIVATE_PUBLIC_REGISTERED_GROUP,
+        BusinessType::PUBLIC_LIMITED         => self::DEFAULT_REGISTERED_GROUP,
+        BusinessType::PRIVATE_LIMITED        => self::DEFAULT_REGISTERED_GROUP,
         BusinessType::TRUST                  => self::DEFAULT_REGISTERED_GROUP,
         BusinessType::SOCIETY                => self::DEFAULT_REGISTERED_GROUP,
         BusinessType::EDUCATIONAL_INSTITUTES => self::DEFAULT_REGISTERED_GROUP,

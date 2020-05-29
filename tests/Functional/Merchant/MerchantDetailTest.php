@@ -1727,26 +1727,6 @@ class MerchantDetailTest extends OAuthTestCase
         $this->fixtures->create('balance', $balanceData);
     }
 
-    public function testBoardResolutionDocuments()
-    {
-        $merchant = $this->fixtures->create('merchant');
-
-        $user = $this->fixtures->user->createUserForMerchant($merchant['id']);
-
-        $this->fixtures->create('merchant_detail', ['merchant_id' => $merchant['id'], 'business_type' => 4]);
-
-        $this->ba->proxyAuth('rzp_test_' . $merchant['id'], $user->getId());
-
-        $response = $this->startTest();
-
-        $requiredFields = $response['verification']['required_fields'];
-
-        $this->assertContains('memorandum_of_association', $requiredFields);
-        $this->assertContains('article_of_association', $requiredFields);
-        $this->assertContains('board_resolution', $requiredFields);
-    }
-
-
     private function createDocumentEntities(string $merchantId, array $documentTypes)
     {
         $data = [
