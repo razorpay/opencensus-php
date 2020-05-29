@@ -74,6 +74,7 @@ import qs from 'query-string';
         user_role: user.role,
         business_type: user.business_type,
         activation_status: user.activated,
+        is_reg_auto_kyc_enabled: user.isRegAutoKYCEnabled,
       };
     }
     if (query.merchant) {
