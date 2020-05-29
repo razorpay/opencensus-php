@@ -527,7 +527,8 @@ class Core extends Base\Core
                 /** @var Merchant\Entity $merchant */
                 $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
-                if ($merchant->isBusinessBankingEnabled() === true)
+                if (($merchant->isBusinessBankingEnabled() === true) &&
+                    ($merchant->isFeatureEnabled(Constants::BANKING_STORK_MIGRATION) === false))
                 {
                     $webhook = $this->repo->webhook->findByMerchant($merchant);
 
@@ -537,15 +538,7 @@ class Core extends Base\Core
                         continue;
                     }
 
-                    /** @var Entity $webhook */
-                    $webhook->setId(null);
-                    $res = $this->createToStorkIfNotExists($merchant, $webhook, Product::BANKING);
-
-                    if ($res === null)
-                    {
-                        $noSettingIds[] = $merchantId;
-                        continue;
-                    }
+                    $this->upsertToStork($merchant, $webhook, Product::BANKING);
 
                     $successfulIds[] = $merchantId;
                 }
@@ -571,33 +564,5 @@ class Core extends Base\Core
         $this->trace->info(TraceCode::STORK_WEBHOOK_COPY_API_TO_RX_SUMMARY, $summary);
 
         return $summary;
-    }
-
-    /**
-     * This is temp function used for webhook separation migration
-     *
-     * @param Merchant\Entity $merchant
-     * @param Entity          $webhook
-     * @param string          $product
-     *
-     * @return Entity|null
-     * @throws Exception\ServerErrorException
-     */
-    public function createToStorkIfNotExists(Merchant\Entity $merchant,
-                                             Entity $webhook,
-                                             string $product)
-    {
-        $stork = new Stork($product);
-
-        $storkResponse = $stork->fetchMultiple($merchant);
-
-        if (sizeof($storkResponse) > 0)
-        {
-            return null;
-        }
-
-        $stork->create($webhook);
-
-        return $webhook;
     }
 }
