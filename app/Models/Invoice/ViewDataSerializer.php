@@ -617,10 +617,13 @@ class ViewDataSerializer extends Base\Core
 
             $title = $externalEntity->getAttribute(PaymentLink\Entity::TITLE);
 
+            $order = $this->invoice->order;
+
             $serialized[E::PAYMENT_PAGE] = [
                 'details_80g'          => empty($details80g) ? null : $details80g,
                 'selected_input_field' => $selectedInputField,
                 'title'                => $title,
+                'payments'             => $order->payments->toArrayPublic(),
             ];
         }
         else
