@@ -980,9 +980,9 @@ class Repository extends \Razorpay\Spine\Repository
 
         $mode = $mode ?? $this->app['rzp.mode'];
 
-        $connection = ($mode === Mode::TEST) ? Connection::SLAVE_TEST : Connection::SLAVE_LIVE;
+        $connection = ($mode === Mode::TEST) ? Connection::TEST : Connection::LIVE;
 
-        return $connection;
+        return $connection  . '::read';
     }
 
     public function getUniqueMerchantIdsWhereBalanceIdIsNull(int $limit): array
