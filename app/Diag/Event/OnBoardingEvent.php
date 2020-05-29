@@ -8,6 +8,13 @@ class OnBoardingEvent extends Event
 
     const EVENT_VERSION = 'v1';
 
+    protected function addEventDetails()
+    {
+        $this->properties += $this->addSourceDetails();
+
+        parent::addEventDetails();
+    }
+
     protected function getEventProperties()
     {
         $properties = [];
@@ -28,5 +35,19 @@ class OnBoardingEvent extends Event
                 'email' => $merchant->getEmail(),
             ];
         }
+    }
+
+    private function addSourceDetails()
+    {
+        $properties = [];
+
+        if (empty($this->app['basicauth']) === false)
+        {
+            $properties['source'] = [
+                'product'    => $this->app['basicauth']->getRequestOriginProduct(),
+            ];
+        }
+
+        return $properties;
     }
 }

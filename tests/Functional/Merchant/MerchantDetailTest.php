@@ -8,6 +8,7 @@ use Config;
 
 use RZP\Constants;
 use RZP\Constants\Mode;
+use RZP\Services\DiagClient;
 use RZP\Services\RazorXClient;
 use RZP\Services\HubspotClient;
 use RZP\Mail\Merchant\Rejection;
@@ -725,6 +726,10 @@ class MerchantDetailTest extends OAuthTestCase
 
     public function testPutPreSignupDetails()
     {
+        $this->testData[__FUNCTION__]['request']['server']['HTTP_X-Request-Origin'] = config('applications.banking_service_url');
+
+        $this->verifyOnboardingEvent('banking');
+
         $merchantDetail = $this->fixtures->create('merchant_detail');
 
         $this->ba->proxyAuth('rzp_live_' . $merchantDetail['merchant_id']);
@@ -736,6 +741,8 @@ class MerchantDetailTest extends OAuthTestCase
 
     public function testPutPreSignupDetailsForUnregisteredBusiness()
     {
+        $this->verifyOnboardingEvent('primary');
+
         $merchantDetail = $this->fixtures->create('merchant_detail', [
             Entity::BUSINESS_TYPE => '11'
         ]);
@@ -1737,5 +1744,46 @@ class MerchantDetailTest extends OAuthTestCase
         ];
 
         $this->fixtures->create('merchant_document:multiple', $data);
+    }
+
+    private function mockDiag()
+    {
+        $diagMock = $this->getMockBuilder(DiagClient::class)
+                         ->setConstructorArgs([$this->app])
+                         ->setMethods(['trackEvent'])
+                         ->getMock();
+
+        $this->app->instance('diag', $diagMock);
+    }
+
+    private function verifyOnboardingEvent($product = 'primary')
+    {
+        $this->mockDiag();
+
+        $this->app->diag->method('trackEvent')
+                        ->will($this->returnCallback(
+                            function (string $eventType,
+                                      string $eventVersion,
+                                      array $event,
+                                      array $properties,
+                                      array $metaData = null,
+                                      array $readKey = [] ,
+                                      string $writeKey = null) use ($product)
+                            {
+                                if (($event['group'] === 'onboarding') and
+                                    ($event['name'] === 'signup.finish_signup.success'))
+                                {
+                                    $expectedProperties = [
+                                        'merchant'  => [],
+                                        'source'    => [
+                                            'product' => $product
+                                        ],
+                                    ];
+
+                                    $this->assertArraySelectiveEquals($expectedProperties, $properties);
+                                }
+
+                                return;
+                            }));
     }
 }
