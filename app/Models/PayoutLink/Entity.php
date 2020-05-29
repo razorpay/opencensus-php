@@ -328,7 +328,11 @@ class Entity extends Base\PublicEntity
     // to handle payouts creation
     public function getTrimmedDescription()
     {
-        return substr($this->getAttribute(self::DESCRIPTION), 0, 30);
+        $description = $this->getAttribute(self::DESCRIPTION);
+
+        $description = trim(preg_replace("/[^A-Za-z0-9]+/"," ", $description));
+
+        return substr($description, 0, 30);
     }
 
     public function getBalanceId()
@@ -426,6 +430,11 @@ class Entity extends Base\PublicEntity
 
             $this->setAttribute(self::CANCELLED_AT, $currentTime);
         }
+    }
+
+    public function setDescription(string $description)
+    {
+        $this->setAttribute(self::DESCRIPTION, $description);
     }
 
     // -------------------------------------- End Setters -----------------------------

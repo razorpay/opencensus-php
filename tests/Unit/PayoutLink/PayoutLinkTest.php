@@ -3,6 +3,7 @@
 namespace RZP\Tests\Unit\PayoutLink;
 
 use RZP\Tests\Functional\TestCase;
+use RZP\Models\PayoutLink\Entity as PayoutLinkEntity;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 
 class PayoutLinkTest extends TestCase
@@ -56,5 +57,20 @@ class PayoutLinkTest extends TestCase
                                               ]);
 
         $this->assertNull($payoutLink->payout());
+    }
+
+    public function testPayoutLinkTrimmedDescription()
+    {
+        $description = "__@#ABC@123@@testing_qwer__tyuiopasdfghjkl___";
+
+        $trimmedDescriptionExpected = "ABC 123 testing qwer tyuiopasd";
+
+        $payoutLink = new PayoutLinkEntity();
+
+        $payoutLink->setDescription($description);
+
+        $trimmedDescriptionActual = $payoutLink->getTrimmedDescription();
+
+        $this->assertEquals($trimmedDescriptionExpected, $trimmedDescriptionActual);
     }
 }
