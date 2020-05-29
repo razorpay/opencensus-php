@@ -128,6 +128,14 @@ class CreateOrders extends Migration
             $table->integer(Order::CREATED_AT);
             $table->integer(Order::UPDATED_AT);
 
+            $table->char(Order::PRODUCT_ID, Order::ID_LENGTH)
+                ->nullable()
+                ->default(null);
+
+            $table->string(Order::PRODUCT_TYPE)
+                ->nullable()
+                ->default(null);
+
             // $table->integer(Order::VALIDITY)
             //       ->default(0);
 

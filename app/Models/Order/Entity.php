@@ -134,11 +134,15 @@ class Entity extends Base\PublicEntity
     const AUTH_TYPE = 'auth_type';
 
     const CHECKOUT_CONFIG_ID = 'checkout_config_id';
-    
+
     const PROVIDER_CONTEXT = 'provider_context';
 
+    const PRODUCT_TYPE = 'product_type';
+
+    const PRODUCT_ID = 'product_id';
+
     const PHONEPE_SWITCH_CONTEXT = 'phonepe_switch_context';
-    
+
     protected $fillable = [
         self::DISCOUNT,
         self::AMOUNT,

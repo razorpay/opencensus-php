@@ -5752,8 +5752,13 @@ ALTER TABLE payment_downtimes
 ALTER TABLE gateway_downtimes
     Add COLUMN vpa_handle VARCHAR(255) DEFAULT NULL AFTER method;
 
+ALTER TABLE orders
+    ADD COLUMN product_id CHAR(14) DEFAULT NULL,
+    ADD COLUMN product_type VARCHAR(255) DEFAULT NULL;
+
 ALTER TABLE merchant_banks
     Add COLUMN cred TINYINT(4) NOT NULL DEFAULT 0;
 
 ALTER TABLE terminals
     ADD COLUMN cred TINYINT(1) NOT NULL DEFAULT 0;
+
