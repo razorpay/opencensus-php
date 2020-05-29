@@ -36,6 +36,11 @@ class Service extends Base\Service
 
     public function updateMerchantOnboardingCategoryAttributes(Base\PublicCollection $merchantAttributes, $newAttributeValue)
     {
+        if ($merchantAttributes->isEmpty())
+        {
+            return;
+        }
+
         $merchantAttributeIds = [];
 
         /** @var $merchantAttribute Entity */

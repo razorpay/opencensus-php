@@ -213,7 +213,7 @@ class MerchantAttributeTest extends TestCase
                 'created_at' => ($doneAt === null)? time():$doneAt
             ]);
 
-        $this->ba->adminAuth();
+        $this->ba->cronAuth();
 
         $this->startTest();
 

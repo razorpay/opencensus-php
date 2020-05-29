@@ -430,7 +430,7 @@ class Route
         'merchant_batches'                         => ['post',     'merchant/{id}/batches',                          'MerchantController@createBatches'                                  ],
         'merchant_payout_mail'                     => ['post',     'merchant/payout/mail',                           'MerchantController@sendPayoutMail'                                 ],
         'merchants_update_onboarding_category_to_normal_cron'
-                                                   => ['post',     'merchants/update_onboarding_category_to_normal', 'MerchantController@postUpdateSelfServeBankingMerchantsToNormal'    ],
+                                                   => ['post',     'merchants/onboarding_category/normal',           'MerchantController@postUpdateSelfServeBankingMerchantsToNormal'    ],
         'pricing_create_plan'                      => ['post',     'pricing',                                        'PricingController@postCreatePlan'                                  ],
         'pricing_get_plans'                        => ['get',      'pricing',                                        'PricingController@getPlans'                                        ],
         'pricing_get_merchant_plans'               => ['get',      'pricing/merchants',                              'PricingController@getMerchantPricingPlans'                         ],
@@ -2301,6 +2301,7 @@ class Route
         'merchant_methods_edit_internal',
         'payment_links_bulk_expire',
         'fts_bulk_attempts_initiate',
+        'merchants_update_onboarding_category_to_normal_cron',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -3270,9 +3271,6 @@ class Route
 
         // Banking webhook Stork
         'webhook_stork_create_banking_bulk',
-        
-        // Merchant attribute
-        'merchants_update_onboarding_category_to_normal_cron',
 
         // API<->Stork webhook recon route
         'admin_webhook_recon',
@@ -4422,6 +4420,7 @@ class Route
             'fee_recovery_payout_process',
             'webhook_stork_create_banking_bulk',
             'fts_bulk_attempts_initiate',
+            'merchants_update_onboarding_category_to_normal_cron'
         ],
 
         'subscriptions' => [

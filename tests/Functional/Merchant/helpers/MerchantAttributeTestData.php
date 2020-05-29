@@ -48,7 +48,7 @@ return [
             'content' => [
                 'days' => 0
             ],
-            'url' => '/merchants/update_onboarding_category_to_normal',
+            'url' => '/merchants/onboarding_category/normal',
             'method' => 'POST'
         ],
         'response' => [
