@@ -233,6 +233,16 @@ class GatewayDowntimeDetectionV2Test extends TestCase
         $this->makeRequestAndGetContent($request);
 
         $this->assertNotNull($this->redis->get('DOWNTIME_CREATED_payment_interval_netbanking_BANK_HDFC'));
+
+        $this->doAuthAndCapturePayment($payment);
+        $this->doAuthAndCapturePayment($payment);
+
+        Carbon::setTestNow(Carbon::now()->addSeconds(70));
+
+        $this->ba->cronAuth();
+        $this->makeRequestAndGetContent($request);
+
+        $this->assertNull($this->redis->get('DOWNTIME_CREATED_payment_interval_netbanking_BANK_HDFC'));
     }
 
     public function getAllJobTypes()

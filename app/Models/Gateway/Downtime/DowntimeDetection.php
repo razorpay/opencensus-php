@@ -362,6 +362,10 @@ class DowntimeDetection
             {
                 $payments = (new \RZP\Models\Payment\Repository())->fetchLastNPaymentsForDowntime($from, $to, $type, $key, $value, $minimumPayments);
             }
+            else if ($method === Method::NETBANKING)
+            {
+                $payments = (new \RZP\Models\Payment\Repository())->fetchLastNNetbankingPaymentsForDowntime($from, $to, $type, $key, $value, $minimumPayments);
+            }
             else if ($method === Method::UPI)
             {
                 $payments = (new \RZP\Models\Payment\Repository())->fetchLastNUpiPaymentsForDowntime($from, $to, $type, $key, $value, $minimumPayments);
