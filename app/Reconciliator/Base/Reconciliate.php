@@ -231,7 +231,10 @@ class Reconciliate extends Base\Core
             {
                 $reconciliationType = $this->getReconciliationType($fileContents[Orchestrator::EXTRA_DETAILS]);
 
-                $this->updateBatchWithReconciliationType($batch, $reconciliationType, $extraDetails);
+                if ($reconciliationType !== null)
+                {
+                    $this->updateBatchWithReconciliationType($batch, $reconciliationType, $extraDetails);
+                }
             }
 
             // If unable to get the reconciliation type, just continue on to the next file.
