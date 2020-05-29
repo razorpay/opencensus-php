@@ -2176,9 +2176,9 @@ class Gateway extends Base\Gateway
     {
         $contact = $input['payment']['contact'];
 
-        $merchantId = $this->terminal[Terminal\Entity::MERCHANT_ID];
+        $merchantId = $input['merchant']['id'];
 
-        $cacheKey = $input['payment']['wallet'] . '_' . $contact . '_' . $merchantId;
+        $cacheKey = strtolower($input['payment']['wallet']) . '_' . $contact . '_' . $merchantId;
 
         $key = sprintf(self::CACHE_KEY, $cacheKey);
 
