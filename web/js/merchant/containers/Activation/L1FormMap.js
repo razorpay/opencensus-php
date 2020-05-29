@@ -2,7 +2,7 @@ import Input from 'common/new-ui/Input';
 
 import { WarningSvg } from 'merchant/components/Home/GenericPanel';
 
-import { validatePANCard, isUrlLenient } from 'common/utils/validators';
+import { validatePersonalPAN, isUrlLenient } from 'common/utils/validators';
 
 import AddressFields from './AddressFieldsMap';
 
@@ -121,8 +121,25 @@ export default [
     name: 'promoter_pan',
     placeholder: 'PAN Number',
     className: 'Input--capitalize Input--vTop',
-    validator: validatePANCard,
+    validator: validatePersonalPAN,
     _when: excludeFor_Indiv,
+    checkValidityFromAPI: activation => {
+      if (
+        activation.props.data.poi_verification_status === 'incorrect_details'
+      ) {
+        return 'The number entered doesn’t exist in the PAN database. Please verify and enter again';
+      }
+    },
+  },
+  {
+    label: 'PAN Owner’s Name',
+    name: 'promoter_pan_name',
+    placeholder: 'Name as per PAN',
+    info: function() {
+      return !this.props.user.isRegAutoKYCEnabled
+        ? ''
+        : 'We verify the details with the central PAN database. Please ensure you enter the correct PAN details';
+    },
   },
   ...AddressFields, // check ./AddressFieldsMap.js for address fields
   [

@@ -198,6 +198,7 @@ export default class ActivationWizard extends React.Component {
       international,
       promoter_pan,
       business_type,
+      poi_verification_status,
     } = data;
 
     // Updating % activation_progress (side bar) and other important activation fields
@@ -211,6 +212,7 @@ export default class ActivationWizard extends React.Component {
       promoter_pan,
       business_type,
       submitted: +submitted,
+      poi_verification_status,
     }));
 
     this.props.updateSession({
@@ -241,8 +243,14 @@ export default class ActivationWizard extends React.Component {
       accountId: this.props.accountId,
     })
       .then(response => {
+        const { poi_verification_status } = response.data;
+        let has_pan_error = poi_verification_status === 'incorrect_details';
         if (this.onActivationSuccess) {
-          return this.onActivationSuccess(response);
+          if (!has_pan_error) {
+            return this.onActivationSuccess(response);
+          } else {
+            return this.onActivationSuccess({ success: false });
+          }
         }
 
         this.updateSession(response.data); // Updating % activation_progress (side bar)
@@ -267,8 +275,16 @@ export default class ActivationWizard extends React.Component {
             .routeActions()
             .success('route.linked_account.activate_account.business_details')
         );
-
-        return this.props.history.replace('/');
+        // this.props.updateActivationData(response.data);
+        this.setState({
+          dirty: {
+            ...this.state.dirty,
+            promoter_pan: '',
+          },
+        });
+        if (!has_pan_error) {
+          return this.props.history.replace('/');
+        }
       })
       .catch(err => {
         if (err.errors.length && err.errors[0]) {
@@ -517,6 +533,12 @@ function ActivationField(field) {
 
   if (rest.description && typeof rest.description === 'function') {
     rest.description = rest.description(this);
+  }
+
+  if (rest.checkValidityFromAPI) {
+    const error = rest.checkValidityFromAPI(this);
+    if (!this.state.dirty[rest.name] && error) rest.propagatedError = error;
+    else rest.propagatedError = '';
   }
 
   return (
