@@ -253,7 +253,7 @@ export default class ActivationWizard extends React.Component {
         // set default additional doc
         const defaultAdditionalDoc = getDefaultAdditionalDoc(this);
         this.state.additional_doc = defaultAdditionalDoc || '';
-        const ADDITIONAL_DOC_SELECT_FIELD_INDEX = 12;
+        const ADDITIONAL_DOC_SELECT_FIELD_INDEX = 9;
         FORM_TABS_CONTENT[DOCUMENT_UPLOAD_STEP][
           ADDITIONAL_DOC_SELECT_FIELD_INDEX
         ].options = getAdditionalDocOptions(this);
