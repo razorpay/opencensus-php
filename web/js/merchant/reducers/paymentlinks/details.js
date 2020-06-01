@@ -80,11 +80,39 @@ export const fetchPaymentLinkDetails = paymentLinkId => {
   } else {
     let paymentlink = new Invoice();
 
-    payload = paymentlink.fetch(
-      paymentLinkId,
-      {},
-      { expand: ['payments', 'user', 'reminder_status'] }
-    );
+    payload = paymentlink
+      .fetch(
+        paymentLinkId,
+        {},
+        { expand: ['payments', 'user', 'reminder_status'] }
+      )
+      .then(data => {
+        if (data) {
+          const userId = data.user_id;
+
+          const paymentLink = {
+            ...data,
+          };
+
+          if (userId) {
+            return fetchUserDetailsById(userId)
+              .then(userResp => {
+                if (userResp.data) {
+                  paymentLink.user = userResp.data;
+                }
+
+                return paymentLink;
+              })
+              .catch(err => {
+                return paymentLink;
+              });
+          }
+
+          return paymentLink;
+        }
+
+        return data;
+      });
   }
 
   return {
