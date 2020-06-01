@@ -27,6 +27,21 @@ class PublicCollection extends Collection
     }
 
     /**
+     * Get the collection of items as a plain array with fields in proxy array of the entity.
+     *
+     * @return array
+     */
+
+    public function toArrayProxy()
+    {
+        $array[static::ENTITY] = $this->entity;
+        $array[static::COUNT] = count($this->items);
+        $array[static::ITEMS] = $this->itemsToArrayProxy();
+
+        return $array;
+    }
+
+    /**
      * Get the collection of items as a plain array.
      * Response will include the relations which are fetched and present in the expanded[] array of the entity.
      *(eg. expand[] = transaction, transaction.settlement with payment fetch).
@@ -38,6 +53,15 @@ class PublicCollection extends Collection
         $array[static::ENTITY] = $this->entity;
         $array[static::COUNT] = count($this->items);
         $array[static::ITEMS] = $this->itemsToArrayPublic($expand = true);
+
+        return $array;
+    }
+
+    public function toArrayProxyWithExpand(): array
+    {
+        $array[static::ENTITY] = $this->entity;
+        $array[static::COUNT] = count($this->items);
+        $array[static::ITEMS] = $this->itemsToArrayProxy($expand = true);
 
         return $array;
     }
@@ -236,6 +260,26 @@ class PublicCollection extends Collection
             else
             {
                 return $item->toArrayPublic();
+            }
+        }, $this->items);
+    }
+
+    /**
+     * Converts the items list in the list of arrays having fields which are in proxy list of the entity
+     *
+     * @return array
+     */
+    protected function itemsToArrayProxy(bool $expand = false): array
+    {
+        return array_map(function($item) use ($expand)
+        {
+            if ($expand === true)
+            {
+                return $item->toArrayProxyWithExpand();
+            }
+            else
+            {
+                return $item->toArrayProxy();
             }
         }, $this->items);
     }

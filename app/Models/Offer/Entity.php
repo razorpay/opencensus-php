@@ -141,6 +141,10 @@ class Entity extends Base\PublicEntity
 
     protected $public = [
         self::ID,
+    ];
+
+    protected $proxy = [
+        self::ID,
         self::ENTITY,
         self::NAME,
         self::PAYMENT_METHOD,
@@ -645,5 +649,14 @@ class Entity extends Base\PublicEntity
         }
 
         return true;
+    }
+
+    public function toArrayProxy()
+    {
+        $array = $this->attributesToArray();
+
+        $this->setPublicAttributes($array);
+
+        return array_only($array, $this->proxy);
     }
 }

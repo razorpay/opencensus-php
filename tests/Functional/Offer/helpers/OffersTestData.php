@@ -1703,4 +1703,34 @@ return [
             ]
         ]
     ],
+
+    'testFindOffersInPaymentResponseWithExpandsForPrivateAuth' => [
+        'request' => [
+            'url'     => '/payments/',
+            'method'  => 'get',
+            'content' => [
+                'expand' => [
+                    'offers',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'payment',
+            ],
+        ],
+    ],
+
+    'testPaymentResponseWithNoExpandsForPrivateAuth' => [
+        'request' => [
+            'url'     => '/payments/',
+            'method'  => 'get',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'payment',
+            ],
+        ],
+    ],
 ];

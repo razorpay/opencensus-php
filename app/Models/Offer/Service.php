@@ -37,7 +37,7 @@ class Service extends Base\Service
     {
         $offer = $this->core->create($input);
 
-        return $offer->toArrayPublic();
+        return $offer->toArrayProxy();
     }
 
     public function createBulk(array $input)
@@ -89,21 +89,21 @@ class Service extends Base\Service
 
         $offer = $this->core->update($offer, $input);
 
-        return $offer->toArrayPublic();
+        return $offer->toArrayProxy();
     }
 
     public function fetch(string $id)
     {
         $offer = $this->repo->offer->findByPublicIdAndMerchant($id, $this->merchant);
 
-        return $offer->toArrayPublic();
+        return $offer->toArrayProxy();
     }
 
     public function fetchMultiple(array $input)
     {
         $offers = $this->repo->offer->fetch($input, $this->merchant->getId());
 
-        return $offers->toArrayPublic();
+        return $offers->toArrayProxy();
     }
 
     public function deactivate()

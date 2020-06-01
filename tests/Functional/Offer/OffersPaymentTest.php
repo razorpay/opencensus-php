@@ -999,4 +999,52 @@ class OffersPaymentTest extends TestCase
         $this->assertNotContains($secondOffer->getPublicId(), $response);
     }
 
+    public function testFindOffersInPaymentResponseWithExpandsForPrivateAuth()
+    {
+        $offer = $this->fixtures->create('offer');
+
+        $order = $this->fixtures->order->createWithOffers($offer, [
+            'force_offer' => true,
+        ]);
+
+        $payment = $this->getOrderPaymentArray($order);
+
+        $this->doAuthPayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->ba->privateAuth();
+
+        $this->testData[__FUNCTION__]['request']['url'] .= $payment['id'];
+
+        $response = $this->startTest();
+
+        $this->assertArrayHasKey('offers', $response);
+
+        $this->assertEquals($offer->getPublicId(), $response['offers']['items'][0]['id']);
+    }
+
+    public function testPaymentResponseWithNoExpandsForPrivateAuth()
+    {
+        $offer = $this->fixtures->create('offer');
+
+        $order = $this->fixtures->order->createWithOffers($offer, [
+            'force_offer' => true,
+        ]);
+
+        $payment = $this->getOrderPaymentArray($order);
+
+        $this->doAuthPayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->ba->privateAuth();
+
+        $this->testData[__FUNCTION__]['request']['url'] .= $payment['id'];
+
+        $response = $this->startTest();
+
+        $this->assertArrayNotHasKey('offers', $response);
+    }
+
 }
