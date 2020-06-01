@@ -2454,6 +2454,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         return $this->getAttribute(self::REFERENCE2);
     }
 
+    public function getReference13()
+    {
+        return $this->getAttribute(self::REFERENCE13);
+    }
+
     public function getReference16()
     {
         return $this->getAttribute(self::REFERENCE16);

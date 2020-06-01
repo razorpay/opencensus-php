@@ -213,7 +213,26 @@ class Gateway extends Base\Gateway
 
         if ($payment->getAuthenticationGateway() === Payment\Gateway::GOOGLE_PAY)
         {
-            $response['status'] = $payment->getStatus();
+            $status = $payment->getStatus();
+
+            switch($status)
+            {
+                case Payment\Status::CAPTURED:
+                case Payment\Status::AUTHORIZED:
+                case Payment\Status::REFUNDED:
+                    $response['status'] = 'success';
+                    break;
+                case Payment\Status::CREATED:
+                    $response['status'] = 'unknown';
+                    break;
+                case Payment\Status::FAILED:
+                    $response['status'] = 'failed';
+                    break;
+            }
+
+            $response['error'] = [
+                'reason_code' => $payment->getReference13(),
+            ];
         }
         else
         {

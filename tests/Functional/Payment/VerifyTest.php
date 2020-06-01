@@ -859,7 +859,34 @@ class VerifyTest extends TestCase
 
         $response = $this->makeRequestAndGetContent($request);
 
-        $this->assertEquals($response['status'], 'authorized');
+        $this->assertEquals($response['status'], 'success');
+        $this->assertEquals($response['error']['reason_code'], '');
+    }
+
+    public function testVerifyGooglePayCardFailedPayments()
+    {
+        $payment = $this->fixtures->create('payment', []);
+
+        $payment->setAuthenticationGateway('google_pay');
+        $payment->setStatus(Payment\Status::FAILED);
+        $payment['reference13'] = 'PRAZR004';
+
+        (new Payment\Repository)->saveOrFail($payment);
+
+        $this->ba->expressAuth();
+
+        $request = array(
+            'url'     => '/gateway/google_pay/verify',
+            'method'  => 'post',
+            'content' => [
+                'pgTransactionRefId' => 'pay_' . $payment['id']
+            ],
+        );
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals($response['status'], 'failed');
+        $this->assertEquals($response['error']['reason_code'], 'PRAZR004');
     }
 
     public function testVerifyGooglePayCardPaymentNotFound()
