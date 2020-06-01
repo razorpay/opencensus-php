@@ -312,6 +312,15 @@ class UpiSbiGatewayTest extends TestCase
         $this->startTest();
     }
 
+    public function testValidateAccountVpaTimeout()
+    {
+        config()->set('gateway.validate_vpa_terminal_ids.test', '100UPIMgateSbi');
+
+        $this->ba->publicAuth();
+
+        $this->startTest();
+    }
+
     public function testValidateAccountInvalidInput()
     {
         config()->set('gateway.validate_vpa_terminal_ids.test', '100UPIMgateSbi');

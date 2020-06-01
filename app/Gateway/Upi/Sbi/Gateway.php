@@ -157,6 +157,17 @@ class Gateway extends Base\Gateway
 
         $response = $this->sendMozartRequest($request);
 
+        if ($response['success'] !== true)
+        {
+            throw new GatewayErrorException(
+                $response['error']['internal_error_code'] ?? 'GATEWAY_ERROR_REQUEST_ERROR',
+                $response['error']['gateway_error_code'] ?? 'gateway_error_code',
+                $response['error']['gateway_error_description'] ?? 'gateway_error_desc',
+                [],
+                null,
+                $this->action);
+        }
+
         $response = $response["data"]["gateway_response"];
 
         $this->trace->info(TraceCode::GATEWAY_VALIDATE_VPA_RESPONSE,

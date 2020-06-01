@@ -152,6 +152,30 @@ return [
         ]
     ],
 
+    'testValidateAccountVpaTimeout' => [
+        'request' => [
+            'url'    => '/payments/validate/account',
+            'method' => 'post',
+            'content' => [
+                'entity' => 'vpa',
+                'value'  => 'timeout@sbi'
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error'   => [
+                    'code'          => PublicErrorCode::GATEWAY_ERROR,
+                    'description'   => 'Payment processing failed due to error at bank or wallet gateway',
+                ]
+            ],
+            'status_code' => 502,
+        ],
+        'exception' => [
+            'class'                 => 'RZP\Exception\GatewayErrorException',
+            'internal_error_code'   => ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
+        ],
+    ],
+
     'testValidateAccountVpa' => [
         'request' => [
             'url'    => '/payments/validate/account',

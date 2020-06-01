@@ -147,7 +147,8 @@ class Server extends Base\Mock\Server
                 ResponseFields::NAME            => 'Test User',
             ],
             ResponseFields::STATUS             => Status::AVAILABLE_VPA,
-            ResponseFields::STATUS_DESCRIPTION => 'VPA is valid'
+            ResponseFields::STATUS_DESCRIPTION => 'VPA is valid',
+            'success' => true,
         ];
 
         if ($vpa === 'failedvalidate@sbi')
@@ -160,6 +161,11 @@ class Server extends Base\Mock\Server
         {
             $response[ResponseFields::STATUS] = 'T';
             $response[ResponseFields::STATUS_DESCRIPTION] = 'Timeout';
+        }
+
+        if ($vpa === 'timeout@sbi')
+        {
+            $response['success'] = false;
         }
 
         $response["data"]["gateway_response"] = $response;
