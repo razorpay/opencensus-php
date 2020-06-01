@@ -463,6 +463,7 @@ export default class User {
   }
 
   get isAsyncReportsEnabled() {
+    return true;
     return this.getExpStatus('async_reports');
   }
 

@@ -83,10 +83,31 @@ export default class GenerateReportPanel extends React.PureComponent {
       end_time: endTime,
       emails: isPresent(emails) ? emails : undefined,
       ...this.selectFormat.getValue(),
+      ...this.getCustomPayloadForConfigs(),
     };
 
     return this.props.onGenerateReport(payload, accountId);
   };
+
+  getCustomPayloadForConfigs() {
+    const customPayload = {};
+
+    // Request to '/logs' does send mode in url. But for payment links service, mode is needed to be sent explicitly in body
+    if (this.state.selectedConfig.type === 'paymentlinksv2') {
+      customPayload.template_overrides = {
+        filters: {
+          paymentlinksv2: {
+            mode: {
+              op: 'IN',
+              values: [this.props.mode],
+            },
+          },
+        },
+      };
+    }
+
+    return customPayload;
+  }
 
   generateCustomConfigReport = () => {
     const { mode } = this.props;
@@ -185,7 +206,7 @@ export default class GenerateReportPanel extends React.PureComponent {
               disabled={isFormDisabled || !!dateRangeError}
               class="m-t"
             >
-              {isCustomConfig ? 'Download' : 'Generate'} Report
+              {isCustomConfig ? 'Download Report' : 'Generate Report'}
             </AsyncBtn.Primary>
           </Input.Group>
         </Form>
