@@ -451,7 +451,7 @@ class EventCode
 
     const KYC_PERSONAL_PAN_VERIFICATION = [
         'group' => 'onboarding',
-        'name'  => 'kyc.auto_poi.perosnal.verification',
+        'name'  => 'kyc.auto_poi.personal.verification',
     ];
 
     const KYC_COMPANY_PAN_VERIFICATION = [

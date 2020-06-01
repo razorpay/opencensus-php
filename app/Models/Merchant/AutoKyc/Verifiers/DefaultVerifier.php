@@ -56,7 +56,7 @@ trait DefaultVerifier
     {
         $this->verificationData = [
             Constants::DOCUMENT_TYPE       => $this->documentType,
-            Constants::API_STATUS_CODE     => $this->data[Constants::API_STATUS_CODE] ?? '',
+            Constants::API_STATUS_CODE     => $this->data[Constants::STATUS_CODE] ?? '',
             Constants::API_CALL_SUCCESSFUL => $this->isSuccessResponse,
             Constants::API_ERROR_CODE      => $this->internalErrorCode,
             Constants::VERIFIED            => ($verificationStatus === Constants::VERIFIED),
