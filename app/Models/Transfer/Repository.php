@@ -130,8 +130,11 @@ class Repository extends Base\Repository
     //  ON t.entity_id = p.id inner join transfers tr on tr.id = p.transfer_id and
     //  t.type = 'payment' and tr.recipient_settlement_id is null  and t.settlement_id = 'ES69iARhvUoyCo'
     //  )
-    public function updatetransfersWithSettelement(string $settelementId,int $skip)
+    public function updatetransfersWithSettelement(string $settelementId)
     {
+        Settlement\Entity::verifyIdAndStripSign($settelementId);
+
+        $paymentId            = $this->repo->payment->dbColumn(Payment\Entity::ID);
         $paymentIdColumn      = $this->repo->payment->dbColumn(Entity::ID);
         $transferIdColumn     = $this->repo->payment->dbColumn(Payment\Entity::TRANSFER_ID);
         $entityIdCol          = $this->repo->transaction->dbColumn(Transaction\Entity::ENTITY_ID);
@@ -147,43 +150,14 @@ class Repository extends Base\Repository
                            ->whereNull($settlementIdColumn)
                            ->where($settlementCol, $settelementId)
                            ->select($transferColumn)
-                           ->skip($skip * Constant::CHUNK)
-                           ->take(Constant::CHUNK)
                            ->get();
 
-        $transferIds = [];
-
-        foreach($transfers as $transferId)
-        {
-            $transferIds[] = $transferId->getId();
-        }
-
-        $this->newQuery()
-            ->whereIn($transferColumn, $transferIds)
-            ->update
-            ([
-                Entity::RECIPIENT_SETTLEMENT_ID => $settelementId
-            ]);
-        return $transfers;
-    }
-
-    public function getTransfersSettlementCount($settelementId)
-    {
-        $paymentIdColumn      = $this->repo->payment->dbColumn(Entity::ID);
-        $transferIdColumn     = $this->repo->payment->dbColumn(Payment\Entity::TRANSFER_ID);
-        $entityIdCol          = $this->repo->transaction->dbColumn(Transaction\Entity::ENTITY_ID);
-        $entityType           = $this->repo->transaction->dbColumn(Transaction\Entity::TYPE);
-        $settlementCol        = $this->repo->transaction->dbColumn(Transaction\Entity::SETTLEMENT_ID);
-        $settlementIdColumn   = $this->dbColumn(Entity::RECIPIENT_SETTLEMENT_ID);
-        $transferColumn       = $this->dbColumn(Entity::ID);
-
-        $transfers =   $this->newQuery()
-                            ->join(Table::PAYMENT,$transferIdColumn, '=', $transferColumn)
-                            ->join(Table::TRANSACTION,$entityIdCol, '=', $paymentIdColumn)
-                            ->where($entityType, Constant::PAYMENT)
-                            ->whereNull($settlementIdColumn)
-                            ->where($settlementCol, $settelementId)
-                            ->count();
+                      $this->newQuery()
+                            ->whereIn($transferColumn, $transfers)
+                            ->update
+                            ([
+                              Entity::RECIPIENT_SETTLEMENT_ID => $settelementId
+                            ]);
         return $transfers;
     }
 

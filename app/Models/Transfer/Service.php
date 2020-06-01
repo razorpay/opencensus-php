@@ -62,29 +62,20 @@ class Service extends Base\Service
 
                 if ($merchant->isLinkedAccount() === true)
                 {
-                    $transferscount = $this->repo->transfer->getTransfersSettlementCount($settlementId);
-
-                    if($transferscount > 0 )
+                    $this->repo->transaction(function () use($settlementId)
                     {
-                        $totalchunks = ceil($transferscount / Constant::CHUNK);
+                        $transactions = $this->repo->transaction->fetchTransactionsForSettlementIdCount($settlementId);
 
-                        $this->repo->transaction(function () use ($settlementId, $totalchunks)
+                        $totalchunks = ceil($transactions / Constant::CHUNK);
+
+                        for ($chunk = 0; $chunk < $totalchunks; $chunk = $chunk + 1)
                         {
-                            for ($chunk = 0; $chunk < $totalchunks; $chunk = $chunk + 1)
-                            {
-                                $transactions = $this->repo->transfer->updatetransfersWithSettelement($settlementId, $chunk);
+                            $transactions = $this->repo->transaction->fetchTransactionsForSettlementId($settlementId, $chunk);
 
-                            }
-                        });
-                    }
-                    else
-                    {
-                        $this->trace->info(
-                            TraceCode::NO_TRANSFERS_FOUND_SETTLEMENT,
-                            [
-                                'settlementId' => $settlementId,
-                            ]);
-                    }
+                            $this->updateSettlementIdInTransfer($transactions, $settlementId);
+
+                        }
+                    });
 
                 }
                 $timeTaken = microtime(true) - $startTime;
