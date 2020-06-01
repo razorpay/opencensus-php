@@ -301,6 +301,11 @@ class Server extends Base\Mock\Server
         return json_encode($response);
     }
 
+    protected function cred($input)
+    {
+        return;
+    }
+
     protected function wallet_phonepe($input)
     {
         $content = $input;

@@ -246,7 +246,7 @@ class Entity extends Base\PublicEntity
         self::PHONEPE        => false,
         self::PHONEPE_SWITCH => false,
         self::PAYPAL         => false,
-        self::CRED         => false,
+        self::CRED           => false,
     );
 
     protected $wallets = array(
@@ -291,7 +291,6 @@ class Entity extends Base\PublicEntity
         self::PHONEPE_SWITCH,
         self::PAYPAL,
         self::CRED,
-
     ];
 
     // Casts the attributes to native types
@@ -744,9 +743,9 @@ class Entity extends Base\PublicEntity
         $this->setCardNetwork(Network::RUPAY, $value);
     }
 
-    public function setCred(int $value)
+    public function setCred($value)
     {
-        $this->setCardNetwork(Network::RUPAY, $value);
+        $this->setAttribute(self::CRED, $value);
     }
 
     protected function setCardNetwork(string $network, int $value)

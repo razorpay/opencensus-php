@@ -185,6 +185,7 @@ class Entity
     const UPI                    = 'upi';
     const MPI                    = 'mpi';
     const ISG                    = 'isg';
+    const CRED                   = 'cred';
     const AEPS                   = 'aeps';
     const AMEX                   = 'amex';
     const HDFC                   = 'hdfc';
@@ -613,6 +614,7 @@ class Entity
         self::GETSIMPL               => \RZP\Gateway\Mozart::class,
         self::PAYLATER_ICICI         => \RZP\Gateway\Mozart::class,
         self::HDFC_DEBIT_EMI         => \RZP\Gateway\Mozart::class,
+        self::CRED                   => \RZP\Gateway\Mozart::class,
 
         // heimdall
         self::ORG                          => \RZP\Models\Admin\Org::class,

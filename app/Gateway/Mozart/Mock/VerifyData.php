@@ -287,6 +287,11 @@ class VerifyData extends Base\Mock\Server
         return $response;
     }
 
+    public static function cred($entities)
+    {
+        return;
+    }
+
     public static function wallet_phonepe($entities)
     {
         $response = [

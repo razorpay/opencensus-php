@@ -12,6 +12,7 @@ return [
     'available' => [
         'amex',
         'atom',
+        'cred',
         'mozart',
         'axis_genius',
         'axis_migs',
@@ -110,6 +111,7 @@ return [
 
     'mock_amex'                   => env('AMEX_MOCK'),
     'mock_hdfc'                   => env('HDFC_MOCK'),
+    'mock_cred'                   => env('CRED_MOCK'),
     'mock_cybersource'            => env('CYBERSOURCE_MOCK'),
     'mock_first_data'             => env('FIRST_DATA_MOCK'),
     'mock_atom'                   => env('ATOM_MOCK'),

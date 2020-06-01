@@ -126,6 +126,11 @@ class PayInitData extends Base\Mock\Server
         return $response;
     }
 
+    public function cred($entities)
+    {
+        return;
+    }
+
     public function wallet_phonepe($entities)
     {
         $this->gateway = $entities['payment']['gateway'];

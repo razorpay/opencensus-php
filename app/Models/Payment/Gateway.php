@@ -1041,6 +1041,7 @@ class Gateway
         self::UPI_CITI,
         self::UPI_JUSPAY,
         self::WALLET_PHONEPE,
+        self::CRED,
     ];
 
     public static $immediateVerifyGateways = [

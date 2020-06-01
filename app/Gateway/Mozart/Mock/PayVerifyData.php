@@ -342,6 +342,11 @@ class PayVerifyData extends Base\Mock\Server
         return $response;
     }
 
+    public function cred($entities)
+    {
+        return;
+    }
+
     public function wallet_phonepe($entities)
     {
         if (isset($entities['gateway']['redirect']['data']) == true)

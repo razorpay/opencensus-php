@@ -5761,4 +5761,3 @@ ALTER TABLE merchant_banks
 
 ALTER TABLE terminals
     ADD COLUMN cred TINYINT(1) NOT NULL DEFAULT 0;
-

@@ -121,6 +121,7 @@ class Validator extends Base\Validator
         Payment\Gateway::HDFC_DEBIT_EMI,
         Payment\Gateway::BT_RBL,
         Payment\Gateway::WORLDLINE,
+        Payment\Gateway::CRED,
     ];
 
     protected static $createValidators = [

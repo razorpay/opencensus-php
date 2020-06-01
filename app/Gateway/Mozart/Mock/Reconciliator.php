@@ -512,6 +512,11 @@ class Reconciliator extends Base\Mock\PaymentReconciliator
         return $data;
     }
 
+    protected function cred($input)
+    {
+        return;
+    }
+
     protected function wallet_phonepe($input)
     {
         $this->fileExtension = FileStore\Format::CSV;
