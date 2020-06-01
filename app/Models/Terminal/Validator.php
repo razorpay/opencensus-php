@@ -122,6 +122,7 @@ class Validator extends Base\Validator
         Payment\Gateway::BT_RBL,
         Payment\Gateway::WORLDLINE,
         Payment\Gateway::CRED,
+        Payment\Gateway::WALLET_PAYZAPP,
     ];
 
     protected static $createValidators = [
@@ -537,12 +538,21 @@ class Validator extends Base\Validator
 
     protected static $walletPayzappTerminalRules = [
         Entity::GATEWAY                    => 'required|in:wallet_payzapp',
-        Entity::GATEWAY_MERCHANT_ID        => 'required|string|size:21',
+        Entity::GATEWAY_MERCHANT_ID        => 'required|string',
         Entity::GATEWAY_MERCHANT_ID2       => 'required|integer|digits:8',
         Entity::GATEWAY_TERMINAL_ID        => 'required|integer|digits:8',
-        Entity::GATEWAY_SECURE_SECRET      => 'required|string|size:21',
+        Entity::GATEWAY_SECURE_SECRET      => 'required|string',
         Entity::GATEWAY_ACCESS_CODE        => 'required|integer|digits:4',
         Entity::GATEWAY_TERMINAL_PASSWORD  => 'required|alpha_num|size:16',
+    ];
+
+    protected static $walletPayzappEditTerminalRules = [
+        Entity::GATEWAY_MERCHANT_ID        => 'sometimes|string',
+        Entity::GATEWAY_MERCHANT_ID2       => 'sometimes|integer|digits:8',
+        Entity::GATEWAY_TERMINAL_ID        => 'sometimes|integer|digits:8',
+        Entity::GATEWAY_SECURE_SECRET      => 'sometimes|string',
+        Entity::GATEWAY_ACCESS_CODE        => 'sometimes|integer|digits:4',
+        Entity::GATEWAY_TERMINAL_PASSWORD  => 'sometimes|alpha_num|size:16',
     ];
 
     protected static $walletPayumoneyTerminalRules = [
