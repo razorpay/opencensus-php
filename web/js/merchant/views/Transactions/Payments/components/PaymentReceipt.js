@@ -71,7 +71,7 @@ export default class PaymentReceipt extends React.Component {
             this.openDownloadReceiptUrl();
 
             this.setState({
-              showCustomReceiptField: false,
+              showCustomReceiptInput: false,
               receipt: res.data.receipt,
             });
           }

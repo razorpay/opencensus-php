@@ -551,32 +551,20 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
       );
     }
 
-    // Make call parallel to main call
-    if (isEditExistingId) {
-      this.saveReceiptSettings(this.props.id, receipt);
-    }
+    // Note: Don't make this call and save receipt call in parallel bcoz they modify the same DB table which gets locked.
 
     return requestAPIPromise
       .then(resp => {
         if (resp.data) {
-          this.props.markDataSaved();
-          this.isIntentDuplicate = false;
-
           const entityId = resp.data.id;
 
-          this.props.history.push(`/paymentpages/${entityId}/edit`);
-
-          if (!isEditExistingId) {
-            this.saveReceiptSettings(entityId, receipt);
-          }
-
-          this.openSuccessView(
-            entityId,
-            resp.data.short_url,
-            resp.data.title,
-            resp.data.description,
-            isEditExistingId
-          );
+          this.saveReceiptSettings(entityId, receipt)
+            .then(() => {
+              this.onSaveSuccessActions(resp, isEditExistingId);
+            })
+            .catch(err => {
+              this.onSaveSuccessActions(resp, isEditExistingId);
+            });
         } else {
           throw new Error(resp.errors);
         }
@@ -608,6 +596,23 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
       });
   };
 
+  onSaveSuccessActions = (resp, isEditExistingId) => {
+    this.props.markDataSaved();
+    this.isIntentDuplicate = false;
+
+    const entityId = resp.data.id;
+
+    this.props.history.push(`/paymentpages/${entityId}/edit`);
+
+    this.openSuccessView(
+      entityId,
+      resp.data.short_url,
+      resp.data.title,
+      resp.data.description,
+      isEditExistingId
+    );
+  };
+
   saveReceiptSettings = (entityId, receipt) => {
     const requestAPIPromiseForReceipt = setReceiptDetails(entityId, receipt);
 
@@ -616,6 +621,8 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
         if (!res || !res.success) {
           throw new Error(resp.errors);
         }
+
+        return res;
       })
       .catch(err => {
         this.props.showNotification({
