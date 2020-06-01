@@ -1221,6 +1221,23 @@ return [
         ],
     ],
 
+    'testAddPricingPlanCredRule' => [
+        'request' => [
+            'content' => [
+                'payment_method'  => 'cred',
+                'percent_rate'    => 1500
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'plan_name'           => 'TestPlan1',
+                'payment_method'      => 'cred',
+                'percent_rate'        => 1500
+            ],
+        ],
+    ],
+
     'testAddPricingPlanFundAccountValidationRule' => [
         'request' => [
             'content' => [
@@ -1894,7 +1911,7 @@ return [
                     [
                         'name' => 'testDefaultPlan',
                         'entity' => 'pricing',
-                        'count' => 25,
+                        'count' => 26,
                         'rules' => [
                             [],
                         ],
@@ -2042,7 +2059,7 @@ return [
                     [
                         'name'   => 'testDefaultPlan',
                         'entity' => 'pricing',
-                        'count'  => 25,
+                        'count'  => 26,
                         'rules'  => [
                             [],
                         ],
@@ -2174,7 +2191,7 @@ return [
                 ],
                 [
                     'plan_name'   => 'testDefaultPlan',
-                    'rules_count' => 25,
+                    'rules_count' => 26,
                     'type'        => 'pricing',
                 ],
             ],
@@ -2264,7 +2281,7 @@ return [
                 ],
                 [
                     'plan_name'   => 'testDefaultPlan',
-                    'rules_count' => 25,
+                    'rules_count' => 26,
                     'type'        => 'pricing',
                 ],
             ],

@@ -449,6 +449,20 @@ class Pricing extends Base
                 'receiver_type'       => 'vpa',
                 'org_id'              => '100000razorpay',
             ],
+            [
+                'id'                  => '1zE31zbybacap0',
+                'plan_id'             => $pricingPlanId,
+                'plan_name'           => 'testDefaultPlan',
+                'feature'             => 'payment',
+                'payment_method'      => 'cred',
+                'payment_method_type' => null,
+                'payment_network'     => null,
+                'payment_issuer'      => null,
+                'percent_rate'        => 1500,
+                'fixed_rate'          => 0,
+                'max_fee'             => 0,
+                'org_id'              => '100000razorpay',
+            ],
         ];
 
         return $rows;
@@ -608,6 +622,16 @@ class Pricing extends Base
                 'feature'        => 'payout',
                 'payment_method' => 'fund_transfer',
                 'percent_rate'   => 18,
+                'fixed_rate'     => 0,
+                'org_id'         => '100000razorpay',
+            ],
+            [
+                'id'             => '1ABp2Xd3t5aROP',
+                'plan_id'        => $pricingPlanId,
+                'plan_name'      => 'standard_plan',
+                'feature'        => 'payment',
+                'payment_method' => 'cred',
+                'percent_rate'   => 15000,
                 'fixed_rate'     => 0,
                 'org_id'         => '100000razorpay',
             ],
@@ -853,6 +877,22 @@ class Pricing extends Base
         ];
 
         $this->addPricingRulesToDb($rows);
+    }
+
+    public function createCredPricingPlan()
+    {
+        $pricingPlanId = '1hDYlICobzOCYt';
+
+        $row = [
+            'id'                  => '1zE3CYqf1zbycT',
+            'plan_id'             => $pricingPlanId,
+            'plan_name'           => 'testDefaultPlan',
+            'feature'             => 'payment',
+            'payment_method'      => 'cred',
+            'percent_rate'        => 1500,
+            'fixed_rate'          => 0,
+            'org_id'              => '100000razorpay',
+        ];
     }
 
     public function createEmiPricingPlan()
