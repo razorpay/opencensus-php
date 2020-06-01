@@ -831,6 +831,9 @@ class Header
     const BANK_TRANSFER_EDIT_IFSC_CODE              = 'IFSC_CODE';
     const BANK_TRANSFER_EDIT_PAYER_BANK_ACCOUNT_ID  = 'PAYER_BANK_ACCOUNT_ID';
 
+    // PL Service
+    const PL_V2_REFERENCE_ID        = 'Reference Id';
+
     /**
      * Input and output file headers
      * The keys need to be like <type>_<sub-type>_<gateway>.
@@ -990,7 +993,7 @@ class Header
 
         Type::PAYMENT_LINK_V2 => [
             self::INPUT => [
-                self::INVOICE_NUMBER,
+                self::PL_V2_REFERENCE_ID,
                 self::CUSTOMER_NAME,
                 self::CUSTOMER_EMAIL,
                 self::CUSTOMER_CONTACT,
@@ -1002,7 +1005,7 @@ class Header
             ],
 
             self::OUTPUT => [
-                self::INVOICE_NUMBER,
+                self::PL_V2_REFERENCE_ID,
                 self::CUSTOMER_NAME,
                 self::CUSTOMER_EMAIL,
                 self::CUSTOMER_CONTACT,
