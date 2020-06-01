@@ -180,6 +180,9 @@ class Name
     const EDIT_GATEWAY_RULE                   = 'edit_gateway_rule';
     const DELETE_GATEWAY_RULE                 = 'delete_gateway_rule';
     const VIEW_GATEWAY_RULE                   = 'view_gateway_rule';
+    const CREATE_GOVERNOR_RULE                = 'create_governor_rule';
+    const EDIT_GOVERNOR_RULE                  = 'edit_governor_rule';
+    const DELETE_GOVERNOR_RULE                = 'delete_governor_rule';
     const VIEW_MERCHANT_REPORT                = 'view_merchant_report';
     const VIEW_SPECIAL_MERCHANT_REPORT        = 'view_special_merchant_report';
     const CREATE_MERCHANT_OFFER               = 'create_merchant_offer';

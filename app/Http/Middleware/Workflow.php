@@ -54,6 +54,9 @@ class Workflow
         Permission::TOGGLE_TERMINAL,
         Permission::EDIT_MERCHANT_INTERNATIONAL,
         Permission::COMMISSION_PAYOUT,
+        Permission::CREATE_GOVERNOR_RULE,
+        Permission::EDIT_GOVERNOR_RULE,
+        Permission::DELETE_GOVERNOR_RULE,
         Permission::EDIT_MERCHANT_INTERNATIONAL_NEW,
     ];
 

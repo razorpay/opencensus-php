@@ -391,13 +391,11 @@ class GovernorService
 
     }
 
-    public function sendRequestV1(string $method, string $path, string $content)
+    public function sendRequestV1(string $method, string $path, array $content)
     {
         $url = $this->getBaseUrl() . preg_replace('/^v1\//', '', $path);
 
         $auth = $this->getAdminAuthDetails();
-
-        $data = $this->jsonToArray($content);
 
         if($method == 'POST'){
             $userId = $this->app['basicauth']->getAdmin()->getId();
@@ -409,7 +407,7 @@ class GovernorService
         $request = [
             'url'     => $url,
             'method'  => $method,
-            'content' => $data,
+            'content' => $content,
             'headers' => $headers,
         ];
 
