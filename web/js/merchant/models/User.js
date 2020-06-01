@@ -7,7 +7,6 @@ import LocalStorageService from 'common/utils/localStorage';
 import { getOrg, getMode } from 'merchant/store';
 import { getOnBoardingDataFromLocalState } from 'merchant/components/OnBoarding';
 import { getURLQueryParams } from 'common/utils/rzp-utils';
-import { hasAPIL1Error } from 'merchant/components/Activation/ActivationUtils';
 
 import rolesList from 'merchant/helpers/permissions/roles-list';
 import {
@@ -177,8 +176,6 @@ export default class User {
       business_type: this.business_type,
       activated: this.activated,
       isUnregisteredBusiness: this.isUnregisteredBusiness,
-      poi_verification_status: this.poi_verification_status,
-      company_pan_verification_status: this.company_pan_verification_status,
 
       get isWhitelistFlow() {
         return this.activation_flow === 'whitelist';
@@ -192,22 +189,12 @@ export default class User {
         return this.activation_flow === 'greylist';
       },
 
-      get isUnregBizActivated() {
-        return this.activated === 1;
-      },
-
       get isL1Submitted() {
         if (this.activated === 1) {
           return true;
         }
         if (!this.isUnregisteredBusiness) {
-          let _hasAPIL1Error = hasAPIL1Error({
-            poi_verification_status: this.poi_verification_status,
-            company_pan_verification_status: this
-              .company_pan_verification_status,
-            is_unreg: false,
-          });
-          return !!this.activation_flow && !_hasAPIL1Error;
+          return !!this.activation_flow;
         }
         return false;
       },

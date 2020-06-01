@@ -61,8 +61,6 @@ import {
 import L1FormFieldNames from './L1FormFieldNames';
 import * as activationUtils from './ActivationUtils';
 import {
-  handleInstantActivationSuccess,
-  L1FormError,
   UNREGISTERED_TYPES,
   isL1Completed,
   hasSelectedBlacklistedCategory,
@@ -72,6 +70,10 @@ import {
   hasAPIL1Error,
   displayCompanyPAN,
 } from './ActivationUtils';
+import {
+  fireL1FormSuccessEvents,
+  fireL1FormErrorEvents,
+} from 'merchant/containers/Activation/ActivationFormMarketingEvents';
 import QueryString from 'query-string';
 import { getNeedsClarificationTabsData } from './NeedsClarificationFormMap';
 import SubmitFormLayer from './components/SubmitFormLayer';
@@ -973,7 +975,7 @@ export default class ActivationWizard extends React.Component {
         });
       }
 
-      L1FormError();
+      fireL1FormErrorEvents();
 
       // if (this.onActivationSuccess) {
       //   this.onActivationSuccess({ success: false });
@@ -1884,4 +1886,28 @@ function isFieldValid(field, activation) {
   }
 
   return true;
+}
+
+function handleInstantActivationSuccess(props) {
+  if (props.user.business_type == 11) {
+    const { poi_verification_status } = props.user;
+    if (poi_verification_status == 'verified') {
+      props.showPANStatusModal();
+      fireL1FormSuccessEvents(props.user);
+    }
+  } else {
+    const {
+      isWhitelistFlow,
+      isBlacklistFlow,
+      isGraylistFlow,
+      isL1Submitted,
+    } = props.user.instantActivation;
+    if (isWhitelistFlow && isL1Submitted) {
+      props.showInstantActivationSuccessModal();
+      fireL1FormSuccessEvents(props.user);
+    } else if (isGraylistFlow && isL1Submitted) {
+      props.showKYCDetailsModal();
+      fireL1FormSuccessEvents(props.user);
+    }
+  }
 }

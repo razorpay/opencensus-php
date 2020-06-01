@@ -1,7 +1,3 @@
-import {
-  fireL1FormSuccessEvents,
-  fireL1FormErrorEvents,
-} from 'merchant/containers/Activation/ActivationFormMarketingEvents';
 import { fireAnalyticsEvents } from 'common/utils/googleAnalytics';
 import { addPrefixToObjectKeys, isPresent } from 'common/utils/rzp-utils';
 
@@ -12,34 +8,6 @@ import {
   ADDITIONAL_DOCS_LABEL_VALUE_MAP,
   BIZ_CAT_SUB_CAT_OPTIONAL_ADDITIONAL_DOCS,
 } from './Constants';
-
-function handleInstantActivationSuccess(props) {
-  if (props.user.business_type == 11) {
-    const { poi_verification_status } = props.user;
-    if (poi_verification_status == 'verified') {
-      props.showPANStatusModal();
-      fireL1FormSuccessEvents(props.user);
-    }
-  } else {
-    const {
-      isWhitelistFlow,
-      isBlacklistFlow,
-      isGraylistFlow,
-      isL1Submitted,
-    } = props.user.instantActivation;
-    if (isWhitelistFlow && isL1Submitted) {
-      props.showInstantActivationSuccessModal();
-      fireL1FormSuccessEvents(props.user);
-    } else if (isGraylistFlow && isL1Submitted) {
-      props.showKYCDetailsModal();
-      fireL1FormSuccessEvents(props.user);
-    }
-  }
-}
-
-function L1FormError() {
-  fireL1FormErrorEvents();
-}
 
 const NOT_REGISTERED = 11; // 'Unregistered Businesses
 const INDIVIDUAL = 2; // Legacy Type, Now combined under Unregistered Type
@@ -329,8 +297,6 @@ function hasAPIL1Error({
 }
 
 export {
-  handleInstantActivationSuccess,
-  L1FormError,
   differentAddress,
   isUnregisteredBusiness,
   excludeFor_Indiv,
