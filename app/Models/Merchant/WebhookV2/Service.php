@@ -1,0 +1,176 @@
+<?php
+
+namespace RZP\Models\Merchant\WebhookV2;
+
+use RZP\Exception;
+use RZP\Models\Base;
+use RZP\Models\Merchant;
+use RZP\Trace\TraceCode;
+use RZP\Error\ErrorCode;
+
+/**
+* API working as a proxy layer. Forwards request to stork with minimum
+* logic. API accepts webhook input in stork format and populates
+* only some implicit fields fields.
+*/
+class Service extends Base\Service
+{
+    const ID            = 'id';
+    const WEBHOOK       = 'webhook';
+    const MERCHANT      = 'merchant';
+    const OWNER_ID      = 'owner_id';
+    const OWNER_TYPE    = 'owner_type';
+    const APPLICATION   = 'application';
+    const CREATED_AT    = 'created_at';
+
+    /**
+     * @var Validator
+     */
+    protected $validator;
+
+    /**
+     * Type of product from which request is coming - banking, primary
+     */
+    protected $product;
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->validator = new Validator;
+
+        $this->product = $this->auth->getRequestOriginProduct();
+    }
+
+    /**
+     * This method handles the oauth app's create webhook
+     * use case and just adds a few implict fields to the input.
+     * It then calls a common method to create webhook.
+     * @param   array  $input
+     * @param   string $appId The app id of the oauth application
+     * @return  array
+     */
+    public function createForOAuthApp(array $input, string $appId): array
+    {
+        $this->validator->validateStorkWebhookInput($input, $this->merchant);
+        $this->validator->validatePartnerWithWebhooksAccess($this->merchant);
+
+        $input[self::OWNER_ID]   = $appId;
+        $input[self::OWNER_TYPE] = self::APPLICATION;
+
+        return $this->create($input);
+    }
+
+    /**
+     * This method handles the merchant's create webhook
+     * use case and just adds a few implict fields to the input.
+     * It then calls a common method to create webhook.
+     * @param   array $input
+     * @return  array
+     */
+    public function createForMerchant(array $input): array
+    {
+        $this->validator->validateStorkWebhookInput($input, $this->merchant);
+
+        $input[self::OWNER_ID]   = $this->merchant->getId();
+        $input[self::OWNER_TYPE] = self::MERCHANT;
+
+        return $this->create($input);
+    }
+
+    /**
+     * Creates a webhook on Stork. Temporarily dual writes to API DB.
+     * These writes to API DB will be removed later.
+     * @param  array  $input - input in stork webhook create format
+     * @return array         - stork webhook create response body
+     */
+    protected function create(array $input): array
+    {
+        if ($this->auth->isProductBanking() === true)
+        {
+            $this->checkAndFailIfWebhookExistsOnStork($input);
+        }
+
+        $res = (new Stork($this->product))->create($input);
+
+        //TODO: this will be removed once it's all stork
+        if ((isset($res[self::ID]) === true) and
+            ($this->auth->isProductBanking() === false))
+        {
+            (new Merchant\Webhook\Core)->createWebhookForStork($input, $this->merchant, $res[self::ID], $res[self::CREATED_AT] ?? 0);
+        }
+
+        return $res;
+    }
+
+    /**
+     * Edits the webhook on stork and temporarily edits the webhook
+     * entity on API as well. This will be removed in sometime.
+     * @param  string $webhookId
+     * @param  array  $input     - input in stork format
+     * @return array             - stork's webhook edit response body
+     */
+    public function update(string $webhookId, array $input): array
+    {
+        if ($this->auth->isProductBanking() === true)
+        {
+            $this->checkAndFailIfWebhookNotExistsOnStork($webhookId);
+        }
+
+        $this->validator->validateStorkWebhookInput($input, $this->merchant);
+
+        $input[self::ID]         = $webhookId;
+        $input[self::OWNER_ID]   = $this->merchant->getId();
+        $input[self::OWNER_TYPE] = self::MERCHANT;
+
+        $res = (new Stork($this->product))->edit($input);
+
+        //TODO: this will be removed once it's all stork
+        if ((isset($res[self::ID]) === true) and
+            ($this->auth->isProductBanking() === false))
+        {
+            (new Merchant\Webhook\Core)->updateWebhookForStork($input, $this->merchant, $res[self::ID], $res[self::CREATED_AT] ?? 0);
+        }
+
+        return $res;
+    }
+
+    public function get(string $webhookId): array
+    {
+        if ($this->app['basicauth']->isHosted() === true)
+        {
+            return (new Stork($this->product))->getWithSecret($webhookId, $this->merchant->getId());
+        }
+
+        return (new Stork($this->product))->get($webhookId, $this->merchant->getId());
+    }
+
+    public function list(array $params): array
+    {
+        if ($this->app['basicauth']->isHosted() === true)
+        {
+            return (new Stork($this->product))->listWithSecret($this->merchant->getId(), $params);
+        }
+
+        return (new Stork($this->product))->list($this->merchant->getId(), $params);
+    }
+
+    //if webhook already exists on stork throw exception
+    protected function checkAndFailIfWebhookExistsOnStork(array $input)
+    {
+        $webhookCollection = $this->list(['offset' => 0, 'limit' => 2]);
+        if ($webhookCollection['count'] > 0)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_STORK_WEBHOOK_ALREADY_CREATED);
+        }
+    }
+
+    protected function checkAndFailIfWebhookNotExistsOnStork(string $webhookId)
+    {
+        $webhook = $this->get($webhookId);
+        if (isset($webhook[self::ID]) === false)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_STORK_WEBHOOK_NOT_FOUND);
+        }
+    }
+}

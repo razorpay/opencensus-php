@@ -237,7 +237,7 @@ class Stork
         }
     }
 
-    protected function formatWebhook(array $res): array
+    public function formatWebhook(array $res): array
     {
         return array_except($res, ['secret']);
     }

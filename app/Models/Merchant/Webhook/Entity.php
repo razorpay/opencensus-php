@@ -154,6 +154,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::DISABLE_ON_FAILURE);
     }
 
+    public function setCreatedAt($createdAt)
+    {
+        $this->setAttribute(self::CREATED_AT, $createdAt);
+    }
+
     public function setId($id)
     {
         return $this->setAttribute('id', $id);

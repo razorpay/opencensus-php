@@ -51,6 +51,74 @@ class Core extends Base\Core
         return $webhook;
     }
 
+    /**
+     * Creates webhook entity from input provided in stork's format. The entity id is set to
+     * be same as id in stork. Currently being called from RZP\Models\Merchant\WebhookV2\Service.php.
+     * Once it's all stork this methods will be removed.
+     * @param array           $storkInput - input provided in stork format
+     * @param Merchant\Entity $merchant
+     * @param string          $webhookId  - id of the webhook in stork service
+     * @param int             $wkCreatedAt - we need to sync createdAt b/w stork-webhook & api-webhook
+     */
+    public function createWebhookForStork(array $storkInput, Merchant\Entity $merchant, string $webhookId, int $wkCreatedAt = 0)
+    {
+        $apiInput = $this->storkInputToApiFormatInput($storkInput, $merchant);
+        try {
+            $webhook = new Entity;
+            $webhook->setId($webhookId);
+            $wkCreatedAt !== 0 ? $webhook->setCreatedAt($wkCreatedAt) : null;
+            $webhook->merchant()->associate($merchant);
+            $webhook->build($apiInput);
+            $this->repo->webhook->save($webhook);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e, Trace::CRITICAL,
+                TraceCode::CREATE_WEBHOOK_FOR_STORK_FAILED,
+                [
+                    'stork_wk_id' => $webhookId,
+                ]);
+        }
+    }
+
+     /**
+     * Edits webhook entity from input provided in stork's format. Currently being
+     * called from RZP\Models\Merchant\WebhookV2\Service.php. Once it's all stork
+     * this methods will be removed.
+     * @param array           $storkInput - input provided in stork format
+     * @param Merchant\Entity $merchant
+     * @param string          $webhookId
+     * @param int             $wkCreatedAt - the createdAt timestamp from stork. This is required
+     *                                       in case stork wk was upserted & now here it is required to
+     *                                       created instead of update.
+     */
+    public function updateWebhookForStork(array $storkInput, Merchant\Entity $merchant, string $webhookId, int $wkCreatedAt = 0)
+    {
+        $apiInput = $this->storkInputToApiFormatInput($storkInput, $merchant);
+        try {
+            try
+            {
+                $webhook = $this->repo->webhook->findByIdAndMerchant($webhookId, $merchant);
+            }
+            catch(\RZP\Exception\BadRequestException $e)
+            {
+                //since stork edit action is upsert, webhook will be created there even in case of
+                //wrong webhook id. But it would fail here and hence this.
+                return $this->createWebhookForStork($storkInput, $merchant, $webhookId, $wkCreatedAt);
+            }
+            $webhook->edit($apiInput);
+            $this->repo->webhook->save($webhook);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e, Trace::CRITICAL,
+                TraceCode::UPDATE_WEBHOOK_FOR_STORK_FAILED,
+                [
+                    'stork_wk_id'   =>  $webhookId,
+                ]);
+        }
+    }
+
     public function editWebhook(Merchant\Entity $merchant, string $webhookId, array $input)
     {
         $webhook = $this->repo->webhook->findByIdAndMerchant($webhookId, $merchant);
@@ -101,6 +169,48 @@ class Core extends Base\Core
             (new Stork)->processEventSafe($event, $this->mode);
         }
     }
+
+    /**
+     * Translates the input provided for creating webhook in stork format
+     * to API's webhook entity format.
+     * @param  array            $input    - input in stork format
+     * @param Merchant\Entity   $merchant
+     * @return array                      - input in API's webhook format to build API's webhook entity
+     */
+    protected function storkInputToApiFormatInput(array $input, Merchant\Entity $merchant): array
+    {
+        $events = [];
+
+        $allEvents = $this->fetchApplicableWebhookEvents($merchant);
+
+        //set all events name as not active
+        foreach ($allEvents as $eventName)
+        {
+            $events[$eventName] = '0';
+        }
+
+        //for all events which are enabled, set the event to 1
+        foreach ($input['subscriptions'] as $value)
+        {
+           // validations are already done for the presence of these fields in Validator
+            $events[$value['eventmeta']['name']] = '1';
+        }
+
+        $resp = [
+            'url'       => $input['url'],
+            'secret'    => $input['secret'] ?? '',
+            'events'    => $events,
+        ];
+
+        if ($input['owner_type'] === Entity::APPLICATION)
+        {
+            $resp[Entity::ENTITY_TYPE] = $input['owner_type'];
+            $resp[Entity::ENTITY_ID]   = $input['owner_id'];
+        }
+
+        return $resp;
+    }
+
 
     /**
      * Reads webhooks from api for given after-id, limit and writes to stork.

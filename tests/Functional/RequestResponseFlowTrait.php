@@ -238,7 +238,8 @@ trait RequestResponseFlowTrait
         // Adds '/v1' to beginning if not already there and
         // not an absolute url
         if ((strpos($request['url'], 'http') === false) and
-            (strpos($request['url'], '/v1') === false))
+            (strpos($request['url'], '/v1') === false) and
+            (strpos($request['url'], '/v2') === false))
         {
             $request['url'] = '/v1' . $request['url'];
         }
