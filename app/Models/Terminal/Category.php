@@ -85,6 +85,18 @@ class Category
         self::HOSPITALITY,
         self::LOGISTICS,
         self::OTHERS,
+        self::FINANCIAL_SERVICES,
+        self::FOOD_AND_BEVERAGE,
+        self::HEALTHCARE,
+        self::IT_AND_SOFTWARE,
+        self::MEDIA_AND_ENTERTAINMENT,
+        self::MONEY_TRANSFER,
+        self::NOT_FOR_PROFIT,
+        self::REAL_ESTATE,
+        self::RECHARGES,
+        self::SERVICES,
+        self::SOCIAL,
+        self::TRANSPORT,
     ];
 
 
