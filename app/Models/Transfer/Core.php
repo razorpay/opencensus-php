@@ -133,7 +133,10 @@ class Core extends Base\Core
         {
             $this->trace->info(
                 TraceCode::PAYMENT_TRANSFER_RAZORX_SQS_PUSH,
-                ['transfer' => $input]);
+                ['transfer' => $input,
+                'paymentId' =>$payment->getId(),
+                'transferId'=>$transfer->getId()
+                ]);
 
             TransferProcess::dispatch($this->mode, $payment->getId(), Constant::PAYMENT);
         }
