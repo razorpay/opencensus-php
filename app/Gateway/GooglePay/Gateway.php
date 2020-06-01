@@ -56,14 +56,26 @@ class Gateway extends Base\Gateway
     {
         $validator = new Validator();
 
-        $validator->validateInput('google_pay_card_authorization', $data);
+        $validator->internalInputValidation('google_pay_card_authorization', $data);
 
         $this->trace->info(TraceCode::GATEWAY_DECRYPT_MOZART_REQUEST,
             [
                 'mozart_request' => $data[RequestFields::TOKEN],
             ]);
 
-        $response = $this->decryptData($data[RequestFields::TOKEN]);
+        try
+        {
+            $response = $this->decryptData($data[RequestFields::TOKEN]);
+        }
+        catch (\Exception $e)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_DECRYPTION_FAILED,
+                null,
+                [
+                    'method' => 'card'
+                ]);
+        }
 
         $this->trace->info(TraceCode::GATEWAY_DECRYPT_MOZART_RESPONSE,
             [
@@ -73,7 +85,11 @@ class Gateway extends Base\Gateway
         if (isset($response['data']['decryptedMessage']) === false)
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_DECRYPTION_FAILED);
+                ErrorCode::BAD_REQUEST_DECRYPTION_FAILED,
+                null,
+                [
+                    'method' => 'card'
+                ]);
         }
 
         $this->validateRequest($validator, $response);
@@ -85,7 +101,7 @@ class Gateway extends Base\Gateway
 
     protected function validateRequest($validator, $response)
     {
-        $validator->validateInput('google_pay_decrypted_message', $response['data']);
+        $validator->internalInputValidation('google_pay_decrypted_message', $response['data']);
 
         $decryptedMessage = $response['data']['decryptedMessage'];
 
@@ -94,21 +110,33 @@ class Gateway extends Base\Gateway
         if ($decryptedMessage[RequestFields::SIGNING_KEY_EXPIRY] <= $currentMilliSecond)
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_SIGNING_KEY_EXPIRED);
+                ErrorCode::BAD_REQUEST_SIGNING_KEY_EXPIRED,
+                null,
+                [
+                    'method' => 'card'
+                ]);
         }
 
         if ($decryptedMessage[RequestFields::MESSAGE_EXPIRY] <= $currentMilliSecond)
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_MESSAGE_EXPIRED);
+                ErrorCode::BAD_REQUEST_MESSAGE_EXPIRED,
+                null,
+                [
+                    'method' => 'card'
+                ]);
         }
     }
 
     public function validateCallbackRequest($input, $payment)
     {
-        if (is_null($payment) === true)
+        if ((is_null($payment) === true) or ($payment->getAuthenticationGateway() !== Payment\Gateway::GOOGLE_PAY))
         {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_NOT_FOUND);
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_NOT_FOUND,
+                null,
+                [
+                    'method' => 'card'
+                ]);
         }
 
         // Convert Rupee to Paise.
@@ -117,19 +145,31 @@ class Gateway extends Base\Gateway
         if ($payment->getAmount() !== $inputAmount)
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_AMOUNT_MISMATCH);
+                ErrorCode::BAD_REQUEST_AMOUNT_MISMATCH,
+                null,
+                [
+                    'method'      => $payment->getMethod(),
+                ]);
         }
 
         if (($input[RequestFields::TOKEN][RequestFields::MERCHANT_ID] !== $payment->getMerchantId()))
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_MERCHANT_ID_DOES_NOT_MATCH);
+                ErrorCode::BAD_REQUEST_MERCHANT_ID_DOES_NOT_MATCH,
+                null,
+                [
+                    'method' => 'card'
+                ]);
         }
 
         if ($payment->getStatus() !== Payment\Status::CREATED)
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCESSED);
+                ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCESSED,
+                null,
+                [
+                    'method' => 'card'
+                ]);
         }
     }
 
@@ -153,7 +193,7 @@ class Gateway extends Base\Gateway
 
         $response = [];
 
-        (new Validator)->validateInput('google_pay_card_verification', $input);
+        (new Validator)->internalInputValidation('google_pay_card_verification', $input);
 
         $publicPaymentId = $input[RequestFields::PAYMENT_ID];
 
@@ -164,7 +204,11 @@ class Gateway extends Base\Gateway
         }
         catch (\Exception $e)
         {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_NOT_FOUND);
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_NOT_FOUND,
+                null,
+                [
+                    'method' => 'card'
+                ]);
         }
 
         if ($payment->getAuthenticationGateway() === Payment\Gateway::GOOGLE_PAY)
@@ -173,7 +217,11 @@ class Gateway extends Base\Gateway
         }
         else
         {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_NOT_FOUND);
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_NOT_FOUND,
+                null,
+                [
+                    'method' => 'card'
+                ]);
         }
 
         $this->trace->info(
@@ -246,7 +294,12 @@ class Gateway extends Base\Gateway
             return ['status' => $payment->getStatus()];
         }
 
-        throw new Exception\BadRequestException($payment->getErrorCode());
+        throw new Exception\BadRequestException(
+            $payment->getInternalErrorCode(),
+            null,
+            [
+                'method' => 'card'
+            ]);
     }
 
     protected function getGooglePayBundle($payment)

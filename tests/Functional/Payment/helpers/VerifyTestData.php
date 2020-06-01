@@ -163,6 +163,7 @@ return [
                 'error' => [
                     'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description'   => PublicErrorDescription::BAD_REQUEST_PAYMENT_NOT_FOUND,
+                    'reason_code'   => 'PRAZR070',
                 ],
             ],
             'status_code' => 400,
@@ -179,6 +180,7 @@ return [
                 'error' => [
                     'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description'   => PublicErrorDescription::BAD_REQUEST_PAYMENT_NOT_FOUND,
+                    'reason_code'   => 'PRAZR070'
                 ],
             ],
             'status_code' => 400,

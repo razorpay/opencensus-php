@@ -4,7 +4,9 @@ namespace RZP\Gateway\Mozart\Mock;
 
 use Str;
 use RZP\App;
+use RZP\Exception;
 use RZP\Gateway\Base;
+use RZP\Error\ErrorCode;
 use phpseclib\Crypt\AES;
 use RZP\Constants\HashAlgo;
 use RZP\Gateway\Mozart\Action;
@@ -838,6 +840,22 @@ class Server extends Base\Mock\Server
                 break;
             Case "MEYCIQDVSnPca+hhBAtksD3mLOVrOaCr30Sd0VAFBpQdiCSboAIhAI5U+rQPCIpP7ouvEfoH15omHhN7znRHASDqV2HdOQCY==3":
                 $decryptedMessage['messageExpiration'] = '1117862000000';
+                $responseBody = [
+                    'data' => [
+                        '_raw'             => '',
+                        'decryptedMessage' => $decryptedMessage,
+                    ],
+                    'error'             => [],
+                    'external_trace_id' => '',
+                    'mozart_id'         => 'blfq216r1gunssphbs01',
+                    'next'              => null,
+                    'success'           => true,
+                ];
+                break;
+            Case "MEYCIQDVSnPca+hhBAtksD3mLOVrOaCr30Sd0VAFBpQdiCSboAIhAI5U+rQPCIpP7ouvEfoH15omHhN7znRHASDqV2HdOQCY==5":
+                throw new Exception\GatewayErrorException(ErrorCode::GATEWAY_ERROR_INTERNAL_SERVER_ERROR);
+            Case "MEYCIQDVSnPca+hhBAtksD3mLOVrOaCr30Sd0VAFBpQdiCSboAIhAI5U+rQPCIpP7ouvEfoH15omHhN7znRHASDqV2HdOQCY==6":
+                $decryptedMessage['paymentMethodDetails']['3dsCryptogram'] = '';
                 $responseBody = [
                     'data' => [
                         '_raw'             => '',

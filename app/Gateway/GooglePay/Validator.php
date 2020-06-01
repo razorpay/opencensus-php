@@ -2,7 +2,10 @@
 
 namespace RZP\Gateway\GooglePay;
 
+use RZP\Exception;
+use RZP\Error\ErrorCode;
 use RZP\Base\JitValidator;
+use Illuminate\Support\Facades\Validator as LaravelValidator;
 
 class Validator extends JitValidator
 {
@@ -39,4 +42,31 @@ class Validator extends JitValidator
         'decryptedMessage.paymentMethodDetails.pan'                  => 'required',
         'decryptedMessage.signingKeyExpiration'                      => 'required',
     ];
+
+    public function internalInputValidation($operation, $input)
+    {
+        $rulesVar = $this->getRulesVariableName($operation);
+
+        $invalidKeys = array_keys(array_diff_key($input, static::$$rulesVar));
+
+        if (count($invalidKeys) > 0)
+        {
+            throw new Exception\ExtraFieldsException($invalidKeys,
+                ErrorCode::BAD_REQUEST_EXTRA_FIELDS_PROVIDED,
+                null,
+                ['method'=>'card']);
+        }
+
+        $validator = LaravelValidator::make($input, static::$$rulesVar);
+
+        if ($validator->fails() === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INPUT_VALIDATION_FAILURE,
+                null,
+                [
+                    'method' => 'card'
+                ]);
+        }
+    }
 }

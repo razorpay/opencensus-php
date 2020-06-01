@@ -166,6 +166,83 @@ class GooglePayCardTest extends TestCase
         );
     }
 
+    public function testGooglePayCardCallbackFailureValidationError()
+    {
+        $order = $this->fixtures->create('order', []);
+        $payment = $this->fixtures->create('payment', ['amount' => 1234,]);
+        $payment['order_id'] = $order['id'];
+
+        $payment->setAuthenticationGateway('google_pay');
+        $payment->setGateway('cybersource');
+
+        $payment['terminal_id'] = $this->terminal['id'];
+        $this->repo->saveOrFail($payment);
+
+        $googlePayMessage = [
+            'pgTransactionRefId' => 'pay_' . $payment['id'],
+            'cardType'           => 'CREDIT',
+            'network'            => 'UNKNOWN',
+            'amount'             => '12.34',
+            'token'              => $this->paymentDataToken,
+            // optional pgBundle
+        ];
+
+        $this->ba->expressAuth();
+        $request = array(
+            'url'     => '/gateway/google_pay/authorize',
+            'method'  => 'post',
+            'content' => $googlePayMessage,
+        );
+
+        $data = $this->testData[__FUNCTION__];
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($request)
+            {
+                $this->makeRequestAndGetContent($request);
+            }
+        );
+    }
+
+    public function testGooglePayCardCallbackFailureExtraFieldError()
+    {
+        $order = $this->fixtures->create('order', []);
+        $payment = $this->fixtures->create('payment', ['amount' => 1234,]);
+        $payment['order_id'] = $order['id'];
+
+        $payment->setAuthenticationGateway('google_pay');
+        $payment->setGateway('cybersource');
+
+        $payment['terminal_id'] = $this->terminal['id'];
+        $this->repo->saveOrFail($payment);
+
+        $googlePayMessage = [
+            'pgTransactionRefId' => 'pay_' . $payment['id'],
+            'cardType'           => 'CREDIT',
+            'network'            => 'VISA',
+            'ThisField'          => 'This field is extra',
+            'amount'             => '12.34',
+            'token'              => $this->paymentDataToken,
+            // optional pgBundle
+        ];
+
+        $this->ba->expressAuth();
+        $request = array(
+            'url'     => '/gateway/google_pay/authorize',
+            'method'  => 'post',
+            'content' => $googlePayMessage,
+        );
+
+        $data = $this->testData[__FUNCTION__];
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($request)
+            {
+                $this->makeRequestAndGetContent($request);
+            }
+        );
+    }
+
     public function testGooglePayCardCallbackFailureMessageExpired()
     {
         $order = $this->fixtures->create('order', []);
@@ -249,6 +326,9 @@ class GooglePayCardTest extends TestCase
                 $this->makeRequestAndGetContent($request);
             }
         );
+
+        $payment = $this->repo->reload($payment);
+        $this->assertEquals('GWAZR009', $payment['reference13']);
     }
 
 
@@ -276,6 +356,102 @@ class GooglePayCardTest extends TestCase
 
         $paymentDataToken = $this->paymentDataToken;
         $paymentDataToken['signature'] = "MEYCIQDVSnPca+hhBAtksD3mLOVrOaCr30Sd0VAFBpQdiCSboAIhAI5U+rQPCIpP7ouvEfoH15omHhN7znRHASDqV2HdOQCY==4";
+
+        $request = array(
+            'url'     => '/gateway/google_pay/authorize',
+            'method'  => 'post',
+            'content' => [
+                'pgTransactionRefId' => 'pay_' . $payment['id'],
+                'cardType'           => 'CREDIT',
+                'network'            => 'VISA',
+                'amount'             => '12.34',
+                'token'              => $paymentDataToken,
+            ],
+        );
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($request)
+            {
+                $this->makeRequestAndGetContent($request);
+            }
+        );
+    }
+
+    public function testGooglePayCardCallbackDecryptionRequestFailure()
+    {
+        $order = $this->fixtures->create('order', []);
+
+        $payment = $this->fixtures->create('payment', ['amount' => 1234]);
+        $payment['order_id'] = $order['id'];
+        $payment->setAuthenticationGateway('google_pay');
+        $payment->setGateway('cybersource');
+
+        $terminal = $this->fixtures->create(
+            'terminal',
+            [
+                'merchant_id' => '10000000000000',
+                'gateway'     => 'cybersource',
+            ]
+        );
+
+        $payment['terminal_id'] = $terminal['id'];
+        $this->repo->saveOrFail($payment);
+
+        $this->ba->expressAuth();
+
+        $paymentDataToken = $this->paymentDataToken;
+        $paymentDataToken['signature'] = "MEYCIQDVSnPca+hhBAtksD3mLOVrOaCr30Sd0VAFBpQdiCSboAIhAI5U+rQPCIpP7ouvEfoH15omHhN7znRHASDqV2HdOQCY==5";
+
+        $request = array(
+            'url'     => '/gateway/google_pay/authorize',
+            'method'  => 'post',
+            'content' => [
+                'pgTransactionRefId' => 'pay_' . $payment['id'],
+                'cardType'           => 'CREDIT',
+                'network'            => 'VISA',
+                'amount'             => '12.34',
+                'token'              => $paymentDataToken,
+            ],
+        );
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($request)
+            {
+                $this->makeRequestAndGetContent($request);
+            }
+        );
+    }
+
+    public function testGooglePayCardCallbackDecryptionIncomplete()
+    {
+        $order = $this->fixtures->create('order', []);
+
+        $payment = $this->fixtures->create('payment', ['amount' => 1234]);
+        $payment['order_id'] = $order['id'];
+        $payment->setAuthenticationGateway('google_pay');
+        $payment->setGateway('cybersource');
+
+        $terminal = $this->fixtures->create(
+            'terminal',
+            [
+                'merchant_id' => '10000000000000',
+                'gateway'     => 'cybersource',
+            ]
+        );
+
+        $payment['terminal_id'] = $terminal['id'];
+        $this->repo->saveOrFail($payment);
+
+        $this->ba->expressAuth();
+
+        $paymentDataToken = $this->paymentDataToken;
+        $paymentDataToken['signature'] = "MEYCIQDVSnPca+hhBAtksD3mLOVrOaCr30Sd0VAFBpQdiCSboAIhAI5U+rQPCIpP7ouvEfoH15omHhN7znRHASDqV2HdOQCY==6";
 
         $request = array(
             'url'     => '/gateway/google_pay/authorize',

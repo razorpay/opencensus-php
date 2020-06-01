@@ -396,6 +396,7 @@ class ErrorCode
     const BAD_REQUEST_INVALID_REQUEST_BODY                                          = 'BAD_REQUEST_INVALID_REQUEST_BODY';
     const BAD_REQUEST_EXTRA_FIELDS_PROVIDED                                         = 'BAD_REQUEST_EXTRA_FIELDS_PROVIDED';
     const BAD_REQUEST_VALIDATION_FAILURE                                            = 'BAD_REQUEST_VALIDATION_FAILURE';
+    const BAD_REQUEST_INPUT_VALIDATION_FAILURE                                      = 'BAD_REQUEST_INPUT_VALIDATION_FAILURE';
     const BAD_REQUEST_SIGNATURE_ERROR                                               = 'BAD_REQUEST_SIGNATURE_ERROR';
     const BAD_REQUEST_REMINDER_NOT_APPLICABLE                                       = 'BAD_REQUEST_REMINDER_NOT_APPLICABLE';
     const BAD_REQUEST_PERMISSION_ERROR                                              = 'BAD_REQUEST_PERMISSION_ERROR';

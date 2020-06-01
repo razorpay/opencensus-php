@@ -162,7 +162,7 @@ class GatewayController extends Controller
 
             $this->app['basicauth']->setModeAndDbConnection($mode);
 
-            $payment = $paymentRepo->findOrFail($paymentId);
+            $payment = $paymentRepo->find($paymentId);
 
             $gateway->validateCallbackRequest($input, $payment);
 

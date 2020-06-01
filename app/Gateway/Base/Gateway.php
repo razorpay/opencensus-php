@@ -1850,20 +1850,34 @@ class Gateway
             }
         }
 
-        $this->checkErrorsAndThrowExceptionFromMozartResponse($responseBody);
+        $method = null;
+
+        if (isset($input['payment']['method']) === true)
+        {
+            $method = $input['payment']['method'];
+        }
+
+        $this->checkErrorsAndThrowExceptionFromMozartResponse($responseBody, $method);
 
         return $responseBody['next']['redirect'] ?? null;
     }
 
-    protected function checkErrorsAndThrowExceptionFromMozartResponse(array $response)
+    protected function checkErrorsAndThrowExceptionFromMozartResponse(array $response, $method = null)
     {
         if ($response['success'] !== true)
         {
+            $data = [];
+
+            if (is_null($method) === false)
+            {
+                $data = ['method' => $method];
+            }
+
             throw new Exception\GatewayErrorException(
                 $response['error']['internal_error_code'] ?? 'BAD_REQUEST_PAYMENT_FAILED',
                 $response['error']['gateway_error_code'] ?? 'gateway_error_code',
                 $response['error']['gateway_error_description'] ?? 'gateway_error_desc',
-                [],
+                $data,
                 null,
                 $this->action);
         }

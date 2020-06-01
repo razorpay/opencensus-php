@@ -140,7 +140,7 @@ trait MessageFormats
         return [array_keys($this->first)[0], array_values($this->first)[0]];
     }
 
-    protected function constructError($code, $message, $field = null)
+    protected function constructError($code, $message, $field = null, $data = null)
     {
         $desc = $message;
 
@@ -150,7 +150,7 @@ trait MessageFormats
             list($field, $desc) = $this->getFirstPair();
         }
 
-        $this->error = new Error($code, $desc, $field);
+        $this->error = new Error($code, $desc, $field, $data);
 
         parent::__construct($desc, $code, null);
     }

@@ -33,7 +33,7 @@ class GatewayErrorException extends RecoverableException
     {
         parent::__construct('', $code, $previous);
 
-        $this->initError($code);
+        $this->initError($code, $data);
 
         $this->setData($data);
 

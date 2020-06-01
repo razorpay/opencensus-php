@@ -10,6 +10,7 @@ use RZP\Trace\TraceCode;
 use RZP\Services\DowntimeMetric;
 use RZP\Error\Twirp\ErrorCodeMap;
 use RZP\Models\Feature\Constants;
+use RZP\Models\Payment\DetailedError;
 
 class Error extends Support\Fluent
 {
@@ -48,6 +49,7 @@ class Error extends Support\Fluent
     const NEXT_BEST_ACTION      = 'next_best_action';
     const PAYMENT_METHOD        = 'payment_method';
     const RECOVERABLE           = 'recoverable';
+    const REASON_CODE           = 'reason_code';
 
     const ERROR_CODE_FILE_PATH  = 'files/errorcodes/error_reason_%s.csv';
 
@@ -311,17 +313,23 @@ class Error extends Support\Fluent
             {
                 //$this->setDesc($errorCodeMap[$code][0]);
 
-                $this->setReason($errorCodeMap[$code][1]);
+                $reason = $errorCodeMap[$code][1] ?: 'NA';
+                $source = $errorCodeMap[$code][3] ?: 'NA';
+                $step   = $errorCodeMap[$code][5] ?: 'NA';
+
+                $this->setReason($reason);
 
                 $this->setFailureType($errorCodeMap[$code][2]);
 
-                $this->setSource($errorCodeMap[$code][3] ?: "NA");
+                $this->setSource($source);
 
                 $this->setNextBestAction($errorCodeMap[$code][4]);
 
-                $this->setStep($errorCodeMap[$code][5] ?: "NA");
+                $this->setStep($step);
 
                 $this->setRecoverable($errorCodeMap[$code][6]);
+
+                $this->setReasonCode($source, $step, $reason);
             }
             else
             {
@@ -373,6 +381,19 @@ class Error extends Support\Fluent
     protected function setRecoverable($recoverable)
     {
         $this->setAttribute(self::RECOVERABLE, $recoverable);
+    }
+
+    protected function setReasonCode($source, $step, $reason)
+    {
+        $sourceFieldMap = array_flip(DetailedError::$sourceFieldMap);
+
+        $stepFieldMap = array_flip(DetailedError::$stepFieldMap);
+
+        $reasonFieldMap = array_flip(DetailedError::$reasonFieldMap);
+
+        $code =  ($sourceFieldMap[$source] ?? 'NA').($stepFieldMap[$step] ?? 'NA').($reasonFieldMap[$reason] ?? 'NA');
+
+        $this->setAttribute(self::REASON_CODE, $code);
     }
 
     protected function getAttribute($attr)
@@ -530,7 +551,8 @@ class Error extends Support\Fluent
             self::SOURCE            => $this->getAttribute(self::SOURCE),
             self::STEP              => $this->getAttribute(self::STEP),
             self::REASON            => $this->getAttribute(self::REASON),
-            self::METADATA          => $metadata
+            self::METADATA          => $metadata,
+            self::REASON_CODE       => $this->getAttribute(self::REASON_CODE),
         );
 
         $this->trace->info(TraceCode::ERROR_RESPONSE_DATA,

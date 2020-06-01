@@ -176,14 +176,10 @@ class Server extends Base\Mock\Server
                         [
                             '_raw'                  => '',
                             'attempt_id'            => $entities['payment']['id'],
-                            'status'                => 'authorized',
+                            'status'                => 'faileds',
                             'received'              => true,
                             'avs_code'              => 'X',
-                            'gateway_reference_id1' => '4465840340765000001541',
-                            'gateway_reference_id3' => '888888',
                             'payment_id'            => 'Bi7fYtbRhkouOX',
-                            'processorResponse'     => '100',
-                            'reason_code'           => 100
                         ],
                     'error' => null,
                     'success' => false,

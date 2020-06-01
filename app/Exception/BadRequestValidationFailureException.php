@@ -17,7 +17,7 @@ class BadRequestValidationFailureException extends RecoverableException
 
         $code = ErrorCode::BAD_REQUEST_VALIDATION_FAILURE;
 
-        $this->constructError($code, $message, $field);
+        $this->constructError($code, $message, $field, $data);
 
         $this->data = $data;
     }

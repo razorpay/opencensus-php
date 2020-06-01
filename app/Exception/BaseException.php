@@ -33,13 +33,15 @@ class BaseException extends Exception
         $this->code = $code;
     }
 
-    protected function initError($code)
+    protected function initError($code, $data)
     {
         Error::checkErrorCode($code);
 
-        $error = new Error($code);
+        $error = new Error($code, null, null, $data);
 
         $this->setError($error);
+
+        $this->setData($data);
     }
 
     protected function setError($error)

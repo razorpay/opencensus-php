@@ -14,7 +14,8 @@ class ExtraFieldsException extends RecoverableException
     public function __construct(
         $fields,
         $code = ErrorCode::BAD_REQUEST_EXTRA_FIELDS_PROVIDED,
-        \Exception $previous = null)
+        \Exception $previous = null,
+        $data = null)
     {
         $this->fields = $fields;
 
@@ -29,7 +30,9 @@ class ExtraFieldsException extends RecoverableException
 
         $message = $extraFields . ' is/are not required and should not be sent';
 
-        $this->error = new Error($code, $message);
+        $this->error = new Error($code, $message, null, $data);
+
+        $this->data = $data;
 
         parent::__construct($message, $code, $previous);
     }

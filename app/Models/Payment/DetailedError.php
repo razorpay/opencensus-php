@@ -21,6 +21,7 @@ class DetailedError
         "IS"                                                          =>         "issuer",
         "CP"                                                          =>         "customer_psp",
         "BB"                                                          =>         "beneficary_bank",
+        "PR"                                                          =>         "provider",
         "NA"                                                          =>         "NA",
     ];
 
@@ -116,5 +117,13 @@ class DetailedError
         "R062"                                   						=>				"invalid_email",
         "R063"                                   						=>				"otp_expired",
         "R064"                                   						=>				"invalid_mobile_number",
+        "R065"                                   						=>				"amount_mismatch",
+        "R066"                                   						=>				"extra_field_sent",
+        "R067"                                   						=>				"decryption_failed",
+        "R068"                                   						=>				"signing_key_expired",
+        "R069"                                   						=>				"message_expired",
+        "R070"                                   						=>				"payment_not_found",
+        "R071"                                   						=>				"invalid_merchant_id",
+        "R072"                                   						=>				"incorrect_request",
         ];
 }
