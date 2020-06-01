@@ -6,6 +6,7 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
+use RZP\Models\Payment\Gateway;
 use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
 use RZP\Models\Payment\Method;
@@ -209,7 +210,10 @@ class Generator extends Base\Core
             $this->trace->info(TraceCode::RAZORX_REQUEST_FAILED);
         }
 
-        if (strtolower($variant) === 'on')
+        $isUpiIciciVpaEnabled = $this->isUpiIciciVpaEnabled();
+
+        if ((strtolower($variant) === 'on') or
+            ($isUpiIciciVpaEnabled === true))
         {
             $virtualVpaPrefix = $this->repo
                 ->virtual_vpa_prefix
@@ -226,7 +230,9 @@ class Generator extends Base\Core
                 return $terminal;
             }
 
-            $terminal = (new TerminalProcessor())->getTerminalForUpiTransfer();
+            $gateway = ($isUpiIciciVpaEnabled === true) ? Gateway::UPI_ICICI : Gateway::UPI_MINDGATE;
+
+            $terminal = (new TerminalProcessor())->getTerminalForUpiTransfer(null, $gateway);
         }
         else
         {
@@ -345,5 +351,23 @@ class Generator extends Base\Core
             'handle'              => $this->handle,
             'isDescriptorEnabled' => $this->isDescriptorEnabled,
         ];
+    }
+
+    private function isUpiIciciVpaEnabled()
+    {
+        $variant = 'off';
+        try
+        {
+            $variant = $this->app->razorx->getTreatment($this->merchant->getId(),
+                                                        Merchant\RazorxTreatment::VIRTUAL_VPA_ICICI,
+                                                        $this->mode
+            );
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->info(TraceCode::RAZORX_REQUEST_FAILED);
+        }
+
+        return ($variant === 'on');
     }
 }

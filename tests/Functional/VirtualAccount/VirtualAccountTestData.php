@@ -1157,5 +1157,35 @@ return [
                 "address"  => "rzpy.payto00000virtualvpa@hdfcbank"
             ],
         ],
-    ]
+    ],
+
+    'testCreateVirtualAccountWithVpaForIcici' => [
+        'name'        => 'Test virtual account',
+        'entity'      => 'virtual_account',
+        'status'      => 'active',
+        'description' => 'VA for tests',
+        'receivers'   => [
+            [
+                "entity"   => "vpa",
+                "username" => "rzr.payto00000virtualvpa",
+                "handle"   => "icici",
+                "address"  => "rzr.payto00000virtualvpa@icici"
+            ],
+        ],
+    ],
+
+    'testCreateVirtualAccountWithVpaForIciciAndCustomPrefix' => [
+        'name'        => 'Test virtual account',
+        'entity'      => 'virtual_account',
+        'status'      => 'active',
+        'description' => 'VA for tests',
+        'receivers'   => [
+            [
+                "entity"   => "vpa",
+                "username" => "rzr.paytorazorvirtualvpa",
+                "handle"   => "icici",
+                "address"  => "rzr.paytorazorvirtualvpa@icici"
+            ],
+        ],
+    ],
 ];

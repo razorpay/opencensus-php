@@ -123,5 +123,7 @@ final class RazorxTreatment
 
     const VIRTUAL_VPA_PREFIX = 'virtual_vpa_prefix';
 
+    const VIRTUAL_VPA_ICICI = 'virtual_vpa_icici';
+
     const PAYMENT_TRANSFER_ASYNC = 'payment_transfer_async';
 }

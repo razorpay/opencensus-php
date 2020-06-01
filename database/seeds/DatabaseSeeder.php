@@ -2138,6 +2138,25 @@ class DatabaseSeeder extends Seeder
         ]);
 
         DB::table(Table::TERMINAL)->insert([
+            'id'                          => Terminal\Shared::UPI_ICICI_VPA_TERMINAL,
+            'merchant_id'                 => Account::SHARED_ACCOUNT,
+            'gateway'                     => Gateway::UPI_ICICI,
+            'card'                        => '0',
+            'netbanking'                  => '0',
+            'upi'                         => '1',
+            'gateway_merchant_id'         => '190127',
+            'gateway_merchant_id2'        => 'rzr.payto00000@icici',
+            'gateway_terminal_id'         => '1234',
+            'gateway_terminal_password'   => Crypt::encrypt('shared_account_upi_icici_terminal_pass'),
+            'type'                        => '65537',
+            'virtual_upi_root'            => 'rzr.',
+            'virtual_upi_merchant_prefix' => 'payto00000',
+            'virtual_upi_handle'          => 'icici',
+            'created_at'                  => time(),
+            'updated_at'                  => time(),
+       ]);
+
+        DB::table(Table::TERMINAL)->insert([
             'id'                        => Terminal\Shared::UPI_AXIS_RAZORPAY_TERMINAL,
             'merchant_id'               => Account::DEMO_ACCOUNT,
             'gateway'                   => Gateway::UPI_AXIS,

@@ -199,7 +199,16 @@ class TerminalProcessor extends Base\Core
         return $this->selectTerminalForBankAccount($terminals, $bankTransfer->getPayeeAccount(), $log);
     }
 
-    public function getTerminalForUpiTransfer($merchantId = null) : Terminal\Entity
+    /**
+     * This function is used to fetch terminal for virtual VPA configs.
+     * VPA terminals are created for shared merchant, but there can be dedicated terminal for merchant with custom vpa root.
+     *
+     * @param null $merchantId : Need to filter terminal if merchant has dedicated terminal for upi_transfer
+     * @param null $gateway : When multiple terminals are enabled for upi_transfer, it can be used to filter terminals based on gateway.
+     *
+     * @return Terminal\Entity
+     */
+    public function getTerminalForUpiTransfer($merchantId = null, $gateway = null) : Terminal\Entity
     {
         $merchantIds = array_filter([Account::SHARED_ACCOUNT, $merchantId]);
 
@@ -207,12 +216,36 @@ class TerminalProcessor extends Base\Core
                           ->terminal
                           ->getByTypeAndMerchantIds(Terminal\Type::UPI_TRANSFER, $merchantIds);
 
-        foreach ($terminals as $terminal)
+        $this->trace->info(
+            TraceCode::TERMINALS_FILTERED,
+            [
+                'terminal_ids' => $terminals->getIds(),
+                'merchant_id'  => $merchantIds,
+                'gateway'      => $gateway
+            ]
+        );
+
+        if ($gateway !== null)
         {
-            if ($terminal->getMerchantId() === $merchantId)
+            $terminals = $terminals->filter(function (Terminal\Entity $terminal) use ($gateway)
             {
-                return $terminal;
-            }
+                return ($terminal->getGateway() === $gateway);
+            });
+        }
+
+        if ($merchantId !== null)
+        {
+            $terminals = $terminals->filter(function (Terminal\Entity $terminal) use ($merchantId)
+            {
+                return ($terminal->getMerchantId() === $merchantId);
+            });
+        }
+
+        if($terminals->count() === 0)
+        {
+            $this->trace->error(
+                TraceCode::VIRTUAL_ACCOUNT_VPA_CONFIG_NOT_FOUND
+            );
         }
 
         return $terminals->last();

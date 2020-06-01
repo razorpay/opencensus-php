@@ -19,5 +19,6 @@ class Validator extends Base\Validator
 
     protected static $editRules = [
         Entity::PREFIX              => 'required|string|alpha_num|min:4|max:10',
+        Entity::TERMINAL_ID         => 'filled|string|size:14',
     ];
 }

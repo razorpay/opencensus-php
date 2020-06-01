@@ -3520,6 +3520,25 @@ class Terminal extends Base
         return $this->createSharedUpiMindgateTerminal($attributes);
     }
 
+    public function createVpaSharedTerminalIcici(array $attributes = [])
+    {
+        $defaultValues = [
+            'id'                          => 'VaVpaShrdicici',
+            'gateway_merchant_id'         => '12345',
+            'gateway_merchant_id2'        => 'rzr.payto00000@icici',
+            'type'                        => [
+                Type::NON_RECURRING => '1',
+                Type::UPI_TRANSFER  => '1'
+            ],
+            'virtual_upi_root'            => 'rzr.',
+            'virtual_upi_merchant_prefix' => 'payto00000',
+            'virtual_upi_handle'          => 'icici',
+        ];
+        $attributes    = array_merge($defaultValues, $attributes);
+
+        return $this->createSharedUpiIciciTerminal($attributes);
+    }
+
     public function createUpiJuspayTerminal(array $attributes = [])
     {
         $defaultValues = [

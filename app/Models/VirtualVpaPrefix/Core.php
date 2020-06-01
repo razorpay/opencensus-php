@@ -5,8 +5,10 @@ namespace RZP\Models\VirtualVpaPrefix;
 
 use RZP\Models\Base;
 use RZP\Error\ErrorCode;
+use RZP\Models\Payment\Gateway;
 use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
+use RZP\Models\Merchant;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Payment\Processor\TerminalProcessor;
 use RZP\Models\VirtualVpaPrefixHistory as PrefixHistory;
@@ -28,8 +30,13 @@ class Core extends Base\Core
             );
         }
 
+        // We are taking UPI ICICI for VPA live with razorx experiment.
+        //This is to ensure correct terminal config is used to vpa custom prefix.
+        // Once everything is moved to ICICI and mindgate terminals are disabled, this can be removed.
+        $gateway = ($this->isUpiIciciVpaEnabled() === true) ? Gateway::UPI_ICICI : Gateway::UPI_MINDGATE;
+
         // ToDo: Pass merchant_id after terminals are migrated.
-        $terminal = (new TerminalProcessor())->getTerminalForUpiTransfer();
+        $terminal = (new TerminalProcessor())->getTerminalForUpiTransfer(null, $gateway);
 
         if ($terminal->getMerchantId() === $merchantId)
         {
@@ -46,7 +53,7 @@ class Core extends Base\Core
         }
         else
         {
-            return $this->update($input);
+            return $this->update($input, $terminal);
         }
     }
 
@@ -82,14 +89,14 @@ class Core extends Base\Core
         return $virtualVpaPrefix;
     }
 
-    public function update(array $input) : Entity
+    public function update(array $input, Terminal\Entity $terminal) : Entity
     {
         $this->trace->info(
             TraceCode::VIRTUAL_VPA_PREFIX_UPDATING,
             $input
         );
 
-        $virtualVpaPrefix = $this->transaction(function () use ($input)
+        $virtualVpaPrefix = $this->transaction(function () use ($input, $terminal)
         {
             $merchantId = $this->merchant->getId();
 
@@ -98,6 +105,8 @@ class Core extends Base\Core
             (new PrefixHistory\Core())->deactivatePreviousPrefix($merchantId, $virtualVpaPrefix->getId());
 
             $previousPrefix = $virtualVpaPrefix->getPrefix();
+
+            $virtualVpaPrefix->terminal()->associate($terminal);
 
             $virtualVpaPrefix->edit($input, 'edit');
 
@@ -135,5 +144,23 @@ class Core extends Base\Core
         }
 
         return true;
+    }
+
+    private function isUpiIciciVpaEnabled()
+    {
+        $variant = 'off';
+        try
+        {
+            $variant = $this->app->razorx->getTreatment($this->merchant->getId(),
+                                                        Merchant\RazorxTreatment::VIRTUAL_VPA_ICICI,
+                                                        $this->mode
+            );
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->info(TraceCode::RAZORX_REQUEST_FAILED);
+        }
+
+        return ($variant === 'on');
     }
 }
