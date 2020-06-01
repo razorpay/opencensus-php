@@ -172,7 +172,7 @@ class Repository extends Base\Repository
     {
         return $this->newQuery()
                       ->merchantId($merchantId)
-                      ->where(Entity::ENTITY_TYPE,'!=','payout')
+                      ->where(Entity::ENTITY_TYPE,'=','transfer')
                       ->orderBy(Entity::CREATED_AT, 'desc')
                       ->orderBy(Entity::ID, 'desc')
                       ->take($count)
