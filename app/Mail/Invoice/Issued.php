@@ -71,7 +71,7 @@ class Issued extends Base
 
         if(empty($this->data['pp_invoice']) === false)
         {
-            $this->view('emails.invoice.customer.pp_invoice');
+            $this->view('emails.mjml.customer.payment_page.payment');
         }
 
         return $this;

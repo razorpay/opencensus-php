@@ -17,6 +17,7 @@ use RZP\Models\PaymentLink;
 use RZP\Constants\Timezone;
 use RZP\Models\BankAccount;
 use RZP\Models\PaperMandate;
+use RZP\Models\Base\Utility;
 use RZP\Constants\Entity as E;
 use RZP\Models\Options\Constants;
 use RZP\Models\Plan\Subscription;
@@ -290,11 +291,16 @@ class ViewDataSerializer extends Base\Core
             $data['image_padding'] = false;
         }
 
+        $brandImage = $this->getMerchantLogo($partner);
+
         return [
             'id'                               => $this->merchant->getId(),
             'name'                             => $this->invoice->getMerchantLabel(),
-            'image'                            => $this->getMerchantLogo($partner),
+            'billing_label'                    => $this->invoice->getMerchantLabel(),
+            'image'                            => $brandImage,
+            'brand_logo'                       => $brandImage,
             'brand_color'                      => $this->getMerchantBrandColor($partner),
+            'contrast_color'                   => $this->getMerchantContrastTextColor($partner),
             'brand_text_color'                 => $this->getMerchantBrandTextColor($partner),
             'pan'                              => $pan,
             'cin'                              => $cin,
@@ -347,6 +353,21 @@ class ViewDataSerializer extends Base\Core
         }
 
         return $textColor ?: get_brand_text_color($this->merchant->getBrandColorOrDefault());
+    }
+
+    protected function getMerchantContrastTextColor(Merchant\Entity $partner = null): string
+    {
+        // Check if partner enforces its config on submerchant
+        $overrideConfig = optional($partner)->isFeatureEnabled(Feature\Constants::OVERRIDE_SUB_CONFIG);
+
+        $textColor = null;
+
+        if ($overrideConfig === true)
+        {
+            $textColor = $partner->getContrastOfBrandColor();
+        }
+
+        return $textColor ?: $this->merchant->getContrastOfBrandColor();
     }
 
     protected function serializeInvoiceForHosted(): array
@@ -619,11 +640,32 @@ class ViewDataSerializer extends Base\Core
 
             $order = $this->invoice->order;
 
+            $payment = $this->getCapturedPaymentForOrder($order);
+
+            $paymentFormatted = [];
+
+            if ($payment !== null)
+            {
+                $paymentFormatted = [
+                    'id'                   => $payment->getId(),
+                    'public_id'            => $payment->getPublicId(),
+                    'amount'               => $payment->getFormattedAmount(),
+                    'raw_amount'           => $payment['base_amount'],
+                    'adjusted_amount'      => $payment->getAdjustedAmountWrtCustFeeBearer(),
+                    'timestamp'            => $payment->getUpdatedAt(),
+                    'captured_at'          => $payment->getAttribute('captured_at'),
+                    'amount_spread'        => $payment->getAmountComponents(),
+                    'created_at_formatted' => Utility::getTimestampFormatted($payment->getCreatedAt(), 'jS M, Y'),
+                    'method'               => $payment->getMethodWithDetail(),
+                    'notes'                => $payment->getNotes(),
+                ];
+            }
+
             $serialized[E::PAYMENT_PAGE] = [
                 'details_80g'          => empty($details80g) ? null : $details80g,
                 'selected_input_field' => $selectedInputField,
                 'title'                => $title,
-                'payments'             => $order->payments->toArrayPublic(),
+                'payment'             => $paymentFormatted,
             ];
         }
         else
@@ -692,6 +734,26 @@ class ViewDataSerializer extends Base\Core
         }
 
         return $validPayments;
+    }
+
+    protected function getCapturedPaymentForOrder(Order\Entity $order)
+    {
+        if ($order === null)
+        {
+            return null;
+        }
+
+        $payments = $order->payments;
+
+        foreach ($payments as $payment)
+        {
+            if ($payment->getStatus() === Payment\Status::CAPTURED)
+            {
+               return $payment;
+            }
+        }
+
+        return null;
     }
 
     protected function getOptions(): array
