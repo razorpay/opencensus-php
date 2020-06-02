@@ -1135,7 +1135,7 @@ class Reconciliate extends Base\Core
         return;
     }
 
-    protected function getRefundIdFromScrooge(array $input, $gateway, $referenceKey)
+    protected function getRefundIdFromScrooge(array $input, $gateway)
     {
         $responses = [];
 
@@ -1144,7 +1144,6 @@ class Reconciliate extends Base\Core
             try {
                 $request = [
                     'gateway'       => $gateway,
-                    'reference_key' => $referenceKey,
                     'query_data'    => $chunks,
                 ];
 
@@ -1164,7 +1163,6 @@ class Reconciliate extends Base\Core
                     [
                         'info_code'     => InfoCode::REFUND_RECON_SCROOGE_JOB_FAILURE_EXCEPTION,
                         'gateway'       => $gateway,
-                        'reference_key' => $referenceKey,
                         'batch_id'      => $this->batchId,
                     ]
                 );

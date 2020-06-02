@@ -15,9 +15,6 @@ class Reconciliate extends Base\Reconciliate
     // FirstData is sending a summary file with name razorpay_templet26_21may180_summary.xls.
     //
     const SUMMARY = 'summary';
-    // Const sent as a param to scrooge in preprocess
-    // step, to fetch refund id from it's api.
-    const RZP_REFERENCE_KEY = 'gateway_transaction_id';
 
     /**
      * Figures out what kind of reconciliation is it
@@ -122,7 +119,7 @@ class Reconciliate extends Base\Reconciliate
 
         if (count($request) > 0)
         {
-            $response = $this->getRefundIdFromScrooge($request, Gateway::FIRST_DATA, self::RZP_REFERENCE_KEY);
+            $response = $this->getRefundIdFromScrooge($request, Gateway::FIRST_DATA);
 
             foreach ($fileContents as &$row)
             {
