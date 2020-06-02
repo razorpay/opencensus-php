@@ -6,6 +6,7 @@ use App;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Models\Payment\Method;
+use RZP\Models\Payment\Gateway;
 
 class Raven extends Base\Core
 {
@@ -96,11 +97,14 @@ class Raven extends Base\Core
             $request['template'] = $input['template'];
         }
 
-        if ((isset($input['method'])) and ($input['method'] === Method::CARDLESS_EMI))
+        if ((isset($input['method'])) and
+            (($input['method'] === Method::CARDLESS_EMI) or
+            ($input['method'] === Method::PAYLATER)))
         {
+
             $request['template'] = 'sms.otp_cardless';
 
-            $request['params']['provider'] = $input['provider'];
+            $request['params']['provider'] = $input['provider'] === Gateway::GETSIMPL ? 'Simpl' : $input['provider'];
         }
 
         return $request;
