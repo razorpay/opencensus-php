@@ -1671,29 +1671,6 @@ class Service extends Base\Service
         return $results;
     }
 
-    public function notifyAuthorizedPayments()
-    {
-        $date = Carbon::yesterday(Timezone::IST);
-        $timestamp = $date->getTimestamp();
-
-        $payments = $this->repo->payment->getAuthorizedPaymentsBeforeTimestamp(
-                            $timestamp);
-
-        $count = $payments->count();
-
-        if ($count !== 0)
-        {
-            $date->subDay(1);
-
-            $message = 'Payment authorizations till ' .
-                        $date->format('d-m-y') . ': ' . $count;
-
-            $this->slack->queue($message, [], ['channel' => Config::get('slack.channels.tech_logs')]);
-        }
-
-        return ['count' => $count];
-    }
-
     public function timeoutOldPayments(array $input)
     {
         $count = 0;

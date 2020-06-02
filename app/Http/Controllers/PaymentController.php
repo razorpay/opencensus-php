@@ -260,13 +260,6 @@ class PaymentController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function getAuthNotify()
-    {
-        $data = $this->service()->notifyAuthorizedPayments();
-
-        return ApiResponse::json($data);
-    }
-
     public function getAutoCaptureEmail()
     {
         $data = $this->service()->deliverAutoCaptureEmail();
