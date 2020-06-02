@@ -3867,4 +3867,64 @@ class PayoutTest extends TestCase
         $this->ba->adminAuth('live');
         $this->startTest();
     }
+
+    public function testPayoutFetchById()
+    {
+        $payout = $this->testCreatePayout();
+
+        //$this->fixtures->edit('payout', $payout['id'], ['reference_id' => 'WckD']);
+
+        $request = & $this->testData[__FUNCTION__]['request'];
+        $request['url'] = '/payouts/' . $payout['id'];
+
+        $this->ba->privateAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEquals($payout['id'], $response['id']);
+        $this->assertEquals($payout['mode'], $response['mode']);
+        $this->assertEquals($payout['fees'], $response['fees']);
+    }
+
+    public function testPayoutsFetchMultiple()
+    {
+        $payout = $this->testCreatePayout();
+
+        $this->ba->privateAuth();
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'purpose'         => 'refund',
+                'narration'       => 'Batman',
+                'mode'            => 'NEFT',
+                'fund_account_id' => 'fa_100000000000fa',
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ];
+
+        $payout2 = $this->makeRequestAndGetContent($request);
+
+        $request = & $this->testData[__FUNCTION__]['request'];
+
+        $request['url'] = '/payouts?mode=NEFT&account_number=2224440041626905';
+
+        $this->ba->privateAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEquals(1, $response['count']);
+
+        $responsePayout = $response['items'][0];
+
+        $this->assertEquals($payout2['id'], $responsePayout['id']);
+        $this->assertEquals($payout2['mode'], $responsePayout['mode']);
+        $this->assertEquals($payout2['fees'], $responsePayout['fees']);
+    }
 }

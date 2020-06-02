@@ -533,4 +533,9 @@ class RblPayoutTest extends TestCase
 
         $this->startTest();
     }
+
+    public function testRblPayoutWithInvalidMode()
+    {
+        $this->startTest();
+    }
 }

@@ -4097,4 +4097,59 @@ return [
             'status_code' => 200,
         ],
     ],
+
+    'testPayoutFetchById' => [
+        'request' => [
+            'method'  => 'GET',
+            'url'     => '/payouts/id',
+            'content' => []
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
+    'testPayoutsFetchMultiple' => [
+        'request' => [
+            'method'  => 'GET',
+            'url'     => '/payouts',
+            'content' => []
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
+    'testRblPayoutWithInvalidMode' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number'       => '2224440041626905',
+                'amount'               => 2000000,
+                'currency'             => 'INR',
+                'purpose'              => 'refund',
+                'narration'            => 'Batman',
+                'mode'                 => '10xKarna',
+                'fund_account_id'      => 'fa_100000000000fa',
+                'queue_if_low_balance' => true,
+                'notes'                => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PAYOUT_INVALID_MODE,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYOUT_INVALID_MODE,
+        ],
+    ],
 ];
