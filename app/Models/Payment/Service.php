@@ -1663,9 +1663,10 @@ class Service extends Base\Service
             'timed out'       => $timedOut,
             'total time'      => $time . ' secs');
 
-        $message = 'Authorized payments refunded: ' . $refunded;
-
-        $this->slack->queue($message, $results, ['channel' => Config::get('slack.channels.tech_logs')]);
+        $this->trace->info(
+            TraceCode::PAYMENT_AUTO_REFUND_CRON_SUMMARY,
+            $results
+        );
 
         return $results;
     }
