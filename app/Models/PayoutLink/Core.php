@@ -68,9 +68,7 @@ class Core extends Base\Core
 
     public function getSettings(MerchantEntity $merchant)
     {
-        $settingsAccessor = $this->getSettingsAccessor($merchant);
-
-        return $settingsAccessor->all()->toArray();
+        return $this->getSettingsAttributeArray($merchant);
     }
 
     /**
@@ -551,16 +549,15 @@ class Core extends Base\Core
      * 2. Is not RBL
      * 3. Amount less than 1 lac
      * @param Entity $payoutLink
+     * @param array $settingsAttributeArray
      * @return bool
      */
-    protected function allowUpi(Entity $payoutLink)
+    protected function allowUpi(Entity $payoutLink, array $settingsAttributeArray)
     {
         $channelSupportsUpi = true;
 
-        $settingsAccessor = $this->getSettingsAccessor($this->merchant);
-
-        $upiEnabledInSettings = $settingsAccessor->exists(Entity::UPI) and
-                                boolval($settingsAccessor->get(Entity::UPI));
+        $upiEnabledInSettings = (key_exists(Entity::UPI, $settingsAttributeArray) and
+                                boolval($settingsAttributeArray[Entity::UPI]));
 
         $bankingAccount = $payoutLink->balance->bankingAccount;
 
@@ -632,7 +629,7 @@ class Core extends Base\Core
      */
     protected function getPayoutMode(Entity $payoutLink)
     {
-        $settingsAccessor = $this->getSettingsAccessor($this->merchant);
+        $settingsAttributeArray = $this->getSettingsAttributeArray($this->merchant);
 
         $amount = $payoutLink->getAmount();
 
@@ -641,8 +638,8 @@ class Core extends Base\Core
         switch ($fundAccount->getAccountType())
         {
             case Type::BANK_ACCOUNT:
-                $isImpsEnabled = $settingsAccessor->exists(Entity::IMPS) and
-                                 boolval($settingsAccessor->get(Entity::IMPS));
+                $isImpsEnabled = (key_exists(Entity::IMPS, $settingsAttributeArray) and
+                                 boolval($settingsAttributeArray[Entity::IMPS]));
 
                 if (($isImpsEnabled === true) and
                     ($amount < Validator::MAX_IMPS_AMOUNT))
@@ -679,7 +676,7 @@ class Core extends Base\Core
 
         $fundAccountDetails = $this->getMaskedFundAccountDetails($payoutLink->fundAccount);
 
-        $settings = $this->getSettings($payoutLink->merchant);
+        $settingsAttributeArray = $this->getSettingsAttributeArray($payoutLink->merchant);
 
         // This is required to Add/Remove code on the HTML page that pushed GA events.
         // We do not want this to be added in non-prod envs
@@ -700,16 +697,16 @@ class Core extends Base\Core
             'payout_link_description'           => $payoutLink->getDescription(),
             'primary_color'                     => $this->merchant->getBrandColorElseDefault(),
             'merchant_name'                     => $this->merchant->getBillingLabel(),
-            'allow_upi'                         => $this->allowUpi($payoutLink),
+            'allow_upi'                         => $this->allowUpi($payoutLink, $settingsAttributeArray),
             'banking_url'                       => $this->config['applications.banking_service_url'],
             'is_production'                     => $isProduction,
             'fund_account_details'              => json_encode($fundAccountDetails),
             'purpose'                           => $payoutLink->getPurpose(),
             'payout_utr'                        => $payoutLink->getPayoutUtr(),
-            'payout_links_custom_message'       => $settings[Entity::CUSTOM_MESSAGE] ?? null,
-            'support_contact'                   => $settings[Entity::SUPPORT_CONTACT] ?? null,
-            'support_email'                     => $settings[Entity::SUPPORT_EMAIL] ?? null,
-            'support_url'                       => $settings[Entity::SUPPORT_URL] ?? null
+            'payout_links_custom_message'       => $settingsAttributeArray[Entity::CUSTOM_MESSAGE] ?? null,
+            'support_contact'                   => $settingsAttributeArray[Entity::SUPPORT_CONTACT] ?? null,
+            'support_email'                     => $settingsAttributeArray[Entity::SUPPORT_EMAIL] ?? null,
+            'support_url'                       => $settingsAttributeArray[Entity::SUPPORT_URL] ?? null
         ];
 
         return $data;
@@ -945,7 +942,38 @@ class Core extends Base\Core
 
     protected function getSettingsAccessor($merchant)
     {
-        return Settings\Accessor::for($merchant, Settings\Module::PAYOUT_LINK);
+        $settingsAccessor = Settings\Accessor::for($merchant, Settings\Module::PAYOUT_LINK);
+
+        return $settingsAccessor;
+    }
+
+    protected function getSettingsAttributeArray($merchant)
+    {
+        $settingsAccessor = $this->getSettingsAccessor($merchant);
+
+        $settingsAttributeArray = $settingsAccessor->all()->toArray();
+
+        $this->populatePayoutModesDefaultValue($settingsAttributeArray);
+
+        return $settingsAttributeArray;
+    }
+
+    protected function populatePayoutModesDefaultValue(&$settingsAttributeArray)
+    {
+        if (key_exists(Entity::IMPS, $settingsAttributeArray) === false)
+        {
+            $settingsAttributeArray[Entity::IMPS] = 1;
+        }
+
+        if (key_exists(Entity::NEFT, $settingsAttributeArray) === false)
+        {
+            $settingsAttributeArray[Entity::NEFT] = 1;
+        }
+
+        if (key_exists(Entity::UPI, $settingsAttributeArray) === false)
+        {
+            $settingsAttributeArray[Entity::UPI] = 1;
+        }
     }
 
     protected function pushStatusUpdateNotification(Entity $payoutLink)
