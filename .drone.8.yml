@@ -52,10 +52,10 @@ pipeline:
       - DB_AUTH_DATABASE=api_auth_applicaiton
       - REDIS_HOST=redis
       - REDIS_LABS_HOST=redis
-      - QUERY_CACHE_REDIS_HOST=redis-cluster-1
-      - QUERY_CACHE_REDIS_PORT=7000
-      - MUTEX_REDIS_HOST=redis-cluster-1
-      - MUTEX_REDIS_PORT=7000
+      - QUERY_CACHE_REDIS_HOST=redis
+      - QUERY_CACHE_REDIS_PORT=6379
+      - MUTEX_REDIS_HOST=redis
+      - MUTEX_REDIS_PORT=6379
       - ES_HOST=elasticsearch
       - ES_AUDIT_HOST=elasticsearch
     when:
@@ -81,10 +81,10 @@ pipeline:
       - DB_AUTH_DATABASE=api_auth_feature_1
       - REDIS_HOST=redis2
       - REDIS_LABS_HOST=redis2
-      - QUERY_CACHE_REDIS_HOST=redis-cluster-2
-      - QUERY_CACHE_REDIS_PORT=7000
-      - MUTEX_REDIS_HOST=redis-cluster-2
-      - MUTEX_REDIS_PORT=7000
+      - QUERY_CACHE_REDIS_HOST=redis2
+      - QUERY_CACHE_REDIS_PORT=6379
+      - MUTEX_REDIS_HOST=redis2
+      - MUTEX_REDIS_PORT=6379
       - ES_HOST=elasticsearch
       - ES_AUDIT_HOST=elasticsearch
       - ES_ENTITY_INDEX_PREFIX=testing_features_1_
@@ -113,10 +113,10 @@ pipeline:
       - DB_AUTH_DATABASE=api_auth_feature_2
       - REDIS_HOST=redis3
       - REDIS_LABS_HOST=redis3
-      - QUERY_CACHE_REDIS_HOST=redis-cluster-3
-      - QUERY_CACHE_REDIS_PORT=7000
-      - MUTEX_REDIS_HOST=redis-cluster-3
-      - MUTEX_REDIS_PORT=7000
+      - QUERY_CACHE_REDIS_HOST=redis3
+      - QUERY_CACHE_REDIS_PORT=6379
+      - MUTEX_REDIS_HOST=redis3
+      - MUTEX_REDIS_PORT=6379
       - ES_HOST=elasticsearch
       - ES_AUDIT_HOST=elasticsearch
       - ES_ENTITY_INDEX_PREFIX=testing_features_2_
@@ -145,10 +145,10 @@ pipeline:
       - DB_AUTH_DATABASE=api_auth_feature_3
       - REDIS_HOST=redis4
       - REDIS_LABS_HOST=redis4
-      - QUERY_CACHE_REDIS_HOST=redis-cluster-4
-      - QUERY_CACHE_REDIS_PORT=7000
-      - MUTEX_REDIS_HOST=redis-cluster-4
-      - MUTEX_REDIS_PORT=7000
+      - QUERY_CACHE_REDIS_HOST=redis4
+      - QUERY_CACHE_REDIS_PORT=6379
+      - MUTEX_REDIS_HOST=redis4
+      - MUTEX_REDIS_PORT=6379
       - ES_HOST=elasticsearch
       - ES_AUDIT_HOST=elasticsearch
       - ES_ENTITY_INDEX_PREFIX=testing_features_3_
@@ -176,10 +176,10 @@ pipeline:
       - DB_AUTH_DATABASE=api_auth_feature_4
       - REDIS_HOST=redis5
       - REDIS_LABS_HOST=redis5
-      - QUERY_CACHE_REDIS_HOST=redis-cluster-5
-      - QUERY_CACHE_REDIS_PORT=7000
-      - MUTEX_REDIS_HOST=redis-cluster-5
-      - MUTEX_REDIS_PORT=7000
+      - QUERY_CACHE_REDIS_HOST=redis5
+      - QUERY_CACHE_REDIS_PORT=6379
+      - MUTEX_REDIS_HOST=redis5
+      - MUTEX_REDIS_PORT=6379
       - ES_HOST=elasticsearch
       - ES_AUDIT_HOST=elasticsearch
       - ES_ENTITY_INDEX_PREFIX=testing_features_4_
@@ -217,10 +217,10 @@ pipeline:
     - ES_HOST=elasticsearch
     - REDIS_HOST=redis5
     - REDIS_LABS_HOST=redis5
-    - QUERY_CACHE_REDIS_HOST=redis-cluster-6
-    - QUERY_CACHE_REDIS_PORT=7000
-    - MUTEX_REDIS_HOST=redis-cluster-6
-    - MUTEX_REDIS_PORT=7000
+    - QUERY_CACHE_REDIS_HOST=redis6
+    - QUERY_CACHE_REDIS_PORT=6379
+    - MUTEX_REDIS_HOST=redis6
+    - MUTEX_REDIS_PORT=6379
     when:
       event:
         include:
@@ -249,10 +249,10 @@ pipeline:
     - ES_HOST=elasticsearch
     - REDIS_HOST=redis6
     - REDIS_LABS_HOST=redis6
-    - QUERY_CACHE_REDIS_HOST=redis-cluster-7
-    - QUERY_CACHE_REDIS_PORT=7000
-    - MUTEX_REDIS_HOST=redis-cluster-7
-    - MUTEX_REDIS_PORT=7000
+    - QUERY_CACHE_REDIS_HOST=redis7
+    - QUERY_CACHE_REDIS_PORT=6379
+    - MUTEX_REDIS_HOST=redis7
+    - MUTEX_REDIS_PORT=6379
     when:
       event:
         include:
@@ -281,10 +281,10 @@ pipeline:
     - ES_HOST=elasticsearch
     - REDIS_HOST=redis7
     - REDIS_LABS_HOST=redis7
-    - QUERY_CACHE_REDIS_HOST=redis-cluster-8
-    - QUERY_CACHE_REDIS_PORT=7000
-    - MUTEX_REDIS_HOST=redis-cluster-8
-    - MUTEX_REDIS_PORT=7000
+    - QUERY_CACHE_REDIS_HOST=redis8
+    - QUERY_CACHE_REDIS_PORT=6379
+    - MUTEX_REDIS_HOST=redis8
+    - MUTEX_REDIS_PORT=6379
     when:
       event:
         include:
@@ -314,10 +314,10 @@ pipeline:
     - ES_HOST=elasticsearch
     - REDIS_HOST=redis8
     - REDIS_LABS_HOST=redis8
-    - QUERY_CACHE_REDIS_HOST=redis-cluster-9
-    - QUERY_CACHE_REDIS_PORT=7000
-    - MUTEX_REDIS_HOST=redis-cluster-9
-    - MUTEX_REDIS_PORT=7000
+    - QUERY_CACHE_REDIS_HOST=redis9
+    - QUERY_CACHE_REDIS_PORT=6379
+    - MUTEX_REDIS_HOST=redis9
+    - MUTEX_REDIS_PORT=6379
     when:
       event:
         include:
@@ -346,10 +346,10 @@ pipeline:
     - ES_HOST=elasticsearch
     - REDIS_HOST=redis9
     - REDIS_LABS_HOST=redis9
-    - QUERY_CACHE_REDIS_HOST=redis-cluster-10
-    - QUERY_CACHE_REDIS_PORT=7000
-    - MUTEX_REDIS_HOST=redis-cluster-10
-    - MUTEX_REDIS_PORT=7000
+    - QUERY_CACHE_REDIS_HOST=redis10
+    - QUERY_CACHE_REDIS_PORT=6379
+    - MUTEX_REDIS_HOST=redis10
+    - MUTEX_REDIS_PORT=6379
     when:
       event:
         include:
@@ -620,9 +620,9 @@ services:
           - deployment
           - pull_request
 
-  redis-cluster-1:
+  redis10:
     pull: false
-    image: grokzen/redis-cluster
+    image: redis
     when:
       event:
         include:
@@ -631,104 +631,115 @@ services:
           - deployment
           - pull_request
 
-  redis-cluster-2:
-    pull: false
-    image: grokzen/redis-cluster
-    when:
-      event:
-        include:
-          - push
-        exclude:
-          - deployment
-          - pull_request
-
-  redis-cluster-3:
-    pull: false
-    image: grokzen/redis-cluster
-    when:
-      event:
-        include:
-          - push
-        exclude:
-          - deployment
-          - pull_request
-
-  redis-cluster-4:
-    pull: false
-    image: grokzen/redis-cluster
-    when:
-      event:
-        include:
-          - push
-        exclude:
-          - deployment
-          - pull_request
-
-  redis-cluster-5:
-    pull: false
-    image: grokzen/redis-cluster
-    when:
-      event:
-        include:
-          - push
-        exclude:
-          - deployment
-          - pull_request
-
-  redis-cluster-6:
-    pull: false
-    image: grokzen/redis-cluster
-    when:
-      event:
-        include:
-          - push
-        exclude:
-          - deployment
-          - pull_request
-
-  redis-cluster-7:
-    pull: false
-    image: grokzen/redis-cluster
-    when:
-      event:
-        include:
-          - push
-        exclude:
-          - deployment
-          - pull_request
-
-  redis-cluster-8:
-    pull: false
-    image: grokzen/redis-cluster
-    when:
-      event:
-        include:
-          - push
-        exclude:
-          - deployment
-          - pull_request
-
-  redis-cluster-9:
-    pull: false
-    image: grokzen/redis-cluster
-    when:
-      event:
-        include:
-          - push
-        exclude:
-          - deployment
-          - pull_request
-
-  redis-cluster-10:
-    pull: false
-    image: grokzen/redis-cluster
-    when:
-      event:
-        include:
-          - push
-        exclude:
-          - deployment
-          - pull_request
+#  redis-cluster-1:
+#    pull: false
+#    image: grokzen/redis-cluster
+#    when:
+#      event:
+#        include:
+#          - push
+#        exclude:
+#          - deployment
+#          - pull_request
+#
+#  redis-cluster-2:
+#    pull: false
+#    image: grokzen/redis-cluster
+#    when:
+#      event:
+#        include:
+#          - push
+#        exclude:
+#          - deployment
+#          - pull_request
+#
+#  redis-cluster-3:
+#    pull: false
+#    image: grokzen/redis-cluster
+#    when:
+#      event:
+#        include:
+#          - push
+#        exclude:
+#          - deployment
+#          - pull_request
+#
+#  redis-cluster-4:
+#    pull: false
+#    image: grokzen/redis-cluster
+#    when:
+#      event:
+#        include:
+#          - push
+#        exclude:
+#          - deployment
+#          - pull_request
+#
+#  redis-cluster-5:
+#    pull: false
+#    image: grokzen/redis-cluster
+#    when:
+#      event:
+#        include:
+#          - push
+#        exclude:
+#          - deployment
+#          - pull_request
+#
+#  redis-cluster-6:
+#    pull: false
+#    image: grokzen/redis-cluster
+#    when:
+#      event:
+#        include:
+#          - push
+#        exclude:
+#          - deployment
+#          - pull_request
+#
+#  redis-cluster-7:
+#    pull: false
+#    image: grokzen/redis-cluster
+#    when:
+#      event:
+#        include:
+#          - push
+#        exclude:
+#          - deployment
+#          - pull_request
+#
+#  redis-cluster-8:
+#    pull: false
+#    image: grokzen/redis-cluster
+#    when:
+#      event:
+#        include:
+#          - push
+#        exclude:
+#          - deployment
+#          - pull_request
+#
+#  redis-cluster-9:
+#    pull: false
+#    image: grokzen/redis-cluster
+#    when:
+#      event:
+#        include:
+#          - push
+#        exclude:
+#          - deployment
+#          - pull_request
+#
+#  redis-cluster-10:
+#    pull: false
+#    image: grokzen/redis-cluster
+#    when:
+#      event:
+#        include:
+#          - push
+#        exclude:
+#          - deployment
+#          - pull_request
 
   elasticsearch:
     pull: false
