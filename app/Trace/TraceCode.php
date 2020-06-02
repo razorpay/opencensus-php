@@ -2966,6 +2966,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const PAYMENTS_BULK_FETCH = 'PAYMENTS_BULK_FETCH';
 
+    // Logs for tracing payout to amex failures
+    const PAYOUT_TO_AMEX_FAILURE = 'PAYOUT_TO_AMEX_FAILURE';
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
         self::PAYMENT_CREATED                                       => 'New payment created',

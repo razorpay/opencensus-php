@@ -8,6 +8,7 @@ use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Constants;
 use RZP\Models\Base;
+use RZP\Models\Card;
 use RZP\Models\Admin;
 use DeepCopy\DeepCopy;
 use RZP\Models\Payment;
@@ -64,6 +65,8 @@ class Core extends Base\Core
     const PAYOUT_MUTEX_LOCK_TIMEOUT         = 180;
 
     const PAYOUT_REVERSAL_MUTEX_LOCK_TIMEOUT = 3600;
+
+    const FAILURE_STATUSES_FOR_PAYOUT_TO_AMEX = [Attempt\Status::FAILED, Attempt\Status::REVERSED];
 
     /**
      * @var Mutex
@@ -372,6 +375,30 @@ class Core extends Base\Core
                 $this->trace->warning(
                     TraceCode::UNKNOWN_FTA_STATUS_SENT_TO_PAYOUT,
                     $ftaData);
+        }
+
+        $payout->reload();
+
+        if ((in_array($status, self::FAILURE_STATUSES_FOR_PAYOUT_TO_AMEX, true) === true) and
+            ($payout->fundAccount->getAccountType() === FundAccount\Type::CARD) and
+            ($payout->fundAccount->account->isAmex() === true))
+        {
+
+            /** @var Card\IIN\Entity $iin */
+            $iin = $payout->fundAccount->account->iinRelation;
+
+            $issuer = (empty($iin) === true) ? $payout->fundAccount->account->getIssuer() : $iin->getIssuer();
+
+            $this->trace->info(
+                TraceCode::PAYOUT_TO_AMEX_FAILURE,
+                [
+                    Entity::PAYOUT . '_' . Entity::ID => $payout->getId(),
+                    Entity::STATUS                    => $payout->getStatus(),
+                    Entity::FAILURE_REASON            => $payout->getFailureReason(),
+                    Card\Entity::ISSUER               => ($issuer === null) ?
+                                                          Attempt\Constants::DEFAULT_ISSUER : $issuer,
+                ]
+            );
         }
     }
 
