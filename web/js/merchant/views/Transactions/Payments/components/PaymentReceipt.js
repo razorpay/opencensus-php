@@ -33,12 +33,12 @@ export default class PaymentReceipt extends React.Component {
   sendReceipt = receipt => {
     sendReceipt(this.props.payment.id, receipt)
       .then(res => {
-        if (res && res.success) {
+        if (res.data && res.data.success) {
           this.setState({
             showCustomReceiptInput: false,
           });
 
-          this.showNotification({
+          this.props.showNotification({
             type: 'success',
             message: 'Receipt is sent successfully',
           });
