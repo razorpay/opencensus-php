@@ -115,6 +115,7 @@ class ProviderCode
     const PURZ               = 'purz';
     const RAJGOVHDFCBANK     = 'rajgovhdfcbank';
     const RBL                = 'rbl';
+    const RMHDFCBANK         = 'rmhdfcbank';
     const S2B                = 's2b';
     const SBI                = 'sbi';
     const SC                 = 'sc';
@@ -248,6 +249,7 @@ class ProviderCode
         self::PURZ               => 'NPCI',
         self::RAJGOVHDFCBANK     => IFSC::HDFC,
         self::RBL                => IFSC::RATN,
+        self::RMHDFCBANK         => IFSC::HDFC,
         self::S2B                => 'NPCI',
         self::SBI                => IFSC::SBIN,
         self::SC                 => IFSC::SCBL,
