@@ -30,6 +30,16 @@ export default ({ showBatchIdFilter, ...props }) => {
       </div>
 
       <div class="form-group list-filter-item">
+        <label>Email</label>
+        <Field
+          name="email"
+          component="input"
+          type="email"
+          class="form-control input-sm"
+        />
+      </div>
+
+      <div class="form-group list-filter-item">
         <label>Notes</label>
         <Field name="notes" component="input" class="form-control input-sm" />
       </div>

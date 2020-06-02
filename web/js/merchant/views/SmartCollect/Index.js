@@ -29,6 +29,13 @@ import VirtualAccountsList from './VirtualAccounts/List';
   }
 )
 export default class SmartCollectContainer extends React.Component {
+  componentDidMount() {
+    window.rzpAnalytics({
+      eventCategory: 'Dashboard - Smart Collect',
+      eventAction: 'Go To - Smart Collect',
+    });
+  }
+
   render() {
     const { isQuickGuideOpen, showOnboarding } = this.props.VAProductOnBoarding;
 

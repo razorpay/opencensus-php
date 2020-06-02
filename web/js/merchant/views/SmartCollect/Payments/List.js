@@ -1,6 +1,8 @@
 import { connect } from 'react-redux';
 import { RZPFeatures } from 'merchant/helpers/data';
 
+import { getKeysSeparatedByPipe } from 'common/utils/rzp-utils';
+
 import HeaderAction from 'common/ui/HeaderAction';
 import DocsLink from 'merchant/components/DocsLink';
 import ListContainer from 'merchant/containers/ListContainer';
@@ -12,6 +14,31 @@ import { fetchSmartCollectPayments as fetchAll } from 'merchant/reducers/collect
 
 @connect(state => state.scPayments, { fetchAll })
 export default class VirtualAccountsListContainer extends ListContainer {
+  componentDidMount() {
+    window.rzpAnalytics({
+      eventCategory: 'Dashboard - Smart Collect',
+      eventAction: 'Go To - VA Payments',
+    });
+  }
+
+  onSearchAnalytics = params => {
+    const label = getKeysSeparatedByPipe(params);
+    if (label && label.length > 0) {
+      window.rzpAnalytics({
+        eventCategory: 'Dashboard - VA Payments',
+        eventAction: 'Search - Payments',
+        eventLabel: label,
+      });
+    }
+  };
+
+  onClearAnalytics = () => {
+    window.rzpAnalytics({
+      eventCategory: 'Dashboard - VA Payments',
+      eventAction: 'Clear Search Params - Payments',
+    });
+  };
+
   render() {
     return (
       <div class="content-wrapper">
@@ -27,6 +54,8 @@ export default class VirtualAccountsListContainer extends ListContainer {
           form="paymentListFilter"
           count={this.state.count}
           onSubmit={this.search}
+          onSearchAnalytics={this.onSearchAnalytics}
+          onClearAnalytics={this.onClearAnalytics}
         />
 
         <PaymentsTable

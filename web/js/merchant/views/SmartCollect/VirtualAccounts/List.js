@@ -66,7 +66,7 @@ export default class VirtualAccountsListContainer extends ListContainer {
   componentDidMount() {
     window.rzpAnalytics({
       eventCategory: 'Dashboard - Smart Collect',
-      eventAction: 'Go To - Smart Collect',
+      eventAction: 'Go To - Virtual Accounts',
     });
   }
 
