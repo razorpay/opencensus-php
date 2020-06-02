@@ -57,6 +57,7 @@ class Core extends Base\Core
                 Entity::PERIOD   => Period::DAILY,
                 Entity::INTERVAL => 1,
                 Entity::DELAY    => $delay,
+                Entity::HOUR     => Merchant\Entity::DOMESTIC_SETTLEMENT_SCHEDULE_DEFAULT_HOUR,
             ];
 
             $schedule = $this->createSchedule($input);

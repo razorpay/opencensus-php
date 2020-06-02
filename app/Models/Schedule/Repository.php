@@ -26,6 +26,7 @@ class Repository extends Base\Repository
                     ->where(Entity::TYPE,   '=', Type::SETTLEMENT)
                     ->where(Entity::PERIOD, '=', Period::DAILY)
                     ->where(Entity::DELAY,  '=', $delay)
+                    ->where(Entity::HOUR,   '=', Merchant\Entity::DOMESTIC_SETTLEMENT_SCHEDULE_DEFAULT_HOUR)
                     ->first();
     }
 
