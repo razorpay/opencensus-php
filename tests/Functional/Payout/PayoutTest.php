@@ -3869,6 +3869,13 @@ class PayoutTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreatePayoutWithIfQueueLowBalanceFalse()
+    {
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
     public function testPayoutFetchById()
     {
         $payout = $this->testCreatePayout();
