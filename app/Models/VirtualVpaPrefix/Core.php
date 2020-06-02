@@ -64,29 +64,40 @@ class Core extends Base\Core
             $input
         );
 
-        $virtualVpaPrefix = $this->transaction(function () use ($input, $terminal)
+        try
         {
-            $virtualVpaPrefix = (new Entity())->build($input);
+            $virtualVpaPrefix = $this->transaction(function () use ($input, $terminal)
+            {
+                $virtualVpaPrefix = (new Entity())->build($input);
 
-            $virtualVpaPrefix->merchant()->associate($this->merchant);
+                $virtualVpaPrefix->merchant()->associate($this->merchant);
 
-            $virtualVpaPrefix->terminal()->associate($terminal);
+                $virtualVpaPrefix->terminal()->associate($terminal);
 
-            $this->repo->saveOrFail($virtualVpaPrefix);
+                $this->repo->saveOrFail($virtualVpaPrefix);
 
-            $virtualVpaPrefixHistory = (new PrefixHistory\Entity())->buildEntity($virtualVpaPrefix);
+                $virtualVpaPrefixHistory = (new PrefixHistory\Entity())->buildEntity($virtualVpaPrefix);
 
-            $this->repo->saveOrFail($virtualVpaPrefixHistory);
+                $this->repo->saveOrFail($virtualVpaPrefixHistory);
+
+                return $virtualVpaPrefix;
+            });
+
+            $this->trace->info(
+                TraceCode::VIRTUAL_VPA_PREFIX_CREATED,
+                $virtualVpaPrefix->toArray()
+            );
+
+            (new Metric())->pushSuccessMetrics('create');
 
             return $virtualVpaPrefix;
-        });
+        }
+        catch(\Exception $ex)
+        {
+            (new Metric())->pushFailedMetrics('create', $ex);
 
-        $this->trace->info(
-            TraceCode::VIRTUAL_VPA_PREFIX_CREATED,
-            $virtualVpaPrefix->toArray()
-        );
-
-        return $virtualVpaPrefix;
+            throw $ex;
+        }
     }
 
     public function update(array $input, Terminal\Entity $terminal) : Entity
@@ -96,35 +107,46 @@ class Core extends Base\Core
             $input
         );
 
-        $virtualVpaPrefix = $this->transaction(function () use ($input, $terminal)
+        try
         {
-            $merchantId = $this->merchant->getId();
+            $virtualVpaPrefix = $this->transaction(function () use ($input, $terminal)
+            {
+                $merchantId = $this->merchant->getId();
 
-            $virtualVpaPrefix = $this->repo->virtual_vpa_prefix->fetchEntityByMerchantId($merchantId);
+                $virtualVpaPrefix = $this->repo->virtual_vpa_prefix->fetchEntityByMerchantId($merchantId);
 
-            (new PrefixHistory\Core())->deactivatePreviousPrefix($merchantId, $virtualVpaPrefix->getId());
+                (new PrefixHistory\Core())->deactivatePreviousPrefix($merchantId, $virtualVpaPrefix->getId());
 
-            $previousPrefix = $virtualVpaPrefix->getPrefix();
+                $previousPrefix = $virtualVpaPrefix->getPrefix();
 
-            $virtualVpaPrefix->terminal()->associate($terminal);
+                $virtualVpaPrefix->terminal()->associate($terminal);
 
-            $virtualVpaPrefix->edit($input, 'edit');
+                $virtualVpaPrefix->edit($input, 'edit');
 
-            $this->repo->saveOrFail($virtualVpaPrefix);
+                $this->repo->saveOrFail($virtualVpaPrefix);
 
-            $virtualVpaPrefixHistory = (new PrefixHistory\Entity())->buildEntity($virtualVpaPrefix, [PrefixHistory\Entity::PREVIOUS_PREFIX => $previousPrefix]);
+                $virtualVpaPrefixHistory = (new PrefixHistory\Entity())->buildEntity($virtualVpaPrefix, [PrefixHistory\Entity::PREVIOUS_PREFIX => $previousPrefix]);
 
-            $this->repo->saveOrFail($virtualVpaPrefixHistory);
+                $this->repo->saveOrFail($virtualVpaPrefixHistory);
+
+                return $virtualVpaPrefix;
+            });
+
+            $this->trace->info(
+                TraceCode::VIRTUAL_VPA_PREFIX_UPDATED,
+                $virtualVpaPrefix->toArray()
+            );
+
+            (new Metric())->pushSuccessMetrics('update');
 
             return $virtualVpaPrefix;
-        });
+        }
+        catch(\Exception $ex)
+        {
+            (new Metric())->pushFailedMetrics('update', $ex);
 
-        $this->trace->info(
-            TraceCode::VIRTUAL_VPA_PREFIX_UPDATED,
-            $virtualVpaPrefix->toArray()
-        );
-
-        return $virtualVpaPrefix;
+            throw $ex;
+        }
     }
 
     public function validatePrefixAvailability(string $prefix) : bool
