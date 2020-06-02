@@ -1409,16 +1409,31 @@ class Service extends Base\Service
 
     public function editWebhook($webhookId, $input)
     {
-        $this->trace->info(
-            TraceCode::WEBHOOK_EDIT,
-            [
-                'webhook_id' => $webhookId,
-                'input'      => array_except($input, [Webhook\Entity::SECRET]),
-            ]);
+        $this->traceWebhookEditRequest($webhookId, $input);
 
         $webhook = (new Merchant\Webhook\Service())->editWebhook($this->merchant, $webhookId, $input);
 
         return $webhook->toArrayPublic();
+    }
+
+    protected function traceWebhookEditRequest($webhookId, $input)
+    {
+        if (array_key_exists(Webhook\Entity::SECRET, $input) === true)
+        {
+            $input[Webhook\Entity::SECRET] = "SECRET_REDACTED";
+
+            if (empty($input[Webhook\Entity::SECRET]) === true)
+            {
+                $input[Webhook\Entity::SECRET] = "EMPTY_SECRET_REDACTED";
+            }
+        }
+
+        $this->trace->info(
+            TraceCode::WEBHOOK_EDIT,
+            [
+                'webhook_id' => $webhookId,
+                'input'      => $input,
+            ]);
     }
 
     public function fetchWebhookEvents()
