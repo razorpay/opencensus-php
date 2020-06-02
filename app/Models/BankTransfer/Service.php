@@ -165,7 +165,9 @@ class Service extends Base\Service
         }
         catch (Exception\BadRequestValidationFailureException $exception)
         {
-            $defaultIfscCode = BankCodes::getIfscForBankCode($ifsc);
+            $bankCode = substr($ifsc, 0, 4);
+
+            $defaultIfscCode = BankCodes::getIfscForBankCode($bankCode);
 
             if ($defaultIfscCode === null)
             {

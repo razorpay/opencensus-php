@@ -2388,7 +2388,7 @@ class BankTransferTest extends TestCase
     protected function createRblRefund($callee)
     {
         $testData = $this->testData[$callee];
-                                                                                                  
+
         $testData['request']['content']['Data'][0]['beneficiaryAccountNumber'] = $this->getRblVaBankAccount();
 
         $this->ba->directAuth();
@@ -2789,6 +2789,37 @@ class BankTransferTest extends TestCase
                 Header::ICICI_ECOLLECT_REMITTING_BANK_UTR_NO    => '6716048037',
             ],
         ];
+    }
+
+    public function testProcessBankTransferInvalidPayerIfsc()
+    {
+        $accountNumber = $this->bankAccount['account_number'];
+        $ifsc          = $this->bankAccount['ifsc'];
+
+        $request = $this->testData[__FUNCTION__];
+
+        $request['content']['payee_account'] = $accountNumber;
+        $request['content']['payee_ifsc']    = $ifsc;
+
+        $this->ba->appAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        // Created bank transfer is an expected one
+        $bankTransfer = $this->getLastEntity('bank_transfer', true);
+        $this->assertNotNull($bankTransfer['payment_id']);
+
+        // Payment is automatically captured
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals('bank_transfer', $payment['method']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals($bankTransfer['payment_id'], $payment['id']);
+
+        // Customer bank account created
+        $bankAccount = $this->getDbLastEntity('bank_account');
+        $bankAccount = $bankAccount->toArray();
+        // Null, because IFSC was not received for IMPS transaction
+        $this->assertEquals('UTIB0001918', $bankAccount['ifsc']); //Default IFSC for UTIB
     }
 
     protected function getPreferences()
