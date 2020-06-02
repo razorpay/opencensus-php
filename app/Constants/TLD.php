@@ -1681,6 +1681,7 @@ class TLD
         'org.',
         'nj',
         'azurewebsites.net',
+        '*.elb.amazonaws.com',
     ];
 
     public static function isValid($tld)
