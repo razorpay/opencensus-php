@@ -123,20 +123,6 @@ class Capture extends Job
             'job_attempts' => $this->attempts(),
             'message'      => 'Deleting the job after configured number of tries. Still unsuccessful.'
         ]);
-
-        $settings = [
-            'channel' => config('slack.channels.tech_logs'),
-            'color'   => 'danger'
-        ];
-
-        $this->slack->queue(
-            'Payment couldn\'t be captured via queue',
-            [
-                'payment_id' => $this->data['payment']['id'],
-                'gateway'    => $this->data['payment']['gateway'],
-                'attempts'   => $this->attempts(),
-            ],
-            $settings);
     }
 
     public function getData()
