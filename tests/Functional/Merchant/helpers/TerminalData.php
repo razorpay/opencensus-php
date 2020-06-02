@@ -216,6 +216,29 @@ return [
         ],
     ],
 
+    'testAssignTerminalWhenDuplicateTerminalExistSharedAccount' => [
+        'request' => [
+            'content' => [
+                'gateway'                   => 'hdfc',
+                'category'                  => '4321',
+                'gateway_merchant_id'       => '1234567',
+                'gateway_terminal_id'       => '87654321',
+                'gateway_terminal_password' => 'password',
+                'gateway_acquirer'          => 'hdfc',
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'gateway_acquirer'          => 'hdfc',
+                'category'                  => '4321',
+                'gateway_merchant_id'       => '1234567',
+                'gateway_terminal_id'       => '87654321',
+                'enabled'             => true
+            ]
+        ]
+    ],
+
     'testAssignTerminalWhenDuplicateTerminalExistHitachiGateway' => [
         'request' => [
             'content' => [

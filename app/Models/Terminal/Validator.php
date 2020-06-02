@@ -1767,19 +1767,20 @@ class Validator extends Base\Validator
 
         return null;
     }
-  
+
     protected function getMatchAttributes(Entity $entity)
     {
         $gateway = $entity->getGateway();
 
-        if (in_array($gateway, self::$automaticGateways) === true)
+        if ((in_array($gateway, self::$automaticGateways) === true) or
+            ($entity->getMerchantId() === Merchant\Account::SHARED_ACCOUNT))
         {
             return self::$automaticGatewayMatchAttributes;
         }
 
         return self::$manualGatewayMatchAttributes;
     }
-  
+
     protected static function validateBanks($attribute, array $value)
     {
         foreach ($value as $bank)
@@ -1787,7 +1788,7 @@ class Validator extends Base\Validator
             self::validateBank($attribute, $bank);
         }
     }
-  
+
     protected static function validateBank($attribute, $value)
     {
         if (Bank\IFSC::exists($value) === false)

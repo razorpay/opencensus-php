@@ -147,6 +147,24 @@ class TerminalTest extends TestCase
         $this->startTest();
     }
 
+    public function testAssignTerminalWhenDuplicateTerminalExistSharedAccount()
+    {
+        $this->fixtures->create('terminal', [
+            'merchant_id'           => '100000Razorpay',
+            'gateway'               => 'hdfc',
+            'category'              => '1234',
+            'gateway_merchant_id'   => '1234567',
+            'gateway_acquirer'      => 'hdfc',
+            'international'         => true,
+        ]);
+
+        $url = '/merchants/100000Razorpay/terminals';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
     public function testAssignTerminalWhenDuplicateTerminalExistHitachiGateway()
     {
         $merchant = $this->fixtures->create('merchant');
