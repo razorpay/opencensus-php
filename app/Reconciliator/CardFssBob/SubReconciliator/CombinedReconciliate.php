@@ -93,6 +93,12 @@ class CombinedReconciliate extends Base\SubReconciliator\CombinedReconciliate
                 $row[$column[0]] = $originalRow[$columnSet] ?? '';
             }
         }
+
+        // We have this idempotent id set when recon request coming from batch service
+        if (empty($originalRow[Base\Constants::IDEMPOTENT_ID]) === false)
+        {
+            $row[Base\Constants::IDEMPOTENT_ID] = $originalRow[Base\Constants::IDEMPOTENT_ID];
+        }
     }
 
     //
