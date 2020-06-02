@@ -4,6 +4,7 @@
 namespace RZP\Models\VirtualVpaPrefix;
 
 use RZP\Models\Base;
+use RZP\Diag\EventCode;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 
@@ -45,6 +46,16 @@ class Service extends Base\Service
         {
             $this->trace->traceException($ex);
         }
+
+        $this->app['diag']->trackVirtualVpaPrefixEvent(
+            EventCode::VIRTUAL_VPA_PREFIX_VALIDATE,
+            $this->merchant,
+            null,
+            [
+                'prefix'    => $input[Entity::PREFIX],
+                'is_valid'  => $isValid,
+            ]
+        );
 
         return [
             'is_valid'  => $isValid,

@@ -499,7 +499,6 @@ class EventCode
         'name'  => 'payment_page.created',
     ];
 
-
     // Onboarding Attribute Events
     const MERCHANT_ONBOARDING_CATEGORY_SET = [
         'group' => 'onboarding',
@@ -540,5 +539,10 @@ class EventCode
     const UPI_TRANSFER_UNEXPECTED_PAYMENT = [
         'group' => 'upi_transfer',
         'name'  => 'upi_transfer.unexpected_payment',
+    ];
+
+    const VIRTUAL_VPA_PREFIX_VALIDATE = [
+        'group' => 'virtual_vpa_prefix',
+        'name'  => 'virtual_vpa_prefix.validate',
     ];
 }
