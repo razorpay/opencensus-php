@@ -382,6 +382,29 @@ class Service extends Base\Service
 
     public function getSupportedModes(array $input)
     {
-       return Mode::getSupportedModesMap();
+        $xRequestId = $this->app['request']->header('X-Request-ID');
+
+        $this->trace->info(
+            TraceCode::FTA_FETCH_SUPPORTED_MODES_REQUEST,
+            [
+                'input'        => $input,
+                'x-request-id' => $xRequestId,
+            ]
+        );
+
+        $supportedModes = Mode::getSupportedModesMap();
+
+        //
+        // Not logging entire map, since we are logging only to confirm we have reached this point
+        //
+        $this->trace->info(
+            TraceCode::FTA_FETCH_SUPPORTED_MODES_RESPONSE,
+            [
+                'issuer_count' => count(array_keys($supportedModes)),
+                'x-request-id' => $xRequestId,
+            ]
+        );
+
+       return $supportedModes;
     }
 }

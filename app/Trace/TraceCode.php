@@ -964,6 +964,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FTA_RECON_JOB_DISPATCHED                              = 'FTA_RECON_JOB_DISPATCHED';
     const FTA_RECONCILE_SKIPPED                                 = 'FTA_RECONCILE_SKIPPED';
     const FTA_RECONCILE_JOB_FAILED                              = 'FTA_RECONCILE_JOB_FAILED';
+    const FTA_FETCH_SUPPORTED_MODES_REQUEST                     = 'FTA_FETCH_SUPPORTED_MODES_REQUEST';
+    const FTA_FETCH_SUPPORTED_MODES_RESPONSE                    = 'FTA_FETCH_SUPPORTED_MODES_RESPONSE';
     const PAYOUT_SOURCE_UPDATER_JOB_FAILED                      = 'PAYOUT_SOURCE_UPDATER_JOB_FAILED';
     const PAYOUT_LINK_NOTIFICATION_JOB_FAILED                   = 'PAYOUT_LINK_NOTIFICATION_JOB_FAILED';
     const INITIATE_FUND_TRANSFER                                = 'INITIATE_FUND_TRANSFER';
