@@ -197,16 +197,6 @@ class Service extends Base\Service
                                 'message'     => $ex->getMessage(),
                             ]
                         );
-
-                        $message = '*ALERT*: Queing failed while onboarding terminal'; 
-
-                        $this->app['slack']->queue(
-                            $message,
-                            $terminal->toArrayPublic(),
-                            [
-                                'channel'  => Config::get('slack.channels.tech_logs'),
-                            ]
-                        );
                     }
                 }
 
