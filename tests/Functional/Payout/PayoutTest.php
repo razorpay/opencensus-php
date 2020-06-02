@@ -3869,6 +3869,19 @@ class PayoutTest extends TestCase
         $this->startTest();
     }
 
+    public function testBulkPayoutWithNotes()
+    {
+        $this->ba->batchAuth();
+
+        $headers = [
+            'HTTP_X_Batch_Id' => 'C0zv9I46W4wiOq',
+        ];
+
+        $this->testData[__FUNCTION__]['request']['server'] = $headers;
+        
+        $this->startTest();
+    }
+
     public function testCreatePayoutWithIfQueueLowBalanceFalse()
     {
         $this->ba->privateAuth();
