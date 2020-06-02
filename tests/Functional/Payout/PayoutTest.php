@@ -3373,7 +3373,7 @@ class PayoutTest extends TestCase
         $this->startTest();
     }
 
-    public function testPayoutToAmexCardWithSupportedIssuerNotSupportedMode()
+    public function testPayoutToAmexCardWithSupportedIssuerWithUPIMode()
     {
         $this->fixtures->create('iin', [
             'iin'     => 340169,
@@ -3420,6 +3420,7 @@ class PayoutTest extends TestCase
         $testData = $this->testData[__FUNCTION__];
 
         $testData['request']['content']['fund_account_id'] = $fundAccount['id'];
+        $testData['response']['content']['fund_account_id'] = $fundAccount['id'];
 
         $this->testData[__FUNCTION__] = $testData;
 
