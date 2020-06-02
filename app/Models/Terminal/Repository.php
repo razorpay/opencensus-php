@@ -21,6 +21,13 @@ class Repository extends Base\Repository
 
     protected $entity = 'terminal';
 
+    protected $entityFetchParamRules = [
+        Entity::GATEWAY                 => 'sometimes',
+        Entity::CATEGORY                => 'sometimes|integer|digits:4',
+        Entity::ENABLED                 => 'sometimes',
+        Entity::STATUS                  => 'sometimes',
+    ];
+
     protected $appFetchParamRules = array(
         Entity::GATEWAY                 => 'sometimes',
         Entity::ORG_ID                  => 'sometimes|alpha_num|size:14',

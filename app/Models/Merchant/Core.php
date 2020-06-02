@@ -2321,7 +2321,16 @@ class Core extends Base\Core
         $merchant->setCategory2($category2);
         $merchant->setCategory($category);
 
-        $this->repo->saveOrFail($merchant);
+        $this->repo->transaction(function () use ($merchant, $category){
+            $input = [
+                Entity::CATEGORY => $category,
+            ];
+
+            (new Terminal\Core)->processMerchantMccUpdate($merchant, $input);
+
+            $this->repo->saveOrFail($merchant);
+
+        });
 
         $newData = [
             Entity::CATEGORY2 => $merchant->getCategory2(),

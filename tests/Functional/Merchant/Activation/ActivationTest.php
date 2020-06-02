@@ -87,6 +87,13 @@ class ActivationTest extends OAuthTestCase
     {
         $merchantId = '1cXSLlUU8V9sXl';
 
+        $terminalId = $this->fixtures->create('terminal', [
+            'merchant_id' => $merchantId,
+            'gateway'     => 'hitachi',
+            'category'    => '5399',
+            'enabled'     => '1',
+        ])['id'];
+
         $this->fixtures->create('merchant_detail', ['merchant_id' => $merchantId]);
 
         $this->fixtures->on('live')->create('methods:default_methods', [
@@ -120,6 +127,16 @@ class ActivationTest extends OAuthTestCase
         $this->assertEquals($legalEntity->getMcc(), 5691);
         $this->assertEquals('ecommerce', $legalEntity->getBusinessCategory());
         $this->assertEquals('fashion_and_lifestyle', $legalEntity->getBusinessSubcategory());
+
+        // assert terminals were disabled - we have a requirement that whenever merchant mcc changes,
+        // to disable old mcc hitachi terminals of that merchant.
+        //merchant category/category2 is getting auto updated by directly editing the merchant entity and not calling
+        // merchant->edit.
+        // hence this test to assert even in the automatic MERCHANT_AUTO_UPDATE_SUBCATEGORY_METADATA flow
+        // the above requirements are met
+
+        $terminal = $this->getEntityById('terminal', $terminalId);
+        $this->assertFalse($terminal['enabled']);
     }
 
     public function testBusinessWebsiteUpdate()
