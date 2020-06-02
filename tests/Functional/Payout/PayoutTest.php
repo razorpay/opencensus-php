@@ -3948,4 +3948,74 @@ class PayoutTest extends TestCase
         $this->assertEquals($payout2['mode'], $responsePayout['mode']);
         $this->assertEquals($payout2['fees'], $responsePayout['fees']);
     }
+
+    public function testCreatePayoutWithInvalidPurpose()
+    {
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
+    public function testCreatePayoutWithoutPurpose()
+    {
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
+    public function testCreatePayoutWithCustomPurpose()
+    {
+        $custom_purpose = $this->testCreatePayoutPurpose();
+
+        $this->ba->privateAuth();
+
+        $this->testData[__FUNCTION__]['request']['content']['purpose'] = $custom_purpose;
+
+        $this->testData[__FUNCTION__]['response']['content']['purpose'] = $custom_purpose;
+
+        $this->startTest();
+    }
+
+    public function getPayoutPurposesCount()
+    {
+        $this->ba->privateAuth();
+
+        $request = [
+            'method'  => 'get',
+            'url'     => '/payouts/purposes',
+            'content' => [
+            ],
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        return $response['count'];
+    }
+
+    public function testCreatePayoutPurpose()
+    {
+        $existing_purposes_count = $this->getPayoutPurposesCount();
+
+        $this->ba->privateAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEquals(($existing_purposes_count + 1 ), $response['count']);
+
+        return $this->testData[__FUNCTION__]['request']['content']['purpose'];
+    }
+
+    public function testCreatePayoutPurposeWithInvalidPurpose()
+    {
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
+    public function testCreatePayoutPurposeWithInvalidPurposeType()
+    {
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
 }

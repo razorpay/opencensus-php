@@ -4335,4 +4335,168 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_PAYOUT_INVALID_MODE,
         ],
     ],
+
+    'testCreatePayoutWithCustomPurpose' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'narration'       => 'Batman',
+                'mode'            => 'IMPS',
+                'fund_account_id' => 'fa_100000000000fa',
+                'purpose'         => 'custom',
+                'notes'           => [
+                    'abc'         => 'xyz',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'fund_account_id' => 'fa_100000000000fa',
+                'narration'       => 'Batman',
+                'status'          => 'processing',
+                'mode'            => 'IMPS',
+                'tax'             => 162,
+                'fees'            => 1062,
+                'purpose'         => 'custom',
+                'notes'           => [
+                    'abc'         => 'xyz',
+                ],
+            ],
+        ],
+    ],
+
+    'testCreatePayoutWithInvalidPurpose' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'purpose'         => 'invalid',
+                'narration'       => 'Batman',
+                'mode'            => 'IMPS',
+                'fund_account_id' => 'fa_100000000000fa',
+                'notes'           => [
+                    'abc'         => 'xyz',
+                ],
+            ],
+        ],
+        'response'  => [
+            'content'   => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Invalid purpose: invalid'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testCreatePayoutWithoutPurpose' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'narration'       => 'Batman',
+                'mode'            => 'IMPS',
+                'fund_account_id' => 'fa_100000000000fa',
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response'  => [
+            'content'   => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The purpose field is required.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testCreatePayoutPurpose' => [
+        'request' => [
+            'method'  => 'post',
+            'url'     => '/payouts/purposes',
+            'content' => [
+                'purpose'   => 'test purpose',
+                'purpose_type'  => 'refund'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection'
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testCreatePayoutPurposeWithInvalidPurpose' => [
+        'request' => [
+            'method'  => 'post',
+            'url'     => '/payouts/purposes',
+            'content' => [
+                'purpose'       => '334kfs *',
+                'purpose_type'  => 'refund'
+            ],
+        ],
+        'response'  => [
+            'content'   => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The purpose may only contain alphabets, digits, hyphens, underscores, and spaces.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testCreatePayoutPurposeWithInvalidPurposeType' => [
+        'request' => [
+            'method'  => 'post',
+            'url'     => '/payouts/purposes',
+            'content' => [
+                'purpose'       => 'test purpose',
+                'purpose_type'  => 'invalid'
+            ],
+        ],
+        'response'  => [
+            'content'   => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The selected purpose type is invalid.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
 ];
