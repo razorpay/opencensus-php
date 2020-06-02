@@ -37,8 +37,6 @@ class Doppler
 
     const X_RAZORPAY_APP_HEADER    = 'X-Razorpay-App';
 
-    const RAZORX_NEW_MODEL         = 'doppler_traffic_new_upi_model';
-
     const RAZORX_DOPPLER           = 'api_hitting_doppler_service';
 
     const CONNECT_TIMEOUT = 1;
@@ -52,12 +50,6 @@ class Doppler
     const ERROR_MESSAGE = 'error_message';
 
     const ERROR_CODE = 'error_code';
-
-    const MODEL_0 = 0;
-
-    const NEW_MODEL = 2;
-
-    const OLD_MODEL = 1;
 
     protected $app;
 
@@ -188,17 +180,6 @@ class Doppler
             $os = $paymentAnalytics->getOs();
         }
 
-        $dopplerModel = self::MODEL_0;
-
-        if (in_array($payment->getMethod(), [Payment\Method::CARD, Payment\Method::UPI]) === true )
-        {
-            $dopplerModel = self::OLD_MODEL;
-
-            if ($this->checkRazorXForDoppler($payment->getId(), self::RAZORX_NEW_MODEL) === true) {
-                $dopplerModel = self::NEW_MODEL;
-            }
-        }
-
         if($payment->hasCard() === true)
         {
             $card['card_iin'] = $payment->card->getIin();
@@ -271,7 +252,6 @@ class Doppler
             'error_code'            => $errorCode ?? null,
             'internal_error_code'   => $internalErrorCode ?? null,
             'attempt'               => $paymentRetryAttempt ?? null,
-            'model'                 => $dopplerModel,
         ];
 
 
