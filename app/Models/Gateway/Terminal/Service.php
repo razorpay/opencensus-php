@@ -12,10 +12,13 @@ use RZP\Constants\Environment;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Error\ErrorCode;
 use RZP\Exception\LogicException;
+use RZP\Gateway\Hitachi\TerminalFields;
 use RZP\Models\TerminalOnboardingDetail;
-use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\Merchant\Entity as Merchant;
+use RZP\Models\Gateway\Terminal\Constants as TerminalConstants;
 
+const HITACHI_ONBOARDING_TERMINAlS_SERVICE = "hitachi_onboarding_terminals_service";
+const HITACHI_ONBOARDING_TERINALS_SERVICE_VARIANT = "terminals";
 
 class Service extends Base\Service
 {
@@ -41,8 +44,6 @@ class Service extends Base\Service
 
         $gatewayInput = $input['gateway_input'];
 
-        $gatewayProcessor = GatewayFactory::build($gateway);
-
         $createTerminal = $this->shouldCreateTerminal($checkFeatureEnabled, $merchant->getId());
 
         if ($createTerminal === false)
@@ -57,6 +58,25 @@ class Service extends Base\Service
                 'input'       => $input,
             ]);
 
+
+        $variantFlag = $this->app->razorx->getTreatment($merchant['id'], HITACHI_ONBOARDING_TERMINAlS_SERVICE, $this->mode);
+
+        $data = [
+            'feature'   => HITACHI_ONBOARDING_TERMINAlS_SERVICE,
+            'variant'   => $variantFlag,
+        ];
+
+        $this->trace->info(TraceCode::TERMINALS_SERVICE_ONBOARD_RESPONSE, $data);
+
+        $shouldUseTerminalService = ($variantFlag === HITACHI_ONBOARDING_TERINALS_SERVICE_VARIANT ? true : false);
+
+        if ($shouldUseTerminalService === true)
+        {
+             return $this->onboardMerchantViaTerminalService($merchant, $input);
+        }
+
+        $gatewayProcessor = GatewayFactory::build($gateway);
+
         $merchantDetail = $merchant->merchantDetail->toArray();
 
         $gatewayProcessor->addDefaultValueToMerchantDetailIfApplicable($merchantDetail);
@@ -64,6 +84,36 @@ class Service extends Base\Service
         $gatewayProcessor->validateGatewayInput($gatewayInput, $merchantDetail);
 
         return $this->performOnboarding($merchant, $gatewayProcessor, $gatewayInput, $merchantDetail);
+    }
+
+    public function onboardMerchantViaTerminalService(Merchant $merchant, array $input)
+    {
+        $identifiers = null;
+
+        if (empty($input[TerminalFields::MCC]) === false)
+        {
+            $identifiers = [];
+
+            $identifiers[TerminalConstants::CATEGORY] = $input[TerminalFields::MCC];
+        }
+
+        $currency = [];
+        if (empty($input[TerminalConstants::CURRENCY]) === false)
+        {
+            $currency[] = $input["currency"];
+        };
+
+        $terminalServiceResp = $this->app['terminals_service']->initiateOnboarding($merchant->getId(), $input['gateway'],
+            $identifiers, $currency);
+
+        $terminalId = $terminalServiceResp["terminal"]["id"];
+
+
+        $this->trace->info(TraceCode::TERMINALS_SERVICE_RESPONSE_TERMINAL, $terminalServiceResp);
+
+        $newTerminal = $this->repo->terminal->findOrFail($terminalId);
+
+        return $newTerminal;
     }
 
     public function onboardMerchantAsync(Merchant $merchant, $input)

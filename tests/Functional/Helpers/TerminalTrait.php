@@ -57,6 +57,26 @@ trait TerminalTrait
         return $response;
     }
 
+    protected function getHitachiOnboardResponse($id) : \Requests_Response
+    {
+        $data = [];
+        $terminal = ["id" => $id, "gateway" => "hitachi"];
+        $data["terminal"] = $terminal;
+
+        $response = new \Requests_Response;
+
+        $responseData = ['data' => $data];
+
+        $response->body = json_encode($responseData);
+
+        return $response;
+    }
+
+    protected function getHitachiOnboardErrorResponse()
+    {
+        $this->throwTerminalsServiceIntegrationException();
+    }
+
     protected function getSyncDeleteTerminalTerminalServiceResponse() : \Requests_Response
     {
 

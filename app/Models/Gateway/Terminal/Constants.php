@@ -56,4 +56,7 @@ class Constants
     const ACTIVATION_FAILED_TERMINALS             =   'activation_failed_terminals';
     const NOT_APPLICABLE_TERMINALS                =   'not_applicable_terminals'; // terminals which are acquired or already been processed by other mutex
     const VERIFICATION_ERROR_TERMINALS            =   'verification_error_terminals';
+
+    const CURRENCY                                = "currency";
+    const CATEGORY                                = "category";
 }

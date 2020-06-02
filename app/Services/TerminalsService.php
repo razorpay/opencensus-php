@@ -26,6 +26,8 @@ class TerminalsService
 
     const GATEWAY           = 'gateway';
     const MERCHANT_ID       = 'merchant_id';
+    const IDENTIFIERS       = 'identifiers';
+    const CURRENCY          = 'currency';
     const URL               = 'url';
     const CONTENT           = 'content';
     const CONTENT_TYPE      = 'content_type';
@@ -215,7 +217,7 @@ class TerminalsService
         return $this->parseAndReturnResponse($response)[self::DATA][0] ?? [];
     }
 
-    public function initiateOnboarding(string $merchantId, string $gateway): array
+    public function initiateOnboarding(string $merchantId, string $gateway, $identifiers = null, array $currency = []): array
     {
         $params = self::PARAMS[self::INITIATE_ONBOARDING];
 
@@ -223,8 +225,11 @@ class TerminalsService
 
         $content = [
             self::MERCHANT_ID   =>  $merchantId,
-            self::GATEWAY       =>  $gateway
+            self::GATEWAY       =>  $gateway,
+            self::CURRENCY      =>  $currency,
+            self::IDENTIFIERS   =>  $identifiers,
         ];
+
         $content = json_encode($content);
 
         $response = $this->sendRequest($path, $content, $params[self::METHOD], $params[self::OPTIONS]);

@@ -31,7 +31,7 @@ class TerminalOnboardingTest extends TestCase
             'submitted'   => true,
             'business_registered_state' => 'KA',
         ]);
-        
+
         $response = $this->startTest();
 
         $this->assertArrayHasKey('links', $response);
@@ -40,7 +40,7 @@ class TerminalOnboardingTest extends TestCase
     public function testInitiateOnboardingWithNoGatewayInInput()
     {
         $this->ba->proxyAuth();
-        
+
         $this->expectException(Exception\BadRequestValidationFailureException::class);
 
         $this->expectExceptionMessage(
@@ -59,7 +59,7 @@ class TerminalOnboardingTest extends TestCase
         $this->fixtures->create('pricing:standard_plan');
 
         $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1A0Fkd38fGZPVC']);
-        
+
         $merchant = $this->getDbLastEntity('merchant' );
 
         $pricingRules = (new PricingRepo)->getPlanByIdOrFailPublic('1A0Fkd38fGZPVC');
@@ -87,7 +87,7 @@ class TerminalOnboardingTest extends TestCase
         $this->fixtures->create('pricing:standard_plan');
 
         $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1A0Fkd38fGZPVC']);
-        
+
         $pricingRules = (new PricingRepo)->getPlanByIdOrFailPublic('1A0Fkd38fGZPVC');
         $ruleCount = $pricingRules->count();
 
@@ -115,7 +115,7 @@ class TerminalOnboardingTest extends TestCase
         $this->testData[__FUNCTION__] = $this->testData['testEnablePaypalMethodInternal'];
 
         $this->testData[__FUNCTION__]['request']['url'] = '/merchants/1001230000000000/methods';
-        
+
         $this->expectException(Exception\BadRequestException::class);
 
         $this->expectExceptionCode(

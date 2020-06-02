@@ -9,12 +9,14 @@ use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Gateway\Hitachi\TerminalFields;
 use RZP\Models\Merchant\Detail;
+use RZP\Tests\Functional\Helpers\TerminalTrait;
 use RZP\Models\Merchant\Repository as MerchantRepo;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 
 class HitachiOnboardTest extends TestCase
 {
     use RequestResponseFlowTrait;
+    use TerminalTrait;
 
     protected $input;
 
@@ -23,6 +25,8 @@ class HitachiOnboardTest extends TestCase
     protected $merchantId;
 
     protected $pgMerchantId;
+
+    protected $terminalsServiceMock;
 
     public function setUp()
     {
@@ -72,6 +76,47 @@ class HitachiOnboardTest extends TestCase
                 $this->onboard($merchantId, $data);
             },
             \RZP\Exception\GatewayErrorException::class);
+    }
+
+    protected function enableRazorXTreatmentForTerminalService()
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->willReturn('terminals');
+    }
+
+    public function testOnboardViaTerminalService()
+    {
+        $this->createMerchants();
+
+        $this->enableRazorXTreatmentForTerminalService();
+
+        $data =$this->getDefaultInput();
+
+        // Though in production actual terminal will be created by terminal service, but since that part is mocked,
+        // creating the terminal through code only and the mock response shd return that terminal id
+        $terminal = $this->fixtures->create('terminal:direct_hitachi_terminal');
+        $tid = $terminal->getId();
+
+        $this->terminalsServiceMock = $this->getTerminalsServiceMock();
+
+        $this->mockTerminalsServiceSendRequest(function () use ($tid){
+            return $this->getHitachiOnboardResponse($tid);
+        }, 1);
+
+        $response = $this->onboard($this->merchantId, $data);
+
+        $this->assertNotNull($response);
+
+        $this->assertEquals('hitachi', $response['gateway']);
+
+        $this->assertEquals(['non_recurring', 'recurring_3ds', 'recurring_non_3ds', 'debit_recurring'], $response['type']);
     }
 
     // Should add default merchant details if not present

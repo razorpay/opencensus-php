@@ -139,8 +139,6 @@ class TerminalSelectionTest extends TestCase
         $this->assertEquals('1000BdeskTrmnl', $payment['terminal_id']);
     }
 
-
-
     public function testSubMerchantAssignWithMultipleAssignments()
     {
         $this->ba->adminAuth();
@@ -1804,6 +1802,48 @@ class TerminalSelectionTest extends TestCase
         $this->assertEquals('hitachi', $terminal->getGateway());
         $this->assertEquals('hitachiDirectMerchantId', $terminal->getGatewayMerchantId());
         $this->assertEquals('hitachiDirectTerminalId', $terminal->getGatewayTerminalId());
+    }
+
+    //should not create new hitachi terminal as mocked response is of error
+    public function testHitachiTerminalCreationTerminalServiceError()
+    {
+        $this->fixtures->merchant->setCategory('1240');
+
+        $this->enableRazorXTreatmentForTerminalService();
+
+        $this->terminalsServiceMock = $this->getTerminalsServiceMock();
+
+        $this->mockTerminalsServiceSendRequest(function () {
+            return $this->getHitachiOnboardErrorResponse();
+        }, 1);
+
+        $input = $this->getInputForHitachiTerminalCreationOnRun();
+
+        $this->app['rzp.mode'] = Mode::TEST;
+
+        $options = new Options;
+        $selector = new Selector($input, $options);
+        $selectedTerminals = $selector->select();
+
+        // size of selectedTerminals should be 1 only with existing hdfc terminals, hitachi terminal won't be created
+        $this->assertEquals(1, sizeof($selectedTerminals));
+
+        $terminal = $selectedTerminals[0];
+
+        $this->assertEquals('hdfc', $terminal->getGateway());
+    }
+
+    protected function enableRazorXTreatmentForTerminalService()
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->willReturn('terminals');
     }
 
     public function testDuplicateHitachiTerminalCreationOnRunWithDisabledTerminal()
