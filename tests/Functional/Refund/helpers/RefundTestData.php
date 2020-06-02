@@ -981,7 +981,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Bad request'
+                    'description' => 'Your Negative Balance Limit has reached its maximum. Please Add funds to your account.'
                 ],
             ],
             'status_code' => 400,

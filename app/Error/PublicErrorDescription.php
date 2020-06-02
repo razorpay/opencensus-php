@@ -1093,4 +1093,11 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_UPI_MANDATE_NOT_AVAILABLE_ON_VPA                      = 'UPI Mandate not available on VPA.';
     const BAD_REQUEST_PAYMENT_UPI_MANDATE_NOT_REVOKABLE                             = 'UPI Mandate cannot be revoked';
     const BAD_REQUEST_PAYMENT_UPI_MANDATE_AUTO_CAPTURE_NOT_ALLOWED                  = 'Auto capture is not allowed for upi mandates.';
+    const BAD_REQUEST_NEGATIVE_BALANCE_BREACHED                                      = 'Your Negative Balance Limit has reached its maximum. Please Add funds to your account.';
+    const RESERVE_BALANCE_CREATE_ALREADY_IN_PROGRESS                                 = 'Reserve Balance creation is already in progress';
+    const BAD_REQUEST_RESERVE_BALANCE_TICKET_NOT_FOUND                               = 'Reserve Balance creation ticket not found';
+    const FRESHDESK_TICKET_ALREADY_EXISTS                                             = 'Freshdesk ticket for Reserve Balance creation already exists';
+    const BAD_REQUEST_BALANCE_CONFIG_ALREADY_EXISTS_FOR_BALANCE                      = 'Balance Config already exists for this Balance';
+    const BAD_REQUEST_BALANCE_CONFIG_INVALID_NEGATIVE_LIMIT                          = 'Invalid negative limit for Balance Config creation';
+    const BAD_REQUEST_BALANCE_CONFIG_INVALID_NEGATIVE_TRANSACTION_FLOW               = 'Invalid transaction flows for Balance Config creation';
 }
