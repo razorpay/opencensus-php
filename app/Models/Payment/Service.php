@@ -2020,12 +2020,6 @@ class Service extends Base\Service
 
         $this->trace->debug(TraceCode::PAYMENT_UPDATE_HOLD_CRON, ['step' => 'summary', 'summary' => $cronSummary]);
 
-        $slackMessage = 'CRON: Payment set on_hold=false for elapsed on_hold_until';
-
-        $slackChannel = Config::get('slack.channels.tech_logs');
-
-        $this->slack->queue($slackMessage, $cronSummary, ['channel' => $slackChannel]);
-
         return [
             'success'   => true,
             'summary'   => $cronSummary
