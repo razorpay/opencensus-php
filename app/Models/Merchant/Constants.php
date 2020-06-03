@@ -16,6 +16,7 @@ final class Constants
     const SUSPEND                                 = 'suspend';
     const UNSUSPEND                               = 'unsuspend';
     const PAYMENT_TIMEOUT_WINDOW                  = 'payment_timeout_window';
+    const MERCHANT                                = 'merchant';
 
 
     // Used for pagination in submerchant listing for partners

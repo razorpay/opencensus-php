@@ -28,6 +28,10 @@ return [
                     ],
                 ],
                 'can_submit'   => false,
+                'merchant'     => [
+                    'activated' => false,
+                    'live'      => false,
+                ]
             ],
         ],
     ],

@@ -1505,6 +1505,7 @@ class Core extends Base\Core
         $response[Merchant\Entity::ACTIVATED]                   = (int) $merchant->isActivated();
         $response[Merchant\Entity::LIVE]                        = $merchant->isLive();
         $response[Merchant\Entity::INTERNATIONAL]               = $merchant->isInternational();
+        $response[Constants::MERCHANT]                          = $merchant->toArrayPublic();
 
         $response = $this->appendBankingSpecificDetails($response, $merchant);
 
