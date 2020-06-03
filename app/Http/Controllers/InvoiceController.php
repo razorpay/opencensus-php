@@ -9,16 +9,36 @@ use Response;
 use ApiResponse;
 use RZP\Constants;
 use RZP\Constants\Mode;
+use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
+use RZP\Models\Invoice\Type;
+use RZP\Models\Invoice\Entity;
 use RZP\Exception\BaseException;
 use RZP\Models\Merchant\Preferences;
+use RZP\Models\Feature\Constants as Feature;
 use Illuminate\Http\Response as ResponseCodes;
 
 class InvoiceController extends Controller
 {
+    protected $paymentlinkservice;
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->paymentlinkservice = $this->app['paymentlinkservice'];
+    }
+
     public function createInvoice()
     {
         $input = Request::all();
+
+        if ($this->shouldForwardToPaymentLinkService($input, true) === true)
+        {
+            $response =  $this->paymentlinkservice->sendRequest($this->app->request);
+
+            return ApiResponse::json($response['response'], $response['status_code']);
+        }
 
         $invoice = $this->service()->create($input);
 
@@ -42,6 +62,27 @@ class InvoiceController extends Controller
     {
         $input = Request::all();
 
+        if ($this->shouldForwardToPaymentLinkService() === true)
+        {
+            try
+            {
+                $response = $this->paymentlinkservice->sendRequest($this->app->request);
+
+                if ($response['status_code'] === 200)
+                {
+                    return ApiResponse::json($response['response']);
+                }
+
+                $this->trace->info(TraceCode::PAYMENT_LINK_SERVICE_NO_DATA_FOUND, ['id' => $id]);
+                // all other cases , do nothing. will try fetching from invoice repo
+            }
+            catch(\Throwable $e)
+            {
+                $this->trace->warn(TraceCode::PAYMENT_LINK_SERVICE_NO_DATA_FOUND, ['id' => $id]);
+                // do nothing. will try fetching from invoice repo
+            }
+        }
+
         $invoice = $this->service()->fetch($id, $input);
 
         return ApiResponse::json($invoice);
@@ -50,6 +91,26 @@ class InvoiceController extends Controller
     public function getInvoices()
     {
         $input = Request::all();
+
+        if ($this->shouldForwardToPaymentLinkService($input, true) === true)
+        {
+            try
+            {
+                $response = $this->paymentlinkservice->sendRequest($this->app->request);
+
+                if ($response['status_code'] === 200)
+                {
+                    return ApiResponse::json($response['response']);
+                }
+
+                $this->trace->warn(TraceCode::PAYMENT_LINK_SERVICE_NO_DATA_FOUND, ['input' => $input]);
+            }
+            catch(\Throwable $e)
+            {
+                $this->trace->warn(TraceCode::PAYMENT_LINK_SERVICE_NO_DATA_FOUND, ['input' => $input]);
+                // do nothing. will try fetching from invoice repo
+            }
+        }
 
         $invoices = $this->service()->fetchMultiple($input);
 
@@ -60,6 +121,26 @@ class InvoiceController extends Controller
     {
         $input = Request::all();
 
+        if ($this->shouldForwardToPaymentLinkService() === true)
+        {
+            try
+            {
+                $response = $this->paymentlinkservice->sendRequest($this->app->request);
+
+                if ($response['status_code'] === 200)
+                {
+                    return ApiResponse::json($response['response']);
+                }
+
+                $this->trace->warn(TraceCode::PAYMENT_LINK_SERVICE_NO_DATA_FOUND, ['input' => $input]);
+            }
+            catch(\Throwable $e)
+            {
+                $this->trace->warn(TraceCode::PAYMENT_LINK_SERVICE_NO_DATA_FOUND, ['input' => $input]);
+                // do nothing. will try fetching from invoice repo
+            }
+        }
+
         $invoiceCount = $this->service()->getInvoicesCount($input);
 
         return ApiResponse::json($invoiceCount);
@@ -68,6 +149,38 @@ class InvoiceController extends Controller
     public function updateInvoice(string $id)
     {
         $input = Request::all();
+
+        if ($this->shouldForwardToPaymentLinkService() === true)
+        {
+            try
+            {
+                $response = $this->paymentlinkservice->sendRequest($this->app->request);
+
+                $jsonResponse = $response['response'];
+
+                if ($response['status_code'] === 200)
+                {
+                    return ApiResponse::json($jsonResponse);
+                }
+
+                if ($response['status_code'] === 400)
+                {
+                    $errorCode = $jsonResponse['error']['code'] ?? null;
+
+                    if ($errorCode === self::VALIDATION_ERROR)
+                    {
+                        return ApiResponse::json($jsonResponse, $response['status_code']);
+                    }
+                }
+
+                $this->trace->warn(TraceCode::PAYMENT_LINK_SERVICE_NO_DATA_FOUND, ['id' => $id, 'input' => $input]);
+            }
+            catch(\Throwable $e)
+            {
+                $this->trace->warn(TraceCode::PAYMENT_LINK_SERVICE_NO_DATA_FOUND, ['id' => $id, 'input' => $input]);
+                // do nothing. will try fetching from invoice repo
+            }
+        }
 
         $invoice = $this->service()->update($id, $input);
 
@@ -108,6 +221,26 @@ class InvoiceController extends Controller
 
     public function deleteInvoice(string $id)
     {
+        if ($this->shouldForwardToPaymentLinkService() === true)
+        {
+            try
+            {
+                $response = $this->paymentlinkservice->sendRequest($this->app->request);
+
+                if ($response['status_code'] === 200)
+                {
+                    return ApiResponse::json($response['response']);
+                }
+
+                $this->trace->warn(TraceCode::PAYMENT_LINK_SERVICE_NO_DATA_FOUND, ['id' => $id]);
+            }
+            catch(\Throwable $e)
+            {
+                $this->trace->warn(TraceCode::PAYMENT_LINK_SERVICE_NO_DATA_FOUND, ['id' => $id]);
+                // do nothing. will try fetching from invoice repo
+            }
+        }
+
         $response = $this->service()->delete($id);
 
         return ApiResponse::json($response);
@@ -160,6 +293,24 @@ class InvoiceController extends Controller
 
     public function sendNotification(string $id, string $medium)
     {
+        if ($this->shouldForwardToPaymentLinkService() === true)
+        {
+            try {
+                $response = $this->paymentlinkservice->sendRequest($this->app->request);
+
+                if ($response['status_code'] === 200)
+                {
+                    return ApiResponse::json($response['response']);
+                }
+
+                $this->trace->warn(TraceCode::PAYMENT_LINK_SERVICE_NO_DATA_FOUND, ['id' => $id]);
+            } catch (\Throwable $e)
+            {
+                $this->trace->warn(TraceCode::PAYMENT_LINK_SERVICE_NO_DATA_FOUND, ['id' => $id]);
+                // do nothing. will try fetching from invoice repo
+            }
+        }
+
         $data = $this->service()->sendNotification($id, $medium);
 
         return ApiResponse::json($data);
@@ -167,6 +318,26 @@ class InvoiceController extends Controller
 
     public function cancelInvoice(string $id)
     {
+        if ($this->shouldForwardToPaymentLinkService() === true)
+        {
+            try
+            {
+                $response = $this->paymentlinkservice->sendRequest($this->app->request);
+
+                if ($response['status_code'] === 200)
+                {
+                    return ApiResponse::json($response['response']);
+                }
+
+                $this->trace->warn(TraceCode::PAYMENT_LINK_SERVICE_NO_DATA_FOUND, ['id' => $id]);
+            }
+            catch(\Throwable $e)
+            {
+                $this->trace->warn(TraceCode::PAYMENT_LINK_SERVICE_NO_DATA_FOUND, ['id' => $id]);
+                // do nothing. will try fetching from invoice repo
+            }
+        }
+
         $invoice = $this->service()->cancelInvoice($id);
 
         return ApiResponse::json($invoice);
@@ -417,5 +588,50 @@ class InvoiceController extends Controller
         $response = $this->service()->sendEmailForPaymentLinkService($input);
 
         return ApiResponse::json($response);
+    }
+
+    protected function shouldForwardToPaymentLinkService(array $input = [], bool $checkForInput = false): bool
+    {
+        if ($this->app['basicauth']->isPaymentLinkServiceApp() === true)
+        {
+            return false;
+        }
+
+        $merchant = $this->app['basicauth']->getMerchant();
+
+        if ($merchant !== null)
+        {
+            if ($merchant->isFeatureEnabled(Feature::PAYMENTLINKS_COMPATIBILITY_V2) === false)
+            {
+                return false;
+            }
+
+            if ($checkForInput === true)
+            {
+                return $this->checkInputHasTypeLink($input);
+            }
+
+            return true;
+        }
+
+        return false;
+    }
+
+    protected function checkInputHasTypeLink(array $input): bool
+    {
+        if ((isset($input[Entity::TYPE]) === true)
+            && ($input[Entity::TYPE] === Type::LINK))
+        {
+            return true;
+        }
+
+        if ((isset($input[Entity::TYPES]) === true) && (is_array($input[Entity::TYPES]) === true))
+        {
+            if (in_array(Type::LINK, $input[Entity::TYPES]) === true)
+            {
+                return true;
+            }
+        }
+        return false;
     }
 }

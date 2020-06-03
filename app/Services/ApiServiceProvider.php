@@ -301,6 +301,11 @@ class ApiServiceProvider extends BaseServiceProvider
             return new RZP\Modules\Manager($app);
         });
 
+        $this->app->singleton('paymentlinkservice', function($app)
+        {
+            return new PaymentLinkService($app);
+        });
+
         $this->registerShield();
 
         $this->registerRedisDualWrite();
@@ -426,6 +431,7 @@ class ApiServiceProvider extends BaseServiceProvider
             'freshdesk_client',
             'token_service',
             'terminals_service',
+            'paymentlinkservice'
         ];
     }
 

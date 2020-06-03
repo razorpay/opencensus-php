@@ -1,0 +1,191 @@
+<?php
+
+namespace RZP\Services;
+
+use Cache;
+use ApiResponse;
+use RZP\Exception;
+use RZP\Error\ErrorCode;
+use RZP\Trace\TraceCode;
+use RZP\Http\RequestHeader;
+use Illuminate\Http\Request;
+use RZP\Http\Request\Requests;
+use Razorpay\Trace\Logger as Trace;
+
+
+
+class PaymentLinkService
+{
+    const CONTENT_TYPE_JSON = 'application/json';
+
+    /**
+     * @var string
+     */
+    protected $baseUrl;
+
+    /**
+     * @var string
+     */
+    protected $key;
+
+    /*
+     * @var string
+     */
+    protected $secret;
+
+    protected $ba;
+
+    protected $timeOut;
+
+    protected $trace;
+
+    public function __construct($app)
+    {
+        $plinkConfig   = $app['config']->get('applications.payment_links');
+        $this->trace   = $app['trace'];
+        $this->baseUrl = $plinkConfig['url'];
+        $this->key     = $plinkConfig['username'];
+        $this->secret  = $plinkConfig['secret'];
+        $this->timeOut = $plinkConfig['timeout'];
+        $this->ba      = $app['basicauth'];
+    }
+
+    public function sendRequest(\Illuminate\Http\Request $request, $param = null)
+    {
+        $params = $this->getRequestParams($request);
+
+        try {
+            $response = \Requests::request(
+                $params['url'],
+                $params['headers'],
+                $params['data'],
+                $params['method'],
+                $params['options']);
+
+            return $this->parseAndReturnResponse($response);
+        }
+        catch(\Throwable $e)
+        {
+            throw new Exception\ServerErrorException(
+                'Error on payment link service',
+                ErrorCode::SERVER_ERROR_PAYMENT_LINK_SERVICE_FAILURE,
+                null,
+                $e
+            );
+        }
+    }
+
+    protected function parseAndReturnResponse($res)
+    {
+        $code = $res->status_code;
+
+        $contentType  = $res->headers['content-type'];
+
+        $res = json_decode($res->body, true);
+
+        return ['status_code' => $code, 'response' => $res];
+    }
+
+    protected function getRequestParams(\Illuminate\Http\Request $request)
+    {
+        $path = $request->path();
+
+        $url = $this->baseUrl . $path;
+
+        $urlAppend = '?';
+
+        if ($request->getQueryString() !== null)
+        {
+            $url .= $urlAppend . $request->getQueryString();
+
+            $urlAppend = '&';
+        }
+
+        $method = $request->method();
+
+        $headers = $this->getHeaders($request);
+
+        $requestBody = [];
+
+        $body = $request->post();
+
+        if ((empty($body) === false) && ($request->method() !== Request::METHOD_GET))
+        {
+            $requestBody = json_encode($body);
+        }
+
+        //needed because dashboard backend passes the get params in request body
+        if ((empty($body) === false) && ($request->method() === Request::METHOD_GET))
+        {
+            $extraParams = http_build_query( $body );
+
+            $extraParams = preg_replace('/%5B[0-9]+%5D/simU', '%5B%5D', $extraParams);
+
+            $url .= $urlAppend .$extraParams;
+        }
+
+        $options = [
+            'timeout' => $this->timeOut,
+            'auth'    => [$this->key, $this->secret],
+        ];
+
+        $this->trace->info(TraceCode::PAYMENT_LINK_SERVICE_REQUEST, ['url' => $url]);
+
+        $response = [
+            'url'     => $url,
+            'headers' => $headers,
+            'data'    => $requestBody,
+            'options' => $options,
+            'method'  => $method,
+        ];
+
+        return $response;
+    }
+
+    protected function getHeaders(\Illuminate\Http\Request $request): array
+    {
+        $headers = [
+            'Accept'            => self::CONTENT_TYPE_JSON,
+            'Content-Type'      => self::CONTENT_TYPE_JSON,
+            'X-Razorpay-TaskId' => $request->getTaskId(),
+        ];
+
+        if ($this->ba->getMerchantId() !== null)
+        {
+            $headers['X-Razorpay-MerchantId'] = $this->ba->getMerchantId();
+
+            $merchant = $this->ba->getMerchant();
+
+            $enabledFeatures = $merchant->getEnabledFeatures();
+
+            $headers['X-Razorpay-Merchant-Features'] = json_encode($enabledFeatures);
+        }
+
+        $user = $this->ba->getUser();
+
+        if ($user !== null)
+        {
+            $headers['X-Razorpay-UserId'] = $user->getId();
+
+            $role = $this->ba->getUserRole();
+
+            $headers['X-Razorpay-UserRole'] = $role;
+        }
+
+        if ($this->ba->isBatchApp() === true)
+        {
+            $batchId = $request->header(RequestHeader::X_Batch_Id) ?? null;
+
+            if ($batchId !== null)
+            {
+                $headers['X-Razorpay-BatchId'] = $batchId;
+            }
+        }
+
+        $headers['X-Razorpay-Mode']          = $this->ba->getMode();
+
+        $headers['X-Razorpay-Auth']          = $this->ba->getAuthType();
+
+        return $headers;
+    }
+}

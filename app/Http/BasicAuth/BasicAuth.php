@@ -1505,6 +1505,11 @@ class BasicAuth
         return ($this->getInternalApp() === 'batch');
     }
 
+    public function isPaymentLinkServiceApp(): bool
+    {
+        return ($this->getInternalApp() === 'payment_links');
+    }
+
     public function getOAuthApplicationId()
     {
         return $this->applicationId;

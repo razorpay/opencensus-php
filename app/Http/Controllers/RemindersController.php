@@ -4,10 +4,13 @@ namespace RZP\Http\Controllers;
 
 use Request;
 use ApiResponse;
+use RZP\Constants\Entity;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
+use RZP\Trace\TraceCode;
 use App\Http\AppResponse;
 use RZP\Exception\BadRequestException;
+use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\Reminders\ReminderProcessor;
 
 class RemindersController extends Controller
@@ -65,11 +68,15 @@ class RemindersController extends Controller
         ]
     ];
 
+    protected $paymentlinkservice;
+
     public function __construct()
     {
         parent::__construct();
 
         $this->reminders = $this->app['reminders'];
+
+        $this->paymentlinkservice = $this->app['paymentlinkservice'];
     }
 
     public function sendReminder(string $mode, string $entity, string $namespace, string $id)
@@ -145,10 +152,55 @@ class RemindersController extends Controller
 
     public function remindersNextRun(string $entity, string $id, string $namespace = '')
     {
+        if ($this->shouldForwardToPaymentLinkService($entity) === true)
+        {
+            try {
+                $response = $this->paymentlinkservice->sendRequest($this->app->request);
+
+                if ($response['status_code'] === 200)
+                {
+                    return ApiResponse::json($response['response']);
+                }
+
+                $this->trace->warn(TraceCode::PAYMENT_LINK_SERVICE_NO_DATA_FOUND, ['id' => $id]);
+            } catch (\Throwable $e)
+            {
+                $this->trace->warn(TraceCode::PAYMENT_LINK_SERVICE_NO_DATA_FOUND, ['id' => $id]);
+                // do nothing. will try fetching from invoice repo
+            }
+        }
+
         $processor = ReminderProcessor::getReminderProcessorName($namespace);
 
         $response =  (new $processor)->nextRunAt($entity, $id);
 
         return ApiResponse::json($response);
+    }
+
+    protected function shouldForwardToPaymentLinkService(string $entity): bool
+    {
+        if ($entity !== Entity::INVOICE)
+        {
+           return false;
+        }
+
+        if ($this->app['basicauth']->isPaymentLinkServiceApp() === true)
+        {
+            return false;
+        }
+
+        $merchant = $this->app['basicauth']->getMerchant();
+
+        if ($merchant !== null)
+        {
+            if ($merchant->isFeatureEnabled(Feature::PAYMENTLINKS_COMPATIBILITY_V2) === false)
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        return false;
     }
 }

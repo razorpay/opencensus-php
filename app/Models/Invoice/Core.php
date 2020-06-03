@@ -1106,7 +1106,35 @@ class Core extends Base\Core
 
     public function fetchStatsOfBatch(Batch\Entity $batch): array
     {
-        $stats = $this->repo->invoice->getInvoiceStatsForBatch($batch);
+        $stats = null;
+
+        if ($this->isPaymentLinkServiceCompatibilityFeatureEnabled() === true)
+        {
+            try
+            {
+                $paymentLinkService = $this->app['paymentlinkservice'];
+
+                $response = $paymentLinkService->sendRequest($this->app->request);
+
+                if ($response['status_code'] === 200)
+                {
+                    $stats =  $response['response'];
+                }
+
+                $this->trace->info(TraceCode::PAYMENT_LINK_SERVICE_NO_DATA_FOUND, ['batch' => $batch->getId()]);
+                // all other cases , do nothing. will try fetching from invoice repo
+            }
+            catch(\Throwable $e)
+            {
+                $this->trace->warn(TraceCode::PAYMENT_LINK_SERVICE_NO_DATA_FOUND, ['batch' => $batch->getId()]);
+                // do nothing. will try fetching from invoice repo
+            }
+        }
+
+        if ($stats === null)
+        {
+            $stats = $this->repo->invoice->getInvoiceStatsForBatch($batch);
+        }
 
         //
         // created_count is the number of links that were in `issued` state
@@ -1337,5 +1365,20 @@ class Core extends Base\Core
                 ['resource' => $merchant->getId()."-".$receipt]
             );
         }
+    }
+
+    protected function isPaymentLinkServiceCompatibilityFeatureEnabled(): bool
+    {
+        $merchant = $this->merchant;
+
+        if ($merchant !== null)
+        {
+            if ($merchant->isFeatureEnabled(Features::PAYMENTLINKS_COMPATIBILITY_V2) === true)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

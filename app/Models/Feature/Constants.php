@@ -364,6 +364,8 @@ class Constants
      * payment link service endpoints
      */
     const PAYMENTLINKS_V2                = 'paymentlinks_v2';
+
+    const PAYMENTLINKS_COMPATIBILITY_V2  = 'paymentlinks_v2_compat';
     /*
      * This flag when enabled, send checkout_config_id will be send in order response
      * if the value is not null
@@ -593,6 +595,7 @@ class Constants
         self::COVID                           => true,
         self::SR_SENSITIVE                    => true,
         self::PAYMENTLINKS_V2                 => true,
+        self::PAYMENTLINKS_COMPATIBILITY_V2   => true,
         self::SEND_PAYMENT_CONFIG_ID          => false,
         self::PAYMENT_STATUS_AGGREGATE        => true,
         self::SEND_PAYMENT_LATE_AUTH          => true,
@@ -767,6 +770,11 @@ class Constants
         self::PAYMENTLINKS_V2             => [
             'feature'       => self::PAYMENTLINKS_V2,
             'display_name'  => 'Payment links micro service for dashboard',
+            'documentation' => '',
+        ],
+        self::PAYMENTLINKS_COMPATIBILITY_V2  => [
+            'feature'       => self::PAYMENTLINKS_COMPATIBILITY_V2,
+            'display_name'  => 'Payment links micro service compatibility with old apis',
             'documentation' => '',
         ],
     ];

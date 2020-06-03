@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Reminders;
 
+use RZP\Exception;
 use RZP\Models\Invoice;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
@@ -15,6 +16,8 @@ class InvoiceReminderProcessor extends ReminderProcessor
 
     protected $elfin;
 
+    protected $paymentlinkservice;
+
     public function __construct()
     {
         parent::__construct();
@@ -22,11 +25,29 @@ class InvoiceReminderProcessor extends ReminderProcessor
         $this->baseInvoiceUrl = $this->app['config']->get('app.invoice');
 
         $this->elfin = $this->app['elfin'];
+
+        $this->paymentlinkservice = $this->app['paymentlinkservice'];
     }
 
     public function process(string $entity, string $namespace, string $id, array $input)
     {
-        $invoice = $this->repo->$entity->findOrFail($id);
+        $invoice = null;
+
+        try {
+            $invoice = $this->repo->$entity->findOrFail($id);
+        }
+        catch(\Throwable $e)
+        {
+            // sending request to pl service since, id cannot be found here
+            $response =  $this->paymentlinkservice->sendRequest($this->app->request);
+
+            if ($response['status_code'] === 200)
+            {
+                return $response['response'];
+            }
+
+            $this->handleInvalidReminder();
+        }
 
         $reminderEntity = $this->repo->invoice_reminder->getByInvoiceId($invoice->getId());
 

@@ -4470,7 +4470,15 @@ class Route
             'order_create',
             'payment_fetch_by_id',
             'order_payments',
+            'invoice_fetch',
+            'invoice_fetch_multiple',
             'read_options_by_ref_id',
+            'invoice_update',
+            'invoice_delete',
+            'invoice_cancel',
+            'invoice_get_count',
+            'customer_create',
+            'order_fetch_by_id',
         ],
 
         'kotak' => [
