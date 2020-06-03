@@ -47,8 +47,6 @@ class Core extends Base\Core
 
     protected $lineItemCore;
     protected $pdfGenerator;
-    protected $slack;
-    protected $slackTechLogsChannel;
     protected $eventService;
     protected $options;
     /**
@@ -64,8 +62,6 @@ class Core extends Base\Core
 
         $this->lineItemCore         = new LineItem\Core;
         $this->pdfGenerator         = null;
-        $this->slack                = $this->app['slack'];
-        $this->slackTechLogsChannel = Config::get('slack.channels.tech_logs');
         $this->eventService         = $this->app['events'];
         $this->options              = new Options\Core();
         $this->reminders            = $this->app['reminders'];
@@ -624,10 +620,6 @@ class Core extends Base\Core
         $summary['time_taken'] = $time . ' secs';
 
         $this->trace->debug(TraceCode::INVOICES_EXPIRE_CRON_SUMMARY, $summary);
-
-        $slackMessage = 'Invoices past expire_by, marked expired via cron.';
-
-        $this->slack->queue($slackMessage, $summary, ['channel' => $this->slackTechLogsChannel]);
 
         return $summary;
     }
