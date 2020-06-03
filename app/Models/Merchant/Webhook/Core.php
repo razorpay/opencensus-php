@@ -12,6 +12,7 @@ use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Product;
+use RZP\Constants\Timezone;
 use RZP\Base\RuntimeManager;
 use RZP\Models\Feature\Constants;
 use Razorpay\Trace\Logger as Trace;
@@ -260,19 +261,19 @@ class Core extends Base\Core
     }
 
     /**
-     * Reads webhooks from api and stork, attempts to reconcile.
-     * For now: Helps with updating missing secret in api records.
+     * Reads webhooks from api and attempts to reconcile with stork.
      *
      * Sample payload-
+     * (Field webhook_ids is optional.)
      * {
-     *   "dry_run": false,
+     *   "dry_run": true,
      *   "webhook_ids": [
      *     "Ad3K7rDLkTWbJK",
      *     "EvGK2kr7jqlvPo"
      *   ]
      * }
      *
-     * @param  array  $input - Should contain webhook_ids to reconcile, dry_run.
+     * @param  array  $input - See sample payload ^
      * @return array         - List of webhooks that (will be/have been) reconciled.
      */
     public function webhookStorkRecon(array $input): array
@@ -280,27 +281,36 @@ class Core extends Base\Core
         RuntimeManager::setMemoryLimit('1024M');
         RuntimeManager::setTimeLimit(1000);
 
-        $dryRun = $input["dry_run"] ?? false;
-        $webhookIDs = $input["webhook_ids"];
+        $dryRun = $input["dry_run"] ?? true;
 
-        $idsWithMismatch = [];
+        // Fetches api webhooks to be reconciled.
+        $webhookIds = $input["webhook_ids"] ?? null;
+        // Ref: http://support.ecisolutions.com/doc-ddms/help/reportsmenu/ascii_sort_order_chart.htm
+        $afterId = $input['after_id'] ?? ' ';
+        $limit = $input['limit'] ?? 100;
+        if ($webhookIds !== null)
+        {
+            $webhooks = $this->repo->webhook->findMultipleByIds($webhookIds);
+        }
+        else
+        {
+            $webhooks = Entity::where(Entity::ID, '>=', $afterId)->orderBy(Entity::ID)->take($limit)->get();
+        }
 
-        $apiWebhooks = $this->repo->webhook->findMultipleByIds($webhookIDs);
         $stork = new Stork;
-
         // Fetch stork webhook entries for all valid webhooks queried.
-        foreach ($apiWebhooks as $index => $apiWebhook)
+        foreach ($webhooks as $index => $webhook)
         {
             try
             {
-                $fetchedWebhooks = $stork->listWithSecret($apiWebhook);
-                foreach ($fetchedWebhooks['webhooks'] as $fw)
+                $storkWebhooks = $stork->listWithSecret($webhook);
+                foreach ($storkWebhooks['webhooks'] ?? [] as $storkWebhook)
                 {
                     // Stork might have multiple webhooks per merchant/service.
-                    // IDs should match for webhooks created via API
-                    if ($fw['id'] === $apiWebhook[Entity::ID])
+                    // Id should match for webhooks created via api.
+                    if ($storkWebhook['id'] === $webhook->getId())
                     {
-                        $apiWebhooks[$index]['stork_data'] = $fw;
+                        $webhooks[$index]['stork_data'] = $storkWebhook;
                         break;
                     }
                 }
@@ -311,35 +321,78 @@ class Core extends Base\Core
             }
         }
 
-        // Build a set of all webhooks with secret mismatch
-        foreach ($apiWebhooks as $apiWebhook)
+        // At this point each of $webhooks 'should' contain stork_data, which is corresponding stork's webhook.
+        // Now finds all webhooks of api with attributes not matching with corresponding stork's webhook.
+        $webhooksWithMismatch = [];
+        $webhooksNotFoundInStork = [];
+        $mismatchesByWebhookIds = [];
+        foreach ($webhooks as $webhook)
         {
-            $mismatch = ($apiWebhook[Entity::SECRET] ?? null) !== ($apiWebhook['stork_data']['secret'] ?? null);
+            if (isset($webhook['stork_data']) === false)
+            {
+                $webhooksNotFoundInStork[] = $webhook;
+                continue;
+            }
+
+            $mismatches = [];
+            $storkWebhook = $webhook['stork_data'];
+            if ($webhook->getSecret() !== ($storkWebhook['secret'] ?? null))
+            {
+                $mismatches[] = 'secret';
+            }
+            if (($webhook->isActive() === false) !== ($storkWebhook['disabled'] ?? false))
+            {
+                $mismatches[] = 'active';
+            }
+            if ($webhook->getUrl() !== $storkWebhook['url'])
+            {
+                $mismatches[] = 'url';
+            }
+            $apiSubscriptionsSorted = array_sort(array_keys(array_filter($webhook->getEvents())));
+            $storkSubscriptionsSorted = array_sort(array_pluck($storkWebhook['subscriptions'], 'eventmeta.name'));
+            if ($apiSubscriptionsSorted != $storkSubscriptionsSorted)
+            {
+                $mismatches[] = 'subscriptions';
+            }
+            if (Carbon::createFromTimestamp($webhook->getCreatedAt(), Timezone::IST)->toIso8601ZuluString() !== $storkWebhook['created_at'])
+            {
+                $mismatches[] = 'created_at';
+            }
 
             // Maintain a list of webhooks to update (webhooks with secret mismatch).
-            if ($mismatch === true)
+            if (count($mismatches) > 0)
             {
-                $idsWithMismatch[] = $apiWebhook[Entity::ID];
+                $webhooksWithMismatch[] = $webhook;
+                $mismatchesByWebhookIds[$webhook->getId()] = $mismatches;
             }
         }
 
-        // Update only if dry_run is false, else simply return webhook info.
+        // Now upserts only if 'dry_run' is false.
+        $webhookIdsFailedToUpsertToStork = [];
         if ($dryRun === false)
         {
-            foreach ($apiWebhooks as $apiWebhook)
+            foreach (array_merge($webhooksNotFoundInStork, $webhooksWithMismatch) as $webhook)
             {
-                if (in_array($apiWebhook[Entity::ID], $idsWithMismatch) === true)
+                try
                 {
-                    $updateInput[Entity::SECRET] = $apiWebhook['stork_data']['secret'];
-                    unset($apiWebhook['stork_data']);
-
-                    $apiWebhook->edit($updateInput);
-                    $this->repo->saveOrFail($apiWebhook);
+                    $stork->upsert($webhook);
+                }
+                catch (\Throwable $e)
+                {
+                    $this->trace->traceException($e);
+                    $webhookIdsFailedToUpsertToStork[] = $webhook->getId();
                 }
             }
         }
 
-        return $idsWithMismatch;
+        // Logs and returns summary.
+        $summary = compact('dryRun','webhookIds','afterId','limit','mismatchesByWebhookIds','webhookIdsFailedToUpsertToStork');
+        $summary['webhookIdsTotal'] = count($webhooks);
+        $summary['webhookIdsWithMismatch'] = array_pluck($webhooksWithMismatch, 'id');
+        $summary['webhookIdsNotFoundInStork'] = array_pluck($webhooksNotFoundInStork, 'id');
+        $this->trace->info(TraceCode::STORK_WEBHOOK_RECON_SUMMARY, $summary);
+
+        return $summary;
     }
 
     /**
