@@ -231,6 +231,10 @@ export default class PaymentDetailsContainer extends Component {
     });
   };
 
+  onUpdateReferenceId = () => {
+    this.props.fetchItem(this.props.id);
+  };
+
   openRefundModal = (payment, refunds) => {
     this.props.openModal({
       component: (
@@ -336,6 +340,7 @@ export default class PaymentDetailsContainer extends Component {
           goToLink={this.goToLink}
           openRefundModal={this.openRefundModal}
           onRefundDetailsToggleClick={this.onRefundDetailsToggleClick}
+          onUpdateReferenceId={this.onUpdateReferenceId}
           isRoleAllowedEdit={this.props.user.isAllowedEdit('payments')}
           viewSettlementOverview={this.viewSettlementOverview}
           config={config}

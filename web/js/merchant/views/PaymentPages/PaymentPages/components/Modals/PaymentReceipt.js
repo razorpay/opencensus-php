@@ -19,19 +19,25 @@ export default class PaymentReceipt extends React.Component {
 
     let selectedInputField = null;
 
-    this.options = formItems.map(item => {
-      if (item.name === receipt.selected_udf_field) {
-        selectedInputField = item;
+    const udfFormFields = formItems.filter(field => {
+      const isUDFField = !field.hasOwnProperty('item');
+
+      return isUDFField;
+    });
+
+    this.options = udfFormFields.map(field => {
+      if (field.name === receipt.selected_udf_field) {
+        selectedInputField = field;
       }
 
       return {
-        name: item.name,
-        title: item.title,
+        name: field.name,
+        title: field.title,
         disabled:
           [
             paymentPageEntity.settings.checkout_options.email,
             paymentPageEntity.settings.checkout_options.phone,
-          ].indexOf(item.name) > -1,
+          ].indexOf(field.name) > -1,
       };
     });
 
@@ -105,10 +111,16 @@ export default class PaymentReceipt extends React.Component {
                 />
 
                 <div class="doc-links">
-                  <a href="https://razorpay.com/payment-pages" target="_blank">
+                  <a
+                    href="https://razorpay.com/docs/payment-pages/receipt-80-g/#pdf-receipt-to-customers"
+                    target="_blank"
+                  >
                     View Sample Receipt <i class="i i-external-link" />
                   </a>
-                  <a href="https://razorpay.com/payment-pages" target="_blank">
+                  <a
+                    href="https://razorpay.com/docs/payment-pages/receipt-80g"
+                    target="_blank"
+                  >
                     Learn More <i class="i i-external-link" />
                   </a>
                 </div>

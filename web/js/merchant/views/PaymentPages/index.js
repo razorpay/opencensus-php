@@ -15,6 +15,8 @@ import QuickGuide from './QuickGuide';
 
 import PaymentPagesList from 'merchant/views/PaymentPages/PaymentPages/List';
 
+import PaymentPageReceiptBanner from 'merchant/components/Announcements/PaymentPageReceipt';
+
 @connect(
   state => {
     return {
@@ -22,6 +24,7 @@ import PaymentPagesList from 'merchant/views/PaymentPages/PaymentPages/List';
         state,
         RZPFeatures.PP
       ),
+      user: state.session.user,
     };
   },
   {
@@ -40,23 +43,29 @@ export default class PaymentPagesContainer extends React.Component {
     }
 
     return (
-      <tabbed-container>
-        {isQuickGuideOpen && <QuickGuide />}
+      <>
+        {this.props.user.isPaymentPageReceiptsEnabled && (
+          <PaymentPageReceiptBanner />
+        )}
 
-        <header id="link-header">
-          <NavLink exact to="/paymentpages">
-            Payment Pages
-          </NavLink>
-        </header>
+        <tabbed-container>
+          {isQuickGuideOpen && <QuickGuide />}
 
-        <TestModeBanner />
+          <header id="link-header">
+            <NavLink exact to="/paymentpages">
+              Payment Pages
+            </NavLink>
+          </header>
 
-        <content>
-          <Switch>
-            <Route path="/paymentpages" component={PaymentPagesList} />
-          </Switch>
-        </content>
-      </tabbed-container>
+          <TestModeBanner />
+
+          <content>
+            <Switch>
+              <Route path="/paymentpages" component={PaymentPagesList} />
+            </Switch>
+          </content>
+        </tabbed-container>
+      </>
     );
   }
 }

@@ -30,6 +30,7 @@ export default props => {
     openRefundModal,
     statusMsg = {},
     onRefundDetailsToggleClick = () => {},
+    onUpdateReferenceId = () => {},
     isRoleAllowedEdit,
     viewSettlementOverview,
     config,
@@ -223,7 +224,10 @@ export default props => {
                 </EntityDetailRow>
 
                 {user.isPaymentPageReceiptsEnabled && (
-                  <PaymentReceipt payment={payment} />
+                  <PaymentReceipt
+                    payment={payment}
+                    onUpdateReferenceId={onUpdateReferenceId}
+                  />
                 )}
 
                 {config.settlement_ux_revamp &&

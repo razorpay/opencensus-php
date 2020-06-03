@@ -14,6 +14,7 @@ import { showNotification } from 'merchant_common/reducers/notifications';
 })
 export default class PaymentReceipt extends React.Component {
   state = {
+    isActionInProgress: false,
     invoiceId: null,
     receipt: null, // null => manual receipt, or if  payment_id => automatic receipt
     showCustomReceiptInput: false,
@@ -31,10 +32,15 @@ export default class PaymentReceipt extends React.Component {
   }
 
   sendReceipt = receipt => {
+    this.setState({
+      isActionInProgress: true,
+    });
+
     sendReceipt(this.props.payment.id, receipt)
       .then(res => {
         if (res.data && res.data.success) {
           this.setState({
+            isActionInProgress: false,
             showCustomReceiptInput: false,
           });
 
@@ -42,6 +48,8 @@ export default class PaymentReceipt extends React.Component {
             type: 'success',
             message: 'Receipt is sent successfully',
           });
+
+          setTimeout(this.props.onUpdateReferenceId);
         }
       })
       .catch(({ errors }) => {
@@ -59,10 +67,14 @@ export default class PaymentReceipt extends React.Component {
   };
 
   downloadReceipt = receipt => {
+    this.props.showNotification({
+      type: 'success',
+      message: 'Receipt is downloading...',
+    });
+
     if (receipt) {
-      this.props.showNotification({
-        type: 'success',
-        message: 'Receipt is downloading...',
+      this.setState({
+        isActionInProgress: true,
       });
 
       saveReceipt(this.props.payment.id, receipt)
@@ -71,9 +83,12 @@ export default class PaymentReceipt extends React.Component {
             this.openDownloadReceiptUrl();
 
             this.setState({
+              isActionInProgress: false,
               showCustomReceiptInput: false,
               receipt: res.data.receipt,
             });
+
+            setTimeout(this.props.onUpdateReferenceId);
           }
         })
         .catch(({ errors }) => {
@@ -148,11 +163,16 @@ export default class PaymentReceipt extends React.Component {
               class="btn btn-default m-r"
               type="button"
               onClick={this.closeManualReceiptAction}
+              disabled={this.state.isActionInProgress}
             >
               Cancel
             </button>
-            <button class="btn btn-primary">
+            <button
+              class="btn btn-primary"
+              disabled={this.state.isActionInProgress}
+            >
               {manualReceiptActionHandlerLabel}
+              {this.state.isActionInProgress ? 'ing...' : ''}
             </button>
           </div>
         </Form>
@@ -170,8 +190,12 @@ export default class PaymentReceipt extends React.Component {
             manualReceiptActions
           ) : (
             <div>
-              <button class="btn btn-default m-r" onClick={this.handleSend}>
-                Send
+              <button
+                class="btn btn-default m-r"
+                onClick={this.handleSend}
+                disabled={this.state.isActionInProgress}
+              >
+                {this.state.isActionInProgress ? 'Sending..' : 'Send'}
               </button>
               <button class="btn btn-default" onClick={this.handleDownload}>
                 Download
