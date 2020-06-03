@@ -528,6 +528,7 @@ class Validator extends Base\Validator
         Entity::ACCOUNT_NUMBER          => 'sometimes|string|max:50',
         Entity::TPV                     => 'sometimes|in:0,1,2',
         Entity::TYPE                    => 'sometimes|array',
+        Entity::CORPORATE               => 'sometimes|int|in:0,1,2',
     ];
 
     protected static $netbankingIndusindEditTerminalRules = [

@@ -814,6 +814,29 @@ class TerminalTest extends TestCase
         $this->assertEquals($content['gateway_terminal_id'], 'random');
     }
 
+    public function testEditNetbankingIciciTerminal()
+    {
+        $terminal = $this->fixtures->create(
+            'terminal',
+            [
+                'id'                   => 'AqdfGh5460opVt',
+                'merchant_id'          => '10000000000000',
+                'gateway'              => 'netbanking_icici',
+                'gateway_merchant_id'  => '250000002',
+                'enabled'              => 1,
+                'gateway_merchant_id2' => '350000002',
+                'corporate'            => 1,
+            ]);
+
+        $tid = $terminal['id'];
+
+        $data = ['corporate' => 2];
+
+        $content = $this->editTerminal($tid, $data);
+
+        $this->assertEquals(2, $content['corporate']);
+    }
+
     public function testEditHdfcTerminal()
     {
         $terminal = $this->fixtures->create(
