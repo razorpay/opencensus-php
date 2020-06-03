@@ -290,7 +290,11 @@ export default props => {
                 )}
 
                 <EntityDetailRow
-                  label="Receipt No."
+                  label={
+                    user.isPaymentlinksV2Enabled
+                      ? 'Reference Id'
+                      : 'Receipt No.'
+                  }
                   value={
                     isIssued
                       ? () => (
@@ -305,6 +309,9 @@ export default props => {
                             }}
                             isRoleAllowedEdit={isRoleAllowedEdit}
                             required={user.isInvoiceReceiptMandatory}
+                            isPaymentlinksV2Enabled={
+                              user.isPaymentlinksV2Enabled
+                            }
                           />
                         )
                       : paymentlink.receipt || '--'

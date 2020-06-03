@@ -67,7 +67,9 @@ export default ({
         </div>
       )}
       <div class="form-group list-filter-item">
-        <label>Receipt No.</label>
+        <label>
+          {isPaymentlinksV2Enabled ? 'Reference Id' : 'Receipt No.'}
+        </label>
         <Field name="receipt" component="input" class="form-control input-sm" />
       </div>
 

@@ -215,16 +215,16 @@ function getStatsTableForPLV2(stats, processedCount) {
   return [
     [
       { title: 'Total rows processed', value: processedCount },
-      { title: 'Payment links created', value: stats.CREATED || 0 },
+      { title: 'Payment links created', value: stats.created || 0 },
     ],
     [
       {
         title: 'Paid',
-        value: <span class="text-success">{stats.PAID || 0}</span>,
+        value: <span class="text-success">{stats.paid || 0}</span>,
       },
       {
         title: 'Expired',
-        value: <span class="text-danger">{stats.EXPIRED || 0}</span>,
+        value: <span class="text-danger">{stats.expired || 0}</span>,
       },
     ],
   ];

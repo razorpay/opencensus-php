@@ -21,7 +21,7 @@ export default class EditReceipt extends React.Component {
   };
 
   render() {
-    const { isRoleAllowedEdit } = this.props;
+    const { isRoleAllowedEdit, isPaymentlinksV2Enabled } = this.props;
 
     let content = (
       <React.Fragment>
@@ -43,7 +43,9 @@ export default class EditReceipt extends React.Component {
         <React.Fragment>
           <Input
             name="receipt_no"
-            placeholder="Receipt No."
+            placeholder={
+              isPaymentlinksV2Enabled ? 'Reference Id' : 'Receipt No.'
+            }
             class="Input--small"
             value={this.state.receipt}
             validator={maxLength(40)}

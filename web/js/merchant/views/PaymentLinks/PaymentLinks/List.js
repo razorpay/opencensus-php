@@ -12,9 +12,9 @@ import { fetchReminders } from 'merchant/reducers/reminders';
 
 import ShowWhen from 'merchant/components/ShowWhen';
 import DocsLink from 'merchant/components/DocsLink';
-import InvoicesList from 'merchant/views/Invoices/Invoices/components/List';
+import List from 'merchant/views/Invoices/Invoices/components/List';
 import TakeATourButton from 'merchant/components/QuickGuide/TakeATourButton';
-import InvoiceListFilter from 'merchant/views/Invoices/Invoices/components/ListFilter';
+import ListFilter from 'merchant/views/Invoices/Invoices/components/ListFilter';
 
 import ListContainer from 'merchant/containers/ListContainer';
 import { EmptyListWithTableRow } from 'merchant/components/EmptyList';
@@ -152,7 +152,7 @@ export default class PaymentLinksContainer extends ListContainer {
           </div>
         </HeaderAction>
 
-        <InvoiceListFilter
+        <ListFilter
           form="InvoiceListFilter"
           type="link"
           count={this.state.count}
@@ -170,13 +170,14 @@ export default class PaymentLinksContainer extends ListContainer {
           onCloseClick={this.onAlertCloseClick}
         />
 
-        <InvoicesList
+        <List
           invoices={paymentlinks}
           isLoading={loading}
           type="link"
           onCopy={this.onCopy}
           onDuplicate={this.onDuplicate}
           EmptyList={EmptyComponent}
+          isPaymentlinksV2Enabled={user.isPaymentlinksV2Enabled}
         />
 
         <Pager

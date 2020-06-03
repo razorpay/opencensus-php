@@ -41,6 +41,16 @@ export default class BatchListContainer extends Component {
     };
   }
 
+  get sampleUrl() {
+    let url = '/files/sample_batch_payment_links.xlsx';
+
+    if (this.props.user.isPaymentlinksV2Enabled) {
+      url = '/files/sample_batch_payment_links_v2.xlsx';
+    }
+
+    return url;
+  }
+
   handlePaymentLinksFormChange = (propName, value) => {
     this.setState({
       [propName]: value,
@@ -104,7 +114,7 @@ export default class BatchListContainer extends Component {
         createBatch={this.props.createBatch}
         validateBatch={this.props.validateBatch}
         docUrl="https://razorpay.com/docs/payment-links/batch-upload/"
-        sampleUrl="/files/sample_batch_payment_links_v2.xlsx"
+        sampleUrl={this.sampleUrl}
         renderBatchCreationForm={() => (
           <PaymentLinksForm
             batchType={this.props.batchType}
@@ -122,7 +132,7 @@ export default class BatchListContainer extends Component {
       <BatchList
         form="batchListFilter"
         docUrl="https://razorpay.com/docs/payment-links/batch-upload/"
-        sampleUrl="/files/sample_batch_payment_links_v2.xlsx"
+        sampleUrl={this.sampleUrl}
         batchType={
           this.props.user.isPaymentlinksV2Enabled
             ? 'payment_link_v2'

@@ -8,7 +8,7 @@ const DEFAULT_MAX_FILE_SIZE = 1048576; // 1MB in bytes.
 
 export default class BatchValidateModal extends Component {
   render() {
-    const {
+    let {
       status,
       stagedFileStatus,
       fileUrl,
@@ -26,7 +26,12 @@ export default class BatchValidateModal extends Component {
       maxFileSize = DEFAULT_MAX_FILE_SIZE,
       onSampleFileDownload = () => {},
       onErrorReportDownload = () => {},
+      user,
     } = this.props;
+
+    if (batchType === 'payment_link_v2') {
+      batchTypeText = 'Payment Link'; // We don't want to unnececssarily expose that merchant is using V2
+    }
 
     return (
       <div class="modal-body">
@@ -82,9 +87,10 @@ export default class BatchValidateModal extends Component {
               <li>The amount mentioned should be in paise.</li>
               {batchType && (
                 <li>
-                  The receipt id for all{' '}
-                  {batchTypeText ? batchTypeText : titleCase(batchType)}s should
-                  be unique.
+                  The{' '}
+                  {user.isPaymentlinksV2Enabled ? 'reference id' : 'receipt id'}{' '}
+                  for all {batchTypeText ? batchTypeText : titleCase(batchType)}s
+                  should be unique.
                 </li>
               )}
               {maxRows && (

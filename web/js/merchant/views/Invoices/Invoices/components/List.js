@@ -71,6 +71,7 @@ export default props => {
     onCopy = () => {},
     onDuplicate,
     EmptyList,
+    isPaymentlinksV2Enabled,
   } = props;
   const isPaymentLinksType = type === 'link';
   let label = isPaymentLinksType ? 'Payment Link' : 'Invoice';
@@ -83,7 +84,7 @@ export default props => {
             <th>{label} Id</th>
             <th>Created Date</th>
             <th class="text-right">Amount</th>
-            <th>Receipt No.</th>
+            <th>{isPaymentlinksV2Enabled ? 'Reference Id' : 'Receipt No.'}</th>
             <th>Customer</th>
             <th>Payment Link</th>
             <th>Status</th>
