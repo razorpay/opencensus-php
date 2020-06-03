@@ -103,7 +103,8 @@ abstract class Processor extends Base\Core
 
         $this->trace->info(
             TraceCode::VIRTUAL_ACCOUNT_PAYMENT_SUCCESSFUL,
-            $entity->toArray());
+            $entity->toArrayTrace()
+        );
 
         return $entity;
     }

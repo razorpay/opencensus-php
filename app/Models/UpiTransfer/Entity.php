@@ -131,6 +131,12 @@ class Entity extends Base\PublicEntity
         self::TR,
     ];
 
+    protected $pii = [
+        self::PAYEE_VPA,
+        self::PAYER_ACCOUNT,
+        self::PAYER_VPA,
+    ];
+
     // ----------------------- Relations -----------------------
 
     public function payment()
@@ -283,5 +289,37 @@ class Entity extends Base\PublicEntity
         }
 
         return parent::toArrayPublic();
+    }
+
+    public function toArrayTrace(): array
+    {
+        $data = $this->toArray();
+
+        foreach ($this->pii as $piiField)
+        {
+            if (isset($data[$piiField]) === false)
+            {
+                continue;
+            }
+
+            switch ($piiField)
+            {
+                case self::PAYEE_VPA:
+                    $payee_vpa = $data[self::PAYEE_VPA];
+
+                    $data[self::PAYEE_VPA . '_root']    = explode('.', $payee_vpa)[0];
+                    $data[self::PAYEE_VPA . '_dynamic'] = explode('@', explode('.', $payee_vpa)[1])[0];
+                    $data[self::PAYEE_VPA . '_handle']  = explode('@', $payee_vpa)[1];
+
+                    break;
+
+                default:
+                    break;
+            }
+
+            unset($data[$piiField]);
+        }
+
+        return $data;
     }
 }

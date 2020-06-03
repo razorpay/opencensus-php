@@ -82,6 +82,12 @@ class Entity extends Base\PublicEntity
         self::BANK_REFERENCE,
     ];
 
+    protected $pii = [
+        self::VPA,
+        self::CARD_NUMBER,
+        self::CUSTOMER_NAME,
+    ];
+
     protected $generateIdOnCreate = true;
 
     // ----------------------- Relations -----------------------
@@ -155,5 +161,22 @@ class Entity extends Base\PublicEntity
     public function isExpected()
     {
         return $this->getAttribute(self::EXPECTED);
+    }
+
+    public function toArrayTrace(): array
+    {
+        $data = $this->toArray();
+
+        foreach ($this->pii as $piiField)
+        {
+            if (isset($data[$piiField]) === false)
+            {
+                continue;
+            }
+
+            unset($data[$piiField]);
+        }
+
+        return $data;
     }
 }

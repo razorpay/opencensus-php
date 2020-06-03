@@ -184,6 +184,12 @@ class Entity extends Base\PublicEntity
         self::PAYEE_ACCOUNT,
     ];
 
+    protected $pii = [
+        self::PAYEE_ACCOUNT,
+        self::PAYER_NAME,
+        self::PAYER_ACCOUNT,
+    ];
+
     protected static $sign = 'bt';
 
     protected $entity = Constants\Entity::BANK_TRANSFER;
@@ -545,14 +551,30 @@ class Entity extends Base\PublicEntity
     {
         $data = $this->toArray();
 
-        if (isset($data[Entity::PAYEE_ACCOUNT]) === true)
+        foreach ($this->pii as $piiField)
         {
-            $payeeAccount                               = $data[Entity::PAYEE_ACCOUNT];
-            $data[Entity::PAYEE_ACCOUNT . '_prefix']     = substr($payeeAccount, 0, 8);
-            $data[Entity::PAYEE_ACCOUNT . '_descriptor'] = substr($payeeAccount, 8, strlen($payeeAccount));
+            if (isset($data[$piiField]) === false)
+            {
+                continue;
+            }
 
-            unset($data[Entity::PAYEE_ACCOUNT]);
+            switch ($piiField)
+            {
+                case self::PAYEE_ACCOUNT:
+                    $payeeAccount = $data[Entity::PAYEE_ACCOUNT];
+
+                    $data[Entity::PAYEE_ACCOUNT . '_prefix']        = substr($payeeAccount, 0, 8);
+                    $data[Entity::PAYEE_ACCOUNT . '_descriptor']    = substr($payeeAccount, 8, strlen($payeeAccount));
+
+                    break;
+
+                default:
+                    break;
+            }
+
+            unset($data[$piiField]);
         }
+
         return $data;
     }
 }
