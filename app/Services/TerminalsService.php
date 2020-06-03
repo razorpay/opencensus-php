@@ -58,11 +58,13 @@ class TerminalsService
     // terminals service error descriptions
     const MERCHANT_HAS_ALREADY_COMPLETED_PAYPAL_ONBOARDING         = 'Merchant has already completed PayPal onboarding';
     const PAYPAL_ONBOARDING_NOT_ALLOWED_FOR_YOUR_ACCOUNT           = 'PayPal Onboarding is not allowed for your account.';
+    const DUPLICATE_TERMINAL_EXIST                                 = "Duplicate Terminal Exist";
 
     // terminals service error descriptions mapped with exception that needs to be raised by api
     const TERMINALS_API_ERROR_CODE_MAPPING     =    [
         self::MERCHANT_HAS_ALREADY_COMPLETED_PAYPAL_ONBOARDING      =>  ErrorCode::BAD_REQUEST_TERMINAL_ONBOARDING_ALREADY_REQUESTED,
-        self::PAYPAL_ONBOARDING_NOT_ALLOWED_FOR_YOUR_ACCOUNT        =>  ErrorCode::BAD_REQUEST_PAYPAL_ONBOARDING_NOT_ALLOWED
+        self::PAYPAL_ONBOARDING_NOT_ALLOWED_FOR_YOUR_ACCOUNT        =>  ErrorCode::BAD_REQUEST_PAYPAL_ONBOARDING_NOT_ALLOWED,
+        self::DUPLICATE_TERMINAL_EXIST                              =>  ErrorCode::BAD_REQUEST_TERMINALS_SERVICE_DUPLICATE_TERMINAL_EXISTS,
     ];
 
     const PARAMS = [
