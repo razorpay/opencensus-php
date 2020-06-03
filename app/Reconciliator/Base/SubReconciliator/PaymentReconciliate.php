@@ -187,6 +187,8 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
             $this->checkForGatewayMismatch();
 
             $this->processReconciliationRow($row, $rowDetails, $paymentId);
+
+            $this->releaseResourceForRecon($paymentId);
         }
         catch (\Exception $ex)
         {
@@ -988,6 +990,19 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
             $this->setRowReconStatusAndError(Base\InfoCode::RECON_FAILED, Base\InfoCode::PAYMENT_ID_NOT_AS_EXPECTED);
 
             return null;
+        }
+        $acquire = $this->lockResourceForRecon($paymentId);
+
+        if($acquire === false)
+        {
+            $this->trace->info(
+                TraceCode::RECON_INFO_ALERT,
+                [
+                    'info_code'     => Base\InfoCode::UNABLE_TO_ACQUIRE_LOCK,
+                    'payment_id'    => $paymentId,
+                    'gateway'       => $this->gateway,
+                    'batch_id'      => $this->batchId,
+                ]);
         }
 
         try

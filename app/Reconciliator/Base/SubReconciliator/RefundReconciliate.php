@@ -126,6 +126,8 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
             }
 
             $this->setTransactionDetailsInOutput($this->refund->transaction);
+
+            $this->releaseResourceForRecon($refundId);
         }
         catch (\Exception $ex)
         {
@@ -578,6 +580,20 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
             $this->setRowReconStatusAndError(Base\InfoCode::RECON_FAILED, Base\InfoCode::REFUND_ID_NOT_AS_EXPECTED);
 
             return null;
+        }
+
+        $acquire = $this->lockResourceForRecon($refundId);
+
+        if($acquire === false)
+        {
+            $this->trace->info(
+                TraceCode::RECON_INFO_ALERT,
+                [
+                    'info_code'     => Base\InfoCode::UNABLE_TO_ACQUIRE_LOCK,
+                    'refund_id'     => $refundId,
+                    'gateway'       => $this->gateway,
+                    'batch_id'      => $this->batchId,
+                ]);
         }
 
         try

@@ -89,6 +89,9 @@ class SubReconciliate extends Base\Core
         InfoCode::AMOUNT_MISMATCH   =>  10,
     ];
 
+    const KEY_PREFIX            = 'recon_';
+    const MUTEX_LOCK_TIMEOUT    = 60; //seconds
+
     /**
      * The list of payments/refunds attempted to reconcile.
      *
@@ -172,6 +175,8 @@ class SubReconciliate extends Base\Core
         $this->gateway = $gateway;
 
         $this->batch = $batch;
+
+        $this->mutex = $this->app['api.mutex'];
 
         $this->batchId = $batch ? $batch->getId() : null;
 
@@ -448,6 +453,35 @@ class SubReconciliate extends Base\Core
                         'entity_name'        => $entity->getEntityName(),
                     ]);
         }
+    }
+
+    /**
+     * Add mutex lock for given resource Id
+     * parameter required for lock in following order(acquire function)
+     * $resourceWithPrefix - as key for lock
+     * MUTEX_LOCK_TIMEOUT - time in seconds for lock release
+     * number of times the lock should try
+     * Minimum time to wait before retry in millisec
+     * Maximum time to wait before retry in millisec
+     *
+     * @param $resourceId
+     */
+    protected function lockResourceForRecon($resourceId)
+    {
+        $resourceWithPrefix = self::KEY_PREFIX . $resourceId;
+
+        $this->mutex->acquire($resourceWithPrefix, self::MUTEX_LOCK_TIMEOUT, 20 , 100 , 200);
+    }
+
+    /**
+     * release mutex lock for given resource Id
+     * @param $resourceId
+     */
+    protected function releaseResourceForRecon($resourceId)
+    {
+        $resourceWithPrefix = self::KEY_PREFIX . $resourceId;
+
+        $this->mutex->release($resourceWithPrefix);
     }
 
     protected function persistGatewaySettledAt(Base\Entity $entity, array $rowDetails)
