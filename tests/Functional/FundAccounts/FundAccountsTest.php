@@ -716,4 +716,18 @@ class FundAccountsTest extends TestCase
 
         $this->assertEquals($fundAccount['id'], $response['id']);
     }
+
+    public function testCreateFundAccountCardWithEmptyArray()
+    {
+        $this->fixtures->create('contact', ['id' => '1000000contact']);
+
+        $this->startTest();
+    }
+
+    public function testCreateFundAccountVpaWithEmptyArray()
+    {
+        $this->fixtures->create('contact', ['id' => '1000000contact']);
+
+        $this->startTest();
+    }
 }

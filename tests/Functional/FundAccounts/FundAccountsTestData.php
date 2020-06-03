@@ -131,7 +131,7 @@ return [
             'content'   => [
                 'error' => [
                     'code'  => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description'   =>  'The ifsc field is required.',
+                    'description'   =>  'The bank account field is required.',
                 ],
             ],
             'status_code'   => 400,
@@ -2238,4 +2238,53 @@ return [
         ],
     ],
 
+    'testCreateFundAccountCardWithEmptyArray' => [
+        'request'  => [
+            'content' => [
+                'account_type' => 'card',
+                'contact_id'   => 'cont_1000000contact',
+                'card'      => [],
+            ],
+            'url'     => '/fund_accounts',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content'   => [
+                'error' => [
+                    'code'  => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'   =>  'The card field is required.',
+                ],
+            ],
+            'status_code'   => 400,
+        ],
+        'exception' => [
+            'class' => Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testCreateFundAccountVpaWithEmptyArray' => [
+        'request'  => [
+            'content' => [
+                'account_type' => 'vpa',
+                'contact_id'   => 'cont_1000000contact',
+                'vpa'      => [],
+            ],
+            'url'     => '/fund_accounts',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content'   => [
+                'error' => [
+                    'code'  => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'   =>  'The vpa field is required.',
+                ],
+            ],
+            'status_code'   => 400,
+        ],
+        'exception' => [
+            'class' => Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ]
 ];
