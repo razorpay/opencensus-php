@@ -24,6 +24,7 @@ use RZP\Models\Card\Issuer;
 use RZP\Models\Card\Network;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\FundTransfer\Attempt;
+use RZP\Models\Base\PublicCollection;
 use RZP\Mail\Banking\LowBalanceAlert;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\Webhook\Event;
@@ -1946,6 +1947,74 @@ class PayoutTest extends TestCase
 
     public function testFetchMultiplePayoutsWithPrimaryProductParameter()
     {
+        $this->ba->proxyAuth();
+        $this->startTest();
+    }
+
+    public function testFetchMultipleWithHasMoreOnPrivate()
+    {
+        $this->testCreatePayout();
+
+        $this->ba->privateAuth();
+        $response = $this->startTest();
+
+        $this->assertArrayNotHasKey(PublicCollection::HAS_MORE, $response);
+    }
+
+    public function testFetchMultipleWithHasMoreFalseWithNoResults()
+    {
+        $this->ba->proxyAuth();
+        $this->startTest();
+    }
+
+    public function testFetchMultipleWithHasMoreWithSkipAndCount()
+    {
+        $this->testCreatePayout();
+        $this->testCreatePayout();
+        $this->testCreatePayout();
+        $this->testCreatePayout();
+
+        $this->ba->proxyAuth();
+        $this->startTest();
+    }
+
+    public function testFetchMultipleWithHasMoreWithExactSkipAndCount()
+    {
+        $this->testCreatePayout();
+        $this->testCreatePayout();
+        $this->testCreatePayout();
+        $this->testCreatePayout();
+
+        $this->ba->proxyAuth();
+        $this->startTest();
+    }
+
+    public function testFetchMultipleWithHasMoreWithOnlyCount()
+    {
+        $this->testCreatePayout();
+        $this->testCreatePayout();
+        $this->testCreatePayout();
+
+        $this->ba->proxyAuth();
+        $this->startTest();
+    }
+
+    public function testFetchMultipleWithHasMoreWithOnlyMaxCount()
+    {
+        $this->testCreatePayout();
+        $this->testCreatePayout();
+        $this->testCreatePayout();
+
+        $this->ba->proxyAuth();
+        $this->startTest();
+    }
+
+    public function testFetchMultipleWithHasMoreWithNoCountAndSkip()
+    {
+        $this->testCreatePayout();
+        $this->testCreatePayout();
+        $this->testCreatePayout();
+
         $this->ba->proxyAuth();
         $this->startTest();
     }

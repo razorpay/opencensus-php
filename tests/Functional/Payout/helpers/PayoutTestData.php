@@ -2074,6 +2074,227 @@ return [
         ],
     ],
 
+    'testFetchMultipleWithHasMoreOnPrivate' => [
+        'request' => [
+            'url'    => '/payouts',
+            'method' => 'get',
+            'content' => [
+                'account_number'    => '2224440041626905',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count' => 1,
+                'items' => [
+                    [
+                        'entity'          => 'payout',
+                        'amount'          => 2000000,
+                        'currency'        => 'INR',
+                        'fund_account_id' => 'fa_100000000000fa',
+                        'narration'       => 'Batman',
+                        'purpose'         => 'refund',
+                        'status'          => 'processing',
+                        'tax'             => 162,
+                        'fees'            => 1062,
+                        'notes'           => [
+                            'abc' => 'xyz',
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testFetchMultipleWithHasMoreFalseWithNoResults' => [
+        'request' => [
+            'url'    => '/payouts',
+            'method' => 'get',
+            'content' => [
+                'product' => 'banking',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'has_more'  => false,
+                'count' => 0,
+                'items' => [],
+            ],
+        ],
+    ],
+
+    'testFetchMultipleWithHasMoreWithSkipAndCount' => [
+        'request' => [
+            'url'    => '/payouts',
+            'method' => 'get',
+            'content' => [
+                'product' => 'banking',
+                'skip' => 1,
+                'count' => 2,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'has_more' => true,
+                'count' => 2,
+                'items' => [
+                    [
+                        'entity'          => 'payout',
+                        'amount'          => 2000000,
+                        'currency'        => 'INR',
+                        'fund_account_id' => 'fa_100000000000fa',
+                        'narration'       => 'Batman',
+                        'purpose'         => 'refund',
+                        'status'          => 'processing',
+                        'tax'             => 162,
+                        'fees'            => 1062,
+                        'notes'           => [
+                            'abc' => 'xyz',
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testFetchMultipleWithHasMoreWithOnlyCount' => [
+        'request' => [
+            'url'    => '/payouts',
+            'method' => 'get',
+            'content' => [
+                'product' => 'banking',
+                'count' => 2,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'has_more' => true,
+                'count' => 2,
+                'items' => [
+                    [
+                        'entity'          => 'payout',
+                        'amount'          => 2000000,
+                        'currency'        => 'INR',
+                        'fund_account_id' => 'fa_100000000000fa',
+                        'narration'       => 'Batman',
+                        'purpose'         => 'refund',
+                        'status'          => 'processing',
+                        'tax'             => 162,
+                        'fees'            => 1062,
+                        'notes'           => [
+                            'abc' => 'xyz',
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testFetchMultipleWithHasMoreWithOnlyMaxCount' => [
+        'request' => [
+            'url'    => '/payouts',
+            'method' => 'get',
+            'content' => [
+                'product' => 'banking',
+                'count' => 3,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'has_more' => false,
+                'count' => 3,
+                'items' => [
+                    [
+                        'entity'          => 'payout',
+                        'amount'          => 2000000,
+                        'currency'        => 'INR',
+                        'fund_account_id' => 'fa_100000000000fa',
+                        'narration'       => 'Batman',
+                        'purpose'         => 'refund',
+                        'status'          => 'processing',
+                        'tax'             => 162,
+                        'fees'            => 1062,
+                        'notes'           => [
+                            'abc' => 'xyz',
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testFetchMultipleWithHasMoreWithExactSkipAndCount' => [
+        'request' => [
+            'url'    => '/payouts',
+            'method' => 'get',
+            'content' => [
+                'product' => 'banking',
+                'skip' => 2,
+                'count' => 2,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'has_more' => false,
+                'count' => 2,
+                'items' => [
+                    [
+                        'entity'          => 'payout',
+                        'amount'          => 2000000,
+                        'currency'        => 'INR',
+                        'fund_account_id' => 'fa_100000000000fa',
+                        'narration'       => 'Batman',
+                        'purpose'         => 'refund',
+                        'status'          => 'processing',
+                        'tax'             => 162,
+                        'fees'            => 1062,
+                        'notes'           => [
+                            'abc' => 'xyz',
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testFetchMultipleWithHasMoreWithNoCountAndSkip' => [
+        'request' => [
+            'url'    => '/payouts',
+            'method' => 'get',
+            'content' => [
+                'product' => 'banking',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'has_more' => false,
+                'count' => 3,
+                'items' => [
+                    [
+                        'entity'          => 'payout',
+                        'amount'          => 2000000,
+                        'currency'        => 'INR',
+                        'fund_account_id' => 'fa_100000000000fa',
+                        'narration'       => 'Batman',
+                        'purpose'         => 'refund',
+                        'status'          => 'processing',
+                        'tax'             => 162,
+                        'fees'            => 1062,
+                        'notes'           => [
+                            'abc' => 'xyz',
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
+
     'testBulkPayoutWithSameIdempotencyandBatchId' => [
         'request'   => [
             'url'     => '/payouts/bulk',

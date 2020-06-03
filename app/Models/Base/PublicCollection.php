@@ -2,14 +2,14 @@
 
 namespace RZP\Models\Base;
 
-use RZP\Exception;
-
 class PublicCollection extends Collection
 {
     const COUNT = 'count';
     const ITEMS = 'items';
     const ENTITY = 'entity';
+    const HAS_MORE = 'has_more';
 
+    protected $hasMore = null;
     protected $entity = 'collection';
 
     /**
@@ -21,9 +21,22 @@ class PublicCollection extends Collection
     {
         $array[static::ENTITY] = $this->entity;
         $array[static::COUNT] = count($this->items);
+        $this->setHasMoreInCollectionResponse($array);
         $array[static::ITEMS] = $this->itemsToArrayPublic();
 
         return $array;
+    }
+
+    public function setHasMore(bool $hasMore)
+    {
+        $this->hasMore = $hasMore;
+
+        return $this;
+    }
+
+    public function getHasMore()
+    {
+        return $this->hasMore;
     }
 
     /**
@@ -344,6 +357,31 @@ class PublicCollection extends Collection
             return $item->toArrayPartner();
 
         }, $this->items);
+    }
+
+    protected function setHasMoreInCollectionResponse(& $array)
+    {
+        $hasMore = $this->getHasMore();
+
+        //
+        // We are setting hasMore only for proxy auth currently.
+        // We don't want this class (PublicCollection) to have
+        // context of auth. Whoever is creating the collection
+        // will set hasMore as per business logic. If they don't
+        // set it to anything specifically, we don't want to
+        // expose hasMore with null value and hence removing
+        // it completely from the collection result set.
+        //
+        // Also, we are checking with null explicitly and not
+        // `empty` because hasMore can be `false` too and that
+        // would evaluate `empty` to false.
+        //
+        if ($hasMore === null)
+        {
+            return;
+        }
+
+        $array[static::HAS_MORE] = $hasMore;
     }
 
     public static function isPublicCollection($object)

@@ -5740,7 +5740,7 @@ ALTER TABLE merchant_details
     ADD COLUMN `company_pan_verification_status` varchar(30) DEFAULT NULL ;
 
 ALTER TABLE transactions
-    CHANGE reference10 posted_at BIGINT UNSIGNED DEFAULT NULL;
+    CHANGE reference10 posted_at BIGINT UNSIGNED DEFAULT NULL,
     ADD INDEX transactions_balance_idposted_at_index  (`balance_id`, `posted_at`);
 
 ALTER TABLE pricing

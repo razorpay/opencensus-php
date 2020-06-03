@@ -431,7 +431,7 @@ class OrderTest extends TestCase
 
         $payments = $this->startTest();
 
-        $this-> assertEquals($payments['count'], 0);
+        $this-> assertEquals(0, $payments['count']);
     }
 
     public function testFetchOrder()

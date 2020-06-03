@@ -2,6 +2,7 @@
 
 namespace RZP\Base;
 
+use Illuminate\Pagination\Paginator;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 use RZP\Constants\Es;
@@ -143,7 +144,7 @@ trait RepositoryFetch
 
         $routeThroughMasterReplica = false;
 
-        if($useMasterEsReplica === true)
+        if ($useMasterEsReplica === true)
         {
             $routeThroughMasterReplica = $this->app['api.route']->routeThroughMasterReplica();
         }
@@ -183,7 +184,34 @@ trait RepositoryFetch
         // result.
         $query = $this->buildFetchQuery($query, $mysqlParams);
 
+        //
+        // For now, we want to expose this only for proxy auth.
+        // We would want to expose this to private auth as well
+        // in the future, but need a little bit though around
+        // how we want to expose it. Pagination has lot of standards
+        // generally and we might want to follow those when
+        // exposing on private auth. SDKs _might_ have to fixed too.
+        //
+        if ($this->auth->isProxyAuth() === true)
+        {
+            return $this->getPaginated($query, $params);
+        }
+
         return $query->get();
+    }
+
+    protected function getPaginated(BuilderEx $query, array $params = [])
+    {
+        $this->resolvePageForPagination($query, $params);
+
+        $paginatedResult = $query->simplePaginate();
+
+        $hasMorePages = $paginatedResult->hasMorePages();
+
+        $resultCollection = $paginatedResult->getCollection()
+                                            ->setHasMore($hasMorePages);
+
+        return $resultCollection;
     }
 
     /**
@@ -607,6 +635,29 @@ trait RepositoryFetch
     protected function validateAdditional(array $params)
     {
         return;
+    }
+
+    /**
+     * We need to do this because `simplePaginate` takes "page" instead of
+     * using `skip` value directly. The formula used to convert page to skip
+     * in simplePaginate function is "((page-1) * count)". We are just
+     * doing inverse of that here.
+     *
+     * @param $query
+     * @param $params
+     */
+    protected function resolvePageForPagination($query, $params)
+    {
+        $query->getModel()->setPerPage($params['count']);
+
+        Paginator::currentPageResolver(function() use ($params) {
+            $skip = $params['skip'] ?? 0;
+            // We always add a default count param if not sent in the request.
+            // Check `addDefaultParamCount` function.
+            $count = $params['count'];
+
+            return (($skip + $count) / $count);
+        });
     }
 
     public function setMerchantIdRequiredForMultipleFetch($required)
