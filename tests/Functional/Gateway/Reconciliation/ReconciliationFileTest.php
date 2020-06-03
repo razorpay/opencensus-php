@@ -26,6 +26,7 @@ use RZP\Gateway\Card\Fss\Entity as CardFssEntity;
 use RZP\Gateway\Worldline\Entity as WorldlineEntity;
 use RZP\Tests\Functional\Gateway\Reconciliation\TestTraits;
 use RZP\Reconciliator\Base\SubReconciliator\ManualReconciliate;
+use RZP\Reconciliator\Base\SubReconciliator\PaymentReconciliate;
 use RZP\Tests\Functional\Helpers\VirtualAccount\VirtualAccountTrait;
 
 use RZP\Reconciliator\Base\SubReconciliator\Helper as Helper;
@@ -2373,6 +2374,61 @@ class ReconciliationFileTest extends TestCase
         $updatedTransaction3 = $this->getEntityById('transaction', $updatedRefund1['transaction_id'], true);
 
         $this->assertNotNull($updatedTransaction3['reconciled_at']);
+    }
+
+    public function testHitachiForceAuthFailedPaymentViaBatchService()
+    {
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+        $this->fixtures->create('terminal:shared_hitachi_terminal');
+        $this->fixtures->merchant->addFeatures('charge_at_will');
+
+        $this->payment['card']['number'] = CardNumber::VALID_ENROLL_NUMBER;
+
+        $payment = $this->getNewPaymentEntity(false,true);
+
+        $gatewayPayment1 = $this->getLastEntity('hitachi', true);
+
+        $this->assertNull($payment['reference1']);
+
+        $row = $this->overrideHitachiPayment($gatewayPayment1, ['auth_id' => $payment['reference2']]);
+
+        // set the payment status to 'failed' and try to reconcile it with force authorize
+        $this->fixtures->edit('payment', $gatewayPayment1['payment_id'], ['status' => Payment\Status::FAILED]);
+
+        $updatedPayment = $this->getEntityById('payment', $payment['id'], true);
+
+        $this->assertEquals($updatedPayment['status'], Payment\Status::FAILED);
+
+        // add extra column to indicate we want to force auth this payment
+        $row[PaymentReconciliate::RZP_FORCE_AUTH_PAYMENT] = 1;
+
+        $entries[] = $row;
+
+        // add metadata info to each row
+        foreach ($entries as $key => $entry)
+        {
+            $entry[Constants::GATEWAY]          = 'Hitachi';
+            $entry[Constants::SUB_TYPE]         = 'combined';
+            $entry[Constants::SOURCE]           = 'manual';
+            $entry[Constants::SHEET_NAME]       = 'sheet0';
+            $entry[Constants::IDEMPOTENT_ID]    = 'batch_' . str_random(14);
+
+            $entries[$key] = $entry;
+        }
+
+        $this->runWithData($entries);
+
+        $updatedPayment2 = $this->getEntityById('payment', $payment['id'], true);
+
+        $this->assertEquals($entries[0][HitachiPaymentRecon::COLUMN_AUTH_CODE], $updatedPayment2['reference2']);
+
+        $this->assertTrue($updatedPayment2['gateway_captured']);
+
+        $this->assertEquals('authorized', $updatedPayment2['status']);
+
+        $transactionEntity = $this->getDbLastEntity('transaction');
+
+        $this->assertNotNull($transactionEntity['reconciled_at']);
     }
 
     protected function mockRazorx()

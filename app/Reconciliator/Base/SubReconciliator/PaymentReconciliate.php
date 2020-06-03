@@ -95,6 +95,14 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
     // This contains international amount of transaction
     const COLUMN_INTERNATIONAL_PAYMENT_AMOUNT = '';
 
+    //
+    // FinOps adds this column when they want to force auth the payment.
+    // This flag is needed bcoz, with batch service flow, we can not add
+    // more than 4-5 payment_ids in force auth field due to limitation
+    // of 240 chars in settings json.
+    //
+    const RZP_FORCE_AUTH_PAYMENT = 'rzp_force_auth_payment';
+
     /*******************
      * Instance objects
      *******************/
@@ -574,7 +582,8 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         // always use that, instead of verify. There's no
         // need for running verify if force authorization is present.
         //
-        if ($this->allowForceAuthorization === true)
+        if (($this->allowForceAuthorization === true) or
+            ($this->isforceAuthFlagSetInRow($row) === true))
         {
             return $this->handleForceAuthorization($row);
         }
@@ -714,6 +723,17 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         }
 
         return $authResponse;
+    }
+
+    /**
+     * @param array $row
+     * @return bool
+     * Checks if finOps has added specific column/flag to
+     * force authorize this payment.
+     */
+    protected function isforceAuthFlagSetInRow(array $row)
+    {
+        return (empty($row[self::RZP_FORCE_AUTH_PAYMENT]) === false);
     }
 
     /**

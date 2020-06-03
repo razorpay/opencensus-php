@@ -21,6 +21,7 @@ use RZP\Reconciliator\RequestProcessor;
 use RZP\Models\Batch\Processor\Reconciliation;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 use RZP\Reconciliator\Base\Foundation\SubReconciliate;
+use RZP\Reconciliator\Base\SubReconciliator\PaymentReconciliate;
 
 class Reconciliate extends Base\Core
 {
@@ -1070,6 +1071,10 @@ class Reconciliate extends Base\Core
                 //
                 $this->unsetTxnFileRelatedColumns($row);
 
+                // if this extra column was added by Finops, need to unset
+                // so that output file column format remain consistent.
+                unset($row[PaymentReconciliate::RZP_FORCE_AUTH_PAYMENT]);
+
                 continue;
             }
 
@@ -1100,6 +1105,10 @@ class Reconciliate extends Base\Core
             $transactionsData[] = $txn;
 
             $this->unsetTxnFileRelatedColumns($row);
+
+            // if this extra column was added by Finops, need to unset
+            // so that output file column format remain consistent.
+            unset($row[PaymentReconciliate::RZP_FORCE_AUTH_PAYMENT]);
         }
 
         return $transactionsData;
