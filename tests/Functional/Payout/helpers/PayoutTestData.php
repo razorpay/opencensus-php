@@ -4094,9 +4094,9 @@ return [
             ],
             'status_code' => 200,
         ],
-  ],
+    ],
 
-  'testBulkPayoutWithNotes' => [
+    'testBulkPayoutWithNotes' => [
         'request'   => [
             'url'     => '/payouts/bulk',
             'method'  => 'POST',
@@ -4497,6 +4497,38 @@ return [
         'exception' => [
             'class'               => 'RZP\Exception\BadRequestValidationFailureException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testGetPayoutReversals' => [
+        'request' => [
+            'method'  => 'get',
+            'url'     => '/payouts/{id}/reversals',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'reversal',
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testGetPayoutReversalsForProcessedPayout' => [
+        'request' => [
+            'method'  => 'get',
+            'url'     => '/payouts/{id}/reversals',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count' => 0,
+                'items' => []
+            ],
+            'status_code' => 200,
         ],
     ],
 ];

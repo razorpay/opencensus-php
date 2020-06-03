@@ -3869,6 +3869,96 @@ class PayoutTest extends TestCase
         $this->startTest();
     }
 
+    public function testGetPayoutReversals()
+    {
+        $payout_data = $this->testCreatePayout();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->fixtures->edit(
+            'payout',
+            $payout->getId(),
+            [
+                'status' => 'initiated',
+                'utr'    => 928337183,
+            ]
+        );
+
+        $ftaForPayout = $this->getDbEntities(
+            'fund_transfer_attempt',
+            [
+                'source_id'   => $payout->getId(),
+                'source_type' => 'payout',
+                'is_fts'      => true,
+            ]
+        )->first();
+
+        $this->fixtures->edit(
+            'fund_transfer_attempt',
+            $ftaForPayout->getId(),
+            [
+                'status' => 'initiated',
+                'utr'    => 928337183,
+            ]
+        );
+
+        $this->updateFtaAndSource($payout->getId(), Payout\Status::FAILED);
+
+        $this->ba->privateAuth();
+
+        $request = & $this->testData[__FUNCTION__]['request'];
+
+        $request['url'] = '/payouts/'. $payout_data['id']. '/reversals';
+
+        $response = $this->startTest();
+
+        $this->assertEquals($payout_data['id'], $response['payout_id']);
+    }
+
+    public function testGetPayoutReversalsForProcessedPayout()
+    {
+        $payout_data = $this->testCreatePayout();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->fixtures->edit(
+            'payout',
+            $payout->getId(),
+            [
+                'status' => 'initiated',
+                'utr'    => 928337183,
+            ]
+        );
+
+        $ftaForPayout = $this->getDbEntities(
+            'fund_transfer_attempt',
+            [
+                'source_id'   => $payout->getId(),
+                'source_type' => 'payout',
+                'is_fts'      => true,
+            ]
+        )->first();
+
+        $this->fixtures->edit(
+            'fund_transfer_attempt',
+            $ftaForPayout->getId(),
+            [
+                'status' => 'initiated',
+                'utr'    => 928337183,
+            ]
+        );
+
+        $this->updateFtaAndSource($payout->getId(), Payout\Status::PROCESSED);
+
+        $this->ba->privateAuth();
+
+        $request = & $this->testData[__FUNCTION__]['request'];
+
+        $request['url'] = '/payouts/'. $payout_data['id']. '/reversals';
+
+        $this->startTest();
+    }
+
     public function testBulkPayoutWithNotes()
     {
         $this->ba->batchAuth();
@@ -3878,7 +3968,7 @@ class PayoutTest extends TestCase
         ];
 
         $this->testData[__FUNCTION__]['request']['server'] = $headers;
-        
+
         $this->startTest();
     }
 
