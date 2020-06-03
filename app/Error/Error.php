@@ -552,8 +552,14 @@ class Error extends Support\Fluent
             self::STEP              => $this->getAttribute(self::STEP),
             self::REASON            => $this->getAttribute(self::REASON),
             self::METADATA          => $metadata,
-            self::REASON_CODE       => $this->getAttribute(self::REASON_CODE),
         );
+
+        $data = $this->getAttribute(self::DATA);
+
+        if ($this->shouldExposeReasonCode($data) === true)
+        {
+            $error[self::REASON_CODE] = $this->getAttribute(self::REASON_CODE);
+        }
 
         $this->trace->info(TraceCode::ERROR_RESPONSE_DATA,
             [
@@ -583,6 +589,17 @@ class Error extends Support\Fluent
         }
 
         return $array;
+    }
+
+    protected function shouldExposeReasonCode($data)
+    {
+        if ((isset($data['application']) === true) and
+            ($data['application'] === 'google_pay'))
+        {
+            return true;
+        }
+
+        return false;
     }
 
     /** We generally don't send the data in the error response. However, in few situations

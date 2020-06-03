@@ -558,7 +558,8 @@ trait Callback
 
         $e->setData(['payment_id'  => $this->payment->getPublicId(),
                      'order_id'    => $this->payment->getPublicOrderId(),
-                     'method'      => $this->payment->getMethod()]);
+                     'method'      => $this->payment->getMethod(),
+                     'application' => $this->payment->getAuthenticationGateway()]);
 
         if (Error\Error::hasAction($internalErrorCode) === false)
         {

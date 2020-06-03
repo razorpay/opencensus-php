@@ -73,7 +73,8 @@ class Gateway extends Base\Gateway
                 ErrorCode::BAD_REQUEST_DECRYPTION_FAILED,
                 null,
                 [
-                    'method' => 'card'
+                    'method'      => 'card',
+                    'application' => 'google_pay'
                 ]);
         }
 
@@ -88,7 +89,8 @@ class Gateway extends Base\Gateway
                 ErrorCode::BAD_REQUEST_DECRYPTION_FAILED,
                 null,
                 [
-                    'method' => 'card'
+                    'method'      => 'card',
+                    'application' => 'google_pay'
                 ]);
         }
 
@@ -113,7 +115,8 @@ class Gateway extends Base\Gateway
                 ErrorCode::BAD_REQUEST_SIGNING_KEY_EXPIRED,
                 null,
                 [
-                    'method' => 'card'
+                    'method'      => 'card',
+                    'application' => 'google_pay'
                 ]);
         }
 
@@ -123,7 +126,8 @@ class Gateway extends Base\Gateway
                 ErrorCode::BAD_REQUEST_MESSAGE_EXPIRED,
                 null,
                 [
-                    'method' => 'card'
+                    'method'      => 'card',
+                    'application' => 'google_pay'
                 ]);
         }
     }
@@ -135,7 +139,8 @@ class Gateway extends Base\Gateway
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_NOT_FOUND,
                 null,
                 [
-                    'method' => 'card'
+                    'method'      => 'card',
+                    'application' => 'google_pay'
                 ]);
         }
 
@@ -148,7 +153,8 @@ class Gateway extends Base\Gateway
                 ErrorCode::BAD_REQUEST_AMOUNT_MISMATCH,
                 null,
                 [
-                    'method'      => $payment->getMethod(),
+                    'method'      => 'card',
+                    'application' => 'google_pay'
                 ]);
         }
 
@@ -158,7 +164,8 @@ class Gateway extends Base\Gateway
                 ErrorCode::BAD_REQUEST_MERCHANT_ID_DOES_NOT_MATCH,
                 null,
                 [
-                    'method' => 'card'
+                    'method'      => 'card',
+                    'application' => 'google_pay'
                 ]);
         }
 
@@ -168,7 +175,8 @@ class Gateway extends Base\Gateway
                 ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCESSED,
                 null,
                 [
-                    'method' => 'card'
+                    'method'      => 'card',
+                    'application' => 'google_pay'
                 ]);
         }
     }
@@ -207,7 +215,8 @@ class Gateway extends Base\Gateway
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_NOT_FOUND,
                 null,
                 [
-                    'method' => 'card'
+                    'method'      => 'card',
+                    'application' => 'google_pay'
                 ]);
         }
 
@@ -239,7 +248,8 @@ class Gateway extends Base\Gateway
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_NOT_FOUND,
                 null,
                 [
-                    'method' => 'card'
+                    'method'      => 'card',
+                    'application' => 'google_pay'
                 ]);
         }
 
@@ -317,7 +327,8 @@ class Gateway extends Base\Gateway
             $payment->getInternalErrorCode(),
             null,
             [
-                'method' => 'card'
+                'method'      => 'card',
+                'application' => 'google_pay'
             ]);
     }
 

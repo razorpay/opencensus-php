@@ -54,7 +54,10 @@ class Validator extends JitValidator
             throw new Exception\ExtraFieldsException($invalidKeys,
                 ErrorCode::BAD_REQUEST_EXTRA_FIELDS_PROVIDED,
                 null,
-                ['method'=>'card']);
+                [
+                    'method'      =>'card',
+                    'application' => 'google_pay'
+                ]);
         }
 
         $validator = LaravelValidator::make($input, static::$$rulesVar);
@@ -65,7 +68,8 @@ class Validator extends JitValidator
                 ErrorCode::BAD_REQUEST_INPUT_VALIDATION_FAILURE,
                 null,
                 [
-                    'method' => 'card'
+                    'method'      => 'card',
+                    'application' => 'google_pay'
                 ]);
         }
     }
