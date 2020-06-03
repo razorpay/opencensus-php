@@ -9,10 +9,16 @@ use RZP\Http\Route;
 use RZP\Error\Error;
 use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
+use RZP\Constants\Environment;
 use Illuminate\Http\JsonResponse;
 
 class Response
 {
+    /**
+     * The application instance.
+     *
+     * @var \Illuminate\Foundation\Application
+     */
     protected $app;
 
     /**
@@ -444,7 +450,8 @@ class Response
 
     protected function setRequestIdInHeaders(JsonResponse $response, bool $debug)
     {
-        if ($debug === false)
+        if (($debug === false) and
+            ($this->app->environment(Environment::PRODUCTION) === true))
         {
             return;
         }
