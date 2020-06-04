@@ -6,12 +6,18 @@ const metricType = {
 const getLocationUrl = url => {
   if (!url) {
     if (location.hash) {
+      // Eg. #/access/signin
       url = location.hash;
-      url = url.replace('#', '');
+      // trim leading #/
+      url = url.replace(/#\//,'');
     } else {
+      // Eg. /app/payment/some_module/payment_id
       url = location.pathname;
+      // trim /app/
+      url = url.replace('/app/', '');
+      // trim internal modules
+      url = url.split('/')[0];
     }
-    return url.split('/')[2];
   }
 
   return url.split('?')[0];
