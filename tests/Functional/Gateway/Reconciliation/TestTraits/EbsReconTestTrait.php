@@ -5,6 +5,7 @@ use Carbon\Carbon;
 use RZP\Gateway\Ebs;
 use RZP\Models\Batch;
 use RZP\Models\Payment;
+use RZP\Models\Base\PublicEntity;
 
 trait EbsReconTestTrait
 {
@@ -109,9 +110,54 @@ trait EbsReconTestTrait
         $this->runForFiles([$file], 'Ebs');
 
         $transaction->reload();
-        $this->assertFalse($transaction->isReconciled());
+        $this->assertTrue($transaction->isReconciled());
 
         $this->assertBatchStatus(Batch\Status::PROCESSED);
+    }
+
+    /**
+     * We are allowing recon for refunds that can be
+     * uniquely identified by given payment id and amount,
+     * since, that is all we get in MIS as of the moment.
+     * We create a file containing 1 payment and 3 refund
+     * rows, the refund row which contains payment id and
+     * amount, against which only 1 entry is present, gets
+     * successfully reconciled, rest do not.
+     */
+    public function testEbsCombinedUniqueEntityRecon()
+    {
+        $this->ebsReconSetup();
+
+        $this->getNewPaymentEntity(false, true);
+        $payment = $this->getDbLastPayment();
+        $ebs = $this->getDbLastEntity('ebs');
+        $refund1 = $this->refundPayment($payment->getPublicId(), '10000');
+        $refund2 = $this->refundPayment($payment->getPublicId(), '20000');
+        $refund3 = $this->refundPayment($payment->getPublicId(), '20000');
+
+        $refundEntity1 = $this->getDbENtityById('refund', $refund1['id']);
+        $refundEntity2 = $this->getDbENtityById('refund', $refund2['id']);
+        $refundEntity3 = $this->getDbENtityById('refund', $refund3['id']);
+
+        $entries[] = $this->overrideEbsPayment($payment, $ebs);
+        $entries[] = $this->overrideEbsRefund($refundEntity1, $ebs);
+        $entries[] = $this->overrideEbsRefund($refundEntity2, $ebs);
+        $entries[] = $this->overrideEbsRefund($refundEntity3, $ebs);
+
+        $file = $this->writeToCsvFile($entries, 'EBS_SETTLEMENT_DETAILS');
+        $this->runForFiles([$file], 'Ebs');
+
+        $transaction1 = $this->getDbEntity('transaction', ['type' => 'payment', 'entity_id' => $payment['id']]);;
+        $transaction2 = $this->getDbEntity('transaction', ['type' => 'refund', 'entity_id' => $refundEntity1['id']]);;
+        $transaction3 = $this->getDbEntity('transaction', ['type' => 'refund', 'entity_id' => $refundEntity2['id']]);;
+        $transaction4 = $this->getDbEntity('transaction', ['type' => 'refund', 'entity_id' => $refundEntity3['id']]);;
+
+        $this->assertNotNull($transaction1['reconciled_at']);
+        $this->assertNotNull($transaction2['reconciled_at']);
+        $this->assertNull($transaction3['reconciled_at']);
+        $this->assertNull($transaction4['reconciled_at']);
+
+        $this->assertBatchStatus(Batch\Status::PARTIALLY_PROCESSED);
     }
 
     private function overrideEbsPayment(Payment\Entity $payment, Ebs\Entity $ebs, array $override = [])
@@ -139,16 +185,16 @@ trait EbsReconTestTrait
         return array_merge($facade, $override);
     }
 
-    private function overrideEbsRefund(Payment\Entity $payment, Ebs\Entity $ebs, array $override = [])
+    private function overrideEbsRefund(PublicEntity $entity, Ebs\Entity $ebs, array $override = [])
     {
-        $amounts = $this->parseEbsReconFileAmount($payment->getAmount(), 'refund');
+        $amounts = $this->parseEbsReconFileAmount($entity->getAmount(), 'refund');
 
         $facade = [
             'transactionid'    => (string) $ebs->transaction_id ?? random_integer(8),
             'paymentid'        => (string) $ebs->getGatewayPaymentId() ?? random_integer(8),
             'merchant_refno'   => $ebs->getPaymentId(),
-            'txn_date'         => Carbon::createFromTimestamp($payment->getCreatedAt())->format('d/m/Y'),
-            'settlement_date'  => Carbon::createFromTimestamp($payment->getCreatedAt())->addDay()->format('d/m/Y'),
+            'txn_date'         => Carbon::createFromTimestamp($entity->getCreatedAt())->format('d/m/Y'),
+            'settlement_date'  => Carbon::createFromTimestamp($entity->getCreatedAt())->addDay()->format('d/m/Y'),
             'accountid'        => '20640',
             'merchant'         => 'Razorpay',
             'paymentmethod'    => 'Bank of Razorpay',
@@ -182,7 +228,7 @@ trait EbsReconTestTrait
                 $output['tax'] = 0;
                 $output['net'] = $debit;
                 $output['debit'] = $debit;
-                $output['credit'] = 0;
+                $output['credit'] = $debit;
         }
 
         return array_map(function($amount)

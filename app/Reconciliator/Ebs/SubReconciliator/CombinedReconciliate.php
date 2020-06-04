@@ -96,7 +96,7 @@ class CombinedReconciliate extends Base\SubReconciliator\CombinedReconciliate
 
             case self::TXN_REFUND:
 
-                return self::NA;
+                return BaseReconciliate::REFUND;
 
             default:
 
