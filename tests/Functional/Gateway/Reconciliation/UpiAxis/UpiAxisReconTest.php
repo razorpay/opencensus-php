@@ -5,7 +5,6 @@ namespace RZP\Tests\Functional\Gateway\Reconciliation\UpiAxis;
 use Carbon\Carbon;
 use Illuminate\Http\UploadedFile;
 
-use RZP\Error\Action;
 use RZP\Gateway\Upi\Base\Entity;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
@@ -268,6 +267,39 @@ class UpiAxisReconTest extends TestCase
         $this->assertBatchStatus(Status::PROCESSED);
     }
 
+    /**
+     * We are allowing recon for refunds, which can
+     * be uniquely identified by the given payment id
+     * and amount in the MIS, since that's all we get
+     * as of the moment.
+     */
+    public function testUpiAxisUniqueRefundRecon()
+    {
+        $this->payment = $this->doUpiAxisPayment();
+
+        $this->ba->appAuth();
+
+        $refund1 = $this->refundPayment('pay_' . $this->payment['id'], 10000);
+        $refund2 = $this->refundPayment('pay_' . $this->payment['id'], 20000);
+        $refund3 = $this->refundPayment('pay_' . $this->payment['id'], 20000);
+
+        $entries[] = $this->mockRefundData('100.0');
+        $entries[] = $this->mockRefundData('200.0');
+        $entries[] = $this->mockRefundData('200.0');
+
+        $file = $this->writeToExcelFile($entries, 'REFUND_Razorpay Software Pvt Ltd');
+        $uploadedFile = $this->createRefundUploadedFile($file);
+        $this->reconcile($uploadedFile, 'UpiAxis');
+
+        $transaction1 = $this->getEntities('transaction', ['type' => 'refund', 'entity_id' => $refund1['id']], true);
+        $transaction2 = $this->getEntities('transaction', ['type' => 'refund', 'entity_id' => $refund2['id']], true);
+        $transaction3 = $this->getEntities('transaction', ['type' => 'refund', 'entity_id' => $refund3['id']], true);
+
+        $this->assertNotNull($transaction1['items'][0]['reconciled_at']);
+        $this->assertNull($transaction2['items'][0]['reconciled_at']);
+        $this->assertNull($transaction3['items'][0]['reconciled_at']);
+    }
+
     protected function overrideUpiAxisPayment(array $upiEntity)
     {
         $facade = $this->testData['upiAxis'];
@@ -374,7 +406,7 @@ class UpiAxisReconTest extends TestCase
         return $payment;
     }
 
-    protected function mockRefundData()
+    protected function mockRefundData($amount = null)
     {
         $array = $this->testData['upiAxisRefund'];
 
@@ -382,9 +414,10 @@ class UpiAxisReconTest extends TestCase
 
         $refundDate = Carbon::createFromTimestamp($this->refund['created_at'], Timezone::IST)->format('d-M-y');
 
-        $array['ORDER_ID']          = $this->refund['id'];
+        $array['ORDER_ID']          = $this->payment['id'];
         $array['TRANSACTION_DATE']  = $paymentDate;
         $array['TXN_REF_DATE']      = $refundDate;
+        $array['REFUND_AMOUNT']     = $amount ?? $array['AMOUNT'];
 
         return $array;
     }

@@ -10,16 +10,54 @@ use RZP\Models\Base\PublicEntity;
 class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
 {
     const RRN                     = 'rrn';
+    const VPA                     = 'vpa';
     const TXN_ID                  = 'txn_id';
-    const REFUND_ID               = 'order_id';
+    const PAYMENT_ID              = 'order_id';
     const RESPONSE                = 'response';
     const COLUMN_REFUND_AMOUNT    = 'refund_amount';
+    const ACOUNT_CUST_NAME        = 'acnt_custname';
 
     const SUCCESS = 'Success';
 
+    const BLACKLISTED_COLUMNS = [
+        self::ACOUNT_CUST_NAME,
+        self::VPA,
+    ];
+
     protected function getRefundId(array $row)
     {
-       return $row[self::REFUND_ID] ?? null;
+        $refundId = null;
+
+        $paymentId = $this->getPaymentId($row);
+
+        $refundAmount = $this->getReconRefundAmount($row);
+
+        $refunds = $this->repo->refund->findForPaymentAndAmount($paymentId, $refundAmount);
+
+        if (count($refunds) === 1)
+        {
+            $refundId = $refunds[0]['id'];
+        }
+        else
+        {
+            $this->trace->info(
+                TraceCode::RECON_MISMATCH,
+                [
+                    'info_code'             => Base\InfoCode::RECON_UNIQUE_REFUND_NOT_FOUND,
+                    'payment_id'            => $paymentId,
+                    'refund_amount'         => $refundAmount,
+                    'refund_count'          => count($refunds),
+                    'gateway'               => $this->gateway,
+                    'batch_id'              => $this->batchId,
+                ]);
+        }
+
+        return $refundId;
+    }
+
+    protected function getPaymentId(array $row)
+    {
+        return $row[self::PAYMENT_ID] ?? null;
     }
 
     protected function getGatewayTransactionId(array $row)

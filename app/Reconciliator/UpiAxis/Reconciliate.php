@@ -35,6 +35,11 @@ class Reconciliate extends Base\Reconciliate
             $type = self::PAYMENT;
         }
 
+        if (str_contains($fileName, self::REFUND_RECON_FILE_NAME) !== false)
+        {
+            $type = self::REFUND;
+        }
+
         return $type;
     }
 
@@ -43,19 +48,6 @@ class Reconciliate extends Base\Reconciliate
     protected function getFileName(array $extraDetails): string
     {
         return $extraDetails[FileProcessor::FILE_DETAILS][FileProcessor::FILE_NAME];
-    }
-
-    public function inExcludeList(array $fileDetails, array $inputDetails = [])
-    {
-        // Skipping refund recon files - because currently bank is sending payment_id
-        // and payment_rrn in the refund recon file - so there is no way to uniquely identify the
-        // refund transaction uniquely on our system.
-        if (str_contains($fileDetails[FileProcessor::FILE_NAME], self::REFUND_RECON_FILE_NAME) !== false)
-        {
-            return true;
-        }
-
-        return false;
     }
 
     //
