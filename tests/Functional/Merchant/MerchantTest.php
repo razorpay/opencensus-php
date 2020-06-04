@@ -15,6 +15,7 @@ use Illuminate\Cache\Events\KeyForgotten;
 use Illuminate\Database\Eloquent\Factory;
 use Illuminate\Foundation\Testing\Concerns\InteractsWithSession;
 
+use RZP\Models\Feature\Constants;
 use RZP\Models\Key;
 use RZP\Jobs\EsSync;
 use RZP\Models\Admin;
@@ -1776,6 +1777,18 @@ class MerchantTest extends TestCase
 
         $count = count($content['methods']['netbanking']);
         $this->assertEquals(0, $count);
+    }
+
+    public function testGetCheckoutPreferencesAmexRecurring()
+    {
+        $this->ba->publicLiveAuth();
+
+        $this->fixtures->merchant->activate('10000000000000');
+        $this->fixtures->merchant->addFeatures(Constants::AMEX_RECURRING);
+        $this->fixtures->merchant->addFeatures(Constants::CHARGE_AT_WILL);
+        $this->fixtures->merchant->enableMethod('10000000000000', 'card');
+
+        $this->startTest();
     }
 
     public function testGetCheckoutPreferencesWithPartnerLogo()

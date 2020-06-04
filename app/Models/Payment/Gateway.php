@@ -1373,6 +1373,7 @@ class Gateway
     public static $recurringCardNetworks = [
         Network::MC,
         Network::VISA,
+        Network::AMEX
     ];
 
     public static $recurringDebitCardBanks = [

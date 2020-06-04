@@ -1908,6 +1908,31 @@ return [
         ],
     ],
 
+    'testGetCheckoutPreferencesAmexRecurring' => [
+        'request' => [
+            'url' => '/preferences',
+            'method' => 'get',
+            'content' => [
+                'currency' => 'INR',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'methods' => [
+                    'recurring' => [
+                        'card' => [
+                            'credit' => [
+                                'MasterCard',
+                                'Visa',
+                                'American Express',
+                            ]
+                        ]
+                    ]
+                ]
+            ]
+        ]
+    ],
+
     'testGetCheckoutPreferencesWithPartnerLogo' => [
         'request' => [
             'url' => '/preferences',

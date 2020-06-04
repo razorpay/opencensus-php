@@ -254,6 +254,11 @@ class Core extends Base\Core
         {
             $supportedNetworksForCreditCardRecurring = Payment\Gateway::getNetworksSupportedForCardRecurring();
 
+            if ($merchant->isFeatureEnabled(Constants::AMEX_RECURRING) === false)
+            {
+                unset($supportedNetworksForCreditCardRecurring[array_search(Network::AMEX, $supportedNetworksForCreditCardRecurring)]);
+            }
+
             $recurringData['card']['credit'] = Network::getFullNames($supportedNetworksForCreditCardRecurring);
         }
 
