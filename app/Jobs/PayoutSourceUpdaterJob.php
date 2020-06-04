@@ -4,7 +4,6 @@ namespace RZP\Jobs;
 
 use App;
 use RZP\Trace\TraceCode;
-use RZP\Models\PayoutLink\Core;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Payout\SourceUpdater;
 
@@ -20,6 +19,8 @@ class PayoutSourceUpdaterJob extends Job
     const MAX_RETRIES = 5;
 
     const MAX_RETRY_DELAY   = 300;
+
+    protected $queueConfigKey = 'payout_source_updater';
 
     protected $payoutPublicId;
 

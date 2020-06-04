@@ -9,7 +9,6 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Jobs\PayoutSourceUpdaterJob;
 use RZP\Models\Payout\Entity as PayoutEntity;
 use RZP\Models\PayoutLink\Core as PayoutLinkCore;
-use RZP\Models\PayoutLink\Entity as PayoutLinkEntity;
 
 /**
  * Class SourceUpdater

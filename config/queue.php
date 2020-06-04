@@ -411,6 +411,10 @@ return [
         'test'       => env('AWS_RBL_BANKING_ACCOUNT_STATEMENT_TEST_QUEUE'),
         'live'       => env('AWS_RBL_BANKING_ACCOUNT_STATEMENT_LIVE_QUEUE'),
     ],
+    'payout_source_updater' => [
+        'test'       => env('AWS_PAYOUT_SOURCE_UPDATER_TEST_QUEUE'),
+        'live'       => env('AWS_PAYOUT_SOURCE_UPDATER_LIVE_QUEUE'),
+    ],
     'payment_nbplus_api_reconciliation' => [
         'test'       =>  env('AWS_PAYMENT_NBPLUS_API_RECONCILIATION_TEST_QUEUE'),
         'live'       =>  env('AWS_PAYMENT_NBPLUS_API_RECONCILIATION_LIVE_QUEUE'),
