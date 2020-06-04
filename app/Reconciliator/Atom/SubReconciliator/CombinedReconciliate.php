@@ -9,11 +9,11 @@ use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
 class CombinedReconciliate extends Base\SubReconciliator\CombinedReconciliate
 {
     const COLUMN_TXN_STATE = 'txn_state';
-    const COLUMN_REFUND_STATUS = 'refund_status';
 
-    const PAYMENT_TXN  = 'Sale';
-    const REFUND_TXN   = 'Full Refund';
-    const REFUND_TXN_2 = 'Partial Refund';
+    const PAYMENT_TXN  = 'sale';
+    const REFUND_TXN   = 'refund';
+    const REFUND_TXN_2 = 'full refund';
+    const REFUND_TXN_3 = 'partial refund';
 
     const COLUMN_MERCHANT_NAME  = 'merchant_name';
     const COLUMN_MERCHANT_ID    = 'merchant_id';
@@ -24,6 +24,7 @@ class CombinedReconciliate extends Base\SubReconciliator\CombinedReconciliate
     const TRANSACTION_TYPE_TO_RECONCILIATION_TYPE_MAP = [
         self::PAYMENT_TXN   => BaseReconciliate::PAYMENT,
         self::REFUND_TXN    => BaseReconciliate::REFUND,
+        self::REFUND_TXN_2  => BaseReconciliate::REFUND,
     ];
 
     const BLACKLISTED_COLUMNS = [];
@@ -35,7 +36,7 @@ class CombinedReconciliate extends Base\SubReconciliator\CombinedReconciliate
             return null;
         }
 
-        $txnState = $row[self::COLUMN_TXN_STATE];
+        $txnState = strtolower($row[self::COLUMN_TXN_STATE]);
 
         if (isset(self::TRANSACTION_TYPE_TO_RECONCILIATION_TYPE_MAP[$txnState]) === true)
         {
@@ -65,7 +66,7 @@ class CombinedReconciliate extends Base\SubReconciliator\CombinedReconciliate
         // If yes : then left shift the column values to fix the row
         // and then get the recon type
         //
-        $txnDate = $row[self::COLUMN_TXN_DATE] ?? null;
+        $txnDate = strtolower($row[self::COLUMN_TXN_DATE] ?? null);
 
         if (isset(self::TRANSACTION_TYPE_TO_RECONCILIATION_TYPE_MAP[$txnDate]) === true)
         {
@@ -81,7 +82,7 @@ class CombinedReconciliate extends Base\SubReconciliator\CombinedReconciliate
             $this->leftShiftRowValues($row);
 
             // $row has been modified now, get the $txnState again
-            $txnState = $row[self::COLUMN_TXN_STATE];
+            $txnState = strtolower($row[self::COLUMN_TXN_STATE]);
 
             $reconType = self::TRANSACTION_TYPE_TO_RECONCILIATION_TYPE_MAP[$txnState] ?? self::NA;
         }
@@ -99,5 +100,47 @@ class CombinedReconciliate extends Base\SubReconciliator\CombinedReconciliate
         array_shift($values);
 
         $row = array_combine_pad($columns, $values);
+    }
+
+    protected function modifyRowIfNeeded(&$row)
+    {
+        if ($this->shouldModifyRow($row) === false)
+        {
+            return;
+        }
+
+        $originalRow = $row;
+        $row = [];
+
+        foreach (ReconciliationFields::OLD_TO_NEW_FILE_MAPPING as $column)
+        {
+            if (is_array($column) === false)
+            {
+                $row[$column] = $originalRow[$column] ?? '';
+            }
+            else
+            {
+                // See which column in the array is set, take that value
+                $columnSet = Base\SubReconciliator\Helper::getArrayFirstValue($originalRow, $column);
+
+                // Here 0th index corresponds to old file column.
+                $row[$column[0]] = $columnSet ?? '';
+            }
+        }
+    }
+
+    /**
+     * To check if the file is in new format, we check
+     * presence of 2 crucial columns for recon, and
+     * then proceed to change it to older format, so
+     * that reconciliation output file remain same.
+     *
+     * @param $row
+     * @return bool
+     */
+    protected function shouldModifyRow($row)
+    {
+        return (isset($row[ReconciliationFields::TXN_STATE[1]]) and
+                isset($row[ReconciliationFields::ATOM_TXN_ID[1]]));
     }
 }

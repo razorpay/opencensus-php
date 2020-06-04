@@ -20,7 +20,10 @@ class PaymentReconciliate extends Base\SubReconciliator\NetbankingServiceRecon
     const COLUMN_SERVICE_TAX         = ['gst_18', 'service_tax'];
     const COLUMN_SETTLED_AT          = 'settlement_date';
 
-    const SETTLEMENT_DATE_FORMAT     = 'd-M-Y h:i:s';
+    const SETTLEMENT_DATE_FORMAT = [
+        'd/m/y',
+        'd-M-Y h:i:s',
+    ];
 
     protected function getPaymentId(array $row)
     {
@@ -151,20 +154,21 @@ class PaymentReconciliate extends Base\SubReconciliator\NetbankingServiceRecon
 
         $gatewaySettledAt = null;
 
-        try
+        foreach (self::SETTLEMENT_DATE_FORMAT as $dateFormat)
         {
-            $gatewaySettledAt = Carbon::createFromFormat(self::SETTLEMENT_DATE_FORMAT, $columnSettledAt, Timezone::IST);
-            $gatewaySettledAt = $gatewaySettledAt->getTimestamp();
-        }
-        catch (\Exception $ex)
-        {
-            $this->trace->error(
-                TraceCode::RECON_INFO_ALERT,
-                [
-                    'message'           => 'Unable to get Gateway Settled at',
-                    'row'               => $row,
-                    'gateway'           => $this->gateway
-                ]);
+            try
+            {
+                if (strpos($columnSettledAt, 'done on ') !== false)
+                {
+                    $columnSettledAt = str_replace('done on ', '', $columnSettledAt);
+                }
+
+                $gatewaySettledAt = Carbon::createFromFormat($dateFormat, $columnSettledAt, Timezone::IST)->getTimestamp();
+            }
+            catch (\Exception $ex)
+            {
+                continue;
+            }
         }
 
         return $gatewaySettledAt;

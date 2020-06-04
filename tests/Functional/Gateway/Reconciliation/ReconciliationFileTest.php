@@ -2081,17 +2081,17 @@ class ReconciliationFileTest extends TestCase
     {
         $facade = $this->testData['facades']['atom'];
 
-        $facade[AtomPaymentRecon::COLUMN_ATOM_TRANSACTION_ID] = $gatewayPayment['gateway_payment_id'];
-        $facade[AtomPaymentRecon::COLUMN_PAYMENT_ID]          = $gatewayPayment['payment_id'];
-        $facade[AtomPaymentRecon::COLUMN_BANK_REFERENCE_NO]   = $gatewayPayment['bank_payment_id'];
-        $facade['Gross Txn Amount']                           = $gatewayPayment['amount'] / 100;
-        $facade['Txn Charges']                                = (float) $facade['Gross Txn Amount'] * 1.1;
-        $facade['GST (18%)']                                  = (float) $facade['Gross Txn Amount'] * 0.002;
-        $facade['Bank / Card Name']                           = $gatewayPayment['bank_name'];
-        $facade['Net Amount to be Paid']                      = $facade['GST (18%)'] + $facade['Txn Charges'];
-        $facade['Settlement Date']                            = Carbon::createFromTimestamp($gatewayPayment['created_at'], Timezone::IST)->format('d-M-Y h:i:s');
-        $facade['Txn Date']                                   = Carbon::createFromTimestamp($gatewayPayment['created_at'], Timezone::IST)->format('d-M-Y h:i:s');
-        $facade['Refund Status']                              = '';
+        $facade['Atom Txn Id']           = $gatewayPayment['gateway_payment_id'];
+        $facade['Merchant Txn Id']       = $gatewayPayment['payment_id'];
+        $facade['Bank Ref No']           = $gatewayPayment['bank_payment_id'];
+        $facade['Gross Txn Amount']      = $gatewayPayment['amount'] / 100;
+        $facade['Txn Charges']           = (float) $facade['Gross Txn Amount'] * 1.1;
+        $facade['GST (18%)']             = (float) $facade['Gross Txn Amount'] * 0.002;
+        $facade['Bank / Card Name']      = $gatewayPayment['bank_name'];
+        $facade['Net Amount to be Paid'] = $facade['GST (18%)'] + $facade['Txn Charges'];
+        $facade['Settlement Date']       = Carbon::createFromTimestamp($gatewayPayment['created_at'], Timezone::IST)->format('d-M-Y h:i:s');
+        $facade['Txn Date']              = Carbon::createFromTimestamp($gatewayPayment['created_at'], Timezone::IST)->format('d-M-Y h:i:s');
+        $facade['Refund Status']         = '';
 
         return $facade;
     }
