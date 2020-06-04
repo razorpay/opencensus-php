@@ -250,6 +250,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::GATEWAY);
     }
 
+    public function getPii()
+    {
+        return $this->pii;
+    }
+
     public function toArrayPublic()
     {
         $app = \App::getFacadeRoot();

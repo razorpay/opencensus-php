@@ -27,13 +27,9 @@ class Core extends Base\Core
     {
         $upiTransferInput = $gatewayResponse['upi_transfer_data'];
 
-        $upiTransferTraceInput = $upiTransferInput;
-
-        unset($upiTransferTraceInput['payer_account']);
-
         $this->trace->info(
             TraceCode::UPI_TRANSFER_PAYMENT_PROCESS_REQUEST,
-            $upiTransferTraceInput
+            $this->removePiiForLogging($upiTransferInput)
         );
 
         $this->convertPayeeVpaToLower($upiTransferInput);
@@ -102,7 +98,11 @@ class Core extends Base\Core
         $input = $input['upi_transfer_data'] ?? $input;
 
         $this->trace->traceException(
-            $ex, Trace::CRITICAL, TraceCode::UPI_TRANSFER_PAYMENT_PROCESSING_FAILED, $input);
+            $ex,
+            Trace::CRITICAL,
+            TraceCode::UPI_TRANSFER_PAYMENT_PROCESSING_FAILED,
+            $this->removePiiForLogging($input, [Entity::PAYEE_VPA])
+        );
     }
 
     protected function convertPayeeVpaToLower(array & $input)
@@ -130,5 +130,50 @@ class Core extends Base\Core
             null,
             $properties
         );
+    }
+
+    /**
+     * Pass fields to $fields that are not to be logged.
+     * If nothing is passed, default PII fields will be
+     * fetched from Entity class. If any field is not to
+     * be completely removed, use the switch-case.
+     *
+     * @param array $array
+     * @param array $fields
+     * @return array
+     */
+    public function removePiiForLogging(array $array, array $fields = [])
+    {
+        if (empty($fields) === true)
+        {
+            $fields = (new Entity())->getPii();
+        }
+
+        foreach ($fields as $field)
+        {
+            if (isset($array[$field]) === false)
+            {
+                continue;
+            }
+
+            switch ($field)
+            {
+                case Entity::PAYEE_VPA:
+                    $payeeVpa = $array[Entity::PAYEE_VPA];
+
+                    $array[Entity::PAYEE_VPA . '_root']     = explode('.', $payeeVpa)[0];
+                    $array[Entity::PAYEE_VPA . '_dynamic']  = explode('@', explode('.', $payeeVpa)[1])[0];
+                    $array[Entity::PAYEE_VPA . '_handle']   = explode('@', $payeeVpa)[1];
+
+                    break;
+
+                default:
+                    break;
+            }
+
+            unset($array[$field]);
+        }
+
+        return $array;
     }
 }

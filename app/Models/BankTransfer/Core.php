@@ -74,7 +74,7 @@ class Core extends Base\Core
     {
         $this->trace->info(
             TraceCode::BANK_TRANSFER_PROCESSING,
-            $this->removePiiDataForLogging($input)
+            $this->removePiiForLogging($input)
         );
 
         $processor = new Processor();
@@ -178,8 +178,9 @@ class Core extends Base\Core
             $this->trace->info(
                 TraceCode::BANK_TRANSFER_PROCESSING_FAILED,
                 [
-                    'input' => $this->removePiiDataForLogging($input)
-                ]);
+                    'input' => $this->removePiiForLogging($input, [Entity::PAYEE_ACCOUNT]),
+                ]
+            );
 
             return;
         }
@@ -187,7 +188,7 @@ class Core extends Base\Core
         // Any non-trivial (non-empty request) exception is critical, as
         // bank transfers are never supposed to fail. Trace accordingly.
         $this->trace->traceException(
-            $ex, Trace::CRITICAL, TraceCode::BANK_TRANSFER_PROCESSING_FAILED, $this->removePiiDataForLogging($input));
+            $ex, Trace::CRITICAL, TraceCode::BANK_TRANSFER_PROCESSING_FAILED, $this->removePiiForLogging($input, [Entity::PAYEE_ACCOUNT]));
 
         // Slack alerts are only for prod
         if ($this->isEnvironmentProduction() === false)
@@ -242,7 +243,7 @@ class Core extends Base\Core
                 $this->trace->error(
                     TraceCode::BANK_TRANSFER_UNEXPECTED_NOTIFY,
                     [
-                        'input' => $input,
+                        'input' => $this->removePiiForLogging($input),
                     ]
                 );
             }
@@ -598,17 +599,47 @@ class Core extends Base\Core
         );
     }
 
-    public function removePiiDataForLogging($input)
+    /**
+     * Pass fields to $fields that are not to be logged.
+     * If nothing is passed, default PII fields will be
+     * fetched from Entity class. If any field is not to
+     * be completely removed, use the switch-case.
+     *
+     * @param array $array
+     * @param array $fields
+     * @return array
+     */
+    public function removePiiForLogging(array $array, array $fields = [])
     {
-        $data = $input;
-        if (isset($data[Entity::PAYEE_ACCOUNT]) === true)
+        if (empty($fields) === true)
         {
-            $payeeAccount                               = $data[Entity::PAYEE_ACCOUNT];
-            $data[Entity::PAYEE_ACCOUNT . '_prefix']     = substr($payeeAccount, 0, 8);
-            $data[Entity::PAYEE_ACCOUNT . '_descriptor'] = substr($payeeAccount, 8, strlen($payeeAccount));
-
-            unset($data[Entity::PAYEE_ACCOUNT]);
+            $fields = (new Entity())->getPii();
         }
-        return $data;
+
+        foreach ($fields as $field)
+        {
+            if (isset($array[$field]) === false)
+            {
+                continue;
+            }
+
+            switch ($field)
+            {
+                case Entity::PAYEE_ACCOUNT:
+                    $payeeAccount = $array[Entity::PAYEE_ACCOUNT];
+
+                    $array[Entity::PAYEE_ACCOUNT . '_prefix']       = substr($payeeAccount, 0, 8);
+                    $array[Entity::PAYEE_ACCOUNT . '_descriptor']   = substr($payeeAccount, 8, strlen($payeeAccount));
+
+                    break;
+
+                default:
+                    break;
+            }
+
+            unset($array[$field]);
+        }
+
+        return $array;
     }
 }

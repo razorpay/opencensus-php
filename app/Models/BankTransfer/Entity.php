@@ -485,6 +485,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::NARRATION);
     }
 
+    public function getPii()
+    {
+        return $this->pii;
+    }
+
     // ----------------------- Setters -----------------------------------------
 
     public function setExpected(bool $expected)
