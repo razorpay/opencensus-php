@@ -33,8 +33,6 @@ class Notifier extends Base\Core
      * @var Reminders
      */
     protected $reminders;
-    protected $slack;
-    protected $slackTechLogsChannel;
 
     public function __construct($invoice = null, string $issuedPdfPath = null)
     {
@@ -49,10 +47,6 @@ class Notifier extends Base\Core
         $this->raven = $this->app['raven'];
 
         $this->reminders = $this->app['reminders'];
-
-        $this->slack = $this->app['slack'];
-
-        $this->slackTechLogsChannel = Config::get('slack.channels.tech_logs');
     }
 
     public function setInvoice($invoice)
@@ -381,12 +375,6 @@ class Notifier extends Base\Core
         ];
 
         $this->trace->info(TraceCode::INVOICE_BULK_NOTIFICATION_SUMMARY, $results);
-
-        // Post summary to slack
-        $message = 'Invoice Notify result';
-        $meta    = ['channel' => $this->slackTechLogsChannel];
-
-        $this->slack->queue($message, $results, $meta);
 
         return $results;
     }
