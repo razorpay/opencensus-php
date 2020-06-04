@@ -306,6 +306,7 @@ class Server extends Base\Mock\Server
     protected function cred($input)
     {
         return;
+
     }
 
     protected function wallet_phonepe($input)

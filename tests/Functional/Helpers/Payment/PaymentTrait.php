@@ -1725,6 +1725,20 @@ trait PaymentTrait
         return $payment;
     }
 
+    protected function getDefaultCredPayment()
+    {
+        $payment = $this->getDefaultPaymentArray();
+        $payment['method'] = 'cred';
+
+        unset($payment['card'], $payment['bank']);
+
+        $payment['cred'] = [
+            'app_offer'   => false,
+            'app_present' => true,
+        ];
+        return $payment;
+    }
+
     protected function getDefaultPayLaterPaymentArray($provider)
     {
         $payment = $this->getDefaultPaymentArray();

@@ -633,7 +633,7 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::CARDLESS_EMI);
     }
 
-    public function isCredMethodEnabled()
+    public function isCredEnabled()
     {
         return $this->getAttribute(self::CRED);
     }

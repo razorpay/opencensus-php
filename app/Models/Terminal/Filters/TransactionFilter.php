@@ -99,6 +99,9 @@ class TransactionFilter extends Terminal\Filter
             case Method::NACH:
                 return $terminal->isNachEnabled();
 
+            case Method::CRED:
+                return $terminal->isCredEnabled();
+
             default:
                 throw new Exception\LogicException(
                     'Unknown payment method passed.',

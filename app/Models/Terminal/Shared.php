@@ -125,6 +125,7 @@ class Shared
     const UPI_CITI_RAZORPAY_TERMINAL         = '100UPICitiTmnl';
     const WORLDLINE_TERMINAL                 = '1000WldlineTml';
     const UPI_JUSPAY_TERMINAL                = '100UpiJsPayTml';
+    const CRED_TERMINAL                      = '100DiCreDTrmnl';
 
     protected static $shared = array(
         self::ATOM_RAZORPAY_TERMINAL,

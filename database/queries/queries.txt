@@ -5770,3 +5770,6 @@ ALTER TABLE terminals
 
 // update methods in emi_plans for bajajfinserv to card.
 UPDATE emi_plans SET method="card" WHERE network="BAJAJ" and deleted_at IS NULL LIMIT 11;
+
+ALTER TABLE merchant_banks
+    Add COLUMN cred TINYINT(1) NOT NULL DEFAULT 0;

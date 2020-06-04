@@ -1889,6 +1889,12 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         return ($this->getAttribute(self::METHOD) === Payment\Method::WALLET);
     }
 
+    public function isMethodCred()
+    {
+        return ($this->getAttribute(self::METHOD) === Payment\Method::CRED);
+    }
+
+
     public function isEmi()
     {
         return ($this->getAttribute(self::METHOD) === Payment\Method::EMI);

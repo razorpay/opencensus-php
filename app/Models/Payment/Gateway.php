@@ -301,7 +301,6 @@ class Gateway
         self::UPI_ICICI,
         self::UPI_MINDGATE,
         self::UPI_AXIS,
-        self::CRED,
     ];
 
     /**
@@ -1294,7 +1293,6 @@ class Gateway
         self::WALLET_MPESA,
         self::CARDLESS_EMI,
         self::PAYLATER,
-        self::CRED
     ];
 
     public static $verifyDisabled = [

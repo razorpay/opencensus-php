@@ -763,6 +763,25 @@ class Terminal extends Base
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
+    public function createDirectCredTerminal(array $attributes = [])
+    {
+        $termId = \RZP\Models\Terminal\Shared::CRED_TERMINAL;
+
+        $attributes = [
+            'id'                    => $termId,
+            'merchant_id'           => '10000000000000',
+            'gateway'               => 'cred',
+            'card'                  => 0,
+            'netbanking'            => 0,
+            'cred'                  => 1,
+            'gateway_merchant_id'   => 'cred_merchant',
+            'gateway_secure_secret' => 'cred_merchant',
+            'mode'                  => 1,
+        ];
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
     public function createCardlessEmiFlexMoneyTerminal(array $attributes = [])
     {
         $termId = \RZP\Models\Terminal\Shared::CARDLESS_EMI_FLEXMONEY_TERMINAL;

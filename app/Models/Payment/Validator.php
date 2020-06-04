@@ -119,6 +119,10 @@ class Validator extends Base\Validator
         'currency_request_id'           => 'required_with:dcc_currency|string',
         'dcc_currency'                  => 'required_with:currency_request_id|string|max:3|custom',
         'charge_account'                => 'sometimes|string',
+        'cred'                          => 'sometimes_if:method,cred|associative_array',
+        'cred.app_offer'                => 'required_with:cred|sometimes|boolean',
+        'cred.app_present'              => 'required_with:cred|sometimes|boolean',
+        'cred.os'                       => 'required_with:cred|sometimes|string',
     ];
 
     protected static $editAcquirerRules = [

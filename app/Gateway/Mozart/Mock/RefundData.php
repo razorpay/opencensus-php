@@ -35,7 +35,7 @@ class RefundData extends Base\Mock\Server
 
     public static function cred($entities)
     {
-
+        return;
     }
 
     public static function wallet_phonepe($entities)

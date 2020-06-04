@@ -3100,6 +3100,11 @@ trait Authorize
             $this->setRecurringType($payment, $input);
         }
 
+        if ($payment->isMethodCred() === true)
+        {
+            $gatewayInput['cred'] = $input['cred'] ?? [];
+        }
+
         $this->setPreferredAuthIfApplicable($payment);
 
         // this needs to be done after we have card entity as we need to know if card is debit or credit
@@ -4045,6 +4050,10 @@ trait Authorize
                 $this->verifyNachEnabled();
                 break;
 
+            case Payment\Method::CRED:
+                $this->verifyCredEnabled();
+                break;
+
             default:
                 throw new Exception\LogicException(
                     'Should not reach here.',
@@ -4144,11 +4153,11 @@ trait Authorize
     {
         switch (true)
         {
-            case $this->canRunAsyncPaymentFlow($payment):
+            case $this->canRunAsyncPaymentFlow($payment, $request):
 
                 return $this->getAsyncPaymentCreatedResponse($request, $payment);
 
-            case $this->canRunAsyncIntentPaymentFlow($payment):
+            case $this->canRunAsyncIntentPaymentFlow($payment, $request):
 
                 return $this->getIntentPaymentCreatedResponse($request, $payment);
 
@@ -5611,12 +5620,32 @@ trait Authorize
         return true;
     }
 
-    protected function canRunAsyncPaymentFlow($payment)
+    protected function canRunAsyncPaymentFlow($payment, $request)
     {
         if ((Payment\Method::supportsAsync($payment->getMethod()) === true) and
             (Payment\Gateway::supportsAsync($payment->getGateway()) === true) and
+            ($payment->isMethodCred() === false) and
             (($payment->getMetadata('flow') !== 'intent') or
              ($payment->getMetadata(Payment\Entity::UPI_PROVIDER, null) !== null)))
+        {
+            return true;
+        }
+
+        if (($payment->isMethodCred() === true) and
+            ($this->canRunAsyncPaymentFlowCred($payment, $request) === true))
+        {
+
+            return true;
+        }
+
+        return false;
+    }
+
+    protected function canRunAsyncIntentPaymentFlow($payment, $request)
+    {
+        if (($this->canRunAsyncIntentPaymentFlowUpi($payment) === true) or
+            ($this->canRunAsyncPaymentFlowWallet($payment) === true) or
+            ($this->canRunAsyncIntentPaymentFlowCred($payment, $request) === true))
         {
             return true;
         }
@@ -5624,10 +5653,23 @@ trait Authorize
         return false;
     }
 
-    protected function canRunAsyncIntentPaymentFlow($payment)
+    protected function canRunAsyncIntentPaymentFlowCred($payment, $request)
     {
-        if (($this->canRunAsyncIntentPaymentFlowUpi($payment) === true) or
-            ($this->canRunAsyncPaymentFlowWallet($payment) === true))
+        if (($payment->getMethod() === Payment\Method::CRED) and
+            ($payment->getGateway() === Payment\Gateway::CRED) and
+            (empty($request['data']['intent_url']) === false))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    protected function canRunAsyncPaymentFlowCred($payment, $request)
+    {
+        if (($payment->getMethod() === Payment\Method::CRED) and
+            ($payment->getGateway() === Payment\Gateway::CRED) and
+            (empty($request['data']['intent_url']) === true))
         {
             return true;
         }
@@ -5999,6 +6041,18 @@ trait Authorize
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_NACH_NOT_ENABLED_FOR_MERCHANT);
+        }
+    }
+
+    protected function verifyCredEnabled()
+    {
+        $merchantMethods = $this->methods;
+
+        if (($merchantMethods === null) or
+            ($merchantMethods->isCredEnabled() === false))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_CRED_NOT_ENABLED_FOR_MERCHANT);
         }
     }
 

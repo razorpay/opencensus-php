@@ -165,26 +165,36 @@ class Gateway extends Base\Gateway
 
         $intentGatewaysWithPayInit = [
             Payment\Gateway::UPI_JUSPAY,
+            Payment\Gateway::CRED
         ];
 
+        // In cred, we get to know the payment flow, after making pay init request
+        // In pay init response cred will tell us its a collect/intent flow.
+        // In intent cred returns the intent url in the response.
         if (($this->action === Action::PAY_INIT) and
             (in_array($this->getGateway($input), $intentGatewaysWithPayInit, true)))
         {
-            if($this->isUpiIntent($input) === true)
+            if (($this->isUpiIntent($input) === true) or
+                (($this->getGateway($input) === Payment\Gateway::CRED) and
+                (empty($response['next']['redirect']['url']) === false)))
             {
                 $data = [
                     'intent_url' => $response['next']['redirect']['url'],
                 ];
 
-                return ['data' => $data ];
+                return ['data' => $data];
             }
         }
 
-        if ($input['payment']['method'] === 'upi')
+        if (($input['payment']['method'] === 'upi') or
+            ($input['payment']['method'] === Payment\Method::CRED))
         {
+            $merchantId = ($input['payment']['method'] === Payment\Method::CRED) ? $input['terminal']['gateway_merchant_id'] :
+            $input['terminal']['gateway_merchant_id2'];
+
             return [
                 'data'   => [
-                    Payment\Entity::VPA => $input['terminal']['gateway_merchant_id2']
+                    Payment\Entity::VPA => $merchantId
                 ]
             ];
         }
@@ -1436,6 +1446,13 @@ class Gateway extends Base\Gateway
                 Action::VERIFY          => null,
                 Action::REFUND          => null,
                 Action::VERIFY_REFUND   => null,
+            ],
+            Payment\Gateway::CRED       =>  [
+                Action::PAY_INIT        => null,
+                Action::PAY_VERIFY      => null,
+                Action::VERIFY          => null,
+                Action::REFUND          => null,
+                Action::VERIFY_REFUND   => null,
             ]
         ];
 
@@ -1567,6 +1584,13 @@ class Gateway extends Base\Gateway
                 Action::VERIFY          => Action::CHECKACCOUNT,
             ],
             Payment\Gateway::WALLET_PHONEPESWITCH  =>  [
+                Action::PAY_INIT        => null,
+                Action::PAY_VERIFY      => null,
+                Action::VERIFY          => null,
+                Action::REFUND          => null,
+                Action::VERIFY_REFUND   => null,
+            ],
+            Payment\Gateway::CRED       =>  [
                 Action::PAY_INIT        => null,
                 Action::PAY_VERIFY      => null,
                 Action::VERIFY          => null,

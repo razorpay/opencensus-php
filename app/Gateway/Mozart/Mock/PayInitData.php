@@ -128,7 +128,56 @@ class PayInitData extends Base\Mock\Server
 
     public function cred($entities)
     {
-        return;
+        // will optimize it later
+        if ((empty($entities['cred']['app_present']) === false) and
+            ($entities['cred']['app_present'] === true))
+        {
+            $response = [
+                'data' =>
+                    [
+                        'trackingID' => $entities['payment']['id'],
+                        'gatewayTransactionId' => '123ase!234',
+                        'status' => 'CREATED',
+                        '_raw' => '{"response": {"tracking_id": "","reference_id": "34","state": "CREATED","checkout_mode": "INTENT","intent_url": "<URL>","expiry_time": "<TIME_IN_EPOCH>"},"status": "200","error_code": "","error_message": "","error_description": ""}',
+                    ],
+                'error' => NULL,
+                'external_trace_id' => 'DUMMY_REQUEST_ID',
+                'mozart_id' => 'DUMMY_MOZART_ID',
+                'next' => [
+                    'redirect' => [
+                           'method' => 'post',
+                           "url" => "cred://pay?am=100.00&cu=INRPAISE&mc=5411"
+                       ]
+                ],
+                'success' => true,
+            ];
+
+            return $response;
+        }
+
+        if ((empty($entities['cred']['app_present']) === true) or
+            ($entities['cred']['app_present'] === false));
+        {
+            $response = [
+                'data' =>
+                    [
+                        'trackingID' => $entities['payment']['id'],
+                        'gatewayTransactionId' => '123ase!234',
+                        'status' => 'CREATED',
+                        '_raw' => '{"response": {"tracking_id": "","reference_id": "34","state": "CREATED","checkout_mode": "COLLECT","intent_url": "<URL>","expiry_time": "<TIME_IN_EPOCH>"},"status": "200","error_code": "","error_message": "","error_description": ""}',
+                    ],
+                'error' => NULL,
+                'external_trace_id' => 'DUMMY_REQUEST_ID',
+                'mozart_id' => 'DUMMY_MOZART_ID',
+                'next' => [],
+                'success' => true,
+            ];
+
+            return $response;
+        }
+
+
+        return $response;
     }
 
     public function wallet_phonepe($entities)
