@@ -1888,4 +1888,32 @@ class OrderTest extends TestCase
 
         $this->assertArrayHasKey('card', $order['items'][0]['payments']['items'][0]);
     }
+
+    public function testCreateOrderWithValidProductType()
+    {
+        $this->startTest();
+
+        $this->getLastEntity('order', true);
+
+        $order = $this->getLastEntity('order', true);
+
+        self::assertEquals($order['product_id'], "somerandtestId");
+
+        self::assertEquals($order['product_type'], "invoice");
+    }
+
+    public function testCreateOrderWithInvalidValidProductType()
+    {
+        $this->startTest();
+    }
+
+    public function testCreateOrderWithProductIdMissing()
+    {
+        $this->startTest();
+    }
+
+    public function testCreateOrderWithProductTypeMissing()
+    {
+        $this->startTest();
+    }
 }

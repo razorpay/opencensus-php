@@ -52,6 +52,8 @@ class Validator extends Base\Validator
         Entity::PARTIAL_PAYMENT                    => 'sometimes|boolean',
         Entity::CHECKOUT_CONFIG_ID                 => 'filled|size:14',
         Entity::PHONEPE_SWITCH_CONTEXT             => 'sometimes|json|max:3000',
+        Entity::PRODUCT_ID                         => 'required_with:product_type|alpha_num|size:14',
+        Entity::PRODUCT_TYPE                       => 'required_with:product_id|string|max:32|custom',
     ];
 
     protected static $createValidators = [
@@ -525,5 +527,10 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestValidationFailureException(
                     'Discount without offers is not supported');
         }
+    }
+
+    public function validateProductType($attribute, $value)
+    {
+        ProductType::checkType($value);
     }
 }

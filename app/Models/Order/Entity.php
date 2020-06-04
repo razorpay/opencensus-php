@@ -158,6 +158,8 @@ class Entity extends Base\PublicEntity
         self::FIRST_PAYMENT_MIN_AMOUNT,
         self::PAYER_NAME,
         self::CHECKOUT_CONFIG_ID,
+        self::PRODUCT_ID,
+        self::PRODUCT_TYPE,
     ];
 
     protected $generateIdOnCreate = true;
