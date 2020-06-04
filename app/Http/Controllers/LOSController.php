@@ -54,7 +54,13 @@ class LOSController extends Controller
             }
         }
 
-        $response = $this->sendRequestAndParseResponse($url, $body);
+        $headers = [
+            'X-Merchant-Id'    => $this->ba->getMerchant()->getId() ?? '',
+            'X-Merchant-Email' => $this->ba->getMerchant()->getEmail() ?? '',
+            'X-Auth-Type'      => 'proxy',
+        ];
+
+        $response = $this->sendRequestAndParseResponse($url, $body, $headers);
         return $response;
     }
 
@@ -68,6 +74,12 @@ class LOSController extends Controller
             'request' => $url,
             'body'    => $body,
         ]);
+
+        $headers = [
+            'X-Admin-Id'    => $this->ba->getAdmin()->getId() ?? '',
+            'X-Admin-Email' => $this->ba->getAdmin()->getEmail() ?? '',
+            'X-Auth-Type'   => 'admin'
+        ];
 
         //foreach (self::WORKFLOW_REGEX_ROUTES as $route => $regex)
         //{
@@ -85,7 +97,7 @@ class LOSController extends Controller
         //    }
         //}
 
-        $response = $this->sendRequestAndParseResponse($url, $body);
+        $response = $this->sendRequestAndParseResponse($url, $body, $headers);
         return $response;
     }
 
@@ -95,12 +107,17 @@ class LOSController extends Controller
         $url = self::LEEGALITY_WEBHOOK_URL;
         $body   = $request->all();
 
+        $headers = [
+            'X-Service-Name'    => $this->ba->getInternalApp() ?? '',
+            'X-Auth-Type'       => 'internal',
+        ];
+
         $this->trace->info(TraceCode::LOAN_ORIGINATION_SYSTEM_PROXY_REQUEST, [
             'request' => $url,
             'body'    => $body,
         ]);
 
-        $response = $this->sendRequestAndParseResponse($url, $body);
+        $response = $this->sendRequestAndParseResponse($url, $body, $headers);
         return $response;
     }
 
@@ -115,12 +132,10 @@ class LOSController extends Controller
         $username = $config['username'];
         $password = $config['secret'];
         $timeout = $config['timeout'];
-        $headers = [
-            'Accept'            => 'application/json',
-            'Content-Type'      => 'application/json',
-            'X-User-Id'         => $this->ba->getUser() ?? '',
-            'X-Merchant-Id'     => $this->ba->getMerchant() ?? '',
-        ];
+        $headers['Accept']       = 'application/json';
+        $headers['Content-Type'] = 'application/json';
+        $headers['X-Task-Id'] = $this->app['request']->getTaskId();
+
         $auth = [$username, $password];
         $defaultOptions = [
             'timeout' => $timeout,
