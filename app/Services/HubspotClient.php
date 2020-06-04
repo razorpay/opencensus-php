@@ -20,6 +20,8 @@ class HubspotClient
 
     protected $eventData = [];
 
+    protected $app;
+
     protected $relativeUrls = [
         'update_contact_properties_by_email' => 'contacts/v1/contact/createOrUpdate/email/',
     ];
@@ -39,6 +41,8 @@ class HubspotClient
         $this->baseUrl = $this->config['url'];
 
         $this->secret = $this->config['secret'];
+
+        $this->app = $app;
     }
 
     public function trackSignupEvent(array $input)
@@ -49,6 +53,8 @@ class HubspotClient
         }
 
         $payloadData['email'] = $input['email'];
+
+        $this->addSourceDetail($payloadData);
 
         $this->dispatchRequestJob($payloadData);
     }
@@ -62,6 +68,8 @@ class HubspotClient
         $this->appendPrefixToArray($payloadData, $this->prefix_events['signup']);
 
         $this->addMerchantContext($payloadData, $merchant);
+
+        $this->addSourceDetail($payloadData);
 
         $this->dispatchRequestJob($payloadData);
     }
@@ -109,6 +117,8 @@ class HubspotClient
 
         $payloadData['bucket'] = $activationFlow;
 
+        $this->addSourceDetail($payloadData);
+
         $this->dispatchRequestJob($payloadData);
     }
 
@@ -123,6 +133,8 @@ class HubspotClient
         $this->appendPrefixToArray($payloadData, $this->prefix_events['l2']);
 
         $this->addMerchantContext($payloadData, $merchant);
+
+        $this->addSourceDetail($payloadData);
 
         $this->dispatchRequestJob($payloadData);
     }
@@ -263,5 +275,13 @@ class HubspotClient
         }
 
         return $properties;
+    }
+
+    private function addSourceDetail(array & $payloadData)
+    {
+        if (empty($this->app['basicauth']) === false)
+        {
+           $payloadData['product_type'] = $this->app['basicauth']->getRequestOriginProduct();
+        }
     }
 }

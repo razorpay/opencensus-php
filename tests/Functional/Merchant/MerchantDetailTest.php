@@ -1786,4 +1786,56 @@ class MerchantDetailTest extends OAuthTestCase
                                 return;
                             }));
     }
+
+    protected function mockHubSpotClientForProductType($methodName, $param)
+    {
+        $hubSpotMock = $this->getMockBuilder(HubspotClient::class)
+                            ->setConstructorArgs([$this->app])
+                            ->setMethods([$methodName])
+                            ->getMock();
+
+        $this->app->instance('hubspot', $hubSpotMock);
+
+        $hubSpotMock->expects($this->exactly(1))
+                    ->method($methodName)
+                    ->will($this->returnCallback(
+                        function(array $payloadData) use ($param)
+                        {
+                            foreach ($param as $key => $value)
+                            {
+                                    $this->assertArrayHasKey($key, $payloadData);
+                                    $this->assertSame($value, $payloadData[$key], 'The key is: '.$key);
+                            }
+                        }));
+    }
+
+    public function testRequestOriginInHubspotPreSignupDetails()
+    {
+        $this->testData[__FUNCTION__]['request']['server']['HTTP_X-Request-Origin'] = config('applications.banking_service_url');
+
+        $param  = ["product_type" => "banking"];
+
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+
+        $this->ba->proxyAuth('rzp_live_' . $merchantDetail['merchant_id']);
+
+        $this->mockHubSpotClientForProductType('dispatchRequestJob', $param);
+
+        $this->startTest();
+    }
+
+    public function testRequestOriginInHubspotPreSignupDetailsForPrimary()
+    {
+        $this->testData[__FUNCTION__]['request']['server']['HTTP_X-Request-Origin'] = 'https://dashboard.razorpay.com';
+
+        $param  = ["product_type" => "primary"];
+
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+
+        $this->ba->proxyAuth('rzp_live_' . $merchantDetail['merchant_id']);
+
+        $this->mockHubSpotClientForProductType('dispatchRequestJob', $param);
+
+        $this->startTest();
+    }
 }
