@@ -35,6 +35,15 @@ class SubscriptionRegistrationController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function migrateNach()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->migrateNach($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function fetchAuthLink(string $id)
     {
         $input = Request::all();

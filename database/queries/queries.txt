@@ -5743,6 +5743,12 @@ ALTER TABLE transactions
     CHANGE reference10 posted_at BIGINT UNSIGNED DEFAULT NULL,
     ADD INDEX transactions_balance_idposted_at_index  (`balance_id`, `posted_at`);
 
+
+// PAYAPPS-1607 - Nach Migration
+ALTER TABLE tokens
+    ADD COLUMN debit_type VARCHAR(20) DEFAULT NULL,
+    ADD COLUMN frequency VARCHAR(20) DEFAULT NULL;
+
 ALTER TABLE pricing
     MODIFY COLUMN payment_method VARCHAR(255) DEFAULT NULL;
 

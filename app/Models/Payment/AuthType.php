@@ -19,6 +19,7 @@ class AuthType
     const IVR          = 'ivr';
     const UNKNOWN      = 'unknown';
     const PHYSICAL     = 'physical';
+    const MIGRATED     = 'migrated';
 
     public static $types = [
         Method::EMANDATE => [
@@ -26,9 +27,11 @@ class AuthType
             self::AADHAAR,
             self::AADHAAR_FP,
             self::DEBITCARD,
+            self::MIGRATED,
         ],
         Method::NACH    => [
             self::PHYSICAL,
+            self::MIGRATED,
         ],
         Method::CARD    => [
             self::PIN,

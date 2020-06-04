@@ -95,7 +95,7 @@ class Core extends Base\Core
         if (isset($input[Token\Entity::TERMINAL_ID]))
         {
             //
-            // This if block gets run only in case of wallet currently.
+            // This if block gets run only in case of wallet currently. + nach migration
             //
 
             $terminal = $this->repo->terminal->findOrFail($input[Token\Entity::TERMINAL_ID]);

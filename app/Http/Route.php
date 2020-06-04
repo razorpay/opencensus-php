@@ -92,6 +92,7 @@ class Route
         'batch_create_admin'                       => ['post',     'admin/batches',                                  'AdminController@createAdminBatch'                                  ],
         'update_admin_through_batch'               => ['post',     'admin/update_admin_through_batch',               'AdminController@updateAdminThroughBatch'                           ],
         'batch_validate_file'                      => ['post',     'batches/validate',                               'BatchController@validateFile'                                      ],
+        'batch_validate_file_admin'                => ['post',     'admin/batches/validate',                         'AdminController@validateFile'                                      ],
         'batch_send_mail'                          => ['post',     'batch/sendmail',                                 'BatchController@sendMail'                                          ],
         'batch_upload_form_get'                    => ['get',      'batches/upload',                                 'BatchController@renderBatchUploadForm'                             ],
         'batch_upload_form_validate_file'          => ['post',     'batches/upload/validate',                        'BatchController@validateBatchFile'                                 ],
@@ -1441,6 +1442,9 @@ class Route
         'subscription_registration_list_tokens'         => ['get',      'subscription_registration/tokens',                    'SubscriptionRegistrationController@listTokens'                     ],
         'subscription_registration_list_links'          => ['get',      'subscription_registration/auth_links',                'SubscriptionRegistrationController@listAuthLinks'                  ],
         'subscription_registration_create_links'        => ['post',     'subscription_registration/auth_links',                'SubscriptionRegistrationController@createAuthLink'                 ],
+        'subscription_registration_nach_migration'      => ['post',     'subscription_registration/migration',                'SubscriptionRegistrationController@migrateNach'                 ],
+
+
         'subscription_registration_fetch_link'          => ['get',      'subscription_registration/auth_links/{id}',           'SubscriptionRegistrationController@fetchAuthLink'                  ],
         'subscription_registration_resend_link'         => ['post',     'subscription_registration/auth_links/{id}/notify_by/{medium}', 'SubscriptionRegistrationController@sendNotification'      ],
         'subscription_registration_resend_links_batch'  => ['put',      'subscription_registration/auth_links/batch/{batchId}/notify',  'SubscriptionRegistrationController@notifyAuthLinksOfBatch'],
@@ -2087,6 +2091,7 @@ class Route
     // If a route needs access from the Dashboard
     // Put it in the Admin Array instead
     public static $internal = [
+        'subscription_registration_nach_migration',
         'leegality_webhook',
         'gateway_first_data_pares_store',
         'vendor_payment_send_failure_email',
@@ -2760,6 +2765,7 @@ class Route
         'feature_delete_entity',
         'feature_get',
         'batch_create_admin',
+        'batch_validate_file_admin',
         'send_test_sms',
         'invoice_cancel_by_batch_admin',
         'file_upload_admin',
@@ -3673,6 +3679,7 @@ class Route
         'refund_edit_status'                       => Permission::EDIT_REFUND,
         'refund_mark_processed_bulk'               => Permission::EDIT_REFUND,
         'batch_create'                             => '*',
+        'batch_validate_file_admin'                => Permission::ADMIN_BATCH_CREATE,
         'batch_create_admin'                       => Permission::ADMIN_BATCH_CREATE,
         'send_test_sms'                            => '*',
         'file_upload_admin'                        => Permission::ADMIN_FILE_UPLOAD,
@@ -4588,6 +4595,7 @@ class Route
         ],
 
         'batch' => [
+            'subscription_registration_nach_migration',
             'invoice_create',
             'batch_send_mail',
             'bulk_invoice_create',

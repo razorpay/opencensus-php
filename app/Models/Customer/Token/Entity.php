@@ -65,6 +65,8 @@ class Entity extends Base\PublicEntity
     const UPDATED_AT                = 'updated_at';
     const DELETED_AT                = 'deleted_at';
     const MRN                       = 'mrn';
+    const DEBIT_TYPE                = 'debit_type';
+    const FREQUENCY                 = 'frequency';
 
     const CUSTOMER                  = 'customer';
 
@@ -124,6 +126,8 @@ class Entity extends Base\PublicEntity
         self::EXPIRED_AT,
         self::START_TIME,
         self::VPA_ID,
+        self::DEBIT_TYPE,
+        self::FREQUENCY,
     ];
 
     protected $visible = [
@@ -163,6 +167,8 @@ class Entity extends Base\PublicEntity
         self::CREATED_AT,
         self::UPDATED_AT,
         self::START_TIME,
+        self::DEBIT_TYPE,
+        self::FREQUENCY,
     ];
 
     protected $public = [

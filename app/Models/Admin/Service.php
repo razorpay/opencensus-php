@@ -620,6 +620,17 @@ class Service extends Base\Service
         return $batch->toArrayPublic();
     }
 
+    public function validateFile(array $input)
+    {
+        $batchCore = new Batch\Core;
+
+        $sharedMerchant = $this->repo->merchant->getSharedAccount();
+
+        $batch = $batchCore->storeAndValidateInputFile($input, $sharedMerchant);
+
+        return $batch;
+    }
+
     /**
      * @param array $input
      *

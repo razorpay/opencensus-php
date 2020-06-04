@@ -23,7 +23,7 @@ class Validator extends Base\Validator
         Entity::EXPIRE_AT                       => 'sometimes|epoch',
         Entity::MAX_AMOUNT                      => 'sometimes|integer|nullable',
         Entity::FIRST_PAYMENT_AMOUNT            => 'sometimes|integer|nullable',
-        Entity::AUTH_TYPE                       => 'sometimes|string|nullable|in:netbanking,aadhaar,debitcard,physical',
+        Entity::AUTH_TYPE                       => 'sometimes|string|nullable|in:netbanking,aadhaar,debitcard,physical,migrated',
         Entity::METHOD                          => 'sometimes|string|nullable|in:emandate,card,nach,upi',
         Entity::NOTES                           => 'sometimes|notes',
         UPI_MANDATE::FREQUENCY                  => 'required_if:method,upi',
@@ -74,7 +74,7 @@ class Validator extends Base\Validator
         Entity::EXPIRE_AT                       => 'sometimes|epoch',
         Entity::MAX_AMOUNT                      => 'sometimes|integer|nullable',
         Entity::FIRST_PAYMENT_AMOUNT            => 'sometimes|integer|nullable',
-        Entity::AUTH_TYPE                       => 'sometimes|string|nullable|in:netbanking,aadhaar,debitcard,physical',
+        Entity::AUTH_TYPE                       => 'sometimes|string|nullable|in:netbanking,aadhaar,debitcard,physical,migrated',
         Entity::METHOD                          => 'sometimes|string|nullable|in:emandate,card,nach,upi',
         Entity::NOTES                           => 'sometimes|notes',
         Entity::BANK_ACCOUNT                    => 'required_if:method,nach',
@@ -83,11 +83,11 @@ class Validator extends Base\Validator
     ];
 
     protected static $nachAuthTypeRules = [
-        Entity::AUTH_TYPE => 'required|string|in:physical',
+        Entity::AUTH_TYPE => 'required|string|in:physical,migrated',
     ];
 
     protected static $emandateAuthTypeRules = [
-        Entity::AUTH_TYPE => 'sometimes|string|nullable|in:netbanking,aadhaar,debitcard',
+        Entity::AUTH_TYPE => 'sometimes|string|nullable|in:netbanking,aadhaar,debitcard,migrated',
     ];
 
     protected static $nachArrayRules = [
@@ -105,8 +105,10 @@ class Validator extends Base\Validator
             $maxAmountLimit = self::EMANDATE_MAX_AMOUNT_LIMIT;
 
             $authType = $input[Entity::AUTH_TYPE] ?? null;
+            $method = $input[Entity::METHOD] ?? null;
 
-            if ($authType === Payment\AuthType::PHYSICAL)
+            if ($authType === Payment\AuthType::PHYSICAL ||
+                    ($method === Payment\Method::NACH && $authType === Payment\AuthType::MIGRATED ) )
             {
                 $maxAmountLimit = PaperMandate\Validator::MAX_AMOUNT_LIMIT;
             }

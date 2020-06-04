@@ -52,6 +52,12 @@ class CreateTokens extends Migration
             $table->integer(Token::MAX_AMOUNT)
                   ->nullable();
 
+            $table->string(Token::DEBIT_TYPE, 20)
+                  ->nullable();
+
+            $table->string(Token::FREQUENCY, 20)
+                  ->nullable();
+
             $table->string(Token::WALLET, 15)
                   ->nullable();
 

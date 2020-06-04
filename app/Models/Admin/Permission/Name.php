@@ -111,6 +111,7 @@ class Name
     const VIEW_MERCHANT_BALANCE_LIVE          = 'view_merchant_balance_live';
     const VIEW_MERCHANT_REQUESTS              = 'view_merchant_requests';
     const ADD_RECONCILIATION_FILE             = 'add_reconciliation_file';
+    const UPLOAD_NACH_MIGRATION               = 'upload_nach_migration';
     const ADD_MANUAL_RECONCILIATION_FILE      = 'add_manual_reconciliation_file';
     const ADD_SETTLEMENT_RECONCILIATION       = 'add_settlement_reconciliation';
     const SEND_NEWSLETTER                     = 'send_newsletter';

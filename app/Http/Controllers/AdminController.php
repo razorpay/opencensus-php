@@ -245,6 +245,15 @@ class AdminController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function validateFile()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->validateFile($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function updateAdminThroughBatch()
     {
         $input = Request::all();

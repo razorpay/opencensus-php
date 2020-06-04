@@ -164,6 +164,19 @@ class Validator extends Base\Validator
         Entity::GATEWAY     => 'required|string',
     ];
 
+    protected static $nachMigrationCreateRules = [
+        Entity::FILE        => 'required_without:file_id|file|max:102400' . self::DEFAULT_MIME_RULE,    // in KB
+        Entity::FILE_ID     => 'required_without:file|public_id',
+        Entity::TYPE        => 'required|in:nach_migration',
+        Entity::CONFIG      => 'required|array',
+    ];
+
+    protected static $nachMigrationValidateRules = [
+        Entity::FILE        => 'required|file|max:102400' . self::DEFAULT_MIME_RULE,    // in KB
+        Entity::TYPE        => 'required|in:nach_migration',
+        Entity::CONFIG      => 'required|array',
+    ];
+
     protected static $merchantOnboardingCreateRules = [
         Entity::FILE    => 'required|file' . self::DEFAULT_MIME_RULE,
         Entity::TYPE    => 'required|in:merchant_onboarding',

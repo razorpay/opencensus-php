@@ -4,10 +4,13 @@ namespace RZP\Models\SubscriptionRegistration;
 
 use Queue;
 use RZP\Constants;
+use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Order;
 use RZP\Models\Payment;
+use RZP\Models\Customer\Entity as CustomerEntity;
+use RZP\Models\BankAccount;
 use RZP\Models\Invoice;
 use RZP\Http\RequestHeader;
 use RZP\Models\Customer\Token;
@@ -54,6 +57,110 @@ class Service extends Base\Service
         $invoice = $this->core->createAuthLink($input, $this->merchant,null, null, $batchId);
 
         return $invoice->toArrayPublic();
+    }
+
+    /*
+     * PAYAPPS-1490
+     */
+    public function migrateNach(array $input): array
+    {
+        $batchId = $this->app['request']->header(RequestHeader::X_Batch_Id) ?? null;
+
+        try {
+            $emandatePaymentMethodEnabled = $input['emandate_payment_enabled'];
+            $nachPaymentMethodEnabled     = $input['nach_payment_enabled'];
+
+            $this->makeMigrateNachPayload($input);
+
+            $data     = $this->core->migrateNach($input, $batchId);
+            $response = $data->toArrayPublic();
+
+            $response['emandate_payment_enabled'] = $emandatePaymentMethodEnabled;
+            $response['nach_payment_enabled']     = $nachPaymentMethodEnabled;
+
+        } catch (Exception\BadRequestException | Exception\BadRequestValidationFailureException $ex) {
+            $this->trace->traceException(
+                $ex,
+                Trace::ERROR,
+                TraceCode::BATCH_SERVICE_BULK_BAD_REQUEST,
+                [
+                    'batchID' => $batchId,
+                    'mode'    => $this->mode
+                ]
+            );
+            throw $ex;
+        } catch (\Throwable $ex) {
+            $this->trace->traceException(
+                $ex,
+                Trace::ERROR,
+                TraceCode::BATCH_SERVICE_BULK_BAD_REQUEST,
+                [
+                    'batchID' => $batchId,
+                    'mode'    => $this->mode
+                ]
+            );
+
+            throw new Exception\BadRequestValidationFailureException(
+                'Generic Error : Parameter Missing: please provide correct input',
+                "",
+                $ex->getMessage()
+            );
+        }
+
+        return $response;
+    }
+
+    private function makeMigrateNachPayload(array &$input): void
+    {
+        $emandateTerminalEnabled      = $input['emandate_terminal_enabled'];
+        $nachTerminalEnabled          = $input['nach_terminal_enabled'];
+
+        if (($input[Token\Entity::METHOD] === Payment\Method::NACH and $nachTerminalEnabled === false) or
+            ($input[Token\Entity::METHOD] === Payment\Method::EMANDATE and $emandateTerminalEnabled === false))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                "Terminal is not present/enabled for the payment method"
+            );
+        }
+
+        unset($input['emandate_payment_enabled'], $input['nach_payment_enabled'],
+              $input['emandate_terminal_enabled'], $input['nach_terminal_enabled']);
+
+        // These will be handled by the caller (Batch Service)
+        // Here, just for fail safety
+        if (isset($input[Token\Entity::EXPIRED_AT]) === false or empty($input[Token\Entity::EXPIRED_AT]) === true)
+        {
+            $input[Token\Entity::EXPIRED_AT] = Base\ExtendedValidations::EPOCH_DEFAULT_MAX;
+        }
+
+        if (isset($input["customer"]) === false or empty($input["customer"][CustomerEntity::EMAIL]) === true or
+            empty($input["customer"][CustomerEntity::NAME]) === true or
+            empty($input["customer"][CustomerEntity::CONTACT]) === true)
+        {
+
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_SUBSCRIPTION_CUSTOMER_NOT_FOUND,
+                "customer", "", "Customer Details not provided");
+        }
+
+        $input[Token\Entity::BENEFICIARY_NAME] = $input["customer"][CustomerEntity::NAME];
+
+        $input["subscription_registration"] = [
+            Entity::METHOD       => $input[Token\Entity::METHOD],
+            Entity::MAX_AMOUNT   => $input[Token\Entity::MAX_AMOUNT],
+            Entity::EXPIRE_AT    => $input[Token\Entity::EXPIRED_AT],
+            Entity::AUTH_TYPE    => Payment\AuthType::MIGRATED,
+            Entity::BANK_ACCOUNT => [
+                BankAccount\Entity::BANK_NAME          => $input[Token\Entity::BANK],
+                BankAccount\Entity::ACCOUNT_NUMBER     => $input[Token\Entity::ACCOUNT_NUMBER],
+                BankAccount\Entity::IFSC_CODE          => $input[Token\Entity::IFSC],
+                BankAccount\Entity::BENEFICIARY_NAME   => $input["customer"][CustomerEntity::NAME],
+                BankAccount\Entity::BENEFICIARY_EMAIL  => $input["customer"][CustomerEntity::EMAIL],
+                BankAccount\Entity::BENEFICIARY_MOBILE => $input["customer"][CustomerEntity::CONTACT],
+                BankAccount\Entity::ACCOUNT_TYPE       => $input[Token\Entity::ACCOUNT_TYPE],
+            ],
+        ];
+
     }
 
     public function fetchAuthLink(string $id, array $input): array

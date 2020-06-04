@@ -37,6 +37,8 @@ class Type
 
     const NACH                      = 'nach';
 
+    const NACH_MIGRATION            = 'nach_migration';
+
     const PAYOUT                    = 'payout';
 
     const SUB_MERCHANT              = 'sub_merchant';
@@ -140,6 +142,7 @@ class Type
         self::ECOLLECT_ICICI,
         self::ECOLLECT_RBL,
         self::BANK_TRANSFER_EDIT,
+        self::NACH_MIGRATION,
     ];
 
     /**
@@ -297,6 +300,7 @@ class Type
         self::ADMIN_BATCH,
         self::RECONCILIATION,
         self::BANK_TRANSFER_EDIT,
+        self::NACH_MIGRATION,
     ];
 
     /**
@@ -319,6 +323,7 @@ class Type
         self::REPORT,
         self::ADMIN_BATCH,
         self::BANK_TRANSFER_EDIT,
+        self::NACH_MIGRATION,
     ];
 
     public static $batchToAdminPermissionMapping = [

@@ -5,6 +5,8 @@ namespace RZP\Models\SubscriptionRegistration;
 use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Constants;
+use RZP\Gateway\Base\Terminal;
+use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\Base;
 use RZP\Models\Batch;
 use RZP\Models\Order;
@@ -19,6 +21,7 @@ use RZP\Models\PaperMandate;
 use RZP\Services\UfhService;
 use RZP\Constants\Entity as E;
 use RZP\Models\Customer\Token;
+use RZP\Models\Customer\GatewayToken\Core as GatewayToken;
 use RZP\Exception\LogicException;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Payment\Processor\Processor;
@@ -88,6 +91,33 @@ class Core extends Base\Core
         $this->trace->count(Metric::SUBSCRIPTION_REGISTRATION_CREATED,$tokenRegistration->getMetricDimensions());
 
         return $invoice;
+    }
+
+    public function migrateNach(
+        array $input,
+        string $batchId = null): Customer\Token\Entity
+    {
+        $merchantCore = new Merchant\Core();
+        $merchant     = $merchantCore->get($input['merchant_id']);
+
+        $token = $this->repo->transaction(
+            function () use ($input, $merchant, $batchId) {
+                $customer = $this->createCustomer($input, $merchant);
+
+                $subscriptionRegistration = $this->createSubscriptionRegistration($input, $merchant, $customer);
+
+                $token = $this->createMigratedToken($customer, $input, $subscriptionRegistration, $merchant, $batchId);
+
+                return $token;
+            }
+        );
+
+        $token->refresh();
+
+        // ToDo: for metrics
+        // $this->trace->count(Metric::SUBSCRIPTION_REGISTRATION_MIGRATED,$token->getMetricDimensions());
+
+        return $token;
     }
 
     public function createOrderForUPI(& $input, $customer)
@@ -270,9 +300,10 @@ class Core extends Base\Core
 
     protected function getPaperMandateInput(array & $paperMandateInput, array & $subrInput)
     {
-        $method = $subrInput[Entity::METHOD] ?? null;
+        $method   = $subrInput[Entity::METHOD] ?? null;
+        $authType = $subrInput[Entity::AUTH_TYPE] ?? null;
 
-        if ($method !== Method::NACH)
+        if ($method !== Method::NACH || $authType === Payment\AuthType::MIGRATED)
         {
             return;
         }
@@ -337,10 +368,68 @@ class Core extends Base\Core
         return $invoice;
     }
 
+    /*
+     * Specific method only to be called by migrate Nach Batch to create token
+     */
+    public function createMigratedToken(
+        $customer,
+        array &$input,
+        Entity $subscriptionRegistration,
+        Merchant\Entity $merchant,
+        String $batchId = null): Customer\Token\Entity
+    {
+        $tokenCore = new Token\Core();
+
+        // remove not-required $input fields
+        $removeFields = ['description', 'currency', 'notes', 'customer_id', 'merchant_id'];
+        foreach ($removeFields as $f)
+        {
+            if (isset($input[$f]))
+            {
+                unset($input[$f]);
+            }
+        }
+
+        $token = $tokenCore->create(
+            $customer,
+            $input
+        );
+        $token->setRecurring(true);
+        $token->setRecurringStatus(Token\RecurringStatus::CONFIRMED);
+        $this->associateToken($subscriptionRegistration, $token);
+        $subscriptionRegistration->setStatus(Status::COMPLETED);
+
+        $gatewayTokenCore = new GatewayToken();
+        $gatewayTokenCore->migrate($token, $merchant, $token->terminal);
+
+        $this->repo->saveOrFail($token);
+        $this->repo->saveOrFail($subscriptionRegistration);
+
+
+        $this->trace->info(
+            TraceCode::TOKEN_BEING_MIGRATED,
+            [
+                'token_id' => $token->getId(),
+                'batchId'  => $batchId
+            ]
+        );
+
+        // call webhook
+        $event = 'api.token.' . Token\RecurringStatus::CONFIRMED;
+
+        $eventPayload = [
+            ApiEventSubscriber::MAIN => $token,
+        ];
+
+        $this->app['events']->fire($event, $eventPayload);
+
+        return $token;
+    }
+
     // Associate
     public function associateToken(Entity $subr,  Customer\Token\Entity $token)
     {
-        if ($subr->getMethod() === Method::NACH)
+        if ($subr->getMethod() === Method::NACH && $subr->getAuthType() !== Payment\AuthType::MIGRATED)
         {
             $paperMandate = $subr->paperMandate;
 

@@ -502,6 +502,16 @@ class Merchant extends Base
         return $this->fixtures->edit('methods', $id, ['emandate' => false]);
     }
 
+    public function enableNach($id = '10000000000000')
+    {
+        return $this->fixtures->edit('methods', $id, ['nach' => true]);
+    }
+
+    public function disableNach($id = '10000000000000')
+    {
+        return $this->fixtures->edit('methods', $id, ['nach' => false]);
+    }
+
     public function enableCardlessEmi($id = '10000000000000')
     {
         return $this->fixtures->edit('methods', $id, ['cardless_emi' => true]);

@@ -16,6 +16,7 @@ use RZP\Gateway\Netbanking\Axis\EMandateDebitReconFileHeadings as AxisEMDebitHea
 use RZP\Gateway\Netbanking\Sbi\Emandate\RegisterFileHeadings as SbiEMRegisterHeadings;
 use RZP\Gateway\Netbanking\Sbi\Emandate\DebitFileHeadings as SbiEMDebitHeadings;
 use RZP\Gateway\Netbanking\Hdfc\EMandateRegisterFileHeadings as HdfcEMRegisterHeadings;
+use RZP\Models\Batch\Processor\Nach\Migration\NachMigrationFileHeadings as NachMigrationHeadings;
 
 class Header
 {
@@ -263,6 +264,32 @@ class Header
     const CITI_NACH_DEBIT_BENEFICIARY_AADHAR_NUMBER        = CitiNachDebitHeadings::BENEFICIARY_AADHAR_NUMBER;
     const CITI_NACH_DEBIT_UMRN                             = CitiNachDebitHeadings::UMRN;
     const CITI_NACH_DEBIT_FILLER                           = CitiNachDebitHeadings::FILLER;
+
+    //
+    // nach-migration request headers
+    //
+    const NACH_MIGRATION_START_DATE             = NachMigrationHeadings::START_DATE;
+    const NACH_MIGRATION_END_DATE               = NachMigrationHeadings::END_DATE;
+    const NACH_MIGRATION_BANK                   = NachMigrationHeadings::BANK;
+    const NACH_MIGRATION_ACCOUNT_NUMBER         = NachMigrationHeadings::ACCOUNT_NUMBER;
+    const NACH_MIGRATION_ACCOUNT_HOLDER_NAME    = NachMigrationHeadings::ACCOUNT_HOLDER_NAME;
+    const NACH_MIGRATION_ACCOUNT_TYPE           = NachMigrationHeadings::ACCOUNT_TYPE;
+    const NACH_MIGRATION_IFSC                   = NachMigrationHeadings::IFSC;
+    const NACH_MIGRATION_MAX_AMOUNT             = NachMigrationHeadings::MAX_AMOUNT;
+    const NACH_MIGRATION_UMRN                   = NachMigrationHeadings::UMRN;
+    const NACH_MIGRATION_DEBIT_TYPE             = NachMigrationHeadings::DEBIT_TYPE;
+    const NACH_MIGRATION_FREQ                   = NachMigrationHeadings::FREQ;
+    const NACH_MIGRATION_METHOD                 = NachMigrationHeadings::METHOD;
+    const NACH_MIGRATION_CUSTOMER_EMAIL         = NachMigrationHeadings::CUSTOMER_EMAIL;
+    const NACH_MIGRATION_CUSTOMER_PHONE         = NachMigrationHeadings::CUSTOMER_PHONE;
+
+    //
+    // nach-migration response headers
+    // response will contains these headers in addition to above request headers
+    const NACH_MIGRATION_TOKEN_CREATION_STATUS  = NachMigrationHeadings::TOKEN_CREATION_STATUS;
+    const NACH_MIGRATION_TOKEN_ID               = NachMigrationHeadings::TOKEN_ID;
+    const NACH_MIGRATION_FAILURE_REASON         = NachMigrationHeadings::FAILURE_REASON;
+    const NACH_MIGRATION_CUSTOMER_ID            = NachMigrationHeadings::CUSTOMER_ID;
 
     //
     // SBI Emandate Register Response File Headers
@@ -2637,6 +2664,47 @@ class Header
                 self::BANK_TRANSFER_EDIT_IFSC_CODE,
                 self::ERROR_CODE,
                 self::ERROR_DESCRIPTION,
+            ],
+        ],
+
+        Type::NACH_MIGRATION => [
+            self::INPUT => [
+                self::NACH_MIGRATION_START_DATE,
+                self::NACH_MIGRATION_END_DATE,
+                self::NACH_MIGRATION_BANK,
+                self::NACH_MIGRATION_ACCOUNT_NUMBER,
+                self::NACH_MIGRATION_ACCOUNT_HOLDER_NAME,
+                self::NACH_MIGRATION_ACCOUNT_TYPE,
+                self::NACH_MIGRATION_IFSC,
+                self::NACH_MIGRATION_MAX_AMOUNT,
+                self::NACH_MIGRATION_UMRN,
+                self::NACH_MIGRATION_DEBIT_TYPE,
+                self::NACH_MIGRATION_FREQ,
+                self::NACH_MIGRATION_METHOD,
+                self::NACH_MIGRATION_CUSTOMER_EMAIL,
+                self::NACH_MIGRATION_CUSTOMER_PHONE,
+                self::NOTES,
+            ],
+            self::OUTPUT => [
+                self::NACH_MIGRATION_START_DATE,
+                self::NACH_MIGRATION_END_DATE,
+                self::NACH_MIGRATION_BANK,
+                self::NACH_MIGRATION_ACCOUNT_NUMBER,
+                self::NACH_MIGRATION_ACCOUNT_HOLDER_NAME,
+                self::NACH_MIGRATION_ACCOUNT_TYPE,
+                self::NACH_MIGRATION_IFSC,
+                self::NACH_MIGRATION_MAX_AMOUNT,
+                self::NACH_MIGRATION_UMRN,
+                self::NACH_MIGRATION_DEBIT_TYPE,
+                self::NACH_MIGRATION_FREQ,
+                self::NACH_MIGRATION_METHOD,
+                self::NACH_MIGRATION_CUSTOMER_EMAIL,
+                self::NACH_MIGRATION_CUSTOMER_PHONE,
+                self::NOTES,
+                self::NACH_MIGRATION_TOKEN_CREATION_STATUS,
+                self::NACH_MIGRATION_TOKEN_ID,
+                self::NACH_MIGRATION_FAILURE_REASON,
+                self::NACH_MIGRATION_CUSTOMER_ID,
             ],
         ],
     ];
