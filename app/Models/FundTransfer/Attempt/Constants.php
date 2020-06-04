@@ -31,6 +31,8 @@ final class Constants
 
     const IGNORE_TIME_LIMIT     = 'ignore_time_limit';
 
+    const CHANNEL               = 'channel';
+
     const MAX_UPI_AMOUNT        = 100000;
 
     const MAX_IMPS_AMOUNT       = 20000000;

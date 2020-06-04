@@ -2746,6 +2746,7 @@ class PayoutTest extends TestCase
             'failure_reason'    => '',
             'utr'               => $utr,
             'remarks'           => 'testing failed mapping',
+            'channel'           => 'yesbank',
         ]);
 
         $updatedPayout = $this->getDbEntityById('payout',$payoutId)->toArray();
@@ -2770,6 +2771,7 @@ class PayoutTest extends TestCase
             'failure_reason'    => 'Beneficiary bank\'s systems are down. Please retry after some time.',
             'utr'               =>  $utr,
             'remarks'           => 'testing failed mapping',
+            'channel'           => 'yesbank',
         ]);
 
         $updatedPayout = $this->getDbEntityById('payout',$payoutId)->toArray();
@@ -4108,6 +4110,67 @@ class PayoutTest extends TestCase
         $this->assertEquals($payout2['fees'], $responsePayout['fees']);
     }
 
+    public function testWithUpdatedChannelBeforeFtaReconNonRBL()
+    {
+
+        $this->testCreatePayout();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $payoutId = $payout->getId();
+
+        $utr = $payout->getUtr();
+
+        $txn = $this->getLastEntity('transaction', true);
+
+        (new Payout\Core)->updateWithDetailsBeforeFtaRecon($payout, [
+            'channel'           => 'icici',
+            'failure_reason'    => '',
+            'utr'               => $utr,
+            'remarks'           => '',
+        ]);
+
+        $updatedPayout = $this->getDbEntityById('payout',$payoutId)->toArray();
+
+        // Verify transaction entity
+        $updatedTxn = $this->getLastEntity('transaction', true);
+
+        $this->assertEquals($updatedPayout[Payout\Entity::CHANNEL], 'icici');
+
+        $this->assertEquals($txn[Payout\Entity::CHANNEL], 'yesbank');
+
+        $this->assertEquals($updatedTxn[Payout\Entity::CHANNEL], 'icici');
+    }
+
+    public function testWithUpdatedChannelBeforeFtaReconForRBL()
+    {
+        $this->testCreateRblPayoutSuccessfully();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $payoutId = $payout->getId();
+
+        $utr = $payout->getUtr();
+
+        $this->makeRequestAndCatchException(function() use ($payout, $utr)
+        {
+            (new Payout\Core)->updateWithDetailsBeforeFtaRecon($payout, [
+            'channel'           => 'yesbank',
+            'failure_reason'    => '',
+            'utr'               => $utr,
+            'remarks'           => '',
+            ]);
+        },
+        \RZP\Exception\LogicException::class,
+        'Different channel passed by FTS for rbl payouts');
+
+        $updatedPayout = $this->getDbEntityById('payout',$payoutId)->toArray();
+
+        $this->assertEquals($payout[Payout\Entity::CHANNEL], 'rbl');
+
+        $this->assertEquals($updatedPayout[Payout\Entity::CHANNEL], 'rbl');
+    }
+
     public function testCreatePayoutWithInvalidPurpose()
     {
         $this->ba->privateAuth();
@@ -4173,6 +4236,43 @@ class PayoutTest extends TestCase
 
     public function testCreatePayoutPurposeWithInvalidPurposeType()
     {
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
+    public function testCreateRblPayoutSuccessfully()
+    {
+        $balanceAttributes = [
+            'balance' => 10000000,
+            'balanceType' => 'direct',
+            'channel' => 'rbl',
+        ];
+
+        $bankingBalance = $this->fixtures->merchant->createBalanceOfBankingType(
+            $balanceAttributes["balance"],
+            '10000000000000',
+            $balanceAttributes["balanceType"] ,
+            $balanceAttributes["channel"]
+        );
+
+        $virtualAccount = $this->fixtures->create('virtual_account');
+        $secondBankAccount    = $this->fixtures->create(
+            'bank_account',
+            [
+                'type'           => 'virtual_account',
+                'entity_id'      => $virtualAccount->getId(),
+                'account_number' => '2224440041626906',
+                'ifsc_code'      => 'RAZRB000000',
+            ]);
+
+        $virtualAccount->bankAccount()->associate($secondBankAccount);
+        $virtualAccount->balance()->associate($bankingBalance);
+        $virtualAccount->save();
+
+        $bankingBalance->setAccountNumber($virtualAccount->bankAccount->getAccountNumber());
+        $bankingBalance->save();
+
         $this->ba->privateAuth();
 
         $this->startTest();

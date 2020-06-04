@@ -38,6 +38,7 @@ use RZP\Jobs\QueuedPayoutsInitiate;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Exception\BadRequestException;
 use RZP\Models\BankingAccountStatement;
+use RZP\Models\Merchant\Balance\Channel;
 use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Models\Admin\Service as AdminService;
 use RZP\Models\Payout\Processor\DownstreamProcessor\FundAccountPayout;
@@ -421,54 +422,68 @@ class Core extends Base\Core
                 'payout_id' => $payout->getId(),
             ]);
 
-        // For non-Yesbank, we will not get public_failure_reason
-        $ftaFailureReason = $ftaData[Attempt\Constants::FAILURE_REASON] ?? null;
-
         $initialUtr = $payout->getUtr();
 
-        $payout->setUtr($ftaData[Attempt\Constants::UTR]);
+        $this->repo->transaction(
+            function() use ($payout, $ftaData, $initialUtr) {
 
-        $payout->setRemarks($ftaData[Attempt\Constants::REMARKS]);
+                // For non-Yesbank, we will not get public_failure_reason
+                $ftaFailureReason = $ftaData[Attempt\Constants::FAILURE_REASON] ?? null;
 
-        //
-        // For VPA type, we always set it to UPI only
-        // at build and we don't take the mode from FTA.
-        //
-        // Also, we don't want to override the payout's mode if it's already set.
-        //
-        if ((empty($ftaData[Attempt\Constants::VPA_ID]) === true) and
-            ($payout->getMode() === null))
-        {
-            $payout->setMode($ftaData[Attempt\Constants::MODE]);
-        }
+                $initialChannel = $payout->getChannel();
 
-        //
-        // We do not want to override the failure reason if it's already set.
-        // It could have been set in the `afterRecon` flow. In some cases, it's
-        // possible that `beforeRecon` gets called and then `afterRecon` gets
-        // called and then again `beforeRecon`. In `afterRecon`, if the failure
-        // reason gets set, we don't want to reset it to null in `beforeRecon` if
-        // the failure reason is empty in the 2nd `beforeRecon` call.
-        //
-        if (empty($ftaFailureReason) === false)
-        {
-            $payout->setFailureReason($ftaFailureReason);
-        }
+                $updatedChannel = $ftaData[Attempt\Constants::CHANNEL] ?? null;
 
-        // we want to override return UTR only if there is no value for UTR before
-        // since return_utr column has a unique constraint, so checking for empty
-        // value.
-        if (empty($payout->getReturnUtr()) === true)
-        {
-            if (empty($ftaData[Entity::RETURN_UTR]) === false)
-            {
-                $returnUtr = $ftaData[Attempt\Constants::RETURN_UTR];
+                $payout->setUtr($ftaData[Attempt\Constants::UTR]);
 
-                $payout->setReturnUtr($returnUtr);
-            }
-        }
+                $payout->setRemarks($ftaData[Attempt\Constants::REMARKS]);
 
-        $this->repo->saveOrFail($payout);
+                //
+                // For VPA type, we always set it to UPI only
+                // at build and we don't take the mode from FTA.
+                //
+                // Also, we don't want to override the payout's mode if it's already set.
+                //
+                if ((empty($ftaData[Attempt\Constants::VPA_ID]) === true) and
+                    ($payout->getMode() === null))
+                {
+                    $payout->setMode($ftaData[Attempt\Constants::MODE]);
+                }
+
+                if (($updatedChannel !== null) and
+                    ($initialChannel !== $updatedChannel))
+                {
+                    $this->updateChannelToPayoutAndTransaction($payout, $initialChannel, $updatedChannel);
+                }
+
+                //
+                // We do not want to override the failure reason if it's already set.
+                // It could have been set in the `afterRecon` flow. In some cases, it's
+                // possible that `beforeRecon` gets called and then `afterRecon` gets
+                // called and then again `beforeRecon`. In `afterRecon`, if the failure
+                // reason gets set, we don't want to reset it to null in `beforeRecon` if
+                // the failure reason is empty in the 2nd `beforeRecon` call.
+                //
+                if (empty($ftaFailureReason) === false)
+                {
+                    $payout->setFailureReason($ftaFailureReason);
+                }
+
+                // we want to override return UTR only if there is no value for UTR before
+                // since return_utr column has a unique constraint, so checking for empty
+                // value.
+                if (empty($payout->getReturnUtr()) === true)
+                {
+                    if (empty($ftaData[Entity::RETURN_UTR]) === false)
+                    {
+                        $returnUtr = $ftaData[Attempt\Constants::RETURN_UTR];
+
+                        $payout->setReturnUtr($returnUtr);
+                    }
+                }
+
+                $this->repo->saveOrFail($payout);
+        });
 
         if (($initialUtr === null) and
             ($payout->getUtr() !== null))
@@ -1857,5 +1872,53 @@ class Core extends Base\Core
             [
                 Admin\ConfigKey::RX_QUEUED_PAYOUTS_PAGINATION => $queuedPayoutsPaginationData
             ]);
+    }
+
+    protected function updateChannelToPayoutAndTransaction(Entity $payout,
+                                                           string $payoutChannel,
+                                                           string $ftsChannel)
+    {
+        $traceInfo = [
+            'payout_id'         => $payout->getId(),
+            'payoutChannel'     => $payoutChannel,
+            'ftsChannel'        => $ftsChannel,
+        ];
+
+        $this->trace->info(
+            TraceCode::PAYOUT_HAS_DIFFERENT_CHANNEL_AT_FTS,
+            $traceInfo);
+
+        if ($payoutChannel ===  Channel::RBL)
+        {
+            //
+            // For RBL payouts, there shouldn't be any mismatch in channel at FTS
+            // So this signifies bug in logic, hence raising an alert and failing webhook
+            //
+            (new Settlement\SlackNotification)->send(
+            'FTS sent different channel for rbl payouts',
+            $traceInfo,
+            null,
+            1,
+            'rx_ca_rbl_alerts');
+
+            throw new Exception\LogicException(
+                'Different channel passed by FTS for rbl payouts',
+                null,
+                $traceInfo);
+        }
+        else
+        {
+            $this->trace->info(
+            TraceCode::PAYOUT_CHANNEL_CHANGED_USING_FTA_DATA,
+            $traceInfo);
+
+            $payout->setChannel($ftsChannel);
+
+            $transaction = $payout->transaction;
+
+            $transaction->setChannel($ftsChannel);
+
+            $this->repo->saveOrFail($transaction);
+        }
     }
 }
