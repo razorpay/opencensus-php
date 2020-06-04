@@ -4079,8 +4079,6 @@ class Service extends Base\Service
 
                 return;
             }
-
-            $this->assignOnboardingCategoryForBankingMerchant($merchant);
         }
 
         $this->repo->transactionOnLiveAndTest(function() use ($product)
@@ -4092,9 +4090,16 @@ class Service extends Base\Service
 
             $currentlyEnabled = $merchant->isBusinessBankingEnabled();
 
-            $this->enableBusinessBankingIfApplicable($merchant, true);
+            $wasEnabledNow = $this->enableBusinessBankingIfApplicable($merchant);
 
             $this->repo->saveOrFail($merchant);
+
+            if ($wasEnabledNow === true)
+            {
+                $this->assignOnboardingCategoryForBankingMerchant($merchant);
+
+                $this->captureEventOfInterestOfPrimaryMerchantInBanking($merchant);
+            }
 
             $config = (new MainAdmin\Service)->getConfigKey(['key' => MainAdmin\ConfigKey::BLOCK_X_REGISTRATION]) ?? false;
 
@@ -4234,7 +4239,30 @@ class Service extends Base\Service
         }
     }
 
-    protected function enableBusinessBankingIfApplicable(Entity $merchant, bool $captureEvent = false)
+    protected function captureEventOfInterestOfPrimaryMerchantInBanking($merchant)
+    {
+        // Merchant has switched from primary product to banking product for the first time,
+        // so, sending details to salesforce.
+
+        // Putting in a try catch block so that any error here does not disrupt
+        // the main flow.
+        try
+        {
+            /** @var  $salesforceClient SalesForceClient */
+            $salesforceClient = $this->app->salesforce;
+
+            $salesforceClient->captureInterestOfPrimaryMerchantInBanking($merchant);
+        }
+        catch(\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::SALESFORCE_FAILED_TO_DISPATCH_JOB);
+        }
+    }
+
+    protected function enableBusinessBankingIfApplicable(Entity $merchant)
     {
         $isBanking = $this->auth->isProductBanking();
 
@@ -4250,29 +4278,9 @@ class Service extends Base\Service
 
             $merchant->setBusinessBanking(true);
 
-            if ($captureEvent === true)
-            {
-                // Merchant has switched from primary product to banking product for the first time,
-                // so, sending details to salesforce.
-
-                // Putting in a try catch block so that any error here does not disrupt
-                // the main flow.
-                try
-                {
-                    /** @var  $salesforceClient SalesForceClient */
-                    $salesforceClient = $this->app->salesforce;
-
-                    $salesforceClient->captureInterestOfPrimaryMerchantInBanking($merchant);
-                }
-                catch(\Throwable $e)
-                {
-                    $this->trace->traceException(
-                        $e,
-                        Trace::ERROR,
-                        TraceCode::SALESFORCE_FAILED_TO_DISPATCH_JOB);
-                }
-            }
+            return true;
         }
+        return false;
     }
 
     /**

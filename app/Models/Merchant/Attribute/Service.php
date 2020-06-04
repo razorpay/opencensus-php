@@ -5,6 +5,7 @@ namespace RZP\Models\Merchant\Attribute;
 
 use RZP\Models\Base;
 use RZP\Diag\EventCode;
+use RZP\Trace\TraceCode;
 use RZP\Constants\Product;
 use RZP\Services\DiagClient;
 use RZP\Services\SalesForceClient;
@@ -38,6 +39,8 @@ class Service extends Base\Service
     {
         if ($merchantAttributes->isEmpty())
         {
+            $this->trace->info(TraceCode::MERCHANT_ONBOARDING_CATEGORY_CRON_NOTHING_TO_UPDATE, []);
+
             return;
         }
 
@@ -74,6 +77,12 @@ class Service extends Base\Service
         }
 
         $this->salesforce->updateChangeInBankingMerchantOnboardingCategory($merchantEntities, $newAttributeValue);
+
+        $this->trace->info(TraceCode::MERCHANT_ONBOARDING_CATEGORY_CRON_UPDATE_SUCCESSFUL,
+            [
+                'value'         => $newAttributeValue,
+                'merchant_ids'  => $merchantAttributeIds
+            ]);
     }
 
     public function updateSelfServeBankingMerchantsToNormal(array $input)
@@ -90,7 +99,7 @@ class Service extends Base\Service
 
         // get all the merchantattributeIds that belong to merchants who have been tagged
         // as self-serve $days back, and who have not onboarded yet
-        $merchantAttributeIdsToUpdate = $this->core->getAttributeIdsSetBeforeDaysForMerchantsNotOnboarded(
+        $merchantAttributesToUpdate = $this->core->getAttributesSetBeforeDaysForMerchantsNotOnboarded(
             $product,
             $group,
             $type,
@@ -99,7 +108,7 @@ class Service extends Base\Service
         );
 
         // Move them to the NORMAL merchant_onboarding_category
-        $this->updateMerchantOnboardingCategoryAttributes($merchantAttributeIdsToUpdate, Entity::NORMAL);
+        $this->updateMerchantOnboardingCategoryAttributes($merchantAttributesToUpdate, Entity::NORMAL);
 
         return [];
     }

@@ -2,12 +2,12 @@
 
 namespace Functional\Merchant;
 
+use RZP\Exception;
 use RZP\Diag\EventCode;
 use RZP\Models\Merchant;
 use RZP\Services\DiagClient;
 use RZP\Services\RazorXClient;
 use RZP\Services\SalesForceClient;
-use RZP\Tests\Functional\OAuth\OAuthTestCase;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Tests\Functional\Fixtures\Entity\User;
@@ -71,9 +71,6 @@ class MerchantAttributeTest extends TestCase
 
     public function testSignupScenario()
     {
-//        $merchantDetail = $this->fixtures->create('merchant_detail');
-
-//        $this->ba->proxyAuth('rzp_live_' . $merchantDetail['merchant_id']);
         $this->ba->adminAuth();
 
         $testData = &$this->testData[__FUNCTION__];
@@ -140,8 +137,21 @@ class MerchantAttributeTest extends TestCase
 
         $this->app->instance('salesforce', $salesforceClientMock);
 
-        $salesforceClientMock->expects($this->exactly(1))
-                             ->method($methodName);
+        if (in_array($methodName, ['captureInterestOfPrimaryMerchantInBanking', 'sendPreSignupDetails']))
+        {
+            $salesforceClientMock->expects($this->exactly(1))
+                                 ->method($methodName)
+                                 ->will($this->returnCallback(function(Merchant\Entity $merchant){
+                                            $merchantOnboardingCategory = $merchant->getBankingOnboardingCategory();
+
+                                            $this->assertNotNull($merchantOnboardingCategory);
+                                        }));
+        }
+        else
+        {
+            $salesforceClientMock->expects($this->exactly(1))
+                                 ->method($methodName);
+        }
     }
 
     public function testMerchantOnboardingCategoryAttributeCreatedOnSwitchProductOn(string $expVal = 'on', string $expectedValue = 'self_serve')
@@ -151,6 +161,8 @@ class MerchantAttributeTest extends TestCase
         $methodCalled = false;
 
         $this->mockLumberjackEventTracked('trackOnboardingEvent', $methodCalled, EventCode::MERCHANT_ONBOARDING_CATEGORY_SET);
+
+        $this->mockSalesforceEventTracked('captureInterestOfPrimaryMerchantInBanking');
 
         $this->testSwitchProductScenario();
 
@@ -164,6 +176,44 @@ class MerchantAttributeTest extends TestCase
     public function testMerchantOnboardingCategoryAttributeCreatedOnSwitchProductOff()
     {
         $this->testMerchantOnboardingCategoryAttributeCreatedOnSwitchProductOn('off', 'normal');
+    }
+
+    public function testMerchantOnboardingCategoryAttributeNotCreatedonSwitchProductFail()
+    {
+        // Forcing failure in SwitchProduct transaction.
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                           ->setConstructorArgs([$this->app])
+                           ->setMethods(['getTreatment'])
+                           ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+                          ->will($this->returnCallback(
+                                function ($mid, $feature, $mode)
+                                {
+                                    if ($feature === 'razorpayx_x_test_mode_onboarding')
+                                    {
+                                        throw new \Exception("Intentional failure");
+                                    }
+                                    return 'control';
+                                }));
+
+        $this->expectException(\Exception::class);
+
+        try
+        {
+            $this->testSwitchProductScenario();
+        }
+        catch (\Throwable $e)
+        {
+            // asserting that merchant attribute is not created.
+            $merchantAttribute = $this->getLastEntity('merchant_attribute', true);
+
+            $this->assertNull($merchantAttribute);
+
+            throw $e;
+        }
     }
 
     public function testMerchantOnboardingCategoryAttributeCreatedOnSignupOn(string $expVal = 'on', string $expectedValue = 'self_serve')
@@ -189,11 +239,11 @@ class MerchantAttributeTest extends TestCase
     }
 
     public function testMerchantOnboardingCategoryCron(string $merchantId = '10000000000000',
-                                                        string $startingValue = 'self_serve',
-                                                        string $finalExpectedValue = 'normal',
-                                                        int $doneAt = null)
+                                                       string $startingValue = 'self_serve',
+                                                       $finalExpectedValue = 'normal',
+                                                       int $doneAt = null)
     {
-        if ($startingValue != $finalExpectedValue)
+        if (($startingValue != $finalExpectedValue) and ($finalExpectedValue != null))
         {
             $methodCalled = false;
 
@@ -217,6 +267,10 @@ class MerchantAttributeTest extends TestCase
 
         $this->startTest();
 
+        if ($finalExpectedValue === null)
+        {
+            $this->expectException(Exception\BadRequestException::class);
+        }
         $newmerchantAttribute = $this->getDbEntityById('merchant_attribute', $merchantAttribute['id']);
 
         $this->assertEquals($newmerchantAttribute['value'], $finalExpectedValue);

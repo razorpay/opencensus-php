@@ -74,16 +74,16 @@ class Core extends Base\Core
     {
         $this->trace->info(TraceCode::MERCHANT_ATTRIBUTE_BULK_UPDATE_REQUEST,
             [
-                'value'  => $newAttributeValue,
-                'merchant_ids' => $merchantAttributeIds
+                'value'         => $newAttributeValue,
+                'merchant_ids'  => $merchantAttributeIds
             ]);
 
         $this->repo->merchant_attribute->updateMerchantAttributeValuesById($merchantAttributeIds, $newAttributeValue);
 
         $this->trace->info(TraceCode::MERCHANT_ATTRIBUTE_BULK_UPDATE,
                 [
-                    'value'  => $newAttributeValue,
-                    'merchant_ids' => $merchantAttributeIds
+                    'value'         => $newAttributeValue,
+                    'merchant_ids'  => $merchantAttributeIds
                 ]);
     }
 
@@ -160,9 +160,7 @@ class Core extends Base\Core
         return $mocAttribute;
     }
 
-
-
-    public function getAttributeIdsSetBeforeDaysForMerchantsNotOnboarded(string $product, string $group, string $type, $value, int $days)
+    public function getAttributesSetBeforeDaysForMerchantsNotOnboarded(string $product, string $group, string $type, $value, int $days)
     {
         // convert days to start, end epoch timestamps
         $timeNow = time();

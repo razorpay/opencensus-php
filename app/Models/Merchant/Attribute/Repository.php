@@ -46,7 +46,7 @@ class Repository extends Base\Repository
      * @param int $end
      * @return mixed
      */
-    public function getAttributeIdsSetBetweenForMerchantsNotOnboarded(string $product, string $group, string $type, string $value, int $start, int $end)
+    public function getAttributeIdsSetBetweenForMerchantsNotOnboarded(string $product, string $group, string $type, string $value, int $start, int $end): Base\PublicCollection
     {
         $balanceTable = $this->repo->balance->getTableName();
 
