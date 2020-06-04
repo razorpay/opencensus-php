@@ -93,32 +93,16 @@ $max-width = 640px
 .Modal-container--VirtualAccountV2
   width: 90%
   max-width: 400px
-  max-height: 510px
+  max-height: 526px
   height: 85vh
-
-  &.Modal-container--has_bank_account,
-  &.Modal-container--has_vpa
-    max-height: 598px
-
-  &.Modal-container--has_bank_account_has_vpa
-    max-height: 694px
 
 .StandAloneContainer
   .VirtualAccount--CreateV2
-    max-height: 510px
+    max-height: 568px
     background: white
     position: relative
     height: 80vh
     max-width: 400px
-
-  &.has_bank_account,
-  &.has_vpa
-    .VirtualAccount--CreateV2
-      max-height: 598px
-
-  &.has_bank_account_has_vpa
-    .VirtualAccount--CreateV2
-      max-height: 694px
 
 .VirtualAccount--CreateV2
   .form-title
@@ -149,6 +133,9 @@ $max-width = 640px
     padding: 70px 24px 96px 24px
     overflow: auto
 
+    .form-container
+      height: auto
+
     &::-webkit-scrollbar
       display: none
 
@@ -162,6 +149,13 @@ $max-width = 640px
     .Input-label span
       color: #828282
       font-size: 12px
+
+  .Input-error
+    position absolute
+    top 42px
+
+  .Input-desc
+    margin-top: 8px
 
   .additional-options-btn
     margin-top: 24px
@@ -217,6 +211,8 @@ $max-width = 640px
   max-width: 432px
   padding: 16px
   position: relative
+  top: 50%
+  transform: translateY(-100%)
 
   img
     width: 16px
@@ -229,6 +225,13 @@ $max-width = 640px
     align-times: baseline
     .Input-label
       width: 100px
+
+    .Input-error
+      position absolute
+      top: 42px
+
+  .status
+    min-height: 18px
 
   .upi-example
     margin: 12px 0

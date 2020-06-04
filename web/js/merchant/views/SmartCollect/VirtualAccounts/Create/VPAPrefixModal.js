@@ -10,7 +10,7 @@ import {
 } from 'merchant/reducers/virtualaccounts';
 import { showNotification } from 'merchant_common/reducers/notifications';
 
-import { validateAlphanumericWithMinAndMaxLength } from 'common/utils/validators';
+import { validateAlphanumeric } from 'common/utils/validators';
 import debounce from 'common/utils/debounce';
 
 import {
@@ -171,7 +171,7 @@ export default class VPAPrefixModal extends React.Component {
                 {merchantPrefix.length} / {MERCHANT_PREFIX_MAX_LENGTH_VPA}
               </div>
 
-              {showStatus && <div class={status.type}>{status.message}</div>}
+              <div class={'status ' + status.type}>{status.message}</div>
             </>
           }
           addonBefore={
@@ -221,15 +221,20 @@ function validateCustomMerchantPrefix() {
   const minLength = MERCHANT_PREFIX_MIN_LENGTH_VPA;
   const maxLength = MERCHANT_PREFIX_MAX_LENGTH_VPA;
 
-  return val => {
-    const isValid = validateAlphanumericWithMinAndMaxLength(
-      val,
-      minLength,
-      maxLength
-    );
+  return value => {
+    const isValidMinLength = value.length >= minLength;
+    if (!isValidMinLength) {
+      return `Must be greater than ${minLength} characters.`;
+    }
 
-    if (isValid) return;
+    const isValidMaxLength = value.length <= maxLength;
+    if (!isValidMaxLength) {
+      return `Must be less than ${maxLength} characters.`;
+    }
 
-    return `Enter only Alphanumeric, from ${minLength} upto ${maxLength} characters`;
+    const isValidAlphanumeric = validateAlphanumeric(value);
+    if (!isValidAlphanumeric) {
+      return 'Special characters not allowed';
+    }
   };
 }

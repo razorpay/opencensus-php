@@ -13,7 +13,7 @@ import Spinner from 'common/ui/Spinner';
 import { classList } from 'common/utils/rzp-utils';
 import {
   validateAlphanumericWithMaxLength,
-  validateAlphanumericWithStrictLength,
+  validateAlphanumeric,
 } from 'common/utils/validators';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
@@ -71,7 +71,7 @@ export default class CreateVirtualAccount extends React.Component {
       close_by: null,
       _internals: {
         hasBankAccount: !props.user.isVACreationBankAccountDisabled,
-        hasVPA: !!props.user.isVACreationBankAccountDisabled,
+        hasVPA: true,
       },
       isLoading: true,
       isUpdating: false,
@@ -101,15 +101,31 @@ export default class CreateVirtualAccount extends React.Component {
 
     Promise.all(promiseList)
       .then(() => {
-        this.setState({
-          isLoading: false,
-        });
+        this.setState(
+          {
+            isLoading: false,
+          },
+          this.setModalHeight
+        );
       })
       .catch(() => {
         this.setState({
           isLoading: false,
         });
       });
+  };
+
+  setModalHeight = () => {
+    setTimeout(() => {
+      const formEle = document.querySelector(
+        '.VirtualAccount--CreateV2 .form-container'
+      );
+
+      document.querySelector('.Modal-container--VirtualAccountV2').style[
+        'max-height'
+      ] =
+        formEle.offsetHeight + 176 + 'px';
+    });
   };
 
   handleSubmit = formData => {
@@ -238,12 +254,15 @@ export default class CreateVirtualAccount extends React.Component {
   };
 
   handlePaymentMethod = name => () => {
-    this.setState({
-      _internals: {
-        ...this.state._internals,
-        [name]: !this.state._internals[name],
+    this.setState(
+      {
+        _internals: {
+          ...this.state._internals,
+          [name]: !this.state._internals[name],
+        },
       },
-    });
+      this.setModalHeight
+    );
   };
 
   handleDescriptor = name => event => {
@@ -256,9 +275,30 @@ export default class CreateVirtualAccount extends React.Component {
   };
 
   handleAdditionalOptions = () => {
+    if (this.state.showAdditionalOptions) {
+      const formTopEle = document.querySelector(
+        '.VirtualAccount--CreateV2 .payment-method-label'
+      );
+
+      if (formTopEle) {
+        formTopEle.scrollIntoView({
+          behavior: 'smooth',
+          block: 'center',
+        });
+      }
+
+      setTimeout(() => {
+        this.setState({
+          showAdditionalOptions: false,
+        });
+      }, 100);
+
+      return true;
+    }
+
     this.setState(
       {
-        showAdditionalOptions: !this.state.showAdditionalOptions,
+        showAdditionalOptions: true,
       },
       () => {
         setTimeout(() => {
@@ -272,6 +312,8 @@ export default class CreateVirtualAccount extends React.Component {
               block: 'center',
             });
           }
+
+          return;
         }, 100);
       }
     );
@@ -339,7 +381,7 @@ export default class CreateVirtualAccount extends React.Component {
     const showBankAccountDescriptor =
       !!descriptorLimit_BankAccount && _internals.hasBankAccount;
     let showVPADescriptor = !!descriptorLimit_VPA && _internals.hasVPA;
-    let showVPAPrefix = true;
+    let showVPAPrefix = _internals.hasVPA;
 
     if (
       user.isUnregisteredBusiness &&
@@ -358,185 +400,203 @@ export default class CreateVirtualAccount extends React.Component {
           ref={this.setRefForm}
         >
           <main>
-            <div class="form-title">Create Virtual Account</div>
+            <div class="form-container">
+              <div class="form-title">Create Virtual Account</div>
 
-            {isLoading ? (
-              <div class="page-spinner-container">
-                <Spinner />
-              </div>
-            ) : (
-              <>
-                <label class="payment-method-label">
-                  Methods to accept payments in this account
-                </label>
+              {isLoading ? (
+                <div class="page-spinner-container">
+                  <Spinner />
+                </div>
+              ) : (
+                <>
+                  <label class="payment-method-label">
+                    Methods to accept payments in this account
+                  </label>
 
-                <SelectBox
-                  name="hasBankAccount"
-                  class="SelectBox--Outline"
-                  onClick={this.handlePaymentMethod('hasBankAccount')}
-                  defaultChecked={_internals.hasBankAccount}
-                  label={
-                    <div>
-                      <img src="/dist/css/assets/bank.svg" /> Fund Transfers
-                      (NEFT, RTGS, IMPS)
-                    </div>
-                  }
-                  description="Get bank account details to accept fund transfers."
-                >
-                  {showBankAccountDescriptor && (
-                    <Input
-                      name="descriptorBankAccount"
-                      size="vpa_custom"
-                      description={
-                        <>
-                          <div class="remaining-count">
-                            {descriptors.bank_account.length} /{' '}
-                            {descriptorLimit_BankAccount}
-                          </div>
-                          <br />
-                          If left blank, an account number will be auto
-                          generated
-                        </>
-                      }
-                      style={getStyle_DescriptorInput_BankAccount(va_config)}
-                      onChange={this.handleDescriptor('bank_account')}
-                      validator={validateCustomBankAccountNumber(
-                        descriptorLimit_BankAccount
-                      )}
-                      addonBefore={
-                        <span
-                          style={getStyle_AddOnBefore_BankAccount(va_config)}
-                        >
-                          {bankAccountConfig.prefix}
-                        </span>
-                      }
-                    />
-                  )}
-                </SelectBox>
-
-                {!isTestMode && (
                   <SelectBox
-                    name="hasVPA"
+                    name="hasBankAccount"
                     class="SelectBox--Outline"
-                    onClick={this.handlePaymentMethod('hasVPA')}
-                    defaultChecked={_internals.hasVPA}
+                    onClick={this.handlePaymentMethod('hasBankAccount')}
+                    defaultChecked={_internals.hasBankAccount}
                     label={
                       <div>
-                        <img src="/dist/css/assets/upi.svg" /> UPI Transfers
-                        (GPay, PhonePe, etc.)
+                        <img src="/dist/css/assets/bank.svg" /> Bank Transfers
+                        (NEFT, RTGS, IMPS)
                       </div>
                     }
                     description={
-                      showVPAPrefix && (
-                        <>
-                          To update{' '}
-                          <strong>"{vpaConfig.merchant_prefix}"</strong> prefix{' '}
-                          <a onClick={this.openVPAPrefixModal}>click here</a>
-                        </>
-                      )
+                      !_internals.hasBankAccount &&
+                      'Get bank account details to accept fund transfers.'
                     }
                   >
-                    {showVPADescriptor && (
+                    {showBankAccountDescriptor && (
                       <Input
-                        name="descriptorVPA"
+                        name="descriptorBankAccount"
                         size="vpa_custom"
-                        disabled={false}
-                        validator={validateCustomVPA(descriptorLimit_VPA)}
                         description={
                           <>
                             <div class="remaining-count">
-                              {descriptors.vpa.length} / {descriptorLimit_VPA}
+                              {descriptors.bank_account.length} /{' '}
+                              {descriptorLimit_BankAccount}
                             </div>
                             <br />
-                            UPI ID is auto generated if details are left blank
+                            If left blank, an account number will be auto
+                            generated
                           </>
                         }
-                        style={getStyle_DescriptorInput_VPA(va_config)}
-                        onChange={this.handleDescriptor('vpa')}
+                        style={getStyle_DescriptorInput_BankAccount(va_config)}
+                        onChange={this.handleDescriptor('bank_account')}
+                        validator={validateCustomBankAccountNumber(
+                          descriptorLimit_BankAccount
+                        )}
                         addonBefore={
-                          <span style={getStyle_AddOnBefore_VPA(va_config)}>
-                            {vpaConfig.prefix}
-                          </span>
-                        }
-                        addonAfter={
-                          <span style={getStyle_AddOnAfter_VPA(va_config)}>
-                            @{vpaConfig.handle}
+                          <span
+                            style={getStyle_AddOnBefore_BankAccount(va_config)}
+                          >
+                            {bankAccountConfig.prefix}
                           </span>
                         }
                       />
                     )}
                   </SelectBox>
-                )}
 
-                <div class="Input Input--vTop Input--SelectCustomer">
-                  <div class="Input-label">
-                    Customer <span>(Optional)</span>
-                  </div>
+                  {!isTestMode && (
+                    <SelectBox
+                      name="hasVPA"
+                      class="SelectBox--Outline"
+                      onClick={this.handlePaymentMethod('hasVPA')}
+                      defaultChecked={_internals.hasVPA}
+                      label={
+                        <div>
+                          <img src="/dist/css/assets/upi.svg" /> UPI Transfers
+                          (GPay, PhonePe, etc.)
+                        </div>
+                      }
+                      description={
+                        <>
+                          {_internals.hasVPA &&
+                            showVPAPrefix && (
+                              <>
+                                To update{' '}
+                                <strong>"{vpaConfig.merchant_prefix}"</strong>{' '}
+                                prefix{' '}
+                                <a onClick={this.openVPAPrefixModal}>
+                                  click here
+                                </a>
+                              </>
+                            )}
 
-                  <div class="Input-content">
-                    <TypeAhead
-                      options={customers}
-                      class="ps-in-modal"
-                      searchIndices={['id', 'name', 'email', 'contact']}
-                      placeholder="Select a customer"
-                      showClear={true}
-                      selected={this.state.customer}
-                      selectedOptionLabelPath="selectedDisplayName"
-                      optionComponent={CustomCustomerOption}
-                      onChange={this.handleSelectCustomer}
-                      afterOptionsComponent={props => (
-                        <QuickAdd
-                          {...props}
-                          onClick={this.openCreateCustomerModal}
+                          {!_internals.hasVPA && (
+                            <>Get a VPA to accept fund transfers via UPI.</>
+                          )}
+                        </>
+                      }
+                    >
+                      {showVPADescriptor && (
+                        <Input
+                          name="descriptorVPA"
+                          size="vpa_custom"
+                          disabled={false}
+                          validator={validateCustomVPA(descriptorLimit_VPA)}
+                          description={
+                            <>
+                              <div class="remaining-count">
+                                {descriptors.vpa.length} / {descriptorLimit_VPA}
+                              </div>
+                              <br />
+                              UPI ID is auto generated if details are left blank
+                            </>
+                          }
+                          style={getStyle_DescriptorInput_VPA(va_config)}
+                          onChange={this.handleDescriptor('vpa')}
+                          addonBefore={
+                            <span style={getStyle_AddOnBefore_VPA(va_config)}>
+                              {vpaConfig.prefix}
+                            </span>
+                          }
+                          addonAfter={
+                            <span style={getStyle_AddOnAfter_VPA(va_config)}>
+                              @{vpaConfig.handle}
+                            </span>
+                          }
                         />
                       )}
-                    />
+                    </SelectBox>
+                  )}
+
+                  <div class="Input Input--vTop Input--SelectCustomer">
+                    <div class="Input-label">
+                      Customer <span>(Optional)</span>
+                    </div>
+
+                    <div class="Input-content">
+                      <TypeAhead
+                        options={customers}
+                        class="ps-in-modal"
+                        searchIndices={['id', 'name', 'email', 'contact']}
+                        placeholder="Select a customer"
+                        showClear={true}
+                        selected={this.state.customer}
+                        selectedOptionLabelPath="selectedDisplayName"
+                        optionComponent={CustomCustomerOption}
+                        onChange={this.handleSelectCustomer}
+                        afterOptionsComponent={props => (
+                          <QuickAdd
+                            {...props}
+                            onClick={this.openCreateCustomerModal}
+                          />
+                        )}
+                      />
+                    </div>
                   </div>
-                </div>
 
-                <div class="additional-options-btn">
-                  <button type="button" onClick={this.handleAdditionalOptions}>
-                    {showAdditionalOptions
-                      ? 'Hide Options'
-                      : 'Additional Options'}
-                    <i
-                      class={classList(
-                        'i',
-                        showAdditionalOptions ? 'i-arrow-up' : 'i-arrow-down'
-                      )}
-                    />
-                  </button>
-                </div>
-
-                {showAdditionalOptions && (
-                  <div class="AdditionalOptions">
-                    <Input.TextareaAutoResize
-                      class="Input--vTop"
-                      name="description"
-                      label="Account Description"
-                      description="Description is shown only on the dashboard and not to customers"
-                    />
-
-                    <Input.DateTime
-                      class="Input--vTop"
-                      label="Close By"
-                      checkboxFieldLabel="Disable Auto Close"
-                      onChange={this.updateDate}
-                      description="You won’t be able to recieve payments after the specified date"
-                      isInline
-                    />
-
-                    <Input.PairList
-                      class="Input--vTop"
-                      name="notes"
-                      label="Internal Notes"
-                      onChange={this.handleNotesChange}
-                      onAddNew={this.handleAddNewNote}
-                    />
+                  <div class="additional-options-btn">
+                    <button
+                      type="button"
+                      onClick={this.handleAdditionalOptions}
+                    >
+                      {showAdditionalOptions
+                        ? 'Hide Options'
+                        : 'Additional Options'}
+                      <i
+                        class={classList(
+                          'i',
+                          showAdditionalOptions ? 'i-arrow-up' : 'i-arrow-down'
+                        )}
+                      />
+                    </button>
                   </div>
-                )}
-              </>
-            )}
+
+                  {showAdditionalOptions && (
+                    <div class="AdditionalOptions">
+                      <Input.TextareaAutoResize
+                        class="Input--vTop"
+                        name="description"
+                        label="Account Description"
+                        description="Description is shown only on the dashboard and not to customers"
+                      />
+
+                      <Input.DateTime
+                        class="Input--vTop"
+                        label="Close By"
+                        checkboxFieldLabel="Disable Auto Close"
+                        onChange={this.updateDate}
+                        description="You won’t be able to recieve payments after the specified date"
+                        isInline
+                      />
+
+                      <Input.PairList
+                        class="Input--vTop"
+                        name="notes"
+                        label="Internal Notes"
+                        onChange={this.handleNotesChange}
+                        onAddNew={this.handleAddNewNote}
+                      />
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
           </main>
 
           <footer>
@@ -558,65 +618,44 @@ export default class CreateVirtualAccount extends React.Component {
       </div>
     );
 
-    let classNames = '';
-
-    if (descriptorLimit_BankAccount && _internals.hasBankAccount) {
-      classNames += 'has_bank_account ';
-    }
-
-    if (descriptorLimit_VPA && _internals.hasVPA) {
-      classNames += 'has_vpa ';
-    }
-
-    if (
-      descriptorLimit_BankAccount &&
-      descriptorLimit_BankAccount &&
-      _internals.hasVPA &&
-      _internals.hasBankAccount
-    ) {
-      classNames += 'has_bank_account_has_vpa';
-    }
-
     return IS_MODAL_VIEW ? (
       <Modal
-        class={classList(
-          'VirtualAccountV2',
-          content && 'animate-down',
-          classNames
-        )}
+        class={classList('VirtualAccountV2', content && 'animate-down')}
         onClose={onClose}
       >
         <ModalContent>{content}</ModalContent>
       </Modal>
     ) : (
-      <div class={classList('StandAloneContainer', classNames)}>{content}</div>
+      <div class="StandAloneContainer">{content}</div>
     );
   }
 }
 
 function validateCustomVPA(descriptorLimit_VPA) {
-  return val => {
-    const isValid = validateAlphanumericWithStrictLength(
-      val,
-      descriptorLimit_VPA
-    );
+  return value => {
+    const isValidLength = value.length === descriptorLimit_VPA;
+    if (!isValidLength) {
+      return `Must contain ${descriptorLimit_VPA} characters`;
+    }
 
-    if (isValid) return;
-
-    return `Enter only Alphanumeric, ${descriptorLimit_VPA} characters`;
+    const isValidAlphanumeric = validateAlphanumeric(value);
+    if (!isValidAlphanumeric) {
+      return 'Special characters not allowed';
+    }
   };
 }
 
 function validateCustomBankAccountNumber(descriptorLimit_BankAccount) {
-  return val => {
-    const isValid = validateAlphanumericWithMaxLength(
-      val,
-      descriptorLimit_BankAccount
-    );
+  return value => {
+    const isValidLength = value.length <= descriptorLimit_BankAccount;
+    if (!isValidLength) {
+      return `Must be less than ${descriptorLimit_BankAccount} characters`;
+    }
 
-    if (isValid) return;
-
-    return `Enter only Alphanumeric, upto ${descriptorLimit_BankAccount} characters`;
+    const isValidAlphanumeric = validateAlphanumeric(value);
+    if (!isValidAlphanumeric) {
+      return 'Special characters not allowed';
+    }
   };
 }
 
