@@ -877,9 +877,10 @@ class Service extends Base\Service
             return $summary;
         }
 
-        $message = 'Transactions created for gateways refunded refunds ' . $totalCount;
-
-        $this->slack->queue($message, $summary, ['channel' => Config::get('slack.channels.tech_logs')]);
+        $this->trace->info(
+            TraceCode::GATEWAY_REFUNDED_TXNS_CREATED_SUMMARY,
+            $summary
+        );
 
         return $summary;
     }
