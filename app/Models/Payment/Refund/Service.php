@@ -1140,13 +1140,6 @@ class Service extends Base\Service
             TraceCode::GATEWAY_VALIDATE_REFUND_SUMMARY,
             $summary);
 
-        $message = "Gateway refund records validation";
-
-        $this->app['slack']->queue(
-            $message,
-            $summary,
-            ['channel' => Config::get('slack.channels.tech_logs')]);
-
         return $summary;
     }
 
