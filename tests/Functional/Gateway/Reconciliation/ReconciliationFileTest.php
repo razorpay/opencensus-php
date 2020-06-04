@@ -3845,28 +3845,18 @@ class ReconciliationFileTest extends TestCase
                 'country' => null,
             ]);
 
-        $payment = $this->getNewPaymentEntity(false, true);
+        $this->getNewPaymentEntity(false, true);
 
         $gatewayPayment = $this->getDbLastEntityToArray('amex');
 
         $paymentData = $this->overrideAmexPayment($gatewayPayment);
-
-        // amex recon file contains 20 lines of extra data before the actual payment
-
-        // adding 20 rows with data before the actual row that has to be processed
-        for ($row_index = 1; $row_index < 20; $row_index++)
-        {
-            $entries[] = [];
-        }
-
-        $entries[] = array_keys($paymentData);
 
         $entries[] = $paymentData;
 
         $file = $this->writeToExcelFile($entries, 'Submission_details10032018_023644' , 'files/settlement',
                                         ['Sheet 1'], 'xls');
 
-        $response = $this->runForFiles([$file], 'Amex');
+        $this->runForFiles([$file], 'Amex');
 
         $transactionEntity = $this->getDbLastEntity('transaction');
 
@@ -3906,7 +3896,7 @@ class ReconciliationFileTest extends TestCase
                 'country' => null,
             ]);
 
-        $payment = $this->getNewPaymentEntity(false, true);
+        $this->getNewPaymentEntity(false, true);
 
         $gatewayPayment = $this->getDbLastEntityToArray('amex');
 
@@ -3916,23 +3906,12 @@ class ReconciliationFileTest extends TestCase
 
         $paymentData['Charge amount'] = '1.00';
 
-        // amex recon file contains 20 lines of extra data before the actual payment
-
-        // adding 20 rows with data before the actual row that has to be processed
-        for ($row_index = 1; $row_index < 20; $row_index++)
-
-        {
-            $entries[] = [];
-        }
-
-        $entries[] = array_keys($paymentData);
-
         $entries[] = $paymentData;
 
         $file = $this->writeToExcelFile($entries, 'Submission_details10032018_023644' , 'files/settlement',
             ['Sheet 1'], 'xls');
 
-        $response = $this->runForFiles([$file], 'Amex');
+        $this->runForFiles([$file], 'Amex');
 
         $batch = $this->getDbLastEntityToArray('batch');
 
@@ -3989,16 +3968,6 @@ class ReconciliationFileTest extends TestCase
         $refundData2 = $this->overrideAmexRefund($gatewayPayment, $refund2['amount']);
 
         $refundData3 = $this->overrideAmexRefund($gatewayPayment, $refund3['amount']);
-
-        // amex recon file contains 20 lines of extra data before the actual payment
-
-        // adding 20 rows with data before the actual row that has to be processed
-        for ($row_index = 1; $row_index < 20; $row_index++)
-        {
-            $entries[] = [];
-        }
-
-        $entries[] = array_keys($refundData1);
 
         $entries[] = $paymentData;
 
@@ -4236,8 +4205,6 @@ class ReconciliationFileTest extends TestCase
 
         $facade['Charge reference number'] = $gatewayPayment['vpc_ShopTransactionNo'];
 
-        $facade['Reference number'] = $gatewayPayment['vpc_ShopTransactionNo'];
-
         $facade['Rental agreement number'] = $gatewayPayment['vpc_ShopTransactionNo'];
 
         $facade['Merchant Account Number'] = 'razorpay amex';
@@ -4249,9 +4216,7 @@ class ReconciliationFileTest extends TestCase
     {
         $facade = $this->overrideAmexPayment($gatewayPayment);
 
-        $facade['Type'] = 'Credit';
-
-        $facade['Charge amount'] = $amount/100;
+        $facade['Charge amount'] = strval(-1 * $amount/100);
 
         return $facade;
     }

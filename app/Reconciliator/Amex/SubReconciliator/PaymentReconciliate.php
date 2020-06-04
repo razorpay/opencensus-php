@@ -12,7 +12,6 @@ use RZP\Models\Payment\Entity;
 
 class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 {
-    const COLUMN_GATEWAY_PAYMENT_ID         = 'reference_number';
     const COLUMN_AMOUNT                     = 'charge_amount';
     const COLUMN_SETTLED_AT_DATE            = 'settlement_date';
     const COLUMN_MERCHANT_ACCOUNT_NUMBER    = 'merchant_account_number';
@@ -27,7 +26,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
      */
     protected function getPaymentId(array $row)
     {
-        return trim($row[self::COLUMN_GATEWAY_PAYMENT_ID] ?? null);
+        return trim($row[self::COLUMN_CHARGE_REFERENCE_NUMBER] ?? null);
     }
 
     protected function validatePaymentAmountEqualsReconAmount(array $row)

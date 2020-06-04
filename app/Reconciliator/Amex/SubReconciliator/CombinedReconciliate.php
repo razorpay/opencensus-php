@@ -7,9 +7,9 @@ use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
 
 class CombinedReconciliate extends Base\SubReconciliator\CombinedReconciliate
 {
-    const COLUMN_ENTITY_TYPE  = 'type';
     const COLUMN_PAYMENT      = 'sale';
     const COLUMN_REFUND       = 'credit';
+    const COLUMN_AMOUNT       = 'charge_amount';
 
     // Refund cannot be processed as we dont the refund id
     // in the recon file
@@ -22,13 +22,13 @@ class CombinedReconciliate extends Base\SubReconciliator\CombinedReconciliate
 
     protected function getReconciliationTypeForRow($row)
     {
-        if (isset($row[self::COLUMN_ENTITY_TYPE]) === false)
+        $amount = strval($row[self::COLUMN_AMOUNT] ?? null);
+
+        if ($amount === null)
         {
             return null;
         }
 
-        $txnType = strtolower($row[self::COLUMN_ENTITY_TYPE]);
-
-        return self::TRANSACTION_TYPE_TO_RECONCILIATION_TYPE_MAP[$txnType] ?? self::NA;
+        return ($amount[0] === '-') ? BaseReconciliate::REFUND : BaseReconciliate::PAYMENT;
     }
 }

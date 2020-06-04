@@ -11,23 +11,9 @@ use RZP\Reconciliator\Amex\SubReconciliator\PaymentReconciliate;
 class Reconciliate extends Base\Reconciliate
 {
 
-    const KEY_COLUMN_NAMES = [
-        'type' => self::PAYMENT,
-    ];
-
     protected function getTypeName($fileName)
     {
         return self::COMBINED;
-    }
-
-    /*
-     * in amex recon file there are some rows that are present before actual payments
-     * we need to jump to that line to start processing, this line number keeps changing
-     * so getting the column header from where to start
-     */
-    public function getKeyColumnNames(array $fileDetails = [])
-    {
-        return self::KEY_COLUMN_NAMES;
     }
 
     /**
@@ -42,16 +28,16 @@ class Reconciliate extends Base\Reconciliate
     {
         foreach ($fileContents as &$row)
         {
-            if (isset($row[PaymentReconciliate::COLUMN_GATEWAY_PAYMENT_ID]) === true)
+            if (isset($row[PaymentReconciliate::COLUMN_CHARGE_REFERENCE_NUMBER]) === true)
             {
-                $paymentIdValue = $row[PaymentReconciliate::COLUMN_GATEWAY_PAYMENT_ID];
+                $paymentIdValue = trim($row[PaymentReconciliate::COLUMN_CHARGE_REFERENCE_NUMBER]);
                 $paymentId = $this->getPaymentIdV2($paymentIdValue);
 
                 if ($paymentId !== null) {
                     continue;
                 }
 
-                $row[PaymentReconciliate::COLUMN_GATEWAY_PAYMENT_ID] = $this->getPaymentIdV1($row) ?? $paymentIdValue;
+                $row[PaymentReconciliate::COLUMN_CHARGE_REFERENCE_NUMBER] = $this->getPaymentIdV1($row) ?? $paymentIdValue;
             }
         }
     }
@@ -69,7 +55,7 @@ class Reconciliate extends Base\Reconciliate
 
         try
         {
-            $ref = $row[PaymentReconciliate::COLUMN_GATEWAY_PAYMENT_ID];
+            $ref = trim($row[PaymentReconciliate::COLUMN_CHARGE_REFERENCE_NUMBER]);
 
             $accountNumber = $row[PaymentReconciliate::COLUMN_MERCHANT_ACCOUNT_NUMBER];
 

@@ -13,13 +13,12 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
     const COLUMN_REFUND_AMOUNT              = 'charge_amount';
     const COLUMN_SETTLED_AT_DATE            = 'settlement_date';
     const COLUMN_CHARGE_REFERENCE_NUMBER    = 'charge_reference_number';
-    const COLUMN_GATEWAY_PAYMENT_ID         = 'reference_number';
 
     protected function getRefundId($row)
     {
         $refundId = null;
 
-        $paymentId = trim($row[self::COLUMN_GATEWAY_PAYMENT_ID] ?? null);
+        $paymentId = trim($row[self::COLUMN_CHARGE_REFERENCE_NUMBER] ?? null);
 
         $refundAmount = $this->getReconRefundAmount($row);
 

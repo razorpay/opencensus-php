@@ -49,9 +49,9 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 
         if (empty($utr) === true)
         {
-            $this->messenger->raiseReconAlert(
+            $this->trace->info(
+                TraceCode::RECON_ALERT,
                 [
-                    'trace_code'    => TraceCode::RECON_ALERT,
                     'message'       => 'UTR not present in recon file',
                     'column_utr'    => $row[self::COLUMN_UTR] ?? null,
                     'column_rrn'    => $row[self::COLUMN_RRN_NUMBER] ?? null,
