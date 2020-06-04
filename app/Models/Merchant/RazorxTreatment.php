@@ -123,6 +123,9 @@ final class RazorxTreatment
 
     const VIRTUAL_VPA_PREFIX = 'virtual_vpa_prefix';
 
+    // Block external transaction webhooks for RBL CA
+    const BLOCK_EXTERNAL_TRANSACTION_CREATED_WEBHOOK_RBL = 'block_external_transaction_created_webhook_rbl';
+
     const VIRTUAL_VPA_ICICI = 'virtual_vpa_icici';
 
     const PAYMENT_TRANSFER_ASYNC = 'payment_transfer_async';

@@ -7,6 +7,7 @@ use File;
 use Carbon\Carbon;
 
 use RZP\Exception;
+use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Models\Payout;
 use RZP\Trace\TraceCode;
@@ -378,7 +379,7 @@ class Core extends Base\Core
                 'bank_txn_channel'      => $bankTxnChannel,
             ]);
 
-        $this->repo->transaction(function () use ($bankTransaction, $merchant) {
+        list($sourceEntity, $isSourceAlreadyCreated) = $this->repo->transaction(function () use ($bankTransaction, $merchant) {
 
             $basEntity = (new Entity)->build($bankTransaction);
 
@@ -393,7 +394,7 @@ class Core extends Base\Core
 
             $basEntity->merchant()->associate($merchant);
 
-            $sourceEntity = $this->processSourceEntity($basEntity);
+            list($sourceEntity, $isSourceAlreadyCreated) = $this->processSourceEntity($basEntity);
 
             $this->trace->info(TraceCode::BANKING_ACCOUNT_STATEMENT_SOURCE_CREATION, $sourceEntity->toArray());
 
@@ -406,7 +407,45 @@ class Core extends Base\Core
             $this->trace->info(TraceCode::BANKING_ACCOUNT_STATEMENT_SAVE, $basEntity->toArray());
 
             $this->repo->saveOrFail($basEntity);
+
+            return [$sourceEntity, $isSourceAlreadyCreated];
         });
+
+        $this->fireWebhooksAfterSuccessfulMappingOfSourceEntity($sourceEntity, $isSourceAlreadyCreated);
+    }
+
+    protected function fireWebhooksAfterSuccessfulMappingOfSourceEntity($sourceEntity, $isSourceAlreadyCreated)
+    {
+        $sourceTransaction = $sourceEntity->transaction;
+
+        $sourceTransaction->load('source');
+
+        if ($sourceEntity->getEntityName() === Constants\Entity::EXTERNAL)
+        {
+            // transaction.created webhook for external transactions
+            $variant = $this->app->razorx->getTreatment($sourceEntity->merchant->getId(),
+                                                        Merchant\RazorxTreatment::BLOCK_EXTERNAL_TRANSACTION_CREATED_WEBHOOK_RBL,
+                                                        $this->mode);
+
+            // by default webhook will be sent for all merchants , if experiment is on for that merchant then webhook
+            // will not be sent. In case razorx is down webhook will be sent.
+            if ($variant !== 'on')
+            {
+                (new Transaction\Core)->dispatchEventForTransactionCreatedWithoutEmailOrSmsNotification(
+                    $sourceEntity->transaction);
+            }
+        }
+        else
+        {
+            if (($sourceEntity->getEntityName() === Constants\Entity::REVERSAL) and
+                ($isSourceAlreadyCreated === false))
+            {
+                $this->app->events->fire('api.payout.reversed', $sourceEntity->entity);
+            }
+
+            (new Transaction\Core)->dispatchEventForTransactionCreatedWithoutEmailOrSmsNotification(
+                $sourceEntity->transaction);
+        }
     }
 
     protected function getBalance(Entity $basEntity)
@@ -425,9 +464,12 @@ class Core extends Base\Core
 
     protected function processSourceEntity(Entity $basEntity)
     {
+        // to ensure duplicate webhook doesn't get fired
+        $isSourceAlreadyCreated = true;
+
         if ($basEntity->isTypeCredit() === true)
         {
-            $sourceEntity = $this->processReversal($basEntity);
+            list($sourceEntity, $isSourceAlreadyCreated) = $this->processReversal($basEntity);
         }
         else
         {
@@ -441,15 +483,24 @@ class Core extends Base\Core
 
         $this->validateBalance($basEntity, $sourceEntity);
 
-        return $sourceEntity;
+        return [$sourceEntity, $isSourceAlreadyCreated];
     }
 
     protected function processReversal(Entity $basEntity)
     {
         $reversal = $this->fetchExistingReversalIfPresent($basEntity);
 
+        // this is to ensure that payout.reversed webhook does not get fired twice. i.e
+        // it only gets fired in this flow if a new reversal entity is created and we are not
+        // able to map existing reversal to bas. Because if we were able to map existing reversal,
+        // that means that webhook would have been fired already when that reversal entity was
+        // created
+        $isReversalAlreadyCreated = true;
+
         if ($reversal === null)
         {
+            $isReversalAlreadyCreated = false;
+
             // There can be a possibilty that a payout is not marked reversed due
             // to some code-or-mapping miss at Mozart layer or if the webhook from
             // FTS to API is missed. In that case, we will not be able to
@@ -494,7 +545,7 @@ class Core extends Base\Core
                 ]);
         }
 
-        return $reversal;
+        return [$reversal, $isReversalAlreadyCreated];
     }
 
     protected function processPayout(Entity $basEntity)

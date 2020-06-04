@@ -1456,6 +1456,11 @@ class Core extends Base\Core
         $this->app->events->fire('api.transaction.created', $txn);
     }
 
+    public function dispatchEventForTransactionCreatedWithoutEmailOrSmsNotification(Entity $txn)
+    {
+        $this->app->events->fire('api.transaction.created', $txn);
+    }
+
     public function dispatchEventForTransactionUpdated(Entity $txn)
     {
         $this->app->events->fire('api.transaction.updated', $txn);

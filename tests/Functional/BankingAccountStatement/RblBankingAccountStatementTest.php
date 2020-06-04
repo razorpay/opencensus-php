@@ -14,6 +14,7 @@ use RZP\Services\Mozart;
 use RZP\Constants\Timezone;
 use RZP\Models\FundTransfer;
 use RZP\Models\BankingAccount;
+use RZP\Services\RazorXClient;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Merchant\Balance;
 use RZP\Constants\Mode as EnvMode;
@@ -22,6 +23,7 @@ use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\BankingAccount\Channel;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use RZP\Models\Merchant\Balance\Entity;
+use RZP\Tests\Traits\TestsWebhookEvents;
 use RZP\Models\BankingAccount\Gateway\Rbl;
 use RZP\Mail\BankingAccount\StatementMail;
 use RZP\Models\Merchant\Balance\AccountType;
@@ -44,6 +46,7 @@ class RblBankingAccountStatementTest extends TestCase
     use PayoutTrait;
     use AttemptTrait;
     use DbEntityFetchTrait;
+    use TestsWebhookEvents;
     use TestsBusinessBanking;
 
     const UFH_FILE_PATH_REGEX    = '/.*\/ufh\/file\/(.*)/';
@@ -3042,5 +3045,278 @@ class RblBankingAccountStatementTest extends TestCase
         $this->assertArraySelectiveEquals($expectedResponse, $observedResponse);
 
         Carbon::setTestNow();
+    }
+
+    public function testWebhookEventForRblAccountStatementForSuccessfulMappingToExternalAndPayout()
+    {
+        $channel = Channel::RBL;
+
+        $this->setupForRblPayout($channel);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->assertEquals(590, $payout['fees']);
+        $this->assertEquals(90, $payout['tax']);
+        $this->assertEquals('Bbg7cl6t6I3XA6', $payout['pricing_rule_id']);
+
+        $attempt = $this->getDbLastEntity('fund_transfer_attempt');
+
+        $this->fixtures->edit('payout', $payout['id'], ['status' => 'initiated']);
+
+        $this->fixtures->edit('fund_transfer_attempt', $attempt['id'], ['utr' => '123456']);
+
+        $ftsCreateTransfer = new FtsFundTransfer(
+            EnvMode::TEST,
+            $attempt['id']);
+
+        $ftsCreateTransfer->handle();
+
+        $attempt = $this->getDbLastEntity('fund_transfer_attempt');
+
+        $this->assertEquals(Attempt\Status::INITIATED, $attempt['status']);
+
+        $this->updateFta(
+            $attempt['fts_transfer_id'],
+            $attempt['source'],
+            Attempt\Type::PAYOUT,
+            Attempt\Status::PROCESSED);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $attempt = $this->getDbLastEntity('fund_transfer_attempt');
+
+        $this->assertEquals(Payout\Status::PROCESSED, $payout['status']);
+        $this->assertEquals(FundTransfer\Mode::IMPS, $payout['mode']);
+        $this->assertEquals(Attempt\Status::PROCESSED, $attempt['status']);
+        $this->assertEquals(FundTransfer\Mode::IMPS, $attempt['mode']);
+
+        $mockedResponse = $this->getRblDataResponse();
+
+        $this->setMozartMockResponse($mockedResponse);
+
+        $this->ba->cronAuth();
+
+        $eventTestDataKey = 'testTransactionCreatedWebhookForSuccessfulMappingToExternal';
+        $this->expectWebhookEventWithContents('transaction.created', $eventTestDataKey);
+
+        $eventTestDataKey1 = 'testTransactionCreatedWebhookForSuccessfulMappingToPayout';
+        $this->expectWebhookEventWithContents('transaction.created', $eventTestDataKey1);
+
+        $testData = $this->testData['testRblAccountStatementTxnMappingCase1'];
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->startTest();
+    }
+
+    /*
+    * case when status check is done first and followed by account statement processing.
+    * in status check payout is failed , but in account statement we get debit and credit row
+    */
+    public function testWebhookEventForRblAccountStatementForSuccessfulMappingToReversal()
+    {
+        $channel = Channel::RBL;
+
+        $this->setupForRblPayout($channel);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->assertEquals(590, $payout['fees']);
+        $this->assertEquals(90, $payout['tax']);
+        $this->assertEquals('Bbg7cl6t6I3XA6', $payout['pricing_rule_id']);
+
+        $attempt = $this->getDbLastEntity('fund_transfer_attempt');
+
+        $this->fixtures->edit('payout', $payout['id'], ['status' => 'initiated']);
+
+        $this->fixtures->edit('fund_transfer_attempt', $attempt['id'], ['utr' => '123456']);
+
+        $ftsCreateTransfer = new FtsFundTransfer(
+            EnvMode::TEST,
+            $attempt['id']);
+
+        $ftsCreateTransfer->handle();
+
+        $attempt = $this->getDbLastEntity('fund_transfer_attempt');
+
+        $this->assertEquals(Attempt\Status::INITIATED, $attempt['status']);
+
+        $this->updateFta(
+            $attempt['fts_transfer_id'],
+            $attempt['source'],
+            Attempt\Type::PAYOUT,
+            Attempt\Status::FAILED);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $attempt = $this->getDbLastEntity('fund_transfer_attempt');
+
+        $this->assertEquals(Payout\Status::FAILED, $payout['status']);
+        $this->assertEquals(FundTransfer\Mode::IMPS, $payout['mode']);
+        $this->assertEquals(Attempt\Status::FAILED, $attempt['status']);
+        $this->assertEquals(FundTransfer\Mode::IMPS, $attempt['mode']);
+
+        $mockedResponse = $this->getRblDataResponseForFailureMapping();
+
+        $this->setMozartMockResponse($mockedResponse);
+
+        $this->ba->cronAuth();
+
+        $eventTestDataKey = 'testPayoutReversedWebhookForSuccessfulMappingToReversal';
+
+        $this->expectWebhookEventWithContents('payout.reversed', $eventTestDataKey);
+
+        $eventTestDataKey1 = 'testTransactionCreatedWebhookForSuccessfulMappingToReversal';
+        $data = & $this->testData['testTransactionCreatedWebhookForSuccessfulMappingToReversal'];
+        $data['payload']['transaction']['entity']['source']['payout_id'] = 'pout_' . $payout->getId();
+
+        $this->expectWebhookEventWithContents('transaction.created', $eventTestDataKey1);
+
+        $testData = $this->testData['testRblAccountStatementTxnMappingCase1'];
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->startTest();
+    }
+
+    /*
+     * case when status check processed is received first and in first account stmt fetch we get debit row.
+     * Later we get status reversed via status check and reversal is created on our end . in next stmt fetch
+     * we get a credit row corresponding to it and map that to reversal
+     */
+    public function testWebhookEventForRblReversalTxnCreationViaExistingReversal()
+    {
+        $channel = Channel::RBL;
+
+        $this->setupForRblPayout($channel);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->assertEquals(590, $payout['fees']);
+        $this->assertEquals(90, $payout['tax']);
+        $this->assertEquals('Bbg7cl6t6I3XA6', $payout['pricing_rule_id']);
+
+        $attempt = $this->getDbLastEntity('fund_transfer_attempt');
+
+        $this->fixtures->edit('payout', $payout['id'], ['status' => 'initiated','return_utr' => '143535']);
+
+        $this->fixtures->edit('fund_transfer_attempt', $attempt['id'], ['utr' => '123456']);
+
+        // Update status
+        $ftsCreateTransfer = new FtsFundTransfer(
+            EnvMode::TEST,
+            $attempt['id']);
+
+        $ftsCreateTransfer->handle();
+
+        $attempt = $this->getDbLastEntity('fund_transfer_attempt');
+
+        $this->assertEquals(Attempt\Status::INITIATED, $attempt['status']);
+
+        $this->updateFta(
+            $attempt['fts_transfer_id'],
+            $attempt['source'],
+            Attempt\Type::PAYOUT,
+            Attempt\Status::PROCESSED);
+
+        $payout = $this->getDbLastEntity('payout');
+        $this->assertEquals('processed', $payout['status']);
+
+        $mockedResponse = $this->getRblTxnCreation();
+
+        // getting only debit row for payout
+        unset($mockedResponse['data']['PayGenRes']['Body']['transactionDetails'][2]);
+
+        // fetching account statement first time
+        $this->setMozartMockResponse($mockedResponse);
+
+        $testData = $this->testData['testRblAccountStatementTxnMappingCase1'];
+
+        $this->testData[__FUNCTION__] = $testData;
+        $this->ba->cronAuth();
+        $this->startTest();
+
+        $basEntries = $this->getDbEntities('banking_account_statement', ['account_number' => '2224440041626905']);
+        $transactions = $this->getDbEntities('transaction');
+        $externalEntries = $this->getDbEntities('external', ['balance_id' => $payout['balance_id']]);
+
+        $this->assertEquals(EntityConstants::EXTERNAL, $basEntries[0]['entity_type']);
+        $this->assertEquals($externalEntries[0]['id'], $basEntries[0]['entity_id']);
+        $this->assertEquals($externalEntries[0]['transaction_id'], $basEntries[0]['transaction_id']);
+        $this->assertEquals($externalEntries[0]['banking_account_statement_id'], $basEntries[0]['id']);
+        $this->assertEquals($transactions[0]['entity_id'],$externalEntries[0]['id']);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->assertEquals(EntityConstants::PAYOUT, $basEntries[1]['entity_type']);
+        $this->assertEquals($payout['id'], $basEntries[1]['entity_id']);
+        $this->assertEquals($payout['transaction_id'], $basEntries[1]['transaction_id']);
+        $this->assertEquals($transactions[1]['entity_id'],$payout['id']);
+
+        // payout reversed status received via status check api . creates a reversal entity
+        // which is then used while fetching account stmt.
+        // flow is $existing reversal != null in processReversal while stmt fetch
+        $this->updateFta(
+            $attempt['fts_transfer_id'],
+            $attempt['source'],
+            Attempt\Type::PAYOUT,
+            Attempt\Status::REVERSED);
+
+        $payout = $this->getDbLastEntity('payout');
+        $this->assertEquals('reversed', $payout['status']);
+
+        // Fetch account statement from RBL second time
+        $mockedResponse = $this->getRblTxnCreation();
+
+        $this->setMozartMockResponse($mockedResponse);
+
+        $eventTestDataKey = 'testTransactionCreatedWebhookForSuccessfulMappingToReversal';
+        $data = & $this->testData['testTransactionCreatedWebhookForSuccessfulMappingToReversal'];
+        $data['payload']['transaction']['entity']['source']['payout_id'] = 'pout_' . $payout->getId();
+        $this->expectWebhookEventWithContents('transaction.created', $eventTestDataKey);
+
+        $this->dontExpectWebhookEvent('payout.reversed');
+
+        $testData = $this->testData['testRblAccountStatementTxnMappingCase1'];
+
+        $this->testData[__FUNCTION__] = $testData;
+        $this->ba->cronAuth();
+        $this->startTest();
+
+        $reversal = $this->getDbLastEntity('reversal');
+        $basEntries = $this->getDbEntities('banking_account_statement', ['account_number' => '2224440041626905']);
+
+        $this->assertEquals(EntityConstants::REVERSAL, $basEntries[2]['entity_type']);
+        $this->assertEquals($reversal['id'], $basEntries[2]['entity_id']);
+        $this->assertEquals($reversal['transaction_id'], $basEntries[2]['transaction_id']);
+    }
+
+    public function testWebhookEventForRblAccountStatementForSuccessfulMappingToExternalWithRazorxFlagOn()
+    {
+        $mockedResponse = $this->getRblDataResponse();
+
+        unset($mockedResponse['data']['PayGenRes']['Body']['transactionDetails'][1]);
+
+        $this->setMozartMockResponse($mockedResponse);
+
+        $this->ba->cronAuth();
+
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                           ->setConstructorArgs([$this->app])
+                           ->setMethods(['getTreatment'])
+                           ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+                          ->willReturn('on');
+
+        $this->dontExpectWebhookEvent('transaction.created');
+
+        $testData = $this->testData['testRblAccountStatementTxnMappingCase1'];
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->startTest();
     }
 }

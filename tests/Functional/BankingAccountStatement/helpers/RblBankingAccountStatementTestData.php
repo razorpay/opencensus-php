@@ -487,4 +487,91 @@ return [
             'internal_error_code' => 'SERVER_ERROR_TOO_MANY_PAYOUTS_FOUND_VIA_CMS_REF_NO_FOR_NON_IFT',
         ],
     ],
+
+    'testTransactionCreatedWebhookForSuccessfulMappingToPayout' => [
+        'entity'   => 'event',
+        'event'    => 'transaction.created',
+        'contains' => [
+            'transaction',
+        ],
+        'payload'  => [
+            'transaction' => [
+                'entity' => [
+                    'entity' => 'transaction',
+                    'source'   => [
+                        'entity' => 'payout',
+                        'status' => 'processed',
+                    ],
+                ],
+            ],
+        ],
+     ],
+
+    'testPayoutProcessedWebhookForSuccessfulMappingToPayout' => [
+        'entity'   => 'event',
+        'event'    => 'payout.processed',
+        'contains' => [
+            'payout',
+        ],
+        'payload'  => [
+            'payout' => [
+                'entity' => [
+                    'entity' => 'payout',
+                    'status' => 'processed',
+                ],
+            ],
+        ],
+    ],
+
+    'testTransactionCreatedWebhookForSuccessfulMappingToExternal' => [
+        'entity'   => 'event',
+        'event'    => 'transaction.created',
+        'contains' => [
+            'transaction',
+        ],
+        'payload'  => [
+            'transaction' => [
+                'entity' => [
+                    'entity' => 'transaction',
+                    'source'   => [
+                        'entity' => 'external',
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testTransactionCreatedWebhookForSuccessfulMappingToReversal' => [
+        'entity'   => 'event',
+        'event'    => 'transaction.created',
+        'contains' => [
+            'transaction',
+        ],
+        'payload'  => [
+            'transaction' => [
+                'entity' => [
+                    'entity' => 'transaction',
+                    'source'   => [
+                        'entity' => 'reversal',
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testPayoutReversedWebhookForSuccessfulMappingToReversal' => [
+        'entity'   => 'event',
+        'event'    => 'payout.reversed',
+        'contains' => [
+            'payout',
+        ],
+        'payload'  => [
+            'payout' => [
+                'entity' => [
+                    'entity' => 'payout',
+                    'status' => 'reversed',
+                ],
+            ],
+        ],
+    ],
 ];

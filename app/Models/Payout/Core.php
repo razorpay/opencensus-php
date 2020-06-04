@@ -1240,12 +1240,7 @@ class Core extends Base\Core
                 $this->updateBankingAccountStatementLinkedEntity($transaction->bankingAccountStatement, $payout);
             });
 
-        // TODO: check if dispatchEventForTransactionUpdated can be used
-        // JIRA: https://razorpay.atlassian.net/browse/RX-697
-        // skipping this code as there is no templatef for transaction.created and this
-        // method will throw an exception in Mail/Transaction/Payout as there is not handling
-        // for event transaction.created
-        //  (new Transaction\Core)->dispatchEventForTransactionCreated($payout->transaction);
+          (new Transaction\Core)->dispatchEventForTransactionCreatedWithoutEmailOrSmsNotification($payout->transaction);
     }
 
     protected function updateTransactionAndSourceToReversal(Reversal\Entity $reversal, Transaction\Entity $transaction)
@@ -1283,10 +1278,7 @@ class Core extends Base\Core
                 $this->updateBankingAccountStatementLinkedEntity($transaction->bankingAccountStatement, $reversal);
             });
 
-        // skipping this code as there is no templatef for transaction.created and this
-        // method will throw an exception in Mail/Transaction/Payout as there is not handling
-        // for event transaction.created
-        //(new Transaction\Core)->dispatchEventForTransactionCreated($reversal->transaction);
+        (new Transaction\Core)->dispatchEventForTransactionCreatedWithoutEmailOrSmsNotification($reversal->transaction);
     }
 
     protected function getDummyTransactionAndFeesBreakupForPayout(Entity $payout)
