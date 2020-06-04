@@ -1078,10 +1078,6 @@ class Service extends Base\Service
             TraceCode::MISSING_BILLDESK_CANCELLED_REFUNDS,
             $summary);
 
-        $message = 'Missing billdesk cancelled refunds created';
-
-        $this->app['slack']->queue($message, $summary, ['channel' => Config::get('slack.channels.tech_logs')]);
-
         return $summary;
     }
 
