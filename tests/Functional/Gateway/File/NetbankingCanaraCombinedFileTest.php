@@ -39,8 +39,20 @@ class NetbankingCanaraCombinedFileTest extends TestCase
         $payment  = $this->getDefaultNetbankingPaymentArray($this->bank);
         $payment1 = $this->doAuthAndCapturePayment($payment);
 
+        $transaction1 = $this->getLastEntity('transaction', true);
+
+        $this->fixtures->edit('transaction', $transaction1['id'], [
+            'reconciled_at' => Carbon::tomorrow(Timezone::IST)->addHours(8)->timestamp
+        ]);
+
         $payment = $this->getDefaultNetbankingPaymentArray($this->bank);
         $payment2 = $this->doAuthAndCapturePayment($payment);
+
+        $transaction2 = $this->getLastEntity('transaction', true);
+
+        $this->fixtures->edit('transaction', $transaction2['id'], [
+            'reconciled_at' => Carbon::tomorrow(Timezone::IST)->addHours(8)->timestamp
+        ]);
 
         $refundFull    = $this->refundPayment($payment1['id']);
 
