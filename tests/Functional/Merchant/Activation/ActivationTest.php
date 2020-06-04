@@ -1746,6 +1746,22 @@ class ActivationTest extends OAuthTestCase
         $this->verifySuccessBankDetailVerification($favAttribute, $merchantDetailAttribute, 'under_review');
     }
 
+    public function testSuccessBankDetailsVerificationForRegisteredWithPromoterPan()
+    {
+        $merchantDetailAttribute = [
+            'business_type'     => 4,
+            'business_name'     => 'mr subramaniam laxmi vijay',
+            'bank_account_name' => 'pankaj k',
+            'promoter_pan_name' => 'pankaj kumar',
+        ];
+
+        $favAttribute = [
+            ValidationEntity::REGISTERED_NAME => "p kumar",
+        ];
+
+        $this->verifySuccessBankDetailVerification($favAttribute, $merchantDetailAttribute, 'under_review');
+    }
+
     public function testSuccessJumbledBankDetailsVerification()
     {
         $merchantDetailAttribute = [

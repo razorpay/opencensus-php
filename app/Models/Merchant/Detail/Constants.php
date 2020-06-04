@@ -51,6 +51,7 @@ class Constants
     const PENNY_TESTING_FUZZY_MATCH_PERCENTAGE_WITH_PAN = 'fuzzy_match_percentage_with_pan';
     const PENNY_TESTING_FUZZY_MATCH_BASE                = 'penny_testing_fuzzy_match_base';
     const PENNY_TESTING_FUZZY_MATCH_TYPE_FOR_PAN        = 'penny_testing_fuzzy_match_type_for_pan';
+    const PENNY_TESTING_FUZZY_MATCH_ATTRIBUTE_TYPE      = 'penny_testing_fuzzy_match_attribute_type';
     const POA_FUZZY_MATCH_TYPE                          = 'poa_fuzzy_match_type';
     const POI_FUZZY_MATCH_TYPE                          = 'poi_fuzzy_match_type';
     const BANK_VERIFICATION_THRESHOLD_FOR_PAN           = 'bank_detail_verification_threshold_for_pan';

@@ -279,6 +279,7 @@ class PennyTesting extends Base\Core
             Constants::PENNY_TESTING_FUZZY_MATCH_TYPE_FOR_PAN        => $nameValidationData[Constants::PENNY_TESTING_FUZZY_MATCH_TYPE_FOR_PAN],
             Constants::BANK_VERIFICATION_THRESHOLD_FOR_PAN           => BankDetailsVerificationStatus::BANK_DETAIL_VERIFICATION_THRESHOLD_FOR_PAN,
             Constants::PENNY_TESTING_FUZZY_MATCH_BASE                => $nameValidationData[Constants::PENNY_TESTING_FUZZY_MATCH_BASE] ?? '',
+            Constants::PENNY_TESTING_FUZZY_MATCH_ATTRIBUTE_TYPE      => $nameValidationData[Constants::PENNY_TESTING_FUZZY_MATCH_ATTRIBUTE_TYPE] ?? '',
         ];
 
         $this->trace->count(DetailMetric::PENNY_TESTING_STATUS_TOTAL,
@@ -314,18 +315,29 @@ class PennyTesting extends Base\Core
 
     private function validateNameForBankAccount(array $input, Entity $merchantDetails): array
     {
-        $panFuzzyMatcher = new FuzzyMatcher(BankDetailsVerificationStatus::BANK_DETAIL_VERIFICATION_THRESHOLD_FOR_PAN, FuzzyMatcher::JUMBLED_MATCH);
+        $fuzzyMatcher = new FuzzyMatcher(BankDetailsVerificationStatus::BANK_DETAIL_VERIFICATION_THRESHOLD_FOR_PAN, FuzzyMatcher::JUMBLED_MATCH);
 
-        $baseStringToBeMatched = $this->getPennyTestingMatchSourceString($merchantDetails);
+        $allowedMerchantAttributesDetails = $this->getAllowedMerchantAttributesDetails($merchantDetails);
 
-        $isValidName = $panFuzzyMatcher->isMatch($baseStringToBeMatched, $input[Constants::REGISTERED_NAME], $panPercentMatch);
+        $validationData = [];
 
-        $validationData = [
-            Constants::PENNY_TESTING_FUZZY_MATCH_PERCENTAGE_WITH_PAN => $panPercentMatch,
-            Constants::PENNY_TESTING_FUZZY_MATCH_TYPE_FOR_PAN        => $panFuzzyMatcher->getMatchType(),
-            Constants::IS_VALID_NAME                                 => $isValidName,
-            Constants::PENNY_TESTING_FUZZY_MATCH_BASE                => $baseStringToBeMatched,
-        ];
+        foreach ($allowedMerchantAttributesDetails as $attributeType => $attribute)
+        {
+            $isAttributeMatched = $fuzzyMatcher->isMatch($attribute, $input[Constants::REGISTERED_NAME], $matchPercentage);
+
+            $validationData = [
+                Constants::PENNY_TESTING_FUZZY_MATCH_PERCENTAGE_WITH_PAN => $matchPercentage,
+                Constants::PENNY_TESTING_FUZZY_MATCH_TYPE_FOR_PAN        => $fuzzyMatcher->getMatchType(),
+                Constants::IS_VALID_NAME                                 => $isAttributeMatched,
+                Constants::PENNY_TESTING_FUZZY_MATCH_BASE                => $attribute,
+                Constants::PENNY_TESTING_FUZZY_MATCH_ATTRIBUTE_TYPE      => $attributeType
+            ];
+
+            if ($isAttributeMatched === true)
+            {
+                return $validationData;
+            }
+        }
 
         return $validationData;
     }
@@ -451,25 +463,29 @@ class PennyTesting extends Base\Core
     }
 
     /**
-     * Returns base string to be matched in case of penny testing
+     * Returns merchant attributes details that can be matched in case of penny testing
      *
      * @param Entity $merchantDetails
      *
-     * @return string
+     * @return array
      */
-    protected function getPennyTestingMatchSourceString(Entity $merchantDetails) : string
+    protected function getAllowedMerchantAttributesDetails(Entity $merchantDetails): array
     {
         switch ($merchantDetails->getBusinessType())
         {
             case BusinessType::NOT_YET_REGISTERED:
             case BusinessType::INDIVIDUAL:
-            case BusinessType::PROPRIETORSHIP:
 
-                return $merchantDetails->getPromoterPanName();
+                return [
+                    Constants::PROMOTER_PAN_NAME => $merchantDetails->getPromoterPanName()
+                ];
 
             default :
 
-                return $merchantDetails->getBusinessName();
+                return [
+                    Constants::COMPANY_PAN_NAME  => $merchantDetails->getBusinessName(),
+                    Constants::PROMOTER_PAN_NAME => $merchantDetails->getPromoterPanName()
+                ];
         }
     }
 }
