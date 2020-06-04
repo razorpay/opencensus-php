@@ -33,4 +33,13 @@ class MpanController extends Controller
         return ApiResponse::json($mpanCollection);
     }
 
+    public function postMpansBulk()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->mpansBulk($input);
+
+        return ApiResponse::json($response->toArrayWithItems());
+    }
+
 }

@@ -458,6 +458,7 @@ return [
         'url'               => env('BATCH_SERVICE_URL'),
         'username'          => env('BATCH_USERNAME'),
         'password'          => env('BATCH_PASSWORD'),
+        'aes_key'           => env('BATCH_AES_KEY'),
     ],
 
     'smart_routing' => [

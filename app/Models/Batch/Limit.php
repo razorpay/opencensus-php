@@ -51,6 +51,7 @@ class Limit
         'nach_debit_nach_citi'                      => 50000,
         Type::ECOLLECT_RBL                          => 100000,
         Type::BANK_TRANSFER_EDIT                    => 10000,
+        Type::MPAN                                  => 100000,
     ];
 
     /**

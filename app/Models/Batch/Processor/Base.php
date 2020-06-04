@@ -15,9 +15,11 @@ use RZP\Models\Merchant;
 use RZP\Models\Settings;
 use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
+use RZP\Models\Batch\Header;
 use RZP\Exception\BaseException;
 use RZP\Exception\LogicException;
 use RZP\Models\Base as BaseModel;
+use RZP\Exception\BadRequestException;
 use Symfony\Component\HttpFoundation\File\File;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 use RZP\Exception\BadRequestValidationFailureException;
@@ -176,6 +178,10 @@ class Base extends BaseModel\Core
     */
     public function storeInputFileAndSaveBatchWithSettings(array $input)
     {
+        // encrypt sensitive fields before saving file
+       $this->encryptBatchSensitiveFields($input);
+
+
         //
         // We upload the file and create file store entity first. As of now
         // the file store entity gets created without batch entity association.
@@ -287,6 +293,74 @@ class Base extends BaseModel\Core
         $entries = $this->validateInputFileEntries($input);
 
         return [$ufhFile, $entries];
+    }
+
+    /**
+     * TODO: add support for other than csv formats also
+     */
+    protected function encryptBatchSensitiveFields(array $input)
+    {        
+        $type = $input['type'];
+
+        if (in_array($type, Batch\Type::$haveSensitiveData, true) === false)
+        {
+            return;
+        }
+
+        $file = $input['file'];
+
+        $ext = $file->getClientOriginalExtension();
+
+        if ($ext !== FileStore\Format::CSV)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_BATCH_SERVICE_ERROR, 'Invalid file type for batch having sensitive headers, only csv file type allowed');
+        }
+
+        $rows = $this->parseCsvFile($file);
+
+        $headings = $rows[0];
+
+        $sensitiveHeadersIndexes = [];
+
+        foreach(Header::HEADER_MAP[$type][Header::SENSITIVE_HEADERS] as $sensitiveHeader)
+        {
+            $index = array_search($sensitiveHeader, $headings);
+            
+            if ($index != false)
+            {
+                array_push($sensitiveHeadersIndexes, $index);
+            }
+        }
+
+        $rowsToWrite = [];
+
+        $aesCrypto = new AESCrypto();
+
+        foreach($rows as $idx => $row) 
+        {  
+            // skip encryption for first row i.e. headings
+            if($idx !== 0) 
+            {
+                foreach($sensitiveHeadersIndexes as $index)
+                {
+                    if (empty($row[$index]) === false)
+                    {
+                        $row[$index] = $aesCrypto->encryptString($row[$index]);
+                    }
+                }
+            }
+            
+            array_push($rowsToWrite, $row);
+        }
+
+        $myFile = fopen($file->path(), 'w');
+
+        foreach ($rowsToWrite as $rowToWrite) { 
+            fputcsv($myFile, $rowToWrite);  
+        } 
+
+        fclose($myFile);
     }
 
     /**

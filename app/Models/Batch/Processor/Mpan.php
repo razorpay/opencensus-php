@@ -43,8 +43,20 @@ class Mpan extends Base
                     continue;
                 }
 
+                // decrypt only if its non-empty, we also do not encrypt empty values
+                if (empty($entry[$batchHeader]) === false)
+                {
+                    $aesCrypto =  new AESCrypto();
+
+                    $mpan = $aesCrypto->decryptString($entry[$batchHeader]);    
+                }
+                else
+                {
+                    $mpan = $entry[$batchHeader];
+                }
+
                 $mpanCreationInput = [
-                    Models\Mpan\Entity::MPAN         => $entry[$batchHeader],
+                    Models\Mpan\Entity::MPAN         => $mpan,
                     Models\Mpan\Entity::NETWORK      => $networkCode,
                 ];
 

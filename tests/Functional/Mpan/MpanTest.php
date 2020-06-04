@@ -4,9 +4,11 @@ namespace RZP\Tests\Functional\Mpan;
 
 use RZP\Constants\Entity;
 use RZP\Models\Feature\Constants;
-use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
-use RZP\Tests\Functional\RequestResponseFlowTrait;
+use Illuminate\Support\Facades\DB;
 use RZP\Tests\Functional\TestCase;
+use RZP\Models\Batch\Processor\Mpan as MpanBatch;
+use RZP\Tests\Functional\RequestResponseFlowTrait;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 
 class MpanTest extends TestCase
 {
@@ -114,5 +116,52 @@ class MpanTest extends TestCase
 
             $this->assertTrue($mpanFromDatabase[\RZP\Models\Mpan\Entity::ASSIGNED]);
         }
+    }
+
+    public function testMpanBulk()
+    {
+        $this->ba->appAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEquals(3, count($response['items']));
+
+        foreach ($this->testData[__FUNCTION__]['unmasked_mpans'] as $row)
+        {
+            foreach (MpanBatch::BATCH_HEADER_NETWORK_CODE_MAP  as $header => $network)
+            {
+                $mpanFromDatabase = $this->getDbEntityById(Entity::MPAN, $row[$header]);
+
+                $this->assertNull($mpanFromDatabase->getMerchantId());
+
+                $this->assertFalse($mpanFromDatabase->isAssigned());
+
+                $this->assertEquals($network, $mpanFromDatabase->getNetwork());
+            }
+        }
+    }
+
+    public function testMpanBulkInvalidMpan()
+    {
+        $this->ba->appAuth();
+
+        $beforeCount = Db::table('mpan')
+            ->count();
+
+        $response = $this->startTest();
+
+        $afterCount = Db::table('mpan')
+            ->count();
+
+        // even though input is 3 rows(3x3 networks = 9 mpans)
+        // the 2nd row has invalid input.
+        // the 3rd row contains an already existing mpan
+        // test is to check that entire row is failed
+        $this->assertEquals($beforeCount + 3, $afterCount);
+
+
+        $row = $response['items']['2'];
+
+        $this->assertContains("SQLSTATE[23000]: Integrity constraint violation", $row['error']['description']);
     }
 }

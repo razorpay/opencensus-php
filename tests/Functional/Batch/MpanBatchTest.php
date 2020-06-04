@@ -2,7 +2,7 @@
 
 namespace RZP\Tests\Functional\Batch;
 
-
+use Mockery;
 use RZP\Constants\Entity;
 use RZP\Models\Batch;
 use RZP\Tests\Functional\TestCase;
@@ -19,11 +19,16 @@ class MpanBatchTest extends TestCase
 
         $this->ba->adminAuth();
     }
+
+    /**
+     * tests if batch processing is done in api service and not via batch service
+     * BatchMicroService's mock isCompletelyMigratedBatchType will return false, so api flow would be tested 
+     */
     public function testMpanCreationBatch()
     {
         $entries = $this->getDefaultFileEntries();
 
-        $this->createAndPutExcelFileInRequest($entries, __FUNCTION__);
+        $this->createAndPutCsvFileInRequest($entries, __FUNCTION__);
 
         $this->startTest();
 
@@ -42,7 +47,7 @@ class MpanBatchTest extends TestCase
 
         $entries[0][Batch\Header::MPAN_RUPAY_PAN] = null;
 
-        $this->createAndPutExcelFileInRequest($entries, __FUNCTION__);
+        $this->createAndPutCsvFileInRequest($entries, __FUNCTION__);
 
         $this->startTest();
 
@@ -50,14 +55,13 @@ class MpanBatchTest extends TestCase
 
         $this->assertEquals(2, $batch['processed_count']);
 
-        $this->assertEquals(2, $batch['success_count']);
+        $this->assertEquals(1, $batch['success_count']);
 
-        $this->assertEquals(0, $batch['failure_count']);
+        $this->assertEquals(1, $batch['failure_count']);
 
         $mpans = $this->getDbEntities(Entity::MPAN);
-
-        $this->assertEquals(5, $mpans->count());
-
+         
+        $this->assertEquals(3, $mpans->count()); // only one row will get processed
     }
 
     public function testMpanCreationInvalidMpan()
@@ -66,7 +70,7 @@ class MpanBatchTest extends TestCase
 
         $entries[0][Batch\Header::MPAN_RUPAY_PAN] = '6123456'; // expecting 16 digits
 
-        $this->createAndPutExcelFileInRequest($entries, __FUNCTION__);
+        $this->createAndPutCsvFileInRequest($entries, __FUNCTION__);
 
         $this->startTest();
 
@@ -89,7 +93,7 @@ class MpanBatchTest extends TestCase
 
         $entries[0][Batch\Header::MPAN_MASTERCARD_PAN] =  $entries[1][Batch\Header::MPAN_MASTERCARD_PAN];
 
-        $this->createAndPutExcelFileInRequest($entries, __FUNCTION__);
+        $this->createAndPutCsvFileInRequest($entries, __FUNCTION__);
 
         $this->startTest();
 
@@ -106,6 +110,56 @@ class MpanBatchTest extends TestCase
         $this->assertEquals(3, $mpans->count());
     }
 
+    // tests the mpans batch completely migrated to batch service,
+    // response should be as returned by batch mock and batch file should have encrypted values
+    public function testMpanCreationBatchMigrated()
+    {
+        $batch = Mockery::mock('RZP\Services\Mock\BatchMicroService')->makePartial();
+
+        $this->app->instance('batchService', $batch);
+
+        $encryptedData = $this->testData[__FUNCTION__]['encrypted_data'];
+
+        $batch->shouldReceive('isCompletelyMigratedBatchType')
+            ->andReturnUsing(function (string $type)
+            {
+                return true;
+            });
+
+        $batch->shouldReceive('forwardToBatchServiceRequest')
+            ->andReturnUsing(function (array $input, $merchant, $ufhFile) use ($encryptedData)
+            {
+                $rows = $this->parseCsvFile($ufhFile->getFullFilePath());
+
+                // assert that sensitive headers(mpans) are actually encrypted 
+                $this->assertArraySelectiveEquals($rows, $encryptedData);
+
+                return [
+                    'id'               => 'Ev6Ob5J8kaMV6o',
+                    'created_at'       => 1590521524,
+                    'updated_at'       => 1590521524,
+                    'entity_id'        => '100000Razorpay',
+                    'name'             =>  null,
+                    'batch_type_id'    => 'mpan',
+                    'type'             => 'mpan',
+                    'is_scheduled'     => false,
+                    'upload_count'     => 0,
+                    'total_count'      => 3,
+                    'failure_count'    => 0,
+                    'success_count'    => 0,
+                    'amount'           => 0,
+                    'attempts'         => 0,
+                    'status'           => 'created',
+                    'processed_amount' => 0
+                ];
+            });
+
+        $entries = $this->getDefaultFileEntries();
+
+        $this->createAndPutCsvFileInRequest($entries, __FUNCTION__);
+
+        $this->startTest();
+    }
 
     protected function getDefaultFileEntries()
     {

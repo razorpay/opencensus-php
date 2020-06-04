@@ -1655,9 +1655,9 @@ class Route
         'p2p_reminder_send'                       => ['post',     'p2p/reminders/send/{handle}/{entity}/{id}/{action}',        'P2p\UpiController@sendReminder'],
 
         // Mpan related routes
-        'mpans_issue'                             => ['post',     'mpans/issue',                                               'MpanController@issueMpans'],
-        'mpans_fetch'                             => ['get',      'mpans',                                                     'MpanController@fetchMpans'],
-
+        'mpans_issue'                             => ['post',     'mpans/issue',                                               'MpanController@issueMpans'                                ],
+        'mpans_fetch'                             => ['get',      'mpans',                                                     'MpanController@fetchMpans'                                ],
+        'mpans_bulk'                              => ['post',     'mpans/bulk',                                                'MpanController@postMpansBulk'                             ],
         // Core Payment Service Routes
         'cps_sync_gateway_entities_cron'          => ['post',     'cps/sync_gateway_entities',                                 'CpsController@syncGatewayEntities'                        ],
 
@@ -2307,6 +2307,7 @@ class Route
         'merchant_create_terminal_internal',
         'retry_penny_testing_cron',
         'merchant_methods_edit_internal',
+        'mpans_bulk',
         'payment_links_bulk_expire',
         'fts_bulk_attempts_initiate',
         'merchants_update_onboarding_category_to_normal_cron',
@@ -4621,6 +4622,7 @@ class Route
             'bank_transfer_process_rbl_internal',
             'update_admin_through_batch',
             'bank_transfer_edit_payer_account_internal',
+            'mpans_bulk',
         ],
 
         'stork' => [

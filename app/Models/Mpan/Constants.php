@@ -18,4 +18,11 @@ class Constants
     const VISA                        = 'Visa';
     const RUPAY                       = 'RuPay';
 
+    // new batch service related constants
+    const BATCH_ERROR                 = 'error';
+    const BATCH_ERROR_CODE            = 'code';
+    const BATCH_ERROR_DESCRIPTION     = 'description';
+    const BATCH_SUCCESS               = 'success';
+    const BATCH_HTTP_STATUS_CODE      = 'http_status_code';
+
 }

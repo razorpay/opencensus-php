@@ -67,9 +67,26 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::MPAN);
     }
 
+    public function getAssigned()
+    {
+        return $this->getAttribute(self::ASSIGNED);
+    }
+
+    public function getNetwork()
+    {
+        return $this->getAttribute(self::NETWORK);
+    }
+
+    public function isAssigned()
+    {
+        return $this->getAssigned() === true;
+    }
+    
     public function getMaskedMpan(string $mpan)
     {
-        if (empty($mpan) === true)
+        // if mpan is not 16 digit, it means its invalid and we can return as is
+        if ( (empty($mpan) === true) 
+            or (strlen($mpan) !== 16) )
         {
             return $mpan;
         }

@@ -23,6 +23,10 @@ class Header
     const INPUT             = 'input';
     const OUTPUT            = 'output';
 
+    // list headers which are sensitive/pci and should be encrypted before uploading batch file for processing
+    // so that batch service don't come under PCI scope, add type in $haveSensitiveData array, if you want to use this
+    const SENSITIVE_HEADERS = 'sensitive_headers';
+
     // A header key which holds notes values(key value pairs)
     const NOTES             = 'notes';
     // In file, notes columns are expected to be in format: Notes[<key>] & while parsing the file, formatted as above
@@ -882,7 +886,12 @@ class Header
                 self::STATUS,
                 self::ERROR_CODE,
                 self::ERROR_DESCRIPTION,
-            ]
+            ],
+            self::SENSITIVE_HEADERS => [
+                self::MPAN_VISA_PAN,
+                self::MPAN_MASTERCARD_PAN,
+                self::MPAN_RUPAY_PAN,
+            ],
         ],
 
         Type::TERMINAL_CREATION => [
