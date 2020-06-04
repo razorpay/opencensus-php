@@ -148,8 +148,6 @@ return array(
         'risky'                  => 'C0RL2C917',
         // settlements
         'settlements'            => 'C02LBK2D7',
-        // tech_logs
-        'tech_logs'              => 'C0E2Q6MJM',
         // tech_logs_verify
         'tech_logs_verify'       => 'C3AJ9V9EY',
         // subscriptions
