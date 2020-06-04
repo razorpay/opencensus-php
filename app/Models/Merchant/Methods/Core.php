@@ -163,6 +163,7 @@ class Core extends Base\Core
             Payment\Method::CARDLESS_EMI => [],
             Payment\Method::PAYLATER     => [],
             Entity::GOOGLE_PAY_CARDS     => false,
+            Payment\Method::CRED         => false,
         ];
 
         $methods = $this->getMethods($merchant);
@@ -176,6 +177,7 @@ class Core extends Base\Core
         $data[Entity::CARD_SUBTYPE]  = $methods->getCardSubtypes();
         $data[Payment\Gateway::AMEX] = $methods->isAmexEnabled();
         $netbankingEnabled           = $methods->isNetbankingEnabled();
+        $data[Payment\Method::CRED]  = $methods->isCredEnabled();
 
         if ($netbankingEnabled === true)
         {
