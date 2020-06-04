@@ -4277,4 +4277,64 @@ class PayoutTest extends TestCase
 
         $this->startTest();
     }
+
+    public function testUpdateFTAAndPayoutWithInvalidStateTransition()
+    {
+        $this->testCreatePayout();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['source_id'] = $payout->getId();
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+
+        // Assert that payout status didn't update
+        $this->assertEquals('created', $payout->getStatus());
+
+        $ftaForPayout = $this->getDbEntities('fund_transfer_attempt',
+                                             [
+                                                 'source_id'   => $payout->getId(),
+                                                 'source_type' => 'payout',
+                                                 'is_fts'      => true,
+                                             ])->first();
+
+        // Assert that fta status didn't update
+        $this->assertEquals('created', $ftaForPayout->getStatus());
+    }
+
+    public function testUpdateFTAAndPayoutWithInvalidStatus()
+    {
+        $this->testCreatePayout();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['source_id'] = $payout->getId();
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+
+        // Assert that payout status didn't update
+        $this->assertEquals('created', $payout->getStatus());
+
+        $ftaForPayout = $this->getDbEntities('fund_transfer_attempt',
+                                             [
+                                                 'source_id'   => $payout->getId(),
+                                                 'source_type' => 'payout',
+                                                 'is_fts'      => true,
+                                             ])->first();
+
+        // Assert that fta status didn't update
+        $this->assertEquals('created', $ftaForPayout->getStatus());
+    }
 }

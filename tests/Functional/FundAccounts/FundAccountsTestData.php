@@ -2286,5 +2286,78 @@ return [
             'class' => Exception\BadRequestValidationFailureException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
-    ]
+    ],
+
+    'testFetchFundAccountsWithContactIdIfFundAccountsExist' => [
+        'request'  => [
+            'url'    => '/fund_accounts',
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content'     => [
+                'items' => [
+                    [
+                        'entity'       => 'fund_account',
+                        'contact_id'   => 'cont_1000000contact',
+                        'account_type' => 'bank_account',
+                    ],
+
+                    [
+                        'entity'       => 'fund_account',
+                        'contact_id'   => 'cont_1000000contact',
+                        'account_type' => 'bank_account',
+                    ],
+                ],
+            ],
+            'status_code' => 200
+        ],
+    ],
+
+    'testFetchFundAccountsWithContactIdIfFundAccountDoesNotExist' => [
+        'request'  => [
+            'url'    => '/fund_accounts',
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content'     => [
+                'items' => [],
+            ],
+            'status_code' => 200
+        ],
+    ],
+
+    'testFetchFundAccountsWithFundAccountIdIfFundAccountExists' => [
+        'request'  => [
+            'url'    => '/fund_accounts/{id}',
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content'     => [
+                'entity'       => 'fund_account',
+                'contact_id'   => 'cont_1000000contact',
+                'account_type' => 'bank_account',
+            ],
+            'status_code' => 200
+        ],
+    ],
+
+    'testFetchFundAccountsWithFundAccountIdIfFundAccountDoesNotExist' => [
+        'request'   => [
+            'url'    => '/fund_accounts/{id}',
+            'method' => 'GET'
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The id provided does not exist',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_ID,
+        ],
+    ],
 ];

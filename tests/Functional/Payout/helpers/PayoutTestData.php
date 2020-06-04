@@ -4788,4 +4788,72 @@ return [
             ],
         ],
     ],
+
+    'testUpdateFTAAndPayoutWithInvalidStateTransition' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/update_fts_fund_transfer',
+            'content' => [
+                'bank_processed_time' => '2019-12-04 15:51:21',
+                'bank_status_code'    => 'SUCCESS',
+                'extra_info'          => [
+                    'beneficiary_name' => 'SUSANTA BHUYAN',
+                    'cms_ref_no'       => 'd10ce8e4167f11eab1750a0047330000',
+                    'internal_error'   => false
+                ],
+                'failure_reason'      => 'Test for webhook and email not firing',
+                'fund_transfer_id'    => 1236890,
+                'mode'                => 'IMPS',
+                'narration'           => 'Kissht FastCash Disbursal',
+                'remarks'             => 'Check the status by calling getStatus API.',
+                'source_id'           => 'EgmjebcvYkSg3v',
+                'source_type'         => 'payout',
+                'status'              => 'REVERSED',
+                'utr'                 => 928337183,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'message' => 'webhook update skipped due to invalid state transition'
+            ],
+        ],
+    ],
+
+    'testUpdateFTAAndPayoutWithInvalidStatus' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/update_fts_fund_transfer',
+            'content' => [
+                'bank_processed_time' => '2019-12-04 15:51:21',
+                'bank_status_code'    => 'SUCCESS',
+                'extra_info'          => [
+                    'beneficiary_name' => 'SUSANTA BHUYAN',
+                    'cms_ref_no'       => 'd10ce8e4167f11eab1750a0047330000',
+                    'internal_error'   => false
+                ],
+                'failure_reason'      => 'Test for webhook and email not firing',
+                'fund_transfer_id'    => 1236890,
+                'mode'                => 'IMPS',
+                'narration'           => 'Kissht FastCash Disbursal',
+                'remarks'             => 'Check the status by calling getStatus API.',
+                'source_id'           => 'EgmjebcvYkSg3v',
+                'source_type'         => 'payout',
+                'status'              => 'XYZ',
+                'utr'                 => 928337183,
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Invalid status',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
 ];

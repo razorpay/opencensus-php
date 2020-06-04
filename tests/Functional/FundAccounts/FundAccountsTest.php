@@ -8,11 +8,13 @@ use RZP\Models\Feature;
 use RZP\Services\RazorXClient;
 use RZP\Jobs\FTS\CreateAccount;
 use RZP\Tests\Functional\TestCase;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class FundAccountsTest extends TestCase
 {
     use PaymentTrait;
+    use DbEntityFetchTrait;
 
     public function setUp()
     {
@@ -619,6 +621,12 @@ class FundAccountsTest extends TestCase
     {
         $this->fixtures->create('contact', ['id' => '1000000contact']);
 
+        $this->fixtures->create('feature', [
+            'name'        => Feature\Constants::PAYOUT_TO_CARDS,
+            'entity_id'   => 10000000000000,
+            'entity_type' => 'merchant',
+        ]);
+
         $this->fixtures->merchant->removeFeatures(['s2s']);
 
         $this->startTest();
@@ -627,6 +635,12 @@ class FundAccountsTest extends TestCase
     public function testCreateCardFundAccountFeaturePayoutToCardsNotEnabled()
     {
         $this->fixtures->create('contact', ['id' => '1000000contact']);
+
+        $this->fixtures->create('feature', [
+            'name'        => Feature\Constants::S2S,
+            'entity_id'   => 10000000000000,
+            'entity_type' => 'merchant',
+        ]);
 
         $this->fixtures->merchant->removeFeatures(['payout_to_cards']);
 
@@ -727,6 +741,155 @@ class FundAccountsTest extends TestCase
     public function testCreateFundAccountVpaWithEmptyArray()
     {
         $this->fixtures->create('contact', ['id' => '1000000contact']);
+
+        $this->startTest();
+    }
+
+    public function testFetchFundAccountsWithContactIdIfFundAccountsExist()
+    {
+        $this->fixtures->create('contact', ['id' => '1000000contact']);
+
+        $fundAccountRequest = [
+            'method'  => 'POST',
+            'url'     => '/fund_accounts',
+            'content' => [
+                'account_type' => 'bank_account',
+                'contact_id'   => 'cont_1000000contact',
+                'bank_account'      => [
+                    'ifsc'           => 'SBIN0007105',
+                    'name'           => 'Amit M',
+                    'account_number' => '111000111',
+                ],
+            ]
+        ];
+
+        $this->ba->privateAuth();
+
+        $this->makeRequestAndGetContent($fundAccountRequest);
+
+        $fund_account1 = $this->getDbLastEntity('fund_account');
+
+        $fundAccountRequest['content']['bank_account'] = [
+            'ifsc'           => 'KKBK0000958',
+            'name'           => 'Amit Mah',
+            'account_number' => '111000222',
+        ];
+
+        $this->makeRequestAndGetContent($fundAccountRequest);
+
+        $fund_account2 = $this->getDbLastEntity('fund_account');
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/fund_accounts?contact_id=cont_1000000contact';
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $response = $this->startTest();
+
+        // Assert that there are 2 fund accounts for this contact.
+        $this->assertEquals(2, count($response['items']));
+
+        // Assert that the response has only those FA that we created above.
+        $this->assertTrue(empty(array_diff(['fa_' . $fund_account1->getId(), 'fa_' . $fund_account2->getId()],
+                                     [$response['items'][0]['id'], $response['items'][1]['id']])));
+    }
+
+    public function testFetchFundAccountsWithContactIdIfFundAccountDoesNotExist()
+    {
+        $this->fixtures->create('contact', ['id' => '1000000contact']);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/fund_accounts?contact_id=cont_1000000contact';
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $response = $this->startTest();
+
+        // Assert that there are 0 fund accounts for this contact.
+        $this->assertEquals(0, count($response['items']));
+    }
+
+    public function testFetchFundAccountsWithFundAccountIdIfFundAccountExists()
+    {
+        $this->fixtures->create('contact', ['id' => '1000000contact']);
+
+        $fundAccountRequest = [
+            'method'  => 'POST',
+            'url'     => '/fund_accounts',
+            'content' => [
+                'account_type' => 'bank_account',
+                'contact_id'   => 'cont_1000000contact',
+                'bank_account'      => [
+                    'ifsc'           => 'SBIN0007105',
+                    'name'           => 'Amit M',
+                    'account_number' => '111000111',
+                ],
+            ]
+        ];
+
+        $this->ba->privateAuth();
+
+        $this->makeRequestAndGetContent($fundAccountRequest);
+
+        $fund_account = $this->getDbLastEntity('fund_account');
+
+        $fundAccountRequest['content']['bank_account'] = [
+            'ifsc'           => 'KKBK0000958',
+            'name'           => 'Amit Mah',
+            'account_number' => '111000222',
+        ];
+
+        $this->makeRequestAndGetContent($fundAccountRequest);
+
+        $fund_account2 = $this->getDbLastEntity('fund_account');
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/fund_accounts/fa_' . $fund_account->getId();
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $response = $this->startTest();
+
+        // Assert that the response has only that FA whose id we sent  in the get request.
+        $this->assertEquals('fa_' . $fund_account->getId(), $response['id']);
+    }
+
+    public function testFetchFundAccountsWithFundAccountIdIfFundAccountDoesNotExist()
+    {
+        $this->fixtures->create('contact', ['id' => '1000000contact']);
+
+        $fundAccountRequest = [
+            'method'  => 'POST',
+            'url'     => '/fund_accounts',
+            'content' => [
+                'account_type' => 'bank_account',
+                'contact_id'   => 'cont_1000000contact',
+                'bank_account'      => [
+                    'ifsc'           => 'SBIN0007105',
+                    'name'           => 'Amit M',
+                    'account_number' => '111000111',
+                ],
+            ]
+        ];
+
+        $this->ba->privateAuth();
+
+        $this->makeRequestAndGetContent($fundAccountRequest);
+
+        $fund_account = $this->getDbLastEntity('fund_account');
+
+        $randomFundAccountId = (sprintf('%s', $fund_account->getId()));
+
+        $randomFundAccountId++;
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/fund_accounts/fa_' . $randomFundAccountId;
+
+        $this->testData[__FUNCTION__] = $testData;
 
         $this->startTest();
     }
