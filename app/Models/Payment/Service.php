@@ -1458,11 +1458,6 @@ class Service extends Base\Service
 
         $this->trace->info(TraceCode::ORDERS_MULTIPLE_AUTHORIZED_REFUNDS, $summary);
 
-        $message = 'Authorized payments for paid orders refunded';
-        $channel = Config::get('slack.channels.tech_logs');
-
-        $this->slack->queue($message, $summary, ['channel' => $channel]);
-
         return $summary;
     }
 
