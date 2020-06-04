@@ -7,7 +7,7 @@ $invoice_expire_by              = $invoice_data['expire_by'];
 $invoice_payments               = $invoice_data['payments'];
 $is_invoice_partial_payment     = $invoice_data['partial_payment'] === true;
 $invoice_status                 = $invoice_data['status'];
-$isExpired                      = $invoice_status === 'expired' or ($invoice_expire_by <= time() and $invoice_status === 'issued');
+$isExpired                      = ($invoice_status === 'expired' or (isset($invoice_expire_by) === true and $invoice_expire_by <= time() and $invoice_status === 'issued'));
 $invoice_status                 = $isExpired ? 'expired' : $invoice_status;
 $customer_details               = $invoice_data['customer_details'];
 $checkout_options               = $data['options']['checkout'];
