@@ -1705,5 +1705,7 @@ class ErrorCode
     // Salesforce Service
     const SERVER_ERROR_SALESFORCE_SERVICE_ERROR                                     = 'SERVER_ERROR_SALESFORCE_SERVICE_ERROR';
 
+    const BAD_REQUEST_INVALID_CHARGE_ACCOUNT                                        = 'BAD_REQUEST_INVALID_CHARGE_ACCOUNT';
+  
     const SERVER_ERROR_MERCHANT_ONBOARDING_CATEGORY_FETCH_FAILED                    = 'SERVER_ERROR_MERCHANT_ONBOARDING_CATEGORY_FETCH_FAILED';
 }

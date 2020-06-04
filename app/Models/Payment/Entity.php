@@ -242,6 +242,10 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
     const ACCOUNT_ID                        = 'account_id';
 
+    const CHARGE_ACCOUNT                    = 'charge_account';
+
+    const CHARGE_ACCOUNT_MERCHANT           = 'charge_account_merchant';
+
     protected static $sign      = 'pay';
 
     protected $entity           = 'payment';

@@ -693,6 +693,15 @@ class Repository extends Base\Repository
         return $query->first();
     }
 
+    public function findMerchantIdByGatewayMerchantID(string $gatewayMerchantId)
+    {
+        $query = $this->newQuery()
+                      ->where(Entity::GATEWAY_MERCHANT_ID, '=', $gatewayMerchantId)
+                      ->enabled();
+
+        return $query->first();
+    }
+
     protected function buildFetchByParamsQuery(array $params)
     {
         $params = $this->unsetEmptyParams($params);

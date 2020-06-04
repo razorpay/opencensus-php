@@ -3104,6 +3104,38 @@ trait Authorize
 
         // this needs to be done after we have card entity as we need to know if card is debit or credit
         $this->validateForMaxAmount($input, $payment);
+
+        $this->setChargeAccountMerchantIfApplicable($input, $gatewayInput);
+    }
+
+    protected function setChargeAccountMerchantIfApplicable($input, & $gatewayInput)
+    {
+        if (empty($input[Payment\Entity::CHARGE_ACCOUNT]) === true)
+        {
+            return;
+        }
+
+        $terminal = $this->repo->terminal->
+                        findMerchantIdByGatewayMerchantID($input[Payment\Entity::CHARGE_ACCOUNT]);
+
+        if ($terminal !== null)
+        {
+            $input[Payment\Entity::CHARGE_ACCOUNT] = $terminal->getMerchantId();
+        }
+
+        $merchant = $this->repo->merchant->find($input[Payment\Entity::CHARGE_ACCOUNT]);
+
+        if ($merchant === null)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_CHARGE_ACCOUNT,
+                null,
+                [
+                    'charge_account'   => $input[Payment\Entity::CHARGE_ACCOUNT],
+                ]);
+        }
+
+        $gatewayInput[Payment\Entity::CHARGE_ACCOUNT_MERCHANT] = $merchant;
     }
 
     protected function setPreferredAuthIfApplicable(Payment\Entity $payment)

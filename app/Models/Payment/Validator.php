@@ -118,6 +118,7 @@ class Validator extends Base\Validator
         'device'                        => 'sometimes',
         'currency_request_id'           => 'required_with:dcc_currency|string',
         'dcc_currency'                  => 'required_with:currency_request_id|string|max:3|custom',
+        'charge_account'                => 'sometimes|string',
     ];
 
     protected static $editAcquirerRules = [
@@ -279,6 +280,7 @@ class Validator extends Base\Validator
         'preferred_auth',
         'payment_provider',
         'upi_block',
+        'charge_account'
     ];
 
     protected static $minAmountCheckRules = [
@@ -361,6 +363,24 @@ class Validator extends Base\Validator
                     'current_time'      => $currentTime,
                     'payment_id'        => $this->entity->getId(),
                 ]);
+        }
+    }
+
+    protected function validateChargeAccount(array $input)
+    {
+        if (isset($input[Entity::CHARGE_ACCOUNT]) === false)
+        {
+            return;
+        }
+
+        $merchant = $this->entity->merchant;
+        $app = App::getFacadeRoot();
+
+        if (($merchant->isFeatureEnabled(Feature\Constants::CHARGE_ACCOUNT) === false) or
+            ($app['basicauth']->isPrivateAuth() === false))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'charge account is/are not required and should not be sent');
         }
     }
 

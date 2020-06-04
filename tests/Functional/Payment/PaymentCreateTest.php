@@ -264,7 +264,7 @@ class PaymentCreateTest extends TestCase
         $this->assertEquals($payment['authentication_gateway'], 'google_pay');
 
         $this->assertEquals($payment['cps_route'], 0);
-        
+
         $this->checkPaymentStatus($payment['id'], 'created');
     }
 
@@ -3512,5 +3512,39 @@ class PaymentCreateTest extends TestCase
         $this->assertEquals($payment['card_id'], $card['id']);
 
         $this->assertEquals($payment['international'], false);
+    }
+
+    public function testCreatePaymentChargeAccountS2S()
+    {
+        $this->fixtures->create('terminal:direct_hitachi_terminal', [
+            'type' => [
+                'non_recurring' => '1',
+            ]
+        ]);
+
+        $this->ba->privateAuth();
+
+        $this->fixtures->merchant->addFeatures(['s2s']);
+        $this->fixtures->merchant->enableInternational();
+
+        $paymentArray = $this->getDefaultPaymentArray();
+
+        $paymentArray['charge_account'] = 'hitachiDirectMerchantI';
+
+        $this->makeRequestAndCatchException(function() use ($paymentArray)
+        {
+            $this->doS2SPrivateAuthPayment($paymentArray);
+        },
+        \RZP\Exception\BadRequestValidationFailureException::class,
+        'charge account is/are not required and should not be sent');
+
+        $this->fixtures->merchant->addFeatures(['charge_account']);
+
+        $this->makeRequestAndCatchException(function() use ($paymentArray)
+        {
+            $this->doS2SPrivateAuthPayment($paymentArray);
+        },
+        \RZP\Exception\BadRequestException::class,
+        'Invalid charge account');
     }
 }
