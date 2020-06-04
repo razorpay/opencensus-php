@@ -2164,7 +2164,7 @@ class ActivationTest extends OAuthTestCase
     {
         $pennyTestingAttemptRedisKey = DetailConstants::PENNY_TESTING_ATTEMPT_COUNT_REDIS_KEY_PREFIX . $merchantDetail->getId();
 
-        $this->app['cache']->put($pennyTestingAttemptRedisKey, $count, DetailConstants::PENNY_TESTING_ATTEMPT_COUNT_TTL_IN_SEC);
+        $this->app['cache']->put($pennyTestingAttemptRedisKey, $count, DetailConstants::PENNY_TESTING_ATTEMPT_COUNT_TTL_IN_MIN);
     }
 
     private function createDocumentEntities(string $merchantId, array $documentTypes)
