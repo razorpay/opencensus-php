@@ -792,6 +792,8 @@ trait Authorize
             'wallet'                => $payment->getWallet(),
             'merchant'              => $payment->merchant->getBillingLabel(),
             'merchant_id'           => $payment->merchant->getId(),
+            'theme_color'           => $payment->merchant->getBrandColorElseDefault(),
+            'nobranding'            => $payment->merchant->isFeatureEnabled(Feature\Constants::PAYMENT_NOBRANDING),
         ];
 
         // This is a hack to return direct method for IVR payments
