@@ -168,7 +168,7 @@ class Gateway extends Base\Gateway
             Payment\Gateway::CRED
         ];
 
-        // In cred, we get to know the payment flow, after making pay init request
+        // In cred, we get to know the payment flow after making pay init request
         // In pay init response cred will tell us its a collect/intent flow.
         // In intent cred returns the intent url in the response.
         if (($this->action === Action::PAY_INIT) and
@@ -845,6 +845,8 @@ class Gateway extends Base\Gateway
                 return $response;
             case Payment\Gateway::NETBANKING_KVB:
                 return $this->preProcessServerCallbackForKvb($input, $mode);
+            case Payment\Gateway::CRED:
+                return $input;
             default :
                 throw new Exception\LogicException(
                     'Invalid gateway passed for prcessing S2S callback');
@@ -892,6 +894,8 @@ class Gateway extends Base\Gateway
                 return $response['data']['paymentId'];
             case Payment\Gateway::UPI_JUSPAY:
                 return $this->getPaymentIdForUpiJuspay($response);
+            case Payment\Gateway::CRED:
+                return $response['response']['tracking_id'];
             default :
                 throw new Exception\LogicException(
                     'Invalid gateway passed for getting payment id from S2S callback');
@@ -1891,6 +1895,7 @@ class Gateway extends Base\Gateway
             Payment\Gateway::NETBANKING_IBK,
             Payment\Gateway::NETBANKING_IDBI,
             Payment\Gateway::NETBANKING_KVB,
+            Payment\Gateway::CRED,
         ];
 
         return in_array($gateway, $validationGateways, true);

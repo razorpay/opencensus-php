@@ -990,11 +990,45 @@ class Server extends Base\Mock\Server
 
         $this->content($content, 'callback');
 
-        $response = $this->makeIntentResponsePhonepe($content);
+        $response = $this->encondeResponse($content);
 
         return [
             'response' => $response
         ];
+    }
+
+    public function getAsyncCallbackContentCred(array $payment)
+    {
+        $this->action = 'callback';
+
+        $content = $this->callbackResponseContentCred($payment);
+
+        $this->content($content, 'callback');
+
+        return [
+            'response' => $content['response']
+        ];
+    }
+
+    protected function callbackResponseContentCred($payment)
+    {
+        $response = [
+            'response' => [
+                'tracking_id'=> ltrim($payment['id'], 'pay_'),
+                'reference_id'=> 'abc',
+                'state'=> 'COMPLETED',
+                'amount'=> [
+                    'currency'=> 'INRPAISE',
+                    'value'=> $payment['amount'],
+                ],
+            ],
+            'status'=> 'OK',
+            'error_code'=> '',
+            'error_message'=> '',
+            'error_description'=> ''
+        ];
+
+        return $response;
     }
 
     protected function callbackResponseContent(array $payment)
@@ -1013,7 +1047,7 @@ class Server extends Base\Mock\Server
         return $response;
     }
 
-    protected function makeIntentResponsePhonepe($content)
+    protected function encondeResponse($content)
     {
         $data = base64_encode(json_encode($content));
 

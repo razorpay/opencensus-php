@@ -34,10 +34,43 @@ class CredTest extends TestCase
 
         $response = $this->makeRequestAndGetContent($request);
 
+        $payment = $this->getLastPayment('payment', 'true');
+
         $this->assertEquals('intent', $response['type']);
 
-        $this->assertEquals('cred://pay?am=100.00&cu=INRPAISE&mc=5411', $response['data']['intent_url']);
+        $this->assertEquals('cred://pay?am=100000&cu=INRPAISE&mc=5411', $response['data']['intent_url']);
 
+        $this->assertEquals('cred', $payment['gateway']);
+
+        $this->assertEquals('created', $payment['status']);
+
+        $this->assertEquals('100DiCreDTrmnl', $payment['terminal_id']);
+
+        $payment = $this->getLastPayment('payment', true);
+
+        $content = $this->getMockServer()->getAsyncCallbackContentCred($payment);
+
+        $response = $this->makeS2SCallbackAndGetContent($content, 'cred');
+
+        $payment = $this->getLastPayment('payment', 'true');
+
+        $this->assertEquals('cred', $payment['gateway']);
+
+        $this->assertEquals('authorized', $payment['status']);
+
+        $this->assertTrue($payment['gateway_captured']);
+
+        $this->capturePayment($payment['id'], $payment['amount']);
+
+        $payment = $this->getLastPayment('payment', 'true');
+
+        $this->assertEquals('captured', $payment['status']);
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->assertEquals(17700, $transaction['fee']);
+
+        $this->assertEquals(82300, $transaction['credit']);
     }
 
     public function testCredPaymentCreateResponseCollectFlow()
@@ -56,8 +89,42 @@ class CredTest extends TestCase
 
         $response = $this->makeRequestAndGetContent($request);
 
+        $payment = $this->getLastPayment('payment', 'true');
+
         $this->assertEquals('async', $response['type']);
 
         $this->assertEquals('cred_merchant', $response['data']['vpa']);
+
+         $this->assertEquals('cred', $payment['gateway']);
+
+        $this->assertEquals('created', $payment['status']);
+
+        $this->assertEquals('100DiCreDTrmnl', $payment['terminal_id']);
+
+        $payment = $this->getLastPayment('payment', true);
+
+        $content = $this->getMockServer()->getAsyncCallbackContentCred($payment);
+
+        $response = $this->makeS2SCallbackAndGetContent($content, 'cred');
+
+        $payment = $this->getLastPayment('payment', 'true');
+
+        $this->assertEquals('cred', $payment['gateway']);
+
+        $this->assertEquals('authorized', $payment['status']);
+
+        $this->assertTrue($payment['gateway_captured']);
+
+        $this->capturePayment($payment['id'], $payment['amount']);
+
+        $payment = $this->getLastPayment('payment', 'true');
+
+        $this->assertEquals('captured', $payment['status']);
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->assertEquals(17700, $transaction['fee']);
+
+        $this->assertEquals(82300, $transaction['credit']);
     }
 }

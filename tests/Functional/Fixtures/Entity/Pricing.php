@@ -460,7 +460,6 @@ class Pricing extends Base
                 'payment_issuer'      => null,
                 'percent_rate'        => 1500,
                 'fixed_rate'          => 0,
-                'max_fee'             => 0,
                 'org_id'              => '100000razorpay',
             ],
         ];

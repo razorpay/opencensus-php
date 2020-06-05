@@ -1579,6 +1579,7 @@ class Gateway
         // Cybersource does not make s2s callback, Google Pay makes s2s callback for payments
         // that went through tokenization gateways.
         Gateway::CYBERSOURCE,
+        Gateway::CRED,
     ];
 
     /**

@@ -776,7 +776,7 @@ class Terminal extends Base
             'cred'                  => 1,
             'gateway_merchant_id'   => 'cred_merchant',
             'gateway_secure_secret' => 'cred_merchant',
-            'mode'                  => 1,
+            'mode'                  => 2,
         ];
 
         return $this->createEntityInTestAndLive('terminal', $attributes);

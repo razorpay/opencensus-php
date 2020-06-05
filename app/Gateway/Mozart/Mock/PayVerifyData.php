@@ -344,7 +344,28 @@ class PayVerifyData extends Base\Mock\Server
 
     public function cred($entities)
     {
-        return;
+        $response = [
+            'data' =>
+                    [
+                        'paymentId' => $entities['payment']['id'],
+                        'gatewayTransactionId' => '123ase!234',
+                        'amount'  => $entities['payment']['amount'],
+                        'status' => 'BLOCKED',
+                        '_raw' => '{"response": {"tracking_id": "<PARTNER_ORDER_ID\/MERCHANT_ORDER_ID>","reference_id": "<CRED_REF_ID>","state": "<ORDER_STATE>","expiry_time": "<TIME_IN_EPOCH>","amount": {"currency": "INRPAISE","value": 10000},"refunds": [{"tracking_id": "<REFUND_ID>","reference_id": "<CRED_REF_ID>","state": "<REFUND_STATE>","amount": {"value": 10000,"currency": "INRPAISE"}}]},"metadata": {"key": "value"},"status": "200","error_code": "","error_message": "","error_description": ""}',
+                    ],
+                'error' => NULL,
+                'external_trace_id' => 'DUMMY_REQUEST_ID',
+                'mozart_id' => 'DUMMY_MOZART_ID',
+                'next' => [
+                    'redirect' => [
+                           'method' => 'post',
+                           "url" => "cred://pay?am=100.00&cu=INRPAISE&mc=5411"
+                       ]
+                ],
+                'success' => true,
+        ];
+
+        return $response;
     }
 
     public function wallet_phonepe($entities)

@@ -1729,6 +1729,7 @@ trait PaymentTrait
     {
         $payment = $this->getDefaultPaymentArray();
         $payment['method'] = 'cred';
+        $payment['amount'] = 100000;
 
         unset($payment['card'], $payment['bank']);
 

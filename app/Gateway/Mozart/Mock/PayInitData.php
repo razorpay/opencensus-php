@@ -146,7 +146,7 @@ class PayInitData extends Base\Mock\Server
                 'next' => [
                     'redirect' => [
                            'method' => 'post',
-                           "url" => "cred://pay?am=100.00&cu=INRPAISE&mc=5411"
+                           "url" => "cred://pay?am=". $entities['payment']['amount'] . "&cu=INRPAISE&mc=5411"
                        ]
                 ],
                 'success' => true,
