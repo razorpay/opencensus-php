@@ -191,7 +191,8 @@ class Core extends Base\Core
             $ex, Trace::CRITICAL, TraceCode::BANK_TRANSFER_PROCESSING_FAILED, $this->removePiiForLogging($input, [Entity::PAYEE_ACCOUNT]));
 
         // Slack alerts are only for prod
-        if ($this->isEnvironmentProduction() === false)
+        if (($this->isEnvironmentProduction() === false) or
+            ($this->isTestMode() === true))
         {
             return;
         }

@@ -86,16 +86,6 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
             'payee_account' => $row[self::COLUMN_PAYEE_ACCOUNT],
             'gateway'       => $this->gateway,
         ]);
-
-        $this->app['slack']->queue(
-            TraceCode::BANK_TRANSFER_UNEXPECTED,
-            $row,
-            [
-                'channel'  => Config::get('slack.channels.virtual_accounts_log'),
-                'username' => 'Scrooge',
-                'icon'     => ':x:'
-            ]
-        );
     }
 
     /**
