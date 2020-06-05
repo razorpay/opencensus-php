@@ -1249,6 +1249,8 @@ class Validator extends Base\Validator
 
     protected function validateUpiBlockForOtm($input)
     {
+
+        $app = App::getFacadeRoot();
         /**
          * Currently, Blocking intent for upi mandate payments.
          */
@@ -1269,7 +1271,7 @@ class Validator extends Base\Validator
             /**
              * Check the vpa for supported PSP's. Else throw a validation error.
              */
-            if (ProviderCode::validateOtmProvider($vpaParts[1]) === false)
+            if (ProviderCode::validateOtmProvider($vpaParts[1], $app['rzp.mode']) === false)
             {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_PAYMENT_UPI_APP_ONE_TIME_MANDATE_NOT_SUPPORTED,

@@ -2,6 +2,7 @@
 
 namespace RZP\Gateway\Upi\Base;
 
+use RZP\Constants;
 use RZP\Models\Bank\IFSC;
 
 class ProviderCode
@@ -347,8 +348,17 @@ class ProviderCode
         return (array_search($bankCode, self::$bankCodes) !== false);
     }
 
-    public static function validateOtmProvider(string $bankCode): bool
+    public static function validateOtmProvider(string $bankCode, $mode): bool
     {
+        $testModeProviders = [
+            self::RAZORPAY,
+        ];
+
+        if (($mode === Constants\Mode::TEST) and
+            (array_search($bankCode, $testModeProviders) !== false )) {
+            return true;
+        }
+
         return (array_search($bankCode, self::$validOtmProviders) !== false);
     }
 }

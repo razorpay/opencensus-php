@@ -792,6 +792,39 @@ class SharpGatewayTest extends TestCase
         'End time provided for upi mandate is out of range');
     }
 
+    public function testOtmPaymentWithFailVpa()
+    {
+        $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
+
+        $payment = $this->getDefaultUpiOtmPayment();
+
+        $payment['upi']['vpa'] = 'failure@razorpay';
+
+        $response = $this->doAuthPaymentViaAjaxRoute($payment);
+
+        $payment = $this->getLastPayment();
+
+        $this->assertSame('failed', $payment['status']);
+    }
+
+    public function testOtmPaymentInLiveModeTestVpaFails()
+    {
+        $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
+        $this->fixtures->merchant->activate('10000000000000');
+
+        $this->ba->publicLiveAuth();
+
+        $payment = $this->getDefaultUpiOtmPayment();
+
+        $payment['upi']['vpa'] = 'failure@razorpay';
+
+        $this->makeRequestAndCatchException(function () use ($payment) {
+            $this->doAuthPaymentViaAjaxRoute($payment);
+        },
+        Exception\BadRequestException::class,
+        'Your UPI application does not support one time mandate.');
+    }
+
     protected function otpCommonFlow($otp)
     {
         $this->fixtures->merchant->enableWallet('10000000000000', 'mobikwik');
