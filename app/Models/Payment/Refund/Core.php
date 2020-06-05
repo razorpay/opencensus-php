@@ -50,6 +50,8 @@ class Core extends Base\Core
         'Ba2to8xoI5kO2x' => false,
         'Cc057xzfWMnyBn' => false,
         'DafY7CuC98D8mK' => false,
+        'DwoYjQ5IFWvyJP' => false,
+        'DwprllSF0aWzBO' => false,
     ];
 
     /**
