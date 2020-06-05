@@ -321,4 +321,13 @@ class CustomerController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function postTokensUpiVpaBulk()
+    {
+        $input = Request::all();
+
+        $response = $this->service(E::TOKEN)->createTokensUpiVpaBulk($input);
+
+        return ApiResponse::json($response);
+    }
 }

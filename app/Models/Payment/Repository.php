@@ -593,6 +593,25 @@ class Repository extends Base\Repository
         return ['payments' => $payments, 'verifiable_count' => $verifiableCount];
     }
 
+
+    public function getPaymentsForCreatingCustomerVpaTokens($limit)
+    {
+        $query = $this->newQuery();
+
+        $startTime = 1575384036; // Six months before
+
+        $query->whereNotNull(Payment\Entity::GLOBAL_CUSTOMER_ID)
+              ->where(Payment\Entity::CREATED_AT, '>=', $startTime)
+              ->where(Payment\Entity::METHOD, Payment\Method::UPI)
+              ->whereNotNull(Payment\Entity::AUTHORIZED_AT)
+              ->whereNotNull(Payment\Entity::VPA)
+              ->whereNull(Payment\Entity::GLOBAL_TOKEN_ID)
+              ->orderBy(Payment\Entity::CREATED_AT)
+              ->limit($limit);
+
+        return $query->get();
+    }
+
     /**
      * Add Where Condition for Created Payments, And Verify Failed Payments
      *

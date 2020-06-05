@@ -652,6 +652,7 @@ class Route
         'customer_set_primary_address'             => ['put',      'customers/{id}/addresses/{address_id}/primary',  'CustomerController@putPrimaryAddress'                              ],
         'customer_get_wallet_balance'              => ['get',      'customers/{id}/balance',                         'CustomerController@getCustomerWalletBalance'                       ],
         'customer_get_wallet_statement'            => ['get',      'customers/{id}/statement',                       'CustomerController@getCustomerWalletStatement'                     ],
+        'tokens_upi_vpa_bulk_cron'                 => ['post',     'tokens/upi/vpa/bulk',                            'CustomerController@postTokensUpiVpaBulk'                           ],
         'reminder_send'                            => ['post',     'reminders/send/{mode}/{entity}/{namespace}/{id}','RemindersController@sendReminder'                                  ],
         'reminder_service'                         => ['any',      'reminders/service/{path?}',                      'RemindersController@handleAny'                                     ],
         'offline_verification_service_get'         => ['get',      'offline_verification/service/{path?}',           'OfflineVerificationController@handleAny'                           ],
@@ -2209,6 +2210,7 @@ class Route
         'subscriptions_charge_invoices',
         'subscriptions_expire',
         'subscriptions_retry',
+        'tokens_upi_vpa_bulk_cron',
         'payment_page_items_migrate',
         'user_change_password',
         'user_2fa_change_setting',
@@ -4440,7 +4442,8 @@ class Route
             'fee_recovery_payout_process',
             'webhook_stork_create_banking_bulk',
             'fts_bulk_attempts_initiate',
-            'merchants_update_onboarding_category_to_normal_cron'
+            'merchants_update_onboarding_category_to_normal_cron',
+            'tokens_upi_vpa_bulk_cron',
         ],
 
         'subscriptions' => [

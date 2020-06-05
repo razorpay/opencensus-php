@@ -13,6 +13,7 @@ use RZP\Exception;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Entity;
+use RZP\Models\PaymentsUpi;
 
 class Service extends Base\Service
 {
@@ -261,6 +262,99 @@ class Service extends Base\Service
         ];
 
         return $summary;
+    }
+
+    public function createTokensUpiVpaBulk($input)
+    {
+        $limit = 100;
+
+        if (isset($input['limit']) === true)
+        {
+            $limit = $input['limit'];
+        }
+
+        // Adding time log for fetching payments
+        $time = time();
+
+        $payments = $this->repo->payment->getPaymentsForCreatingCustomerVpaTokens($limit);
+
+        $time = time() - $time;
+
+        $count = count($payments);
+
+        $this->trace->info(TraceCode::CUSTOMER_TOKENS_UPI_VPA_BULK,
+            [
+                'count' =>  $count,
+                'time'  =>  $time.' Secs'
+            ]);
+
+        $tokensCreated = 0;
+        $errors = 0;
+
+        $customerRepo = (new Customer\Repository);
+        $vpaCore = new PaymentsUpi\Vpa\Core();
+
+        foreach ($payments as $payment)
+        {
+            /**
+             * @var $payment Payment\Entity
+             */
+
+            $this->trace->info(TraceCode::CUSTOMER_TOKENS_UPI_VPA_BULK, [
+               'payment_id'         => $payment->getId(),
+               'global_customer_id' => $payment->getGlobalCustomerId(),
+               'vpa'                => $payment->getVpa(),
+               'global_token_id'    => $payment->getGlobalTokenId(),
+            ]);
+
+            try
+            {
+                $this->repo->transaction(function () use ($payment, $customerRepo, $vpaCore, &$tokensCreated)
+                {
+                    $customerId = $payment->getGlobalCustomerId();
+
+                    $customer = $customerRepo->find($customerId);
+
+                    $vpa = $vpaCore->firstOrCreate([
+                        'vpa' => $payment->getVpa(),
+                    ]);
+
+                    $tokenInput = [
+                        Token\Entity::METHOD    => Payment\Method::UPI,
+                        Token\Entity::VPA_ID    => $vpa->getId(),
+                        Token\Entity::USED_AT   => $payment->getCreatedAt(),
+                    ];
+
+                    $token = (new Token\Core)->create($customer, $tokenInput);
+
+                    $payment->globalToken()->associate($token);
+
+                    $payment->save();
+
+                    $tokensCreated++;
+                });
+            }
+            catch (\Exception $e)
+            {
+                $errors++;
+
+                $this->trace->traceException($e, Trace::CRITICAL, TraceCode::CUSTOMER_VPA_TOKEN_CREATE_FAILED,
+                    [
+                        'payment_id' => $payment->getId(),
+                    ]);
+            }
+        }
+
+        $response = [
+            'errors'            => $errors,
+            'tokens_created'    => $tokensCreated,
+        ];
+
+        $this->trace->info(TraceCode::CUSTOMER_TOKENS_UPI_VPA_BULK, [
+           'response' => $response,
+        ]);
+
+        return $response;
     }
 
     protected function deleteTokenForCustomer($tokenId, $customer)

@@ -504,6 +504,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const REFUND_EXCEPTION                                      = 'REFUND_EXCEPTION';
     const GATEWAY_TOKEN_TOO_MANY_PRESENT                        = 'GATEWAY_TOKEN_TOO_MANY_PRESENT';
     const CUSTOMER_DIRECT_TOKEN_CREATE                          = 'CUSTOMER_DIRECT_TOKEN_CREATE';
+    const CUSTOMER_TOKENS_UPI_VPA_BULK                          = 'CUSTOMER_TOKENS_UPI_VPA_BULK';
+    const CUSTOMER_VPA_TOKEN_CREATE_FAILED                      = 'CUSTOMER_VPA_TOKEN_CREATE_FAILED';
 
     const CANCEL_INVOICE                                        = 'CANCEL_INVOICE';
     const INVOICES_EXPIRE_CRON_SUMMARY                          = 'INVOICES_EXPIRE_CRON_SUMMARY';
