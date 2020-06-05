@@ -152,7 +152,7 @@ class VirtualAccountController extends Controller
                 if ($valid === true)
                 {
                     $responseArray['CustName'] = $data['merchantName'];
-                    $responseArray['ActCode']  = (int) $valid;
+                    $responseArray['ActCode']  = 0;
                     $responseArray['Message']  = 'VALID';
                     $responseArray['TxnId']    = $input['TxnId'];
                 }
