@@ -487,6 +487,12 @@ class Generator extends Base\Core
                 Order\Entity::FIRST_PAYMENT_MIN_AMOUNT => $firstMinAmount,
             ];
 
+            if ($this->invoice->isOfSubscription() === true)
+            {
+                $orderInput[Order\Entity::PRODUCT_ID] = $this->invoice->getSubscriptionId();
+                $orderInput[Order\Entity::PRODUCT_TYPE] = Order\ProductType::SUBSCRIPTION;
+            }
+
             if (($this->externalEntity !== null) and
                 ($this->invoice->isTypeOfSubscriptionRegistration() === true))
             {
