@@ -404,7 +404,17 @@ class Validator extends Base\Validator
     protected static $entityUpdateActionConfigRules = [
         Constants::BATCH_ACTION => 'required|string|custom',
         Constants::ENTITY       => 'required|string|custom',
+        Constants::ACTION       => 'sometimes|string',
     ];
+
+
+    protected static $merchantStatusActionCreateRules = [
+        Entity::TYPE   => 'required|in:merchant_status_action',
+        Entity::NAME   => 'filled|string|max:255',
+        Entity::FILE   => 'required|file|max:3072' . self::DEFAULT_MIME_RULE,
+        Entity::CONFIG => 'required|array|custom',
+    ];
+
 
     protected static $ecollectRblCreateRules = [
         Entity::TYPE                 => 'required|in:ecollect_rbl',
@@ -431,6 +441,7 @@ class Validator extends Base\Validator
     {
         (new Validator())->validateInput('entityUpdateActionConfig', $value);
     }
+
 
     public function validateBatchAction($attribute, $batchAction)
     {

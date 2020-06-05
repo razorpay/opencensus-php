@@ -4493,7 +4493,7 @@ class Service extends Base\Service
             }
         }
 
-        return $response;
+        return $response->toArrayWithItems();
     }
 
     /**

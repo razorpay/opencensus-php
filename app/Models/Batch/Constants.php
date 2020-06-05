@@ -17,6 +17,7 @@ class Constants
     const DEFAULT                        = 'default';
     const BATCH_ACTION                   = 'batch_action';
     const ENTITY                         = 'entity';
+    const ACTION                         = 'action';
 
     const IDEMPOTENCY_KEY                = 'idempotency_key';
 }

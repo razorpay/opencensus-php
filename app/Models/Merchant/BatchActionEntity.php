@@ -5,9 +5,11 @@ namespace RZP\Models\Merchant;
 class BatchActionEntity
 {
     const MERCHANT_DETAIL = 'merchant_detail';
+    const MERCHANT = 'merchant';
 
     const BATCH_ACTION_ENTITIES = [
         self::MERCHANT_DETAIL,
+        self::MERCHANT
     ];
 
     /**

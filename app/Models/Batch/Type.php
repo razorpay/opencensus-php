@@ -98,6 +98,8 @@ class Type
 
     const ENTITY_UPDATE_ACTION = 'entity_update_action';
 
+    const MERCHANT_STATUS_ACTION  = 'merchant_status_action';
+
     const ADJUSTMENT            = 'adjustment';
 
     const ECOLLECT_ICICI        = 'ecollect_icici';
@@ -142,6 +144,7 @@ class Type
         self::ECOLLECT_ICICI,
         self::ECOLLECT_RBL,
         self::BANK_TRANSFER_EDIT,
+        self::MERCHANT_STATUS_ACTION,
         self::NACH_MIGRATION,
     ];
 
@@ -324,13 +327,14 @@ class Type
         self::REPORT,
         self::ADMIN_BATCH,
         self::BANK_TRANSFER_EDIT,
+        self::MERCHANT_STATUS_ACTION,
         self::NACH_MIGRATION,
         self::MPAN,
     ];
 
     // For following batches, sensitive data is encrypted in storeInputFileAndSaveBatchWithSettings() so that file with sensitive/PCI data
     // don't get saved on disk. We decrypt the data again at the time of processing in api, so that batch service don't come under PCI scope
-    // See SENSITIVE_HEADERS in Header.php 
+    // See SENSITIVE_HEADERS in Header.php
     public static $haveSensitiveData = [
         self::MPAN,
     ];

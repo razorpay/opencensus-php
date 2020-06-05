@@ -273,6 +273,7 @@ class Validator extends Base\Validator
         'email' => 'required|email',
     ];
 
+
     protected static $bulkSyncBalanceRules = [
         Constants::INTERVAL => 'sometimes|integer|min:15|max:120'
     ];

@@ -803,6 +803,15 @@ class Core extends Base\Core
         return $merchant;
     }
 
+    public function merchantAction(string $merchantId, array $input)
+    {
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        $merchant->getValidator()->validateInput('action', $input);
+
+        return (new Merchant\Service())->action($merchantId, $input, false);
+    }
+
     /*
      check if merchant is subMerchant to aggregator/fully Managerd partner
      and if partner is settle to partner

@@ -37,6 +37,66 @@ class BatchActionTest extends OAuthTestCase
         $this->assertEquals('local mukesh address', $merchant_detail2['business_registered_address']);
     }
 
+
+    public function testMerchantSuspendBatch()
+    {
+        $merchant = $this->getEntityById('merchant', '10000000000000',true);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+
+        $merchant = $this->getEntityById('merchant', $merchant['id'], true);
+
+        $this->assertNotNull($merchant['suspended_at']);
+    }
+
+    public function testMerchantAlreadySuspendMerchantBatch()
+    {
+        $merchant = $this->getEntityById('merchant', '10000000000000',true);
+
+        $this->fixtures->base->editEntity('merchant', $merchant['id'], [ 'suspended_at' => '123456789' ]);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+
+        $merchant = $this->getEntityById('merchant', $merchant['id'], true);
+
+        $this->assertNotNull($merchant['suspended_at']);
+    }
+
+    public function testMerchantUnsuspendBatch()
+    {
+        $merchant = $this->getEntityById('merchant', '10000000000000',true);
+
+        $this->fixtures->base->editEntity('merchant', $merchant['id'], [ 'suspended_at' => '123456789' ]);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+
+        $merchant = $this->getEntityById('merchant', $merchant['id'], true);
+
+        $this->assertNull($merchant['suspended_at']);
+    }
+
+    public function testMerchantAlreadyUnuspendMerchantBatch()
+    {
+        $merchant = $this->getEntityById('merchant', '10000000000000',true);
+
+        $this->fixtures->base->editEntity('merchant', $merchant['id'], ['suspended_at' => null]);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+
+        $merchant = $this->getEntityById('merchant', $merchant['id'], true);
+
+        $this->assertNull($merchant['suspended_at']);
+    }
+
+
     public function testUpdateFieldsInvalidAction()
     {
         $this->ba->proxyAuth();

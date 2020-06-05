@@ -2716,6 +2716,19 @@ class Header
                 self::NACH_MIGRATION_CUSTOMER_ID,
             ],
         ],
+
+        Type::MERCHANT_STATUS_ACTION => [
+            self::INPUT => [
+                self::ID,
+            ],
+
+            self::OUTPUT => [
+                self::ID,
+                self::STATUS,
+                self::ERROR_CODE,
+                self::ERROR_DESCRIPTION,
+            ]
+        ],
     ];
 
     /**
