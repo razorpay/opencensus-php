@@ -4,6 +4,7 @@ namespace RZP\Models\Payment\Processor;
 
 use RZP\Exception;
 use RZP\Models\Payment;
+use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use Razorpay\Trace\Logger as Trace;
@@ -25,6 +26,13 @@ trait Vpa
         (new Payment\Validator)->validateInput($action, $input);
 
         $terminalIds = Payment\Gateway::getTerminalsForValidateVpaForMode($this->mode);
+
+        $variant = $this->app->razorx->getTreatment($this->app['request']->getTaskId(), 'validate_vpa_routing', Mode::LIVE);
+
+        if (($this->mode === Mode::LIVE) and ($variant === Payment\Gateway::UPI_SBI))
+        {
+            $terminalIds = ['AK6NMmzbL6FPe4', '9Q8w9weX9D1T27'];
+        }
 
         $terminals = $this->repo->terminal->findManyEnabledByIds($terminalIds);
 
