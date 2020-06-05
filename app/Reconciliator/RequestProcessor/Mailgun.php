@@ -54,6 +54,7 @@ class Mailgun extends Base
         self::NETBANKING_ALLAHABAD,
         self::NETBANKING_SBI,
         self::NETBANKING_KVB,
+        self::NETBANKING_SVC,
         self::HDFC_DEBIT_EMI,
         self::UPI_JUSPAY,
     ];

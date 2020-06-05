@@ -97,7 +97,7 @@ class Validator extends Base\Core
         RequestProcessor\Base::YES_BANK           => ["/Yes Bank_ MPR [0-9]{2}-[0-9]{2}-20[0-9]{2}/"],
         RequestProcessor\Base::HDFC_DEBIT_EMI     => ["/^DCEMI Reconciliation & Payment Summary Report/"],
         RequestProcessor\Base::UPI_JUSPAY         => ["/BAJAJ TXN DETAILS/"],
-        RequestProcessor\Base::NETBANKING_SVC     => ['/Recon File for date [0-9]{2}.[0-9]{2}.20[0-9]{2}/']
+        RequestProcessor\Base::NETBANKING_SVC     => ['/Razor pay file [0-9]{2}.[0-9]{2}.20[0-9]{2} to [0-9]{2}.[0-9]{2}.20[0-9]{2}/']
     ];
 
     const GATEWAY_BODY_REGEX = [
@@ -166,6 +166,7 @@ class Validator extends Base\Core
         RequestProcessor\Base::CARDLESS_EMI_FLEXMONEY   => 2,
         RequestProcessor\Base::PHONEPE                  => 1,
         RequestProcessor\Base::HDFC_DEBIT_EMI           => 1,
+        RequestProcessor\Base::NETBANKING_SVC           => 1,
     ];
 
     // Add here too when being added in Validator::ACCEPTED_EXTENSIONS_MAP
@@ -326,6 +327,19 @@ class Validator extends Base\Core
             RequestProcessor\Base::NETBANKING_SIB);
 
         return ($validSubject and $validAttachmentCount and $validBody);
+    }
+
+    public function validateNetbankingSvcEmail(array $emailDetails)
+    {
+        $validSubject = $this->validateEmailSubject(
+            $emailDetails[RequestProcessor\Mailgun::SUBJECT],
+            RequestProcessor\Base::NETBANKING_SVC);
+
+        $validAttachmentCount = $this->validateAttachmentCount(
+            $emailDetails[RequestProcessor\Base::ATTACHMENT_COUNT],
+            RequestProcessor\Base::NETBANKING_SVC);
+
+        return ($validSubject and $validAttachmentCount);
     }
 
     public function validateNetbankingScbEmail(array $emailDetails)
