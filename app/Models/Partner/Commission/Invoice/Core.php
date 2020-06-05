@@ -14,11 +14,13 @@ use RZP\Trace\TraceCode;
 use RZP\Models\LineItem;
 use RZP\Constants\Timezone;
 use RZP\Base\RuntimeManager;
+use RZP\Models\Currency\Currency;
 use RZP\Models\Partner\Commission;
 use RZP\Models\Tax\Gst\GstTaxIdMap;
 use RZP\Jobs\CommissionInvoiceAction;
 use RZP\Jobs\CommissionInvoiceGenerate;
 use RZP\Mail\Merchant\CommissionInvoice;
+use RZP\Mail\Merchant\CommissionOpsInvoice;
 use RZP\Models\Admin\Permission\Name as Permission;
 
 class Core extends Base\Core
@@ -93,8 +95,6 @@ class Core extends Base\Core
 
             $this->repo->saveOrFail($invoice);
 
-            CommissionInvoiceAction::dispatch($this->mode, $invoice->getStatus(), $invoice->getId());
-
             // clear on Hold For Partner after workflow is approved
             (new Commission\Core)->clearOnHoldForPartner($merchant, [Commission\Constants::INVOICE_ID => $invoice->getId()]);
 
@@ -107,49 +107,135 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($invoice);
 
+        CommissionInvoiceAction::dispatch($this->mode, $invoice->getStatus(), $invoice->getId());
+
         $this->triggerWorkflowActionIfApplicable($invoice, $merchant);
 
         return ['success' => 'true'];
     }
 
-    public function sendCommissionMail(Entity $invoice)
+    public function sendCommissionMail(Entity $invoice, string $pdfPath)
     {
-        $pdf = $invoice->pdf();
-
-        $data = [
-            'status'     => $invoice->getStatus(),
-            'month_year' => $invoice->getMonth() . '/' . $invoice->getYear(),
-        ];
-
-        $data['filePath'] = $pdf ?? $pdf->getFullFilePath();
+        $data = $this->getTemplateData($invoice, $pdfPath);
 
         $commissionInvoice = new CommissionInvoice($data);
 
         Mail::queue($commissionInvoice);
+
+        $opsInvoice = new CommissionOpsInvoice($data);
+
+        Mail::queue($opsInvoice);
+    }
+
+    public function getTemplateData(Entity $invoice, $pdfPath = null): array
+    {
+        $month = $invoice->getMonth();
+        $year  = $invoice->getYear();
+
+        $fromTimestamp = Carbon::createFromDate($year, $month, 1)->startOfMonth()->getTimestamp();
+        $endTimestamp  = Carbon::createFromDate($year, $month, 1)->endOfMonth()->getTimestamp();
+
+        $relations = ['lineItems', 'lineItems.taxes'];
+        $invoice->load($relations);
+
+        $merchant      = $invoice->merchant;
+        $tdsPercentage = (new Commission\Core)->getTdsPercentage($merchant);
+
+        $data = [
+            'merchant'                 => $invoice->merchant->toArray(),
+            'pan'                      => $merchant->merchantDetail->getPromoterPan(),
+            'gstin'                    => $merchant->merchantDetail->getGstin(),
+            'address'                  => $merchant->getBusinessRegisteredAddressAsText(),
+            'start_date'               => Carbon::createFromTimestamp($fromTimestamp, Timezone::IST)->format('d-M-y'),
+            'end_date'                 => Carbon::createFromTimestamp($endTimestamp, Timezone::IST)->format('d-M-y'),
+            'is_under_auto_commission' => $invoice->merchant->isUnderAutomatedCommission(),
+            'invoice'                  => $invoice->toArrayPublic(),
+            'created_at'               => Carbon::createFromTimestamp($invoice->getCreatedAt(), Timezone::IST)->format('d-M-y'),
+            'tds_percentage'           => $tdsPercentage/100,
+        ];
+
+        if (empty($pdfPath) === false)
+        {
+            $data['file_path'] = $pdfPath;
+        }
+
+        $data['invoice']['gross_amount_spread'] = $this->formatAmountForTemplate($data['invoice']['gross_amount']);
+        $data['invoice']['tax_amount_spread'] = $this->formatAmountForTemplate($data['invoice']['tax_amount']);
+
+        foreach ($data['invoice']['line_items'] as $key => &$lineItem)
+        {
+            if (empty($lineItem['taxes']) === false)
+            {
+                foreach ($lineItem['taxes'] as &$tax)
+                {
+                    $tax['tax_amount_spread'] = $this->formatAmountForTemplate($tax['tax_amount']);
+                }
+            }
+
+            $lineItem['gross_amount_spread'] = $this->formatAmountForTemplate($lineItem['gross_amount']);
+            $lineItem['tax_amount_spread'] = $this->formatAmountForTemplate($lineItem['tax_amount']);
+            $lineItem['net_amount_spread'] = $this->formatAmountForTemplate($lineItem['net_amount']);
+
+            $subTotal = $lineItem['gross_amount'] - $lineItem['tax_amount'];
+            $lineItem['sub_total_spread'] = $this->formatAmountForTemplate($subTotal);
+        }
+
+        return $data;
+    }
+
+    protected function formatAmountForTemplate($amount)
+    {
+        $currency = 'INR';
+
+        $currencySymbol = Currency::SYMBOL[$currency];
+
+        $denominationFactor = Currency::DENOMINATION_FACTOR[$currency] ?: 100;
+
+        $rupeesInAmount = money_format_IN((integer)($amount / $denominationFactor));
+
+        $paiseInAmount = str_pad($amount % $denominationFactor, 2, 0, STR_PAD_LEFT);
+
+        return [$currencySymbol, $rupeesInAmount, $paiseInAmount];
     }
 
     public function triggerWorkflowActionIfApplicable(Entity $invoice, Merchant\Entity $merchant)
     {
         $result = $merchant->isFeatureEnabled(Feature\Constants::AUTOMATED_COMM_PAYOUT);
 
-        if ($result === true)
+        if ($result === false)
         {
-            //trigger workflow if automated commission feature is present;
-            $routePermission = Permission::COMMISSION_PAYOUT;
-
-            $this->trace->info(
-                TraceCode::COMMISSION_INVOICE_ACTION_TRIGGER_WORKFLOW,
-                [
-                    'invoice_id' => $invoice->getId(),
-                    'merchant_id' => $merchant->getId(),
-                ]);
-
-            $newInvoice = clone $invoice;
-
-            $newInvoice->setStatus(Status::APPROVED);
-
-            $this->app['workflow']->setPermission($routePermission)->handle($newInvoice, $invoice);
+            return;
         }
+
+        //trigger workflow if automated commission feature is present;
+        $routePermission = Permission::COMMISSION_PAYOUT;
+
+        $this->trace->info(
+            TraceCode::COMMISSION_INVOICE_ACTION_TRIGGER_WORKFLOW,
+            [
+                'invoice_id' => $invoice->getId(),
+                'merchant_id' => $merchant->getId(),
+            ]);
+
+        $newInvoice = clone $invoice;
+
+        $newInvoice->setStatus(Status::APPROVED);
+
+        $dirtyData = [
+            Entity::ID          => $invoice->getId(),
+            Entity::MERCHANT_ID => $invoice->getMerchantId(),
+            Entity::MONTH => $invoice->getMonth(),
+            Entity::YEAR => $invoice->getYear(),
+            Entity::STATUS => $newInvoice->getStatus(),
+            Entity::GROSS_AMOUNT => $invoice->getGrossAmount(),
+            Entity::TAX_AMOUNT => $invoice->getTaxAmount(),
+        ];
+
+        $this->app['workflow']
+            ->setPermission($routePermission)
+            ->setEntityAndId($invoice->getEntity(), $invoice->getId())
+            ->setDirty($dirtyData)
+            ->handle();
     }
 
     public function generateInvoice(Merchant\Entity $partner, array $input)
@@ -200,7 +286,18 @@ class Core extends Base\Core
 
         $this->repo->transaction(function() use ($partner, $invoice, $month, $year) {
 
-            $this->createLineItemsForInvoice($partner, $invoice, $month, $year);
+            $created = $this->createLineItemsForInvoice($partner, $invoice, $month, $year);
+
+            if ($created === false)
+            {
+                $this->trace->info(TraceCode::COMMISSION_INVOICE_SKIPPED_LINE_ITEMS_NOT_CREATED,
+                                   [
+                                       'partner'     => $partner->getId(),
+                                   ]);
+
+                return;
+            }
+
             $this->updateInvoiceAmounts($invoice);
 
             $this->repo->saveOrFail($invoice);
@@ -310,7 +407,7 @@ class Core extends Base\Core
         ];
     }
 
-    protected function createLineItemsForInvoice(Merchant\Entity $partner, Entity $invoice, int $month, int $year)
+    protected function createLineItemsForInvoice(Merchant\Entity $partner, Entity $invoice, int $month, int $year): bool
     {
         $fromTimestamp = Carbon::createFromDate($year, $month, 1)->startOfMonth()->getTimestamp();
         $endTimestamp  = Carbon::createFromDate($year, $month, 1)->endOfMonth()->getTimestamp();
@@ -321,6 +418,15 @@ class Core extends Base\Core
 
         // amount contains both commission and tax
         $amount = $aggregateSum['fee'];
+
+        if (empty($amount) === true)
+        {
+            $this->trace->info(TraceCode::COMMISSION_INVOICE_SKIPPED_AMOUNT_ZERO,
+                               [
+                                   'partner'     => $partner->getId(),
+                               ]);
+            return false;
+        }
 
         $taxRate = 1800;
         $prefix = Tax\Entity::getSign() . '_';
@@ -339,6 +445,8 @@ class Core extends Base\Core
         ];
 
         (new LineItem\Core)->updateLineItemsAsPut($lineItemInput, $partner, $invoice);
+
+        return true;
     }
 
     protected function updateInvoiceAmounts(Entity $invoice)

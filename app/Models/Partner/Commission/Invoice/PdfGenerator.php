@@ -2,11 +2,14 @@
 
 namespace RZP\Models\Partner\Commission\Invoice;
 
+use Carbon\Carbon;
 use mikehaertl\wkhtmlto\Pdf;
 
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\FileStore;
+use RZP\Constants\Timezone;
+use RZP\Models\Partner\Commission;
 
 class PdfGenerator extends Base\Core
 {
@@ -21,9 +24,7 @@ class PdfGenerator extends Base\Core
 
     public function generate(): FileStore\Entity
     {
-        $viewPayload = $this->invoice->toArrayPublic();
-
-        $html = $this->getHtml($viewPayload);
+        $html = $this->getHtml($this->invoice);
 
         $pdfContent = $this->getPdfContent($html);
 
@@ -40,20 +41,13 @@ class PdfGenerator extends Base\Core
             ->getFileInstance();
     }
 
-    protected function getHtml(array $viewPayload): string
+    protected function getHtml(Entity $invoice): string
     {
-        return "
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <style>
-                </style>
-            </head>
-            <body>
-                Invoice Pdf
-            </body>
-            </html>
-        ";
+        $data = (new Core)->getTemplateData($invoice);
+
+        $html = view('merchant.commission_invoice.invoice', $data)->render();
+
+        return $html;
     }
 
     protected function getPdfContent(string $html): string

@@ -7,6 +7,7 @@ use RZP\Models\Base;
 use RZP\Error\ErrorCode;
 use RZP\Models\LineItem;
 use RZP\Models\Merchant;
+use RZP\Trace\TraceCode;
 use RZP\Exception\BadRequestException;
 
 class Core extends Base\Core

@@ -122,10 +122,20 @@ class Core extends Base\Core
 
         $input[Constants::FROM] = $input[Constants::FROM] ?? null;
 
-        $commissionAggregate = $this->fetchAggregateCommissionDataFromHarvester($partner, $input);
+        if (empty($input[Constants::INVOICE_ID]) === false)
+        {
+            $invoice = $this->repo->commission_invoice->findByIdAndMerchantId($input[Constants::INVOICE_ID], $partner->getId());
 
-        $totalCommission = $commissionAggregate[Constants::TOTAL_COMMISSION];
-        $totalTax        = $commissionAggregate[Constants::TOTAL_TAX];
+            $totalCommission = $invoice->getGrossAmount() - $invoice->getTaxAmount();
+            $totalTax        = $invoice->getTaxAmount();
+        }
+        else
+        {
+            $commissionAggregate = $this->fetchAggregateCommissionDataFromHarvester($partner, $input);
+
+            $totalCommission = $commissionAggregate[Constants::TOTAL_COMMISSION];
+            $totalTax        = $commissionAggregate[Constants::TOTAL_TAX];
+        }
 
         $totalTds = $this->calculateTds($partner, $totalCommission);
 
@@ -136,13 +146,17 @@ class Core extends Base\Core
             Constants::TOTAL_TDS        => $totalTds,
             Constants::TOTAL_COMMISSION => $totalCommission,
             Constants::TOTAL_NET_AMOUNT => $netAmount,
-            Constants::COMPONENTS       => [
-                Constants::COMMISSION => $commissionAggregate,
-            ],
         ];
     }
 
     public function calculateTds(Merchant\Entity $partner, int $totalCommission): int
+    {
+        $tdsPercentage = $this->getTdsPercentage($partner);
+
+        return ((int) round(($tdsPercentage * $totalCommission) / 10000));
+    }
+
+    public function getTdsPercentage(Merchant\Entity $partner): int
     {
         $configs = (new PartnerConfig\Core)->fetchAllDefaultConfigsByPartner($partner);
 
@@ -151,9 +165,7 @@ class Core extends Base\Core
             return 0;
         }
 
-        $tdsPercentage = $configs->first()->getTdsPercentage();
-
-        return ((int) round(($tdsPercentage * $totalCommission) / 10000));
+        return $configs->first()->getTdsPercentage();
     }
 
     public function createCommissionTds(Merchant\Entity $partner, int $totalTds)

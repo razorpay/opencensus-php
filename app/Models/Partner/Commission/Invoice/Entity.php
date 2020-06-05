@@ -126,6 +126,16 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::STATUS);
     }
 
+    public function getGrossAmount()
+    {
+        return $this->getAttribute(self::GROSS_AMOUNT);
+    }
+
+    public function getTaxAmount()
+    {
+        return $this->getAttribute(self::TAX_AMOUNT);
+    }
+
     public function getMonth()
     {
         return $this->getAttribute(self::MONTH);
@@ -158,6 +168,13 @@ class Entity extends Base\PublicEntity
                     ->where(FileStore\Entity::TYPE, '=', FileStore\Type::COMMISSION_INVOICE)
                     ->latest()
                     ->first();
+    }
+
+    public function file()
+    {
+        return $this->morphOne('RZP\Models\FileStore\Entity', 'entity')
+                    ->where(FileStore\Entity::TYPE, '=', FileStore\Type::COMMISSION_INVOICE)
+                    ->latest();
     }
 
     public function setPublicPdfAttribute(array & $array)

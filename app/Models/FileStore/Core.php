@@ -17,13 +17,18 @@ class Core extends Base\Core
     {
         (new Validator)->validateInput('entity_fetch', ['entity' => $entity, 'entity_id' => $entityId]);
 
-        $entityObj = $this->repo->$entity->findByIdAndMerchantId($entityId, $merchantId);
+        $entityObj = $this->repo->$entity->findByIdAndMerchantId($entityId, $this->merchant->getId());
 
         $file = $entityObj->file;
 
         $signedUrl = (new Accessor)->getSignedUrlOfFile($file);
 
-        return $signedUrl;
+        $data = [
+            'file_id'    => $file->getId(),
+            'signed_url' => $signedUrl,
+        ];
+
+        return $data;
     }
 
     public function getSignedUrl(string $fileStoreId, string $merchantId)

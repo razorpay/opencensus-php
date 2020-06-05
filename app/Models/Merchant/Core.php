@@ -1393,6 +1393,14 @@ class Core extends Base\Core
 
     protected function setDefaultFeatureForPartner(Entity $partner)
     {
+        $setting = (new Settings\Service)->getForMerchant(Constants::PARTNER, Constants::PARTNER_INTENT, $partner);
+
+        // add features only if coming from website
+        if (empty($setting) === true)
+        {
+            return;
+        }
+
         // add feature flags if commissions are not yet created or if commission balance is zero
         $commissionBalance = $partner->commissionBalance;
 
@@ -1404,8 +1412,8 @@ class Core extends Base\Core
         $featureCore = new Feature\Core;
 
         $features = [
-            //Feature\Constants::GENERATE_PARTNER_INVOICE,
-            //Feature\Constants::AUTOMATED_COMM_PAYOUT,
+            Feature\Constants::GENERATE_PARTNER_INVOICE,
+            Feature\Constants::AUTOMATED_COMM_PAYOUT,
         ];
 
         foreach ($features as $feature)

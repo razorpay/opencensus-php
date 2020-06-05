@@ -779,6 +779,11 @@ class Constants
             'display_name'  => 'Payment links micro service compatibility with old apis',
             'documentation' => '',
         ],
+        self::GENERATE_PARTNER_INVOICE => [
+            'feature'       => self::GENERATE_PARTNER_INVOICE,
+            'display_name'  => 'Generate Partner Invoice',
+            'documentation' => 'Commissions',
+        ],
     ];
 
     /**

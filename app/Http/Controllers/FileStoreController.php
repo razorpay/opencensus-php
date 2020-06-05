@@ -2,7 +2,6 @@
 
 namespace RZP\Http\Controllers;
 
-use Redirect;
 use ApiResponse;
 
 class FileStoreController extends Controller
@@ -29,8 +28,8 @@ class FileStoreController extends Controller
      */
     public function getSignedUrlForEntity(string $entity, string $entityId)
     {
-        $signedUrl = $this->service()->fetchSignedUrlForEntityFile($entity, $entityId);
+        $data = $this->service()->fetchSignedUrlForEntityFile($entity, $entityId);
 
-        return Redirect::to($signedUrl);
+        return ApiResponse::json($data);
     }
 }

@@ -14,13 +14,14 @@ use RZP\Models\Partner\Config;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Settlement\Channel;
 use RZP\Models\Settlement\Holidays;
+use RZP\Mail\Merchant\CommissionInvoice;
+use RZP\Mail\Merchant\CommissionOpsInvoice;
 use RZP\Tests\Functional\Partner\Constants;
 use RZP\Tests\Functional\Fixtures\Entity\Pricing;
 use RZP\Tests\Functional\Merchant\CommissionTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Models\Partner\Commission\Type as CommissionType;
-use RZP\Mail\Merchant\CommissionInvoice as CommissionInvoiceMail;
 use RZP\Models\Partner\Commission\Constants as CommissionConstants;
 
 class CommissionCreateTest extends TestCase
@@ -149,6 +150,9 @@ class CommissionCreateTest extends TestCase
         $invoice = $this->getDbLastEntity('commission_invoice');
 
         $this->assertEquals('under_review', $invoice['status']);
+
+        Mail::assertQueued(CommissionOpsInvoice::class, 1);
+        Mail::assertQueued(CommissionInvoice::class, 1);
 
         $testData = $this->testData['testInvoiceFetch'];
 

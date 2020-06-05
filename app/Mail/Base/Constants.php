@@ -43,6 +43,8 @@ class Constants
     const RAZORPAY_HELP_DESK      = 'help_desk';
     const TECH_SETTLEMENTS        = 'tech_settlements';
     const FINANCE                 = 'finance';
+    const PARTNER_PAYMENTS        = 'partner_payments';
+    const PARTNER_OPS             = 'partner_ops';
 
     const PARTNER_ON_BOARDING_REPLY = 'partner_on_boarding_reply';
 
@@ -87,6 +89,8 @@ class Constants
         self::RAZORPAY_HELP_DESK        => 'helpdesk@razorpay.com',
         self::TECH_SETTLEMENTS          => 'tech.settlements@razorpay.com',
         self::FINANCE                   => 'finance@razorpay.com',
+        self::PARTNER_PAYMENTS          => 'partner-payments@razorpay.com',
+        self::PARTNER_OPS               => 'partner.ops@razorpay.com',
     ];
 
     const HEADERS = [
@@ -117,6 +121,8 @@ class Constants
         self::CAPITAL_SUPPORT         => 'Razorpay Capital',
         self::CAPITAL_CREDIT          => 'Capital Credit',
         self::NACH                    => 'Razorpay Nach',
+        self::PARTNER_PAYMENTS        => 'Partner Payments',
+        self::PARTNER_OPS             => 'Partner Ops',
         self::RAZORPAY_HELP_DESK      => 'Team Razorpay'
     ];
 }

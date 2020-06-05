@@ -3,7 +3,7 @@
 namespace RZP\Models\FileStore;
 
 use RZP\Exception;
-use RZP\Models\Base;
+use RZP\Base;
 use RZP\Constants\Entity as E;
 
 class Validator extends Base\Validator
@@ -15,6 +15,7 @@ class Validator extends Base\Validator
      */
     protected $allowed = [
         E::REPORT,
+        E::COMMISSION_INVOICE,
     ];
 
     /*

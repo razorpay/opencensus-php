@@ -2,10 +2,12 @@
 
 namespace RZP\Mail\Merchant;
 
-use RZP\Mail\Base\Mailable;
 use RZP\Constants\MailTags;
+use RZP\Mail\Base\Mailable;
+use RZP\Mail\Base\Constants;
+use RZP\Models\Partner\Commission\Invoice;
 
-class CommissionInvoice extends Mailable
+class CommissionOpsInvoice extends Mailable
 {
     protected $data;
 
@@ -18,11 +20,9 @@ class CommissionInvoice extends Mailable
 
     protected function addRecipients()
     {
-        $email = $this->data['merchant']['email'];
+        $this->to(Constants::MAIL_ADDRESSES[Constants::PARTNER_PAYMENTS], Constants::HEADERS[Constants::PARTNER_PAYMENTS]);
 
-        $name = $this->data['merchant']['name'];
-
-        $this->to($email, $name);
+        $this->cc(Constants::MAIL_ADDRESSES[Constants::PARTNER_OPS], Constants::HEADERS[Constants::PARTNER_OPS]);
 
         return $this;
     }
@@ -36,7 +36,11 @@ class CommissionInvoice extends Mailable
 
     protected function addSubject()
     {
-        $subject = 'Invoice for your commission for the date range: '. $this->data['start_date'].' to '. $this->data['end_date'];
+        $status = $this->data['is_under_auto_commission'] ? 'Processed' : 'Created';
+        $mId = $this->data['merchant']['id'];
+        $name = $this->data['merchant']['name'];
+
+        $subject = 'Commission Payout Invoice '. $status. ' for '. $mId. ':'. $name. ':'. $this->data['start_date'].' to '. $this->data['end_date'];
 
         $this->subject($subject);
 
@@ -69,7 +73,16 @@ class CommissionInvoice extends Mailable
 
     protected function addHtmlView()
     {
-        $this->view('emails.mjml.merchant.partner.commission_invoice.merchant');
+        $status = $this->data['is_under_auto_commission'];
+
+        if ($status === false)
+        {
+            $this->view('emails.mjml.merchant.partner.commission_invoice.ops_created');
+        }
+        else
+        {
+            $this->view('emails.mjml.merchant.partner.commission_invoice.ops_processed');
+        }
 
         return $this;
     }

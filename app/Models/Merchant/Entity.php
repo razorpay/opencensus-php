@@ -1794,6 +1794,11 @@ class Entity extends Base\PublicEntity
         return ($this->isFeatureEnabled(Feature\Constants::KYC_HANDLED_BY_PARTNER));
     }
 
+    public function isUnderAutomatedCommission(): bool
+    {
+        return ($this->isFeatureEnabled(Feature\Constants::AUTOMATED_COMM_PAYOUT));
+    }
+
     public function canCommunicateWithSubmerchant(): bool
     {
         return ($this->isFeatureEnabled(Feature\Constants::NO_COMM_WITH_SUBMERCHANTS) === false);

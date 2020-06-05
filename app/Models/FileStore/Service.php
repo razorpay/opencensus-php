@@ -48,8 +48,6 @@ class Service extends Base\Service
      */
     public function fetchSignedUrlForEntityFile(string $entity, string $entityId)
     {
-        $signedUrl = (new Core)->signedUrlForEntityFile($entity, $entityId);
-
-        return $signedUrl;
+        return (new Core)->signedUrlForEntityFile($entity, $entityId);
     }
 }
