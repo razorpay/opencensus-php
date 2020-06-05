@@ -428,6 +428,21 @@ trait Callback
             $pa = $this->repo->payment_analytics->findLatestByPayment($payment->getId());
 
             $input['payment_analytics'] = $pa ? $pa->toArray() : null;
+
+            // It is observed when s2s merchants send multiple redirect requests for headless payments.
+            // This causes failure on otp_elf resulting in reset of payment auth type
+            // but customer has submitted otp on native otp page opened during first redirect request.
+            if ((isset($input['gateway']['type']) === true) and
+                ($input['gateway']['type'] === 'otp') and
+                (($payment->getAuthType() === null) or
+                 ($payment->getAuthType() === Payment\AuthType::_3DS)))
+            {
+                if (in_array($payment->getGateway(), Payment\Gateway::$otpPostFormSubmitGateways, true) === false)
+                {
+                    throw new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_PAYMENT_OTP_SUBMIT_FOR_3DS_AUTH);
+                }
+            }
         }
 
         if (($payment->isMethodCardOrEmi() === true) and
