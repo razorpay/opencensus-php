@@ -6,12 +6,13 @@ use RZP\Exception\BadRequestValidationFailureException;
 
 class ProductType
 {
-    const INVOICE         = 'invoice';
-    const AUTH_LINK       = 'auth_link';
-    const PAYMENT_PAGE    = 'payment_page';
-    const PAYMENT_LINK    = 'payment_link';
-    const SUBSCRIPTION    = 'subscription';
-    const VIRTUAL_ACCOUNT = 'virtual_account';
+    const INVOICE            = 'invoice';
+    const AUTH_LINK          = 'auth_link';
+    const PAYMENT_PAGE       = 'payment_page';
+    const PAYMENT_LINK       = 'payment_link';
+    const PAYMENT_LINK_V2    = 'payment_link_v2';
+    const SUBSCRIPTION       = 'subscription';
+    const VIRTUAL_ACCOUNT    = 'virtual_account';
 
 
     public static function isTypeValid(string $type): bool
