@@ -3943,7 +3943,7 @@ return [
         ],
     ],
 
-    'testPayoutToAmexCardWithNullIssuerNotSupportedMode' => [
+    'testPayoutToAmexCardWithNullIssuerWithUPIMode' => [
         'request'  => [
             'method'  => 'POST',
             'url'     => '/payouts',
@@ -3957,17 +3957,15 @@ return [
             ],
         ],
         'response' => [
-            'content'     => [
-                'error' => [
-                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'UPI is not a valid mode for issuer AMEX',
-                ]
+            'content' => [
+                'entity'          => 'payout',
+                'fund_account_id' => 'fa_EIXgVWknyiroq6',
+                'amount'          => 100,
+                'currency'        => 'INR',
+                'status'          => 'processing',
+                'purpose'         => 'refund',
+                'mode'            => 'UPI',
             ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
 

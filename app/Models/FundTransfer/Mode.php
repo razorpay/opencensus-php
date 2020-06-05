@@ -185,6 +185,7 @@ class Mode
         */
         Attempt\Constants::DEFAULT_ISSUER => [
             Network::AMEX => [
+                self::UPI,
                 self::IMPS,
                 self::NEFT
             ],

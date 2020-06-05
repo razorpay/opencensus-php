@@ -3342,7 +3342,7 @@ class PayoutTest extends TestCase
         $this->startTest();
     }
 
-    public function testPayoutToAmexCardWithNullIssuerNotSupportedMode()
+    public function testPayoutToAmexCardWithNullIssuerWithUPIMode()
     {
         $fundAccountRequest = [
             'method'  => 'POST',
@@ -3384,6 +3384,7 @@ class PayoutTest extends TestCase
         $testData = $this->testData[__FUNCTION__];
 
         $testData['request']['content']['fund_account_id'] = $fundAccount['id'];
+        $testData['response']['content']['fund_account_id'] = $fundAccount['id'];
 
         $this->testData[__FUNCTION__] = $testData;
 
