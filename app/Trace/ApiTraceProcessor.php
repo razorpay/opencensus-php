@@ -6,6 +6,7 @@ use App;
 use Request;
 
 use RZP\Http\Route;
+use RZP\Constants\Product;
 use Razorpay\Trace\Logger;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Admin\Service as AdminService;
@@ -175,6 +176,19 @@ class ApiTraceProcessor
     protected function addProduct(&$record)
     {
         $product = $this->app['basicauth']->getRequestOriginProduct();
+
+        $isProxyAuth = $this->app['basicauth']->isProxyAuth();
+
+        $routeName = optional($this->app['router'])->currentRouteName();
+
+        $bankingRoutes = array_keys(Route::$bankingRoutePermissions) + array_values(Route::BANKING_SPECIFIC_ROUTES);
+
+        // If route is a banking_route and auth is private auth, tag it as banking
+        if (($isProxyAuth === false) and
+            (in_array($routeName, $bankingRoutes, true) === true))
+        {
+            $product = Product::BANKING;
+        }
 
         $record['request']['product'] = $product;
     }

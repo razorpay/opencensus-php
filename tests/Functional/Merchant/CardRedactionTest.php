@@ -5,14 +5,17 @@ namespace Functional\Merchant;
 use Illuminate\Routing\Router;
 
 use RZP\Constants\Product;
+use RZP\Http\BasicAuth\Type;
 use RZP\Trace\ApiTraceProcessor;
 use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use RZP\Tests\Functional\Helpers\PrivateMethodTrait;
 
 class CardRedactionTest extends TestCase
 {
+    use PrivateMethodTrait;
     use DbEntityFetchTrait;
     use RequestResponseFlowTrait;
 
@@ -73,7 +76,7 @@ class CardRedactionTest extends TestCase
         return $routerMock;
     }
 
-    protected function mockBasicAuth($product = Product::PRIMARY)
+    protected function mockBasicAuth(string $product = Product::PRIMARY, string $baType = null)
     {
         $authMock = $this->getMockBuilder(BasicAuth::class)
                          ->setConstructorArgs([$this->app])
@@ -82,6 +85,11 @@ class CardRedactionTest extends TestCase
 
         $authMock->method('getRequestOriginProduct')
                  ->willReturn($product);
+
+        if (empty($baType) === false)
+        {
+            $this->invokePrivateMethod($authMock, BasicAuth::class, 'setType', [$baType]);
+        }
 
         $this->app->instance('basicauth', $authMock);
 
@@ -580,7 +588,7 @@ class CardRedactionTest extends TestCase
                            ->getMock();
 
         $routerMock->method('currentRouteName')
-                   ->willReturn(function () {
+                   ->willReturnCallback(function () {
                        static $counter = 0;
 
                        switch ($counter++) {
@@ -1135,13 +1143,42 @@ class CardRedactionTest extends TestCase
         $this->assertEquals($updatedRecord['request']['product'], Product::BANKING);
     }
 
-    protected function getUpdatedTrace(string $routeName, array $record, string $product = Product::PRIMARY)
+    public function testBankingProductPresentInTracePrivateAuth()
+    {
+        $record = [
+            'context' => [
+                'email' => 'xyz@razorpay.com',
+            ]
+        ];
+
+        $updatedRecord =  $this->getUpdatedTrace('payout_create', $record, null, Type::PRIVATE_AUTH);
+
+        $this->assertEquals($updatedRecord['request']['product'], Product::BANKING);
+    }
+
+    public function testPrimaryProductPresentInTracePrivateAuth()
+    {
+        $record = [
+            'context' => [
+                'email' => 'xyz@razorpay.com',
+            ]
+        ];
+
+        $updatedRecord =  $this->getUpdatedTrace('payment_create', $record, null, Type::PRIVATE_AUTH);
+
+        $this->assertEquals($updatedRecord['request']['product'], Product::PRIMARY);
+    }
+
+    protected function getUpdatedTrace(string $routeName,
+                                       array $record,
+                                       string $product = null,
+                                       string $authType = null)
     {
         $trace = new ApiTraceProcessor($this->app);
 
         $this->mockRouter($routeName);
 
-        $this->mockBasicAuth($product);
+        $this->mockBasicAuth($product ?? Product::PRIMARY, $authType);
 
         return $trace($record);
     }
