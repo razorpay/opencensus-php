@@ -50,20 +50,17 @@ class Constants
     const REGISTERED_NAME                               = 'registered_name';
     const PENNY_TESTING_FUZZY_MATCH_PERCENTAGE_WITH_PAN = 'fuzzy_match_percentage_with_pan';
     const PENNY_TESTING_FUZZY_MATCH_BASE                = 'penny_testing_fuzzy_match_base';
+    const PENNY_TESTING_FUZZY_MATCH_TYPE_FOR_PAN        = 'penny_testing_fuzzy_match_type_for_pan';
     const PENNY_TESTING_FUZZY_MATCH_ATTRIBUTE_TYPE      = 'penny_testing_fuzzy_match_attribute_type';
-    const PENNY_TESTING_FUZZY_MATCH_TYPE_FOR_PAN       = 'penny_testing_fuzzy_match_type_for_pan';
-    const POA_FUZZY_MATCH_TYPE                         = 'poa_fuzzy_match_type';
-    const POI_FUZZY_MATCH_TYPE                         = 'poi_fuzzy_match_type';
-    const BANK_VERIFICATION_THRESHOLD_FOR_PAN          = 'bank_detail_verification_threshold_for_pan';
-    const IS_VALID_NAME                                = 'is_valid_name';
-    const PENNY_TESTING_ATTEMPT_COUNT_REDIS_KEY_PREFIX = 'penny_testing_attempt_count';
-    const PENNY_TESTING_MAX_ATTEMPT                    = 2;
-    //
-    // penny testing attempt count ttl should be more than retry period for avoiding expiry
-    //
-    const PENNY_TESTING_ATTEMPT_COUNT_TTL_IN_MIN       = 180;
-    const PENNY_TESTING_RETRY_PERIOD_IN_SEC            = 7200;
-    const UNREGISTERED                                 = 'unregistered';
+    const POA_FUZZY_MATCH_TYPE                          = 'poa_fuzzy_match_type';
+    const POI_FUZZY_MATCH_TYPE                          = 'poi_fuzzy_match_type';
+    const BANK_VERIFICATION_THRESHOLD_FOR_PAN           = 'bank_detail_verification_threshold_for_pan';
+    const IS_VALID_NAME                                 = 'is_valid_name';
+    const PENNY_TESTING_ATTEMPT_COUNT_REDIS_KEY_PREFIX  = 'penny_testing_attempt_count';
+    const PENNY_TESTING_ATTEMPT_COUNT_TTL_IN_SEC        = 120;
+    const PENNY_TESTING_MAX_ATTEMPT                     = 2;
+    const PENNY_TESTING_RETRY_PERIOD_IN_SEC             = 7200;
+    const UNREGISTERED                                  = 'unregistered';
 
     // merchant verification
     const VERIFICATION    = 'verification';

@@ -19,14 +19,6 @@ use RZP\Models\FundAccount\Validation\AccountStatus as FundAccountValidationAcco
 
 class PennyTesting extends Base\Core
 {
-    protected $cache;
-
-    public function __construct()
-    {
-        parent::__construct();
-
-        $this->cache = $this->app['cache_dual_write'];
-    }
 
     /**
      * Make penny testing attempt
@@ -442,9 +434,7 @@ class PennyTesting extends Base\Core
     {
         $pennyTestingAttemptRedisKey = DetailConstants::PENNY_TESTING_ATTEMPT_COUNT_REDIS_KEY_PREFIX . $merchantDetails->getId();
 
-        $pennyTestingAttempt = $this->getPennyTestingAttempts($merchantDetails);
-
-        $this->cache->put($pennyTestingAttemptRedisKey, $pennyTestingAttempt + 1, Constants::PENNY_TESTING_ATTEMPT_COUNT_TTL_IN_MIN);
+        $this->app['cache']->increment($pennyTestingAttemptRedisKey, 1);
     }
 
     /**
@@ -456,7 +446,7 @@ class PennyTesting extends Base\Core
     {
         $pennyTestingAttemptRedisKey = DetailConstants::PENNY_TESTING_ATTEMPT_COUNT_REDIS_KEY_PREFIX . $merchantDetails->getId();
 
-        $pennyTestingCount = $this->cache->get($pennyTestingAttemptRedisKey) ?? 0;
+        $pennyTestingCount = $this->app['cache']->get($pennyTestingAttemptRedisKey) ?? 0;
 
         return $pennyTestingCount;
     }
