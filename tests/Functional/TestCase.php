@@ -7,8 +7,10 @@
 
 namespace RZP\Tests\Functional;
 
+use Cache;
 use Artisan;
 use Carbon\Carbon;
+use Illuminate\Cache\FileStore;
 use Illuminate\Support\Facades\Redis;
 
 use RZP\Services\EsClient;
@@ -89,13 +91,23 @@ class TestCase extends ParentTestCase
 
     public function flushCache()
     {
-        Redis::connection()->flushall();
-
-        foreach ($this->config->get('database.redis.clusters') as $cluster => $config)
+        //A lot of test cases are redis independent,
+        // thus if we set Cache Driver as File in .env.testing on local machine,
+        // we can bypass the dep of redis.
+        if (Cache::driver()->getStore() instanceof FileStore)
         {
-            foreach (Redis::connection($cluster)->getConnection() as $node)
+            Cache::flush();
+        }
+        else
+        {
+            Redis::connection()->flushall();
+
+            foreach ($this->config->get('database.redis.clusters') as $cluster => $config)
             {
-                $node->executeCommand(new \Predis\Command\ServerFlushDatabase());
+                foreach (Redis::connection($cluster)->getConnection() as $node)
+                {
+                    $node->executeCommand(new \Predis\Command\ServerFlushDatabase());
+                }
             }
         }
     }
