@@ -76,10 +76,11 @@ class Service extends Base\Service
      * @see Core::webhookDeactivate()
      *
      * @param string $id
+     * @param array  $input
      */
-    public function webhookDeactivate(string $id)
+    public function webhookDeactivate(string $id, array $input)
     {
-        $this->core()->webhookDeactivate($id);
+        $this->core()->webhookDeactivate($id, $input);
     }
 
     public function fetchWebhooks($params)

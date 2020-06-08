@@ -1836,6 +1836,27 @@ return [
         'url' => 'http://webhook.com/v1/dummy/route',
     ],
 
+    'testWebhookDeactivateWithEmail' => [
+        'request' => [
+            'url' => '',
+            'content' => [
+                'alert_email' => 'stork-external@razorpay.com',
+            ],
+            'method' => 'POST',
+        ],
+        'response' => [
+            'content' => [],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testWebhookDeactivateWithEmailData' => [
+        'subject' => 'Razorpay | Webhook deactivated after 24 hours from last successful delivery for Test Merchant',
+        'mode' => 'test',
+        'url' => 'http://webhook.com/v1/dummy/route',
+        'alert_email' => 'stork-external@razorpay.com',
+    ],
+
     'createSettingsForWebhookTranslateUrl' => [
         'request'  => [
             'url'     => '/settings/partner',

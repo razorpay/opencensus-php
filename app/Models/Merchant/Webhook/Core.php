@@ -399,8 +399,9 @@ class Core extends Base\Core
      * Read webhook from id
      * Then deactivate the webhook and sends a deactivation email to merchant.
      * @param string $id
+     * @param array  $input
      */
-    public function webhookDeactivate(string $id)
+    public function webhookDeactivate(string $id, array $input)
     {
         $webhook = $this->repo->webhook->findOrFailPublic($id);
 
@@ -410,6 +411,11 @@ class Core extends Base\Core
             'mode'         => $this->mode,
             'type'         => 'deactivate',
         ];
+
+        if (isset($input['alert_email']) === true)
+        {
+            $options ['recipient_email'] = $input['alert_email'];
+        }
 
         $this->sendMail($webhook, $options);
     }

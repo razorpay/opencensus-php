@@ -88,7 +88,9 @@ class WebhookController extends Controller
      */
     public function webhookDeactivate(string $id)
     {
-        $this->service()->webhookDeactivate($id);
+        $input = Request::all();
+
+        $this->service()->webhookDeactivate($id, $input);
 
         return ApiResponse::json([]);
     }

@@ -1597,6 +1597,38 @@ class WebhookTest extends TestCase
         });
     }
 
+    public function testWebhookDeactivateWithEmail()
+    {
+        Mail::fake();
+
+        $this->createMerchantWebhook();
+
+        $webhook = $this->getLastEntity('webhook', false);
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/webhooks/'.$webhook['id'] . '/deactivate';
+
+        $this->startTest();
+
+        // test webhook deactivate
+        $webhookExpected = $this->getEntityById('webhook',$webhook['id']);
+
+        $this->assertEquals($webhookExpected['active'],false);
+
+        $testData = $this->testData[__FUNCTION__.'Data'];
+
+        // test mail sent
+        Mail::assertQueued(WebhookMail::class, function ($mail) use ($testData)
+        {
+            $this->assertEquals($mail->viewData['url'], $testData['url']);
+
+            $this->assertEquals($mail->viewData['mode'], $testData['mode']);
+
+            $this->assertEquals($mail->viewData['subject'], $testData['subject']);
+
+            return ($mail->hasFrom('alerts@razorpay.com') and ($mail->hasTo($testData['alert_email'])));
+        });
+    }
+
 
     protected function createTransferEntity($payment, $account)
     {

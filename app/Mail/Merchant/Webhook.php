@@ -15,6 +15,8 @@ class Webhook extends Mailable
 
     protected $options;
 
+    protected $recipientEmail;
+
     public function __construct(array $webhook, array $merchant, array $options)
     {
         parent::__construct();
@@ -24,6 +26,8 @@ class Webhook extends Mailable
         $this->merchant = $merchant;
 
         $this->options = $options;
+
+        $this->recipientEmail = $options['recipient_email'] ?? null;
     }
 
     protected function addSender()
@@ -39,7 +43,7 @@ class Webhook extends Mailable
 
     protected function addRecipients()
     {
-        $emails = $this->merchant['transaction_report_email'];
+        $emails = $this->recipientEmail ?? $this->merchant['transaction_report_email'];
 
         $this->to($emails);
 
