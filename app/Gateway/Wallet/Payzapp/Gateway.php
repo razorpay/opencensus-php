@@ -529,6 +529,16 @@ class Gateway extends Base\Gateway
 
             $content['message_hash'] = 'CURRENCY:7:'.$this->getHashForVerifyRequest($content);
 
+            $contentLog = $content;
+
+            unset($contentLog['pg_instance_id']);
+
+            $this->trace->info(
+                TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
+                [
+                    'request'=> $contentLog
+                ]);
+
             $requestResponse = $this->postRequest($content);
 
             $content = $requestResponse['content'];
