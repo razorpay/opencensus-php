@@ -230,7 +230,7 @@ class Core extends Base\Core
     {
         $payment = $input['payment'];
 
-        $merchant = $input['merchant'];
+        $merchant = (empty($input['charge_account_merchant']) === false) ? $input['charge_account_merchant'] : $input['merchant'];
 
         $currency = ($payment->getConvertCurrency() === true) ? Currency::INR : $payment->getGatewayCurrency();
 

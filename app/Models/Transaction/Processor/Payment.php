@@ -26,6 +26,8 @@ class Payment extends Base
 
         $this->checkAndSetTxnReconciliation();
 
+        $this->setTransactionOnHoldIfApplicable();
+
         $this->repo->saveOrFail($this->txn);
 
         $settledAt = $this->getSettledAtTimestamp();
@@ -285,5 +287,17 @@ class Payment extends Base
         }
 
         return $returnTime;
+    }
+
+    protected function setTransactionOnHoldIfApplicable()
+    {
+        $payment = $this->source;
+
+        $merchant = $payment->merchant;
+
+        if ($merchant->isFeatureEnabled(Feature\Constants::TRANSACTION_ON_HOLD) === true)
+        {
+            $this->txn->setOnHold(true);
+        }
     }
 }

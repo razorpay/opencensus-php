@@ -459,19 +459,21 @@ class Selector extends Base\Core
         $response = $this->app->razorx->getTreatment($this->input['merchant']->getId(), 'payments_fetch_config_parent_terminal',
                     $this->mode);
 
+        $merchant = (empty($this->input['charge_account_merchant']) === false) ? $this->input['charge_account_merchant'] : $this->input['merchant'];
+
         if ($response === 'on')
         {
             // Fetch all terminals (enabled/disabled) for both the current merchant, parent merchant and the shared Merchant
             $merchantTerminals = $this->repo
                                       ->terminal
-                                      ->getTerminalForMerchantParentMerchantAndSharedMerchant($this->input['merchant']);
+                                      ->getTerminalForMerchantParentMerchantAndSharedMerchant($merchant);
         }
         else
         {
             // Fetch all terminals (enabled/disabled) for both the current merchant and the shared Merchant
             $merchantTerminals = $this->repo
                                       ->terminal
-                                      ->getTerminalsForMerchantAndSharedMerchant($this->input['merchant']);
+                                      ->getTerminalsForMerchantAndSharedMerchant($merchant);
         }
 
         $payment = $this->input['payment'];
@@ -753,16 +755,19 @@ class Selector extends Base\Core
 
             $merchantData = $this->getMerchantData($merchant);
 
+            $chargeAccountMerchantData = (empty($this->input['charge_account_merchant']) === false) ? $this->getMerchantData($this->input['charge_account_merchant']) : null;
+
             $data = [
-                'payment'             => $paymentData,
-                'merchant'            => $merchantData,
-                'terminals'           => array_values($allTerminals),
-                'filtered_terminals'  => array_values($sortedTerminals),
-                'gateway_downtime'    => $downtimes,
-                'failed_terminals'    => array_values($failedTerminalIds),
-                'gateway_tokens'      => $this->input['gateway_tokens'],
-                'gateway_config'      => $this->getGatewayConfig(),
-                'chance'              => $this->options->getChance(),
+                'payment'                   => $paymentData,
+                'merchant'                  => $merchantData,
+                'terminals'                 => array_values($allTerminals),
+                'filtered_terminals'        => array_values($sortedTerminals),
+                'gateway_downtime'          => $downtimes,
+                'failed_terminals'          => array_values($failedTerminalIds),
+                'gateway_tokens'            => $this->input['gateway_tokens'],
+                'gateway_config'            => $this->getGatewayConfig(),
+                'chance'                    => $this->options->getChance(),
+                'charge_account_merchant'   => $chargeAccountMerchantData,
             ];
 
             $tracePayment = $data['payment'];

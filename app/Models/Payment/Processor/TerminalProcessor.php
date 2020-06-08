@@ -7,6 +7,7 @@ use Razorpay\Trace\Logger as Trace;
 
 use RZP\Models\Base;
 use RZP\Models\Payment;
+use RZP\Models\Merchant;
 use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
 use RZP\Models\BharatQr;
@@ -33,15 +34,16 @@ class TerminalProcessor extends Base\Core
      *
      * @return array
      */
-    public function getTerminalsForPayment(Payment\Entity $payment)
+    public function getTerminalsForPayment(Payment\Entity $payment, Merchant\Entity $chargeAccountMerchant = null)
     {
         $this->payment = $payment;
 
         $options = $this->getTerminalSelectionOptions();
 
         $input = [
-            'payment'  => $this->payment,
-            'merchant' => $this->payment->merchant,
+            'payment'                   => $this->payment,
+            'merchant'                  => $this->payment->merchant,
+            'charge_account_merchant'   => $chargeAccountMerchant,
         ];
 
         $terminalSelector = new Terminal\Selector($input, $options);

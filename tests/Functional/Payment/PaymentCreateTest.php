@@ -3529,6 +3529,8 @@ class PaymentCreateTest extends TestCase
 
         $paymentArray = $this->getDefaultPaymentArray();
 
+        $paymentArray['card']['number'] = '5567630000002004';
+
         $paymentArray['charge_account'] = 'hitachiDirectMerchantI';
 
         $this->makeRequestAndCatchException(function() use ($paymentArray)
@@ -3546,6 +3548,114 @@ class PaymentCreateTest extends TestCase
         },
         \RZP\Exception\BadRequestException::class,
         'Invalid charge account');
+
+        $paymentArray['charge_account'] = 'hitachiDirectMerchant';
+
+        $merchantAttr = $this->createMerchant();
+
+        $merchant = $this->getDbLastEntity('merchant');
+
+        $this->assertEquals($merchant->getId(), $merchant['id']);
+
+        $this->fixtures->merchant->addFeatures(['s2s', 'charge_account'], '1X4hRFHFx4UiXt');
+
+        $this->ba->privateAuth($merchantAttr['key_id'], $merchantAttr['secret']);
+
+        $paymentArray['charge_account'] = 'hitachiDirectMerchantId';
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/create/redirect',
+            'content' => $paymentArray
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertArrayHasKey('razorpay_payment_id', $response);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['id'], $response['razorpay_payment_id']);
+
+        $this->assertEquals('authorized', $payment['status']);
+
+        $this->assertEquals('100HitaDirTmnl', $payment['terminal_id']);
+
+        $this->assertEquals('1X4hRFHFx4UiXt', $payment['merchant_id']);
+
+        $terminal = $this->getDbEntity('terminal', ['id' => $payment['terminal_id']]);
+
+        $this->assertEquals($terminal->getMerchantId(), '10000000000000');
+
+        $this->fixtures->merchant->addFeatures(['transaction_on_hold'], '1X4hRFHFx4UiXt');
+
+        $request = array(
+            'method'  => 'POST',
+            'url'     => '/payments/' . $payment['id']. '/capture',
+            'content' => array('amount' => $payment['amount'])
+        );
+
+
+        $this->ba->privateAuth($merchantAttr['key_id'], $merchantAttr['secret']);
+
+        $response = $this->makeRequestAndGetContent($request);
+
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->assertEquals('captured', $payment['status']);
+
+        $this->assertEquals($transaction['entity_id'], $payment['id']);
+
+        $this->assertTrue($transaction['on_hold']);
+    }
+
+    protected function createMerchant($attributes = [])
+    {
+        $this->ba->adminAuth();
+
+        $defaultAttributes = [
+            'id'    => '1X4hRFHFx4UiXt',
+            'name'  => 'Tester 2',
+            'email' => 'liveandtest@localhost.com'
+        ];
+
+        $merchant = array_merge($defaultAttributes, $attributes);
+
+        $request = [
+            'content' => $merchant,
+            'url' => '/merchants',
+            'method' => 'POST'
+        ];
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $user = $this->fixtures->user->createUserForMerchant('1X4hRFHFx4UiXt');
+
+        $this->ba->proxyAuth('rzp_test_1X4hRFHFx4UiXt', $user->getId());
+
+        $request = [
+            'method' => 'POST',
+            'url' => '/keys',
+            'content' => [
+            ]
+        ];
+
+        $keyContent = $this->makeRequestAndGetContent($request);
+
+        $key = $this->getDbEntity('key', ['merchant_id' => '1X4hRFHFx4UiXt']);
+
+        $this->assertEquals($key->getMerchantId(), '1X4hRFHFx4UiXt');
+
+        $this->fixtures->create('pricing:standard_plan');
+
+        $this->fixtures->merchant->edit('1X4hRFHFx4UiXt', ['pricing_plan_id' => '1A0Fkd38fGZPVC']);
+
+        $content['key_id'] = $keyContent['id'];
+        $content['secret'] = $keyContent['secret'];
+
+        return $content;
     }
 
     public function testCreatePaymentWithAmountGreaterThanMaxAmountAndCurrencyUSD()

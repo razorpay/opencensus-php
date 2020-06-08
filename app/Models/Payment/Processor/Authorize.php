@@ -188,7 +188,9 @@ trait Authorize
             }
             else
             {
-                $this->selectedTerminals = (new TerminalProcessor)->getTerminalsForPayment($payment);
+                $chargeAccountMerchant = $gatewayInput[Payment\Entity::CHARGE_ACCOUNT_MERCHANT] ?? null;
+
+                $this->selectedTerminals = (new TerminalProcessor)->getTerminalsForPayment($payment, $chargeAccountMerchant);
             }
 
             $this->trace->info(

@@ -123,7 +123,6 @@ class Validator extends Base\Validator
         'cred'                          => 'sometimes_if:method,cred|associative_array',
         'cred.app_offer'                => 'required_with:cred|sometimes|boolean',
         'cred.app_present'              => 'required_with:cred|sometimes|boolean',
-        'cred.os'                       => 'required_with:cred|sometimes|string',
     ];
 
     protected static $editAcquirerRules = [
