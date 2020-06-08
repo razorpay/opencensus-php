@@ -124,15 +124,15 @@ class Core extends Base\Core
     {
         $orderPayLoad =
             [
-                'amount'          =>  $input['subscription_registration']['first_payment_amount'],
+                'amount'          => $input['amount'] ?? 0,
                 'currency'        => 'INR',
-                'method'          =>  Method::UPI,
+                'method'          => Method::UPI,
                 'customer_id'     => $input[Entity::CUSTOMER_ID],
                 'payment_capture' => 1,
                 'token'           =>
                     [
-                        'max_amount'      => $input['subscription_registration']['max_amount'],
-                        'frequency'       => $input['subscription_registration']['frequency'],
+                        'max_amount'      => $input['subscription_registration']['max_amount'] ?? null,
+                        'frequency'       => $input['subscription_registration']['frequency'] ?? null,
                         'recurring_type'  => \RZP\Models\UpiMandate\RecurringType::BEFORE,
                         'recurring_value' => 31,
                         'start_time'      => Carbon::now()->addDay(1)->getTimestamp(),

@@ -183,6 +183,11 @@ class SubscriptionRegistrationTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateAuthLinkWithUPIAndMaxAllowedAmount()
+    {
+        $this->startTest();
+    }
+
     public function testFetchTokenByMerchant()
     {
         $paymentRequest = $this->setupPaymentRequest();

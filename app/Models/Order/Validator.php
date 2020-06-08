@@ -12,6 +12,7 @@ use RZP\Exception;
 use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
 use RZP\Models\Currency\Currency;
+use RZP\Models\UpiMandate;
 use RZP\Models\SubscriptionRegistration;
 use RZP\Models\Currency\Core as CurrencyCore;
 use RZP\Exception\BadRequestValidationFailureException;
@@ -80,7 +81,8 @@ class Validator extends Base\Validator
 
         if ((isset($input[Entity::METHOD]) === false) or
             (($input[Entity::METHOD] !== Payment\Method::EMANDATE) and
-                ($input[Entity::METHOD] !== Payment\Method::NACH)))
+             ($input[Entity::METHOD] !== Payment\Method::NACH) and
+             ($input[Entity::METHOD] !== Payment\Method::UPI)))
         {
             $this->validateInputValues('min_amount_check', $input);
         }
@@ -94,6 +96,19 @@ class Validator extends Base\Validator
                 (Payment\Gateway::isZeroRupeeFlowSupported($input[Entity::BANK]) === false))
             {
                 $this->validateInputValues('min_amount_check', $input);
+            }
+        }
+        else if ($input[Entity::METHOD] === Payment\Method::UPI)
+        {
+            if ($amount > UpiMandate\Validator::MAX_AMOUNT_LIMIT)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'Amount exceeds maximum amount allowed.',
+                    Entity::AMOUNT,
+                    [
+                        Entity::AMOUNT => $amount,
+                        SubscriptionRegistration\Entity::MAX_AMOUNT => UpiMandate\Validator::MAX_AMOUNT_LIMIT
+                    ]);
             }
         }
 

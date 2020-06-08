@@ -548,5 +548,41 @@ return [
             ],
         ],
     ],
+
+    'testCreateAuthLinkWithUPIAndMaxAllowedAmount' => [
+        'request'   => [
+            'url'     => '/subscription_registration/auth_links',
+            'method'  => 'post',
+            'content' => [
+                'type'                      => 'link',
+                'amount'                    => '210000',
+                'customer'                  => [
+                    'email'   => 'test@razorpay.com',
+                    'contact' => '9999999999',
+                    'name'    => 'test',
+                ],
+                'description'               => 'test description',
+                'subscription_registration' => [
+                    'method'     => 'upi',
+                    'max_amount' => 200000,
+                    'frequency'  => 'yearly'
+                ],
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => ErrorCode::BAD_REQUEST_ERROR,
+                    'field'       => 'amount',
+                    'description' => 'Amount exceeds maximum amount allowed.'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
     // ----------------------------------------------------------------------
 ];
