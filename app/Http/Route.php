@@ -1377,6 +1377,8 @@ class Route
         // Features
         'feature_add'                              => ['post',     'features',                                       'FeatureController@addFeatures'                                     ],
         'feature_get'                              => ['get',      'features/{entityType}/{entityId}',               'FeatureController@getFeatures'                                     ],
+        'feature_get_all'                          => ['get',      'feature/{entityType}/{entityId}',                'FeatureController@getFeatures'                                     ],
+        'feature_get_status'                       => ['get',      'feature/{entityType}/{entityId}/{featureName}',  'FeatureController@getFeatureStatus'                                ],
         'feature_bulk_assign'                      => ['post',     'features/assign',                                'FeatureController@multiAssignFeature'                              ],
         'feature_bulk_remove'                      => ['post',     'features/remove',                                'FeatureController@multiRemoveFeature'                              ],
         'feature_delete_entity'                    => ['delete',   '{entityType}/{entityId}/features/{featureName}', 'FeatureController@deleteEntityFeature'                             ],
@@ -2383,6 +2385,8 @@ class Route
     ];
 
     public static $proxy = [
+        'feature_get_status',
+        'feature_get_all',
         'ufh_upload_file',
         'los_service',
         'user_fetch_for_merchant',
@@ -3363,6 +3367,8 @@ class Route
         'feature_delete'                           => Permission::DELETE_MERCHANT_FEATURES,
         'feature_delete_entity'                    => Permission::DELETE_MERCHANT_FEATURES,
         'feature_get'                              => Permission::VIEW_MERCHANT_FEATURES,
+        'feature_get_all'                          => Permission::VIEW_MERCHANT_FEATURES,
+        'feature_get_status'                       => Permission::VIEW_MERCHANT_FEATURES,
         'workflow_create'                          => Permission::CREATE_WORKFLOW, // Fix permissions
         'workflow_payout_amount_rules_create'      => Permission::CREATE_WORKFLOW,
         'workflow_get'                             => Permission::VIEW_WORKFLOW,
@@ -4465,6 +4471,8 @@ class Route
             'merchant_fetch_keys',
             'entity_origin_create',
             'currency_fetch_all_proxy',
+            'feature_get_all',
+            'feature_get_status',
             'invoice_update_billing_period',
             'create_credit_note',
             'credit_note_list',

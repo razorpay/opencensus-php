@@ -1023,4 +1023,32 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_FEATURE_UNEDITABLE_IN_LIVE,
         ],
     ],
+
+    'testCheckFeatureStatus' => [
+        'request' => [
+            'url' => '/feature/merchant/10000000000000/subscriptions',
+            'method' => 'get'
+        ],
+        'response' => [
+            'content' => [
+                'status' => true
+            ],
+            'status_code' => 200
+        ]
+    ],
+
+    'testCheckFeatureAllProxyAuth' => [
+        'request' => [
+            'url' => '/feature/merchant/10000000000000/',
+            'method' => 'get'
+        ],
+        'response' => [
+            'content' => [
+                'assigned_features' => [
+                    ['name' => 'subscriptions']
+                ],
+            ],
+            'status_code' => 200
+        ]
+    ],
 ];

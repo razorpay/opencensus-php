@@ -98,6 +98,37 @@ class Service extends Base\Service
     }
 
     /**
+     * Delete the feature association with an entity
+     *
+     * @param string $entityType
+     * @param string $entityId
+     * @param string $featureName
+     *
+     * @return array
+     * @throws Exception\BadRequestException
+     */
+    public function checkFeatureEnabled($entityType, $entityId, $featureName): array
+    {
+        // Not removed from params
+        // As in future iteration, there will be some checks added for Entity Type and ID
+        // Exact requirement is not finalised yet. Only this will be rolled out in Iteration 1
+
+        $entityType = Constants::MERCHANT;
+
+        $entityId = $this->merchant->getId();
+
+        $response = new Base\Collection;
+
+        $status = $this->repo
+            ->feature
+            ->findByEntityTypeEntityIdAndName($entityType, $entityId, $featureName);
+
+        $response['status'] = $status !== null ? true : false;
+
+        return $response->toArray();
+    }
+
+    /**
     * Delete the feature association with an entity
     *
     * @param string $routeEndpoint

@@ -116,6 +116,14 @@ class FeatureController extends Controller
         return $this->getFeatures();
     }
 
+
+    protected function getFeatureStatus($entityType, $entityId, $featureName)
+    {
+        $data = $this->service()->checkFeatureEnabled($entityType, $entityId, $featureName);
+
+        return ApiResponse::json($data);
+    }
+
     /**
      * Returns the features assigned to the entity
      *

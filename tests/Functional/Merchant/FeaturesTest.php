@@ -576,6 +576,42 @@ class FeaturesTest extends TestCase
     }
 
     /**
+     * Checks if the feature is active for the merchant
+     * merchant dashboard
+     */
+    public function testCheckFeatureStatus()
+    {
+        $this->fixtures->create(
+            'feature',
+            [
+                'entity_id' => '10000000000000',
+                'name' => 'subscriptions'
+            ]);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    /**
+     * Checks if the feature is active for the merchant
+     * merchant dashboard
+     */
+    public function testCheckFeatureAllProxyAuth()
+    {
+        $this->fixtures->create(
+            'feature',
+            [
+                'entity_id' => '10000000000000',
+                'name' => 'subscriptions'
+            ]);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    /**
      * This function tests updating of a visible merchant feature: noflashcheckout
      */
     public function testUpdateMerchantFeatures()
