@@ -1916,4 +1916,25 @@ class OrderTest extends TestCase
     {
         $this->startTest();
     }
+
+    public function testCreateOrderWithAmountGreaterThanMaxAmountAndCurrencyUSD()
+    {
+        $merchantId = "10000000000000";
+
+        $merchantAttribute = [
+            Entity::INTERNATIONAL         => true,
+            Entity::CONVERT_CURRENCY      => true,
+            ENTITY::MAX_PAYMENT_AMOUNT    => 10000,
+        ];
+
+        $this->fixtures->edit('merchant', $merchantId, $merchantAttribute);
+
+        $merchantDetailAttribute = [
+            Entity::MERCHANT_ID             => $merchantId,
+        ];
+
+        $this->fixtures->create('merchant_detail', $merchantDetailAttribute);
+
+        $this->startTest();
+    }
 }

@@ -13,6 +13,7 @@ use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
 use RZP\Models\Currency\Currency;
 use RZP\Models\SubscriptionRegistration;
+use RZP\Models\Currency\Core as CurrencyCore;
 use RZP\Exception\BadRequestValidationFailureException;
 
 class Validator extends Base\Validator
@@ -59,9 +60,9 @@ class Validator extends Base\Validator
     protected static $createValidators = [
         Entity::ACCOUNT_NUMBER,
         Entity::BANK,
+        Entity::CURRENCY,
         Entity::AMOUNT,
         'method_fee_bearer',
-        Entity::CURRENCY,
         Entity::DISCOUNT,
     ];
 
@@ -98,7 +99,16 @@ class Validator extends Base\Validator
 
         $maxAmountAllowed = $this->entity->merchant->getMaxPaymentAmount();
 
-        if ($amount > $maxAmountAllowed)
+        $currency = $input['currency'];
+
+        $baseAmount = $amount;
+
+        if ($currency != Currency::INR)
+        {
+            $baseAmount = (new CurrencyCore)->getBaseAmount($amount, $currency);
+        }
+
+        if (($baseAmount > $maxAmountAllowed) === true)
         {
             $this->trace->count(Metric::ORDER_CREATION_AMOUNT_VALIDATION_FAILURE_COUNT, [
                 'business_type' => $this->entity->merchant->merchantDetail->getBusinessType() ?? "",

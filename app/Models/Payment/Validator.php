@@ -26,6 +26,7 @@ use RZP\Models\VirtualAccount\Receiver;
 use RZP\Models\Payment\Processor\Wallet;
 use RZP\Models\Payment\Processor\CardlessEmi;
 use RZP\Models\Payment\Processor\UpiTrait;
+use RZP\Models\Currency\Core as CurrencyCore;
 
 class Validator extends Base\Validator
 {
@@ -781,7 +782,16 @@ class Validator extends Base\Validator
 
         $maxAmountAllowed = $this->entity->merchant->getMaxPaymentAmount();
 
-        if ($amount > $maxAmountAllowed)
+        $currency = $input["currency"];
+
+        $baseAmount = $amount;
+
+        if ($currency != Currency::INR)
+        {
+            $baseAmount = (new CurrencyCore)->getBaseAmount($amount, $currency);
+        }
+
+        if (($baseAmount > $maxAmountAllowed) === true)
         {
             $this->trace->count(Metric::PAYMENT_CREATION_AMOUNT_VALIDATION_FAILURE_COUNT, [
                 'business_type' => $this->entity->merchant->merchantDetail->getBusinessType() ?? "",

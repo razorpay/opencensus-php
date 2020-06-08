@@ -3547,4 +3547,35 @@ class PaymentCreateTest extends TestCase
         \RZP\Exception\BadRequestException::class,
         'Invalid charge account');
     }
+
+    public function testCreatePaymentWithAmountGreaterThanMaxAmountAndCurrencyUSD()
+    {
+        $merchantId = "10000000000000";
+
+        $merchantAttribute = [
+            MERCHANT::INTERNATIONAL => true,
+            MERCHANT::CONVERT_CURRENCY => true,
+            MERCHANT::MAX_PAYMENT_AMOUNT => 10000,
+        ];
+
+        $this->fixtures->edit('merchant', $merchantId, $merchantAttribute);
+
+        $merchantDetailAttribute = [
+            DetailEntity::MERCHANT_ID => $merchantId,
+        ];
+
+        $this->fixtures->create('merchant_detail', $merchantDetailAttribute);
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['amount'] = '1001';
+
+        $payment['currency'] = 'USD';
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($testData, function () use ($payment) {
+            $this->doAuthPayment($payment);
+        });
+    }
 }
