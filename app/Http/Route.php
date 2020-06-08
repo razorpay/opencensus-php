@@ -1746,6 +1746,9 @@ class Route
 
         //cron job to retry penny testing for initiated case
         'retry_penny_testing_cron'                => ['post',      'merchants/retry_penny_testing',                           'MerchantController@retryPennyTestingCron'                 ],
+
+        // Routes related to payments rearch for fetching/writing data
+        'api_entity_fetch'                        => ['get',     'entities/{entity}/{id}',                                 'CardPSController@FetchEntity'                                   ],
     ];
 
     public static $public = [
@@ -2094,6 +2097,7 @@ class Route
     // If a route needs access from the Dashboard
     // Put it in the Admin Array instead
     public static $internal = [
+        'api_entity_fetch',
         'subscription_registration_nach_migration',
         'leegality_webhook',
         'gateway_first_data_pares_store',
@@ -4677,6 +4681,14 @@ class Route
 
         'mozart' => [
             'gateway_first_data_pares_store'
+        ],
+
+        'card_payment_service' => [
+            'api_entity_fetch'
+        ],
+
+        'pg_router' => [
+            'api_entity_fetch'
         ]
     ];
 

@@ -499,6 +499,7 @@ return [
 
     'card_payment_service' => [
         'mock'      => env('CARD_PAYMENT_SERVICE_MOCK', false),
+        'secret'    => env('CARD_PAYMENT_SERVICE_SECRET'),
         'username'  => env('CARD_PAYMENT_SERVICE_KEY'),
         'password'  => env('CARD_PAYMENT_SERVICE_SECRET'),
         'url'       => [
