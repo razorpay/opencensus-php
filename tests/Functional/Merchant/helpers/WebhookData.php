@@ -1667,7 +1667,7 @@ return [
                     'entity' => [
                         'entity'            => 'terminal',
                         'status'            => 'pending',
-                        'enabled'           =>  false,
+                        'enabled'           =>  true,
                     ],
                 ],
             ],

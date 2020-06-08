@@ -297,6 +297,8 @@ class GatewayProcessor extends BaseGatewayProcessor
 
             $terminal->setStatus(Terminal\Status::PENDING);
 
+            $terminal->setEnabled(true);
+
             $terminal->save();
 
             $terminalOnboardingDetail->save();

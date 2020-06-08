@@ -241,7 +241,7 @@ class Repository extends Base\Repository
         return $this->newQuery()
         ->where(Entity::GATEWAY, '=', $gateway)
         ->where(Entity::GATEWAY_MERCHANT_ID, '=', $gatewayMerchantId)
-        ->where(Entity::STATUS, '=', Terminal\Status::ACTIVATED)
+        ->whereIn(Entity::STATUS, [Terminal\Status::ACTIVATED, Terminal\Status::PENDING])
         ->where(function ($query) use ($mpan)
         {
             $query->where(Entity::VISA_MPAN, '=', $mpan)
