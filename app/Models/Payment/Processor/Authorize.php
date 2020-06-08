@@ -2995,7 +2995,12 @@ trait Authorize
 
             $emiDuration = $input['emi_duration'];
 
-            $gatewayInput['emi_plan'] = $this->setBankAndEmiPlanDetails($payment, $cardNumber, $emiDuration);
+            // Using array to pass card number due to https://razorpay.atlassian.net/browse/CARD-760
+            $cardNumberArray = [
+                'number' => $cardNumber,
+            ];
+
+            $gatewayInput['emi_plan'] = $this->setBankAndEmiPlanDetails($payment, $cardNumberArray, $emiDuration);
         }
 
         if ($payment->isCardlessEmi() === true)
@@ -4066,8 +4071,10 @@ trait Authorize
         }
     }
 
-    protected function setBankAndEmiPlanDetails(Payment\Entity $payment, string $cardNumber, int $emiDuration)
+    protected function setBankAndEmiPlanDetails(Payment\Entity $payment, $cardNumberArray, int $emiDuration)
     {
+        $cardNumber = $cardNumberArray['number'];
+
         $iinEntity = $payment->card->iinRelation;
 
         // On custom checkouts, sometimes users are entering random cards for

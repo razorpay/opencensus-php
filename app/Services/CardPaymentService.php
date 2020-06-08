@@ -9,6 +9,7 @@ use RZP\Models\Order;
 use RZP\Models\Card;
 use RZP\Error\ErrorCode;
 use RZP\Gateway\Base\Verify;
+use RZP\Models\Emi\Migration;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Trace\TraceCode;
 use RZP\Models\Terminal;
@@ -373,40 +374,48 @@ class CardPaymentService
             }
 
             $traceMap = [
-                'action'                   => 'content.action',
-                'payment.id'               => 'content.input.payment.id',
-                'payment.auth_type'        => 'content.input.payment.auth_type',
-                'merchant.id'              => 'content.input.merchant.id',
-                'merchant.name'            => 'content.input.merchant.name',
-                'merchant.features'        => 'content.input.merchant.features',
-                'terminal.id'              => 'content.input.terminal.id',
-                'terminal.merchant_id'     => 'content.input.terminal.merchant_id',
-                'terminal.type'            => 'content.input.terminal.type',
-                'card.network'             => 'content.input.card.network',
-                'card.issuer'              => 'content.input.card.issuer',
-                'card.country'             => 'content.input.card.country',
-                'iin.iin'                  => 'content.input.iin.iin',
-                'iin.network'              => 'content.input.iin.network',
-                'iin.country'              => 'content.input.iin.country',
-                'iin.emi'                  => 'content.input.iin.emi',
-                'iin.flows'                => 'content.input.iin.flows',
-                'iin.enabled'              => 'content.input.iin.enabled',
-                'emi_plan.id'              => 'content.input.emi_plan.id',
-                'emi_plan.duration'        => 'content.input.emi_plan.duration',
-                'emi_plan.type'            => 'content.input.emi_plan.type',
-                'emi_plan.rate'            => 'content.input.emi_plan.rate',
-                'emi_plan.subvention'      => 'content.input.emi_plan.subvention',
-                'card.is_international'    => 'content.input.card.international',
-                'authentication.auth'      => 'content.input.authenticate',
-                'authentication.auth_type' => 'content.input.auth_type',
-                'gateway.data'             => 'content.input.gateway',
-                'gateway.callback_url'     => 'content.input.callbackUrl',
-                'gateway.otpsubmit_url'    => 'content.input.otpSubmitUrl',
-                'terminals'                => 'content.input.terminal_ids',
-                'token.id'                 => 'content.input.token.id',
-                'analytics.risk_engine'    => 'content.input.payment_analytics.risk_engine',
-                'analytics.risk_score'     => 'content.input.payment_analytics.risk_score',
-                'order.receipt'            => 'content.input.order.receipt',
+                'action'                            => 'content.action',
+                'payment.id'                        => 'content.input.payment.id',
+                'payment.auth_type'                 => 'content.input.payment.auth_type',
+                'merchant.id'                       => 'content.input.merchant.id',
+                'merchant.name'                     => 'content.input.merchant.name',
+                'merchant.features'                 => 'content.input.merchant.features',
+                'terminal.id'                       => 'content.input.terminal.id',
+                'terminal.merchant_id'              => 'content.input.terminal.merchant_id',
+                'terminal.type'                     => 'content.input.terminal.type',
+                'card.network'                      => 'content.input.card.network',
+                'card.issuer'                       => 'content.input.card.issuer',
+                'card.country'                      => 'content.input.card.country',
+                'iin.iin'                           => 'content.input.iin.iin',
+                'iin.network'                       => 'content.input.iin.network',
+                'iin.country'                       => 'content.input.iin.country',
+                'iin.emi'                           => 'content.input.iin.emi',
+                'iin.flows'                         => 'content.input.iin.flows',
+                'iin.enabled'                       => 'content.input.iin.enabled',
+                'emi_plan.id'                       => 'content.input.emi_plan.id',
+                'emi_plan.duration'                 => 'content.input.emi_plan.duration',
+                'emi_plan.type'                     => 'content.input.emi_plan.type',
+                'emi_plan.rate'                     => 'content.input.emi_plan.rate',
+                'emi_plan.subvention'               => 'content.input.emi_plan.subvention',
+                'card.is_international'             => 'content.input.card.international',
+                'authentication.auth'               => 'content.input.authenticate',
+                'authentication.auth_type'          => 'content.input.auth_type',
+                'gateway.data'                      => 'content.input.gateway',
+                'gateway.callback_url'              => 'content.input.callbackUrl',
+                'gateway.otpsubmit_url'             => 'content.input.otpSubmitUrl',
+                'terminals'                         => 'content.input.terminal_ids',
+                'token.id'                          => 'content.input.token.id',
+                'analytics.risk_engine'             => 'content.input.payment_analytics.risk_engine',
+                'analytics.risk_score'              => 'content.input.payment_analytics.risk_score',
+                'order.receipt'                     => 'content.input.order.receipt',
+                'emi_plan_fetch.merchant_id'        => 'content.merchant_id',
+                'emi_plan_fetch.merchant_ids'       => 'content.merchant_ids',
+                'emi_plan_fetch.id'                 => 'content.id',
+                'emi_plan_fetch.network'            => 'content.network',
+                'emi_plan_fetch.bank'               => 'content.bank',
+                'emi_plan_fetch.type'               => 'content.type',
+                'emi_plan_fetch.duration'           => 'content.duration',
+                'emi_plan_fetch.durations'          => 'content.durations',
             ];
 
             $requestTrace = [];
@@ -520,8 +529,24 @@ class CardPaymentService
        unset($traceResponse['data']['content']['expmonth']);
        unset($traceResponse['data']['content']['expyear']);
 
+       if (isset($traceResponse[Migration::EMI_PLANS]) === true)
+       {
+           $emiTrace = [];
 
-        $this->trace->info(TraceCode::CARD_PAYMENT_SERVICE_RESPONSE, $traceResponse ?? []);
+           foreach ($traceResponse[Migration::EMI_PLANS] as $plan)
+           {
+               $planTrace = [
+                   'id'             => Arr::get($plan, 'id'),
+                   'merchant_id'    => Arr::get($plan, 'merchant_id'),
+               ];
+
+               array_push($emiTrace, $planTrace);
+           }
+
+           $traceResponse[Migration::EMI_PLANS] = $emiTrace;
+       }
+
+       $this->trace->info(TraceCode::CARD_PAYMENT_SERVICE_RESPONSE, $traceResponse ?? []);
     }
 
     protected function jsonToArray($json)

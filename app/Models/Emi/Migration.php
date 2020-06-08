@@ -9,6 +9,7 @@ use RZP\Exception;
 use RZP\Models\Admin;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Models\Base\PublicCollection;
 
 class Migration
 {
@@ -75,7 +76,7 @@ class Migration
         return $this->migrationRequestHandler($action, $emiPlan, $id, $input);
     }
 
-    function migrationRequestHandler($action, $emiPlan, $id = '', $input = [])
+    function migrationRequestHandler($action, $emiPlan, $id = '', $input = [], $ignoreFailure = false)
     {
         $response = [];
 
@@ -124,6 +125,11 @@ class Migration
             ]);
         }
 
+        if ($ignoreFailure === true)
+        {
+            return [];
+        }
+
         $this->trace->warning(TraceCode::CARD_PAYMENT_SERVICE_EMI_FETCH_DISABLING, [
             'config_key' => Admin\ConfigKey::CARD_PAYMENT_SERVICE_EMI_FETCH,
             'message' => 'emi fetch disabled',
@@ -161,6 +167,11 @@ class Migration
     //Returns a collection of eloquent model instances.
     public function getEntityList($input)
     {
+        if ($input === null)
+        {
+            return new PublicCollection;
+        }
+
         $entityList = [];
 
         foreach($input as $data)
@@ -170,7 +181,7 @@ class Migration
             array_push($entityList, $entityData);
         }
 
-        return collect($entityList);
+        return new PublicCollection($entityList);
     }
 
     //Returns an eloquent model instance based on the given input.

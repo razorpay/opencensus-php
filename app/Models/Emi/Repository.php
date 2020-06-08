@@ -119,16 +119,18 @@ class Repository extends Base\Repository
             $cpsQuery[Entity::NETWORK] = $network;
         }
 
+        if (empty($type) === false)
+        {
+            $query->where(Entity::TYPE, $type);
+
+            $cpsQuery[Entity::TYPE] = $type;
+        }
+
         $cpsResp = (new Migration) -> handleMigration(Migration::EMI_QUERY, null, '', $cpsQuery);
 
         if ($cpsResp != null)
         {
             return (new Migration)->getEntityList($cpsResp[Migration::EMI_PLANS]);
-        }
-
-        if (empty($type) === false)
-        {
-            $query->where(Entity::TYPE, $type);
         }
 
         return $query->get();
@@ -198,9 +200,9 @@ class Repository extends Base\Repository
     //DB query exception.
     public function handleFindOrFail($id)
     {
-        if((new Migration)->isCpsFetchEnabled())
+        if ((new Migration)->isCpsFetchEnabled())
         {
-            $cpsData = (new Migration)->migrationRequestHandler(Migration::FETCH,null, $id, null);
+            $cpsData = (new Migration)->migrationRequestHandler(Migration::FETCH,null, $id, null, true);
 
             if($cpsData == null)
             {
@@ -225,9 +227,9 @@ class Repository extends Base\Repository
     //BAD_REQUEST_INVALID_ID exception.
     public function handleFindOrFailPublic($id)
     {
-        if((new Migration)->isCpsFetchEnabled())
+        if ((new Migration)->isCpsFetchEnabled())
         {
-            $cpsData = (new Migration)->migrationRequestHandler(Migration::FETCH,null, $id, null);
+            $cpsData = (new Migration)->migrationRequestHandler(Migration::FETCH,null, $id, null, true);
 
             if($cpsData == null)
             {

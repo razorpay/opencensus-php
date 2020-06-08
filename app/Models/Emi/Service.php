@@ -387,13 +387,18 @@ class Service extends Base\Service
 
     private function fetchEmiPlans()
     {
+        $sharedEmiPlans = null;
+        $merchantEmiPlans = null;
+
         if ((new Migration)->isCpsFetchEnabled() == true)
         {
             $sharedEmiPlans = $this->fetchEmiPlansFromCardPaymentsService(Account::SHARED_ACCOUNT);
 
             $merchantEmiPlans = $this->fetchEmiPlansFromCardPaymentsService($this->merchant->getId());
         }
-        else
+
+        // Adding check again to handle the fallback condition where config key is turned off due to issue on cps.
+        if (($sharedEmiPlans === null) or ($merchantEmiPlans === null))
         {
             $sharedEmiPlans = $this->repo->emi_plan->fetchEmiPlansByMerchantId(Account::SHARED_ACCOUNT);
 
@@ -430,6 +435,11 @@ class Service extends Base\Service
         ];
 
         $plans = (new Migration)->handleMigration(Migration::QUERY, null, '', $input);
+
+        if ($plans === null)
+        {
+            return $plans;
+        }
 
         return (new Migration)->getEntityList($plans[Migration::EMI_PLANS]);
     }
