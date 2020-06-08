@@ -316,8 +316,19 @@ return [
         ],
 
         'billdesk_refund' => [
-            'refund_id'                 => 'uibpgthqndxmwcf',
+            'biller_id'                 => 'R5DLGMPL4',
+            'bank_id'                   => 'IDB',
+            'bank_ref_no'               => '2609795892',
+            'pgi_ref_no'                => 'SIDB8828522243',
             'ref_1'                     => '9LRjiRNokiZ3Ww',
+            'ref_2'                     => '9LRjiRNokiZ3Ww',
+            'ref_3'                     => 'NA',
+            'ref_4'                     => 'NA',
+            'date_of_transaction'       => '25/05/20 1:59',
+            'settlement_date'           => '26/05/20 1:30',
+            'gross_amountrsps'          => '500.00',
+            'refund_id'                 => 'SIDB88285222431',
+            'refund_date'               => '04/06/20 2:00',
             'refund_amount_rs_ps'       => 500
         ],
 

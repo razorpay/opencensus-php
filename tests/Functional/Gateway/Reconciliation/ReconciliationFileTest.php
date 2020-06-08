@@ -1614,6 +1614,91 @@ class ReconciliationFileTest extends TestCase
         $this->assertBatchStatus(Status::PROCESSED);
     }
 
+    public function testBillDeskRefundReconFile()
+    {
+        $this->fixtures->create('terminal:shared_billdesk_terminal');
+        $this->fixtures->merchant->addFeatures('charge_at_will');
+
+        // Recurring authorised payment
+        $payment = $this->getDefaultNetbankingPaymentArray();
+
+        $payment = $this->doAuthAndCapturePayment($payment);
+
+        $refund = $this->refundPayment($payment['id']);
+        $gatewayRefund = $this->getLastEntity('billdesk', true);
+
+        $refundEntity = $this->getEntityById('refund', $gatewayRefund['refund_id'], true);
+        $transaction = $this->getEntityById('transaction', $refundEntity['transaction_id'], true);
+
+        //Reconciled at should be null
+        $this->assertNull($transaction['reconciled_at']);
+        $this->assertNull($transaction['reconciled_type']);
+
+        $entries[] = $this->overrideBilldeskRefund($gatewayRefund);
+
+        // Recurring authorised payment 2
+        $payment2 = $this->getDefaultNetbankingPaymentArray();
+
+        $payment2 = $this->doAuthAndCapturePayment($payment2);
+
+        $refund2 = $this->refundPayment($payment2['id']);
+        $gatewayRefund2 = $this->getLastEntity('billdesk', true);
+
+        $refundEntity2 = $this->getEntityById('refund', $gatewayRefund2['refund_id'], true);
+        $transaction2 = $this->getEntityById('transaction', $refundEntity2['transaction_id'], true);
+
+        //Reconciled at should be null
+        $this->assertNull($transaction2['reconciled_at']);
+        $this->assertNull($transaction2['reconciled_type']);
+
+        $entries[] = $this->overrideBilldeskRefund($gatewayRefund2);
+
+        $file = $this->writeToCsvFile($entries, 'billdesk_refund');
+
+        // Intentionally, Here we have just one refund in scrooge mock response,
+        // Thus, for 2nd refund, we will fetch refund ID from billdesk table, in old way.
+        // This is done to test back ward compatibility.
+        $scroogeResponse = [
+            'body' => [
+                'data' => [
+                    ltrim($entries[0]['refund_id'], '0') => [
+                        'payment_id'     => PublicEntity::stripDefaultSign($payment['id']),
+                        'refund_id'      => PublicEntity::stripDefaultSign($refund['id'])
+                    ],
+                ]
+            ]
+        ];
+
+        $scroogeMock = $this->getMockBuilder(Scrooge::class)
+                            ->setConstructorArgs([$this->app])
+                            ->setMethods(['getRefundsFromPaymentIdAndGatewayId'])
+                            ->getMock();
+
+        $this->app->instance('scrooge', $scroogeMock);
+
+        $this->app->scrooge->method('getRefundsFromPaymentIdAndGatewayId')->willReturn($scroogeResponse);
+
+        $this->runForFiles([$file], 'BillDesk');
+
+        // Assert Refund 1
+        $updatedRefund = $this->getEntityById('refund', $gatewayRefund['refund_id'], true);
+        $updatedTransaction = $this->getEntityById('transaction', $updatedRefund['transaction_id'], true);
+
+        //Reconciled at should not be null
+        $this->assertNotNull($updatedTransaction['reconciled_at']);
+        $this->assertNotNull($updatedTransaction['reconciled_type']);
+
+        // Assert Refund 2
+        $updatedRefund2 = $this->getEntityById('refund', $gatewayRefund2['refund_id'], true);
+        $updatedTransaction2 = $this->getEntityById('transaction', $updatedRefund2['transaction_id'], true);
+
+        //Reconciled at should not be null
+        $this->assertNotNull($updatedTransaction2['reconciled_at']);
+        $this->assertNotNull($updatedTransaction2['reconciled_type']);
+
+        $this->assertBatchStatus(Status::PROCESSED);
+    }
+
     public function testBillDeskReconPaymentFile()
     {
         $this->fixtures->create('terminal:shared_billdesk_terminal');
@@ -2063,6 +2148,7 @@ class ReconciliationFileTest extends TestCase
 
         $facade[BilldeskRefundRecon::COLUMN_REFUND_ID]  = $refund['RefundId'];
         $facade[BilldeskRefundRecon::COLUMN_PAYMENT_ID] = $refund['payment_id'];
+        $facade['ref_2']                                = $refund['payment_id'];
 
         return $facade;
     }

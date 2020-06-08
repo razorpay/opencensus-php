@@ -245,7 +245,7 @@ class Reconciliate extends Base\Core
                 continue;
             }
 
-            $this->preProcessFileContents($fileContents);
+            $this->preProcessFileContents($fileContents, $reconciliationType);
 
             $this->setSubReconciliator($reconciliationType, $batch);
 
@@ -1138,8 +1138,9 @@ class Reconciliate extends Base\Core
      * Currently only implemented for FirstData.
      *
      * @param array $fileContents
+     * @param string $reconciliationType
      */
-    protected function preProcessFileContents(array &$fileContents)
+    protected function preProcessFileContents(array &$fileContents, string $reconciliationType)
     {
         return;
     }

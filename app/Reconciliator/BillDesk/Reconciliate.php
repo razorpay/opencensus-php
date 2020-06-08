@@ -3,6 +3,10 @@
 namespace RZP\Reconciliator\BillDesk;
 
 use RZP\Reconciliator\Base;
+use RZP\Models\Payment\Gateway;
+use RZP\Models\Batch\Processor\Reconciliation;
+use RZP\Reconciliator\BillDesk\SubReconciliator\RefundReconciliate;
+use RZP\Reconciliator\BillDesk\SubReconciliator\PaymentReconciliate;
 
 class Reconciliate extends Base\Reconciliate
 {
@@ -42,6 +46,7 @@ class Reconciliate extends Base\Reconciliate
      * be part of the reconciliation or not.
      *
      * @param array $fileDetails
+     * @param array $inputDetails
      * @return bool Whether the given file is present in the gateway's
      *              exclude list or not.
      */
@@ -56,5 +61,72 @@ class Reconciliate extends Base\Reconciliate
         }
 
         return false;
+    }
+
+    /**
+     * For refund MIS file, we send payment_id and gateway refund id
+     * to scrooge api, which returns refund id in the response.
+     * We set the RZP refund ID in ref_3 column (which is currently
+     * unused and contains NA, always). ref_1, ref_2 contains paymentID.
+     *
+     * @param array $fileContents
+     * @param string $reconciliationType
+     */
+    protected function preProcessFileContents(array &$fileContents, string $reconciliationType)
+    {
+        if ($reconciliationType === Base\Reconciliate::PAYMENT)
+        {
+            return;
+        }
+
+        $refundsArray = [];
+
+        foreach ($fileContents as $index => &$row)
+        {
+            if ($index === Reconciliation::EXTRA_DETAILS)
+            {
+                continue;
+            }
+
+            $txnId = $row[RefundReconciliate::COLUMN_REFUND_ID];
+            $refundsArray[$txnId] = $row[PaymentReconciliate::COLUMN_PAYMENT_ID];
+        }
+
+        $request = $this->buildRequestForScrooge($refundsArray);
+
+        if (count($request) > 0)
+        {
+            $response = $this->getRefundIdFromScrooge($request, Gateway::BILLDESK);
+
+            foreach ($fileContents as $index => &$row)
+            {
+                if ($index === Reconciliation::EXTRA_DETAILS)
+                {
+                    continue;
+                }
+
+                $txnId = $row[RefundReconciliate::COLUMN_REFUND_ID];
+
+                if (empty($response[$txnId]) === false)
+                {
+                    $row[RefundReconciliate::COLUMN_RZP_REFUND_ID] = $response[$txnId]['refund_id'];
+                }
+            }
+        }
+    }
+
+    private function buildRequestForScrooge(array $input)
+    {
+        $request = [];
+
+        foreach ($input as $key => $value)
+        {
+            $request[] = [
+                'payment_id'      => $value,
+                'reference_value' => ltrim($key, '0'),
+            ];
+        }
+
+        return $request;
     }
 }

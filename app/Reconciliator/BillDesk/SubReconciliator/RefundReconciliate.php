@@ -2,8 +2,9 @@
 
 namespace RZP\Reconciliator\BillDesk\SubReconciliator;
 
-use RZP\Reconciliator\Base;
 use RZP\Trace\TraceCode;
+use RZP\Reconciliator\Base;
+use RZP\Models\Payment\Entity;
 use Razorpay\Spine\Exception\DbQueryException;
 
 class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
@@ -13,6 +14,7 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
      *******************/
     const COLUMN_REFUND_ID      = 'refund_id';
     const COLUMN_PAYMENT_ID     = 'ref_1';
+    const COLUMN_RZP_REFUND_ID  = 'ref_3';
     const COLUMN_REFUND_AMOUNT  = 'refund_amount_rs_ps';
 
     const BLACKLISTED_COLUMNS = [];
@@ -20,12 +22,23 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
     /**
      * BillDesk reconciliation files only send us the gateway refund ID,
      * which is mapped to api's refund id in BillDesk gateway db.
+     * EDIT : Now we are pre-processing the file contents, and for nb_plus
+     * migrated refunds, calling scrooge to fetch the RZP refund ID and
+     * setting it in ref_3 column.
      *
      * @param array $row
      * @return string Refund ID
+     * @throws \RZP\Exception\BadRequestValidationFailureException
      */
     protected function getRefundId(array $row)
     {
+        $refundId = $row[self::COLUMN_RZP_REFUND_ID] ?? null;
+
+        if (Entity::verifyUniqueId($refundId, false) === true)
+        {
+            return $refundId;
+        }
+
         $gatewayRefundId = $row[self::COLUMN_REFUND_ID];
 
         if (empty($gatewayRefundId) === true)

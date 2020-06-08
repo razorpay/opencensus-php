@@ -66,9 +66,10 @@ class Reconciliate extends Base\Reconciliate
      * get populated in this column only.
      *
      * @param array $fileContents
+     * @param string $reconciliationType
      * @throws \RZP\Exception\BadRequestValidationFailureException
      */
-    protected function preProcessFileContents(array &$fileContents)
+    protected function preProcessFileContents(array &$fileContents, string $reconciliationType)
     {
         $capsPaymentIds = [];
 

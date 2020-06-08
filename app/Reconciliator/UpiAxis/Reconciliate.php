@@ -56,7 +56,7 @@ class Reconciliate extends Base\Reconciliate
     // create issue in output file (looker dashboard), so need
     // to unset these columns
     //
-    protected function preProcessFileContents(array &$fileContents)
+    protected function preProcessFileContents(array &$fileContents, string $reconciliationType)
     {
         foreach ($fileContents as &$row)
         {

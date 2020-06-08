@@ -23,8 +23,9 @@ class Reconciliate extends Base\Reconciliate
      * that column with payment ids.
      *
      * @param array $fileContents
+     * @param string $reconciliationType
      */
-    protected function preProcessFileContents(array &$fileContents)
+    protected function preProcessFileContents(array &$fileContents, string $reconciliationType)
     {
         foreach ($fileContents as &$row)
         {
