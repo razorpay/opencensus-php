@@ -217,13 +217,14 @@ class Gateway extends Base\Gateway
         if (empty($refundFields) === false)
         {
             return [
-                Fields::REQUEST_TYPE       => $refundFields[Fields::REQUEST_TYPE] ?? null,
-                Fields::MERCHANT_ID        => $refundFields[Fields::MERCHANT_ID] ?? null,
+                Fields::REFUND_ID          => $refundFields[Fields::REFUND_ID] ?? null,
                 Fields::REF_STATUS         => $refundFields[Fields::REF_STATUS] ?? null,
                 Fields::ERROR_CODE         => $refundFields[Fields::ERROR_CODE] ?? null,
+                Fields::MERCHANT_ID        => $refundFields[Fields::MERCHANT_ID] ?? null,
+                Fields::REQUEST_TYPE       => $refundFields[Fields::REQUEST_TYPE] ?? null,
                 Fields::ERROR_REASON       => $refundFields[Fields::ERROR_REASON] ?? null,
                 Fields::PROCESS_STATUS     => $refundFields[Fields::PROCESS_STATUS] ?? null,
-                Fields::CHECKSUM           => $refundFields[Fields::CHECKSUM] ?? null,
+                Fields::TXN_REFERENCE_NO   => $refundFields[Fields::TXN_REFERENCE_NO] ?? null,
             ];
         }
 
