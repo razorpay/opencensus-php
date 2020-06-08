@@ -29,12 +29,21 @@ trait Vpa
 
         $variant = $this->app->razorx->getTreatment($this->app['request']->getTaskId(), 'validate_vpa_routing', Mode::LIVE);
 
+        $this->trace->info(TraceCode::VALIDATE_VPA_REQUEST, [
+            'variant'     => $variant,
+            'vpa'         => mask_vpa($input['vpa']),
+        ]);
+
         if (($this->mode === Mode::LIVE) and ($variant === Payment\Gateway::UPI_SBI))
         {
             $terminalIds = ['AK6NMmzbL6FPe4', '9Q8w9weX9D1T27'];
         }
 
         $terminals = $this->repo->terminal->findManyEnabledByIds($terminalIds);
+
+        $terminals = $terminals->sortBy(function ($terminal) use ($terminalIds) {
+                    return array_search($terminal->getId(), $terminalIds);
+        });
 
         $count = count($terminals);
 
