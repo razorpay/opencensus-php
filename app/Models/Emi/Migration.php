@@ -4,6 +4,7 @@
 namespace RZP\Models\Emi;
 
 use App;
+use Config;
 use RZP\Exception;
 use RZP\Models\Admin;
 use RZP\Error\ErrorCode;
@@ -128,10 +129,20 @@ class Migration
             'message' => 'emi fetch disabled',
         ]);
 
-        //todo: What happens if for some case request times out, it is a normal failure, this will lead to unnecessary parity issues?
         (new Admin\Service)->setConfigKeys(
             [Admin\ConfigKey::CARD_PAYMENT_SERVICE_EMI_FETCH => false]
         );
+
+        $this->app['slack']->queue(
+            TraceCode::CARD_PAYMENT_SERVICE_EMI_FETCH_DISABLING,
+            [
+                'message'        => 'emi fetch disabled',
+                'response'       => $response->body,
+                'status'         => $response->status_code,
+            ],
+            [
+                'channel'   => Config::get('slack.channels.card_payments_alert'),
+            ]);
 
         return null;
 

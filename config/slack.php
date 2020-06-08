@@ -187,7 +187,10 @@ return array(
         'ivr_alerts'             => 'C010H5E2XCL',
 
         //rbl_ca_alerts
-        'rx_ca_rbl_alerts'       => 'C010ZL4J9V3'
+        'rx_ca_rbl_alerts'       => 'C010ZL4J9V3',
+
+        //tech_payments_cards_alerts
+        'card_payments_alert'    => 'CTB3BPENR'
     ],
 
     'is_slack_enabled' => env('SLACK_MOCK') === true ? false : true,
