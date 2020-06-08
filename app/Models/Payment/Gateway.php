@@ -429,6 +429,14 @@ class Gateway
         IFSC::SBIN
     ];
 
+    const EMANDATE_NB_DIRECT_DEBIT_BANK = [
+        IFSC::ICIC,
+    ];
+
+    const EMANDATE_NB_DIRECT_DEBIT_GATEWAY = [
+        Gateway::NETBANKING_ICICI,
+    ];
+
     // The 2 commented banks are mentioned at the bottom
     // with their retail versions
     // Please keep this list sorted
@@ -2370,6 +2378,16 @@ class Gateway
     public static function getIssuersSupportedForDebitCardRecurring(): array
     {
         return self::$recurringDebitCardBanks;
+    }
+
+    public static function isDirectDebitEmandateBank(string $bank): bool
+    {
+        return (in_array($bank, self::EMANDATE_NB_DIRECT_DEBIT_BANK, true) === true);
+    }
+
+    public static function isDirectDebitEmandateGateway(string $bank): bool
+    {
+        return (in_array($bank, self::EMANDATE_NB_DIRECT_DEBIT_GATEWAY, true) === true);
     }
 
     public static function getExclusiveNetworksForGateway(string $gateway)

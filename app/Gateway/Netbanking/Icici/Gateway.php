@@ -228,6 +228,15 @@ class Gateway extends Base\Gateway
 
         if ($this->isFirstRecurringPayment() === true)
         {
+            $paymentAmount = $input['payment']['amount'];
+
+            if ($paymentAmount > 0)
+            {
+                $expectedAmount = $this->formatAmount($paymentAmount / 100);
+                $actualAmount   = $this->formatAmount($callbackAmount);
+
+                $this->assertAmount($expectedAmount, $actualAmount);
+            }
             //
             // Since there's no hot payment, we would not
             // have an amount in the first auth request
@@ -237,7 +246,8 @@ class Gateway extends Base\Gateway
             // 2. Status => N, AMT => 99999
             //
             if (($callbackAmount !== 'null') and
-                ($callbackData[ResponseFields::PAID] === Status::Y))
+                ($callbackData[ResponseFields::PAID] === Status::Y) and
+                ($paymentAmount === 0))
             {
                 throw new Exception\GatewayErrorException(
                     ErrorCode::GATEWAY_ERROR_AMOUNT_TAMPERED,
@@ -515,18 +525,25 @@ class Gateway extends Base\Gateway
         //
         if ($this->isEMandateRegistrationRequired($input) === true)
         {
-            $eMandateData = $this->getEMandateRequestData($input);
+            // This directDebitFlow flow is used when registration amount is greater than 0.
+            // so when the payment is success the registration and debit for input amount will be done in single payment.
+            $directDebitFlow = $input['payment']['amount'] > 0 ? true : false;
+
+            $eMandateData = $this->getEMandateRequestData($input, $directDebitFlow);
 
             $requestData = array_merge($requestData, $eMandateData);
 
-            $this->assertAmount(0, $input['payment']['amount']);
+            if ($directDebitFlow === false)
+            {
+                $this->assertAmount(0, $input['payment']['amount']);
 
-            //
-            // For registration-only payments, we
-            // should not send the amount field
-            // There will be no upfront amount.
-            //
-            unset($requestData['AMT']);
+                //
+                // For registration-only payments, we
+                // should not send the amount field
+                // There will be no upfront amount.
+                //
+                unset($requestData['AMT']);
+            }
         }
 
         $traceRequestData = $requestData;
@@ -607,12 +624,18 @@ class Gateway extends Base\Gateway
      * to the E - Mandate registration step.
      *
      * @param array $input
+     * @param bool $debitFlow
      * @return array
      */
-    protected function getEMandateRequestData(array $input): array
+    protected function getEMandateRequestData(array $input, bool $directDebitFlow): array
     {
         // For registration-only auth request, we need to set the payment date to any date in the future
         $date = Carbon::now(Timezone::IST)->addDay()->format('Y-m-d');
+
+        if ($directDebitFlow === true)
+        {
+            $date = Carbon::createFromTimestamp($input['payment']['created_at'], Timezone::IST)->format('Y-m-d');
+        }
 
         $endDate = Carbon::createFromTimestamp($input['token']->getExpiredAt(), Timezone::IST)
                          ->format('Y-m-d');

@@ -196,6 +196,14 @@ class TransactionFilter extends Terminal\Filter
                     }
             }
         }
+
+        if (($this->input['payment']->getAmount() > 0) and
+            ($this->input['payment']->getRecurringType() === Payment\RecurringType::INITIAL))
+        {
+            return (in_array($terminalGateway, $gateways) and
+                   (Gateway::isDirectDebitEmandateGateway($terminalGateway) === true));
+        }
+
         return in_array($terminalGateway, $gateways);
     }
 

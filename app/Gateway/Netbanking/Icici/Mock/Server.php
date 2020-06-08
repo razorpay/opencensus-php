@@ -143,6 +143,12 @@ class Server extends Base\Mock\Server
             // For mandate registration-only auth request, the payment status is 'null'
             $response[ResponseFields::PAID]           = 'null';
 
+            if ((isset($input[RequestFields::AMOUNT])) and ($input[RequestFields::AMOUNT] > 0))
+            {
+                $response[ResponseFields::PAID] = 'Y';
+
+                return $response;
+            }
             // Since there's no hot payment, BID won't exist
             unset($response[ResponseFields::BANK_PAYMENT_ID]);
         }

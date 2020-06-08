@@ -5,10 +5,12 @@ namespace RZP\Tests\Functional\Gateway\Netbanking\Icici\EMandate;
 use Carbon\Carbon;
 use RZP\Constants\Entity;
 use RZP\Models\Bank\IFSC;
+use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Feature\Constants;
 use RZP\Tests\Functional\TestCase;
 use RZP\Error\PublicErrorDescription;
+use RZP\Models\Order\Entity as Order;
 use RZP\Models\Payment\Entity as Payment;
 use RZP\Models\Customer\Token\Entity as Token;
 use RZP\Models\Customer\Token\RecurringStatus;
@@ -648,6 +650,29 @@ class NetbankingIciciEMandateTest extends TestCase
             });
     }
 
+    public function testDirectDebitFlowSuccess()
+    {
+        $orderInput = [
+            Order::AMOUNT          => 4000,
+            Order::METHOD          => Method::EMANDATE,
+            Order::PAYMENT_CAPTURE => true,
+        ];
+
+        $order = $this->createOrder($orderInput);
+
+        $paymentInput = $this->getEmandateNetbankingRecurringPaymentArray(IFSC::ICIC);
+
+        $paymentInput[Payment::AMOUNT] = $orderInput[Order::AMOUNT];
+
+        $paymentInput[Payment::BANK_ACCOUNT] = $this->payment[Payment::BANK_ACCOUNT];
+
+        $paymentInput[Payment::ORDER_ID] = $order[Order::ID];
+
+        $this->doAuthPayment($paymentInput);
+
+        $this->assertEMandateEntities();
+    }
+
     protected function assertSiNullGatewayToken()
     {
         $token = $this->getLastEntity(Entity::TOKEN, true);
@@ -690,6 +715,7 @@ class NetbankingIciciEMandateTest extends TestCase
         $token = $this->getLastEntity(Entity::TOKEN, true);
         $payment = $this->getLastEntity(Entity::PAYMENT, true);
         $gatewayToken = $this->getLastEntity(Entity::GATEWAY_TOKEN, true);
+        $order = $this->getLastEntity(Entity::ORDER, true);
 
         // Assert Netbanking Entity
         $this->assertNotNull($netbanking[Netbanking::SI_TOKEN]);
@@ -701,11 +727,19 @@ class NetbankingIciciEMandateTest extends TestCase
 
         if ($initial === true)
         {
+            if ($payment['amount'] > 0)
+            {
+                $this->assertEquals('9999999999', $netbanking[Netbanking::BANK_PAYMENT_ID]);
+                $this->assertEquals('Y', $netbanking[Netbanking::STATUS]);
+            }
+            else
+            {
+                $this->assertEquals(null, $netbanking[Netbanking::BANK_PAYMENT_ID]);
+                $this->assertEquals('null', $netbanking[Netbanking::STATUS]);
+            }
             // For registration-only auth, the payment id field send by bank is "null"
-            $this->assertEquals(null, $netbanking[Netbanking::BANK_PAYMENT_ID]);
             $this->assertEquals('Y', $netbanking[Netbanking::SI_STATUS]);
             $this->assertEquals('SUC', $netbanking[Netbanking::SI_MSG]);
-            $this->assertEquals('null', $netbanking[Netbanking::STATUS]);
 
             $usedCount = 1;
         }
@@ -738,6 +772,8 @@ class NetbankingIciciEMandateTest extends TestCase
         $this->assertEquals(IFSC::ICIC, $payment[Payment::BANK]);
         $this->assertEquals(PaymentMethod::EMANDATE, $token[Token::METHOD]);
         $this->assertEquals(IFSC::ICIC, $token[Token::BANK]);
+
+        $this->assertEquals($payment[Payment::AMOUNT], $order[Order::AMOUNT]);
 
         // Assert GatewayToken entity
         $this->assertEquals($token[Token::ID], 'token_' . $gatewayToken[GatewayToken::TOKEN_ID]);

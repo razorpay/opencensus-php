@@ -1833,23 +1833,6 @@ trait Authorize
                 ]);
         }
 
-        //
-        // TODO: This is broken still. We should not be accepting any token
-        // in private auth also for first recurring. But, in private auth,
-        // it could be second recurring also, where we accept a token.
-        //
-        if (($this->ba->isPublicAuth() === true) and
-            (empty($input[Payment\Entity::TOKEN]) === false))
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_EMANDATE_TOKEN_PASSED_IN_FIRST_RECURRING,
-                Payment\Entity::BANK,
-                [
-                    'payment' => $payment->toArray(),
-                    'token'   => $token->toArray(),
-                ]);
-        }
-
         // Customer fee bearer is not allowed on netbanking recurring
         if ($payment->isFeeBearerCustomer() === true)
         {
@@ -1901,8 +1884,17 @@ trait Authorize
 
     protected function validateInitialRecurringForEmandate(Payment\Entity $payment, array $input)
     {
+        $directDebitFlow = false;
+
+        if (($payment->getAmount() > 0) and
+            ((Payment\Gateway::isDirectDebitEmandateBank($payment->getBank())) === true))
+        {
+            $directDebitFlow = true;
+        }
+
         if ((Payment\Gateway::isZeroRupeeFlowSupported($payment->getBank()) === true) and
-            ($payment->getAmount() !== 0))
+            ($payment->getAmount() !== 0) and
+            ($directDebitFlow === false))
         {
             throw new Exception\BadRequestValidationFailureException(
                 'The amount must be 0 for eMandate registration',
@@ -1957,6 +1949,17 @@ trait Authorize
                 Payment\Entity::BANK,
                 [
                     'payment' => $payment->toArray(),
+                ]);
+        }
+
+        if (empty($input[Payment\Entity::TOKEN]) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_EMANDATE_TOKEN_PASSED_IN_FIRST_RECURRING,
+                Payment\Entity::BANK,
+                [
+                    'payment' => $payment->toArray(),
+                    'token'   => $input[Payment\Entity::TOKEN],
                 ]);
         }
     }
