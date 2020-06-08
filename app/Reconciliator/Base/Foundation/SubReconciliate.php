@@ -255,6 +255,8 @@ class SubReconciliate extends Base\Core
     {
         $batch = $batchProcessor->batch;
 
+        $this->batchId = $batch ? $batch->getId() : null;
+
         $this->setExtraDetails($fileContents[Orchestrator::EXTRA_DETAILS]);
         unset($fileContents[Orchestrator::EXTRA_DETAILS]);
 

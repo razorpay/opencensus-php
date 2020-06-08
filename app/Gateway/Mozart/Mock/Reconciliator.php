@@ -341,25 +341,19 @@ class Reconciliator extends Base\Mock\PaymentReconciliator
 
         foreach ($input as $row)
         {
-            $date = Carbon::createFromTimestamp(
-                $row['payment']['created_at'],
-                Timezone::IST)
-                ->format('j-M-y');
-
-            $gatewayData = json_decode($row['mozart']['raw'], true);
-
             $col = [
-                'date'                        => $date,
-                'order_id'                    => $row['payment']['id'],
-                'deal_id'                     => $gatewayData['DealID'],
-                'gross_loan_amount'           => (string)ceil($row['payment']['amount'] / 100),
-                'net_tenor'                   => 6,
-                'scheme_code'                 => 141030,
-                'transaction_type'            => 'SALE-APPROVED',
-                'case_sourceaquiring_channel' => 'ECOM',
-                'merchant_code'               => 565968,
-                'merchant_name'               => 'RAZORPAY SOFTWARE PRIVATEBANGALORE IN',
-                'product'                     => 'ECF',
+                'dealer_id'                         => '567674',
+                'type_of_txn'                       => 'Sale',
+                'rrn'                               => 'CS008112079346',
+                'transaction_date'                  => '21-Mar-20',
+                'disbursement_date'                 => '23-Mar-20',
+                'amount_financed_rs'                => (string)ceil($row['payment']['amount'] / 100),
+                'scheme_desc'                       => 141137,
+                'interest_subsidy_including_gst_rs' => 1321,
+                'interest_subsidy_gst'              => '0.0826',
+                'net_disb_amount_rs'                => 14669,
+                'utr_no'                            => 'N083201101515575',
+                'asset_serial_numberimei'           => $row['payment']['id']
             ];
 
             $this->content($col, 'col_payment_bfl_recon');

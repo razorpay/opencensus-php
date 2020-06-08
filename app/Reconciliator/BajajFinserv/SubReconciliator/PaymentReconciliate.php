@@ -5,27 +5,18 @@ namespace RZP\Reconciliator\BajajFinserv\SubReconciliator;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Base;
-use RZP\Models\Base\PublicEntity;
 
 class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 {
-    const COLUMN_AMOUNT = 'gross_loan_amount';
+    const COLUMN_RRN            = 'rrn';
 
-    const COLUMN_GATEWAY_TRANSACTION_ID = 'deal_id';
+    const COLUMN_ARN            = 'utr_no';
 
-    const COLUMN_PAYMENT_ID = 'order_id';
+    const TRANSACTION_DATE      = 'transaction_date';
 
-    const COLUMN_STATUS = 'transaction_type';
+    const COLUMN_PAYMENT_ID     = 'asset_serial_numberimei';
 
-    const STATUS_SUCCESS  = 'sale-approved';
-    const STATUS_REJECTED = 'sale-failed';
-
-    protected $paymentStatusMappings = [
-        self::STATUS_SUCCESS  => Payment\Status::AUTHORIZED,
-        self::STATUS_REJECTED => Payment\Status::FAILED,
-    ];
-
-    const BLACKLISTED_COLUMNS = [];
+    const COLUMN_PAYMENT_AMOUNT = 'amount_financed_rs';
 
     protected function getPaymentId(array $row)
     {
@@ -34,33 +25,22 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 
     protected function getArn($row)
     {
-        return $row['utr_no'] ?? null;
-    }
-
-    protected function getReconPaymentAmount(array $row)
-    {
-        return Base\SubReconciliator\Helper::getIntegerFormattedAmount($row[self::COLUMN_AMOUNT] ?? null);
+        return $row[self::COLUMN_ARN] ?? null;
     }
 
     protected function getGatewayTransactionId(array $row)
     {
-        if (empty($row[self::COLUMN_GATEWAY_TRANSACTION_ID]) === true)
-        {
-            return null;
-        }
-
-        return trim($row[self::COLUMN_GATEWAY_TRANSACTION_ID]);
+        return $row[self::COLUMN_RRN] ? trim($row[self::COLUMN_RRN]) : null;
     }
 
-    protected function setGatewayTransactionId(string $gatewayTransactionId, PublicEntity $gatewayPayment)
+    protected function getReferenceNumber($row)
     {
-        $body = $gatewayPayment->getData();
+        return $row[self::COLUMN_RRN] ?? null;
+    }
 
-        $body['DealID'] = $gatewayTransactionId;
-
-        $attributes['raw'] = json_encode($body);
-
-        $gatewayPayment->fill($attributes);
+    protected function getGatewayPaymentDate($row)
+    {
+        return $row[self::TRANSACTION_DATE] ?? null;
     }
 
     protected function validatePaymentAmountEqualsReconAmount(array $row)
@@ -95,24 +75,5 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         }
 
         return true;
-    }
-
-    protected function getReconPaymentStatus(array $row)
-    {
-        $status = strtolower(trim($row[self::COLUMN_STATUS]));
-
-        if (isset($this->paymentStatusMappings[$status]) === true)
-        {
-            return $this->paymentStatusMappings[$status];
-        }
-
-        $this->messenger->raiseReconAlert(
-            [
-                'trace_code'      => TraceCode::RECON_INFO_ALERT,
-                'message'         => 'Invalid payment status sent',
-                'payment_id'      => $this->payment->getId(),
-                'status'          => $status,
-                'gateway'         => $this->gateway
-            ]);
     }
 }

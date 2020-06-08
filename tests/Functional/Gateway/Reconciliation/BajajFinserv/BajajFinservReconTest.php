@@ -2,7 +2,10 @@
 
 namespace RZP\Tests\Functional\Gateway\Reconciliation\BajajFinserv;
 
+use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Models\Batch\Status;
+use RZP\Models\Base\PublicEntity;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Batch\BatchTestTrait;
 use RZP\Tests\Functional\Helpers\Reconciliator\ReconTrait;
@@ -64,7 +67,7 @@ class BajajFinservReconTest extends TestCase
 
         $this->mockReconContentFunction(function (& $content) use ($payment_failure)
         {
-            if ($content['order_id'] === $payment_failure['id'])
+            if ($content['asset_serial_numberimei'] === $payment_failure['id'])
             {
                 $content = [];
             }
@@ -98,6 +101,47 @@ class BajajFinservReconTest extends TestCase
         );
     }
 
+    public function testRefundRecon()
+    {
+        $card = $this->createCardEntity();
+
+        // Payment marked as success in db and in recon
+        $payment = $this->createPaymentEntities(14500, $card , 'captured');
+
+        $createdAt = Carbon::yesterday(Timezone::IST)->addHours(3)->getTimestamp();
+
+        $refund = $this->createRefundEntities($payment,$createdAt);
+
+        $this->mockReconContentFunction(function (& $content) use ($refund)
+        {
+            $content['type_of_txn'] = 'Refund';
+        });
+
+        $fileContents = $this->generateReconFile(['gateway' => $this->gateway]);
+
+        $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
+
+        $this->reconcile($uploadedFile, 'BajajFinserv');
+
+        $this->refundSuccessAsserts($refund);
+
+        $batch = $this->getDbLastEntityToArray('batch');
+
+        $this->assertArraySelectiveEquals(
+            [
+                'type'            => 'reconciliation',
+                'gateway'         => 'BajajFinserv',
+                'status'          => Status::PROCESSED,
+                'total_count'     => 1,
+                'success_count'   => 1,
+                'processed_count' => 1,
+                'failure_count'   => 0,
+            ],
+            $batch
+        );
+
+    }
+
     protected function createCardEntity()
     {
         $card = $this->fixtures->create(
@@ -121,6 +165,54 @@ class BajajFinservReconTest extends TestCase
         return $card;
     }
 
+    protected function createRefundEntities($payment , $createdAt)
+    {
+        $refund = $this->fixtures->create(
+            'refund',
+            [
+                'payment_id'  => $payment['id'],
+                'merchant_id' => '10000000000000',
+                'amount'      => $payment['amount'],
+                'base_amount' => $payment['amount'],
+                'gateway'     => 'BajajFinserv',
+            ])->toArray();
+
+        $transaction = $this->fixtures->create(
+            'transaction',
+            [
+                'entity_id' => $refund['id'],
+                'merchant_id' => '10000000000000'
+            ]);
+
+        $this->fixtures->edit(
+            'refund',
+            $refund['id'],
+            [
+                'created_at' => $createdAt,
+                'transaction_id' => $transaction->getId()
+            ]);
+
+        $this->fixtures->create(
+            'mozart',
+            [
+            'payment_id' => $payment['id'],
+            'refund_id'  => PublicEntity::stripDefaultSign($refund['id']),
+            'action'     => 'refund',
+            'amount'     => $this->payment['amount'],
+            'gateway'    => 'bajajfinserv',
+            'raw'        => json_encode([
+                    'DealID'           => 'CS905114097404',
+                    'Errordescription' => 'TRANSACTION PERFORMED SUCCESSFULLY',
+                    'OrderNo'          => '104',
+                    'RequestID'        => 'RZP190219162906768',
+                    'Responsecode'     => '0',
+                    'received'         => true,
+                    'status'           => 'created',
+                ])
+            ]);
+        return $refund;
+    }
+
     protected function createPaymentEntities($amount, $card, $status = 'authorized')
     {
         $payment = $this->fixtures->create(
@@ -140,6 +232,11 @@ class BajajFinservReconTest extends TestCase
 
         if (($status === 'authorized') or ($status === 'captured'))
         {
+            if ($status === 'authorized')
+            {
+                $payment['gateway_captured'] = true;
+            }
+
             $this->fixtures->create(
                 'mozart',
                 [
@@ -233,6 +330,21 @@ class BajajFinservReconTest extends TestCase
         $this->assertNotNull($data['DealID']);
 
         $transactionEntity = $this->getDbEntity('transaction', ['entity_id' => $payment['id']]);
+
+        $this->assertNotNull($transactionEntity['reconciled_at']);
+    }
+
+    protected function refundSuccessAsserts(array $refund)
+    {
+        $refund = $this->getDbEntity('refund', ['id' => $refund['id']])->toArray();
+
+        $gatewayEntity = $this->getDbEntity('mozart', ['refund_id' => $refund['id']]);
+
+        $data = json_decode($gatewayEntity['raw'], true);
+
+        $this->assertNotNull($data['DealID']);
+
+        $transactionEntity = $this->getDbEntity('transaction', ['entity_id' => $refund['id']]);
 
         $this->assertNotNull($transactionEntity['reconciled_at']);
     }
