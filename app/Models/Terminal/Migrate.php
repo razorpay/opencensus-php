@@ -169,9 +169,10 @@ trait Migrate
     {
         $isFetchTerminalSuccess = $this->isFetchTerminalFromTerminalsServiceSuccess($terminal, $fetchTerminalResponse, $ignoreSecrets);
 
-       // $areFetchedSubmerchantsSame = $this->areFetchedSubmerchantsSameForTerminal($terminal, $fetchTerminalResponse);
+        $areFetchedSubmerchantsSame = $this->areFetchedSubmerchantsSameForTerminal($terminal, $fetchTerminalResponse);
 
-        return $isFetchTerminalSuccess;
+        return (($isFetchTerminalSuccess === true) and
+                ($areFetchedSubmerchantsSame === true));
     }
 
     public function isFetchTerminalFromTerminalsServiceSuccess(Entity $terminal, $fetchTerminalResponse, $ignoreSecrets = False): bool

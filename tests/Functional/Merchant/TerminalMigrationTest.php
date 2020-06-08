@@ -496,8 +496,6 @@ class TerminalMigrationTest extends TestCase
 
     public function testUpdateTerminalServiceSubmerchantMismatchResponseMigrateTerminalVariant()
     {
-        // skipping this as the functionality is not yet live
-        $this->markTestSkipped();
 
         //-- setup terminal + add merchant as submerchant to the terminal
         $terminal = $this->fixtures->create(
@@ -1587,19 +1585,6 @@ class TerminalMigrationTest extends TestCase
         $this->razorxValue = 'migrate';
 
         $this->mockTerminalsServiceSendRequest(null, 0);
-
-        $this->doAuthPayment();
-    }
-
-    public function testPaymentCallbackSyncForUnUsedTerminal()
-    {
-        $this->markTestSkipped();
-
-        $this->razorxValue = 'migrate';
-
-        $this->mockTerminalsServiceSendRequest(function () {
-            return $this->getDefaultTerminalServiceResponse();
-        }, 2);
 
         $this->doAuthPayment();
     }
