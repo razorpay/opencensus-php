@@ -1457,7 +1457,12 @@ class Gateway extends Base\Gateway
                 Action::VERIFY          => null,
                 Action::REFUND          => null,
                 Action::VERIFY_REFUND   => null,
-            ]
+            ],
+            Payment\Gateway::NETBANKING_JSB =>  [
+                Action::PAY_INIT    =>  null,
+                Action::PAY_VERIFY  =>  Action::PAY_INIT,
+                Action::VERIFY      =>  Action::PAY_VERIFY,
+            ],
         ];
 
         return $previousActionForStep[$gateway][$this->action];
@@ -1600,6 +1605,11 @@ class Gateway extends Base\Gateway
                 Action::VERIFY          => null,
                 Action::REFUND          => null,
                 Action::VERIFY_REFUND   => null,
+            ],
+            Payment\Gateway::NETBANKING_JSB =>  [
+                Action::PAY_INIT    =>  null,
+                Action::PAY_VERIFY  =>  Action::AUTHORIZE,
+                Action::VERIFY      =>  Action::AUTHORIZE,
             ],
         ];
 
@@ -1896,6 +1906,7 @@ class Gateway extends Base\Gateway
             Payment\Gateway::NETBANKING_IDBI,
             Payment\Gateway::NETBANKING_KVB,
             Payment\Gateway::CRED,
+            Payment\Gateway::NETBANKING_JSB,
         ];
 
         return in_array($gateway, $validationGateways, true);
@@ -2042,6 +2053,7 @@ class Gateway extends Base\Gateway
             Payment\Gateway::NETBANKING_IDBI,
             Payment\Gateway::NETBANKING_KVB,
             Payment\Gateway::PAYLATER_ICICI,
+            Payment\Gateway::NETBANKING_JSB,
         ];
 
         return in_array($gateway, $fileBasedGateways, true);

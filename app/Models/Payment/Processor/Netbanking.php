@@ -121,6 +121,7 @@ class Netbanking
         IFSC::STBP,
         IFSC::SBTR,
         IFSC::SVCB,
+        IFSC::JSFB,
     ];
 
     protected static $selfCorp = [
@@ -627,6 +628,12 @@ class Netbanking
             'retail' => [
                 IFSC::SVCB,
             ],
+        ],
+
+        Gateway::NETBANKING_JSB =>  [
+            'retail'    =>  [
+                IFSC::JSFB,
+            ]
         ],
     ];
 

@@ -597,6 +597,32 @@ class PayInitData extends Base\Mock\Server
         return $response;
     }
 
+    public function netbanking_jsb($entities)
+    {
+        $url = $this->route->getUrlWithPublicAuth(
+            'mock_mozart_payment_post',
+            ['gateway' => 'netbanking_jsb','callbackUrl' => $entities['callbackUrl']]);
+
+        $response = [
+            'data'              => [],
+            'error'             => null,
+            'success'           => true,
+            'next'              => [
+                'redirect' => [
+                    'method'  => 'post',
+                    'url'     => $url,
+                    'content' => [
+                        'qs' => 'random_encrypted_string',
+                    ],
+                ]
+            ],
+            'mozart_id'         => 'DUMMY_MOZART_ID',
+            'external_trace_id' => 'DUMMY_REQUEST_ID',
+        ];
+
+        return $response;
+    }
+
     public function google_pay($entities)
     {
         $response = [

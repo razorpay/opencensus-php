@@ -1261,6 +1261,7 @@ class DatabaseSeeder extends Seeder
         $this->createPayLaterTerminal();
         $this->createNetbankingKvbTerminal();
         $this->createNetbankingSvcTerminal();
+        $this->createNetbankingJsbTerminal();
     }
 
     protected function createNetbankingCorporationTerminals()
@@ -2712,6 +2713,22 @@ class DatabaseSeeder extends Seeder
                 'gateway_merchant_id'   => 'netbanking_svc_merchant_id',
                 'created_at'            => time(),
                 'updated_at'            => time()
+            ]
+        );
+    }
+
+    protected function createNetbankingJsbTerminal()
+    {
+        DB::table(Table::TERMINAL)->insert(
+            [
+                'id'                    => Terminal\Shared::NETBANKING_JSB_TERMINAL,
+                'merchant_id'           => Account::TEST_ACCOUNT,
+                'gateway'               => Gateway::NETBANKING_JSB,
+                'card'                  => '0',
+                'netbanking'            => '1',
+                'gateway_merchant_id'   => 'MAGMER100037',
+                'created_at'            => time(),
+                'updated_at'            => time(),
             ]
         );
     }

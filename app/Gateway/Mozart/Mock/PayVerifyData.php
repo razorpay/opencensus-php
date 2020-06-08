@@ -562,4 +562,24 @@ class PayVerifyData extends Base\Mock\Server
 
         return $response;
     }
+
+    public function netbanking_jsb($entities)
+    {
+        $response = [
+            'next'              => [],
+            'error'             => null,
+            'success'           => true,
+            'external_trace_id' => 'DUMMY_REQUEST_ID',
+            'mozart_id'         => 'DUMMY_MOZART_ID',
+            'data'              => [
+                '_raw'            => 'dummy_raw_value',
+                'paymentId'       => $entities['payment']['id'],
+                'bank_payment_id' => '999999',
+                'amount'          => $entities['payment']['amount'],
+                'status'          => 'callback_successful',
+            ],
+        ];
+
+        return $response;
+    }
 }

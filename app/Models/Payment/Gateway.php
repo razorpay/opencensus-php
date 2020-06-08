@@ -74,6 +74,7 @@ class Gateway
     const NETBANKING_YESB        = 'netbanking_yesb';
     const NETBANKING_KVB         = 'netbanking_kvb';
     const NETBANKING_SVC         = 'netbanking_svc';
+    const NETBANKING_JSB         = 'netbanking_jsb';
     const NACH_CITI              = 'nach_citi';
     const PAYTM                  = 'paytm';
     const SHARP                  = 'sharp';
@@ -844,6 +845,7 @@ class Gateway
             self::NETBANKING_YESB,
             self::NETBANKING_KVB,
             self::NETBANKING_SVC,
+            self::NETBANKING_JSB,
         ],
 
         //
@@ -1306,6 +1308,7 @@ class Gateway
         self::NETBANKING_CBI,
         self::HDFC_DEBIT_EMI,
         self::NETBANKING_SVC,
+        self::NETBANKING_JSB,
     ];
 
     public static $captureVerifyEnabled = [
@@ -1687,6 +1690,7 @@ class Gateway
         Netbanking::BARB_R => Gateway::NETBANKING_BOB,
         IFSC::KVBL         => Gateway::NETBANKING_KVB,
         IFSC::SVCB         => Gateway::NETBANKING_SVC,
+        IFSC::JSFB         => Gateway::NETBANKING_JSB,
         IFSC::SBBJ         => Gateway::NETBANKING_SBI,
         IFSC::SBHY         => Gateway::NETBANKING_SBI,
         IFSC::SBMY         => Gateway::NETBANKING_SBI,

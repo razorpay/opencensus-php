@@ -240,6 +240,7 @@ class Entity
     const NETBANKING_SBI         = 'netbanking_sbi';
     const NETBANKING_KVB         = 'netbanking_kvb';
     const NETBANKING_SVC         = 'netbanking_svc';
+    const NETBANKING_JSB         = 'netbanking_jsb';
     const WALLET_PHONEPE         = 'wallet_phonepe';
     const WALLET_PHONEPESWITCH   = 'wallet_phonepeswitch';
     const NETBANKING_CSB         = 'netbanking_csb';
@@ -590,6 +591,7 @@ class Entity
         self::NETBANKING_SBI         => \RZP\Gateway\Netbanking\Sbi::class,
         self::NETBANKING_YESB        => \RZP\Gateway\Mozart::class,
         self::NETBANKING_KVB         => \RZP\Gateway\Mozart::class,
+        self::NETBANKING_JSB         => \RZP\Gateway\Mozart::class,
         self::WALLET_PAYUMONEY       => \RZP\Gateway\Wallet\Payumoney::class,
         self::WALLET_OPENWALLET      => \RZP\Gateway\Wallet\Openwallet::class,
         self::WALLET_FREECHARGE      => \RZP\Gateway\Wallet\Freecharge::class,
