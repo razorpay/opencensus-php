@@ -40,7 +40,7 @@ class Validator extends Merchant\Validator
         Constants::LEGAL_ENTITY_ID   => 'sometimes|string',
         Constants::MANAGED           => 'sometimes|boolean',
         Constants::EMAIL             => 'sometimes|email',
-        Constants::PHONE             => 'sometimes|numeric|digits:10',
+        Constants::PHONE             => 'sometimes|numeric',
         Constants::NOTES             => 'sometimes|notes',
         Constants::PROFILE           => 'required|array',
         Constants::SETTLEMENT        => 'sometimes|array',
@@ -50,7 +50,7 @@ class Validator extends Merchant\Validator
     ];
 
     protected static $editAccountRules = [
-        Constants::PHONE           => 'filled|numeric|digits:10',
+        Constants::PHONE           => 'filled|numeric',
         Constants::NOTES           => 'sometimes|notes',
         Constants::PROFILE         => 'sometimes|array',
         Constants::TNC             => 'sometimes|array',
@@ -71,7 +71,7 @@ class Validator extends Merchant\Validator
         Constants::CHARGEBACK        => 'sometimes|array',
         Constants::REFUND            => 'sometimes|array',
         Constants::DISPUTE           => 'sometimes|array',
-        Constants::BILLING_LABEL     => 'required|string|max:100',
+        Constants::BILLING_LABEL     => 'required|string',
         Constants::IDENTIFICATION    => 'sometimes|array',
         Constants::OWNER_INFO        => 'sometimes|array',
     ];
@@ -90,7 +90,7 @@ class Validator extends Merchant\Validator
         Constants::CHARGEBACK        => 'sometimes|array',
         Constants::REFUND            => 'sometimes|array',
         Constants::DISPUTE           => 'sometimes|array',
-        Constants::BILLING_LABEL     => 'sometimes|string|max:100',
+        Constants::BILLING_LABEL     => 'sometimes|string',
     ];
 
     protected static $accountAddressRules = [
@@ -148,9 +148,9 @@ class Validator extends Merchant\Validator
 
     protected static $bankAccountRules = [
         Constants::NOTES          => 'sometimes|notes',
-        Constants::IFSC           => 'required|string|size:11',
-        Constants::NAME           => 'required|string|max:120',
-        Constants::ACCOUNT_NUMBER => 'required|string|max:16',
+        Constants::IFSC           => 'required|string',
+        Constants::NAME           => 'required|string',
+        Constants::ACCOUNT_NUMBER => 'required|string',
     ];
 
     protected static $listAccountsRules = [
@@ -173,7 +173,7 @@ class Validator extends Merchant\Validator
     protected static $contactInfoRules = [
         Constants::NAME  => 'required|string',
         Constants::EMAIL => 'required|email',
-        Constants::PHONE => 'required|numeric|digits:10',
+        Constants::PHONE => 'required|numeric',
     ];
 
     protected static $settingsRules = [
