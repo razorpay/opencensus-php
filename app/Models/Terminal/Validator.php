@@ -90,6 +90,7 @@ class Validator extends Base\Validator
         Payment\Gateway::CYBERSOURCE,
         Payment\Gateway::UPI_MINDGATE,
         Payment\Gateway::UPI_AXIS,
+        Payment\Gateway::UPI_SBI,
         Payment\Gateway::MPGS,
         Payment\Gateway::NETBANKING_CSB,
         Payment\Gateway::NETBANKING_BOB,
@@ -813,6 +814,13 @@ class Validator extends Base\Validator
         Entity::GATEWAY                    => 'required|in:upi_sbi',
         Entity::GATEWAY_MERCHANT_ID        => 'required|string',
         Entity::UPI                        => 'sometimes|boolean|in:1',
+        Entity::VPA                        => 'required|string',
+        Entity::TYPE                       => 'sometimes|array',
+    ];
+
+    protected static $upiSbiEditTerminalRules = [
+        Entity::VPA                        => 'sometimes|string',
+        Entity::TYPE                       => 'sometimes|array',
     ];
 
     protected static $upiYesbankTerminalRules = [
