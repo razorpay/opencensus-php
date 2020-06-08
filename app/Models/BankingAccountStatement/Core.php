@@ -437,6 +437,8 @@ class Core extends Base\Core
         }
         else
         {
+            // TODO: refactor using wasRecentlyCreated
+            // https://razorpay.atlassian.net/browse/RX-2630
             if (($sourceEntity->getEntityName() === Constants\Entity::REVERSAL) and
                 ($isSourceAlreadyCreated === false))
             {
