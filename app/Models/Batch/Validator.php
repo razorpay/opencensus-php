@@ -6,6 +6,7 @@ use App;
 use RZP\Base;
 use Carbon\Carbon;
 use RZP\Models\User;
+use RZP\Models\Admin;
 use RZP\Models\Invoice;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
@@ -850,6 +851,10 @@ class Validator extends Base\Validator
 
     protected function validatePayoutEntries(array & $entries, array $params, ME $merchant)
     {
+        $countOfPayouts = count($entries);
+
+        $this->assertCustomLimitForMerchant($merchant, $countOfPayouts);
+
         if ($merchant->isFeatureEnabled(Feature::PAYOUT) === false)
         {
             throw new BadRequestValidationFailureException('Batch type is not enabled for merchant');
@@ -1170,6 +1175,43 @@ class Validator extends Base\Validator
             {
                 throw new BadRequestException(ErrorCode::BAD_REQUEST_REQUIRED_PERMISSION_NOT_FOUND);
             }
+        }
+    }
+
+    protected static function assertCustomLimitForMerchant(ME $merchant, int $total)
+    {
+        $listOfLimits = (new Admin\Service)->getConfigKey([
+            'key' => Admin\ConfigKey::RX_PAYOUTS_CUSTOM_BATCH_FILE_LIMIT_MERCHANTS
+        ]);
+
+        // If the MID has a custom limit set from redis, we shall apply that limit
+        if (in_array($merchant->getId(), array_keys($listOfLimits), true) === true)
+        {
+            $limit = $listOfLimits[$merchant->getId()];
+        }
+        else
+        {
+            // If the limit isn't set for a certain merchant, we default to the global Redis based limit
+            $limit = (new Admin\Service)->getConfigKey([
+                'key' => Admin\ConfigKey::RX_PAYOUTS_DEFAULT_MAX_BATCH_FILE_COUNT
+            ]);
+
+            // If the global redis limit isn't set either, then we fall back to the hardcoded limit
+            if (empty($limit) === true)
+            {
+                $limit = Limit::DEFAULT_PAYOUT_LIMIT;
+            }
+        }
+
+        if ($total > $limit)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_BATCH_FILE_EXCEED_LIMIT,
+                null,
+                [
+                    'type'  => 'payout',
+                    'total' => $total,
+                ]);
         }
     }
 }

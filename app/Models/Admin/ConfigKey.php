@@ -111,6 +111,11 @@ class ConfigKey
     const RX_QUEUED_PAYOUTS_PAGINATION          = self::PREFIX . 'rx_queued_payouts_pagination';
     const RX_QUEUED_PAYOUTS_CRON_LAST_RUN_AT    = self::PREFIX . 'rx_queued_payouts_cron_last_run_at';
 
+    // TODO : Remove after June 15 2020 once we can support 25k bulk payouts
+    const RX_PAYOUTS_CUSTOM_BATCH_FILE_LIMIT_MERCHANTS  = self::PREFIX . 'rx_payouts_custom_batch_file_limit_merchants';
+    const RX_PAYOUTS_DEFAULT_MAX_BATCH_FILE_COUNT       = self::PREFIX . 'rx_payouts_default_max_batch_file_count';
+
+
     const PUBLIC_KEYS = [
         self::TERMINAL_SELECTION_LOG_VERBOSE,
         self::PRICING_RULE_SELECTION_LOG_VERBOSE,
@@ -165,6 +170,8 @@ class ConfigKey
         self::CVV_REGEX_FOR_REDACTING,
         self::RX_QUEUED_PAYOUTS_PAGINATION,
         self::RX_QUEUED_PAYOUTS_CRON_LAST_RUN_AT,
+        self::RX_PAYOUTS_CUSTOM_BATCH_FILE_LIMIT_MERCHANTS,
+        self::RX_PAYOUTS_DEFAULT_MAX_BATCH_FILE_COUNT,
         self::CARD_PAYMENT_SERVICE_EMI_FETCH,
     ];
 

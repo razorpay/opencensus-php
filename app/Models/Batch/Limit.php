@@ -2,12 +2,15 @@
 
 namespace RZP\Models\Batch;
 
+use RZP\Models\Admin;
 use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestException;
 
 class Limit
 {
     const DEFAULT_LIMIT = 1000;
+
+    const DEFAULT_PAYOUT_LIMIT = 50000;
 
     /**
      * The keys need to be like <type>_<sub-type>_<gateway>
@@ -23,7 +26,6 @@ class Limit
         Type::IRCTC_SETTLEMENT                      => 100000,
         Type::VIRTUAL_BANK_ACCOUNT                  => 50000,
         Type::BANK_TRANSFER                         => 3000,
-        Type::PAYOUT                                => 50000,
         'emandate_register_hdfc'                    => 50000,
         'emandate_register_enach_rbl'               => 10000,
         'emandate_register_enach_npci_netbanking'   => 10000,
@@ -67,6 +69,12 @@ class Limit
      */
     public static function validate(string $type, int $total)
     {
+        // We have shifted the payout limit validations downstream so that we can have merchant level configurations.
+        if ($type === Type::PAYOUT)
+        {
+            return;
+        }
+
         if ($total === 0)
         {
             throw new BadRequestException(
