@@ -7,10 +7,11 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use RZP\Models\Base;
 use RZP\Models\Bank;
 use RZP\Models\Card;
+use RZP\Models\Base\Traits\ExternalOwner;
 
 class Entity extends Base\PublicEntity
 {
-    use SoftDeletes;
+    use SoftDeletes, ExternalOwner;
 
     const ID                    = 'id';
     const MERCHANT_ID           = 'merchant_id';

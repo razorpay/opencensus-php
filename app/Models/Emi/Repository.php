@@ -215,7 +215,7 @@ class Repository extends Base\Repository
                 $this->throwException($e);
             }
 
-            return $cpsData;
+            return (new Migration)->getEntity($cpsData);
         }
 
         return $this->findOrFail($id);
@@ -240,7 +240,7 @@ class Repository extends Base\Repository
                     ErrorCode::BAD_REQUEST_INVALID_ID, null, $e);
             }
 
-            return $cpsData;
+            return (new Migration)->getEntity($cpsData);
         }
 
         return $this->findOrFailPublic($id);

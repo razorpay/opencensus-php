@@ -171,6 +171,7 @@ class Service extends Base\Service
         $allPlans = $this->repo->emi_plan->fetchAllLivePlans();
 
         $ids = [];
+        $failureIds = [];
 
         foreach($allPlans as $plan)
         {
@@ -180,12 +181,17 @@ class Service extends Base\Service
             {
                 array_push($ids, $response[Entity::ID]);
             }
+            else
+            {
+                array_push($failureIds, $plan[Entity::ID]);
+            }
         }
 
         return [
             'api_count'         =>  count($allPlans),
             'cps_success_count' =>  count($ids),
             'success_ids'       =>  $ids,
+            'failed_ids'        =>  $failureIds,
         ];
     }
 

@@ -185,6 +185,7 @@ class Migration
 
         $entity = (new Entity)->build($input);
         $entity->setId($id);
+        $entity->setExternal(true);
 
         return $entity;
     }

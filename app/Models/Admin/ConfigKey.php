@@ -165,6 +165,7 @@ class ConfigKey
         self::CVV_REGEX_FOR_REDACTING,
         self::RX_QUEUED_PAYOUTS_PAGINATION,
         self::RX_QUEUED_PAYOUTS_CRON_LAST_RUN_AT,
+        self::CARD_PAYMENT_SERVICE_EMI_FETCH,
     ];
 
     public static function isSensitive(string $key)

@@ -1230,7 +1230,14 @@ class Core extends Base\Core
 
         $emiMerchantSub->merchant()->associate($merchant);
 
-        $emiMerchantSub->emiPlan()->associate($emiPlan);
+        if ($emiPlan->isExternal())
+        {
+            $emiMerchantSub[EmiPlans\Entity::EMI_PLAN_ID] = $emiPlan[Emi\Entity::ID];
+        }
+        else
+        {
+            $emiMerchantSub->emiPlan()->associate($emiPlan);
+        }
 
         $emiMerchantSub->generateId();
 

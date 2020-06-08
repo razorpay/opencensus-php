@@ -2136,4 +2136,28 @@ class Repository extends Base\Repository
                     ->where(Entity::AUTHENTICATION_GATEWAY, '=', Gateway::MPI_BLADE)
                     ->pluck(Entity::ID);
     }
+
+    public function saveOrFail($payment, array $options = array())
+    {
+        $emiPlan = null;
+
+        if ($payment->isEmi() &&
+            $payment->emiPlan != null &&
+            $payment->emiPlan->isExternal())
+        {
+            $emiPlan = $payment->emiPlan;
+
+            $payment->emiPlan()->dissociate();
+
+            //We should keep the plan id and just remove the relationship.
+            $payment[Entity::EMI_PLAN_ID] = $emiPlan['id'];
+        }
+
+        parent::saveOrFail($payment, $options);
+
+        if ($emiPlan != null)
+        {
+            $payment->emiPlan()->associate($emiPlan);
+        }
+    }
 }
