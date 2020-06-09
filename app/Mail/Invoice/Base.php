@@ -165,15 +165,31 @@ class Base extends Mailable
 
         if(empty($this->data['pp_invoice']) === false)
         {
-            $appendText = "Payment receipt for your successful transaction on ";
-
-            $template = $this->data['invoice'][C\Entity::PAYMENT_PAGE]['title'] ?? static::SUBJECT_TEMPLATES['pp_invoice'];
-
-            $template = $appendText.$template;
+            $template = $this->getPpMailSubject();
 
             $args = [];
         }
 
         return sprintf($template, ...$args);
+    }
+
+    protected function getPpMailSubject()
+    {
+        $enable80g = $this->data['invoice'][C\Entity::PAYMENT_PAGE]['enable_80g'];
+
+        $startText = "Payment ";
+
+        if ($enable80g == "1")
+        {
+            $startText = "Donation ";
+        }
+
+        $appendText = $startText. "receipt for your successful transaction on ";
+
+        $template = $this->data['invoice'][C\Entity::PAYMENT_PAGE]['title'] ?? static::SUBJECT_TEMPLATES['pp_invoice'];
+
+        $template = $appendText. $template;
+
+        return $template;
     }
 }

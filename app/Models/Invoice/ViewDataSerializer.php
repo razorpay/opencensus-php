@@ -662,10 +662,11 @@ class ViewDataSerializer extends Base\Core
             }
 
             $serialized[E::PAYMENT_PAGE] = [
+                'enable_80g'           => $enable80g,
                 'details_80g'          => empty($details80g) ? null : $details80g,
                 'selected_input_field' => $selectedInputField,
                 'title'                => $title,
-                'payment'             => $paymentFormatted,
+                'payment'              => $paymentFormatted,
             ];
         }
         else

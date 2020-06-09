@@ -1050,7 +1050,11 @@ class Entity extends Base\PublicEntity
         $status  = $this->hasBeenPaid() ? 'Paid' : 'Unpaid';
         $ext     = FileStore\Format::PDF;
 
-        return sanitizeFilename("Invoice $receipt from $from ($status).$ext");
+        $displayName = $this->isPaymentPageInvoice() ? "Receipt " : "Invoice ";
+
+        $displayName = $displayName."$receipt from $from ($status).$ext";
+
+        return sanitizeFilename($displayName);
     }
 
     /**
