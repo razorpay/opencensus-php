@@ -2633,6 +2633,7 @@ class Gateway
             self::NETBANKING_SVC,
             self::NETBANKING_ALLAHABAD,
             self::NETBANKING_KVB,
+            self::NETBANKING_INDUSIND,
         ];
 
         return (in_array($gateway, $gateways, true));

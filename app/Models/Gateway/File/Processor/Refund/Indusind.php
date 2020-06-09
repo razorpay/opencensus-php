@@ -3,10 +3,12 @@
 namespace RZP\Models\Gateway\File\Processor\Refund;
 
 use Carbon\Carbon;
+
 use RZP\Models\Payment;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
+use RZP\Services\NbPlus\Netbanking;
 use RZP\Models\Gateway\File\Processor\FileHandler;
 use RZP\Gateway\Netbanking\Indusind\RefundFileFields;
 
@@ -29,13 +31,22 @@ class Indusind extends Base
 
         foreach ($data as $index => $row)
         {
+            if ($row['payment']['cps_route'] === Payment\Entity::NB_PLUS_SERVICE)
+            {
+                $bankRefNo = $row['gateway'][Netbanking::BANK_TRANSACTION_ID]; // payment through nbplus service
+            }
+            else
+            {
+                $bankRefNo = $row['gateway']['bank_payment_id'];
+            }
+
             $formattedData[] = [
                 RefundFileFields::SERIAL_NO          => $index + 1,
                 RefundFileFields::TRANSACTION_ID     => $row['payment']['id'],
                 RefundFileFields::REFUND             => RefundFileFields::REFUND_MODE,
                 RefundFileFields::BANK               => RefundFileFields::BANK_NAME,
                 RefundFileFields::REFUND_AMOUNT      => number_format($row['refund']['amount'] / 100, 2, '.', ''),
-                RefundFileFields::BANK_REFERENCE_ID  => $row['gateway']['bank_payment_id']
+                RefundFileFields::BANK_REFERENCE_ID  => $bankRefNo
             ];
         }
 
