@@ -597,6 +597,7 @@ class Validator extends Base\Validator
         Entity::CURRENCY                                => 'sometimes|array',
         Entity::INTERNATIONAL                           => 'sometimes|boolean',
         Entity::MODE                                    => 'sometimes',
+        Entity::CATEGORY                                => 'sometimes|string|numeric|digits:4',
         Entity::TYPE                                    => 'required|array',
         Entity::TYPE . '.direct_settlement_with_refund' => 'required|in:1',
     ];

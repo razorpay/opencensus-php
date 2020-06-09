@@ -2613,6 +2613,7 @@ return [
             'content' => [
                 'gateway'                   => 'wallet_paypal',
                 'gateway_merchant_id'       => 'merchant_id',
+                'category'                  => '1234',
                 'type'                      => [
                     'direct_settlement_with_refund' => '1'
                 ],
@@ -2623,6 +2624,7 @@ return [
             'content'  => [
                 'gateway_merchant_id'  => 'merchant_id',
                 'enabled'              => true,
+                'category'             => '1234'
             ]
         ]
     ],
