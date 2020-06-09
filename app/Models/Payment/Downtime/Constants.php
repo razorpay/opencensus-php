@@ -33,4 +33,8 @@ class Constants
         Gateway::HDFC,
         Gateway::HITACHI,
     ];
+
+    // Constants used For email notification
+    const CREATED   = 'CREATED';
+    const RESOLVED  = 'RESOLVED';
 }

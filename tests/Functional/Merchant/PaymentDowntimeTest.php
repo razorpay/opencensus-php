@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Merchant;
 
+use Mail;
 use Carbon\Carbon;
 
 use RZP\Models\Payment\Gateway;
@@ -9,6 +10,7 @@ use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Traits\TestsWebhookEvents;
 use RZP\Tests\Functional\Helpers\MocksDnsTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Mail\Downtime\DowntimeNotification as DowntimeNotification;
 
 /**
  * @group dns-sensitive
@@ -668,6 +670,8 @@ class PaymentDowntimeTest extends TestCase
             'url' => '/gateway/downtimes'
         ];
 
+        $this->expectWebhookEventWithContents('payment.downtime.started', 'testPaymentDowntimeStartedWebhook');
+
         $this->makeRequestAndGetContent($addDowntimeRequest);
 
         $downtime = $this->getLastEntity('payment.downtime', true);
@@ -675,8 +679,6 @@ class PaymentDowntimeTest extends TestCase
         $this->assertEquals($downtime['method'], 'netbanking');
         $this->assertEquals($downtime['issuer'], 'SBIN');
         $this->assertEquals($downtime['status'], 'started');
-
-        $this->expectWebhookEventWithContents('payment.downtime.started', 'testPaymentDowntimeStartedWebhook');
 
         $this->activateDowntimes('started');
     }
@@ -838,6 +840,47 @@ class PaymentDowntimeTest extends TestCase
 
         $this->assertEquals($downtime2['end'], $time2);
     }
+
+    public function testPaymentDowtimeEmailNotification()
+    {
+        Mail::fake();
+
+        Mail::setFakeConfig();
+
+        $this->ba->adminAuth();
+
+        $addDowntimeRequest = [
+            'content' => [
+                'begin'       => Carbon::now()->subMinutes(60)->timestamp,
+                'gateway'     => 'ALL',
+                'reason_code' => 'HIGHER_DECLINES',
+                'method'      => 'upi',
+                'source'      => 'BANK',
+                'vpa_handle'  => 'oksbi',
+            ],
+            'method' => 'POST',
+            'url' => '/gateway/downtimes'
+        ];
+
+        $this->makeRequestAndGetContent($addDowntimeRequest);
+
+        $gatewayDowntime = $this->getLastEntity('gateway_downtime', true);
+
+        Mail::assertSent(DowntimeNotification::class);
+
+        $resolveDowntimeRequest = [
+            'content' => [
+                'end'         => Carbon::now()->subMinutes(10)->timestamp,
+            ],
+            'method' => 'PUT',
+            'url' => '/gateway/downtimes/'.$gatewayDowntime['id'],
+        ];
+
+        $this->makeRequestAndGetContent($resolveDowntimeRequest);
+
+        Mail::assertSent(DowntimeNotification::class);
+    }
+
 
     public function testGetCheckoutPreferencesWithPaymentDowntime()
     {

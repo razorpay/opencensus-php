@@ -1405,6 +1405,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYMENT_DOWNTIMES_TO_ACTIVATE                         = 'PAYMENT_DOWNTIMES_TO_ACTIVATE';
     const PAYMENT_DOWNTIMES_TO_RESOLVE                          = 'PAYMENT_DOWNTIMES_TO_RESOLVE';
 
+    const PAYMENT_DOWNTIME_CREATE_EMAIL                         = 'PAYMENT_DOWNTIME_CREATE_EMAIL';
+    const PAYMENT_DOWNTIME_RESOLVE_EMAIL                        = 'PAYMENT_DOWNTIME_RESOLVE_EMAIL';
+    const PAYMENT_DOWNTIME_EMAIL_FAILED                         = 'PAYMENT_DOWNTIME_EMAIL_FAILED';
+
     const ADHOC_SETTLEMENT_CREATE_FAILED                        = 'ADHOC_SETTLEMENT_CREATE_FAILED';
     const ADHOC_SETTLEMENT_ENTITIES_CREATED                     = 'ADHOC_SETTLEMENT_ENTITIES_CREATED';
 

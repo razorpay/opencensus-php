@@ -194,6 +194,8 @@ class MailTags
     const USER_ACCOUNT_LOCKED                           = 'user_account_locked';
     const USER_CONTACT_MOBILE_UPDATED                   = 'user_contact_mobile_updated';
 
+    //Downtime Emails
+    const DOWNTIME_NOTIFICATION                         = 'downtime_notification';
 
     //Merchant Invoice tags
     const MERCHANT_INVOICE_EXECUTION_SUMMARY            = 'merchant_invoice_execution_summary';

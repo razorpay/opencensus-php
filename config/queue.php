@@ -437,6 +437,7 @@ return [
      */
     'mail' => [
         'default' => env('AWS_EMAILS_QUEUE'),
+        'downtime_notification' => env('AWS_PAYMENT_DOWNTIME_WEBHOOK_QUEUE'),
     ],
 
     'poc_update'=>[

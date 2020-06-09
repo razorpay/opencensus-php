@@ -52,11 +52,18 @@ class WalletProcessor extends BaseProcessor
 
         $severity = ReasonCode::getSeverity($gatewayDowntime->getReasonCode());
 
+        $status = Status::SCHEDULED;
+
+        if($gatewayDowntime->isScheduled() === false)
+        {
+            $status = Status::STARTED;
+        }
+
         $input = [
             Entity::METHOD    => $this->method,
             Entity::BEGIN     => $gatewayDowntime->getBegin(),
             Entity::END       => $gatewayDowntime->getEnd(),
-            Entity::STATUS    => Status::SCHEDULED,
+            Entity::STATUS    => $status,
             Entity::SCHEDULED => $gatewayDowntime->isScheduled(),
             Entity::SEVERITY  => $severity,
             Entity::ISSUER    => $issuer,

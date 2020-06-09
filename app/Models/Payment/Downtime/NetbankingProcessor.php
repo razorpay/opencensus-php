@@ -76,11 +76,18 @@ class NetbankingProcessor extends BaseProcessor
 
         $severity = $this->calculateDowntimeSeverity($gatewayDowntimes);
 
+        $status = Status::SCHEDULED;
+
+        if ($scheduled === false)
+        {
+            $status = Status::STARTED;
+        }
+
         $input = [
             Entity::METHOD    => $this->method,
             Entity::BEGIN     => $begin,
             Entity::END       => $end,
-            Entity::STATUS    => Status::SCHEDULED,
+            Entity::STATUS    => $status,
             Entity::SCHEDULED => $scheduled,
             Entity::SEVERITY  => $severity,
             Entity::ISSUER    => $bank,

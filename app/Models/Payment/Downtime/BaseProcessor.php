@@ -7,6 +7,7 @@ use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Payment\Gateway;
+use RZP\Models\Payment\Downtime\Service;
 use RZP\Models\Gateway\Downtime\Severity;
 use RZP\Models\Gateway\Downtime\ReasonCode;
 use RZP\Models\Payment\Downtime\Constants;
@@ -40,6 +41,8 @@ class BaseProcessor extends Base\Core
             $downtime->setEndNow();
 
             $this->getRepo()->saveOrFail($downtime);
+
+            (new Service())->resolveDowntimes();
         }
     }
 

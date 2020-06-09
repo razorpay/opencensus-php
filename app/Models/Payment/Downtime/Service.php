@@ -2,12 +2,16 @@
 
 namespace RZP\Models\Payment\Downtime;
 
+use Mail;
+
 use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Mail\Downtime;
 use RZP\Base\RuntimeManager;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\Merchant\Webhook\Event;
@@ -58,7 +62,7 @@ class Service extends Base\Service
         ];
     }
 
-    protected function activateDowntimes()
+    public function activateDowntimes()
     {
         $now = Carbon::now()->getTimestamp();
 
@@ -80,7 +84,7 @@ class Service extends Base\Service
         ];
     }
 
-    protected function resolveDowntimes()
+    public function resolveDowntimes()
     {
         $now = Carbon::now()->getTimestamp();
 
@@ -117,6 +121,8 @@ class Service extends Base\Service
 
             $this->app['events']->fire('api.payment.downtime.started', $eventPayload);
         }
+
+        $this->emailDowntime(Constants::CREATED, $downtime);
     }
 
     public function eventDowntimeResolved(Entity $downtime)
@@ -134,10 +140,56 @@ class Service extends Base\Service
 
             $this->app['events']->fire('api.payment.downtime.resolved', $eventPayload);
         }
+
+        $this->emailDowntime(Constants::RESOLVED, $downtime);
     }
 
     protected function increaseAllowedSystemLimits()
     {
         RuntimeManager::setTimeLimit(300);
+    }
+
+    public function emailDowntime(string $status, Entity $downtime)
+    {
+        $downtimeArray = $downtime->toArray();
+
+        try
+        {
+            if ($status === Constants::CREATED)
+            {
+                $createEmail = new Downtime\DowntimeNotification($downtimeArray, Constants::CREATED);
+
+                Mail::send($createEmail);
+
+                $this->trace->info(
+                    TraceCode::PAYMENT_DOWNTIME_CREATE_EMAIL,
+                    [
+                        'message'            => 'Mail Sent'
+                    ]);
+            }
+            elseif ($status === Constants::RESOLVED)
+            {
+                $resolveEmail = new Downtime\DowntimeNotification($downtimeArray, Constants::RESOLVED);
+
+                Mail::send($resolveEmail);
+
+                $this->trace->info(
+                    TraceCode::PAYMENT_DOWNTIME_RESOLVE_EMAIL,
+                    [
+                        'message'            => 'Mail Sent'
+                    ]);
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::PAYMENT_DOWNTIME_EMAIL_FAILED,
+                [
+                    'error'              => $e->getMessage(),
+                    'status'             => $status,
+                ]);
+        }
     }
 }

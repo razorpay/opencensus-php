@@ -7,6 +7,7 @@ use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
+use RZP\Models\Payment\Downtime\Service;
 use Illuminate\Database\Eloquent\Collection;
 
 class Core extends Base\Core
@@ -22,6 +23,11 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($downtime);
 
+        if($downtime->isScheduled() === false)
+        {
+            (new Service())->eventDowntimeStarted($downtime);
+        }
+
         return $downtime;
     }
 
@@ -32,6 +38,8 @@ class Core extends Base\Core
         $downtime->edit($input);
 
         $this->repo->saveOrFail($downtime);
+
+        (new Service())->resolveDowntimes();
 
         return $downtime;
     }

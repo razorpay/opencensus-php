@@ -203,6 +203,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::VPA_HANDLE);
     }
 
+    public function isScheduled()
+    {
+        return $this->getAttribute(self::SCHEDULED);
+    }
+
     public function getStatusByTime()
     {
         $now   = Carbon::now(Timezone::IST)->getTimestamp();
