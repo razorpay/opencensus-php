@@ -3,6 +3,7 @@
 namespace RZP\Services;
 
 use RZP\Exception;
+use RZP\Http\RequestHeader;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use Illuminate\Support\Arr;
@@ -21,6 +22,8 @@ class HubspotClient
     protected $eventData = [];
 
     protected $app;
+
+    const APPLICATION_JSON = 'application/json';
 
     protected $relativeUrls = [
         'update_contact_properties_by_email' => 'contacts/v1/contact/createOrUpdate/email/',
@@ -237,7 +240,9 @@ class HubspotClient
         $request = [
             'url'     => $this->getAbsoluteUrl($payloadData),
             'method'  => 'post',
-            'headers' => [],
+            'headers' => [
+                RequestHeader::CONTENT_TYPE  => self::APPLICATION_JSON,
+            ],
             'options' => [],
             'content' => json_encode($payload)
         ];
