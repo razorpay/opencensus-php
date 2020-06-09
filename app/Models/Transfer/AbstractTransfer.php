@@ -39,6 +39,7 @@ abstract class AbstractTransfer
 
     protected $failurecode;
 
+    protected  $status;
 
     public function __construct($payment)
     {
@@ -68,7 +69,7 @@ abstract class AbstractTransfer
 
         $this->merchant = $this->repo->merchant->findOrFail($payment->getMerchantId());
 
-        $transferStatus = [Status::PENDING,Status::FAILED];
+        $transferStatus = $this->status;
 
         $transfers = $this->repo
                           ->transfer
@@ -82,78 +83,98 @@ abstract class AbstractTransfer
                 'transferMode' =>  $this->transfermode,
             ]);
 
-        $this->processTransfers($payment,$transfers,$this->merchant);
-
-        return $transfers;
-    }
-
-    public function processTransfers($payment ,$transfers,$merchant)
-    {
-        $this->merchant = $merchant;
-
-        $this->repo->transaction(function() use ($payment, $transfers)
-        {
-            $totalTransferAmount = 0;
-
             foreach ($transfers as $transfer)
             {
-                if ($transfer->isFailed() === true and
-                    $transfer->getAttempts() >= Constant::MAX_ALLOWED_ORDER_TRANSFER_PROCESS_ATTEMPTS)
-                {
-                    $this->trace->info($this->invalidCode,
-                        [
-                            'payment_id'   => $payment->getPublicId(),
-                            'transfer'     => $transfer->toArrayPublic(),
-                            'transfermode' => $this->transfermode,
-                        ]);
-                    continue;
-                }
                 try
                 {
-                    $oldTransfer = clone $transfer;
+                  $this->processTransfers($payment, $transfer, $this->merchant);
 
-                    $core = new Core();
-
-                    $transfer = $core->createTransactionForTransfer($oldTransfer);
-
-                    $to = $this->repo
-                               ->account
-                               ->findByIdAndMerchant($transfer->getToId(), $this->merchant);
-
-                    $input = $this->getTransferData($transfer);
-
-                    $transferPayment = (new Payment\Processor\Processor($to))->processTransfer($input, $payment);
-
-                    $transferPayment->transfer()->associate($transfer);
-
-                    $this->repo->saveOrFail($transferPayment);
-
-                    $transfer->setProcessed();
-
-                    $totalTransferAmount += $transfer->getAmount();
-
-                    (new Metric())->pushTransferProcessSuccessMetrics();
                 }
                 catch (\Exception $e)
                 {
-                    $transfer->setFailed();
-
-                    $transfer->setMessage($e->getMessage());
-
                     $this->trace->traceException(
                         $e,
                         null,
                         $this->failurecode,
                         [
-                            'payment_id'   => $payment->getPublicId(),
-                            'transfer'     => $transfer->toArrayPublic(),
+                            'payment_id' => $payment->getPublicId(),
+                            'transfer' => $transfer->toArrayPublic(),
                             'transfermode' => $this->transfermode,
                         ]
                     );
+                    $transfer->setFailed();
 
-                    (new Metric())->pushTransferProcessFailedMetrics($e);
+                    $transfer->setMessage($e->getMessage());
+
+                    $transfer->incrementAttempts();
+
+                    $this->repo->saveOrFail($transfer);
+
                 }
-                finally
+            }
+
+        return $transfers;
+    }
+
+    public function processTransfers($payment ,$transfer,$merchant)
+    {
+        $this->merchant = $merchant;
+
+        $istransferProcessed = true;
+
+        if ($transfer->isFailed() === true and
+                    $transfer->getAttempts() >= Constant::MAX_ALLOWED_ORDER_TRANSFER_PROCESS_ATTEMPTS)
+        {
+            $this->trace->info($this->invalidCode,
+                        [
+                            'payment_id' => $payment->getPublicId(),
+                            'transfer' => $transfer->toArrayPublic(),
+                            'transfermode' => $this->transfermode,
+                        ]);
+            return;
+        }
+
+        $this->repo->transaction(function () use ($payment, $transfer,$istransferProcessed)
+        {
+            try
+            {
+                $oldTransfer = clone $transfer;
+
+                $core = new Core();
+
+                $transfer = $core->createTransactionForTransfer($oldTransfer);
+
+                $to = $this->repo
+                            ->account
+                            ->findByIdAndMerchant($transfer->getToId(), $this->merchant);
+
+                $input = $this->getTransferData($transfer);
+
+                $transferPayment = (new Payment\Processor\Processor($to))->processTransfer($input, $payment);
+
+                $transferPayment->transfer()->associate($transfer);
+
+                $this->repo->saveOrFail($transferPayment);
+
+                $transfer->setProcessed();
+
+                $totalTransferAmount = $transfer->getAmount();
+
+                $this->updatePaymentAmountTransferred($payment, $totalTransferAmount);
+
+                (new Metric())->pushTransferProcessSuccessMetrics();
+
+            } catch (\Exception $e)
+            {
+                $istransferProcessed = false ;
+
+                (new Metric())->pushTransferProcessFailedMetrics($e);
+
+                throw  $e;
+
+            } finally
+            {
+                if($istransferProcessed === true)
                 {
                     $transfer->incrementAttempts();
 
@@ -167,10 +188,10 @@ abstract class AbstractTransfer
                     }
                 }
             }
-
-            $this->updatePaymentAmountTransferred($payment, $totalTransferAmount);
         });
     }
+
+
 
     private function getTransferData(Entity $transfer)
     {

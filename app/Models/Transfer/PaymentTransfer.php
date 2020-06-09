@@ -37,6 +37,8 @@ class PaymentTransfer extends  AbstractTransfer
 
                     $this->transfermode = Constant::PAYMENT;
 
+                    $this->status = [Status::PENDING];
+
                     $this->processOrderTransfers($this->payment);
                 },
                 self::MUTEX_LOCK_TIMEOUT,
