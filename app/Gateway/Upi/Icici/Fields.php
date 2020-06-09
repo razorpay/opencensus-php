@@ -43,4 +43,5 @@ class Fields
     const TXN_COMPLETION_DATE       = 'TxnCompletionDate';
     const TXN_INIT_DATE             = 'TxnInitDate';
     const TXN_STATUS                = 'TxnStatus';
+    const RESPONSE_CODE             = 'ResponseCode';
 }
