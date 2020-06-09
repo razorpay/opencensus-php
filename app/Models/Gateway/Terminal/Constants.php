@@ -64,7 +64,10 @@ class Constants
     const BATCH_ERROR_CODE            = 'code';
     const BATCH_ERROR_DESCRIPTION     = 'description';
     const BATCH_SUCCESS               = 'success';
-    const BATCH_HTTP_STATUS_CODE      = 'http_status_code';    
+    const BATCH_HTTP_STATUS_CODE      = 'http_status_code';
     const CURRENCY                    = "currency";
     const CATEGORY                    = "category";
+
+    const CURRENCY_CODE               = "currency_code";
+
 }

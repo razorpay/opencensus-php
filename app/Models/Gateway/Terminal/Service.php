@@ -98,9 +98,9 @@ class Service extends Base\Service
         }
 
         $currency = [];
-        if (empty($input[TerminalConstants::CURRENCY]) === false)
+        if (empty($input["gateway_input"][TerminalConstants::CURRENCY_CODE]) === false)
         {
-            $currency[] = $input["currency"];
+            $currency[] = $input["gateway_input"][TerminalConstants::CURRENCY_CODE];
         };
 
         $terminalServiceResp = $this->app['terminals_service']->initiateOnboarding($merchant->getId(), $input['gateway'],
