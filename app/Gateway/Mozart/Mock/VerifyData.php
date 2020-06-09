@@ -2,6 +2,8 @@
 
 namespace RZP\Gateway\Mozart\Mock;
 
+use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Gateway\Base;
 
 class VerifyData extends Base\Mock\Server
@@ -482,6 +484,81 @@ class VerifyData extends Base\Mock\Server
             'success' => true
         ];
 
+        return $response;
+    }
+
+    public function upi_sbi($entities)
+    {
+        $paymentId = $entities['payment']['id'];
+        $vpa = $entities['payment']['vpa'];
+
+        $response = [
+            'error'             => null,
+            'success'           => true,
+            'external_trace_id' => 'DUMMY_REQUEST_ID',
+            'mozart_id'         => 'DUMMY_MOZART_ID',
+            'data'              => [
+                '_raw'            => 'dummy_raw_value',
+                'gateway_response'=> [
+                    'pspRefNo'      => $paymentId,
+                    'upiTransRefNo' => 99999,
+                    'npciTransId'   => 99999999999,
+                    'custRefNo'     => "99999999999",
+                    'amount'        => 500,
+                    'txnAuthDate'       => Carbon::now(Timezone::IST)->toDateTimeString(),
+                    'responseCode'      => "00",
+                    'approvalNumber'    => random_int(100000, 999999),
+                    'status'            => "S",
+                    'statusDesc'        => "Payment Successful",
+                    'addInfo'           => [
+                        'addInfo2'          => "7971807546",
+                        'statusDesc'        => "status description in addInfo not expected from gateway, but we
+                                                                       still need to remove before making database call, because our
+                                                                       poor database can only take 255 characters and gateway can still
+                                                                       send a very large data in addInfo, Off course same applies
+                                                                       for addInfo2, but since this contract is different story we are
+                                                                       fine with db failure",
+                    ],
+                    'payerVPA' => $vpa,
+                    'payeeVPA' => "razorpay@sbi",
+                ],
+                'paymentId'       => $paymentId,
+                'bank_payment_id' => '999999',
+                'status'          => 'verification_successful',
+            ],
+        ];
+
+        if ($vpa === 'failedcollect@sbi')
+        {
+            $response['data']['gateway_response']['status'] = 'F';
+            $response['data']['status'] = 'verification_failed';
+            $response['data']['gateway_response']['statusDesc'] = 'Payment failed';
+            $response['success'] = false;
+            $response['error'] = [
+                'description' => '',
+                'internal_error_code' => 'BAD_REQUEST_PAYMENT_VERIFICATION_FAILED'
+            ];
+        }
+        if ($vpa === 'failedverify@sbi')
+        {
+            $response['data']['gateway_response']['status'] = 'F';
+            $response['data']['status'] = 'verification_failed';
+            $response['data']['gateway_response']['statusDesc'] = 'Payment failed';
+            $response['success'] = false;
+            $response['error'] = [
+                'description' => '',
+                'internal_error_code' => 'BAD_REQUEST_PAYMENT_VERIFICATION_FAILED'
+            ];
+        }
+        else if ($vpa === 'cbsdown@sbi')
+        {
+            $response['data']['status'] = 'verification_failed';
+            $response['data']['gateway_response']['status'] = 'F';
+            $response['data']['gateway_response']['statusDesc'] = 'CBS transaction processing timed out';
+            $response['success'] = false;
+            $response['error']['internal_error_code'] = 'BAD_REQUEST_PAYMENT_TIMED_OUT';
+        }
+        
         return $response;
     }
 

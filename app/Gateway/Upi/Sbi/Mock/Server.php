@@ -67,7 +67,11 @@ class Server extends Base\Mock\Server
         $response = $this->makeResponse($content);
 
         return [
-            ResponseFields::MESSAGE => $response->content()
+            ResponseFields::MESSAGE => $response->content(),
+            //We don't get this in call back actually, but for test as we dont actually hit mozart
+            //hence wont be able to decrypt the response sent from here.
+            'payment_id' => $upiEntity[Entity::PAYMENT_ID],
+            'vpa' => $upiEntity['vpa'],
         ];
     }
 

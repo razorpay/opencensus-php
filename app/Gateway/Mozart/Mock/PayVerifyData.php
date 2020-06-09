@@ -268,6 +268,62 @@ class PayVerifyData extends Base\Mock\Server
         return $response;
     }
 
+    public function upi_sbi($entities)
+    {
+        $response = [
+            'error'             => null,
+            'success'           => true,
+            'external_trace_id' => 'DUMMY_REQUEST_ID',
+            'mozart_id'         => 'DUMMY_MOZART_ID',
+            'data'              => [
+                '_raw'            => 'dummy_raw_value',
+                'gateway_response'=> [
+                    'pspRefNo'      => $entities['gateway']['redirect']['payment_id'],
+                    'upiTransRefNo' => 99999,
+                    'npciTransId'   => 99999999999,
+                    'custRefNo'     => "99999999999",
+                    'amount'        => 500,
+                    'txnAuthDate'       => "2020-06-01 19:23:51",
+                    'responseCode'      => "00",
+                    'approvalNumber'    => 840600,
+                    'status'            => "S",
+                    'statusDesc'        => "Payment Successful",
+                    'addInfo'           => [
+                        'addInfo2'          => "7971807546",
+                        'statusDesc'        => "status description in addInfo not expected from gateway, but we
+                                                                       still need to remove before making database call, because our
+                                                                       poor database can only take 255 characters and gateway can still
+                                                                       send a very large data in addInfo, Off course same applies
+                                                                       for addInfo2, but since this contract is different story we are
+                                                                       fine with db failure",
+                    ],
+                    'payerVPA' => "vishnu@icici",
+                    'payeeVPA' => "razorpay@sbi",
+                ],
+                'amount' => 500,
+                'paymentId'       => $entities['gateway']['redirect']['payment_id'],
+                'bank_payment_id' => '999999',
+                'status'          => 'callback_successful',
+            ],
+        ];
+
+        if($entities['gateway']['redirect']['vpa'] === 'rejectedcollect@sbi'){
+            $response['data']['gateway_response']['status'] = 'R';
+            $response['success'] = false;
+            $response['error']['internal_error_code'] = 'BAD_REQUEST_PAYMENT_UPI_COLLECT_REQUEST_REJECTED';
+        }
+
+        if(isset($entities['gateway']['redirect']['amount'])){
+            $response['data']['gateway_response']['amount'] = $entities['gateway']['redirect']['amount'];
+        }
+
+        if(isset($entities['gateway']['redirect']['upiTransRefNo'])){
+            $response['data']['gateway_response']['upiTransRefNo'] = $entities['gateway']['redirect']['upiTransRefNo'];
+        }
+
+        return $response;
+    }
+
     public function netbanking_idbi($entities)
     {
         $response = [

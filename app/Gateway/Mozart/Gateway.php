@@ -186,6 +186,11 @@ class Gateway extends Base\Gateway
             }
         }
 
+        if ($this->getGateway($input) === 'upi_sbi')
+        {
+            return $response;
+        }
+
         if (($input['payment']['method'] === 'upi') or
             ($input['payment']['method'] === Payment\Method::CRED))
         {
@@ -597,7 +602,16 @@ class Gateway extends Base\Gateway
         }
         else
         {
-            $response = json_decode($input['gateway']['preProcessServerCallbackResponse'], true);
+            $gateway = $input['payment']['gateway'];
+
+            if($gateway === Payment\Gateway::UPI_SBI)
+            {
+                $response = $input['gateway'];
+            }
+            else
+            {
+                $response = json_decode($input['gateway']['preProcessServerCallbackResponse'], true);
+            }
         }
 
         $action = Action::AUTHORIZE;
@@ -837,6 +851,8 @@ class Gateway extends Base\Gateway
             case Payment\Gateway::UPI_JUSPAY:
             case Payment\Gateway::UPI_CITI:
                 return $input;
+            case Payment\Gateway::UPI_SBI:
+                return $this->preProcessServerCallbackForUpiSbi($input);
             case Payment\Gateway::NETBANKING_YESB:
                 return $this->preProcessServerCallbackForYesb($input);
             case Payment\Gateway::WALLET_PHONEPE:
@@ -1072,6 +1088,15 @@ class Gateway extends Base\Gateway
                     'gateway'           => $input['payment']['gateway']
                 ]);
         }
+    }
+
+    public function sendVerifyRequest($verify)
+    {
+        $this->action = Payment\Action::VERIFY;
+
+        $verifyResponseContent = $this->sendPaymentVerifyRequest($verify);
+
+        return $verifyResponseContent;
     }
 
     public function sendPaymentVerifyRequest($verify)
@@ -1399,6 +1424,11 @@ class Gateway extends Base\Gateway
                 Action::VERIFY        => null,
                 Action::REFUND        => null,
             ],
+            Payment\Gateway::UPI_SBI => [
+                Action::PAY_INIT      => null,
+                Action::PAY_VERIFY    => null,
+                Action::VERIFY        => null,
+            ],
             Payment\Gateway::UPI_CITI => [
                 Action::PAY_INIT => null,
                 Action::PAY_VERIFY => null,
@@ -1570,6 +1600,11 @@ class Gateway extends Base\Gateway
                 Action::AUTH_INIT       => null,
                 Action::PAY_INIT        => null,
                 Action::PAY_VERIFY      => null,
+            ],
+            Payment\Gateway::UPI_SBI => [
+                Action::PAY_INIT        => null,
+                Action::PAY_VERIFY      => null,
+                Action::VERIFY          => null,
             ],
             Payment\Gateway::NETBANKING_KVB =>  [
                 Action::PAY_INIT    =>  null,
@@ -1797,6 +1832,30 @@ class Gateway extends Base\Gateway
         return $response;
     }
 
+    public function preProcessServerCallbackForUpiSbi($input): array
+    {
+        $this->action = Action::PAY_VERIFY;
+
+        $content['gateway']['redirect'] = $input;
+
+        $content['terminal'] = '';
+
+        $content['payment']['gateway'] = Payment\Gateway::UPI_SBI;
+
+        $request = $this->getMozartRequestArray($content, Mode::LIVE);
+
+        $response = $this->sendGatewayRequest($request);
+
+        $traceRes = $this->getRedactedData($response);
+
+        // Till here response was fully encrypted and we did not know the payment id
+        $paymentDetails['payment']['id'] = $response['data']['paymentId'];
+
+        $this->traceGatewayPaymentResponse($traceRes, $paymentDetails, TraceCode::GATEWAY_AUTHORIZE_RESPONSE);
+
+        return $response;
+    }
+
     public function preProcessServerCallbackForKvb($input, $mode): array
     {
         $this->action = Action::PAY_VERIFY;
@@ -1893,6 +1952,7 @@ class Gateway extends Base\Gateway
             Payment\Gateway::UPI_AIRTEL,
             Payment\Gateway::UPI_CITI,
             Payment\Gateway::UPI_JUSPAY,
+            Payment\Gateway::UPI_SBI,
             Payment\Gateway::WALLET_PHONEPE,
             Payment\Gateway::WALLET_PHONEPESWITCH,
             Payment\Gateway::WALLET_PAYPAL,
@@ -1916,8 +1976,8 @@ class Gateway extends Base\Gateway
     {
         $fullyEncryptedInputGateways = [
           Payment\Gateway::NETBANKING_YESB,
+          Payment\Gateway::UPI_SBI,
         ];
-
         return in_array($gateway, $fullyEncryptedInputGateways, true);
     }
 
@@ -1932,6 +1992,7 @@ class Gateway extends Base\Gateway
             Payment\Gateway::NETBANKING_IBK,
             Payment\Gateway::NETBANKING_IDBI,
             Payment\Gateway::UPI_AIRTEL,
+            Payment\Gateway::UPI_SBI,
             Payment\Gateway::NETBANKING_KVB,
         ];
 

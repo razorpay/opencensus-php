@@ -2,6 +2,8 @@
 
 namespace RZP\Gateway\Mozart\Mock;
 
+use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Gateway\Base;
 
 class PayInitData extends Base\Mock\Server
@@ -302,6 +304,53 @@ class PayInitData extends Base\Mock\Server
             'external_trace_id' => 'DUMMY_REQUEST_ID',
         ];
 
+        return $response;
+    }
+
+    public function upi_sbi($entities)
+    {
+        $vpa = $entities['payment']['vpa'];
+
+        $response = [
+            'data' =>
+                [
+                    'gateway_response'=>
+                        [
+                            'upiTransRefNo' => '99999',
+                            'status' => 'S',
+                            'pspRefNo' => $entities['payment']['id'],
+                            'txnAuthDate' => Carbon::now(Timezone::IST)->toDateTimeString(),
+                            'payerVPA' => $vpa,
+                            'amount' => $entities['payment']['amount'],
+                            'payeeVPA' => 'razorpay@sbi',
+                            'statusDesc' => 'Transaction Pending waiting for response',
+                            'npciTransId' => '99999999999',
+                            'custRefNo' => '99999999999',
+                        ],
+                ],
+            'error'             => null,
+            'success'           => true,
+            'mozart_id'         => 'DUMMY_MOZART_ID',
+            'external_trace_id' => 'DUMMY_REQUEST_ID',
+        ];
+
+        if ($vpa === 'failedcollect@sbi')
+        {
+            $response['data']['gateway_response']['status'] = 'F';
+            $response['data']['gateway_response']['statusDesc'] = 'Payment failed';
+            $response['success'] = false;
+            $response['error'] = [
+                'description' => '',
+                'internal_error_code' => 'BAD_REQUEST_PAYMENT_FAILED'
+            ];
+        }
+        else if ($vpa === 'cbsdown@sbi')
+        {
+            $response['data']['gateway_response']['status'] = 'T';
+            $response['data']['gateway_response']['statusDesc'] = 'CBS transaction processing timed out';
+            $response['success'] = false;
+            $response['error']['internal_error_code'] = 'BAD_REQUEST_PAYMENT_TIMED_OUT';
+        }
         return $response;
     }
 

@@ -22,6 +22,8 @@ class Gateway extends Base\Gateway
 {
     use AuthorizeFailed;
 
+    use Base\MozartTrait;
+
     const ACQUIRER = Payment\Processor\Upi::SBIN;
 
     protected $gateway = Payment\Gateway::UPI_SBI;
@@ -67,18 +69,9 @@ class Gateway extends Base\Gateway
 
         $gatewayPayment = $this->createGatewayPaymentEntity($attributes);
 
-        $request = $this->getCollectRequestData($input);
+        $response = $this->authorizeRequest($input);
 
-        // this is handled in base/gateway. but since base gateway's sendGatewayRequest is mocked,
-        // base/gateway's retry handler cannot be tested. so adding retry handler here to have
-        // atleast one gateway which can test this flow.
-        $response = $this->sendGatewayRequest($request);
-
-        $response = $this->parseGatewayResponse($response->body, TraceCode::GATEWAY_PAYMENT_RESPONSE);
-
-        $this->updateGatewayPaymentEntity($gatewayPayment, $response[ResponseFields::API_RESPONSE]);
-
-        $this->checkResponseStatus($response[ResponseFields::API_RESPONSE][ResponseFields::STATUS]);
+        $this->updateGatewayPaymentEntity($gatewayPayment, $response['data']['gateway_response']);
 
         $vpa = $input[ConstantsEntity::TERMINAL][Terminal\Entity::GATEWAY_MERCHANT_ID2] ?? self::DEFAULT_PAYEE_VPA;
 
@@ -100,9 +93,11 @@ class Gateway extends Base\Gateway
     {
         parent::callback($input);
 
-        $content = $input['gateway'][ResponseFields::API_RESPONSE];
+        $this->callbackRequest($input);
 
-        $this->assertPaymentIdAndAmount($input, $input['gateway']);
+        $content = $input['gateway']['data']['gateway_response'];
+
+        $this->assertPaymentIdAndAmount($input, $content);
 
         $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail($input[ConstantsEntity::PAYMENT][Payment\Entity::ID],
                                                                       Action::AUTHORIZE);
@@ -129,6 +124,8 @@ class Gateway extends Base\Gateway
 
     public function verify(array $input)
     {
+        unset($input['gateway_config']);
+
         parent::verify($input);
 
         $verify = new Verify($this->gateway, $input);
@@ -186,7 +183,7 @@ class Gateway extends Base\Gateway
     {
         $expectedAmount = $this->formatAmount($input);
 
-        $actualAmount = $response[ResponseFields::API_RESPONSE][ResponseFields::AMOUNT];
+        $actualAmount = $response[ResponseFields::AMOUNT];
 
         $actualAmount = number_format($actualAmount, 2, '.', '');
 
@@ -194,27 +191,28 @@ class Gateway extends Base\Gateway
 
         $expectedPaymentId = $input[ConstantsEntity::PAYMENT][Payment\Entity::ID];
 
-        $actualPaymentId = $response[ResponseFields::API_RESPONSE][ResponseFields::PSP_REFERENCE_NO];
+        $actualPaymentId = $response[ResponseFields::PSP_REFERENCE_NO];
 
         $this->assertPaymentId($expectedPaymentId, $actualPaymentId);
     }
 
     protected function sendPaymentVerifyRequest(Verify $verify)
     {
-        $request = $this->getPaymentVerifyRequest($verify);
 
-        $response = $this->sendGatewayRequest($request);
+        $response = $this->verifyRequest($verify);
 
-        $verify->verifyResponseBody = $response->body;
+        $verify->verifyResponseBody = $response;
 
-        $verify->verifyResponseContent = $this->parseGatewayResponse($response->body);
+        unset($response['data']['gateway_response']['addInfo']['statusDesc']);
+
+        $verify->verifyResponseContent = $response['data']['gateway_response'];
     }
 
     protected function verifyPayment(Verify $verify)
     {
         $this->setVerifyAmountMismatch($verify);
 
-        $content = $verify->verifyResponseContent[ResponseFields::API_RESPONSE];
+        $content = $verify->verifyResponseContent;
 
         $entityData = $this->processGatewayData($content);
 
@@ -248,7 +246,7 @@ class Gateway extends Base\Gateway
     {
         $paymentAmount = $this->formatAmount($verify->input);
 
-        $content = $verify->verifyResponseContent[ResponseFields::API_RESPONSE];
+        $content = $verify->verifyResponseContent;
 
         if (empty($content[ResponseFields::AMOUNT]) === false)
         {
@@ -282,7 +280,7 @@ class Gateway extends Base\Gateway
 
         $content = $verify->verifyResponseContent;
 
-        $status = $content[ResponseFields::API_RESPONSE][ResponseFields::STATUS];
+        $status = $content[ResponseFields::STATUS];
 
         $verify->gatewaySuccess = (Status::isStatusSuccess($status, $this->action) === true);
     }
@@ -325,30 +323,6 @@ class Gateway extends Base\Gateway
         }
 
         return $traceCode;
-    }
-
-    private function getCollectRequestData(array $input): array
-    {
-        parent::authorize($input);
-
-        $content = [
-            RequestFields::ADDITIONAL_INFO  => [
-                RequestFields::ADDITIONAL_INFO9  => Constants::NOT_APPLICABLE,
-                RequestFields::ADDITIONAL_INFO10 => Constants::NOT_APPLICABLE,
-            ],
-            RequestFields::AMOUNT           => $this->formatAmount($input),
-            RequestFields::EXPIRY_TIME      => (string) $input[ConstantsEntity::UPI][Base\Entity::EXPIRY_TIME],
-            RequestFields::PAYER_TYPE       => [
-                RequestFields::VIRTUAL_ADDRESS => $input[ConstantsEntity::PAYMENT][Payment\Entity::VPA],
-            ],
-            RequestFields::REQUEST_INFO     => [
-                RequestFields::PG_MERCHANT_ID   => $this->getMerchantId(),
-                RequestFields::PSP_REFERENCE_NO => $input[ConstantsEntity::PAYMENT][Payment\Entity::ID],
-            ],
-            RequestFields::TRANSACTION_NOTE => Constants::TRANSACTION_NOTE,
-        ];
-
-        return $this->getStandardRequestArray($content);
     }
 
     public function getEncryptedPayload(array $content): string
@@ -524,9 +498,11 @@ class Gateway extends Base\Gateway
      */
     public function preProcessServerCallback($input): array
     {
-        $response = $this->jsonToArray($input[ResponseFields::MESSAGE])[ResponseFields::RESPONSE];
+        $response = $this->preProcessServerCallbackRequest($input);
 
-        $callback = $this->getDecryptedPayload($response);
+        $callback = $response['data']['gateway_response'];
+
+        $callback = [ResponseFields::API_RESPONSE => $callback];
 
         $traceCallback = $this->maskUpiDataForTracing($callback, [
             Base\Entity::VPA    => ResponseFields::PAYER_VPA,
@@ -539,13 +515,13 @@ class Gateway extends Base\Gateway
                 'payment_id'     => $callback[ResponseFields::API_RESPONSE][ResponseFields::PSP_REFERENCE_NO]
             ]);
 
-        return $callback;
+        return $response;
     }
 
     public function postProcessServerCallback($input): array
     {
         return [
-            'pspRefNo' => $input['gateway'][ResponseFields::API_RESPONSE]['pspRefNo'],
+            'pspRefNo' => $input['gateway']['data']['gateway_response']['pspRefNo'],
             'status'   => 'SUCCESS',
             'message'  => 'Request Processed Successfully'
         ];
@@ -557,7 +533,7 @@ class Gateway extends Base\Gateway
      */
     public function getPaymentIdFromServerCallback(array $response): string
     {
-        return $response[ResponseFields::API_RESPONSE][ResponseFields::PSP_REFERENCE_NO];
+        return $response['data']['paymentId'];
     }
 
     /**
@@ -684,7 +660,6 @@ class Gateway extends Base\Gateway
          * up losing data. We need additional info to be there as it is needed in refund file.
          * TODO: Fix this for other fields too.
          */
-
         if (empty($content[ResponseFields::ADDITIONAL_INFO]) === true)
         {
             unset($content[ResponseFields::ADDITIONAL_INFO]);
