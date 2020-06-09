@@ -1449,6 +1449,11 @@ class BasicAuth
         return $this->internalApp === 'vendor_payments';
     }
 
+    public function isPayoutLinkApp()
+    {
+        return $this->internalApp === 'payout_links';
+    }
+
     public function isDashboardApp()
     {
         return (in_array($this->getInternalApp(), ['dashboard', 'dashboard_guest'], true) === true);

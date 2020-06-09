@@ -476,7 +476,7 @@ class Core extends Base\Core
 
         $this->deliverOtp($payoutLink, $otp);
 
-        return [self::SUCCESS => self::OK];
+        return [Entity::SUCCESS => Entity::OK];
     }
 
     public function verifyCustomerOtp(Entity $payoutLink, $input): array

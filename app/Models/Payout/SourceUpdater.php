@@ -60,7 +60,9 @@ class SourceUpdater
      */
     public static function update(Entity $payout, string $previousPayoutStatus = null)
     {
-        $trace = App::getFacadeRoot()['trace'];
+        $app = App::getFacadeRoot();
+
+        $trace = $app['trace'];
 
         $trace->info(TraceCode::PAYOUT_SOURCE_UPDATER_PROCESSING,
             [
@@ -80,9 +82,29 @@ class SourceUpdater
     {
         try
         {
-            if (($payout->payoutLink !== null))
+            $payoutLinkId = $payout->getPayoutLinkId();
+
+            if($payoutLinkId !== null)
             {
-                (new PayoutLinkCore())->payoutUpdateListener($payout->payoutLink, $payout);
+                // check if payout link microservice feature flag enabled for this merchant
+                $isFeatureEnabled = $payout->merchant->isFeatureEnabled(Constants::X_PAYOUT_LINKS_MS);
+
+                if($isFeatureEnabled === false)
+                {
+                    $payoutLink = $payout->payoutLink;
+
+                    if($payoutLink !== null)
+                    {
+                        (new PayoutLinkCore())->payoutUpdateListener($payoutLink, $payout);
+                    }
+                }else
+                {
+                    // instead of making the above call we are going to call the payoutlink service that will
+                    // update the payout link status
+                    $payoutLinkService = App::getFacadeRoot()['payout-links'];
+
+                    $payoutLinkService->pushPayoutStatus($payoutLinkId, $payout->getId(), $payout->getStatus());
+                }
             }
         }
         catch (\Exception $e)

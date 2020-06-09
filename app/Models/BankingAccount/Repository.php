@@ -29,6 +29,14 @@ class Repository extends Base\Repository
                     ->firstOrFail();
     }
 
+    public function findByMerchantAndAccountNumberPublic(Merchant\Entity $merchant, string $accountNumber)
+    {
+        return $this->newQuery()
+                    ->where(Entity::MERCHANT_ID, '=', $merchant->getId())
+                    ->where(Entity::ACCOUNT_NUMBER , '=' , $accountNumber)
+                    ->first();
+    }
+
     public function findByAccountNumberAndChannelPublic(string $accountNumber, string $channel)
     {
         return $this->whereAccountNumberAndChannelAre($accountNumber, $channel)

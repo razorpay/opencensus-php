@@ -161,6 +161,15 @@ class PayoutLinkController extends Controller
 
         return ApiResponse::json($response);
     }
+    /*
+     * piggybacking on API's Mailgun integration used by PL microservice
+     */
+    public function sendEmailInternal()
+    {
+        $response = $this->service()->sendEmailInternal($this->input);
+
+        return ApiResponse::json($response);
+    }
 
     private function addCorsHeaders(& $response)
     {
@@ -169,5 +178,19 @@ class PayoutLinkController extends Controller
         $response->headers->set('Access-Control-Allow-Credentials' , 'true');
 
         $response->headers->set('Access-Control-Allow-Headers', 'Content-Type');
+    }
+
+    public function get(string $id)
+    {
+        $entity = $this->service()->fetchMerchantSpecific($id);
+
+        return ApiResponse::json($entity);
+    }
+
+    public function list()
+    {
+        $entities = $this->service()->fetchMultipleMerchantSpecific($this->input);
+
+        return ApiResponse::json($entities);
     }
 }

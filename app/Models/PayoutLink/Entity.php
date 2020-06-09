@@ -102,6 +102,9 @@ class Entity extends Base\PublicEntity
     const MERCHANT_NAME        = 'merchant_name';
     const PAYOUT_PURPOSE       = 'payout_purpose';
     const CUSTOMER_NAME        = 'customer_name';
+    const SUCCESS              = 'success';
+    const OK                   = 'OK';
+    const TO_EMAIL             = 'to_email';
 
     protected $generateIdOnCreate = true;
 

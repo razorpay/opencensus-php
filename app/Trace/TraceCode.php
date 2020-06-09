@@ -62,6 +62,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     // payout links
     const PAYOUT_LINK_NOTIFICATION_JOB_RELEASED                 = 'PAYOUT_LINK_NOTIFICATION_JOB_RELEASED';
     const PAYOUT_LINK_CREATE_REQUEST                            = 'PAYOUT_LINK_CREATE_REQUEST';
+    const PAYOUT_LINK_INITIATE_REQUEST                          = 'PAYOUT_LINK_INITIATE_REQUEST';
+    const PAYOUT_LINK_GET_HOSTED_PAGE_DATA                      = 'PAYOUT_LINK_GET_HOSTED_PAGE_DATA';
     const PAYOUT_LINK_SENDING_LINK_SMS                          = 'PAYOUT_LINK_SENDING_LINK_SMS';
     const PAYOUT_LINK_SENDING_LINK_EMAIL                        = 'PAYOUT_LINK_SENDING_LINK_EMAIL';
     const PAYOUT_LINK_SUCCESS_SMS                               = 'PAYOUT_LINK_SUCCESS_SMS';
@@ -77,6 +79,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const VENDOR_PAYMENT_PAYOUT_UPDATER_ERROR                   = 'VENDOR_PAYMENT_PAYOUT_UPDATER_ERROR';
     const PAYOUT_LINK_SHORT_URL_CREATED                         = 'PAYOUT_LINK_SHORT_URL_CREATED';
     const PAYOUT_LINK_SETTINGS_UPDATE                           = 'PAYOUT_LINK_SETTINGS_UPDATE';
+    const PAYOUT_LINK_SETTINGS_GET                              = 'PAYOUT_LINK_SETTINGS_GET';
     const PAYOUT_LINK_UN_HANDLED_PAYOUT_STATUS                  = 'PAYOUT_LINK_UN_HANDLED_PAYOUT_STATUS';
     const PAYOUT_LINK_INVALIDATING_REDIS_TOKEN                  = 'PAYOUT_LINK_INVALIDATING_REDIS_TOKEN';
     const PAYOUT_LINK_PROCESS_CONTACT_REQUEST                   = 'PAYOUT_LINK_PROCESS_CONTACT_REQUEST';

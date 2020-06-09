@@ -507,6 +507,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::PURPOSE);
     }
 
+    public function getPayoutLinkId()
+    {
+        return "poutlk_" . $this->getAttribute(self::PAYOUT_LINK_ID);
+    }
+
     public function getPurposeType()
     {
         return $this->getAttribute(self::PURPOSE_TYPE);
@@ -855,6 +860,11 @@ class Entity extends Base\PublicEntity
     public function setQueueFlag($flag)
     {
         $this->queueFlag = $flag;
+    }
+
+    public function setPayoutLinkId($payoutlinkid)
+    {
+        $this->setAttribute(self::PAYOUT_LINK_ID, str_replace("poutlk_", "", $payoutlinkid));
     }
 
     public function setShouldValidateAndUpdateBalancesFlag($flag)

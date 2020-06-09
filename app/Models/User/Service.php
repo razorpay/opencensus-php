@@ -417,9 +417,7 @@ class Service extends Base\Service
 
     public function get(string $id): array
     {
-        if (($this->auth->isAdminAuth() === true) or
-            (($this->auth->isPrivilegeAuth() === true) and
-             ($this->auth->isVendorPaymentApp())))
+        if ($this->auth->isAdminAuth() === true or $this->isAllowedInternalApp())
         {
             $user = $this->repo->user->findOrFailPublic($id);
         }
@@ -432,6 +430,11 @@ class Service extends Base\Service
         $response = (new Core)->get($user);
 
         return $response;
+    }
+
+    protected function isAllowedInternalApp(): bool
+    {
+        return ($this->auth->isPayoutLinkApp() or $this->auth->isVendorPaymentApp());
     }
 
     public function updateMerchantManageTeam(string $userId, array $input): array

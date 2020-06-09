@@ -268,9 +268,10 @@ class Service extends Base\Service
 
         $createDuplicate = true;
 
-        if ((($this->auth->isPrivateAuth() === true) or
+        if (((($this->auth->isPrivateAuth() === true) or
              ($this->auth->isPublicAuth() === true)) and
-            ($this->shouldCreateDuplicate() === false))
+            ($this->shouldCreateDuplicate() === false)) or
+            ($this->isAllowedInternalAppForDeDuplicateFA()))
         {
             $createDuplicate = false;
         }
@@ -289,6 +290,11 @@ class Service extends Base\Service
             Constants\Entity::FUND_ACCOUNT => $entity,
             Entity::RESPONSE_CODE          => $responseCode,
         ];
+    }
+
+    protected function isAllowedInternalAppForDeDuplicateFA(): bool
+    {
+        return $this->auth->isPayoutLinkApp();
     }
 
     protected function handleFundAccountCreationForCustomer(array $input)

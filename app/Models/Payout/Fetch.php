@@ -46,6 +46,7 @@ class Fetch extends BaseFetch
         ],
         AuthType::PRIVILEGE_AUTH => [
             Entity::PRODUCT                 => 'sometimes|string',
+            Entity::PAYOUT_LINK_ID          => 'sometimes|string',
         ],
     ];
 
@@ -85,6 +86,7 @@ class Fetch extends BaseFetch
             Entity::DESTINATION,
             Entity::METHOD,
             Entity::CHANNEL,
+            Entity::PAYOUT_LINK_ID,
         ],
     ];
 
@@ -94,6 +96,7 @@ class Fetch extends BaseFetch
         Entity::CONTACT_ID,
         Entity::FUND_ACCOUNT_ID,
         Entity::BATCH_ID,
+        Entity::PAYOUT_LINK_ID,
     ];
 
     const ES_FIELDS = [

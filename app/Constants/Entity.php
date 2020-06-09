@@ -758,6 +758,7 @@ class Entity
         self::FTS_CHANNEL_HEALTH_EVENTS     => \RZP\Services\FTS\FtsAdminClient::class,
         self::UFH_FILES                     => \RZP\Services\UfhClient::class,
         self::PAYMENTS_NBPLUS_NETBANKING    => \RZP\Services\NbPlus\Netbanking::class,
+        self::PAYOUT_LINK                   => \RZP\Models\PayoutLink\Service::class,
     ];
 
     protected static $syncedInLiveAndTest = [
@@ -775,7 +776,8 @@ class Entity
     ];
 
     protected static $externalEntities = [
-        self::SUBSCRIPTION
+        self::SUBSCRIPTION,
+        self::PAYOUT_LINK
     ];
 
     public static function getAllEntities()
@@ -951,7 +953,14 @@ class Entity
 
     public static function getExternalEntityName(string $entity)
     {
-        return explode('.', $entity)[1];
+        if(strpos($entity, '.') == true)
+        {
+            return explode('.', $entity)[1];
+        }
+        else
+        {
+            return $entity;
+        }
     }
 
     public static function isEntitySyncedInLiveAndTest($entity)

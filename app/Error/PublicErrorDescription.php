@@ -889,9 +889,11 @@ class PublicErrorDescription
     const BAD_REQUEST_FEE_RECOVERY_AMOUNT_ZERO                                  = 'Fee Recovery payout amount cannot be zero';
 
     // payout links
+    const BAD_REQUEST_PAYOUT_LINK_MICRO_SERVICE_FAILED                         = 'Error occurred at Payout Link Microservice';
     const BAD_REQUEST_CANNOT_GENERATE_OTP_WITHOUT_PHONE_AND_EMAIL              = 'Provided contact neither has email nor phone number';
     const BAD_REQUEST_CUSTOMER_OTP_DELIVERY_FAILED                             = 'Error in SMS/Email delivery for OTP';
     const BAD_REQUEST_INVALID_STATE_FOR_OTP_GENERATION                         = 'Cannot generate OTP for Payout Link in this state';
+    const BAD_REQUEST_PAYOUT_LINK_SEND_EMAIL_FAILED                            = 'Invalid email_type. Please provide valid value';
     const BAD_REQUEST_INVALID_STATE_FOR_OTP_VERIFICATION                       = 'Cannot verify OTP for Payout Link in this state';
     const BAD_REQUEST_ONLY_VPA_AND_BANK_ACCOUNT_SUPPORTED                      = 'Only VPA and Bank Accounts supported by Payout Links';
     const BAD_REQUEST_INVALID_OTP_AUTH_TOKEN                                   = 'Token passed is either invalid or expired';

@@ -20,6 +20,10 @@ class Validator extends Base\Validator
     const RESEND_NOTIFICATION_RULE         = 'resend_notification';
     const ADD_FUND_ACCOUNT_RULE            = 'add_fund_account';
     const SETTINGS_RULE                    = 'settings';
+    const SEND_OTP_EMAIL_INTERNAL_RULE     = 'send_otp_email_internal';
+    const SEND_LINK_EMAIL_INTERNAL_RULE    = 'send_link_email_internal';
+    const SEND_SUCCESS_EMAIL_INTERNAL_RULE    = 'send_success_email_internal';
+    const SEND_FAILURE_EMAIL_INTERNAL_RULE    = 'send_failure_email_internal';
     const MAX_IMPS_AMOUNT                  = 20000000;
     const MAX_UPI_AMOUNT                   = 10000000;
     const RESEND_NOTIFICATION_PARAMS       = 'resend_notification_params';
@@ -30,6 +34,34 @@ class Validator extends Base\Validator
         Entity::SEND_SMS             => 'sometimes|boolean',
         Entity::CONTACT_EMAIL        => 'sometimes|nullable|email',
         Entity::CONTACT_PHONE_NUMBER => 'sometimes|nullable|contact_syntax',
+    ];
+
+    protected static $sendOtpEmailInternalRules = [
+        Entity::MERCHANT_ID => 'required|string',
+        Entity::PURPOSE     => 'required|filled|string|max:30|alpha_dash_space',
+        Entity::OTP         => 'required|string|min:4|max:6',
+        Entity::TO_EMAIL    => 'required|email',
+    ];
+
+    protected static $sendLinkEmailInternalRules = [
+        Entity::MERCHANT_ID => 'required|string',
+        Entity::TO_EMAIL    => 'required|email',
+        'payoutlinkresponse'=> 'required|array',
+    ];
+
+    protected static $sendSuccessEmailInternalRules = [
+        Entity::MERCHANT_ID => 'required|string',
+        Entity::TO_EMAIL    => 'required|email',
+        'payoutlinkresponse'=> 'required|array',
+        'settings'          => 'required|array',
+        'payout_utr'        => 'required|string',
+    ];
+
+    protected static $sendFailureEmailInternalRules = [
+        Entity::MERCHANT_ID => 'required|string',
+        Entity::TO_EMAIL    => 'required|email',
+        'payoutlinkresponse'=> 'required|array',
+        'settings'          => 'required|array',
     ];
 
     protected static $settingsRules = [

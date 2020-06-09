@@ -328,6 +328,11 @@ class Constants
     const X_PRO_INVITE  = 'x_pro_invite';
 
     /*
+     * This is a feature flag is switch for Payout-Links V1+(Dashboard access) for merchants to access from microservice.
+     */
+    const X_PAYOUT_LINKS_MS  = 'x_payout_links_ms';
+
+     /*
      * This is a feature flag to enable Vendor Payment
      */
     const RX_VENDOR_PAYMENTS  = 'rx_vendor_payments';
@@ -552,6 +557,7 @@ class Constants
         self::PAYOUT_TO_CARDS                 => true,
         self::PAYMENT_ONHOLD                  => true,
         self::X_PRO_INVITE                    => true,
+        self::X_PAYOUT_LINKS_MS               => true,
         self::RX_VENDOR_PAYMENTS              => true,
         self::GOOGLE_PAY_OMNICHANNEL          => true,
         self::TERMINAL_ONBOARDING             => true,
@@ -732,6 +738,11 @@ class Constants
         self::X_PRO_INVITE              => [
             'feature'       => self::X_PRO_INVITE,
             'display_name'  => 'Razorpay X Pro Invite',
+            'documentation' => '',
+        ],
+        self::X_PAYOUT_LINKS_MS            => [
+            'feature'       => self::X_PAYOUT_LINKS_MS,
+            'display_name'  => 'Razorpay X - Payout Links Microservice',
             'documentation' => '',
         ],
         self::RX_VENDOR_PAYMENTS              => [

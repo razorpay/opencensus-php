@@ -1,0 +1,617 @@
+<?php
+
+namespace RZP\Services;
+
+use Requests;
+use RZP\Constants\Mode;
+use RZP\Trace\TraceCode;
+use RZP\Error\ErrorCode;
+use RZP\Constants\Environment;
+use RZP\Models\FundAccount\Type;
+use RZP\Http\Response\StatusCode;
+use RZP\Models\PayoutLink\Entity;
+use RZP\Models\PayoutLink\Validator;
+use RZP\Exception\BadRequestException;
+use RZP\Models\Vpa\Entity as VpaEntity;
+use RZP\Models\BankingAccount\Channel;
+use RZP\Models\Merchant\Entity as MerchantEntity;
+use RZP\Models\FundAccount\Entity as FundAccountEntity;
+
+/**
+ * Class PayoutLinks
+ * @package RZP\Services
+ *
+ * No validations will happen here.
+ * This will just call the right endpoints and return the responses as is
+ * If there is an error thrown from the MicroService, that same error with
+ * the right error code will be sent back to the caller
+ *
+ */
+class PayoutLinks
+{
+    const KEY                                      = 'api';
+    const MERCHANT_ID                              = 'merchant_id';
+    const PAYOUT_LINK_ID                           = 'payout_link_id';
+    const CREATE_PAYOUT_LINK_PATH                  = 'twirp/payoutlinks.Payoutlinks/CreatePayoutLink';
+    const CANCEL_PAYOUT_LINK_PATH                  = 'twirp/payoutlinks.Payoutlinks/CancelPayoutLink';
+    const FETCH_PAYOUT_LINK_PATH                   = 'twirp/payoutlinks.Payoutlinks/FetchPayoutLink';
+    const FETCH_PAYOUT_LINK_MULTIPLE_PATH          = 'twirp/payoutlinks.Payoutlinks/FetchMultiplePayoutLinks';
+    const GET_SETTINGS_PAYOUT_LINK_PATH            = 'twirp/payoutlinks.Payoutlinks/GetSettings';
+    const UPDATE_SETTINGS_PAYOUT_LINK_PATH         = 'twirp/payoutlinks.Payoutlinks/UpdateSettings';
+    const PAYOUT_LINK_GENERATE_OTP_PATH            = 'twirp/payoutlinks.Payoutlinks/GenerateOTP';
+    const PAYOUT_LINK_GET_FUND_ACCOUNTS_BY_CONTACT = 'twirp/payoutlinks.Payoutlinks/GetFundAccountsByContact';
+    const PAYOUT_LINK_VERIFY_OTP_PATH              = 'twirp/payoutlinks.Payoutlinks/VerifyOTP';
+    const PAYOUT_STATUS_UPDATE                     = 'twirp/payoutlinks.Payoutlinks/UpdatePayoutLinkStatus';
+    const INITIATE_PAYOUT_LINK_PATH                = 'twirp/payoutlinks.Payoutlinks/InitiatePayoutLink';
+    const GET_HOSTED_PAGE_DATA                     = 'twirp/payoutlinks.Payoutlinks/GetHostedPageData';
+    const RESEND_NOTIFICATION                      = 'twirp/payoutlinks.Payoutlinks/ResendNotification';
+    const ON_BOARDING_STATUS                       = 'twirp/payoutlinks.Payoutlinks/OnboardingStatus';
+    const SUMMARY                                  = 'twirp/payoutlinks.Payoutlinks/Summary';
+    const FUND_ACCOUNT_ID                          = 'fund_account_id';
+    const CANCELLED_AT                             = 'cancelled_at';
+    const SEND_SMS                                 = 'send_sms';
+    const SEND_EMAIL                               = 'send_email';
+    const ATTEMPT_COUNT                            = 'attempt_count';
+    const PAYOUTS                                  = 'payouts';
+    const USER_ID                                  = 'user_id';
+    const USER                                     = 'user';
+    const RECEIPT                                  = 'receipt';
+    const MODE                                     = 'mode';
+    const NOTES                                    = 'notes';
+
+    protected $baseUrl;
+
+    protected $secret;
+
+    protected $repo;
+
+    protected $config;
+
+    protected $trace;
+
+    protected $proxy;
+
+    protected $mode;
+
+    protected $merchant;
+
+    protected $app;
+
+    public function __construct($app)
+    {
+        $this->trace = $app['trace'];
+
+        $this->config = $app['config'];
+
+        $payoutLinkConfig = $this->config->get('applications.payout_links');
+
+        $this->baseUrl = $payoutLinkConfig['micro_service_endpoint'];
+
+        $this->secret  = $payoutLinkConfig['secret'];
+
+        $this->repo  = $app['repo'];
+
+        $this->app = $app;
+    }
+
+    public function create(MerchantEntity $merchant, array $input): array
+    {
+        $this->trace->info(TraceCode::PAYOUT_LINK_CREATE_REQUEST,
+                           $input);
+
+        $url = sprintf('%s/%s', $this->baseUrl, self::CREATE_PAYOUT_LINK_PATH);
+
+        $input[self::MERCHANT_ID] = $merchant->getId();
+        /*
+         * TODO use array_pull https://razorpay.atlassian.net/browse/RX-2633
+         */
+        if (key_exists(self::SEND_SMS, $input) === true)
+        {
+            $input[self::SEND_SMS] = strval($input[self::SEND_SMS]);
+        }else
+        {
+            $input[self::SEND_SMS] = "false";
+        }
+        if (key_exists(self::SEND_EMAIL, $input) === true)
+        {
+            $input[self::SEND_EMAIL] = strval($input[self::SEND_EMAIL]);
+        }
+        else
+        {
+            $input[self::SEND_EMAIL] = "false";
+        }
+
+        $response = $this->makeRequest($url, $input);
+
+        $this->addEmptyParameters($response);
+
+        return $response;
+    }
+
+    public function getSettings(string $merchantId)
+    {
+        $this->trace->info(TraceCode::PAYOUT_LINK_SETTINGS_GET,
+                           [
+                               $merchantId
+                           ]);
+
+        $url = $this->getConstructedUrl(self::GET_SETTINGS_PAYOUT_LINK_PATH);
+
+        $request = [
+            'merchantId' => $merchantId
+        ];
+
+        $response = $this->makeRequest($url, $request);
+
+        if (key_exists(self::MODE, $response))
+        {
+            return $response[self::MODE];
+        }
+
+        return [];
+    }
+
+    public function updateSettings(string $merchantId, array $input)
+    {
+        $this->trace->info(TraceCode::PAYOUT_LINK_SETTINGS_GET,
+                           [
+                               $merchantId
+                           ]);
+
+        $url = $this->getConstructedUrl(self::UPDATE_SETTINGS_PAYOUT_LINK_PATH);
+
+        $request = [
+            'merchantId' => $merchantId,
+            'mode'       => $input
+        ];
+
+        $response = $this->makeRequest($url, $request);
+
+        if (key_exists(self::MODE, $response))
+        {
+            return $response[self::MODE];
+        }
+
+        return [];
+    }
+
+    public function cancel(string $payoutLinkId)
+    {
+        $this->trace->info(TraceCode::PAYOUT_LINK_CANCEL_REQUEST,
+                           [
+                               $payoutLinkId
+                           ]);
+
+        $url = $this->getConstructedUrl(self::CANCEL_PAYOUT_LINK_PATH);
+
+        $request = [
+            self::PAYOUT_LINK_ID => $payoutLinkId
+        ];
+
+        $response = $this->makeRequest($url, $request);
+
+        $this->addEmptyParameters($response);
+
+        return $response;
+    }
+
+    public function fetch(string $payoutLinkId, string $merchantId = "")
+    {
+
+        $url = $this->getConstructedUrl(self::FETCH_PAYOUT_LINK_PATH);
+
+        $request = [
+            self::PAYOUT_LINK_ID => $payoutLinkId
+        ];
+
+        if($merchantId != "")
+        {
+            $request['merchant_id'] = $merchantId;
+        }
+
+        $response = $this->makeRequest($url, $request);
+
+        $this->addEmptyParameters($response);
+
+        return $response;
+    }
+
+    public function fetchMultiple(array $input)
+    {
+        $url = $this->getConstructedUrl(self::FETCH_PAYOUT_LINK_MULTIPLE_PATH);
+
+        if(key_exists('id', $input))
+        {
+            $payoutlinkid = $input['id'];
+            if(!str_contains($payoutlinkid, 'poutlk_'))
+            {
+                $payoutlinkid = 'poutlk_' . $payoutlinkid;
+            }
+            $input[self::PAYOUT_LINK_ID] = $payoutlinkid;
+        }
+
+        $response = $this->makeRequest($url, $input);
+
+        $payoutlinks = &$response["items"];
+
+        foreach ($payoutlinks as &$value)
+        {
+            $this->addEmptyParameters($value);
+        }
+
+        return $response;
+    }
+
+    public function getModeAndMerchant(string $payoutLinkId)
+    {
+        $this->trace->info(TraceCode::PAYOUT_LINK_GET_HOSTED_PAGE_DATA,
+                           [
+                               $payoutLinkId
+                           ]);
+
+        $url = sprintf('%s/%s', $this->baseUrl, self::GET_HOSTED_PAGE_DATA);
+
+        $request = [
+            self::PAYOUT_LINK_ID => 'poutlk_' . $payoutLinkId
+        ];
+
+        $response =  $this->makeRequest($url, $request);
+
+        return [Mode::LIVE, $response['settings']['merchantId']];
+    }
+
+    public function initiate(MerchantEntity $merchant, array $input, string $payoutLinkId): array
+    {
+        $this->trace->info(TraceCode::PAYOUT_LINK_INITIATE_REQUEST,
+                           $input);
+
+        $url = sprintf('%s/%s', $this->baseUrl, self::INITIATE_PAYOUT_LINK_PATH);
+
+        $input[self::MERCHANT_ID] = $merchant->getId();
+
+        $input[self::PAYOUT_LINK_ID] = $payoutLinkId;
+
+        return $this->makeRequest($url, $input);
+    }
+
+    public function generateAndSendCustomerOtp(string $payoutLinkId, array $input): array
+    {
+        $this->trace->info(TraceCode::PAYOUT_LINK_CUSTOMER_OTP_GENERATE,
+                           $input);
+
+        $url = $this->getConstructedUrl(self::PAYOUT_LINK_GENERATE_OTP_PATH);
+
+        $input[self::PAYOUT_LINK_ID] = $payoutLinkId;
+
+        return $this->makeRequest($url, $input);
+    }
+
+    public function getFundAccountsOfContact(string $payoutLinkId, array $input): array
+    {
+        $url = $this->getConstructedUrl(self::PAYOUT_LINK_GET_FUND_ACCOUNTS_BY_CONTACT);
+
+        $input[self::PAYOUT_LINK_ID] = $payoutLinkId;
+
+        $response = $this->makeRequest($url, $input);
+
+        if (key_exists('count', $response) === false)
+        {
+            $response['count'] = 0;
+        }
+
+        return $response;
+    }
+
+    public function getHostedPageData(string $payoutLinkId, MerchantEntity $merchant)
+    {
+        $url = sprintf('%s/%s', $this->baseUrl, self::GET_HOSTED_PAGE_DATA);
+
+        $request = [
+            self::PAYOUT_LINK_ID => $payoutLinkId
+        ];
+
+        $response = $this->makeRequest($url, $request);
+
+        $payoutLinkInfo = $response['payoutlinkresponse'];
+
+        $settings = [];
+
+        if (key_exists(self::MODE, $response['settings']))
+        {
+            $settings = $response['settings'][self::MODE];
+        }
+
+        $allowUpi = $this->allowUpi($payoutLinkInfo, $settings, $merchant);
+
+        $isProduction = $this->app->environment() === Environment::PRODUCTION;
+
+        $fundAccountDetails = $this->extractFundAccountDetails($payoutLinkInfo, $merchant);
+
+        $contact = $payoutLinkInfo['contact'];
+
+        $data = [
+            'api_host'                    => $this->config['url.api.production'],
+            'payout_link_id'              => $payoutLinkInfo['id'],
+            'payout_link_status'          => $payoutLinkInfo['status'],
+            'amount'                      => $payoutLinkInfo['amount'],
+            'currency'                    => $payoutLinkInfo['currency'],
+            'description'                 => $payoutLinkInfo['description'],
+            'user_name'                   => $contact['name'] ?? null,
+            'user_email'                  => mask_email($contact['email'] ?? null),
+            'user_phone'                  => mask_phone($contact['contact'] ?? null),
+            'receipt'                     => $payoutLinkInfo['receipt'] ?? null,
+            'merchant_logo_url'           => $merchant->getFullLogoUrlWithSize(),
+            'primary_color'               => $merchant->getBrandColorElseDefault(),
+            'merchant_name'               => $merchant->getBillingLabel(),
+            'allow_upi'                   => $allowUpi,
+            'banking_url'                 => $this->config['applications.banking_service_url'],
+            'is_production'               => $isProduction,
+            'fund_account_details'        => json_encode($fundAccountDetails),
+            'purpose'                     => $payoutLinkInfo['purpose'] ?? null,
+            'payout_utr'                  => $payoutLinkInfo['payout_utr'] ?? null,
+            'payout_links_custom_message' => $settings[Entity::CUSTOM_MESSAGE] ?? null,
+            'support_contact'             => $settings[Entity::SUPPORT_CONTACT] ?? null,
+            'support_email'               => $settings[Entity::SUPPORT_EMAIL] ?? null,
+            'support_url'                 => $settings[Entity::SUPPORT_URL] ?? null
+        ];
+
+        return $data;
+    }
+
+    public function pushPayoutStatus($payoutLinkId, $payoutId, $payoutStatus)
+    {
+        $input = [
+          'payout_link_id'  => $payoutLinkId,
+          'payout_id'       => $payoutId,
+          'payout_status'   => strtoupper($payoutStatus)
+        ];
+
+        $url = $this->getConstructedUrl(self::PAYOUT_STATUS_UPDATE);
+
+        return $this->makeRequest($url, $input);
+    }
+
+    public function verifyCustomerOtp(string $payoutLinkId, array $input): array
+    {
+        $this->trace->info(TraceCode::PAYOUT_LINK_CUSTOMER_OTP_VERIFY,
+                           $input);
+
+        $url = $this->getConstructedUrl(self::PAYOUT_LINK_VERIFY_OTP_PATH);
+
+        $input[self::PAYOUT_LINK_ID] = $payoutLinkId;
+
+        return $this->makeRequest($url, $input);
+    }
+
+    public function resendNotification(string $payoutLinkId, array $input)
+    {
+        $url = $this->getConstructedUrl(self::RESEND_NOTIFICATION);
+
+        $input[self::PAYOUT_LINK_ID] = $payoutLinkId;
+        if (key_exists(self::SEND_SMS, $input) === true)
+        {
+            if(is_bool($input[self::SEND_SMS]))
+            {
+                $input[self::SEND_SMS] = $input[self::SEND_SMS] ? 'true' : 'false';
+            }
+            else
+            {
+                $input[self::SEND_SMS] = strval($input[self::SEND_SMS]);
+            }
+        }
+        if (key_exists(self::SEND_EMAIL, $input) === true)
+        {
+            if(is_bool($input[self::SEND_EMAIL]))
+            {
+                $input[self::SEND_EMAIL] = $input[self::SEND_EMAIL] ? 'true' : 'false';
+            }
+            else
+            {
+                $input[self::SEND_EMAIL] = strval($input[self::SEND_EMAIL]);
+            }
+        }
+
+        return $this->makeRequest($url, $input);
+    }
+
+    public function onBoardingStatus(string $merchantId)
+    {
+        $url = $this->getConstructedUrl(self::ON_BOARDING_STATUS);
+
+        $request = [
+            'merchant_id' => $merchantId
+        ];
+
+        return $this->makeRequest($url, $request);
+    }
+
+    public function summary(string $merchantId)
+    {
+        $url = $this->getConstructedUrl(self::SUMMARY);
+
+        $request = [
+            'merchant_id' => $merchantId
+        ];
+
+        return $this->makeRequest($url, $request);
+    }
+
+    /**
+     * 1. Setting is enabled
+     * 2. Is not RBL
+     * 3. Amount less than 1 lac
+     * @param array $payoutLinkInfo
+     * @param array $settings
+     * @param MerchantEntity $merchant
+     * @return bool
+     */
+    protected function allowUpi(array $payoutLinkInfo, array $settings, MerchantEntity $merchant)
+    {
+        $channelSupportsUpi = true;
+
+        $upiEnabledInSettings = (key_exists('UPI', $settings) === true) and
+                                (boolval($settings['UPI']) === true);
+
+        $bankingAccount = $this->repo
+                               ->banking_account
+                               ->findByMerchantAndAccountNumberPublic($merchant, $payoutLinkInfo['account_number']);
+
+        if ($bankingAccount->getChannel() === Channel::RBL)
+        {
+            $channelSupportsUpi = false;
+        }
+
+        $amountLessThanLac = $payoutLinkInfo['amount'] <= Validator::MAX_UPI_AMOUNT ? true : false;
+
+        return $upiEnabledInSettings and $channelSupportsUpi and $amountLessThanLac;
+    }
+
+    protected function extractFundAccountDetails(array $payoutLinkInfo, MerchantEntity $merchant)
+    {
+        if (array_key_exists('fund_account_id' , $payoutLinkInfo) === false)
+        {
+            return [];
+        }
+
+        $fundAccountId = $payoutLinkInfo['fund_account_id'];
+
+        $fundAccount = $this->repo->fund_account->findByPublicIdAndMerchant($fundAccountId, $merchant);
+
+        return $this->getMaskedFundAccountDetails($fundAccount);
+    }
+
+    /**
+     * Masks the VPA details before sending to the front-end
+     * todo, pl Need to move to VPA/Entity [https://razorpay.atlassian.net/browse/RX-1343]
+     *
+     * @param FundAccountEntity|null $fundAccount
+     * @return array|null
+     */
+    protected function getMaskedFundAccountDetails(FundAccountEntity $fundAccount = null)
+    {
+        $percentageToMask = '0.7';
+
+        if ($fundAccount === null)
+        {
+            return null;
+        }
+
+        $details = $fundAccount->toArrayPublic();
+
+        $type = $fundAccount->getAccountType();
+
+        switch ($type)
+        {
+            case Type::VPA:
+                $address = $details[Type::VPA][VpaEntity::USERNAME];
+
+                $handle = $details[Type::VPA][VpaEntity::HANDLE];
+
+                $addressLen = strlen($address);
+
+                $handleLen = strlen($handle);
+
+                $lengthOfHandleToMask = ceil($handleLen * $percentageToMask);
+
+                $lengthOfAddressToMask = ceil($addressLen * $percentageToMask);
+
+                $maskedAddress = substr($address, 0, $addressLen - $lengthOfAddressToMask) .
+                                 str_repeat('*', $lengthOfAddressToMask);
+
+                $maskedHandle = substr($handle, 0, $handleLen - $lengthOfHandleToMask) .
+                                str_repeat('*', $lengthOfHandleToMask);
+
+                $details[Type::VPA][VpaEntity::ADDRESS] = sprintf('%s@%s', $maskedAddress, $maskedHandle);
+
+                $details[Type::VPA][VpaEntity::HANDLE] = $maskedHandle;
+
+                $details[Type::VPA][VpaEntity::USERNAME] = $maskedAddress;
+        }
+
+        return $details;
+    }
+
+    protected function makeRequest(string $url,
+                                   array $data,
+                                   array $headers = [],
+                                   string $method = 'POST')
+    {
+        $headers['Content-Type'] = 'application/json';
+
+        $headers['X-Task-ID'] = $this->app['request']->getId();
+
+        $options = ['auth' => [self::KEY,
+                               $this->secret]];
+
+        $response = Requests::$method(
+            $url,
+            $headers,
+            json_encode($data, JSON_FORCE_OBJECT),
+            $options);
+
+        $responseBody = json_decode($response->body, true);
+
+        if ($response->status_code !== StatusCode::SUCCESS)
+        {
+            $description = array_pull($responseBody, 'msg', $responseBody);
+
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_PAYOUT_LINK_MICRO_SERVICE_FAILED, null, null, $description);
+        }
+        return json_decode($response->body, true);
+    }
+
+    protected function getConstructedUrl(string $path)
+    {
+        return $url = sprintf('%s/%s', $this->baseUrl, $path);
+    }
+
+    protected function addEmptyParameters(array &$payoutLink)
+    {
+        if (key_exists(self::FUND_ACCOUNT_ID, $payoutLink) === false)
+        {
+            $payoutLink[self::FUND_ACCOUNT_ID] = null;
+        }
+
+        if (key_exists(self::CANCELLED_AT, $payoutLink) === false)
+        {
+            $payoutLink[self::CANCELLED_AT] = null;
+        }
+
+        if (key_exists(self::ATTEMPT_COUNT, $payoutLink) === false)
+        {
+            $payoutLink[self::ATTEMPT_COUNT] = 0;
+        }
+
+        if (sizeof($payoutLink[self::PAYOUTS]) === 0)
+        {
+            $payoutLink[self::PAYOUTS] = [
+                'entity' => 'collection',
+                'count' => 0,
+                'items' => [],
+            ];
+        }
+
+        if (sizeof($payoutLink[self::USER]) === 0)
+        {
+            $payoutLink[self::USER] = null;
+        }
+
+        if (key_exists(self::USER_ID, $payoutLink) === false)
+        {
+            $payoutLink[self::USER_ID] = null;
+        }
+
+        if (key_exists(self::RECEIPT, $payoutLink) === false)
+        {
+            $payoutLink[self::RECEIPT] = null;
+        }
+
+        if (key_exists(self::NOTES, $payoutLink) === false)
+        {
+            $payoutLink[self::NOTES] = [];
+        }
+        $payoutLink[self::SEND_SMS] = filter_var($payoutLink[self::SEND_SMS], FILTER_VALIDATE_BOOLEAN);
+
+        $payoutLink[self::SEND_EMAIL] = filter_var($payoutLink[self::SEND_EMAIL], FILTER_VALIDATE_BOOLEAN);
+    }
+}

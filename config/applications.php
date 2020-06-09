@@ -424,10 +424,11 @@ return [
     ],
 
     'banking_service_url' => env('BANKING_SERVICE_URL', 'https://x.razorpay.com'),
-
     'payout_links' => [
-            'url' => env('APP_PAYOUT_LINKS_URL', 'https://payout-links.razorpay.com')
-        ],
+        'url'                    => env('APP_PAYOUT_LINKS_URL', 'http://localhost:8000'),
+        'secret'                 => env('APP_PAYOUT_LINKS_INTERNAL_SECRET'),
+        'micro_service_endpoint' => env('PAYOUT_LINKS_MICRO_SERVICE_URL', 'http://localhost:8000')
+    ],
 
     'vajra' => [
         'secret'   => env('APP_VAJRA_SECRET'),

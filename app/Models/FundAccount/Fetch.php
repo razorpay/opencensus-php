@@ -19,6 +19,7 @@ class Fetch extends Base\Fetch
             Entity::CONTACT_ID   => 'sometimes|string',
             Entity::ACCOUNT_TYPE => 'sometimes|string',
             Entity::BATCH_ID     => 'sometimes|string',
+            Entity::ACTIVE       => 'sometimes|bool',
         ],
         AuthType::PROXY_AUTH => [
             self::EXPAND_EACH    => 'filled|string|in:contact',
@@ -45,6 +46,7 @@ class Fetch extends Base\Fetch
         ],
         AuthType::PRIVILEGE_AUTH => [
             Entity::SOURCE_ID,
+            Entity::ACTIVE,
         ],
     ];
 

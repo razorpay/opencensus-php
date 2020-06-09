@@ -313,6 +313,8 @@ class ApiServiceProvider extends BaseServiceProvider
 
         $this->registerRaven();
 
+        $this->registerPayoutLinks();
+
         $this->registerReminders();
 
         $this->registerNonBlockingHttp();
@@ -440,6 +442,14 @@ class ApiServiceProvider extends BaseServiceProvider
         });
     }
 
+    protected function registerPayoutLinks()
+    {
+        $this->app->bind('payout-links', function($app)
+        {
+            return new PayoutLinks($app);
+        });
+    }
+
     protected function registerRaven()
     {
         $this->app->bind('raven', function($app)
@@ -478,9 +488,9 @@ class ApiServiceProvider extends BaseServiceProvider
     {
         $this->app->bind('smartRouting', function($app)
         {
-            $smartRoutingtMock = $app['config']->get('applications.smart_routing.mock');
+            $smartRoutingMock = $app['config']->get('applications.smart_routing.mock');
 
-            if ($smartRoutingtMock === true)
+            if ($smartRoutingMock === true)
             {
                 return new Mock\SmartRouting($app);
             }

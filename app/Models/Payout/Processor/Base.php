@@ -542,9 +542,19 @@ class Base extends BaseCore
 
         if (empty($payoutLinkId) === false)
         {
-            $payoutLink = $this->repo->payout_link->findByPublicIdAndMerchant($payoutLinkId, $this->merchant);
+            // check if payout link microservice feature flag enabled for this merchant
+            $isFeatureEnabled = $this->merchant->isFeatureEnabled(Features::X_PAYOUT_LINKS_MS);
 
-            $payout->payoutLink()->associate($payoutLink);
+            if($isFeatureEnabled === false)
+            {
+                $payoutLink = $this->repo->payout_link->findByPublicIdAndMerchant($payoutLinkId, $this->merchant);
+
+                $payout->payoutLink()->associate($payoutLink);
+            }
+            else
+            {
+                $payout->setPayoutLinkId($payoutLinkId);
+            }
         }
     }
 
