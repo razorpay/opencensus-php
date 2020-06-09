@@ -132,9 +132,13 @@ class Service extends Base\Service
             $this->user = $this->repo->user->findOrFail($input[Entity::USER_ID]);
         }
 
+        $traceData = $input;
+
+        $traceData['otp'] = '**redacted** length:' . strlen($input['otp'] ?? '');
+
         $this->trace->info(TraceCode::D2C_BUREAU_OTP_SUBMIT_REQUEST, [
             'id'    => $id,
-            'input' => $input,
+            'input' => $traceData,
         ]);
 
         /** @var Entity $bureauDetail */
