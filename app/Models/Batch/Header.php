@@ -31,7 +31,7 @@ class Header
     const NOTES             = 'notes';
     // In file, notes columns are expected to be in format: Notes[<key>] & while parsing the file, formatted as above
     const NOTES_REGEX       = '/^notes\[(.*)]$/';
-    const TERMINAL_CREATION_TYPE_REGEX           = '/^type\[(.*)]$/';
+    const TERMINAL_CREATION_TYPE_REGEX           = '/^Type\[(.*)]$/';
 
     //
     // Refund Headers
@@ -737,15 +737,21 @@ class Header
     const INITIATOR_ID             = 'Initiator Id';
 
     // Bulk Terminal Creation Headers
-    const TERMINAL_CREATION_MERCHANT_ID          = 'Merchant Id';
-    const TERMINAL_CREATION_GATEWAY              = 'Gateway';
-    const TERMINAL_CREATION_GATEWAY_MERCHANT_ID  = 'Gateway Merchant Id';
-    const TERMINAL_CREATION_GATEWAY_MERCHANT_ID2 = 'Gateway Merchant Id2';
-    const TERMINAL_CREATION_GATEWAY_TERMINAL_ID  = 'Gateway Terminal Id';
-    const TERMINAL_CREATION_GATEWAY_ACCESS_CODE  = 'Gateway Access Code';
-    const TERMINAL_CREATION_MC_MPAN              = 'MC MPAN';
-    const TERMINAL_CREATION_VISA_MPAN            = 'VISA MPAN';
-    const TERMINAL_CREATION_RUPAY_MPAN           = 'RUPAY MPAN';
+    const TERMINAL_CREATION_MERCHANT_ID                 = 'Merchant Id';
+    const TERMINAL_CREATION_GATEWAY                     = 'Gateway';
+    const TERMINAL_CREATION_GATEWAY_MERCHANT_ID         = 'Gateway Merchant ID';
+    const TERMINAL_CREATION_GATEWAY_MERCHANT_ID2        = 'Gateway Merchant ID2';
+    const TERMINAL_CREATION_GATEWAY_TERMINAL_ID         = 'Gateway Terminal ID';
+    const TERMINAL_CREATION_GATEWAY_ACCESS_CODE         = 'Gateway Access Code';
+    const TERMINAL_CREATION_GATEWAY_TERMINAL_PASSWORD   = 'Gateway Terminal Password';
+    const TERMINAL_CREATION_GATEWAY_TERMINAL_PASSWORD2  = 'Gateway Terminal Password2';
+    const TERMINAL_CREATION_GATEWAY_SECURE_SECRET       = 'Gateway Secure Secret';
+    const TERMINAL_CREATION_GATEWAY_SECURE_SECRET2      = 'Gateway Secure Secret2';
+    const TERMINAL_CREATION_GATEWAY_RECON_PASSWORD      = 'Gateway Recon Password';
+    const TERMINAL_CREATION_GATEWAY_CLIENT_CERTIFICATE = 'Gateway Client Certificate';
+    const TERMINAL_CREATION_MC_MPAN              = 'Mastercard MPAN';
+    const TERMINAL_CREATION_VISA_MPAN            = 'Visa MPAN';
+    const TERMINAL_CREATION_RUPAY_MPAN           = 'Rupay MPAN';
     const TERMINAL_CREATION_VPA                  = 'VPA';
     const TERMINAL_CREATION_CATEGORY             = 'Category';
     const TERMINAL_CREATION_CARD                 = 'Card';
@@ -753,9 +759,10 @@ class Header
     const TERMINAL_CREATION_EMANDATE             = 'Emandate';
     const TERMINAL_CREATION_EMI                  = 'EMI';
     const TERMINAL_CREATION_UPI                  = 'UPI';
+    const TERMINAL_CREATION_OMNICHANNEL          = 'Omnichannel';
     const TERMINAL_CREATION_BANK_TRANSFER        = 'Bank Transfer';
     const TERMINAL_CREATION_AEPS                 = 'AEPS';
-    const TERMINAL_CREATION_EMI_DURATION         = 'EMI_DURATION';
+    const TERMINAL_CREATION_EMI_DURATION         = 'EMI Duration';
     const TERMINAL_CREATION_TYPE                 = 'Type';
     const TERMINAL_CREATION_MODE                 = 'Mode';
     const TERMINAL_CREATION_TPV                  = 'TPV';
@@ -768,7 +775,7 @@ class Header
     const TERMINAL_CREATION_CURRENCY             = 'Currency';
     const TERMINAL_CREATION_ACCOUNT_NUMBER       = 'Account Number';
     const TERMINAL_CREATION_IFSC_CODE            = 'IFSC Code';
-    const TERMINAL_CREATION_CARDLESS_EMI         = 'Cardless EMPI';
+    const TERMINAL_CREATION_CARDLESS_EMI         = 'Cardless EMI';
     const TERMINAL_CREATION_PAYLATER             = 'Paylater';
     const TERMINAL_CREATION_ENABLED              = 'Enabled';
     const TERMINAL_CREATION_CAPABILITY           = 'Capability';
@@ -902,6 +909,12 @@ class Header
                 self::TERMINAL_CREATION_GATEWAY_MERCHANT_ID2,
                 self::TERMINAL_CREATION_GATEWAY_TERMINAL_ID,
                 self::TERMINAL_CREATION_GATEWAY_ACCESS_CODE,
+                self::TERMINAL_CREATION_GATEWAY_TERMINAL_PASSWORD,
+                self::TERMINAL_CREATION_GATEWAY_TERMINAL_PASSWORD2,
+                self::TERMINAL_CREATION_GATEWAY_SECURE_SECRET,
+                self::TERMINAL_CREATION_GATEWAY_SECURE_SECRET2,
+                self::TERMINAL_CREATION_GATEWAY_RECON_PASSWORD,
+                self::TERMINAL_CREATION_GATEWAY_CLIENT_CERTIFICATE,
                 self::TERMINAL_CREATION_MC_MPAN,
                 self::TERMINAL_CREATION_VISA_MPAN,
                 self::TERMINAL_CREATION_RUPAY_MPAN,
@@ -912,6 +925,7 @@ class Header
                 self::TERMINAL_CREATION_EMANDATE,
                 self::TERMINAL_CREATION_EMI,
                 self::TERMINAL_CREATION_UPI,
+                self::TERMINAL_CREATION_OMNICHANNEL,
                 self::TERMINAL_CREATION_BANK_TRANSFER,
                 self::TERMINAL_CREATION_AEPS,
                 self::TERMINAL_CREATION_EMI_DURATION,
@@ -972,6 +986,18 @@ class Header
                 self::STATUS,
                 self::ERROR_CODE,
                 self::ERROR_DESCRIPTION,
+            ],
+            self::SENSITIVE_HEADERS => [
+                self::TERMINAL_CREATION_GATEWAY_TERMINAL_PASSWORD,
+                self::TERMINAL_CREATION_GATEWAY_TERMINAL_PASSWORD2,
+                self::TERMINAL_CREATION_GATEWAY_SECURE_SECRET,
+                self::TERMINAL_CREATION_GATEWAY_SECURE_SECRET2,
+                self::TERMINAL_CREATION_GATEWAY_RECON_PASSWORD,
+                self::TERMINAL_CREATION_GATEWAY_CLIENT_CERTIFICATE,
+                self::TERMINAL_CREATION_MC_MPAN,
+                self::TERMINAL_CREATION_VISA_MPAN,
+                self::TERMINAL_CREATION_RUPAY_MPAN,   
+                self::TERMINAL_CREATION_ACCOUNT_NUMBER,
             ],
         ],
 

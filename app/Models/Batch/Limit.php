@@ -56,6 +56,7 @@ class Limit
         Type::MERCHANT_STATUS_ACTION                => 50000,
         Type::FUND_ACCOUNT                          => 50000,
         Type::MPAN                                  => 100000,
+        Type::TERMINAL_CREATION                     => 5000,
     ];
 
     /**

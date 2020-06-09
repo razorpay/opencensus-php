@@ -57,6 +57,14 @@ class Constants
     const NOT_APPLICABLE_TERMINALS                =   'not_applicable_terminals'; // terminals which are acquired or already been processed by other mutex
     const VERIFICATION_ERROR_TERMINALS            =   'verification_error_terminals';
 
-    const CURRENCY                                = "currency";
-    const CATEGORY                                = "category";
+    // new batch service related constants
+    const IDEMPOTENCY_KEY             = 'idempotency_key';
+    const TERMINAL_ID                 = 'terminal_id';
+    const BATCH_ERROR                 = 'error';
+    const BATCH_ERROR_CODE            = 'code';
+    const BATCH_ERROR_DESCRIPTION     = 'description';
+    const BATCH_SUCCESS               = 'success';
+    const BATCH_HTTP_STATUS_CODE      = 'http_status_code';    
+    const CURRENCY                    = "currency";
+    const CATEGORY                    = "category";
 }

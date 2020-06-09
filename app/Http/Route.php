@@ -312,6 +312,7 @@ class Route
         'terminal_get_banks'                       => ['get',      'terminals/{id}/banks',                           'TerminalController@getBanks'                                       ],
         'terminal_set_banks'                       => ['patch',    'terminals/{id}/banks',                           'TerminalController@setBanks'                                       ],
         'terminal_migrate_cron'                    => ['post',     'terminals/migrate_cron',                         'TerminalController@postTerminalsMigrateCron'                       ],
+        'terminal_create_bulk'                     => ['post',     'terminals/bulk',                                 'TerminalController@postTerminalsBulk'                              ],
         'terminal_service_sync_delete'             => ['post',     'terminals/sync/deleted',                         'TerminalController@syncDeletedTerminalsOnTerminalService'          ],
         'terminal_onboarding_update_status'        => ['put',      'terminal_onboarding_update_status',              'TerminalOnboardingController@putTerminalOnboardingStatus'          ],
         'terminal_enable'                          => ['put',      'terminals/{id}/enable',                          'TerminalOnboardingController@putTerminalEnable'                    ],
@@ -2315,6 +2316,7 @@ class Route
         'merchant_create_terminal_internal',
         'retry_penny_testing_cron',
         'merchant_methods_edit_internal',
+        'terminal_create_bulk',
         'mpans_bulk',
         'payment_links_bulk_expire',
         'fts_bulk_attempts_initiate',
@@ -4637,6 +4639,7 @@ class Route
             'bank_transfer_process_rbl_internal',
             'update_admin_through_batch',
             'bank_transfer_edit_payer_account_internal',
+            'terminal_create_bulk',
             'mpans_bulk',
         ],
 

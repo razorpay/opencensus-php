@@ -303,6 +303,7 @@ class Type
         self::ADMIN_BATCH,
         self::RECONCILIATION,
         self::BANK_TRANSFER_EDIT,
+        self::TERMINAL_CREATION,
         self::NACH_MIGRATION,
         self::MPAN,
     ];
@@ -327,6 +328,7 @@ class Type
         self::REPORT,
         self::ADMIN_BATCH,
         self::BANK_TRANSFER_EDIT,
+        self::TERMINAL_CREATION,
         self::MERCHANT_STATUS_ACTION,
         self::NACH_MIGRATION,
         self::MPAN,
@@ -337,6 +339,7 @@ class Type
     // See SENSITIVE_HEADERS in Header.php
     public static $haveSensitiveData = [
         self::MPAN,
+        self::TERMINAL_CREATION,
     ];
 
     public static $batchToAdminPermissionMapping = [

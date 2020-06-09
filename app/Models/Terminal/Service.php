@@ -5,14 +5,19 @@ namespace RZP\Models\Terminal;
 use App;
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\Batch;
 use RZP\Models\Merchant;
 use RZP\Models\Payment;
 use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
+use RZP\Error\PublicErrorCode;
+use RZP\Exception\BaseException;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Jobs\TerminalsServiceMigrateJob;
 use RZP\Models\TerminalOnboardingDetail;
+use RZP\Models\Gateway\Terminal\Constants;
+use RZP\Models\Batch\Processor\TerminalCreation;
 
 
 class Service extends Base\Service
@@ -503,6 +508,79 @@ class Service extends Base\Service
         );
 
         return $response;
+    }
+
+    public function postTerminalsBulk($input)
+    {
+        $response = new Base\PublicCollection;
+
+        foreach ($input as $row)
+        {
+            $rowOutput = $this->processTerminalCreationBulkRow($row);
+
+            $response->add($rowOutput);
+        }
+
+        return $response;
+    }
+
+    public function processTerminalCreationBulkRow(array $row)
+    {
+        $result = [
+            Constants::IDEMPOTENCY_KEY        => $row[Constants::IDEMPOTENCY_KEY],
+            Constants::BATCH_SUCCESS          => false,
+            Constants::BATCH_HTTP_STATUS_CODE => 500,
+            Constants::TERMINAL_ID            => '',
+            Constants::BATCH_ERROR => [
+                Constants::BATCH_ERROR_CODE        => '',
+                Constants::BATCH_ERROR_DESCRIPTION => '',
+            ],
+        ];
+
+        $result = array_merge($result, $row);
+
+        try
+        {
+            (new TerminalCreation())->processEntry($row);
+
+            $result[Constants::BATCH_SUCCESS] = true;
+            $result[Constants::TERMINAL_ID]  =  $row[Constants::TERMINAL_ID];
+            $result[Constants::BATCH_HTTP_STATUS_CODE] = 201;
+        }
+        catch(BaseException $exception)
+        {
+            $result[Constants::BATCH_ERROR] = [
+                Constants::BATCH_ERROR_DESCRIPTION => $exception->getMessage(),
+                Constants::BATCH_ERROR_CODE => $exception->getPublicError(),
+            ];
+
+            $result[Constants::BATCH_HTTP_STATUS_CODE] = $exception->getCode();        
+        }
+        catch (\Throwable $throwable)
+        {
+            $result[Constants::BATCH_ERROR] = [
+                Constants::BATCH_ERROR_DESCRIPTION => $throwable->getMessage(),
+                Constants::BATCH_ERROR_CODE => PublicErrorCode::SERVER_ERROR,
+            ];
+
+            $result[Constants::BATCH_HTTP_STATUS_CODE] = $throwable->getCode();
+        }
+
+        $this->redactSensitiveHeadersFromResult($result);
+
+        return $result;
+    }
+
+    protected function redactSensitiveHeadersFromResult(array & $result)
+    {
+        foreach($result as $key => $value)
+        {
+            if ((in_array($key, Batch\Header::HEADER_MAP[Batch\Type::TERMINAL_CREATION][Batch\Header::SENSITIVE_HEADERS], true) == true)
+                and (empty($value) == false ))
+            {
+                $result[$key] = 'redacted';
+            }
+        }
     }
 
     public function terminalsMigrateCron(array $input)

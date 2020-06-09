@@ -123,6 +123,16 @@ class TerminalController extends Controller
         return $response;
     }
 
+    // used by batch service
+    public function postTerminalsBulk()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->postTerminalsBulk($input);
+
+        return ApiResponse::json($response->toArrayWithItems());
+    }
+
     public function fetchTerminalById(string $id)
     {
         $data = $this->service()->fetchTerminalById($id);
