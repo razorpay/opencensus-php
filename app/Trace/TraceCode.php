@@ -1292,11 +1292,6 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PRICING_PLAN_RULE_UPDATE_SUCCESS                      = 'PRICING_PLAN_RULE_UPDATE_SUCCESS';
     const PRICING_PLAN_RULE_DELETE_ATTEMPT                      = 'PRICING_PLAN_RULE_DELETE_ATTEMPT';
 
-    const WEBHOOK_DISPATCH                                      = 'WEBHOOK_DISPATCH';
-    const WEBHOOK_FIRING                                        = 'WEBHOOK_FIRING';
-    const WEBHOOK_FIRED                                         = 'WEBHOOK_FIRED';
-    const WEBHOOK_DEACTIVATE                                    = 'WEBHOOK_DEACTIVATE';
-    const WEBHOOK_RESPONSE_FAILURE                              = 'WEBHOOK_RESPONSE_FAILURE';
     const WEBHOOK_PRIVATE_IP_FOUND                              = 'WEBHOOK_PRIVATE_IP_FOUND';
     const WEBHOOK_EVENT_JOB_RECEIVED                            = 'WEBHOOK_EVENT_JOB_RECEIVED';
 

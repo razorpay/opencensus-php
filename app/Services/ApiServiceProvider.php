@@ -129,11 +129,6 @@ class ApiServiceProvider extends BaseServiceProvider
             return new GatewayManager($app);
         });
 
-        $this->app->singleton('webhook.inferno', function($app)
-        {
-            return new \RZP\Models\Merchant\Webhook\Inferno;
-        });
-
         $this->app->bind('exception.handler', function($app)
         {
             return new \RZP\Exception\Handler($app);
@@ -406,7 +401,6 @@ class ApiServiceProvider extends BaseServiceProvider
             'segment',
             'eventManager',
             'upi.client',
-            'webhook.inferno',
             'exchange',
             'pigeon',
             'workflow',

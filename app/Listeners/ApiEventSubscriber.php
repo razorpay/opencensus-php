@@ -3,14 +3,11 @@
 namespace RZP\Listeners;
 
 use Throwable;
-use Carbon\Carbon;
 use Razorpay\Trace\Logger;
-use RZP\Constants\Timezone;
 
 use RZP\Error;
 use RZP\Constants;
 use RZP\Models\Base;
-use RZP\Jobs\WebHook;
 use RZP\Models\Event;
 use RZP\Models\Payout;
 use RZP\Models\Invoice;
@@ -32,10 +29,7 @@ use RZP\Jobs\Invoice\Job as InvoiceJob;
 use RZP\Jobs\SubscriptionPaymentHandler;
 use RZP\Models\Payment\Refund\Entity as RefundEntity;
 use RZP\Models\PayoutLink\Entity as PayoutLinkEntity;
-use RZP\Models\Merchant\Webhook\Event as WebhookEvent;
-use RZP\Models\Merchant\Webhook\Entity as WebhookEntity;
 use RZP\Models\Merchant\Webhook\Metric as WebhookMetric;
-use RZP\Models\Merchant\AccessMap\Entity as AccessMapEntity;
 
 class ApiEventSubscriber extends Base\Core
 {
@@ -44,16 +38,6 @@ class ApiEventSubscriber extends Base\Core
      * @var string
      */
     protected $event;
-
-    /**
-     * Laravel Events instance
-     * @var
-     */
-    protected $events;
-
-    protected $queue;
-
-    protected $params;
 
     /**
      * For invoice.paid, the mainEntity would consist of the invoice entity.
@@ -79,18 +63,6 @@ class ApiEventSubscriber extends Base\Core
      */
     protected $listeningMerchant;
 
-    protected $webhookEnabledForEvent = false;
-
-    /**
-     * Active merchant webhook, enabled for the current event.
-     */
-    protected $activeMerchantWebhook  = null;
-
-    /**
-     * Active webhooks of applications used by the merchant, enabled for the current event.
-     */
-    protected $activeAppsWebhooks     = [];
-
     /**
      * Webhook\Stork is initialized with a product(i.e. banking, primary).
      * @var string|null
@@ -100,38 +72,6 @@ class ApiEventSubscriber extends Base\Core
     const MAIN        = 'main';
     const WITH        = 'with';
     const MERCHANT_ID = 'merchant_id';
-
-    /**
-     * Events for which other things apart from
-     * webhooks also needs to be triggered/done.
-     *
-     * @var array
-     */
-    protected static $notWebhookOnlyEvents = [
-        WebhookEvent::INVOICE_PARTIALLY_PAID,
-        WebhookEvent::INVOICE_PAID,
-        WebhookEvent::PAYMENT_AUTHORIZED,
-        WebhookEvent::PAYMENT_FAILED,
-        WebhookEvent::PAYOUT_PROCESSED,
-        WebhookEvent::PAYOUT_REVERSED,
-        WebhookEvent::ORDER_PAID,
-        WebhookEvent::PAYMENT_CAPTURED,
-        WebhookEvent::ACCOUNT_SUSPENDED,
-    ];
-
-    /**
-     * Razorx ramp has been removed and this variable is always set to true.
-     * This change will follow more cleanup.
-     * @var boolean
-     */
-    protected $shouldDispatchEventToStork = true;
-
-    public function __construct()
-    {
-        parent::__construct();
-
-        $this->event = $this->app['events'];
-    }
 
     public function getMode()
     {
@@ -185,32 +125,6 @@ class ApiEventSubscriber extends Base\Core
         // updated_at and other things like that.
         //
 
-        //
-        // Call to isWebhookEnabledForEvent() first resolves webhooks for
-        // merchant and applications and sets these and few more class variables.
-        //
-        // Stork is called with raw event and rest is taken care by the service
-        // and hence we need to avoid former things. Because below is or logic
-        // later will not execute.
-        //
-        // Later(refer another call) if call to stork fails we do need to call
-        // isWebhookEnabledForEvent() again to actually set those variables
-        // before proceeding with fall back of existing flow.
-        //
-        $this->webhookEnabledForEvent = (($this->shouldDispatchEventToStork === true) or
-            ($this->isWebhookEnabledForEvent($this->mainEntity) === true));
-
-        //
-        // Doesn't execute the event if
-        // - The event's purpose is only webhook
-        // - Webhook not enabled for the event
-        //
-        if ((in_array($event, self::$notWebhookOnlyEvents, true) === false) and
-            ($this->webhookEnabledForEvent === false))
-        {
-            return null;
-        }
-
         $event = str_replace('.', '_', $event);
 
         $func = 'on' . studly_case($event);
@@ -220,7 +134,7 @@ class ApiEventSubscriber extends Base\Core
         $this->trace->histogram(
             WebhookMetric::EVENT_PROCESS_DURATION_MILLISECONDS,
             millitime() - $startAt,
-            ['event' => $event, 'via_stork' => $this->shouldDispatchEventToStork]);
+            ['event' => $event, 'via_stork' => true]);
     }
 
     /**
@@ -249,7 +163,7 @@ class ApiEventSubscriber extends Base\Core
     {
         $payload = $this->getMerchantPayload($merchant);
 
-        $this->prepareAndDispatchWebhook($payload);
+        $this->dispatchEventToStork($payload);
 
         // disable all direct settlement terminals of this merchant
         $terminals = $this->repo->terminal->getActivatedDirectSettlementTerminalsByMerchant($merchant->getId());
@@ -280,77 +194,77 @@ class ApiEventSubscriber extends Base\Core
     {
         $payload = $this->getMerchantPayload($merchant);
 
-        $this->prepareAndDispatchWebhook($payload);
+        $this->dispatchEventToStork($payload);
     }
 
     protected function onAccountUnderReview($merchant)
     {
         $payload = $this->getMerchantPayload($merchant);
 
-        $this->prepareAndDispatchWebhook($payload);
+        $this->dispatchEventToStork($payload);
     }
 
     protected function onAccountNeedsClarification($merchant)
     {
         $payload = $this->getMerchantPayload($merchant);
 
-        $this->prepareAndDispatchWebhook($payload);
+        $this->dispatchEventToStork($payload);
     }
 
     protected function onAccountActivated($merchant)
     {
         $payload = $this->getMerchantPayload($merchant);
 
-        $this->prepareAndDispatchWebhook($payload);
+        $this->dispatchEventToStork($payload);
     }
 
     protected function onAccountRejected($merchant)
     {
         $payload = $this->getMerchantPayload($merchant);
 
-        $this->prepareAndDispatchWebhook($payload);
+        $this->dispatchEventToStork($payload);
     }
 
     protected function onAccountInternationalEnabled($merchant)
     {
         $payload = $this->getMerchantPayload($merchant);
 
-        $this->prepareAndDispatchWebhook($payload);
+        $this->dispatchEventToStork($payload);
     }
 
     protected function onAccountInternationalDisabled($merchant)
     {
         $payload = $this->getMerchantPayload($merchant);
 
-        $this->prepareAndDispatchWebhook($payload);
+        $this->dispatchEventToStork($payload);
     }
 
     protected function onAccountFundsHold($merchant)
     {
         $payload = $this->getMerchantPayload($merchant);
 
-        $this->prepareAndDispatchWebhook($payload);
+        $this->dispatchEventToStork($payload);
     }
 
     protected function onAccountFundsUnhold($merchant)
     {
         $payload = $this->getMerchantPayload($merchant);
 
-        $this->prepareAndDispatchWebhook($payload);
+        $this->dispatchEventToStork($payload);
     }
 
     protected function onAccountPaymentsEnabled($merchant)
     {
         $payload = $this->getMerchantPayload($merchant);
 
-        $this->prepareAndDispatchWebhook($payload);
+        $this->dispatchEventToStork($payload);
     }
 
     protected function onAccountPaymentsDisabled($merchant)
     {
         $payload = $this->getMerchantPayload($merchant);
 
-        $this->prepareAndDispatchWebhook($payload);
+        $this->dispatchEventToStork($payload);
     }
 
     protected function onPaymentAuthorized($payment)
@@ -364,7 +278,7 @@ class ApiEventSubscriber extends Base\Core
             SubscriptionPaymentHandler::dispatch($paymentPayload, $this->mode);
         }
 
-        $this->prepareAndDispatchWebhook($payload);
+        $this->dispatchEventToStork($payload);
     }
 
     protected function onPaymentFailed($payment)
@@ -378,7 +292,7 @@ class ApiEventSubscriber extends Base\Core
             SubscriptionPaymentHandler::dispatch($paymentPayload, $this->mode);
         }
 
-        $this->prepareAndDispatchWebhook($payload);
+        $this->dispatchEventToStork($payload);
     }
 
     protected function onPaymentCaptured($payment)
@@ -390,84 +304,84 @@ class ApiEventSubscriber extends Base\Core
 
         $payload = $this->getPaymentPayload($payment);
 
-        $this->prepareAndDispatchWebhook($payload);
+        $this->dispatchEventToStork($payload);
     }
 
     protected function onPaymentCreated($payment)
     {
         $payload = $this->getPaymentPayload($payment);
 
-        $this->prepareAndDispatchWebhook($payload);
+        $this->dispatchEventToStork($payload);
     }
 
     protected function onPaymentDisputeCreated($payment)
     {
         $payload = $this->getPaymentPayloadWithDispute($payment);
 
-        $this->prepareAndDispatchWebhook($payload);
+        $this->dispatchEventToStork($payload);
     }
 
     protected function onPaymentDisputeLost($payment)
     {
         $payload = $this->getPaymentPayloadWithDispute($payment);
 
-        $this->prepareAndDispatchWebhook($payload);
+        $this->dispatchEventToStork($payload);
     }
 
     protected function onPaymentDisputeWon($payment)
     {
         $payload = $this->getPaymentPayloadWithDispute($payment);
 
-        $this->prepareAndDispatchWebhook($payload);
+        $this->dispatchEventToStork($payload);
     }
 
     protected function onPaymentDisputeClosed($payment)
     {
         $payload = $this->getPaymentPayloadWithDispute($payment);
 
-        $this->prepareAndDispatchWebhook($payload);
+        $this->dispatchEventToStork($payload);
     }
 
     protected function onFundAccountValidationCompleted(FundAccount\Validation\Entity $fundAccountValidation)
     {
         $payload = $this->getFundAccountValidationPayload($fundAccountValidation);
 
-        $this->prepareAndDispatchWebhook($payload);
+        $this->dispatchEventToStork($payload);
     }
 
     protected function onOrderPaid($payment)
     {
         $payload = $this->getOrderPayload($payment);
 
-        $this->prepareAndDispatchWebhook($payload);
+        $this->dispatchEventToStork($payload);
     }
 
     protected function onTransferProcessed(Transfer\Entity $transfer)
     {
         $payload = $this->getTransferPayload($transfer);
 
-        $this->prepareAndDispatchWebhook($payload);
+        $this->dispatchEventToStork($payload);
     }
 
     protected function onVirtualAccountCredited(Payment\Entity $payment)
     {
         $payload = $this->getVirtualAccountPaymentPayload($payment);
 
-        $this->prepareAndDispatchWebhook($payload);
+        $this->dispatchEventToStork($payload);
     }
 
     protected function onVirtualAccountCreated(VirtualAccount\Entity $virtualAccount)
     {
         $payload = $this->getVirtualAccountPayload($virtualAccount);
 
-        $this->prepareAndDispatchWebhook($payload);
+        $this->dispatchEventToStork($payload);
     }
 
     protected function onVirtualAccountClosed(VirtualAccount\Entity $virtualAccount)
     {
         $payload = $this->getVirtualAccountPayload($virtualAccount);
 
-        $this->prepareAndDispatchWebhook($payload);
+        $this->dispatchEventToStork($payload);
     }
 
     protected function onInvoicePartiallyPaid($payment)
@@ -488,204 +402,197 @@ class ApiEventSubscriber extends Base\Core
         // Fires a job so in async pdf can be refreshed
         InvoiceJob::dispatch($this->getMode(), InvoiceJob::CAPTURED, $payment->getInvoiceId());
 
-        // Follows web hook related code conditionally, Refer $notWebhookOnlyEvents
-        if ($this->webhookEnabledForEvent === false)
-        {
-            return;
-        }
-
         $payload = $this->getInvoicePayloadWithPayment($payment);
-
-        $this->prepareAndDispatchWebhook($payload);
+        $this->dispatchEventToStork($payload);
     }
 
     protected function onInvoiceExpired($invoice)
     {
         $payload = $this->getInvoicePayload($invoice);
 
-        $this->prepareAndDispatchWebhook($payload);
+        $this->dispatchEventToStork($payload);
     }
 
     protected function onSubscriptionActivated($subscription)
     {
         $payload = $this->getSubscriptionPayload($subscription);
 
-        $this->prepareAndDispatchWebhook($payload);
+        $this->dispatchEventToStork($payload);
     }
 
     protected function onSubscriptionPending($subscription)
     {
         $payload = $this->getSubscriptionPayload($subscription);
 
-        $this->prepareAndDispatchWebhook($payload);
+        $this->dispatchEventToStork($payload);
     }
 
     protected function onSubscriptionHalted($subscription)
     {
         $payload = $this->getSubscriptionPayload($subscription);
 
-        $this->prepareAndDispatchWebhook($payload);
+        $this->dispatchEventToStork($payload);
     }
 
     protected function onSubscriptionCancelled($subscription)
     {
         $payload = $this->getSubscriptionPayload($subscription);
 
-        $this->prepareAndDispatchWebhook($payload);
+        $this->dispatchEventToStork($payload);
     }
 
     protected function onSubscriptionCompleted($subscription)
     {
         $payload = $this->getSubscriptionPayload($subscription);
 
-        $this->prepareAndDispatchWebhook($payload);
+        $this->dispatchEventToStork($payload);
     }
 
     protected function onSubscriptionCharged($subscription)
     {
         $payload = $this->getSubscriptionPayload($subscription);
 
-        $this->prepareAndDispatchWebhook($payload);
+        $this->dispatchEventToStork($payload);
     }
 
     // protected function onSubscriptionExpired($subscription)
     // {
     //     $payload = $this->getSubscriptionPayload($subscription);
     //
-    //     $this->prepareAndDispatchWebhook($payload);
+    //     $this->dispatchEventToStork($payload);
     // }
 
     protected function onVpaEdited($vpa)
     {
         $payload = $this->getVpaPayload($vpa);
 
-        $this->prepareAndDispatchWebhook($payload);
+        $this->dispatchEventToStork($payload);
     }
 
     protected function onP2pCreated($p2p)
     {
         $payload = $this->getP2pPayload($p2p);
 
-        $this->prepareAndDispatchWebhook($payload);
+        $this->dispatchEventToStork($payload);
     }
 
     protected function onP2pRejected($p2p)
     {
         $payload = $this->getP2pPayload($p2p);
 
-        $this->prepareAndDispatchWebhook($payload);
+        $this->dispatchEventToStork($payload);
     }
 
     protected function onP2pTransferred($p2p)
     {
         $payload = $this->getP2pPayload($p2p);
 
-        $this->prepareAndDispatchWebhook($payload);
+        $this->dispatchEventToStork($payload);
     }
 
     protected function onTokenConfirmed($token)
     {
         $payload = $this->getTokenPayload($token);
 
-        $this->prepareAndDispatchWebhook($payload);
+        $this->dispatchEventToStork($payload);
     }
 
     protected function onTokenRejected($token)
     {
         $payload = $this->getTokenPayload($token);
 
-        $this->prepareAndDispatchWebhook($payload);
+        $this->dispatchEventToStork($payload);
     }
 
     protected function onSettlementProcessed($settlement)
     {
         $payload = $this->getSettlementPayload($settlement);
 
-        $this->prepareAndDispatchWebhook($payload);
+        $this->dispatchEventToStork($payload);
     }
 
     protected function onTransactionCreated(Transaction\Entity $txn)
     {
         $payload = $this->getTransactionPayload($txn);
 
-        $this->prepareAndDispatchWebhook($payload);
+        $this->dispatchEventToStork($payload);
     }
 
     protected function onTransactionUpdated(Transaction\Entity $txn)
     {
         $payload = $this->getTransactionPayload($txn);
 
-        $this->prepareAndDispatchWebhook($payload);
+        $this->dispatchEventToStork($payload);
     }
 
     protected function onPayoutLinkIssued(PayoutLinkEntity $payoutLink)
     {
         $payload = $this->getPayoutLinkPayload($payoutLink);
 
-        $this->prepareAndDispatchWebhook($payload);
+        $this->dispatchEventToStork($payload);
     }
 
     protected function onPayoutLinkProcessed(PayoutLinkEntity $payoutLink)
     {
         $payload = $this->getPayoutLinkPayload($payoutLink);
 
-        $this->prepareAndDispatchWebhook($payload);
+        $this->dispatchEventToStork($payload);
     }
 
     protected function onPayoutLinkProcessing(PayoutLinkEntity $payoutLink)
     {
         $payload = $this->getPayoutLinkPayload($payoutLink);
 
-        $this->prepareAndDispatchWebhook($payload);
+        $this->dispatchEventToStork($payload);
     }
 
     protected function onPayoutLinkAttempted(PayoutLinkEntity $payoutLink)
     {
         $payload = $this->getPayoutLinkPayload($payoutLink);
 
-        $this->prepareAndDispatchWebhook($payload);
+        $this->dispatchEventToStork($payload);
     }
 
     protected function onPayoutLinkCancelled(PayoutLinkEntity $payoutLink)
     {
         $payload = $this->getPayoutLinkPayload($payoutLink);
 
-        $this->prepareAndDispatchWebhook($payload);
+        $this->dispatchEventToStork($payload);
     }
 
     protected function onPayoutCreated(Payout\Entity $payout)
     {
         $payload = $this->getPayoutPayload($payout);
 
-        $this->prepareAndDispatchWebhook($payload);
+        $this->dispatchEventToStork($payload);
     }
 
     protected function onRefundProcessed(RefundEntity $refund)
     {
         $payload = $this->getRefundPayload($refund);
 
-        $this->prepareAndDispatchWebhook($payload);
+        $this->dispatchEventToStork($payload);
     }
 
     protected function onRefundCreated(RefundEntity $refund)
     {
         $payload = $this->getRefundPayload($refund);
 
-        $this->prepareAndDispatchWebhook($payload);
+        $this->dispatchEventToStork($payload);
     }
 
     protected function onRefundFailed(RefundEntity $refund)
     {
         $payload = $this->getRefundPayload($refund);
 
-        $this->prepareAndDispatchWebhook($payload);
+        $this->dispatchEventToStork($payload);
     }
 
     protected function onRefundSpeedChanged(RefundEntity $refund)
     {
         $payload = $this->getRefundPayload($refund);
 
-        $this->prepareAndDispatchWebhook($payload);
+        $this->dispatchEventToStork($payload);
     }
 
     protected function onPayoutProcessed(Payout\Entity $payout)
@@ -695,60 +602,38 @@ class ApiEventSubscriber extends Base\Core
             (new Transaction\Notifier($payout->transaction, $this->event))->notify();
         }
 
-        if ($this->webhookEnabledForEvent === true)
-        {
-            $payload = $this->getPayoutPayload($payout);
-
-            $this->prepareAndDispatchWebhook($payload);
-        }
+        $payload = $this->getPayoutPayload($payout);
+        $this->dispatchEventToStork($payload);
     }
 
     protected function onPayoutQueued(Payout\Entity $payout)
     {
-        if ($this->webhookEnabledForEvent === true)
-        {
-            $payload = $this->getPayoutPayload($payout);
-
-            $this->prepareAndDispatchWebhook($payload);
-        }
+        $payload = $this->getPayoutPayload($payout);
+        $this->dispatchEventToStork($payload);
     }
 
     protected function onPayoutUpdated(Payout\Entity $payout)
     {
-        if ($this->webhookEnabledForEvent === true)
-        {
-            $payload = $this->getPayoutPayload($payout);
-
-            $this->prepareAndDispatchWebhook($payload);
-        }
+        $payload = $this->getPayoutPayload($payout);
+        $this->dispatchEventToStork($payload);
     }
 
     protected function onPayoutRejected(Payout\Entity $payout)
     {
-        if ($this->webhookEnabledForEvent === true)
-        {
-            $payload = $this->getPayoutPayload($payout);
-            $this->prepareAndDispatchWebhook($payload);
-        }
+        $payload = $this->getPayoutPayload($payout);
+        $this->dispatchEventToStork($payload);
     }
 
     protected function onPayoutPending(Payout\Entity $payout)
     {
-        if ($this->webhookEnabledForEvent === true)
-        {
-            $payload = $this->getPayoutPayload($payout);
-            $this->prepareAndDispatchWebhook($payload);
-        }
+        $payload = $this->getPayoutPayload($payout);
+        $this->dispatchEventToStork($payload);
     }
 
     protected function onPayoutInitiated(Payout\Entity $payout)
     {
-        if ($this->webhookEnabledForEvent === true)
-        {
-            $payload = $this->getPayoutPayload($payout);
-
-            $this->prepareAndDispatchWebhook($payload);
-        }
+        $payload = $this->getPayoutPayload($payout);
+        $this->dispatchEventToStork($payload);
     }
 
     protected function onPayoutReversed(Payout\Entity $payout)
@@ -759,57 +644,44 @@ class ApiEventSubscriber extends Base\Core
              (new Transaction\Notifier($payout->transaction, $this->event))->notify();
          }
 
-        if ($this->webhookEnabledForEvent === true)
-        {
-            $payload = $this->getPayoutPayload($payout);
-
-            $this->prepareAndDispatchWebhook($payload);
-        }
+        $payload = $this->getPayoutPayload($payout);
+        $this->dispatchEventToStork($payload);
     }
 
     protected function onPayoutFailed(Payout\Entity $payout)
     {
-        if ($this->webhookEnabledForEvent === true)
-        {
-            $payload = $this->getPayoutPayload($payout);
-
-            $this->prepareAndDispatchWebhook($payload);
-        }
+        $payload = $this->getPayoutPayload($payout);
+        $this->dispatchEventToStork($payload);
     }
 
     protected function onPaymentDowntimeStarted(Downtime\Entity $downtime)
     {
         $payload = $this->getPaymentDowntimePayload($downtime);
-
-        $this->prepareAndDispatchWebhook($payload);
+        $this->dispatchEventToStork($payload);
     }
 
     protected function onPaymentDowntimeResolved(Downtime\Entity $downtime)
     {
         $payload = $this->getPaymentDowntimePayload($downtime);
-
-        $this->prepareAndDispatchWebhook($payload);
+        $this->dispatchEventToStork($payload);
     }
 
     protected function onTerminalCreated(Terminal\Entity $terminal)
     {
         $payload = $this->getTerminalCreatedPayload($terminal);
-
-        $this->prepareAndDispatchWebhook($payload);
+        $this->dispatchEventToStork($payload);
     }
 
     protected function onTerminalActivated(Terminal\Entity $terminal)
     {
         $payload = $this->getTerminalActivatedPayload($terminal);
-
-        $this->prepareAndDispatchWebhook($payload);
+        $this->dispatchEventToStork($payload);
     }
 
     protected function onTerminalFailed(Terminal\Entity $terminal)
     {
         $payload = $this->getTerminalFailedPayload($terminal);
-
-        $this->prepareAndDispatchWebhook($payload);
+        $this->dispatchEventToStork($payload);
     }
 
     protected function getP2pPayload($p2p)
@@ -1183,68 +1055,6 @@ class ApiEventSubscriber extends Base\Core
         return $payload;
     }
 
-    protected function prepareAndDispatchWebhook(array $payload)
-    {
-        if ($this->shouldDispatchEventToStork === true)
-        {
-            $success = $this->dispatchEventToStork($payload);
-
-            if ($success === true)
-            {
-                return;
-            }
-
-            // Refer comment at other call of same function in onEvent() method.
-            if ($this->isWebhookEnabledForEvent($this->mainEntity) === false)
-            {
-                return;
-            }
-        }
-
-        $merchantWebhook = $this->activeMerchantWebhook;
-
-        // If merchant webhook is active and enabled, then dispatch.
-        if ($merchantWebhook !== null)
-        {
-            $data = $this->getWebhookData($payload, $merchantWebhook);
-
-            $this->dispatchWebhook($data);
-        }
-
-        $activeEnabledAppWebhooks = $this->activeAppsWebhooks;
-
-        // Dispatch each active and enabled connected App Webhook
-        foreach ($activeEnabledAppWebhooks as $activeEnabledAppWebhook)
-        {
-            $data = $this->getWebhookData($payload, $activeEnabledAppWebhook);
-
-            $this->dispatchWebhook($data);
-        }
-    }
-
-    protected function dispatchWebhook(array $data)
-    {
-        $this->trace->info(TraceCode::WEBHOOK_DISPATCH, $data);
-
-        WebHook::dispatch($data)->using([$this->event]);
-    }
-
-    protected function getWebhookData(array $payload, WebhookEntity $webhook): array
-    {
-        $event = $this->createEventEntity($payload);
-
-        $data = [
-            'mode'       => $this->getMode(),
-            'event'      => json_encode($event->toArrayPublic()),
-            'event_name' => $this->event,
-            'webhook_id' => $webhook->getId(),
-            // Refer Inferno's eventQueuedAt.
-            'queued_at'  => millitime(),
-        ];
-
-        return $data;
-    }
-
     protected function createEventEntity(array $payload): Event\Entity
     {
         $eventFired = $this->event;
@@ -1297,91 +1107,6 @@ class ApiEventSubscriber extends Base\Core
                 ];
             }
         }
-    }
-
-    protected function isWebhookEnabledForEvent(Base\PublicEntity $entity): bool
-    {
-        $merchant = $this->getMerchantFromEntity($entity);
-
-        $webhook = $this->repo->webhook->findByMerchant($merchant);
-
-        // Check if the merchant has an active webhook for the event
-        $enabledForMerchant = $this->isWebhookActiveAndEnabled($webhook);
-
-        if ($enabledForMerchant === true)
-        {
-            $this->activeMerchantWebhook = $webhook;
-        }
-
-        //
-        // Check if any of the Partner applications connected to the merchant have an
-        // active webhook for the event. If defined, we will eventually send the
-        // webhook request to all of these active application webhooks.
-        //
-        $enabledForApps = $this->checkAndSetWebhooksEnabledForEventForAnyApp();
-
-        return (($enabledForApps or $enabledForMerchant) === true);
-    }
-
-    protected function isWebhookActiveAndEnabled($webhook = null): bool
-    {
-        return (($webhook !== null) and
-                ($webhook->isActive() === true) and
-                ($webhook->isEventEnabled($this->event)));
-    }
-
-    protected function checkAndSetWebhooksEnabledForEventForAnyApp(): bool
-    {
-        $merchantId = $this->getMerchantFromEntity($this->mainEntity)->getId();
-
-        $activeEnabledAppWebhooks = $this->getActiveWebhooksForConnectedApps($merchantId);
-
-        if (count($activeEnabledAppWebhooks) > 0)
-        {
-            $this->activeAppsWebhooks = $activeEnabledAppWebhooks;
-
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
-     * Gets active webhooks used by al lthe apps used by the merchant whose
-     * event is triggering the webhooks. Takes the apps used by the merchant
-     * as input.
-     *
-     * @param string $merchantId
-     *
-     * @return array $activeEnabledAppWebhooks
-     */
-    protected function getActiveWebhooksForConnectedApps(string $merchantId)
-    {
-        // Fetch all applications connected to the current merchant ID
-        $appConnections = $this->repo
-                               ->merchant_access_map
-                               ->fetchMerchantAccessMapsOnEntityType($merchantId, WebhookEntity::APPLICATION);
-
-        if (count($appConnections) === 0)
-        {
-            return [];
-        }
-
-        //
-        // If one or more applications are connected, fetch all webhooks that are
-        // defined by the applications.
-        //
-        $appIds = $appConnections->pluck(AccessMapEntity::ENTITY_ID)->all();
-
-        $appWebhooks = $this->repo->webhook->findMultipleByApplicationIds($appIds);
-
-        // Filter and return the list of active application webhooks
-        $activeEnabledAppWebhooks = $appWebhooks->filter(function($webhook, $key)
-        {
-            return ($this->isWebhookActiveAndEnabled($webhook) === true);
-        });
-
-        return $activeEnabledAppWebhooks;
     }
 
     /**
@@ -1465,30 +1190,14 @@ class ApiEventSubscriber extends Base\Core
 
     /**
      * Dispatches event to stork where dispatch-able webhooks are resolved and
-     * events are fired to all of them. It returns true on success.
-     *
+     * events are fired to all of them.
      * @param array  $payload
      * @param string $product
-     *
-     * @return boolean
      */
-    protected function dispatchEventToStork(array $payload): bool
+    protected function dispatchEventToStork(array $payload)
     {
         $event = $this->createEventEntity($payload);
-
-        try
-        {
-            (new Stork($this->storkProduct))->processEventSafe($event, $this->getMode());
-        }
-        catch (Throwable $e)
-        {
-            $this->trace->traceException(
-                $e, Logger::WARNING, TraceCode::STORK_DISPATCH_EVENT_FAILED);
-
-            return false;
-        }
-
-        return true;
+        (new Stork($this->storkProduct))->processEventSafe($event, $this->getMode());
     }
 
     /**
