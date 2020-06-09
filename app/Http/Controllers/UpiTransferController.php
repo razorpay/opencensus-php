@@ -9,7 +9,7 @@ use RZP\Models\Payment\Gateway;
 
 class UpiTransferController extends Controller
 {
-    public function processUpiTransferPayment($acquirer, $gateway)
+    public function processUpiTransferPayment()
     {
         $this->trace->info(
             TraceCode::UPI_TRANSFER_PAYMENT_PROCESS_REQUEST,
@@ -17,22 +17,9 @@ class UpiTransferController extends Controller
                 'input' => Request::getContent(),
             ]);
 
-        // For UPI ICICI, bank send only the encrypted message,
-        // whereas for UPI Mindgate, bank send a string which contains
-        // the encrypted message and pgMerchantId which is used to decrypted the message.
+        $input = Request::all();
 
-        switch ($gateway)
-        {
-            case 'upi_icici' :
-                $input = Request::getContent();
-
-                break;
-
-            default:
-                $input = Request::all();
-        }
-
-        $response = $this->service()->processUpiTransferPayment($input, $gateway);
+        $response = $this->service()->processPaymentForUpiMindgate($input);
 
         return ApiResponse::json($response);
     }

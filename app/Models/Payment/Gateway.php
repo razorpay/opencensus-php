@@ -958,7 +958,6 @@ class Gateway
      */
     const UPI_TRANSFER_REFUND_GATEWAYS = [
        self::UPI_MINDGATE,
-       self::UPI_ICICI,
     ];
 
     /**
@@ -1416,7 +1415,6 @@ class Gateway
 
     public static $upiTransferGateway = [
         self::UPI_MINDGATE,
-        self::UPI_ICICI,
     ];
 
     public static $partialRefundDisabledGateways = [

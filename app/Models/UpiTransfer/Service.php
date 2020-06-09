@@ -9,7 +9,7 @@ use RZP\Models\Payment;
 use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Account;
-use RZP\Gateway\Upi\Icici\Fields;
+use RZP\Gateway\Upi\Mindgate\ResponseFields;
 
 class Service extends Base\Service
 {
@@ -24,13 +24,13 @@ class Service extends Base\Service
         $this->core = new Core();
     }
 
-    public function processUpiTransferPayment($input, $gateway)
+    public function processPaymentForUpiMindgate($input)
     {
         $this->trace->info(
             TraceCode::UPI_TRANSFER_PAYMENT_PROCESS_REQUEST,
             [
                 'input'   => $input,
-                'gateway' => $gateway,
+                'gateway' => Payment\Gateway::UPI_MINDGATE,
             ]);
 
         $valid           = false;
@@ -40,15 +40,15 @@ class Service extends Base\Service
         {
             $this->determineAndSetMode();
 
-            $gatewayClass = $this->getGatewayClass($input, $gateway);
+            $this->terminal = $this->getTerminal($input);
+
+            $gatewayClass = $this->getGatewayClass($input, Payment\Gateway::UPI_MINDGATE);
 
             $gatewayResponse = $gatewayClass->preProcessServerCallback($input);
 
-            $terminal = $this->terminal ?: $this->getTerminalFromGatewayResponse($gatewayResponse, $gateway, $gatewayClass);
-
             $gatewayResponse = $gatewayClass->getUpiTransferData($gatewayResponse);
 
-            $valid = $this->core->processPayment($gatewayResponse, $terminal);
+            $valid = $this->core->processPayment($gatewayResponse, $this->terminal);
         }
         catch (\Exception $e)
         {
@@ -76,84 +76,48 @@ class Service extends Base\Service
 
         $gatewayClass = $this->app['gateway']->gateway($gateway);
 
-        $this->terminal = $this->getTerminalFromCallback($input, $gatewayClass, $gateway);
-
         $gatewayClass->setGatewayParams($input, $this->mode, $this->terminal);
 
         return $gatewayClass;
     }
 
-    protected function getTerminalFromCallback($gatewayRequest, $gatewayClass, $gateway)
+    protected function getTerminal($gatewayRequest)
     {
-        if (method_exists($gatewayClass, 'getTerminalDetailsFromCallbackIfApplicable') !== true)
+        $terminalDetails = [];
+
+        if (isset($gatewayRequest[ResponseFields::CALLBACK_RESPONSE_PGMID]) === true)
         {
-            return null;
-        }
-
-        $terminalDetails = $gatewayClass->getTerminalDetailsFromCallbackIfApplicable($gatewayRequest);
-
-        //Earlier flow was,to create a new terminal with exactly same configs every time a merchant requests for a new custom prefix for virtual vpa
-        //From now on all the payment will go via single terminal.
-        $terminalDetails[Terminal\Entity::MERCHANT_ID] = Account::SHARED_ACCOUNT;
-
-        $terminals = $this->repo->terminal->findByGatewayAndTerminalData($gateway, $terminalDetails, true);
-
-        if (empty($terminals) === true)
-        {
-            unset($terminalDetails[Terminal\Entity::MERCHANT_ID]);
+            //Earlier flow was,to create a new terminal with exactly same configs every time a merchant requests for a new custom prefix for virtual vpa
+            //From now on all the payment will go via single terminal.
+            $terminalDetails[Terminal\Entity::GATEWAY_MERCHANT_ID] = $gatewayRequest[ResponseFields::CALLBACK_RESPONSE_PGMID];
+            $terminalDetails[Terminal\Entity::MERCHANT_ID]         = Account::SHARED_ACCOUNT;
 
             $terminals = $this->repo->terminal->getByParams($terminalDetails);
-        }
 
-        if ($terminals->count() !== 0)
-        {
+            if ($terminals->count() === 0)
+            {
+                unset($terminalDetails[Terminal\Entity::MERCHANT_ID]);
+
+                $terminals = $this->repo->terminal->getByParams($terminalDetails);
+            }
+
             return $terminals->first();
         }
         else
         {
-            throw new Exception\LogicException(
-                'No terminal found for upi transfer',
-                null,
-                [
-                    'gateway_response' => $gatewayRequest,
-                    'gateway'          => $gateway,
-                ]
-            );
+            $terminal = (new  Payment\Processor\TerminalProcessor())->getTerminalForUpiTransfer();
         }
-    }
-
-    protected function getTerminalFromGatewayResponse($gatewayResponse, $gateway, $gatewayClass)
-    {
-        $terminal          = null;
-        $gatewayMerchantId = null;
-
-        $terminalDetails[Terminal\Entity::MERCHANT_ID] = Account::SHARED_ACCOUNT;
-
-        switch ($gateway)
-        {
-            case Payment\Gateway::UPI_ICICI:
-            {
-                $terminalDetails[Terminal\Entity::GATEWAY_MERCHANT_ID] = $gatewayResponse[Fields::MERCHANT_ID];
-
-                break;
-            }
-        }
-
-        $terminal = $this->repo->terminal->findByGatewayAndTerminalData($gateway, $terminalDetails, true);
 
         if ($terminal === null)
         {
             throw new Exception\LogicException(
-                'No terminal found for upi transfer',
+                'Terminal should not be null here',
                 null,
                 [
-                    'gateway_response' => $gatewayResponse,
-                    'gateway'          => $gateway,
+                    'gateway_response' => $gatewayRequest,
                 ]
             );
         }
-
-        $gatewayClass->setGatewayParams($gatewayResponse, $this->mode, $terminal);
 
         return $terminal;
     }
@@ -195,8 +159,8 @@ class Service extends Base\Service
         $routeName = $this->app['api.route']->getCurrentRouteName();
 
         // Gets mode per route and sets application & db mode.
-        $this->mode = str_contains($routeName, 'test') ? Mode::TEST : Mode::LIVE;
+        $mode = str_contains($routeName, 'test') ? Mode::TEST : Mode::LIVE;
 
-        $this->app['basicauth']->setModeAndDbConnection($this->mode);
+        $this->app['basicauth']->setModeAndDbConnection($mode);
     }
 }

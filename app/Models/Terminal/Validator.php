@@ -158,9 +158,6 @@ class Validator extends Base\Validator
         Entity::UPI                        => 'required|boolean|in:1',
         Entity::VPA                        => 'required_only_if:type.bharat_qr,1|string|max:20',
         Entity::TYPE                       => 'sometimes|array',
-        Entity::VIRTUAL_UPI_HANDLE         => 'required_if:type.upi_transfer,1|string',
-        Entity::VIRTUAL_UPI_ROOT           => 'required_if:type.upi_transfer,1|string',
-        Entity::VIRTUAL_UPI_MERCHANT_PREFIX=> 'sometimes_if:type.upi_transfer,1|string',
     ];
 
     protected static $upiAirtelTerminalRules = [
