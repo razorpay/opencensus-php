@@ -45,6 +45,10 @@ class Entity extends Base\PublicEntity
     const PAYMENT_PAGE_ITEM_ID = 'payment_page_item_id';
     const LINE_ITEMS           = 'line_items';
     const ORDER                = 'order';
+    const VIEW_TYPE            = 'view_type';
+
+    const VIEW_TYPE_BUTTON     = 'button';
+    const VIEW_TYPE_PAGE       = 'page';
 
     /**
      * Optional attribute: allows a custom view template ID to be defined
@@ -143,6 +147,7 @@ class Entity extends Base\PublicEntity
         self::SUPPORT_EMAIL,
         self::TERMS,
         self::TYPE,
+        self::VIEW_TYPE,
     ];
 
     protected $visible = [
@@ -256,6 +261,7 @@ class Entity extends Base\PublicEntity
         self::SUPPORT_EMAIL      => null,
         self::TERMS              => null,
         self::TYPE               => Type::PAYMENT,
+        self::VIEW_TYPE          => self::VIEW_TYPE_PAGE,
     ];
 
     protected $publicSetters = [

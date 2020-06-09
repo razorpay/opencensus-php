@@ -84,6 +84,9 @@ class CreatePaymentLinks extends Migration
             $table->string(Entity::TYPE, 30)
                   ->default('payment');
 
+            $table->string(Entity::VIEW_TYPE, 255)
+                  ->default(Entity::VIEW_TYPE_PAGE);
+
             $table->integer(Entity::CREATED_AT);
             $table->integer(Entity::UPDATED_AT);
             $table->integer(Entity::DELETED_AT)

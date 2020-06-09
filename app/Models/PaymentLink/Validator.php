@@ -41,6 +41,7 @@ class Validator extends Base\Validator
         Entity::TERMS           => 'nullable|string|min:5|max:2048',
         Entity::SETTINGS        => 'nullable|array',
         Entity::TEMPLATE_TYPE   => 'sometimes|string|max:24',
+        Entity::VIEW_TYPE       => 'sometimes|string|in:button,page',
 
         Entity::SETTINGS . '.' . Entity::THEME                        => 'nullable|string|in:light,dark',
         Entity::SETTINGS . '.' . Entity::UDF_SCHEMA                   => 'nullable|json',
