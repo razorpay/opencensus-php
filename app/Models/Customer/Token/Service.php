@@ -17,6 +17,8 @@ use RZP\Models\PaymentsUpi;
 
 class Service extends Base\Service
 {
+    const CREATE_GLOBAL_TOKEN_CRON_KEY = 'CREATE_GLOBAL_TOKEN_CRON_KEY';
+
     protected $core;
 
     public function __construct()
@@ -276,7 +278,12 @@ class Service extends Base\Service
         // Adding time log for fetching payments
         $time = time();
 
-        $payments = $this->repo->payment->getPaymentsForCreatingCustomerVpaTokens($limit);
+        /**
+         * Trying to get the last created at set for cron, and use that in the query.
+         */
+        $lastCreatedAt = $this->app['cache']->get(self::CREATE_GLOBAL_TOKEN_CRON_KEY);
+
+        $payments = $this->repo->payment->getPaymentsForCreatingCustomerVpaTokens($limit, $lastCreatedAt ?? null);
 
         $time = time() - $time;
 
@@ -343,6 +350,18 @@ class Service extends Base\Service
                         'payment_id' => $payment->getId(),
                     ]);
             }
+        }
+
+        /**
+         * Checking if any error occurred, we wont update the cache key.
+         * Ideally, It will never occur. We can always set the new created at.
+         */
+        if (($errors === 0) and ($count > 0))
+        {
+            /**
+             * Adding 7 minutes as ttl, so next cron(which runs after 5 minutes) can pick it up.
+             */
+            $this->app['cache']->set(self::CREATE_GLOBAL_TOKEN_CRON_KEY, $payments->last()->getCreatedAt(), 7);
         }
 
         $response = [

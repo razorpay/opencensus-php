@@ -76,6 +76,7 @@ class SavedVpaCustomerTokenTest extends TestCase
         $beforeTokenCount = count($tokens);
 
         $response = $this->createCustomerTokenUpiBulkCron(4);
+        $this->createCustomerTokenUpiBulkCron(4);
 
         $this->assertSame(4, $response['tokens_created']);
         $this->assertSame(0, $response['errors']);

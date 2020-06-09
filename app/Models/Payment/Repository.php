@@ -594,11 +594,14 @@ class Repository extends Base\Repository
     }
 
 
-    public function getPaymentsForCreatingCustomerVpaTokens($limit)
+    public function getPaymentsForCreatingCustomerVpaTokens($limit, $startTime = null)
     {
-        $query = $this->newQuery();
+        if (isset($startTime) === false)
+        {
+            $startTime = 1575384036;
+        }
 
-        $startTime = 1575384036; // Six months before
+        $query = $this->newQuery();
 
         $query->whereNotNull(Payment\Entity::GLOBAL_CUSTOMER_ID)
               ->where(Payment\Entity::CREATED_AT, '>=', $startTime)
