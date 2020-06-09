@@ -167,7 +167,15 @@ class GatewayDowntimeDetectionV2Test extends TestCase
 
         $this->startTest();
 
-        $this->assertNotNull($this->redis->get('DOWNTIME_CREATED_success_rate_card_ISSUER_HDFC'));
+        $gatewayDowntime = $this->getLastEntity('gateway_downtime', true);
+
+        $this->assertNull($gatewayDowntime['end']);
+
+        $this->assertEquals('card', $gatewayDowntime['method']);
+
+        $paymentDowntime = $this->getLastEntity('payment.downtime', true);
+
+        $this->assertNull($paymentDowntime);
 
         $this->ba->adminAuth();
 
@@ -188,7 +196,9 @@ class GatewayDowntimeDetectionV2Test extends TestCase
 
         $this->makeRequestAndGetContent($request);
 
-        $this->assertNull($this->redis->get('DOWNTIME_CREATED_success_rate_card_ISSUER_HDFC'));
+        $gatewayDowntime = $this->getLastEntity('gateway_downtime', true);
+
+        $this->assertNotNull($gatewayDowntime['end']);
     }
 
     public function testDowntimeDetectionForUpi()
@@ -211,7 +221,17 @@ class GatewayDowntimeDetectionV2Test extends TestCase
 
         $this->makeRequestAndGetContent($request);
 
-        $this->assertNotNull($this->redis->get('DOWNTIME_CREATED_payment_interval_upi_PROVIDER_okhdfcbank'));
+        $gatewayDowntime = $this->getLastEntity('gateway_downtime', true);
+
+        $paymentDowntime = $this->getLastEntity('payment.downtime', true);
+
+        $this->assertNull($gatewayDowntime['end']);
+
+        $this->assertEquals('upi', $gatewayDowntime['method']);
+
+        $this->assertEquals('okhdfcbank', $gatewayDowntime['vpa_handle']);
+
+        $this->assertNull($paymentDowntime);
     }
 
     public function testDowntimeDetectionForNetbanking()
@@ -232,7 +252,9 @@ class GatewayDowntimeDetectionV2Test extends TestCase
 
         $this->makeRequestAndGetContent($request);
 
-        $this->assertNotNull($this->redis->get('DOWNTIME_CREATED_payment_interval_netbanking_BANK_HDFC'));
+        $gatewayDowntime = $this->getLastEntity('gateway_downtime', true);
+
+        $this->assertNull($gatewayDowntime['end']);
 
         $this->doAuthAndCapturePayment($payment);
         $this->doAuthAndCapturePayment($payment);
@@ -242,7 +264,17 @@ class GatewayDowntimeDetectionV2Test extends TestCase
         $this->ba->cronAuth();
         $this->makeRequestAndGetContent($request);
 
-        $this->assertNull($this->redis->get('DOWNTIME_CREATED_payment_interval_netbanking_BANK_HDFC'));
+        $gatewayDowntime = $this->getLastEntity('gateway_downtime', true);
+
+        $paymentDowntime = $this->getLastEntity('payment.downtime', true);
+
+        $this->assertNotNull($gatewayDowntime['end']);
+
+        $this->assertEquals('netbanking', $gatewayDowntime['method']);
+
+        $this->assertEquals('HDFC', $gatewayDowntime['issuer']);
+
+        $this->assertNull($paymentDowntime);
     }
 
     public function getAllJobTypes()
@@ -268,6 +300,39 @@ class GatewayDowntimeDetectionV2Test extends TestCase
             ],
         ];
     }
+
+    public function testDowntimeDetectionStoredInDB()
+    {
+        $payment = $this->getDefaultUpiPaymentArray();
+
+        $payment['vpa'] = 'failedcollect@okhdfcbank';
+
+        $this->doAuthPaymentViaAjaxRoute($payment);
+        $this->doAuthPaymentViaAjaxRoute($payment);
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/gateway/downtimes/detection/cron',
+        ];
+
+        $this->ba->cronAuth();
+
+        Carbon::setTestNow(Carbon::now()->addSeconds(70));
+
+        $this->makeRequestAndGetContent($request);
+
+        $gatewayDowntime = $this->getLastEntity('gateway_downtime', true);
+
+        $paymentDowntime = $this->getLastEntity('payment.downtime', true);
+
+        $this->assertNull($gatewayDowntime['end']);
+
+        $this->assertEquals('upi', $gatewayDowntime['method']);
+
+        $this->assertNull($paymentDowntime);
+    }
+
+
 }
 
 class ConstantsStub

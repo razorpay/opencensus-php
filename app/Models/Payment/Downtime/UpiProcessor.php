@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Collection;
 
 use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Gateway;
+use RZP\Models\Gateway\Downtime\Source;
 use RZP\Models\Gateway\Downtime\Entity as GatewayDowntime;
 
 class UpiProcessor extends BaseProcessor
@@ -15,6 +16,8 @@ class UpiProcessor extends BaseProcessor
     public function process(Collection $gatewayDowntimes)
     {
         $gatewayDowntimes = $gatewayDowntimes->where(GatewayDowntime::METHOD, '=', $this->method);
+
+        $gatewayDowntimes = $gatewayDowntimes->where(GatewayDowntime::SOURCE, '!=', Source::DOWNTIME_V2);
 
         if ($this->impliesUpiDowntime($gatewayDowntimes) === true)
         {

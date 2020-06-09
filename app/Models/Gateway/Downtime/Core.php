@@ -530,4 +530,87 @@ class Core extends Base\Core
             }
         }
     }
+
+    public function createDowntimeV2(array $input)
+    {
+        $downtimeArray = $this->DowntimeV2Request($input);
+
+        try
+        {
+            $this->create($downtimeArray);
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException($e,
+                Logger::ERROR,
+                TraceCode::GATEWAY_DOWNTIME_V2_CREATE_FAILED,
+                $input
+            );
+        }
+    }
+
+    public function resolveDowntimeV2(array $input)
+    {
+        $downtimeArray = $this->DowntimeV2Request($input);
+
+        $downtime = $this->fetchMostRecentActive($downtimeArray);
+
+        if(is_null($downtime) === true)
+        {
+            throw new Exception\LogicException(
+                'DowntimeV2 Trying to resolve a non-existent downtime',
+                null,
+                [
+                    'DowntimeData' => $downtimeArray,
+                ]
+            );
+        }
+
+        $downtime->setEndTime($input['downtime_recover_time']);
+
+        $this->repo->saveOrFail($downtime);
+    }
+
+    public function DowntimeV2Request(array $input)
+    {
+        $downtimeArray = [
+            Entity::GATEWAY       => Entity::ALL,
+            Entity::BEGIN         => $input['downtime_start_time'],
+            Entity::COMMENT       => $input['type'],
+            Entity::REASON_CODE   => ReasonCode::HIGHER_DECLINES,
+            Entity::SOURCE        => Source::DOWNTIME_V2,
+            Entity::METHOD        => $input['method'],
+            Entity::SCHEDULED     => false,
+        ];
+
+        switch ($input['method'])
+        {
+            case 'upi' :
+                if ($input['key'] === DowntimeDetection::PROVIDER)
+                {
+                    $downtimeArray[Entity::VPA_HANDLE] = $input['value'];
+                }
+                break;
+
+            case 'card' :
+                if ($input['key'] === DowntimeDetection::ISSUER)
+                {
+                    $downtimeArray[Entity::ISSUER] = $input['value'];
+                }
+                elseif ($input['key'] === DowntimeDetection::NETWORK)
+                {
+                    $downtimeArray[Entity::NETWORK] = $input['value'];
+                }
+                break;
+
+            case 'netbanking' :
+                if ($input['key'] === DowntimeDetection::BANK)
+                {
+                    $downtimeArray[Entity::ISSUER] = $input['value'];
+                }
+                break;
+        }
+
+        return $downtimeArray;
+    }
 }

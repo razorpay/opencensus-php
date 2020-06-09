@@ -407,6 +407,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::END, time());
     }
 
+    public function setEndTime($time)
+    {
+        $this->setAttribute(self::END, $time);
+    }
+
     /**
      * Formats the downtime entity with relevant data to display on public
      * facing routes like checkout, merchant dashboard etc

@@ -4,6 +4,7 @@ namespace RZP\Models\Payment\Downtime;
 
 use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Gateway;
+use RZP\Models\Gateway\Downtime\Source;
 use Illuminate\Database\Eloquent\Collection;
 use RZP\Models\Gateway\Downtime\Entity as GatewayDowntime;
 
@@ -14,6 +15,8 @@ class CardProcessor extends BaseProcessor
     public function process(Collection $gatewayDowntimes)
     {
         $gatewayDowntimes = $gatewayDowntimes->where(GatewayDowntime::METHOD, '=', $this->method);
+
+        $gatewayDowntimes = $gatewayDowntimes->where(GatewayDowntime::SOURCE, '!=', Source::DOWNTIME_V2);
 
         $unavailableNetworks = $this->calculateUnavailableNetworks($gatewayDowntimes);
 

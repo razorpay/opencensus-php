@@ -36,6 +36,8 @@ class DowntimeDetection
      */
     protected $redis;
 
+    protected $repo;
+
     const ISSUER            = 'ISSUER';
 
     const NETWORK           = 'NETWORK';
@@ -57,6 +59,16 @@ class DowntimeDetection
 
     const PAYMENT_INTERVAL  = 'payment_interval';
 
+    const DOWNTIME_V2_UNIQUE_KEYS = [
+        Entity::GATEWAY,
+        Entity::ISSUER,
+        Entity::METHOD,
+        Entity::SOURCE,
+        Entity::NETWORK,
+        Entity::VPA_HANDLE,
+        Entity::COMMENT,
+    ];
+
     public function __construct()
     {
         /**
@@ -69,6 +81,8 @@ class DowntimeDetection
         $this->razorx  = $app['razorx'];
 
         $this->mode    = $app['rzp.mode'];
+
+        $this->repo = $app['repo'];
 
         $this->redis   = Redis::connection()->client();
     }
@@ -211,7 +225,10 @@ class DowntimeDetection
         $redisKeyForDowntime = Constants::DOWNTIME_KEY . '_' . $type .'_' . $method . '_' . $key .'_' . $value;
 
         // check if downtime is already there for this issuer
-        $downtimeCreatedSince = $this->redis->get($redisKeyForDowntime);
+        //$downtimeCreatedSince = $this->redis->get($redisKeyForDowntime);
+
+        //Check if downtime present in Gateway downtime Table
+        $downtimeCreatedSince = $this->fetchExistingDowntime($type, $method, $key, $value);
 
         if (empty($downtimeCreatedSince) == true)
         {
@@ -316,7 +333,18 @@ class DowntimeDetection
 
                     // set downtime in redis
                     // plus 30 because payment was created at $metric->downtime_start_time but failed at later time.
-                    $this->redis->set($redisKeyForDowntime, $metric->downtime_start_time + 30);
+                    //$this->redis->set($redisKeyForDowntime, $metric->downtime_start_time + 30);
+
+                    // Storing Downtime in Gateway Downtime table
+                    $input = [
+                        'type'                      => $type,
+                        'method'                    => $method,
+                        'key'                       => $key,
+                        'value'                     => $value,
+                        'downtime_start_time'       => $metric->downtime_start_time + 30,
+                    ];
+
+                    (new Core)->createDowntimeV2($input);
                 }
 
                 break;
@@ -427,9 +455,20 @@ class DowntimeDetection
                     ]);
 
                 // delete redis key to resolve
-                $this->redis->del([$redisKeyForDowntime]);
-            }
+                //$this->redis->del([$redisKeyForDowntime]);
 
+                // Resolving Downtime stored in Gateway Downtime table
+                $input = [
+                    'type'                      => $type,
+                    'method'                    => $method,
+                    'key'                       => $key,
+                    'value'                     => $value,
+                    'downtime_start_time'       => $metric->downtime_start_time + 30,
+                    'downtime_recover_time'     => $metric->downtime_recover_time,
+                ];
+
+                (new Core)->resolveDowntimeV2($input);
+            }
         }
 
         return;
@@ -444,4 +483,41 @@ class DowntimeDetection
 
         return $success/$totalCompleted;
     }
+
+    public function fetchExistingDowntime($type, $method, $key, $value)
+    {
+        $input = [
+            Entity::GATEWAY => Entity::ALL,
+            Entity::METHOD => $method,
+            Entity::SOURCE => Source::DOWNTIME_V2,
+            Entity::COMMENT => $type,
+        ];
+
+        switch ($key)
+        {
+            case DowntimeDetection::BANK :
+            case DowntimeDetection::ISSUER :
+                $input[Entity::ISSUER] = $value;
+                break;
+            case DowntimeDetection::NETWORK :
+                $input[Entity::NETWORK] = $value;
+                break;
+            case DowntimeDetection::PROVIDER :
+                $input[Entity::VPA_HANDLE] = $value;
+                break;
+        }
+
+        $downtime = $this->repo->gateway_downtime->getConflictingDowntime($input, self::DOWNTIME_V2_UNIQUE_KEYS);
+
+        if(empty($downtime) === true)
+        {
+            return null;
+        }
+        else {
+            $downtimeArray = $downtime->toArray();
+
+            return $downtimeArray['begin'];
+        }
+    }
+
 }

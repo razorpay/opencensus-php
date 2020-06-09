@@ -111,7 +111,6 @@ class Service extends Base\Service
         $eventEnabledWebhooks = $this->repo
                                      ->webhook
                                      ->getWebhooksByEventEnabled(Event::PAYMENT_DOWNTIME_STARTED);
-
         foreach ($eventEnabledWebhooks as $webhook)
         {
             $eventPayload = [

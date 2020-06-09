@@ -12,6 +12,7 @@ class Source
     const VAJRA       = 'VAJRA';
     const DOPPLER     = 'DOPPLER';
     const INTERNAL    = 'INTERNAL';
+    const DOWNTIME_V2 = 'DOWNTIME_V2';
     const OTHER       = 'OTHER';
 
     const DUMMY       = 'dummy';
@@ -23,6 +24,7 @@ class Source
         Source::VAJRA,
         Source::DOPPLER,
         Source::INTERNAL,
+        Source::DOWNTIME_V2,
         Source::OTHER,
     ];
 

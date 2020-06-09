@@ -46,6 +46,7 @@ class Repository extends Base\Repository
         Entity::TERMINAL_ID => '=',
         Entity::NETWORK     => '=',
         Entity::VPA_HANDLE  => '=',
+        Entity::COMMENT     => '=',
     ];
 
     const UNIQUE_KEYS = [
