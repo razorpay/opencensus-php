@@ -21,9 +21,14 @@ class PaymentReconciliate extends Base\SubReconciliator\NetbankingServiceRecon
         return $row[Reconciliate::BANK_REFERENCE_NUMBER] ?? null;
     }
 
+    protected function getGatewayTransactionId(array $row)
+    {
+        return $row[Reconciliate::BANK_REFERENCE_NUMBER] ?? null;
+    }
+
     protected function getGatewayAmount(array $row)
     {
-        return Base\SubReconciliator\Helper ::getIntegerFormattedAmount($row[Reconciliate::PAYMENT_AMOUNT]);
+        return Base\SubReconciliator\Helper::getIntegerFormattedAmount($row[Reconciliate::PAYMENT_AMOUNT]);
     }
 
     protected function getReconPaymentStatus(array $row)
