@@ -36,9 +36,9 @@ abstract class BaseGatewayProcessor
         }
     }
 
-    abstract public function getInputValue($gatewayInput, $merchant);
+    abstract public function getGatewayData($gatewayInput, $merchant, $merchantDetail);
 
-    abstract public function processTerminalData($terminaldata, $merchant);
+    abstract public function processTerminalData($terminaldata, $merchant, $gatewayInput);
 
     abstract public function validateGatewayInput($gatewayInput, $merchantDetail);
 
@@ -47,6 +47,8 @@ abstract class BaseGatewayProcessor
     abstract public function getLockResource($merchant, $gateway, $gatewayInput);
 
     abstract public function addDefaultValueToMerchantDetailIfApplicable(array &$merchantDetail);
+
+    abstract public function getGatewayActionName();
 
     public function getGatewayName()
     {

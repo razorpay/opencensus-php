@@ -67,22 +67,6 @@ class TerminalOnboardingController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function postOnboardTerminalCreation()
-    {
-        $input = Request::all();
-
-        $data = $this->service()->onboardTerminals($input);
-
-        $this->trace->info(
-            TraceCode::TERMINAL_ONBOARDING_CREATION_CRON_RESPONSE,
-            [
-                'input'    => $input,
-                'response' => $data,
-            ]);
-
-        return ApiResponse::json($data);
-    }
-
     public function postInitiateOnboarding()
     {        
         $input = Request::all();
@@ -90,19 +74,6 @@ class TerminalOnboardingController extends Controller
         $response = $this->service()->initiateOnboarding($input);
 
         return $response;
-    }
-
-    /**
-     * This is a precautionary API, which will be used using adminAuth, in case we need to change status of a terminalonboarding manually
-     * This will update status of input terminal_onboarding_details ids to created
-     */
-    public function putTerminalOnboardingStatus()
-    {
-        $input = Request::all();
-
-        $response = $this->service()->updateTerminalOnboardingStatus($input);
-
-        return ApiResponse::json($response);
     }
 
     public function postTerminalOnboardCallback(string $gateway, string $mode)

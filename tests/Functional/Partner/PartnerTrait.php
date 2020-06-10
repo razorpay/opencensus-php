@@ -8,6 +8,7 @@ use RZP\Tests\Functional\OAuth\OAuthTrait;
 use RZP\Models\Partner\Config as PartnerConfig;
 use RZP\Tests\Functional\Fixtures\Entity\Pricing;
 use RZP\Tests\Functional\Fixtures\Entity\Org as Org;
+use RZP\Tests\Functional\Fixtures\Entity\Base as BaseFixture;
 
 trait PartnerTrait
 {
@@ -296,6 +297,13 @@ trait PartnerTrait
         ];
 
         $this->fixtures->create('merchant_access_map', $accessMapData);
+
+        (new BaseFixture)->createEntity('merchant_detail', [
+            'merchant_id' => '10000000000000',
+            'submitted'   => true,
+            'business_registered_state' => 'KA',
+            'locked'      => true
+        ]);
 
         $this->ba->partnerAuth($subMerchantId, 'rzp_test_partner_' . $client->getId(), $client->getSecret());
 

@@ -38,17 +38,17 @@ class Validator extends Base\Validator
             $visaMpan   = $input[Constants::MPAN][Constants::VISA];
             $rupayMpan  = $input[Constants::MPAN][Constants::RUPAY];
 
-            $issuesMpans = (new MpanRepo())->findByMerchantIdMpans($partnerMerchantId, [$mcMpan, $visaMpan, $rupayMpan]);
-            
-            if ($issuesMpans->count() != 3)
+            $issuedMpans = (new MpanRepo())->findByMerchantIdMpans($partnerMerchantId, [$mcMpan, $visaMpan, $rupayMpan]);
+
+            if ($issuedMpans->count() != 3)
             {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_INVALID_MPAN);
             }
 
-            $issuedMcMpan = $issuesMpans->firstWhere(Mpan\Entity::NETWORK, Mpan\Constants::MASTERCARD);
-            $issuedVisaMpan = $issuesMpans->firstWhere(Mpan\Entity::NETWORK, Mpan\Constants::VISA);
-            $issuedRupayMpan = $issuesMpans->firstWhere(Mpan\Entity::NETWORK, Mpan\Constants::RUPAY);
+            $issuedMcMpan = $issuedMpans->firstWhere(Mpan\Entity::NETWORK, Mpan\Constants::MASTERCARD);
+            $issuedVisaMpan = $issuedMpans->firstWhere(Mpan\Entity::NETWORK, Mpan\Constants::VISA);
+            $issuedRupayMpan = $issuedMpans->firstWhere(Mpan\Entity::NETWORK, Mpan\Constants::RUPAY);
 
             // If any of the issuedMpan is null, it means wrong network is used for atlead one of the issued mpan
             if (($issuedMcMpan === null) or ( $issuedVisaMpan === null) or ($issuedRupayMpan === null) or 

@@ -226,28 +226,27 @@ class Repository extends Base\Repository
             ->first();
     }
 
-    public function findActivatedTerminalByGatewayMerchantIdAndGatewayTerminalId(string $gatewayMerchantId, string $gatewayTerminalId, string $gateway)
+    public function findTerminalByGatewayMerchantIdAndGatewayTerminalId(string $gatewayMerchantId, string $gatewayTerminalId, string $gateway)
     {
         return $this->newQuery()
                     ->where(Entity::GATEWAY_MERCHANT_ID, '=', $gatewayMerchantId)
                     ->where(Entity::GATEWAY_TERMINAL_ID, '=', $gatewayTerminalId)
                     ->where(Entity::GATEWAY, '=', $gateway)
-                    ->where(Entity::STATUS, '=', Terminal\Status::ACTIVATED)
                     ->first();
     }
 
-    public function findActivatedTerminalByMpanAndGatewayMerchantId(string $gatewayMerchantId, string $gateway, string $mpan)
+    public function findEnabledTerminalByMpanAndGatewayMerchantId(string $gatewayMerchantId, string $gateway, string $mpan)
     {
         return $this->newQuery()
         ->where(Entity::GATEWAY, '=', $gateway)
         ->where(Entity::GATEWAY_MERCHANT_ID, '=', $gatewayMerchantId)
-        ->whereIn(Entity::STATUS, [Terminal\Status::ACTIVATED, Terminal\Status::PENDING])
         ->where(function ($query) use ($mpan)
         {
             $query->where(Entity::VISA_MPAN, '=', $mpan)
                   ->orWhere(Entity::MC_MPAN, '=', $mpan)
                   ->orWhere(Entity::RUPAY_MPAN, '=', $mpan);
         })
+        ->enabled()
         ->first();
     }
 
@@ -660,27 +659,6 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    // fetches all terminals where terminal_onboarding_detail status is created
-    public function fetchTerminalsForOnboarding($input)
-    {
-        $count = $input['count'];
-
-        $terminalId = $this->dbColumn(Entity::ID);
-
-        $termininalOnboardingDetailRepo = $this->repo->terminal_onboarding_detail;
-
-        $terminalOnboardingTerminalId = $termininalOnboardingDetailRepo->dbColumn(TerminalOnboardingDetail\Entity::TERMINAL_ID);
-
-        $terminalOnboardingStatus = $termininalOnboardingDetailRepo->dbColumn(TerminalOnboardingDetail\Entity::STATUS);
-
-        return $this->newQuery()
-                    ->take($count)
-                    ->select($this->getTableName() . '.*')
-                    ->join(Table::TERMINAL_ONBOARDING_DETAIL, $terminalOnboardingTerminalId, '=', $terminalId)
-                    ->where($terminalOnboardingStatus, '=', TerminalOnboardingDetail\Status::CREATED)
-                    ->get();
-    }
-
     public function findByMerchantIdGatewayAndCurrency(string $merchantId, string $gateway, string $currency)
     {
         $query = $this->newQuery()
@@ -693,6 +671,16 @@ class Repository extends Base\Repository
         return $query->first();
     }
 
+
+    public function fetchByMerchantIdGatewayAndStatus(string $mid, string $gateway, array $status)
+    {
+        return $this->newQuery()
+                    ->where(Entity::GATEWAY, '=', $gateway)
+                    ->where(Entity::MERCHANT_ID, '=', $mid)
+                    ->whereIn(Entity::STATUS, $status)
+                    ->get();
+    }
+    
     public function findMerchantIdByGatewayMerchantID(string $gatewayMerchantId)
     {
         $query = $this->newQuery()

@@ -2550,6 +2550,62 @@ return [
         ]
     ],
 
+    'testUpdateTerminalsBulkTryEnablingFailedTerminal'    =>  [
+        'request' => [
+            'method'  => 'PATCH',
+            'url'     => '/terminals/bulk',
+            'content' => [
+                'terminal_ids' => [
+
+                ],
+                'attributes'  =>  [
+                    'status'  => 'activated'
+                ]
+            ],
+        ],
+        'response' => [
+            'content'  => [
+                'error' => [
+                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'   => 'Terminal status should be activated or pending for enabling a terminal',
+                ],
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_TERMINAL_STATUS_SHOULD_BE_ACTIVATED_OR_PENDING_TO_ENABLE
+        ],
+    ],
+
+    'testUpdateTerminalsBulkTryStatusUpdateWithoutEnableField'    =>  [
+        'request' => [
+            'method'  => 'PATCH',
+            'url'     => '/terminals/bulk',
+            'content' => [
+                'terminal_ids' => [
+
+                ],
+                'attributes'  =>  [
+                    'status'  => 'activated'
+                ]
+            ],
+        ],
+        'response' => [
+            'content'  => [
+                'error' => [
+                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'   => 'The enabled field is required when status is present.',
+                ],
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+        ],
+    ],
+
     'testQueryCacheforTerminals' => [
         'request' => [
             'content' => [
@@ -2746,473 +2802,6 @@ return [
         ]
     ],
 
-    'testEnableTerminal'  => [
-        'request' => [
-            'method' => 'PUT'
-        ],
-        'response' => [
-            'content' => [
-                'entity'              => 'terminal',
-                'status'              => 'activated',
-                'enabled'             =>  true,
-                'notes'               =>  'some notes',
-                'mpan'                =>  [
-                    'mc_mpan'             => '1234567890123456',
-                    'visa_mpan'           => '9876543210123456',
-                    'rupay_mpan'          => '1234123412341234'
-                ]
-            ]
-        ]
-    ],
-
-
-    'testEnableTerminalFailedOnGateway'  => [
-        'request' => [
-            'method' => 'PUT'
-        ],
-        'response' => [
-            'content'  => [
-                'error' => [
-                    'code'        => PublicErrorCode::GATEWAY_ERROR,
-                    'description' => 'Terminal enable failed on gateway',
-                ],
-            ],
-            'status_code' => 502
-        ],
-        'exception' => [
-            'class'               => RZP\Exception\BadRequestException::class,
-            'internal_error_code' => ErrorCode::GATEWAY_ERROR_TERMINAL_ENABLE_FAILED
-        ],
-    ],
-
-
-
-    'testDisableTerminal'  => [
-        'request' => [
-            'method' => 'PUT'
-        ],
-        'response' => [
-            'content' => [
-                'entity'              => 'terminal',
-                'status'              => 'deactivated',
-                'enabled'             =>  false,
-                'notes'               =>  'some notes',
-                'mpan'                =>  [
-                    'mc_mpan'             => '1234567890123456',
-                    'visa_mpan'           => '9876543210123456',
-                    'rupay_mpan'          => '1234123412341234'
-                ]
-            ]
-        ]
-    ],
-
-    'testDisableTerminalFailedOnGateway'  => [
-        'request' => [
-            'method' => 'PUT'
-        ],
-        'response' => [
-            'content'  => [
-                'error' => [
-                    'code'        => PublicErrorCode::GATEWAY_ERROR,
-                    'description' => 'Terminal disable failed on gateway',
-                ],
-            ],
-            'status_code' => 502
-        ],
-        'exception' => [
-            'class'               => RZP\Exception\BadRequestException::class,
-            'internal_error_code' => ErrorCode::GATEWAY_ERROR_TERMINAL_DISABLE_FAILED
-        ],
-    ],
-
-    'testCreatedTerminalsShouldNotBeDisabled' => [
-        'request' => [
-            'method' => 'PUT'
-        ],
-        'response' => [
-            'content'  => [
-                'error' => [
-                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Only pending or activated terminals can be disabled',
-                ],
-            ],
-            'status_code' => 400
-        ],
-        'exception' => [
-            'class'               => RZP\Exception\BadRequestException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_ONLY_PENDING_OR_ACTIVATED_TERMINALS_CAN_BE_DISABLED
-        ],
-    ],
-
-    'testOnlyDeactivatedTerminalsShouldBeEnabled'  => [
-        'request' => [
-            'method' => 'PUT'
-        ],
-        'response' => [
-            'content'  => [
-                'error' => [
-                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Only deactivated terminals can be enabled',
-                ],
-            ],
-            'status_code' => 400
-        ],
-        'exception' => [
-            'class'               => RZP\Exception\BadRequestException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_ONLY_DEACTIVATED_TERMINALS_CAN_BE_ENABLED
-        ],
-    ],
-
-    'testSubMerchantsShouldNotBeAbleToDisableTerminals'  => [
-        'request' => [
-            'method' => 'PUT'
-        ],
-        'response' => [
-            'content'  => [
-                'error' => [
-                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description'   => 'Merchant is not a partner',
-                ],
-            ],
-            'status_code' => 400
-        ],
-        'exception' => [
-            'class'               => RZP\Exception\BadRequestException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_IS_NOT_PARTNER
-        ],
-    ],
-
-    'testFetchTerminals'  => [
-        'request' => [
-            'method' => 'GET'
-        ],
-        'response' => [
-            'content'  => [
-                'count'   => 2,
-                'entity'  => 'collection',
-                'items'   => [
-                    [
-                        'entity'  => 'terminal',
-                        'status'  => 'activated',
-                        'enabled' => true,
-                        'notes'   => null,
-                        'mpan' => [
-                            'mc_mpan'    => '5220240401208405',
-                            'rupay_mpan' => '6100030401208403',
-                            'visa_mpan'  => '4403844012084006'
-                        ]
-                    ],
-                    [
-                        'entity'  => 'terminal',
-                        'status'  => 'activated',
-                        'enabled' => true,
-                        'notes'   => null,
-                        'mpan' => [
-                            'mc_mpan'    => '4287346823986423',
-                            'rupay_mpan' => '6287346823986423',
-                            'visa_mpan'  => '5287346823986423'
-                        ]
-                    ]
-                ]
-            ]
-        ]
-    ],
-
-    'testPartnerWithoutTerminalOnboardingFeatureShouldNotBeAbleToFetchTerminals'  => [
-        'request' => [
-            'method' => 'GET'
-        ],
-        'response' => [
-            'content'  => [
-                'error' => [
-                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description'   => 'Terminal onboarding feature is disabled',
-                ],
-            ],
-            'status_code' => 400
-        ],
-        'exception' => [
-            'class'               => RZP\Exception\BadRequestException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_TERMINAL_ONBOARDING_DISABLED
-        ],
-    ],
-
-    'testSubMerchantsShouldNotBeAbleToFetchTerminals'  => [
-        'request' => [
-            'method' => 'GET'
-        ],
-        'response' => [
-            'content'  => [
-                'error' => [
-                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description'   => 'Merchant is not a partner',
-                ],
-            ],
-            'status_code' => 400
-        ],
-        'exception' => [
-            'class'               => RZP\Exception\BadRequestException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_IS_NOT_PARTNER
-        ],
-    ],
-
-    'testTerminalOnboardingCreateTerminal' => [
-        'request' => [
-            'content' => [
-                'mpan' => [
-                  'mastercard'  => '5122600005005789',
-                  'visa'        => '4604901005005799',
-                  'rupay'       => '6100020005005792'
-                ]
-            ],
-            'method' => 'POST'
-        ],
-        'response' => [
-            'content'  => [
-                'entity'   => 'terminal',
-                'enabled'  => false,
-                'status'   => 'created',
-                'mpan'     => [
-                    'mc_mpan'       =>  '5122600005005789',
-                    'rupay_mpan'    =>  '6100020005005792',
-                    'visa_mpan'     =>  '4604901005005799'
-                ],
-            ]
-        ]
-    ],
-
-    'testTerminalOnboardingCreateTerminalForNonActivatedMerchant' => [
-        'request' => [
-            'content' => [
-                'mpan' => [
-                  'mastercard'  => '1234567880123456',
-                  'visa'        => '1234567890123456',
-                  'rupay'       => '1234567890123457'
-                ]
-            ],
-            'method' => 'POST'
-        ],
-        'response' => [
-            'content'  => [
-                'error' => [
-                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description'   => 'The merchant has not been activated. This action can only be taken for activated merchants',
-                ],
-            ],
-            'status_code' => 400
-        ],
-        'exception' => [
-            'class'               => RZP\Exception\BadRequestException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_NOT_ACTIVATED
-        ],
-    ],
-
-
-    'testTerminalOnboardingCreateTerminalWithSameFields' => [
-        'request' => [
-            'content' => [
-                'mpan' => [
-                    'mastercard'  => '5122600005005789',
-                    'visa'        => '4604901005005799',
-                    'rupay'       => '6100020005005792'
-                  ]
-            ],
-            'method' => 'POST'
-        ],
-        'response' => [
-            'content'  => [
-                'entity'   => 'terminal',
-                'enabled'  => false,
-                'status'   => 'created',
-                'mpan'     => [
-                    'mc_mpan'       =>  '5122600005005789',
-                    'rupay_mpan'    =>  '6100020005005792',
-                    'visa_mpan'     =>  '4604901005005799'
-                ]
-
-            ]
-        ]
-    ],
-
-    'testTerminalOnboardingCreateTerminalWithMpansNotIssued'    =>  [
-        'request' => [
-            'url'     => '/terminals',
-            'content' => [
-                'mpan' => [
-                    'mastercard'  => '1234567890123456',
-                    'visa'        => '2234567890123456',
-                    'rupay'       => '3234567890123456'
-                  ]
-            ],
-            'method' => 'POST'
-        ],
-        'response' => [
-            'content'  => [
-                'error' => [
-                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description'   => 'The MPAN used is not issued to your account.',
-                ],
-            ],
-            'status_code' => 400
-        ],
-        'exception' => [
-            'class'               => RZP\Exception\BadRequestException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_MPAN
-        ],
-    ],
-
-    'testTerminalOnboardingCreateTerminalWithSwappedNetworks'    =>  [
-        'request' => [
-            'url'     => '/terminals',
-            'content' => [
-                'mpan' => [
-                    'mastercard'  => '5122600005005789',
-                    'visa'        => '5122600005005961',
-                    'rupay'       => '6100020005005792'
-                  ]
-              ],
-            'method' => 'POST'
-        ],
-        'response' => [
-            'content'  => [
-                'error' => [
-                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description'   => 'The MPAN used does not belong to the network.',
-                ],
-            ],
-            'status_code' => 400
-        ],
-        'exception' => [
-            'class'               => RZP\Exception\BadRequestException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_MPAN_FOR_NETWORK
-        ],
-    ],
-
-    'testTerminalOnboardingCreateTerminalWithSwappedNetworks2' => [
-        'request' => [
-            'url'     => '/terminals',
-            'content' => [
-                'mpan' => [
-                    'mastercard'  => '4604901005005799',
-                    'visa'        => '5122600005005995',
-                    'rupay'       => '6100020005005792'
-                  ]
-              ],
-            'method' => 'POST'
-        ],
-        'response' => [
-            'content'  => [
-                'error' => [
-                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description'   => 'The MPAN used does not belong to the network.',
-                ],
-            ],
-            'status_code' => 400
-        ],
-        'exception' => [
-            'class'               => RZP\Exception\BadRequestException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_MPAN_FOR_NETWORK
-        ],
-    ],
-
-    // Used in all cases
-    'testTerminalOnboardingCreationCron'    =>  [
-        'request' => [
-            'method'  => 'POST',
-            'url'     => '/terminals/onboard/creation',
-            ],
-        'response'  => [
-            'content' => [],
-        ],
-    ],
-
-    'testTerminalOnboardingCreateTerminal2' => [
-        'request' => [
-            'content' => [
-                'mpan' => [
-                  'mastercard'  => '5122600005005813',
-                  'visa'        => '4604901005005823',
-                  'rupay'       => '6100020005005826'
-                ]
-            ],
-            'url'    => '/terminals',
-            'method' => 'POST'
-        ],
-        'response' => [
-            'content'  => [
-                'entity'   => 'terminal',
-                'enabled'  => false,
-                'status'   => 'created',
-                'mpan'     => [
-                    'mc_mpan'       =>  '5122600005005813',
-                    'rupay_mpan'    =>  '6100020005005826',
-                    'visa_mpan'     =>  '4604901005005823'
-                ]
-
-            ]
-        ]
-    ],
-
-    'testTerminalOnboardingVerificationCronCase1'    => [
-        'request' => [
-            'url'     => '/terminals/onboard/verification',
-            'content' => [
-                'count'    => 100,
-            ],
-            'method'  => 'POST',
-        ],
-        'response'  => [
-            'content'      => [
-                'activated_terminals'           =>  1,
-                'pending_terminals'             =>  0,
-                'activation_failed_terminals'   =>  0,
-                'not_applicable_terminals'      =>  0,
-                'verification_error_terminals'  =>  0,
-            ],
-            'status_code'  => 200,
-        ]
-    ],
-
-    'testTerminalOnboardingVerificationCronCase2'    => [
-        'request' => [
-            'url'     => '/terminals/onboard/verification',
-            'content' => [
-                'count'    => 100,
-            ],
-            'method'  => 'POST',
-        ],
-        'response'  => [
-            'content'      => [
-                'activated_terminals'           =>  0,
-                'pending_terminals'             =>  1,
-                'activation_failed_terminals'   =>  0,
-                'not_applicable_terminals'      =>  0,
-                'verification_error_terminals'  =>  0,
-            ],
-            'status_code'  => 200,
-        ]
-    ],
-
-    'testTerminalOnboardingVerificationCronCase3'    => [
-        'request' => [
-            'url'     => '/terminals/onboard/verification',
-            'content' => [
-                'count'    => 100,
-            ],
-            'method'  => 'POST',
-        ],
-        'response'  => [
-            'content'      => [
-                'activated_terminals'           =>  0,
-                'pending_terminals'             =>  0,
-                'activation_failed_terminals'   =>  1,
-                'not_applicable_terminals'      =>  0,
-                'verification_error_terminals'  =>  0,
-            ],
-            'status_code'  => 200,
-        ]
-    ],
-
     'testCreateTerminalWithWrongGatewayCase'  => [
         'request' => [
             'content' => [
@@ -3288,21 +2877,6 @@ return [
             'class'               => RZP\Exception\BadRequestValidationFailureException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
         ],
-    ],
-
-    'testUpdateTerminalOnboardingStatus' => [
-        'request'   => [
-            'url'     => '/terminal_onboarding_update_status',
-            'content' => [
-                ['termianl_ids_array']
-            ],
-            'method'  => 'PUT',
-        ],
-        'response'  => [
-            'content'     => [
-            ],
-            'status_code' => 200
-        ]
     ],
 
     'testCreateJuspayTerminal'                => [

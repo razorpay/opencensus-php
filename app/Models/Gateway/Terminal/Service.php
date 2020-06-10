@@ -4,6 +4,7 @@ namespace RZP\Models\Gateway\Terminal;
 
 use App;
 use Carbon\Carbon;
+use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Mode;
@@ -11,11 +12,12 @@ use RZP\Models\Terminal;
 use RZP\Constants\Environment;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Error\ErrorCode;
-use RZP\Exception\LogicException;
+use RZP\Models\Payment\Gateway;
 use RZP\Gateway\Hitachi\TerminalFields;
 use RZP\Models\TerminalOnboardingDetail;
 use RZP\Models\Merchant\Entity as Merchant;
 use RZP\Models\Gateway\Terminal\Constants as TerminalConstants;
+use RZP\Models\Terminal\Onboarding\Service as TerminalOnboardingService;
 
 const HITACHI_ONBOARDING_TERMINAlS_SERVICE = "hitachi_onboarding_terminals_service";
 const HITACHI_ONBOARDING_TERINALS_SERVICE_VARIANT = "terminals";
@@ -24,7 +26,6 @@ class Service extends Base\Service
 {
     const MERCHANT_ONBOARD                          = 'merchant_onboard';
     const GATEWAY_INPUT                             = 'gateway_input';
-    const TERMINAL                                  = 'terminal';
     const MUTEX_LOCK_TIMEOUT                        = '60';
 
     protected $mutex;
@@ -44,7 +45,7 @@ class Service extends Base\Service
 
         $gatewayInput = $input['gateway_input'];
 
-        $createTerminal = $this->shouldCreateTerminal($checkFeatureEnabled, $merchant->getId());
+        $createTerminal = $this->shouldCreateTerminal($checkFeatureEnabled, $merchant->getId(), $gateway);
 
         if ($createTerminal === false)
         {
@@ -55,24 +56,14 @@ class Service extends Base\Service
             TraceCode::MERCHANT_ONBOARD_REQUEST,
             [
                 'merchant_id' => $merchant->getId(),
-                'input'       => $input,
+                'input'       => $this->getMerchantOnboardingTrace($input),
             ]);
 
+        $shouldOnboardViaTerminalsService = $this->shouldOnboardMerchantViaTerminalsService($merchant);
 
-        $variantFlag = $this->app->razorx->getTreatment($merchant['id'], HITACHI_ONBOARDING_TERMINAlS_SERVICE, $this->mode);
-
-        $data = [
-            'feature'   => HITACHI_ONBOARDING_TERMINAlS_SERVICE,
-            'variant'   => $variantFlag,
-        ];
-
-        $this->trace->info(TraceCode::TERMINALS_SERVICE_ONBOARD_RESPONSE, $data);
-
-        $shouldUseTerminalService = ($variantFlag === HITACHI_ONBOARDING_TERINALS_SERVICE_VARIANT ? true : false);
-
-        if ($shouldUseTerminalService === true)
+        if ($shouldOnboardViaTerminalsService === true)
         {
-             return $this->onboardMerchantViaTerminalService($merchant, $input);
+            return $this->onboardMerchantsViaTerminalService($merchant, $input);
         }
 
         $gatewayProcessor = GatewayFactory::build($gateway);
@@ -86,7 +77,7 @@ class Service extends Base\Service
         return $this->performOnboarding($merchant, $gatewayProcessor, $gatewayInput, $merchantDetail);
     }
 
-    public function onboardMerchantViaTerminalService(Merchant $merchant, array $input)
+    public function onboardMerchantsViaTerminalService(Merchant $merchant, array $input)
     {
         $identifiers = null;
 
@@ -145,25 +136,26 @@ class Service extends Base\Service
 
                 $gatewayProcessor->checkDbConstraints($gatewayInput, $merchant);
 
-                $gatewayInput = $gatewayProcessor->getInputValue($gatewayInput, $merchant);
-
-                $gatewayData = [
-                    'gateway'          => $gateway,
-                    'merchant'         => $merchant,
-                    'merchant_details' => $merchantDetail,
-                    'gateway_input'    => $gatewayInput,
-                ];
+                $gatewayData = $gatewayProcessor->getGatewayData($gatewayInput, $merchant, $merchantDetail);
 
                 try
                 {
                     $terminalData = $this->app['gateway']->call('mozart',
-                        Constants::MERCHANT_ONBOARD,
+                        $gatewayProcessor->getGatewayActionName(),
                         $gatewayData,
                         $this->mode);
 
-                    $terminal = $gatewayProcessor->processTerminalData($terminalData, $merchant);
+                        $terminal = $gatewayProcessor->processTerminalData($terminalData, $merchant, $gatewayData);
 
                     return $terminal;
+                }
+                // We are catching gateway errors so that end-user see custom msg instead of "Payment processing failed due to error at bank or wallet gateway"
+                catch (Exception\GatewayErrorException $e)
+                {
+                    $this->trace->traceException($e, Trace::ERROR, TraceCode::MERCHANT_ONBOARD_REQUEST_FAILED, $gatewayInput);
+
+                    throw new Exception\GatewayErrorException(
+                        ErrorCode::GATEWAY_ERROR_TERMINAL_ONBOARDING_FAILED);
                 }
                 catch (\Throwable $e)
                 {
@@ -231,8 +223,13 @@ class Service extends Base\Service
         return $cronResponse;
     }
 
-    protected function shouldCreateTerminal(bool $checkFeatureEnabled, $merchantId)
+    protected function shouldCreateTerminal(bool $checkFeatureEnabled, $merchantId, $gateway)
     {
+        if ($gateway === Gateway::WORLDLINE)
+        {
+            return true;
+        }
+
         $isFunc = $this->app->environment(Environment::FUNC);
 
         if($isFunc === true){
@@ -289,6 +286,27 @@ class Service extends Base\Service
         return false;
     }
 
+    protected function shouldOnboardMerchantViaTerminalsService($merchant)
+    {
+        $variantFlag = $this->app->razorx->getTreatment($merchant['id'], HITACHI_ONBOARDING_TERMINAlS_SERVICE, $this->mode);
+
+        $data = [
+            'feature'   => HITACHI_ONBOARDING_TERMINAlS_SERVICE,
+            'variant'   => $variantFlag,
+        ];
+
+        $this->trace->info(TraceCode::TERMINALS_SERVICE_ONBOARD_RESPONSE, $data);
+
+        $shouldUseTerminalService = ($variantFlag === HITACHI_ONBOARDING_TERINALS_SERVICE_VARIANT ? true : false);
+
+        if ($shouldUseTerminalService === true)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
     // Creates onboarded terminal on actual gateway
     public function callGatewayForOnboardingAsync($terminal)
     {
@@ -335,7 +353,7 @@ class Service extends Base\Service
                 if ((is_null($terminalOnboardingDetail->getVerifyAt())) or
                     ($terminalOnboardingDetail->getVerifyAt() > $currentTimestamp))
                     {
-                        throw new LogicException('Terminal has already been processed');
+                        throw new Exception\LogicException('Terminal has already been processed');
                     }
 
                 $request = $gatewayProcessor->getGatewayRequestArrayForVerification($terminal);
@@ -383,5 +401,15 @@ class Service extends Base\Service
         $response = $this->app['gateway']->call($gateway, $action, $request, $this->mode, $terminal);
 
         $gatewayProcessor->raiseExceptionIfEnableOrDisableFails($response, $action);
+    }
+
+    protected function getMerchantOnboardingTrace($input)
+    {
+        if ($input['gateway'] === Gateway::WORLDLINE)
+        {
+            return (new TerminalOnboardingService)->getCreateTraceInput($input['gateway_input']);
+        }
+
+        return $input;
     }
 }

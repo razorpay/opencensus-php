@@ -429,10 +429,12 @@ class Service extends Base\Service
 
         unset($input['attributes']['enabled']);
 
-        if (($input['attributes']['status'] !== Terminal\Status::ACTIVATED) and ($enabled === true))
+        // TODO: make this usable by all gateways
+        if (($enabled === true) and 
+            (in_array($input['attributes']['status'], Terminal\Status::POSSIBLE_STATUS_FOR_WORLDLINE_ENABLED_TERMINAL) === false))
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_TERMINAL_STATUS_SHOULD_BE_ACTIVATED_TO_ENABLE);
+                ErrorCode::BAD_REQUEST_TERMINAL_STATUS_SHOULD_BE_ACTIVATED_OR_PENDING_TO_ENABLE);
         }
 
         $terminalIds = $input['terminal_ids'];
@@ -447,35 +449,21 @@ class Service extends Base\Service
             {
                 $terminal = $this->repo->terminal->findOrFailPublic($terminalId);
 
-                // We are not allowing created terminals to be updated because created terminal is yet to be sent to gateway
-                if ($terminal->getStatus() === Terminal\Status::CREATED)
-                {
-                    throw new Exception\BadRequestException(
-                        ErrorCode::BAD_REQUEST_CREATED_TERMINAL_CANNOT_BE_BULK_UPDATED);
-                }
-
                 $this->core()->edit($terminal, $input['attributes']);
 
                 $this->core()->toggle($terminal, $enabled);
 
-                $terminalOnboardingDetail = $terminal->terminalOnboardingDetail;
-
-                if ( ($terminalOnboardingDetail !== null) and isset($input['attributes'][Entity::STATUS]) )
+                // dispatch terminal.activated or terminal.failed webhook, if required
+                if (isset($input['attributes'][Entity::STATUS]) === true) 
                 {
                     if ($input['attributes'][Entity::STATUS] === Status::FAILED)
                     {
-                        $terminalOnboardingDetail->setStatus(TerminalOnboardingDetail\Status::FAILED);
-
                         $app['events']->fire('api.terminal.failed', ['main' => $terminal]);
                     }
                     else if ($input['attributes'][Entity::STATUS] === Status::ACTIVATED)
                     {
-                        $terminalOnboardingDetail->setStatus(TerminalOnboardingDetail\Status::ACTIVATED);
-
                         $app['events']->fire('api.terminal.activated', ['main' => $terminal]);
                     }
-
-                    $terminalOnboardingDetail->save();
                 }
 
                 $successCount++;

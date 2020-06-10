@@ -10,7 +10,9 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Terminal;
 use RZP\Models\Merchant;
 use RZP\Models\Terminal\Core;
+use RZP\Gateway\Mozart\Action;
 use RZP\Models\Payment\Gateway;
+use RZP\Models\Base\UniqueIdEntity;
 use Illuminate\Support\Facades\Redis;
 use RZP\Models\Gateway\Terminal\Constants;
 use RZP\Models\TerminalOnboardingDetail;
@@ -26,12 +28,14 @@ class GatewayProcessor extends BaseGatewayProcessor
     const WORLDLINE_MID_OFFSET                        = 999000000000000;
     const TERMINAL_ONBOARDING_VERIFICATION_MUTEX_LOCK = 'TERMINAL_ONBOARDING_VERIFICATION_MUTEX_LOCK';
 
-    // For worldline, if terminal_onboardnig_details status is one of below, then it means merchant is onboarded on gateway successfully
-    const MERCHANT_ONBOARDED_STATUSES                 =   [TerminalOnboardingDetail\Status::PENDING, TerminalOnboardingDetail\Status::ACTIVATED, TerminalOnboardingDetail\Status::ACTIVATION_FAILED];
+    // For worldline, if terminal status is one of below, then it means merchant is onboarded on gateway successfully
+    const MERCHANT_ONBOARDED_ON_GATEWAY_STATUSES      =   [Terminal\Status::PENDING, Terminal\Status::ACTIVATED, Terminal\Status::DEACTIVATED];
 
     protected $tidGenerator;
 
     protected $redisMidKey;
+
+    protected $gateway;
 
     public function __construct()
     {
@@ -46,52 +50,52 @@ class GatewayProcessor extends BaseGatewayProcessor
         $this->tidGenerator = new TidGenerator();
 
         $this->redisMidKey = $this->mode . '_' . self::WORLDLINE_MID_INDEX_KEY;
+
+        $this->gateway = Gateway::WORLDLINE;
     }
 
-    // GetInput Value (params) for terminal creation
-    public function getInputValue($gatewayInput, $subMerchant)
+    // get gateway request array
+    public function getGatewayData($input, $subMerchant, $merchantDetail)
     {
-        list($accountNumber, $ifscCode) = $this->getPartnerBankDetails();
+        // If the submerchant is already onboarded on gateway, then send additional tid request, otherwise send merchant-onboarding request
+        if ($this->isMerchantOnboardedOnGateway($subMerchant->getId()) === true)
+        {
+            return $this->getGatewayRequestArrayForAdditionalTerminalCreation($subMerchant, $input);
+        }
 
-        $terminalData = [
-            Terminal\Entity::STATUS              => Terminal\Status::CREATED,
-            Terminal\Entity::ENABLED             => 0,
-            Terminal\Entity::CATEGORY            => $subMerchant->getCategory(),
-            Terminal\Entity::ACCOUNT_NUMBER      => $accountNumber,
-            Terminal\Entity::IFSC_CODE           => $ifscCode,
-            Terminal\Entity::GATEWAY             => Gateway::WORLDLINE,
-            Terminal\Entity::GATEWAY_ACQUIRER    => Gateway::ACQUIRER_AXIS,
-            Terminal\Entity::GATEWAY_MERCHANT_ID => $this->generateMid($subMerchant),
-            Terminal\Entity::CARD                => '1',
-            Terminal\Entity::EXPECTED            => '1',
-            Terminal\Entity::GATEWAY_TERMINAL_ID => $this->tidGenerator->generateTid(),
-            Terminal\Entity::TYPE                => [
-                                                        Terminal\Type::NON_RECURRING                 => '1',
-                                                        Terminal\Type::BHARAT_QR                     => '1',
-                                                        Terminal\Type::DIRECT_SETTLEMENT_WITH_REFUND => '1',
-                                                    ],
-        ];
-
-        $terminalData[Terminal\Entity::MC_MPAN] = $gatewayInput[Constants::MPAN][Constants::MASTERCARD];
-
-        $terminalData[Terminal\Entity::VISA_MPAN] = $gatewayInput[Constants::MPAN][Constants::VISA];
-
-        $terminalData[Terminal\Entity::RUPAY_MPAN] = $gatewayInput[Constants::MPAN][Constants::RUPAY];
-
-        return $terminalData;
+        return $this->getGatewayRequestArrayForMerchantOnboarding($subMerchant, $input);        
     }
 
-    public function processTerminalData($terminalData, $merchant)
+    public function processTerminalData($terminalResponseData, $subMerchant, $gatewayInput)
     {
-        $terminal = (new Core)->create($terminalData, $merchant);
+        if (isset($terminalResponseData[Constants::SUCCESS]) === true and $terminalResponseData[Constants::SUCCESS] === true)
+        {
+            $terminalParams = $this->getTerminalCreationParams($gatewayInput, $subMerchant);
 
-        $this->assignRequisiteFeatures($merchant);
+            $terminal = (new Core)->create($terminalParams, $subMerchant);
+    
+            $this->assignRequisiteFeatures($subMerchant);
+        
+            return $terminal;    
+        }
 
-        (new TerminalOnboardingDetail\Core)->create([], $terminal);
+        $errorCode = ErrorCode::GATEWAY_ERROR_UNKNOWN_ERROR;
+        $errorMsg = '';
 
-        return $terminal;
+        if (isset($terminalResponseData[Constants::ERROR][Constants::INTERNAL_ERROR_CODE]) === true)
+        {
+            $errorCode = $terminalResponseData[Constants::ERROR][Constants::INTERNAL_ERROR_CODE];
+        }
+
+        if (isset($terminalResponseData[Constants::DATA][Constants::DESCRIPTION]) === true)
+        {
+            $errorMsg = $terminalResponseData[Constants::DATA][Constants::DESCRIPTION];
+        }
+
+        throw new Exception\BadRequestException(
+            $errorCode,
+            null, null, $errorMsg);
     }
-
 
     public function validateGatewayInput($gatewayInput, $merchantDetail)
     {
@@ -111,7 +115,7 @@ class GatewayProcessor extends BaseGatewayProcessor
             function() use ($input, $merchant)
             {
                 $terminalData = [
-                    Terminal\Entity::GATEWAY               => Gateway::WORLDLINE,
+                    Terminal\Entity::GATEWAY               => $this->gateway,
                     Terminal\Entity::GATEWAY_ACQUIRER      => Gateway::ACQUIRER_AXIS,
                     Terminal\Entity::GATEWAY_MERCHANT_ID   => '999999999999',
                     Terminal\Entity::GATEWAY_TERMINAL_ID   => '12345678',
@@ -137,20 +141,7 @@ class GatewayProcessor extends BaseGatewayProcessor
         return $terminal->getId() . '_' . self::TERMINAL_ONBOARDING_VERIFICATION_MUTEX_LOCK;
     }
 
-    public function getGatewayRequestArrayForCreation($terminal)
-    {
-        $subMerchant = $terminal->merchant;
-
-        // If the submerchant is already onboarded on gateway, then send additional tid request, otherwise send merchant-onboarding request
-        if ($this->isMerchantOnboardedOnGateway($subMerchant->getId()) === true)
-        {
-            return $this->getGatewayRequestArrayForAdditionalTerminalCreation($terminal, $subMerchant);
-        }
-
-        return $this->getGatewayRequestArrayForMerchantOnboarding($terminal, $subMerchant);
-    }
-
-    protected function getGatewayRequestArrayForMerchantOnboarding($terminal, $subMerchant)
+    protected function getGatewayRequestArrayForMerchantOnboarding($subMerchant, $input)
     {
         $partnerMerchant = $this->repo->merchant->getPartnerMerchantFromSubMerchantId($subMerchant->getId());
 
@@ -163,39 +154,80 @@ class GatewayProcessor extends BaseGatewayProcessor
         $gatewayRequestArray = [
             'method'                    => "POST",
             'request_type'              => 'N',
-            'gateway'                   => $terminal->getGateway(),
-            'terminal'                  => $terminal->toArrayWithPassword(),
+            'gateway'                   => $this->gateway,
+            'terminal'                  => $this->getTerminalData($subMerchant, $input),
             'merchant'                  => $subMerchant->toArray(),
             'merchant_details'          => $merchantDetail,
             'category_details'          => $this->getCategoryDetails($subMerchant),
             'partner_merchant'          => $partnerMerchant,
             'partner_merchant_details'  => $partnerMerchantDetail,
-            'request_details'           => $this->getRequestDetails($terminal),
+            'request_details'           => $this->getRequestDetails(),
             'bank_details'              => $partnerMerchant->bankAccount->toArrayPublic(),
-            'pricing_details'           => $this->getPricingDetails($terminal),
+            'pricing_details'           => $this->getPricingDetails($subMerchant),
             'other_details'             => $this->getPartnerOtherDetails(),
         ];
 
         return $gatewayRequestArray;
     }
 
-    protected function getGatewayRequestArrayForAdditionalTerminalCreation($terminal, $subMerchant)
+    protected function getGatewayRequestArrayForAdditionalTerminalCreation($subMerchant, $input)
     {
         $gatewayRequestArray = [
             'method'                    => 'POST',
             'request_type'              =>  'A',
-            'gateway'                   => $terminal->getGateway(),
-            'terminal'                  => $terminal->toArrayWithPassword() ,
-            'request_details'           => $this->getRequestDetails($terminal),
+            'gateway'                   => $this->gateway,
+            'terminal'                  => $this->getTerminalData($subMerchant, $input),
+            'request_details'           => $this->getRequestDetails(),
             'other_details'             => $this->getPartnerOtherDetails(),
         ];
 
         return $gatewayRequestArray;
     }
 
+    protected function getTerminalData($subMerchant, $input)
+    {
+        return [
+            Terminal\Entity::MC_MPAN             => $input[Constants::MPAN][Constants::MASTERCARD],
+            Terminal\Entity::VISA_MPAN           => $input[Constants::MPAN][Constants::VISA],
+            Terminal\Entity::RUPAY_MPAN          => $input[Constants::MPAN][Constants::RUPAY],
+            Terminal\Entity::GATEWAY_MERCHANT_ID => $this->generateMid($subMerchant),
+            Terminal\Entity::GATEWAY_TERMINAL_ID => $this->tidGenerator->generateTid(),
+        ];
+    }
+
+    protected function getTerminalCreationParams($gatewayInput, $subMerchant)
+    {
+        list($accountNumber, $ifscCode) = $this->getPartnerBankDetails();
+
+        $terminalData = [
+            Terminal\Entity::STATUS              => Terminal\Status::PENDING,
+            Terminal\Entity::ENABLED             => 1,
+            Terminal\Entity::CATEGORY            => $subMerchant->getCategory(),
+            Terminal\Entity::ACCOUNT_NUMBER      => $accountNumber,
+            Terminal\Entity::IFSC_CODE           => $ifscCode,
+            Terminal\Entity::GATEWAY             => Gateway::WORLDLINE,
+            Terminal\Entity::GATEWAY_ACQUIRER    => Gateway::ACQUIRER_AXIS,
+            Terminal\Entity::GATEWAY_MERCHANT_ID => $gatewayInput[Constants::TERMINAL][Terminal\Entity::GATEWAY_MERCHANT_ID],
+            Terminal\Entity::CARD                => '1',
+            Terminal\Entity::EXPECTED            => '1',
+            Terminal\Entity::GATEWAY_TERMINAL_ID => $gatewayInput[Constants::TERMINAL][Terminal\Entity::GATEWAY_TERMINAL_ID],
+            Terminal\Entity::TYPE                => [
+                                                        Terminal\Type::NON_RECURRING                 => '1',
+                                                        Terminal\Type::BHARAT_QR                     => '1',
+                                                        Terminal\Type::DIRECT_SETTLEMENT_WITH_REFUND => '1',
+                                                    ],
+
+            Terminal\Entity::MC_MPAN             => $gatewayInput[Constants::TERMINAL][Terminal\Entity::MC_MPAN],
+            Terminal\Entity::VISA_MPAN           => $gatewayInput[Constants::TERMINAL][Terminal\Entity::VISA_MPAN],
+            Terminal\Entity::RUPAY_MPAN          => $gatewayInput[Constants::TERMINAL][Terminal\Entity::RUPAY_MPAN],
+        ];
+
+        return $terminalData;
+    }
+
     public function getGatewayRequestArrayForEnableOrDisable($terminal)
     {
-        $uniqueRrn = $terminal->getId() . Carbon::now()->timestamp;
+        $uniqueRrn = UniqueIdEntity::generateUniqueId();
 
         $gatewayRequestArray = [
             'req_rrn'               =>  $uniqueRrn,
@@ -218,6 +250,13 @@ class GatewayProcessor extends BaseGatewayProcessor
                 if ((isset($response[Constants::DATA][Constants::STATUS]) === false) or
                     ($response[Constants::DATA][Constants::STATUS] !== Constants::TERMINAL_REACTIVATION_SUCCESSFUL))
                     {
+                        // If somehow, terminal is already enabled and we are again trying to reenable it, then return from here
+                        if ((isset($response[Constants::DATA][Constants::DESCRIPTION]) === true) and
+                        ($response[Constants::DATA][Constants::DESCRIPTION] === Constants::MERCHANT_IS_ALREADY_IN_ACTIVE_STATE))
+                            {
+                                return;
+                            }
+
                         throw new Exception\BadRequestException(
                             ErrorCode::GATEWAY_ERROR_TERMINAL_ENABLE_FAILED, null, $response);
                     }
@@ -226,6 +265,13 @@ class GatewayProcessor extends BaseGatewayProcessor
                 if ((isset($response[Constants::DATA][Constants::STATUS]) === false) or
                     ($response[Constants::DATA][Constants::STATUS] !== Constants::TERMINAL_DEACTIVATION_SUCCESSFUL))
                     {
+                        // If somehow, terminal is already deactive and we are again trying to disable it, then return from here
+                        if ((isset($response[Constants::DATA][Constants::DESCRIPTION]) === true) and
+                        ($response[Constants::DATA][Constants::DESCRIPTION] === Constants::MERCHANT_IS_ALREADY_IN_DEACTIVE_STATE))
+                            {
+                                return;
+                            }
+                        
                         throw new Exception\BadRequestException(
                             ErrorCode::GATEWAY_ERROR_TERMINAL_DISABLE_FAILED, null, $response);
                     }
@@ -408,9 +454,9 @@ class GatewayProcessor extends BaseGatewayProcessor
         return [$partnerBankAccountNumber, $partnerBankIfscCode];
     }
 
-    protected function getRequestDetails($terminal)
+    protected function getRequestDetails()
     {
-        $reqDetails['req_rrn'] = $terminal->terminalOnboardingDetail->getReqRrn();
+        $reqDetails['req_rrn'] = UniqueIdEntity::generateUniqueId();
 
         return $reqDetails;
     }
@@ -426,10 +472,8 @@ class GatewayProcessor extends BaseGatewayProcessor
         return $details;
     }
 
-    protected function getPricingDetails($terminal)
+    protected function getPricingDetails($merchant)
     {
-        $merchant = $terminal->merchant;
-
         $mcc = (int) $merchant->getCategory();
 
         return Merchant\Detail\FreechargeWorldlineOnboardingDetails::getMccPricing($mcc);
@@ -438,7 +482,7 @@ class GatewayProcessor extends BaseGatewayProcessor
     protected function generateMid($subMerchant)
     {
         $params = [ Terminal\Entity::MERCHANT_ID => $subMerchant->getId(),
-                    Terminal\Entity::GATEWAY     =>  Gateway::WORLDLINE ];
+                    Terminal\Entity::GATEWAY     => $this->gateway ];
 
         // Existing terminals of this submerchant of this gateway
         $existingTerminals = $this->repo->terminal->getByParams($params);
@@ -462,13 +506,13 @@ class GatewayProcessor extends BaseGatewayProcessor
 
     /**
      * Belopw method checks whether the submerchant is actually onboarded on worldline gateway or not
-     * A sub-merchant is actually on gateway if any of its terminalondetails status is pending, activated or activation_failed
+     * A sub-merchant is actually on gateway if any of its terminal's status is pending, activated or deactivated
      */
     protected function isMerchantOnboardedOnGateway($subMerchantId)
     {
-        $merchantOnboardedTerminalOnboardingDetails = $this->repo->terminal_onboarding_detail->fetchByMerchantIdAndStatus($subMerchantId, self::MERCHANT_ONBOARDED_STATUSES);
+        $terminals = $this->repo->terminal->fetchByMerchantIdGatewayAndStatus($subMerchantId, $this->gateway, self::MERCHANT_ONBOARDED_ON_GATEWAY_STATUSES);
 
-        if (count($merchantOnboardedTerminalOnboardingDetails) === 0)
+        if (count($terminals) === 0)
         {
             return false;
         }
@@ -478,12 +522,20 @@ class GatewayProcessor extends BaseGatewayProcessor
 
     protected function assignRequisiteFeatures($merchant)
     {
-        $featureParam = [
-            Feature\Entity::ENTITY_TYPE => $merchant->getEntityName(),
-            Feature\Entity::ENTITY_ID   => $merchant->getId(),
-            Feature\Entity::NAME        => Feature\Constants::BHARAT_QR,
-        ];
+        if ($merchant->isFeatureEnabled(Feature\Constants::BHARAT_QR) === false)
+        {            
+            $featureParam = [
+                Feature\Entity::ENTITY_TYPE => $merchant->getEntityName(),
+                Feature\Entity::ENTITY_ID   => $merchant->getId(),
+                Feature\Entity::NAME        => Feature\Constants::BHARAT_QR,
+            ];
+    
+            (new Feature\Core)->create($featureParam, true);    
+        }
+    }
 
-        (new Feature\Core)->create($featureParam, true);
+    public function getGatewayActionName()
+    {
+        return Action::CREATE_TERMINAL;
     }
 }

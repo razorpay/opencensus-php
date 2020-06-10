@@ -1453,23 +1453,9 @@ class TerminalTest extends TestCase
             'enabled'   =>  false,
         ]);
 
-        $terminalOnboardingDetail = $this->fixtures->create('terminal_onboarding_detail', [
-            'terminal_id'       => $terminal->getId(),
-            'status'            => 'pending',
-            'attempts'          => 0,
-            'verify_bucket'     => 0,
-        ]);
-
         $terminal2 = $this->fixtures->create('terminal', [
-            'status'    =>  'pending',
+            'status'    =>  'activated',
             'gateway'   =>  'worldline',
-        ]);
-
-        $terminalOnboardingDetail2 = $this->fixtures->create('terminal_onboarding_detail', [
-            'terminal_id'       => $terminal2->getId(),
-            'status'            => 'pending',
-            'attempts'          => 0,
-            'verify_bucket'     => 0,
         ]);
 
         $this->testData[__FUNCTION__]['request']['content'] = [
@@ -1482,17 +1468,11 @@ class TerminalTest extends TestCase
             ]
         ];
 
-        $response = $this->startTest();
+        $this->startTest();
 
         $updatedTerminal = $this->getEntityById(
             'terminal',
             $terminal->getId(),
-            true
-        );
-
-        $updatedTerminalOnboardingDetail = $this->getEntityById(
-            'terminal_onboarding_detail',
-            $terminalOnboardingDetail->getId(),
             true
         );
 
@@ -1502,19 +1482,100 @@ class TerminalTest extends TestCase
             true
         );
 
-        $updatedTerminalOnboardingDetail2 = $this->getEntityById(
-            'terminal_onboarding_detail',
-            $terminalOnboardingDetail2->getId(),
+        $this->assertEquals($updatedTerminal['status'], 'activated');
+        $this->assertEquals($updatedTerminal['enabled'], true);
+        $this->assertEquals($updatedTerminal2['status'], 'activated');
+    }
+
+    public function testUpdateTerminalsBulkTryEnablingFailedTerminal()
+    {
+        $this->ba->adminAuth();
+
+        $terminal = $this->fixtures->create('terminal', [
+            'status'    =>  'pending',
+            'gateway'   =>  'worldline',
+            'enabled'   =>  false,
+        ]);
+
+        $terminal2 = $this->fixtures->create('terminal', [
+            'status'    =>  'activated',
+            'gateway'   =>  'worldline',
+        ]);
+
+        // sending enabled true with status failed in request, should not be allowed
+        $this->testData[__FUNCTION__]['request']['content'] = [
+            'terminal_ids'  =>  [
+                $terminal['id'], $terminal2['id'], 'notexisttermid'
+            ],
+            'attributes'    =>  [
+                'status'    =>  'failed',
+                'enabled'   =>  true
+            ]
+        ];
+
+        $this->startTest();
+
+        $updatedTerminal = $this->getEntityById(
+            'terminal',
+            $terminal->getId(),
             true
         );
 
-        $this->assertEquals($updatedTerminal['status'], 'activated');
-        $this->assertEquals($updatedTerminal['enabled'], true);
-        $this->assertEquals($updatedTerminalOnboardingDetail['status'], 'activated');
+        $updatedTerminal2 = $this->getEntityById(
+            'terminal',
+            $terminal2->getId(),
+            true
+        );
+
+        // nothing should have updated
+        $this->assertEquals($updatedTerminal['status'], 'pending');
+        $this->assertEquals($updatedTerminal['enabled'], false);
         $this->assertEquals($updatedTerminal2['status'], 'activated');
-        $this->assertEquals($updatedTerminalOnboardingDetail2['status'], 'activated');
     }
 
+    public function testUpdateTerminalsBulkTryStatusUpdateWithoutEnableField()
+    {
+        $this->ba->adminAuth();
+
+        $terminal = $this->fixtures->create('terminal', [
+            'status'    =>  'pending',
+            'gateway'   =>  'worldline',
+            'enabled'   =>  false,
+        ]);
+
+        $terminal2 = $this->fixtures->create('terminal', [
+            'status'    =>  'activated',
+            'gateway'   =>  'worldline',
+        ]);
+
+        $this->testData[__FUNCTION__]['request']['content'] = [
+            'terminal_ids'  =>  [
+                $terminal['id'], $terminal2['id'], 'notexisttermid'
+            ],
+            'attributes'    =>  [
+                'status'    =>  'activated',
+            ]
+        ];
+
+        $this->startTest();
+
+        $updatedTerminal = $this->getEntityById(
+            'terminal',
+            $terminal->getId(),
+            true
+        );
+
+        $updatedTerminal2 = $this->getEntityById(
+            'terminal',
+            $terminal2->getId(),
+            true
+        );
+
+        // nothing should have updated
+        $this->assertEquals($updatedTerminal['status'], 'pending');
+        $this->assertEquals($updatedTerminal['enabled'], false);
+        $this->assertEquals($updatedTerminal2['status'], 'activated');
+    }
 
     public function testQueryCacheforTerminals()
     {

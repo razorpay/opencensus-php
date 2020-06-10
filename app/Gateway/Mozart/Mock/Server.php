@@ -618,12 +618,19 @@ class Server extends Base\Mock\Server
 
     public function createTerminal($body)
     {
+        $reqjson = json_decode($body, true);
+
+        $reqType = $reqjson['entities']['request_type'];
+
         $mockCase = $this->app['config']->get('worldline_terminal_onboarding_creation.case');
 
         switch ($mockCase)
         {
             case "1":
             default:
+                // asserts that req_type is 'N' for first onboarding request
+                assert($reqType === 'N');
+
                 $responseBody = [
                     'data' => [
                         'description'   => "SUCCESS",
@@ -729,6 +736,37 @@ class Server extends Base\Mock\Server
                     "success" => false
                 ];
                 break;
+                case "7":
+                    // if request reached here, it means checkDbConstraints did not through exception, throwing exception here to fail test
+                    // this is necessary to confirm that error is raised while creating terminal in checkDbConstraints and not by creating actual terminal after receiving gateway response
+                    throw new Exception\LogicException('Request should not have reached here');
+                break;    
+                case "8":                    
+                    // asserts that req_type is 'A' for additional tid flow instead of 'N' 
+                    assert($reqType === 'A');
+
+                    $responseBody = [
+                        'data' => [
+                            'description'   => "SUCCESS",
+                            'res_code'      => "00",
+                            'retry'         =>  "false",
+                            'status'        => "terminal_creation_successful",
+                            '_raw'          => "{\"TID\":\"9137251R\",\"REQRRN\":null,\"RESDTTM\":\"23082019134719\",\"RESCODE\":\"00\",\"RESDESC\":\"Success\",\"REQTYPE\":\"N\",\"BANKCODE\":\"00031\",\"MID\":\"999122000040351\"}"
+                        ],
+                        'error'             => [],
+                        'external_trace_id' => "",
+                        'mozart_id'         => "blfq216r1gunssphbs01",
+                        'next'              => null,
+                        'success'           => true
+                    ];
+                break;
+                case "9":
+                    $ex = new Exception\GatewayErrorException(
+                        ErrorCode::GATEWAY_ERROR_FATAL_ERROR);
+                    throw $ex;
+                break;
+
+        
 
 
         }
@@ -927,7 +965,29 @@ class Server extends Base\Mock\Server
                 'next'              => null,
                 'success'           => false,
             ];
-
+            break;
+            case "3":
+                $responseBody = [
+                    'data' => [
+                    'raw'           => "{\"BANKCODE\":\"00031\",\"MID\":\"999000000000072\",\"TID\":\"12380330\",\"REQRRN\":\"DyQMfdzfyAybZ31577778271\",\"RESDTTM\":\"31122019011432\",\"RESCODE\":\"05\",\"RESDESC\":\"Merchant is already in deactive state\",\"REQTYPE\":\"D\"}",
+                    'description'   => "Merchant is already in deactive state",
+                    'res_code'      => '05',
+                    'retry'         => "false",
+                    'status'        => 'terminal_deactivation_failed'
+                ],
+                'error'             => [
+                    'description'               =>  "GATEWAY_ERROE",
+                    'gateway_error_code'        =>  "05",
+                    'gateway_error_description' =>  "GATEWAY_ERROR",
+                    'gateway_status_code'       =>  200,
+                    'internal_error_code'       =>  "GATEWAY_ERROR_INVALID_DATA"
+                ],
+                'external_trace_id' => "1af7c9e0b229bbc862afd7e1ccd19cdf",
+                'mozart_id'         => 'bo5foo6ef6s0qcbubbs0',
+                'next'              => null,
+                'success'           => false,
+            ];
+            break;
         }
 
 
@@ -973,6 +1033,29 @@ class Server extends Base\Mock\Server
                 'success'           => false,
             ];
             break;
+            case "3":
+                $responseBody = [
+                    'data' => [
+                    'raw'           => "{\"BANKCODE\":\"00031\",\"MID\":\"999000000000072\",\"TID\":\"12380330\",\"REQRRN\":\"DyQMfdzfyAybZ31577778271\",\"RESDTTM\":\"31122019011432\",\"RESCODE\":\"05\",\"RESDESC\":\"Merchant is already in deactive state\",\"REQTYPE\":\"D\"}",
+                    'description'   => "Merchant is already in active state",
+                    'res_code'      => '05',
+                    'retry'         => "false",
+                    'status'        => 'terminal_reactivation_failed'
+                ],
+                'error'             => [
+                    'description'               =>  "GATEWAY_ERROE",
+                    'gateway_error_code'        =>  "05",
+                    'gateway_error_description' =>  "GATEWAY_ERROR",
+                    'gateway_status_code'       =>  200,
+                    'internal_error_code'       =>  "GATEWAY_ERROR_INVALID_DATA"
+                ],
+                'external_trace_id' => "1af7c9e0b229bbc862afd7e1ccd19cdf",
+                'mozart_id'         => 'bo5foo6ef6s0qcbubbs0',
+                'next'              => null,
+                'success'           => false,
+            ];
+            break;
+
         }
 
         $response = \Response::make($responseBody);

@@ -1037,18 +1037,9 @@ class ApiEventSubscriber extends Base\Core
 
     protected function getTerminalFailedPayload(Terminal\Entity $terminal): array
     {
-        $terminalOnboardingDetail = $terminal->terminalOnboardingDetail;
-
-        $terminalArray = $terminal->toArrayPublic();
-
-        // TODO: Instead of generic error code, add specific error codes.
-        $terminalArray['error_code'] = Error\TerminalOnboarding\ErrorCode::SERVER_ERROR_TERMINAL_ONBOARDING_FAILED;
-
-        $terminalArray['error_description'] = $terminalOnboardingDetail->getErrorDescription();
-
         $payload = [
             Constants\Entity::TERMINAL => [
-                'entity' => $terminalArray,
+                'entity' => $terminal->toArrayPublic(),
             ]
         ];
 

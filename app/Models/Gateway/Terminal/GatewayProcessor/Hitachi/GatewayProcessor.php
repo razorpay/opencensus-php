@@ -7,6 +7,7 @@ use RZP\Exception;
 use RZP\Trace\TraceCode;
 use RZP\Models\Terminal\Type;
 use RZP\Models\Terminal\Core;
+use RZP\Gateway\Mozart\Action;
 use RZP\Models\Terminal\Entity;
 use RZP\Constants\IndianStates;
 use RZP\Constants\Entity as Constants;
@@ -31,7 +32,7 @@ class GatewayProcessor extends BaseGatewayProcessor
         $this->gateway = Constants::HITACHI;
     }
 
-    public function getInputValue($gateWayInput, $merchant)
+    public function getGatewayData($gateWayInput, $merchant, $merchantDetail)
     {
         $newIndex = $this->redis->incr(self::HITACHI_INDEX_KEY);
 
@@ -57,7 +58,14 @@ class GatewayProcessor extends BaseGatewayProcessor
             'trans_mode'    => $transMode
         ];
 
-        return $gateWayInput;
+        $gatewayData = [
+            'gateway'          => $this->gateway,
+            'merchant'         => $merchant,
+            'merchant_details' => $merchantDetail,
+            'gateway_input'    => $gateWayInput,
+        ];
+
+        return $gatewayData;
     }
 
     public function addDefaultValueToMerchantDetailIfApplicable(array &$merchantDetail)
@@ -100,7 +108,7 @@ class GatewayProcessor extends BaseGatewayProcessor
         return $shouldUpdate;
     }
 
-    public function processTerminalData($terminalData, $merchant)
+    public function processTerminalData($terminalData, $merchant, $gateWayInput)
     {
         $this->setTerminalType($terminalData);
 
@@ -189,8 +197,13 @@ class GatewayProcessor extends BaseGatewayProcessor
 
         $transMode = $gatewayInput['trans_mode'];
 
-        $mcc = $gateWayInput['mcc'] ?? $merchant->getCategory();
+        $mcc = $gatewayInput['mcc'] ?? $merchant->getCategory();
 
         return 'merchantOnBoard_' . $merchant->getId() . '_' . $gateway . '_' . $currencyCode . '_' . $transMode . '_' . $mcc;
+    }
+
+    public function getGatewayActionName()
+    {
+        return Action::MERCHANT_ONBOARD;
     }
 }

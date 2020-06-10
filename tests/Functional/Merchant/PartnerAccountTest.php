@@ -271,12 +271,6 @@ class PartnerAccountTest extends TestCase
             ],
         ]);
 
-        $this->fixtures->on('live')->create('terminal_onboarding_detail', [
-            'terminal_id'       => $terminal->getId(),
-            'status'            => 'activated',
-            'verify_bucket'     => 0,
-        ]);
-
         $this->app['config']->set('gateway.mock_mozart', true);
 
         // disable account
@@ -291,8 +285,6 @@ class PartnerAccountTest extends TestCase
         $this->assertEquals($terminal['enabled'], false);
 
         $this->assertEquals($terminal['status'], 'deactivated');
-
-        $this->assertEquals($terminal->terminalOnboardingDetail['status'], 'deactivated');
 
         // enable account
         $testData = $this->testData[__FUNCTION__];

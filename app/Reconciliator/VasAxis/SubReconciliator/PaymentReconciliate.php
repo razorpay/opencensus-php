@@ -274,7 +274,8 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         $gatewayMerchantId = $input[self::COLUMN_MERCHANT_ID];
         $gatewayTerminalId = $input[self::COLUMN_TERMINAL_NUMBER];
 
-        $terminal = $this->repo->terminal->findActivatedTerminalByGatewayMerchantIdAndGatewayTerminalId($gatewayMerchantId,
+        // For worldline, every terminal have unique gateway_terminal_id
+        $terminal = $this->repo->terminal->findTerminalByGatewayMerchantIdAndGatewayTerminalId($gatewayMerchantId,
                                                                                                         $gatewayTerminalId,
                                                                                                 Gateway::WORLDLINE
         );

@@ -272,15 +272,6 @@ class Core extends Base\Core
 
         $terminal->save();
 
-        $terminalOnboardingDetail = $terminal->terminalOnboardingDetail;
-
-        if (empty($terminalOnboardingDetail) === false)
-        {
-            $terminalOnboardingDetail->setStatus(TerminalOnboardingDetail\Status::DEACTIVATED);
-
-            $terminalOnboardingDetail->save();
-        }
-
         return $terminal;
     }
 

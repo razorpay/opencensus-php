@@ -21,6 +21,8 @@ class Constants
     const VISA       = 'visa';
     const MASTERCARD = 'mastercard';
     const RUPAY      = 'rupay';
+    const TERMINAL   = 'terminal';
+
 
     // Default merchant details for merchant onboarding
     const DEFAULT_BUSINESS_OPERATION_ADDRESS      = 'SJR Cyber Laskar, Hosur Rd, Opp Adugodi Police Station, Bengaluru';
@@ -49,6 +51,9 @@ class Constants
     const TERMINAL_ACTIVATION_FAILED              =   'terminal_activation_failed';
     const TERMINAL_DEACTIVATION_SUCCESSFUL        =   'terminal_deactivation_successful';
     const TERMINAL_REACTIVATION_SUCCESSFUL        =   'terminal_reactivation_successful';
+
+    const MERCHANT_IS_ALREADY_IN_DEACTIVE_STATE   =   'Merchant is already in deactive state';
+    const MERCHANT_IS_ALREADY_IN_ACTIVE_STATE     =   'Merchant is already in active state';
 
     // cron Response
     const ACTIVATED_TERMINALS                     =   'activated_terminals';

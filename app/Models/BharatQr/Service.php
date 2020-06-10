@@ -128,7 +128,9 @@ class Service extends Base\Service
 
                         $gatewayMpan = $gatewayResponse[GatewayResponseParams::MPAN];
 
-                        $terminal = $this->repo->terminal->findActivatedTerminalByMpanAndGatewayMerchantId($gatewayMerchantId, $gateway, $gatewayMpan);
+                        // if push payment request came, it means terminal is already activated on gateway, we need to find enabled terminal on our end.
+                        // For worldline, only pending or activated terminal can have enabled true
+                        $terminal = $this->repo->terminal->findEnabledTerminalByMpanAndGatewayMerchantId($gatewayMerchantId, $gateway, $gatewayMpan);
                     }
                 }
                 else

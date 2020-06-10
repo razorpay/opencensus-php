@@ -1642,38 +1642,6 @@ return [
         ],
     ],
 
-    'testTerminalOnboardingCreationWebhook' => [
-        'request' => [
-            'url'     => '/terminals/onboard/creation',
-            'content' => [
-                'count'    => 100,
-            ],
-            'method'  => 'POST',
-        ],
-        'response'  => [
-            'content'      => [],
-            'status_code'  => 200,
-        ],
-    ],
-
-    'testTerminalOnboardingCreationWebhookData' => [
-        'mode' => 'test',
-        'event' => [
-            'entity' => 'event',
-            'event' => 'terminal.created',
-            'contains' => ['terminal'],
-            'payload' => [
-                'terminal' => [
-                    'entity' => [
-                        'entity'            => 'terminal',
-                        'status'            => 'pending',
-                        'enabled'           =>  true,
-                    ],
-                ],
-            ],
-        ],
-    ],
-
     'testTerminalOnboardingVerificationWebhook' => [
         'request' => [
             'url'     => '/terminals/onboard/verification',
@@ -1700,40 +1668,6 @@ return [
                         'entity'            => 'terminal',
                         'status'            => 'activated',
                         'enabled'           =>  true,
-                    ],
-                ],
-            ],
-        ],
-    ],
-
-    'testTerminalOnboardingCreationFailedWebhook' => [
-        'request' => [
-            'url'     => '/terminals/onboard/creation',
-            'content' => [
-                'count'    => 100,
-            ],
-            'method'  => 'POST',
-        ],
-        'response'  => [
-            'content'      => [],
-            'status_code'  => 200,
-        ],
-    ],
-
-    'testTerminalOnboardingCreationFailedWebhookData' => [
-        'mode' => 'test',
-        'event' => [
-            'entity' => 'event',
-            'event' => 'terminal.failed',
-            'contains' => ['terminal'],
-            'payload' => [
-                'terminal' => [
-                    'entity' => [
-                        'entity'            => 'terminal',
-                        'status'            => 'failed',
-                        'enabled'           =>  false,
-                        'error_code'        => 'SERVER_ERROR_TERMINAL_ONBOARDING_FAILED',
-                        'error_description' => 'Duplicate MVISAPAN',
                     ],
                 ],
             ],
