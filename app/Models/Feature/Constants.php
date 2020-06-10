@@ -300,6 +300,11 @@ class Constants
      */
     const AGGREGATOR_OAUTH_CLIENT       = 'aggregator_oauth_client';
 
+    /**
+     * Gives access to los service
+     */
+    const LOAN = 'loan';
+
     // Different actions for feature activation flow
     const CREATE           = 'create';
     const UPDATE           = 'update';
@@ -603,6 +608,7 @@ class Constants
         self::UPI_OTM                         => true,
         self::CHARGE_ACCOUNT                  => true,
         self::TRANSACTION_ON_HOLD             => true,
+        self::LOAN                            => true,
         self::AMEX_RECURRING                  => true,
     ];
 
@@ -686,6 +692,11 @@ class Constants
         self::ES_AUTOMATIC              => [
             'feature'       => self::ES_AUTOMATIC,
             'display_name'  => 'Es Automatic',
+            'documentation' => '',
+        ],
+        self::LOAN                      => [
+            'feature'       => self::LOAN,
+            'display_name'  => 'Loan',
             'documentation' => '',
         ],
         self::PL_FIRST_MIN_AMOUNT       => [

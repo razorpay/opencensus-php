@@ -4777,6 +4777,7 @@ class Route
      * A route can belong to multiple features, mapped here
      */
     public static $routeNameToFeaturesMap = [
+        'los_service'                          => [Feature::LOAN],
         'feature_dummy'                        => [Feature::DUMMY],
         'customer_delete'                      => [Feature::TOKENS, Feature::CHARGE_AT_WILL],
         'customer_delete_token'                => [Feature::TOKENS, Feature::CHARGE_AT_WILL],
