@@ -11,6 +11,7 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\User;
 use RZP\Diag\EventCode;
+use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Constants\Product;
@@ -18,9 +19,9 @@ use RZP\Models\Invitation;
 use RZP\Models\Admin\Admin;
 use RZP\Mail\User as UserMail;
 use RZP\Models\Admin\AdminLead;
+use RZP\Exception\BaseException;
 use RZP\Models\Merchant\Account;
 use Illuminate\Hashing\BcryptHasher;
-use RZP\Trace\TraceCode;
 
 class Service extends Base\Service
 {
@@ -143,7 +144,8 @@ class Service extends Base\Service
             $data = $this->createMerchantFromUser($merchantInputData, $user, $referrer);
         }
 
-        (new Core)->trackOnboardingEvent($user[Entity::EMAIL], EventCode::SIGNUP_CREATE_ACCOUNT_SUCCESS);
+        (new Core)->trackOnboardingEvent($user[Entity::EMAIL],
+                                         EventCode::SIGNUP_CREATE_ACCOUNT_SUCCESS);
 
         return $data;
     }
@@ -369,7 +371,16 @@ class Service extends Base\Service
 
     public function login(array $input, $validate2fa = true): array
     {
-        return (new Core)->login($input, $validate2fa);
+        try
+        {
+            return (new Core)->login($input, $validate2fa);
+        }
+        catch (\Throwable $ex)
+        {
+            (new Core)->trackOnboardingEvent($input[Entity::EMAIL] ?? '', EventCode::MERCHANT_ONBOARDING_LOGIN_FAILURE, $ex);
+
+            throw $ex;
+        }
     }
 
     public function checkUserAccess(array $input)
@@ -571,6 +582,10 @@ class Service extends Base\Service
                     [
                         'email' => $email
                     ]);
+
+                (new Core)->trackOnboardingEvent($email,
+                                                 EventCode::MERCHANT_ONBOARDING_RESET_PASSWORD_FAILURE,
+                                                 new BaseException(Constants::USER_EMAIL_NOT_FOUND));
             }
             else
             {
@@ -586,6 +601,9 @@ class Service extends Base\Service
                 $passwordResetMail = new UserMail\PasswordReset($user, $org, $requestOriginProduct);
 
                 Mail::queue($passwordResetMail);
+
+                (new Core)->trackOnboardingEvent($user->getEmail(),
+                                                 EventCode::MERCHANT_ONBOARDING_RESET_PASSWORD_SUCCESS);
             }
         }
 

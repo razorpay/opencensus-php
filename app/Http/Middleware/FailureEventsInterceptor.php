@@ -101,11 +101,23 @@ class FailureEventsInterceptor
                 [
                     'event_code' => EventCode::KYC_UPLOAD_DOCUMENT_FAILED,
                 ],
+            'user_login'                       =>
+                [
+                    'event_code' => EventCode::MERCHANT_ONBOARDING_LOGIN_FAILURE,
+                ],
+            'user_login_no2fa'                 =>
+                [
+                    'event_code' => EventCode::MERCHANT_ONBOARDING_LOGIN_FAILURE,
+                ],
+            'user_reset_password_create'       =>
+                [
+                    'event_code' => EventCode::MERCHANT_ONBOARDING_RESET_PASSWORD_FAILURE,
+                ],
         ];
 
         if (array_key_exists($routeName, $eventCodeNameRouteMappings) === true)
         {
-           return $eventCodeNameRouteMappings[$routeName]['event_code'];
+            return $eventCodeNameRouteMappings[$routeName]['event_code'];
         }
 
         return null;

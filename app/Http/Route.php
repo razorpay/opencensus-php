@@ -5049,6 +5049,9 @@ class Route
         'merchant_activation_upload_file',
         'merchant_activation_save',
         'merchant_document_upload',
+        'user_login',
+        'user_login_no2fa',
+        'user_reset_password_create',
     ];
 
     // These routes are redirected after a feature check

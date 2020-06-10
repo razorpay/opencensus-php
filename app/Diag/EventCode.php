@@ -505,6 +505,27 @@ class EventCode
         'name'  => 'merchant_onboarding_category.set'
     ];
 
+    const MERCHANT_ONBOARDING_RESET_PASSWORD_SUCCESS = [
+        'group' => 'onboarding',
+        'name'  => 'merchant_onboarding.reset_password.success'
+    ];
+
+    const MERCHANT_ONBOARDING_RESET_PASSWORD_FAILURE = [
+        'group' => 'onboarding',
+        'name'  => 'merchant_onboarding.reset_password.failure'
+    ];
+
+    const MERCHANT_ONBOARDING_LOGIN_FAILURE = [
+        'group' => 'onboarding',
+        'name'  => 'merchant_onboarding.login.failure'
+    ];
+
+    const MERCHANT_ONBOARDING_LOGIN_SUCCESS = [
+        'group' => 'onboarding',
+        'name'  => 'merchant_onboarding.login.success'
+    ];
+
+
     const MERCHANT_ONBOARDING_CATEGORY_UPDATE = [
         'group' => 'onboarding',
         'name'  => 'merchant_onboarding_category.update'

@@ -8,9 +8,9 @@ use Config;
 use Carbon\Carbon;
 use Illuminate\Hashing\BcryptHasher;
 
+use Throwable;
 use RZP\Exception;
 use RZP\Models\Base;
-use RZP\Constants\Mode;
 use RZP\Diag\EventCode;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
@@ -26,8 +26,8 @@ use RZP\Models\Admin\Admin\Token;
 use RZP\Http\UserRolePermissionsMap;
 use RZP\Exception\BadRequestException;
 use RZP\Modules\SecondFactorAuth\Constants as AuthConstants;
-use RZP\Mail\User\AccountLockedWrongAttempt as AccountLockedWrongAttemptMail;
 use RZP\Mail\User\ContactMobileUpdated as ContactMobileUpdatedMail;
+use RZP\Mail\User\AccountLockedWrongAttempt as AccountLockedWrongAttemptMail;
 
 class Core extends Base\Core
 {
@@ -80,7 +80,8 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($user);
 
-        $this->trackOnboardingEvent($user->getEmail(), EventCode::SIGNUP_EMAIL_VERIFICATION_SUCCESS);
+        $this->trackOnboardingEvent($user->getEmail(),
+                                    EventCode::SIGNUP_EMAIL_VERIFICATION_SUCCESS);
 
         return $user;
     }
@@ -304,6 +305,9 @@ class Core extends Base\Core
         }
 
         $this->trace->count(Metric::LOGIN_2FA_SUCCESS);
+
+        (new Core)->trackOnboardingEvent($user->getEmail(),
+                                         EventCode::MERCHANT_ONBOARDING_LOGIN_SUCCESS);
 
         return $this->get($user);
     }
@@ -1456,14 +1460,15 @@ class Core extends Base\Core
     /**
      * Tracking Onboarding event along with User Email.
      *
-     * @param string $userEmail
-     * @param array  $eventCode
+     * @param string         $userEmail
+     * @param array          $eventCode
+     * @param Throwable|null $ex
      */
-    public function trackOnboardingEvent(string $userEmail, array $eventCode)
+    public function trackOnboardingEvent(string $userEmail, array $eventCode, Throwable $ex = null)
     {
         $customProperties = ['email' => $userEmail];
 
-        $this->app['diag']->trackOnboardingEvent($eventCode, $this->merchant, null, $customProperties);
+        $this->app['diag']->trackOnboardingEvent($eventCode, $this->merchant, $ex, $customProperties);
     }
 
     /**

@@ -59,6 +59,8 @@ class Constants
 
     const SUBMERCHANT_ACCOUNT_CREATE_PASSOWRD_TOKEN_EXPIRY_TIME =  86400; //24 hours
 
+    const USER_EMAIL_NOT_FOUND  = 'USER_EMAIL_NOT_FOUND';
+
     const LOCK   = 'lock';
     const UNLOCK = 'unlock';
     const UN_VERIFY = 'un_verify';
