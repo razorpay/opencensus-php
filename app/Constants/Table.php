@@ -272,6 +272,9 @@ class Table
 
     const UPI_MANDATE          = 'upi_mandates';
 
+    //Payout downtimes table
+    const PAYOUT_DOWNTIMES     = 'payout_downtimes';
+
     protected static $entityToTableMap = [
         Entity::AXIS_MIGS           => self::MIGS,
         Entity::AXIS_GENIUS         => self::MIGS,

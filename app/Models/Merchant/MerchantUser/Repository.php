@@ -40,4 +40,47 @@ class Repository extends Base\Repository
                         ->whereIn(Constants\Entity::ROLE, $roles)
                         ->get();
     }
+
+    /**
+     * select `user_id` from `merchant_users`
+     *         where `merchant_id` in (?)
+     *         and `product` = ?
+     *         order by `merchant_id` asc, `product` asc
+     *
+     * @param array $merchantIds
+     *
+     * @return array
+     */
+    public function fetchAllBankingUserIdsForMerchantIds(array $merchantIds): Base\PublicCollection
+    {
+        return $this->newQuery()
+                    ->select(Entity::USER_ID)
+                    ->whereIn(Entity::MERCHANT_ID, $merchantIds)
+                    ->where(Entity::PRODUCT, 'banking')
+                    ->orderBy(Entity::MERCHANT_ID)
+                    ->orderBy(Entity::PRODUCT)
+                    ->get();
+
+    }
+
+    /**
+     * select `merchant_id` from `merchant_users`
+     *        where `product` = ?
+     *        and `merchant_id` in (?)
+     *
+     * @param string $product
+     * @param array  $merchantIds
+     *
+     * @return Base\PublicCollection
+     */
+
+    public function fetchMerchantIdsByProduct(string $product, array $merchantIds): Base\PublicCollection
+    {
+        return $this->newQuery()
+                    ->select(Entity::MERCHANT_ID)
+                    ->where(Entity::PRODUCT, $product)
+                    ->whereIn(Entity::MERCHANT_ID, $merchantIds)
+                    ->get();
+    }
+
 }

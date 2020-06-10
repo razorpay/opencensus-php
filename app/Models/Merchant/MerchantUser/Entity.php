@@ -32,4 +32,5 @@ class Entity extends Pivot
     {
         return $this->getAttribute(self::ROLE);
     }
+
 }

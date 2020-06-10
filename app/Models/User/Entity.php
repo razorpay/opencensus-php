@@ -397,4 +397,9 @@ class Entity extends Base\PublicEntity
 
         return $attributes;
     }
+
+    public function getUserId()
+    {
+        return $this->getAttribute(self::ID);
+    }
 }

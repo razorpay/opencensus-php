@@ -80,6 +80,8 @@ use RZP\Base\Database\Connectors\MySqlConnector;
  * @property Models\VirtualVpaPrefix\Repository                 $virtual_vpa_prefix
  * @property Models\VirtualVpaPrefixHistory\Repository          $virtual_vpa_prefix_history
  * @property Models\Merchant\Reminders\Repository               $merchant_reminders
+ * @property Models\PayoutDowntime\Repository                   $payout_downtimes
+ * @property Models\User\Repository                             $user
  * @property Models\Transfer\Repository                         $transfer
  */
 class RepositoryManager extends Illuminate\Support\Manager

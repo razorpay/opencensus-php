@@ -431,6 +431,10 @@ return [
         'test'       => env('AWS_DOWNTIME_QUEUE'),
         'live'       => env('AWS_DOWNTIME_QUEUE'),
     ],
+    'payout_downtime' => [
+        'test'       => env('AWS_DOWNTIME_COMMUNICATION_QUEUE'),
+        'live'       => env('AWS_DOWNTIME_COMMUNICATION_QUEUE'),
+    ],
 
     /*
      | Lists various queues to be used per mailable

@@ -1750,8 +1750,18 @@ class Route
         //cron job to retry penny testing for initiated case
         'retry_penny_testing_cron'                => ['post',      'merchants/retry_penny_testing',                           'MerchantController@retryPennyTestingCron'                 ],
 
+
+        //payout downtime methods
+        'create_payout_downtime'                  => ['post',      'payout/downtime',                                        'PayoutDowntimeController@createPayoutDowntime'              ],
+        'update_payout_downtime_by_id'            => ['patch',     'payout/downtime/{id}',                                   'PayoutDowntimeController@updatePayoutDowntime'              ],
+        'fetch_payout_downtime_by_id'             => ['get',       'payout/downtime/{id}',                                   'PayoutDowntimeController@fetchPayoutDowntime'               ],
+        'fetch_payout_downtimes_enabled'          => ['get',       'payout/downtimes/enabled',                               'PayoutDowntimeController@fetchPayoutDowntimesEnabled'       ],
+        'fetch_payout_downtimes'                  => ['get',       'payout/downtimes',                                       'PayoutDowntimeController@fetchPayoutDowntimes'              ],
+
+
         // Routes related to payments rearch for fetching/writing data
         'api_entity_fetch'                        => ['get',     'entities/{entity}/{id}',                                 'CardPSController@FetchEntity'                                   ],
+
     ];
 
     public static $public = [
@@ -2704,6 +2714,9 @@ class Route
         // Virtual VPA Prefix
         'virtual_vpa_prefix_validate',
         'virtual_vpa_prefix_save',
+
+        //payout downtime
+        'fetch_payout_downtimes_enabled',
     ];
 
     //
@@ -3303,8 +3316,15 @@ class Route
         // Banking webhook Stork
         'webhook_stork_create_banking_bulk',
 
+        //payout downtime
+        'create_payout_downtime',
+        'update_payout_downtime_by_id',
+        'fetch_payout_downtime_by_id',
+        'fetch_payout_downtimes',
+
         // API<->Stork webhook recon route
         'admin_webhook_recon',
+
 
     ];
 
@@ -3975,8 +3995,20 @@ class Route
         // copy API setting to RX on stork
         'webhook_stork_create_banking_bulk'        => Permission::CREATE_WEBHOOK_STORK_BANKING_BULK,
 
+
+        //payout downtime
+        'create_payout_downtime'                   => Permission::MANAGE_PAYOUT_DOWNTIME,
+        'update_payout_downtime_by_id'             => Permission::MANAGE_PAYOUT_DOWNTIME,
+        'fetch_payout_downtime_by_id'              => Permission::VIEW_PAYOUT_DOWNTIME,
+        'fetch_payout_downtimes'                   => Permission::VIEW_PAYOUT_DOWNTIME,
+
+
         // Merchant Attribute
         'merchants_update_onboarding_category_to_normal_cron'     => '*',
+
+        //payout downtime fetch from X dashboard
+        'fetch_payout_downtimes_enabled'           => '*',
+
     ];
 
     public static $bankingRoutePermissions = [
@@ -4136,6 +4168,10 @@ class Route
         'merchant_partner_configs_fetch'               => '*',
         'setl_holidays'                                => '*',
         'merchant_activation_update_website_status'    => '*',
+
+        //fetches all the active downtime
+        'fetch_payout_downtimes_enabled'               => '*',
+
 
     ];
 

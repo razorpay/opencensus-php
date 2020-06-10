@@ -200,6 +200,9 @@ class MailTags
     //Merchant Invoice tags
     const MERCHANT_INVOICE_EXECUTION_SUMMARY            = 'merchant_invoice_execution_summary';
 
+    //payout downtime notification
+    const PAYOUT_DOWNTIME_NOTIFICATION                  = 'payout_downtime_notification';
+
     /**
      * Email tags that should respond to the mailgun failure webhook
      * @var array Email tags

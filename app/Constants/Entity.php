@@ -347,6 +347,9 @@ class Entity
     const PAYMENTS_UPI_VPA_BANK_ACCOUNT = 'payments_upi_vpa_bank_account';
     const CONFIG                        = 'config';
 
+    //payout downtime
+    const PAYOUT_DOWNTIMES              = Table::PAYOUT_DOWNTIMES;
+
 
     /**
      * Defines a map of entites which are currently
@@ -667,6 +670,8 @@ class Entity
         self::MERCHANT_FRESHDESK_TICKETS    => \RZP\Models\Merchant\FreshdeskTicket::class,
 
         self::CONFIG                        => \RZP\Models\Payment\Config::class,
+
+        self::PAYOUT_DOWNTIMES              => \RZP\Models\PayoutDowntime::class,
     ];
 
     protected static $repository = [

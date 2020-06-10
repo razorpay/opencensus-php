@@ -1417,6 +1417,16 @@ final class FactoryData
             ]
         );
 
+
+        $factory(\RZP\Models\PayoutDowntime\Entity::class, [
+            'id'               => $faker->uniqueid,
+            'status'           => 'Enabled',
+            'channel'          => 'RBL',
+            'mode'             => 'NEFT',
+            'created_by'       => 'OPS_A',
+            'downtime_message' => 'RBL bank NEFT payments are down',
+        ]);
+
         $factory(\RZP\Models\Merchant\Attribute\Entity::class, [
             'id'                 => $faker->uniqueid,
             'merchant_id'        => '10000000000000',
@@ -1424,6 +1434,7 @@ final class FactoryData
             'group'              => 'onboarding',
             'type'               => 'merchant_onboarding_mechanism',
             'value'              => 'normal',
+
         ]);
     }
 }

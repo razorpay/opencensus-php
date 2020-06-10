@@ -48,4 +48,27 @@ class Repository extends Base\Repository
 
         return $this->saveOrFailTestAndLive($entity, $options);
     }
+
+
+    /**
+     * select `email` from `users`
+     *         where `id` in (?, ?)
+     *         order by `id` asc
+     *
+     * @param     $userIds
+     *
+     * @return array
+     */
+    public function fetchUserEmails($userIds): array
+    {
+        $userEmailIds = $this->newQuery()
+                             ->select(Entity::EMAIL)
+                             ->whereIn(Entity::ID, $userIds)
+                             ->orderBy(Entity::ID)
+                             ->get()
+                             ->getStringAttributesByKey(Entity::EMAIL);
+
+        return array_keys($userEmailIds);
+    }
+
 }

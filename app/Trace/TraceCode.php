@@ -2961,6 +2961,21 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     //Exception message while scrubbing user sensitive details in banking routes.
     const KEYS_BASED_SCRUBBING_BANKING_INFO_FAILURE_EXCEPTION = 'KEYS_BASED_SCRUBBING_BANKING_INFO_FAILURE_EXCEPTION';
 
+
+    //Payout downtime details
+    const PAYOUT_DOWNTIME_CREATE                              = 'PAYOUT_DOWNTIME_CREATE';
+    const PAYOUT_DOWNTIME_EDIT                                = 'PAYOUT_DOWNTIME_EDIT';
+    const PAYOUT_DOWNTIME_FETCH_BY_ID                         = 'PAYOUT_DOWNTIME_FETCH_BY_ID';
+    const PAYOUT_DOWNTIME_DUPLICATE_MID                       = 'PAYOUT_DOWNTIME_DUPLICATE_MID';
+    const PAYOUT_DOWNTIME_CHUNKS                              = 'PAYOUT_DOWNTIME_CHUNKS';
+    const PROCESS_PAYOUT_NOTIFICATION_ERROR                   = 'PROCESS_PAYOUT_NOTIFICATION_ERROR';
+    const PAYOUT_DOWNTIME_EMAIL_STATUS_UPDATE_ERROR           = 'PAYOUT_DOWNTIME_EMAIL_STATUS_UPDATE_ERROR';
+    const PAYOUT_ENABLED_DOWNTIME                             = 'PAYOUT_ENABLED_DOWNTIME';
+    const PAYOUT_DOWNTIME_ALL                                 = 'PAYOUT_DOWNTIME_ALL';
+    const PAYOUT_DOWNTIME_MID                                 = 'PAYOUT_DOWNTIME_MID';
+    const PAYOUT_DOWNTIME_EMAIL_STATUS                        = 'PAYOUT_DOWNTIME_EMAIL_STATUS';
+    const PROCESS_PAYOUT_NOTIFICATION_JOB_DISPATCHED          = 'PROCESS_PAYOUT_NOTIFICATION_JOB_DISPATCHED';
+
     // Merchant Attribute
     const MERCHANT_ATTRIBUTE_EVENT                            = 'MERCHANT_ATTRIBUTE_EVENT';
     const MERCHANT_ATTRIBUTE_CREATE                           = 'MERCHANT_ATTRIBUTE_CREATE';
@@ -2973,6 +2988,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     // Logs for tracing payout to amex failures
     const PAYOUT_TO_AMEX_FAILURE = 'PAYOUT_TO_AMEX_FAILURE';
+  
 
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',

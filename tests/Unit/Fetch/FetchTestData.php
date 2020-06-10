@@ -554,4 +554,7 @@ return [
     ],
 
     E::FEE_RECOVERY => [],
+
+    E::PAYOUT_DOWNTIMES => [],
+
 ];

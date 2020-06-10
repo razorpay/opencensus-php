@@ -756,6 +756,15 @@ return [
             ],
         ],
 
+        PermissionCategory::PAYOUT_DOWNTIME  => [
+            Permission::MANAGE_PAYOUT_DOWNTIME => [
+                'description' => 'Create, Update and Email Payout Downtime',
+            ],
+            Permission::VIEW_PAYOUT_DOWNTIME => [
+                'description' => 'View Payout Downtime',
+            ],
+        ],
+
         // RZP White label wallet config
         PermissionCategory::WALLET_CONFIG => [
             Permission::CREATE_WALLET_CONFIG => [
