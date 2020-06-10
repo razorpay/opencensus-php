@@ -2337,6 +2337,7 @@ class Route
         'payment_links_bulk_expire',
         'fts_bulk_attempts_initiate',
         'merchants_update_onboarding_category_to_normal_cron',
+        'entity_bulk_update',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
