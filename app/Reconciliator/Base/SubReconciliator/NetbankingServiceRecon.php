@@ -56,8 +56,8 @@ class NetbankingServiceRecon extends PaymentReconciliate
         $paymentService = new Payment\Service;
 
         $gatewayData = [
-            NetbankingService::GATEWAY_TRANSACTION_ID => $this->getReferenceNumber($row),
-            NetbankingService::BANK_TRANSACTION_ID    => $this->getGatewayTransactionId($row)
+            NetbankingService::GATEWAY_TRANSACTION_ID =>  $this->getGatewayTransactionId($row),
+            NetbankingService::BANK_TRANSACTION_ID    =>  $this->getReferenceNumber($row)
         ];
 
         try
