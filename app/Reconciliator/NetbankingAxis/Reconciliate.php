@@ -39,12 +39,4 @@ class Reconciliate extends Base\Reconciliate
 
         return $typeName;
     }
-
-    public function getNumLinesToSkip(array $fileDetails)
-    {
-        return [
-            FileProcessor::LINES_FROM_TOP    => 0,
-            FileProcessor::LINES_FROM_BOTTOM => 1
-        ];
-    }
 }
