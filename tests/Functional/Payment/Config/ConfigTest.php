@@ -115,4 +115,33 @@ class ConfigTest extends TestCase
 
         return $this->startTest();
     }
+
+    public function testCreateLocaleConfig()
+    {
+        return $this->startTest();
+    }
+
+    public function testCreateLocaleConfigWithExistingDefaultConfig()
+    {
+        $firstConfig = $this->fixtures->create('config', ['type' => 'locale']);
+
+        $firstConfig->reload();
+
+        $this->startTest();
+    }
+
+    public function testUpdateConfigFieldForLocaleConfig()
+    {
+        $config = $this->fixtures->create('config', ['type' => 'locale']);
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/payment/config';
+
+        $this->testData[__FUNCTION__]['request']['content']['id'] = $config->getPublicId();
+
+        $this->testData[__FUNCTION__]['response']['content']['id'] = $config->getPublicId();
+
+        $this->startTest();
+
+        $this->assertEquals($config->getPublicId(), $this->testData[__FUNCTION__]['response']['content']['id']);
+    }
 }

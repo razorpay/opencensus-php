@@ -41,17 +41,37 @@ class Validator extends Base\Validator
 
     const ALLOW              = 'allow';
 
+    const CONFIG_JSON        = 'config_json';
+
+    const LANGUAGE_CODE      = 'language_code';
+
     protected static $createRules = [
         Entity::NAME           => 'required|string|max:255',
         Entity::CONFIG         => 'required|array',
         Entity::IS_DEFAULT     => 'required|boolean',
-        Entity::TYPE           => 'required|string|in:checkout',
+        Entity::TYPE           => 'required|string|custom',
     ];
 
     protected static $editRules = [
-        Entity::TYPE           => 'required|string|in:checkout',
+        Entity::TYPE           => 'required|string|custom',
         Entity::IS_DEFAULT     => 'required_if:type,checkout|boolean',
-        Entity::ID             => 'required_if:type,checkout|string',
+        Entity::ID             => 'required_if:type,checkout,locale|string',
+        Entity::CONFIG         => 'required_if:type,locale|array'
+    ];
+
+    // will add a locale class once we have more number of language code to support
+    protected static $localeConfigRules= [
+        self::LANGUAGE_CODE    => 'required|string|in:hi,en',
+    ];
+
+    protected static $createValidators = [
+        self::CONFIG_JSON,
+    ];
+
+    protected static $editValidators = [
+        Entity::CONFIG,
+        self::CONFIG_JSON,
+        Entity::IS_DEFAULT,
     ];
 
     protected static $addRestrictionsRules = [
@@ -286,7 +306,7 @@ class Validator extends Base\Validator
         }
         else
         {
-            $config =$config_repo->fetchDefaultConfigByMerchantIdAndType($merchant->getId(), 'checkout');
+            $config =$config_repo->fetchDefaultConfigByMerchantIdAndType($merchant->getId(), Type::CHECKOUT);
         }
 
         if ($config === null or isset($config->restrictions) === false)
@@ -720,6 +740,45 @@ class Validator extends Base\Validator
             }
 
             $this->validateInput(studly_case($item[self::METHOD]).'_restriction', $item);
+        }
+    }
+
+    protected function validateConfig(array $input)
+    {
+        if (($input['type'] === Type::CHECKOUT) and
+            (isset($input['config']) === true))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Config field is not required for type checkout');
+        }
+    }
+
+    protected function validateConfigJson($input)
+    {
+        if ($input['type'] === Type::LOCALE)
+        {
+            $this->validateInput('locale_config', $input['config']);
+        }
+    }
+
+    protected function validateType($attribute, $input)
+    {
+        $isTypeSupported = (new Type())->isConfigTypeSupported($input);
+
+        if ($isTypeSupported === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'The selected type is invalid.');
+        }
+    }
+
+    protected function validateIsDefault($input)
+    {
+        if (($input['type'] !== Type::CHECKOUT) and
+            (isset($input['is_default']) === true))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Is default field is not required for type '.$input['type']);
         }
     }
 }

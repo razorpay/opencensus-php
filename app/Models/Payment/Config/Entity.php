@@ -99,6 +99,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(Entity::TYPE, $type);
     }
 
+    public function setConfig(string $config)
+    {
+        $this->setAttribute(Entity::CONFIG, $config);
+    }
+
     public function setPublicConfigAttribute(array & $input)
     {
         if (isset($input['config']) === true)

@@ -180,14 +180,14 @@ return  [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'config is/are not required and should not be sent',
+                    'description' => 'Config field is not required for type checkout',
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
-            'class'               => RZP\Exception\ExtraFieldsException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_EXTRA_FIELDS_PROVIDED
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
         ],
     ],
     'testCreateCheckoutConfigFromAdminAuth' => [
@@ -212,6 +212,75 @@ return  [
                 'is_default' => true,
                 'config'     => [
                     'method' => 'card',
+                ],
+            ]
+        ],
+    ],
+    'testCreateLocaleConfig' => [
+        'request' => [
+            'content' => [
+                'name'       => 'First',
+                'is_default' => true,
+                'type'       => 'locale',
+                'config'     => [
+                    'language_code' => 'hi',
+                ],
+            ],
+            'method'    => 'POST',
+            'url'       => '/payment/config',
+        ],
+        'response' => [
+            'content' => [
+                'name'       => 'First',
+                'is_default' => true,
+                'config'     => [
+                    'language_code' => 'hi',
+                ],
+            ]
+        ],
+    ],
+    'testCreateLocaleConfigWithExistingDefaultConfig' => [
+        'request' => [
+            'content' => [
+                'name'       => 'Second',
+                'is_default' => true,
+                'type'       => 'locale',
+                'config'     => [
+                    'language_code' => 'hi',
+                ],
+            ],
+            'method'    => 'POST',
+            'url'       => '/payment/config',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Default locale config already present for the merchant'
+                ]
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_DEFAULT_LOCALE_CONFIG_PRESENT
+        ]
+    ],
+    'testUpdateConfigFieldForLocaleConfig' => [
+        'request' => [
+            'content' => [
+                'type'      => 'locale',
+                'config'     => [
+                    'language_code' => 'en',
+                ],
+            ],
+            'method'    => 'PATCH',
+            'url'       => '',
+        ],
+        'response' => [
+            'content' => [
+                'config'     => [
+                    'language_code' => 'en',
                 ],
             ]
         ],

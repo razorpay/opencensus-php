@@ -46,6 +46,13 @@ class Core extends Base\Core
 
                         if (isset($defaultConfig) === true)
                         {
+                            if ($input['type'] === Type::LOCALE)
+                            {
+                                throw new Exception\BadRequestException(
+                                    ErrorCode::BAD_REQUEST_DEFAULT_LOCALE_CONFIG_PRESENT, null, null,
+                                'Default locale config already present for the merchant');
+                            }
+
                             $defaultConfig->is_default = false;
 
                             $this->repo->saveOrFail($defaultConfig);
@@ -60,6 +67,65 @@ class Core extends Base\Core
                 return $config;
             });
     }
+
+    private function updateCheckoutConfig($config,$input, $id, $type)
+    {
+        $config->edit($input);
+
+        if ((isset($input['is_default']) === true) and $this->isDefaultConfig($input))
+        {
+            // find if any default config exist
+            $defaultConfig = $this->repo->config->fetchDefaultConfigByMerchantIdAndType($this->merchant->getId(), $type);
+
+            if ((isset($defaultConfig) === true) and
+                $id !== $defaultConfig->getId())
+            {
+                $defaultConfig->is_default = false;
+
+                $this->repo->saveOrFail($defaultConfig);
+            }
+        }
+
+        $this->repo->saveOrFail($config);
+    }
+
+    public function getFormattedConfigForCheckout($configId, $merchantId, & $data)
+    {
+        $config = null;
+
+        if (isset($configId) === false)
+        {
+            $config = $this->repo->config->fetchDefaultConfigByMerchantIdAndType($merchantId, 'checkout');
+        }
+        else {
+            $config = $this->repo->config->findByPublicIdAndMerchant($configId, $this->merchant);
+        }
+
+        if (isset($config) === true)
+        {
+            $data['checkout_config'] = json_decode($config->config, true);
+        }
+    }
+    private function isDefaultConfig($input)
+    {
+        if (($input['is_default'] === true) or (strval($input['is_default']) === '1'))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    private function updateLocaleConfig($config, $input)
+    {
+        $config->setConfig(json_encode($input['config']));
+
+        $this->repo->saveOrFail($config);
+
+        return $config;
+
+    }
+
 
     public function update($input)
     {
@@ -92,23 +158,15 @@ class Core extends Base\Core
                 {
                     $config = $this->repo->transaction(function () use($input, $merchant, $config, $id, $type)
                     {
-                        $config->edit($input);
-
-                        if ((isset($input['is_default']) === true) and $this->isDefaultConfig($input))
+                        if ($type === Type::CHECKOUT)
                         {
-                            // find if any default config exist
-                            $defaultConfig = $this->repo->config->fetchDefaultConfigByMerchantIdAndType($this->merchant->getId(), $type);
-
-                            if ((isset($defaultConfig) === true) and
-                                  $id !== $defaultConfig->getId())
-                            {
-                                $defaultConfig->is_default = false;
-
-                                $this->repo->saveOrFail($defaultConfig);
-                            }
+                            $this->updateCheckoutConfig($config, $input, $id, $type);
                         }
 
-                        $this->repo->saveOrFail($config);
+                        if ($type === Type::LOCALE)
+                        {
+                            $this->updateLocaleConfig($config, $input);
+                        }
 
                         return $config;
                     });
@@ -116,32 +174,6 @@ class Core extends Base\Core
                     return  $config;
                 }
             });
-    }
 
-    public function getFormattedConfigForCheckout($configId, $merchantId, & $data)
-    {
-        $config = null;
-
-        if (isset($configId) === false)
-        {
-            $config = $this->repo->config->fetchDefaultConfigByMerchantIdAndType($merchantId, 'checkout');
-        }
-        else {
-            $config = $this->repo->config->findByPublicIdAndMerchant($configId, $this->merchant);
-        }
-
-        if (isset($config) === true)
-        {
-            $data['checkout_config'] = json_decode($config->config, true);
-        }
-    }
-    private function isDefaultConfig($input)
-    {
-        if (($input['is_default'] === true) or (strval($input['is_default']) === '1'))
-        {
-            return true;
-        }
-
-        return false;
     }
 }

@@ -51,14 +51,6 @@ class Service extends Base\Service
     {
         (new Validator())->validateInput('edit', $input);
 
-        if ($input['type'] === 'checkout')
-        {
-            return $this->updateCheckoutConfig($input);
-        }
-    }
-
-    private function updateCheckoutConfig(array $input)
-    {
         $config = $this->core->update($input);
 
         return $config->toArrayPublic();
