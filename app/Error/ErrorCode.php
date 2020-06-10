@@ -1689,6 +1689,7 @@ class ErrorCode
 
     // Terminals service error codes
     const SERVER_ERROR_TERMINALS_SERVICE_INTEGRATION_ERROR                          = 'SERVER_ERROR_TERMINALS_SERVICE_INTEGRATION_ERROR';
+    const BAD_REQUEST_TERMINALS_SERVICE_ERROR                                       = 'BAD_REQUEST_TERMINALS_SERVICE_ERROR';
 
     //payment config
     const BAD_REQUEST_INVALID_CONFIG_ID                                             = 'BAD_REQUEST_INVALID_CONFIG_ID';

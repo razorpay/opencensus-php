@@ -13,7 +13,7 @@ trait TerminalTrait
     {
         $this->terminalRepository = new Terminal\Repository;
 
-        $terminalsServiceMock = Mockery::mock('RZP\Services\TerminalsService')->makePartial();
+        $terminalsServiceMock = Mockery::mock('RZP\Services\TerminalsService', [$this->app])->makePartial();
 
         $terminalsServiceMock->shouldAllowMockingProtectedMethods();
 

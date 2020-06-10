@@ -294,39 +294,41 @@ class TerminalsService
         {
             $this->trace->info(TraceCode::TERMINALS_SERVICE_REQUEST, $data);
 
-            $response = Requests::request(
-                $url,
-                $headers,
-                $content,
-                $method,
-                $options
-            );
+            $response = $this->makeRequest($url, $headers, $content, $method, $options);
 
             $this->trace->info(TraceCode::TERMINALS_SERVICE_RESPONSE,
                 [
                    self::STATUS_CODE => $response->status_code,
                 ]);
 
-            if ($response->status_code >= 400)
-            {
-                $body = $this->parseAndReturnResponse($response);
+            $parsedResponse = $this->parseAndReturnResponse($response);
 
-                $errorDescription = isset($body['error']['description']) ? $body['error']['description'] : null;
-        
-                if (array_key_exists($errorDescription, self::TERMINALS_API_ERROR_CODE_MAPPING) === true)
-                {
-                    throw new Exception\BadRequestException(
-                        self::TERMINALS_API_ERROR_CODE_MAPPING[$errorDescription], null, null, $errorDescription);                
-                }
-                else
-                {
+            $errorDescription = isset($parsedResponse['error']['description']) ? $parsedResponse['error']['description'] : null;
+
+            if ($response->status_code >= 500)
+            {
                     throw new Exception\IntegrationException('Terminals service request failed with status code : ' . $response->status_code,
                         ErrorCode::SERVER_ERROR_TERMINALS_SERVICE_INTEGRATION_ERROR,
                         [
-                            self::RESPONSE      => $this->parseAndReturnResponse($response),
+                            self::RESPONSE      => $parsedResponse,
                             self::STATUS_CODE   => $response->status_code,
                         ]);
+            }
+
+            if ($response->status_code >= 400)
+            {
+                $data = [
+                    self::RESPONSE    => $parsedResponse,
+                    self::STATUS_CODE => $response->status_code,
+                ];
+
+                if (array_key_exists($errorDescription, self::TERMINALS_API_ERROR_CODE_MAPPING) === true)
+                {
+                    throw new Exception\BadRequestException(
+                        self::TERMINALS_API_ERROR_CODE_MAPPING[$errorDescription], null, $data, $errorDescription);
                 }
+
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_TERMINALS_SERVICE_ERROR, null, $data, $errorDescription);
             }
 
             return $response;
@@ -343,6 +345,11 @@ class TerminalsService
 
             throw $exception;
         }
+    }
+
+    protected function makeRequest($url, $headers, $content, $method, $options)
+    {
+        return Requests::request($url, $headers, $content, $method, $options);
     }
 
     protected function parseAndReturnResponse(\Requests_Response $response): array

@@ -1601,4 +1601,44 @@ class TerminalMigrationTest extends TestCase
         $this->startTest();
 
     }
+
+    // below two tests assert right exceptions are raised when call to
+    // terminals services generates 4xx and 5xx errors on Terminals Service
+    public function test4xxException()
+    {
+        $this->ba->cronAuth();
+
+        $terminalsServiceMock = $this->getTerminalsServiceMock();
+
+        $terminalsServiceMock->shouldReceive('makeRequest')
+            ->andReturnUsing(function () {
+                $response = new \Requests_Response();
+                $response->body = '
+                    {
+                        "error": {
+                            "description": "foo"
+                        }
+                    }';
+                $response->status_code = 400;
+                return $response;
+            });
+
+        $this->startTest();
+    }
+
+    public function test5xxException()
+    {
+        $this->ba->cronAuth();
+
+        $terminalsServiceMock = $this->getTerminalsServiceMock();
+
+        $terminalsServiceMock->shouldReceive('makeRequest')
+            ->andReturnUsing(function () {
+                $response = new \Requests_Response();
+                $response->status_code = 500;
+                return $response;
+            });
+
+        $this->startTest();
+    }
 }

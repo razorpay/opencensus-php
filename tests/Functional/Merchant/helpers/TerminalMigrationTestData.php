@@ -411,4 +411,42 @@ return [
             ],
         ],
     ],
+
+    'test4xxException' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/terminals/sync/deleted',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'description' => 'foo',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => \RZP\Exception\BadRequestException::class,
+            'internal_error_code' => 'BAD_REQUEST_TERMINALS_SERVICE_ERROR',
+        ]
+    ],
+
+    'test5xxException' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/terminals/sync/deleted'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'description' => 'The server encountered an error. The incident has been reported to admins.'
+                ]
+            ],
+            'status_code' => 500,
+        ],
+        'exception' => [
+            'class' => \RZP\Exception\IntegrationException::class,
+            'internal_error_code' => 'SERVER_ERROR_TERMINALS_SERVICE_INTEGRATION_ERROR',
+        ]
+    ],
 ];
