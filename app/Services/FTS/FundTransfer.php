@@ -223,7 +223,7 @@ class FundTransfer extends Base
                 $product = Constants::PAYOUT_REFUND;
             }
 
-            if ($this->fta->isRefund() === true)
+            if (($this->fta->isRefund() === true) && ($source->isBalanceAccountTypeDirect() === false))
             {
                 $product = Constants::PAYOUT_REFUND;
             }
