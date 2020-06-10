@@ -19,22 +19,79 @@ class LOSController extends Controller
     const PATCH  = 'PATCH';
     const DELETE = 'DELETE';
 
-    const DISBURSE_LOAN_REGEX = 'DISBURSE_LOAN_REGEX';
-    const GET_OFFLINE_VERIFICATION_TASKS_REGEX = 'GET_OFFLINE_VERIFICATION_TASKS_REGEX';
-    const CREATE_VERIFICATION_REGEX = 'CREATE_VERIFICATION_REGEX';
-    const SCHEDULE_VERIFICATION_REGEX = 'SCHEDULE_VERIFICATION_REGEX';
-    const GET_SEED_INFO_REGEX = 'GET_SEED_INFO_REGEX';
-    const LEEGALITY_WEBHOOK_URL = 'twirp/rzp.capital.los.contracts.v1.DocSignAPI/LeegalityWebhook';
+    const LEEGALITY_WEBHOOK_URL                       = 'twirp/rzp.capital.los.contracts.v1.DocSignAPI/LeegalityWebhook';
+
+    const DISBURSE_LOAN_REGEX                         = 'DISBURSE_LOAN_REGEX';
+    const SCHEDULE_VERIFICATION_REGEX                 = 'SCHEDULE_VERIFICATION_REGEX';
+    const GET_SEED_INFO_REGEX                         = 'GET_SEED_INFO_REGEX';
+    const GET_PRODUCTS_REGEX                          = 'GET_PRODUCTS_REGEX';
+    const GET_APPLICATION_REGEX                       = 'GET_APPLICATION_REGEX';
+    const UPDATE_APPLICATION_REGEX                    = 'UPDATE_APPLICATION_REGEX';
+    const CREATE_APPLICATION_REGEX                    = 'CREATE_APPLICATION_REGEX';
+    const GET_BUSINESS_DETAILS_REGEX                  = 'GET_BUSINESS_DETAILS_REGEX';
+    const GET_BUSINESS_DETAILS_BY_REFERENCDE_ID_REGEX = 'GET_BUSINESS_DETAILS_BY_REFERENCDE_ID_REGEX';
+    const UPDATE_BUSINESS_DETAILS_REGEX               = 'UPDATE_BUSINESS_DETAILS_REGEX';
+    const CREATE_BUSINESS_REGEX                       = 'CREATE_BUSINESS_REGEX';
+    const GET_APPLICANT_REGEX                         = 'GET_APPLICANT_REGEX';
+    const UPDATE_APPLICANT_REGEX                      = 'UPDATE_APPLICANT_REGEX';
+    const CREATE_APPLICANT_API                        = 'CREATE_APPLICANT_API';
+    const GET_DOCUMENT_GROUPS                         = 'GET_DOCUMENT_GROUPS';
+    const GET_ALL_OFFERS                              = 'GET_ALL_OFFERS';
+    const ACCEPT_OFFER_REGEX                          = 'ACCEPT_OFFER_REGEX';
+    const GET_APPLICATION_CONTRACTS_REGEX             = 'GET_APPLICATION_CONTRACTS_REGEX';
+    const CHECK_AGREEMENT_STATUS                      = 'CHECK_AGREEMENT_STATUS';
+    const CREATE_NACH_REGEX                           = 'CREATE_NACH_REGEX';
+    const GET_NACH_BY_APPLICATION_REGEX               = 'GET_NACH_BY_APPLICATION_REGEX';
+    const UPLOAD_NACH_REGEX                           = 'UPLOAD_NACH_REGEX';
+    const GET_NETBANKING_LINK_REGEX                   = 'GET_NETBANKING_LINK_REGEX';
+    const SUBMIT_OTP_REGEX                            = 'SUBMIT_OTP_REGEX';
+    const GET_BUREAU_REPORT_REGEX                     = 'GET_BUREAU_REPORT_REGEX';
+    const SCHEDULE_MERCHANT_VERIFICATION_REGEX        = 'SCHEDULE_MERCHANT_VERIFICATION_REGEX';
+    const SCHEDULE_ADMIN_VERIFICATION_REGEX           = 'SCHEDULE_ADMIN_VERIFICATION_REGEX';
+    const LIST_OR_SEARCH_REGEX                        = 'LIST_OR_SEARCH_REGEX';
+    const UPLOAD_DOCUMENTS_REGEX                      = 'UPLOAD_DOCUMENTS_REGEX';
+    const FETCH_LEGAL_AGREEMENT_REGEX                 = 'FETCH_LEGAL_AGREEMENT_REGEX';
+    const GET_SCHEDULED_DETAILS                       = 'GET_SCHEDULED_DETAILS';
+    const GET_DISBURSAL_REGEX                         = 'GET_DISBURSAL_REGEX';
+    const GET_LENDER_REGEX                            = 'GET_LENDER_REGEX';
 
     const WORKFLOW_REGEX_ROUTES = [
         self::DISBURSE_LOAN_REGEX => '/capital\.los\.admin\.v1\.DisbursalAPI\/CreateDisbursal/',
     ];
 
     const MERCHANT_ROUTES_REGEX = [
-        self::GET_OFFLINE_VERIFICATION_TASKS_REGEX => '/rzp\.capital\.los\.admin\.v1\.OfferVerificationAPI\/GetOfferVerificationTasks/',
-        self::CREATE_VERIFICATION_REGEX            => '/rzp\.capital\.los\.admin\.v1\.OfferVerificationAPI\/CreateVerification/',
-        self::SCHEDULE_VERIFICATION_REGEX          => '/rzp\.capital\.los\.admin\.v1\.OfferVerificationAPI\/ScheduleVerification/',
-        self::GET_SEED_INFO_REGEX                  => '/rzp\.capital\.los\.origination\.v1\.ApplicationAPI\/GetSeedInfo/'
+        self::SCHEDULE_VERIFICATION_REGEX                 => '/rzp\.capital\.los\.admin\.v1\.OfferVerificationAPI\/ScheduleVerification/',
+        self::GET_SEED_INFO_REGEX                         => '/rzp\.capital\.los\.origination\.v1\.ApplicationAPI\/GetSeedInfo/',
+        self::GET_PRODUCTS_REGEX                          => '/rzp\.capital\.los\.admin\.v1\.ProductAPI\/GetProducts/',
+        self::GET_APPLICATION_REGEX                       => '/rzp\.capital\.los\.origination\.v1\.ApplicationAPI\/GetApplication/',
+        self::UPDATE_APPLICATION_REGEX                    => '/rzp\.capital\.los\.origination\.v1\.ApplicationAPI\/UpdateApplication/',
+        self::CREATE_APPLICATION_REGEX                    => '/rzp\.capital\.los\.origination\.v1\.ApplicationAPI\/CreateApplication/',
+        self::LIST_OR_SEARCH_REGEX                        => '/rzp\.capital\.los\.origination\.v1\.ApplicationAPI\/ListOrSearch/',
+        self::UPLOAD_DOCUMENTS_REGEX                      => '/rzp\.capital\.los\.origination\.v1\.ApplicationAPI\/UploadDocuments/',
+        self::GET_BUSINESS_DETAILS_REGEX                  => '/rzp\.capital\.los\.client\.v1\.BusinessAPI\/GetBusinessDetails/',
+        self::GET_BUSINESS_DETAILS_BY_REFERENCDE_ID_REGEX => '/rzp\.capital\.los\.client\.v1\.BusinessAPI\/GetBusinessDetailsByReferenceID/',
+        self::UPDATE_BUSINESS_DETAILS_REGEX               => '/rzp\.capital\.los\.client\.v1\.BusinessAPI\/UpdateBusinessDetails/',
+        self::CREATE_BUSINESS_REGEX                       => '/rzp\.capital\.los\.client\.v1\.BusinessAPI\/CreateBusiness/',
+        self::GET_APPLICANT_REGEX                         => '/rzp\.capital\.los\.client\.v1\.ApplicantAPI\/GetApplicant/',
+        self::UPDATE_APPLICANT_REGEX                      => '/rzp\.capital\.los\.client\.v1\.ApplicantAPI\/UpdateApplicant/',
+        self::CREATE_APPLICANT_API                        => '/rzp\.capital\.los\.client\.v1\.ApplicantAPI\/CreateApplicant/',
+        self::GET_DOCUMENT_GROUPS                         => '/rzp\.capital\.los\.admin\.v1\.DocumentsAPI\/GetDocumentGroups/',
+        self::GET_ALL_OFFERS                              => '/rzp\.capital\.los\.admin\.v1\.CreditOfferAPI\/GetAllOffers/',
+        self::ACCEPT_OFFER_REGEX                          => '/rzp\.capital\.los\.admin\.v1\.CreditOfferAPI\/AcceptOffer/',
+        self::GET_APPLICATION_CONTRACTS_REGEX             => '/rzp\.capital\.los\.contracts\.v1\.ContractsAPI\/GetApplicationContracts/',
+        self::CHECK_AGREEMENT_STATUS                      => '/rzp\.capital\.los\.contracts\.v1\.DocSignAPI\/CheckAgreementStatus/',
+        self::CREATE_NACH_REGEX                           => '/rzp\.capital\.los\.nach\.v1\.NachAPI\/CreateNach/',
+        self::GET_NACH_BY_APPLICATION_REGEX               => '/rzp\.capital\.los\.nach\.v1\.NachAPI\/GetNachByApplication/',
+        self::UPLOAD_NACH_REGEX                           => '/rzp\.capital\.los\.nach\.v1\.NachAPI\/UploadNachForm/',
+        self::GET_NETBANKING_LINK_REGEX                   => '/rzp\.capital\.los\.fds\.v1\.FDSBankStatementAPI\/GetNetBankingLink/',
+        self::SUBMIT_OTP_REGEX                            => '/rzp\.capital\.los\.d2c\.v1\.D2CBureauAPI\/SubmitOtp/',
+        self::GET_BUREAU_REPORT_REGEX                     => '/rzp\.capital\.los\.d2c\.v1\.D2CBureauAPI\/GetBureauReport/',
+        self::SCHEDULE_MERCHANT_VERIFICATION_REGEX        => '/rzp\.capital\.los\.admin\.v1\.OfferVerificationAPI\/ScheduleMerchantVerification/',
+        self::SCHEDULE_ADMIN_VERIFICATION_REGEX           => '/rzp\.capital\.los\.admin\.v1\.OfferVerificationAPI\/ScheduleAdminVerification/',
+        self::FETCH_LEGAL_AGREEMENT_REGEX                 => '/rzp\.capital\.los\.contracts\.v1\.DocSignAPI\/FetchLegalAgreement/',
+        self::GET_SCHEDULED_DETAILS                       => '/rzp\.capital\.los\.admin\.v1\.OfferVerificationAPI\/GetScheduleDetail/',
+        self::GET_DISBURSAL_REGEX                         => '/rzp\.capital\.los\.admin\.v1\.DisbursalAPI\/GetDisbursal/',
+        self::GET_LENDER_REGEX                            => '/rzp\.capital\.los\.admin\.v1\.LenderAPI\/GetLender/',
     ];
 
     protected function handleProxyRequests($path = null)
@@ -48,12 +105,17 @@ class LOSController extends Controller
             'body'    => $body,
         ]);
 
+        $isMerchantAccessible = false;
         foreach (self::MERCHANT_ROUTES_REGEX as $route => $regex)
         {
-            if (preg_match($regex, $path, $matches) === 0)
+            if (preg_match($regex, $path, $matches) === 1)
             {
-                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
+                $isMerchantAccessible = true;
             }
+        }
+
+        if ($isMerchantAccessible === false) {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
         }
 
         $headers = [
