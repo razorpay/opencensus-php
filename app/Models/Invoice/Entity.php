@@ -1005,6 +1005,25 @@ class Entity extends Base\PublicEntity
 
     public function isPaymentPageInvoice(): bool
     {
+        if ($this->getEntityType() === null)
+        {
+            return false;
+        }
+
+        try
+        {
+            $relation = $this->getRelation('entity');
+        }
+        catch (\Exception $e)
+        {
+           if ($this->getEntityType() === 'payment_page')
+           {
+               return true;
+           }
+
+           return false;
+        }
+
         return (($this->getEntityType() !== null)) and
             ($this->getRelation('entity') instanceof PaymentLink\Entity);
     }
