@@ -546,6 +546,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_SECURE_SECRET      => 'required|string',
         Entity::GATEWAY_ACCESS_CODE        => 'required|integer|digits:4',
         Entity::GATEWAY_TERMINAL_PASSWORD  => 'required|alpha_num|size:16',
+        Entity::TYPE                       => 'sometimes|array',
     ];
 
     protected static $walletPayzappEditTerminalRules = [
@@ -555,6 +556,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_SECURE_SECRET      => 'sometimes|string',
         Entity::GATEWAY_ACCESS_CODE        => 'sometimes|integer|digits:4',
         Entity::GATEWAY_TERMINAL_PASSWORD  => 'sometimes|alpha_num|size:16',
+        Entity::TYPE                       => 'sometimes|array',
     ];
 
     protected static $walletPayumoneyTerminalRules = [
@@ -1107,6 +1109,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_ACCESS_CODE         => 'sometimes|string',
         Entity::GATEWAY_MERCHANT_ID2        => 'sometimes|string',
         Entity::GATEWAY_TERMINAL_ID         => 'sometimes|string',
+        Entity::TYPE                        => 'sometimes|array',
     ];
 
     protected static $editWalletAirtelmoneyTerminalRules = [
