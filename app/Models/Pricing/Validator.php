@@ -65,6 +65,7 @@ class Validator extends Base\Validator
     protected static $addPlanRuleValidators = [
         'addPlanRuleRate',
         'addPlanRuleCard',
+        'addPlanRuleEmi',
         'addPlanRuleNB',
         'addPlanRuleFundAccountValidation',
         'addPlanRuleEmandateOrNach',
@@ -159,6 +160,7 @@ class Validator extends Base\Validator
         // Valid pricing methods for which Payment method type can be added
         $validPricingMethods = [
             Payment\Method::CARD,
+            Payment\Method::EMI,
             Payment\Method::EMANDATE,
             Payout\Method::FUND_TRANSFER,
             Payment\Method::NACH
@@ -291,6 +293,28 @@ class Validator extends Base\Validator
                     $subType = $input[Entity::PAYMENT_METHOD_SUBTYPE];
 
                     SubType::checkSubType($subType);
+                }
+            }
+        }
+    }
+
+    protected function validateaddPlanRuleEmi($input)
+    {
+        if ($input[Entity::PAYMENT_METHOD] === Payment\Method::EMI)
+        {
+            if (isset($input[Entity::PAYMENT_METHOD_TYPE]) === true)
+            {
+                $cardType = $input[Entity::PAYMENT_METHOD_TYPE];
+
+                $validCardTypes = [
+                    CardType::DEBIT,
+                    CardType::CREDIT,
+                ];
+
+                if (in_array($cardType, $validCardTypes, true) === false)
+                {
+                    throw new Exception\BadRequestValidationFailureException(
+                        'Payment method type for card should be debit / credit');
                 }
             }
         }

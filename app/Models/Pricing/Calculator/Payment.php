@@ -412,6 +412,7 @@ class Payment extends Base
     {
         $payment = $this->entity;
         $emiPlan = $payment->emiPlan;
+        $cardType = $payment->card->getTypeElseDefault();
 
         $network = Card\Network::getCode($payment->card->getNetwork());
 
@@ -422,9 +423,10 @@ class Payment extends Base
         //Emi duration and issuer filter is for merchant subvented model
         //in normal emi it will be null where feature is payment
         $filters1 = array(
-            [Pricing\Entity::PAYMENT_NETWORK, $network,     true, null ],
-            [Pricing\Entity::PAYMENT_ISSUER,  $issuer,      true, null ],
-            [Pricing\Entity::EMI_DURATION,    $emiDuration, true, null ]
+            [Pricing\Entity::PAYMENT_NETWORK,        $network,     true, null ],
+            [Pricing\Entity::PAYMENT_ISSUER,         $issuer,      true, null ],
+            [Pricing\Entity::PAYMENT_METHOD_TYPE,    $cardType,    true, null ],
+            [Pricing\Entity::EMI_DURATION,           $emiDuration, true, null ],
         );
 
         $rules = $this->applyFiltersOnRules($rules, $filters1);

@@ -247,6 +247,24 @@ class PricingTest extends TestCase
         $this->startTest($testData);
     }
 
+    public function testAddPricingPlanEmi()
+    {
+        $content = $this->createPricingPlan();
+
+        $testData['request']['url'] = '/pricing/'.$content['id'] . '/rule';
+
+        $this->startTest($testData);
+    }
+
+    public function testAddPricingPlanEmiDebit()
+    {
+        $content = $this->createPricingPlan();
+
+        $testData['request']['url'] = '/pricing/'.$content['id'] . '/rule';
+
+        $this->startTest($testData);
+    }
+
     public function testAddPricingPlanFundAccountValidationRule()
     {
         $content = $this->createPricingPlan();
@@ -1384,6 +1402,131 @@ class PricingTest extends TestCase
         $testData['request']['url'] = '/pricing/'. $content['id'] . '/rule';
 
         $this->startTest($testData);
+    }
+
+    public function testCreatePaymentEmiMethodTypePricing()
+    {
+        $this->mockCardVault();
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $this->fixtures->iin->create([
+            'iin'      => '555555',
+            'country'  => 'IN',
+            'network'  => 'MasterCard',
+            'type'     => 'credit',
+            'sub_type' => 'business',
+            'issuer'   => 'HDFC',
+            'emi'      => 1,
+        ]);
+
+        $defaultPricingPlan = [
+            'plan_name'      => 'TestPlan1',
+            'payment_method' => 'emi',
+            'percent_rate'   => 1000,
+            'fixed_rate'     => 0,
+            'payment_issuer' => 'HDFC',
+            'payment_network' => 'MC',
+            'emi_duration'   => 9,
+            'org_id'         => '10000000000000',
+            'type'           => 'pricing',
+        ];
+
+        $plan = $this->createPricingPlan($defaultPricingPlan);
+
+        $this->fixtures->create('emi_plan:default_emi_plans');
+
+        $this->fixtures->create('terminal:shared_hdfc_emi_terminal');
+
+        $this->fixtures->merchant->enableEmi();
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => $plan['id']]);
+
+        $payment['card']['number'] = '555555555555558';
+        $payment['amount']         = 500000;
+        $payment['method']         = 'emi';
+        $payment['emi_duration']   = 9;
+
+        $this->doAuthAndCapturePayment($payment);
+
+        $paymentObj = $this->getDbLastEntityToArray('payment');
+
+        $this->assertEquals('50000', ($paymentObj['fee'] - $paymentObj['tax']));
+    }
+
+    public function testCreatePaymentEmiMethodTypePricingDebit()
+    {
+        $this->mockCardVault();
+
+        $this->gateway = 'mozart';
+
+        $this->ba->publicAuth();
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $this->fixtures->iin->create([
+            'iin'      => '555555',
+            'country'  => 'IN',
+            'network'  => 'MasterCard',
+            'type'     => 'debit',
+            'issuer'   => 'HDFC',
+            'emi'      => 1,
+        ]);
+
+        $defaultPricingPlan = [
+            'plan_name'           => 'TestPlan1',
+            'payment_method'      => 'emi',
+            'payment_method_type' => 'debit',
+            'percent_rate'        => 1000,
+            'fixed_rate'          => 0,
+            'payment_issuer'      => 'HDFC',
+            'payment_network'     => 'MC',
+            'emi_duration'        => 9,
+            'org_id'              => '10000000000000',
+            'type'                => 'pricing',
+        ];
+
+        $plan = $this->createPricingPlan($defaultPricingPlan);
+
+        $this->fixtures->emiPlan->create(
+            [
+                'merchant_id' => '10000000000000',
+                'bank'        => 'HDFC',
+                'type'        => 'debit',
+                'rate'        => 1200,
+                'min_amount'  => 300000,
+                'duration'    => 9,
+            ]);
+
+        $this->fixtures->create('terminal:hdfc_debit_emi');
+
+        $this->fixtures->merchant->enableEmi();
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => $plan['id']]);
+
+        $payment['card']['number'] = '555555555555558';
+        $payment['amount']         = 500000;
+        $payment['method']         = 'emi';
+        $payment['emi_duration']   = 9;
+
+        $this->doAuthPayment($payment);
+        $payment = $this->getDbLastEntity('payment');
+        $data = $this->testData[__FUNCTION__];
+
+        $url = $this->getOtpSubmitUrl($payment);
+
+        $data['request']['url'] = $url;
+
+        $this->runRequestResponseFlow($data);
+
+        $this->capturePayment(
+            'pay_' .$payment['id'],
+            $payment['amount'],
+            'INR');
+
+        $paymentObj = $this->getDbLastEntityToArray('payment');
+
+        $this->assertEquals('50000', ($paymentObj['fee'] - $paymentObj['tax']));
     }
 
     public function testCreatePaymentCardSubTypePricing()

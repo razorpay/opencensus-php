@@ -318,7 +318,7 @@ return [
                         'success'           => false,
                         'error' => [
                             'description'   => 'The payment method type field may be sent only ' .
-                                'when payment method is card/emandate/fund_transfer/nach',
+                                'when payment method is card/emi/emandate/fund_transfer/nach',
                             'code'          => 'BAD_REQUEST_VALIDATION_FAILURE'
                         ]
                     ],
@@ -1234,6 +1234,42 @@ return [
                 'plan_name'           => 'TestPlan1',
                 'payment_method'      => 'cred',
                 'percent_rate'        => 1500
+            ],
+        ],
+    ],
+
+    'testAddPricingPlanEmi' => [
+        'request' => [
+            'content' => [
+                'payment_method' => 'emi',
+                'percent_rate'   => 1500,
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'plan_name'      => 'TestPlan1',
+                'payment_method' => 'emi',
+                'percent_rate'   => 1500,
+            ],
+        ],
+    ],
+
+    'testAddPricingPlanEmiDebit' => [
+        'request' => [
+            'content' => [
+                'payment_method'      => 'emi',
+                'payment_method_type' => 'debit',
+                'percent_rate'        => 1500,
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'plan_name'           => 'TestPlan1',
+                'payment_method'      => 'emi',
+                'payment_method_type' => 'debit',
+                'percent_rate'        => 1500,
             ],
         ],
     ],
@@ -3211,6 +3247,20 @@ return [
                 'amount_range_min'    => null,
                 'amount_range_max'    => null,
             ],
+        ],
+    ],
+
+    'testCreatePaymentEmiMethodTypePricingDebit' => [
+        'request'   => [
+            'method'    => 'POST',
+            'content'   => [
+                'type'  => 'otp',
+                'otp'   => '111111'
+            ]
+        ],
+        'response'  => [
+            'content'     => [],
+            'status_code' => 200,
         ],
     ],
 ];
