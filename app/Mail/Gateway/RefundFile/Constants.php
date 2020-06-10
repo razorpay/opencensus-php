@@ -25,6 +25,7 @@ class Constants extends Base\Constants
         Gateway::WALLET_AIRTELMONEY     => ['settlements@razorpay.com'],
         Gateway::WALLET_PAYUMONEY       => ['settlements@razorpay.com'],
         Gateway::PAYLATER_ICICI         => ['icici.netbanking.refunds@razorpay.com', 'settlements@razorpay.com'],
+        Gateway::NETBANKING_JSB         => ['jsb-netbanking.refunds@razorpay.com','settlements@razorpay.com'],
     ];
 
     const HEADER_MAP = [

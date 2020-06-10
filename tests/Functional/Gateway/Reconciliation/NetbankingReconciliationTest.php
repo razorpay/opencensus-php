@@ -1704,6 +1704,102 @@ class NetbankingReconciliationTest extends TestCase
         $this->assertBatchStatus(Status::PROCESSED);
     }
 
+    public function testJsbSuccessRecon()
+    {
+        $this->gateway = 'netbanking_jsb';
+
+        $payment1 = $this->createPayment($this->gateway);
+
+        $this->createMozartEntity($payment1['id'], $payment1['amount'], 'netbanking_jsb');
+
+        $payment2 = $this->createPayment($this->gateway);
+
+        $this->createMozartEntity($payment2['id'], $payment2['amount'], 'netbanking_jsb');
+
+        $fileContents = $this->generateFile('jsb', ['gateway' => 'netbanking_jsb']);
+
+        $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
+
+        $this->reconcile('NetbankingJsb', $uploadedFile);
+
+        $gatewayEntity = $this->getDbLastEntity('mozart');
+
+        $data = json_decode($gatewayEntity['raw'], true);
+
+        $this->assertNotNull($data['bank_payment_id']);
+
+        $transactionEntity = $this->getDbLastEntity('transaction');
+
+        $this->assertNotNull($transactionEntity['reconciled_at']);
+
+        $this->assertBatchStatus(Status::PROCESSED);
+    }
+
+    public function testJsbSuccessMixedPaymentsRecon()
+    {
+        $this->gateway = 'netbanking_jsb';
+
+        $payment1 = $this->createPayment($this->gateway);
+
+        $this->createMozartEntity($payment1['id'], $payment1['amount'], 'netbanking_jsb');
+
+        $payment2 = $this->createPayment($this->gateway);
+
+        $this->createMozartEntity($payment2['id'], $payment2['amount'], 'netbanking_jsb');
+
+        $payment3 = $this->createFailedPayment($this->gateway);
+
+        $this->createMozartEntity($payment3['id'], $payment3['amount'], 'netbanking_jsb');
+
+        $fileContents = $this->generateFile('jsb', ['gateway' => 'netbanking_jsb']);
+
+        $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
+
+        $this->reconcile('NetbankingJsb', $uploadedFile);
+
+        $gatewayEntity = $this->getDbLastEntity('mozart');
+
+        $data = json_decode($gatewayEntity['raw'], true);
+
+        $this->assertNotNull($data['bank_payment_id']);
+
+        $transactionEntity = $this->getDbLastEntity('transaction');
+
+        $this->assertNotNull($transactionEntity['reconciled_at']);
+
+        $this->assertBatchStatus(Status::PROCESSED);
+    }
+
+    public function testJsbAmountMismatchReconciliation()
+    {
+        $this->gateway = 'netbanking_jsb';
+
+        $this->setMockGatewayTrue();
+
+        $payment = $this->createPayment($this->gateway);
+
+        $this->createMozartEntity($payment['id'], $payment['amount'], 'netbanking_jsb');
+
+        $this->mockReconContentFunction(
+            function(& $content, $action = null)
+            {
+                if ($action === 'col_payment_jsb_nb_recon')
+                {
+                    $content['payment_amount'] = '50';
+                }
+            });
+
+        $fileContents = $this->generateFile('jsb', ['gateway' => 'netbanking_jsb']);
+
+        $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
+
+        $this->reconcile('NetbankingJsb', $uploadedFile);
+
+        $transactionEntity = $this->getDbLastEntity('transaction');
+
+        $this->assertNull($transactionEntity['reconciled_at']);
+    }
+
     protected function reconcile($gateway, $uploadedFile, $forceAuthorizePayments = [])
     {
         $this->ba->appAuth();

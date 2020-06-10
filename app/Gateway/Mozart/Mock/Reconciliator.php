@@ -14,6 +14,7 @@ use RZP\Gateway\Mozart\NetbankingYesb;
 use RZP\Gateway\Mozart\NetbankingKvb;
 use RZP\Gateway\Mozart\NetbankingIbk;
 use RZP\Gateway\Mozart\NetbankingCub;
+use RZP\Gateway\Mozart\NetbankingJsb;
 use RZP\Models\Payment\Gateway as PaymentGateway;
 
 class Reconciliator extends Base\Mock\PaymentReconciliator
@@ -592,6 +593,51 @@ class Reconciliator extends Base\Mock\PaymentReconciliator
         }
 
         return $data;
+    }
+
+    protected function netbanking_jsb($input)
+    {
+        $this->fileExtension = FileStore\Format::TXT;
+
+        $this->fileToWriteName = 'Payment' . Carbon::now(Timezone::IST)->format('Ymdis');
+
+        $data[] = NetbankingJsb\ReconFields::RECON_FIELDS;
+
+        foreach ($input as $row)
+        {
+            $date = Carbon::createFromTimestamp(
+                $row['payment']['created_at'],
+                Timezone::IST)
+                ->format('Y-M-d H:i:s');
+
+            $date = strtoupper($date);
+
+            $status = 'Failed';
+
+            if(($row['payment']['status']) === 'authorized')
+            {
+                $status = 'Success';
+            }
+
+            $col = [
+                NetbankingJsb\ReconFields::PAYMENT_ID            => $row['payment']['id'],
+                NetbankingJsb\ReconFields::BANK_REFERENCE_NUMBER => $this->fetchFieldFromJsonData($row['mozart']['raw'], 'bank_payment_id'),
+                NetbankingJsb\ReconFields::CURRENCY              => 'INR',
+                NetbankingJsb\ReconFields::PAYMENT_AMOUNT        => $row['payment']['amount'] / 100,
+                NetbankingJsb\ReconFields::STATUS                => $status,
+                NetbankingJsb\ReconFields::TRANSACTION_DATE      => $date,
+                NetbankingJsb\ReconFields::MERCHANT_CODE         => $row['payment']['merchant_id'],
+                NetbankingJsb\ClaimFields::MERCHANT_NAME         => 'RAZORPAY',
+            ];
+
+            $this->content($col, 'col_payment_jsb_nb_recon');
+
+            $data[] = $col;
+        }
+
+        $formattedData = $this->generateText($data, '|');
+
+        return $formattedData;
     }
 
     public function generateReconciliation(array $input)

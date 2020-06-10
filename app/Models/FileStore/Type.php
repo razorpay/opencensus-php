@@ -104,6 +104,10 @@ class Type
 
     const SCB_NETBANKING_REFUND             = 'scb_netbanking_refund';
 
+    const JSB_NETBANKING_REFUND             = 'jsb_netbanking_refund';
+
+    const JSB_NETBANKING_CLAIM              = 'jsb_netbanking_claim';
+
     const AIRTELMONEY_WALLET_REFUND         = 'airtelmoney_wallet_refund';
 
     const PAYUMONEY_WALLET_REFUND           = 'payumoney_wallet_refund';
@@ -248,6 +252,8 @@ class Type
             self::SVC_NETBANKING_REFUND,
             self::SCB_NETBANKING_CLAIM,
             self::SCB_NETBANKING_REFUND,
+            self::JSB_NETBANKING_REFUND,
+            self::JSB_NETBANKING_CLAIM,
             self::AIRTELMONEY_WALLET_REFUND,
             self::PAYUMONEY_WALLET_REFUND,
             self::RBL_NETBANKING_CLAIM,
@@ -385,6 +391,8 @@ class Type
         self::CUB_NETBANKING_CLAIM,
         self::CUB_NETBANKING_REFUND,
         self::IBK_NETBANKING_REFUND,
+        self::JSB_NETBANKING_REFUND,
+        self::JSB_NETBANKING_CLAIM,
         self::INDUSIND_NETBANKING_REFUND,
         self::INDUSIND_NETBANKING_CLAIM,
         self::SIB_NETBANKING_REFUND,
