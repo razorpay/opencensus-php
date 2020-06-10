@@ -353,12 +353,6 @@ class Constants
     const PAYMENT_CREATED_WEBHOOK  = 'payment_created_webhook';
 
     const PAYMENT_CONFIG_ENABLED   = 'payment_config_enabled';
-    /*
-     * Enable Stork migration for a banking merchant
-     * This is temp until all merchants are not migrated
-     * Note - We can't user razorX because of external dependency issue and migration is irreversible
-     */
-    const BANKING_STORK_MIGRATION = 'banking_stork_migration';
 
     /*
      * This feature will be used to pass order receipt in cybersource gateway requests
@@ -596,7 +590,6 @@ class Constants
         self::DCC                             => true,
         self::PAYMENT_CREATED_WEBHOOK         => true,
         self::PAYMENT_CONFIG_ENABLED          => false,
-        self::BANKING_STORK_MIGRATION         => true,
         self::CYBERSOURCE_VAS                 => true,
         self::CHECKOUT_DISABLE_RETRY          => true,
         self::COVID                           => true,

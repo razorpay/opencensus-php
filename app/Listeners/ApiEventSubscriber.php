@@ -949,6 +949,16 @@ class ApiEventSubscriber extends Base\Core
 
     protected function getPayoutLinkPayload(PayoutLinkEntity $payoutLink): array
     {
+        try
+        {
+            $this->setMerchantProductForStork($payoutLink->merchant, $payoutLink->balance->getType());
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e, Logger::WARNING, TraceCode::STORK_PRODUCT_SET_FAILED);
+        }
+
         return [
             Constants\Entity::PAYOUT_LINK => [
                 'entity' => $payoutLink->toArrayPublic(),
@@ -1203,8 +1213,7 @@ class ApiEventSubscriber extends Base\Core
     protected function setMerchantProductForStork(Merchant\Entity $merchant, $balanceType)
     {
         // feature flag check is for stork migration
-        if (($balanceType === Merchant\Balance\Type::BANKING) and
-            $merchant->isFeatureEnabled(Feature\Constants::BANKING_STORK_MIGRATION))
+        if ($balanceType === Merchant\Balance\Type::BANKING)
         {
             $this->trace->info(TraceCode::STORK_DISPATCH_EVENT_REQUEST_PRODUCT_BANKING,
                                ['merchant_id' => $merchant->getId()]);

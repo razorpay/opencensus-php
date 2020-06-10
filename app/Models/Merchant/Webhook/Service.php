@@ -11,8 +11,7 @@ class Service extends Base\Service
 {
     public function createWebhook(Merchant\Entity $merchant, array $input)
     {
-        if ($this->auth->isProductBanking() and
-            $this->merchant->isFeatureEnabled(Constants::BANKING_STORK_MIGRATION))
+        if ($this->auth->isProductBanking())
         {
             return $this->core()->createToStork(
                 $merchant,
@@ -26,8 +25,7 @@ class Service extends Base\Service
 
     public function editWebhook(Merchant\Entity $merchant, string $webhookId, array $input)
     {
-        if ($this->auth->isProductBanking() and
-            $this->merchant->isFeatureEnabled(Constants::BANKING_STORK_MIGRATION))
+        if ($this->auth->isProductBanking())
         {
             return $this->core()->updateToStork($merchant, $webhookId, $input, Product::BANKING);
         }
@@ -86,8 +84,7 @@ class Service extends Base\Service
     public function fetchWebhooks($params)
     {
         // return stork setting if banking stork migration feature is enabled
-        if ($this->auth->isProductBanking() and
-            $this->merchant->isFeatureEnabled(Constants::BANKING_STORK_MIGRATION))
+        if ($this->auth->isProductBanking())
         {
             $webhooks = $this->core()->fetchFromStork($this->merchant, Product::BANKING);
         }

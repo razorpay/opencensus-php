@@ -224,6 +224,8 @@ class WebhookTest extends TestCase
 
     public function testCreateWebhookForProductBanking()
     {
+        $this->markTestSkipped("Duplicate of testCreateWebhookForProductBankingWithStork");
+
         // This is required, because this is going to on board the merchant on X on the test mode
         // which requires the terminal entity to be present
         $this->fixtures->create('terminal:bank_account_terminal_for_business_banking',
@@ -236,10 +238,8 @@ class WebhookTest extends TestCase
         $this->assertNotNull($response['id']);
     }
 
-    public function testCreateWebhookWithFeatureOnWithStork()
+    public function testCreateWebhookWithStork()
     {
-        $this->fixtures->merchant->addFeatures([Feature\Constants::BANKING_STORK_MIGRATION]);
-
         $createExpectedPayload = $this->testData['createRequestStorkProductPrimaryFeatureOn'];
 
         $this->mockServiceStorkRequest(
@@ -252,13 +252,11 @@ class WebhookTest extends TestCase
         $this->startTest();
     }
 
-    public function testEditWebhookWithFeatureOnWithStork()
+    public function testEditWebhookWithStork()
     {
         $webhook = $this->createWebhook();
 
         $this->testData[__FUNCTION__]['request']['url'] = '/webhooks/'.$webhook['id'];
-
-        $this->fixtures->merchant->addFeatures([Feature\Constants::BANKING_STORK_MIGRATION]);
 
         $updateExpectedPayload = $this->testData['editRequestStorkProductPrimaryFeatureOn'];
 
@@ -274,7 +272,6 @@ class WebhookTest extends TestCase
     public function testCreateWebhookForProductBankingWithStork()
     {
         $this->fixtures->merchant->addFeatures(['payout']);
-        $this->fixtures->merchant->addFeatures([Feature\Constants::BANKING_STORK_MIGRATION]);
 
         $this->mockServiceStorkRequest(
             function ($path, $payload)
@@ -285,7 +282,7 @@ class WebhookTest extends TestCase
 
                 if ($path === "/twirp/rzp.stork.webhook.v1.WebhookAPI/Create")
                 {
-                    return $this->getStorkCreateResponse();
+                    return $this->getStorkCreateResponse('rx-live', 'http://webhook.com/v1/dummy/route', ['payout.created']);
                 }
 
                 return new \Requests_Response();
@@ -294,72 +291,9 @@ class WebhookTest extends TestCase
         $this->startTest();
     }
 
-    public function testCreateWebhookForProductBankingWithFeatureOffWithStork()
-    {
-        $createExpectedPayload = $this->testData['storkCreateRequestBanking'];
-        $updateExpectedPayload = $this->testData['storkUpdateRequestPrimary'];
-
-        $this->mockServiceStorkRequest(
-            function ($path, $payload) use ( $createExpectedPayload, $updateExpectedPayload )
-            {
-                switch ($path)
-                {
-                    case '/twirp/rzp.stork.webhook.v1.WebhookAPI/List':
-                        return $this->getStorkListResponseEmpty();
-
-                    case '/twirp/rzp.stork.webhook.v1.WebhookAPI/Create':
-                        $this->assertArraySelectiveEquals($createExpectedPayload, $payload);
-                        break;
-
-                    case '/twirp/rzp.stork.webhook.v1.WebhookAPI/Update':
-                        $this->assertArraySelectiveEquals($updateExpectedPayload, $payload);
-                        break;
-                }
-
-                return new \Requests_Response();
-            })->times(3);
-
-        $this->testCreateWebhookForProductBanking();
-    }
-
-    public function testEditWebhookWithFeatureOffStorkRequest()
-    {
-        $webhook = $this->createWebhook();
-
-        $this->testData[__FUNCTION__]['request']['url'] = '/webhooks/'.$webhook['id'];
-
-        $createExpectedPayloadBanking = $this->testData['testEditWebhookStorkCreateRequestBanking'];
-        $updateExpectedPayloadPrimary = $this->testData['testEditWebhookStorkUpdateRequestPrimary'];
-
-        $this->mockServiceStorkRequest(
-            function ($path, $payload) use ( $createExpectedPayloadBanking, $updateExpectedPayloadPrimary )
-            {
-                switch ($path)
-                {
-                    case '/twirp/rzp.stork.webhook.v1.WebhookAPI/List':
-                        return $this->getStorkListResponseEmpty();
-
-                    case '/twirp/rzp.stork.webhook.v1.WebhookAPI/Create':
-                        $this->assertArraySelectiveEquals($createExpectedPayloadBanking, $payload);
-                        break;
-
-                    case '/twirp/rzp.stork.webhook.v1.WebhookAPI/Update':
-                        $this->assertArraySelectiveEquals($updateExpectedPayloadPrimary, $payload);
-                        break;
-                }
-
-                return new \Requests_Response();
-            })->times(3);
-
-        $this->fixtures->merchant->edit('10000000000000', ['business_banking' => 1]);
-
-        $this->startTest();
-    }
-
     public function testCreateWebhookForProductBankingWithInvalidEventsWithStork()
     {
         $this->fixtures->merchant->addFeatures(['payout']);
-        $this->fixtures->merchant->addFeatures([Feature\Constants::BANKING_STORK_MIGRATION]);
 
         $this->mockServiceStorkRequest(
             function ($path, $payload)
@@ -373,7 +307,6 @@ class WebhookTest extends TestCase
     public function testEditWebhookForProductBankingWithStork()
     {
         $this->fixtures->merchant->addFeatures(['payout']);
-        $this->fixtures->merchant->addFeatures([Feature\Constants::BANKING_STORK_MIGRATION]);
 
         $this->mockServiceStorkRequest(
             function ($path, $payload)
@@ -393,7 +326,6 @@ class WebhookTest extends TestCase
 
     public function testGetWebhooksProductBankingWithStork()
     {
-        $this->fixtures->merchant->addFeatures([Feature\Constants::BANKING_STORK_MIGRATION]);
         $this->fixtures->merchant->addFeatures(['payout']);
 
         $this->mockServiceStorkRequest(
@@ -422,7 +354,7 @@ class WebhookTest extends TestCase
                 {
                     $this->assertArraySelectiveEquals($createExpectedPayloadBanking, $payload);
 
-                    return $this->getStorkCreateResponse();
+                    return $this->getStorkCreateResponse('rx-live', 'http://webhook.com/v1/dummy/route', []);
                 }
 
                 return new \Requests_Response();
@@ -435,6 +367,8 @@ class WebhookTest extends TestCase
 
     public function testCreateWebhookForProductBankingWithInvalidEvents()
     {
+        $this->markTestSkipped("Duplicate of testCreateWebhookForProductBankingWithInvalidEventsWithStork");
+
         // This is required, because this is going to on board the merchant on X on the test mode
         // which requires the terminal entity to be present
         $this->fixtures->create('terminal:bank_account_terminal_for_business_banking',

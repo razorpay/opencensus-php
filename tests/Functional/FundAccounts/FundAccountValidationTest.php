@@ -318,7 +318,6 @@ class FundAccountValidationTest extends TestCase
         $testData = $this->testData['testFiringOfWebhookOnFAVCompletionWithStork'];
 
         $this->enableRazorXTreatmentForStork();
-        $this->fixtures->merchant->addFeatures([Feature\Constants::BANKING_STORK_MIGRATION]);
 
         $this->mockServiceStorkRequest(
             function ($path, $payload) use ($testData)

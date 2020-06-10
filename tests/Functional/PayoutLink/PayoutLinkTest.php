@@ -21,6 +21,7 @@ use RZP\Mail\PayoutLink\CustomerOtp;
 use RZP\Exception\BadRequestException;
 use RZP\Models\PayoutLink\TokenService;
 use RZP\Tests\Traits\TestsWebhookEvents;
+use RZP\Tests\Functional\Helpers\WebhookTrait;
 use RZP\Services\Elfin\Service as ElfinService;
 use RZP\Models\PayoutLink\Entity as PayoutLink;
 use RZP\Tests\Functional\Helpers\MocksDnsTrait;
@@ -36,6 +37,7 @@ class PayoutLinkTest extends TestCase
     use RequestResponseFlowTrait;
     use DbEntityFetchTrait;
     use EntityActionTrait;
+    use WebhookTrait;
     use MocksDnsTrait;
     use TestsWebhookEvents;
 
@@ -93,6 +95,8 @@ class PayoutLinkTest extends TestCase
         $this->bankAccount->saveOrFail();
 
         $this->config = App::getFacadeRoot()['config'];
+
+        $this->mockStorkService();
     }
 
     public function testBoolCastingInPayoutLinkNotification()
@@ -111,32 +115,75 @@ class PayoutLinkTest extends TestCase
 
         $this->ba->addXOriginHeader();
 
+        $this->mockServiceStorkRequest(
+            function ($path, $payload)
+            {
+                switch ($path)
+                {
+                    case "/twirp/rzp.stork.webhook.v1.WebhookAPI/Create":
+                        return $this->getStorkCreateResponse("rx-test", "https://www.example.com",
+                                                             [
+                                                                 "payout.created",
+                                                                 "payout_link.issued",
+                                                                 "payout_link.processing",
+                                                                 "payout_link.processed",
+                                                                 "payout_link.attempted",
+                                                                 "payout_link.cancelled",
+                                                             ]);
+                        break;
+
+                    case "/twirp/rzp.stork.webhook.v1.WebhookAPI/List":
+                        $this->getStorkListResponseEmpty();
+                        break;
+                }
+
+                return new \Requests_Response();
+            });
+
         $this->startTest();
-
-        $newWebhook = $this->getDbEntity('webhook',['merchant_id' => '10000000000000']);
-
-        $events2Value = $newWebhook->getAttributes()['events2'];
-
-        $this->assertEquals(31, $events2Value);
-
-        return $newWebhook;
     }
 
     public function testWebhooksUpdate()
     {
-        $newWebhook = $this->testWebhooksEnabled();
-
         $this->ba->proxyAuth();
 
         $this->ba->addXOriginHeader();
 
-        $this->testData[__FUNCTION__]['request']['url'] = '/webhooks/' . $newWebhook->getId();
+        $this->testData[__FUNCTION__]['request']['url'] = '/webhooks/EZ4ezgl4124qKu';
+
+        $this->mockServiceStorkRequest(
+            function ($path, $payload)
+            {
+                switch ($path)
+                {
+                    case "/twirp/rzp.stork.webhook.v1.WebhookAPI/Get":
+                        return $this->getStorkCreateResponse("rx-test", "https://www.example.com",
+                            [
+                                "payout.created",
+                                "payout_link.issued",
+                                "payout_link.processing",
+                                "payout_link.processed",
+                                "payout_link.attempted",
+                                "payout_link.cancelled",
+                            ]);
+                        break;
+
+                    case "/twirp/rzp.stork.webhook.v1.WebhookAPI/Update":
+                        return $this->getStorkCreateResponse("rx-test", "https://www.example.com",
+                            [
+                                "payout.created",
+                                "payout_link.processing",
+                                "payout_link.processed",
+                                "payout_link.cancelled",
+                            ]);
+
+                        break;
+                }
+
+                return new \Requests_Response();
+            });
 
         $this->startTest();
-
-        $events2Value = $this->getDbEntity('webhook',['merchant_id' => '10000000000000'])->getAttributes()['events2'];
-
-        $this->assertEquals(22, $events2Value);
     }
 
     public function testWebhooksEnabledPartial()
@@ -145,11 +192,30 @@ class PayoutLinkTest extends TestCase
 
         $this->ba->addXOriginHeader();
 
+        $this->mockServiceStorkRequest(
+            function ($path, $payload)
+            {
+                switch ($path)
+                {
+                    case "/twirp/rzp.stork.webhook.v1.WebhookAPI/Create":
+                        return $this->getStorkCreateResponse("rx-test", "https://www.example.com",
+                            [
+                                "payout.created",
+                                "payout_link.processing",
+                                "payout_link.attempted",
+                                "payout_link.cancelled",
+                            ]);
+                        break;
+
+                    case "/twirp/rzp.stork.webhook.v1.WebhookAPI/List":
+                        $this->getStorkListResponseEmpty();
+                        break;
+                }
+
+                return new \Requests_Response();
+            });
+
         $this->startTest();
-
-        $events2Value = $this->getDbEntity('webhook',['merchant_id' => '10000000000000'])->getAttributes()['events2'];
-
-        $this->assertEquals(14, $events2Value);
     }
 
     public function testExceptionOnCreatePayoutLinkWithoutOtpOnProxyAuth()

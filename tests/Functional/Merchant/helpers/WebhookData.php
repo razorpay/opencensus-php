@@ -373,7 +373,7 @@ return [
         ],
     ],
 
-    'testCreateWebhookWithFeatureOnWithStork' => [
+    'testCreateWebhookWithStork' => [
         'request' => [
             'url'     => '/webhooks',
             'content' => [
@@ -395,7 +395,7 @@ return [
         ]
     ],
 
-    'testEditWebhookWithFeatureOnWithStork' => [
+    'testEditWebhookWithStork' => [
         'request' => [
             'url'       => '/webhooks',
             'content' => [
@@ -416,27 +416,6 @@ return [
                 'active' => true,
             ],
         ]
-    ],
-
-    'testEditWebhookWithFeatureOffStorkRequest' => [
-        'request' => [
-            'url'       => '/webhooks/3232',
-            'content'   => [
-                'url'       => 'http://webhook.com/v1/dummy/route',
-                'events'    => [
-                    'payment.failed' => '1',
-                ],
-            ],
-            'method'    => 'PUT',
-        ],
-        'response' => [
-            'content' => [
-                'url'       => 'http://webhook.com/v1/dummy/route',
-                'events'    => [
-                    'payment.failed' => true,
-                ],
-            ],
-        ],
     ],
 
     'testCreateWebhookForProductBankingWithStork' => [

@@ -122,26 +122,27 @@ trait WebhookTrait
         return $res;
     }
 
-    protected function getStorkCreateResponse()
+    protected function getStorkCreateResponse(string $service, string $url, array $events)
     {
         $res = new \Requests_Response();
+
+        $subscriptions = [];
+        foreach ($events as $event)
+        {
+            $subscriptions[] = ['eventmeta'  => ['name' => $event]];
+        }
+
         $body =  [
             'webhook' => [
                 'id'            => 'EZ4ezgl4124qKu',
                 'created_at'    => '2020-04-01T03:32:10Z',
-                'service'       => 'rx-live',
+                'service'       => $service,
                 'owner_id'      => '10000000000000',
                 'owner_type'    => 'merchant',
                 'context'       => '{"mode":"test"}',
                 'disabled_at'   => '1970-01-01T00:00:00Z',
-                'url'           => 'http://webhook.com/v1/dummy/route'  ,
-                'subscriptions' => [
-                    [
-                        'id'         => 'EZ4ezhzqgKNjxI',
-                        'created_at' => '2020-04-01T03:32:10Z',
-                        'eventmeta'  => ['name' => 'payout.created',],
-                    ],
-                ],
+                'url'           => $url,
+                'subscriptions' => $subscriptions,
             ]
         ];
 

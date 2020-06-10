@@ -51,12 +51,16 @@ return [
     'testWebhooksUpdate' => [
         'request'  => [
             'method'  => 'PUT',
-            'url'     => '/webhooks',
+            'url'     => '/webhooks/{id}',
             'content' => [
                 'url'    => 'https://www.example.com',
                 'events' => [
+                    'payout.created'         => '1',
                     'payout_link.attempted'  => '0',
                     'payout_link.issued'     => '0',
+                    'payout_link.processing' => '1',
+                    'payout_link.processed'  => '1',
+                    'payout_link.cancelled'  => '1',
                 ]
             ]
         ],
@@ -64,6 +68,7 @@ return [
             'content' => [
                 'url'    => 'https://www.example.com',
                 'events' => [
+                    'payout.created'         => true,
                     'payout_link.issued'     => false,
                     'payout_link.processing' => true,
                     'payout_link.processed'  => true,

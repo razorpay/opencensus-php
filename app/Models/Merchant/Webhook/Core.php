@@ -603,15 +603,6 @@ class Core extends Base\Core
         try
         {
             $this->upsertToStork($merchant, $webhook, Product::PRIMARY);
-
-            // Copy webhook setting for X if business banking is ON for Merchant
-            // Don't write to X service on Stork if feature is ON
-            // This will go away after complete rollout of webhook separation for X and PG
-            if (!$merchant->isFeatureEnabled(Constants::BANKING_STORK_MIGRATION) and
-                $merchant->isBusinessBankingEnabled() === true)
-            {
-                $this->upsertToStork($merchant, $webhook, Product::BANKING);
-            }
         }
         catch (\Throwable $e)
         {
@@ -696,8 +687,7 @@ class Core extends Base\Core
                 /** @var Merchant\Entity $merchant */
                 $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
-                if (($merchant->isBusinessBankingEnabled() === true) &&
-                    ($merchant->isFeatureEnabled(Constants::BANKING_STORK_MIGRATION) === false))
+                if ($merchant->isBusinessBankingEnabled() === true)
                 {
                     $webhook = $this->repo->webhook->findByMerchant($merchant);
 

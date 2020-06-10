@@ -3121,8 +3121,6 @@ class PayoutTest extends TestCase
         // stork is called regardless event setting is enabled or not
         $this->mockRazorxTreatment('yesbank', 'on', 'on');
 
-        $this->fixtures->merchant->addFeatures([Feature\Constants::BANKING_STORK_MIGRATION]);
-
         $payoutQueuedEventData = $this->testData['testFiringOfWebhookOnQueuedPayoutEventData'];
 
         $payoutInitiatedEventData = $this->testData['testFiringOfWebhookOnInitiatedPayoutEventData'];
@@ -3170,8 +3168,6 @@ class PayoutTest extends TestCase
         // stork is called regardless event setting is enabled or not
         $this->mockRazorxTreatment('yesbank', 'on', 'on');
 
-        $this->fixtures->merchant->addFeatures([Feature\Constants::BANKING_STORK_MIGRATION]);
-
         $payoutUpdatedEventData = $this->testData['testFiringOfWebhookOnUpdateOfPayoutEventData'];
         $payoutProcessedEventData = $this->testData['testFiringOfWebhookOnProcessPayoutEventData'];
 
@@ -3210,8 +3206,6 @@ class PayoutTest extends TestCase
 
         $this->mockRazorxTreatment('yesbank', 'on', 'on');
 
-        $this->fixtures->merchant->addFeatures([Feature\Constants::BANKING_STORK_MIGRATION]);
-
         $eventData = $this->testData['testFiringOfWebhookOnRejectionOfPayoutEventData'];
 
         $this->mockServiceStorkRequest(
@@ -3235,8 +3229,6 @@ class PayoutTest extends TestCase
         $this->setupMockDns();
 
         $this->mockRazorxTreatment('yesbank', 'on', 'on');
-
-        $this->fixtures->merchant->addFeatures([Feature\Constants::BANKING_STORK_MIGRATION]);
 
         $testData = $this->testData['testFiringOfWebhookOnCreationOfPendingPayoutEventData'];
 
@@ -3622,8 +3614,6 @@ class PayoutTest extends TestCase
     {
         Mail::fake();
 
-        $this->fixtures->merchant->addFeatures([Feature\Constants::BANKING_STORK_MIGRATION]);
-
         $this->testCreatePayout();
 
         $payout = $this->getDbLastEntity('payout');
@@ -3699,8 +3689,6 @@ class PayoutTest extends TestCase
     public function testTransactionCreatedWebhookAndPayoutReversedEmailNotFiringForCurrentAccountPayout()
     {
         Mail::fake();
-
-        $this->fixtures->merchant->addFeatures([Feature\Constants::BANKING_STORK_MIGRATION]);
 
         $this->createDirectAccountPayout();
 
