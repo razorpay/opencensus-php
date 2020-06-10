@@ -13,6 +13,7 @@ import EnableInstantRefundsModal from 'merchant/views/Transactions/Payments/comp
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
 import InstantRefundFee from 'merchant/views/Transactions/Payments/components/InstantRefundFee';
 import { fetchRefundPricing } from 'merchant/reducers/config';
+import RTracking from 'react-tracking';
 
 @connect(
   state => {
@@ -31,6 +32,7 @@ import { fetchRefundPricing } from 'merchant/reducers/config';
     fetchRefundPricing,
   }
 )
+@RTracking(() => window.rzpQ.component('DefaultRefundSpeed'))
 export default class DefaultRefundSpeed extends Component {
   static contextTypes = {
     confirm: PropTypes.func,
@@ -54,6 +56,20 @@ export default class DefaultRefundSpeed extends Component {
   }
 
   changeDefaultRefundSpeed = speed => {
+    this.props.tracking.trackEvent(
+      window.rzpQ
+        .merchantActions()
+        .initiated(
+          `Click - ${
+            speed === 'normal' ? 'Normal' : 'Instant'
+          } Refund Radio Button`,
+          {
+            label: 'Setting Page',
+            session_id: window.session_id,
+            category: 'Merchant Dashboard - IR',
+          }
+        )
+    );
     this.props.openModal({
       component: (
         <EnableInstantRefundsModal
@@ -68,14 +84,6 @@ export default class DefaultRefundSpeed extends Component {
   };
 
   checkDefaultRefundSpeed = speed => {
-    if (speed === 'optimum') {
-      let label;
-      window.rzpAnalytics({
-        eventCategory: 'Dashboard - Instant Refund',
-        eventAction: 'Yes Enable',
-        eventLabel: label,
-      });
-    }
     this.changeDefaultRefundSpeed(speed);
   };
 
@@ -207,6 +215,15 @@ export default class DefaultRefundSpeed extends Component {
                   <strong
                     class="pointer"
                     onClick={() => {
+                      this.props.tracking.trackEvent(
+                        window.rzpQ
+                          .merchantActions()
+                          .initiated(`Click - Minimal Fee`, {
+                            label: `Setting Page`,
+                            session_id: window.session_id,
+                            category: 'Merchant Dashboard - IR',
+                          })
+                      );
                       this.props.openModal({
                         component: (
                           <InstantRefundFee

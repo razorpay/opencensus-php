@@ -5,6 +5,7 @@ import Button from 'common/new-ui/Button';
 import EnableInstantRefundsModal from 'merchant/views/Transactions/Payments/components/EnableInstantRefundsModal';
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
 import { showWhenUtil } from 'merchant/components/ShowWhen';
+import RTracking from 'react-tracking';
 
 import {
   fetchPayments,
@@ -77,6 +78,7 @@ const Row = ({ record, tabName, tabTitle, sectionTitle, displayCompact }) => {
     fetchSettlements,
   }
 )
+@RTracking(() => window.rzpQ.component('RecentActivity'))
 export default class RecentActivity extends Component {
   constructor(props) {
     super(props);
@@ -131,6 +133,13 @@ export default class RecentActivity extends Component {
       eventAction: 'Enable Now',
       eventLabel: `Recent Activity | Enable Now`,
     });
+    this.props.tracking.trackEvent(
+      window.rzpQ.merchantActions().initiated(`Click - Enable Now`, {
+        label: 'Recent Activity',
+        session_id: window.session_id,
+        category: 'Merchant Dashboard - IR',
+      })
+    );
   };
 
   render() {

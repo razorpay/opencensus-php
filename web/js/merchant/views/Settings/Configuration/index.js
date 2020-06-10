@@ -11,6 +11,7 @@ import InternationalConfig from './InternationalConfig';
 import PaymentSettings from './PaymentSettings';
 import PaypalOnboarding from './PaypalOnboarding';
 import { showWhenUtil } from 'merchant/components/ShowWhen';
+import RTracking from 'react-tracking';
 
 @connect(
   state => {
@@ -22,6 +23,7 @@ import { showWhenUtil } from 'merchant/components/ShowWhen';
   },
   { ...ConfigActions, ...NotificationActions }
 )
+@RTracking(() => window.rzpQ.component('CongfigurationContainer'))
 export default class CongfigurationContainer extends Component {
   componentWillMount() {
     this.props.fetchFeatures(this.props.user.current).catch(err => {
@@ -31,7 +33,7 @@ export default class CongfigurationContainer extends Component {
       });
     });
   }
-
+  is_hash_loaded_once = false;
   saveConfig = ({ brand_color, transaction_report_email }) => {
     let data = {
       brand_color: brand_color ? brand_color.substr(1).toUpperCase() : null,
@@ -67,11 +69,22 @@ export default class CongfigurationContainer extends Component {
       setTimeout(() => this.scrollIntoView('paypal-auto-onboarding'), 1000);
     }
     if (this.props.location.hash === '#instantrefunds') {
-      window.rzpAnalytics({
-        eventCategory: 'Dashboard - Instant Refund',
-        eventAction: 'Enable Now',
-        eventLabel: `Announcement | Enable Now`,
-      });
+      if (!this.is_hash_loaded_once) {
+        window.rzpAnalytics({
+          eventCategory: 'Dashboard - Instant Refund',
+          eventAction: 'Enable Now',
+          eventLabel: `Announcement | Enable Now`,
+        });
+        this.props.tracking.trackEvent(
+          window.rzpQ.merchantActions().initiated(`Click - Enable Now`, {
+            label: 'Announcement Tab',
+            session_id: window.session_id,
+            category: 'Merchant Dashboard - IR',
+          })
+        );
+        this.is_hash_loaded_once = true;
+      }
+
       setTimeout(() => {
         this.scrollIntoView('default-refund-container');
         const el = document.getElementById('instant-refund-panel-col');

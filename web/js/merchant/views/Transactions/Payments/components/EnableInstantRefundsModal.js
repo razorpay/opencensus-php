@@ -13,6 +13,7 @@ import Popover, { PopoverBody } from 'common/ui/Popover';
 import Amount from 'common/ui/Amount';
 import { Fragment } from 'react';
 import { updateConfig } from 'merchant/reducers/config';
+import RTracking from 'react-tracking';
 
 import {
   isBlank,
@@ -56,6 +57,7 @@ const selector = formValueSelector('refundModal');
     ...NotificationsActions,
   }
 )
+@RTracking(() => window.rzpQ.component('EnableInstantRefundsModal'))
 export default class EnableInstantRefundsModal extends Component {
   static contextTypes = {
     confirm: PropTypes.func,
@@ -90,7 +92,9 @@ export default class EnableInstantRefundsModal extends Component {
               : 'Normal Pricing'
             : ''
         }${this.state.show_breakup ? ' | Show Pricing' : ''}${
-          this.analytics.learn_more ? ' | Learn More' : ''
+          this.analytics.learn_more
+            ? ` ${this.props.speed !== 'normal' ? ' | ' : ''} Learn More`
+            : ''
         }${
           this.props.speed === 'normal'
             ? ` ${
@@ -109,6 +113,31 @@ export default class EnableInstantRefundsModal extends Component {
           } Refund`,
           eventLabel: label,
         });
+        if (this.props.speed === 'normal') {
+          this.props.tracking.trackEvent(
+            window.rzpQ
+              .merchantActions()
+              .initiated(`Click - Enable Normal Refund`, {
+                label: `Normal Refund Modal`,
+                session_id: window.session_id,
+                category: 'Merchant Dashboard - IR',
+              })
+          );
+        } else {
+          this.props.tracking.trackEvent(
+            window.rzpQ
+              .merchantActions()
+              .initiated(`Click - Enable Instant Refund`, {
+                label: `Instant Refund Modal - ${
+                  this.props.pricing.custom_pricing
+                    ? 'Custom Pricing'
+                    : 'Normal Pricing'
+                }`,
+                session_id: window.session_id,
+                category: 'Merchant Dashboard - IR',
+              })
+          );
+        }
         this.props.updated();
         this.props.closeModal();
       })
@@ -126,7 +155,30 @@ export default class EnableInstantRefundsModal extends Component {
     return (
       <div class="enable-instant-refund-modal">
         <ModalHeader
-          onCloseClick={this.props.closeModal}
+          onCloseClick={() => {
+            if (this.props.speed === 'normal') {
+              this.props.tracking.trackEvent(
+                window.rzpQ.merchantActions().initiated(`Click - Cancel`, {
+                  label: `Normal Refund Modal`,
+                  session_id: window.session_id,
+                  category: 'Merchant Dashboard - IR',
+                })
+              );
+            } else {
+              this.props.tracking.trackEvent(
+                window.rzpQ.merchantActions().initiated(`Click - Cancel`, {
+                  label: `Instant Refund Modal - ${
+                    this.props.pricing.custom_pricing
+                      ? 'Custom Pricing'
+                      : 'Normal Pricing'
+                  }`,
+                  session_id: window.session_id,
+                  category: 'Merchant Dashboard - IR',
+                })
+              );
+            }
+            this.props.closeModal();
+          }}
           title={
             <div>
               {this.props.speed !== 'normal' ? (
@@ -170,6 +222,21 @@ export default class EnableInstantRefundsModal extends Component {
                               onClick={() => {
                                 const show_breakup = this.state.show_breakup;
                                 this.setState({ show_breakup: !show_breakup });
+                                if (!show_breakup) {
+                                  this.props.tracking.trackEvent(
+                                    window.rzpQ
+                                      .merchantActions()
+                                      .initiated(`Click - Show Pricing`, {
+                                        label: `Instant Refund Modal - ${
+                                          this.props.pricing.custom_pricing
+                                            ? 'Custom Pricing'
+                                            : 'Normal Pricing'
+                                        }`,
+                                        category: 'Merchant Dashboard - IR',
+                                        session_id: window.session_id,
+                                      })
+                                  );
+                                }
                               }}
                               class="show-fee-struct"
                             >
@@ -301,6 +368,15 @@ export default class EnableInstantRefundsModal extends Component {
                       eventAction: `Enable Normal Refund`,
                       eventLabel: `Learn More | Enable Normal Refund`,
                     });
+                    this.props.tracking.trackEvent(
+                      window.rzpQ
+                        .merchantActions()
+                        .initiated(`Click - Click Here`, {
+                          label: `Normal Refund Modal`,
+                          session_id: window.session_id,
+                          category: 'Merchant Dashboard - IR',
+                        })
+                    );
                     this.analytics.learn_more = true;
                   }}
                 >
@@ -322,6 +398,21 @@ export default class EnableInstantRefundsModal extends Component {
                       eventAction: `Enable Instant Refund`,
                       eventLabel: `Learn More | Enable Instant Refund`,
                     });
+
+                    this.props.tracking.trackEvent(
+                      window.rzpQ
+                        .merchantActions()
+                        .initiated(`Click - Click Here`, {
+                          label: `Instant Refund Modal - ${
+                            this.props.pricing.custom_pricing
+                              ? 'Custom Pricing'
+                              : 'Normal Pricing'
+                          }`,
+                          session_id: window.session_id,
+                          category: 'Merchant Dashboard - IR',
+                        })
+                    );
+
                     this.analytics.learn_more = true;
                   }}
                 >
