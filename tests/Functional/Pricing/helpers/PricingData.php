@@ -2166,7 +2166,7 @@ return [
                 ],
                 [
                     'plan_name'   => 'Banking default plan',
-                    'rules_count' => 12,
+                    'rules_count' => 6,
                     'type'        => 'pricing',
                 ],
                 [
@@ -2256,7 +2256,7 @@ return [
                 ],
                 [
                     'plan_name'   => 'Banking default plan',
-                    'rules_count' => 12,
+                    'rules_count' => 6,
                     'type'        => 'pricing',
                 ],
                 [

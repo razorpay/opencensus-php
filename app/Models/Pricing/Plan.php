@@ -337,19 +337,22 @@ class Plan extends PublicCollection
         return false;
     }
 
-    public function hasBankingDirectAccountPayoutRule(): bool
-    {
-        /** @var Entity $rule */
-        foreach ($this->items as $rule)
-        {
-            if (($rule->isBankingProduct() === true) and
-                ($rule->getFeature() === Feature::PAYOUT) and
-                ($rule->isAccountTypeDirect() === true))
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
+    // @TODO: Visit this later when visiting account_type and channel filter
+    // https://razorpay.atlassian.net/browse/RX-2659
+    //
+    //public function hasBankingDirectAccountPayoutRule(): bool
+    //{
+    //    /** @var Entity $rule */
+    //    foreach ($this->items as $rule)
+    //    {
+    //        if (($rule->isBankingProduct() === true) and
+    //            ($rule->getFeature() === Feature::PAYOUT) and
+    //            ($rule->isAccountTypeDirect() === true))
+    //        {
+    //            return true;
+    //        }
+    //    }
+    //
+    //    return false;
+    //}
 }

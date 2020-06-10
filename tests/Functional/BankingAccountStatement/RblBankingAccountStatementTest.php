@@ -406,7 +406,7 @@ class RblBankingAccountStatementTest extends TestCase
 
         $this->assertEquals(590, $payout['fees']);
         $this->assertEquals(90, $payout['tax']);
-        $this->assertEquals('Bbg7cl6t6I3XA6', $payout['pricing_rule_id']);
+        $this->assertEquals('Bbg7cl6t6I3XA5', $payout['pricing_rule_id']);
 
         $attempt = $this->getDbLastEntity('fund_transfer_attempt');
 
@@ -468,7 +468,7 @@ class RblBankingAccountStatementTest extends TestCase
         $this->assertEquals(0, $feeBreakup1->count());
         $this->assertEquals(2, $feeBreakup2->count());
 
-        $this->assertEquals('Bbg7cl6t6I3XA6', $feeBreakup2[0]['pricing_rule_id']);
+        $this->assertEquals('Bbg7cl6t6I3XA5', $feeBreakup2[0]['pricing_rule_id']);
         $this->assertEquals(EntityConstants::PAYOUT, $feeBreakup2[0]['name']);
         $this->assertEquals(500, $feeBreakup2[0]['amount']);
         $this->assertEquals(90, $feeBreakup2[1]['amount']);
@@ -492,7 +492,7 @@ class RblBankingAccountStatementTest extends TestCase
 
         $this->assertEquals(590, $payout['fees']);
         $this->assertEquals(90, $payout['tax']);
-        $this->assertEquals('Bbg7cl6t6I3XA6', $payout['pricing_rule_id']);
+        $this->assertEquals('Bbg7cl6t6I3XA5', $payout['pricing_rule_id']);
 
         $attempt = $this->getDbLastEntity('fund_transfer_attempt');
 
@@ -581,7 +581,7 @@ class RblBankingAccountStatementTest extends TestCase
         $this->assertEquals(0, $feeBreakup1->count());
         $this->assertEquals(2, $feeBreakup2->count());
 
-        $this->assertEquals('Bbg7cl6t6I3XA6', $feeBreakup2[0]['pricing_rule_id']);
+        $this->assertEquals('Bbg7cl6t6I3XA5', $feeBreakup2[0]['pricing_rule_id']);
         $this->assertEquals(EntityConstants::PAYOUT, $feeBreakup2[0]['name']);
         $this->assertEquals(500, $feeBreakup2[0]['amount']);
         $this->assertEquals(90, $feeBreakup2[1]['amount']);
@@ -602,7 +602,7 @@ class RblBankingAccountStatementTest extends TestCase
 
         $this->assertEquals(590, $payout['fees']);
         $this->assertEquals(90, $payout['tax']);
-        $this->assertEquals('Bbg7cl6t6I3XA6', $payout['pricing_rule_id']);
+        $this->assertEquals('Bbg7cl6t6I3XA5', $payout['pricing_rule_id']);
 
         $attempt = $this->getDbLastEntity('fund_transfer_attempt');
 
@@ -670,7 +670,7 @@ class RblBankingAccountStatementTest extends TestCase
 
         $feeBreakup = $this->getDbEntities('fee_breakup', ['transaction_id' => $payout['transaction_id']]);
 
-        $this->assertEquals('Bbg7cl6t6I3XA6', $feeBreakup[0]['pricing_rule_id']);
+        $this->assertEquals('Bbg7cl6t6I3XA5', $feeBreakup[0]['pricing_rule_id']);
         $this->assertEquals(500, $feeBreakup[0]['amount']);
         $this->assertEquals(EntityConstants::PAYOUT, $feeBreakup[0]['name']);
         $this->assertEquals(90, $feeBreakup[1]['amount']);
@@ -691,7 +691,7 @@ class RblBankingAccountStatementTest extends TestCase
 
         $this->assertEquals(590, $payout['fees']);
         $this->assertEquals(90, $payout['tax']);
-        $this->assertEquals('Bbg7cl6t6I3XA6', $payout['pricing_rule_id']);
+        $this->assertEquals('Bbg7cl6t6I3XA5', $payout['pricing_rule_id']);
 
         $attempt = $this->getDbLastEntity('fund_transfer_attempt');
 
@@ -759,7 +759,7 @@ class RblBankingAccountStatementTest extends TestCase
 
         $feeBreakup = $this->getDbEntities('fee_breakup', ['transaction_id' => $payout['transaction_id']]);
 
-        $this->assertEquals('Bbg7cl6t6I3XA6', $feeBreakup[0]['pricing_rule_id']);
+        $this->assertEquals('Bbg7cl6t6I3XA5', $feeBreakup[0]['pricing_rule_id']);
         $this->assertEquals(500, $feeBreakup[0]['amount']);
         $this->assertEquals(EntityConstants::PAYOUT, $feeBreakup[0]['name']);
         $this->assertEquals(90, $feeBreakup[1]['amount']);
@@ -781,7 +781,7 @@ class RblBankingAccountStatementTest extends TestCase
 
         $this->assertEquals(1770, $payout['fees']);
         $this->assertEquals(270, $payout['tax']);
-        $this->assertEquals('Bbg7e4oKCgaube', $payout['pricing_rule_id']);
+        $this->assertEquals('Bbg7e4oKCgaubd', $payout['pricing_rule_id']);
 
         $attempt = $this->getDbLastEntity('fund_transfer_attempt');
 
@@ -854,7 +854,7 @@ class RblBankingAccountStatementTest extends TestCase
 
         $feeBreakup = $this->getDbEntities('fee_breakup', ['transaction_id' => $payout['transaction_id']]);
 
-        $this->assertEquals('Bbg7e4oKCgaube', $feeBreakup[0]['pricing_rule_id']);
+        $this->assertEquals('Bbg7e4oKCgaubd', $feeBreakup[0]['pricing_rule_id']);
         $this->assertEquals(1500, $feeBreakup[0]['amount']);
         $this->assertEquals(EntityConstants::PAYOUT, $feeBreakup[0]['name']);
         $this->assertEquals(270, $feeBreakup[1]['amount']);
@@ -876,7 +876,7 @@ class RblBankingAccountStatementTest extends TestCase
 
         $this->assertEquals(590, $payout['fees']);
         $this->assertEquals(90, $payout['tax']);
-        $this->assertEquals('Bbg7cl6t6I3XA6', $payout['pricing_rule_id']);
+        $this->assertEquals('Bbg7cl6t6I3XA5', $payout['pricing_rule_id']);
 
         $attempt = $this->getDbLastEntity('fund_transfer_attempt');
 
@@ -943,7 +943,7 @@ class RblBankingAccountStatementTest extends TestCase
 
         $this->assertEquals(590, $payout['fees']);
         $this->assertEquals(90, $payout['tax']);
-        $this->assertEquals('Bbg7cl6t6I3XA6', $payout['pricing_rule_id']);
+        $this->assertEquals('Bbg7cl6t6I3XA5', $payout['pricing_rule_id']);
 
         $attempt = $this->getDbLastEntity('fund_transfer_attempt');
 
@@ -1098,7 +1098,7 @@ class RblBankingAccountStatementTest extends TestCase
 
         $this->assertEquals(590, $payout['fees']);
         $this->assertEquals(90, $payout['tax']);
-        $this->assertEquals('Bbg7cl6t6I3XA6', $payout['pricing_rule_id']);
+        $this->assertEquals('Bbg7cl6t6I3XA5', $payout['pricing_rule_id']);
 
         $attempt = $this->getDbLastEntity('fund_transfer_attempt');
 
@@ -1194,7 +1194,7 @@ class RblBankingAccountStatementTest extends TestCase
 
         $this->assertEquals(590, $payout['fees']);
         $this->assertEquals(90, $payout['tax']);
-        $this->assertEquals('Bbg7cl6t6I3XA6', $payout['pricing_rule_id']);
+        $this->assertEquals('Bbg7cl6t6I3XA5', $payout['pricing_rule_id']);
 
         $attempt = $this->getDbLastEntity('fund_transfer_attempt');
 
@@ -2733,7 +2733,7 @@ class RblBankingAccountStatementTest extends TestCase
 
         $feeBreakup = $this->getDbEntities('fee_breakup', ['transaction_id' => $payout['transaction_id']]);
 
-        $this->assertEquals('Bbg7cl6t6I3XA6', $feeBreakup[0]['pricing_rule_id']);
+        $this->assertEquals('Bbg7cl6t6I3XA5', $feeBreakup[0]['pricing_rule_id']);
         $this->assertEquals(500, $feeBreakup[0]['amount']);
         $this->assertEquals(EntityConstants::PAYOUT, $feeBreakup[0]['name']);
         $this->assertEquals(90, $feeBreakup[1]['amount']);
@@ -2796,7 +2796,7 @@ class RblBankingAccountStatementTest extends TestCase
 
         $feeBreakup = $this->getDbEntities('fee_breakup', ['transaction_id' => $payout['transaction_id']]);
 
-        $this->assertEquals('Bbg7cl6t6I3XA6', $feeBreakup[0]['pricing_rule_id']);
+        $this->assertEquals('Bbg7cl6t6I3XA5', $feeBreakup[0]['pricing_rule_id']);
         $this->assertEquals(500, $feeBreakup[0]['amount']);
         $this->assertEquals(EntityConstants::PAYOUT, $feeBreakup[0]['name']);
         $this->assertEquals(90, $feeBreakup[1]['amount']);
@@ -2818,7 +2818,7 @@ class RblBankingAccountStatementTest extends TestCase
 
         $this->assertEquals(590, $payout['fees']);
         $this->assertEquals(90, $payout['tax']);
-        $this->assertEquals('Bbg7cl6t6I3XA6', $payout['pricing_rule_id']);
+        $this->assertEquals('Bbg7cl6t6I3XA5', $payout['pricing_rule_id']);
 
         $attempt = $this->getDbLastEntity('fund_transfer_attempt');
 
@@ -2905,7 +2905,7 @@ class RblBankingAccountStatementTest extends TestCase
 
         $this->assertEquals(590, $payout['fees']);
         $this->assertEquals(90, $payout['tax']);
-        $this->assertEquals('Bbg7cl6t6I3XA6', $payout['pricing_rule_id']);
+        $this->assertEquals('Bbg7cl6t6I3XA5', $payout['pricing_rule_id']);
 
         $attempt = $this->getDbLastEntity('fund_transfer_attempt');
 
@@ -3057,7 +3057,7 @@ class RblBankingAccountStatementTest extends TestCase
 
         $this->assertEquals(590, $payout['fees']);
         $this->assertEquals(90, $payout['tax']);
-        $this->assertEquals('Bbg7cl6t6I3XA6', $payout['pricing_rule_id']);
+        $this->assertEquals('Bbg7cl6t6I3XA5', $payout['pricing_rule_id']);
 
         $attempt = $this->getDbLastEntity('fund_transfer_attempt');
 
@@ -3123,7 +3123,7 @@ class RblBankingAccountStatementTest extends TestCase
 
         $this->assertEquals(590, $payout['fees']);
         $this->assertEquals(90, $payout['tax']);
-        $this->assertEquals('Bbg7cl6t6I3XA6', $payout['pricing_rule_id']);
+        $this->assertEquals('Bbg7cl6t6I3XA5', $payout['pricing_rule_id']);
 
         $attempt = $this->getDbLastEntity('fund_transfer_attempt');
 
@@ -3194,7 +3194,7 @@ class RblBankingAccountStatementTest extends TestCase
 
         $this->assertEquals(590, $payout['fees']);
         $this->assertEquals(90, $payout['tax']);
-        $this->assertEquals('Bbg7cl6t6I3XA6', $payout['pricing_rule_id']);
+        $this->assertEquals('Bbg7cl6t6I3XA5', $payout['pricing_rule_id']);
 
         $attempt = $this->getDbLastEntity('fund_transfer_attempt');
 

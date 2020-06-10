@@ -256,19 +256,22 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function getBankingDirectAccountDefaultPricingRules(string $feature, Merchant\Entity $merchant)
-    {
-        $orgId = $merchant->getOrgId();
-
-        return $this->newQuery()
-                    ->product(Product::BANKING)
-                    ->planId(Fee::DEFAULT_BANKING_PLAN_ID)
-                    ->where(Pricing\Entity::FEATURE, '=', $feature)
-                    ->where(Pricing\Entity::ACCOUNT_TYPE, AccountType::DIRECT)
-                    ->where(Pricing\Entity::ORG_ID, '=', $orgId)
-                    ->where(Pricing\Entity::TYPE, Pricing\Type::PRICING)
-                    ->get();
-    }
+    // @TODO: Visit this later when visiting account_type and channel filter
+    // https://razorpay.atlassian.net/browse/RX-2659
+    //
+    //public function getBankingDirectAccountDefaultPricingRules(string $feature, Merchant\Entity $merchant)
+    //{
+    //    $orgId = $merchant->getOrgId();
+    //
+    //    return $this->newQuery()
+    //                ->product(Product::BANKING)
+    //                ->planId(Fee::DEFAULT_BANKING_PLAN_ID)
+    //                ->where(Pricing\Entity::FEATURE, '=', $feature)
+    //                ->where(Pricing\Entity::ACCOUNT_TYPE, AccountType::DIRECT)
+    //                ->where(Pricing\Entity::ORG_ID, '=', $orgId)
+    //                ->where(Pricing\Entity::TYPE, Pricing\Type::PRICING)
+    //                ->get();
+    //}
 
     public function getPlansOrderedByPlanId(array $input)
     {
