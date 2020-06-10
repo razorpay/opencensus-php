@@ -1453,6 +1453,12 @@ class VerifyTest extends TestCase
                 ->zeroOrMoreTimes()
                 ->andReturn("control");
 
+        \Cache::shouldReceive('driver')
+            ->andReturnUsing(function() use ($store)
+            {
+                return $store;
+            });
+
         $redisMock->method('get')->will($this->returnValue(''));
 
         $redisMock->method('exists')->will($this->returnValue(0));

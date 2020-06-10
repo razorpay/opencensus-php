@@ -374,6 +374,8 @@ class ApiServiceProvider extends BaseServiceProvider
         $this->registerTerminalsService();
 
         $this->registerStorkService();
+
+        $this->registerCustomSessionProvider();
     }
 
     /**
@@ -579,6 +581,15 @@ class ApiServiceProvider extends BaseServiceProvider
             }
 
             return new RedisDualWrite($app);
+        });
+    }
+
+    protected function registerCustomSessionProvider()
+    {
+        $manager = $this->app['session'];
+
+        $manager->extend('custom', function($app) {
+            return new CustomSessionHandler($app);
         });
     }
 
