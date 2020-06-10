@@ -144,6 +144,41 @@ If you want to pass in specific params(e.g. -filter PaymentTest or --stop-on-fai
 $ make test AT="--filter PaymentTest --stop-on-failure"
 ```
 
+#### Running tests from PHPStorm
+
+1. Make sure the `version` in docker-compose.dev.yml is set to 2.2 or above
+2. Follow the instructions of changing Dockerfile.dev/docker-compose.dev.yml to enable XDebug
+3. Go to the Edit Configurations dropdown, just left to the green play button on top right of PHPStorm
+4. Select Templates -> PHPUnit
+5. In the Preferred Coverage Engine, select XDebug
+6. In the Interpreter Section, click the `…` to create a new interpreter config with the below config
+    ```
+    Name : api
+    Server : Docker
+    Configuration file(s) : ./docker-compose.dev.yml
+    Service : api
+    Environment Variables : APP_ENV=testing_docker
+    Lifecycle : Connect to existing container
+    PHP Executable : php
+    ```
+7. Once the above config is created, use this newly created config as the Interpreter
+8. Your Dockerfile.dev should have the following changes, above EXPOSE 80 line
+    ```
+    RUN apk add --no-cache php7-xdebug
+    RUN echo 'zend_extension=/usr/lib/php7/modules/xdebug.so' > /etc/php7/conf.d/xdebug.ini
+    RUN echo 'xdebug.remote_port=9000' >> /etc/php7/conf.d/xdebug.ini
+    RUN echo 'xdebug.remote_enable=1' >> /etc/php7/conf.d/xdebug.ini
+    RUN echo 'xdebug.remote_connect_back=0' >> /etc/php7/conf.d/xdebug.ini
+    RUN echo "xdebug.remote_autostart=off" >> /etc/php7/conf.d/xdebug.ini
+    RUN echo "xdebug.idekey=PHPSTORM" >> /etc/php7/conf.d/xdebug.ini
+    ```
+9. Your docker-compose.dev.yml should have the following ENV variables
+    ```
+    XDEBUG_CONFIG: remote_host=docker.for.mac.host.internal
+    PHP_IDE_CONFIG: serverName=Docker
+    ```
+10. You will see a green play button to the left of your tests, just click it, PHPStorm will run your tests.
+
 ##### Optional
  Add the following to your `.env.testing_docker`:
 ```
@@ -152,7 +187,7 @@ RUN_FIXTURES_ONCE                              = (true)
 TRUNCATE_DATABASE                              = (true)
 ```
 After running one test, you can edit them all to false. This will speed up test execution on your pc.
-###### NOTE: 
+###### NOTE:
 * You need to make these 3 variables `true` everytime you run `make build`. Then, just run one test, and then make them `false` again.
 * Or, you can leave them all true. This will slow down the first test, but still speed up the rest of the tests on your pc.
 
