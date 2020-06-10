@@ -300,6 +300,28 @@ class Constants
                 ]
             ],
         ],
+        [
+            'title'       => 'RazorpayX Payout Link',
+            'description' => 'Send money easily and instantly without Bank Account Details.',
+            'icon'        => 'https://cdn.razorpay.com/static/assets/rx-payout.svg',
+            'buttons'     => [
+                [
+                    'type'  => 'button',
+                    'label' => 'Explore',
+                    'url'   => 'https://razorpay.com/x/payout-links/?utm_source=pgdashboard&utm_medium=annoucement&utm_campaign=payoutlinks',
+                ],
+                [
+                    'type'  => 'primary-inverted',
+                    'label' => 'Learn More',
+                    'url'   => 'https://razorpay.com/blog/payout-links-e-commerce-companies-automate-cod-refunds?utm_source=pgdashboard&utm_medium=annoucement&utm_campaign=payoutlinks',
+                ],
+            ],
+            'start_ts'    => 1591727400,
+            'end_ts'      => 1592764199,
+            'filters'     => [
+                'business_type' => MerchantDetails\BusinessType::REGISTERED_BUSINESS_TYPES,
+            ]
+        ],
     ];
 
     public static function getNotifications(): array
