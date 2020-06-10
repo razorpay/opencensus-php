@@ -663,6 +663,7 @@ class Route
         'offline_verification_webhook'             => ['post',     'offline_verification/webhook/v1/ecom_update_status', 'OfflineVerificationController@handleWebhook'                   ],
         'los_service'                              => ['any',      'los/service/{path?}',                            'LOSController@handleProxyRequests'                                 ],
         'los_service_admin'                        => ['any',      'los/admin/{path?}',                              'LOSController@handleAdminRequests'                                 ],
+        'los_mail'                                 => ['post',     'los/mail',                                       'LOSController@sendMail'                                            ],
         'leegality_webhook'                        => ['post',     'leegality/webhook',                              'LOSController@handleLeegalityWebhook'                              ],
         'reminder_admin'                           => ['any',      'reminders/admin/{path?}',                        'RemindersController@remindersAdmin'                                ],
         'reminder_next_run'                        => ['get',      'reminders/next_run/{entity}/{id}/{namespace?}',  'RemindersController@remindersNextRun'                              ],
@@ -2110,6 +2111,7 @@ class Route
     // If a route needs access from the Dashboard
     // Put it in the Admin Array instead
     public static $internal = [
+        'los_mail',
         'api_entity_fetch',
         'subscription_registration_nach_migration',
         'leegality_webhook',
@@ -4579,6 +4581,7 @@ class Route
         ],
 
         'los'  => [
+            'los_mail',
             'los_d2c_bureau_details_create',
             'los_d2c_bureau_report_fetch',
         ],

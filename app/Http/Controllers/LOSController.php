@@ -3,10 +3,12 @@ namespace RZP\Http\Controllers;
 
 use Request;
 use ApiResponse;
-use Illuminate\Support\Str;
 use RZP\Exception;
+use RZP\Mail\Los\Base;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Mail;
 use RZP\Http\Request\Requests as RzpRequest;
 
 class LOSController extends Controller
@@ -206,6 +208,23 @@ class LOSController extends Controller
         return ApiResponse::json($body, $code);
     }
 
+    protected function sendMail()
+    {
+        $request = Request::instance();
+        $data   = $request->all();
+        if ((isset($data['name']) === false) or
+            (isset($data['email']) === false) or
+            (isset($data['fields']) === false) or
+            (isset($data['subject']) === false))
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_VALIDATION_FAILURE);
+        }
+
+        $mail = new Base($data);
+        Mail::queue($mail);
+
+        return ApiResponse::json(['success' => true]);
+    }
 
     protected function startWorkflow($body)
     {
