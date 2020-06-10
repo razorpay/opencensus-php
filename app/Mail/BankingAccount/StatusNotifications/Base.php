@@ -6,7 +6,7 @@ use App;
 use RZP\Mail\Base\Mailable;
 use RZP\Constants\MailTags;
 use RZP\Mail\Base\Constants;
-use RZP\Models\BankingAccount\Entity;
+use Illuminate\Foundation\Application;
 
 class Base extends Mailable
 {
@@ -29,9 +29,30 @@ class Base extends Mailable
 
         $repo = $app['repo'];
 
-        $this->config = $app['config'];
+        $this->config = $this->getRequiredConfigParamsFromApp($app);
 
         $this->bankingAccount = $repo->banking_account->find($bankingAccountId);
+    }
+
+    protected function getRequiredConfigParamsFromApp(Application $app)
+    {
+        $requiredConfig = [];
+
+        $requiredConfigParams = $this->getRequiredConfigParams();
+
+        foreach ($requiredConfigParams as $requiredConfigParam)
+        {
+            $requiredConfig[$requiredConfigParam] = $app['config']->get($requiredConfigParam);
+        }
+
+        return $requiredConfig;
+    }
+
+    protected function getRequiredConfigParams()
+    {
+        return [
+            'applications.banking_service_url'
+        ];
     }
 
     protected function addRecipients()

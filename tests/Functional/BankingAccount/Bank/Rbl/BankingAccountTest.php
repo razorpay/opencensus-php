@@ -1271,5 +1271,4 @@ class BankingAccountTest extends TestCase
         Mail::assertQueued(XProActivation::class);
 
     }
-
 }
