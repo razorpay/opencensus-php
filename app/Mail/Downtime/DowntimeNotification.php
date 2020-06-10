@@ -27,6 +27,39 @@ class DowntimeNotification extends Mailable
         $this->data = $downtime;
 
         $this->status = $status;
+
+        $dimension = null;
+
+        switch($this->data['method'])
+        {
+            case Method::CARD :
+                if (isset($this->data[Entity::NETWORK]))
+                {
+                    $dimension = $this->data[Entity::NETWORK];
+                }
+                elseif (isset($this->data[Entity::ISSUER]))
+                {
+                    $dimension = $this->data[Entity::ISSUER];
+                }
+                break;
+
+            case Method::WALLET:
+            case Method::NETBANKING :
+                if (isset($this->data[Entity::ISSUER]))
+                {
+                    $dimension = $this->data[Entity::ISSUER];
+                }
+                break;
+
+            case Method::UPI :
+                if (isset($this->data[Entity::VPA_HANDLE]))
+                {
+                    $dimension = $this->data[Entity::VPA_HANDLE];
+                }
+                break;
+        }
+
+        $this->data['dimension'] = $dimension;
     }
 
     protected function addRecipients()
@@ -68,20 +101,49 @@ class DowntimeNotification extends Mailable
         switch ($this->status)
         {
             case self::CREATED :
-                if ($scheduled === false) {
-                    $subject = 'Unscheduled Downtime -- '. $method;
+                if ($scheduled === false)
+                {
+                    if (isset($this->data['dimension']))
+                    {
+                        $subject = 'Unscheduled Downtime -- '. $this->data['dimension'] . ' ' . $method;
+                    }
+                    else
+                        {
+                        $subject = 'Unscheduled Downtime -- '. $method;
+                    }
                 }
                 else {
-                    $subject = 'Scheduled Downtime -- '. $method;
+                    if (isset($this->data['dimension']))
+                    {
+                        $subject = 'Scheduled Downtime -- '. $this->data['dimension'] . ' ' . $method;
+                    }
+                    else
+                        {
+                        $subject = 'Scheduled Downtime -- '. $method;
+                    }
                 }
                 break;
 
             case self::RESOLVED :
                 if ($scheduled === false) {
-                    $subject = '[Resolved] RE: Unscheduled Downtime -- '. $method;
+                    if (isset($this->data['dimension']))
+                    {
+                        $subject = '[Resolved] RE: Unscheduled Downtime -- '. $this->data['dimension'] . ' ' . $method;
+                    }
+                    else
+                        {
+                        $subject = '[Resolved] RE: Unscheduled Downtime -- '. $method;
+                    }
                 }
                 else {
-                    $subject = '[Resolved] RE: Scheduled Downtime -- '. $method;
+                    if (isset($this->data['dimension']))
+                    {
+                        $subject = '[Resolved] RE: Scheduled Downtime -- '. $this->data['dimension'] . ' ' . $method;
+                    }
+                    else
+                        {
+                        $subject = '[Resolved] RE: Scheduled Downtime -- '. $method;
+                    }
                 }
                 break;
         }
@@ -112,39 +174,6 @@ class DowntimeNotification extends Mailable
 
     protected function addMailData()
     {
-        $dimension = null;
-
-        switch($this->data['method'])
-        {
-            case Method::CARD :
-                if (isset($this->data[Entity::NETWORK]))
-                {
-                    $dimension = $this->data[Entity::NETWORK];
-                }
-                elseif (isset($this->data[Entity::ISSUER]))
-                {
-                    $dimension = $this->data[Entity::ISSUER];
-                }
-                break;
-
-            case Method::WALLET:
-            case Method::NETBANKING :
-                if (isset($this->data[Entity::ISSUER]))
-                {
-                    $dimension = $this->data[Entity::ISSUER];
-                }
-                break;
-
-            case Method::UPI :
-                if (isset($this->data[Entity::VPA_HANDLE]))
-                {
-                    $dimension = $this->data[Entity::VPA_HANDLE];
-                }
-                break;
-        }
-
-        $this->data['dimension'] = $dimension;
-
         if($this->data[Entity::SCHEDULED] === true && isset($this->data[Entity::BEGIN]) && isset($this->data[Entity::END]))
         {
             $this->data[Entity::BEGIN] = Carbon::createFromTimestamp($this->data[Entity::BEGIN], Timezone::IST)

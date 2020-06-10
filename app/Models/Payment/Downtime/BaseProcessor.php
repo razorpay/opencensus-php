@@ -40,9 +40,11 @@ class BaseProcessor extends Base\Core
         {
             $downtime->setEndNow();
 
+            $downtime->setStatus(Status::RESOLVED);
+
             $this->getRepo()->saveOrFail($downtime);
 
-            (new Service())->resolveDowntimes();
+            (new Service())->eventDowntimeResolved($downtime);
         }
     }
 
