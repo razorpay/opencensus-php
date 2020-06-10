@@ -63,7 +63,7 @@ class UfhService
      */
     protected $repo;
 
-    public function __construct($app)
+    public function __construct($app, $merchantId = null)
     {
         $this->trace           = $app['trace'];
 
@@ -77,9 +77,9 @@ class UfhService
 
         $this->merchantId      = $this->ba->getMerchantId();
 
-        if (($this->ba->isAdminAuth() === true) && (empty($merchantId) === true))
+        if (($this->ba->isAdminAuth() === true))
         {
-            $this->merchantId = $this->repo->merchant->getSharedAccount()->getId();
+            $this->merchantId = $merchantId ?? $this->repo->merchant->getSharedAccount()->getId();
         }
 
         $this->ufhClient = $this->createUfhClient();

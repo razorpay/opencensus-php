@@ -8,6 +8,7 @@ use ApiResponse;
 use RZP\Models\Merchant\Account;
 use Razorpay\Ufh\Client as UfhClient;
 use RZP\Services\UfhService;
+use RZP\Services\Mock\UfhService as MockUfhService;
 
 class UfhController extends Controller
 {
@@ -24,8 +25,20 @@ class UfhController extends Controller
     public function uploadFileAndGetUrl()
     {
         $input = Request::all();
+        $app = $this->app;
+        $ufhServiceMock = $app['config']->get('applications.ufh.mock');
+        $merchantId = isset($input['merchant_id']) == true ? $input['merchant_id'] : null;
 
-        $response = $this->app['ufh.service']->uploadFileAndGetUrl($input['file'],
+        if ($ufhServiceMock === true)
+        {
+            $ufhService = new MockUfhService($app, $merchantId);
+        }
+        else
+        {
+            $ufhService = new UfhService($app, $merchantId);
+        }
+
+        $response = $ufhService->uploadFileAndGetUrl($input['file'],
                                                 $input[UfhService::NAME],
                                                 $input[UfhService::TYPE],
                                                 $input[self::ENTITY],
