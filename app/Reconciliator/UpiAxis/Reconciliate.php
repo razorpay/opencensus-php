@@ -10,12 +10,16 @@ use RZP\Reconciliator\FileProcessor;
  */
 class Reconciliate extends Base\Reconciliate
 {
-    const REFUND_RECON_FILE_NAME    = 'refund_razorpay software pvt ltd';
+    const REFUND_RECON_FILE_NAME    = [
+        'upi_refund_razorpay',
+        'refund_razorpay software pvt ltd',
+    ];
+
     const PAYMENT_RECON_FILE_NAME   = [
         'razorpay software private limited',
         'razorpay software pvt ltd',
         'upi_sett_razorpay',
-        ];
+    ];
 
     const UNUSED_COLUMNS = [
         'surcharge',
