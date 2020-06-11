@@ -1194,4 +1194,58 @@ EOT;
         $this->assertSame('icici', $upi->provider);
         $this->assertSame('800800800800', $upi->gateway_payment_id);
     }
+
+    public function testLateAuthorizePayment()
+    {
+        $now  = Carbon::now();
+
+        Carbon::setTestNow(Carbon::parse('15 minutes ago'));
+
+        $this->fixtures->create('terminal:shared_upi_icici_intent_terminal');
+
+        unset($this->payment['description']);
+        unset($this->payment['vpa']);
+        $this->payment['_']['flow'] = 'intent';
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'authorize')
+            {
+                $content['refId'] = 'ICICIRefId';
+            }
+            else
+            {
+                $content['PayerVA'] = 'user@icici';
+            }
+        });
+
+        $this->doAuthPaymentViaAjaxRoute($this->payment);
+
+        $payment = $this->getDbLastPayment();
+        $upi     = $this->getDbLastEntity('upi');
+
+        $this->assertSame('created', $payment->getStatus());
+        $this->assertSame('0', $upi->status_code);
+
+        Carbon::setTestNow($now);
+
+        $this->timeoutOldPayment();
+
+        $this->assertNull($payment->getReference16());
+
+        $this->authorizedFailedPayment($payment->getPublicId());
+
+        $payment->reload();
+
+        $this->assertNotNull($payment->getReference16());
+        $this->assertTrue($payment->isAuthorized());
+        $this->assertTrue($payment->isLateAuthorized());
+
+        $upi->reload();
+        $this->assertEquals($upi->getPaymentId(), $payment['id']);
+
+        $this->assertSame('icici', $upi->provider);
+        $this->assertSame('ICIC', $upi->bank);
+        $this->assertSame('0', $upi->status_code);
+    }
 }

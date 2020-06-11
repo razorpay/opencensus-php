@@ -804,6 +804,8 @@ class Gateway extends Base\Gateway
 
         $verify->verifyResponseContent = $content;
 
+        $this->updateGatewayPaymentResponse($verify->payment, $verify->verifyResponseContent);
+
         return $status;
     }
 
