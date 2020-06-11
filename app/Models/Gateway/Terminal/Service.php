@@ -59,7 +59,7 @@ class Service extends Base\Service
                 'input'       => $this->getMerchantOnboardingTrace($input),
             ]);
 
-        $shouldOnboardViaTerminalsService = $this->shouldOnboardMerchantViaTerminalsService($merchant);
+        $shouldOnboardViaTerminalsService = $this->shouldOnboardMerchantViaTerminalsService($merchant, $gateway);
 
         if ($shouldOnboardViaTerminalsService === true)
         {
@@ -286,8 +286,13 @@ class Service extends Base\Service
         return false;
     }
 
-    protected function shouldOnboardMerchantViaTerminalsService($merchant)
+    protected function shouldOnboardMerchantViaTerminalsService($merchant, $gateway)
     {
+        if ($gateway === Gateway::WORLDLINE)
+        {
+            return false;
+        }
+        
         $variantFlag = $this->app->razorx->getTreatment($merchant['id'], HITACHI_ONBOARDING_TERMINAlS_SERVICE, $this->mode);
 
         $data = [
