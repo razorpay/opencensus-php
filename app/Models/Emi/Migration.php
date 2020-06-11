@@ -143,8 +143,7 @@ class Migration
             TraceCode::CARD_PAYMENT_SERVICE_EMI_FETCH_DISABLING,
             [
                 'message'        => 'emi fetch disabled',
-                'response'       => $response->body,
-                'status'         => $response->status_code,
+                'priority'       => 'P2',
             ],
             [
                 'channel'   => Config::get('slack.channels.card_payments_alert'),
