@@ -1029,6 +1029,7 @@ class Service extends Base\Service
             'allow_yesbank_va_on_x',
             'rx_creation_flows_v2',
             'rx_vp_announcement',
+            'rx_scheduled_payouts_rollout'
         ];
 
         $experimentsResults = $merchantService->getBulkTreatment($features);
