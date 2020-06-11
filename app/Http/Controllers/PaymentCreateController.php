@@ -350,7 +350,7 @@ class PaymentCreateController extends Controller
 
          $merchant = $this->app['basicauth']->getMerchant();
 
-        if (($merchant->isFeatureEnabled(Feature::S2S_JSON_V2) === true) or
+        if (($merchant->isFeatureEnabled(Feature::JSON_V2) === true) or
             ($merchant->isFeatureEnabled(Feature::S2S_JSON) === true))
         {
             return $this->processCoprotoJsonData($data);
@@ -690,7 +690,7 @@ class PaymentCreateController extends Controller
             {
                 $merchant = $this->app['basicauth']->getMerchant();
 
-                if ($merchant->isFeatureEnabled(Feature::S2S_JSON_V2) === true)
+                if ($merchant->isFeatureEnabled(Feature::JSON_V2) === true)
                 {
                     return $this->generateOtpJsonV2($data);
                 }

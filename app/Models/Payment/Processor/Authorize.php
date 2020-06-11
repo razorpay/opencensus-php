@@ -6823,7 +6823,7 @@ trait Authorize
 
         $merchant = $payment->merchant;
 
-        if ($merchant->isFeatureEnabled(Feature\Constants::S2S_JSON_V2)  === true)
+        if ($merchant->isFeatureEnabled(Feature\Constants::JSON_V2)  === true)
         {
             return true;
         }
@@ -7027,7 +7027,7 @@ trait Authorize
             return $this->processPaymentCallbackSecondTime($payment);
         }
 
-        if (($merchant->isFeatureEnabled(Feature\Constants::S2S_JSON_V2) === true) and
+        if (($merchant->isFeatureEnabled(Feature\Constants::JSON_V2) === true) and
             ($payment->isFailed() === true))
         {
             if ($payment->getInternalErrorCode() === ErrorCode::GATEWAY_ERROR_OTPELF_FAILURE)

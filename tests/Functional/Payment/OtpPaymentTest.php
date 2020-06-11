@@ -804,7 +804,7 @@ class OtpPaymentTest extends TestCase
             ]
         ]);
 
-        $this->fixtures->merchant->addFeatures(['s2s', 's2s_json', 'otp_auth_default', 's2s_json_v2']);
+        $this->fixtures->merchant->addFeatures(['s2s', 's2s_json', 'otp_auth_default', 'json_v2']);
 
         $this->mockCardVault();
 
@@ -944,7 +944,7 @@ class OtpPaymentTest extends TestCase
             ]
         ]);
 
-        $this->fixtures->merchant->addFeatures(['s2s', 's2s_json', 'otp_auth_default', 's2s_json_v2']);
+        $this->fixtures->merchant->addFeatures(['s2s', 's2s_json', 'otp_auth_default', 'json_v2']);
 
         $this->mockCardVault();
 
@@ -1040,7 +1040,7 @@ class OtpPaymentTest extends TestCase
             ]
         ]);
 
-        $this->fixtures->merchant->addFeatures(['s2s', 's2s_json', 'otp_auth_default', 's2s_json_v2']);
+        $this->fixtures->merchant->addFeatures(['s2s', 's2s_json', 'otp_auth_default', 'json_v2']);
 
         $this->mockCardVault();
 
@@ -1143,7 +1143,7 @@ class OtpPaymentTest extends TestCase
             ]
         ]);
 
-        $this->fixtures->merchant->addFeatures(['s2s', 's2s_json', 'otp_auth_default', 's2s_json_v2']);
+        $this->fixtures->merchant->addFeatures(['s2s', 's2s_json', 'otp_auth_default', 'json_v2']);
 
         $this->mockCardVault();
 

@@ -377,7 +377,7 @@ class Constants
     */
     const SEND_PAYMENT_CONFIG_ID         = 'send_payment_config_id';
 
-    const S2S_JSON_V2              = 's2s_json_v2';
+    const JSON_V2                        = 'json_v2';
     const SEND_PAYMENT_LATE_AUTH         = 'send_payment_late_auth';
 
     /*
@@ -604,7 +604,7 @@ class Constants
         self::PAYMENTLINKS_COMPATIBILITY_V2   => true,
         self::SEND_PAYMENT_CONFIG_ID          => false,
         self::PAYMENT_STATUS_AGGREGATE        => true,
-        self::S2S_JSON_V2                     => true,
+        self::JSON_V2                         => true,
         self::SEND_PAYMENT_LATE_AUTH          => true,
         self::OVERRIDE_HITACHI_BLACKLIST      => true,
         self::UPI_OTM                         => true,
