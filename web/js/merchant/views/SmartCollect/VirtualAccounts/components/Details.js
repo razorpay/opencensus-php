@@ -22,12 +22,18 @@ import { openModal, closeModal } from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { updateVirtualAccountDetails } from 'merchant/reducers/virtualaccounts';
 
-@connect(state => ({ user: state.session.user }), {
-  openModal,
-  closeModal,
-  showNotification,
-  updateVirtualAccountDetails,
-})
+@connect(
+  state => ({
+    user: state.session.user,
+    isTestMode: state.session.mode === 'test',
+  }),
+  {
+    openModal,
+    closeModal,
+    showNotification,
+    updateVirtualAccountDetails,
+  }
+)
 export default class extends React.Component {
   openEnableTransferModeModal = () => {
     const { bankAccount1, bankAccount2, upiAddress } = getVirtualAccountDetails(
@@ -102,6 +108,7 @@ export default class extends React.Component {
       onMakeTestPaymentClick,
       onCopy = () => {},
       user,
+      isTestMode,
     } = this.props;
 
     const isClosed = virtualaccount.status === 'closed';
@@ -176,7 +183,7 @@ export default class extends React.Component {
 
                 {!isClosed &&
                   !upiAddress &&
-                  user.isVPAFeatureEnabled && (
+                  !isTestMode && (
                     <>
                       <br />
 

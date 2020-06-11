@@ -64,6 +64,7 @@ import {
       ...state.config.config,
       user: state.session.user,
       va_config: state.virtualaccounts.va_config,
+      isTestMode: state.session.mode === 'test',
     };
   },
   {
@@ -83,7 +84,7 @@ export default class CreateVirtualAccount extends Component {
     _internals: {
       hasBankAccount: !this.props.user.isVACreationBankAccountDisabled,
       hasVPA:
-        this.props.user.isVPAFeatureEnabled ||
+        !this.props.isTestMode ||
         this.props.user.isVACreationBankAccountDisabled
           ? true
           : false,
@@ -259,6 +260,7 @@ export default class CreateVirtualAccount extends Component {
       onClose,
       user,
       va_config,
+      isTestMode,
     } = this.props;
 
     const IS_MODAL_VIEW = !!onClose;
@@ -325,8 +327,7 @@ export default class CreateVirtualAccount extends Component {
                     fieldLabel="Bank Transfer ( NEFT, RTGS, IMPS )"
                     defaultValue={_internals.hasBankAccount}
                     disabled={
-                      !user.isVPAFeatureEnabled ||
-                      user.isVACreationBankAccountDisabled
+                      isTestMode || user.isVACreationBankAccountDisabled
                     }
                     onChange={e =>
                       this.setState({
@@ -386,7 +387,7 @@ export default class CreateVirtualAccount extends Component {
                   )}
                 </div>
 
-                {!!user.isVPAFeatureEnabled && (
+                {!isTestMode && (
                   <>
                     {!!descriptorLimit_BankAccount && <br />}
 

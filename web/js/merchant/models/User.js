@@ -524,13 +524,6 @@ export default class User {
     return this.getExpStatus('batch_cancel');
   }
 
-  // Currently, available only in Live mode bcoz terminals are not created in test mode.
-  get isVPAFeatureEnabled() {
-    const isLiveMode = getMode() === 'live';
-
-    return isLiveMode && this.getExpStatus('vpa_enabled');
-  }
-
   get isVACreationBankAccountDisabled() {
     return this.getExpStatus('disable_va_creation_bank_account');
   }
