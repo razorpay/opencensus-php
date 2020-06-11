@@ -71,7 +71,7 @@ class PDO implements IntegrationInterface
     public static function handleQuery($pdo, $query)
     {
         return [
-            'attributes' => ['query' => $query],
+            'attributes' => ['db.statement' => $query],
             'kind' => Span::KIND_CLIENT
         ];
     }
@@ -86,9 +86,10 @@ class PDO implements IntegrationInterface
      */
     public static function handleConnect($pdo, $dsn)
     {
-        return [
-            'attributes' => ['dsn' => $dsn],
-            'kind' => Span::KIND_CLIENT
+        $attributes = ['dsn' => $dsn, 'db.type' => 'sql'];
+
+        return [ 'attributes' => $attributes,
+            'kind' => Span::KIND_CLIENT,
         ];
     }
 
@@ -101,8 +102,61 @@ class PDO implements IntegrationInterface
      */
     public static function handleStatementExecute($statement)
     {
+        /*
+            refer following for SQL return codes
+            https://docstore.mik.ua/orelly/java-ent/jenut/ch08_06.htm
+        */
+
+        $rowCount = $statement->rowCount();
+        $errorCode = $statement->errorCode();
+        $error =  substr($errorCode, 0, 2);
+        $errorTags = [];
+
+        switch ($error) {
+            case (string) '01':
+                $errorTags = ['warning' => 'true', 'warning.code' => $errorCode];
+                break;
+        };
+
+        $errorCodeMsgArray = [
+            "02" => "No Data",
+            "07" => "Dynamic SQL error",
+            "08" => "Connection Exception",
+            "0A" => "Feature not supported",
+            "21" => "Cardinality violation",
+            "22" => "Data exception",
+            "23" => "Integrity constraint violation",
+            "24" => "Invalid Cursor State",
+            "25" => "Invalid Transaction state",
+            "26" => "Invalid SQL Statement Name",
+            "27" => "Triggered Data Change Violation",
+            "28" => "Invalid Authorization Specification",
+            "2A" => "Syntax Error or Access Rule Violation in Direct SQL Statement",
+            "2B" => "Dependent Privilege Descriptors Still Exist",
+            "2C" => "Invalid Character Set Name",
+            "2D" => "Invalid Transaction Termination",
+            "2E" => "Invalid Connection Name",
+            "33" => "Invalid SQL Descriptor Name",
+            "34" => "Invalid Cursor Name",
+            "35" => "Invalid Condition Number",
+            "37" => "Syntax Error or Access Rule Violation in Dynamic SQL Statement",
+            "3C" => "Ambigous Cursor Name",
+            "3F" => "No Data",
+            "40" => "Transition Rollback",
+            "42" => "Syntax Error or Access Rule Violation",
+            "44" => "With Check Option Violation"
+        ];
+
+        if (array_key_exists($error, $errorCodeMsgArray)){
+            $errorTags['error'] = 'true';
+            $errorTags['error.code'] = $errorCode;
+            $errorTags['error.message'] = $errorCodeMsgArray[$error] ?? '';
+        }
+
+        $tags = ['db.statement' => $statement->queryString, 'db.row_count' => $rowCount];
+
         return [
-            'attributes' => ['query' => $statement->queryString],
+            'attributes' => $tags + $errorTags,
             'kind' => Span::KIND_CLIENT
         ];
     }

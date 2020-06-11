@@ -90,6 +90,7 @@ class RequestHandler
         array $options = []
     ) {
         $this->exporter = $exporter;
+        $this->propagator = $propagator;
         $this->headers = new ArrayHeaders($options['headers'] ?? $_SERVER);
 
         $spanContext = $propagator->extract($this->headers);
@@ -113,10 +114,14 @@ class RequestHandler
             $this->tracer = new NullTracer();
         }
 
+        $rootSpanName = $this->nameFromOptions($options) ?? $this->nameFromHeaders($this->headers->toArray());
+        $rootSpanAttrs = $this->spanAttrsFromOptions($options);
+        unset($options['root_span_options']);
+
         $spanOptions = $options + [
             'startTime' => $this->startTimeFromHeaders($this->headers->toArray()),
-            'name' => $this->nameFromHeaders($this->headers->toArray()),
-            'attributes' => [],
+            'name' => $rootSpanName,
+            'attributes' => $rootSpanAttrs,
             'kind' => Span::KIND_SERVER,
             'sameProcessAsParentSpan' => false
         ];
@@ -268,10 +273,33 @@ class RequestHandler
             $this->tracer->addAttribute(Span::ATTRIBUTE_STATUS_CODE, $responseCode, [
                 'spanId' => $this->rootSpan->spanId()
             ]);
+            if ($responseCode >= 400) {
+                $this->tracer->addAttribute('error', 'true', [
+                    'spanId' => $this->rootSpan->spanId()
+                ]);
+            }
         }
+
         foreach (self::ATTRIBUTE_MAP as $attributeKey => $headerKeys) {
             if ($val = $this->detectKey($headerKeys, $headers)) {
                 $this->tracer->addAttribute($attributeKey, $val, [
+                    'spanId' => $this->rootSpan->spanId()
+                ]);
+            }
+        }
+
+        if (array_key_exists('QUERY_STRING', $headers)){
+            // add all query parameters as tags
+            parse_str($headers['QUERY_STRING'], $queryParams);
+
+            foreach ($queryParams as $key => $value) {
+                if(is_array($value)){
+                    $value = implode(', ', $value);
+                }
+
+                $key = 'http.query.params.' . $key;
+
+                $this->tracer->addAttribute($key, $value, [
                     'spanId' => $this->rootSpan->spanId()
                 ]);
             }
@@ -289,9 +317,32 @@ class RequestHandler
         return null;
     }
 
+    private function nameFromOptions(array $options)
+    {
+        $rootSpanOptions = array_key_exists('root_span_options', $options)
+                            ? $options['root_span_options']
+                            : array();
+
+        return array_key_exists('name', $rootSpanOptions) ? $rootSpanOptions['name'] : null;
+    }
+
+    private function spanAttrsFromOptions(array $options): array
+    {
+        $rootSpanOptions = array_key_exists('root_span_options', $options)
+                            ? $options['root_span_options']
+                            : array();
+        return array_key_exists('attributes', $rootSpanOptions) ? $rootSpanOptions['attributes'] : array();
+    }
+
     private function nameFromHeaders(array $headers): string
     {
-        return $headers['REQUEST_URI'] ?? self::DEFAULT_ROOT_SPAN_NAME;
+        // omit query parameters in the span name
+        if (array_key_exists('REQUEST_URI', $headers) and ($headers['REQUEST_URI'])) {
+            return strtok($headers['REQUEST_URI'], '?');
+        }
+        else {
+            return self::DEFAULT_ROOT_SPAN_NAME;
+        }
     }
 
     private function detectKey(array $keys, array $array)
@@ -302,5 +353,10 @@ class RequestHandler
             }
         }
         return null;
+    }
+
+    public function inject(SpanContext $context, ArrayHeaders $headers)
+    {
+        $this->propagator->inject($context, $headers);
     }
 }
