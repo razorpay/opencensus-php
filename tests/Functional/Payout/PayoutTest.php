@@ -4326,4 +4326,68 @@ class PayoutTest extends TestCase
         // Assert that fta status didn't update
         $this->assertEquals('created', $ftaForPayout->getStatus());
     }
+
+    public function testLowBalanceAlertForQueuedPayouts()
+    {
+        Mail::fake();
+
+        $this->ba->privateAuth();
+
+        (new Admin\Service)->setConfigKeys(
+            [
+                Admin\ConfigKey::LOW_BALANCE_RX_EMAIL => [
+                    '10000000000000' =>
+                        [
+                            'low_balance_threshold' => 10000000000,
+                            'email_ids'             => ['a@a.com', 'b@b.com']
+                        ]
+                ]
+            ]);
+
+        $queuedPayoutAttributes = [
+            'account_number'        =>  '2224440041626905',
+            'amount'                =>  20000099,
+            'queue_if_low_balance'  =>  1,
+        ];
+
+        $this->createQueuedOrPendingPayout($queuedPayoutAttributes);
+
+        Mail::assertQueued(LowBalanceAlert::class);
+
+        $config = (new Admin\Service)->getConfigKey(['key' => Admin\ConfigKey::LOW_BALANCE_RX_EMAIL]);
+
+        $this->assertArrayHasKey('notify_at', $config['10000000000000']);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->assertEquals('queued', $payout->getStatus());
+    }
+
+    public function testLowBalanceAlertForPayoutsWhenBalanceIsAboveThreshold()
+    {
+        Mail::fake();
+
+        $this->ba->privateAuth();
+
+        (new Admin\Service)->setConfigKeys(
+            [
+                Admin\ConfigKey::LOW_BALANCE_RX_EMAIL => [
+                    '10000000000000' =>
+                        [
+                            'low_balance_threshold' => 1000,
+                            'email_ids'             => ['a@a.com', 'b@b.com']
+                        ]
+                ]
+            ]);
+
+        $queuedPayoutAttributes = [
+            'account_number'        =>  '2224440041626905',
+            'amount'                =>  2000,
+            'queue_if_low_balance'  =>  1,
+        ];
+
+        $this->createQueuedOrPendingPayout($queuedPayoutAttributes);
+
+        Mail::assertNotQueued(LowBalanceAlert::class);
+    }
 }

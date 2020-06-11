@@ -71,6 +71,8 @@ class Base extends FundAccountPayout\Base
                 }
 
                 $payout->setStatus(Status::QUEUED);
+
+                $this->sendEmailHackForLowBalance($payout);
             }
             else
             {
