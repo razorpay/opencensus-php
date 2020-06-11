@@ -1027,6 +1027,7 @@ class Route
         'transfer_fetch_multiple'                  => ['get',      'transfers/',                                     'TransferController@getTransfers'                                   ],
 
         'transfer_pending_process'                 => ['post',     'transfers/process_pending',                      'TransferController@processPendingOrderTransfers'                   ],
+        'transfer_payment_pending_process'         => ['post',     'transfers/process_payment_pending',               'TransferController@processPendingPaymentTransfers'                ],
         'transfer_failed_process'                  => ['post',     'transfers/process_failed',                       'TransferController@processFailedOrderTransfers'                    ],
         'transfer_edit'                            => ['patch',    'transfers/{id}',                                 'TransferController@patchTransfer'                                  ],
         'transfer_create'                          => ['post',     'transfers',                                      'TransferController@postTransfer'                                   ],
@@ -2298,6 +2299,7 @@ class Route
         'recon_fetch_files_count',
         'mailing_list_remove_suspended_merchant',
         'transfer_pending_process',
+        'transfer_payment_pending_process',
         'transfer_settlements_update',
         'transfer_failed_process',
         'merchant_mtu_update',
@@ -4490,6 +4492,7 @@ class Route
             'mailing_list_remove_suspended_merchant',
             'create_fts_nodal_beneficiary',
             'transfer_pending_process',
+            'transfer_payment_pending_process',
             'transfer_failed_process',
             'banking_account_statement_process_cron',
             'banking_account_statement_channel_fetch',

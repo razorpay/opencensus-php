@@ -446,6 +446,55 @@ class Service extends Base\Service
         return $this->processOrderTransfers($orderIds);
     }
 
+    public function processPendingPaymentTransfers()
+    {
+        $paymentIds = $this->repo->transfer->fetchPendingTransfersToRetry(EntityConstant::PAYMENT);
+
+        $this->trace->info(
+            TraceCode::PENDING_ORDER_TRANSFER_PROCESS_CRON,
+            [
+                'payement_ids' => $paymentIds,
+            ]
+        );
+
+        return $this->processPaymentTransfers($paymentIds);
+    }
+
+    protected function processPaymentTransfers(array $paymentIds)
+    {
+        $payments = [];
+
+        foreach ($paymentIds as $paymentId)
+        {
+            try
+            {
+                $this->trace->info(
+                    TraceCode::PAYMENT_TRANSFER_PROCESS_SQS_PUSH_INIT,
+                    [
+                        'payment_id' => $paymentId,
+                        'mode'       => $this->mode,
+                    ]
+                );
+
+                Jobs\TransferProcess::dispatch($this->mode, $paymentId, Transfer\Constant::PAYMENT);
+
+                array_push($payments, $paymentId);
+
+            }
+            catch (\Throwable $e)
+            {
+                $this->trace->critical(
+                    TraceCode::PAYMENT_TRANSFER_PROCESS_SQS_PUSH_FAILED,
+                    [
+                        'payment_id' => $paymentId,
+                        'message'    => $e->getMessage(),
+                    ]
+                );
+            }
+        }
+        return $payments;
+    }
+
     public function processTransfersSettelements(string $settelementId)
     {
         $this->trace->info(
