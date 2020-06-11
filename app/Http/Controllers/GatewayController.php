@@ -558,6 +558,25 @@ class GatewayController extends Controller
 
     public function processGetSimplCallback($input)
     {
+        $paymentId = $input['merchant_payload'];
+
+        $mode = $this->app['repo']->determineLiveOrTestModeForEntity($paymentId, 'payment');
+
+        $this->app['config']->set('database.default', $mode);
+
+        $this->app['basicauth']->setModeAndDbConnection($mode);
+
+        $payment = $this->app['repo']->payment->findOrFail($paymentId);
+
+        $merchant = $payment->merchant;
+
+        $this->app['basicauth']->setMerchant($merchant);
+
+        if ($payment->getCallbackUrl() !== null)
+        {
+            $this->app['rzp.merchant_callback_url'] = $payment->getCallbackUrl();
+        }
+
         if((isset($input['token']) === false) or ($input['token'] === "null"))
         {
             throw new Exception\BadRequestException(
@@ -577,20 +596,6 @@ class GatewayController extends Controller
             ]
         );
 
-        $paymentId = $input['merchant_payload'];
-
-        $mode = $this->app['repo']->determineLiveOrTestModeForEntity($paymentId, 'payment');
-
-        $this->app['config']->set('database.default', $mode);
-
-        $this->app['basicauth']->setModeAndDbConnection($mode);
-
-        $payment = $this->app['repo']->payment->findOrFail($paymentId);
-
-        $merchant = $payment->merchant;
-
-        $this->app['basicauth']->setMerchant($merchant);
-
         $input = Mozart\GetSimpl\Helper::getPaymentInputParameters($input, $payment);
 
         $input['simpltoken'] = $input['token'];
@@ -605,7 +610,13 @@ class GatewayController extends Controller
         {
             return $data;
         }
+
         assertTrue ($data !== null);
+
+        if ((isset($data['request'])) and ($data['type'] === 'return'))
+        {
+            return View::make('gateway.callbackReturnUrl')->with('data', $data);
+        }
 
         return View::make('gateway.callback')->with('data', $data);
     }
