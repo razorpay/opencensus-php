@@ -49,7 +49,7 @@ class Validator extends Base\Core
                                                         . "\([0-9]{2}-[0-9]{2}-20[0-9]{2}\)/"
                                                      ],
         RequestProcessor\Base::NETBANKING_CSB     => ["/^RAZORPAY_Recon File/"],
-        RequestProcessor\Base::NETBANKING_SBI     => ["/^RAZORPAY_Recon File/"],
+        RequestProcessor\Base::NETBANKING_SBI     => ["/^RAZORPAY Recon File/"],
         RequestProcessor\Base::NETBANKING_ICICI   => ["/^Payment Through Internet Banking Center Razorpay/"],
         RequestProcessor\Base::NETBANKING_FEDERAL => [
                                                         "/^MIS Report File Dated "
@@ -89,7 +89,7 @@ class Validator extends Base\Core
         RequestProcessor\Base::CARD_FSS_SBI       => ["/IPAY MIS dated [0-9]{2}-[0-9]{2}-20[0-9]{2}/"],
         RequestProcessor\Base::UPI_HULK           => ["/Razorpay_Transaction_Details_[0-9]{2}-(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)-20[0-9]{2}/"],
         RequestProcessor\Base::EMANDATE_AXIS      => ["/axis e[\-]?mandate debit file/i"],
-        RequestProcessor\Base::NETBANKING_ALLAHABAD => ["/Recon file for [0-9]{2}.[0-9]{2}.20[0-9]{2}/"],
+        RequestProcessor\Base::NETBANKING_ALLAHABAD   => ["/Recon file for [0-9]{2}.[0-9]{2}.20[0-9]{2}/"],
         RequestProcessor\Base::CARDLESS_EMI_FLEXMONEY => ["/^Flexmoney Recon and Refund files/"],
         RequestProcessor\Base::PHONEPE            => [".*/Settlement Report/"],
         RequestProcessor\Base::NETBANKING_KVB     => ["/Recon file [0-9]{2}.[0-9]{2}.20[0-9]{2}/"],
@@ -118,7 +118,7 @@ class Validator extends Base\Core
                                                             . " You net amount settled is/"
                                                          ],
         RequestProcessor\Base::NETBANKING_CSB         => ["/Please find attached, the recon file for the date/"],
-        RequestProcessor\Base::NETBANKING_SBI         => ["/Please find attached, the recon file for the date/"],
+        RequestProcessor\Base::NETBANKING_SBI         => ["/Please find the attached file/"],
         RequestProcessor\Base::FIRST_DATA             => ["/the statement of transactions for MID (.)*razorpay/"],
         RequestProcessor\Base::VIRTUAL_ACC_KOTAK      => ["/Please find the hourly report of Virtual Accounts./"],
         RequestProcessor\Base::VIRTUAL_ACC_YESBANK    => ["/Please find attached subject scheduled reports./"],
