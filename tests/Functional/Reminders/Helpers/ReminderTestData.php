@@ -3,6 +3,8 @@
 namespace RZP\Tests\Functional\Reminders;
 
 use RZP\Error\ErrorCode;
+use RZP\Error\PublicErrorCode;
+use RZP\Exception\BadRequestException;
 
 
 return [
@@ -214,4 +216,27 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
+
+    'testSendReminderTerminalCreatedWebhook'    =>  [
+        'request' => [
+            'url' => '/reminders/send/test/terminal/terminal_created_webhook/<terminalId>',
+            'method' => 'post',
+            'content' => [
+            ]
+        ],
+        'response' => [
+            'content'  => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Bad request',
+                ],
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class'               => BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_REMINDER_NOT_APPLICABLE
+        ]
+    ],
+
 ];

@@ -31,6 +31,8 @@ class GatewayProcessor extends BaseGatewayProcessor
     // For worldline, if terminal status is one of below, then it means merchant is onboarded on gateway successfully
     const MERCHANT_ONBOARDED_ON_GATEWAY_STATUSES      =   [Terminal\Status::PENDING, Terminal\Status::ACTIVATED, Terminal\Status::DEACTIVATED];
 
+    const REMINDER_NAMESPACE                          =   'terminal_created_webhook';
+
     protected $tidGenerator;
 
     protected $redisMidKey;
@@ -75,6 +77,8 @@ class GatewayProcessor extends BaseGatewayProcessor
             $terminal = (new Core)->create($terminalParams, $subMerchant);
     
             $this->assignRequisiteFeatures($subMerchant);
+
+            $this->setupCreateReminder($terminal);
         
             return $terminal;    
         }
@@ -538,4 +542,47 @@ class GatewayProcessor extends BaseGatewayProcessor
     {
         return Action::CREATE_TERMINAL;
     }
+
+    protected function setupCreateReminder($terminal)
+    {
+        $callbackUrl = $this->getCallbackUrlForReminder($terminal);
+
+        $reminderData = [
+            'issued_at' => $terminal->getCreatedAt(),
+        ];
+
+        $requestData = [
+            'namespace'         => self::REMINDER_NAMESPACE,
+            'entity_id'         => $terminal->getId(),
+            'entity_type'       => $terminal->getEntityName(),
+            'reminder_data'     => $reminderData,
+            'callback_url'      => $callbackUrl,
+        ];
+
+        try {
+            $this->app['reminders']->createReminder($requestData, Merchant\Account::SHARED_ACCOUNT);
+        }
+        catch (\Throwable $e)
+        {
+            $this->app['trace']->traceException($e);
+        }
+    }
+
+    protected function getCallbackUrlForReminder($terminal)
+    {
+        $baseUrl = 'reminders/send';
+
+        $mode = $this->mode;
+
+        $entity = $terminal->getEntityName();
+
+        $namespace = self::REMINDER_NAMESPACE;
+
+        $terminalId = $terminal->getId();
+
+        $callbackURL = sprintf('%s/%s/%s/%s/%s', $baseUrl, $mode, $entity, $namespace, $terminalId);
+
+        return $callbackURL;
+    }
+
 }

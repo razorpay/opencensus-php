@@ -1621,6 +1621,51 @@ return [
         ],
     ],
 
+    'testTerminalCreatedReminderWebhook' => [
+        'request' => [
+            'url' => '/reminders/send/test/terminal/terminal_created_webhook/<terminalId>',
+            'method' => 'post',
+            'content' => [
+            ]
+        ],
+        'response' => [
+            'content'  => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Bad request',
+                ],
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_REMINDER_NOT_APPLICABLE
+        ]
+    ],
+
+    'testTerminalCreatedReminderWebhookData' => [
+        'event' => [
+            'entity' => 'event',
+            'event' => 'terminal.created',
+            'contains' => ['terminal'],
+            'payload' => [
+                'terminal' => [
+                    'entity' => [
+                        'entity'            => 'terminal',
+                        'status'            => 'pending',
+                        'enabled'           =>  true,
+                        'mpan' => [
+                            'mc_mpan'    => '1234567890123456',
+                            'rupay_mpan' => '1234123412341234',
+                            'visa_mpan'  => '9876543210123456',
+                        ],
+                        'notes' =>  null,
+                    ],
+                ],
+            ],
+        ],
+    ],
+
     'testTerminalOnboardingVerificationWebhook' => [
         'request' => [
             'url'     => '/terminals/onboard/verification',

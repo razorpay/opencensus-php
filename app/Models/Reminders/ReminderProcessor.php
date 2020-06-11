@@ -25,12 +25,14 @@ abstract class ReminderProcessor
 
     protected $mode;
 
-    const PAYMENT_LINK      = 'payment_link';
-    const NEGATIVE_BALANCE  = 'negative_balance';
+    const PAYMENT_LINK              = 'payment_link';
+    const NEGATIVE_BALANCE          = 'negative_balance';
+    const TERMINAL_CREATED_WEBHOOK  = 'terminal_created_webhook';
 
     const REMINDERS_API_NAMESPACE_PROCESSORS = [
-        self::PAYMENT_LINK      => 'InvoiceReminderProcessor',
-        self::NEGATIVE_BALANCE  => 'NegativeBalanceReminderProcessor',
+        self::PAYMENT_LINK              => 'InvoiceReminderProcessor',
+        self::NEGATIVE_BALANCE          => 'NegativeBalanceReminderProcessor',
+        self::TERMINAL_CREATED_WEBHOOK  => 'TerminalCreatedWebhookReminderProcessor' 
     ];
 
     public function __construct()

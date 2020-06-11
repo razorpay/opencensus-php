@@ -157,6 +157,25 @@ class ReminderTest extends TestCase
 
     }
 
+    public function testSendReminderTerminalCreatedWebhook()
+    {
+        $terminal = $this->fixtures->create('terminal', [
+            'enabled'             => true,
+            'status'              => 'pending',
+            'gateway'             => 'worldline',
+            'merchant_id'         => '10000000000000',
+            'gateway_merchant_id' => '90000000002',
+            'mc_mpan'             => '1234567890123456',
+            'visa_mpan'           => '9876543210123456',
+            'rupay_mpan'          => '1234123412341234',
+            'notes'               => 'some notes'
+        ]);
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/reminders/send/test/terminal/terminal_created_webhook/' . $terminal->getId();
+        
+        $this->startTest();
+    }
+
     protected function createNegativeBalanceReminder()
     {
         $this->fixtures->create('merchant', ['id' => '100ghi000ghi00', 'email' => 'test@razorpay.com']);

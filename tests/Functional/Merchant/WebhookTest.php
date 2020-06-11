@@ -1172,6 +1172,30 @@ class WebhookTest extends TestCase
         $this->refundPayment($payment['id']);
     }
 
+    // We fire webhook terminal.created to aggregators 45 min after terminal is created
+    // We are using reminders service for this
+    public function testTerminalCreatedReminderWebhook()
+    {
+        $subMerchant = $this->fixtures->create('merchant');
+
+        $terminal = $this->fixtures->create('terminal',
+        [
+            'merchant_id' => $subMerchant->getId(),
+            'enabled'     => true,
+            'gateway'     => 'worldline',
+            'status'      => 'pending',
+            'mc_mpan'     => '1234567890123456',
+            'visa_mpan'   => '9876543210123456',
+            'rupay_mpan'  => '1234123412341234',
+        ]);
+
+        $expectedEvent = $this->testData[__FUNCTION__.'Data']['event'];
+        $this->expectWebhookEventWithContents('terminal.created', $expectedEvent);
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/reminders/send/test/terminal/terminal_created_webhook/' . $terminal->getId();
+        $this->startTest();
+    }
+
     public function testTerminalOnboardingVerificationWebhook()
     {
         $this->markTestSkipped();
