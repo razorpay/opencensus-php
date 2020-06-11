@@ -4839,6 +4839,28 @@ return [
         ],
     ],
 
+    'testMerchantSwitchProductWithInvalidBeneficiaryNameThrowsProperException' => [
+        'request'  => [
+            'url'     => '/merchants/product-switch',
+            'method'  => 'post',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'   => 'The beneficiary name field is invalid.',
+                    'field'         => 'beneficiary_name',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testMerchantSwitchProductWhenXOnboardingExperimentOff' => [
         'request'  => [
             'url'     => '/merchants/product-switch',

@@ -5713,6 +5713,71 @@ class MerchantTest extends TestCase
         $this->testMerchantSwitchProductSendsInterestDetailsToSalesforce(0, true);
     }
 
+    public function testMerchantSwitchProductWithInvalidBeneficiaryNameThrowsProperException()
+    {
+        // Activate merchant with business_banking flag set to true.
+        $this->fixtures->on('live')->merchant->edit('10000000000000', ['business_banking' => 1]);
+        $this->fixtures->on('live')->merchant->activate();
+
+        // Creates banking balance
+        $bankingBalance = $this->fixtures->on('live')->merchant->createBalanceOfBankingType();
+
+        // Creates virtual account, its bank account receiver on new banking balance.
+        $virtualAccount = $this->fixtures->on('live')->create('virtual_account');
+
+        // Creates bank account with invalid b
+        $bankAccount    = $this->fixtures->on('live')->create(
+            'bank_account',
+            [
+                'id'               => '1000001lcustba',
+                'type'             => 'virtual_account',
+                'entity_id'        => $virtualAccount->getId(),
+                'account_number'   => '3434440041626905',
+                'ifsc_code'        => 'YESB0CMSNOC',
+                'beneficiary_name' => '_abc'
+            ]);
+
+        $virtualAccount->bankAccount()->associate($bankAccount);
+        $virtualAccount->balance()->associate($bankingBalance);
+        $virtualAccount->save();
+
+        $this->fixtures->on('live')->merchant->addFeatures(['virtual_accounts', 'payout']);
+
+        $user = (new User())->createUserForMerchant();
+
+        $this->fixtures->edit('merchant',
+            '10000000000000',
+            ['activated' => true, 'business_banking' => false,]);
+
+        $this->fixtures->create('merchant_detail',
+            [
+                'merchant_id'       => '10000000000000',
+                'activation_status' => 'activated'
+            ]);
+
+        $this->fixtures->create('terminal:bank_account_terminal_for_business_banking',
+            ['merchant_id' => '100000Razorpay']);
+
+        // To create a virtual account we need to enable bank transfer
+        $this->fixtures->edit('methods', '10000000000000', ['bank_transfer' => true]);
+
+        $liveBankingAccount = $this->getDbEntity('banking_account',
+            [
+                'merchant_id' => '10000000000000',
+            ],
+            'live');
+
+        $this->assertNull($liveBankingAccount);
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', $user['id'], 'owner');
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $testData['request']['server']['HTTP_X-Request-Origin'] = config('applications.banking_service_url');
+
+        $this->startTest();
+    }
+
     public function testBulkAssignPricing()
     {
         $this->setAdminForInternalAuth();

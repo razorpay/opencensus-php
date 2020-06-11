@@ -285,7 +285,7 @@ class Validator extends Base\Validator
 
             if ($match !== 1)
             {
-                throw new Exception\BadRequestValidationFailureException(
+                throw new BadRequestValidationFailureException(
                     'The beneficiary name field is invalid.',
                     Entity::BENEFICIARY_NAME);
             }
