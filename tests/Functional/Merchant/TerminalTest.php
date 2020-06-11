@@ -1919,4 +1919,14 @@ class TerminalTest extends TestCase
 
         $this->startTest();
     }
+
+    public function testAssignUpiIciciVirtualVPATerminal()
+    {
+        $this->startTest();
+    }
+
+    public function testAssignUpiIciciVirtualVPATerminalWithoutConfig()
+    {
+        $this->startTest();
+    }
 }

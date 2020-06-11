@@ -29,7 +29,10 @@ class Core extends Base\Core
 
         $this->trace->info(
             TraceCode::UPI_TRANSFER_PAYMENT_PROCESS_REQUEST,
-            $this->removePiiForLogging($upiTransferInput)
+            [
+                'upi_transfer_data' => $this->removePiiForLogging($upiTransferInput),
+                'terminal'          => $terminal->getId(),
+            ]
         );
 
         $this->convertPayeeVpaToLower($upiTransferInput);

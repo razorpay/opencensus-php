@@ -999,11 +999,18 @@ trait Capture
         }
     }
 
-    protected function updateVirtualAccountStatusForBankTransfer(Payment\Entity $payment)
+    protected function updateVirtualAccountStatusForVaPayment(Payment\Entity $payment)
     {
         $virtualAccountCore = new VirtualAccount\Core;
 
-        $virtualAccount = $payment->bankTransfer->virtualAccount;
+        if ($payment->isBankTransfer() === true)
+        {
+            $virtualAccount = $payment->bankTransfer->virtualAccount;
+        }
+        else if($payment->isUpiTransfer() === true)
+        {
+            $virtualAccount = $payment->upiTransfer->virtualAccount;
+        }
 
         if (($virtualAccount->hasAmountExpected() === true) and
             ($virtualAccount->getAmountPaid() >= $virtualAccount->getAmountExpected()))
@@ -1095,7 +1102,8 @@ trait Capture
 
     protected function updateVirtualAccountStatusIfApplicable(Payment\Entity $payment)
     {
-        if ($payment->isBankTransfer() === true)
+        if (($payment->isBankTransfer() === true) or
+            ($payment->isUpiTransfer() === true))
         {
             /*
              *  If any payment is a Bank Transfer and If amount
@@ -1103,7 +1111,7 @@ trait Capture
              *  we will mark the Virtual Account as paid.
              */
 
-            $this->updateVirtualAccountStatusForBankTransfer($payment);
+            $this->updateVirtualAccountStatusForVaPayment($payment);
         }
         else if ($payment->hasOrder() === true)
         {

@@ -14,6 +14,7 @@ use RZP\Trace\TraceCode;
 use phpseclib\Crypt\RSA;
 use RZP\Error\ErrorCode;
 use RZP\Gateway\Upi\Base;
+use RZP\Models\UpiTransfer;
 use RZP\Constants\Timezone;
 use RZP\Models\BankAccount;
 use RZP\Gateway\Base\Action;
@@ -87,7 +88,8 @@ class Gateway extends Base\Gateway
     {
         parent::action($input, Action::AUTHENTICATE);
 
-        if ($this->isBharatQrPayment() === true)
+        if (($this->isBharatQrPayment() === true) or
+            ($this->isUpiTransferPayment() === true))
         {
             //
             //Hacky fixture: When ORIGINAL_BANK_RRN_REQ is null, the entity NPCI_REFERENCE_ID method becomes
@@ -797,7 +799,7 @@ class Gateway extends Base\Gateway
         {
             $content[Entity::NPCI_REFERENCE_ID] = $content[Fields::ORIGINAL_BANK_RRN];
         }
-        
+
         $verify->match = ($status === VerifyResult::STATUS_MATCH) ? true : false;
 
         $verify->verifyResponseContent = $content;
@@ -1314,5 +1316,42 @@ class Gateway extends Base\Gateway
         ];
 
         return $request;
+    }
+
+    public function getUpiTransferData(array $input)
+    {
+        $this->checkCallbackResponseStatus($input);
+
+        $amount = $this->getIntegerFormattedAmount($input[Fields::PAYER_AMOUNT]);
+
+        $upiTransferData = [
+            UpiTransfer\GatewayResponseParams::AMOUNT                => $amount,
+            UpiTransfer\GatewayResponseParams::GATEWAY               => $this->gateway,
+            UpiTransfer\GatewayResponseParams::PAYER_VPA             => $input[Fields::PAYER_VA],
+            UpiTransfer\GatewayResponseParams::PAYEE_VPA             => $this->terminal->getVirtualUpiRoot() . $input[Fields::MERCHANT_TRAN_ID] . '@' . $this->terminal->getVirtualUpiHandle(),
+            UpiTransfer\GatewayResponseParams::TRANSACTION_TIME      => $input[Fields::TXN_COMPLETION_DATE],
+            UpiTransfer\GatewayResponseParams::GATEWAY_MERCHANT_ID   => $input[Fields::MERCHANT_ID],
+            UpiTransfer\GatewayResponseParams::PROVIDER_REFERENCE_ID => $input[Fields::BANK_RRN],
+            UpiTransfer\GatewayResponseParams::NPCI_REFERENCE_ID     => $input[Fields::BANK_RRN],
+            UpiTransfer\GatewayResponseParams::PAYER_IFSC            => '',
+        ];
+
+        return [
+            'callback_data'     => $input,
+            'upi_transfer_data' => $upiTransferData
+        ];
+    }
+
+    protected function checkCallbackResponseStatus($response, $successStatus = Status::SUCCESS)
+    {
+        if ($response[Fields::TXN_STATUS] !== $successStatus)
+        {
+            $errorMessage = ResponseCode::getResponseMessage($response[Fields::RESPONSE_CODE]);
+
+            throw new Exception\GatewayErrorException(
+                ResponseCodeMap::getApiErrorCode($response[Fields::RESPONSE_CODE]),
+                $response[Fields::TXN_STATUS],
+                $errorMessage);
+        }
     }
 }

@@ -3072,4 +3072,61 @@ return [
         ]
     ],
 
+    'testAssignUpiIciciVirtualVPATerminal' => [
+        'request'  => [
+            'url'     => '/merchants/100000Razorpay/terminals',
+            'content' => [
+                'gateway'                     => Gateway::UPI_ICICI,
+                'gateway_acquirer'            => 'icici',
+                'gateway_merchant_id'         => '12345',
+                'gateway_merchant_id2'        => 'rzr.payto00000@icici',
+                'upi'                         => 1,
+                'type'                        => [
+                    Terminal\Type::NON_RECURRING => '1',
+                    Terminal\Type::UPI_TRANSFER  => '1',
+                ],
+                'virtual_upi_root'            => 'rzr.',
+                'virtual_upi_merchant_prefix' => 'payto00000',
+                'virtual_upi_handle'          => 'icici',
+            ],
+            'method'  => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                'gateway_acquirer'    => 'icici',
+                'gateway_merchant_id' => '12345',
+                'enabled'             => true
+            ]
+        ]
+    ],
+
+    'testAssignUpiIciciVirtualVPATerminalWithoutConfig' => [
+        'request'   => [
+            'url'     => '/merchants/100000Razorpay/terminals',
+            'content' => [
+                'gateway'              => Gateway::UPI_ICICI,
+                'gateway_acquirer'     => 'icici',
+                'gateway_merchant_id'  => '12345',
+                'gateway_merchant_id2' => 'rzr.payto00000@icici',
+                'upi'                  => 1,
+                'type'                 => [
+                    Terminal\Type::NON_RECURRING => '1',
+                    Terminal\Type::UPI_TRANSFER  => '1',
+                ],
+            ],
+            'method'  => 'POST',
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+        ],
+    ],
 ];
