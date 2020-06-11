@@ -81,8 +81,7 @@ class PlinkController extends Controller
 
         $request->request->remove('captcha');
 
-        $this->sendRequest($request);
-
+        return $this->sendRequest($request);
     }
 
     protected function validateCaptcha(array $input)

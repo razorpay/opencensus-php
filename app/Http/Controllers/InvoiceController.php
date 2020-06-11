@@ -22,6 +22,8 @@ class InvoiceController extends Controller
 {
     protected $paymentlinkservice;
 
+    const VALIDATION_ERROR = 'VALIDATION_ERROR';
+
     public function __construct()
     {
         parent::__construct();

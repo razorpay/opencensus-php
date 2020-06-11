@@ -588,6 +588,15 @@ class Core extends Base\Core
 
         $order = $payment->order;
 
+        if(empty($order) === true)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_ERROR,
+                null,
+                null,
+                'Receipt is not generated for this payment');
+        }
+
         $invoice = $order->invoice;
 
         if(empty($invoice) === true)
