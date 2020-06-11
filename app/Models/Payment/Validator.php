@@ -24,6 +24,7 @@ use RZP\Error\PublicErrorDescription;
 use RZP\Gateway\Upi\Base\ProviderCode;
 use RZP\Models\VirtualAccount\Receiver;
 use RZP\Models\Payment\Processor\Wallet;
+use RZP\Models\Payment\Processor\Constants;
 use RZP\Models\Payment\Processor\CardlessEmi;
 use RZP\Models\Payment\Processor\UpiTrait;
 use RZP\Models\Currency\Core as CurrencyCore;
@@ -147,6 +148,12 @@ class Validator extends Base\Validator
         Entity::AMOUNT               => 'required|integer',
         Entity::CURRENCY             => 'required|custom',
     ];
+
+    protected static $otpGenerateRules = [
+        'track_id'       => 'sometimes|string',
+        'action'         => 'sometimes|in:' . Constants::ACTION_OTP_RESEND,
+    ];
+
 
     protected static $bulkCaptureRules = [
         'payment_ids'                => 'required|sequential_array',

@@ -47,6 +47,7 @@ class Route
         // @todo: Require feature S2S for payment_create_private route.
         'payment_create_private'                   => ['post',     'payments/create',                                'PaymentCreateController@postCreateS2SPayment'                      ],
         'payment_create_private_json'              => ['post',     'payments/create/json',                           'PaymentCreateController@postCreateS2SJsonPayment'                  ],
+        'payment_create_checkout_json'              => ['post',    'payments/create/checkout/json',                  'PaymentCreateController@postCreateCheckoutJsonPayment'                  ],
         'payment_create_aeps'                      => ['post',     'payments/create/aeps',                           'PaymentCreateController@postCreateS2SPayment'                      ],
         'payment_create_subscriptions'             => ['post',     'payments/create/subscriptions',                  'PaymentCreateController@postCreateS2SPayment'                      ],
         'payment_create_recurring'                 => ['post',     'payments/create/recurring',                      'PaymentCreateController@postCreateS2SPayment'                      ],
@@ -74,6 +75,7 @@ class Route
         'payment_otp_submit'                       => ['post',     'payments/{x_entity_id}/otp_submit/{hash}',       'PaymentCreateController@postOtpSubmit'                             ],
         'payment_otp_submit_private'               => ['post',     'payments/{x_entity_id}/otp/submit',              'PaymentCreateController@postOtpSubmitPrivate'                      ],
         'payment_otp_resend'                       => ['post',     'payments/{x_entity_id}/otp_resend',              'PaymentCreateController@postOtpResend'                             ],
+        'payment_otp_generate'                     => ['post',     'payments/{x_entity_id}/otp_generate',            'PaymentCreateController@postOtpGenerate'                           ],
         'payment_otp_resend_private'               => ['post',     'payments/{x_entity_id}/otp/resend',              'PaymentCreateController@postOtpResendPrivate'                      ],
         'payment_topup_ajax'                       => ['post',     'payments/{x_entity_id}/topup/ajax',              'PaymentCreateController@postTopupAjax'                             ],
         'payment_topup_post'                       => ['post',     'payments/{x_entity_id}/topup',                   'PaymentCreateController@postTopup'                                 ],
@@ -1772,10 +1774,12 @@ class Route
         'payment_create_checkout',
         'payment_create_jsonp',
         'payment_create_ajax',
+        'payment_create_checkout_json',
         'payment_create_fees',
         'payment_calculate_fees',
         'payment_otp_submit',
         'payment_otp_resend',
+        'payment_otp_generate',
         'payment_topup_ajax',
         'payment_topup_post',
         'payment_redirect_callback',
@@ -4776,7 +4780,8 @@ class Route
     ];
 
     protected static $s2sJsonRoutes = [
-        'payment_create_private_json'
+        'payment_create_private_json',
+        'payment_create_checkout_json'
     ];
 
     /**
@@ -4794,6 +4799,7 @@ class Route
         'payment_create_recurring'             => [Feature::CHARGE_AT_WILL],
         'payment_create_private_old'           => [Feature::S2S],
         'payment_create_private_json'          => [Feature::S2S_JSON],
+        'payment_create_checkout_json'         => [Feature::S2S_JSON_V2],
         'reports_transaction_broking'          => [Feature::BROKING_REPORT],
         'reports_transaction_dsp'              => [Feature::DSP_REPORT],
         'reports_order_rpp'                    => [Feature::RPP_REPORT],
@@ -4967,6 +4973,7 @@ class Route
         'payment_get_status',
         'payment_otp_submit',
         'payment_otp_resend',
+        'payment_otp_generate',
         'payment_topup_ajax',
         'payment_topup_post',
         'payment_redirect_callback',
@@ -5419,7 +5426,7 @@ class Route
         return in_array($route, $jsonpRoutes);
     }
 
-    public static function isS2SJsonRoute($route)
+    public static function isJsonRoute($route)
     {
         $jsonpRoutes = self::$s2sJsonRoutes;
 

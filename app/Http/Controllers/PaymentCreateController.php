@@ -83,6 +83,25 @@ class PaymentCreateController extends Controller
         return ApiResponse::json($response);
     }
 
+     /**
+     * Creates an checkout json payment and return json response
+     */
+    public function postCreateCheckoutJsonPayment()
+    {
+        $input = Request::all();
+
+        $this->logPaymentRequestEvent($input);
+
+        $data = $this->service(E::PAYMENT)->process($input);
+
+        $response = $this->processCoprotoJsonData($data);
+
+        $this->logResponseIfApplicable($response);
+
+        return ApiResponse::json($response);
+    }
+
+
     /**
      * In this case, we ensure that for direct response cases like
      * international credit cards with no 3dsecure, we give back the
@@ -327,9 +346,34 @@ class PaymentCreateController extends Controller
     {
         $input = Request::all();
 
-        $payment = $this->service(E::PAYMENT)->otpResend($id, $input);
+        $data = $this->service(E::PAYMENT)->otpResend($id, $input);
 
-        return ApiResponse::json($payment);
+         $merchant = $this->app['basicauth']->getMerchant();
+
+        if (($merchant->isFeatureEnabled(Feature::S2S_JSON_V2) === true) or
+            ($merchant->isFeatureEnabled(Feature::S2S_JSON) === true))
+        {
+            return $this->processCoprotoJsonData($data);
+        }
+
+        return ApiResponse::json($data);
+    }
+
+    /**
+     * Generate OTP for a payment
+     */
+
+    public function postOtpGenerate($id)
+    {
+        $input = Request::all();
+
+        $data = $this->service(E::PAYMENT)->otpGenerate($id, $input);
+
+        $response = $this->processCoprotoJsonData($data);
+
+        $this->logResponseIfApplicable($response);
+
+        return ApiResponse::json($response);
     }
 
     public function postOtpResendPrivate($id)
@@ -644,7 +688,14 @@ class PaymentCreateController extends Controller
             }
             elseif ($data['type'] === 'otp')
             {
-              return $this->generateOtpJson($data);
+                $merchant = $this->app['basicauth']->getMerchant();
+
+                if ($merchant->isFeatureEnabled(Feature::S2S_JSON_V2) === true)
+                {
+                    return $this->generateOtpJsonV2($data);
+                }
+
+                return $this->generateOtpJson($data);
             }
             elseif (($data['type'] === 'intent') or
                     ($data['type'] === 'async'))
@@ -689,16 +740,31 @@ class PaymentCreateController extends Controller
 
     protected function generateRedirectJson($data)
     {
+        $metadata = 'metadata';
+
         $response = [];
 
         $response['razorpay_payment_id'] = $data['payment_id'];
 
         $next = [
             [
-                "action" => "redirect",
-                "url"    => $data['request']['url'],
+                'action' => 'redirect',
+                'url'    => $data['request']['url'],
             ],
         ];
+
+        if (empty($data['request']['otp_generate_url']) === false)
+        {
+            array_push($next, [
+                'action' => 'otp_generate',
+                'url'    => $data['request']['otp_generate_url'],
+            ]);
+
+            if (empty($data[$metadata]) === false)
+            {
+                $response[$metadata] = $data[$metadata];
+            }
+        }
 
         $response['next'] = $next;
 
@@ -738,6 +804,40 @@ class PaymentCreateController extends Controller
                 'action' => $redirect,
                 'url'    => $data['redirect'],
             ];
+        }
+
+        return $response;
+    }
+
+    protected function generateOtpJsonV2($data)
+    {
+        $otpResend = 'otp_resend';
+        $otpSubmit = 'otp_submit';
+        $metadata  = 'metadata';
+
+        $response = [];
+
+        $response['razorpay_payment_id'] =  $data['payment_id'];
+
+        if (in_array($otpSubmit, $data['next'], true) === true)
+        {
+            $response['next'][] = [
+                'action' => $otpSubmit,
+                'url'    => $data['submit_url'],
+            ];
+        }
+
+        if (in_array($otpResend, $data['next'], true) === true)
+        {
+            $response['next'][] = [
+                'action' => $otpResend,
+                'url'    => $data['resend_url'],
+            ];
+        }
+
+        if (empty($data[$metadata]) === false)
+        {
+            $response[$metadata] = $data[$metadata];
         }
 
         return $response;

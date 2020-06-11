@@ -27,10 +27,10 @@ trait CardPaymentService
         }
 
         $routeName = $this->app['request.ctx']->getRoute();
-        $this->isS2SJsonRoute = $this->app['api.route']->isS2SJsonRoute($routeName);
+        $this->isJsonRoute = $this->app['api.route']->isJsonRoute($routeName);
 
 
-        if ($this->app['api.route']->isS2SJsonRoute($routeName) === true)
+        if ($this->app['api.route']->isJsonRoute($routeName) === true)
         {
             return false;
         }

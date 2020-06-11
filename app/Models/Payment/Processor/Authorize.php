@@ -48,6 +48,7 @@ use RZP\Models\Card\Network;
 use RZP\Jobs\RunShieldCheck;
 use RZP\Models\EntityOrigin;
 use RZP\Models\Payment\Action;
+use RZP\Models\Payment\Status;
 use RZP\Models\Payment\Method;
 use RZP\Models\Customer\Token;
 use RZP\Models\Payment\Gateway;
@@ -66,6 +67,7 @@ use RZP\Models\Payment\TerminalAnalytics;
 use RZP\Gateway\Mozart\GetSimpl\Constants;
 use RZP\Gateway\Base\Action as GatewayAction;
 use RZP\Models\Payment\Processor\Netbanking;
+use RZP\Models\Payment\Processor\Constants as PaymentConstants;
 use RZP\Gateway\Enach\Npci\Netbanking\Gateway as enachNpciGateway;
 
 trait Authorize
@@ -77,7 +79,7 @@ trait Authorize
 
     protected $headlessError = false;
 
-    protected $isS2SJsonRoute = false;
+    protected $isJsonRoute = false;
 
     /**
      * @param Payment\Entity $payment
@@ -816,8 +818,13 @@ trait Authorize
                 'network'    => $card->getNetworkCode(),
                 'last4'      => $card->getLast4(),
                 'iin'        => $card->getIin(),
-                'gateway'    => $payment->getGateway(),
             ];
+
+            if ((empty($this->isJsonRoute) === false) and
+                ($this->isJsonRoute === false))
+            {
+                $metadata['gateway'] = $payment->getGateway();
+            }
 
             $response['metadata'] = $metaData;
 
@@ -867,7 +874,7 @@ trait Authorize
             if (in_array($otpResend, $next, true) === true)
             {
                 $resendUrl        = $this->getOtpResendUrl();
-                $resendUrlPrivate = $this->getOtpResendUrl();
+                $resendUrlPrivate = $this->getOtpResendUrlPrivate();
             }
 
             $response = [
@@ -888,7 +895,6 @@ trait Authorize
 
             $response['submit_url_private'] = $this->getOtpSubmitUrlPrivate();
             $response['resend_url_private'] = $resendUrlPrivate;
-
         }
 
         $this->segment->trackPayment($payment, TraceCode::OTP_GENERATE, $response);
@@ -2508,7 +2514,8 @@ trait Authorize
 
         // We need to disable fraud checks for redirection payments before redirection hence this check. This will
         // be later handled within payment service
-        if (($this->shouldRedirect($payment) === true) or ($this->shouldRedirectV2($payment, []) === true))
+        if (($this->shouldRedirect($payment) === true) or
+            ($this->shouldRedirectV2($payment, []) === true))
         {
             return;
         }
@@ -6621,10 +6628,11 @@ trait Authorize
             'id' => $this->payment->getPublicId()
         ];
 
-        $otpResendUrl = $this->route->getUrl('payment_otp_resend_private', $params);
+        $otpResendUrl = $this->route->getUrlWithPublicAuth('payment_otp_resend', $params);
 
         return $otpResendUrl;
     }
+
 
     protected function getOtpResendUrlPrivate(): string
     {
@@ -6632,7 +6640,7 @@ trait Authorize
             'id' => $this->payment->getPublicId()
         ];
 
-        $otpResendUrl = $this->route->getUrlWithPublicAuth('payment_otp_resend', $params);
+        $otpResendUrl = $this->route->getUrl('payment_otp_resend_private', $params);
 
         return $otpResendUrl;
     }
@@ -6748,7 +6756,7 @@ trait Authorize
         $routeName = $this->app['request.ctx']->getRoute();
 
         if (($this->app['basicauth']->isPrivateAuth() === false) or
-            ($this->app['api.route']->isS2SJsonRoute($routeName) === true))
+            ($this->app['api.route']->isJsonRoute($routeName) === true))
         {
             return false;
         }
@@ -6790,7 +6798,7 @@ trait Authorize
     protected function shouldRedirectV2(Payment\Entity $payment, $gatewayInput)
     {
         $routeName = $this->app['request.ctx']->getRoute();
-        $this->isS2SJsonRoute = $this->app['api.route']->isS2SJsonRoute($routeName);
+        $this->isJsonRoute = $this->app['api.route']->isJsonRoute($routeName);
 
         /*
          * We don't use the redirect flow for the following scenarios
@@ -6802,8 +6810,7 @@ trait Authorize
          * 6. BharathQR payment
          * 7. Payment receiver is VPA
          */
-        if (($this->app['basicauth']->isPrivateAuth() === false) or
-            ($this->app['api.route']->isS2SJsonRoute($routeName) === false) or
+        if (($this->isJsonRoute === false) or
             ($payment->isRecurringTypeAuto() === true) or
             ($payment->isBankTransfer() === true) or
             ($payment->isUpi() === true) or
@@ -6815,6 +6822,11 @@ trait Authorize
         }
 
         $merchant = $payment->merchant;
+
+        if ($merchant->isFeatureEnabled(Feature\Constants::S2S_JSON_V2)  === true)
+        {
+            return true;
+        }
 
         if ($merchant->isHeadlessEnabled() === false)
         {
@@ -6874,6 +6886,7 @@ trait Authorize
 
             $redirectUrl = $this->route->getUrl('payment_redirect_to_authorize_get', ['id' => $trackId]);
 
+
             $data['type'] = 'first';
 
             $data['payment_id'] = $payment->getPublicId();
@@ -6886,12 +6899,21 @@ trait Authorize
                 'task_id'  => $this->request->getTaskId()
             ];
 
+            if ($this->shouldAddOtpGenerateUrl($terminalGatewayInput) === true)
+            {
+               $data['request']['otp_generate_url'] = $this->route->getUrlWithPublicAuthInQueryParam('payment_otp_generate',
+                [
+                        'id' => $payment->getPublicId(),
+                        'track_id' => $trackId,
+                ]);
+            }
+
             $data['version'] = 1;
 
             $this->repo->saveOrFail($payment);
 
             $payload['track_id'] = $trackId;
-            $payload['request'] = $data;
+            $payload['request']  = $data;
 
             $this->trace->info(
                 TraceCode::PAYMENT_CREATED_IN_REDIRECT_TO_AUTHORIZE_FLOW,
@@ -6917,6 +6939,131 @@ trait Authorize
         return null;
     }
 
+    public function shouldAddOtpGenerateUrl(array $terminalGatewayInput)
+    {
+        $authTypes = [
+            Payment\AuthType::HEADLESS_OTP,
+            Payment\AuthType::IVR,
+            Payment\AuthType::OTP,
+        ];
+
+        if ((empty($terminalGatewayInput['auth_type']) === false) and
+            (in_array($terminalGatewayInput['auth_type'], $authTypes, true) === true))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    public function processOtpGenerate($payment, $input)
+    {
+        $this->setPayment($payment);
+
+        $resource = $this->getCallbackMutexResource($payment);
+
+        $response = $this->mutex->acquireAndRelease(
+            $resource,
+            function() use ($payment)
+            {
+                $ret = $this->reCheckPayment($payment, PaymentConstants::REQUEST_TYPE_OTP);
+
+                if ($ret !== null)
+                {
+                    return $ret;
+                }
+
+                if (($payment->getAuthType() !== null) and
+                    (in_array($payment->getAuthType(), Payment\AuthType::$otpAuthTypes, true) === true))
+                {
+                    throw new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_OTP_GENERATE_ALREADY_PROCESSED);
+                }
+
+                $key = $payment->getCacheRedirectInputKey();
+
+                $inputDetails = $this->getInputDetails($payment, $key);
+
+                $gatewayInput = $inputDetails['gateway_input'];
+
+                $this->setAnalyticsLog($payment);
+
+                $payment->setAuthType(Payment\AuthType::OTP);
+
+                unset($inputDetails['gatewayInput']);
+
+                $this->runFraudChecksIfApplicable($payment);
+
+                $response = $this->gatewayRelatedProcessing($payment, $inputDetails, $gatewayInput);
+
+                if ($response['type'] !== 'otp')
+                {
+                   throw new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_OTP_GENERATE_FAILURE);
+                }
+
+                return $response;
+            },
+            120,
+            ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS,
+            20,
+            1000,
+            2000);
+
+
+        return $response;
+    }
+
+
+    protected function reCheckPayment($payment, $requestType)
+    {
+        // Reload in case it's processed by another thread.
+        $this->repo->reload($payment);
+
+        $merchant = $payment->merchant;
+
+        if ($payment->hasBeenAuthorized() === true)
+        {
+            return $this->processPaymentCallbackSecondTime($payment);
+        }
+
+        if (($merchant->isFeatureEnabled(Feature\Constants::S2S_JSON_V2) === true) and
+            ($payment->isFailed() === true))
+        {
+            if ($payment->getInternalErrorCode() === ErrorCode::GATEWAY_ERROR_OTPELF_FAILURE)
+            {
+                $payment->setStatus(Status::CREATED);
+
+                $payment->setErrorNull();
+            }
+        }
+
+        // if payment is already processed and failed we will throw an error
+        if ($payment->isFailed() === true)
+        {
+            return $this->rethrowFailedPaymentErrorException($payment);
+        }
+
+        $diff = Carbon::now(Timezone::IST)->getTimestamp() - $payment->getCreatedAt();
+
+        if ($diff > self::PAYMENT_REDIRECT_TO_AUTHORIZE_TIME_DURATION)
+        {
+            $errorCode = ErrorCode::BAD_REQUEST_PAYMENT_CANNOT_REDIRECT_TO_AUTHORIZE;
+
+            if ($requestType === PaymentConstants::REQUEST_TYPE_OTP)
+            {
+                $errorCode = ErrorCode::BAD_REQUEST_PAYMENT_CANNOT_GENERATE_OTP;
+            }
+
+            $this->segment->trackPayment($payment, $errorCode);
+
+            throw new Exception\BadRequestException(
+                $errorCode);
+        }
+
+        return null;
+    }
+
     public function processRedirectToAuthorize(Payment\Entity $payment, string $trackId)
     {
         $this->setPayment($payment);
@@ -6937,28 +7084,11 @@ trait Authorize
             $resource,
             function() use ($payment)
             {
-                // Reload in case it's processed by another thread.
-                $this->repo->reload($payment);
+                $ret = $this->reCheckPayment($payment, PaymentConstants::REQUEST_TYPE_REDIRECT);
 
-                if ($payment->hasBeenAuthorized() === true)
+                if ($ret !== null)
                 {
-                    return $this->processPaymentCallbackSecondTime($payment);
-                }
-
-                // if payment is already processed and failed we will throw an error
-                if ($payment->isFailed() === true)
-                {
-                    return $this->rethrowFailedPaymentErrorException($payment);
-                }
-
-                $diff = Carbon::now(Timezone::IST)->getTimestamp() - $payment->getCreatedAt();
-
-                if ($diff > self::PAYMENT_REDIRECT_TO_AUTHORIZE_TIME_DURATION)
-                {
-                    $this->segment->trackPayment($payment, ErrorCode::BAD_REQUEST_PAYMENT_CANNOT_REDIRECT_TO_AUTHORIZE);
-
-                    throw new Exception\BadRequestException(
-                        ErrorCode::BAD_REQUEST_PAYMENT_CANNOT_REDIRECT_TO_AUTHORIZE);
+                    return $ret;
                 }
 
                 $key = $payment->getCacheRedirectInputKey();

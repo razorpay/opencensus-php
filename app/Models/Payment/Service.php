@@ -37,6 +37,7 @@ use RZP\Models\Customer\Token;
 use RZP\Models\Payment\Gateway;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Payment\Verify\Verify;
+use RZP\Models\Payment\Processor\Constants as PaymentConstants;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Payment\Refund\Constants as RefundConstants;
 
@@ -276,6 +277,62 @@ class Service extends Base\Service
     public function redirectTo3ds($id)
     {
         return $this->getNewProcessor()->redirectTo3ds($id);
+    }
+
+    public function otpGenerate($id, $input)
+    {
+        $traceData = [
+            'payment_id' => $id,
+            'input'    => $input,
+        ];
+
+        $payment = null;
+
+        try
+        {
+            $this->trace->info(TraceCode::PAYMENT_OTP_GENERATE_REQUEST, $traceData);
+
+            (new Payment\Validator)->validateInput('otp_generate', $input);
+
+            $payment = $this->repo->payment->findByPublicId($id);
+
+            $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_CREATE_OTP_GENERATE_INITIATED, $payment, null, [], $traceData);
+
+            $response = $this->getNewProcessor()->processOtpGenerate($payment, $id);
+
+            $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_CREATE_OTP_GENERATE_PROCESSED, $payment, null, [], $traceData);
+
+            return $response;
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::CRITICAL,
+                TraceCode::PAYMENT_OTP_GENERATE_FAILURE,
+                $traceData
+            );
+
+            $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_CREATE_OTP_GENERATE_PROCESSED, $payment, $e, [], $traceData);
+
+            throw $e;
+        }
+
+    }
+
+    protected function isOtpResendAction($input)
+    {
+        if (empty($input[PaymentConstants::ACTION]) === true)
+        {
+            return false;
+        }
+
+        if ($input[PaymentConstants::ACTION] === PaymentConstants::ACTION_OTP_RESEND)
+        {
+            return true;
+        }
+
+        return false;
     }
 
     public function redirectToAuthorize($id)

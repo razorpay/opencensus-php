@@ -131,6 +131,27 @@ trait PaymentCreationTrait
         return (preg_match($pattern, $uri) === 1);
     }
 
+    protected function isOtpGenerateUrlPublic($uri)
+    {
+        $pattern = '/payments\/pay_[\w]+\/otp_generate\?track_id=[\w]+\&key_id=rzp_[\w]+/';
+
+        return (preg_match($pattern, $uri) === 1);
+    }
+
+    protected function isOtpResendUrlPublic($uri)
+    {
+        $pattern = '/payments\/pay_[\w]+\/otp_resend\?key_id=rzp_[\w]+/';
+
+        return (preg_match($pattern, $uri) === 1);
+    }
+
+    protected function getUri($url)
+    {
+        $ix = strpos($url, 'v1');
+
+        return substr($url, $ix + 2);
+    }
+
     protected function isOtpResendUrlPrivate($uri)
     {
         $pattern = '/payments\/pay_[\w]+\/otp\/resend/';
@@ -144,6 +165,7 @@ trait PaymentCreationTrait
 
         return (preg_match($pattern, $uri) === 1);
     }
+
 
     protected function handlePaymentCreationFlow($response, $request, &$callback = null)
     {

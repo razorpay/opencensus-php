@@ -101,6 +101,16 @@ class EventCode
         'name'  => 'payment.create.redirect.processed'
     ];
 
+    const PAYMENT_CREATE_OTP_GENERATE_INITIATED             = [
+        'group' => 'payment_creation',
+        'name'  => 'payment.create.otp.generate.initiated'
+    ];
+
+    const PAYMENT_CREATE_OTP_GENERATE_PROCESSED             = [
+        'group' => 'authentication',
+        'name'  => 'payment.create.otp.generate.processed'
+    ];
+
     const PAYMENT_AUTHENTICATION_INITIATED              = [
         'group' => 'authentication',
         'name'  => 'payment.authentication.initiated'

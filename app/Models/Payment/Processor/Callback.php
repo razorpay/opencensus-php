@@ -648,6 +648,11 @@ trait Callback
         return 'callback_' . $payment->getId();
     }
 
+    protected function getRedirectMutexResource(Payment\Entity $payment): string
+    {
+        return 'redirect_' . $payment->getId();
+    }
+
     protected function getCardNumber($card)
     {
         if ($card->globalCard !== null)

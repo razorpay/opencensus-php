@@ -1227,6 +1227,11 @@ class Processor
     {
         $method = $payment->getMethod();
 
+        if (empty($payment->getCpsRoute()) === false)
+        {
+            return;
+        }
+
         if ((in_array($method, [Payment\Method::CARD, Payment\Method::NETBANKING, Payment\Method::EMI], true) === false) or
             ($payment->isGooglePayCard() === true))
         {

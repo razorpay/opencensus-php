@@ -225,7 +225,7 @@ trait HeadlessOtp
                 true);
         }
 
-        if ($this->isS2SJsonRoute === true)
+        if ($this->isJsonRoute === true)
         {
             $this->headlessError = true;
 

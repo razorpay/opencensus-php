@@ -43,6 +43,7 @@ use RZP\Gateway\Upi\Base\ProviderCode;
 use RZP\Models\VirtualAccount\Receiver;
 use RZP\Models\Payment\Analytics\Metadata;
 use RZP\Models\Payment\Processor\Netbanking;
+use RZP\Models\Payment\Processor\Constants;
 use RZP\Models\Payment\Refund\TransactionTrackerMessages;
 use RZP\Models\Partner\Commission\CommissionSourceInterface;
 
@@ -1445,6 +1446,16 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         $intVal = intval($recurring);
 
         $this->attributes[self::RECURRING] = boolval($intVal);
+    }
+
+    public function isOtpGenerateRequest()
+    {
+        if ($this->hasMetadata(Constants::REQUEST_TYPE) === false)
+        {
+            return false;
+        }
+
+        return ($this->getMetadata(Constants::REQUEST_TYPE, '') === Constants::REQUEST_TYPE_OTP);
     }
 
     protected function setContactAttribute($contact)
