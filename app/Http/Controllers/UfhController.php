@@ -17,20 +17,7 @@ class UfhController extends Controller
 
     public function getSignedUrl(string $fileId)
     {
-        $input = Request::all();
-        $app = $this->app;
-        $ufhServiceMock = $app['config']->get('applications.ufh.mock');
-        $merchantId = isset($input['merchant_id']) == true ? $input['merchant_id'] : null;
-
-        if ($ufhServiceMock === true)
-        {
-            $ufhService = new MockUfhService($app, $merchantId);
-        }
-        else
-        {
-            $ufhService = new UfhService($app, $merchantId);
-        }
-        $response = $ufhService->getSignedUrl($fileId, []);
+        $response = $this->ufhClient()->getSignedUrl($fileId, []);
 
         return ApiResponse::json($response);
     }
