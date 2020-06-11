@@ -39,8 +39,6 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($downtime);
 
-        (new Service())->resolveDowntimes();
-
         return $downtime;
     }
 

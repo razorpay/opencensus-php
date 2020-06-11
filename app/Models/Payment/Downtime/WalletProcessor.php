@@ -43,6 +43,12 @@ class WalletProcessor extends BaseProcessor
         }
         else
         {
+            // During update the status gets updated and hence multiple notifications are triggered.
+            if (isset($input[Entity::STATUS]))
+            {
+                unset($input[Entity::STATUS]);
+            }
+
             $downtime = (new Core)->edit($downtime, $input);
         }
 
