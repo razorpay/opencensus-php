@@ -291,7 +291,12 @@ class RequestHandler
 
     private function nameFromHeaders(array $headers): string
     {
-        return $headers['REQUEST_URI'] ?? self::DEFAULT_ROOT_SPAN_NAME;
+        if (array_key_exists('REQUEST_URI', $headers)) {
+            return strtok($headers['REQUEST_URI'], '?');
+        }
+        else {
+            return self::DEFAULT_ROOT_SPAN_NAME;
+        }
     }
 
     private function detectKey(array $keys, array $array)
