@@ -67,7 +67,7 @@ class Otp extends Mailable
                         "OTP for payout amount INR %s to %s generated at %s IST",
                         amount_format_IN($this->input['amount']),
                         str_limit($this->input['contact']['name'], 10),
-                        Carbon::now(Timezone::IST)->format('m D, Y, H:i A'));
+                        Carbon::now(Timezone::IST)->format('d-M (D), h:i A'));
                 }
                 break;
 
@@ -83,6 +83,13 @@ class Otp extends Mailable
 
     protected function addMailData()
     {
+
+        //converting to IST
+        if(isset($this->otp['expires_at']) === true)
+        {
+            $this->otp['expires_at'] = $this->otp['expires_at'] + 19800;
+        }
+
         $this->with(
             [
                 'input'            => $this->input,

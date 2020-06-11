@@ -2032,4 +2032,32 @@ class UserTest extends TestCase
         $this->assertEquals($testData['request']['content']['contact_mobile'], $userDb['contact_mobile']);
     }
 
+    public function testSendOtpViaEMail()
+    {
+        $this->createContact();
+        $this->createFundAccount();
+
+        Mail::fake();
+
+        $this->ba->proxyAuth();
+
+        $this->testData[__FUNCTION__]['request']['content']['fund_account_id'] = $this->fundAccount->getPublicId();
+
+        $response = $this->startTest();
+
+        $this->assertNotEmpty($response['token']);
+
+        Mail::assertQueued(Otp::class, function($mail) {
+            $this->assertEquals('create_payout', $mail->input['action']);
+            $this->assertNotEmpty($mail->user);
+            $this->assertNotEmpty($mail->otp);
+            $this->assertTrue(strpos($mail->subject, (string) Carbon::now(Timezone::IST)->format('d-M (D)')) !== false);
+            $this->assertEquals('emails.user.otp_create_payout', $mail->view);
+            $this->assertTrue(($mail->otp['expires_at'] > (Carbon::now(Timezone::IST)->getTimestamp() + 19800)) === true);
+            $this->assertTrue(($mail->otp['expires_at'] < (Carbon::now(Timezone::IST)->addMinutes(45)->getTimestamp() + 19800)) === true);
+
+            return true;
+        });
+    }
+
 }

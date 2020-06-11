@@ -1451,4 +1451,22 @@ return [
             'status_code' => 200,
         ],
     ],
+
+    'testSendOtpViaEMail' => [
+        'request' => [
+            'url'     => '/users/otp/send',
+            'method'  => 'POST',
+            'content' => [
+                'medium'          => 'email',
+                'action'          => 'create_payout',
+                'amount'          => 10000,
+                'account_number'  => '1234567890',
+                'purpose'         => 'refund',
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
 ];
