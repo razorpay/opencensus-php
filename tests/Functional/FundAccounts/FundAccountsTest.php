@@ -10,11 +10,13 @@ use RZP\Jobs\FTS\CreateAccount;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 
 class FundAccountsTest extends TestCase
 {
     use PaymentTrait;
     use DbEntityFetchTrait;
+    use TestsBusinessBanking;
 
     public function setUp()
     {
@@ -892,5 +894,32 @@ class FundAccountsTest extends TestCase
         $this->testData[__FUNCTION__] = $testData;
 
         $this->startTest();
+    }
+
+    public function testCreateRuPayCard()
+    {
+        Queue::fake();
+
+        $this->fixtures->create('contact', ['id' => '1000000contact']);
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_TO_CARDS, Feature\Constants::S2S]);
+
+        $this->mockCardVault();
+
+        $this->mockRazorxTreatment('payout_to_prepaid_cards');
+
+        $this->startTest();
+
+        $card = $this->getLastEntity('card', true);
+
+        $expectedCardAttrs = [
+            'merchant_id'   => '10000000000000',
+            'expiry_month'  => 4,
+            'expiry_year'   => 2025,
+        ];
+
+        $this->assertArraySelectiveEquals($expectedCardAttrs, $card);
+
+        Queue::assertPushed(CreateAccount::class);
     }
 }

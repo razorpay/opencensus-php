@@ -76,6 +76,15 @@ class Iin extends Base
                 'trivia'        => 'random trivia'
             ],
             [
+                'iin'           => '652159',
+                'category'      => 'STANDARD',
+                'network'       => 'RuPay',
+                'type'          => 'prepaid',
+                'country'       => 'IN',
+                'issuer_name'   => 'State Bank of India',
+                'trivia'        => 'random trivia'
+            ],
+            [
                 'iin'           => '414767',
                 'category'      => 'STANDARD',
                 'network'       => 'Visa',

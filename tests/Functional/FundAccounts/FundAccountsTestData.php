@@ -366,6 +366,33 @@ return [
         ],
     ],
 
+    'testCreateRuPayCard' => [
+        'request'  => [
+            'content' => [
+                'account_type' => 'card',
+                'contact_id'   => 'cont_1000000contact',
+                'card' => [
+                    'name' => 'shk',
+                    'number' => '6521591827203121',
+                    'expiry_month' => 4,
+                    'expiry_year' => 2025
+                ]
+            ],
+            'url'     => '/fund_accounts',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'entity'       => 'fund_account',
+                'account_type' => 'card',
+                'contact_id'   => 'cont_1000000contact',
+                'card'      => [
+                ],
+            ],
+            'status_code' => 201
+        ],
+    ],
+
     'testCreateCardBeneficiaryVerified' => [
         'request'  => [
             'content' => [

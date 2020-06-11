@@ -54,8 +54,15 @@ class Core extends Base\Core
                 $cardIssuer = $card->getIssuer();
                 $cardVaultToken = $card->getCardVaultToken();
 
+                //experiment for fund account of prepaid card type creation
+                $prepaidCardVariant = $this->app->razorx->getTreatment(
+                    $merchant->getId(),
+                    Merchant\RazorxTreatment::PAYOUT_TO_PREPAID_CARDS,
+                    $this->mode
+                );
+
                 if (($card->getCardVaultToken() === null) or
-                    ($cardType !== Type::CREDIT) or
+                    (Type::isValidFundAccountCardType($cardType, $prepaidCardVariant) === false) or
                     (in_array($cardIssuer, FundTransfer\Mode::getSupportedIssuers(), true) === false))
                 {
                     $variant = $this->app->razorx->getTreatment(

@@ -11,6 +11,11 @@ class Type
     const PREPAID     = 'prepaid';
     const UNKNOWN     = 'unknown';
 
+    public static $fundAccountCardTypesInExperiment = [
+        self::CREDIT,
+        self::PREPAID
+    ];
+
     public static function getType($type, $network = null)
     {
         if ($network === Network::AMEX)
@@ -63,5 +68,15 @@ class Type
             self::DEBIT,
             self::PREPAID
         ];
+    }
+
+    public static function isValidFundAccountCardType(string $type = null, string $variant): bool
+    {
+        if ($variant === 'on')
+        {
+            return (in_array($type, self::$fundAccountCardTypesInExperiment, true) === true);
+        }
+
+        return ($type === self::CREDIT);
     }
 }
