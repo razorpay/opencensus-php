@@ -42,4 +42,8 @@ return array(
     'signup'    => [
         'nocaptcha_secret'  => env('NOCAPTCHA_SECRET')
     ],
+
+    'graphql'   => [
+        'server_url'    => env('GRAPHQL_SERVER_URL'),
+    ],
 );

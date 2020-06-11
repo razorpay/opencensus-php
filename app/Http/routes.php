@@ -195,6 +195,12 @@ Route::group(['middleware' => ['web']], function () {
     Route::get('admin/{all}', 'AdminController@getIndex')->name('admin_catchall')->where(['all' => '.*']);
 });
 
+Route::group(['middleware'  => 'graph'], function()
+{
+    Route::post('/graph', 'GraphController@handleRequestForGraph')
+        ->name('graph_request');
+});
+
 Route::group(['middleware'  =>  'slack'], function ()
 {
     Route::post('/slack', 'AdminController@postSlackQuery');
