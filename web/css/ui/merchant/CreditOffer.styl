@@ -1,0 +1,155 @@
+.loan-offer-wrapper {
+  margin: auto;
+  max-width: 400px;
+
+  .loan-offer-details-wrapper {
+    margin-bottom: 16px;
+    border: 1px solid rgba(11, 112, 231, 0.1);
+    border-radius: 2px;
+
+    .financer-details{
+      background: rgba(22, 47, 86, 0.02);
+      padding: 8px 16px;
+      .details-wrapper{
+        .title{
+          color: #7B8199;
+          font-size: 13px;
+        }
+        .description{
+          font-size: 14px;
+          color: rgba(22, 47, 86, 0.87);
+        }
+      }
+    }
+
+    &.approved {
+      border-top: 3px solid #1FC130;
+    }
+
+    hr {
+      margin: 0;
+    }
+
+    .loan-amount-details-wrapper {
+      border-left: 3px solid #528FF0;
+      padding: 0 !important;
+      margin: 8px 0 8px -2px;
+      &.approved{
+        border-left: none;
+      }
+    }
+
+    .loan-offer-details {
+      background: rgba(11, 112, 231, 0.02);
+    }
+
+    .section {
+      display: flex;
+      padding: 8px 0;
+      align-items: center;
+
+      .loan-offer-detail-title {
+        flex: 1;
+        padding-left: 16px;
+        font-size: 13px;
+        color: rgba(22, 47, 86, 0.74);
+      }
+
+      .loan-offer-amount {
+        color: rgba(22, 47, 86, 0.87);
+        font-size: 20px;
+        padding-right: 20px;
+      }
+
+      .loan-offer-value {
+        padding-right: 20px;
+        font-size: 14px;
+        color: rgba(22, 47, 86, 0.87);
+      }
+
+      .loan-offer-summary-wrapper {
+        flex: 1;
+
+        &:not(:last-child){
+          text-align: center;
+          border-right: 1px solid rgba(22, 47, 86, 0.1);
+          margin-right: 8px;
+        }
+        &:first-child{
+          text-align: left;
+        }
+        &:last-child{
+          text-align: right;
+        }
+
+        .loan-offer-summary-title {
+          color: rgba(22, 47, 86, 0.54);
+          font-size: 12px;
+        }
+      }
+    }
+
+    .loan-offer-summary-section {
+      padding: 8px 16px;
+      display: flex;
+      justify-content: space-between;
+    }
+  }
+
+  .loan-repayment-details-wrapper {
+    padding: 8px 0;
+    border: 1px solid rgba(11, 112, 231, 0.1);
+    margin-bottom: 16px;
+
+    .loan-repayment-details{
+      border-left: 3px solid #F7AA15;
+      margin: 8px 0;
+      margin-left: -2px;
+
+      .loan-repayment-detail-info {
+        padding-left: 16px;
+        font-size: 10px;
+        color: rgba(22, 47, 86, 0.54);
+      }
+      .section {
+        display: flex;
+        align-items: center;
+
+        .loan-offer-detail-title {
+          flex: 1;
+          padding-left: 16px;
+          font-size: 13px;
+          color: rgba(22, 47, 86, 0.74);
+        }
+
+        .loan-offer-value {
+          padding-right: 20px;
+          font-size: 14px;
+          color: rgba(22, 47, 86, 0.87);
+        }
+      }
+    }
+  }
+  .loan-offer-action {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    .help-text {
+      color: rgba(22, 47, 86, 0.54);
+      margin-right: 16px;
+      font-size: 13px;
+      .callback-text {
+        margin-right: 4px;
+      }
+      a {
+        font-size: 14px;
+      }
+    }
+  }
+}
+
+.credit-offer-container{
+  padding: 20px;
+  width: 400px;
+  margin: auto;
+}

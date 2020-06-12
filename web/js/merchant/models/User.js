@@ -565,6 +565,10 @@ export default class User {
     return this.isFeatureEnabled('paymentlinks_v2');
   }
 
+  get isLoansEnabled() {
+    return this.isFeatureEnabled('loan');
+  }
+
   get isUnregisteredBusiness() {
     const userBusinessType = Number(this.business_type);
     const UNREGISTERED_BUSINESS_TYPES = [2, 11];

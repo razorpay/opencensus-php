@@ -13,7 +13,10 @@ function CreditPullScoreBreakdown({ title, total, rowData, amount }) {
       </div>
       {rowData.map((item, index) => {
         return (
-          <div key={`tab-row-${index}`} className="tab-row">
+          <div
+            key={`tab-row-${index}`}
+            className={`tab-row ${item.className || ''}`}
+          >
             <span className="tab-row-lab">
               {amount ? (
                 <Amount value={item.value} currency={'INR'} />

@@ -1,0 +1,27 @@
+.toggle-with-description{
+  padding: 12px 14px;
+  background: '#fff';
+  border-radius: 3px;
+  border: 1px solid rgba(22, 47, 86, 0.1);
+  margin-bottom: 8px;
+  min-width: 154px;
+  &.disabled{
+    background: rgba(22, 47, 86, 0.03);
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+  &.large{
+    width: 320px;
+  }
+  &.selected{
+    border: 1px solid rgba(11, 112, 231, 0.74);
+  }
+  .toggle-title{
+    flex: 1;
+    font-size: 14px;
+    color: rgba(22, 47, 86, 0.87);
+  }
+  .toggle-description{
+    color: rgba(22, 47, 86, 0.54)
+  }
+}

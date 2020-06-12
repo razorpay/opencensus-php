@@ -379,7 +379,7 @@
   width: 80%;
   top:160px;
 
-  
+
 
 .OnBoarding--Route
   .Landing--Image
@@ -442,3 +442,82 @@
     img
       max-width: 600px
       left: 0
+
+.OnBoarding--Loans
+  //min-height: 85vh
+  display: flex
+
+  .Product--Details
+    margin-top: 60px
+    padding: 0 64px
+    width: 50%
+    z-index: 2
+
+    .divider
+      height: 3px
+      width: 32px
+      background-color: #6EEDB3
+      margin-top: 6px
+      z-index: 2
+
+    @media(max-width: 1024px)
+      padding: 0 24px
+      width: auto
+
+    .Details-heading
+      font-weight: bold
+
+    .Details-title
+      font-size: 36px
+      line-height: 48px
+      margin: 16px 0 8px 0
+      font-weight: bold
+      color: #0D2366
+
+      @media(max-width: 1024px)
+        font-size: 28px
+
+    .Details-desc
+      font-size: 18px
+      line-height: 28px
+      margin-bottom: 20px
+      &.privileges
+        margin-bottom: 8px
+
+    .DataList
+      display: flex
+      flex-direction: column
+      align-items: flex-start
+
+      .DataList-Item
+        font-size: 16px
+        display: flex
+        line-height: 1.25
+        flex: 1
+        align-items: center
+        min-width: 100px
+        margin-top: 8px
+        border-color: #cfdadd
+
+        @media(max-width: 767px)
+          padding: 0
+          display: block
+
+        //b
+        //  font-size: 20px
+
+        .i
+          margin-right: 12px
+          margin-top: 4px
+          font-size: 11px
+  .Landing--Image
+    position: absolute;
+    right: 540px;
+    bottom: 0;
+    .image-wrapper
+      width: 440px;
+      height: 300px;
+      overflow: hidden;
+      position: relative;
+      img
+        width: 700px;

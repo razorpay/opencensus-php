@@ -45,9 +45,9 @@ export function inputClass({ props, state, className }) {
     }
 
     /*
-    * 'propagatedError' is used to show api related errors.
-    * It's developer's repsonsibility to flush 'propagatedError' -> on onChange, or as per requirement, else it'll always remain visible.
-    * */
+     * 'propagatedError' is used to show api related errors.
+     * It's developer's repsonsibility to flush 'propagatedError' -> on onChange, or as per requirement, else it'll always remain visible.
+     * */
     if (state.error || props.propagatedError) {
       wrapperClass += ' is-invalid';
     }
@@ -251,9 +251,9 @@ export default class Field extends React.Component {
     this.setState({ focus: false });
 
     /*
-    * Setting mature shows the error. However, mature is done only when the field is touched and also, blurred.
-    * So, error on mature is shown only when it has touched + blurred once.
-    * */
+     * Setting mature shows the error. However, mature is done only when the field is touched and also, blurred.
+     * So, error on mature is shown only when it has touched + blurred once.
+     * */
     if (this.state.touched) {
       this.setState({ mature: true });
     }
@@ -294,6 +294,8 @@ export default class Field extends React.Component {
     }
 
     this.setState({ error });
+    // if(this.state.touched){
+    // }
   }
 
   setRef = el => {

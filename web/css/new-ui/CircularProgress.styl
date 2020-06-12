@@ -1,0 +1,54 @@
+.circular-progress {
+  position: relative;
+  display: inline-block;
+  border-radius: 50%;
+  text-align: center;
+  svg {
+    transform: rotate(270deg);
+  }
+  circle {
+    fill: none;
+    stroke-linecap: round;
+    &:nth-of-type(1) {
+      stroke: rgba(22, 47, 86, 0.1);
+    }
+    &:nth-of-type(2) {
+      stroke: #00b749;
+      transition: stroke-dasharray 0.7s linear 0s;
+    }
+  }
+  .pct {
+    margin: 0;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, calc(-50% - 12px));
+  }
+  .pct-2 {
+    margin: 0;
+    position: absolute;
+    top: calc(50% + 16px);
+    left: 50%;
+    transform: translate(-50%, calc(-50% - 4px));
+  }
+  .percentage-info {
+    top: 50%;
+    //center excluding the outer stroke width
+    left: calc(50% + 2px);
+    transform: translate(-50%, -50%);
+    position: absolute;
+    .percentage-text {
+      margin: 0;
+      font-size: 24px;
+      line-height: 18px;
+      font-weight: 600;
+      color: rgba(22, 47, 86, 0.87);
+    }
+    .description {
+      margin: 0;
+      font-size: 16px;
+      line-height: 18px;
+      color: rgba(22, 47, 86, 0.54);
+    }
+  }
+}

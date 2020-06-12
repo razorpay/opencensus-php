@@ -87,6 +87,16 @@ export default function MerchantNavLinks(props) {
         additionalCondition={user => user.isAllowedView('settlements')}
       />
 
+      <MainNavLink
+        label="Loans"
+        icon="i fa fa-inr text-warm"
+        to="/capital/loans"
+        isNew={true}
+        additionalCondition={user =>
+          user.isAllowedView('loans') && user.isLoansEnabled
+        }
+      />
+
       <div class="divider" />
 
       <MainNavLink

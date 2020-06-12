@@ -1,0 +1,62 @@
+.loan-application-home {
+  position: absolute
+  top: 32px
+  bottom: 0px
+  right: 52px
+  background: #fff
+  z-index: 3
+  padding: 28px 20px 20px;
+  width: 540px
+  margin-left: auto
+  display: flex
+  flex-direction: column
+  border-top: 2px solid rgba(11, 112, 231, 0.87);
+
+  .status-overview{
+    flex: 1
+    overflow: auto
+
+    .loan-application-overview-header {
+      display: flex;
+      padding: 0 20px 12px;
+      justify-content: space-between;
+
+      .loan-meta-wrapper{
+        h4{
+          margin: 0 0 4px;
+          color: #0D2366
+        }
+      }
+      .section {
+        display: flex;
+        flex-direction: column;
+        .title.PlaceholderLoader{
+          height: 18px;
+          width: 220px;
+          margin-bottom: 8px !important;
+        }
+        .description.PlaceholderLoader{
+          height: 14px;
+          width: 120px;
+        }
+      }
+
+      .loan-application-progress-wrapper{
+        margin-top: 4px;
+        .progress-text-wrapper .PlaceholderLoader{
+          height: 18px;
+          width: 60px;
+          margin-top: 2px !important;
+        }
+      }
+    }
+  }
+  .footer{
+    display: flex
+    margin-top: 8px
+    align-items: center;
+    .btn-toolbar{
+      flex: 1
+    }
+  }
+}
