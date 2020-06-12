@@ -130,6 +130,8 @@ class Table
     const MERCHANT_FRESHDESK_TICKETS = 'merchant_freshdesk_tickets';
     const TERMINAL_ONBOARDING_DETAIL = 'terminal_onboarding_details';
     const MERCHANT_ATTRIBUTE         = 'merchant_attributes';
+    const UPI_TRANSFER_REQUEST       = 'upi_transfer_requests';
+    const BANK_TRANSFER_REQUEST      = 'bank_transfer_requests';
 
     const D2C_BUREAU_DETAIL         = 'd2c_bureau_details';
     const D2C_BUREAU_REPORT         = 'd2c_bureau_reports';

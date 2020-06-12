@@ -135,9 +135,11 @@ class Entity
     const BATCH_FUND_TRANSFER        = 'batch_fund_transfer';
     const PAPER_MANDATE_UPLOAD       = 'paper_mandate_upload';
     const CUSTOMER_TRANSACTION       = 'customer_transaction';
+    const UPI_TRANSFER_REQUEST       = 'upi_transfer_request';
     const BANKING_ACCOUNT_STATE      = 'banking_account_state';
     const FUND_TRANSFER_ATTEMPT      = 'fund_transfer_attempt';
     const BANK_TRANSFER_HISTORY      = 'bank_transfer_history';
+    const BANK_TRANSFER_REQUEST      = 'bank_transfer_request';
     const SETTLEMENT_DESTINATION     = 'settlement_destination';
     const BANKING_ACCOUNT_DETAIL     = 'banking_account_detail';
     const FUND_ACCOUNT_VALIDATION    = 'fund_account_validation';
