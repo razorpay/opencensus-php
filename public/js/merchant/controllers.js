@@ -8,7 +8,8 @@ angular
     '$window',
     'theme',
     'organization',
-    function($scope, $localStorage, $window, theme, organization) {
+    'tracking',
+    function($scope, $localStorage, $window, theme, organization, tracking) {
       isSmartDevice($window) &&
         angular.element($window.document.body).addClass('smart');
 
@@ -107,6 +108,10 @@ angular
         );
       }
       $scope.flag = false;
+      tracking.pushEvents({
+        event_name: 'landed',
+        event_type: 'success',
+      });
     },
   ]) //Application mode change controller
   .controller('modeCtrl', [

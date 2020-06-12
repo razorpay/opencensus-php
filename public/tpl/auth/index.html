@@ -96,7 +96,7 @@
             Create customised payment pages for your customers to come and pay. With zero coding, take your page online and start accepting payments instantly and securely.
           </div>
 
-          <a href="https://razorpay.com/payment-pages/?utm_source=signup&utm_medium=banner&utm_campaign=paymentpage" target="_blank" class="messaging-link">Learn More <span>→</span></a>
+          <a href="https://razorpay.com/payment-pages/?utm_source=signup&utm_medium=banner&utm_campaign=paymentpage" target="_blank" ng-click="handlePromotionClick({order : 1, title : 'payment pages'})" class="messaging-link">Learn More <span>→</span></a>
 
           <div class="messaging-heading" style="margin-top: 24px;">
             Introducing GST compliant Invoices
@@ -106,7 +106,7 @@
             Create GST compliant and easy to understand invoices with Razorpay Invoices.
           </div>
 
-          <a href="https://razorpay.com/invoices/" target="_blank" class="messaging-link">Learn More <span>→</span></a>
+          <a href="https://razorpay.com/invoices/" target="_blank" class="messaging-link" ng-click="handlePromotionClick({order : 2, title : 'Introducing GST compliant Invoices'})">Learn More <span>→</span></a>
 
         </div>
         <div class="login-messaging" ng-if="isOrgRZP === false">

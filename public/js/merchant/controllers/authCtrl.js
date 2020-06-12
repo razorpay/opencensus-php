@@ -35,6 +35,7 @@ app
     'authCallbacks',
     '$sce',
     '$filter',
+    'tracking',
     function(
       $scope,
       $timeout,
@@ -53,7 +54,8 @@ app
       appHost,
       authCallbacks,
       $sce,
-      $filter
+      $filter,
+      tracking
     ) {
       $scope.toArray = function(obj) {
         if (!obj) {
@@ -206,6 +208,10 @@ app
       $scope.$watch('login.data.captcha', function(newVal) {
         if (newVal && newVal.length !== 0) {
           $scope.login.disableLogInSubmission = false;
+          tracking.pushEvents({
+            event_name: 'recaptcha',
+            event_type: 'success',
+          });
         } else if (newVal === null && isProd) {
           $scope.login.disableLogInSubmission = true;
         }
@@ -523,6 +529,57 @@ app
         location.hash = '';
         location.pathname = '/app';
         location.reload();
+      };
+
+      $scope.onLoginInputFocus = function(type) {
+        tracking.pushEvents({
+          event_name: 'login',
+          event_type: 'initiated',
+          properties: {
+            action: 'Type ' + type,
+          },
+        });
+      };
+
+      $scope.onLogin = function() {
+        tracking.pushEvents({
+          event_name: 'login',
+          event_type: 'initiated',
+          properties: {
+            action: 'click Login',
+          },
+        });
+      };
+
+      $scope.onContactUs = function() {
+        tracking.pushEvents({
+          event_name: 'non_login_actions',
+          event_type: 'initiated',
+          properties: {
+            action: 'click contact us',
+          },
+        });
+      };
+
+      $scope.handlePromotionClick = function(data) {
+        tracking.pushEvents({
+          event_name: 'non_login_actions',
+          event_type: 'initiated',
+          properties: {
+            action: 'click Promotion ' + data.order + ' CTA',
+            promotion_title: data.title,
+          },
+        });
+      };
+
+      $scope.onResetEmailChange = function() {
+        tracking.pushEvents({
+          event_name: 'send_password_reset_link',
+          event_type: 'initiated',
+          properties: {
+            action: 'type email id',
+          },
+        });
       };
 
       $scope.sendDetails = function() {
@@ -980,7 +1037,15 @@ app
 
       $scope.goToSignupLayout = function(data) {
         var signupData = data || {};
-
+        if (!data) {
+          tracking.pushEvents({
+            event_name: 'non_login_actions',
+            event_type: 'initiated',
+            properties: {
+              action: 'click signup',
+            },
+          });
+        }
         $scope.goToSignupStep(0); // reset signup step
         $scope.goToLoginStep(1); // reset login step
         $scope.rightLayout = false;
@@ -1128,17 +1193,13 @@ app
         );
       };
       $scope.goToForgotPwd = function() {
-        window.rzpQ.push(
-          window.rzpQ
-            .now()
-            .onbr()
-            .initiated('login.forgot_password', {
-              source: 'sign_in',
-              sessionId: window.session_id,
-              emailId: $scope.login.data.email,
-              mode: $scope.eventsMode,
-            })
-        );
+        tracking.pushEvents({
+          event_name: 'non_login_actions',
+          event_type: 'initiated',
+          properties: {
+            action: 'click Forgot Password',
+          },
+        });
         var toRoute = 'access.forgotpwd';
         $state.transitionTo(
           toRoute,
@@ -1567,6 +1628,14 @@ app
       };
 
       $scope.forgotPwdSubmit = function($valid) {
+        tracking.pushEvents({
+          event_name: 'send_password_reset_link',
+          event_type: 'initiated',
+          properties: {
+            action: 'send reset link',
+          },
+        });
+
         if (!$valid) {
           $scope.alerts.addAlert('danger', 'Please fill all the fields', true);
           return true;

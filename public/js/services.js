@@ -1170,4 +1170,42 @@ angular
         },
       };
     },
+  ])
+  .factory('tracking', [
+    function() {
+      var utm = null;
+      var gclid = null;
+      var browser_details = {};
+      if (typeof window.analytics !== 'undefined') {
+        utm = analytics.utils.getLandingParams();
+        gclid = analytics.utils.getCookie('gclid');
+        if (typeof analytics.utils.getBrowserDetails !== 'undefined') {
+          browser_details = analytics.utils.getBrowserDetails();
+        }
+      }
+      var commonProperties = {
+        utm_params: utm,
+        gclid: gclid,
+        mode: 'live',
+        reffering_url: document.referrer,
+        url: document.location.href,
+        session_id: window.session_id,
+      };
+      $.extend(commonProperties, browser_details);
+      function pushEvents(data) {
+        var properties = $.extend({}, commonProperties, data.properties || {});
+        switch (data.event_type) {
+          case 'initiated':
+            window.rzpQ.onbr().initiated('login.' + data.event_name);
+            break;
+          case 'success':
+            window.rzpQ.onbr().success('login.' + data.event_name);
+            break;
+        }
+        window.rzpQ.push(properties);
+      }
+      return {
+        pushEvents: pushEvents,
+      };
+    },
   ]);

@@ -86,6 +86,9 @@ export default class Sidebar extends Component {
     this.props.tracking.trackEvent(
       window.rzpQ.merchantActions().success('Merchant_Logged_In')
     );
+    this.props.tracking.trackEvent(
+      window.rzpQ.onbr().initiated('dashboard.loaded')
+    );
   }
 
   initializeRoutes(location) {
