@@ -681,13 +681,23 @@ class Service extends Base\Service
                 'vpaUsername' => $vpa,
             ]);
 
+        $response['valid'] = false;
+
         $this->determineAndSetMode();
 
         $vpa = $this->repo->vpa->findByAddress($vpa);
 
-        $response['valid'] = ($vpa !== null);
-        if ($vpa !== null)
+        if ($vpa === null)
         {
+            return $response;
+        }
+
+        $virtualAccount = $vpa->virtualAccount;
+
+        if ($virtualAccount->getStatus() === Status::ACTIVE)
+        {
+            $response['valid'] = true;
+
             $response['merchantName'] = $vpa->merchant->getBillingLabel();
         }
 
@@ -699,8 +709,8 @@ class Service extends Base\Service
         $routeName = $this->app['api.route']->getCurrentRouteName();
 
         // Gets mode per route and sets application & db mode.
-        $mode = str_contains($routeName, 'test') ? Mode::TEST : Mode::LIVE;
+        $this->mode = str_contains($routeName, 'test') ? Mode::TEST : Mode::LIVE;
 
-        $this->app['basicauth']->setModeAndDbConnection($mode);
+        $this->app['basicauth']->setModeAndDbConnection($this->mode);
     }
 }

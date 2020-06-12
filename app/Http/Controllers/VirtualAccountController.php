@@ -6,8 +6,10 @@ use Request;
 use ApiResponse;
 use Lib\Formatters\Xml;
 use RZP\Trace\TraceCode;
+use RZP\Base\JitValidator;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\VirtualAccount\Provider;
+use RZP\Models\VirtualAccount\Validator;
 
 class VirtualAccountController extends Controller
 {
@@ -124,19 +126,36 @@ class VirtualAccountController extends Controller
         $response = null;
         $vpa      = '';
 
-        switch ($gateway)
+        try
         {
-            case Gateway::UPI_ICICI:
+            switch ($gateway)
             {
-                $input = (array) simplexml_load_string($requestContent);
+                case Gateway::UPI_ICICI:
+                {
+                    $input = (array) simplexml_load_string($requestContent);
 
-                $vpa = $vpaRoot . '.' . $input['SubscriberId'] . '@' . Provider::VPA_HANDLE[$gateway];
+                    (new JitValidator)->setStrictFalse()->rules(Validator::$validateVpaIciciRules)->caller($this)->validate($input);
 
-                break;
+                    $vpa = $vpaRoot . '.' . $input['SubscriberId'] . '@' . Provider::VPA_HANDLE[$gateway];
+
+                    break;
+                }
             }
-        }
 
-        $data = $this->service()->ecollectValidateVpa($vpa);
+            $data = $this->service()->ecollectValidateVpa($vpa);
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::VIRTUAL_ACCOUNT_ECOLLECT_VALIDATE_VPA_FAILED,
+                [
+                    'request' => $requestContent,
+                ]);
+
+            $data['valid'] = false;
+        }
 
         switch ($gateway)
         {

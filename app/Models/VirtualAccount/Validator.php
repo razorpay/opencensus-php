@@ -63,6 +63,13 @@ class Validator extends Base\Validator
         Entity::NOTES              => 'sometimes|notes',
     ];
 
+    public static $validateVpaIciciRules = [
+        'Source'       => 'required|string',
+        'SubscriberId' => 'required|string',
+        'TxnId'        => 'required|string',
+        'MerchantKey'  => 'nullable|string',
+    ];
+
     protected static $createValidators = [
         Entity::RECEIVER_TYPES,
     ];
