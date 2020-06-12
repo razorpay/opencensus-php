@@ -8,6 +8,7 @@ use Carbon\Carbon;
 use RZP\Constants\Timezone;
 use Illuminate\Database\Eloquent\Factory;
 
+use RZP\Gateway\Upi\Base\Entity;
 use RZP\Gateway\Upi\Icici\Fields;
 use RZP\Tests\Functional\TestCase;
 use RZP\Exception\RuntimeException;
@@ -912,6 +913,49 @@ EOT;
         $this->assertSame($this->payment['payment']['verified'], 1);
     }
 
+    public function testVerifyPaymentWithNpciRefIdMismatch()
+    {
+        $payment = $this->getDefaultUpiPaymentArray();
+
+        $authPayment = $this->doAuthPaymentViaAjaxRoute($payment);
+
+        $upi = $this->getDbLastEntity('upi');
+        $payment = $this->getDbLastPayment();
+
+        $this->assertNotNull($upi->getNpciReferenceId());
+        $this->assertNull($payment->getReference16());
+        $afterRequest = $upi->getNpciReferenceId();
+
+        $content = $this->mockServer()->getAsyncCallbackContent($upi->toArray(), $payment->toArray());
+        $response = $this->makeS2SCallbackAndGetContent($content);
+
+        $this->assertNotNull($upi->refresh()->getNpciReferenceId());
+        $this->assertNotNull($payment->refresh()->getReference16());
+        $this->assertSame($payment->getReference16(), $upi->getNpciReferenceId());
+        $afterCallback = $upi->getNpciReferenceId();
+
+        $this->assertSame($afterRequest, $afterCallback);
+
+        $this->verifyPayment($payment->getPublicId());
+
+        $this->assertNotNull($upi->refresh()->getNpciReferenceId());
+        $this->assertNotNull($payment->refresh()->getReference16());
+        $this->assertNotEquals($payment->getReference16(), $upi->getNpciReferenceId());
+        $afterVerify = $upi->getNpciReferenceId();
+
+        $this->assertNotSame($afterCallback, $afterVerify);
+
+        $rrns = $upi->getGatewayData()[Entity::NPCI_REFERENCE_ID];
+
+        $this->assertCount(2, $rrns);
+
+        $this->assertSame('callback', $rrns[$afterCallback]['action']);
+        $this->assertSame('verify', $rrns[$afterVerify]['action']);
+
+        $this->assertArrayHasKey('updated_at', $rrns[$afterCallback]);
+        $this->assertArrayHasKey('updated_at', $rrns[$afterVerify]);
+    }
+
     public function testVerifyPaymentWithAmountMismatch()
     {
         $payment = $this->getDefaultUpiPaymentArray();
@@ -998,6 +1042,7 @@ EOT;
         $this->assertSame(['rrn' => null], $payment->acquirer_data->toArray());
         $this->assertSame($input['vpa'], $upi['vpa']);
         $this->assertSame($input['vpa'], $payment['vpa']);
+        $this->assertNotNull($upi['npci_reference_id']);
 
         $this->authorizeFailedPayment($payment->getPublicId());  //will change payment status from fail to authorised
         $this->assertTestResponse($upi->refresh()->toArrayAdmin(), 'testPaymentUpiEntity');

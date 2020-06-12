@@ -558,17 +558,48 @@ class Gateway extends Base\Gateway
     {
         $attr = $this->getMappedAttributes($response);
 
-        // For payment's entities, we need NPCI REF ID to generated
-        // Thus if it is null, we need to update it: NO OVERRIDING
-        // Only if attr has GATEWAY_PAYMENT_ID set
-        // For refund entity OriginalBankRRN is set to NPCI_REF_ID
+        // For payment's entities, we need NPCI REF ID to be generated.
+        // Now, gateway payment entity will have authorize action in 3 scenarios - authorize, callback and verify.
+        // In authorize and callback, we dont get OriginalBankRrn or originalBankRrn. So, entity wont have Npci
+        // reference field set at all. In these cases, we need to get the rrn from gateway payment id only as we get
+        // bankRRN field only in response. So, we can always update using gateway payment id for authorize and callback.
+        // For verify, we get OriginalBankRRN, which is again mapped to gateway payment id.
+        // So, in all the above cases, it is safe to overwrite the npci reference id with the value in mapped attribute
+        // for gateway payment id.
+        // For refund, we get originalBankRRN in response which is mapped to NPCI reference ID. But refund will have
+        // entity with refund action. So, overwrite is safe as long as action is authorize.
         if (($payment->getAction() === Action::AUTHORIZE) and
-            (empty($payment->getNpciReferenceId()) === true) and
             (isset($attr[Entity::GATEWAY_PAYMENT_ID]) === true))
         {
             // Now, The Mapper already maps the BANK_RRN to GATEWAY_PAYMENT_ID
             // Even if it is null, we can update null by null
             $attr[Entity::NPCI_REFERENCE_ID] = $attr[Entity::GATEWAY_PAYMENT_ID];
+
+            // If we already have NPCI ref id set in database and we are getting another entity
+            // We need to trace that as mismatch to get more details of payment and action
+            if ((empty($payment->getNpciReferenceId()) === false) and
+                ($payment->getNpciReferenceId() !== $attr[Entity::NPCI_REFERENCE_ID]))
+            {
+                $this->trace->info(TraceCode::GATEWAY_PAYMENT_RESPONSE, [
+                    'message'   => 'NpciRefId Mismatch',
+                    'expected'  => $payment->getNpciReferenceId(),
+                    'actual'    => $attr[Entity::NPCI_REFERENCE_ID],
+                ]);
+            }
+
+            $attr[Entity::GATEWAY_DATA] = $payment->getGatewayData();
+
+            // Not exactly needed, but just to be on safer side
+            if (is_array($attr[Entity::GATEWAY_DATA]) === false)
+            {
+                $attr[Entity::GATEWAY_DATA] = [];
+            }
+
+            // We can also store all the different NRI(RRN) we receive from bank
+            $attr[Entity::GATEWAY_DATA][Entity::NPCI_REFERENCE_ID][$attr[Entity::NPCI_REFERENCE_ID]] = [
+                Entity::ACTION      => $this->getAction(),
+                Entity::UPDATED_AT  => Carbon::now()->getTimestamp(),
+            ];
         }
 
         // To mark that we have received a response for this request

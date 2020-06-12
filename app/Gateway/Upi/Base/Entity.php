@@ -242,12 +242,12 @@ class Entity extends Base\Entity
         $this->setAttribute(self::BANK, $bank);
     }
 
-    protected function setGatewayData($value)
+    public function setGatewayData($value)
     {
         $this->setAttribute(self::GATEWAY_DATA, $value);
     }
 
-    protected function getGatewayData()
+    public function getGatewayData()
     {
         return $this->getAttribute(self::GATEWAY_DATA);
     }

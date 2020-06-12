@@ -390,7 +390,6 @@ return [
         'bank'                  => ProviderCode::getBankCode('icici'),
         'acquirer'              => 'icici',
         'received'              => true,
-        'gateway_data'          => null,
         'contact'               => null,
         'gateway_merchant_id'   => '123456',
         'status_code'           => '0',
