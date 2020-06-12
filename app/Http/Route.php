@@ -1346,6 +1346,8 @@ class Route
         // TODO: Should change to just /signed_url (No 'get' and underscore)
         'ufh_get_file_signed_url'                  => ['get',      'ufh/file/{fileId}/get-signed-url',               'UfhController@getSignedUrl'                                        ],
         'ufh_get_file_signed_url_admin'            => ['get',      'admin-ufh/file/{fileId}/get-signed-url',         'UfhController@getSignedUrl'                                        ],
+
+        'ufh_get_file_signed_url_by_mid'           => ['get',      'admin-ufh/{mId}/files/{fileId}/get-signed-url',  'UfhController@getSignedUrlByMId'                                   ],
         'ufh_admin_upload_file'                    => ['post',     'admin-ufh/file/upload',                          'UfhController@uploadFileAndGetUrl'                                 ],
         'ufh_upload_file'                          => ['post',     'ufh/files/upload',                               'UfhController@uploadFileAndGetUrl'                                 ],
 
@@ -3115,6 +3117,8 @@ class Route
         'reporting_config_edit_full',
         // UFH
         'ufh_get_file_signed_url_admin',
+        'ufh_get_file_signed_url_by_mid',
+
         'nodal_beneficiary_update',
         'terminal_get_banks',
         'terminal_set_banks',
@@ -3760,6 +3764,7 @@ class Route
         'batch_service_route'                      => Permission::BATCH_API_CALL,
         'ufh_get_file_signed_url'                  => '*',
         'ufh_get_file_signed_url_admin'            => '*',
+        'ufh_get_file_signed_url_by_mid'           => Permission::DOWNLOAD_UFH_FILE_BY_MID,
         'merchant_requests_create'                 => '*',
         'merchant_requests_list'                   => Permission::VIEW_MERCHANT_REQUESTS,
         'merchant_requests_get'                    => Permission::VIEW_MERCHANT_REQUESTS,

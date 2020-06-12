@@ -47,6 +47,13 @@ class UfhController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function getSignedUrlByMid(string $mId, string $fileId)
+    {
+        $response = $this->ufhClient()->getSignedUrl($fileId, [], $mId);
+
+        return ApiResponse::json($response);
+    }
+
     /**
      * Builds and returns ufh client
      *

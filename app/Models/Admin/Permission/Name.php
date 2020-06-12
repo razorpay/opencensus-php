@@ -274,6 +274,9 @@ class Name
     const REPORTING_BATCH_UPLOAD              = 'reporting_batch_upload';
     const DOWNLOAD_CREDIT_BUREAU_REPORTS      = 'download_credit_bureau_reports';
 
+    // UFH permission
+    const DOWNLOAD_UFH_FILE_BY_MID            = 'download_ufh_file_by_mid';
+
     // RazorpayX/Business banking permissions
     const BANKING_UPDATE_ACCOUNT              = 'banking_update_account';
     const ASSIGN_BANKING_ACCOUNT_REVIEWER     = 'assign_banking_account_reviewer';
