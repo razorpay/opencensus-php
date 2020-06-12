@@ -51,6 +51,11 @@ trait PaymentEvent
         \Throwable $ex = null,
         array $customProperties = [])
     {
+        $customProperties+= [
+            'auth_type' => $gatewayInput['payment']['auth_type'],
+            'gateway'   => $gatewayInput['payment']['gateway']
+        ];
+
         $event = new PE(null, $ex, $customProperties);
 
         $properties = $event->parseGatewayProperties($gatewayInput);
@@ -65,14 +70,9 @@ trait PaymentEvent
             'write_key' => ''
         ];
 
-        $customProperties+= [
-            'auth_type' => $gatewayInput['payment']['auth_type'],
-            'gateway'   => $gatewayInput['payment']['gateway']
-        ];
+        //$this->trackEvent(PE::EVENT_TYPE, PE::EVENT_VERSION, $eventData, $properties);
 
-        $this->trackEvent(PE::EVENT_TYPE, PE::EVENT_VERSION, $eventData, $properties);
-
-        $this->trackPaymentEventV2($eventData,null, $ex, $metaDetails, $customProperties);
+        $this->trackEvent(PE::EVENT_TYPE, 'v2', $eventData, $properties, $metaDetails['metadata'], $metaDetails['read_key'], $metaDetails['write_key']);
     }
 
     public function trackPaymentEventV2(
@@ -97,8 +97,8 @@ trait PaymentEvent
             $this->trackEvent(PE::EVENT_TYPE, 'v2', $eventData, $properties);
         }
 
-        //push events of v1 as well for now
-        $this->trackPaymentEvent($eventData, $payment, $ex, $customProperties);
+        //Deprecating v1 events
+        //$this->trackPaymentEvent($eventData, $payment, $ex, $customProperties);
 
     }
 }
