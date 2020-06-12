@@ -1630,16 +1630,8 @@ return [
         ],
         'response' => [
             'content'  => [
-                'error' => [
-                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Bad request',
-                ],
-            ],
-            'status_code' => 400
-        ],
-        'exception' => [
-            'class'               => RZP\Exception\BadRequestException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_REMINDER_NOT_APPLICABLE
+                'success' => true
+            ]
         ]
     ],
 

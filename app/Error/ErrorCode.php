@@ -403,6 +403,7 @@ class ErrorCode
     const BAD_REQUEST_INPUT_VALIDATION_FAILURE                                      = 'BAD_REQUEST_INPUT_VALIDATION_FAILURE';
     const BAD_REQUEST_SIGNATURE_ERROR                                               = 'BAD_REQUEST_SIGNATURE_ERROR';
     const BAD_REQUEST_REMINDER_NOT_APPLICABLE                                       = 'BAD_REQUEST_REMINDER_NOT_APPLICABLE';
+    const SERVER_ERROR_REMINDER_CALLBACK_FAILED                                     = 'SERVER_ERROR_REMINDER_CALLBACK_FAILED';
     const BAD_REQUEST_PERMISSION_ERROR                                              = 'BAD_REQUEST_PERMISSION_ERROR';
     const BAD_REQUEST_APP_TOKEN_NOT_GLOBAL                                          = 'BAD_REQUEST_APP_TOKEN_NOT_GLOBAL';
     const BAD_REQUEST_INVALID_BANK_FOR_EMANDATE                                     = 'BAD_REQUEST_INVALID_BANK_FOR_EMANDATE';

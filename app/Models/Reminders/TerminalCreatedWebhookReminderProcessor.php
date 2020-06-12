@@ -2,7 +2,10 @@
 
 namespace RZP\Models\Reminders;
 
+use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use Razorpay\Trace\Logger as Trace;
+use RZP\Exception\ServerErrorException;
 
 class TerminalCreatedWebhookReminderProcessor extends ReminderProcessor
 {
@@ -30,16 +33,19 @@ class TerminalCreatedWebhookReminderProcessor extends ReminderProcessor
         }
         catch(\Throwable $e)
         {
-            $this->trace->info(TraceCode::TERMINAL_CREATED_WEBHOOK_REMINDER_CALLBACK_FAILED,
-                [
-                    'terminal_id'    => $id,
-                    'input'          => $input,
-                ]
+            $this->trace->traceException($e,
+                Trace::ERROR,
+                TraceCode::TERMINAL_CREATED_WEBHOOK_REMINDER_CALLBACK_FAILED,
+                ['terminal_id' => $id]
             );
 
-            return ['success' => false];
+            throw new ServerErrorException(
+                null,
+                ErrorCode::SERVER_ERROR_REMINDER_CALLBACK_FAILED,
+                []);
+
         }
 
-        $this->handleInvalidReminder(); 
+        return ['success' => true];
     }
 }

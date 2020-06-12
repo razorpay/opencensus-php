@@ -5,7 +5,7 @@ namespace RZP\Tests\Functional\Reminders;
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 use RZP\Exception\BadRequestException;
-
+use RZP\Exception\ServerErrorException;
 
 return [
     'testSendReminderWithReminderCountAndChannels' => [
@@ -226,17 +226,10 @@ return [
         ],
         'response' => [
             'content'  => [
-                'error' => [
-                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Bad request',
-                ],
+                'success'   => true
             ],
-            'status_code' => 400
-        ],
-        'exception' => [
-            'class'               => BadRequestException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_REMINDER_NOT_APPLICABLE
-        ]
-    ],
+            'status_code' => 200
+        ]   
+    ]
 
 ];
