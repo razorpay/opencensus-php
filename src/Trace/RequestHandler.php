@@ -276,6 +276,15 @@ class RequestHandler
                 ]);
             }
         }
+
+        // add all query parameters as tags
+        parse_str($headers['QUERY_STRING'], $queryParams);
+
+        foreach ($queryParams as $key => $value) {
+            $this->tracer->addAttribute($key, $value, [
+                'spanId' => $this->rootSpan->spanId()
+            ]);
+        }
     }
 
     private function startTimeFromHeaders(array $headers)
