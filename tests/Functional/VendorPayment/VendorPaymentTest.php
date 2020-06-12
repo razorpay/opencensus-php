@@ -41,6 +41,50 @@ class VendorPaymentTest extends TestCase
         $this->config = App::getFacadeRoot()['config'];
     }
 
+    public function testCompositeExpands()
+    {
+        // will call the compostie api and check if the response are as expected
+        $this->ba->appAuthTest($this->config['applications.vendor_payments.secret']);
+
+        $this->fixtures->create('user', ['id' => '10000000000000', 'name' => 'test-me']);
+
+        $this->fixtures->create('contact', ['id' => 'Dsp92d4N1Mmm6Q', 'name' => 'test_contact']);
+
+        $this->fixtures->create('fund_account:bank_account',
+                                [
+                                    'id'          => 'D6Z9Jfir2egAUT',
+                                    'source_type' => 'contact',
+                                    'source_id'   => 'Dsp92d4N1Mmm6Q',
+                                    'merchant_id' => '10000000000000'
+                                ]);
+
+        $this->fixtures->create('payout', ['id' => 'DuuYxmO7Yegu3x', 'fund_account_id' => 'D6Z9Jfir2egAUT']);
+
+        $this->startTest();
+    }
+
+    public function testCompositeExpandsWhenOnlyPayoutIsPassed()
+    {
+        // will call the compostie api and check if the response are as expected
+        $this->ba->appAuthTest($this->config['applications.vendor_payments.secret']);
+
+        $this->fixtures->create('user', ['id' => '10000000000000', 'name' => 'test-me']);
+
+        $this->fixtures->create('contact', ['id' => 'Dsp92d4N1Mmm6Q', 'name' => 'test_contact']);
+
+        $this->fixtures->create('fund_account:bank_account',
+                                [
+                                    'id'          => 'D6Z9Jfir2egAUT',
+                                    'source_type' => 'contact',
+                                    'source_id'   => 'Dsp92d4N1Mmm6Q',
+                                    'merchant_id' => '10000000000000'
+                                ]);
+
+        $this->fixtures->create('payout', ['id' => 'DuuYxmO7Yegu3x', 'fund_account_id' => 'D6Z9Jfir2egAUT']);
+
+        $this->startTest();
+    }
+
     public function testCreatePayout()
     {
         $this->ba->appAuthTest($this->config['applications.vendor_payments.secret']);

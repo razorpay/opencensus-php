@@ -76,6 +76,20 @@ class VendorPaymentController extends Controller
     }
 
     /**
+     * This will be called by VP-MS internally, for helping with expanding the following
+     * fund_account_id
+     * contact_id
+     * merchant_id
+     * user_ids
+     * payout_ids
+     *
+     */
+    public function compositeExpandsHelper()
+    {
+        return $this->service->compositeExpandsHelper($this->input, $this->ba->getMerchant());
+    }
+
+    /**
      * Will be called by VendorPayment MS, to send email to the merchant,
      * when VP goes to UNPAID state
      * Todo: remove this when VP has a mailer integration

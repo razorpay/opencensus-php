@@ -972,8 +972,9 @@ class Route
         'payouts_workflow_summary'                 => ['get',      'payouts/_meta/workflows',                        'PayoutController@getWorkflowSummary'                               ],
 
         //Vendor Payments
-        'vendor_payment_send_failure_email'        => ['post',      'vendor-payments/send-failure-email',             'VendorPaymentController@internalSendFailureEmail'                 ],
-        'vendor_payment_summary'                   => ['get',      'vendor-payments/_meta/summary',                  'VendorPaymentController@summary'                                  ],
+        'vendor_payment_composite_expands_helper'  => ['get',      'vendor-payments/composite-expands',             'VendorPaymentController@compositeExpandsHelper'                     ],
+        'vendor_payment_send_failure_email'        => ['post',     'vendor-payments/send-failure-email',             'VendorPaymentController@internalSendFailureEmail'                  ],
+        'vendor_payment_summary'                   => ['get',      'vendor-payments/_meta/summary',                  'VendorPaymentController@summary'                                   ],
         'vendor_payment_contact_list'              => ['get',      'vendor-payments/contacts',                       'VendorPaymentController@listContacts'                              ],
         'vendor_payment_invoice_upload'            => ['post',     'vendor-payments/upload-invoice',                 'VendorPaymentController@uploadInvoice'                             ],
         'vendor_payment_invoice_get_signed_url'    => ['get',      'vendor-payments/invoice-signed-url/{file_id}',   'VendorPaymentController@getInvoiceSignedUrl'                       ],
@@ -2115,6 +2116,7 @@ class Route
     // If a route needs access from the Dashboard
     // Put it in the Admin Array instead
     public static $internal = [
+        'vendor_payment_composite_expands_helper',
         'los_mail',
         'api_entity_fetch',
         'subscription_registration_nach_migration',
@@ -4331,7 +4333,8 @@ class Route
             'user_fetch_internal',
             'vendor_payment_verify_otp',
             'vendor_payment_send_failure_email',
-            'internal_merchant_fetch'
+            'internal_merchant_fetch',
+            'vendor_payment_composite_expands_helper',
         ],
 
         'dashboard' => [

@@ -2,6 +2,116 @@
 
 
 return [
+    'testCompositeExpands' => [
+        'request' => [
+            'method' => 'GET',
+            'server' => [
+                'HTTP_X-Razorpay-Account' => '10000000000000',
+            ],
+            'url' => '/vendor-payments/composite-expands',
+            'content' => [
+                'user_ids' => ['10000000000000'],
+                'fund_account_id' => 'fa_D6Z9Jfir2egAUT',
+                'contact_id' => 'cont_Dsp92d4N1Mmm6Q',
+                'payout_ids' => ['pout_DuuYxmO7Yegu3x']
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'merchant' => [],
+                'users' => [
+                    'entity' => 'collection',
+                    'count' => 1,
+                    'items' => [
+                        [
+                            'id' => '10000000000000',
+                            'name' => 'test-me'
+                        ]
+                    ]
+                ],
+                'fund_accounts' => [
+                    'fa_D6Z9Jfir2egAUT' => [
+                        'id'           => 'fa_D6Z9Jfir2egAUT',
+                        'account_type' => 'bank_account'
+                    ]
+                ],
+                'contacts' => [
+                    'cont_Dsp92d4N1Mmm6Q' => [
+                        'id'   => 'cont_Dsp92d4N1Mmm6Q',
+                        'name' => 'test_contact'
+                    ]
+                ],
+                'payouts' => [
+                    'entity' => 'collection',
+                    'count' => 1,
+                    'items' => [
+                        [
+                            'id' => 'pout_DuuYxmO7Yegu3x',
+                            'fund_account_id' => 'fa_D6Z9Jfir2egAUT',
+                            'fund_account' => [
+                                'id' => 'fa_D6Z9Jfir2egAUT',
+                                'contact' => [
+                                    'id' => 'cont_Dsp92d4N1Mmm6Q',
+                                    'name' => 'test_contact'
+                                ]
+                            ]
+                        ]
+                    ]
+                ]
+            ]
+        ]
+
+    ],
+
+    'testCompositeExpandsWhenOnlyPayoutIsPassed' => [
+        'request' => [
+            'method' => 'GET',
+            'server' => [
+                'HTTP_X-Razorpay-Account' => '10000000000000',
+            ],
+            'url' => '/vendor-payments/composite-expands',
+            'content' => [
+                'payout_ids' => ['pout_DuuYxmO7Yegu3x']
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'merchant' => [],
+                'fund_accounts' => [
+                    'fa_D6Z9Jfir2egAUT' => [
+                        'id'           => 'fa_D6Z9Jfir2egAUT',
+                        'account_type' => 'bank_account'
+                    ]
+                ],
+                'contacts' => [
+                    'cont_Dsp92d4N1Mmm6Q' => [
+                        'id'   => 'cont_Dsp92d4N1Mmm6Q',
+                        'name' => 'test_contact'
+                    ]
+                ],
+                'payouts' => [
+                    'entity' => 'collection',
+                    'count' => 1,
+                    'items' => [
+                        [
+                            'id' => 'pout_DuuYxmO7Yegu3x',
+                            'fund_account_id' => 'fa_D6Z9Jfir2egAUT',
+                            'fund_account' => [
+                                'id' => 'fa_D6Z9Jfir2egAUT',
+                                'contact' => [
+                                    'id' => 'cont_Dsp92d4N1Mmm6Q',
+                                    'name' => 'test_contact'
+                                ]
+                            ]
+                        ]
+                    ]
+                ]
+
+
+            ]
+        ]
+
+    ],
     'testCreatePayout' => [
         'request'  => [
             'method'  => 'POST',

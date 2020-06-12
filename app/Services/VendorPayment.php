@@ -13,8 +13,8 @@ use RZP\Models\Payout\Entity as PayoutEntity;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 
 /**
- * This class will be the main service file that will talk to
- * Vendor Payment Microservice and relay all the responses.
+ * This class will be the main file that will talk to
+ * Vendor Payment Micro Service and relay all the responses.
  * This will be as dummy as possible, and will only do conversions
  * Between the Restful API calls and the RPC API calls that the MS understands
  */
@@ -40,6 +40,8 @@ class VendorPayment
 
     protected $app;
 
+    protected $repo;
+
     protected $trace;
 
     protected $config;
@@ -51,6 +53,104 @@ class VendorPayment
         $this->trace = $app['trace'];
 
         $this->config = $app['config']['applications.vendor_payments'];
+
+        $this->repo =  $app['repo'];
+    }
+
+    public function compositeExpandsHelper(array $input, MerchantEntity $merchant)
+    {
+        $result = [
+        ];
+
+        $this->expandUsers($result, $input);
+
+        $this->expandContact($result, $input, $merchant);
+
+        $this->expandFundAccount($result, $input, $merchant);
+
+        $this->expandPayouts($result, $input, $merchant);
+
+        $result['merchant'] = $merchant->toArrayPublic();
+
+        return $result;
+    }
+
+    protected function expandContact(array &$result, array $input, MerchantEntity $merchant)
+    {
+        $contactId = array_pull($input, 'contact_id', null);
+
+        if ($contactId === null)
+        {
+            return;
+        }
+
+        $contact = $this->repo->contact->findByPublicIdAndMerchant($contactId, $merchant);
+
+        if (empty($contact) === false)
+        {
+            $result['contacts'][$contact->getPublicId()] = $contact->toArrayPublic();
+        }
+    }
+
+    protected function expandFundAccount(array &$result, array $input, MerchantEntity $merchant)
+    {
+        $fundAccountId = array_pull($input, 'fund_account_id', null);
+
+        if ($fundAccountId === null)
+        {
+            return;
+        }
+
+        $fundAccount = $this->repo
+                            ->fund_account
+                            ->findByPublicIdAndMerchant($fundAccountId, $merchant, ['expand' => ['contact']]);
+
+        if (empty($fundAccount) === false)
+        {
+            $contact = $fundAccount->contact;
+
+            $result['contacts'][$contact->getPublicId()] = $contact->toArrayPublic();
+
+            $result['fund_accounts'][$fundAccount->getPublicId()] = $fundAccount->toArrayPublic();
+        }
+    }
+
+    protected function expandPayouts(array &$result, array $input, MerchantEntity $merchant)
+    {
+        $payoutIds = array_pull($input, 'payout_ids', []);
+
+        if (count($payoutIds) === 0)
+        {
+            return;
+        }
+        $payouts = $this->repo->payout->findManyByPublicIdsAndMerchant($payoutIds,
+                                                                       $merchant,
+                                                                       ['expand' => ['fund_account.contact']]);
+        foreach ($payouts as $payout)
+        {
+            $fa = $payout->fundAccount;
+
+            $contact = $fa->contact;
+
+            $result['fund_accounts'][$fa->getPublicId()] = $fa->toArrayPublic();
+
+            $result['contacts'][$contact->getPublicId()] = $contact->toArrayPublic();
+        }
+
+        $result['payouts'] = $payouts->toArrayPublic();
+
+    }
+
+    protected function expandUsers(array &$result, array $input)
+    {
+        $userIds = array_pull($input, 'user_ids', null);
+
+        if ($userIds === null)
+        {
+            return;
+        }
+
+        $result['users'] = $this->repo->user->findManyByPublicIds($userIds)->toArrayPublic();
     }
 
     public function create(MerchantEntity $merchant, array $input, Entity $user = null)
