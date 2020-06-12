@@ -270,6 +270,8 @@ class AdminFetch
                     Fetch::VALUES => [
                         'payment_link',
                         'reconciliation',
+                        'merchant_status_action',
+                        'admin_batch',
                     ],
                 ],
             ],
