@@ -536,6 +536,26 @@ class ViewDataSerializer extends Base\Core
         $serialized[E::MERCHANT] += [
             'business_registered_address' => optional($this->merchant->merchantDetail)->getBusinessRegisteredAddress(),
         ];
+
+        // add label customizations
+        switch ($this->merchant->getId()) {
+
+          case Preferences::MID_BAGIC:
+
+              $serialized['custom_labels']['expires_on'] = 'PAYMENT LINK EXPIRES ON';
+              $serialized['custom_labels']['expired_on'] = 'PAYMENT LINK EXPIRED ON';
+              $serialized['view_preferences']['hide_issued_to'] = true;
+
+              break;
+
+          case Preferences::MID_RBL_BANK:
+          case Preferences::MID_RBL_BANK_LTD:
+          case Preferences::MID_RBL_BANK_1:
+
+              $serialized['custom_labels']['receipt_number'] = 'CREDIT CARD NUMBER';
+
+              break;
+        }
     }
 
     protected function addExternalEntityAttributesForInvoice(array & $serialized)
