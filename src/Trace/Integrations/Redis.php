@@ -45,12 +45,23 @@ class Redis implements IntegrationInterface
 
         opencensus_trace_method('Predis\Client', '__construct', [static::class, 'handleConstruct']);
 
-        opencensus_trace_method('Predis\Client', 'set', [static::class, 'handleCall']);
+        opencensus_trace_method('Predis\Client', 'set', function($predis, $key, $value){
+                                return ['name' => 'redis/set',
+                                        'attributes' => ['key' => $key],
+                                        'kind' => Span::KIND_CLIENT
+                                    ];
+                            }
+        );
 
-        opencensus_trace_method('Predis\Client', 'get', [static::class, 'handleCall']);
+        opencensus_trace_method('Predis\Client', 'get', function($predis, $key){
+                                return ['name' => 'redis/get',
+                                        'attributes' => ['key' => $key],
+                                        'kind' => Span::KIND_CLIENT
+                                    ];
+                            }
+        );
 
         opencensus_trace_method('Predis\Client', 'flushDB');
-
     }
 
     /**
@@ -63,25 +74,11 @@ class Redis implements IntegrationInterface
     public static function handleConstruct($predis, $params)
     {
         return [
+            'name' => 'redis/construct',
             'attributes' => [
                 'host' => $params['host'],
                 'port' => $params['port']
             ],
-            'kind' => Span::KIND_CLIENT
-        ];
-    }
-
-    /**
-     * Trace Set / Get Operations
-     *
-     * @param $predis
-     * @param  $method
-     * @return array
-     */
-    public static function handleCall($predis, $method)
-    {
-        return [
-            'attributes' => ['method' => $method],
             'kind' => Span::KIND_CLIENT
         ];
     }
