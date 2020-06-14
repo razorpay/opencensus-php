@@ -36,9 +36,11 @@ class GSTINVerifier implements Verifier
 
     private function isBusinessNameMatch(): bool
     {
+        $matchType = FuzzyMatcher::TOKEN_OR_TOKEN_SET_MATCH;
+
         $legalName = $this->data[Constants::LEGAL_NAME] ?? '';
 
-        $gstinFuzzyMatcher = new FuzzyMatcher(GSTINVerificationStatus::GSTIN_VERIFICATION_BUSINESS_NAME_THRESHOLD, FuzzyMatcher::SIMPLE_MATCH);
+        $gstinFuzzyMatcher = new FuzzyMatcher(GSTINVerificationStatus::GSTIN_VERIFICATION_BUSINESS_NAME_THRESHOLD, $matchType);
 
         $isMatch = $gstinFuzzyMatcher->isMatch($this->dataToVerify[Constants::COMPANY_NAME], $legalName, $matchPercentage);
 
@@ -50,7 +52,7 @@ class GSTINVerifier implements Verifier
                 Constants::MATCH_THRESHOLD           => GSTINVerificationStatus::GSTIN_VERIFICATION_BUSINESS_NAME_THRESHOLD,
                 Constants::MATCH_PERCENTAGE          => $matchPercentage,
                 Constants::SUCCESS                   => ($isMatch === true),
-                Constants::MATCH_TYPE                => FuzzyMatcher::SIMPLE_MATCH,
+                Constants::MATCH_TYPE                => $matchType,
             ]);
 
         return $isMatch === true;
@@ -58,7 +60,9 @@ class GSTINVerifier implements Verifier
 
     private function isPromoterPanNameMatch(): bool
     {
-        $gstinFuzzyMatcher = new FuzzyMatcher(GSTINVerificationStatus::GSTIN_VERIFICATION_PROMOTER_PAN_NAME_THRESHOLD, FuzzyMatcher::SIMPLE_MATCH);
+        $matchType = FuzzyMatcher::TOKEN_OR_TOKEN_SET_MATCH;
+
+        $gstinFuzzyMatcher = new FuzzyMatcher(GSTINVerificationStatus::GSTIN_VERIFICATION_PROMOTER_PAN_NAME_THRESHOLD, $matchType);
 
         $members = $this->data[Constants::MEMBERS] ?? [];
 
@@ -74,7 +78,7 @@ class GSTINVerifier implements Verifier
                     Constants::MATCH_THRESHOLD           => GSTINVerificationStatus::GSTIN_VERIFICATION_PROMOTER_PAN_NAME_THRESHOLD,
                     Constants::MATCH_PERCENTAGE          => $matchPercentage,
                     Constants::SUCCESS                   => ($isMatch === true),
-                    Constants::MATCH_TYPE                => FuzzyMatcher::SIMPLE_MATCH,
+                    Constants::MATCH_TYPE                => $matchType,
                 ]);
 
             if ($isMatch === true)

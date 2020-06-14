@@ -38,7 +38,9 @@ class POAVerifier implements Verifier
 
         $documentType = $this->data[Constants::DOCUMENT_TYPE] ?? '';
 
-        $poaFuzzyMatcher = new FuzzyMatcher(OcrVerificationStatus::OCR_VERIFICATION_THRESHOLD, FuzzyMatcher::JUMBLED_MATCH);
+        $matchType = FuzzyMatcher::TOKEN_OR_TOKEN_SET_MATCH;
+
+        $poaFuzzyMatcher = new FuzzyMatcher(OcrVerificationStatus::OCR_VERIFICATION_THRESHOLD, FuzzyMatcher::TOKEN_OR_TOKEN_SET_MATCH);
 
         $isOcrMatch = $poaFuzzyMatcher->isMatch($this->panOwnerName, $this->ocrName, $matchPercent);
 
@@ -50,7 +52,7 @@ class POAVerifier implements Verifier
                 Constants::MATCH_THRESHOLD           => OcrVerificationStatus::OCR_VERIFICATION_THRESHOLD,
                 Constants::MATCH_PERCENTAGE          => $matchPercent,
                 Constants::SUCCESS                   => ($isOcrMatch === true),
-                Constants::MATCH_TYPE                => FuzzyMatcher::JUMBLED_MATCH,
+                Constants::MATCH_TYPE                => $matchType,
             ]);
 
         return ($isOcrMatch === true);

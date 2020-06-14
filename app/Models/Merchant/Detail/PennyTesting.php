@@ -315,7 +315,7 @@ class PennyTesting extends Base\Core
 
     private function validateNameForBankAccount(array $input, Entity $merchantDetails): array
     {
-        $fuzzyMatcher = new FuzzyMatcher(BankDetailsVerificationStatus::BANK_DETAIL_VERIFICATION_THRESHOLD_FOR_PAN, FuzzyMatcher::JUMBLED_MATCH);
+        $fuzzyMatcher = new FuzzyMatcher(BankDetailsVerificationStatus::BANK_DETAIL_VERIFICATION_THRESHOLD_FOR_PAN, FuzzyMatcher::TOKEN_OR_TOKEN_SET_MATCH);
 
         $allowedMerchantAttributesDetails = $this->getAllowedMerchantAttributesDetails($merchantDetails);
 

@@ -2,6 +2,8 @@
 
 namespace RZP\lib;
 
+use FuzzyWuzzy\Fuzz;
+
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 
@@ -13,11 +15,13 @@ class FuzzyMatcher
 
     protected $matchType;
 
-    const MATCH_TYPES = ["jumbledMatch", "simpleMatch"];
+    const JUMBLED_MATCH = 'jumbledMatch';
 
-    const JUMBLED_MATCH = self::MATCH_TYPES[0];
+    const SIMPLE_MATCH = 'simpleMatch';
 
-    const SIMPLE_MATCH = self::MATCH_TYPES[1];
+    const TOKEN_OR_TOKEN_SET_MATCH = 'tokenOrTokenSetMatch';
+
+    const MATCH_TYPES = [self::JUMBLED_MATCH, self::SIMPLE_MATCH, self::TOKEN_OR_TOKEN_SET_MATCH];
 
     const CENT = 100;
 
@@ -90,9 +94,38 @@ class FuzzyMatcher
                 $matchPercent = $this->jumbledFuzzyMatch($first, $second);
 
                 break;
+
+            case self::TOKEN_OR_TOKEN_SET_MATCH:
+
+                $matchPercent = $this->tokenOrTokenSetMatch($first, $second);
+
+                break;
+
         }
 
         return $matchPercent;
+    }
+
+    /**
+     *
+     * @param $first
+     * @param $second
+     *
+     * @return float
+     */
+    protected function tokenOrTokenSetMatch($first, $second): float
+    {
+        $first = strtolower(preg_replace('/\s+/', ' ', $first));
+
+        $second = strtolower(preg_replace('/\s+/', ' ', $second));
+
+        $fuzz = new Fuzz();
+
+        $percentageFromRatio = $fuzz->ratio($first, $second);
+
+        $percentageFromTokenSet = $fuzz->tokenSetRatio($first, $second);
+
+        return max($percentageFromRatio, $percentageFromTokenSet);
     }
 
     /**

@@ -38,7 +38,9 @@ trait PanVerifier
             return false;
         }
 
-        $poiFuzzyMatcher = new FuzzyMatcher($this->getExpectedMatchPercentage(), FuzzyMatcher::SIMPLE_MATCH);
+        $matchType = FuzzyMatcher::TOKEN_OR_TOKEN_SET_MATCH;
+
+        $poiFuzzyMatcher = new FuzzyMatcher($this->getExpectedMatchPercentage(), $matchType);
 
         $isMatch = $poiFuzzyMatcher->isMatch($this->panOwnerName, $this->nameFromNSDL, $matchPercentage);
 
@@ -50,7 +52,7 @@ trait PanVerifier
                 Constants::MATCH_THRESHOLD           => $this->getExpectedMatchPercentage(),
                 Constants::MATCH_PERCENTAGE          => $matchPercentage,
                 Constants::SUCCESS                   => ($isMatch === true),
-                Constants::MATCH_TYPE                => FuzzyMatcher::SIMPLE_MATCH,
+                Constants::MATCH_TYPE                => $matchType,
             ]);
 
         return ($isMatch === true);
