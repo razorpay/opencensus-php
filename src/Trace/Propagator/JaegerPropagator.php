@@ -30,6 +30,9 @@ class JaegerPropagator implements PropagatorInterface
 {
     const DEFAULT_HEADER = 'uber-trace-id';
 
+    // refer: https://www.jaegertracing.io/docs/1.18/client-libraries/#propagation-format
+    const CONTEXT_HEADER_FORMAT = '%016x:%016x:%016x:%x';
+
     /**
      * @var FormatterInterface
      */
@@ -56,19 +59,25 @@ class JaegerPropagator implements PropagatorInterface
 
     public function extract(HeaderGetter $headers): SpanContext
     {
-        $data = $headers->get($this->header);
+        // normalize header name that comes in, like php does it
+        $extract_header = 'HTTP_' . strtoupper(str_replace('-', '_', $this->header));
+
+        $data = $headers->get($extract_header);
         if (!$data) {
             return new SpanContext();
         }
 
-        list($traceId, $spanId, $parentSpanId, $flags) = explode(':', $data);
+        $n = sscanf($data, self::CONTEXT_HEADER_FORMAT, $traceId, $spanId, $parentSpanId, $flags);
+        if ($n == 0){
+            return new SpanContext();
+        }
 
-        $sampled = $flags & 0x01;
+        $enabled = $flags & 0x01;
 
         $fromHeader = true;
 
         // @@FIXME: Opencensus spanContext doesn't have parent_span_id. figure out what to do
-        return new SpanContext($traceId, $spanId, $sampled, $fromHeader);
+        return new SpanContext($traceId, $spanId, $enabled, $fromHeader);
     }
 
     public function inject(SpanContext $context, HeaderSetter $setter)
@@ -76,10 +85,9 @@ class JaegerPropagator implements PropagatorInterface
         $traceId = $context->traceId();
         $spanId = $context->spanId();
         $parentID = ''; // @@@FIXME
-        $sampled = $context->enabled();
+        $enabled = $context->enabled();
 
-        $value = sprintf("%016x:%016x:%016x:%x", $traceId, $spanId, $parentID, $sampled);
-
+        $value = sprintf(self::CONTEXT_HEADER_FORMAT, $traceId, $spanId, $parentID, $enabled);
         if (!headers_sent()) {
             header("$this->header: $value");
         }
