@@ -32,7 +32,6 @@ class ServiceFactory
      * @param string|null $mode
      *
      * @return ProcessorFactory
-     * @throws LogicException
      */
     public static function getVerifierServiceFactory(array $input,
                                                      string $processorType,
@@ -53,26 +52,18 @@ class ServiceFactory
      * @param string $processorType
      *
      * @return bool
-     * @throws LogicException
      */
     public static function shouldRouteTrafficToKycService(array $input, string $processorType): bool
     {
         switch ($processorType)
         {
-            case DEConstants::POI :
-            case DEConstants::REGISTER :
-            case DEConstants::GSTIN :
-            case DEConstants::COMPANY_PAN:
-                return true;
-
             case DEConstants::POA :
 
                 return self::servePOAFromKycService($input);
 
             default :
-                throw new LogicException(ErrorCode::UNHANDLED_KYC_PROCESSOR_TYPE, null, [
-                    DEConstants::PROCESSOR_TYPE => $processorType
-                ]);
+
+                return true;
         }
     }
 

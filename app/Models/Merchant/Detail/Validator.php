@@ -78,7 +78,7 @@ class Validator extends Base\Validator
         Entity::BUSINESS_DOE                    => 'sometimes|date_format:"Y-m-d"|before:"today"',
         Entity::GSTIN                           => 'filled|string|size:15|nullable',
         Entity::P_GSTIN                         => 'filled|string|size:15',
-        Entity::COMPANY_CIN                     => 'filled|alpha_num|max:21',
+        Entity::COMPANY_CIN                     => ['filled', 'regex:/^([A-Z|a-z]{3}-\d{}|[ulUL]\d{5}[A-Z|a-z]{2}\d{4}[A-Z|a-z]{3}\d{6})/'],
         Entity::COMPANY_PAN                     => 'filled|companyPan',
         Entity::COMPANY_PAN_NAME                => 'filled|max:255',
         Entity::BUSINESS_CATEGORY               => 'filled|max:255|custom',
@@ -156,7 +156,7 @@ class Validator extends Base\Validator
         Entity::BUSINESS_DOE                             => 'sometimes|date_format:"Y-m-d"|before:"today"',
         Entity::GSTIN                                    => 'sometimes|string|size:15|nullable',
         Entity::P_GSTIN                                  => 'sometimes|string|size:15',
-        Entity::COMPANY_CIN                              => 'sometimes|alpha_num|max:21',
+        Entity::COMPANY_CIN                              => ['sometimes', 'regex:/^([A-Z|a-z]{3}-\d{}|[ulUL]\d{5}[A-Z|a-z]{2}\d{4}[A-Z|a-z]{3}\d{6})/'],
         Entity::COMPANY_PAN                              => 'sometimes|companyPan',
         Entity::COMPANY_PAN_NAME                         => 'sometimes|max:255',
         Entity::BUSINESS_CATEGORY                        => 'sometimes|max:255|custom',
@@ -234,6 +234,10 @@ class Validator extends Base\Validator
     protected static $uploadDocumentRules = [
         Merchant\Document\Entity::DOCUMENT_TYPE => 'required|string|max:255|custom',
         Entity::FILE                            => 'required|file|mimes:pdf,jpeg,jpg,png',
+    ];
+
+    protected static $cinVerificationRules = [
+        Constants::COMPANY_CIN => ['required', 'regex:/^([A-Z|a-z]{3}-\d{}|[ulUL]\d{5}[A-Z|a-z]{2}\d{4}[A-Z|a-z]{3}\d{6})/'],
     ];
 
     protected static $archiveFormRules = [

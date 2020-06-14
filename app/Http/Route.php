@@ -1767,7 +1767,9 @@ class Route
 
 
         // Routes related to payments rearch for fetching/writing data
-        'api_entity_fetch'                        => ['get',     'entities/{entity}/{id}',                                 'CardPSController@FetchEntity'                                   ],
+        'api_entity_fetch'                        => ['get',     'entities/{entity}/{id}',                                 'CardPSController@FetchEntity'                                  ],
+
+        'merchant_verify_attributes'              => ['post',    'merchant/verify/{verificationType}',                      'MerchantController@postVerifyMerchantAttributes'              ],
 
     ];
 
@@ -2419,6 +2421,7 @@ class Route
     ];
 
     public static $proxy = [
+        'merchant_verify_attributes',
         'feature_get_status',
         'feature_get_all',
         'ufh_upload_file',

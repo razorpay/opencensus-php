@@ -15,6 +15,7 @@ use RZP\Diag\EventCode;
 use RZP\Trace\TraceCode;
 use RZP\Jobs\RequestJob;
 use RZP\Models\Merchant;
+use RZP\Error\ErrorCode;
 use RZP\Models\Admin\Org;
 use RZP\Models\Batch\Type;
 use RZP\Constants\Product;
@@ -25,6 +26,7 @@ use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Metric;
 use RZP\Models\Merchant\AutoKyc;
 use RZP\Models\Admin\Permission;
+use RZP\Exception\LogicException;
 use RZP\Models\Merchant\Document;
 use RZP\Models\Merchant\Constants;
 use RZP\Models\Merchant\LegalEntity;
@@ -2147,14 +2149,9 @@ class Core extends Base\Core
 
         $merchantDetails = $this->repo->merchant_detail->findByPublicId($merchantId);
 
-        // check that all require fields are present for calling external api
-        // changed to empty on $merchantDetails->getAttribute($field) because fields value could be empty string eg. do_not_have_gstin
-        foreach ($requiredFields as $field)
+        if ($this->hasAllRequiredFields($merchantDetails, $input, $requiredFields) === false)
         {
-            if ((isset($input[$field]) === false) and empty($merchantDetails->getAttribute($field)) === true)
-            {
-                return false;
-            }
+            return false;
         }
 
         // check if there is any change in any field
@@ -2167,6 +2164,21 @@ class Core extends Base\Core
         }
 
         return false;
+    }
+
+    public function hasAllRequiredFields(Entity $merchantDetails, array $input, array $requiredFields)
+    {
+        // check that all require fields are present for calling external api
+        // changed to empty on $merchantDetails->getAttribute($field) because fields value could be empty string eg. do_not_have_gstin
+        foreach ($requiredFields as $field)
+        {
+            if ((isset($input[$field]) === false) and empty($merchantDetails->getAttribute($field)) === true)
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
 
@@ -2324,5 +2336,114 @@ class Core extends Base\Core
         }
 
         return ($this->isKeyNotInMerchantDetail($inputKey, $merchantDetailsArr) === false);
+    }
+
+    /**
+     * @param Entity          $merchantDetails
+     * @param Merchant\Entity $merchant
+     * @param array           $input
+     */
+    protected function verifyCINDetailsIfApplicable(Entity $merchantDetails, Merchant\Entity $merchant, array $input)
+    {
+
+        if (BusinessType::isCinVerificationEnableBusinessTypes($merchantDetails->getBusinessTypeValue()) === false)
+        {
+            $merchantDetails->setCinVerificationStatus(null);
+
+            return;
+        }
+
+        if ((new Merchant\Core())->isAutoKycEnabled($merchantDetails, $merchant) === false)
+        {
+            $merchantDetails->setCinVerificationStatus(null);
+
+            return;
+        }
+
+        $fields = [Detail\Entity::COMPANY_CIN, Detail\Entity::PROMOTER_PAN_NAME, Detail\Entity::BUSINESS_NAME];
+
+        //
+        // 1. If we have all the require params to call
+        //
+        if ($this->hasAllRequiredFields($merchantDetails, $input, $fields) === false)
+        {
+            return;
+        }
+
+        $response = null;
+
+        $verificationStatus = CinVerificationStatus::FAILED;
+
+        try
+        {
+            $input = [
+                DEConstants::CIN                => $merchantDetails->getCompanyCin(),
+                DEConstants::COMPANY_NAME       => $merchantDetails->getBusinessName() ?? '',
+                DEConstants::PROMOTER_PAN_NAME  => $merchantDetails->getPromoterPanName() ?? '',
+                DEConstants::REGISTERED_ADDRESS => $merchantDetails->getBusinessRegisteredAddress() ?? '',
+            ];
+
+            $verificationStatus = (new AutoKyc\Core())->verifyCIN($merchantDetails, $input);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e,
+                                         null,
+                                         TraceCode::MERCHANT_CIN_VERIFICATION_FAILED);
+
+        }
+
+        $merchantDetails->setCinVerificationStatus($verificationStatus);
+
+        $dimension = $this->fetchCinMetricDimensions($merchantDetails);
+
+        $this->trace->count(DetailMetric::CIN_VERIFICATION_STATUS_TOTAL, $dimension);
+    }
+
+    protected function fetchCinMetricDimensions(Entity $merchantDetail): array
+    {
+        return [
+            Detail\Constants::CIN_STATUS => $merchantDetail->getCinVerificationStatus()
+        ];
+    }
+
+    /**
+     *
+     * @param Merchant\Entity $merchant
+     * @param string          $verificationType
+     *
+     * @param array           $input
+     *
+     * @return array
+     * @throws LogicException
+     */
+    public function verifyMerchantAttributes(Merchant\Entity $merchant, string $verificationType, array $input) : array
+    {
+        $this->trace->info(
+            TraceCode::MERCHANT_VERIFY_ATTRIBUTES,
+            [
+                'input'             => $input,
+                'verification_type' => $verificationType
+            ]);
+
+        switch (strtoupper($verificationType))
+        {
+            case DetailConstants::CIN :
+
+                $merchantDetails = $merchant->merchantDetail;
+
+                $merchantDetails->edit($input, 'cin_verification');
+
+                $this->verifyCINDetailsIfApplicable($merchantDetails, $merchant, $input);
+
+                $this->repo->saveOrFail($merchantDetails);
+
+                return $merchantDetails->toArrayPublic();
+
+            default:
+                throw new LogicException(
+                    ErrorCode::BAD_REQUEST_INVALID_VERIFICATION_TYPE,
+                    ['verification_type' => $verificationType]);
+        }
     }
 }

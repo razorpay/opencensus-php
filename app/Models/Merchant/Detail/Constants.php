@@ -6,6 +6,10 @@ use Razorpay\IFSC\Bank;
 
 class Constants
 {
+    // Input params for cin verification
+    const SIGNATORY_DETAILS = 'signatory_details';
+    const COMPANY_CIN       = 'company_cin';
+
     // input params for pan verifier
     const PAN_NUMBER        = 'pan_number';
     const PROMOTER_PAN      = 'promoter_pan';
@@ -20,6 +24,7 @@ class Constants
     const POI_STATUS                       = 'poi_status';
     const POA_STATUS                       = 'poa_status';
     const GSTIN_STATUS                     = 'gstin_status';
+    const CIN_STATUS                       = 'cin_status';
     const DOCUMENT_TYPE                    = 'document_type';
     const DOCUMENT_SOURCE                  = 'document_source';
     const BANK_DETAILS_VERIFICATION_STATUS = 'bank_details_verification_status';
@@ -89,6 +94,7 @@ class Constants
     const COMPANY_NAME        = 'company_name';
     const LEGAL_NAME          = 'legal_name';
     const OPERATIONAL_ADDRESS = 'operational_address';
+    const REGISTERED_ADDRESS  = 'registered_address';
     const ADDRESS             = 'address';
 
     const DOCUMENT_VERIFICATION_STATUS          = 'document_verification_status';
@@ -102,6 +108,7 @@ class Constants
         self::VOTERS_ID       => 'voters_id',
         self::DRIVERS_LICENSE => 'drivers_license',
         self::GSTIN           => 'gstin',
+        self::CIN             => 'cin',
     ];
 
     // Using this blacked listed banks to block bank account details
@@ -125,6 +132,8 @@ class Constants
     const POI            = 'POI';
     const POA            = 'POA';
     const REGISTER       = 'REGISTER';
+    const CIN            = 'CIN';
+    const GSTIN           = 'GSTIN';
 
     // kyc service document type
     const PERSONAL_PAN    = 'PERSONAL_PAN';
@@ -132,7 +141,6 @@ class Constants
     const PASSPORT        = 'PASSPORT';
     const VOTERS_ID       = 'VOTERS_ID';
     const DRIVERS_LICENSE = 'DRIVERS_LICENSE';
-    const GSTIN           = 'GSTIN';
 
     // flows used during activation
     const ACTIVATION               = 'activaiton';

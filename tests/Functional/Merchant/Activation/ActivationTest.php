@@ -2178,4 +2178,79 @@ class ActivationTest extends OAuthTestCase
 
         $this->fixtures->create('merchant_document:multiple', $data);
     }
+
+    public function testVerifyCinDetailsVerified()
+    {
+        $this->fixtures->create('merchant_detail', ['merchant_id' => '10000000000000', 'business_type' => '4']);
+
+        $this->cinVerification('cinVerification', 'success', 'verified',
+                               [
+                                   'company_cin'       => '06abtpk8080c2zf',
+                                   'business_name'     => 'company_name',
+                                   'promoter_pan_name' => 'pankaj kumar',
+                               ]);
+
+        $this->cinVerification('cinVerification', 'success', null,
+                               [
+                                   'company_cin'       => '06abtpk8080c2zf',
+                                   'business_name'     => 'company_name',
+                                   'promoter_pan_name' => 'pankaj kumar',
+                                   'business_type'     => '1',
+                               ]);
+
+        $this->cinVerification('cinVerification', 'success', 'verified',
+                               [
+                                   'company_cin'       => '06abtpk8080c2zf',
+                                   'business_name'     => 'company_name',
+                                   'promoter_pan_name' => 'pankaj kumar',
+                                   'business_type'     => '4',
+                               ]);
+
+        $this->cinVerification('cinVerification', 'incorrect_details', 'incorrect_details',
+                               [
+                                   'company_cin'       => '06abtpk8080c2zf',
+                                   'business_name'     => 'company_name',
+                                   'promoter_pan_name' => 'pankaj kumar',
+                               ]
+        );
+
+        $this->cinVerification('cinVerification', 'failure', 'failed',
+                               [
+                                   'company_cin'       => '06abtpk8080c2zf',
+                                   'business_name'     => 'company_name',
+                                   'promoter_pan_name' => 'pankaj kumar',
+                               ]);
+
+        $this->cinVerification('cinVerification', 'success', 'not_matched',
+                               [
+                                   'company_cin'       => '06abtpk8080c2zf',
+                                   'business_name'     => 'mahinadra finance',
+                                   'promoter_pan_name' => 'pankaj kumar',
+                               ]);
+    }
+
+    public function cinVerification($test, string $mockStatus, $cinVerificationStatus, array $input): void
+    {
+        Config::set('applications.kyc.cin_authentication', $mockStatus);
+
+        Config::set('applications.kyc.mock', true);
+
+        $this->fixtures->on('live')->edit('merchant_detail', '10000000000000', $input);
+        $this->fixtures->on('test')->edit('merchant_detail', '10000000000000', $input);
+
+        $this->mockRazorX($test, 'registered_onboarding_auto_kyc', 'on', '10000000000000');
+
+        $this->ba->proxyAuth();
+
+        $testData = $this->testData[$test];
+
+        $this->startTest($testData);
+
+        $merchant = $this->getDbEntityById('merchant', 10000000000000);
+
+        $merchantDetail = $merchant->merchantDetail;
+
+        $this->assertEquals($merchantDetail->getCinVerificationStatus(), $cinVerificationStatus);
+    }
+
 }

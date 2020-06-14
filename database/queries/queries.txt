@@ -5777,3 +5777,6 @@ ALTER TABLE payment_links
 ALTER TABLE merchant_banks
     Add COLUMN cred TINYINT(1) NOT NULL DEFAULT 0;
 
+ALTER TABLE merchant_details
+    ADD COLUMN `cin_verification_status` varchar(30) DEFAULT NULL;
+

@@ -4,6 +4,8 @@ namespace RZP\Models\Merchant\AutoKyc\KycService;
 
 use App;
 
+use RZP\Models\Merchant\AutoKyc\KycService\cin\CINProcessor;
+use RZP\Models\Merchant\AutoKyc\KycService\cin\CINProcessorMock;
 use RZP\Models\Merchant\Detail\Constants;
 use RZP\Models\Merchant\AutoKyc\Processor;
 use RZP\Models\Merchant\AutoKyc\ProcessorFactory;
@@ -170,5 +172,31 @@ class ProcessorFactoryImpl implements ProcessorFactory
         }
 
         return new CompanyPanProcessor($input);
+    }
+
+    /** Returns mock or kyc service CIN processor based on mock flag
+     *
+     * @param array $input
+     *
+     * @return null|Processor
+     */
+    public static function getCINProcessor(array $input): ?Processor
+    {
+        $app = App::getFacadeRoot();
+
+        $mock = $app['config']['applications.kyc.mock'];
+
+        if ($mock === true)
+        {
+            $mockStatus = $app['config']['applications.kyc.cin_authentication'] ?? Constants::SUCCESS;
+
+            $CINProcessorMock = new CINProcessorMock($input);
+
+            $CINProcessorMock->setMockStatus($mockStatus);
+
+            return $CINProcessorMock;
+        }
+
+        return new CINProcessor($input);
     }
 }

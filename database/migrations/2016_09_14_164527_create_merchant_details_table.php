@@ -345,6 +345,9 @@ class CreateMerchantDetailsTable extends Migration
             $table->string(MerchantDetail::GSTIN_VERIFICATION_STATUS, 30)
                   ->nullable();
 
+            $table->string(MerchantDetail::CIN_VERIFICATION_STATUS, 30)
+                  ->nullable();
+
             $table->date(MerchantDetail::DATE_OF_ESTABLISHMENT)
                   ->nullable();
 

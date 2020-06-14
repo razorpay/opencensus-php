@@ -1439,6 +1439,7 @@ return [
                 'submitted_at'            => null,
                 'activation_status'       => 'instantly_activated',
                 'poi_verification_status' => 'verified',
+                'cin_verification_status' => null,
                 'business_type'           => "11",
                 'can_submit'              => false,
                 'activated'               => 1,
@@ -2980,6 +2981,21 @@ return [
         ],
         'response'    => [
             'content' => [],
+        ],
+        'status_code' => 200,
+    ],
+
+    'cinVerification' => [
+        'request'     => [
+            'method'  => 'POST',
+            'url'     => '/merchant/verify/cin',
+            'content' => [
+                "company_cin" => "U65999KA2018PTC114468",
+            ],
+        ],
+        'response'    => [
+            'content' => [
+            ],
         ],
         'status_code' => 200,
     ],

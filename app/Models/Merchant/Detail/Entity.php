@@ -100,6 +100,7 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
     const POI_VERIFICATION_STATUS            = 'poi_verification_status';
     const COMPANY_PAN_VERIFICATION_STATUS    = 'company_pan_verification_status';
     const POA_VERIFICATION_STATUS            = 'poa_verification_status';
+    const CIN_VERIFICATION_STATUS            = 'cin_verification_status';
     const CLARIFICATION_MODE                 = 'clarification_mode';
     const ARCHIVED_AT                        = 'archived_at';
     const REVIEWER_ID                        = 'reviewer_id';
@@ -360,6 +361,7 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
         self::GSTIN_VERIFICATION_STATUS,
         self::DATE_OF_ESTABLISHMENT,
         self::COMPANY_PAN_VERIFICATION_STATUS,
+        self::CIN_VERIFICATION_STATUS,
     ];
 
     protected $defaults = [
@@ -742,6 +744,11 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
         return ($this->getPoaVerificationStatus() === PoaVerificationStatus::VERIFIED);
     }
 
+    public function isCinVerified(): bool
+    {
+        return ($this->getCinVerificationStatus() === CinVerificationStatus::VERIFIED);
+    }
+
     public function isPoiVerified() : bool
     {
         return ($this->getPoiVerificationStatus() === POIStatus::VERIFIED);
@@ -785,6 +792,16 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
     public function setCompanyPanVerificationStatus(string $status = null)
     {
         return $this->setAttribute(self::COMPANY_PAN_VERIFICATION_STATUS, $status);
+    }
+
+    public function getCinVerificationStatus()
+    {
+        return $this->getAttribute(self::CIN_VERIFICATION_STATUS);
+    }
+
+    public function setCinVerificationStatus(string $status = null)
+    {
+        return $this->setAttribute(self::CIN_VERIFICATION_STATUS, $status);
     }
 
     public function setActivationProgress($activationProgress)

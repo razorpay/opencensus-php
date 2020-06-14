@@ -106,6 +106,11 @@ class BusinessType
         self::PARTNERSHIP
     ];
 
+    protected static $ValidateCINBusinessType = [
+        self::PRIVATE_LIMITED,
+        self::PUBLIC_LIMITED,
+    ];
+
     public static function isBusinessTypeGreylistedForInternational($businessType = null)
     {
         if (empty($businessType) === true)
@@ -239,5 +244,17 @@ class BusinessType
         $businessTypeName = self::getKeyFromIndex($businessType);
 
         return in_array($businessTypeName, self::$ValidateCompanyPanBusinessType, true);
+    }
+
+    public static function isCinVerificationEnableBusinessTypes($businessType): bool
+    {
+        if (empty($businessType) === true)
+        {
+            return false;
+        }
+
+        $businessTypeName = self::getKeyFromIndex($businessType);
+
+        return in_array($businessTypeName, self::$ValidateCINBusinessType, true);
     }
 }

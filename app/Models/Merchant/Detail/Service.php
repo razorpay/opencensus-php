@@ -1137,4 +1137,18 @@ class Service extends Base\Service
 
         return ['success' => true];
     }
+
+    /**
+     * @param array  $input
+     * @param string $verificationType
+     *
+     * @return array
+     * @throws \Throwable
+     */
+    public function verifyMerchantAttributes(array $input, string $verificationType): array
+    {
+        $merchant = $this->repo->merchant->findOrFailPublic($this->merchant->getMerchantId());
+
+        return (new Core())->verifyMerchantAttributes($merchant, $verificationType, $input);
+    }
 }

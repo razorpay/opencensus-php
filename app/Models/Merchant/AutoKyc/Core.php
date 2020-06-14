@@ -6,6 +6,7 @@ use RZP\Models\Base;
 use RZP\Diag\EventCode;
 use RZP\Error\ErrorCode;
 use RZP\Exception\LogicException;
+use RZP\Models\Merchant\AutoKyc\Verifiers\CinVerifier;
 use RZP\Models\Merchant\AutoKyc\Verifiers\POAVerifier;
 use RZP\Models\Merchant\AutoKyc\Verifiers\POIVerifier;
 use RZP\Models\Merchant\AutoKyc\Verifiers\GSTINVerifier;
@@ -69,6 +70,41 @@ class Core extends Base\Core
         $verificationStatus = $poiVerifier->verify();
 
         (new Events())->sendVerificationEvents(EventCode::KYC_PERSONAL_PAN_VERIFICATION, $response, $poiVerifier->getVerificationData());
+
+        return $verificationStatus;
+    }
+
+    /** Verify company CIN
+     *
+     * @param KycEntity $entity
+     * @param array     $input
+     *
+     * @return string
+     * @throws LogicException
+     */
+    public function verifyCIN(KycEntity $entity, array $input): string
+    {
+        $this->registerKyc($entity);
+
+        $cinInput = [
+            DEConstants::CIN       => $input[DEConstants::CIN],
+            DEConstants::ENTITY_ID => $entity->getEntityId(),
+            DEConstants::KYC_ID    => $entity->getKycId(),
+        ];
+
+        $response = $this->process($cinInput, DEConstants::CIN);
+
+        $dataToVerify = [
+            DEConstants::COMPANY_NAME       => $input[DEConstants::COMPANY_NAME] ?? '',
+            DEConstants::PROMOTER_PAN_NAME  => $input[DEConstants::PROMOTER_PAN_NAME] ?? '',
+            DEConstants::REGISTERED_ADDRESS => $input[DEConstants::REGISTERED_ADDRESS] ?? '',
+        ];
+
+        $cinVerifier = new CinVerifier($dataToVerify, $response);
+
+        $verificationStatus = $cinVerifier->verify();
+
+        (new Events())->sendVerificationEvents(EventCode::KYC_CIN_VERIFICATION, $response, $cinVerifier->getVerificationData());
 
         return $verificationStatus;
     }
@@ -270,6 +306,9 @@ class Core extends Base\Core
             case DEConstants::GSTIN :
 
                 return $kycVerifierFactory::getGSTINProcessor($input);
+
+            case DEConstants::CIN:
+                return $kycVerifierFactory::getCINProcessor($input);
 
             default :
                 throw new LogicException(ErrorCode::UNHANDLED_KYC_PROCESSOR_TYPE, null, [

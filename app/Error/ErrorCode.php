@@ -956,6 +956,7 @@ class ErrorCode
     const BAD_REQUEST_MERCHANT_INVALID                                              = 'BAD_REQUEST_MERCHANT_INVALID';
     const BAD_REQUEST_INVALID_SUBCATEGORY                                           = 'BAD_REQUEST_INVALID_SUBCATEGORY';
     const INVALID_ARGUMENT_INVALID_ACTIVATION_FLOW                                  = 'INVALID_ARGUMENT_INVALID_ACTIVATION_FLOW';
+    const BAD_REQUEST_INVALID_VERIFICATION_TYPE                                     = 'BAD_REQUEST_INVALID_VERIFICATION_TYPE';
     const INVALID_ARGUMENT_INVALID_FILE_HANDLER_SOURCE                              = 'INVALID_ARGUMENT_INVALID_FILE_HANDLER_SOURCE';
     const UNHANDLED_KYC_PROCESSOR_TYPE                                              = 'UNHANDLED_KYC_PROCESSOR_TYPE';
 

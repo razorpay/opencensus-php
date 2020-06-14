@@ -86,4 +86,9 @@ class ProcessorFactoryImpl implements ProcessorFactory
     {
         return null;
     }
+
+    public static function getCINProcessor(array $input): ?Processor
+    {
+        return null;
+    }
 }
