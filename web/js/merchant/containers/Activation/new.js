@@ -246,6 +246,21 @@ export default class ActivationContainer extends React.Component {
       });
   };
 
+  verifyData = payload => {
+    let { type, ...data } = payload;
+    merchantFetch({
+      url: `merchant/verify/${type}`,
+      // For accountId, mode must be respected, otherwise accountId in Headers would be ignored in api.
+      mode: !!this.props.accountId ? this.props.session.mode : 'live',
+      method: 'post',
+      headers: {
+        'content-type': 'application/json',
+      },
+      accountId: this.props.accountId, // accountId for linked_accounts. Axios auto-ignore undefined keys in options
+      data,
+    }).catch(() => {});
+  };
+
   postSubmitStep(response) {
     if (this.props.accountId) {
       this.props.callback && this.props.callback(); // Support for callback for linked_account activation
@@ -433,6 +448,7 @@ export default class ActivationContainer extends React.Component {
           defaultMsg={this.props.defaultMsg}
           handleUIUpdate={this.handleUIUpdate}
           deleteFile={this.deleteFile}
+          verifyData={this.verifyData}
         />
       );
     }

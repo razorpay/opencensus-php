@@ -147,9 +147,15 @@ export function validateCompanyPAN(value) {
 // TODO: Convert to return true/false and make it consumable
 // Use required validator if the field is mandatory. This fn. only check whether value if present is valid or not
 export function validateCIN(value) {
-  return value && value.length != 21
-    ? 'CIN length must be 21 characters'
-    : undefined;
+  if (value) {
+    if (value.length != 21) {
+      return 'CIN length must be 21 characters';
+    } else if (
+      !/^([a-z]{3}-\d{4}|[ul]\d{5}[a-z]{2}\d{4}[a-z]{3}\d{6})$/i.test(value)
+    ) {
+      return 'Please Provide Valid CIN';
+    }
+  }
 }
 
 // TODO: Convert to return true/false and make it consumable

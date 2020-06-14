@@ -624,6 +624,13 @@ export default class ActivationWizard extends React.Component {
 
       this.markTabIfActive(savingWhichTab); // Re-evaluate tab being saved tab.
 
+      //make cin verify call
+      if ('company_cin' in reqData) {
+        this.props.verifyData({
+          type: 'cin',
+          company_cin: reqData.company_cin,
+        });
+      }
       // After updating 'Business type' detail, now update dependent field on FE.
       // Can loop and re-evaluate all tabs, IF more dependent fields are there. But this is for optimization.
       if (DOCUMENT_UPLOAD_STEP && savingWhichTab === BUSINESS_TYPE_FORM_STEP) {
