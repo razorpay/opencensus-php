@@ -623,4 +623,39 @@ class ContactsTest extends TestCase
 
         $this->startTest();
     }
+
+    public function testCreateContactWithIdempotencyKey()
+    {
+        $this->startTest();
+    }
+
+    public function testCreateContactWithDuplicateIdempotencyKey()
+    {
+        $this->testCreateContactWithIdempotencyKey();
+
+        $contact1 = $this->getLastEntity('contact', true);
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+
+        $contact2 = $this->getLastEntity('contact', true);
+
+        $this->assertEquals($contact1['id'], $contact2['id']);
+    }
+
+    public function testFetchContactsById()
+    {
+        $this->fixtures->create('contact', ['id' => '1000001contact', 'email' => 'test@test1.com']);
+        $this->fixtures->create('contact', ['id' => '1000002contact', 'email' => 'random@test.com']);
+
+        $this->startTest();
+    }
+
+    public function testCreateContactWithCustomType()
+    {
+        $this->testAddCustomContactType();
+
+        $this->startTest();
+    }
 }

@@ -1645,6 +1645,60 @@ class RblBankingAccountStatementTest extends TestCase
         return $response;
     }
 
+    protected function getRblDataResponseWithInvalidTransactionType()
+    {
+        $response = [
+            'data' => [
+                'PayGenRes' => [
+                    'Body' => [
+                        'hasMoreData' => 'N',
+                        'transactionDetails' => [
+                            [
+                                'pstdDate' => '2015-12-29T15:58:12.000',
+                                'transactionSummary' => [
+                                    'instrumentId' => '',
+                                    'txnAmt' => [
+                                        'amountValue' => '114.50',
+                                        'currencyCode' => 'INR'
+                                    ],
+                                    'txnDate' => '2015-12-29T00:00:00.000',
+                                    'txnDesc' => 'DEBIT CARD ANNUAL FEE 2635',
+                                    'txnType' => 'B'
+                                ],
+                                'txnBalance' => [
+                                    'currencyCode' => 'INR',
+                                    'amountValue' => '214.50'
+                                ],
+                                'txnCat' => 'TBI',
+                                'txnId' => '  S429655',
+                                'txnSrlNo' => ' 498',
+                                'valueDate' => '2015-12-29T00:00:00.000'
+                            ],
+                        ]
+                    ],
+                    'Header' => [
+                        'Approver_ID' => '',
+                        'Corp_ID' => 'RAZORPAY',
+                        'Error_Cde' => '',
+                        'Error_Desc' => '',
+                        'Status' => 'SUCCESS',
+                        'TranID' => '1'
+                    ],
+                    'Signature' => [
+                        'Signature' => 'Signature'
+                    ]
+                ],
+            ],
+            'error' => null,
+            'external_trace_id' => '',
+            'mozart_id' => 'bjt1l8jc1osqk0jtadrg',
+            'next' => [],
+            'success' => true
+        ];
+
+        return $response;
+    }
+
     protected function getMozartServiceFailureResponse()
     {
         $response = [
@@ -3045,6 +3099,79 @@ class RblBankingAccountStatementTest extends TestCase
         $this->assertArraySelectiveEquals($expectedResponse, $observedResponse);
 
         Carbon::setTestNow();
+    }
+
+    public function testStatementGenerationWithValidChannelAndFormat()
+    {
+        $this->addTestTransactions();
+
+        $currentTime = time();
+
+        $response = $this->startTest(['request' => ['content' => ['to_date' => $currentTime]]]);
+    }
+
+    public function testStatementGenerationWithInvalidChannel()
+    {
+        $this->addTestTransactions();
+
+        $currentTime = time();
+
+        $response = $this->startTest(['request' => ['content' => ['to_date' => $currentTime]]]);
+    }
+
+    public function testStatementGenerationWithInvalidFormat()
+    {
+        $this->addTestTransactions();
+
+        $currentTime = time();
+
+        $response = $this->startTest(['request' => ['content' => ['to_date' => $currentTime]]]);
+    }
+
+    /**
+     * Case where request txn type is invalid
+     */
+    public function testRblAccountStatementWithInvalidTxnType()
+    {
+        $mockedResponse = $this->getRblDataResponseWithInvalidTransactionType();
+
+        $this->setMozartMockResponse($mockedResponse);
+
+        $baBeforeTest = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT, true);
+
+        $this->assertNull($baBeforeTest[BaEntity::LAST_STATEMENT_ATTEMPT_AT]);
+
+        $this->ba->cronAuth();
+
+        $this->startTest();
+
+        $baAfterTest = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT, true);
+
+        $this->assertNotNull($baAfterTest[BaEntity::LAST_STATEMENT_ATTEMPT_AT]);
+    }
+
+    /**
+     * Case where request txn category value is unexpected
+     */
+    public function testRblAccountStatementWithInvalidCategory()
+    {
+        $mockedResponse = $this->getRblDataResponse();
+
+        $mockedResponse['data']['PayGenRes']['Body']['transactionDetails'][0]['txnCat'] = 'CRI';
+
+        $this->setMozartMockResponse($mockedResponse);
+
+        $baBeforeTest = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT, true);
+
+        $this->assertNull($baBeforeTest[BaEntity::LAST_STATEMENT_ATTEMPT_AT]);
+
+        $this->ba->cronAuth();
+
+        $this->startTest();
+
+        $baAfterTest = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT, true);
+
+        $this->assertNotNull($baAfterTest[BaEntity::LAST_STATEMENT_ATTEMPT_AT]);
     }
 
     public function testWebhookEventForRblAccountStatementForSuccessfulMappingToExternalAndPayout()

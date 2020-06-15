@@ -488,6 +488,119 @@ return [
         ],
     ],
 
+    'testStatementGenerationWithValidChannelAndFormat' => [
+        'request' => [
+            'method' => 'POST',
+            'url' => '/banking_account_statement/generate',
+            'content' => [
+                'account_number' => '2224440041626905',
+                'send_email' => '0',
+                'format' => 'xlsx',
+                'to_date' => '',
+                'from_date' => '946684800',
+                'channel' => 'rbl'
+            ]
+        ],
+        'response' => [
+            'content' => ['account_number' => '2224440041626905', 'send_email' => '0', 'format' => 'xlsx', 'from_date' => '946684800', 'channel' => 'rbl']
+        ]
+    ],
+
+    'testStatementGenerationWithInvalidChannel' => [
+        'request' => [
+            'method' => 'POST',
+            'url' => '/banking_account_statement/generate',
+            'content' => [
+                'account_number' => '2224440041626905',
+                'send_email' => '0',
+                'format' => 'xlsx',
+                'to_date' => '',
+                'from_date' => '946684800',
+                'channel' => 'icici'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Not a valid channel: icici',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testStatementGenerationWithInvalidFormat' => [
+        'request' => [
+            'method' => 'POST',
+            'url' => '/banking_account_statement/generate',
+            'content' => [
+                'account_number' => '2224440041626905',
+                'send_email' => '0', 'format' => 'csv',
+                'to_date' => '',
+                'from_date' => '946684800',
+                'channel' => 'rbl'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Not a valid format: csv',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testRblAccountStatementWithInvalidTxnType' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/banking_account_statement/process',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'channel'         => 'rbl',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::SERVER_ERROR,
+                ],
+            ],
+            'status_code' => 500,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\IntegrationException',
+            'internal_error_code' => ErrorCode::SERVER_ERROR_INTEGRATION_ERROR,
+        ],
+    ],
+
+    'testRblAccountStatementWithInvalidCategory' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/banking_account_statement/process',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'channel'         => 'rbl',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'account_number' => '2224440041626905',
+                'channel'        => 'rbl'
+            ],
+        ],
+    ],
+
     'testTransactionCreatedWebhookForSuccessfulMappingToPayout' => [
         'entity'   => 'event',
         'event'    => 'transaction.created',

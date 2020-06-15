@@ -70,7 +70,7 @@ class Repository extends Base\Repository
 
     public function fetchByIdempotentKey(string $idempotentKey,
                                          string $merchantId,
-                                         string $batchId)
+                                         string $batchId = null)
     {
         return $this->newQuery()
                     ->where(Entity::IDEMPOTENCY_KEY, '=', $idempotentKey)
