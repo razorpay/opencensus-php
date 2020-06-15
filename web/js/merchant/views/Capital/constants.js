@@ -387,3 +387,12 @@ export const GENDER_MAP = {
   GENDER_TYPE_FEMALE: 1,
   GENDER_TYPE_OTHER: 2,
 };
+
+export const DOCUMENT_GROUP_NAMES_MAP = {
+  business_registration_pro: 'Business Registration Proof',
+  credit_bureau_report: 'Credit Bureau Report',
+  business_identification_p: 'Business Pan',
+  proof_of_address: 'Proof Of Address',
+  proof_of_identification: 'Owner Pan',
+  income_proof: 'Bank Account Statement',
+};

@@ -4,6 +4,7 @@ import Form from 'common/new-ui/Form';
 import * as PropTypes from 'prop-types';
 import FileUpload from 'merchant/components/File/Upload';
 import ToggleWithDescription from '../components/ToggleWithDescription';
+import { DOCUMENT_GROUP_NAMES_MAP } from '../constants';
 
 class DocumentsUpload extends React.Component {
   render() {
@@ -22,7 +23,10 @@ class DocumentsUpload extends React.Component {
         {documents.map(document => (
           <Input.Group
             key={document.document_group.id}
-            label={document.document_group.name}
+            label={
+              DOCUMENT_GROUP_NAMES_MAP[document.document_group.name] ||
+              document.document_group.name
+            }
             className="InputGroup--inline"
             required
           >

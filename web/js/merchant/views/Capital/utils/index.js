@@ -5,11 +5,12 @@ export const getDisbursalAmount = (
   processingFeePercentage,
   taxPercentage
 ) => {
-  return (
-    (parseInt(creditOffered) / 100) *
-    (1 - (processingFeePercentage / 100) * (taxPercentage / 100)) *
-    100
+  const processingFee = calculatePercentageAmount(
+    processingFeePercentage,
+    creditOffered
   );
+  const taxAmount = calculatePercentageAmount(taxPercentage, processingFee);
+  return creditOffered - processingFee - taxAmount;
 };
 
 export const isPreceedingState = (state1, state2) => {

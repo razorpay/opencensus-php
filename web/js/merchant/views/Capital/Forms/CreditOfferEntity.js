@@ -27,7 +27,6 @@ import { APPLICATION_STATES } from '../constants';
 )
 class CreditOfferEntity extends Component {
   handleAcceptance = creditOfferId => {
-    console.log(creditOfferId, this.props.loanApplicationDetails.meta);
     const data = {
       id: creditOfferId,
       application_id: this.props.loanApplicationDetails.meta.data.application
@@ -52,6 +51,12 @@ class CreditOfferEntity extends Component {
     });
   };
 
+  handleBack = () => {
+    this.props.changeActiveState(
+      APPLICATION_STATES.PREVERIFICATION_IN_PROGRESS
+    );
+  };
+
   render() {
     const {
       credit_offer_details,
@@ -68,7 +73,6 @@ class CreditOfferEntity extends Component {
       credit_offer_details.data.credit_offers[
         credit_offer_details.data.credit_offers.length - 1
       ];
-    console.log(creditOffer);
 
     return (
       <div class={'credit-offer-container'}>
@@ -80,16 +84,10 @@ class CreditOfferEntity extends Component {
             accepted_offer_details.data.credit_offer_id
           ) ? (
             <div className="loan-offer-action">
-              <div className="help-text">
-                <span className="callback-text">Need help! Arrange a</span>
-                <a
-                  className="text-primary"
-                  target="_blank"
-                  href="https://razorpay.com/terms/"
-                >
-                  Callback
-                </a>
-              </div>
+              <Button.Transparent onClick={this.handleBack}>
+                <i className="i i-chevron-left" />
+                Back
+              </Button.Transparent>
               <AsyncBtn.Primary
                 type="submit"
                 class="btn btn-primary pull-right no-margin"
@@ -101,17 +99,10 @@ class CreditOfferEntity extends Component {
             </div>
           ) : (
             <div className="loan-offer-action">
-              <button
-                class="btn btn-link"
-                onClick={() =>
-                  this.props.changeActiveState(
-                    APPLICATION_STATES.PREVERIFICATION_IN_PROGRESS
-                  )
-                }
-              >
+              <Button.Transparent onClick={this.handleBack}>
                 <i className="i i-chevron-left" />
                 Back
-              </button>
+              </Button.Transparent>
               <AsyncBtn.Primary
                 type="submit"
                 class="no-margin"

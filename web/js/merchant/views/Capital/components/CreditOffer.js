@@ -68,7 +68,13 @@ const CreditOffer = ({
           <p className="loan-offer-detail-title">Taxes(Including GST)</p>
           <p className="loan-offer-value">
             <Amount
-              value={calculatePercentageAmount(tax_percentage, credit_offered)}
+              value={calculatePercentageAmount(
+                tax_percentage,
+                calculatePercentageAmount(
+                  processing_fee_percentage,
+                  credit_offered
+                )
+              )}
             />
           </p>
         </div>
@@ -102,14 +108,7 @@ const CreditOffer = ({
           <div className="section loan-offer-summary-section">
             <div className="loan-offer-summary-wrapper">
               <p className="loan-offer-summary-title">Rate of Interest</p>
-              <p className="loan-offer-value">
-                <Amount
-                  value={calculatePercentageAmount(
-                    interest_rate,
-                    credit_offered
-                  )}
-                />
-              </p>
+              <p className="loan-offer-value">{interest_rate}%</p>
             </div>
             <vr />
             <div className="loan-offer-summary-wrapper">
