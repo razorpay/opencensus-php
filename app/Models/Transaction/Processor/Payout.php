@@ -215,6 +215,7 @@ class Payout extends Base
                     'txn_fees'      => $this->txn->getFee(),
                     'payout_amount' => $this->source->getAmount(),
                     'debit_amount'  => $debitAmount,
+                    'balance_amount'=> $this->merchantBalance->getBalance()
                 ]);
         }
     }
