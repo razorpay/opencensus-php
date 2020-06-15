@@ -355,7 +355,18 @@ return array(
                     'persistent' => true,
                 ]
             ],
+
+            'throttle' => [
+                [
+                    'host'               => env('THROTTLE_REDIS_HOST'),
+                    'port'               => env('THROTTLE_REDIS_PORT'),
+                    'timeout'            => 1,
+                    'read_write_timeout' => 1,
+                    'persistent'         => true,
+                ]
+            ],
         ],
+
     ],
 
     /*

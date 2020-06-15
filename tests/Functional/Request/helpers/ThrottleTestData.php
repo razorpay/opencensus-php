@@ -294,6 +294,15 @@ return [
         ],
     ],
 
+    'testMigrateThrottleKeysFromRedisLabs' => [
+        'request' => [
+            'method'  => 'post',
+            'url'     => '/throttle/throttle_migrate_redis',
+            'content' => [
+            ],
+        ],
+    ],
+
 
     'testThrottleConfigCreateMerchant2' => [
         'request' => [

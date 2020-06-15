@@ -77,6 +77,13 @@ class ThrottleTest extends TestCase
         $this->startTest();
     }
 
+    public function testMigrateThrottleKeysFromRedisLabs()
+    {
+        $this->ba->adminAuth();
+
+        $this->makeRequestAndGetContent($this->testData['testMigrateThrottleKeysFromRedisLabs']['request']);
+    }
+
     public function testGetOrderWhenBlockedForTestMerchant()
     {
         // Case 1: Blocks GET /invoice route for test mid, so GET /orders should pass

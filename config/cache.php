@@ -65,6 +65,11 @@ return [
             'connection' => 'default',
         ],
 
+        'throttle' => [
+            'driver' => 'redis',
+            'connection' => 'throttle',
+        ],
+
         'secure_redis' => [
             'driver' => 'redis',
             'connection' => 'secure'

@@ -56,8 +56,11 @@ services:
       REDIS_LABS_HOST: api_cache
       QUERY_CACHE_REDIS_HOST: api-redis-cluster
       QUERY_CACHE_REDIS_PORT: 7000
-      MUTEX_REDIS_HOST: api_cache
+      MUTEX_REDIS_HOST: api-redis-cluster
+      MUTEX_REDIS_PORT: 7000
       SECURE_REDIS_HOST: api_cache
+      THROTTLE_REDIS_HOST: api-redis-cluster
+      THROTTLE_REDIS_PORT: 7000
       QUEUE_REDIS_HOST: api_cache
       CACHE_DRIVER: redis
       SECURE_CACHE_DRIVER: redis

@@ -58,6 +58,8 @@ pipeline:
       - MUTEX_REDIS_PORT=6379
       - ES_HOST=elasticsearch
       - ES_AUDIT_HOST=elasticsearch
+      - THROTTLE_REDIS_HOST=redis
+      - THROTTLE_REDIS_PORT=6379
     when:
       event:
         include:
@@ -87,6 +89,8 @@ pipeline:
       - MUTEX_REDIS_PORT=6379
       - ES_HOST=elasticsearch
       - ES_AUDIT_HOST=elasticsearch
+      - THROTTLE_REDIS_HOST=redis2
+      - THROTTLE_REDIS_PORT=6379
       - ES_ENTITY_INDEX_PREFIX=testing_features_1_
       - ES_ENTITY_TYPE_PREFIX=testing_features_1_
     when:
@@ -119,6 +123,8 @@ pipeline:
       - MUTEX_REDIS_PORT=6379
       - ES_HOST=elasticsearch
       - ES_AUDIT_HOST=elasticsearch
+      - THROTTLE_REDIS_HOST=redis3
+      - THROTTLE_REDIS_PORT=6379
       - ES_ENTITY_INDEX_PREFIX=testing_features_2_
       - ES_ENTITY_TYPE_PREFIX=testing_features_2_
     when:
@@ -151,6 +157,8 @@ pipeline:
       - MUTEX_REDIS_PORT=6379
       - ES_HOST=elasticsearch
       - ES_AUDIT_HOST=elasticsearch
+      - THROTTLE_REDIS_HOST=redis4
+      - THROTTLE_REDIS_PORT=6379
       - ES_ENTITY_INDEX_PREFIX=testing_features_3_
       - ES_ENTITY_TYPE_PREFIX=testing_features_3_
     when:
@@ -182,6 +190,8 @@ pipeline:
       - MUTEX_REDIS_PORT=6379
       - ES_HOST=elasticsearch
       - ES_AUDIT_HOST=elasticsearch
+      - THROTTLE_REDIS_HOST=redis5
+      - THROTTLE_REDIS_PORT=6379
       - ES_ENTITY_INDEX_PREFIX=testing_features_4_
       - ES_ENTITY_TYPE_PREFIX=testing_features_4_
     when:
@@ -221,6 +231,8 @@ pipeline:
     - QUERY_CACHE_REDIS_PORT=6379
     - MUTEX_REDIS_HOST=redis6
     - MUTEX_REDIS_PORT=6379
+    - THROTTLE_REDIS_HOST=redis6
+    - THROTTLE_REDIS_PORT=6379
     when:
       event:
         include:
@@ -253,6 +265,8 @@ pipeline:
     - QUERY_CACHE_REDIS_PORT=6379
     - MUTEX_REDIS_HOST=redis7
     - MUTEX_REDIS_PORT=6379
+    - THROTTLE_REDIS_HOST=redis7
+    - THROTTLE_REDIS_PORT=6379
     when:
       event:
         include:
@@ -285,6 +299,8 @@ pipeline:
     - QUERY_CACHE_REDIS_PORT=6379
     - MUTEX_REDIS_HOST=redis8
     - MUTEX_REDIS_PORT=6379
+    - THROTTLE_REDIS_HOST=redis8
+    - THROTTLE_REDIS_PORT=6379
     when:
       event:
         include:
@@ -318,6 +334,8 @@ pipeline:
     - QUERY_CACHE_REDIS_PORT=6379
     - MUTEX_REDIS_HOST=redis9
     - MUTEX_REDIS_PORT=6379
+    - THROTTLE_REDIS_HOST=redis9
+    - THROTTLE_REDIS_PORT=6379
     when:
       event:
         include:
@@ -350,6 +368,8 @@ pipeline:
     - QUERY_CACHE_REDIS_PORT=6379
     - MUTEX_REDIS_HOST=redis10
     - MUTEX_REDIS_PORT=6379
+    - THROTTLE_REDIS_HOST=redis10
+    - THROTTLE_REDIS_PORT=6379
     when:
       event:
         include:

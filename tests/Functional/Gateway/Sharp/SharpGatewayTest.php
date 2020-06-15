@@ -866,6 +866,8 @@ class SharpGatewayTest extends TestCase
 
         $store = Cache::store();
 
+        Cache::shouldReceive('store')->andReturn($store);
+
         Cache::shouldReceive('driver')
             ->andReturnUsing(function() use ($store)
             {
