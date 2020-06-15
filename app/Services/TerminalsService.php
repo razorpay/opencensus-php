@@ -5,6 +5,7 @@ namespace RZP\Services;
 
 use RZP\Exception;
 use RZP\Error\ErrorCode;
+use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Trace\TraceCode;
 use RZP\Models\Terminal;
 use RZP\Models\Merchant;
@@ -189,6 +190,15 @@ class TerminalsService
         return $this->parseAndReturnResponse($response)[self::DATA] ?? [];
     }
 
+    public function proxyTerminalService($input, $method, $path) : array
+    {
+        $params = self::PARAMS[self::ADD_MERCHANT_TO_TERMINAL];
+
+        $response = $this->sendRequest($params[self::PATH], json_encode($input), $method);
+
+        return $this->parseAndReturnResponse($response)[self::DATA] ?? [];
+    }
+
     public function removeMerchantFromTerminal(Terminal\Entity $terminal, Merchant\Entity $merchant) : array
     {
         $params = self::PARAMS[self::REMOVE_MERCHANT_FROM_TERMINAL];
@@ -246,7 +256,7 @@ class TerminalsService
         $path = sprintf($params[self::PATH], $merchantId, $gateway);
 
         $response = $this->sendRequest($path, '', $params[self::METHOD]);
-        
+
         return $this->parseAndReturnResponse($response)[self::DATA] ?? [];
     }
 
@@ -288,6 +298,10 @@ class TerminalsService
         if (isset($content[Terminal\Entity::TERMINAL_ID]) === true)
         {
             $data[Terminal\Entity::TERMINAL_ID] = $content[Terminal\Entity::TERMINAL_ID];
+        }
+        if (isset($content[Terminal\Entity::MERCHANT_ID]) === true)
+        {
+            $data[Terminal\Entity::MERCHANT_ID] = $content[Terminal\Entity::MERCHANT_ID];
         }
 
         try

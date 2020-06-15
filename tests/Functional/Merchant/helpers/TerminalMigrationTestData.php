@@ -412,6 +412,41 @@ return [
         ],
     ],
 
+    'testTerminalServiceProxyDeleteTerminalSubmerchant' => [
+        'request' => [
+            'method'  => 'DELETE',
+            'url'     => '/terminals/proxy/terminal/submerchant',
+            'content' => [
+                'terminal_id' => '10000000000000',
+                'merchant_id'  => '10000000000000',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'data' => null
+            ],
+        ],
+    ],
+
+    'testTerminalServiceProxyCreateTerminalSubmerchant' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/terminals/proxy/terminal/submerchant',
+            'content' => [
+                'terminal_id' => '1000000000000t',
+                'merchant_id' => '1000000000000m',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'data' => [
+                    'id'            => '1000000000000t',
+                    'submerchants'  => ['1000000000000m'],
+                ]
+            ],
+        ],
+    ],
+
     'test4xxException' => [
         'request' => [
             'method'  => 'POST',

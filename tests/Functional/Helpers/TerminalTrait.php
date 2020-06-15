@@ -91,6 +91,34 @@ trait TerminalTrait
         return $response;
     }
 
+    protected function getProxyDeleteTerminalSubmerchantTerminalServiceResponse() : \Requests_Response
+    {
+
+        $data = ["data" => null];
+
+        $response =  new \Requests_Response;
+
+        $responseData = ['data' => $data];
+
+        $response->body = json_encode($responseData);
+
+        return $response;
+    }
+
+    protected function getProxyCreateTerminalSubmerchantTerminalServiceResponse() : \Requests_Response
+    {
+
+        $data = ["data" => ["id" => '1000000000000t', "submerchants" => ['1000000000000m']]];
+
+        $response =  new \Requests_Response;
+
+        $responseData = ['data' => $data];
+
+        $response->body = json_encode($responseData);
+
+        return $response;
+    }
+
     protected function getTerminalToArrayPassword($terminalId)
     {
         Terminal\Entity::verifyIdAndSilentlyStripSign($terminalId);

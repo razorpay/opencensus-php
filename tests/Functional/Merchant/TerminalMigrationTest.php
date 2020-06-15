@@ -113,7 +113,7 @@ class TerminalMigrationTest extends TestCase
 
         $format= '
        {
-  "data": 
+  "data":
     [
       {
         "merchant_id": "%s",
@@ -1733,6 +1733,28 @@ class TerminalMigrationTest extends TestCase
 
         $this->startTest();
 
+    }
+
+    public function testTerminalServiceProxyDeleteTerminalSubmerchant()
+    {
+        $this->ba->cronAuth();
+
+        $this->mockTerminalsServiceSendRequest(function() {
+            return $this->getProxyDeleteTerminalSubmerchantTerminalServiceResponse();
+        }, 1);
+
+        $this->startTest();
+    }
+
+    public function testTerminalServiceProxyCreateTerminalSubmerchant()
+    {
+        $this->ba->cronAuth();
+
+        $this->mockTerminalsServiceSendRequest(function() {
+            return $this->getProxyCreateTerminalSubmerchantTerminalServiceResponse();
+        }, 1);
+
+        $this->startTest();
     }
 
     // below two tests assert right exceptions are raised when call to

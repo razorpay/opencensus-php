@@ -114,6 +114,21 @@ class TerminalController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function proxyV1TerminalService()
+    {
+        $input = Request::all();
+
+        $method = Request::method();
+
+        $path = Request::path();
+
+        $path = str_replace("v1/terminals/proxy","v1", $path);
+
+        $response = $this->app['terminals_service']->proxyTerminalService($input, $method, $path);
+
+        return ApiResponse::json($response);
+    }
+
     public function updateTerminalsBulk()
     {
         $input = Request::all();

@@ -317,6 +317,8 @@ class Route
         'terminal_migrate_cron'                    => ['post',     'terminals/migrate_cron',                         'TerminalController@postTerminalsMigrateCron'                       ],
         'terminal_create_bulk'                     => ['post',     'terminals/bulk',                                 'TerminalController@postTerminalsBulk'                              ],
         'terminal_service_sync_delete'             => ['post',     'terminals/sync/deleted',                         'TerminalController@syncDeletedTerminalsOnTerminalService'          ],
+        'terminals_proxy_delete_submerchant'       => ['delete',   'terminals/proxy/terminal/submerchant',           'TerminalController@proxyV1TerminalService'                           ],
+        'terminals_proxy_create_submerchant'       => ['post',     'terminals/proxy/terminal/submerchant',           'TerminalController@proxyV1TerminalService'                           ],
         'terminal_enable'                          => ['put',      'terminals/{id}/enable',                          'TerminalOnboardingController@putTerminalEnable'                    ],
         'terminal_disable'                         => ['put',      'terminals/{id}/disable',                         'TerminalOnboardingController@putTerminalDisable'                   ],
         'terminal_fetch'                           => ['get',      'terminals',                                      'TerminalOnboardingController@fetchTerminals'                       ],
@@ -2338,6 +2340,8 @@ class Route
         'terminal_fetch_by_id_internal',
         'terminal_migrate_cron',
         'terminal_service_sync_delete',
+        'terminals_proxy_delete_submerchant',
+        'terminals_proxy_create_submerchant',
         'virtual_account_batch_migrate_yesbank',
         'create_settlement_entry',
         'get_global_config',
@@ -4531,6 +4535,8 @@ class Route
             'fts_bulk_attempts_initiate',
             'merchants_update_onboarding_category_to_normal_cron',
             'tokens_upi_vpa_bulk_cron',
+            'terminals_proxy_delete_submerchant',
+            'terminals_proxy_create_submerchant',
         ],
 
         'subscriptions' => [
