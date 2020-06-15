@@ -1030,7 +1030,7 @@ class Service extends Base\Service
             'rx_creation_flows_v2',
             'rx_vp_announcement',
             'rx_scheduled_payouts_rollout',
-            'rx_webhook_seperation_announcement',
+            'rx_webhook_separation_announcement',
         ];
 
         $experimentsResults = $merchantService->getBulkTreatment($features);
