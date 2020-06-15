@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Payment\Processor;
 
+use RZP\Constants\Shield;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Payment;
@@ -139,6 +140,10 @@ trait FraudDetector
 
         $riskData = $this->app['shield.service']->getRiskAssessment($payment);
 
+        $triggeredRules = $riskData[Shield::TRIGGERED_RULES] ?? [];
+
+        unset($riskData[Shield::TRIGGERED_RULES]);
+
         if (is_null($riskData['risk_score']) === false)
         {
             $riskFields = [
@@ -176,7 +181,7 @@ trait FraudDetector
                     'risk_data'  => $riskData,
                 ];
 
-                $errorCode = ErrorCode::BAD_REQUEST_PAYMENT_POSSIBLE_FRAUD;
+                $errorCode = $this->getErrorCodeFromTriggeredRules($triggeredRules);
 
                 $e = new Exception\BadRequestException($errorCode, null, $data);
 
@@ -190,5 +195,32 @@ trait FraudDetector
     protected function getRiskEngineVersionVariant(Merchant\Entity $merchant)
     {
         return $this->app->razorx->getTreatment($merchant->getId(), self::SECURE_3D_INTERNATIONAL, $this->mode);
+    }
+
+    protected function getErrorCodeFromTriggeredRules(array $triggeredRules) : string
+    {
+        if ($this->isFraudDueToWebsiteMismatch($triggeredRules) === true)
+        {
+            return ErrorCode::BAD_REQUEST_PAYMENT_POSSIBLE_FRAUD_WEBSITE_MISMATCH;
+        }
+        return ErrorCode::BAD_REQUEST_PAYMENT_POSSIBLE_FRAUD;
+    }
+
+    private function isFraudDueToWebsiteMismatch(array $triggeredRules) : bool
+    {
+        if (isset($triggeredRules[Shield::ACTION_BLOCK]) === false)
+        {
+            return false;
+        }
+
+        foreach ($triggeredRules[Shield::ACTION_BLOCK] as $blockRule)
+        {
+            // https://razorpay.slack.com/archives/C9AKQB8BH/p1591871493389700
+            if ($blockRule[Shield::RULE_ID] === 'rule_F1fgTZ9p7tj2es')
+            {
+                return true;
+            }
+        }
+        return false;
     }
 }

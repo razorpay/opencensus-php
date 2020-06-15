@@ -218,6 +218,60 @@ class FraudDetectionTest extends TestCase
         );
     }
 
+    public function testFraudDetectedByShieldWebsiteMismatch()
+    {
+        $this->mockRazorx();
+
+        $this->fixtures->create('merchant_detail', ['merchant_id' => '10000000000000']);
+
+        $shieldClient = Mockery::mock('RZP\Services\Mock\ShieldClient')->makePartial();
+
+        $shieldClient->shouldReceive('evaluateRules')
+            ->andReturnUsing(function ($payload) {
+                return [
+                        "action"                => 'block',
+                        "max_rule_weight"       => 0,
+                        "maxmind_score"         => null,
+                        "triggered_rule_weight" => 0,
+                        "triggered_rules"       => [
+                            "block"   => [
+                                [
+                                    "rule_id"     => 'rule_F1fgTZ9p7tj2es',
+                                    "rule_code"   => "Payment blocked as website does not match registered website(s)"
+                                ],
+                            ],
+                        ],
+                    ];
+                });
+
+        $this->app->instance('shield', $shieldClient);
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['card']['number'] = '4012010000000007';
+
+        $data = $this->testData[__FUNCTION__];
+
+
+        $response = $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+
+        $this->assertEquals("Payment blocked as website does not match registered website(s)", $response['error']['description']);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $riskEntity = $this->getLastEntity('risk', true);
+
+        $this->assertEquals($payment['id'], $riskEntity['payment_id']);
+
+        $this->assertEquals(
+            Risk\RiskCode::PAYMENT_CONFIRMED_FRAUD_BY_SHIELD,
+            $riskEntity['reason']
+        );
+    }
+
     public function testFraudNotDetectedByShield()
     {
         $this->mockShield();
