@@ -43,7 +43,7 @@ export default class Staged extends React.Component {
     }
 
     const progress = -70 + 70 * PercProgress; // At t0, translateX = -100%. At t1 of start, we start from translateX = -70%;
-    duration = Math.abs(progress) * 5 / 100; // 100% translate in 5s and rest in proportions
+    duration = (Math.abs(progress) * 5) / 100; // 100% translate in 5s and rest in proportions
 
     this.lastPercProgress = PercProgress;
 
@@ -72,7 +72,7 @@ export default class Staged extends React.Component {
         {!isDocPreUploaded && (
           <img
             class="Dropzone-file-icon"
-            src={`img/files/file-type-${getFileTypeIcon(
+            src={`/dist/css/assets/files/file-type-${getFileTypeIcon(
               file ? file.name : ''
             )}.svg`}
             alt=""

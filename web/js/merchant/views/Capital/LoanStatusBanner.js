@@ -39,15 +39,15 @@ const getStateBanner = (loanApplicationDetails, ref, changeActiveState) => {
           title="Congratulations"
           description={
             <span>
-              Based on your credit history, you are eligible for a loan.
-              <a
-                class="link"
+              Based on your credit history, you are eligible for a loan. &nbsp;
+              <Button.Transparent
+                class="no-margin"
                 onClick={() =>
                   changeActiveState(APPLICATION_STATES.CREDIT_PULL_PENDING)
                 }
               >
                 View Credit Report
-              </a>
+              </Button.Transparent>
             </span>
           }
           type="success"

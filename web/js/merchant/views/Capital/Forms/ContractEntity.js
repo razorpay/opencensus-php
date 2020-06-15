@@ -159,16 +159,6 @@ class ContractEntity extends Component {
                     </React.Fragment>
                   )}
                 </a>
-                {this.state.error && (
-                  <div className="panel-body no-padding m-t">
-                    <div>
-                      <p className="text--secondary">
-                        capital.support@razorpay.com
-                      </p>
-                      <span className="text-faded">Reach out to us at</span>
-                    </div>
-                  </div>
-                )}
               </div>
               <div class="actions pull-right m-t">
                 <button

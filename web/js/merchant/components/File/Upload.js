@@ -284,7 +284,7 @@ export default class FileUpload extends React.Component {
                 <React.Fragment>
                   <img
                     class="Dropzone-file-icon"
-                    src={'img/files/file-placeholder.svg'}
+                    src={'/dist/css/assets/files/file-placeholder.svg'}
                     alt=""
                   />
                   <div class="Dropzone-content-desc">

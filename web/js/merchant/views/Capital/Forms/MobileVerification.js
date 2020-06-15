@@ -8,7 +8,6 @@ import {
   saveD2cReportDetails,
   submitOtp,
 } from 'merchant/reducers/capital';
-import { mockCreateBureauDetails } from 'common/utils/los-mocks';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
 import { FormLoader } from '../components/FormSectionLoadingSkeleton';
 
@@ -44,30 +43,6 @@ class MobileVerification extends Component {
   componentDidMount() {
     this.sendReqForOtp();
   }
-
-  createBureauDetail = () => {
-    const { meta, promoter_details } = this.props.loanApplicationDetails;
-
-    const { applicant } = promoter_details.data;
-    const payload = {
-      application_id: meta.data.application.id,
-      applicant_id: applicant.id,
-      d2c_bureau_detail: {
-        first_name: applicant.kyc.first_name,
-        last_name: applicant.kyc.second_name,
-        date_of_birth: applicant.kyc.date_of_birth,
-        contact_mobile: applicant.phones[0].phone_number,
-        email: applicant.emails[0].email_id,
-        address: applicant.addresses[0].address_line1,
-        city: applicant.addresses[0].city,
-        state: applicant.addresses[0].state,
-        pincode: applicant.addresses[0].pincode,
-        pan: applicant.kyc.pan_number,
-      },
-    };
-
-    return mockCreateBureauDetails(payload);
-  };
 
   sendReqForOtp = async () => {
     this.setState({
