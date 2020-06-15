@@ -53,6 +53,10 @@ class RequestHandler
      */
     private $tracer;
 
+
+    //added now
+    private $propagator;    
+
     /**
      * @var Span The primary span for this request
      */
@@ -90,6 +94,7 @@ class RequestHandler
         array $options = []
     ) {
         $this->exporter = $exporter;
+        $this->propagator = $propagator;
         $this->headers = new ArrayHeaders($options['headers'] ?? $_SERVER);
 
         $spanContext = $propagator->extract($this->headers);
@@ -151,6 +156,18 @@ class RequestHandler
     {
         return $this->tracer;
     }
+
+
+    /**
+     * Return the propagator used for this request.
+     *
+     * @return PropagatorInterface
+     */
+    // public function propagator(): PropagatorInterface
+    // {
+    //     return $this->propagator;
+    // }
+
 
     /**
      * Instrument a callable by creating a Span that manages the startTime
@@ -316,5 +333,10 @@ class RequestHandler
             }
         }
         return null;
+    }
+
+    public function inject(SpanContext $context, array $headers)
+    {
+        $this->propagator->inject($context, new ArrayHeaders($headers));
     }
 }

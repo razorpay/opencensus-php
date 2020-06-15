@@ -301,4 +301,15 @@ class Tracer
     {
         return isset(self::$instance) ? self::$instance->tracer()->spanContext() : new SpanContext(null, null, false);
     }
+
+    public static function injectContext(array $headers)
+    {
+        error_log('coming here in inject');
+
+        $context = self::spanContext();
+        if (isset(self::$instance))
+        {
+            self::$instance->inject($context, $headers);
+        }
+    }
 }
