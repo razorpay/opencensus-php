@@ -23,6 +23,7 @@ use OpenCensus\Trace\Sampler\SamplerInterface;
 use OpenCensus\Trace\Exporter\ExporterInterface;
 use OpenCensus\Trace\Propagator\PropagatorInterface;
 use OpenCensus\Trace\Propagator\HttpHeaderPropagator;
+use OpenCensus\Trace\Propagator\ArrayHeaders;
 
 /**
  * This class provides static functions to give you access to the current
@@ -302,11 +303,10 @@ class Tracer
         return isset(self::$instance) ? self::$instance->tracer()->spanContext() : new SpanContext(null, null, false);
     }
 
-    public static function injectContext(array $headers)
+    public static function injectContext(ArrayHeaders $headers)
     {
-        error_log('coming here in inject');
-
         $context = self::spanContext();
+
         if (isset(self::$instance))
         {
             self::$instance->inject($context, $headers);

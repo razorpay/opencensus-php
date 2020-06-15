@@ -63,11 +63,13 @@ class JaegerPropagator implements PropagatorInterface
         $extract_header = 'HTTP_' . strtoupper(str_replace('-', '_', $this->header));
 
         $data = $headers->get($extract_header);
+
         if (!$data) {
             return new SpanContext();
         }
 
         $n = sscanf($data, self::CONTEXT_HEADER_FORMAT, $traceId, $spanId, $parentSpanId, $flags);
+
         if ($n == 0){
             return new SpanContext();
         }
@@ -76,7 +78,6 @@ class JaegerPropagator implements PropagatorInterface
 
         $fromHeader = true;
 
-        // @@FIXME: Opencensus spanContext doesn't have parent_span_id. figure out what to do
         return new SpanContext($traceId, $spanId, $enabled, $fromHeader);
     }
 
@@ -84,10 +85,11 @@ class JaegerPropagator implements PropagatorInterface
     {
         $traceId = $context->traceId();
         $spanId = $context->spanId();
-        $parentID = ''; // @@@FIXME
+        $parentID = ''; // this is deprecated anyway
         $enabled = $context->enabled();
 
         $value = sprintf(self::CONTEXT_HEADER_FORMAT, $traceId, $spanId, $parentID, $enabled);
+
         if (!headers_sent()) {
             header("$this->header: $value");
         }

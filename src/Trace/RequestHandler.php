@@ -106,6 +106,9 @@ class RequestHandler
 
         // If the request was provided with a trace context header, we need to send it back with the response
         // including whether the request was sampled or not.
+
+        /* check if spanContext is fromHeader, only if it's not-null(could be first hop) */
+        // if (is_null($spanContext->spanId()) or $spanContext->fromHeader()) {
         if ($spanContext->fromHeader()) {
             $propagator->inject($spanContext, $this->headers);
         }
@@ -127,6 +130,8 @@ class RequestHandler
         ];
         $this->rootSpan = $this->tracer->startSpan($spanOptions);
         $this->scope = $this->tracer->withSpan($this->rootSpan);
+
+        // $propagator->inject($this->tracer->spanContext(), $this->headers);
 
         if (!array_key_exists('skipReporting', $options) || !$options['skipReporting']) {
             register_shutdown_function([$this, 'onExit']);
@@ -285,7 +290,13 @@ class RequestHandler
             $this->tracer->addAttribute(Span::ATTRIBUTE_STATUS_CODE, $responseCode, [
                 'spanId' => $this->rootSpan->spanId()
             ]);
+            if ($responseCode >= 400) {
+                $this->tracer->addAttribute('error', 'true', [
+                    'spanId' => $this->rootSpan->spanId()
+                ]);
+            }
         }
+
         foreach (self::ATTRIBUTE_MAP as $attributeKey => $headerKeys) {
             if ($val = $this->detectKey($headerKeys, $headers)) {
                 $this->tracer->addAttribute($attributeKey, $val, [
@@ -335,8 +346,8 @@ class RequestHandler
         return null;
     }
 
-    public function inject(SpanContext $context, array $headers)
+    public function inject(SpanContext $context, ArrayHeaders $headers)
     {
-        $this->propagator->inject($context, new ArrayHeaders($headers));
+        $this->propagator->inject($context, $headers);
     }
 }
