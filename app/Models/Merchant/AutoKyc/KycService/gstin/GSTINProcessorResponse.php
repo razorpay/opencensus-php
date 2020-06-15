@@ -17,6 +17,7 @@ class GSTINProcessorResponse extends BaseResponse
 
         $extractedData = [
             Constants::LEGAL_NAME    => $detail['legal_name'] ?? null,
+            Constants::TRADE_NAME    => $detail['trade_name'] ?? null,
             Constants::MEMBERS       => $this->getMembers($detail['signatory_names'] ?? ''),
             Constants::ADDRESS       => $detail['address'] ?? null,
             Constants::SUCCESS       => $this->isSuccessResponse(),

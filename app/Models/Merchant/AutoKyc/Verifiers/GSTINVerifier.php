@@ -10,6 +10,8 @@ class GSTINVerifier implements Verifier
 {
     use DefaultVerifier;
 
+    use DefaultMatcher;
+
     protected $dataToVerify;
 
     public function __construct(array $dataToVerify, array $data)
@@ -21,7 +23,7 @@ class GSTINVerifier implements Verifier
 
     protected function isCorrectDetails(): bool
     {
-        return (empty($this->data[Constants::LEGAL_NAME] ?? '') === false);
+        return (empty($this->data[Constants::LEGAL_NAME]) === false);
     }
 
     protected function isDetailsMatch(): bool
@@ -36,51 +38,50 @@ class GSTINVerifier implements Verifier
 
     private function isBusinessNameMatch(): bool
     {
-        $matchType = FuzzyMatcher::TOKEN_OR_TOKEN_SET_MATCH;
+        return (($this->isTradeNameMatch() === true) or
+                ($this->isLegalNameMatch() === true));
+    }
 
+    private function isLegalNameMatch(): bool
+    {
         $legalName = $this->data[Constants::LEGAL_NAME] ?? '';
 
-        $gstinFuzzyMatcher = new FuzzyMatcher(GSTINVerificationStatus::GSTIN_VERIFICATION_BUSINESS_NAME_THRESHOLD, $matchType);
+        $promoterPanName = $this->dataToVerify[Constants::PROMOTER_PAN_NAME] ?? '';
 
-        $isMatch = $gstinFuzzyMatcher->isMatch($this->dataToVerify[Constants::COMPANY_NAME], $legalName, $matchPercentage);
+        return $this->isMatch($legalName,
+                              $promoterPanName,
+                              Constants::PROMOTER_PAN_NAME,
+                              GSTINVerificationStatus::GSTIN_VERIFICATION_BUSINESS_NAME_THRESHOLD,
+                              FuzzyMatcher::TOKEN_OR_TOKEN_SET_MATCH);
+    }
 
-        $this->updateVerificationComparisionResult(
-            [
-                Constants::DOCUMENT_TYPE             => Constants::COMPANY_NAME,
-                Constants::DETAILS_FROM_API_RESPONSE => $legalName,
-                Constants::DETAILS_FROM_USER         => $this->dataToVerify[Constants::COMPANY_NAME],
-                Constants::MATCH_THRESHOLD           => GSTINVerificationStatus::GSTIN_VERIFICATION_BUSINESS_NAME_THRESHOLD,
-                Constants::MATCH_PERCENTAGE          => $matchPercentage,
-                Constants::SUCCESS                   => ($isMatch === true),
-                Constants::MATCH_TYPE                => $matchType,
-            ]);
 
-        return $isMatch === true;
+    private function isTradeNameMatch(): bool
+    {
+        $tradeName = $this->data[Constants::TRADE_NAME] ?? '';
+
+        $companyName = $this->dataToVerify[Constants::COMPANY_NAME] ?? '';
+
+        return $this->isMatch($tradeName,
+                              $companyName,
+                              Constants::COMPANY_NAME,
+                              GSTINVerificationStatus::GSTIN_VERIFICATION_BUSINESS_NAME_THRESHOLD,
+                              FuzzyMatcher::TOKEN_OR_TOKEN_SET_MATCH);
     }
 
     private function isPromoterPanNameMatch(): bool
     {
-        $matchType = FuzzyMatcher::TOKEN_OR_TOKEN_SET_MATCH;
-
-        $gstinFuzzyMatcher = new FuzzyMatcher(GSTINVerificationStatus::GSTIN_VERIFICATION_PROMOTER_PAN_NAME_THRESHOLD, $matchType);
-
         $members = $this->data[Constants::MEMBERS] ?? [];
+
+        $promoterPanName = $this->dataToVerify[Constants::PROMOTER_PAN_NAME] ?? '';
 
         foreach ($members as $member)
         {
-            $isMatch = $gstinFuzzyMatcher->isMatch($this->dataToVerify[Constants::PROMOTER_PAN_NAME], $member, $matchPercentage);
-
-            $this->updateVerificationComparisionResult(
-                [
-                    Constants::DOCUMENT_TYPE             => Constants::PROMOTER_PAN_NAME,
-                    Constants::DETAILS_FROM_API_RESPONSE => $member,
-                    Constants::DETAILS_FROM_USER         => $this->dataToVerify[Constants::PROMOTER_PAN_NAME],
-                    Constants::MATCH_THRESHOLD           => GSTINVerificationStatus::GSTIN_VERIFICATION_PROMOTER_PAN_NAME_THRESHOLD,
-                    Constants::MATCH_PERCENTAGE          => $matchPercentage,
-                    Constants::SUCCESS                   => ($isMatch === true),
-                    Constants::MATCH_TYPE                => $matchType,
-                ]);
-
+            $isMatch = $this->isMatch($member,
+                                      $promoterPanName,
+                                      Constants::PROMOTER_PAN_NAME,
+                                      GSTINVerificationStatus::GSTIN_VERIFICATION_BUSINESS_NAME_THRESHOLD,
+                                      FuzzyMatcher::TOKEN_OR_TOKEN_SET_MATCH);
             if ($isMatch === true)
             {
                 return true;

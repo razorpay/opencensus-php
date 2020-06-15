@@ -2259,7 +2259,15 @@ class Core extends Base\Core
             ((array_key_exists(Entity::GSTIN, $input) === true) and
              (empty($input[Entity::GSTIN]) === true)))
         {
-            $merchantDetails->setgstinVerificationStatus(null);
+            $merchantDetails->setGstinVerificationStatus(null);
+
+            return;
+        }
+
+        // For handling business type switch
+        if (BusinessType::isGstinVerificationEnableBusinessTypes($merchantDetails->getBusinessTypeValue()) === false)
+        {
+            $merchantDetails->setGstinVerificationStatus(null);
 
             return;
         }
@@ -2268,7 +2276,8 @@ class Core extends Base\Core
             Entity::GSTIN,
             Entity::BUSINESS_NAME,
             Entity::PROMOTER_PAN_NAME,
-            Entity::BUSINESS_OPERATION_ADDRESS
+            Entity::BUSINESS_OPERATION_ADDRESS,
+            Entity::BUSINESS_TYPE
         ];
 
         $requiredFields = [

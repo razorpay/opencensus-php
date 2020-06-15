@@ -93,6 +93,7 @@ class Constants
     //gstin integration constants
     const COMPANY_NAME        = 'company_name';
     const LEGAL_NAME          = 'legal_name';
+    const TRADE_NAME          = 'trade_name';
     const OPERATIONAL_ADDRESS = 'operational_address';
     const REGISTERED_ADDRESS  = 'registered_address';
     const ADDRESS             = 'address';

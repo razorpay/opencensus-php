@@ -106,6 +106,11 @@ class BusinessType
         self::PARTNERSHIP
     ];
 
+
+    protected static $ValidateGSTINBusinessType = [
+        self::PROPRIETORSHIP
+    ];
+
     protected static $ValidateCINBusinessType = [
         self::PRIVATE_LIMITED,
         self::PUBLIC_LIMITED,
@@ -244,6 +249,19 @@ class BusinessType
         $businessTypeName = self::getKeyFromIndex($businessType);
 
         return in_array($businessTypeName, self::$ValidateCompanyPanBusinessType, true);
+    }
+
+
+    public static function isGstinVerificationEnableBusinessTypes($businessType): bool
+    {
+        if (empty($businessType) === true)
+        {
+            return false;
+        }
+
+        $businessTypeName = self::getKeyFromIndex($businessType);
+
+        return in_array($businessTypeName, self::$ValidateGSTINBusinessType, true);
     }
 
     public static function isCinVerificationEnableBusinessTypes($businessType): bool

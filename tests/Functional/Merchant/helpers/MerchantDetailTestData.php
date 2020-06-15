@@ -1622,23 +1622,21 @@ return [
     ],
 
     'gstinVerification' => [
-        'request' => [
+        'request'  => [
             'content' => [
                 'gstin' => '07AADCB2230M1ZV',
-                'business_name' => 'RELIANCE INDUSTRIES LIMITED',
             ],
-            'url' => '/merchant/activation',
-            'method' => 'POST'
+            'url'     => '/merchant/activation',
+            'method'  => 'POST'
         ],
         'response' => [
             'content' => [
-                'gstin' => '07AADCB2230M1ZV',
-                'business_name' => 'RELIANCE INDUSTRIES LIMITED',
+                'gstin'        => '07AADCB2230M1ZV',
                 'verification' => [
-                    'status' => 'disabled',
+                    'status'          => 'disabled',
                     'disabled_reason' => 'required_fields',
                 ],
-                'can_submit' => false,
+                'can_submit'   => false,
             ],
         ],
     ],
