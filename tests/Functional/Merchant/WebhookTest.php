@@ -471,6 +471,20 @@ class WebhookTest extends TestCase
         $this->ba->hostedAuth('rzp_test_10NodalAccount');
 
         $response = $this->startTest();
+
+        $webhook = $this->fixtures->create('webhook',
+            [
+                'merchant_id' => '10NodalAccount',
+                'url'         => 'http://www.testUrl.com',
+                'secret'      => 'BestTestSecretEver',
+                'events'      => ['payment.authorized' => '1']
+            ]);
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/webhooks/'.$webhook['id'];
+
+        $this->ba->expressAuth('test', 'rzp_test_10NodalAccount');
+
+        $response = $this->startTest();
     }
 
     public function testGetWebhooksWithSecret()
@@ -484,6 +498,18 @@ class WebhookTest extends TestCase
             ]);
 
         $this->ba->hostedAuth('rzp_test_10NodalAccount');
+
+        $response = $this->startTest();
+
+        $this->fixtures->create('webhook',
+            [
+                'merchant_id' => '10NodalAccount',
+                'url'         => 'http://www.testUrl.com',
+                'secret'      => 'BestTestSecretEver',
+                'events'      => ['payment.authorized' => '1']
+            ]);
+
+        $this->ba->expressAuth('test', 'rzp_test_10NodalAccount');
 
         $response = $this->startTest();
     }

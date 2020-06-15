@@ -336,13 +336,21 @@ class Authorization
         $this->appAuth('rzp_' . $mode, $pwd);
     }
 
-    public function expressAuth($mode = 'test')
+    public function expressAuth($mode = 'test', $user = null)
     {
-        $expressConfig = \Config::get('applications.express');
+       if (is_null($user) === false)
+       {
+            $this->appAuth($user, \Config::get('applications.express')['secret']);
+       }
+       else
+       {
+            $expressConfig = \Config::get('applications.express');
 
-        $pwd = $expressConfig['secret'];
+            $pwd = $expressConfig['secret'];
 
-        $this->appAuth('rzp_' . $mode, $pwd);
+            $this->appAuth('rzp_' . $mode, $pwd);
+        }
+
     }
 
     public function kotakAuth($mode = 'test')

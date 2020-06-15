@@ -1484,6 +1484,11 @@ class BasicAuth
         return ($this->getInternalApp() === 'hosted');
     }
 
+    public function isExpress()
+    {
+        return ($this->getInternalApp() === 'express');
+    }
+
     public function isSubscriptionsApp()
     {
         return ($this->getInternalApp() === 'subscriptions');

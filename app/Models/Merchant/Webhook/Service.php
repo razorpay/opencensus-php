@@ -93,7 +93,8 @@ class Service extends Base\Service
             $webhooks = $this->repo->webhook->fetch($params, $this->merchant->getId());
         }
 
-        if ($this->app['basicauth']->isHosted() === true)
+        if (($this->app['basicauth']->isHosted() === true) ||
+            ($this->app['basicauth']->isExpress() === true))
         {
             return $webhooks->toArrayHosted();
         }
