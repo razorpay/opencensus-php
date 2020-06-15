@@ -716,13 +716,11 @@ class Service extends Base\Service
                     throw $exception;
                 }
 
-                $error = $exceptionData['response']['error'];
-
                 $statusCode = (int)($exceptionData['status_code']);
 
                 if (($statusCode === 400) and
-                    ($error['internal_error_code'] === ErrorCode::BAD_REQUEST_ERROR) and
-                    ($error['description']) === 'Terminal doesn\'t exist with this Id')
+                    ($exception->getCode() === ErrorCode::BAD_REQUEST_TERMINALS_SERVICE_ERROR) and
+                    ($exception->getMessage() === 'Terminal doesn\'t exist with this Id'))
                 {
                     $this->app['trace']->info(TraceCode::TERMINALS_SERVICE_TERMINAL_ALREADY_DELETED,
                         [
@@ -754,7 +752,8 @@ class Service extends Base\Service
             {
                 // assert on message and rethrow if not correct
                 if (($data === []) and
-                    ($exception->getCode() === ErrorCode::SERVER_ERROR_TERMINALS_SERVICE_INTEGRATION_ERROR))
+                    ($exception->getCode() === ErrorCode::BAD_REQUEST_TERMINALS_SERVICE_ERROR) and
+                    ($exception->getMessage() == "Terminal doesn't exist with this Id"))
                 {
 
                 }
@@ -771,7 +770,36 @@ class Service extends Base\Service
     {
         $client = $this->app['terminals_service'];
 
-        $client->addMerchantToTerminal($terminal, $merchant);
+        try
+        {
+            $client->addMerchantToTerminal($terminal, $merchant);
+        }
+        catch (\Exception $exception)
+        {
+            $exceptionData = $exception->getData();
+
+            if ($exceptionData === null)
+            {
+                throw $exception;
+            }
+
+            $statusCode = (int)($exceptionData['status_code']);
+
+            if (($statusCode === 400) and
+                ($exception->getCode() === ErrorCode::BAD_REQUEST_TERMINALS_SERVICE_ERROR) and
+                ($exception->getMessage() === "Terminal Submerchant already exist"))
+            {
+                $this->app['trace']->info(TraceCode::TERMINALS_SERVICE_TERMINAL_SUBMERCHANT_ALREADY_EXISTS,
+                    [
+                        Entity::TERMINAL_ID => $terminal->getId(),
+                        Entity::MERCHANT_ID => $merchant->getId(),
+                    ]);
+            }
+            else
+            {
+                throw $exception;
+            }
+        }
 
         $merchant_terminal_fetched = $client->fetchMerchantTerminalById($terminal->getId(), $merchant->getId());
 
@@ -806,7 +834,36 @@ class Service extends Base\Service
     {
         $client = $this->app['terminals_service'];
 
-        $client->removeMerchantFromTerminal($terminal, $merchant);
+        try
+        {
+            $client->removeMerchantFromTerminal($terminal, $merchant);
+        }
+        catch (\Exception $exception)
+        {
+            $exceptionData = $exception->getData();
+
+            if ($exceptionData === null)
+            {
+                throw $exception;
+            }
+
+            $statusCode = (int)($exceptionData['status_code']);
+
+            if (($statusCode === 400) and
+                ($exception->getCode() === ErrorCode::BAD_REQUEST_TERMINALS_SERVICE_ERROR) and
+                ($exception->getMessage() === "Terminal Submerchant relation doesn't exist"))
+            {
+                $this->app['trace']->info(TraceCode::TERMINALS_SERVICE_TERMINAL_SUBMERCHANT_ALREADY_DELETED,
+                    [
+                        Entity::TERMINAL_ID => $terminal->getId(),
+                        Entity::MERCHANT_ID => $merchant->getId(),
+                    ]);
+            }
+            else
+            {
+                throw $exception;
+            }
+        }
 
         $data = [];
 
@@ -827,7 +884,7 @@ class Service extends Base\Service
         {
             // assert on message and rethrow if not correct
             if (($data === []) and
-                ($exception->getCode() === ErrorCode::SERVER_ERROR_TERMINALS_SERVICE_INTEGRATION_ERROR))
+                ($exception->getCode() === ErrorCode::BAD_REQUEST_TERMINALS_SERVICE_ERROR))
             {
 
             }

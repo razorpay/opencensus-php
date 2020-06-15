@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\Merchant;
 
 use RZP\Constants\Table;
 use RZP\Error\ErrorCode;
+use RZP\Exception\BadRequestException;
 use RZP\Models\Terminal;
 use RZP\Constants\Entity;
 use RZP\Http\Request\Requests;
@@ -639,17 +640,27 @@ class TerminalMigrationTest extends TestCase
                     }
                     ';
 
-                throw new IntegrationException('Terminals service request failed with status code : ' . $response->status_code,
-                    ErrorCode::SERVER_ERROR_TERMINALS_SERVICE_INTEGRATION_ERROR,
-                    [
-                        'response'     => json_decode($response->body, true),
-                        'status_code'  => 400,
-                    ]);
+                $data = [
+                    'response'     => json_decode($response->body, true),
+                    'status_code'  => 400,
+                ];
+
+                $errorDescription = "Terminal doesn't exist with this Id";
+
+                throw new BadRequestException(ErrorCode::BAD_REQUEST_TERMINALS_SERVICE_ERROR, null, $data, $errorDescription);
+
             }
 
             if ($method == \Requests::GET)
             {
-                return $this->getTerminalsServiceResponseForEntityNotFound();
+                $data = [
+                'response'     => json_decode($response->body, true),
+                'status_code'  => 400,
+                ];
+
+                $errorDescription = "Terminal doesn't exist with this Id";
+
+                throw new BadRequestException(ErrorCode::BAD_REQUEST_TERMINALS_SERVICE_ERROR, null, $data, $errorDescription);
             }
 
         }, 2);
@@ -1166,6 +1177,74 @@ class TerminalMigrationTest extends TestCase
 
     }
 
+    public function testAddSubmerchantTerminalsServiceUpSubmerchantAlreadyExistOnTerminalsServiceMigrateVariant()
+    {
+        $this->razorxValue = 'migrate';
+
+        $terminal = $this->fixtures->create(
+            'terminal:shared_axis_terminal', [
+            'used'        => true,
+            'enabled'     => '1',
+            'sync_status' => 'sync_success',
+        ]);
+
+        $tid = $terminal['id'];
+
+        $this->mockTerminalsServiceSendRequest(function ($path, $content, $method) use ($tid){
+            if ($method == \Requests::POST)
+            {
+                $content = json_decode($content, true);
+
+                $this->assertEquals('v1/terminal/submerchant', $path);
+
+                $this->assertEquals($tid, $content[Terminal\Entity::TERMINAL_ID]);
+
+                $this->assertEquals('10000000000000', $content[Terminal\Entity::MERCHANT_ID]);
+
+                $parsedResponse = [
+                    'data'  => null,
+                    'error' => [
+                        "internal_error_code"  => "BAD_REQUEST_ERROR",
+                        "description"          =>  "Terminal Submerchant already exist",
+                    ],
+                ];
+                $data = [
+                    'response'    => $parsedResponse,
+                    'status_code' => 400,
+                ];
+
+                $description = "Terminal Submerchant already exist";
+
+                throw new BadRequestException(ErrorCode::BAD_REQUEST_TERMINALS_SERVICE_ERROR, null, $data, $description);
+            }
+
+            if ($method == \Requests::GET)
+            {
+                $this->assertEquals('v2/terminal/submerchant', $path);
+
+                $this->assertEquals($tid, $content[Terminal\Entity::TERMINAL_ID]);
+
+                $this->assertEquals('10000000000000', $content[Terminal\Entity::MERCHANT_ID]);
+
+                return $this->getDefaultTerminalSubmerchantFetchResponse(
+                    $tid,
+                    '10000000000000',
+                    $content,
+                    $path);
+
+            }
+        }, 2);
+
+
+        $beforeCount = $this->getMerchantTerminalCount('10000000000000', $tid);
+
+        $this->assignSubMerchant($terminal['id'], '10000000000000');
+
+        $afterCount = $this->getMerchantTerminalCount('10000000000000', $tid);
+
+        $this->assertEquals($beforeCount + 1, $afterCount);
+    }
+
     public function testDeleteSubmerchantTerminalsServiceUpMigrateVariant()
     {
         [$tid, $mid] = $this->testAddSubmerchantControlVariant();
@@ -1275,6 +1354,60 @@ class TerminalMigrationTest extends TestCase
         $afterCount = $this->getMerchantTerminalCount('10000000000000', $tid);
 
         $this->assertEquals($beforeCount, $afterCount);
+    }
+
+    public function testDeleteSubmerchantAlreadyDeletedTerminalsServiceMigrateVariant()
+    {
+        [$tid, $mid] = $this->testAddSubmerchantControlVariant();
+
+        $this->razorxValue = 'migrate';
+
+        $this->mockTerminalsServiceSendRequest(function ($path, $content, $method) use ($tid) {
+
+            $this->assertEquals($tid, $content[Terminal\Entity::TERMINAL_ID]);
+
+            $this->assertEquals('10000000000000', $content[Terminal\Entity::MERCHANT_ID]);
+
+            if ($method === \Requests::DELETE)
+            {
+                $this->assertEquals('v1/terminal/submerchant', $path);
+
+                $parsedResponse = [
+                    'data' => null,
+                    'error' => [
+                        "internal_error_code" => "BAD_REQUEST_ERROR",
+                        "description"         => "Terminal Submerchant relation doesn't exist",
+                    ]
+                ];
+                $data = [
+                    'response'    => $parsedResponse,
+                    'status_code' => 400,
+                ];
+
+                $errorDescription = "Terminal Submerchant relation doesn't exist";
+
+                throw new BadRequestException(ErrorCode::BAD_REQUEST_TERMINALS_SERVICE_ERROR, null, $data, $errorDescription);
+            }
+
+            if ($method == \Requests::GET)
+            {
+                $this->assertEquals('v2/terminal/submerchant', $path);
+
+                $this->assertEquals($tid, $content[Terminal\Entity::TERMINAL_ID]);
+
+                $this->assertEquals('10000000000000', $content[Terminal\Entity::MERCHANT_ID]);
+
+               return $this->getTerminalsServiceResponseForEntityNotFound();
+            }
+        });
+
+        $beforeCount = $this->getMerchantTerminalCount('10000000000000', $tid);
+
+        $this->deleteSubmerchant($tid, '10000000000000');
+
+        $afterCount = $this->getMerchantTerminalCount('10000000000000', $tid);
+
+        $this->assertEquals($beforeCount - 1, $afterCount);
     }
 
     public function testDeleteSubmerchantControlVariant()
