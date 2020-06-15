@@ -1197,16 +1197,46 @@ class Server extends Base\Mock\Server
             ],
         ];
 
+
         $jsonResponse =  json_encode($response);
 
-        $content = $this->encrypt($jsonResponse);
+        $iv = strtoupper(bin2hex(random_bytes(16)));
+
+        $content = $this->encryptForMandate($jsonResponse, $iv);
 
         $response = [
             'pgMerchantId' => 'HDFC000006002278',
             'payload'      => $content,
+            'ivToken'      => $iv,
+            'keyId'        => 1
         ];
 
         return $response;
+    }
+
+
+    protected function encryptForMandate($plaintext, $iv)
+    {
+        $key = $this->getEncryptionKey();
+
+        $cipher = $this->getCipherInstanceForMandate($key);
+
+        $cipher->setIV(hex2bin($iv));
+
+        $cipherText = $cipher->encrypt($plaintext);
+
+        return strtoupper(bin2hex($cipherText));
+    }
+
+    protected function getCipherInstanceForMandate($key)
+    {
+        $cipher = new AES(AES::MODE_CBC);
+
+        $cipher->setKey($key);
+
+        $cipher->enablePadding();
+
+        return $cipher;
     }
 
     protected function getAsyncCallbackResponseMandateUpdate($payment)

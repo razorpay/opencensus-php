@@ -266,6 +266,13 @@ trait Callback
             $input['card'] = $card->toArray();
         }
 
+        // Adding data for upi one time mandate. It can be used for all upi payments
+        // in future.
+        if ($payment->isUpiOtm() === true)
+        {
+            $input['upi'] = $payment->getUpiMetadata()->toArray();
+        }
+
         // In case of axis corporate payments, the s2s call back return unencrypted
         // data, however, the normal callback return parameters which are encrypted.
         if ($s2sCallback === true)

@@ -13,10 +13,8 @@ use RZP\Gateway\Base\AESCrypto;
  */
 class Crypto extends AESCrypto
 {
-    public function __construct(string $key)
+    public function __construct(string $key, $mode = AES::MODE_ECB)
     {
-        $mode = AES::MODE_ECB;
-
         // The key is provided and stored as hex-encoded
         $key = hex2bin($key);
 
@@ -42,5 +40,19 @@ class Crypto extends AESCrypto
     public function decrypt(string $ciphertext)
     {
         return $this->decryptString(hex2bin($ciphertext));
+    }
+
+    public function setIV(string $iv)
+    {
+        $this->aes->setIV(hex2bin($iv));
+
+        return $this;
+    }
+
+    public function enablePadding()
+    {
+        $this->aes->enablePadding();
+
+        return $this;
     }
 }

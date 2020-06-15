@@ -27,6 +27,8 @@ class Gateway extends Base\Gateway
 
     use Base\RecurringTrait;
 
+    use Base\MandateTrait;
+
     const ACQUIRER = 'hdfc';
 
     protected $gateway = Payment\Gateway::UPI_MINDGATE;
@@ -93,6 +95,19 @@ class Gateway extends Base\Gateway
         if ($this->isFirstRecurringPayment($input) === true)
         {
             return $this->authorizeRecurring($input);
+        }
+
+        if ($this->isMandateCreateRequest($input) === true)
+        {
+            $data = $this->getGatewayEntityAttributes($input);
+
+            $gatewayPayment = $this->createGatewayPaymentEntity($data, Action::AUTHORIZE);
+
+            $response = $this->mandateCreate($input);
+
+            $this->updateGatewayPaymentResponse($gatewayPayment, $response['upi'], false);
+
+            return $response;
         }
 
         if (($this->isBharatQrPayment() === true) or
@@ -320,8 +335,8 @@ class Gateway extends Base\Gateway
      */
     public function preProcessServerCallback($input, $isBharatQr = false): array
     {
-        //TODO:: Fix this condition when we know the correct callback response for OTM.
-        if (isset($input['payload']) === true and ($this->isLiveMode() === false))
+        // TODO: Find a better way of identifying the callback for Mandate.
+        if (isset($input['payload']) === true)
         {
             return $this->preProcessMandateCallback($input, Payment\Gateway::UPI_MINDGATE);
         }
@@ -501,17 +516,9 @@ class Gateway extends Base\Gateway
     {
         parent::callback($input);
 
-        if (isset($input['gateway']['mandateDtls']) === true)
+        if ($this->isMandateProcessedCallback($input) === true)
         {
-            if ($input['gateway']['mandateDtls'][0]['mandateType'] === 'CREATE')
-            {
-                return $this->mandateCreateCallback($input);
-            }
-
-            if ($input['gateway']['mandateDtls'][0]['mandateType'] === 'UPDATE')
-            {
-                return $this->mandateUpdateCallback($input);
-            }
+            return $this->mandateCreateCallback($input);
         }
 
         $content = $input['gateway'];
@@ -626,9 +633,14 @@ class Gateway extends Base\Gateway
         return $payeeVaReferenceArray;
     }
 
-    protected function updateGatewayPaymentResponse($payment, array $response)
+    protected function updateGatewayPaymentResponse($payment, array $response, $shouldMap = true)
     {
-        $attributes = $this->getMappedAttributes($response);
+        $attributes = $response;
+
+        if ($shouldMap === true)
+        {
+            $attributes = $this->getMappedAttributes($attributes);
+        }
 
         // To mark that we have received a callback for this payment/refund
         $attributes[Entity::RECEIVED] = 1;

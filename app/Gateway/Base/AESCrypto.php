@@ -6,6 +6,9 @@ use phpseclib\Crypt\AES;
 
 class AESCrypto
 {
+    const MODE_CBC = AES::MODE_CBC;
+    const MODE_ECB = AES::MODE_ECB;
+
     protected $aes;
 
     public function __construct(int $mode, string $masterKey, string $initializationVector = '')

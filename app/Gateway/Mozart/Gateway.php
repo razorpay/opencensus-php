@@ -15,6 +15,8 @@ use RZP\Constants\Entity as E;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Upi\Mindgate\Crypto;
 use RZP\Gateway\Base\AuthorizeFailed;
+use RZP\Gateway\Upi\Base\MandateTrait;
+use RZP\Gateway\Upi\Base\Entity as UpiEntity;
 use RZP\Gateway\Mozart\Entity as MozartEntity;
 use RZP\Models\Terminal\Entity as TerminalEntity;
 use RZP\Models\Payment\Verify\Action as VerifyAction;
@@ -24,6 +26,8 @@ class Gateway extends Base\Gateway
     use AuthorizeFailed {
         extractPaymentsProperties as extractPaymentsPropertiesAuthorizedFailedTrait;
     }
+
+    use MandateTrait;
 
     protected $gateway = 'mozart';
 
@@ -323,7 +327,7 @@ class Gateway extends Base\Gateway
 
     public function mandateCreate($input)
     {
-        parent::action($input, Action::AUTH_INIT);
+        parent::action($input, Action::PAY_INIT);
 
         $request = $this->getMozartRequestArray($input);
 
@@ -340,17 +344,23 @@ class Gateway extends Base\Gateway
 
         $this->traceGatewayPaymentResponse($traceRes, $input, TraceCode::GATEWAY_MANDATE_CREATE_RESPONSE);
 
-        $this->checkErrorsAndThrowExceptionFromMozartResponse($response);
-
         $attributes = $this->getMappedAttributes($response);
 
-        $this->createGatewayPaymentEntity($attributes, $input, Action::MANDATE_CREATE);
+        $this->createGatewayPaymentEntity($attributes, $input, Action::AUTHORIZE);
+
+        $this->checkErrorsAndThrowExceptionFromMozartResponse($response);
+
+        /**
+         *  In case of otm, We require upi entity to be sent in response,
+         *  We expect mozart entity to send exact keys for upi entity, to properly
+         *  the values.
+         */
 
         return [
             'data'   => [
-                Payment\Entity::VPA            => $input['terminal']['gateway_merchant_id2'],
-                Token\Entity::RECURRING_STATUS => Token\RecurringStatus::INITIATED,
+                Payment\Entity::VPA            => $input['payment']['vpa'] ?? ($response['vpa'] ?? null),
             ],
+            'upi'                              => array_only($response['data'], (new UpiEntity())->getFillable()),
         ];
     }
 
@@ -874,7 +884,7 @@ class Gateway extends Base\Gateway
         switch ($gateway)
         {
             case Payment\Gateway::UPI_MINDGATE:
-                return json_decode($this->decryptForUpiMindgate($input['payload']), true);
+                return json_decode($this->decryptForUpiMindgateMandate($input), true);
             default :
                 throw new Exception\LogicException(
                     'Invalid gateway passed for processing mandate callback');
@@ -1953,6 +1963,7 @@ class Gateway extends Base\Gateway
             Payment\Gateway::UPI_CITI,
             Payment\Gateway::UPI_JUSPAY,
             Payment\Gateway::UPI_SBI,
+            Payment\Gateway::UPI_MINDGATE,
             Payment\Gateway::WALLET_PHONEPE,
             Payment\Gateway::WALLET_PHONEPESWITCH,
             Payment\Gateway::WALLET_PAYPAL,
@@ -2207,10 +2218,19 @@ class Gateway extends Base\Gateway
         }
     }
 
-    public function decryptForUpiMindgate(string $cipherText)
+    public function decryptForUpiMindgateMandate($input)
     {
+        if ((isset($input['keyId']) === true) and ($input['keyId'] == 1))
+        {
+            $payload =  $this->getCipherInstance(Crypto::MODE_CBC)
+                             ->setIV($input['ivToken'])
+                             ->enablePadding()
+                             ->decrypt($input['payload']);
+            return $payload;
+        }
+
         return $this->getCipherInstance()
-            ->decrypt($cipherText);
+                    ->decrypt($input['payload']);
     }
 
     protected function getEncryptionKey()
@@ -2220,11 +2240,11 @@ class Gateway extends Base\Gateway
         return hex2bin($key);
     }
 
-    protected function getCipherInstance()
+    protected function getCipherInstance($mode = null)
     {
         $key = config('gateway.upi_mindgate.gateway_encryption_key');
 
-        return new Crypto($key);
+        return new Crypto($key, $mode);
     }
 
     /**

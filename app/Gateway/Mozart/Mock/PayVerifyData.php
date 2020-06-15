@@ -590,10 +590,24 @@ class PayVerifyData extends Base\Mock\Server
                 '_raw'            => 'dummy_raw_value',
                 'paymentId'       => $entities['payment']['id'],
                 'bank_payment_id' => '999999',
-                'amount'          => $entities['payment']['amount'] / 100,
+                'amount'          => $entities['payment']['amount'],
                 'status'          => 'callback_successful',
             ],
         ];
+
+        switch ($entities['payment']['description'])
+        {
+            case 'failedCallback':
+                $response['success'] = false;
+                $response['error'] = [
+                  'internal_error_code' => 'GATEWAY_ERROR_TIMED_OUT'
+                ];
+            break;
+
+            case 'failedValidations':
+                $response['data']['amount'] = $entities['payment']['amount'] - 100;
+            break;
+        }
 
         return $response;
     }
