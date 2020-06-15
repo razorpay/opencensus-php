@@ -31,7 +31,8 @@ class JaegerPropagator implements PropagatorInterface
     const DEFAULT_HEADER = 'uber-trace-id';
 
     // refer: https://www.jaegertracing.io/docs/1.18/client-libraries/#propagation-format
-    const CONTEXT_HEADER_FORMAT = '%016x:%016x:%016x:%x';
+
+    const CONTEXT_HEADER_FORMAT = '%032s:%016s:%016s:%x';    //traceId, spanId are stored as hex strings in opencensus
 
     /**
      * @var FormatterInterface
