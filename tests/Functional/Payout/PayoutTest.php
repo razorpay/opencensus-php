@@ -2577,6 +2577,36 @@ class PayoutTest extends TestCase
         $this->startTest();
     }
 
+    // This test is to solve a very specific problem https://razorpay.atlassian.net/browse/RX-2257
+    public function testAddCustomPayoutPurposeOfNumericType()
+    {
+        // Test with Private Auth
+        $this->ba->privateAuth();
+
+        $data = $this->testData[__FUNCTION__];
+
+        $data['request']['content']['purpose'] = 'Payout Purpose 1';
+        $data['request']['content']['purpose_type'] = 'settlement';
+
+        $response = $this->startTest($data);
+
+        $this->assertEquals(in_array('Payout Purpose 1', array_column($response['items'], 'purpose'), true), true);
+        $this->assertEquals(in_array('settlement', array_column($response['items'], 'purpose_type'), true),true);
+
+        $data['request']['content']['purpose'] = 1234;
+        $data['request']['content']['purpose_type'] = 'settlement';
+
+        $this->startTest($data);
+
+        $data['request']['content']['purpose'] = 'Payout Purpose 2';
+        $data['request']['content']['purpose_type'] = 'settlement';
+
+        $response = $this->startTest($data);
+
+        $this->assertEquals(in_array('Payout Purpose 2', array_column($response['items'], 'purpose'), true), true);
+        $this->assertEquals(in_array('settlement', array_column($response['items'], 'purpose_type'), true),true);
+    }
+
     public function testAddCustomPayoutPurposeThatAlreadyExists()
     {
         $this->testAddCustomPayoutPurpose();

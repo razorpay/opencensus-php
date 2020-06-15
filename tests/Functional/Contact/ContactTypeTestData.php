@@ -18,6 +18,20 @@ return [
         ],
     ],
 
+    'testCreateCustomContactNumericType' => [
+        'request'  => [
+            'url'     => '/contacts/types',
+            'method'  => 'POST',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => "collection",
+            ]
+        ],
+    ],
+
     'testGetContactType' => [
         'request'  => [
             'url'     => '/contacts/types',

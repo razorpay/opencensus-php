@@ -3318,6 +3318,25 @@ return [
         ],
     ],
 
+    'testAddCustomPayoutPurposeOfNumericType' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/payouts/purposes',
+            'content' => [
+                'purpose'       => 'Give Mehul A Bonus',
+                'purpose_type'  => 'settlement'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'    => 'collection',
+                'items'     =>  [
+
+                ],
+            ],
+        ],
+    ],
+
     'testAddCustomPayoutPurposeWithWrongPurposeType' => [
         'request' => [
             'method'  => 'POST',

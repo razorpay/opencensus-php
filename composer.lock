@@ -8,16 +8,16 @@
     "packages": [
         {
             "name": "anlutro/l4-settings",
-            "version": "0.5.3",
+            "version": "0.5.5",
             "source": {
                 "type": "git",
                 "url": "https://github.com/razorpay/laravel-settings.git",
-                "reference": "571f2ad7e3cb24af309f6f9f4bb4821bce5cf911"
+                "reference": "f8f95b4cd1be732c4e95a2081bb88d114292e5ab"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/laravel-settings/zipball/571f2ad7e3cb24af309f6f9f4bb4821bce5cf911",
-                "reference": "571f2ad7e3cb24af309f6f9f4bb4821bce5cf911",
+                "url": "https://api.github.com/repos/razorpay/laravel-settings/zipball/f8f95b4cd1be732c4e95a2081bb88d114292e5ab",
+                "reference": "f8f95b4cd1be732c4e95a2081bb88d114292e5ab",
                 "shasum": ""
             },
             "require": {
@@ -50,7 +50,7 @@
             ],
             "description": "Persistent settings in Laravel.",
             "support": {
-                "source": "https://github.com/razorpay/laravel-settings/tree/0.5.3"
+                "source": "https://github.com/razorpay/laravel-settings/tree/0.5.5"
             },
             "time": "2017-12-11T11:53:04+00:00"
         },

@@ -41,6 +41,32 @@ class ContactTypeTest extends TestCase
         $this->assertEquals(in_array(['type' => 'Contact Type 2'], $response['items'], true), true);
     }
 
+    public function testCreateCustomContactNumericType()
+    {
+        // Test with Private Auth
+        $this->ba->privateAuth();
+
+        $data = $this->testData[__FUNCTION__];
+
+        $data['request']['content']['type'] = 'Contact Type 1';
+
+        $response = $this->startTest($data);
+
+        $this->assertEquals(in_array(['type' => 'Contact Type 1'], $response['items'], true), true);
+
+        $data['request']['content']['type'] = 1234;
+
+        $response = $this->startTest($data);
+
+        $this->assertEquals(in_array(['type' => 1234], $response['items'], true), true);
+
+        $data['request']['content']['type'] = 'Contact Type 2';
+
+        $response = $this->startTest($data);
+
+        $this->assertEquals(in_array(['type' => 'Contact Type 2'], $response['items'], true), true);
+    }
+
     public function testGetContactType()
     {
         // Test with Private Auth
