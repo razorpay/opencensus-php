@@ -215,8 +215,8 @@ pipeline:
     - ES_ENTITY_INDEX_PREFIX=testing_feature_6_
     - ES_ENTITY_TYPE_PREFIX=testing_feature_6_
     - ES_HOST=elasticsearch
-    - REDIS_HOST=redis5
-    - REDIS_LABS_HOST=redis5
+    - REDIS_HOST=redis6
+    - REDIS_LABS_HOST=redis6
     - QUERY_CACHE_REDIS_HOST=redis6
     - QUERY_CACHE_REDIS_PORT=6379
     - MUTEX_REDIS_HOST=redis6
@@ -247,8 +247,8 @@ pipeline:
     - ES_ENTITY_INDEX_PREFIX=testing_features_5_
     - ES_ENTITY_TYPE_PREFIX=testing_features_5_
     - ES_HOST=elasticsearch
-    - REDIS_HOST=redis6
-    - REDIS_LABS_HOST=redis6
+    - REDIS_HOST=redis7
+    - REDIS_LABS_HOST=redis7
     - QUERY_CACHE_REDIS_HOST=redis7
     - QUERY_CACHE_REDIS_PORT=6379
     - MUTEX_REDIS_HOST=redis7
@@ -279,8 +279,8 @@ pipeline:
     - ES_ENTITY_INDEX_PREFIX=testing_payments_
     - ES_ENTITY_TYPE_PREFIX=testing_payments_
     - ES_HOST=elasticsearch
-    - REDIS_HOST=redis7
-    - REDIS_LABS_HOST=redis7
+    - REDIS_HOST=redis8
+    - REDIS_LABS_HOST=redis8
     - QUERY_CACHE_REDIS_HOST=redis8
     - QUERY_CACHE_REDIS_PORT=6379
     - MUTEX_REDIS_HOST=redis8
@@ -312,8 +312,8 @@ pipeline:
     - ES_ENTITY_INDEX_PREFIX=testing_gateway_1_
     - ES_ENTITY_TYPE_PREFIX=testing_gateway_1_
     - ES_HOST=elasticsearch
-    - REDIS_HOST=redis8
-    - REDIS_LABS_HOST=redis8
+    - REDIS_HOST=redis9
+    - REDIS_LABS_HOST=redis9
     - QUERY_CACHE_REDIS_HOST=redis9
     - QUERY_CACHE_REDIS_PORT=6379
     - MUTEX_REDIS_HOST=redis9
@@ -344,8 +344,8 @@ pipeline:
     - ES_ENTITY_INDEX_PREFIX=testing_gateway_2_
     - ES_ENTITY_TYPE_PREFIX=testing_gateway_2_
     - ES_HOST=elasticsearch
-    - REDIS_HOST=redis9
-    - REDIS_LABS_HOST=redis9
+    - REDIS_HOST=redis10
+    - REDIS_LABS_HOST=redis10
     - QUERY_CACHE_REDIS_HOST=redis10
     - QUERY_CACHE_REDIS_PORT=6379
     - MUTEX_REDIS_HOST=redis10
@@ -631,16 +631,16 @@ services:
           - deployment
           - pull_request
 
-#  redis-cluster-1:
-#    pull: false
-#    image: grokzen/redis-cluster
-#    when:
-#      event:
-#        include:
-#          - push
-#        exclude:
-#          - deployment
-#          - pull_request
+  redis-cluster-1:
+    pull: false
+    image: grokzen/redis-cluster
+    when:
+      event:
+        include:
+          - push
+        exclude:
+          - deployment
+          - pull_request
 #
 #  redis-cluster-2:
 #    pull: false

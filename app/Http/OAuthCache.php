@@ -2,6 +2,9 @@
 
 namespace RZP\Http;
 
+use App;
+
+use RZP\Constants\Mode;
 use RZP\Constants\Entity as E;
 use RZP\Models\Base\QueryCache\Constants;
 
@@ -69,6 +72,15 @@ trait OAuthCache
     public function getCacheTagsForTokenId($id): string
     {
         return implode('_', [E::AUTH_TOKEN, self::ID, $id]);
+    }
+
+    public function getCacheDriverForTokens(): string
+    {
+        $app = App::getFacadeRoot();
+
+        $mode = $app['rzp.mode'] ?? null;
+
+        return ($mode === Mode::TEST) ? 'query_cache_test' : 'query_cache_live';
     }
 
     public function getCacheTags($token, $id): array

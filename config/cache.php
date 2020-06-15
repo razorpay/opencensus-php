@@ -61,7 +61,7 @@ return [
         ],
 
         'redis' => [
-            'driver' => 'redis',
+            'driver' => 'custom',
             'connection' => 'default',
         ],
 
@@ -92,7 +92,17 @@ return [
             'driver'     => 'redis',
             'connection' => 'query_cache_redis',
             'prefix'     => 'session:laravel',
-        ]
+        ],
+
+        'ec_cluster'    => [
+            'driver'     => 'redis',
+            'connection' => 'query_cache_redis',
+        ],
+
+        'redislabs'     => [
+            'driver'     => 'redis',
+            'connection' => 'default',
+        ],
     ],
 
     /*

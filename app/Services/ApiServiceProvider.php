@@ -3,6 +3,7 @@
 namespace RZP\Services;
 
 use RZP;
+use Cache;
 use Swift_Mailer;
 use Razorpay\OAuth\Application;
 use Illuminate\Support\Facades\Redis;
@@ -305,8 +306,6 @@ class ApiServiceProvider extends BaseServiceProvider
 
         $this->registerRedisDualWrite();
 
-        $this->registerCacheDualWrite();
-
         $this->registerApiMutex();
 
         $this->registerMaxMind();
@@ -376,6 +375,8 @@ class ApiServiceProvider extends BaseServiceProvider
         $this->registerStorkService();
 
         $this->registerCustomSessionProvider();
+
+        $this->registerCustomCacheProvider();
     }
 
     /**
@@ -593,18 +594,12 @@ class ApiServiceProvider extends BaseServiceProvider
         });
     }
 
-    protected function registerCacheDualWrite()
+    protected function registerCustomCacheProvider()
     {
-        $this->app->singleton('cache_dual_write', function($app)
-        {
-            $skipDualWrite = $app['config']->get('applications.cache_dual_write.cache_skip_dual_write');
+        $manager = $this->app['cache'];
 
-            if ($skipDualWrite === true)
-            {
-                return $app['cache'];
-            }
-
-            return new CacheDualWrite($app);
+        $manager->extend('custom', function($app) {
+            return Cache::repository(new CustomCache($app));
         });
     }
 
