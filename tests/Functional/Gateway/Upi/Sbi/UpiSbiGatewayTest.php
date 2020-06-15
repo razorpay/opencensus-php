@@ -98,6 +98,7 @@ class UpiSbiGatewayTest extends TestCase
         $this->assertEquals(Type::COLLECT, $upiEntity[Upi::TYPE]);
         $this->assertEquals($payment[Payment\Entity::VPA], $upiEntity[Upi::VPA]);
         $this->assertNotNull($upiEntity[Upi::EXPIRY_TIME]);
+        $this->assertNotNull($payment[Payment\Entity::ACQUIRER_DATA]);
 
         $this->assertNotNull($upiEntity[Upi::GATEWAY_DATA]);
         $this->assertEquals('99999999999',$upiEntity[Upi::NPCI_TXN_ID]);

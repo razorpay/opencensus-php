@@ -119,7 +119,12 @@ class Gateway extends Base\Gateway
 
         $this->checkResponseStatus($content[ResponseFields::STATUS]);
 
-        return [];
+        return [
+            'acquirer' => [
+                Payment\Entity::VPA => $gatewayPayment->getVpa(),
+                Payment\Entity::REFERENCE16 => $gatewayPayment->getNpciReferenceId(),
+            ]
+        ];
     }
 
     public function verify(array $input)
