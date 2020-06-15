@@ -87,7 +87,9 @@ class Service extends Base\Service
             $input['d2c_bureau_report_id'] = Entity::verifyIdAndStripSign($input['d2c_bureau_report_id']);
         }
 
-        $bureauReport = $this->repo->d2c_bureau_report->findByParams($input);
+        $reportValidity = Carbon::now(Timezone::IST)->subDays(15)->getTimestamp();
+
+        $bureauReport = $this->repo->d2c_bureau_report->findByParams($input, $reportValidity);
 
         if ($bureauReport === null)
         {

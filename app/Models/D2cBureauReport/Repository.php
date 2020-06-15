@@ -27,7 +27,7 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function findByParams(array $input)
+    public function findByParams(array $input, int $after)
     {
         $query = $this->newQuery();
 
@@ -43,6 +43,6 @@ class Repository extends Base\Repository
             $query->where(Entity::USER_ID, $input[Entity::USER_ID]);
         }
 
-        return $query->get()->last();
+        return $query->where(Entity::CREATED_AT, '>=', $after)->get()->last();
     }
 }
