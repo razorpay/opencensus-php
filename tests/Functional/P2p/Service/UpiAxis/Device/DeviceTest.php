@@ -98,7 +98,7 @@ class DeviceTest extends TestCase
                 'receiver'  => '919742417121',
                 'source'    => 'api.test.p2p',
                 'template'  => 'sms.p2p.verification_completed',
-                'sender'    => 'BAJAJP',
+                'sender'    => 'BajajP',
                 'params'    => [
                     'app_name'      => 'Bajaj Finserv MARKETS',
                 ],

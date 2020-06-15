@@ -332,8 +332,8 @@ class Entity extends Base\Entity
     public function getSmsSender()
     {
         $map = [
-            'com.razorpay'                  => 'BAJAJP',
-            'in.bajajfinservmarkets.app'    => 'BAJAJP',
+            'com.razorpay'                  => 'BajajP',
+            'in.bajajfinservmarkets.app'    => 'BajajP',
         ];
 
         return array_get($map, $this->getAppName(), 'RZRPAY');
