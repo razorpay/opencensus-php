@@ -17,6 +17,6 @@ trait OrderEvent
 
         $properties = $event->getProperties();
 
-        $this->trackEvent(OE::EVENT_TYPE, OE::EVENT_VERSION, $eventDetails, $properties);
+        $this->trackEvent(OE::EVENT_TYPE, 'v2', $eventDetails, $properties);
     }
 }
