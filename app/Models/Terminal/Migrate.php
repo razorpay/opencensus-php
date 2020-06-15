@@ -281,9 +281,9 @@ trait Migrate
             return $terminal->getId();
         }, $terminals->all());
 
-        array_sort($fetchedTerminalIds);
+        $fetchedTerminalIds = array_sort($fetchedTerminalIds);
 
-        array_sort($terminalIds);
+        $terminalIds = array_sort($terminalIds);
 
         if ($fetchedTerminalIds !== $terminalIds)
         {
