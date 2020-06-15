@@ -336,10 +336,13 @@ class Service extends Base\Service
      *   "entities":{
      *       "card":["iin", "last4"],
      *       "terminal":["gateway_terminal_id", "gateway_merchant_id"],
+     *       "upi_metadata":["type"]
      *       "gateway_entity":{
      *           "axis_migs":{
      *               "authorize":["vpc_ReceiptNo"]
-     *               }
+     *           },
+     *           "mozart":{
+     *               "capture":["order_id", "data.txn.id"]
      *           }
      *       },
      *   "extra_data":[
@@ -364,13 +367,22 @@ class Service extends Base\Service
      *            },
      *            "terminal": {
      *                "gateway_terminal_id": "test_terminal",
-     *               "gateway_merchant_id": "test_merchant"
-     *           },
-     *           "gateway_entity": {
-     *               "axis_migs": {
-     *             "authorize": {
-     *                       "vpc_ReceiptNo": "492348230fd"
-     *                   }
+     *                "gateway_merchant_id": "test_merchant"
+     *            },
+     *            "upi_metadata": {
+     *                "type": "otm"
+     *            },
+     *            "gateway_entity": {
+     *                "axis_migs": {
+     *                    "authorize": {
+     *                        "vpc_ReceiptNo": "492348230fd"
+     *                    }
+     *                },
+     *                "mozart":{
+     *                    "capture":{
+     *                        "order_id": "21311",
+     *                        "data.txn.id": "33190-11121"
+     *                    }
      *                }
      *            }
      *        }
@@ -378,7 +390,7 @@ class Service extends Base\Service
      *           "ifsc_code": "HDFC0000001"
      *       }
      *    }
-     *}
+     * }
      */
     public function scroogeFetchEntities($input)
     {
@@ -431,13 +443,16 @@ class Service extends Base\Service
                         foreach ($input[RefundConstants::ENTITIES] as $key => $values)
                         {
                             /*
+                             * Nested fetch is supported in Mozart entity since we search in json data
                              * This is the structure of gateway_entity
                              * "gateway_entity":{
-                             *           "axis_migs":{
-                             *               "authorize":["vpc_ReceiptNo"]
-                             *               }
-                             *           }
+                             *      "axis_migs":{
+                             *          "authorize":["vpc_ReceiptNo"]
                              *       },
+                             *       "mozart":{
+                             *          "capture":["order_id", "data.txn.id"]
+                             *       }
+                             *  },
                              */
                             if ($key === RefundConstants::GATEWAY_ENTITY)
                             {
@@ -461,13 +476,48 @@ class Service extends Base\Service
 
                                             foreach ($columns as $column)
                                             {
-                                                $map[$column] = $entity[$column] ?? '';
+                                                // Some values have to be fetched from keys in deeper levels
+                                                // Such keys are accepted as `.` appended string
+                                                // We then split input string and recursively pick value of key
+                                                // If at any level key is not found we return '' empty string
+                                                $value = $entity;
+
+                                                $picker = explode('.', $column);
+
+                                                foreach ($picker as $pick)
+                                                {
+                                                    if (isset($value[$pick]) === true)
+                                                    {
+                                                        $value = $value[$pick];
+                                                    }
+                                                    else
+                                                    {
+                                                        $value = '';
+
+                                                        break;
+                                                    }
+                                                }
+
+                                                $map[$column] = $value;
                                             }
 
                                             $response[RefundConstants::ENTITIES][$key][$gatewayEntity][$gatewayAction] = $map;
                                         }
                                     }
                                 }
+                            }
+                            else if ($key === Constants\Entity::UPI_METADATA)
+                            {
+                                $map = [];
+
+                                $upiMetadataEntity = $this->repo->upi_metadata->fetchByPaymentId($payment->getId());
+
+                                foreach ($values as $value)
+                                {
+                                    $map[$value] = $upiMetadataEntity[$value];
+                                }
+
+                                $response[RefundConstants::ENTITIES][Constants\Entity::UPI_METADATA] = $map;
                             }
                             else
                             {
@@ -536,7 +586,9 @@ class Service extends Base\Service
 
     protected function getExtraDataIfscCode(Entity $refund)
     {
-        return BankCodes::getIfscForBankCode($refund->payment->getBank());
+        $bank = (empty($refund->payment->getBank()) === false) ? $refund->payment->getBank() : '';
+
+        return BankCodes::getIfscForBankCode($bank);
     }
 
     public function fetchMultiple($input)
