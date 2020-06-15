@@ -3826,7 +3826,7 @@ class Route
         'partner_config_create'                    => '*',
         'partner_config_fetch'                     => '*',
         'partner_config_edit'                      => '*',
-        'vault_token_create'                       => Permission::MAKE_API_CALL,
+        'vault_token_create'                       => Permission::VAULT_TOKEN_CREATE,
         'merchant_user_reset_password'             => Permission::USER_PASSWORD_RESET,
         'subscription_update_data'                 => Permission::MODIFY_SUBSCRIPTION_DATA,
         'subscription_payment_process'             => Permission::MODIFY_SUBSCRIPTION_DATA,

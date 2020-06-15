@@ -375,6 +375,10 @@ return [
                 'description'   => 'Permission to make raw admin API calls',
                 'assignable'    => true,
             ],
+            Permission::VAULT_TOKEN_CREATE                 => [
+                'description'   => 'Permission to create vault token API call',
+                'assignable'    => true,
+            ],
             Permission::SCHEDULE_CREATE                     => '',
             Permission::SCHEDULE_FETCH                      => '',
             Permission::SCHEDULE_FETCH_MULTIPLE             => '',

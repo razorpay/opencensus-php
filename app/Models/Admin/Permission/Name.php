@@ -383,6 +383,7 @@ class Name
     const CREATE_WEBHOOK_STORK_BANKING_BULK   = 'create_webhook_stork_banking_bulk';
     const MANAGE_PAYOUT_DOWNTIME              = 'manage_payout_downtime';
     const VIEW_PAYOUT_DOWNTIME                = 'view_payout_downtime';
+    const VAULT_TOKEN_CREATE                  = 'vault_token_create';
 
 
     // Permissions for Financial Data Service - Razorpay Capital
