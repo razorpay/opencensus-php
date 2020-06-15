@@ -300,16 +300,23 @@ class FundTransfer extends Base
             $request[Constants::AMOUNT] = $this->source->getBaseAmount();
         }
 
+        $source = $this->fta->source;
+
         if (($channel === Channel::RBL) and ($sourceType === Entity::PAYOUT))
         {
-            $source = $this->fta->source;
-
             if (method_exists($source, 'getSourceFtsFundAccountId'))
             {
                 $request[Constants::TRANSFER] += [
                     Constants::PREFERRED_SOURCE_ACCOUNT_ID => (int) $this->fta->source->getSourceFtsFundAccountId(),
                 ];
             }
+        }
+
+        if (method_exists($source, 'hasBatch'))
+        {
+            $request[Constants::TRANSFER] += [
+                Constants::IS_BATCH => $this->fta->source->hasBatch(),
+            ];
         }
 
         return $request;

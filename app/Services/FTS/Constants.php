@@ -160,6 +160,8 @@ final class Constants
 
     const CA_PAYOUT                      = 'CA_PAYOUT';
 
+    const IS_BATCH                       = 'is_batch';
+
     public static function getProducts(): array
     {
         return [
