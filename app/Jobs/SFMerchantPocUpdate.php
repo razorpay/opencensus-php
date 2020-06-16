@@ -5,6 +5,7 @@ namespace RZP\Jobs;
 use RZP\Trace\TraceCode;
 use RZP\Models\Admin\Group;
 use RZP\Models\Admin\Admin;
+use RZP\Base\RuntimeManager;
 use Razorpay\Trace\Logger as Trace;
 
 class SFMerchantPocUpdate extends Job
@@ -32,6 +33,8 @@ class SFMerchantPocUpdate extends Job
     public function __construct(string $mode, array $value, array $currentAdminIds)
     {
         parent::__construct($mode);
+
+        RuntimeManager::setMemoryLimit('2048M');
 
         $this->value = $value;
 

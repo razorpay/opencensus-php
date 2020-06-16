@@ -180,7 +180,7 @@ class Core extends Base\Core
      */
     public function removeMerchantFromAdmins(Merchant\Entity $merchant, array $adminIds)
     {
-        $this->trace->info(TraceCode::MERCHANT_GROUP_DETACH_REQUEST,
+        $this->trace->info(TraceCode::MERCHANT_ADMIN_DETACH_REQUEST,
                            [
                                'action'   => 'detach_in_merchant_map',
                                'merchantId' => $merchant->getId(),
