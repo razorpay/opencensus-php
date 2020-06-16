@@ -221,10 +221,39 @@ class CustomCache implements \Illuminate\Contracts\Cache\Store
      * @param string $key
      * @param mixed $value
      * @return int|bool
+     * @throws \Throwable
      */
     public function decrement($key, $value = 1)
     {
-        // TODO: Implement decrement() method.
+        $decrementedValue = $this->redislabs->decrement($key, $value);
+
+        try
+        {
+            if ($this->ecCluster->get($key) !== null)
+            {
+                $this->ecCluster->decrement($key, $value);
+
+                return ;
+            }
+
+            // set the key by getting data from old redis
+            // $decrementedValue will be negative value.
+            $this->ecCluster->increment($key, $decrementedValue);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::CRITICAL,
+                TraceCode::REDIS_DUAL_WRITE_STORE_ERROR,
+                ['keys' => $key]);
+
+            $this->redislabs->increment($key, $value);
+
+            $this->ecCluster->forget($key);
+
+            throw $e;
+        }
     }
 
     /**
