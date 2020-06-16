@@ -130,8 +130,7 @@ export default class CongfigurationContainer extends Component {
             {/* <PaymentSettings /> */}
             {this.props.user.isActivated &&
             this.props.mode === 'live' &&
-            config.fee_bearer !== 'customer' &&
-            showWhenUtil({ featureEnabled: 'offers' }) ? (
+            config.fee_bearer !== 'customer' ? (
               <PaypalOnboarding />
             ) : null}
             <DefaultRefundSpeed />

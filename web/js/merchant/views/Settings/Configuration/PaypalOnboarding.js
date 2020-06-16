@@ -110,7 +110,7 @@ export default class PaypalOnboarding extends Component {
       <React.Fragment>
         <div
           class="panel panel-default paypal-auto-onboarding"
-          id="paypal-onboard"
+          id="paypal-auto-onboarding"
         >
           <div class="panel-heading">
             <span class="title">PayPal </span>{' '}
