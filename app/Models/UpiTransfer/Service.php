@@ -42,7 +42,7 @@ class Service extends Base\Service
 
             $gatewayClass = $this->getGatewayClass($input, $gateway);
 
-            $gatewayResponse = $gatewayClass->preProcessServerCallback($input);
+            $gatewayResponse = $gatewayClass->preProcessServerCallback($input, false, true);
 
             $terminal = $this->terminal ?: $this->getTerminalFromGatewayResponse($gatewayResponse, $gateway, $gatewayClass);
 

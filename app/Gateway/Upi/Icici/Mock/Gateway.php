@@ -23,8 +23,12 @@ class Gateway extends Icici\Gateway
 
     /**
      * This is the privateKey for the Gateway Client
+     *
+     * @param bool $isUpiTransfer
+     *
+     * @return string
      */
-    protected function getPrivateKey(): string
+    protected function getPrivateKey(bool $isUpiTransfer): string
     {
         return file_get_contents(__DIR__ . '/keys/mockclient.key');
     }

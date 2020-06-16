@@ -245,14 +245,15 @@ class Gateway extends Base\Gateway
     }
 
     /**
-     * @param  string $response
-     * @param bool    $forceDecryption
+     * @param string $response
+     * @param bool   $forceDecryption
+     * @param bool   $isUpiTransfer
      *
      * @return array response as associative array
      * @throws Exception\GatewayErrorException
      * @throws Exception\RuntimeException
      */
-    protected function parseGatewayResponse(string $response, bool $forceDecryption = false): array
+    protected function parseGatewayResponse(string $response, bool $forceDecryption = false, bool $isUpiTransfer = false): array
     {
         if ($forceDecryption === false)
         {
@@ -282,7 +283,7 @@ class Gateway extends Base\Gateway
 
         try
         {
-            $response = $this->decrypt($response);
+            $response = $this->decrypt($response, $isUpiTransfer);
         }
         catch (ErrorException $e)
         {
@@ -343,18 +344,26 @@ class Gateway extends Base\Gateway
      * This is the private key used for
      * decrypting responses we get from the
      * gateway server
-     * @see getPublicKey
+     *
+     * @param bool $isUpiTransfer : For upi transfer, new private key will be used for decryption of callback responses.
+     *
      * @return string Private Key
      */
-    protected function getPrivateKey(): string
+    protected function getPrivateKey(bool $isUpiTransfer): string
     {
-        $key = $this->config['live_private_key'];
+        $configKey = 'live_private_key';
 
         if ($this->mode === Mode::TEST)
         {
-            $key = $this->config['test_private_key'];
+            $configKey = 'test_private_key';
         }
 
+        if ($isUpiTransfer === true)
+        {
+            $configKey = 'ut_'.$configKey;
+        }
+
+        $key = $this->config[$configKey];
         // The trim is to make sure that the key doesn't end with
         // an extra newline
         return trim(str_replace('\n', "\n", $key));
@@ -392,14 +401,17 @@ class Gateway extends Base\Gateway
 
     /**
      * Decrypts responses from the ICICI API
-     * @param  string $data
+     *
+     * @param string $data
+     * @param bool   $isUpiTransfer
+     *
      * @return string
      */
-    protected function decrypt(string $data): string
+    protected function decrypt(string $data, bool $isUpiTransfer = false): string
     {
         $rsa = $this->getCipherInstance();
 
-        $key = $this->getPrivateKey();
+        $key = $this->getPrivateKey($isUpiTransfer);
 
         $rsa->loadKey($key, RSA::PRIVATE_FORMAT_PKCS1);
 
@@ -996,17 +1008,19 @@ class Gateway extends Base\Gateway
      * Takes in S2S request as a body string
      * and returns the parsed response as an array
      *
-     * @param  String $body Request body
+     * @param String $body Request body
      *
-     * @param bool    $isBharatQr
+     * @param bool   $isBharatQr
+     *
+     * @param bool   $isUpiTransfer
      *
      * @return array
      * @throws Exception\GatewayErrorException
      * @throws Exception\RuntimeException
      */
-    public function preProcessServerCallback($body, $isBharatQr = false): array
+    public function preProcessServerCallback($body, $isBharatQr = false, bool $isUpiTransfer = false): array
     {
-        $response = $this->parseGatewayResponse($body, true);
+        $response = $this->parseGatewayResponse($body, true, $isUpiTransfer);
 
         $traceResponse = $this->maskUpiDataForTracing($response, [
             Entity::VPA             => Fields::PAYER_VA,
