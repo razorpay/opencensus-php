@@ -77,7 +77,8 @@ class Entity extends Base\PublicEntity
     // Indicates whether the bank transfer corresponds
     // to an active virtual account on our side. If
     // false, this transfer will need to be refunded
-    const EXPECTED           = 'expected';
+    const EXPECTED          = 'expected';
+    const UNEXPECTED_REASON = 'unexpected_reason';
 
     // All entities are created and process in the bank transfer process flow.
     // In the notify flow, we simply mark the bank transfer as a confirmed one.

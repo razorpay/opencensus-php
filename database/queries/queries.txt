@@ -5777,6 +5777,11 @@ ALTER TABLE payment_links
 ALTER TABLE merchant_banks
     Add COLUMN cred TINYINT(1) NOT NULL DEFAULT 0;
 
+ALTER TABLE bank_transfers
+    ADD COLUMN unexpected_reason VARCHAR(255) DEFAULT NULL;
+
+ALTER TABLE upi_transfers
+    ADD COLUMN unexpected_reason VARCHAR(255) DEFAULT NULL;
+
 ALTER TABLE merchant_details
     ADD COLUMN `cin_verification_status` varchar(30) DEFAULT NULL;
-

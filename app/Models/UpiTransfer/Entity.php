@@ -42,7 +42,8 @@ class Entity extends Base\PublicEntity
     // Indicates whether the upi transfer corresponds
     // to an active virtual account on our side. If
     // false, this transfer will need to be refunded
-    const EXPECTED = 'expected';
+    const EXPECTED          = 'expected';
+    const UNEXPECTED_REASON = 'unexpected_reason';
 
     // Public alias for PROVIDER_REFERENCE_ID
     const BANK_REFERENCE   = 'bank_reference';

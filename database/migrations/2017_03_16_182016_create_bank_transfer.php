@@ -71,6 +71,10 @@ class CreateBankTransfer extends Migration
             $table->tinyInteger(BankTransfer::EXPECTED)
                   ->default(0);
 
+            $table->string(BankTransfer::UNEXPECTED_REASON)
+                  ->nullable()
+                  ->default(null);
+
             $table->tinyInteger(BankTransfer::NOTIFIED)
                   ->default(0);
 

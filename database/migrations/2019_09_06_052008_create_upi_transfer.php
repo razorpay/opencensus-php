@@ -31,6 +31,10 @@ class CreateUpiTransfer extends Migration
             $table->tinyInteger(UpiTransfer::EXPECTED)
                   ->default(0);
 
+            $table->string(UpiTransfer::UNEXPECTED_REASON)
+                  ->nullable()
+                  ->default(null);
+
             $table->integer(UpiTransfer::AMOUNT)
                   ->unsigned();
 
