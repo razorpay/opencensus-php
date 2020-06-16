@@ -84,7 +84,7 @@ class PaymentReconciliate extends SubReconciliator\PaymentReconciliate
         }
 
         // If the value is 088232 in sheet, the parsed value would be 88232. This prepends the required 0s
-        $authCode = sprintf("%06s", $authCode);
+        $authCode = sprintf("%06d", $authCode);
 
         return $authCode;
     }

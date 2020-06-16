@@ -32,7 +32,7 @@ class Reconciliation extends Job
 
     const MAX_KUBERNETES_JOB_COUNT = 16;
 
-    const KUBERNETES_RECON_JOB_LIST = 'recon_kubernetes_recon_job_list';
+    const KUBERNETES_RECON_JOB_LIST = '{recon}_kubernetes_recon_job_list';
 
     // will release the batch into queue after 15 minutes again.
     const RELEASE_WAIT_SECS = 900;
@@ -72,7 +72,7 @@ class Reconciliation extends Job
 
             $app = App::getFacadeRoot();
 
-            $redis = $app['redisdualwrite']->connection();
+            $redis = $app['redis']->connection();
 
             $jobAction = $this->getJobActionForBatch($redis, $batch);
 
@@ -147,7 +147,7 @@ class Reconciliation extends Job
      */
     protected function getJobActionForBatch($redis, $batch)
     {
-        $data = $redis->hGetAll(self::KUBERNETES_RECON_JOB_LIST);
+        $data = $redis->HGETALL(self::KUBERNETES_RECON_JOB_LIST);
 
         $this->trace->debug(
             TraceCode::KUBERNETES_BATCH_JOB_DEBUG,
@@ -162,7 +162,7 @@ class Reconciliation extends Job
             // already scheduled, another request can be deleted
             $this->delete();
 
-            $redis->hDel(Reconciliation::KUBERNETES_RECON_JOB_LIST, $batch->getId());
+            $redis->HDEL(Reconciliation::KUBERNETES_RECON_JOB_LIST, $batch->getId());
 
             $jobAction = self::JOB_DELETED;
         }
