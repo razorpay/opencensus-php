@@ -41,7 +41,7 @@ class PromoterDetailsEntity extends Component {
     };
   }
 
-  componentDidMount() {
+  componentWillMount() {
     const { loanApplicationDetails } = this.props;
     if (
       loanApplicationDetails.business_details.data &&

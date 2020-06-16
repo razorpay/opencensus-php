@@ -396,3 +396,18 @@ export const DOCUMENT_GROUP_NAMES_MAP = {
   proof_of_identification: 'Owner Pan',
   income_proof: 'Bank Account Statement',
 };
+
+export const VERIFICATION_TIME_SLOTS = [
+  {
+    text: '8 AM - 12 PM',
+    value: 'RZP_SLOT_1',
+  },
+  {
+    text: '12 PM - 4 PM',
+    value: 'RZP_SLOT_2',
+  },
+  {
+    text: '4 PM - 8 PM',
+    value: 'RZP_SLOT_3',
+  },
+];

@@ -92,8 +92,7 @@ const OutlineLockIcon = <i class="i i-outline-lock" />;
           amount: application.requested_product_attributes.amount,
           credit_request_purpose:
             application.requested_product_attributes.credit_request_purpose,
-          expected_tenure:
-            application.requested_product_attributes.expected_tenure,
+          expected_tenure: application.requested_product_attributes.tenure,
         },
         hasLoanAttributesChanged: isDirty('loanee-business-details')(state, [
           'amount',

@@ -43,19 +43,23 @@ class SideNavigation extends Component {
       activeState
     );
 
+    const isFinalState =
+      Object.keys(APPLICATION_STATE_GROUPS).indexOf(parentStep) ===
+      Object.keys(APPLICATION_STATE_GROUPS).length - 1;
+
     //both cannot be true
     const isPendingState =
-      isCurrentStateGroup && PENDING_APPLICATION_STATES.includes(activeState);
+      isCurrentStateGroup && PENDING_APPLICATION_STATES.includes(currentState);
     const isErrorState =
-      isCurrentStateGroup && ERROR_STATES.includes(activeState);
+      isCurrentStateGroup && ERROR_STATES.includes(currentState);
 
     const classList = [
-      ...(isCurrentStateGroup ? ['active'] : []),
+      // ...(isCurrentStateGroup ? [''] : []),
       ...(isActiveStateGroup || isCurrentStateGroup ? ['expanded'] : []),
       ...(this.stepFound
         ? ['not_started']
-        : isCurrentStateGroup
-        ? ['partial-complete']
+        : isCurrentStateGroup && !isFinalState
+        ? ['partial-complete', 'active']
         : ['completed']),
       ...(isPendingState ? ['pending'] : []),
       ...(isErrorState ? ['error'] : []),

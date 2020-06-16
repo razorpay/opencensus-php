@@ -12,7 +12,7 @@ import Form from 'common/new-ui/Form';
 import { states } from 'merchant/helpers/data';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { FormLoader } from '../components/FormSectionLoadingSkeleton';
-import { APPLICATION_STATES } from '../constants';
+import { APPLICATION_STATES, VERIFICATION_TIME_SLOTS } from '../constants';
 import { isPreceedingState } from '../utils';
 
 @connect(
@@ -35,20 +35,7 @@ class VerificationSlotSelection extends Component {
       date_slot_error: null,
       selected_address: 'business',
     };
-    this.timeSlots = [
-      {
-        text: '8 AM - 12 PM',
-        value: 'RZP_SLOT_1',
-      },
-      {
-        text: '12 PM - 4 PM',
-        value: 'RZP_SLOT_2',
-      },
-      {
-        text: '4 PM - 8 PM',
-        value: 'RZP_SLOT_3',
-      },
-    ];
+    this.timeSlots = VERIFICATION_TIME_SLOTS;
   }
 
   isDateValid = day => {

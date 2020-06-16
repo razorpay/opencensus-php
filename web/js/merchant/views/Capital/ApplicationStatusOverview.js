@@ -86,9 +86,15 @@ class ApplicationStatusOverview extends Component {
     const isErrorState =
       isCurrentStateGroup && ERROR_STATES.includes(applicationStatus);
 
+    const isFinalState =
+      Object.keys(APPLICATION_STATE_GROUPS).indexOf(step) ===
+      Object.keys(APPLICATION_STATE_GROUPS).length - 1;
+
     const classList = [
       ...(isCurrentStateGroup
-        ? ['active', 'highlight']
+        ? isFinalState
+          ? ['completed']
+          : ['active', 'highlight']
         : this.stepFound
         ? ['not_started']
         : ['completed']),

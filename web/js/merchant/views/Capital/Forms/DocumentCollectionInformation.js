@@ -6,7 +6,11 @@ import {
 } from 'merchant/reducers/capital';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { FormLoader } from '../components/FormSectionLoadingSkeleton';
-import { APPLICATION_STATES, BUSINESS_TYPES } from '../constants';
+import {
+  APPLICATION_STATES,
+  BUSINESS_TYPES,
+  VERIFICATION_TIME_SLOTS,
+} from '../constants';
 import { states } from 'merchant/helpers/data';
 import { isPreceedingState } from '../utils';
 import { AsyncBtn } from 'common/new-ui/Button';
@@ -33,25 +37,22 @@ class DocumentCollectionInformation extends Component {
     const { document_groups } = loanApplicationDetails;
     const masterDocuments = document_groups.data.document_groups.reduce(
       (acc, docGroup) =>
-        docGroup.master_documents ? [...acc, ...docGroup.master_documents] : acc
+        docGroup.master_documents
+          ? [...acc, ...docGroup.master_documents]
+          : acc,
+      []
     );
 
     return masterDocuments.find(doc => doc.id === masterDocId);
   };
 
   getOtherVerificationDocument = document => {
+    if (!document) return null;
+
     const otherDocumentsLabels = {
       dcol_nach: 'Nach Document',
     };
-    if (
-      document &&
-      document.verfication_type === 'DOCUMENT' &&
-      otherDocumentsLabels[document.task_code]
-    ) {
-      return otherDocumentsLabels[document.task_code];
-    } else {
-      return null;
-    }
+    return otherDocumentsLabels[document.task_code];
   };
 
   getDocuments = () => {
@@ -161,7 +162,13 @@ class DocumentCollectionInformation extends Component {
             </div>
             <div class="documents-wrapper flex slot-details-wrapper">
               <div class="section">
-                <p>{scheduleDetails.slot_timing}</p>
+                <p>
+                  {
+                    VERIFICATION_TIME_SLOTS.find(
+                      slot => slot.value === scheduleDetails.slot_timing
+                    ).text
+                  }
+                </p>
                 <p>{moment(scheduleDetails.slot_date).format('ll')}</p>
               </div>
               <div class="section">
