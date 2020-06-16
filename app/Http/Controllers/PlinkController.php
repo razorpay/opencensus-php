@@ -242,5 +242,16 @@ class PlinkController extends Controller
 
         return $headers;
     }
+
+    public function plDemoCors()
+    {
+        $response = ApiResponse::json([]);
+
+        $response->headers->set('Access-Control-Allow-Origin', $this->app['config']->get('app.razorpay_website_url'));
+
+        $response->headers->set('Access-Control-Allow-Headers', 'Content-Type');
+
+        return $response;
+    }
 }
 

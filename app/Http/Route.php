@@ -744,6 +744,7 @@ class Route
         'payment_links_service_sub_route'          => ['any',      'payment_links/{path?}',                          'PlinkController@sendRequest'                                       ],
         'payment_links_service_count_route'        => ['any',      'payment_links_count',                            'PlinkController@sendRequest'                                       ],
         'payment_links_demo'                       => ['post',     'payment_links_demo',                             'PlinkController@plDemo'                                            ],
+        'payment_links_demo_cors'                  => ['options',  'payment_links_demo',                             'PlinkController@plDemoCors'                                        ],
         'payment_links_bulk_expire'                => ['post',     'payment_links_bulk_expire',                      'PlinkController@sendRequest'                                       ],
 
         'app_delete_token'                         => ['delete',   'apps/tokens/{token}',                            'CustomerController@deleteTokenForGlobalCustomer'                   ],
@@ -4200,7 +4201,6 @@ class Route
     ];
 
     public static $direct = [
-        'payment_links_demo',
         'payment_links_service_hosted_page',
         'third_party_health_check',
         'channel_health_check',
@@ -4281,6 +4281,8 @@ class Route
         'gateway_payment_callback_upi_airtel',
         'payment_page_create_order',
         'payment_page_create_order_option',
+        'payment_links_demo',
+        'payment_links_demo_cors',
 
         // Offline QR
         'activate_test_offline_device',
