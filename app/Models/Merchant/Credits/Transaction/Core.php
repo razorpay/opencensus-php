@@ -12,10 +12,6 @@ use RZP\Models\Merchant\Credits;
 
 class Core extends Base\Core
 {
-    const MERCHANT_CREDIT_TYPE_MUTEX_PREFIX = 'merchant_credit_type_';
-    const MERCHANT_CREDIT_TYPE_MUTEX_TIMEOUT = 30; // seconds
-    const MERCHANT_CREDIT_TYPE_MUTEX_ACQUIRE_RETRY_LIMIT = 5;
-
     public function create(Credits\Entity $credit, Transaction\Entity $txn, string $creditsUsed)
     {
         $creditTxn = new Entity;
@@ -42,7 +38,7 @@ class Core extends Base\Core
     {
         $mutex = App::getFacadeRoot()['api.mutex'];
 
-        $mutexKey = self::MERCHANT_CREDIT_TYPE_MUTEX_PREFIX . $txn->merchant->getId() . '_' . $creditType;
+        $mutexKey = Credits\Constants::MERCHANT_CREDIT_TYPE_MUTEX_PREFIX . $txn->merchant->getId() . '_' . $creditType;
 
         $mutex->acquireAndRelease(
             $mutexKey,
@@ -75,9 +71,9 @@ class Core extends Base\Core
                     }
                 });
             },
-            self::MERCHANT_CREDIT_TYPE_MUTEX_TIMEOUT,
+            Credits\Constants::MERCHANT_CREDIT_TYPE_MUTEX_TIMEOUT,
             ErrorCode::BAD_REQUEST_ANOTHER_CREDITS_OPERATION_IN_PROGRESS,
-            self::MERCHANT_CREDIT_TYPE_MUTEX_ACQUIRE_RETRY_LIMIT
+            Credits\Constants::MERCHANT_CREDIT_TYPE_MUTEX_ACQUIRE_RETRY_LIMIT
         );
     }
 
@@ -130,7 +126,7 @@ class Core extends Base\Core
 
         $mutex = App::getFacadeRoot()['api.mutex'];
 
-        $mutexKey = self::MERCHANT_CREDIT_TYPE_MUTEX_PREFIX . $txn->merchant->getId() . '_' . $creditType;
+        $mutexKey = Credits\Constants::MERCHANT_CREDIT_TYPE_MUTEX_PREFIX . $txn->merchant->getId() . '_' . $creditType;
 
         $mutex->acquireAndRelease(
             $mutexKey,
@@ -150,9 +146,9 @@ class Core extends Base\Core
                     }
                 });
             },
-            self::MERCHANT_CREDIT_TYPE_MUTEX_TIMEOUT,
+            Credits\Constants::MERCHANT_CREDIT_TYPE_MUTEX_TIMEOUT,
             ErrorCode::BAD_REQUEST_ANOTHER_CREDITS_OPERATION_IN_PROGRESS,
-            self::MERCHANT_CREDIT_TYPE_MUTEX_ACQUIRE_RETRY_LIMIT
+            Credits\Constants::MERCHANT_CREDIT_TYPE_MUTEX_ACQUIRE_RETRY_LIMIT
         );
     }
 

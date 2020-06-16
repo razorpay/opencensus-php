@@ -2,11 +2,13 @@
 
 namespace RZP\Models\Merchant\Credits;
 
+use App;
+
 use RZP\Exception;
 use RZP\Models\Base;
-use RZP\Models\Merchant;
-use RZP\Models\Merchant\Credits;
+use RZP\Error\ErrorCode;
 use RZP\Models\Admin\Action;
+use RZP\Models\Merchant\Credits;
 
 class Core extends Base\Core
 {
@@ -84,21 +86,34 @@ class Core extends Base\Core
         //
         $creditsLog->setAuditAction(Action::EDIT_MERCHANT_CREDITS);
 
-        $creditsLog->getValidator()->validateNewCreditsValue($creditsLog, (int) $creditsValue);
+        $mutex = App::getFacadeRoot()['api.mutex'];
 
-        return $this->repo->transaction(function() use ($creditsLog, $creditsValue)
-        {
-            $creditsDifference = $creditsValue - $creditsLog->getValue();
+        $mutexKey = Credits\Constants::MERCHANT_CREDIT_TYPE_MUTEX_PREFIX . $creditsLog->merchant->getId() . '_' . $creditsLog->getType();
 
-            $creditsLog->setValue($creditsValue);
+        return $mutex->acquireAndRelease(
+            $mutexKey,
+            function() use ($creditsLog, $creditsValue)
+            {
+                $creditsLog->getValidator()->validateNewCreditsValue($creditsLog, (int) $creditsValue);
 
-            $this->repo->saveOrFail($creditsLog);
+                return $this->repo->transaction(function() use ($creditsLog, $creditsValue)
+                {
+                    $creditsDifference = $creditsValue - $creditsLog->getValue();
 
-            $type = $creditsLog->getType();
+                    $creditsLog->setValue($creditsValue);
 
-            $this->updateCreditsInMerchantAccount($creditsLog->merchant, $creditsDifference, $type);
+                    $this->repo->saveOrFail($creditsLog);
 
-            return $creditsLog;
-        });
+                    $type = $creditsLog->getType();
+
+                    $this->updateCreditsInMerchantAccount($creditsLog->merchant, $creditsDifference, $type);
+
+                    return $creditsLog;
+                });
+            },
+            Credits\Constants::MERCHANT_CREDIT_TYPE_MUTEX_TIMEOUT,
+            ErrorCode::BAD_REQUEST_ANOTHER_CREDITS_OPERATION_IN_PROGRESS,
+            Credits\Constants::MERCHANT_CREDIT_TYPE_MUTEX_ACQUIRE_RETRY_LIMIT
+        );
     }
 }
