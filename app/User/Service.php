@@ -258,7 +258,7 @@ class Service extends Base\Service
             //temporarily added and will be removed after the root cause is fixed.
             if (in_array('No db records found.', $error) === true)
             {
-                return [['Please delete cookies data. Refresh the page and try sign in again.'], null];
+                return [['The email or password combination you entered doesn\'t exist'], null];
             }
 
             return [['Incorrect email or password. To reset your password click on "Forgot Password" link.'], null];
