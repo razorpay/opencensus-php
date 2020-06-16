@@ -104,7 +104,7 @@ export default class PaypalOnboarding extends Component {
 
   render() {
     let status = this.props.terminals.length && this.props.terminals[0].status;
-    const showStatus =
+    let showStatus =
       ['created', 'activated', 'rejected', 'pending'].indexOf(status) !== -1;
     return (
       <React.Fragment>
@@ -117,7 +117,7 @@ export default class PaypalOnboarding extends Component {
             <a
               class={`highlight ${showStatus ? 'know-more' : ''}`}
               target="_blank"
-              style={{ marginLeft: '10px' }}
+              style={{ marginLeft: '10px', borderColor: '#EBEFF0' }}
               href="https://razorpay.com/docs/payment-methods/paypal"
             >
               Know more
@@ -125,6 +125,7 @@ export default class PaypalOnboarding extends Component {
             </a>
             {showStatus ? (
               <span
+                style={{ marginLeft: '20px' }}
                 class={`status-pill status-pill-${(() => {
                   if (status === 'activated') {
                     return 'success';
