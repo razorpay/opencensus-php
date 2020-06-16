@@ -21,7 +21,7 @@ class Raven extends BaseRaven
 
     public function verifyOtp(array $input, bool $mock = false): array
     {
-        if ($input[self::OTP] !== self::MOCK_VALID_OTP)
+        if (in_array($input['otp'], self::MOCK_VALID_OTPS) === false)
         {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_INCORRECT_OTP);
         }
@@ -32,7 +32,7 @@ class Raven extends BaseRaven
     public function generateOtp(array $input): array
     {
         return [
-            self::OTP        => self::MOCK_VALID_OTP,
+            self::OTP        => self::MOCK_VALID_OTPS[0],
             self::EXPIRES_AT => Carbon::now()->addMinutes(30)->timestamp,
         ];
     }

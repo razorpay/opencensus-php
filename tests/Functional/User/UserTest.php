@@ -771,7 +771,7 @@ class UserTest extends TestCase
         $content = [
             'email'    => $user['email'],
             'password' => 'hello123',
-            'otp'      => 'X' . \RZP\Services\Raven::MOCK_VALID_OTP,
+            'otp'      => 'X' . \RZP\Services\Raven::MOCK_VALID_OTPS[0],
         ];
 
         $testData['request']['content'] = $content;
@@ -796,7 +796,7 @@ class UserTest extends TestCase
         $content = [
             'email'    => $user['email'],
             'password' => 'hello123',
-            'otp'      => \RZP\Services\Raven::MOCK_VALID_OTP,
+            'otp'      => \RZP\Services\Raven::MOCK_VALID_OTPS[0],
         ];
 
         $testData['request']['content'] = $content;
