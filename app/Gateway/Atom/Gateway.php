@@ -649,7 +649,7 @@ class Gateway extends Base\Gateway
             $attributes[Entity::STATUS] = Status::SUCCESS;
 
             if ((empty($gatewayPayment[Entity::GATEWAY_PAYMENT_ID]) === false) and
-                ($gatewayPayment[Entity::GATEWAY_PAYMENT_ID] !== $content[VerifyResponseFields::GATEWAY_TRANSACTION_ID]))
+                (trim($gatewayPayment[Entity::GATEWAY_PAYMENT_ID]) !== trim($content[VerifyResponseFields::GATEWAY_TRANSACTION_ID])))
             {
                 throw new Exception\LogicException(
                     'Gateway Payment ID Mismatch',
@@ -664,7 +664,7 @@ class Gateway extends Base\Gateway
             }
 
             if ((empty($gatewayPayment[Entity::BANK_PAYMENT_ID]) === false) and
-                ($gatewayPayment[Entity::BANK_PAYMENT_ID] !== $content[VerifyResponseFields::BANK_TRANSACTION_ID]))
+                (trim($gatewayPayment[Entity::BANK_PAYMENT_ID]) !== trim($content[VerifyResponseFields::BANK_TRANSACTION_ID])))
             {
                 throw new Exception\LogicException(
                     'Bank Payment ID Mismatch',
@@ -678,9 +678,9 @@ class Gateway extends Base\Gateway
                 );
             }
 
-            $attributes[Entity::GATEWAY_PAYMENT_ID] = $content[VerifyResponseFields::GATEWAY_TRANSACTION_ID];
+            $attributes[Entity::GATEWAY_PAYMENT_ID] = trim($content[VerifyResponseFields::GATEWAY_TRANSACTION_ID]);
 
-            $attributes[Entity::BANK_PAYMENT_ID] = $content[VerifyResponseFields::BANK_TRANSACTION_ID];
+            $attributes[Entity::BANK_PAYMENT_ID] = trim($content[VerifyResponseFields::BANK_TRANSACTION_ID]);
         }
 
         return $attributes;
