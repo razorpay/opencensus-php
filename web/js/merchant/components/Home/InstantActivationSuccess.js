@@ -30,10 +30,21 @@ export default ({
             <p>{content}</p>
           ) : (
             <>
-              <p>You can now start accepting payments from your customers.</p>
+              <p>You can start accepting payments for your account now.</p>
               <p>
-                However, payments will be settled to your account only after KYC
-                verification.
+                Settlements are subject to account approval based on KYC and
+                risk review. If we need any clarification we will reach out to
+                you on your registered email ID.
+              </p>
+              <p>
+                For more information refer to our{' '}
+                <a
+                  href="https://razorpay.com/terms/"
+                  target="_blank"
+                  rel="noopener"
+                >
+                  terms and conditions
+                </a>.
               </p>
             </>
           )}

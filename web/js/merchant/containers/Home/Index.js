@@ -75,32 +75,6 @@ const getPreviousDates = ({ startDate, endDate }) => {
   };
 };
 
-const KycFormSuccess = ({
-  onClose,
-  onGoToDashboard,
-  isWhitelistFlow,
-  user,
-}) => (
-  <InstantActivationSuccess
-    title="KYC under review"
-    subtitle="Your KYC Form has been submitted"
-    content={
-      <div>
-        {isWhitelistFlow && (
-          <p>Meanwhile, you can continue to accept payments using Razorpay.</p>
-        )}
-        <div>
-          We will reach out on your contact email for further clarifications if
-          needed. The review process usually takes {activationDuration}.
-        </div>
-      </div>
-    }
-    onClose={onClose}
-    onGoToDashboard={onGoToDashboard}
-    user={user}
-  />
-);
-
 const bodyClass = ' analytics-v2-active';
 
 // used to show titles for sections and also GA

@@ -1,6 +1,6 @@
 import rolesList from 'merchant/helpers/permissions/roles-list';
 
-export const activationDuration = '4-5 working days';
+export const activationDuration = '7-8 working days';
 
 export const states = {
   AN: 'Andaman And Nicobar',

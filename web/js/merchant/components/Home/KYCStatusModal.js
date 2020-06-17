@@ -26,8 +26,10 @@ const MODAL_CONTENT = {
       <div>
         <p>Great, thank you for providing requested clarifications!</p>
         <p>
-          We’ll review the form and get back to you in 4-5 days. Meanwhile, you
-          can continue accepting payments.
+          We’ll review the form and get back to you in {activationDuration}.{' '}
+          {args.isWhitelistFlow
+            ? 'Meanwhile, you can continue accepting payments.'
+            : ''}
         </p>
       </div>
     ),
