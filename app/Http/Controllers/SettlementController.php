@@ -323,4 +323,112 @@ class SettlementController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function serviceFetch()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->serviceFetch($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function serviceFetchMultiple()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->serviceFetchMultiple($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function merchantConfigGet()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->merchantConfigGet($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function merchantConfigCreate()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->merchantConfigCreate($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function merchantConfigUpdate()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->merchantConfigUpdate($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function bankAccountCreate()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->bankAccountCreate($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function bankAccountUpdate()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->bankAccountUpdate($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function bankAccountGet()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->bankAccountGet($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function bankAccountDelete()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->bankAccountDelete($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function scheduleCreate()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->scheduleCreate($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function scheduleGet()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->scheduleGet($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function scheduleGetIds()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->scheduleGetIds($input);
+
+        return ApiResponse::json($data);
+    }
 }

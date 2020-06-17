@@ -597,4 +597,64 @@ class Service extends Base\Service
 
         return $txns->toArrayPublic();
     }
+
+    public function serviceFetch(array $input) : array
+    {
+        return app('settlements_dashboard')->fetch($input);
+    }
+
+    public function serviceFetchMultiple(array $input) : array
+    {
+        return app('settlements_dashboard')->fetchMultiple($input);
+    }
+
+    public function merchantConfigGet(array $input) : array
+    {
+        return app('settlements_dashboard')->merchantConfigGet($input);
+    }
+
+    public function merchantConfigCreate(array $input) : array
+    {
+        return app('settlements_dashboard')->merchantConfigCreate($input);
+    }
+
+    public function merchantConfigUpdate(array $input) : array
+    {
+        return app('settlements_dashboard')->merchantConfigUpdate($input);
+    }
+
+    public function bankAccountCreate(array $input) : array
+    {
+        return app('settlements_dashboard')->bankAccountCreate($input);
+    }
+
+    public function bankAccountUpdate(array $input) : array
+    {
+        return app('settlements_dashboard')->bankAccountUpdate($input);
+    }
+
+    public function bankAccountGet(array $input) : array
+    {
+        return app('settlements_dashboard')->bankAccountGet($input);
+    }
+
+    public function bankAccountDelete(array $input) : array
+    {
+        return app('settlements_dashboard')->bankAccountDelete($input);
+    }
+
+    public function scheduleCreate(array $input) : array
+    {
+        return app('settlements_dashboard')->scheduleCreate($input);
+    }
+
+    public function scheduleGet(array $input) : array
+    {
+        return app('settlements_dashboard')->scheduleGet($input);
+    }
+
+    public function scheduleGetIds(array $input) : array
+    {
+        return app('settlements_dashboard')->scheduleGetIds($input);
+    }
 }

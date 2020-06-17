@@ -290,6 +290,11 @@ return [
     ],
 
     'settlements_service' => [
+        'url'               => env('SETTLEMENTS_URL'),
+        'dashboard' => [
+            'key'       => env('SETTLEMENTS_DASHBOARD_KEY'),
+            'secret'    => env('SETTLEMENTS_DASHBOARD_SECRET'),
+        ],
         'secret'            => env('SETTLEMENTS_SERVICE_SECRET'),
     ],
 

@@ -1723,4 +1723,7 @@ class ErrorCode
     const BAD_REQUEST_INVALID_CHARGE_ACCOUNT                                        = 'BAD_REQUEST_INVALID_CHARGE_ACCOUNT';
 
     const SERVER_ERROR_MERCHANT_ONBOARDING_CATEGORY_FETCH_FAILED                    = 'SERVER_ERROR_MERCHANT_ONBOARDING_CATEGORY_FETCH_FAILED';
+
+    const BAD_REQUEST_SETTLEMENTS_ERROR                                             = 'BAD_REQUEST_SETTLEMENTS_ERROR';
+    const SERVER_ERROR_SETTLEMENTS                                                  = 'SERVER_ERROR_SETTLEMENTS';
 }

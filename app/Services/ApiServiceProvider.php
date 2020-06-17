@@ -41,6 +41,7 @@ use RZP\Models\FundTransfer;
 use RZP\Models\BankTransfer;
 use RZP\Models\PaperMandate;
 use RZP\Models\EntityOrigin;
+use RZP\Services\Settlements;
 use RZP\Constants\Entity as E;
 use RZP\Models\Admin as Admin;
 use RZP\Models\VirtualAccount;
@@ -377,6 +378,8 @@ class ApiServiceProvider extends BaseServiceProvider
         $this->registerCustomSessionProvider();
 
         $this->registerCustomCacheProvider();
+
+        $this->registerSettlementsDashboard();
     }
 
     /**
@@ -1004,6 +1007,14 @@ class ApiServiceProvider extends BaseServiceProvider
         $this->app->singleton('token_service', function($app)
         {
             return new TokenService($app);
+        });
+    }
+
+    protected function registerSettlementsDashboard()
+    {
+        $this->app->singleton('settlements_dashboard', function($app)
+        {
+            return new Settlements\Dashboard($app);
         });
     }
 }

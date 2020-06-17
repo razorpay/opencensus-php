@@ -1,0 +1,198 @@
+<?php
+
+namespace RZP\Services\Settlements;
+
+use RZP\Exception;
+use Requests_Response;
+use RZP\Trace\TraceCode;
+use RZP\Http\RequestHeader;
+use RZP\Http\Request\Requests;
+use Razorpay\Trace\Logger as Trace;
+
+class Base
+{
+    protected $trace;
+
+    protected $config;
+
+    protected $baseUrl;
+
+    protected $headers;
+
+    protected $auth;
+
+    protected $request;
+
+    const KEY                   = 'key';
+    const SECRET                = 'secret';
+
+    // Headers
+    const ACCEPT        = 'Accept';
+    const ADMIN_EMAIL   = 'admin_email';
+    const CONTENT_TYPE  = 'Content-Type';
+    const X_REQUEST_ID  = 'X-Request-ID';
+
+    const REQUEST_TIMEOUT = 60;
+
+    /**
+     * Settlements Base constructor.
+     *
+     * @param $app
+     */
+    public function __construct($app)
+    {
+        $this->trace   = $app['trace'];
+
+        $this->config  = $app['config']->get('applications.settlements_service');
+
+        $this->baseUrl = $this->config['url'];
+
+        $this->auth    = $app['basicauth'];
+
+        $this->request = $app['request'];
+
+        $this->setHeaders();
+    }
+
+    /**
+     * @param string $endpoint
+     * @param array  $data
+     * @param array  $auth
+     * @return array
+     * @throws Exception\RuntimeException
+     * @throws \Throwable
+     */
+    public function makeRequest(string $endpoint, array $data, array $auth = []): array
+    {
+        $url = $this->baseUrl . $endpoint;
+
+        $options = [
+            'timeout' => self::REQUEST_TIMEOUT,
+            'auth'    => $auth,
+        ];
+
+        $request = [
+            'url'       => $url,
+            'method'    => Requests::POST,
+            'headers'   => $this->headers,
+            'options'   => $options,
+            // here we will be making call to proto endpoints which are POST, we can route a GET request
+            // from API as POST request to settlement service with empty body i.e {}, for requests which
+            // do not need a request body but have to be made POST because of protobuf.
+            'content'   => (empty($data) === false) ? json_encode($data) : json_encode(new \stdClass())
+        ];
+
+        $this->traceRequest($request);
+
+        try
+        {
+            $response = Requests::request(
+                $request['url'],
+                $request['headers'],
+                $request['content'],
+                $request['method'],
+                $request['options']);
+        }
+        catch(\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::SETTLEMENTS_REQUEST_EXCEPTION,
+                [
+                    'message'      => $e->getMessage(),
+                    'request_body' => $request['content'],
+                ]);
+
+            throw $e;
+        }
+
+        $this->trace->info(TraceCode::SETTLEMENTS_RESPONSE, [
+            'response' => $response->body
+        ]);
+
+        $resp = $this->parseResponse($response);
+
+        return $resp;
+    }
+
+    /**
+     * Method to parse response from Settlements.
+     *
+     * @param  $response
+     * @return array
+     * @throws Exception\RuntimeException
+     * @throws Exception\BadRequestException
+     * @throws Exception\ServerErrorException
+     */
+    protected function parseResponse(Requests_Response $response): array
+    {
+        $code = null;
+
+        $body = null;
+
+        if($response !== null)
+        {
+            $code = $response->status_code;
+            $body = json_decode($response->body, true);
+        }
+
+        return [
+            'body' => $body,
+            'code' => $code,
+        ];
+    }
+
+    /**
+     * @param array $request
+     */
+    protected function traceRequest(array $request)
+    {
+        unset($request['options']['auth']);
+
+        $this->trace->info(TraceCode::SETTLEMENTS_REQUEST, $request);
+    }
+
+    /**
+     * Method to set auth in the request
+     *
+     * @param string $service
+     * @return array
+     */
+    protected function getAuth(string $service) : array
+    {
+        $service = $this->config[$service];
+
+        return [
+            $service[self::KEY],
+            $service[self::SECRET],
+        ];
+    }
+
+    /**
+     * Method to set headers in the request
+     */
+    protected function setHeaders()
+    {
+        $headers = [];
+
+        $headers[self::ACCEPT]       = 'application/json';
+        $headers[self::CONTENT_TYPE] = 'application/json';
+        $headers[self::X_REQUEST_ID]  = $this->request->getId();
+
+        $this->headers = $headers;
+    }
+
+    /**
+     * Method to set user headers in the request
+     */
+    protected function setAdminHeader()
+    {
+        $this->headers[RequestHeader::X_USER_EMAIL] = $this->getAdminEmail();
+    }
+
+    protected function getAdminEmail(): string
+    {
+        return $this->auth->getDashboardHeaders()[self::ADMIN_EMAIL] ?? '';
+    }
+}

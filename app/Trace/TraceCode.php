@@ -2932,7 +2932,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_RAZORPAYX_VA_MIGRATION_FAILED                = 'MERCHANT_RAZORPAYX_VA_MIGRATION_FAILED';
     const MERCHANT_RAZORPAYX_ACTIVATION_UNKNOWN_SOURCE          = 'MERCHANT_RAZORPAYX_ACTIVATION_UNKNOWN_SOURCE';
 
-
+    // Settlements service
+    const SETTLEMENTS_REQUEST                                   = 'SETTLEMENTS_REQUEST';
+    const SETTLEMENTS_RESPONSE                                  = 'SETTLEMENTS_RESPONSE';
+    const SETTLEMENTS_REQUEST_EXCEPTION                         = 'SETTLEMENTS_REQUEST_EXCEPTION';
 
     const UPI_MANDATE_CREATE_REQUEST                            = 'UPI_MANDATE_CREATE_REQUEST';
     const UPI_MANDATE_CREATED                                   = 'UPI_MANDATE_CREATED';
