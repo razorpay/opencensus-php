@@ -1205,7 +1205,7 @@ class PayoutTest extends TestCase
 
         $this->expectWebhookEventWithContents('payout.rejected', $eventTestDataKey);
 
-        // Approve with Owner role user
+        // Reject with Owner role user
         $this->ba->proxyAuth('rzp_live_10000000000000', $this->ownerRoleUser->getId());
 
         $this->startTest();
@@ -1233,7 +1233,7 @@ class PayoutTest extends TestCase
 
         $this->expectWebhookEventWithContents('payout.rejected', $eventTestDataKey);
 
-        // Approve with Owner role user
+        // Reject with Owner role user
         $this->ba->proxyAuth('rzp_live_10000000000000', $this->ownerRoleUser->getId());
 
         $this->startTest();
@@ -1261,7 +1261,7 @@ class PayoutTest extends TestCase
 
         $this->expectWebhookEventWithContents('payout.rejected', $eventTestDataKey);
 
-        // Approve with Owner role user
+        // Reject with Owner role user
         $this->ba->proxyAuth('rzp_live_10000000000000', $this->ownerRoleUser->getId());
 
         $this->startTest();
@@ -1292,7 +1292,7 @@ class PayoutTest extends TestCase
         $this->expectWebhookEventWithContents('payout.rejected', $eventTestDataKey);
         $this->expectWebhookEventWithContents('payout.rejected', $eventTestDataKey);
 
-        // Approve with Owner role user
+        // Reject with Owner role user
         $this->ba->proxyAuth('rzp_live_10000000000000', $this->ownerRoleUser->getId());
 
         $this->startTest();
@@ -1321,7 +1321,7 @@ class PayoutTest extends TestCase
         $this->expectWebhookEventWithContents('payout.rejected', $eventTestDataKey);
         $this->expectWebhookEventWithContents('payout.rejected', $eventTestDataKey);
 
-        // Approve with Owner role user
+        // Reject with Owner role user
         $this->ba->proxyAuth('rzp_live_10000000000000', $this->ownerRoleUser->getId());
 
         $this->startTest();
@@ -2873,6 +2873,39 @@ class PayoutTest extends TestCase
 
     public function testAddCustomPurposeRZPFees()
     {
+        $this->startTest();
+    }
+
+    public function testCancelPayoutNotInQueuedState()
+    {
+        $this->testCreatePayout();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/payouts/' . $payout->getPublicId() . '/cancel';
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testRejectPayoutNotInPendingState()
+    {
+        $this->liveSetUp();
+
+        $payout = $this->createQueuedOrPendingPayout([], 'rzp_live_TheLiveAuthKey');
+
+        // Creating the workflow after payout creation so that payout does not go in pending state.
+        // We need the ownerRoleUser to reject the payout which gets created inside this method.
+        $this->createPayoutWorkflowWithBankingUsersLiveMode();
+
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/payouts/' . $payout['id'] . '/reject';
+
+        // Reject with Owner role user
+        $this->ba->proxyAuth('rzp_live_10000000000000', $this->ownerRoleUser->getId());
+
         $this->startTest();
     }
 
