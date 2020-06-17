@@ -321,7 +321,7 @@ class Repository extends Base\Repository
         $query = $this->newQuery()
                       ->enabled()
                       ->where(Entity::EMANDATE, true)
-                      ->where(Entity::TYPE, 6)
+                      ->whereIn(Entity::TYPE, [6, 32774])
                       ->whereIn(Entity::GATEWAY, Payment\Gateway::getEmandateGatewaysForAuthType($authType));
 
         $this->addMerchantWhereCondition($query, $merchantIds);
@@ -680,7 +680,7 @@ class Repository extends Base\Repository
                     ->whereIn(Entity::STATUS, $status)
                     ->get();
     }
-    
+
     public function findMerchantIdByGatewayMerchantID(string $gatewayMerchantId)
     {
         $query = $this->newQuery()
