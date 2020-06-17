@@ -379,7 +379,7 @@ export const CAPITAL_LINKS = {
   terms_and_conditions: 'https://razorpay.com/terms/',
   privacy_policy: 'https://razorpay.com/privacy/',
   capital_know_more: 'https://razorpay.com/capital/',
-  check_credit_score: '/dashboard#creditscore',
+  check_credit_score: '/app/dashboard#creditscore',
 };
 
 export const GENDER_MAP = {
@@ -389,9 +389,9 @@ export const GENDER_MAP = {
 };
 
 export const DOCUMENT_GROUP_NAMES_MAP = {
-  business_registration_pro: 'Business Registration Proof',
+  business_registration_proof: 'Business Registration Proof',
   credit_bureau_report: 'Credit Bureau Report',
-  business_identification_p: 'Business Pan',
+  business_identification_proof: 'Business Pan',
   proof_of_address: 'Proof Of Address',
   proof_of_identification: 'Owner Pan',
   income_proof: 'Bank Account Statement',

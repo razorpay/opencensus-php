@@ -34,7 +34,16 @@ const DOCUMENT_TYPE_LABELS = {
 class DocumentCollectionInformation extends Component {
   getMasterDocument = masterDocId => {
     const { loanApplicationDetails } = this.props;
+    const {
+      offer_tasks: offerVerificationTasks,
+    } = loanApplicationDetails.vnv_details.data;
     const { document_groups } = loanApplicationDetails;
+    const taskExists = offerVerificationTasks
+      .map(task => task.entity_id)
+      .includes(masterDocId);
+
+    if (!taskExists) return;
+
     const masterDocuments = document_groups.data.document_groups.reduce(
       (acc, docGroup) =>
         docGroup.master_documents
@@ -130,9 +139,18 @@ class DocumentCollectionInformation extends Component {
   render() {
     const { loanApplicationDetails } = this.props;
 
-    const { lender_details, meta, schedule_details } = loanApplicationDetails;
+    const {
+      lender_details,
+      meta,
+      schedule_details,
+      vnv_details,
+    } = loanApplicationDetails;
 
-    if (lender_details.loading || schedule_details.loading) {
+    if (
+      lender_details.loading ||
+      schedule_details.loading ||
+      vnv_details.loading
+    ) {
       return <FormLoader />;
     }
 

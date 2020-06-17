@@ -18,6 +18,7 @@ import {
   getLenderDetails,
   getDisbursalDetails,
   getScheduleDetails,
+  getOfferVerificationTasks,
 } from 'merchant/reducers/capital';
 import PromoterDetailsEntity from './Forms/PromoterDetailsEntity';
 import MobileVerification from './Forms/MobileVerification';
@@ -255,6 +256,7 @@ const getTitleInformation = info => {
     getLenderDetails,
     getDisbursalDetails,
     getScheduleDetails,
+    getOfferVerificationTasks,
   }
 )
 class FormSectionRenderer extends Component {
@@ -518,6 +520,9 @@ class FormSectionRenderer extends Component {
             lender_id: acceptedOffer.lender_id,
           }),
           this.props.getScheduleDetails({
+            credit_offer_id: acceptedOffer.id,
+          }),
+          this.props.getOfferVerificationTasks({
             credit_offer_id: acceptedOffer.id,
           }),
         ]);

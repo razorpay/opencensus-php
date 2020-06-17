@@ -305,6 +305,14 @@ export const getScheduleDetails = data => {
   };
 };
 
+export const getOfferVerificationTasks = data => {
+  const loanApplication = new LoanOrigination();
+  return {
+    type: GET_OFFER_VERIFICATION_TASKS,
+    payload: loanApplication.getOfferVerificationTasks(data),
+  };
+};
+
 const initialState = getInitialState();
 
 export default function(state = initialState, action) {

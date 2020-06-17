@@ -24,6 +24,7 @@ class DocumentsUpload extends React.Component {
           <Input.Group
             key={document.document_group.id}
             label={
+              document.document_group.label ||
               DOCUMENT_GROUP_NAMES_MAP[document.document_group.name] ||
               document.document_group.name
             }

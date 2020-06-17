@@ -282,4 +282,15 @@ export default class BaseOriginationEntity extends GenericEntity {
       data
     );
   };
+
+  getOfferVerificationTasks = data => {
+    return this.request(
+      `${this.resourceUrlPrefix(
+        'admin',
+        'OfferVerificationAPI',
+        'GetOfferVerificationTasks'
+      )}`,
+      data
+    );
+  };
 }

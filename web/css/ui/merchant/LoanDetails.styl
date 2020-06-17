@@ -220,9 +220,10 @@
     }
 
     .application-summary {
-      flex: 0.3
+      flex: 0.3;
+      max-width: 215px;
+      overflow-wrap: break-word;
       .summary__wrapper {
-        flex: 0.2;
         background: #fff;
         border-radius: 4px;
         padding: 12px 24px;
@@ -479,6 +480,7 @@
       margin-bottom: 24px;
       .nach-step-icon {
         margin-right: 24px;
+        width: 48px;
       }
       .nach-step-instructions {
         display: flex;
