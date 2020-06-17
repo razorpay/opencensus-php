@@ -12,11 +12,11 @@ use RZP\Models\Merchant;
 use RZP\Models\Admin\Org;
 use RZP\Constants\Product;
 use RZP\Constants\Timezone;
-use RZP\Models\Payout\Method;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\Partner\Commission;
 use RZP\Models\Feature\Constants as Feature;
 use RZP\Constants\Entity as EntityConstants;
+use RZP\Models\Payment\Refund\Constants as RefundConstants;
 
 use Carbon\Carbon;
 
@@ -28,14 +28,15 @@ class Fee extends Base\Core
 
     protected $repo;
 
-    const DEFAULT_PRICING_PLAN_ID         = '1hDYlICobzOCYt';
-    const EMI_SUB_PRICING_PLAN_ID         = '1EmiSubPricing';
-    const DEFAULT_QR_CODE_PLAN_ID         = 'A8UwvIbaL8n4Q8';
-    const DEFAULT_EMI_PLAN_ID             = 'ArGUUem5z3UADv';
-    const DEFAULT_BANK_TRANSFER_PLAN_ID   = '8gP5505KgDVWIh';
-    const DEFAULT_BANKING_PLAN_ID         = 'BTo98voDY05ueB';
-    const DEFAULT_VIRTUAL_UPI_PLAN_ID     = 'E9t4ljLBnt2cad';
-    const DEFAULT_INSTANT_REFUNDS_PLAN_ID = 'EIccfYpbLnrp6E';
+    const DEFAULT_PRICING_PLAN_ID            = '1hDYlICobzOCYt';
+    const EMI_SUB_PRICING_PLAN_ID            = '1EmiSubPricing';
+    const DEFAULT_QR_CODE_PLAN_ID            = 'A8UwvIbaL8n4Q8';
+    const DEFAULT_EMI_PLAN_ID                = 'ArGUUem5z3UADv';
+    const DEFAULT_BANK_TRANSFER_PLAN_ID      = '8gP5505KgDVWIh';
+    const DEFAULT_BANKING_PLAN_ID            = 'BTo98voDY05ueB';
+    const DEFAULT_VIRTUAL_UPI_PLAN_ID        = 'E9t4ljLBnt2cad';
+    const DEFAULT_INSTANT_REFUNDS_PLAN_ID    = 'EIccfYpbLnrp6E';
+    const DEFAULT_INSTANT_REFUNDS_PLAN_V2_ID = 'F3HF3mQrxjvSnm';
 
     public function __construct()
     {
@@ -75,7 +76,28 @@ class Fee extends Base\Core
 
         $method = $entity->getMethod();
 
-        return $this->repo->getInstantRefundsDefaultPricingPlanForMethod($feature, $method, $entity->merchant);
+        $planId = Fee::DEFAULT_INSTANT_REFUNDS_PLAN_ID;
+
+        $merchantId = $entity->merchant->getId();
+
+        $variant = $this->app->razorx->getTreatment(
+            $merchantId,
+            Merchant\RazorxTreatment::INSTANT_REFUNDS_DEFAULT_PRICING_V2,
+            $this->mode
+        );
+
+        if ($variant === RefundConstants::RAZORX_VARIANT_ON)
+        {
+            $planId = Fee::DEFAULT_INSTANT_REFUNDS_PLAN_V2_ID;
+        }
+
+        return $this->repo->getInstantRefundsDefaultPricingPlanForMethod(
+            $feature,
+            $method,
+            $entity->merchant,
+            Product::PRIMARY,
+            $planId
+        );
     }
 
     /**

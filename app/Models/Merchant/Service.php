@@ -58,6 +58,7 @@ use RZP\Constants\{Mode, Entity as CE, Product};
 use RZP\Models\Pricing\Feature as PricingFeature;
 use RZP\Mail\Merchant\CreateSubMerchantAffiliate;
 use RZP\Models\Admin\Permission\Name as Permission;
+use RZP\Models\Payment\Refund\Constants as RefundConstants;
 use RZP\Models\Gateway\Terminal\Service as TerminalService;
 use RZP\Mail\Merchant\CreateSubMerchant as CreateSubMerchantMail;
 use RZP\Models\Merchant\Balance\BalanceConfig\Service as BalanceConfigService;
@@ -1920,11 +1921,27 @@ class Service extends Base\Service
         //
         if ($instantRefundsPricingRules->isEmpty() === true)
         {
+            $planId = Pricing\Fee::DEFAULT_INSTANT_REFUNDS_PLAN_ID;
+
+            $merchantId = $this->merchant->getId();
+
+            $variant = $this->app->razorx->getTreatment(
+                $merchantId,
+                Merchant\RazorxTreatment::INSTANT_REFUNDS_DEFAULT_PRICING_V2,
+                $this->mode
+            );
+
+            if ($variant === RefundConstants::RAZORX_VARIANT_ON)
+            {
+                $planId = Pricing\Fee::DEFAULT_INSTANT_REFUNDS_PLAN_V2_ID;
+            }
+
             $instantRefundsDefaultPricingRules = $this->repo->pricing->getInstantRefundsDefaultPricingPlanForMethod(
                 PricingFeature::REFUND,
                 $pricingMethod,
                 $this->merchant,
-                Product::PRIMARY
+                Product::PRIMARY,
+                $planId
             );
 
             $finalRulesToBeFormatted = $instantRefundsDefaultPricingRules;

@@ -228,13 +228,18 @@ class Repository extends Base\Repository
                     ->firstOrFail();
     }
 
-    public function getInstantRefundsDefaultPricingPlanForMethod($feature, $method, $merchant, $product = Product::PRIMARY)
+    public function getInstantRefundsDefaultPricingPlanForMethod(
+        $feature,
+        $method,
+        $merchant,
+        $product = Product::PRIMARY,
+        $planId = Fee::DEFAULT_INSTANT_REFUNDS_PLAN_ID)
     {
         $orgId = $merchant->org->getId();
 
         return $this->newQuery()
                     ->product($product)
-                    ->planId(Fee::DEFAULT_INSTANT_REFUNDS_PLAN_ID)
+                    ->planId($planId)
                     ->where(Pricing\Entity::FEATURE, '=', $feature)
                     ->where(Pricing\Entity::ORG_ID, '=', $orgId)
                     ->where(Pricing\Entity::PAYMENT_METHOD, '=', $method)

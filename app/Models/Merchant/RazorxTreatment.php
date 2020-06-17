@@ -133,4 +133,8 @@ final class RazorxTreatment
     // Added to test support of prepaid cards payouts for test merchants.
     // TODO: Remove experiment once testing concludes.
     const PAYOUT_TO_PREPAID_CARDS = 'payout_to_prepaid_cards';
+
+    // To decide whether a merchant without specific Instant Refunds pricing - will have the old default pricing or
+    // the new default pricing applied
+    const INSTANT_REFUNDS_DEFAULT_PRICING_V2 = 'instant_refunds_default_pricing_v2';
 }
