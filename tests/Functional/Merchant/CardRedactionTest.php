@@ -80,10 +80,10 @@ class CardRedactionTest extends TestCase
     {
         $authMock = $this->getMockBuilder(BasicAuth::class)
                          ->setConstructorArgs([$this->app])
-                         ->setMethods(['getRequestOriginProduct'])
+                         ->setMethods(['getProduct'])
                          ->getMock();
 
-        $authMock->method('getRequestOriginProduct')
+        $authMock->method('getProduct')
                  ->willReturn($product);
 
         if (empty($baType) === false)
@@ -588,7 +588,7 @@ class CardRedactionTest extends TestCase
                            ->getMock();
 
         $routerMock->method('currentRouteName')
-                   ->willReturnCallback(function () {
+                   ->willReturn(function () {
                        static $counter = 0;
 
                        switch ($counter++) {
@@ -1151,7 +1151,7 @@ class CardRedactionTest extends TestCase
             ]
         ];
 
-        $updatedRecord =  $this->getUpdatedTrace('payout_create', $record, null, Type::PRIVATE_AUTH);
+        $updatedRecord =  $this->getUpdatedTrace('payout_create', $record, Product::BANKING, Type::PRIVATE_AUTH);
 
         $this->assertEquals($updatedRecord['request']['product'], Product::BANKING);
     }
@@ -1164,7 +1164,7 @@ class CardRedactionTest extends TestCase
             ]
         ];
 
-        $updatedRecord =  $this->getUpdatedTrace('payment_create', $record, null, Type::PRIVATE_AUTH);
+        $updatedRecord =  $this->getUpdatedTrace('payment_create', $record, Product::PRIMARY, Type::PRIVATE_AUTH);
 
         $this->assertEquals($updatedRecord['request']['product'], Product::PRIMARY);
     }

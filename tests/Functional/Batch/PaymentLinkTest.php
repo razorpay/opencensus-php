@@ -386,6 +386,8 @@ class PaymentLinkTest extends TestCase
 
         Queue::assertPushed(BatchJob::class, function($job)
         {
+            $this->assertEquals($job->getOriginProduct(), 'primary');
+
             $this->assertEquals(Mode::TEST, $job->getMode());
 
             $this->assertEquals('00000000000001', $job->getId());

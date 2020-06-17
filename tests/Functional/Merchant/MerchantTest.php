@@ -1439,6 +1439,8 @@ class MerchantTest extends TestCase
 
         Mail::assertQueued(BankAccountChangeMail::class, function ($mail)
         {
+            $this->assertEquals($mail->originProduct, 'primary');
+
             $testData = $this->testData['testAddBankAccount']['response']['content'];
 
             $this->assertArraySelectiveEquals($testData, $mail->viewData);

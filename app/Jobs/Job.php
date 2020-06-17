@@ -38,6 +38,11 @@ class Job implements ShouldQueue
     protected $appAuth;
 
     /**
+     * @var string Origin product of the request, i.e.. primary or banking
+     */
+    protected $originProduct;
+
+    /**
      * This is a name of the current job which is being executed.
      *
      * Can be set in the child classes.
@@ -111,6 +116,8 @@ class Job implements ShouldQueue
 
         $this->previousMode = $previousMode;
 
+        $this->originProduct = $app['basicauth']->getProduct();
+
         $this->taskId       = $app['request']->getTaskId();
         $this->jobName      = $this->jobName ?? snake_case(class_basename($this));
         $this->appAuth      = $app['basicauth']->isAppAuth();
@@ -143,6 +150,11 @@ class Job implements ShouldQueue
     public function getPreviousMode()
     {
         return $this->previousMode;
+    }
+
+    public function getOriginProduct()
+    {
+        return $this->originProduct;
     }
 
     public function getQueueConfigKey(): string
@@ -184,6 +196,13 @@ class Job implements ShouldQueue
         if ($this->mode !== null)
         {
             $app['basicauth']->setModeAndDbConnection($this->mode);
+        }
+
+        // Set origin product, this is useful in tracking X logs and exceptions
+        // Refer ApiTraceProcessor::addProduct()
+        if ($this->originProduct !== null)
+        {
+            $app['basicauth']->setProduct($this->getOriginProduct());
         }
 
         //

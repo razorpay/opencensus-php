@@ -72,6 +72,7 @@ class SubMerchantBatchTest extends TestCase
 
         Mail::assertQueued(CreateSubMerchantAffiliate::class, function ($mail) use ($entries)
         {
+            $this->assertEquals($mail->originProduct, 'primary');
             return $mail->hasTo($entries[0][Header::MERCHANT_EMAIL]);
         });
 

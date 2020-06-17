@@ -19,6 +19,7 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Models\Admin\Org;
+use RZP\Constants\Product;
 use RZP\Http\RequestHeader;
 use RZP\Models\EntityOrigin;
 use RZP\Base\RepositoryManager;
@@ -266,7 +267,18 @@ class BasicAuth
      *
      * @var string
      */
-    protected $requestOriginProduct = Merchant\Balance\Type::PRIMARY;
+    protected $requestOriginProduct = Product::PRIMARY;
+
+    /**
+     * Product gives the Product information (payment gateway or business banking).
+     * This is derived using $requestOriginProduct and some other parameters.
+     * Refer UserAccess::setProduct()
+     * Useful for tagging logs with respective product info
+     * Refer ApiTraceProcessor::addProduct()
+     *
+     * @var string
+     */
+    protected $product = Product::PRIMARY;
 
     /**
      * Array of dashboard headers
@@ -2210,13 +2222,25 @@ class BasicAuth
         return $this->requestOriginProduct;
     }
 
+    public function setProduct(string $product)
+    {
+        $this->product = $product;
+
+        return $this;
+    }
+
+    public function getProduct(): string
+    {
+        return $this->product;
+    }
+
     /**
      * Denotes if a request came from banking source or primary dashbaord
      * @return bool
      */
     public function isProductBanking(): bool
     {
-        return ($this->getRequestOriginProduct() === Merchant\Balance\Type::BANKING);
+        return ($this->getRequestOriginProduct() === Product::BANKING);
     }
 
     /**

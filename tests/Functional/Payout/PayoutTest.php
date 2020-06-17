@@ -3720,12 +3720,14 @@ class PayoutTest extends TestCase
 
         $this->testData[__FUNCTION__] = $testData;
 
-        $this->ba->appAuth();
+        $this->ba->ftsAuth();
         $this->startTest();
 
         Mail::assertQueued(PayoutMail::class, function($mail)
         {
             $viewData = $mail->viewData;
+
+            $this->assertEquals($mail->originProduct, 'banking');
 
             $this->assertEquals('2001062', $viewData['txn']['amount']); // raw amount
             $this->assertEquals('20,010.62', amount_format_IN($viewData['txn']['amount'])); // formatted amount

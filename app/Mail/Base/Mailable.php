@@ -25,15 +25,19 @@ class Mailable extends BaseMailable
 
     public $mode;
 
+    // This is useful in tracking X logs and exceptions
+    public $originProduct;
+
     protected $emailValidator;
 
     public function __construct()
     {
         $app = App::getFacadeRoot();
 
-        $this->taskId = $app['request']->getTaskId();
-        $this->mode   = $app['basicauth']->getMode();
-        $this->queue  = $this->getQueueName();
+        $this->taskId        = $app['request']->getTaskId();
+        $this->mode          = $app['basicauth']->getMode();
+        $this->originProduct = $app['basicauth']->getProduct();
+        $this->queue         = $this->getQueueName();
     }
 
     public function build()

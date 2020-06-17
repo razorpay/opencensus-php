@@ -509,7 +509,14 @@ class RblPayoutTest extends TestCase
 
         $this->setupRblDispatchGatewayBalanceUpdateForMerchants();
 
-        Queue::assertPushed(BankingAccountGatewayBalanceUpdate::class, 1);
+        Queue::assertPushedTimes(BankingAccountGatewayBalanceUpdate::class, 1);
+
+        Queue::assertPushed(BankingAccountGatewayBalanceUpdate::class, function($job)
+        {
+            $this->assertEquals($job->getOriginProduct(), 'banking');
+
+            return true;
+        });
     }
 
     public function testProcessGatewayBalanceUpdate()

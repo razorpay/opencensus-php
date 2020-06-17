@@ -240,6 +240,8 @@ class InvoiceTest extends TestCase
 
         Mail::assertQueued(InvoiceAuthorizedMail::class, function ($mail) use ($invoice)
         {
+            $this->assertEquals($mail->originProduct, 'primary');
+
             $this->assertEquals($invoice->getPublicId(), $mail->viewData['invoice']['id']);
 
             return true;

@@ -5211,6 +5211,8 @@ class Route
         'banking_account_create_admin',
         'banking_account_webhook_account_info',
 
+        'banking_account_gateway_balance_fetch',
+
         'fund_transfer_attempt_process',
         'on_demand_settlement',
     ];

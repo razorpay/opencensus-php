@@ -12,6 +12,7 @@ use RZP\Error\ErrorCode;
 use RZP\Http\RequestHeader;
 use RZP\Http\UserRolesScope;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Router;
 use RZP\Http\BasicAuth\BasicAuth;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Http\UserRolePermissionsMap;
@@ -39,6 +40,11 @@ class UserAccess
      * @var Trace
      */
     protected $trace;
+
+    /**
+     * @var Router
+     */
+    protected $router;
 
     const WILDCARD_PERMISSION = '*';
 
@@ -93,6 +99,11 @@ class UserAccess
         {
             $this->setRequestOriginProduct($request);
         }
+
+        // Set product for the request, this is used to tag
+        // logs and exceptions with product info
+        // Refer ApiTraceProcessor::addProduct()
+        $this->setProduct($request);
 
         if (($this->ba->isAdminAuth() === false) and
             ($this->ba->isStrictPrivateAuth() === false) and
@@ -160,6 +171,13 @@ class UserAccess
      */
     private function setRequestOriginProduct(Request $request)
     {
+        $product = $this->getRequestOriginProductFromRequest($request);
+
+        $this->ba->setRequestOriginProduct($product);
+    }
+
+    private function getRequestOriginProductFromRequest(Request $request)
+    {
         $originDomain = $request->headers->get(RequestHeader::X_REQUEST_ORIGIN);
 
         $bankingOriginHost = parse_url(config('applications.banking_service_url'), PHP_URL_HOST);
@@ -173,7 +191,46 @@ class UserAccess
             $product = ProductType::BANKING;
         }
 
-        $this->ba->setRequestOriginProduct($product);
+        return $product;
+    }
+
+    /**
+     * Product gives the Product information (payment gateway or business banking).
+     * This is derived using $requestOriginProduct and some other parameters 
+     * like route_name and internal app
+     * This is useful for tagging logs with respective product info
+     * Refer ApiTraceProcessor::addProduct()
+     *
+     * @var string
+     */
+    private function setProduct(Request $request)
+    {
+        $product = $this->getRequestOriginProductFromRequest($request);
+
+        $isProxyAuth = $this->ba->isProxyAuth();
+
+        $routeName = $this->router->currentRouteName();
+
+        $bankingRoutes1 = array_keys(Route::$bankingRoutePermissions);
+        $bankingRoutes2 = array_values(Route::BANKING_SPECIFIC_ROUTES);
+
+        $bankingRoutes = array_flip(array_merge($bankingRoutes1, $bankingRoutes2));
+
+        // If route is a banking_route and auth is not proxy auth, tag it as banking
+        if (($isProxyAuth === false) and
+            (array_key_exists($routeName, $bankingRoutes) === true))
+        {
+            $product = ProductType::BANKING;
+        }
+
+        $bankingApps = ['vendor_payments', 'payout_links', 'fts'];
+
+        if (in_array($this->ba->getInternalApp(), $bankingApps, true) === true)
+        {
+            $product = ProductType::BANKING;
+        }
+
+        $this->ba->setProduct($product);
     }
 
     private function validateUserAccess(string $route)

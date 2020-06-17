@@ -34,6 +34,12 @@ class SendQueuedMailable extends BaseSendQueuedMailable
             $app['basicauth']->setModeAndDbConnection($this->mailable->mode);
         }
 
+        // Sets originProduct, to tag logs and exceptions for X
+        if ($this->mailable->originProduct !== null)
+        {
+            $app['basicauth']->setProduct($this->mailable->originProduct);
+        }
+
         $repo->resetConnectionAttributes();
 
         parent::handle($mailer);

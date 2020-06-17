@@ -175,20 +175,7 @@ class ApiTraceProcessor
 
     protected function addProduct(&$record)
     {
-        $product = $this->app['basicauth']->getRequestOriginProduct();
-
-        $isProxyAuth = $this->app['basicauth']->isProxyAuth();
-
-        $routeName = optional($this->app['router'])->currentRouteName();
-
-        $bankingRoutes = array_keys(Route::$bankingRoutePermissions) + array_values(Route::BANKING_SPECIFIC_ROUTES);
-
-        // If route is a banking_route and auth is private auth, tag it as banking
-        if (($isProxyAuth === false) and
-            (in_array($routeName, $bankingRoutes, true) === true))
-        {
-            $product = Product::BANKING;
-        }
+        $product = $this->app['basicauth']->getProduct();
 
         $record['request']['product'] = $product;
     }
