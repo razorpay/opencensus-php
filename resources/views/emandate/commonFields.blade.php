@@ -20,4 +20,23 @@
       <span id="icon">info</span>
       <span id="help"></span>
     </div>
+
+    <select
+      name='bank_account[account_type]'
+      required
+    >
+      @if (isset($data['request']['content']['input']['bank_account[account_type]']))
+        <option value="{{ $data['request']['content']['input']['bank_account[account_type]'] }}">
+          @if ($data['request']['content']['input']['bank_account[account_type]'] == 'savings')
+            Savings Account
+          @elseif ($data['request']['content']['input']['bank_account[account_type]'] == 'current')
+            Current Account
+          @endif
+        </option>
+      @else
+        <option value="">Account Type</option>
+        <option value="savings">Savings Account</option>
+        <option value="current">Current Account</option>
+      @endif
+    </select>
 </div>

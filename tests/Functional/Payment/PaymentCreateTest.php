@@ -630,13 +630,16 @@ class PaymentCreateTest extends TestCase
         unset($content['bank_account[name]'],
             $content['bank_account[account_number]'],
             $content['bank_account[ifsc]'],
+            $content['bank_account[account_type]'],
             $content['aadhaar[number]']);
 
         $content['bank_account'] = [
             'account_number' => '12812891982',
             'name'           => 'test name',
-            'ifsc'           => 'UTIB0002766'
+            'ifsc'           => 'UTIB0002766',
+            'account_type'   => 'current',
         ];
+
         // TODO: Figure out why auth_type is not coming in the form response even though it's present in the input!!
         $content['auth_type'] = 'netbanking';
 

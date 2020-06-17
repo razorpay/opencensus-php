@@ -54,10 +54,10 @@
         margin-top: 16px;
       }
 
-      .common input {
+      .common input, select {
         margin: 5px 0 12px;
       }
-      input {
+      input, select {
         border: 1px solid #bbb;
         height: 36px;
         outline: none;
