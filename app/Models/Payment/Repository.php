@@ -2142,6 +2142,24 @@ class Repository extends Base\Repository
 
     public function saveOrFail($payment, array $options = array())
     {
+        $emiPlan = $this->stripEmiRelation($payment);
+
+        parent::saveOrFail($payment, $options);
+
+        $this->addEmiRelationIfApplicable($payment, $emiPlan);
+    }
+
+    public function save($payment, array $options = array())
+    {
+        $emiPlan = $this->stripEmiRelation($payment);
+
+        parent::save($payment, $options);
+
+        $this->addEmiRelationIfApplicable($payment, $emiPlan);
+    }
+
+    public function stripEmiRelation(& $payment)
+    {
         $emiPlan = null;
 
         if ($payment->isEmi() &&
@@ -2156,8 +2174,11 @@ class Repository extends Base\Repository
             $payment[Entity::EMI_PLAN_ID] = $emiPlan['id'];
         }
 
-        parent::saveOrFail($payment, $options);
+        return $emiPlan;
+    }
 
+    public function addEmiRelationIfApplicable(& $payment, $emiPlan)
+    {
         if ($emiPlan != null)
         {
             $payment->emiPlan()->associate($emiPlan);
