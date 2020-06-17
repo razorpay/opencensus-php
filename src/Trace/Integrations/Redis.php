@@ -34,14 +34,17 @@ use OpenCensus\Trace\Span;
 
 class Redis implements IntegrationInterface
 {
+    public static $serviceName = '';
     /**
      * Static method to add instrumentation to redis requests
      */
-    public static function load()
+    public static function load($serviceName='')
     {
         if (!extension_loaded('opencensus')) {
             trigger_error('opencensus extension required to load Redis integrations.', E_USER_WARNING);
         }
+
+        self::$serviceName = $serviceName;
 
         opencensus_trace_method('Predis\Client', '__construct', [static::class, 'handleConstruct']);
 
@@ -76,8 +79,10 @@ class Redis implements IntegrationInterface
         return [
             'name' => 'redis/construct',
             'attributes' => [
-                'host' => $params['host'],
-                'port' => $params['port']
+                'peer.service' => self::$serviceName,
+                'peer.hostname' => $params['host'],
+                'peer.port' => $params['port'],
+                'db.type' => 'redis'
             ],
             'kind' => Span::KIND_CLIENT
         ];

@@ -31,15 +31,19 @@ use OpenCensus\Trace\Span;
  */
 class PDO implements IntegrationInterface
 {
+    public static $serviceName = '';
+
     /**
      * Static method to add instrumentation to the PDO requests
      */
-    public static function load()
+    public static function load($serviceName='')
     {
         if (!extension_loaded('opencensus')) {
             trigger_error('opencensus extension required to load PDO integrations.', E_USER_WARNING);
             return;
         }
+
+        self::$serviceName = $serviceName;
 
         // public int PDO::exec(string $query)
         opencensus_trace_method('PDO', 'exec', [static::class, 'handleQuery']);
@@ -71,7 +75,7 @@ class PDO implements IntegrationInterface
     public static function handleQuery($pdo, $query)
     {
         return [
-            'attributes' => ['query' => $query],
+            'attributes' => ['db.statement' => $query],
             'kind' => Span::KIND_CLIENT
         ];
     }
@@ -87,8 +91,10 @@ class PDO implements IntegrationInterface
     public static function handleConnect($pdo, $dsn)
     {
         return [
-            'attributes' => ['dsn' => $dsn],
-            'kind' => Span::KIND_CLIENT
+            'attributes' => ['dsn' => $dsn,
+                            'peer.service' => self::$serviceName,
+                            'db.type' => 'sql'],
+            'kind' => Span::KIND_CLIENT,
         ];
     }
 
@@ -155,7 +161,7 @@ class PDO implements IntegrationInterface
             $error_tags['error.message'] = $errorCodeMsgArray[$error];
         }
 
-        $tags = ['db.query' => $statement->queryString, 'db.row_count' => $rowCount];
+        $tags = ['db.statement' => $statement->queryString, 'db.row_count' => $rowCount];
 
         return [
             'attributes' => $tags + $error_tags,
