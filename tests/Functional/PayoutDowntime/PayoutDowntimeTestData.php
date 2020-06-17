@@ -11,7 +11,7 @@ use RZP\Models\PayoutDowntime\Constants;
 return [
     'testCreateEntity' => [
         'request'  => [
-            'url'     => '/payout/downtime/',
+            'url'     => '/payouts/downtime/',
             'method'  => 'POST',
             'content' => [
                 'payout_downtime' => [
@@ -41,7 +41,7 @@ return [
 
     'testCreateEntityEndTimeException' => [
         'request'   => [
-            'url'     => '/payout/downtime/',
+            'url'     => '/payouts/downtime/',
             'method'  => 'POST',
             'content' => [
                 'payout_downtime' => [
@@ -72,7 +72,7 @@ return [
 
     'testCreateEntityDownTimeException' => [
         'request'   => [
-            'url'     => '/payout/downtime/',
+            'url'     => '/payouts/downtime/',
             'method'  => 'POST',
             'content' => [
                 'payout_downtime' => [
@@ -102,7 +102,7 @@ return [
 
     'testCreateEntityStatusException' => [
         'request'   => [
-            'url'     => '/payout/downtime/',
+            'url'     => '/payouts/downtime/',
             'method'  => 'POST',
             'content' => [
                 'payout_downtime' => [
@@ -132,7 +132,7 @@ return [
 
     'testCreateEntityModeException' => [
         'request'   => [
-            'url'     => '/payout/downtime/',
+            'url'     => '/payouts/downtime/',
             'method'  => 'POST',
             'content' => [
                 'payout_downtime' => [
@@ -162,7 +162,7 @@ return [
 
     'testCreateEntityChannelException' => [
         'request'   => [
-            'url'     => '/payout/downtime/',
+            'url'     => '/payouts/downtime/',
             'method'  => 'POST',
             'content' => [
                 'payout_downtime' => [
@@ -192,7 +192,7 @@ return [
 
     'testEditEntity' => [
         'request'  => [
-            'url'     => '/payout/downtime/',
+            'url'     => '/payouts/downtime/',
             'method'  => 'patch',
             'content' => [
                 'payout_downtime' => [
@@ -222,7 +222,7 @@ return [
 
     'testEditEntityStatusOnly' => [
         'request'  => [
-            'url'     => '/payout/downtime/',
+            'url'     => '/payouts/downtime/',
             'method'  => 'patch',
             'content' => [
                 'payout_downtime' => [
@@ -247,7 +247,7 @@ return [
 
     'testEditEntityDisabledStateRequiredFieldsException' => [
         'request'   => [
-            'url'     => '/payout/downtime/',
+            'url'     => '/payouts/downtime/',
             'method'  => 'patch',
             'content' => [
                 'payout_downtime' => [
@@ -272,7 +272,7 @@ return [
 
     'testEditEntityInvalidStatusException' => [
         'request'   => [
-            'url'     => '/payout/downtime/',
+            'url'     => '/payouts/downtime/',
             'method'  => 'patch',
             'content' => [
                 'payout_downtime' => [
@@ -302,7 +302,7 @@ return [
 
     'testFetchById' => [
         'request'  => [
-            'url'     => '/payout/downtime/',
+            'url'     => '/payouts/downtime/',
             'method'  => 'GET',
             'content' => [
             ]
@@ -322,7 +322,7 @@ return [
 
     'testFetchAll' => [
         'request'  => [
-            'url'     => '/payout/downtimes?count=2&skip=0',
+            'url'     => '/payouts/downtimes?count=2&skip=0',
             'method'  => 'GET',
             'content' => [
             ]
@@ -358,7 +358,7 @@ return [
 
     'testEnabledDowntime' => [
         'request'  => [
-            'url'     => '/payout/downtimes/enabled',
+            'url'     => '/payouts/downtimes/enabled',
             'method'  => 'GET',
             'content' => [
             ]
@@ -378,7 +378,7 @@ return [
 
     'testSendEmailEnabledState' => [
         'request'  => [
-            'url'     => '/payout/downtime',
+            'url'     => '/payouts/downtime',
             'method'  => 'POST',
             'content' => [
                 'payout_downtime' => [
@@ -414,7 +414,7 @@ return [
 
     'testSendEmailEnabledStateException' => [
         'request'  => [
-            'url'     => '/payout/downtime',
+            'url'     => '/payouts/downtime',
             'method'  => 'POST',
             'content' => [
                 'payout_downtime' => [
@@ -445,7 +445,7 @@ return [
 
     'testSendEmailInvalidMIDException' => [
         'request'   => [
-            'url'     => '/payout/downtime/',
+            'url'     => '/payouts/downtime/',
             'method'  => 'POST',
             'content' => [
                 'payout_downtime' => [
@@ -479,7 +479,7 @@ return [
 
     'testSendEmailInvalidMIDException2' => [
         'request'   => [
-            'url'     => '/payout/downtime/',
+            'url'     => '/payouts/downtime/',
             'method'  => 'POST',
             'content' => [
                 'payout_downtime' => [
@@ -514,7 +514,7 @@ return [
 
     'testSendEmailDisabledState' => [
         'request'  => [
-            'url'     => '/payout/downtime/edit',
+            'url'     => '/payouts/downtime/edit',
             'method'  => 'Patch',
             'content' => [
             ]
@@ -539,7 +539,7 @@ return [
 
     'testSendEmailForPrimaryMerchant' => [
         'request'   => [
-            'url'     => '/payout/downtime/',
+            'url'     => '/payouts/downtime/',
             'method'  => 'POST',
             'content' => [
                 'payout_downtime' => [

@@ -1763,11 +1763,11 @@ class Route
 
 
         //payout downtime methods
-        'create_payout_downtime'                  => ['post',      'payout/downtime',                                        'PayoutDowntimeController@createPayoutDowntime'              ],
-        'update_payout_downtime_by_id'            => ['patch',     'payout/downtime/{id}',                                   'PayoutDowntimeController@updatePayoutDowntime'              ],
-        'fetch_payout_downtime_by_id'             => ['get',       'payout/downtime/{id}',                                   'PayoutDowntimeController@fetchPayoutDowntime'               ],
-        'fetch_payout_downtimes_enabled'          => ['get',       'payout/downtimes/enabled',                               'PayoutDowntimeController@fetchPayoutDowntimesEnabled'       ],
-        'fetch_payout_downtimes'                  => ['get',       'payout/downtimes',                                       'PayoutDowntimeController@fetchPayoutDowntimes'              ],
+        'create_payout_downtime'                  => ['post',      'payouts/downtime',                                        'PayoutDowntimeController@createPayoutDowntime'              ],
+        'update_payout_downtime_by_id'            => ['patch',     'payouts/downtime/{id}',                                   'PayoutDowntimeController@updatePayoutDowntime'              ],
+        'fetch_payout_downtime_by_id'             => ['get',       'payouts/downtime/{id}',                                   'PayoutDowntimeController@fetchPayoutDowntime'               ],
+        'fetch_payout_downtimes_enabled'          => ['get',       'payouts/downtimes/enabled',                               'PayoutDowntimeController@fetchPayoutDowntimesEnabled'       ],
+        'fetch_payout_downtimes'                  => ['get',       'payouts/downtimes',                                       'PayoutDowntimeController@fetchPayoutDowntimes'              ],
 
 
         // Routes related to payments rearch for fetching/writing data

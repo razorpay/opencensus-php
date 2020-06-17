@@ -379,7 +379,7 @@ class PayoutDowntimeTest extends TestCase
 
         $data['request']['content'] = $input;
 
-        $url = "/payout/downtime/" . "pdown_" . $downtime['id'];
+        $url = "/payouts/downtime/" . "pdown_" . $downtime['id'];
 
         $data['request']['url'] = $url;
 
