@@ -101,8 +101,64 @@ class PDO implements IntegrationInterface
      */
     public static function handleStatementExecute($statement)
     {
+        /*
+            refer following for SQL return codes
+            https://docstore.mik.ua/orelly/java-ent/jenut/ch08_06.htm
+        */
+
+        $rowCount = (string) $statement->rowCount();
+        $errorCode = (string) $statement->errorCode();
+        $error =  substr($errorCode, 0, 2);
+        $error_tags = [];
+
+        switch ($error) {
+            case (string) '00':
+                $error_tags = ['error' => 'false'];
+                break;
+            case (string) '01':
+                $error_tags = ['warning'=>'true', 'warning.code' => $errorCode];
+                break;
+        };
+
+        $errorCodeMsgArray = [
+            "02" => "No Data",
+            "07" => "Dynamic SQL error",
+            "08" => "Connection Exception",
+            "0A" => "Feature not supported",
+            "21" => "Cardinality violation",
+            "22" => "Data exception",
+            "23" => "Integrity constraint violation",
+            "24" => "Invalid Cursor State",
+            "25" => "Invalid Transaction state",
+            "26" => "Invalid SQL Statement Name",
+            "27" => "Triggered Data Change Violation",
+            "28" => "Invalid Authorization Specification",
+            "2A" => "Syntax Error or Access Rule Violation in Direct SQL Statement",
+            "2B" => "Dependent Privilege Descriptors Still Exist",
+            "2C" => "Invalid Character Set Name",
+            "2D" => "Invalid Transaction Termination",
+            "2E" => "Invalid Connection Name",
+            "33" => "Invalid SQL Descriptor Name",
+            "34" => "Invalid Cursor Name",
+            "35" => "Invalid Condition Number",
+            "37" => "Syntax Error or Access Rule Violation in Dynamic SQL Statement",
+            "3C" => "Ambigous Cursor Name",
+            "3F" => "No Data",
+            "40" => "Transition Rollback",
+            "42" => "Syntax Error or Access Rule Violation",
+            "44" => "With Check Option Violation"
+        ];
+
+        if (array_key_exists($error, $errorCodeMsgArray)){
+            $error_tags['error'] = 'true';
+            $error_tags['error.code'] = $errorCode;
+            $error_tags['error.message'] = $errorCodeMsgArray[$error];
+        }
+
+        $tags = ['db.query' => $statement->queryString, 'db.row_count' => $rowCount];
+
         return [
-            'attributes' => ['query' => $statement->queryString],
+            'attributes' => $tags + $error_tags,
             'kind' => Span::KIND_CLIENT
         ];
     }
