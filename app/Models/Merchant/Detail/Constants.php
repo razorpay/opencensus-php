@@ -36,6 +36,7 @@ class Constants
     const INCORRECT_DETAILS = 'incorrect_details';
     const SUCCESS           = 'success';
     const FAILURE           = 'failure';
+    const INVALID           = 'invalid';
 
     const SIGNED_URL             = 'signed_url';
     const PASSPORT_FRONT         = 'passport_front';
@@ -62,7 +63,7 @@ class Constants
     const BANK_VERIFICATION_THRESHOLD_FOR_PAN           = 'bank_detail_verification_threshold_for_pan';
     const IS_VALID_NAME                                 = 'is_valid_name';
     const PENNY_TESTING_ATTEMPT_COUNT_REDIS_KEY_PREFIX  = 'penny_testing_attempt_count';
-    const PENNY_TESTING_ATTEMPT_COUNT_TTL_IN_SEC        = 120;
+    const PENNY_TESTING_ATTEMPT_COUNT_TTL_IN_MIN        = 180;
     const PENNY_TESTING_MAX_ATTEMPT                     = 2;
     const PENNY_TESTING_RETRY_PERIOD_IN_SEC             = 7200;
     const UNREGISTERED                                  = 'unregistered';

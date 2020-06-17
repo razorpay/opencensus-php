@@ -16,9 +16,18 @@ use RZP\Models\FundAccount\Validation\Entity as FundAccountValidation;
 use RZP\Models\FundAccount\Validation\Core as FundAccountValidationCore;
 use RZP\Models\FundAccount\Validation\Entity as FundAccountValidationEntity;
 use RZP\Models\FundAccount\Validation\AccountStatus as FundAccountValidationAccountStatus;
+use Throwable;
 
 class PennyTesting extends Base\Core
 {
+    protected $cache;
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->cache = $this->app['cache'];
+    }
 
     /**
      * Make penny testing attempt
@@ -351,7 +360,7 @@ class PennyTesting extends Base\Core
     protected function isPennyTestingRetryRequired(Entity $merchantDetails, array $input): bool
     {
         if ((strtolower($input[DetailConstants::REGISTERED_NAME]) === DetailConstants::UNREGISTERED) or
-            ($input[DetailConstants::ACCOUNT_STATUS] === DetailConstants::FAILURE))
+            (strtolower($input[DetailConstants::ACCOUNT_STATUS]) === DetailConstants::INVALID))
         {
             return $this->isPennyTestingAttemptLessThenMaxAttempt($merchantDetails);
         }
@@ -429,12 +438,24 @@ class PennyTesting extends Base\Core
 
     /**
      * @param Entity $merchantDetails
+     *
+     * @throws Throwable
      */
     protected function increasePennyTestingAttempt(Entity $merchantDetails)
     {
-        $pennyTestingAttemptRedisKey = DetailConstants::PENNY_TESTING_ATTEMPT_COUNT_REDIS_KEY_PREFIX . $merchantDetails->getId();
+        $pennyTestingAttempt = $this->getPennyTestingAttempts($merchantDetails);
 
-        $this->app['cache']->increment($pennyTestingAttemptRedisKey, 1);
+        $this->updatePennyTestingAttempts($merchantDetails, $pennyTestingAttempt + 1);
+    }
+
+    /**
+     * @param string $merchantId
+     *
+     * @return string
+     */
+    public function getPennyTestingAttemptRedisKey(string $merchantId): string
+    {
+        return DetailConstants::PENNY_TESTING_ATTEMPT_COUNT_REDIS_KEY_PREFIX . $merchantId;
     }
 
     /**
@@ -442,13 +463,25 @@ class PennyTesting extends Base\Core
      *
      * @return int
      */
-    public function getPennyTestingAttempts(Entity $merchantDetails)
+    public function getPennyTestingAttempts(Entity $merchantDetails): int
     {
-        $pennyTestingAttemptRedisKey = DetailConstants::PENNY_TESTING_ATTEMPT_COUNT_REDIS_KEY_PREFIX . $merchantDetails->getId();
+        $pennyTestingAttemptRedisKey = $this->getPennyTestingAttemptRedisKey($merchantDetails->getId());
 
-        $pennyTestingCount = $this->app['cache']->get($pennyTestingAttemptRedisKey) ?? 0;
+        $pennyTestingCount = $this->cache->get($pennyTestingAttemptRedisKey) ?? 0;
 
         return $pennyTestingCount;
+    }
+
+    /**
+     * @param Entity $merchantDetails
+     * @param int $pennyTestingAttempt
+     * @throws Throwable
+     */
+    protected function updatePennyTestingAttempts(Entity $merchantDetails, int $pennyTestingAttempt)
+    {
+        $pennyTestingAttemptRedisKey = $this->getPennyTestingAttemptRedisKey($merchantDetails->getId());
+
+        $this->cache->put($pennyTestingAttemptRedisKey, $pennyTestingAttempt, Constants::PENNY_TESTING_ATTEMPT_COUNT_TTL_IN_MIN);
     }
 
     protected function getMerchantAndSetBasicAuth(string $merchantId)

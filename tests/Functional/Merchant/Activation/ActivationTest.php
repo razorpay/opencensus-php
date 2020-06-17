@@ -14,6 +14,7 @@ use RZP\Jobs\FundAccountValidation;
 use RZP\Models\Merchant\Detail\Entity;
 use RZP\Models\Merchant\Document\Type;
 use RZP\Tests\Functional\Partner\Constants;
+use RZP\Models\Merchant\Detail\PennyTesting;
 use RZP\Tests\Functional\OAuth\OAuthTestCase;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Models\Merchant\Detail\ActivationFlow;
@@ -1871,9 +1872,13 @@ class ActivationTest extends OAuthTestCase
 
         $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields', $attributes);
 
+        $this->updateRetryCountInRedis($merchantDetail, 2);
+
         $attribute = $this->getFavAttributes($merchantDetail, "pankaj kumar", "invalid");
 
         $this->validateBankDetailFailureCase($attribute, $merchantDetail);
+
+        $this->assertPennyTestingAttemptCount($merchantDetail->getId(), 2);
     }
 
     public function testBankDetailsVerificationSuccessfulInRetry()
@@ -1898,6 +1903,8 @@ class ActivationTest extends OAuthTestCase
         $this->checkFirstPennyTestingTry($attribute, $merchantDetail, 'initiated');
 
         $this->checkSecondPennyTestingTry($attribute1, $merchantDetail, 'activated', 'verified');
+
+        $this->assertPennyTestingAttemptCount($merchantDetail->getId(), 2);
     }
 
     public function testPennyTestingCronSuccessful()
@@ -2145,7 +2152,7 @@ class ActivationTest extends OAuthTestCase
             'plan_name'      => 'Zero pricing plan',
             'percent_rate'   => 0,
             'fixed_rate'     => 0,
-            "min_fee"=> 0,
+            "min_fee"        => 0,
             'org_id'         => '100000razorpay',
             'type'           => 'pricing',
             'product'        => 'primary',
@@ -2162,9 +2169,18 @@ class ActivationTest extends OAuthTestCase
      */
     private function updateRetryCountInRedis($merchantDetail, int $count = 1): void
     {
-        $pennyTestingAttemptRedisKey = DetailConstants::PENNY_TESTING_ATTEMPT_COUNT_REDIS_KEY_PREFIX . $merchantDetail->getId();
+        $pennyTestingAttemptRedisKey = (new PennyTesting())->getPennyTestingAttemptRedisKey($merchantDetail->getId());
 
-        $this->app['cache']->put($pennyTestingAttemptRedisKey, $count, DetailConstants::PENNY_TESTING_ATTEMPT_COUNT_TTL_IN_SEC);
+        $this->app['cache']->put($pennyTestingAttemptRedisKey, $count, DetailConstants::PENNY_TESTING_ATTEMPT_COUNT_TTL_IN_MIN);
+    }
+
+    private function assertPennyTestingAttemptCount(string $merchantId, int $count)
+    {
+        $pennyTestingAttemptRedisKey = (new PennyTesting())->getPennyTestingAttemptRedisKey($merchantId);
+
+        $actualCount = $this->app['cache']->get($pennyTestingAttemptRedisKey);
+
+        $this->assertEquals($count, $actualCount);
     }
 
     private function createDocumentEntities(string $merchantId, array $documentTypes)
