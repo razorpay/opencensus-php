@@ -3,6 +3,7 @@
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
+use RZP\Exception\BadRequestException;
 
 return [
 
@@ -715,6 +716,158 @@ return [
                 'key'       => 'config:terminal_selection_log_verbose',
                 'new_value' => '1',
             ],
+        ],
+    ],
+
+    'testConfigKeysSetWithAdminWithOnlyUpdateConfigKeyPermission' => [
+        'request' => [
+            'method'  => 'PUT',
+            'url'     => '/config/keys',
+            'content' => [
+                'config:rx_account_number_series_prefix' => [
+                        '100000Razorpay' => '3434'
+                    ],
+                'config:rx_shared_account_allowed_channels' => [
+                    'yesbank',
+                    'icici',
+                    'kotak'
+                ],
+            ],
+        ],
+        'response' => [
+            [
+                'key'       => 'config:rx_account_number_series_prefix',
+                'new_value' => [
+                    '100000Razorpay' => '3434'
+                ],
+            ],
+            [
+                'key'       => 'config:rx_shared_account_allowed_channels',
+                'new_value' => [
+                    'yesbank',
+                    'icici',
+                    'kotak'
+                ],
+            ]
+        ],
+    ],
+
+    'testConfigKeysSetWithSpecificKeyPermissions' => [
+        'request' => [
+            'method'  => 'PUT',
+            'url'     => '/config/keys',
+            'content' => [
+                'config:rx_account_number_series_prefix' => [
+                    '100000Razorpay' => '3434'
+                ],
+                'config:rx_shared_account_allowed_channels' => [
+                    'yesbank',
+                    'icici',
+                    'kotak'
+                ],
+            ],
+        ],
+        'response' => [
+            [
+                'key'       => 'config:rx_account_number_series_prefix',
+                'new_value' => [
+                    '100000Razorpay' => '3434'
+                ],
+            ],
+            [
+                'key'       => 'config:rx_shared_account_allowed_channels',
+                'new_value' => [
+                    'yesbank',
+                    'icici',
+                    'kotak'
+                ],
+            ]
+        ],
+    ],
+
+    'testConfigKeysSetWithCompletelyWrongPermission' => [
+        'request' => [
+            'method'  => 'PUT',
+            'url'     => '/config/keys',
+            'content' => [
+                'config:rx_account_number_series_prefix' => [
+                    '100000Razorpay' => '3434'
+                ],
+                'config:rx_shared_account_allowed_channels' => [
+                    'yesbank',
+                    'icici',
+                    'kotak'
+                ],
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_ACCESS_DENIED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ACCESS_DENIED,
+        ],
+    ],
+
+    'testConfigKeysSetWithMissingPermission' => [
+        'request' => [
+            'method'  => 'PUT',
+            'url'     => '/config/keys',
+            'content' => [
+                'config:rx_account_number_series_prefix' => [
+                    '100000Razorpay' => '3434'
+                ],
+                'config:rx_shared_account_allowed_channels' => [
+                    'yesbank',
+                    'icici',
+                    'kotak'
+                ],
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_ACCESS_DENIED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ACCESS_DENIED,
+        ],
+    ],
+
+    'testConfigKeysSetConfigWithNoPermission' => [
+        'request' => [
+            'method'  => 'PUT',
+            'url'     => '/config/keys',
+            'content' => [
+                'config:rx_account_number_series_prefix' => [
+                    '100000Razorpay' => '3434'
+                ],
+                'config:terminal_selection_log_verbose' => 1,
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_ACCESS_DENIED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ACCESS_DENIED,
         ],
     ],
 

@@ -4,10 +4,13 @@ namespace RZP\Models\Admin;
 
 use App;
 use Cache;
+use RZP\Models\Admin\Permission\Name;
 
 class ConfigKey
 {
     protected static $fetchedKeys = [];
+
+    const WILDCARD_PERMISSION = '*';
 
     const PREFIX                                = 'config:';
 
@@ -174,6 +177,20 @@ class ConfigKey
         self::RX_PAYOUTS_DEFAULT_MAX_BATCH_FILE_COUNT,
         self::CARD_PAYMENT_SERVICE_EMI_FETCH,
     ];
+
+    const REDIS_CONFIG_MAP = [
+        self::RX_ACCOUNT_NUMBER_SERIES_PREFIX => [Name::SET_RX_ACCOUNT_PREFIX],
+        self::RX_SHARED_ACCOUNT_ALLOWED_CHANNELS => [Name::SET_SHARED_ACCOUNT_ALLOWED_CHANNELS],
+    ];
+
+    /**
+     * @param string $key
+     * @return array
+     */
+    public static function fetchPermissionsForKey(string $key) : array
+    {
+        return self::REDIS_CONFIG_MAP[$key] ?? [];
+    }
 
     public static function isSensitive(string $key)
     {

@@ -389,6 +389,10 @@ class Name
     // Permissions for Financial Data Service - Razorpay Capital
     const FINANCIAL_DATA_SERVICE              = 'financial_data_service';
 
+    // Redis Config Permissions
+    const SET_RX_ACCOUNT_PREFIX               = 'set_rx_account_prefix';
+    const SET_SHARED_ACCOUNT_ALLOWED_CHANNELS = 'set_shared_account_allowed_channels';
+
     public static $actionMap = [
         Merchant\Action::ARCHIVE                            => self::EDIT_MERCHANT_ARCHIVE,
         Merchant\Action::UNARCHIVE                          => self::EDIT_MERCHANT_UNARCHIVE,

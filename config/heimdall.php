@@ -891,6 +891,17 @@ return [
             ],
         ],
 
+        PermissionCategory::REDIS_CONFIG_PERIMSSIONS => [
+            Permission::SET_RX_ACCOUNT_PREFIX => [
+                'description'   => 'Allows to set RX account prefixes',
+                'assignable'    => true,
+            ],
+            Permission::SET_SHARED_ACCOUNT_ALLOWED_CHANNELS => [
+                'description'   => 'Allows to set shared account channels',
+                'assignable'    => true,
+            ],
+        ],
+
         PermissionCategory::P2P => [
             Permission::P2P_MANAGE_MERCHANT => [
                 'description'   => 'Allows to manage merchant setup',

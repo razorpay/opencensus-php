@@ -3703,7 +3703,7 @@ class Route
         'schedule_update_next_run'                 => '*',
         'send_newsletter'                          => '*',
         'send_test_newsletter'                     => '*',
-        'set_config_keys'                          => Permission::UPDATE_CONFIG_KEY,
+        'set_config_keys'                          => '*',
         'update_config_key'                        => Permission::UPDATE_CONFIG_KEY,
         'get_config_key'                           => '*',
         'delete_config_key'                        => '*',

@@ -28,9 +28,9 @@ use RZP\Services\Mozart as MozartBase;
 use RZP\Models\GeoIP\Service as GeoIP;
 use RZP\Models\Admin\Admin as AdminModel;
 use RZP\Jobs\SFAllMerchantToUnclaimedGroup;
-use RZP\Models\{Base, Base\EsRepository, Batch, Admin\Org};
 use RZP\Reconciliator\ReconSummary\DailyReconStatusSummary;
 use RZP\Models\Base\QueryCache\Constants as QueryCacheConstants;
+use RZP\Models\{Admin\Permission\Name, Base, Base\EsRepository, Batch, Admin\Org};
 
 class Service extends Base\Service
 {
@@ -375,9 +375,19 @@ class Service extends Base\Service
         return ['success_mids' => $successMids, 'failed_mids' => $failedMids];
     }
 
+    /**
+     * @param array $input
+     * @return array
+     * @throws Exception\BadRequestException
+     */
     public function setConfigKeys(array $input): array
     {
         (new Validator)->validateInput('set_config_keys', $input);
+
+        if ($this->auth->isAdminAuth() === true)
+        {
+            $this->hasPermissionToSetConfigKey($input);
+        }
 
         $result = [];
 
@@ -1240,4 +1250,45 @@ class Service extends Base\Service
         EsSync::dispatch($this->mode, EsRepository::UPDATE, Entity::MERCHANT, array_unique($currentClaimedMerchantsIds));
     }
 
+    /**
+     *
+     * For each config key which the admin wants to modify,
+     * the following is done iteratively :
+     *  1. Fetch permissions required to modify the key from redis_config_map
+     *  2. Add 'update_config_key' as a default permission to this set of
+     *  required permissions.
+     *  3. If admin does not have even one of the required permissions obtained in
+     *  the step above, an exception is thrown implying denial of access.
+     * If no exception is thrown for any key, it implies that validation has succeeded
+     * and that the admin can change all the config keys that he/she has mentioned.
+     *
+     * @param array $input
+     * @throws Exception\BadRequestException
+     */
+    public function hasPermissionToSetConfigKey(array $input)
+    {
+        $adminPermissions = $this->auth->getAdmin()->getPermissionsList();
+
+        foreach ($input as $key => $value)
+        {
+            $requiredPermissions = ConfigKey::fetchPermissionsForKey($key);
+
+            // Admins with this permission should be able to alter any key
+            // This permission should be given only to select admins
+            $requiredPermissions []= Name::UPDATE_CONFIG_KEY;
+
+            if (empty(array_intersect($requiredPermissions, $adminPermissions)) === true)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_ACCESS_DENIED,
+                    null,
+                    [
+                        'admin_id'             => $this->auth->getAdmin()->getPublicId(),
+                        'required_permissions' => $requiredPermissions,
+                        'config_keys'          => array_keys($input)
+                    ]);
+            }
+        }
+
+    }
 }

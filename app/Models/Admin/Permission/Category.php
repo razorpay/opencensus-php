@@ -37,5 +37,6 @@ class Category
     const P2P             			    = 'p2p';
     const RENDERING_PREFERENCES         = 'rendering_preferences';
     const DOWNTIME_CONFIG               = 'downtime_config';
+    const REDIS_CONFIG_PERIMSSIONS      = 'redis_config_permissions';
     const PAYOUT_DOWNTIME               = 'payout_downtime';
 }

@@ -758,6 +758,10 @@ class AdminTest extends TestCase
         $this->startTest();
     }
 
+    // This test is for SuperAdmin to set config keys.
+    // A SuperAdmin should be able to set
+    // any key since he/she has 'update_config_key' permission.
+    // (Although they have all permissions anyway so it doesn't matter)
     public function testConfigKeys()
     {
         $this->ba->adminAuth();
@@ -775,6 +779,115 @@ class AdminTest extends TestCase
                 $this->testData['testConfigKeysFetch']['response'],
                 $this->makeRequestAndGetContent($request)
             );
+    }
+
+    /**
+     * @param $permissions
+     * @return string
+     *
+     * Create an new admin with only the permissions specified in arguments
+     */
+    public function createAdminWithRedisConfigPermissions($permissions) : string
+    {
+        $admin = $this->fixtures->create('admin', [
+            'id' => 'RzrpyRndAdmnId',
+            'org_id' => Org::RZP_ORG,
+            'name' => 'test admin'
+        ]);
+
+        $this->fixtures->create('admin_token', [
+            'id'        => 'AdminToken1234',
+            'token'     => Hash::make('secondToken'),
+            'admin_id'  => $admin->getId(),
+        ]);
+
+        $role = $this->fixtures->create('role', [
+            'id'     => 'setRedisConfId',
+            'org_id' => '100000razorpay',
+            'name'   => 'Set Config admin',
+        ]);
+
+        foreach ($permissions as $permission)
+        {
+            $permissionEntity = $this->fixtures->create('permission',[
+                'name'   => $permission
+            ]);
+
+            $role->permissions()->attach($permissionEntity->getId());
+        }
+
+        $admin->roles()->attach($role);
+
+        return 'secondTokenAdminToken1234';
+    }
+
+    public function testConfigKeysSetWithAdminWithOnlyUpdateConfigKeyPermission()
+    {
+        $token = $this->createAdminWithRedisConfigPermissions([
+            'update_config_key'
+        ]);
+
+        $this->ba->adminAuth('test', $token);
+
+        $request = $this->testData['testConfigKeysSetWithAdminWithOnlyUpdateConfigKeyPermission']['request'];
+
+        $this->assertArraySelectiveEquals(
+            $this->testData['testConfigKeysSetWithAdminWithOnlyUpdateConfigKeyPermission']['response'],
+            $this->makeRequestAndGetContent($request)
+        );
+    }
+
+    public function testConfigKeysSetWithSpecificKeyPermissions()
+    {
+        $token = $this->createAdminWithRedisConfigPermissions([
+            'set_rx_account_prefix',
+            'set_shared_account_allowed_channels'
+        ]);
+
+        $this->ba->adminAuth('test',$token);
+
+        $request = $this->testData['testConfigKeysSetWithSpecificKeyPermissions']['request'];
+
+        $this->assertArraySelectiveEquals(
+            $this->testData['testConfigKeysSetWithSpecificKeyPermissions']['response'],
+            $this->makeRequestAndGetContent($request)
+        );
+    }
+
+    // In this the admin should not have 'update_config_key'
+    // permission and has a wrong permission
+    public function testConfigKeysSetWithCompletelyWrongPermission()
+    {
+        $token = $this->createAdminWithRedisConfigPermissions([
+            'wrong_permission'
+        ]);
+
+        $this->ba->adminAuth('test', $token);
+
+        $this->startTest();
+    }
+
+    // Permissions for certain keys is missing
+    public function testConfigKeysSetWithMissingPermission()
+    {
+        $token = $this->createAdminWithRedisConfigPermissions([
+            'set_rx_account_prefix'
+        ]);
+
+        $this->ba->adminAuth('test', $token);
+
+        $this->startTest();
+    }
+
+    public function testConfigKeysSetConfigWithNoPermission()
+    {
+        $token = $this->createAdminWithRedisConfigPermissions([
+            'set_rx_account_prefix'
+        ]);
+
+        $this->ba->adminAuth('test', $token);
+
+        $this->startTest();
     }
 
     public function testConfigKeysSetSensitive()
