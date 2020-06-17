@@ -54,6 +54,7 @@ class LOSController extends Controller
     const GET_SCHEDULED_DETAILS                       = 'GET_SCHEDULED_DETAILS';
     const GET_DISBURSAL_REGEX                         = 'GET_DISBURSAL_REGEX';
     const GET_LENDER_REGEX                            = 'GET_LENDER_REGEX';
+    const GET_OFFER_VERIFICATION_TASKS_REGEX          = 'GET_OFFER_VERIFICATION_TASKS_REGEX';
 
     const WORKFLOW_REGEX_ROUTES = [
         self::DISBURSE_LOAN_REGEX => '/capital\.los\.admin\.v1\.DisbursalAPI\/CreateDisbursal/',
@@ -90,6 +91,7 @@ class LOSController extends Controller
         self::SCHEDULE_ADMIN_VERIFICATION_REGEX           => '/rzp\.capital\.los\.admin\.v1\.OfferVerificationAPI\/ScheduleAdminVerification/',
         self::FETCH_LEGAL_AGREEMENT_REGEX                 => '/rzp\.capital\.los\.contracts\.v1\.DocSignAPI\/FetchLegalAgreement/',
         self::GET_SCHEDULED_DETAILS                       => '/rzp\.capital\.los\.admin\.v1\.OfferVerificationAPI\/GetScheduleDetail/',
+        self::GET_OFFER_VERIFICATION_TASKS_REGEX          => '/rzp\.capital\.los\.admin\.v1\.OfferVerificationAPI\/GetOfferVerificationTasks/',
         self::GET_DISBURSAL_REGEX                         => '/rzp\.capital\.los\.admin\.v1\.DisbursalAPI\/GetDisbursal/',
         self::GET_LENDER_REGEX                            => '/rzp\.capital\.los\.admin\.v1\.LenderAPI\/GetLender/',
     ];
