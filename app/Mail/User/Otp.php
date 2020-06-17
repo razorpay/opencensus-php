@@ -8,6 +8,7 @@ use RZP\Models\User;
 use RZP\Mail\Base\Mailable;
 use RZP\Constants\Timezone;
 use RZP\Mail\Base\Constants;
+use RZP\Models\Base\Utility;
 use RZP\Exception\LogicException;
 
 class Otp extends Mailable
@@ -88,6 +89,13 @@ class Otp extends Mailable
         if(isset($this->otp['expires_at']) === true)
         {
             $this->otp['expires_at'] = $this->otp['expires_at'] + 19800;
+        }
+        //in verify_email they need only the remaining minute for otp to expire so subtracting IST epoch and current time
+        if ((isset($this->otp['expires_at']) === true) and (isset($this->input['action']) === true) and ($this->input['action'] === 'verify_email'))
+        {
+            $diffTime = $this->otp['expires_at'] - Carbon::now()->timestamp - 19800;
+
+            $this->otp['expires_at'] = Utility::getTimestampFormatted($diffTime, 'i');
         }
 
         $this->with(
