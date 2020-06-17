@@ -891,6 +891,105 @@ class PaymentDowntimeTest extends TestCase
         $this->startTest();
     }
 
+    public function testIssuerAndNetworkCardDowntimeSimultaneously()
+    {
+        $request = [
+            'content' => [
+                'gateway'     => 'ALL',
+                'issuer'      => 'HDFC',
+                'method'      => 'card',
+                'source'      => 'VAJRA',
+                'reason_code' => 'HIGHER_ERRORS',
+                'begin'       => strval(Carbon::now()->timestamp),
+            ],
+            'method' => 'POST',
+            'url' => '/gateway/downtimes/dummy/webhook'
+        ];
+
+        $this->ba->appAuth();
+        $this->updateSignature($request);
+        $this->makeRequestAndGetContent($request);
+
+        $paymentDowntime = $this->getLastEntity('payment.downtime', true);
+
+        $issuerDowntimeId = $paymentDowntime['id'];
+
+        $this->assertEquals($paymentDowntime['issuer'], 'HDFC');
+        $this->assertNull($paymentDowntime['end']);
+
+        Carbon::setTestNow(Carbon::now()->addMinutes(15));
+
+        $request = [
+            'content' => [
+                'gateway'     => 'ALL',
+                'network'     => 'VISA',
+                'method'      => 'card',
+                'source'      => 'VAJRA',
+                'reason_code' => 'HIGHER_ERRORS',
+                'begin'       => strval(Carbon::now()->timestamp),
+            ],
+            'method' => 'POST',
+            'url' => '/gateway/downtimes/dummy/webhook'
+        ];
+
+        $this->ba->appAuth();
+        $this->updateSignature($request);
+        $this->makeRequestAndGetContent($request);
+
+        $paymentDowntime = $this->getLastEntity('payment.downtime', true);
+
+        $this->assertEquals($paymentDowntime['network'], 'VISA');
+        $this->assertNull($paymentDowntime['end']);
+
+        Carbon::setTestNow(Carbon::now()->addMinutes(15));
+
+        $request = [
+            'content' => [
+                'gateway'     => 'ALL',
+                'network'     => 'VISA',
+                'method'      => 'card',
+                'source'      => 'VAJRA',
+                'reason_code' => 'HIGHER_ERRORS',
+                'end'         => strval(Carbon::now()->subMinutes(5)->timestamp),
+            ],
+            'method' => 'POST',
+            'url' => '/gateway/downtimes/dummy/webhook'
+        ];
+
+        $this->ba->appAuth();
+        $this->updateSignature($request);
+        $this->makeRequestAndGetContent($request);
+
+        $paymentDowntime = $this->getLastEntity('payment.downtime', true);
+
+        $this->assertEquals($paymentDowntime['network'], 'VISA');
+        $this->assertNotNull($paymentDowntime['end']);
+
+        Carbon::setTestNow(Carbon::now()->addMinutes(15));
+
+        $request = [
+            'content' => [
+                'gateway'     => 'ALL',
+                'issuer'      => 'HDFC',
+                'method'      => 'card',
+                'source'      => 'VAJRA',
+                'reason_code' => 'HIGHER_ERRORS',
+                'end'         => strval(Carbon::now()->subMinutes(5)->timestamp),
+            ],
+            'method' => 'POST',
+            'url' => '/gateway/downtimes/dummy/webhook'
+        ];
+
+        $this->ba->appAuth();
+        $this->updateSignature($request);
+        $this->makeRequestAndGetContent($request);
+
+        $paymentDowntime = $this->getEntityById('payment.downtime', $issuerDowntimeId, true);
+
+        $this->assertEquals($paymentDowntime['issuer'], 'HDFC');
+        $this->assertNotNull($paymentDowntime['end']);
+    }
+
     protected function createUpiAllGatewayDowntime()
     {
         foreach (Gateway::$methodMap['upi'] as $gateway)

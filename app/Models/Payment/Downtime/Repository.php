@@ -71,11 +71,24 @@ class Repository extends Base\Repository
     {
         $method = $input[Entity::METHOD];
 
-        if (array_key_exists($method, Constants::METHOD_QUERY_MAP) === true)
+        $attributes = Constants::getMethodQueryInstrument($method);
+
+        if (count($attributes) === 1)
         {
-            $attribute = Constants::METHOD_QUERY_MAP[$method];
+            $attribute = $attributes[0];
 
             $query->where($attribute, $input[$attribute]);
+        }
+        else
+        {
+            foreach ($attributes as $attribute)
+            {
+                if(isset($input[$attribute]) && $input[$attribute] != Entity::NA)
+                {
+                    $query->where($attribute, $input[$attribute]);
+                    break;
+                }
+            }
         }
     }
 

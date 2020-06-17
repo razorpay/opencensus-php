@@ -344,4 +344,25 @@ class Repository extends Base\Repository
             });
         });
     }
+
+    public function fetchActiveDowntime($params)
+    {
+        $query = $this->newQuery();
+
+        $this->buildQuery(self::KEY_OPERATOR_MAP,  $params, $query);
+
+        return $query->whereNull(Entity::END)
+            ->get();
+    }
+
+    public function fetchResolvedDowntime($params)
+    {
+        $query = $this->newQuery();
+
+        $this->buildQuery(self::KEY_OPERATOR_MAP,  $params, $query);
+
+        return $query->whereNotNull(Entity::END)
+            ->where(Entity::BEGIN, '>=', $params[Entity::BEGIN])
+            ->get();
+    }
 }

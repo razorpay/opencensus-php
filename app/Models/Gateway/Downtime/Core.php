@@ -576,8 +576,8 @@ class Core extends Base\Core
         $downtimeArray = [
             Entity::GATEWAY       => Entity::ALL,
             Entity::BEGIN         => $input['downtime_start_time'],
-            Entity::COMMENT       => $input['type'],
-            Entity::REASON_CODE   => ReasonCode::HIGHER_DECLINES,
+            Entity::COMMENT       => "Message : " . $input['type'],
+            Entity::REASON_CODE   => ReasonCode::HIGHER_ERRORS,
             Entity::SOURCE        => Source::DOWNTIME_V2,
             Entity::METHOD        => $input['method'],
             Entity::SCHEDULED     => false,
@@ -596,10 +596,12 @@ class Core extends Base\Core
                 if ($input['key'] === DowntimeDetection::ISSUER)
                 {
                     $downtimeArray[Entity::ISSUER] = $input['value'];
+                    $downtimeArray[Entity::NETWORK] = Entity::NA;
                 }
                 elseif ($input['key'] === DowntimeDetection::NETWORK)
                 {
                     $downtimeArray[Entity::NETWORK] = $input['value'];
+                    $downtimeArray[Entity::ISSUER] = Entity::NA;
                 }
                 break;
 

@@ -16,16 +16,23 @@ class CardProcessor extends BaseProcessor
     {
         $gatewayDowntimes = $gatewayDowntimes->where(GatewayDowntime::METHOD, '=', $this->method);
 
-        $gatewayDowntimes = $gatewayDowntimes->where(GatewayDowntime::SOURCE, '!=', Source::DOWNTIME_V2);
-
         $unavailableNetworks = $this->calculateUnavailableNetworks($gatewayDowntimes);
+        $unavailableIssuer = $this->calculateUnavailableIssuer($gatewayDowntimes);
 
         foreach ($unavailableNetworks as $network)
         {
             $this->createPaymentDowntime($network, $gatewayDowntimes);
         }
 
-        $this->endOngoingDowntimes($unavailableNetworks);
+        foreach ($unavailableIssuer as $issuer)
+        {
+            $this->createPaymentDowntime($issuer, $gatewayDowntimes, true);
+        }
+
+        // Since the The value of issuer and network can not be same, combined them in a single list
+        $unavailable = array_merge($unavailableIssuer, $unavailableNetworks);
+
+        $this->endOngoingDowntimes($unavailable);
     }
 
     protected function calculateUnavailableNetworks(Collection $gatewayDowntimes)
@@ -51,9 +58,26 @@ class CardProcessor extends BaseProcessor
         return $mapping->getUnavailableNetworks();
     }
 
-    protected function createPaymentDowntime(string $network, Collection $gatewayDowntimes)
+    protected function calculateUnavailableIssuer(Collection $gatewayDowntimes){
+        if ($gatewayDowntimes->isEmpty() === true)
+        {
+            return [];
+        }
+
+        $gatewayDowntimes = $gatewayDowntimes->where(GatewayDowntime::GATEWAY, '=', GatewayDowntime::ALL);
+
+        $gatewayDowntimes = $gatewayDowntimes->whereNotIn(GatewayDowntime::ISSUER, [GatewayDowntime::NA, GatewayDowntime::UNKNOWN]);
+
+        $gatewaydowntimes = $gatewayDowntimes->unique(GatewayDowntime::ISSUER);
+
+        $issuers = $gatewaydowntimes->pluck(GatewayDowntime::ISSUER)->toArray();
+
+        return $issuers;
+    }
+
+    protected function createPaymentDowntime(string $network, Collection $gatewayDowntimes, $issuer = false)
     {
-        $input = $this->getPaymentDowntimeCreationArray($network, $gatewayDowntimes);
+        $input = $this->getPaymentDowntimeCreationArray($network, $gatewayDowntimes, $issuer);
 
         if ($input === null)
         {
@@ -78,9 +102,18 @@ class CardProcessor extends BaseProcessor
         }
     }
 
-    protected function getPaymentDowntimeCreationArray(string $network, Collection $gatewayDowntimes)
+    protected function getPaymentDowntimeCreationArray(string $network, Collection $gatewayDowntimes, $issuer = false)
     {
-        list($begin, $end) = $this->calculateDowntimePeriodForNetwork($network, $gatewayDowntimes);
+        $begin = $end = null;
+
+        if ($issuer === true)
+        {
+            list($begin, $end) = $this->calculateDowntimePeriodForIssuer($network, $gatewayDowntimes);
+        }
+        else
+            {
+                list($begin, $end) = $this->calculateDowntimePeriodForNetwork($network, $gatewayDowntimes);
+        }
 
         if ($begin === null)
         {
@@ -105,8 +138,16 @@ class CardProcessor extends BaseProcessor
             Entity::STATUS    => $status,
             Entity::SCHEDULED => $scheduled,
             Entity::SEVERITY  => $severity,
-            Entity::NETWORK   => $network,
         ];
+
+        if ($issuer === true)
+        {
+            $input[Entity::ISSUER] = $network;
+        }
+        else
+        {
+            $input[Entity::NETWORK] = $network;
+        }
 
         return $input;
     }
@@ -144,6 +185,24 @@ class CardProcessor extends BaseProcessor
             {
                 return [$allDowntimeBegin, $allDowntimeEnd];
             }
+        }
+
+        return [$begin, $end];
+    }
+
+    protected function calculateDowntimePeriodForIssuer(string $issuer, Collection $gatewayDowntimes)
+    {
+        $GatewayDowntime = $gatewayDowntimes->whereIn(GatewayDowntime::GATEWAY, GatewayDowntime::ALL);
+
+        $GatewayDowntime = $GatewayDowntime->whereIn(GatewayDowntime::ISSUER, [GatewayDowntime::ALL, $issuer]);
+
+        $GatewayDowntime = $GatewayDowntime->sortBy(GatewayDowntime::BEGIN);
+
+        $begin = $end = null;
+
+        if ($GatewayDowntime->count() > 0)
+        {
+            list($begin, $end) = $this->getOverlappingDowntimePeriod($GatewayDowntime);
         }
 
         return [$begin, $end];

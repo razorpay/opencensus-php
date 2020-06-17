@@ -37,4 +37,21 @@ class Constants
     // Constants used For email notification
     const CREATED   = 'CREATED';
     const RESOLVED  = 'RESOLVED';
+
+    public static function getMethodQueryInstrument($method)
+    {
+        switch ($method)
+        {
+            case Method::CARD :
+                return [Entity::NETWORK, Entity::ISSUER];
+                break;
+            case Method::NETBANKING :
+            case Method::WALLET :
+                return  [Entity::ISSUER];
+                break;
+            case Method::UPI :
+                return [Entity::VPA_HANDLE];
+                break;
+        }
+    }
 }

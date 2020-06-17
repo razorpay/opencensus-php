@@ -31,9 +31,12 @@ class BaseProcessor extends Base\Core
          */
         if (array_key_exists($this->method, Constants::METHOD_QUERY_MAP) === true)
         {
-            $attribute = Constants::METHOD_QUERY_MAP[$this->method];
+            $attributes = Constants::getMethodQueryInstrument($this->method);
 
-            $ongoingDowntimes = $ongoingDowntimes->whereNotIn($attribute, $unavailableList);
+            foreach ($attributes as $attribute)
+            {
+                $ongoingDowntimes = $ongoingDowntimes->whereNotIn($attribute, $unavailableList);
+            }
         }
 
         foreach ($ongoingDowntimes as $downtime)

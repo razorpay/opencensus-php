@@ -67,6 +67,8 @@ class GatewayDowntimeDetectionV2Test extends TestCase
 
         $externalMock->shouldReceive('getMaxSingleMerchantContribution')->andReturn(1);
         $externalMock->shouldReceive('getAllJobTypes')->andReturn($this->getAllJobTypes());
+
+        $this->enablePaymentDowntimes();
     }
 
     public function tearDown()
@@ -175,7 +177,7 @@ class GatewayDowntimeDetectionV2Test extends TestCase
 
         $paymentDowntime = $this->getLastEntity('payment.downtime', true);
 
-        $this->assertNull($paymentDowntime);
+        $this->assertNotNull($paymentDowntime);
 
         $this->ba->adminAuth();
 
@@ -231,7 +233,7 @@ class GatewayDowntimeDetectionV2Test extends TestCase
 
         $this->assertEquals('okhdfcbank', $gatewayDowntime['vpa_handle']);
 
-        $this->assertNull($paymentDowntime);
+        $this->assertNotNull($paymentDowntime);
     }
 
     public function testDowntimeDetectionForNetbanking()
@@ -254,7 +256,11 @@ class GatewayDowntimeDetectionV2Test extends TestCase
 
         $gatewayDowntime = $this->getLastEntity('gateway_downtime', true);
 
+        $paymentDowntime = $this->getLastEntity('payment.downtime', true);
+
         $this->assertNull($gatewayDowntime['end']);
+
+        $this->assertNull($paymentDowntime);
 
         $this->doAuthAndCapturePayment($payment);
         $this->doAuthAndCapturePayment($payment);
@@ -329,10 +335,23 @@ class GatewayDowntimeDetectionV2Test extends TestCase
 
         $this->assertEquals('upi', $gatewayDowntime['method']);
 
-        $this->assertNull($paymentDowntime);
+        $this->assertNotNull($paymentDowntime);
     }
 
+    protected function enablePaymentDowntimes()
+    {
+        $this->ba->adminAuth();
 
+        $this->makeRequestAndGetContent([
+            'method'  => 'PUT',
+            'url'     => '/config/keys',
+            'content' => [
+                'config:enable_payment_downtimes' => '1',
+            ],
+        ]);
+
+        $this->fixtures->merchant->addFeatures('expose_downtimes');
+    }
 }
 
 class ConstantsStub

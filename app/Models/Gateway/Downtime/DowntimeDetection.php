@@ -66,7 +66,6 @@ class DowntimeDetection
         Entity::SOURCE,
         Entity::NETWORK,
         Entity::VPA_HANDLE,
-        Entity::COMMENT,
     ];
 
     public function __construct()
@@ -228,7 +227,7 @@ class DowntimeDetection
         //$downtimeCreatedSince = $this->redis->get($redisKeyForDowntime);
 
         //Check if downtime present in Gateway downtime Table
-        $downtimeCreatedSince = $this->fetchExistingDowntime($type, $method, $key, $value);
+        $downtimeCreatedSince = $this->fetchExistingDowntime($method, $key, $value);
 
         if (empty($downtimeCreatedSince) == true)
         {
@@ -484,13 +483,12 @@ class DowntimeDetection
         return $success/$totalCompleted;
     }
 
-    public function fetchExistingDowntime($type, $method, $key, $value)
+    public function fetchExistingDowntime($method, $key, $value)
     {
         $input = [
             Entity::GATEWAY => Entity::ALL,
             Entity::METHOD => $method,
             Entity::SOURCE => Source::DOWNTIME_V2,
-            Entity::COMMENT => $type,
         ];
 
         switch ($key)

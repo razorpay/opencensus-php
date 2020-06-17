@@ -17,8 +17,6 @@ class WalletProcessor extends BaseProcessor
     {
         $gatewayDowntimes = $gatewayDowntimes->where(GatewayDowntime::METHOD, '=', $this->method);
 
-        $gatewayDowntimes = $gatewayDowntimes->where(GatewayDowntime::SOURCE, '!=', Source::DOWNTIME_V2);
-
         $unavailableWallets = [];
 
         foreach ($gatewayDowntimes as $gatewayDowntime)
