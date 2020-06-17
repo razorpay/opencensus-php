@@ -34,8 +34,39 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         {
             return $this->getPaymentIdFromBharatQr($row[self::BANK_TRANS_ID], $row);
         }
+        else
+        {
+            return $this->getPaymentIdFromUpi($row[self::BANK_TRANS_ID]);
+        }
+    }
 
-        return $row[self::MERCHANT_TRAN_ID];
+    /**
+     * Fetch upi entity from upi using gateway_payment_id
+     *
+     * @param string $bankReferenceId
+     * @return |null
+     */
+    protected function getPaymentIdFromUpi(string $bankReferenceId)
+    {
+        try
+        {
+            $upiEntity = $this->repo->upi->fetchByGatewayPaymentIdAndAction($bankReferenceId);
+
+            return $upiEntity->getPaymentId();
+        }
+        catch (DbQueryException $ex)
+        {
+            $this->messenger->raiseReconAlert(
+                [
+                    'trace_code'           => TraceCode::RECON_MISMATCH,
+                    'info_code'            => Base\InfoCode::PAYMENT_ABSENT,
+                    'payment_reference_id' => $bankReferenceId,
+                    'gateway'              => $this->gateway,
+                    'batch_id'             => $this->batchId
+                ]);
+
+            return null;
+        }
     }
 
     protected function getReconPaymentStatus(array $row)

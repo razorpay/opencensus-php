@@ -29,6 +29,8 @@ class UpiIciciGatewayReconTest extends TestCase
 
     public function setUp()
     {
+        $this->testDataFilePath = __DIR__ . '/UpiIciciReconTestData.php';
+
         parent::setUp();
 
         $this->payment = $this->getDefaultUpiPaymentArray();
@@ -184,7 +186,9 @@ class UpiIciciGatewayReconTest extends TestCase
     {
         $createdAt = Carbon::yesterday(Timezone::IST)->addHours(3)->getTimestamp();
 
-        $this->makeUpiIciciPaymentsSince($createdAt);
+        $rrn = '734122607521';
+
+        $this->makeUpiIciciPaymentsSince($createdAt, $rrn, 1);
 
         $this->ba->appAuth();
 
@@ -231,8 +235,10 @@ class UpiIciciGatewayReconTest extends TestCase
     {
         $createdAt = Carbon::yesterday(Timezone::IST)->addHours(3)->getTimestamp();
 
+        $rrn = '734122607521';
+
         // We make just one payment
-        $this->makeUpiIciciPaymentsSince($createdAt, 1);
+        $this->makeUpiIciciPaymentsSince($createdAt, $rrn, 1);
 
         $this->ba->appAuth();
 
@@ -241,7 +247,7 @@ class UpiIciciGatewayReconTest extends TestCase
             {
                 if ($action === 'col_payment_icici_recon')
                 {
-                    $content['merchantTranID'] = "";
+                    $content['banktranid'] = "";
                 }
             },
             $this->gateway,
@@ -252,12 +258,74 @@ class UpiIciciGatewayReconTest extends TestCase
         $this->assertFailedPaymentRecon();
     }
 
+    public function testPaymentReconciliationUsingRRN()
+    {
+        $createdAt = Carbon::yesterday(Timezone::IST)->addHours(3)->getTimestamp();
+
+        $rrn = '734122607521';
+
+        $this->makeUpiIciciPaymentsSince($createdAt, $rrn, 1);
+
+        $upiEntity1 = $this->getDbLastEntityToArray('upi');
+
+        $entries[] = $this->overrideUpiIciciPayment($upiEntity1);
+
+        //passing wrong rrn number so recon for the row should get fail
+        $entries[] = $this->overrideUpiIciciPayment($upiEntity1, '734122607522');
+
+        $file = $this->writeToExcelFile($entries, 'mis_report','files/settlement','Recon MIS');
+
+        $uploadedFile = $this->createUploadedFile($file);
+
+        $this->reconcile($uploadedFile, 'UpiIcici');
+
+        $payments = $this->getEntities('payment', [], true);
+
+        $payment = $payments['items'][0];
+
+        $transactionId = $payment['transaction_id'];
+
+        $transaction = $this->getEntityById('transaction', $transactionId, true);
+
+        $this->assertNotNull($transaction['reconciled_at']);
+
+        $upi = $this->getDbLastEntity('upi');
+
+        $this->assertEquals($upi['npci_reference_id'], '734122607521');
+
+        $batch = $this->getLastEntity('batch', true);
+
+        //reconciled for RRN 734122607521, Failed to reconcile for RRN 734122607522
+        $this->assertEquals(2, $batch['total_count']);
+        
+        $this->assertEquals(1, $batch['success_count']);
+
+        $this->assertEquals(1, $batch['failure_count']);
+
+        $this->assertEquals('{"PAYMENT_ID_NOT_FOUND":1}', $batch['failure_reason']);
+
+        $this->assertBatchStatus(Status::PARTIALLY_PROCESSED);
+    }
+
+    protected function overrideUpiIciciPayment(array $upiEntity, $gatewayPaymentId = null)
+    {
+        $facade = $this->testData['upiIcici'];
+
+        $facade['merchantTranID'] = $upiEntity['payment_id'];
+
+        $facade['bankTranID'] = $gatewayPaymentId ?? $upiEntity['gateway_payment_id'];
+
+        return $facade;
+    }
+
     public function testReconPaymentFailedReconciliation()
     {
         $createdAt = Carbon::yesterday(Timezone::IST)->addHours(3)->getTimestamp();
 
+        $rrn = '734122607521';
+
         // We make just one payment
-        $this->makeUpiIciciPaymentsSince($createdAt, 1);
+        $this->makeUpiIciciPaymentsSince($createdAt, $rrn, 1);
 
         $this->ba->appAuth();
 
@@ -281,8 +349,9 @@ class UpiIciciGatewayReconTest extends TestCase
     {
         $createdAt = Carbon::yesterday(Timezone::IST)->addHours(3)->getTimestamp();
 
+        $rrn = '734122607521';
         // We make just one payment
-        $this->makeUpiIciciPaymentsSince($createdAt, 1);
+        $this->makeUpiIciciPaymentsSince($createdAt, $rrn, 1);
 
         $this->ba->appAuth();
 
@@ -351,11 +420,15 @@ class UpiIciciGatewayReconTest extends TestCase
         return $uploadedFile;
     }
 
-    private function makeUpiIciciPaymentsSince(int $createdAt, int $count = 3)
+    private function makeUpiIciciPaymentsSince(int $createdAt, string $rrn, int $count = 3)
     {
         for ($i = 0; $i < $count; $i++)
         {
             $payments[] = $this->doUpiIciciPayment();
+
+            $upiEntity = $this->getDbLastEntity('upi');
+
+            $this->fixtures->edit('upi', $upiEntity['id'], ['gateway_payment_id' => $rrn]);
         }
 
         foreach ($payments as $payment)
