@@ -7,8 +7,10 @@ use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
+use RZP\Models\Gateway\Downtime\Source;
 use RZP\Models\Payment\Downtime\Service;
 use Illuminate\Database\Eloquent\Collection;
+use RZP\Models\Gateway\Downtime\Entity as GatewayDowntime;
 
 class Core extends Base\Core
 {
@@ -45,6 +47,9 @@ class Core extends Base\Core
     public function createFromGatewayDowntimes(array $input = [])
     {
         $gatewayDowntimes = $this->repo->gateway_downtime->fetchCurrentAndFutureDowntimes($withoutTerminal = true);
+
+        // For now Not creating Downtimes From StatusCake -- Remove this as soon as issue fixed
+        $gatewayDowntimes = $gatewayDowntimes->where(GatewayDowntime::SOURCE, '!=', Source::STATUSCAKE);
 
         foreach (Payment\Method::getAllPaymentMethods() as $method)
         {
