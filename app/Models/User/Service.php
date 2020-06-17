@@ -731,6 +731,9 @@ class Service extends Base\Service
             $data[Constants::FC_SOURCE] = $utmParams[Constants::FC_SOURCE] ?? '';
             $data[Constants::LC_SOURCE] = $utmParams[Constants::LC_SOURCE] ?? '';
 
+            $data[Constants::BANNER_ID]          = $utmParams[Constants::BANNER_ID] ?? '';
+            $data[Constants::BANNER_CLICKSOURCE] = $utmParams[Constants::BANNER_CLICKSOURCE] ?? '';
+
             foreach (Constants::$clickIdentifier as $clickId)
             {
                 $data['first_' . $clickId] = $utmParams['first_' . $clickId] ?? '';

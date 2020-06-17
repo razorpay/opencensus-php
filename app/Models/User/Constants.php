@@ -32,6 +32,10 @@ class Constants
 
     const PERMISSIONS   = 'permissions';
 
+    const BANNER_ID = 'banner_id';
+
+    const BANNER_CLICKSOURCE = 'banner_clicksource';
+
     public static $attributionList = [
         self::UTM_SOURCE,
         self::UTM_CAMPAIGN,
