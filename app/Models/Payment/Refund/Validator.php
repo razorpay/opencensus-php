@@ -142,7 +142,7 @@ class Validator extends Base\Validator
         'fta_data.card_transfer'                    => 'sometimes|associative_array',
         'fta_data.card_transfer.card_id'            => 'required_with:card_transfer|filled|unsigned_id',
         'is_fta'                                    => 'sometimes|bool',
-        'mode_requested'                            => 'sometimes|filled|string|in:IMPS,UPI,NEFT,RTGS,IFT',
+        'mode_requested'                            => 'sometimes|filled|string|in:IMPS,UPI,NEFT,RTGS,IFT,CT',
     ];
 
     protected static $createScroogeRefundBulkRules = [

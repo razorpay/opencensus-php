@@ -2707,6 +2707,24 @@ trait Refund
 
                     return true;
                 }
+                else if (($cardType === Type::DEBIT) and
+                         ($refund->isRefundRequestedSpeedInstant() === true))
+                {
+                    //
+                    // Not ignoring feature flag
+                    //
+                    if ($this->merchant->isFeatureEnabled(Feature::DISABLE_INSTANT_REFUNDS) === true)
+                    {
+                        return false;
+                    }
+
+                    //
+                    // Debit card mode decisioning will be done at Scrooge,
+                    // after fetching supported modes from FTS
+                    //
+
+                    return true;
+                }
             }
         }
 

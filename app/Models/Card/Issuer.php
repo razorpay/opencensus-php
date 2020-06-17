@@ -28,6 +28,12 @@ class Issuer
     const SYNB = 'SYNB';
     const CORP = 'CORP';
     const BKID = 'BKID';
+    const MAHB = 'MAHB';    // Bank of Maharashtra
+    const DCBL = 'DCBL';    // Development Credit Bank Ltd
+    const IDFB = 'IDFB';    // IDFC Bank Limited
+    const ORBC = 'ORBC';    // Oriental Bank of Commerce
+    const FDRL = 'FDRL';    // The Federal Bank Ltd
+    const SIBL = 'SIBL';    // The South Indian Bank Ltd
 
     protected static $issuers = [
         self::ALLA,
@@ -54,6 +60,13 @@ class Issuer
         self::SYNB,
         self::CORP,
         self::BKID,
+        self::BKID,
+        self::MAHB,
+        self::DCBL,
+        self::IDFB,
+        self::ORBC,
+        self::FDRL,
+        self::SIBL,
     ];
 
     public static function getAllIssuers():array

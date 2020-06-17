@@ -21,12 +21,16 @@ class Mode
 
     const UPI = 'UPI';
 
+    // Card Transfer mode for M2P Integration via FTS
+    const CT = 'CT';
+
     protected static $modeMap = [
         self::RTGS => self::RTGS,
         self::IMPS => self::IMPS,
         self::NEFT => self::NEFT,
         self::IFT  => self::IFT,
         self::UPI  => self::UPI,
+        self::CT   => self::CT,
     ];
 
     protected static $modeAccountTypeMap = [
@@ -43,6 +47,7 @@ class Mode
             self::IMPS,
             self::UPI,
             self::NEFT,
+            self::CT,
         ]
     ];
 
@@ -320,6 +325,7 @@ class Mode
             self::IMPS,
             self::IFT,
             self::UPI,
+            self::CT,
         ];
     }
 }

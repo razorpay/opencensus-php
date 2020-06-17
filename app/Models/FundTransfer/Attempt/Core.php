@@ -868,9 +868,18 @@ class Core extends Base\Core
     {
         $source = $fta->source;
 
-        $key = 'fts_refund_' . strtolower($accountType);
+        $amount = $source->getAmount();
+
+        $mode = $fta->getMode();
+
+        $cardType = null;
 
         $iin = null;
+
+        if (empty($card) === false)
+        {
+            $cardType = $card->getType();
+        }
 
         if (empty($card) === false)
         {
@@ -882,7 +891,17 @@ class Core extends Base\Core
             $issuer = $iin->getIssuer();
 
             $networkCode = $iin->getNetworkCode();
+
+            $cardType = $iin->getType();
         }
+
+        if (($cardType === \RZP\Models\Card\Type::DEBIT) and
+            ($mode === Mode::CT))
+        {
+            return [true, Settlement\Channel::M2P];
+        }
+
+        $key = 'fts_refund_' . strtolower($accountType);
 
         $this->trace->info(TraceCode::FTA_REFUND_RAMP_INIT, ['key' => $key]);
 
@@ -898,10 +917,6 @@ class Core extends Base\Core
                 'mode'          => $this->mode,
                 'ramp_status'   => $rampOnFts,
             ]);
-
-        $amount = $source->getAmount();
-
-        $mode = $fta->getMode();
 
         if (strtolower($rampOnFts) === 'on')
         {

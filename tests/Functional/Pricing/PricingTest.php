@@ -2037,6 +2037,7 @@ class PricingTest extends TestCase
             'NEFT',
             'invalid',
             'test',
+            'CT',
         ];
 
         $validModesMap = [
@@ -2046,11 +2047,13 @@ class PricingTest extends TestCase
                 'RTGS',
                 'UPI',
                 'IFT',
+                'CT',
             ],
             'card' => [
                 'UPI',
                 'NEFT',
                 'IMPS',
+                'CT',
             ],
             'upi' => [
                 'UPI',

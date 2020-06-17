@@ -21,6 +21,7 @@ class Channel
     const AXIS2     = 'axis2';
     const ICICI2    = 'icici2';
     const CITI      = 'citi';
+    const M2P       = 'm2p';
 
     public static $gateways = [
         self::KOTAK => [
@@ -54,6 +55,7 @@ class Channel
     public static $channelToNodalGatewayMap = [
         self::YESBANK => Payment\Gateway::NODAL_YESBANK,
         self::ICICI   => Payment\Gateway::NODAL_ICICI,
+        self::M2P     => Payment\Gateway::M2P
     ];
 
     public static function getChannels()
@@ -68,6 +70,7 @@ class Channel
             self::AXIS2,
             self::ICICI2,
             self::CITI,
+            self::M2P,
         ];
     }
 
@@ -334,7 +337,12 @@ class Channel
                     Mode::NEFT,
                     Mode::IFT,
                 ],
-            ]
+            ],
+            self::M2P       => [
+                Constants\Entity::CARD          =>  [
+                    Mode::CT,
+                ]
+            ],
         ];
     }
 }

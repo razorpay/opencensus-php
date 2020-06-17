@@ -839,6 +839,7 @@ class Validator extends Base\Validator
                     FundTransfer\Mode::RTGS,
                     FundTransfer\Mode::UPI,
                     FundTransfer\Mode::IFT,
+                    FundTransfer\Mode::CT,
                 ];
 
                 switch ($method)
@@ -847,7 +848,8 @@ class Validator extends Base\Validator
                         $validModes = [
                             FundTransfer\Mode::UPI,
                             FundTransfer\Mode::NEFT,
-                            FundTransfer\Mode::IMPS
+                            FundTransfer\Mode::IMPS,
+                            FundTransfer\Mode::CT,
                         ];
 
                         break;

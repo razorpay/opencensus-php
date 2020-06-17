@@ -150,6 +150,8 @@ class Validator extends Base\Validator
 
         if ($destinationType === Constants\Entity::CARD)
         {
+            $cardType = $attempt->card->getType();
+
             $cardIssuer = $attempt->card->getIssuer();
 
             $iin = $attempt->card->iinRelation;
@@ -174,6 +176,9 @@ class Validator extends Base\Validator
                     // IIN is source of truth
                     $cardIssuer = $iinIssuer;
                 }
+
+                // IIN is the source of truth
+                $cardType = $iin->getType();
             }
 
             $variant = $app->razorx->getTreatment(
@@ -202,7 +207,22 @@ class Validator extends Base\Validator
 
             $networkCode = $attempt->card->getNetworkCode();
 
-            Mode::validateModeOfIssuer($mode, $cardIssuer, $networkCode);
+            if ($cardType === \RZP\Models\Card\Type::DEBIT)
+            {
+                //
+                // The only supported mode for Fund Transfer to Debit Cards
+                //
+                $supportedModes = [Mode::CT];
+
+                if (in_array($mode, $supportedModes, true) === false)
+                {
+                    throw new BadRequestValidationFailureException("$mode is not a valid mode for Debit Cards");
+                }
+            }
+            else
+            {
+                Mode::validateModeOfIssuer($mode, $cardIssuer, $networkCode);
+            }
         }
 
         $valid = Channel::validateChannelAndMode($channel, $destinationType, $mode);

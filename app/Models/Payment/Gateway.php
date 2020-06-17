@@ -132,6 +132,9 @@ class Gateway
     const NODAL_YESBANK      = 'nodal_yesbank';
     const NODAL_ICICI        = 'nodal_icici';
 
+    // M2P - Integration for Fund Transfers to Debit Cards
+    const M2P                = 'm2p';
+
     const BT_YESBANK         = 'bt_yesbank';
     const BT_KOTAK           = 'bt_kotak';
     const BT_ICICI           = 'bt_icici';
