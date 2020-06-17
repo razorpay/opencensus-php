@@ -37,6 +37,8 @@ abstract class Processor extends Base\Core
 
     const VIRTUAL_ACCOUNT_NOT_FOUND = 'VIRTUAL_ACCOUNT_NOT_FOUND';
 
+    const VIRTUAL_ACCOUNT_DUE_TO_BE_CLOSED = 'VIRTUAL_ACCOUNT_DUE_TO_BE_CLOSED';
+
     public function __construct()
     {
         parent::__construct();
@@ -305,6 +307,8 @@ abstract class Processor extends Base\Core
 
         if ($this->virtualAccount->isDueToBeClosed() === true)
         {
+            $this->setUnexpectedReason($entity, self::VIRTUAL_ACCOUNT_DUE_TO_BE_CLOSED);
+
             $this->trace->info(
                 TraceCode::VIRTUAL_ACCOUNT_CLOSED_PAYMENT_REROUTED,
                 $entity->toArray());
@@ -387,6 +391,15 @@ abstract class Processor extends Base\Core
                 null,
                 ['error' => self::VIRTUAL_ACCOUNT_NOT_FOUND]
             );
+        }
+    }
+
+    protected function setUnexpectedReason(Base\PublicEntity $entity, string $unexpectedReason)
+    {
+        if (($entity->getEntityName() === Constants\Entity::BANK_TRANSFER) or
+            ($entity->getEntityName() === Constants\Entity::UPI_TRANSFER))
+        {
+            $entity->setUnexpectedReason($unexpectedReason);
         }
     }
 }

@@ -149,6 +149,7 @@ class Entity extends Base\PublicEntity
         self::UTR,
         self::TIME,
         self::EXPECTED,
+        self::UNEXPECTED_REASON,
         self::NOTIFIED,
         self::CREATED_AT,
         self::UPDATED_AT,
@@ -516,6 +517,11 @@ class Entity extends Base\PublicEntity
     public function setPayerIfsc(string $ifsc)
     {
         $this->setAttribute(self::PAYER_IFSC, $ifsc);
+    }
+
+    public function setUnexpectedReason(string $unexpectedReason)
+    {
+        $this->setAttribute(self::UNEXPECTED_REASON, $unexpectedReason);
     }
 
     public function setGateway(string $gateway)

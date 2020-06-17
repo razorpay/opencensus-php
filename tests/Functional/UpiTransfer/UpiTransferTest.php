@@ -2,17 +2,23 @@
 
 namespace RZP\Tests\Functional\UpiTransfer;
 
+use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Models\Pricing\Fee;
 use RZP\Services\RazorXClient;
 use RZP\Models\Payment\Gateway;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Tests\Functional\Helpers\VirtualAccount\VirtualAccountTrait;
 
 class UpiTransferTest extends TestCase
 {
     use PaymentTrait;
     use DbEntityFetchTrait;
+    use VirtualAccountTrait;
+
+    protected $virtualAccountId;
 
     public function setUp()
     {
@@ -65,6 +71,8 @@ class UpiTransferTest extends TestCase
         $this->assertNotNull($upi['payment_id']);
 
         $this->assertEquals($upiTransfer['expected'], true);
+
+        $this->assertEquals(null, $upiTransfer['unexpected_reason']);
     }
 
     public function testProcessMindgateUpiTransferPaymentIgnoreCase()
@@ -87,6 +95,8 @@ class UpiTransferTest extends TestCase
         $this->assertNotNull($upi['payment_id']);
 
         $this->assertEquals($upiTransfer['expected'], true);
+
+        $this->assertEquals(null, $upiTransfer['unexpected_reason']);
     }
 
     public function testProcessFailedMindgateUpiTransferPayment()
@@ -122,6 +132,8 @@ class UpiTransferTest extends TestCase
         $this->assertNotNull($upi['payment_id']);
 
         $this->assertEquals($upiTransfer['expected'], true);
+
+        $this->assertEquals(null, $upiTransfer['unexpected_reason']);
 
         // Being used in scrooge checks
         $this->gateway = $payment['gateway'];
@@ -179,6 +191,7 @@ class UpiTransferTest extends TestCase
 
         $this->assertEquals($upiTransfer['payment_id'], $payment['id']);
         $this->assertEquals($upiTransfer['expected'], false);
+        $this->assertEquals('VIRTUAL_ACCOUNT_NOT_FOUND', $upiTransfer['unexpected_reason']);
     }
 
     public function testProcessMindgateUpiTransferWithVpaPricing()
@@ -211,7 +224,7 @@ class UpiTransferTest extends TestCase
         $this->assertEquals($transaction['amount'] * 2 / 100, $transaction['fee'] - $transaction['tax']);
     }
 
-    protected function createVirtualAccount($mode = 'test', $merchantId = '10000000000000', $vpaDescriptor = null)
+    protected function createVirtualAccount($mode = 'test', $merchantId = '10000000000000', $vpaDescriptor = null, $additionalFields = [])
     {
         $this->ba->privateAuth();
 
@@ -227,7 +240,9 @@ class UpiTransferTest extends TestCase
             $request['content']['receivers']['vpa']['descriptor'] = $vpaDescriptor;
         }
 
-        $response = $this->makeRequestAndGetContent($request);
+        $response = $this->makeRequestAndGetContent($request + $additionalFields);
+
+        $this->virtualAccountId = $response['id'];
 
         $vpa = $response['receivers'][0];
 
@@ -311,6 +326,8 @@ class UpiTransferTest extends TestCase
         $this->assertNotNull($upi['payment_id']);
 
         $this->assertEquals($upiTransfer['expected'], true);
+        $this->assertEquals(null, $upiTransfer['unexpected_reason']);
+
     }
     public function testProcessIciciUpiTransferUnexpectedPayment()
     {
@@ -327,6 +344,7 @@ class UpiTransferTest extends TestCase
 
         $this->assertEquals($upiTransfer['payment_id'], $payment['id']);
         $this->assertEquals($upiTransfer['expected'], false);
+        $this->assertEquals('VIRTUAL_ACCOUNT_NOT_FOUND', $upiTransfer['unexpected_reason']);
     }
 
     protected function enableRazorXTreatmentForRazorXVpaIcici()
@@ -348,5 +366,45 @@ class UpiTransferTest extends TestCase
 
                                   return 'off';
                               }));
+    }
+
+    public function testProcessMindgateUpiTransferToClosedVaUnexpectedReason()
+    {
+        $this->closeVirtualAccount($this->virtualAccountId);
+
+        $response = $this->processUpiTransfer();
+
+        $this->assertNull($response['message']);
+
+        $upiTransfer = $this->getLastEntity('upi_transfer', true);
+
+        $this->assertEquals(false, $upiTransfer['expected']);
+
+        $this->assertEquals('VIRTUAL_ACCOUNT_NOT_FOUND', $upiTransfer['unexpected_reason']);
+    }
+
+    public function testProcessMindgateUpiTransferToDueToBeClosedVaUnexpectedReason()
+    {
+        $currentTimestamp = Carbon::now(Timezone::IST)->getTimestamp();
+
+        $this->createVirtualAccount(
+            'test',
+            10000000000000,
+            'anothervpa',
+            ['close_by' => $currentTimestamp + (20 * 60)]
+        );
+
+        // When close_by time has passed but the next cron execution time is still due.
+        $this->fixtures->edit('virtual_account', $this->virtualAccountId, ['close_by' => $currentTimestamp - 60]);
+
+        $response = $this->processUpiTransfer('testProcessMindgateUpiTransferToDueToBeClosedVa');
+
+        $this->assertNull($response['message']);
+
+        $upiTransfer = $this->getLastEntity('upi_transfer', true);
+
+        $this->assertEquals(false, $upiTransfer['expected']);
+
+        $this->assertEquals('VIRTUAL_ACCOUNT_DUE_TO_BE_CLOSED', $upiTransfer['unexpected_reason']);
     }
 }

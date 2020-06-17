@@ -22,13 +22,17 @@ use RZP\Tests\Functional\FundTransfer\AttemptTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 use RZP\Tests\Functional\FundTransfer\AttemptReconcileTrait;
+use RZP\Tests\Functional\Helpers\VirtualAccount\VirtualAccountTrait;
 
 class BankTransferTest extends TestCase
 {
     use AttemptTrait;
     use FileHandlerTrait;
     use DbEntityFetchTrait;
+    use VirtualAccountTrait;
     use AttemptReconcileTrait;
+
+    protected $virtualAccountId;
 
     public function setUp()
     {
@@ -102,6 +106,7 @@ class BankTransferTest extends TestCase
         $this->assertEquals($accountNumber, $bankTransfer['payee_account']);
         $this->assertEquals($ifsc, $bankTransfer['payee_ifsc']);
         $this->assertEquals(true, $bankTransfer['expected']);
+        $this->assertEquals(null, $bankTransfer['unexpected_reason']);
         $this->assertNotNull($bankTransfer['payment_id']);
 
         // Payment is automatically captured
@@ -162,6 +167,7 @@ class BankTransferTest extends TestCase
         $this->assertEquals($accountNumber, $bankTransfer['payee_account']);
         $this->assertEquals($ifsc, $bankTransfer['payee_ifsc']);
         $this->assertEquals(true, $bankTransfer['expected']);
+        $this->assertEquals(null, $bankTransfer['unexpected_reason']);
         $this->assertEquals(99, $bankTransfer['amount']);
         $this->assertNotNull($bankTransfer['payment_id']);
 
@@ -208,6 +214,7 @@ class BankTransferTest extends TestCase
         $this->assertEquals('11122275867', $bankTransfer['payee_account']);
         $this->assertEquals('RAZRB000000', $bankTransfer['payee_ifsc']);
         $this->assertEquals(false, $bankTransfer['expected']);
+        $this->assertEquals(null, $bankTransfer['unexpected_reason']);
         $this->assertEquals('va_ShrdVirtualAcc', $bankTransfer['virtual_account_id']);
         $this->assertEquals($bankTransfer['payment_id'], $payment['id']);
 
@@ -552,6 +559,7 @@ class BankTransferTest extends TestCase
         $this->assertEquals($accountNumber, $bankTransfer['payee_account']);
         $this->assertEquals($ifsc, $bankTransfer['payee_ifsc']);
         $this->assertEquals(true, $bankTransfer['expected']);
+        $this->assertEquals(null, $bankTransfer['unexpected_reason']);
         $this->assertNotNull($bankTransfer['payment_id']);
 
         // Payment is automatically captured
@@ -669,6 +677,7 @@ class BankTransferTest extends TestCase
         $this->assertEquals($ifsc, $bankTransfer['payee_ifsc']);
         $this->assertEquals('IMPS', $bankTransfer['mode']);
         $this->assertEquals(true, $bankTransfer['expected']);
+        $this->assertEquals(null, $bankTransfer['unexpected_reason']);
         $this->assertNotNull($bankTransfer['payment_id']);
 
         // Payment is automatically captured
@@ -729,6 +738,7 @@ class BankTransferTest extends TestCase
         $this->assertEquals($ifsc, $bankTransfer['payee_ifsc']);
         $this->assertEquals('IMPS', $bankTransfer['mode']);
         $this->assertEquals(true, $bankTransfer['expected']);
+        $this->assertEquals(null, $bankTransfer['unexpected_reason']);
         $this->assertNotNull($bankTransfer['payment_id']);
 
         // Payment is automatically captured
@@ -1055,6 +1065,7 @@ class BankTransferTest extends TestCase
         $this->assertEmpty($bankTransfer['payer_account']);
         $this->assertEquals('IMPS', $bankTransfer['mode']);
         $this->assertEquals(true, $bankTransfer['expected']);
+        $this->assertEquals(null, $bankTransfer['unexpected_reason']);
         $this->assertNotNull($bankTransfer['payment_id']);
 
         // Payment is automatically captured
@@ -1119,6 +1130,7 @@ class BankTransferTest extends TestCase
         $this->assertEquals('533/1 NEFT CASH FOR NON CUSTOMER', $bankTransfer['payer_account']);
         $this->assertEquals('RTGS', $bankTransfer['mode']);
         $this->assertEquals(true, $bankTransfer['expected']);
+        $this->assertEquals(null, $bankTransfer['unexpected_reason']);
         $this->assertNotNull($bankTransfer['payment_id']);
 
         // Payment is automatically captured
@@ -1158,6 +1170,7 @@ class BankTransferTest extends TestCase
         $this->assertEquals('11122200123456781112220012345678', $bankTransfer['payee_account']);
         $this->assertEquals('va_ShrdVirtualAcc', $bankTransfer['virtual_account_id']);
         $this->assertEquals(false, $bankTransfer['expected']);
+        $this->assertEquals('VIRTUAL_ACCOUNT_NOT_FOUND', $bankTransfer['unexpected_reason']);
         $this->assertNotNull($payment['id'], 'pay_'.$bankTransfer['payment_id']);
     }
 
@@ -1233,6 +1246,7 @@ class BankTransferTest extends TestCase
         $this->assertEquals($accountNumber, $bankTransfer['payee_account']);
         $this->assertEquals($ifsc, $bankTransfer['payee_ifsc']);
         $this->assertEquals(true, $bankTransfer['expected']);
+        $this->assertEquals(null, $bankTransfer['unexpected_reason']);
         $this->assertNotNull($bankTransfer['payment_id']);
 
         // Payment is automatically captured
@@ -1395,6 +1409,7 @@ class BankTransferTest extends TestCase
         $this->assertEquals($accountNumber, $bankTransfer['payee_account']);
         $this->assertEquals($ifsc, $bankTransfer['payee_ifsc']);
         $this->assertEquals(true, $bankTransfer['expected']);
+        $this->assertEquals(null, $bankTransfer['unexpected_reason']);
         $this->assertNotNull($bankTransfer['payment_id']);
 
         // Payment is automatically captured
@@ -1470,6 +1485,7 @@ class BankTransferTest extends TestCase
         $this->assertEquals($ifsc, $bankTransfer['payee_ifsc']);
         $this->assertEquals($bankAccount['id'], $bankTransfer['payer_bank_account_id']);
         $this->assertEquals(false, $bankTransfer['expected']);
+        $this->assertEquals(null, $bankTransfer['unexpected_reason']);
         $this->assertNotNull($bankTransfer['payment_id']);
 
         // Invalid account forced creation of a temp acc for default merchant
@@ -1537,6 +1553,7 @@ class BankTransferTest extends TestCase
         $this->assertEquals($ifsc, $bankTransfer['payee_ifsc']);
         $this->assertEquals($bankAccount['id'], $bankTransfer['payer_bank_account_id']);
         $this->assertEquals(false, $bankTransfer['expected']);
+        $this->assertEquals('VIRTUAL_ACCOUNT_NOT_FOUND', $bankTransfer['unexpected_reason']);
         $this->assertNotNull($bankTransfer['payment_id']);
 
         // Invalid account forced creation of a temp acc for default merchant
@@ -1627,6 +1644,7 @@ class BankTransferTest extends TestCase
         $this->assertEquals($accountNumber, $bankTransfer['payee_account']);
         $this->assertEquals($ifsc, $bankTransfer['payee_ifsc']);
         $this->assertEquals(true, $bankTransfer['expected']);
+        $this->assertEquals(null, $bankTransfer['unexpected_reason']);
         $this->assertEquals(false, $bankTransfer['notified']);
         $this->assertNotNull($bankTransfer['payment_id']);
 
@@ -1640,6 +1658,7 @@ class BankTransferTest extends TestCase
         $this->assertEquals($accountNumber, $bankTransfer['payee_account']);
         $this->assertEquals($ifsc, $bankTransfer['payee_ifsc']);
         $this->assertEquals(true, $bankTransfer['expected']);
+        $this->assertEquals(null, $bankTransfer['unexpected_reason']);
         $this->assertEquals(true, $bankTransfer['notified']);
         $this->assertNotNull($bankTransfer['payment_id']);
     }
@@ -1656,6 +1675,7 @@ class BankTransferTest extends TestCase
         $this->assertEquals($accountNumber, $bankTransfer['payee_account']);
         $this->assertEquals($ifsc, $bankTransfer['payee_ifsc']);
         $this->assertEquals(true, $bankTransfer['expected']);
+        $this->assertEquals(null, $bankTransfer['unexpected_reason']);
         $this->assertEquals(false, $bankTransfer['notified']);
         $this->assertNotNull($bankTransfer['payment_id']);
 
@@ -1671,6 +1691,7 @@ class BankTransferTest extends TestCase
         $this->assertEquals($accountNumber, $bankTransfer['payee_account']);
         $this->assertEquals($ifsc, $bankTransfer['payee_ifsc']);
         $this->assertEquals(true, $bankTransfer['expected']);
+        $this->assertEquals(null, $bankTransfer['unexpected_reason']);
         $this->assertEquals(true, $bankTransfer['notified']);
         $this->assertNotNull($bankTransfer['payment_id']);
 
@@ -1684,6 +1705,7 @@ class BankTransferTest extends TestCase
         $this->assertEquals($accountNumber, $bankTransfer['payee_account']);
         $this->assertEquals($ifsc, $bankTransfer['payee_ifsc']);
         $this->assertEquals(true, $bankTransfer['expected']);
+        $this->assertEquals(null, $bankTransfer['unexpected_reason']);
         $this->assertEquals(true, $bankTransfer['notified']);
         $this->assertNotNull($bankTransfer['payment_id']);
     }
@@ -2085,6 +2107,8 @@ class BankTransferTest extends TestCase
 
         $this->assertEquals(true, $bankTransfer1['expected']);
 
+        $this->assertEquals(null, $bankTransfer1['unexpected_reason']);
+
         $this->assertEquals($utr1, $bankTransfer1['utr']);
 
         $this->assertEquals($accountNumber1, $bankTransfer1['payee_account']);
@@ -2102,6 +2126,8 @@ class BankTransferTest extends TestCase
         $bankTransfer2 = $this->getLastEntity('bank_transfer', true);
 
         $this->assertEquals(true, $bankTransfer2['expected']);
+
+        $this->assertEquals(null, $bankTransfer2['unexpected_reason']);
 
         $this->assertEquals($utr2, $bankTransfer2['utr']);
 
@@ -2138,6 +2164,8 @@ class BankTransferTest extends TestCase
 
         $this->assertEquals(true, $bankTransfer1['expected']);
 
+        $this->assertEquals(null, $bankTransfer1['unexpected_reason']);
+
         $this->assertEquals($utr1, $bankTransfer1['utr']);
 
         $this->assertEquals($accountNumber1, $bankTransfer1['payee_account']);
@@ -2155,6 +2183,8 @@ class BankTransferTest extends TestCase
         $bankTransfer2 = $this->getLastEntity('bank_transfer', true);
 
         $this->assertEquals(true, $bankTransfer2['expected']);
+
+        $this->assertEquals(null, $bankTransfer2['unexpected_reason']);
 
         $this->assertEquals($utr1, $bankTransfer2['utr']);
 
@@ -2188,6 +2218,8 @@ class BankTransferTest extends TestCase
         $bankTransfer1 = $this->getLastEntity('bank_transfer', true);
 
         $this->assertEquals(true, $bankTransfer1['expected']);
+
+        $this->assertEquals(null, $bankTransfer1['unexpected_reason']);
 
         $this->assertEquals($utr, $bankTransfer1['utr']);
 
@@ -2223,6 +2255,7 @@ class BankTransferTest extends TestCase
         $this->assertEquals($accountNumber, $bankTransfer['payee_account']);
         $this->assertEquals($ifsc, $bankTransfer['payee_ifsc']);
         $this->assertEquals(true, $bankTransfer['expected']);
+        $this->assertEquals(null, $bankTransfer['unexpected_reason']);
         $this->assertNotNull($bankTransfer['payment_id']);
 
         // Payment is automatically captured
@@ -2257,7 +2290,7 @@ class BankTransferTest extends TestCase
         $this->assertEquals('123456', $bankAccount['account_number']);
     }
 
-    protected function createVirtualAccount($mode = 'test', $merchantId = '10000000000000')
+    protected function createVirtualAccount($mode = 'test', $merchantId = '10000000000000', $additionalFields = [])
     {
         $this->ba->privateAuth();
 
@@ -2268,7 +2301,9 @@ class BankTransferTest extends TestCase
 
         $request = $this->testData[__FUNCTION__];
 
-        $response = $this->makeRequestAndGetContent($request);
+        $response = $this->makeRequestAndGetContent($request + $additionalFields);
+
+        $this->virtualAccountId = $response['id'];
 
         $bankAccount = $response['receivers'][0];
 
@@ -2287,6 +2322,7 @@ class BankTransferTest extends TestCase
         $bankTransfer =  $this->getLastEntity('bank_transfer', true);
         $this->assertEquals($accountNumber, $bankTransfer['payee_account']);
         $this->assertEquals(true, $bankTransfer['expected']);
+        $this->assertEquals(null, $bankTransfer['unexpected_reason']);
         $this->assertNotNull($bankTransfer['payment_id']);
     }
 
@@ -2693,6 +2729,7 @@ class BankTransferTest extends TestCase
         $this->assertEquals($accountNumber, $bankTransfer['payee_account']);
         $this->assertEquals($ifsc, $bankTransfer['payee_ifsc']);
         $this->assertEquals(true, $bankTransfer['expected']);
+        $this->assertEquals(null, $bankTransfer['unexpected_reason']);
         $this->assertNotNull($bankTransfer['payment_id']);
 
         // Payment is automatically captured
@@ -2835,5 +2872,50 @@ class BankTransferTest extends TestCase
         ]);
 
         return $response;
+    }
+
+    public function testBankTransferToClosedVaUnexpectedReason()
+    {
+        $accountNumber = $this->bankAccount['account_number'];
+        $ifsc = $this->bankAccount['ifsc'];
+
+        $this->closeVirtualAccount($this->virtualAccountId);
+
+        $response = $this->processBankTransfer($accountNumber, $ifsc);
+
+        $this->assertEquals(true, $response['valid']);
+
+        $this->assertNull($response['message']);
+
+        $bankTransfer = $this->getLastEntity('bank_transfer', true);
+
+        $this->assertEquals(false, $bankTransfer['expected']);
+
+        $this->assertEquals('VIRTUAL_ACCOUNT_NOT_FOUND', $bankTransfer['unexpected_reason']);
+    }
+
+    public function testBankTransferToDueToBeClosedVaUnexpectedReason()
+    {
+        $currentTimestamp = Carbon::now(Timezone::IST)->getTimestamp();
+
+        $bankAccount = $this->createVirtualAccount(['close_by' => $currentTimestamp + (20 * 60)]);
+
+        $accountNumber = $bankAccount['account_number'];
+        $ifsc = $bankAccount['ifsc'];
+
+        // When close_by time has passed but the next cron execution time is still due.
+        $this->fixtures->edit('virtual_account', $this->virtualAccountId, ['close_by' => $currentTimestamp - 60]);
+
+        $response = $this->processBankTransfer($accountNumber, $ifsc);
+
+        $this->assertEquals(true, $response['valid']);
+
+        $this->assertNull($response['message']);
+
+        $bankTransfer = $this->getLastEntity('bank_transfer', true);
+
+        $this->assertEquals(false, $bankTransfer['expected']);
+
+        $this->assertEquals('VIRTUAL_ACCOUNT_DUE_TO_BE_CLOSED', $bankTransfer['unexpected_reason']);
     }
 }

@@ -375,6 +375,8 @@ class Processor extends VirtualAccount\Processor
     {
         if ($this->virtualAccount === null)
         {
+            $bankTransfer->setUnexpectedReason(self::VIRTUAL_ACCOUNT_NOT_FOUND);
+
             $this->trace->info(
                 TraceCode::VIRTUAL_ACCOUNT_UNEXPECTED_PAYMENT,
                 [

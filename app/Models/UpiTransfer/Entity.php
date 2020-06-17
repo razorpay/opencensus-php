@@ -82,6 +82,7 @@ class Entity extends Base\PublicEntity
     protected $visible = [
         self::ID,
         self::EXPECTED,
+        self::UNEXPECTED_REASON,
         self::AMOUNT,
         self::PAYER_VPA,
         self::PAYEE_VPA,
@@ -155,6 +156,11 @@ class Entity extends Base\PublicEntity
     public function setExpected(bool $expected)
     {
         $this->setAttribute(self::EXPECTED, $expected);
+    }
+
+    public function setUnexpectedReason(string $unexpectedReason)
+    {
+        $this->setAttribute(self::UNEXPECTED_REASON, $unexpectedReason);
     }
 
     public function setPublicBankReferenceAttribute(array & $array)
