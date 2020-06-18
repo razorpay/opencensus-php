@@ -16,12 +16,16 @@ use RZP\Error\ErrorCode;
 class Service extends Base\Service
 {
     const ID            = 'id';
+    const ACTIVE        = 'active';
+    const EVENTS        = 'events';
     const WEBHOOK       = 'webhook';
+    const DISABLED      = 'disabled';
     const MERCHANT      = 'merchant';
     const OWNER_ID      = 'owner_id';
     const OWNER_TYPE    = 'owner_type';
     const APPLICATION   = 'application';
     const CREATED_AT    = 'created_at';
+    const SUBSCRIPTIONS = 'subscriptions';
 
     /**
      * @var Validator
@@ -52,6 +56,8 @@ class Service extends Base\Service
      */
     public function createForOAuthApp(array $input, string $appId): array
     {
+        $input = $this->apiToStorkFormat($input);
+
         $this->validator->validateStorkWebhookInput($input, $this->merchant);
         $this->validator->validatePartnerWithWebhooksAccess($this->merchant);
 
@@ -70,6 +76,8 @@ class Service extends Base\Service
      */
     public function createForMerchant(array $input): array
     {
+        $input = $this->apiToStorkFormat($input);
+
         $this->validator->validateStorkWebhookInput($input, $this->merchant);
 
         $input[self::OWNER_ID]   = $this->merchant->getId();
@@ -100,7 +108,7 @@ class Service extends Base\Service
             (new Merchant\Webhook\Core)->createWebhookForStork($input, $this->merchant, $res[self::ID], $res[self::CREATED_AT] ?? 0);
         }
 
-        return $res;
+        return $this->storkToApiFormat($res);
     }
 
     /**
@@ -112,6 +120,8 @@ class Service extends Base\Service
      */
     public function update(string $webhookId, array $input): array
     {
+        $input = $this->apiToStorkFormat($input);
+
         if ($this->auth->isProductBanking() === true)
         {
             $this->checkAndFailIfWebhookNotExistsOnStork($webhookId);
@@ -132,27 +142,39 @@ class Service extends Base\Service
             (new Merchant\Webhook\Core)->updateWebhookForStork($input, $this->merchant, $res[self::ID], $res[self::CREATED_AT] ?? 0);
         }
 
-        return $res;
+        return $this->storkToApiFormat($res);
     }
 
     public function get(string $webhookId): array
     {
-        if ($this->app['basicauth']->isHosted() === true)
+        if (($this->app['basicauth']->isHosted() === true) or
+            ($this->app['basicauth']->isExpress() === true))
         {
-            return (new Stork($this->product))->getWithSecret($webhookId, $this->merchant->getId());
+            $res = (new Stork($this->product))->getWithSecret($webhookId, $this->merchant->getId());
+        }
+        else
+        {
+            $res = (new Stork($this->product))->get($webhookId, $this->merchant->getId());
         }
 
-        return (new Stork($this->product))->get($webhookId, $this->merchant->getId());
+        return $this->storkToApiFormat($res);
     }
 
     public function list(array $params): array
     {
-        if ($this->app['basicauth']->isHosted() === true)
+        if (($this->app['basicauth']->isHosted() === true) or
+            ($this->app['basicauth']->isExpress() === true))
         {
-            return (new Stork($this->product))->listWithSecret($this->merchant->getId(), $params);
+            $res = (new Stork($this->product))->listWithSecret($this->merchant->getId(), $params);
+        }
+        else
+        {
+            $res = (new Stork($this->product))->list($this->merchant->getId(), $params);
         }
 
-        return (new Stork($this->product))->list($this->merchant->getId(), $params);
+        $res['items'] = array_map(function ($v) { return $this->storkToApiFormat($v); }, $res['items']);
+
+        return $res;
     }
 
     //if webhook already exists on stork throw exception
@@ -172,5 +194,88 @@ class Service extends Base\Service
         {
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_STORK_WEBHOOK_NOT_FOUND);
         }
+    }
+
+    /**
+     * events in api format is subscriptions in stork format
+     * active field in api format is disabled field in stork format
+     *
+     * @param array $apiWk webhook in api's format
+     * @return array         webhook in stork's format
+     */
+    protected function apiToStorkFormat(array $apiWk): array
+    {
+        if (isset($apiWk[self::EVENTS]) === false)
+        {
+            // setting as empty array to avoid null exceptions
+            $apiWk[self::EVENTS] = [];
+        }
+
+        $storkWk = $apiWk;
+
+        $storkWk[self::SUBSCRIPTIONS] = array_map(
+            function($e)
+            {
+                return ['eventmeta' => ['name' => $e]];
+            },
+            array_keys(array_filter($apiWk[self::EVENTS])));
+
+        if (isset($apiWk[self::ACTIVE]) === true)
+        {
+            $storkWk[self::DISABLED] = !$apiWk[self::ACTIVE];
+        }
+
+        unset($storkWk[self::ACTIVE]);
+        unset($storkWk[self::EVENTS]);
+        return $storkWk;
+    }
+
+    /**
+     * events in api format is subscriptions in stork format
+     * active field in api format is disabled field in stork format
+     *
+     * @param array $storkWk this is the webhook in stork's format
+     * @return array         webhook in APIs format (diff is in events)
+     */
+    protected function storkToApiFormat(array $storkWk): array
+    {
+        if (isset($storkWk[self::SUBSCRIPTIONS]) === false)
+        {
+            // setting as empty array to avoid null exceptions.
+            $storkWk[self::SUBSCRIPTIONS] = [];
+        }
+
+        $events = [];
+
+        $apiWk = $storkWk;
+
+        $applicableEvents = array_keys(Merchant\Webhook\Event::filterForPublicApi($this->merchant));
+        foreach ($applicableEvents as $ename)
+        {
+            $events[$ename] = false;
+        }
+
+
+        //for all events which are enabled, set the event to 1
+        foreach ($storkWk[self::SUBSCRIPTIONS] as $value)
+        {
+            $events[$value['eventmeta']['name']] = true;
+        }
+
+        if (isset($storkWk[self::DISABLED]) === true)
+        {
+            $apiWk[self::ACTIVE] = !$storkWk[self::DISABLED];
+        }
+        else
+        {
+            // DISABLED field is not there if it's false.
+            $apiWk[self::ACTIVE] = true;
+        }
+
+        unset($apiWk[self::DISABLED]);
+        unset($apiWk[self::SUBSCRIPTIONS]);
+        $apiWk[self::EVENTS] = $events;
+
+        return $apiWk;
     }
 }

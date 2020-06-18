@@ -7,7 +7,7 @@ return [
 
     'testCreateWebhookForOauth' => [
         'request' => [
-            'url'  => '/v2/oauth/applications/10000000000App/webhooks',
+            'url'  => '/v1/oauth/applications/10000000000App/webhooks',
             'content' => [],
             'method' => 'POST',
         ],
@@ -16,7 +16,7 @@ return [
 
     'testCreateWebhookForOauthFailure' => [
         'request' => [
-            'url'  => '/v2/oauth/applications/10000000000App/webhooks',
+            'url'  => '/v1/oauth/applications/10000000000App/webhooks',
             'content' => [],
             'method' => 'POST',
         ],
@@ -36,7 +36,7 @@ return [
 
     'testCreateWebhookForBanking' => [
         'request' => [
-            'url'  => '/v2/webhooks',
+            'url'  => '/v1/webhooks',
             'server' => [
                 'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
             ],
@@ -48,7 +48,7 @@ return [
 
     'testCreateWebhookForBankingAlreadyExistsFailure' => [
         'request' => [
-            'url'  => '/v2/webhooks',
+            'url'  => '/v1/webhooks',
             'server' => [
                 'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
             ],
@@ -71,7 +71,7 @@ return [
 
     'testCreateWebhookForPrimary' => [
         'request' => [
-            'url'  => '/v2/webhooks',
+            'url'  => '/v1/webhooks',
             'content' => [],
             'method' => 'POST',
         ],
@@ -80,7 +80,7 @@ return [
 
     'testCreateWebhookInvalidProductEventFailure' => [
         'request' => [
-            'url' => '/v2/webhooks',
+            'url' => '/v1/webhooks',
             'content' => [],
             'method' => 'POST',
         ],
@@ -101,7 +101,7 @@ return [
 
     'testGetWebhookForHosted' => [
         'request' => [
-            'url'  => '/v2/webhooks/primaryWebhookId',
+            'url'  => '/v1/webhooks/primaryWebhookId',
             'method' => 'GET',
         ],
         'response' => [
@@ -111,7 +111,7 @@ return [
 
     'testGetWebhookForBanking' => [
         'request' => [
-            'url'  => '/v2/webhooks/bankingWebhookId',
+            'url'  => '/v1/webhooks/bankingWebhookId',
             'server' => [
                 'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
             ],
@@ -124,7 +124,7 @@ return [
 
     'testGetWebhookForPrimary' => [
         'request' => [
-            'url'  => '/v2/webhooks/primaryWebhookId',
+            'url'  => '/v1/webhooks/primaryWebhookId',
             'method' => 'GET',
         ],
         'response' => [
@@ -134,7 +134,7 @@ return [
 
     'testListWebhookForHosted' => [
         'request' => [
-            'url'  => '/v2/webhooks',
+            'url'  => '/v1/webhooks',
             'method' => 'GET',
         ],
         'response' => [
@@ -144,7 +144,7 @@ return [
 
     'testListWebhookForBanking' => [
         'request' => [
-            'url'  => '/v2/webhooks',
+            'url'  => '/v1/webhooks',
             'server' => [
                 'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
             ],
@@ -157,7 +157,7 @@ return [
 
     'testListWebhookForPrimary' => [
         'request' => [
-            'url'  => '/v2/webhooks',
+            'url'  => '/v1/webhooks',
             'method' => 'GET',
         ],
         'response' => [
@@ -167,7 +167,7 @@ return [
 
     'testUpdateWebhookForBanking' => [
         'request' => [
-            'url'  => '/v2/webhooks/bankingWebhookId',
+            'url'  => '/v1/webhooks/bankingWebhookId',
             'server' => [
                 'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
             ],
@@ -178,7 +178,7 @@ return [
 
     'testUpdateWebhookForBankingNotExistsFailure' => [
         'request' => [
-            'url'  => '/v2/webhooks/bankingWebhookId',
+            'url'  => '/v1/webhooks/bankingWebhookId',
             'server' => [
                 'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
             ],
@@ -200,7 +200,7 @@ return [
 
     'testUpdateWebhookForPrimary' => [
         'request' => [
-            'url'  => '/v2/webhooks/primaryWebhookId',
+            'url'  => '/v1/webhooks/primaryWebhookId',
             'method' => 'PUT',
         ],
         'response' => [],
@@ -208,7 +208,7 @@ return [
 
     'testUpdateWebhookInvalidProductEventFailure' => [
         'request' => [
-            'url' => '/v2/webhooks/primaryWebhookId',
+            'url' => '/v1/webhooks/primaryWebhookId',
             'content' => [],
             'method' => 'PUT',
         ],

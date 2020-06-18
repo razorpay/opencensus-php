@@ -101,12 +101,8 @@ class UserRolesScope
 
             // webhook routes
             'webhook_create'            => [Role::OWNER, Role::MANAGER, Role::ADMIN],
-            'webhook_create_v2'         => [Role::OWNER, Role::MANAGER, Role::ADMIN],
             'webhook_fetch_multiple'    => [Role::OWNER, Role::MANAGER, Role::ADMIN],
-            'webhook_fetch_multiple_v2' => [Role::OWNER, Role::MANAGER, Role::ADMIN],
-            'webhook_fetch_v2'          => [Role::OWNER, Role::MANAGER, Role::ADMIN],
             'webhook_edit'              => [Role::OWNER, Role::MANAGER, Role::ADMIN],
-            'webhook_edit_v2'           => [Role::OWNER, Role::MANAGER, Role::ADMIN],
 
             // settlements route
             'setl_fetch_multiple' => array_merge(Role::READER_ROLES,Role::LINKED_ACCOUNT_ROLES,

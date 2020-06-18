@@ -140,4 +140,8 @@ final class RazorxTreatment
     // To decide whether a merchant without specific Instant Refunds pricing - will have the old default pricing or
     // the new default pricing applied
     const INSTANT_REFUNDS_DEFAULT_PRICING_V2 = 'instant_refunds_default_pricing_v2';
+  
+    // Added to gradually route the webhook requests to the new path
+    // which makes request to stork & then dual writes to API.
+    const API_WEBHOOK_V2_PATH = 'api_webhook_v2_path';
 }

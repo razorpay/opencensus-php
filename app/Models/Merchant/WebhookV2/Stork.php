@@ -163,6 +163,11 @@ class Stork
             $webhook['created_at'] = strtotime($webhook['created_at']);
         }
 
+        if (isset($webhook['updated_at']) === true)
+        {
+            $webhook['updated_at'] = strtotime($webhook['updated_at']);
+        }
+
         if (isset($webhook['disabled_at']) === true)
         {
             $webhook['disabled_at'] = strtotime($webhook['disabled_at']);

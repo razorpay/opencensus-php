@@ -46,6 +46,15 @@ trait WebhookV2Trait
         ];
     }
 
+    protected function getApiCreatePayloadForBanking(): array
+    {
+        return [
+            'url'     => 'http://webhook.com/v1/dummy/route',
+            'secret'  => 'secret',
+            'events'  => [ 'payout.created' => '1' ],
+        ];
+    }
+
     protected function getStorkCreatePayloadForPrimary(): array
     {
         return [
@@ -55,6 +64,14 @@ trait WebhookV2Trait
                     'eventmeta'  => ['name' => 'payment.authorized',],
                 ],
             ],
+        ];
+    }
+
+    protected function getApiCreatePayloadForPrimary(): array
+    {
+        return [
+            'url'     => 'http://webhook.com/v1/dummy/route',
+            'events'  => [ 'payment.authorized'  => '1' ],
         ];
     }
 
@@ -79,6 +96,21 @@ trait WebhookV2Trait
         ];
     }
 
+    protected function getApiCreateResponseBodyForBanking(): array
+    {
+        return [
+            'id'            => 'EZ4ezgl4124qKu',
+            'created_at'    => '2020-04-01T03:32:10Z',
+            'service'       => 'rx-test',
+            'owner_id'      => '10000000000000',
+            'owner_type'    => 'merchant',
+            'context'       =>  [],
+            'disabled_at'   => '1970-01-01T00:00:00Z',
+            'url'           => 'http://webhook.com/v1/dummy/route',
+            'events'        => [ 'payout.created'  => true ],
+        ];
+    }
+
     protected function getStorkCreateResponseBodyForPrimary(): array
     {
         return [
@@ -100,6 +132,21 @@ trait WebhookV2Trait
         ];
     }
 
+    protected function getApiCreateResponseBodyForPrimary(): array
+    {
+        return [
+            'id'            => 'EZ4ezgl4124qKu',
+            'created_at'    => '2020-04-01T03:32:10Z',
+            'service'       => 'api-test',
+            'owner_id'      => '10000000000000',
+            'owner_type'    => 'merchant',
+            'context'       =>  [],
+            'disabled_at'   => '1970-01-01T00:00:00Z',
+            'url'           => 'http://webhook.com/v1/dummy/route'  ,
+            'events'        => [ 'payment.authorized'  => true ],
+        ];
+    }
+
     protected function getStorkCreateResponseBodyForOauth(): array
     {
         return [
@@ -118,6 +165,21 @@ trait WebhookV2Trait
                     'eventmeta'  => ['name' => 'payment.authorized',],
                 ],
             ],
+        ];
+    }
+
+    protected function getApiCreateResponseBodyForOauth(): array
+    {
+        return [
+            'id'            => 'EZ4ezgl4124qKu',
+            'created_at'    => '2020-04-01T03:32:10Z',
+            'service'       => 'api-test',
+            'owner_id'      => '10000000000App',
+            'owner_type'    => 'application',
+            'context'       => [],
+            'disabled_at'   => '1970-01-01T00:00:00Z',
+            'url'           => 'http://webhook.com/v1/dummy/route',
+            'events'        => [ 'payment.authorized'  => true ],
         ];
     }
 
@@ -160,6 +222,21 @@ trait WebhookV2Trait
         ];
     }
 
+    protected function getApiGetResponseBody(): array
+    {
+        return  [
+            'id'            => 'EZ4ezgl4124qKu',
+            'created_at'    => '2020-04-01T03:32:10Z',
+            'service'       => 'rx-test',
+            'owner_id'      => '10000000000000',
+            'owner_type'    => 'merchant',
+            'context'       => [],
+            'disabled_at'   => '1970-01-01T00:00:00Z',
+            'url'           => 'http://webhook.com/v1/dummy/route',
+            'events'        => [ 'payout.created' => true ],
+        ];
+    }
+
     protected function getStorkGetResponseBodyWithSecret(): array
     {
         return  [
@@ -179,6 +256,22 @@ trait WebhookV2Trait
                     'eventmeta'  => ['name' => 'payout.created',],
                 ],
             ],
+        ];
+    }
+
+    protected function getApiGetResponseBodyWithSecret(): array
+    {
+        return  [
+            'id'            => 'EZ4ezgl4124qKu',
+            'created_at'    => '2020-04-01T03:32:10Z',
+            'service'       => 'rx-test',
+            'owner_id'      => '10000000000000',
+            'owner_type'    => 'merchant',
+            'context'       => [],
+            'disabled_at'   => '1970-01-01T00:00:00Z',
+            'secret'        => 'secret',
+            'url'           => 'http://webhook.com/v1/dummy/route',
+            'events'        => [ 'payout.created' => true ],
         ];
     }
 
@@ -238,6 +331,34 @@ trait WebhookV2Trait
         ];
     }
 
+    protected function getApiListResponseBody(): array
+    {
+        return  [
+            [
+                'id'            => 'EZ4ezgl4124qKu',
+                'created_at'    => '2020-04-01T03:32:10Z',
+                'service'       => 'rx-test',
+                'owner_id'      => '10000000000000',
+                'owner_type'    => 'merchant',
+                'context'       => [],
+                'disabled_at'   => '1970-01-01T00:00:00Z',
+                'url'           => 'http://webhook.com/v1/dummy/route',
+                'events'        => [ 'payout.created' => true ],
+            ],
+            [
+                'id'            => 'EZ4ezg241a4qKu',
+                'created_at'    => '2020-04-01T03:32:10Z',
+                'service'       => 'rx-test',
+                'owner_id'      => '10000000000000',
+                'owner_type'    => 'merchant',
+                'context'       => [],
+                'disabled_at'   => '1970-01-01T00:00:00Z',
+                'url'           => 'http://webhook.com/v1/dummy/route',
+                'events'        => [ 'payout.created' => true ],
+            ],
+        ];
+    }
+
     protected function getStorkListResponseBodyWithSecret(): array
     {
         return  [
@@ -280,6 +401,36 @@ trait WebhookV2Trait
         ];
     }
 
+    protected function getApiListResponseBodyWithSecret(): array
+    {
+        return  [
+            [
+                'id'            => 'EZ4ezgl4124qKu',
+                'created_at'    => '2020-04-01T03:32:10Z',
+                'service'       => 'rx-test',
+                'owner_id'      => '10000000000000',
+                'owner_type'    => 'merchant',
+                'context'       => [],
+                'secret'        => 'secret',
+                'disabled_at'   => '1970-01-01T00:00:00Z',
+                'url'           => 'http://webhook.com/v1/dummy/route',
+                'events'        => [ 'payout.created' => true ],
+            ],
+            [
+                'id'            => 'EZ4ezg241a4qKu',
+                'created_at'    => '2020-04-01T03:32:10Z',
+                'service'       => 'rx-test',
+                'owner_id'      => '10000000000000',
+                'owner_type'    => 'merchant',
+                'context'       => [],
+                'secret'        => 'secret',
+                'disabled_at'   => '1970-01-01T00:00:00Z',
+                'url'           => 'http://webhook.com/v1/dummy/route',
+                'events'        => [ 'payout.created' => true ],
+            ],
+        ];
+    }
+
     protected function getStorkUpdatePayloadForBanking(): array
     {
         return [
@@ -294,6 +445,16 @@ trait WebhookV2Trait
         ];
     }
 
+    protected function getApiUpdatePayloadForBanking(): array
+    {
+        return [
+            'id'            => 'bankingWebhookId',
+            'url'           => 'http://webhook.com/v1/dummy/route',
+            'secret'        => 'secret',
+            'events'        => [ 'payout.processed' => '1' ],
+        ];
+    }
+
     protected function getStorkUpdatePayloadForPrimary(): array
     {
         return [
@@ -304,6 +465,15 @@ trait WebhookV2Trait
                     'eventmeta'  => ['name' => 'payment.failed',],
                 ],
             ],
+        ];
+    }
+
+    protected function getApiUpdatePayloadForPrimary(): array
+    {
+        return [
+            'id'            => 'primaryWebhookId',
+            'url'           => 'http://webhook.com/v1/dummy/route'  ,
+            'events'        => [ 'payment.failed' => '1' ],
         ];
     }
 
@@ -328,6 +498,21 @@ trait WebhookV2Trait
         ];
     }
 
+    protected function getApiUpdateResponseBodyForBanking(): array
+    {
+        return [
+            'id'            => 'bankingWebhookId',
+            'created_at'    => '2020-04-01T03:32:10Z',
+            'service'       => 'rx-test',
+            'owner_id'      => '10000000000000',
+            'owner_type'    => 'merchant',
+            'context'       => [],
+            'disabled_at'   => '1970-01-01T00:00:00Z',
+            'url'           => 'http://webhook.com/v1/dummy/route'  ,
+            'events'        => [ 'payout.processed' => true ],
+        ];
+    }
+
     protected function getStorkUpdateResponseBodyForPrimary(): array
     {
         return [
@@ -349,19 +534,25 @@ trait WebhookV2Trait
         ];
     }
 
+    protected function getApiUpdateResponseBodyForPrimary(): array
+    {
+        return [
+            'id'            => 'primaryWebhookId',
+            'created_at'    => '2020-04-01T03:32:10Z',
+            'service'       => 'api-test',
+            'owner_id'      => '10000000000000',
+            'owner_type'    => 'merchant',
+            'context'       => [],
+            'disabled_at'   => '1970-01-01T00:00:00Z',
+            'url'           => 'http://webhook.com/v1/dummy/route'  ,
+            'events'        => [ 'payment.failed' => true ],
+        ];
+    }
+
     protected function convertAllToUnixTimestamp(array $webhook)
     {
         $webhook['created_at'] = strtotime($webhook['created_at']);
         $webhook['disabled_at'] = strtotime($webhook['disabled_at']);
-        $webhook['subscriptions'] = array_map(function($v)
-        {
-            if (isset($v['created_at']) === true)
-            {
-                $v['created_at'] = strtotime($v['created_at']);
-            }
-            return $v;
-        }, $webhook['subscriptions']);
-
         return $webhook;
     }
 }

@@ -399,15 +399,10 @@ class Route
         'virtual_vpa_prefix_validate'              => ['get',      'virtual_vpa_prefixes/validate',                  'VirtualVpaPrefixController@validatePrefix'                         ],
         'virtual_vpa_prefix_save'                  => ['post',     'virtual_vpa_prefixes',                           'VirtualVpaPrefixController@savePrefix'                             ],
         'webhook_create'                           => ['post',     'webhooks',                                       'MerchantController@postWebhook'                                    ],
-        'webhook_create_v2'                        => ['post',     'webhooks',                                       'WebhookV2Controller@create'                                        ],
         'webhook_edit'                             => ['put',      'webhooks/{id}',                                  'MerchantController@putWebhook'                                     ],
-        'webhook_edit_v2'                          => ['put',      'webhooks/{id}',                                  'WebhookV2Controller@update'                                        ],
         'webhook_fetch'                            => ['get',      'webhooks/{id}',                                  'MerchantController@getWebhook'                                     ],
-        'webhook_fetch_v2'                         => ['get',      'webhooks/{id}',                                  'WebhookV2Controller@get'                                           ],
         'webhook_fetch_events'                     => ['get',      'webhooks/events/all',                            'MerchantController@getWebhookEvents'                               ],
         'webhook_fetch_multiple'                   => ['get',      'webhooks',                                       'MerchantController@getWebhooks'                                    ],
-        'webhook_fetch_multiple_v2'                => ['get',      'webhooks',                                       'WebhookV2Controller@list'                                          ],
-        'oauth_app_webhook_create_v2'              => ['post',     'oauth/applications/{id}/webhooks',               'WebhookV2Controller@createForOAuthApp'                             ],
         'oauth_app_webhook_create'                 => ['post',     'oauth/applications/{id}/webhooks',               'MerchantController@postOAuthApplicationWebhook'                    ],
         'webhook_stork_migrate'                    => ['post',     'webhooks/migrate/stork',                         'WebhookController@webhookStorkMigrate'                             ],
         'webhook_stork_create_banking_bulk'        => ['post',     'webhooks/create/stork/banking/bulk',             'WebhookController@webhookStorkCreateBankingBulk'                   ],
@@ -1974,7 +1969,6 @@ class Route
         'webhook_fetch',
         'webhook_fetch_multiple',
         'oauth_app_webhook_create',
-        'oauth_app_webhook_create_v2',
         'setl_amount',
         'setl_fetch_by_id',
         'setl_fetch_multiple',
@@ -2494,10 +2488,6 @@ class Route
         'merchant_fetch_referrals',
         'merchant_invoice_fetch_multiple',
         'webhook_fetch_events',
-        'webhook_create_v2',
-        'webhook_edit_v2',
-        'webhook_fetch_v2',
-        'webhook_fetch_multiple_v2',
         'customer_delete',
         'device_verify_token',
         'app_fetch_tokens',
@@ -3697,7 +3687,6 @@ class Route
         'merchant_fetch_multiple'                  => '*',
         'merchant_fetch_webhooks'                  => '*',
         'webhook_edit'                             => '*',
-        'webhook_edit_v2'                          => '*',
         'merchant_generate_test_bank_acnt'         => '*',
         'merchant_send_activation_mail'            => '*',
         'merchants_update_bank_account'            => '*',
@@ -4090,7 +4079,6 @@ class Route
         'merchant_analytics'                           => Permission::VIEW_MERCHANT_ANALYTICS,
         'merchant_get_tags'                            => '*',
         'webhook_edit'                                 => Permission::UPDATE_WEBHOOK,
-        'webhook_edit_v2'                              => Permission::UPDATE_WEBHOOK,
         'batch_create'                                 => Permission::CREATE_BATCH,
         'reporting_config_get'                         => Permission::GET_SELF_SERVE_REPORT,
         'reporting_config_list'                        => Permission::GET_SELF_SERVE_REPORT,
@@ -4178,14 +4166,10 @@ class Route
         'user_edit_self'                               => Permission::UPDATE_USER_PROFILE,
         'user_fetch'                                   => Permission::VIEW_USER,
         'webhook_create'                               => Permission::CREATE_WEBHOOK,
-        'webhook_create_v2'                            => Permission::CREATE_WEBHOOK,
         'webhook_fetch'                                => Permission::VIEW_WEBHOOK,
-        'webhook_fetch_v2'                             => Permission::VIEW_WEBHOOK,
         'webhook_fetch_events'                         => Permission::VIEW_WEBHOOK_EVENT,
         'webhook_fetch_multiple'                       => Permission::VIEW_WEBHOOK,
-        'webhook_fetch_multiple_v2'                    => Permission::VIEW_WEBHOOK,
         'oauth_app_webhook_create'                     => Permission::CREATE_WEBHOOK,
-        'oauth_app_webhook_create_v2'                  => Permission::CREATE_WEBHOOK,
         'transaction_statement_fetch'                  => Permission::VIEW_TRANSACTION_STATEMENT,
         'transaction_statement_fetch_multiple'         => Permission::VIEW_TRANSACTION_STATEMENT,
         'invitation_create'                            => Permission::CREATE_INVITATION,
@@ -4700,9 +4684,7 @@ class Route
             'payment_acknowledge',
             'apspdcl_bridge',
             'webhook_fetch',
-            'webhook_fetch_v2',
             'webhook_fetch_multiple',
-            'webhook_fetch_multiple_v2',
         ],
 
         //
@@ -5259,6 +5241,8 @@ class Route
         'on_demand_settlement',
     ];
 
+    public static $routesWithV2Prefix = [];
+
     // Routes for header X_DASHBOARD_USER_2FA_VERIFIED should be true
     // By Sending this flag as true dashboard clarifies that user is verified by 2FA in its current
     //
@@ -5266,14 +5250,6 @@ class Route
     // so add only proxy auth routes which have merchant Id
     public static $twoFactorAuthRequiredRoutes = [
         'user_update_contact',
-    ];
-
-    public static $routesWithV2Prefix = [
-        'webhook_fetch_v2',
-        'webhook_edit_v2',
-        'webhook_create_v2',
-        'webhook_fetch_multiple_v2',
-        'oauth_app_webhook_create_v2',
     ];
 
     /**

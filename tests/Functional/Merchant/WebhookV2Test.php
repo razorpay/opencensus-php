@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Merchant;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
+use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Exception\ServerErrorException;
 use Illuminate\Database\Eloquent\Factory;
@@ -34,14 +35,18 @@ class WebhookV2Test extends TestCase
         $this->setupMockDns();
 
         $this->mockStorkService();
+
+        // this is required so that traffic to webhook APIs can be routed to
+        // the v2 path.
+        $this->mockRazorxToReturnOn();
     }
 
     public function testCreateWebhookForOauth()
     {
         $this->addOAuthTag();
 
-        $this->testData[__FUNCTION__]['request']['content']  = $this->getStorkCreatePayloadForPrimary();
-        $this->testData[__FUNCTION__]['response']['content'] = $this->convertAllToUnixTimestamp($this->getStorkCreateResponseBodyForOauth());
+        $this->testData[__FUNCTION__]['request']['content']  = $this->getApiCreatePayloadForPrimary();
+        $this->testData[__FUNCTION__]['response']['content'] = $this->convertAllToUnixTimestamp($this->getApiCreateResponseBodyForOauth());
 
         $expected  = $this->getExpectedArgsForRequestMethod($this->getStorkCreatePayloadForPrimary(), '10000000000App', 'application', 'api-test');
         $mockeryOn = $this->attachEmptyWKCtxMatcherToArgsMatcher($this->getArgsMatcherForWebhook($expected));
@@ -58,7 +63,7 @@ class WebhookV2Test extends TestCase
 
     public function testCreateWebhookForOauthFailure()
     {
-        $this->testData[__FUNCTION__]['request']['content']  = $this->getStorkCreatePayloadForPrimary();
+        $this->testData[__FUNCTION__]['request']['content']  = $this->getApiCreatePayloadForPrimary();
         $this->startTest();
     }
 
@@ -66,8 +71,8 @@ class WebhookV2Test extends TestCase
     {
         $this->fixtures->merchant->addFeatures(['payout']);
 
-        $this->testData[__FUNCTION__]['request']['content']  = $this->getStorkCreatePayloadForBanking();
-        $this->testData[__FUNCTION__]['response']['content'] = $this->convertAllToUnixTimestamp($this->getStorkCreateResponseBodyForBanking());
+        $this->testData[__FUNCTION__]['request']['content']  = $this->getApiCreatePayloadForBanking();
+        $this->testData[__FUNCTION__]['response']['content'] = $this->convertAllToUnixTimestamp($this->getApiCreateResponseBodyForBanking());
 
         $this->mockServiceStorkRequest(
             function ($path, $payload)
@@ -92,7 +97,7 @@ class WebhookV2Test extends TestCase
     {
         $this->fixtures->merchant->addFeatures(['payout']);
 
-        $this->testData[__FUNCTION__]['request']['content']  = $this->getStorkCreatePayloadForBanking();
+        $this->testData[__FUNCTION__]['request']['content']  = $this->getApiCreatePayloadForBanking();
 
         $this->mockServiceStorkRequest(
             function ($path, $payload)
@@ -109,8 +114,8 @@ class WebhookV2Test extends TestCase
 
     public function testCreateWebhookForPrimary()
     {
-        $this->testData[__FUNCTION__]['request']['content']  = $this->getStorkCreatePayloadForPrimary();
-        $this->testData[__FUNCTION__]['response']['content'] = $this->convertAllToUnixTimestamp($this->getStorkCreateResponseBodyForPrimary());
+        $this->testData[__FUNCTION__]['request']['content']  = $this->getApiCreatePayloadForPrimary();
+        $this->testData[__FUNCTION__]['response']['content'] = $this->convertAllToUnixTimestamp($this->getApiCreateResponseBodyForPrimary());
 
         $expected  = $this->getExpectedArgsForRequestMethod($this->getStorkCreatePayloadForPrimary(), '10000000000000', 'merchant', 'api-test');
         $mockeryOn = $this->attachEmptyWKCtxMatcherToArgsMatcher($this->getArgsMatcherForWebhook($expected));
@@ -129,8 +134,8 @@ class WebhookV2Test extends TestCase
     {
         $this->testData[__FUNCTION__] = $this->testData['testCreateWebhookForPrimary'];
 
-        $this->testData[__FUNCTION__]['request']['content']  = $this->getStorkCreatePayloadForPrimary();
-        $this->testData[__FUNCTION__]['response']['content'] = $this->convertAllToUnixTimestamp($this->getStorkCreateResponseBodyForPrimary());
+        $this->testData[__FUNCTION__]['request']['content']  = $this->getApiCreatePayloadForPrimary();
+        $this->testData[__FUNCTION__]['response']['content'] = $this->convertAllToUnixTimestamp($this->getApiCreateResponseBodyForPrimary());
 
         $this->testData[__FUNCTION__]['request']['content']['context']     = 'wrong_context';
         $this->testData[__FUNCTION__]['request']['content']['owner_id']    = 'wrong_owner_id';
@@ -152,7 +157,7 @@ class WebhookV2Test extends TestCase
     //event is not valid for the product
     public function testCreateWebhookInvalidProductEventFailure()
     {
-        $this->testData[__FUNCTION__]['request']['content']  = $this->getStorkCreatePayloadForBanking();
+        $this->testData[__FUNCTION__]['request']['content']  = $this->getApiCreatePayloadForBanking();
 
         $this->startTest();
     }
@@ -162,7 +167,7 @@ class WebhookV2Test extends TestCase
         $this->addOAuthTag();
         $this->ba->hostedAuth();
 
-        $this->testData[__FUNCTION__]['response']['content'] = $this->convertAllToUnixTimestamp($this->getStorkGetResponseBodyWithSecret());
+        $this->testData[__FUNCTION__]['response']['content'] = $this->convertAllToUnixTimestamp($this->getApiGetResponseBodyWithSecret());
 
         $expected  = $this->getStorkGetPayloadForPrimary();
         $mockeryOn = $this->getArgsMatcherForWebhook($expected);
@@ -179,7 +184,7 @@ class WebhookV2Test extends TestCase
 
     public function testGetWebhookForBanking()
     {
-        $this->testData[__FUNCTION__]['response']['content'] = $this->convertAllToUnixTimestamp($this->getStorkGetResponseBody());
+        $this->testData[__FUNCTION__]['response']['content'] = $this->convertAllToUnixTimestamp($this->getApiGetResponseBody());
 
         $expected  = $this->getStorkGetPayloadForBanking();
         $mockeryOn = $this->getArgsMatcherForWebhook($expected);
@@ -196,7 +201,7 @@ class WebhookV2Test extends TestCase
 
     public function testGetWebhookForPrimary()
     {
-        $this->testData[__FUNCTION__]['response']['content'] = $this->convertAllToUnixTimestamp($this->getStorkGetResponseBody());
+        $this->testData[__FUNCTION__]['response']['content'] = $this->convertAllToUnixTimestamp($this->getApiGetResponseBody());
 
         $expected  = $this->getStorkGetPayloadForPrimary();
         $mockeryOn = $this->getArgsMatcherForWebhook($expected);
@@ -219,7 +224,7 @@ class WebhookV2Test extends TestCase
         $this->testData[__FUNCTION__]['response']['content'] = [
             'entity' => 'collection',
             'count'  => 2,
-            'items'  => array_map(function ($v) { return $this->convertAllToUnixTimestamp($v); }, $this->getStorkListResponseBodyWithSecret()),
+            'items'  => array_map(function ($v) { return $this->convertAllToUnixTimestamp($v); }, $this->getApiListResponseBodyWithSecret()),
         ];
 
         $expected  = $this->getStorkListPayloadForPrimary();
@@ -240,7 +245,7 @@ class WebhookV2Test extends TestCase
         $this->testData[__FUNCTION__]['response']['content'] = [
             'entity' => 'collection',
             'count'  => 2,
-            'items'  => array_map(function ($v) { return $this->convertAllToUnixTimestamp($v); }, $this->getStorkListResponseBody()),
+            'items'  => array_map(function ($v) { return $this->convertAllToUnixTimestamp($v); }, $this->getApiListResponseBody()),
         ];
 
         $expected  = $this->getStorkListPayloadForBanking();
@@ -261,7 +266,7 @@ class WebhookV2Test extends TestCase
         $this->testData[__FUNCTION__]['response']['content'] = [
             'entity' => 'collection',
             'count'  => 2,
-            'items'  => array_map(function ($v) { return $this->convertAllToUnixTimestamp($v); }, $this->getStorkListResponseBody()),
+            'items'  => array_map(function ($v) { return $this->convertAllToUnixTimestamp($v); }, $this->getApiListResponseBody()),
         ];
 
         $expected  = $this->getStorkListPayloadForPrimary();
@@ -281,8 +286,8 @@ class WebhookV2Test extends TestCase
     {
         $this->fixtures->merchant->addFeatures(['payout']);
 
-        $this->testData[__FUNCTION__]['request']['content'] = $this->getStorkUpdatePayloadForBanking();
-        $this->testData[__FUNCTION__]['response']['content'] = $this->convertAllToUnixTimestamp($this->getStorkUpdateResponseBodyForBanking());
+        $this->testData[__FUNCTION__]['request']['content'] = $this->getApiUpdatePayloadForBanking();
+        $this->testData[__FUNCTION__]['response']['content'] = $this->convertAllToUnixTimestamp($this->getApiUpdateResponseBodyForBanking());
 
         $this->mockServiceStorkRequest(
             function ($path, $payload)
@@ -313,7 +318,7 @@ class WebhookV2Test extends TestCase
     {
         $this->fixtures->merchant->addFeatures(['payout']);
 
-        $this->testData[__FUNCTION__]['request']['content'] = $this->getStorkUpdatePayloadForBanking();
+        $this->testData[__FUNCTION__]['request']['content'] = $this->getApiUpdatePayloadForBanking();
 
         $this->mockServiceStorkRequest(
             function ($path, $payload)
@@ -325,8 +330,8 @@ class WebhookV2Test extends TestCase
 
     public function testUpdateWebhookForPrimary()
     {
-        $this->testData[__FUNCTION__]['request']['content'] = $this->getStorkUpdatePayloadForPrimary();
-        $this->testData[__FUNCTION__]['response']['content'] = $this->convertAllToUnixTimestamp($this->getStorkUpdateResponseBodyForPrimary());
+        $this->testData[__FUNCTION__]['request']['content'] = $this->getApiUpdatePayloadForPrimary();
+        $this->testData[__FUNCTION__]['response']['content'] = $this->convertAllToUnixTimestamp($this->getApiUpdateResponseBodyForPrimary());
 
         $expected  = $this->getExpectedArgsForRequestMethod($this->getStorkUpdatePayloadForPrimary(), '10000000000000', 'merchant', 'api-test');
         $mockeryOn = $this->attachEmptyWKCtxMatcherToArgsMatcher($this->getArgsMatcherForWebhook($expected));
@@ -345,8 +350,8 @@ class WebhookV2Test extends TestCase
     {
         $this->testData[__FUNCTION__] = $this->testData['testUpdateWebhookForPrimary'];
 
-        $this->testData[__FUNCTION__]['request']['content']  = $this->getStorkUpdatePayloadForPrimary();
-        $this->testData[__FUNCTION__]['response']['content'] = $this->convertAllToUnixTimestamp($this->getStorkUpdateResponseBodyForPrimary());
+        $this->testData[__FUNCTION__]['request']['content']  = $this->getApiUpdatePayloadForPrimary();
+        $this->testData[__FUNCTION__]['response']['content'] = $this->convertAllToUnixTimestamp($this->getApiUpdateResponseBodyForPrimary());
 
         $this->testData[__FUNCTION__]['request']['content']['context']     = 'wrong_context';
         $this->testData[__FUNCTION__]['request']['content']['owner_id']    = 'wrong_owner_id';
@@ -368,7 +373,7 @@ class WebhookV2Test extends TestCase
     //event is not valid for the product
     public function testUpdateWebhookInvalidProductEventFailure()
     {
-        $this->testData[__FUNCTION__]['request']['content']  = $this->getStorkUpdatePayloadForBanking();
+        $this->testData[__FUNCTION__]['request']['content']  = $this->getApiUpdatePayloadForBanking();
 
         $this->startTest();
     }
@@ -378,6 +383,19 @@ class WebhookV2Test extends TestCase
         $merchant = Merchant\Entity::find($merchantId);
         $merchant->reTag(["oauth"]);
         $merchant->saveOrFail();
+    }
+
+    protected function mockRazorxToReturnOn()
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                           ->setConstructorArgs([$this->app])
+                           ->setMethods(['getTreatment'])
+                           ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+                          ->willReturn('on');
     }
 
     /**
