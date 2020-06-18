@@ -572,6 +572,10 @@ class GatewayController extends Controller
 
         $this->app['basicauth']->setMerchant($merchant);
 
+        $publicKey = $this->getMerchantKeyForPayment($payment, $mode);
+
+        $this->app['basicauth']->setAuthDetailsUsingPublicKey($publicKey);
+        
         if ($payment->getCallbackUrl() !== null)
         {
             $this->app['rzp.merchant_callback_url'] = $payment->getCallbackUrl();
