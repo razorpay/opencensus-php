@@ -2484,6 +2484,53 @@ return [
         ],
     ],
 
+    'testDashboardSummaryForPayoutsOnNonBankingBalance' => [
+        'request'  => [
+            'method'  => 'GET',
+            'url'     => '/payouts/_meta/summary',
+        ],
+        'response' => [
+            'content' => [
+                'bacc_1000000lcustba' => [
+                    'queued' =>  [
+                        'balance'       => 10000000,
+                        'count'         => 0,
+                        'total_amount'  => 0,
+                        'total_fees'    => 0,
+                    ],
+                    'pending' => [
+                        'count'         => 1,
+                        'total_amount'  => 10000,
+                    ]
+                ],
+            ],
+        ],
+    ],
+
+    'createCustomerWalletPayout' => [
+        'request'  => [
+            'url'     => '/customers/cust_100000customer/payouts',
+            'method'  => 'post',
+            'content' => [
+                'amount'          => 800,
+                'purpose'         => 'refund',
+                'fund_account_id' => 'fa_100000000000fa',
+                'currency'        => 'INR',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'customer_id'     => 'cust_100000customer',
+                'fund_account_id' => 'fa_100000000000fa',
+                'currency'        => 'INR',
+                'amount'          => 800,
+                'status'          => 'processing',
+            ]
+        ],
+
+    ],
+
     'testCreatePayoutForVpaFundAccountId' => [
         'request'  => [
             'method'  => 'POST',

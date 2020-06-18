@@ -714,7 +714,7 @@ class Service extends Base\Service
     {
         $user = $this->auth->getUser();
 
-        $pending = $this->repo->payout->fetchPayoutsPendingOnUser($user, $this->merchant);
+        $pending = $this->repo->payout->fetchPayoutsPendingOnUserRole($user, $this->merchant);
 
         $groupedPendingPayouts = $pending->groupBy(Entity::BALANCE_ID);
 

@@ -156,21 +156,34 @@ class Repository extends Base\Repository
     }
 
     public function fetchQueuedPayouts(array $merchantIdsWhitelist = [],
-                                       array $merchantIdsBlacklist = [])
+                                       array $merchantIdsBlacklist = [],
+                                       string $balanceType = Balance\Type::BANKING)
     {
+        // select(payouts.*) because if we don't restrict to payouts table columns,
+        // collection_item->balance will return the balance field from joined table
+        // as opposed to the expected eager-loaded balance entity
         $query = $this->newQuery()
+                      ->select($this->getTableName() . ".*")
                       ->with(['balance', 'merchant', 'merchant.org'])
                       ->status(Status::QUEUED);
 
+        $merchantIdColumn = $this->repo->payout->dbColumn(Entity::MERCHANT_ID);
+
         if (empty ($merchantIdsWhitelist) === false)
         {
-            $query->whereIn(Entity::MERCHANT_ID, $merchantIdsWhitelist);
+            $query->whereIn($merchantIdColumn, $merchantIdsWhitelist);
         }
 
         if (empty($merchantIdsBlacklist) === false)
         {
-            $query->whereNotIn(Entity::MERCHANT_ID, $merchantIdsBlacklist);
+            $query->whereNotIn($merchantIdColumn, $merchantIdsBlacklist);
         }
+
+        $this->joinQueryBalance($query);
+
+        $balanceTypeColumn = $this->repo->balance->dbColumn(Merchant\Balance\Entity::TYPE);
+
+        $query->where($balanceTypeColumn, '=', $balanceType);
 
         return $query->limit(self::QUEUED_PAYOUTS_FETCH_LIMIT)
                      ->get();
@@ -240,13 +253,20 @@ class Repository extends Base\Repository
     /**
      * @param User\Entity     $user
      * @param Merchant\Entity $merchant
+     * @param string          $balanceType
      *
      * @return Base\Collection
      */
-    public function fetchPayoutsPendingOnUser(User\Entity $user, Merchant\Entity $merchant): Base\Collection
+    public function fetchPayoutsPendingOnUserRole(User\Entity $user,
+                                                  Merchant\Entity $merchant,
+                                                  string $balanceType = Balance\Type::BANKING): Base\Collection
     {
+        // select(payouts.*) because if we don't restrict to payouts table columns,
+        // collection_item->balance will return the balance field from joined table
+        // as opposed to the expected eager-loaded balance entity
         /** @var BuilderEx $query */
-        $query = $this->newQuery();
+        $query = $this->newQuery()
+                      ->select($this->getTableName() . ".*");
 
         // If the entity is a user(which implies the product is banking),
         // then the role id for that user for the merchant in context
@@ -263,6 +283,12 @@ class Repository extends Base\Repository
         $query->limit(self::PENDING_PAYOUTS_FETCH_LIMIT);
 
         $query->with(['balance']);
+
+        $this->joinQueryBalance($query);
+
+        $balanceTypeColumn = $this->repo->balance->dbColumn(Merchant\Balance\Entity::TYPE);
+
+        $query->where($balanceTypeColumn, '=', $balanceType);
 
         return $query->get();
     }

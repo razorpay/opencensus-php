@@ -337,6 +337,13 @@ trait PayoutTrait
             'product'     => 'primary',
             'role'        => 'owner',
         ], 'live');
+
+        $this->fixtures->on('live')->user->createUserMerchantMapping([
+            'merchant_id' => '10000000000000',
+            'user_id'     => User::MERCHANT_USER_ID,
+            'product'     => 'banking',
+            'role'        => 'owner',
+        ], 'live');
     }
 
     protected function runBalanceFetchCron()

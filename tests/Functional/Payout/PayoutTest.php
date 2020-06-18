@@ -502,6 +502,50 @@ class PayoutTest extends TestCase
         $this->startTest();
     }
 
+    public function createCustomerWalletPayout()
+    {
+        $this->fixtures->merchant->addFeatures(['tokens']);
+
+        $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
+
+        $this->fixtures->on('live')->create('customer_balance', ['customer_id' => '100000customer', 'balance' => 1000]);
+
+        $this->fixtures->on('live')->edit('balance', '10000000000000', ['balance' => 1000]);
+
+        $payout = $this->startTest();
+
+        $payout = $this->getDbEntityById('payout', $payout['id']);
+
+        return $payout;
+    }
+
+    public function testDashboardSummaryForPayoutsOnNonBankingBalance()
+    {
+        $this->liveSetUp();
+
+        // creating payout from a primary balance in queued state
+        $payout = $this->createCustomerWalletPayout();
+
+        $this->fixtures->on('live')->edit('payout', $payout['id'],[
+            'status' => 'queued',
+            'queued_at' => time()
+        ]);
+
+        // creating payout in pending state
+        $this->createPayoutWorkflowWithBankingUsersLiveMode();
+
+        $this->createPayoutWithWorkflow([], 'rzp_live_TheLiveAuthKey');
+
+        $this->fixtures->edit('banking_account', '1000000lcustba',
+            ['status'=>'activated']);
+
+        $this->ba->proxyAuth('rzp_live_10000000000000', $this->ownerRoleUser->getId());
+
+        $completeSummary = $this->startTest();
+
+        return $completeSummary;
+    }
+
     public function testDashboardSummary()
     {
         //TODO: Can be fixed. (Only IMPS on Yesbank)
