@@ -189,8 +189,5 @@
     };
 </script>
 <script src="{{ $banking_url }}/dist/payoutlinks.js"></script>
-@if($is_production)
-    <script src="{{ $banking_url }}/dist/raven.js" defer></script>
-@endif
 </body>
 </html>
