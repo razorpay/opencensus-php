@@ -37,7 +37,7 @@ class NetbankingHdfcRefundFileTest extends TestCase
 
         $payment = $this->doAuthAndCapturePayment($payment);
 
-        $refund = $this->refundPayment($payment['id']);
+        $this->refundPayment($payment['id']);
 
         $refundEntity = $this->getDbLastEntity('refund');
 

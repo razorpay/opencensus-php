@@ -514,20 +514,29 @@ class PaymentCreateController extends Controller
 
             if ($data['type'] === 'first')
             {
+                //
+                // Temporary changes for customized Form Data, the layer handling to be moved to mozart in future.
+                //
+                $gateway = "";
+
+                if (isset($data['gateway']) === true) {
+                    list($gateway, $time) = explode('__', \Crypt::decrypt($data['gateway']));
+                }
+
                 if ($data['request']['method'] === 'post')
                 {
+                    if(($gateway === Payment\Gateway::NETBANKING_HDFC) and (isset($data['request']['content']['Ref2']) === false))
+                    {
+                       return $this->redirectToNetbankingHdfcGatewayPostForm($data);
+                    }
+
                     return $this->redirectToGatewayPostForm($data);
                 }
                 else if ($data['request']['method'] === 'get')
                 {
-                    if (isset($data['gateway']) === true)
+                    if (Payment\Gateway::isGatewaySupportingGetRedirectForm($gateway) === true)
                     {
-                        list($gateway, $time) = explode('__', \Crypt::decrypt($data['gateway']));
-
-                        if (Payment\Gateway::isGatewaySupportingGetRedirectForm($gateway) === true)
-                        {
-                            return $this->redirectToGatewayGetForm($data);
-                        }
+                        return $this->redirectToGatewayGetForm($data);
                     }
 
                     $response = \Redirect::away($data['request']['url']);
@@ -899,6 +908,20 @@ class PaymentCreateController extends Controller
         {
             // Ignore
         }
+    }
+
+    protected function redirectToNetbankingHdfcGatewayPostForm($data)
+    {
+        $merchant = $this->app['basicauth']->getMerchant();
+        $postFormData = $data;
+        $postFormData['theme']['color'] = $merchant->getBrandColorElseDefault();
+        $postFormData['name'] = $merchant->getBillingLabel();
+        $postFormData['nobranding'] = $merchant->isFeatureEnabled(Feature::PAYMENT_NOBRANDING);
+        $postFormData['production'] = $this->app->environment() === Environment::PRODUCTION;
+        $postFormData['merchant_id'] = $merchant->getId();
+
+        return View::make('gateway.netbankinghdfcgatewayPostForm')
+            ->with('data', $postFormData);
     }
 
     protected function redirectToGatewayPostForm($data)

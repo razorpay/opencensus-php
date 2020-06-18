@@ -9,7 +9,7 @@ use RZP\Models\Payment\Status;
 use Razorpay\Spine\Exception\DbQueryException;
 use RZP\Reconciliator\NetbankingHdfc\Constants;
 
-class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
+class PaymentReconciliate extends Base\SubReconciliator\NetbankingServiceRecon
 {
     const BLACKLISTED_COLUMNS = [
         Constants::COLUMN_CUSTOMER_EMAIL,
