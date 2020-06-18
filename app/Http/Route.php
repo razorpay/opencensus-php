@@ -1762,6 +1762,7 @@ class Route
         'entity_bulk_update'                      => ['post',      'entities/bulk-update',                                         'MerchantController@merchantsBulkUpdate'                    ],
         'fetch_batch_actions'                     => ['get',       'batch_actions',                                          'MerchantController@getBatchActions'                        ],
         'fetch_batch_action_entities'             => ['get',       'batch_action_entities',                                  'MerchantController@getBatchActionEntities'                 ],
+        'fetch_payment_merchant_actions'          => ['get',       '/payment/{id}/merchant/actions',                         'PaymentController@getPaymentMerchantActions'               ],
 
         // Razorpay Capital
         // Financial Data Service Routes
@@ -2723,6 +2724,7 @@ class Route
         'payout_links_merchant_on_boarding_status',
         'payout_links_resend_notification',
         'payout_links_merchant_summary',
+        'fetch_payment_merchant_actions',
         'virtual_account_banking_fetch_multiple',
         'fetch_payment_config',
         'create_payment_config',

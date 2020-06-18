@@ -8,9 +8,9 @@ use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\Card\Network;
+use RZP\Models\Payment\Method;
 use RZP\Models\Order as Order;
 use RZP\Models\Payment as Payment;
-use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Processor\Wallet;
 use RZP\Models\Payment\Processor\PayLater;
 use RZP\Models\Payment\Processor\Netbanking;
@@ -55,17 +55,17 @@ class Validator extends Base\Validator
     protected static $editRules = [
         Entity::TYPE           => 'required|string|custom',
         Entity::IS_DEFAULT     => 'required_if:type,checkout|boolean',
-        Entity::ID             => 'required_if:type,checkout,locale|string',
-        Entity::CONFIG         => 'required_if:type,locale|array'
+        Entity::ID             => 'required_if:type,checkout|string',
+        Entity::CONFIG         => 'required_if:type,late_auth|array',
+    ];
+
+    protected static $createValidators = [
+        Self::CONFIG_JSON,
     ];
 
     // will add a locale class once we have more number of language code to support
     protected static $localeConfigRules= [
         self::LANGUAGE_CODE    => 'required|string|in:hi,en',
-    ];
-
-    protected static $createValidators = [
-        self::CONFIG_JSON,
     ];
 
     protected static $editValidators = [
@@ -147,6 +147,88 @@ class Validator extends Base\Validator
     const PROPERTIES_TO_VALIDATE_FOR_PAYLATER = [
         self::PROVIDERS,
     ];
+
+    protected function validateConfig(array $input)
+    {
+        if (($input['type'] === Type::CHECKOUT) and
+            (isset($input['config']) === true))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Config field is not required for type checkout');
+        }
+    }
+
+    protected function validateConfigJson(array $input)
+    {
+        if ($input['type'] === Type::LOCALE)
+        {
+            $this->validateInput('locale_config', $input['config']);
+        }
+
+        if (($input['type'] === Type::LATE_AUTH) and
+            (isset($input['config']) === true))
+        {
+
+            $config = $input['config'];
+
+            if (isset($config['capture']) === false) {
+                throw new Exception\BadRequestValidationFailureException(
+                    'Config Json format is not correct, capture is required');
+            }
+
+            if (in_array($config['capture'], ['automatic', 'manual'], true) === false) {
+                throw new Exception\BadRequestValidationFailureException(
+                    'Config Capture value can either be automatic or manual');
+            }
+
+            if (isset($config['capture_options'], $config['capture_options']['refund_speed']) === false)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'Config Json format is not correct, refund speed is required');
+            }
+
+            if (in_array($config['capture_options']['refund_speed'], ['normal', 'optimum'], true) === false) {
+                throw new Exception\BadRequestValidationFailureException(
+                    'Config refund speed value can either be normal or optimum');
+            }
+
+            if (($config['capture'] === 'automatic') and
+                (isset($config['capture_options']['automatic_expiry_period'],
+                    $config['capture_options']['manual_expiry_period']) === true))
+            {
+                if ($config['capture_options']['manual_expiry_period'] < $config['capture_options']['automatic_expiry_period']) {
+                    throw new Exception\BadRequestValidationFailureException(
+                        'Manual Expiry Period should be greater than or equal to automatic expiry period passed (default automatic expiry period is 20 mins)');
+                }
+            }
+
+            if (isset($config['capture_options']['automatic_expiry_period']) === true)
+            {
+                if ((($config['capture_options']['automatic_expiry_period'] >= 12) and
+                        ($config['capture_options']['automatic_expiry_period'] <= 7200)) === false)
+                {
+                    throw new Exception\BadRequestValidationFailureException(
+                        'Config Automatic duration should in between 12 minutes and 5 days');
+                }
+            }
+
+            if (isset($config['capture_options']['manual_expiry_period']) === true)
+            {
+                if ((($config['capture_options']['manual_expiry_period'] >= 12) and
+                        ($config['capture_options']['manual_expiry_period'] <= 7200)) === false) {
+                    throw new Exception\BadRequestValidationFailureException(
+                        'Config Manual duration should in between 12 minutes and 5 days');
+                }
+            }
+
+            if (($config['capture'] === 'manual') and
+                (isset($config['capture_options']['manual_expiry_period']) === false))
+                {
+                    throw new Exception\BadRequestValidationFailureException(
+                        'Config Manual duration should be set when capture is manual');
+                }
+        }
+    }
 
     protected function validateIssuers($attribute, $input)
     {
@@ -740,24 +822,6 @@ class Validator extends Base\Validator
             }
 
             $this->validateInput(studly_case($item[self::METHOD]).'_restriction', $item);
-        }
-    }
-
-    protected function validateConfig(array $input)
-    {
-        if (($input['type'] === Type::CHECKOUT) and
-            (isset($input['config']) === true))
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'Config field is not required for type checkout');
-        }
-    }
-
-    protected function validateConfigJson($input)
-    {
-        if ($input['type'] === Type::LOCALE)
-        {
-            $this->validateInput('locale_config', $input['config']);
         }
     }
 

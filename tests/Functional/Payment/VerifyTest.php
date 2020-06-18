@@ -1403,6 +1403,243 @@ class VerifyTest extends TestCase
         $this->assertEquals('paid', $order['status']);
     }
 
+    public function testLateAuthMerchantDefaultConfigVerifyPayment()
+    {
+        $this->setMockGatewayTrue();
+
+        $this->fixtures->merchant->addFeatures(['disable_amount_check']);
+
+        $this->fixtures->create('config', ['type' => 'late_auth', 'is_default' => true,
+            'config'     => '{
+                "capture": "automatic",
+                "capture_options": {
+                    "manual_expiry_period": 20,
+                    "automatic_expiry_period": 13,
+                    "refund_speed": "normal"
+                }
+            }']);
+
+        $data = $this->testData['testTimeoutPaymentVerify'];
+
+        $payments = $this->createMultipleFailedPaymentWithOrder($data);
+
+        $this->ba->cronAuth();
+
+        $request = [
+            'url'    => '/payments/verify/all',
+            'method' => 'post'
+        ];
+
+        $time = Carbon::now(Timezone::IST);
+
+        $time->addMinutes(5);
+
+        Carbon::setTestNow($time);
+
+        $this->makeRequestAndGetContent($request);
+
+        $payment = $this->getEntityById('payment', $payments[0], true);
+
+        $this->assertEquals('captured', $payment['status']);
+
+        $payment = $this->getEntityById('payment', $payments[1], true);
+
+        $this->assertEquals('captured', $payment['status']);
+
+        $order = $this->getDbLastEntityPublic('order');
+
+        $this->assertEquals('paid', $order['status']);
+    }
+
+    public function testLateAuthMerchantOrderConfigVerifyPaymentBeforeTimeout()
+    {
+        $this->setMockGatewayTrue();
+
+        $this->fixtures->merchant->addFeatures(['disable_amount_check']);
+
+        $data = $this->testData['testTimeoutPaymentVerify'];
+
+        $configArr = [
+                "capture"=> 'automatic',
+                "capture_options"=> [
+                    "manual_expiry_period"=> 20,
+                    "automatic_expiry_period"=> 13,
+                    "refund_speed"=> "normal"
+                ]
+        ];
+
+        $payments = $this->createFailedPaymentWithOrderWithConfig($data, $configArr);
+
+        $this->ba->cronAuth();
+
+        $request = [
+            'url'    => '/payments/verify/all',
+            'method' => 'post'
+        ];
+
+        $time = Carbon::now(Timezone::IST);
+
+        $time->addMinutes(5);
+
+        Carbon::setTestNow($time);
+
+        $this->makeRequestAndGetContent($request);
+
+        $payment = $this->getEntityById('payment', $payments[0], true);
+
+        $this->assertEquals('captured', $payment['status']);
+
+        $order = $this->getDbLastEntityPublic('order');
+
+        $this->assertEquals('paid', $order['status']);
+    }
+
+    public function testLateAuthMerchantOrderConfigVerifyPaymentBeforeTimeoutForZeroCapture()
+    {
+        $this->setMockGatewayTrue();
+
+        $this->fixtures->merchant->addFeatures(['disable_amount_check']);
+
+        $data = $this->testData['testTimeoutPaymentVerify'];
+
+        $configArr = [
+                "capture"=> 'manual',
+                "capture_options"=> [
+                    "manual_expiry_period"=> 20,
+                    "automatic_expiry_period"=> 13,
+                    "refund_speed"=> "normal"
+                ]
+        ];
+
+        $payments = $this->createFailedPaymentWithOrderWithConfig($data, $configArr);
+
+        $this->ba->cronAuth();
+
+        $request = [
+            'url'    => '/payments/verify/all',
+            'method' => 'post'
+        ];
+
+        $time = Carbon::now(Timezone::IST);
+
+        $time->addMinutes(5);
+
+        Carbon::setTestNow($time);
+
+        $this->makeRequestAndGetContent($request);
+
+        $payment = $this->getEntityById('payment', $payments[0], true);
+
+        $this->assertEquals('authorized', $payment['status']);
+
+        $order = $this->getDbLastEntityPublic('order');
+
+        $this->assertEquals('attempted', $order['status']);
+    }
+
+    public function testLateAuthMerchantOrderConfigVerifyPaymentAfterTimeout()
+    {
+        $this->setMockGatewayTrue();
+
+        $this->fixtures->merchant->addFeatures(['disable_amount_check']);
+
+        $data = $this->testData['testTimeoutPaymentVerify'];
+
+        $configArr = [
+            "capture"=> 'automatic',
+            "capture_options"=> [
+                "manual_expiry_period"=> 14,
+                "automatic_expiry_period"=> 13,
+                "refund_speed"=> "normal"
+            ]
+        ];
+
+        $payments = $this->createFailedPaymentWithOrderWithConfig($data, $configArr);
+
+        $payment = $this->getEntityById('payment', $payments[0], true);
+
+        $verifyAt = Carbon::now(Timezone::IST)->addMinutes(11)->getTimestamp();
+
+        $this->fixtures->edit('payment', $payment['id'], ['verify_at' => $verifyAt]);
+
+        $this->ba->cronAuth();
+
+        $request = [
+            'url'    => '/payments/verify/all',
+            'method' => 'post'
+        ];
+
+        $time = Carbon::now(Timezone::IST);
+
+        $time->addMinutes(15);
+
+        Carbon::setTestNow($time);
+
+        $this->makeRequestAndGetContent($request);
+
+        $payment = $this->getEntityById('payment', $payments[0], true);
+
+        $this->assertEquals('authorized', $payment['status']);
+
+        $this->assertEquals($payment['refund_at'], Carbon::createFromTimestamp($payment['created_at'])->addMinutes(14)->getTimestamp());
+
+        $order = $this->getDbLastEntityPublic('order');
+
+        $this->assertEquals('attempted', $order['status']);
+    }
+
+    public function testLateAuthMerchantOrderConfigVerifyPaymentAfterTimeoutForZeroCapture()
+    {
+        $this->setMockGatewayTrue();
+
+        $this->fixtures->merchant->addFeatures(['disable_amount_check']);
+
+        $data = $this->testData['testTimeoutPaymentVerify'];
+
+        $configArr = [
+            "capture"=> 'manual',
+            "capture_options"=> [
+                "manual_expiry_period"=> 14,
+                "automatic_expiry_period"=> 13,
+                "refund_speed"=> "normal"
+            ]
+        ];
+
+        $payments = $this->createFailedPaymentWithOrderWithConfig($data, $configArr);
+
+        $payment = $this->getEntityById('payment', $payments[0], true);
+
+        $verifyAt = Carbon::now(Timezone::IST)->addMinutes(11)->getTimestamp();
+
+        $this->fixtures->edit('payment', $payment['id'], ['verify_at' => $verifyAt]);
+
+        $this->ba->cronAuth();
+
+        $request = [
+            'url'    => '/payments/verify/all',
+            'method' => 'post'
+        ];
+
+        $time = Carbon::now(Timezone::IST);
+
+        $time->addMinutes(15);
+
+        Carbon::setTestNow($time);
+
+        $this->makeRequestAndGetContent($request);
+
+        $payment = $this->getEntityById('payment', $payments[0], true);
+
+        $this->assertEquals('authorized', $payment['status']);
+
+        $this->assertEquals($payment['refund_at'], Carbon::createFromTimestamp($payment['created_at'])->addMinutes(14)->getTimestamp());
+
+        $order = $this->getDbLastEntityPublic('order');
+
+        $this->assertEquals('attempted', $order['status']);
+    }
+
+
     protected function setupRedisMock($paymentArray = [])
     {
         $redisMock = $this->getMockBuilder(Redis::class)->setMethods(['hGetAll','set', 'get', 'setex', 'client', 'exists'])
@@ -1781,4 +2018,61 @@ class VerifyTest extends TestCase
         return $payments;
 
     }
+
+    protected function createFailedPaymentWithOrderWithConfig($data, $configArr)
+    {
+        $payments = [];
+
+        $this->getErrorInCallback();
+
+        $order = $this->createOrderForBank('ANDB', $configArr);
+
+        $this->assertEquals('created', $order['status']);
+
+        $payment = $this->getDefaultNetbankingPaymentArray('ANDB');
+
+        $payment["order_id"] = $order["id"];
+
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($payment)
+            {
+                $this->doAuthAndCapturePayment($payment);
+            }
+        );
+        $paymentdata = $this->getDbLastEntityPublic('payment');
+
+        $payments[] = $paymentdata['id'];
+
+        $this->resetMockServer();
+
+        return $payments;
+    }
+
+    protected function createOrderForBank($bank, $configArr)
+    {
+
+        $request = [
+            'content' => [
+                'amount'         => 50000,
+                'currency'       => 'INR',
+                'method'         => 'netbanking',
+                'account_number' => '0040304030403040',
+                'bank'           =>  $bank,
+                'payment'        => $configArr,
+                'payment_capture' => 1,
+            ],
+            'method'    => 'POST',
+            'url'       => '/orders',
+        ];
+
+        $this->ba->privateAuth();
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $this->ba->publicAuth();
+
+        return $content;
+    }
+
 }

@@ -473,6 +473,14 @@ class PaymentController extends Controller
         return ApiResponse::json($data);
     }
 
+
+    public function getPaymentMerchantActions($id)
+    {
+        $data = $this->service()->getPaymentMerchantActions($id);
+
+        return ApiResponse::json($data);
+    }
+
     public function postUpdateRefundAtForPayments()
     {
         $input = Request::all();

@@ -105,6 +105,20 @@ class ConfigTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateLateAuthConfig()
+    {
+        return $this->startTest();
+    }
+
+    public function testUpdateConfigFieldForLateAuthConfig()
+    {
+        $config = $this->fixtures->create('config', ['type' => 'late_auth']);
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/payment/config';
+
+        $this->startTest();
+   }
+
     public function testCreateCheckoutConfigFromAdminAuth()
     {
         $this->ba->adminAuth();

@@ -3,6 +3,7 @@
 
 namespace RZP\Models\Payment\Config;
 
+use RZP\Diag\EventCode;
 use RZP\Models\Base;
 
 
@@ -21,9 +22,9 @@ class Service extends Base\Service
      *
      * @return array
      */
-    public function fetch(string $type = 'checkout')
+    public function fetch(string $type = 'checkout', $input)
     {
-        $configs = $this->repo->config->fetchConfigByMerchantIdAndType($this->merchant->getId(), $type);
+        $configs = $this->repo->config->fetchConfigByMerchantIdAndType($this->merchant->getId(), $type, $input);
 
         return $configs->toArrayPublic();
     }
@@ -51,7 +52,22 @@ class Service extends Base\Service
     {
         (new Validator())->validateInput('edit', $input);
 
-        $config = $this->core->update($input);
+        if ($input['type'] === Type::LATE_AUTH)
+        {
+            return $this->updateLateAuthConfig($input);
+        }
+        else
+        {
+            $config = $this->core->update($input);
+        }
+
+        return $config->toArrayPublic();
+    }
+
+
+    private function updateLateAuthConfig(array $input)
+    {
+        $config = $this->core->updateLateAuthConfig($input);
 
         return $config->toArrayPublic();
     }

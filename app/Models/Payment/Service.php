@@ -2566,6 +2566,56 @@ class Service extends Base\Service
         }
     }
 
+    public function getPaymentMerchantActions($id)
+    {
+        $data = [
+            "capture" => false,
+            "refund" => false
+        ];
+
+        $payment = $this->repo->payment->findByPublicIdAndMerchant($id, $this->merchant);
+
+        if ($payment->isAuthorized() === false)
+        {
+            return $data;
+        }
+
+        $processor = $this->getNewProcessor();
+
+        $lateAuthConfig = $processor->getLateAuthPaymentConfig($payment);
+
+        if (isset($lateAuthConfig) === false)
+        {
+            $data['capture'] = true;
+
+            return $data;
+        }
+
+        $autoTimeoutDuration = $lateAuthConfig['capture_options']['automatic_expiry_period'];
+
+        if (isset($lateAuthConfig['capture_options']['manual_expiry_period']) === false)
+        {
+            $manualTimeoutDuration = $autoTimeoutDuration;
+        }
+        else
+        {
+            $manualTimeoutDuration = $lateAuthConfig['capture_options']['manual_expiry_period'];
+        }
+
+        $difference = $processor->getTimeDifferenceInAuthorizeAndCreated($payment);
+
+        if ($difference < $manualTimeoutDuration)
+        {
+            $data['capture'] = true;
+        }
+        else
+        {
+            $data['refund'] = true;
+        }
+
+        return $data;
+    }
+
     public function updateRefundAtForPayments($input)
     {
         (new Payment\Validator)->validateInput('bulk_update_refund_at', $input);
@@ -2628,5 +2678,6 @@ class Service extends Base\Service
           ]);
 
         return $response;
+
     }
 }

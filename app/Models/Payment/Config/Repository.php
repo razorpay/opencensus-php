@@ -16,12 +16,17 @@ class Repository extends Base\Repository
         Entity::TYPE,
     ];
 
-    public function fetchConfigByMerchantIdAndType($merchantId, $type)
+    public function fetchConfigByMerchantIdAndType($merchantId, $type, $input = [])
     {
-        return $this->newQuery()
+           $query =  $this->newQuery()
                     ->where(Entity::MERCHANT_ID, $merchantId)
-                    ->where(Entity::TYPE, $type)
-                    ->get();
+                    ->where(Entity::TYPE, $type);
+
+           $this->buildQueryWithParams($query, $input);
+
+           $this->addQueryOrder($query);
+
+           return $query->get();
     }
 
     public function findByPublicIdAndMerchantAndType($id, $merchantId, $type)

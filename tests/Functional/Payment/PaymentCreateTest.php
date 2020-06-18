@@ -2970,6 +2970,44 @@ class PaymentCreateTest extends TestCase
         $this->assertNull($upiMetadata);
     }
 
+    public function testPaymentMerchantActionWhenNotAuthorized()
+    {
+        $config = $this->fixtures->create('config', ['type' => 'late_auth']);
+
+        $payment = $this->fixtures->create('payment');
+
+        $this->ba->proxyAuth();
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/payment/'. $payment->getPublicId() .'/merchant/actions';
+
+        $this->startTest();
+    }
+
+    public function testPaymentMerchantActionWhenAuthorized()
+    {
+        $config = $this->fixtures->create('config', ['type' => 'late_auth',
+            'config'     => '{
+                "capture": "automatic",
+                "capture_options": {
+                    "manual_expiry_period": 1600,
+                    "automatic_expiry_period": 600,
+                    "refund_speed": "normal"
+                }
+            }'
+        ]);
+
+        $paymentArray = $this->getDefaultPaymentArray();
+
+        $paymentFromResponse = $this->doAuthPayment($paymentArray);
+
+        $this->ba->proxyAuth();
+
+        $this->testData[__FUNCTION__]['request']['url'] =
+            '/payment/'. $paymentFromResponse['razorpay_payment_id'] .'/merchant/actions';
+
+        $this->startTest();
+    }
+
     public function testCreateCardPaymentWithIssuerNotMatchingConfigIssuers()
     {
         $paymentArray = $this->getDefaultPaymentArray();

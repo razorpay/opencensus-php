@@ -1079,6 +1079,8 @@ class Validator extends Base\Validator
 
         $this->failIfNotAuthorized($payment);
 
+        $this->failIfRefundConfigSetLateAuth($payment);
+
         $this->captureAmountValidate($payment, $amount);
 
         $this->captureCurrencyValidate($payment, $currency);
@@ -1188,6 +1190,40 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_CAPTURE_ONLY_AUTHORIZED);
+        }
+    }
+
+    protected function failIfRefundConfigSetLateAuth($payment)
+    {
+        if ($payment->isLateAuthorized() === true)
+        {
+            $processor = new Payment\Processor\Processor($this->entity->merchant);
+
+            $lateAuthConfig = $processor->getLateAuthPaymentConfig($payment);
+
+            if (isset($lateAuthConfig) === false)
+            {
+                return;
+            }
+
+            $autoTimeoutDuration = $lateAuthConfig['capture_options']['automatic_expiry_period'];
+
+            if (isset($lateAuthConfig['capture_options']['manual_expiry_period']) === false)
+            {
+                $manualTimeoutDuration = $autoTimeoutDuration;
+            }
+            else
+            {
+                $manualTimeoutDuration = $lateAuthConfig['capture_options']['manual_expiry_period'];
+            }
+
+            $difference = $processor->getTimeDifferenceInAuthorizeAndCreated($payment);
+
+            if ($difference > $manualTimeoutDuration)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_CONFIG_MARKED_FOR_REFUND);
+            }
         }
     }
 

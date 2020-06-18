@@ -10,6 +10,7 @@ use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Models\BankAccount;
 use RZP\Models\Bank\BankCodes;
+use RZP\Models\Payment\Config;
 use RZP\Error\PublicErrorDescription;
 use RZP\Models\Feature\Constants as FeatureConstants;
 
@@ -57,6 +58,8 @@ class Core extends Base\Core
             $order->allowPartialPayment();
         }
 
+        $this->createLateAuthConfigIfApplicable($input, $order);
+
         list($order, $ba) = $this->repo->transaction(function() use ($order, $input)
         {
             //The variable pushToQueue is added since we want to delay razorx call and queue push till
@@ -90,6 +93,26 @@ class Core extends Base\Core
         );
 
         return $order;
+    }
+
+    private function createLateAuthConfigIfApplicable(&  $input, $order)
+    {
+        if (isset($input['payment']) === true)
+        {
+            $config['config'] = $input['payment'];
+
+            $config['type'] = 'late_auth';
+
+            $config['name'] = $order->getAttribute(Entity::MERCHANT_ID).'_late_auth';
+
+            $config['is_default'] = false;
+
+            $configCore = new Config\Core();
+
+            $configEntity = $configCore->create($config);
+
+            $order->setLateAuthConfigId($configEntity->getId());
+        }
     }
 
     public function getInputWithoutExtraParams(array $input)

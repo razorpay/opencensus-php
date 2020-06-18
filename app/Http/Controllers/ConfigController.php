@@ -19,7 +19,9 @@ class ConfigController extends Controller
 
     public function fetchPaymentConfig(string $type)
     {
-        $configs = $this->service()->fetch($type);
+        $input = Request::all();
+
+        $configs = $this->service()->fetch($type, $input);
 
         return ApiResponse::json($configs);
     }

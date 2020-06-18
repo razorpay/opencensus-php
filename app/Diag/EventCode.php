@@ -581,4 +581,15 @@ class EventCode
         'group' => 'virtual_vpa_prefix',
         'name'  => 'virtual_vpa_prefix.validate',
     ];
+
+    // payment config events
+    const PAYMENT_CONFIG_CREATION_INITIATED                      = [
+        'group' => 'initiation',
+        'name'  => 'payment_config.creation.initiated'
+    ];
+
+    const PAYMENT_CONFIG_UPDATION_INITIATED                      = [
+        'group' => 'initiation',
+        'name'  => 'payment_config.updation.initiated'
+    ];
 }

@@ -133,6 +133,13 @@ class Entity extends Base\PublicEntity
 
     const AUTH_TYPE = 'auth_type';
 
+    const LATE_AUTH_CONFIG_ID= 'late_auth_config_id';
+
+    /**
+     * This contains the capture settings whcih hets applied to late auth payments
+     */
+    const PAYMENT            = 'payment';
+
     const CHECKOUT_CONFIG_ID = 'checkout_config_id';
 
     const PROVIDER_CONTEXT = 'provider_context';
@@ -165,21 +172,22 @@ class Entity extends Base\PublicEntity
     protected $generateIdOnCreate = true;
 
     protected $defaults = [
-        self::DISCOUNT                 => false,
-        self::PARTIAL_PAYMENT          => false,
-        self::RECEIPT                  => null,
-        self::ATTEMPTS                 => 0,
-        self::STATUS                   => Status::CREATED,
-        self::PAYMENT_CAPTURE          => 0,
-        self::AMOUNT_PAID              => 0,
-        self::AUTHORIZED               => 0,
-        self::NOTES                    => [],
-        self::METHOD                   => null,
-        self::ACCOUNT_NUMBER           => null,
-        self::BANK                     => null,
-        self::FORCE_OFFER              => null,
-        self::CHECKOUT_CONFIG_ID       => null,
-        self::PROVIDER_CONTEXT         => null,
+        self::DISCOUNT              => false,
+        self::PARTIAL_PAYMENT       => false,
+        self::RECEIPT               => null,
+        self::ATTEMPTS              => 0,
+        self::STATUS                => Status::CREATED,
+        self::PAYMENT_CAPTURE       => 0,
+        self::AMOUNT_PAID           => 0,
+        self::AUTHORIZED            => 0,
+        self::NOTES                 => [],
+        self::METHOD                => null,
+        self::ACCOUNT_NUMBER        => null,
+        self::BANK                  => null,
+        self::FORCE_OFFER           => null,
+        self::LATE_AUTH_CONFIG_ID   => null,
+        self::CHECKOUT_CONFIG_ID    => null,
+        self::PROVIDER_CONTEXT      => null,
     ];
 
     protected $public = [
@@ -444,6 +452,16 @@ class Entity extends Base\PublicEntity
     public function setDiscount(bool $discount )
     {
         return $this->setAttribute(self::DISCOUNT, $discount);
+    }
+
+    public function setLateAuthConfigId(string $lateAuthConfigId)
+    {
+        return $this->setAttribute(self::LATE_AUTH_CONFIG_ID, $lateAuthConfigId);
+    }
+
+    public function getLateAuthConfigId()
+    {
+        return $this->getAttribute(self::LATE_AUTH_CONFIG_ID);
     }
 
     public function getStatus()

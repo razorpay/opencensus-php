@@ -5690,6 +5690,9 @@ ALTER TABLE refunds
 ALTER TABLE terminals
     ADD COLUMN account_type VARCHAR(255) DEFAULT NULL;
 
+ALTER TABLE orders
+    ADD COLUMN late_auth_config_id CHAR(14) DEFAULT NULL;
+
 ALTER TABLE merchant_details
 ADD INDEX `bank_details_verification_status_index` (`bank_details_verification_status`);
 

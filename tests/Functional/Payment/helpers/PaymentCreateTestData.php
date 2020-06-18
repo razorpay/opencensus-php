@@ -521,6 +521,32 @@ return [
         ]
     ],
 
+    'testPaymentMerchantActionWhenNotAuthorized' => [
+        'request' => [
+            'url'      => '',
+            'method'   => 'GET'
+        ],
+        'response' => [
+            'content' => [
+               'capture' => false,
+                'refund' => false,
+            ],
+        ]
+    ],
+
+    'testPaymentMerchantActionWhenAuthorized' => [
+        'request' => [
+            'url'      => '',
+            'method'   => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                'capture' => true,
+                'refund' => false,
+            ],
+        ]
+    ],
+
     'testUpiOtmPaymentFail' => [
         'response' => [
             'content' => [
@@ -645,3 +671,4 @@ return [
         ],
     ],
 ];
+

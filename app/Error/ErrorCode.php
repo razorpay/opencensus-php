@@ -526,6 +526,7 @@ class ErrorCode
     const BAD_REQUEST_PAYMENT_INVALID_STATUS                                        = 'BAD_REQUEST_PAYMENT_INVALID_STATUS';
     const BAD_REQUEST_PAYMENT_CARD_IS_NOT_ARRAY                                     = 'BAD_REQUEST_PAYMENT_CARD_IS_NOT_ARRAY';
     const BAD_REQUEST_PAYMENT_CAPTURE_ONLY_AUTHORIZED                               = 'BAD_REQUEST_PAYMENT_CAPTURE_ONLY_AUTHORIZED';
+    const BAD_REQUEST_PAYMENT_CONFIG_MARKED_FOR_REFUND                              = 'BAD_REQUEST_PAYMENT_CONFIG_MARKED_FOR_REFUND';
     const BAD_REQUEST_PAYMENT_CANCEL_ONLY_CREATED                                   = 'BAD_REQUEST_PAYMENT_CANCEL_ONLY_CREATED';
     const BAD_REQUEST_PAYMENT_CARD_NOT_PROVIDED                                     = 'BAD_REQUEST_PAYMENT_CARD_NOT_PROVIDED';
     const BAD_REQUEST_PAYMENT_CARD_CVV_NOT_PROVIDED                                 = 'BAD_REQUEST_PAYMENT_CARD_CVV_NOT_PROVIDED';
@@ -1700,6 +1701,8 @@ class ErrorCode
 
     //payment config
     const BAD_REQUEST_INVALID_CONFIG_ID                                             = 'BAD_REQUEST_INVALID_CONFIG_ID';
+    const BAD_REQUEST_CONFIG_NOT_FOUND                                              = 'BAD_REQUEST_CONFIG_NOT_FOUND';
+    const BAD_REQUEST_DEFAULT_LATE_AUTH_CONFIG_PRESENT                              = 'BAD_REQUEST_DEFAULT_LATE_AUTH_CONFIG_PRESENT';
     const BAD_REQUEST_PAYMENT_METHOD_NOT_ALLOWED_IN_CONFIG                          = 'BAD_REQUEST_PAYMENT_METHOD_NOT_ALLOWED_IN_CONFIG';
     const BAD_REQUEST_DEFAULT_LOCALE_CONFIG_PRESENT                                 = 'BAD_REQUEST_DEFAULT_LOCALE_CONFIG_PRESENT';
 

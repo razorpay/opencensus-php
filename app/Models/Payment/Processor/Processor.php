@@ -3251,6 +3251,17 @@ class Processor
             return true;
         }
 
+        $captureConfig = $this->shouldAutoCapturePaymentConfig($payment);
+
+        if ($captureConfig === true)
+        {
+            return true;
+        }
+        elseif ($captureConfig === false)
+        {
+            return false;
+        }
+
         if ((($order->isPaid() === true) and
             ($order->merchant->isFeatureEnabled(Feature::DISABLE_AMOUNT_CHECK) === false)) or
             ($order->getPaymentCapture() === false))
@@ -3269,6 +3280,116 @@ class Processor
         }
 
         return true;
+    }
+
+    protected function shouldAutoCapturePaymentConfig(Payment\Entity $payment)
+    {
+        $lateAuthConfig = $this->getLateAuthPaymentConfig($payment);
+
+        if (isset($lateAuthConfig) === false)
+        {
+            return null;
+        }
+
+        $autoTimeoutDuration = $lateAuthConfig['capture_options']['automatic_expiry_period'];
+
+        if (isset($lateAuthConfig['capture_options']['manual_expiry_period']) === false)
+        {
+            $manualTimeoutDuration = $autoTimeoutDuration;
+        }
+        else
+        {
+            $manualTimeoutDuration = $lateAuthConfig['capture_options']['manual_expiry_period'];
+        }
+
+        $captureValue = $lateAuthConfig['capture'];
+
+        $difference = $this->getTimeDifferenceInAuthorizeAndCreated($payment);
+
+        if ($captureValue === 'automatic')
+        {
+            if ($difference < $autoTimeoutDuration)
+            {
+                return true;
+            }
+            elseif ($difference > $manualTimeoutDuration)
+            {
+                $this->setPaymentRefundAtForConfig($payment, $manualTimeoutDuration);
+
+                return false;
+            }
+        }
+        elseif ($captureValue === 'manual')
+        {
+            if ($difference > $manualTimeoutDuration)
+            {
+                $this->setPaymentRefundAtForConfig($payment, $manualTimeoutDuration);
+
+                return false;
+            }
+        }
+
+        return false;
+    }
+
+    private function setPaymentRefundAtForConfig($payment, $manualTimeoutDuration)
+    {
+        if ((in_array($payment->getMethod() , [ Payment\Method::EMANDATE,
+                    Payment\Method::NACH]) === true) and
+            ($payment->isRecurringTypeInitial() === true))
+        {
+            return;
+        }
+
+        $refundAt = Carbon::createFromTimestamp($payment->getCreatedAt(), Timezone::IST)
+                ->addMinutes($manualTimeoutDuration)->getTimestamp();
+
+        $payment->setRefundAt($refundAt);
+
+        $this->paymentRepo->saveOrFail($payment);
+
+    }
+
+    public function getTimeDifferenceInAuthorizeAndCreated($payment)
+    {
+        $authorizedTime = Carbon::createFromTimestamp($payment->getAuthorizeTimestamp(), Timezone::IST);
+
+        $createdTime = Carbon::createFromTimestamp($payment->getCreatedAt(), Timezone::IST);
+
+        return $authorizedTime->diffInMinutes($createdTime);
+    }
+
+    public function getLateAuthPaymentConfig(Payment\Entity $payment)
+    {
+        $order = $payment->order;
+
+        $lateAuthConfigId = null;
+
+        if (isset($order) === true)
+        {
+            $lateAuthConfigId = $order->getLateAuthConfigId();
+        }
+
+        $merchant = $this->merchant;
+
+        $configEntity = null;
+
+        if (isset($lateAuthConfigId) === false)
+        {
+            $configEntity = $this->repo->config->fetchDefaultConfigByMerchantIdAndType($merchant->getId(), 'late_auth');
+        }
+        else
+        {
+            $configEntity = $this->repo->config->findByPublicIdAndMerchantAndType($lateAuthConfigId, $merchant->getId(), 'late_auth');
+        }
+
+        if (isset($configEntity) === false)
+        {
+            return null;
+        }
+
+        return json_decode($configEntity->config, true);
+
     }
 
     protected function isAutoRefundDelayExceeded(Payment\Entity $payment): bool
@@ -3911,4 +4032,5 @@ class Processor
     {
         return (($this->payment->isUpi() === true) and ($this->merchant->shouldSaveVpa() === true));
     }
+
 }

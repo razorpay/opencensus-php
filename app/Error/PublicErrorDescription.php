@@ -1088,6 +1088,7 @@ class PublicErrorDescription
     //Invalid Bank Account
     const BAD_REQUEST_INVALID_BANK_ACCOUNT                                          =  'The bank account entered is invalid';
 
+    const BAD_REQUEST_PAYMENT_CONFIG_MARKED_FOR_REFUND                              = 'The Payment has been marked for refund in payment config';
 
     // Upi Mandates
     const BAD_REQUEST_UPI_MANDATE_END_TIME_INVALID                                  = 'Invalid end time for upi mandate payment, end time must be greater than start time and current time';

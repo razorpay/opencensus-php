@@ -117,6 +117,10 @@ class CreateOrders extends Migration
                   ->nullable()
                   ->default(null);
 
+            $table->char(Order::LATE_AUTH_CONFIG_ID, Order::ID_LENGTH)
+                  ->nullable()
+                  ->default(null);
+
             $table->char(Order::CHECKOUT_CONFIG_ID, Order::ID_LENGTH)
                   ->nullable()
                   ->default(null);

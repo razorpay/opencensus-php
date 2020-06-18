@@ -51,6 +51,7 @@ class Validator extends Base\Validator
         Entity::OFFERS . '*'                       => 'filled|public_id|size:20',
         Entity::FORCE_OFFER                        => 'filled|boolean',
         Entity::PARTIAL_PAYMENT                    => 'sometimes|boolean',
+        Entity::PAYMENT                            => 'sometimes|array',
         Entity::CHECKOUT_CONFIG_ID                 => 'filled|size:14',
         Entity::PHONEPE_SWITCH_CONTEXT             => 'sometimes|json|max:3000',
         Entity::PRODUCT_ID                         => 'required_with:product_type|alpha_num|size:14',

@@ -190,6 +190,72 @@ return  [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
         ],
     ],
+
+    'testCreateLateAuthConfig' => [
+        'request' => [
+            'content' => [
+                'name'       => 'First',
+                'is_default' => true,
+                'type'       => 'late_auth',
+                'config'     => [
+                    "capture"=> 'automatic',
+                    "capture_options"=> [
+                        "manual_expiry_period"=> 1600,
+                        "automatic_expiry_period"=> 600,
+                        "refund_speed"=> "normal"
+                    ]
+                ],
+                ],
+            'method'    => 'POST',
+            'url'       => '/payment/config',
+        ],
+        'response' => [
+            'content' => [
+                'name'       => 'First',
+                'is_default' => true,
+                'config'     => [
+                    "capture"=> 'automatic',
+                    "capture_options"=> [
+                        "manual_expiry_period"=> 1600,
+                        "automatic_expiry_period"=> 600,
+                        "refund_speed"=> "normal"
+                    ]
+                ],
+            ]
+        ],
+    ],
+
+    'testUpdateConfigFieldForLateAuthConfig' => [
+        'request' => [
+            'content' => [
+                'type'      => 'late_auth',
+                'config'     => [
+                    "capture"=> 'automatic',
+                        "capture_options"=> [
+                            "manual_expiry_period"=> 1600,
+                            "automatic_expiry_period"=> 600,
+                            "refund_speed"=> "normal"
+                        ]
+                ],
+            ],
+            'method'    => 'PATCH',
+            'url'       => '',
+        ],
+        'response' => [
+            'content' => [
+                'name'       => 'Test Config',
+                'config'     => [
+                    "capture"=> 'automatic',
+                    "capture_options"=> [
+                        "manual_expiry_period"=> 1600,
+                        "automatic_expiry_period"=> 600,
+                        "refund_speed"=> "normal"
+                    ]
+                ],
+            ]
+        ],
+    ],
+
     'testCreateCheckoutConfigFromAdminAuth' => [
         'request' => [
             'content' => [

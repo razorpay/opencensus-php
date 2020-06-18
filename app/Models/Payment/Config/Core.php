@@ -3,7 +3,9 @@
 
 namespace RZP\Models\Payment\Config;
 
+use RZP\Diag\EventCode;
 use RZP\Exception;
+use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Models\Base;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
@@ -12,11 +14,18 @@ class Core extends Base\Core
 {
     protected $mutex;
 
+    /**
+     * @var BasicAuth
+     */
+    protected $ba;
+
     public function __construct()
     {
         parent::__construct();
 
         $this->mutex = $this->app['api.mutex'];
+
+        $this->ba = $this->app['basicauth'];
     }
 
     public function create($input)
@@ -35,6 +44,15 @@ class Core extends Base\Core
 
                 $config->merchant()->associate($merchant);
 
+                if ((isset($input['type']) === true) and
+                    ($input['type'] === Type::LATE_AUTH))
+                {
+                    $this->checkAndUpdateConfig($input);
+
+                    $this->trackLateAuthConfigEvent(EventCode::PAYMENT_CONFIG_CREATION_INITIATED, $input);
+
+                }
+
                 $config->build($input);
 
                 $config = $this->repo->config->transaction(function () use($input, $merchant, $config)
@@ -43,6 +61,14 @@ class Core extends Base\Core
                     if ($this->isDefaultConfig($input))
                     {
                         $defaultConfig = $this->repo->config->fetchDefaultConfigByMerchantIdAndType($merchant->getId(), $input['type']);
+
+                        if ((isset($defaultConfig) === true) and
+                            ($input['type'] === Type::LATE_AUTH))
+                        {
+                            throw new Exception\BadRequestException(
+                                ErrorCode::BAD_REQUEST_DEFAULT_LATE_AUTH_CONFIG_PRESENT, null, null,
+                                'Default Config is present for the provided merchant');
+                        }
 
                         if (isset($defaultConfig) === true)
                         {
@@ -66,6 +92,64 @@ class Core extends Base\Core
 
                 return $config;
             });
+    }
+
+    public function trackLateAuthConfigEvent($eventCode, $input)
+    {
+        $properties = $input;
+
+        $properties['user_agent']  = $this->app['request']->header('User-Agent');
+
+        $properties['merchant_id'] = $this->merchant->getId();
+
+        $properties['source'] = 'api';
+
+        if ($this->ba->isProxyAuth() === true)
+        {
+            $properties['source'] = 'merchant_dashboard';
+        }
+        elseif ($this->ba->isAdminAuth() === true)
+        {
+            $properties['source'] = 'admin_dashboard';
+        }
+
+        $this->app['diag']->trackPaymentConfigEvent($eventCode, null, null, $properties);
+    }
+
+    public function checkAndUpdateConfig(& $input)
+    {
+        if ((isset($input['config']['capture']) === true) and
+            ($input['config']['capture'] === 'automatic'))
+        {
+            if ((isset($input['config']['capture_options']['automatic_expiry_period']) === false) and
+                (isset($input['config']['capture_options']['manual_expiry_period']) === false))
+            {
+                $input['config']['capture_options']['automatic_expiry_period'] = 7200;
+
+                $input['config']['capture_options']['manual_expiry_period'] = null;
+
+                return;
+            }
+
+            if (isset($input['config']['capture_options']['automatic_expiry_period']) === false)
+            {
+                $input['config']['capture_options']['automatic_expiry_period'] = 20;
+            }
+
+            if (isset($input['config']['capture_options']['manual_expiry_period']) === false)
+            {
+                $input['config']['capture_options']['manual_expiry_period'] = null;
+            }
+        }
+
+        if ((isset($input['config']['capture']) === true) and
+            ($input['config']['capture'] === 'manual'))
+        {
+            if (isset($input['config']['capture_options']['automatic_expiry_period']) === false)
+            {
+                $input['config']['capture_options']['automatic_expiry_period'] = null;
+            }
+        }
     }
 
     private function updateCheckoutConfig($config,$input, $id, $type)
@@ -126,7 +210,6 @@ class Core extends Base\Core
 
     }
 
-
     public function update($input)
     {
         $this->trace->info(TraceCode::CONFIG_UPDATE_REQUEST, $input);
@@ -174,6 +257,49 @@ class Core extends Base\Core
                     return  $config;
                 }
             });
+    }
 
+    public function updateLateAuthConfig(array $input)
+    {
+        $this->trace->info(TraceCode::CONFIG_UPDATE_REQUEST, $input);
+
+        $merchant = $this->merchant;
+
+        $resource = 'config_update_' . $merchant->getId();
+
+        $this->trackLateAuthConfigEvent(EventCode::PAYMENT_CONFIG_UPDATION_INITIATED, $input);
+
+        if ((isset($input['type']) === true) and
+            ($input['type'] === Type::LATE_AUTH))
+        {
+            $this->checkAndUpdateConfig($input);
+        }
+
+        return $this->mutex->acquireAndRelease(
+            $resource,
+            function() use ($input, $merchant)
+            {
+                $type = $input['type'];
+
+                $config = $this->repo->config->fetchConfigByMerchantIdAndType($merchant->getId(), $type);
+
+                $configEntity = $config->first();
+
+                if (isset($configEntity) === true)
+                {
+                    $configEntity->setConfig(json_encode($input['config']));
+
+                    $this->repo->saveOrFail($configEntity);
+                }
+                else
+                {
+                    throw new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_CONFIG_NOT_FOUND, null, null,
+                        'Config is not present for the provided merchant');
+
+                }
+
+                return  $configEntity;
+            });
     }
 }

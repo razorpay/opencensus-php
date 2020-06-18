@@ -111,4 +111,14 @@ class Entity extends Base\PublicEntity
             $input['config'] = json_decode($input['config'], true);
         }
     }
+
+    public function getConfig()
+    {
+        $this->getAttribute(Entity::CONFIG);
+    }
+
+    public function getType()
+    {
+        $this->getAttribute(Entity::TYPE);
+    }
 }

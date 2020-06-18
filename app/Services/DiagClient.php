@@ -18,6 +18,7 @@ class DiagClient extends EventTrackerClient
     use Traits\BankTransferEvent;
     use Traits\VirtualAccountEvent;
     use Traits\VirtualVpaPrefixEvent;
+    use Traits\PaymentConfigEvent;
 
     public function trackEvent(string $eventType, string $eventVersion, array $event,
                                array $properties,

@@ -1456,7 +1456,41 @@ trait Refund
                 $refund->setSpeedRequested($input[RefundEntity::SPEED]);
             }
 
-            if ($this->isInstantRefundsSupportedRefund($payment, $refund) === true)
+            //For Late auth payments which has not been captured and in authorized state, fetching the refund speed
+            //from config and checking if void refund is supported. If yes set speed requested from config else set
+            //normal speed.
+            //$lateAuthVoidRefundInstantSpeed flag has been used to check isInstantRefundsSupportedRefund method for
+            //not captured payments.
+            $lateAuthVoidRefundInstantSpeed = false;
+
+            if ($payment->isLateAuthorized() === true)
+            {
+                $lateAuthRefundSpeed = $this->getLateAuthPaymentRefundSpeedIfApplicable($payment);
+
+                if (isset($lateAuthRefundSpeed) === true)
+                {
+                    $refund->setSpeedRequested($lateAuthRefundSpeed);
+
+                    if (($lateAuthRefundSpeed === 'optimum') and
+                        ($payment->hasBeenCaptured() === false) and
+                        ($this->merchant->isFeatureEnabled(Feature::VOID_REFUNDS) === true))
+                    {
+                        $refundAmount = $refund->getAttribute('amount');
+
+                        if ((isset($refundAmount) === true) and ($refundAmount !== $payment->getAmountUnrefunded()) and
+                            $this->gatewaySupportsReversal($payment) === false)
+                        {
+                            $refund->setSpeedRequested(RefundSpeed::NORMAL);
+                        }
+                        else
+                        {
+                            $lateAuthVoidRefundInstantSpeed = true;
+                        }
+                    }
+                }
+            }
+
+            if ($this->isInstantRefundsSupportedRefund($payment, $refund, $lateAuthVoidRefundInstantSpeed) === true)
             {
                 $refund->setSpeedDecisioned($refund->getSpeedRequested());
             }
@@ -1515,6 +1549,38 @@ trait Refund
         $this->refund = $refund;
 
         return $refund;
+    }
+
+    private function  getLateAuthPaymentRefundSpeedIfApplicable($payment)
+    {
+        $processor = new Processor($this->merchant);
+
+        $lateAuthConfig = $processor->getLateAuthPaymentConfig($payment);
+
+        if (isset($lateAuthConfig) === false)
+        {
+            return null;
+        }
+
+        $autoTimeoutDuration = $lateAuthConfig['capture_options']['automatic_expiry_period'];
+
+        if (isset($lateAuthConfig['capture_options']['manual_expiry_period']) === false)
+        {
+            $manualTimeoutDuration = $autoTimeoutDuration;
+        }
+        else
+        {
+            $manualTimeoutDuration = $lateAuthConfig['capture_options']['manual_expiry_period'];
+        }
+
+        $difference = $processor->getTimeDifferenceInAuthorizeAndCreated($payment);
+
+        if ($difference > $manualTimeoutDuration)
+        {
+            return $lateAuthConfig['capture_options']['refund_speed'];
+        }
+
+        return null;
     }
 
     public function fetchFeeForRefundAmount($payment, $input)
@@ -2631,13 +2697,15 @@ trait Refund
     /**
      * @param Payment\Entity $payment
      * @param RefundEntity $refund
+     * @param bool $lateAuthVoidRefundInstantSpeed
      * @return bool
      * @throws \Exception
      */
-    protected function isInstantRefundsSupportedRefund(Payment\Entity $payment, RefundEntity $refund): bool
+    protected function isInstantRefundsSupportedRefund(Payment\Entity $payment, RefundEntity $refund, bool $lateAuthVoidRefundInstantSpeed): bool
     {
         return (($refund->isRefundRequestedSpeedInstant() === true) and
-                ($payment->hasBeenCaptured() === true) and
+                (($payment->hasBeenCaptured() === true) or
+                    ($lateAuthVoidRefundInstantSpeed === true)) and
                 ($payment->isDCC() === false) and
                 (in_array($payment->getGateway(), Payment\Gateway::$scroogeGateways, true) === true) and
                 ((in_array($payment->getMethod(), [

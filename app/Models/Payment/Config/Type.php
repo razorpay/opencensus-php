@@ -1,8 +1,6 @@
 <?php
 
-
 namespace RZP\Models\Payment\Config;
-
 
 class Type
 {
@@ -23,5 +21,4 @@ class Type
 
         return true;
     }
-
 }
