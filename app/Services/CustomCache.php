@@ -182,6 +182,7 @@ class CustomCache implements \Illuminate\Contracts\Cache\Store
      * @param string $key
      * @param mixed $value
      * @return int|bool
+     * @throws \Throwable
      */
     public function increment($key, $value = 1)
     {
@@ -191,13 +192,11 @@ class CustomCache implements \Illuminate\Contracts\Cache\Store
         {
             if ($this->ecCluster->get($key) !== null)
             {
-                $this->ecCluster->increment($key, $value);
-
-                return ;
+                return $this->ecCluster->increment($key, $value);
             }
 
             // set the key by getting data from old redis
-            $this->ecCluster->increment($key, $incrementedValue);
+            return $this->ecCluster->increment($key, $incrementedValue);
         }
         catch (\Throwable $e)
         {
@@ -231,14 +230,12 @@ class CustomCache implements \Illuminate\Contracts\Cache\Store
         {
             if ($this->ecCluster->get($key) !== null)
             {
-                $this->ecCluster->decrement($key, $value);
-
-                return ;
+               return $this->ecCluster->decrement($key, $value);
             }
 
             // set the key by getting data from old redis
             // $decrementedValue will be negative value.
-            $this->ecCluster->increment($key, $decrementedValue);
+            return $this->ecCluster->increment($key, $decrementedValue);
         }
         catch (\Throwable $e)
         {

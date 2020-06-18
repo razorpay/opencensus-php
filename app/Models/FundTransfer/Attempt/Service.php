@@ -319,7 +319,7 @@ class Service extends Base\Service
             'action'        => $action,
         ]);
 
-        $redis = $this->app['redis']->connection();
+        $redis = $this->app['redis']->Connection('mutex_redis');
 
         $user = $this->core()->getInternalUsernameOrEmail();
 
@@ -355,14 +355,13 @@ class Service extends Base\Service
 
     public function getChannelState(): array
     {
-        $redis = $this->app['redis']->connection();
+        $redis = $this->app['redis']->Connection('mutex_redis');
 
         $values = [];
 
         try
         {
             $values = $redis->HGETALL(ConfigKey::FTA_CHANNELS);
-
         }
         catch (\Throwable $e)
         {

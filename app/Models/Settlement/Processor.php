@@ -841,7 +841,8 @@ class Processor extends Base\Core
         // update the count for channel here
         // this would help to maintain the exact settlement create count
         //
-        $redis = app('redis')->connection();
+
+        $redis = app('redis')->Connection('mutex_redis');
 
         $key = sprintf(Create::CHANNEL_WISE_COUNT, $this->mode);
 

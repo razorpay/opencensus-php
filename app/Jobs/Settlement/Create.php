@@ -223,9 +223,9 @@ class Create extends Job
      */
     protected function dispatchForSettlementInitiateIfRequired(string $channel)
     {
-        $redis = app('redis')->connection();
+        $redis = app('redis')->Connection('mutex_redis');
 
-        $channelCount = $redis->hgetall($this->channelWiseCountKey);
+        $channelCount = $redis->hGetAll($this->channelWiseCountKey);
 
         $count = (int) $channelCount[$channel];
 

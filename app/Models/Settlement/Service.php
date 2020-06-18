@@ -441,14 +441,14 @@ class Service extends Base\Service
 
     public function getProcessDetails(): array
     {
-        $redis = $this->app['redis']->connection();
+        $redis = $this->app['redis']->Connection('mutex_redis');
 
         $countKey            = sprintf(Create::TOTAL_MERCHANT_COUNT, $this->mode);
         $channelWiseCountKey = sprintf(Create::CHANNEL_WISE_COUNT, $this->mode);
 
         return [
             'pending_merchants'    => Cache::get($countKey),
-            'channel_wise_process' => $redis->HGETALL($channelWiseCountKey),
+            'channel_wise_process' => $redis->hGetAll($channelWiseCountKey),
         ];
     }
 
@@ -459,7 +459,7 @@ class Service extends Base\Service
 
         Cache::forget($countKey);
 
-        $redis = $this->app['redis']->connection();
+        $redis = $this->app['redis']->Connection('mutex_redis');
 
         $redis->del($channelWiseCountKey);
 
