@@ -11,6 +11,7 @@ use RZP\Gateway\Upi\Base;
 use RZP\Constants\HashAlgo;
 use RZP\Gateway\Base\Verify;
 use RZP\Exception\BaseException;
+use RZP\Gateway\Upi\Base\Entity;
 use RZP\Encryption\PGPEncryption;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Base\AuthorizeFailed;
@@ -65,6 +66,12 @@ class Gateway extends Base\Gateway
     {
         parent::authorize($input);
 
+        if ((isset($input['upi']['flow']) === true) and
+            ($input['upi']['flow'] === 'intent'))
+        {
+            return $this->authorizeIntent($input);
+        }
+
         $attributes = $this->getGatewayEntityAttributes($input);
 
         $gatewayPayment = $this->createGatewayPaymentEntity($attributes);
@@ -81,6 +88,25 @@ class Gateway extends Base\Gateway
             ]
         ];
     }
+
+    protected function authorizeIntent(array $input, bool $persist = true)
+    {
+        $attributes = [
+            Entity::TYPE                => Base\Type::PAY,
+            Entity::GATEWAY_MERCHANT_ID => $this->getMerchantId(),
+        ];
+
+        $this->createGatewayPaymentEntity($attributes, Action::AUTHORIZE);
+
+        $response = $this->authorizeRequest($input);
+
+        $data = [
+            'intent_url' => $response['next']['redirect']['url'],
+        ];
+
+        return ['data' => $data];
+    }
+
 
     /**
      * Handles S2S callback flow
@@ -102,7 +128,8 @@ class Gateway extends Base\Gateway
         $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail($input[ConstantsEntity::PAYMENT][Payment\Entity::ID],
                                                                       Action::AUTHORIZE);
 
-        if ($this->assertUpiTransactionId($gatewayPayment, $content) === false)
+        //Skipping this in case of intent as npci ref id is null for this in initial call
+        if ($this->assertUpiTransactionId($gatewayPayment, $content) === false and $gatewayPayment->getType() !== Base\Type::PAY)
         {
             throw new AssertionException(
                 'Upi Transaction reference number does not match saved npci reference id in DB',

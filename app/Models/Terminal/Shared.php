@@ -89,6 +89,7 @@ class Shared
     const UPI_AXIS_INTENT_TERMINAL           = 'UPIAXISIntTmnl';
     const UPI_MINDGATE_TPV_TERMINAL          = '100UPIMndgtTpv';
     const UPI_MINDGATE_SBI_RAZORPAY_TERMINAL = '100UPIMgateSbi';
+    const UPI_MINDGATE_SBI_INTENT_TERMINAL   = '100UPIIntMgSbi';
     const UPI_MINDGATE_RECURRING_TERMINAL    = '100MgateRcrTml';
     const UPI_ICICI_RAZORPAY_TERMINAL        = '100UPIICICITml';
     const UPI_ICICI_TPV_TERMINAL             = '100UPIICTpvTml';
@@ -176,6 +177,7 @@ class Shared
         self::UPI_AXIS_TPV_RAZORPAY_TERMINAL,
         self::UPI_HULK_RAZORPAY_TERMINAL,
         self::UPI_MINDGATE_SBI_RAZORPAY_TERMINAL,
+        self::UPI_MINDGATE_SBI_INTENT_TERMINAL,
         self::AEPS_ICICI_RAZORPAY_TERMINAL,
         self::AIRTELMONEY_RAZORPAY_TERMINAL,
         self::AMAZONPAY_RAZORPAY_TERMINAL,
@@ -243,6 +245,7 @@ class Shared
         self::AEPS_ICICI_RAZORPAY_TERMINAL       => Gateway::AEPS_ICICI,
         self::UPI_MINDGATE_RAZORPAY_TERMINAL     => Gateway::UPI_MINDGATE,
         self::UPI_MINDGATE_SBI_RAZORPAY_TERMINAL => Gateway::UPI_SBI,
+        self::UPI_MINDGATE_SBI_INTENT_TERMINAL   => Gateway::UPI_SBI,
         self::UPI_ICICI_RAZORPAY_TERMINAL        => Gateway::UPI_ICICI,
         self::UPI_AXIS_RAZORPAY_TERMINAL         => Gateway::UPI_AXIS,
         self::UPI_AXIS_TPV_RAZORPAY_TERMINAL     => Gateway::UPI_AXIS,

@@ -93,12 +93,72 @@ class UpiSbiGatewayTest extends TestCase
         $content = ($this->getDecryptedContent($content[ResponseFields::MESSAGE]))[ResponseFields::API_RESPONSE];
 
         $this->assertEquals($content[ResponseFields::UPI_TRANS_REFERENCE_NO], $upiEntity[Upi::NPCI_REFERENCE_ID]);
+
+        $this->assertNotNull($payment[Payment\Entity::REFERENCE16]);
+        $this->assertEquals($content[ResponseFields::UPI_TRANS_REFERENCE_NO], $payment[Payment\Entity::REFERENCE16]);
+
         $this->assertEquals($content[ResponseFields::CUSTOMER_REFERENCE_NO], $upiEntity[Upi::GATEWAY_PAYMENT_ID]);
         $this->assertEquals($content[ResponseFields::STATUS], $upiEntity[Upi::STATUS_CODE]);
         $this->assertEquals(Type::COLLECT, $upiEntity[Upi::TYPE]);
         $this->assertEquals($payment[Payment\Entity::VPA], $upiEntity[Upi::VPA]);
         $this->assertNotNull($upiEntity[Upi::EXPIRY_TIME]);
         $this->assertNotNull($payment[Payment\Entity::ACQUIRER_DATA]);
+
+        $this->assertNotNull($upiEntity[Upi::GATEWAY_DATA]);
+        $this->assertEquals('99999999999',$upiEntity[Upi::NPCI_TXN_ID]);
+        $this->assertEquals('7971807546', $upiEntity[Upi::GATEWAY_DATA]['addInfo2']);
+    }
+
+    public function testIntentPayment()
+    {
+        $this->sharedTerminal = $this->fixtures->create(Constants::SHARED_UPI_SBI_INTENT_TERMINAL);
+
+        $this->payment['description'] = 'intentPayment';
+        unset($this->payment['vpa']);
+
+        $this->payment['_']['flow'] = 'intent';
+
+        $response = $this->doAuthPaymentViaAjaxRoute($this->payment);
+
+        $paymentId = $response['payment_id'];
+
+        $payment = $this->getDbLastPayment();
+
+        // Co Proto must be working
+        $this->assertEquals('intent', $response['type']);
+        $this->assertArrayHasKey('intent_url', $response['data']);
+
+        $this->checkPaymentStatus($paymentId, 'created');
+
+        $upiEntity = $this->getDbLastEntity(Entity::UPI);
+
+        $this->assertSame(Payment\Status::CREATED, $payment->getStatus());
+
+        $content = $this->mockServer()->getAsyncCallbackContent($upiEntity->toArray());
+
+        $response = $this->makeS2SCallbackAndGetContent($content);
+
+        // We should have gotten a successful response
+        $this->assertArrayHasKey('status', $response);
+        $this->assertEquals('SUCCESS', $response['status']);
+
+        // The payment should now be authorized
+        $payment->refresh();
+        $upiEntity->refresh();
+
+        $this->assertEquals(Payment\Status::AUTHORIZED, $payment->getStatus());
+
+        $content = ($this->getDecryptedContent($content[ResponseFields::MESSAGE]))[ResponseFields::API_RESPONSE];
+
+        $this->assertEquals($content[ResponseFields::UPI_TRANS_REFERENCE_NO], $upiEntity[Upi::NPCI_REFERENCE_ID]);
+
+        $this->assertNotNull($payment[Payment\Entity::REFERENCE16]);
+        $this->assertEquals($content[ResponseFields::UPI_TRANS_REFERENCE_NO], $payment[Payment\Entity::REFERENCE16]);
+
+        $this->assertEquals($content[ResponseFields::CUSTOMER_REFERENCE_NO], $upiEntity[Upi::GATEWAY_PAYMENT_ID]);
+        $this->assertEquals($content[ResponseFields::STATUS], $upiEntity[Upi::STATUS_CODE]);
+        $this->assertEquals(Type::PAY, $upiEntity[Upi::TYPE]);
+        $this->assertEquals($payment[Payment\Entity::VPA], $upiEntity[Upi::VPA]);
 
         $this->assertNotNull($upiEntity[Upi::GATEWAY_DATA]);
         $this->assertEquals('99999999999',$upiEntity[Upi::NPCI_TXN_ID]);

@@ -558,7 +558,7 @@ class VerifyData extends Base\Mock\Server
             $response['success'] = false;
             $response['error']['internal_error_code'] = 'BAD_REQUEST_PAYMENT_TIMED_OUT';
         }
-        
+
         return $response;
     }
 

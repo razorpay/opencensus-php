@@ -309,6 +309,25 @@ class PayInitData extends Base\Mock\Server
 
     public function upi_sbi($entities)
     {
+        if ($entities['upi']['flow'] === 'intent')
+        {
+            $response = [
+                'data' => [],
+                'error' => null,
+                'success' => true,
+                'mozart_id' => 'DUMMY_MOZART_ID',
+                'external_trace_id' => 'DUMMY_REQUEST_ID',
+                'next' => [
+                    'redirect' => [
+                        'method' => 'post',
+                        "url" => "upi://pay?am=100.00&cu=INR&mc=5411&pa=some@abfspay&pn=merchantname&tn=PayviaRazorpay&tr=pay_someid"
+                    ],
+                ],
+            ];
+
+            return $response;
+        }
+
         $vpa = $entities['payment']['vpa'];
 
         $response = [

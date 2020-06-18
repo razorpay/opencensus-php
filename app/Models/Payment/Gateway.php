@@ -1894,6 +1894,7 @@ class Gateway
         Gateway::UPI_AXIS,
         Gateway::UPI_RBL,
         Gateway::UPI_JUSPAY,
+        Gateway::UPI_SBI,
     ];
 
     public static $upiQrGateways = [

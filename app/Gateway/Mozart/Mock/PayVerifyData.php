@@ -279,13 +279,13 @@ class PayVerifyData extends Base\Mock\Server
                 '_raw'            => 'dummy_raw_value',
                 'gateway_response'=> [
                     'pspRefNo'      => $entities['gateway']['redirect']['payment_id'],
-                    'upiTransRefNo' => 99999,
-                    'npciTransId'   => 99999999999,
+                    'upiTransRefNo' => '99999',
+                    'npciTransId'   => '99999999999',
                     'custRefNo'     => "99999999999",
                     'amount'        => 500,
                     'txnAuthDate'       => "2020-06-01 19:23:51",
                     'responseCode'      => "00",
-                    'approvalNumber'    => 840600,
+                    'approvalNumber'    => '840600',
                     'status'            => "S",
                     'statusDesc'        => "Payment Successful",
                     'addInfo'           => [
@@ -299,6 +299,7 @@ class PayVerifyData extends Base\Mock\Server
                     ],
                     'payerVPA' => "vishnu@icici",
                     'payeeVPA' => "razorpay@sbi",
+                    'vpa'      => "vishnu@icici",
                 ],
                 'amount' => 500,
                 'paymentId'       => $entities['gateway']['redirect']['payment_id'],
@@ -307,17 +308,25 @@ class PayVerifyData extends Base\Mock\Server
             ],
         ];
 
-        if($entities['gateway']['redirect']['vpa'] === 'rejectedcollect@sbi'){
+        if($entities['gateway']['redirect']['vpa'] != null)
+        {
+            $response['data']['gateway_response']['vpa'] = $entities['gateway']['redirect']['vpa'];
+        }
+
+        if($entities['gateway']['redirect']['vpa'] === 'rejectedcollect@sbi')
+        {
             $response['data']['gateway_response']['status'] = 'R';
             $response['success'] = false;
             $response['error']['internal_error_code'] = 'BAD_REQUEST_PAYMENT_UPI_COLLECT_REQUEST_REJECTED';
         }
 
-        if(isset($entities['gateway']['redirect']['amount'])){
+        if(isset($entities['gateway']['redirect']['amount']))
+        {
             $response['data']['gateway_response']['amount'] = $entities['gateway']['redirect']['amount'];
         }
 
-        if(isset($entities['gateway']['redirect']['upiTransRefNo'])){
+        if(isset($entities['gateway']['redirect']['upiTransRefNo']))
+        {
             $response['data']['gateway_response']['upiTransRefNo'] = $entities['gateway']['redirect']['upiTransRefNo'];
         }
 

@@ -3128,6 +3128,19 @@ class Terminal extends Base
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
+    public function createSharedUpiMindgateSbiIntentTerminal(array $override)
+    {
+        $attributes = [
+            'id'                        => Shared::UPI_MINDGATE_SBI_INTENT_TERMINAL,
+            'type'                      => [
+                'non_recurring' => '1',
+                'pay'           => '1',
+            ]
+        ];
+
+        return $this->createSharedUpiMindgateSbiTerminal(array_merge($attributes, $override));
+    }
+
     public function createSharedPaysecureTerminal(array $attributes)
     {
         $termId = Shared::PAYSECURE_RAZORPAY_TERMINAL;
