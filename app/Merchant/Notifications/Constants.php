@@ -189,6 +189,28 @@ class Constants
             ]
         ],
         [
+            'title'       => 'Instant Refund Update',
+            'description' => 'The pricing for instant refund has been revised. Now, you can process refunds instantly for Debit Cards too along with Credit Cards, UPI & Net Banking.',
+            'start_ts'    => 1592485521,
+            'end_ts'      => 1597089243,
+            'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/instant-refunds.svg',
+            'buttons'     => [
+                [
+                    'type'  => 'button',
+                    'label' => 'Check Pricing',
+                    'url'   => '/config#instantfee',
+                ],
+                [
+                    'type'  => 'primary-inverted',
+                    'label' => 'Check Coverage',
+                    'url'   => 'https://razorpay.com/docs/payment-gateway/refunds/supported-payment-methods/#debit-cards',
+                ]
+                ],
+                'filters'     => [
+                    'experiments'  => ['instant_refunds_default_pricing_v2'],
+                ]
+        ],
+        [
             'title'       => 'Free Credit Score!',
             'description' => 'Click Here to get your credit score along with the credit report for FREE!',
             'start_ts'    => 1571898702,

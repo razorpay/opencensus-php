@@ -171,7 +171,7 @@ export const createLateAuthConfig = (payload, method) => {
 let initialState = {
   loading: true,
   error: null,
-  refund_pricing: { rules: [], custom_pricing: true },
+  refund_pricing: { rules: [], custom_pricing: true, not_loaded: true },
   config: {},
   features: [],
   lateAuthConfig: {

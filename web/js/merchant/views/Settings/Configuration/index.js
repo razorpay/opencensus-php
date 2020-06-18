@@ -12,16 +12,19 @@ import PaymentSettings from './PaymentSettings';
 import PaypalOnboarding from './PaypalOnboarding';
 import { showWhenUtil } from 'merchant/components/ShowWhen';
 import RTracking from 'react-tracking';
+import { openModal, closeModal } from 'merchant_common/reducers/modals';
+import InstantRefundFee from 'merchant/views/Transactions/Payments/components/InstantRefundFee';
 
 @connect(
   state => {
     return {
       user: state.session.user,
+      refund_pricing: state.config.refund_pricing,
       configState: state.config,
       mode: state.session.mode,
     };
   },
-  { ...ConfigActions, ...NotificationActions }
+  { ...ConfigActions, ...NotificationActions, openModal }
 )
 @RTracking(() => window.rzpQ.component('CongfigurationContainer'))
 export default class CongfigurationContainer extends Component {
@@ -59,6 +62,8 @@ export default class CongfigurationContainer extends Component {
       });
   };
 
+  componentDidMount() {}
+
   componentDidUpdate() {
     this.popupIfSettle();
   }
@@ -95,6 +100,18 @@ export default class CongfigurationContainer extends Component {
           }, 2000);
         }
       }, 1000);
+    }
+    if (
+      this.props.location.hash === '#instantfee' &&
+      !this.props.refund_pricing.not_loaded
+    ) {
+      if (!this.is_hash_loaded_once) {
+        this.props.openModal({
+          component: <InstantRefundFee pricing={this.props.refund_pricing} />,
+          size: 'small',
+        });
+        this.is_hash_loaded_once = true;
+      }
     }
   };
 

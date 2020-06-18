@@ -1029,6 +1029,7 @@ class Service extends Base\Service
             'allow_yesbank_va_on_x',
             'rx_creation_flows_v2',
             'rx_vp_announcement',
+            'instant_refunds_default_pricing_v2',
             'rx_scheduled_payouts_rollout',
             'rx_webhook_separation_announcement',
         ];
