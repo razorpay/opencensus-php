@@ -17,8 +17,6 @@ abstract class Base extends Mailable
 
     protected $data;
 
-    protected $config;
-
     protected $fromEmail;
 
     protected $toEmail;
@@ -31,10 +29,6 @@ abstract class Base extends Mailable
     public function __construct(array $data)
     {
         parent::__construct();
-
-        $app = App::getFacadeRoot();
-
-        $this->config = $app['config'];
 
         $this->data = $data;
     }

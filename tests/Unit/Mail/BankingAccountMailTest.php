@@ -9,6 +9,9 @@ use RZP\Mail\Base\SendQueuedMailable;
 use RZP\Mail\BankingAccount as BankingAccountMail;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 
+/*
+ *  TODO test this automatically for all Mailables and Queueables
+ */
 class BankingAccountMailTest extends TestCase
 {
     use RequestResponseFlowTrait;
@@ -43,7 +46,7 @@ class BankingAccountMailTest extends TestCase
         return strlen($obj);
     }
 
-    private function assertStatusChangeMailableSQSPayloadSize($mailable)
+    private function assertStatusChangeMailableSQSPayloadSize($mailableObj)
     {
         $sqsQueueclass = new \ReflectionClass('Illuminate\Queue\SqsQueue');
 
@@ -53,11 +56,7 @@ class BankingAccountMailTest extends TestCase
 
         $method->setAccessible(true);
 
-        $bankingAccount = $this->createBankingAccount();
-
-        $mailable = new SendQueuedMailable(new $mailable($bankingAccount['id']));
-
-        $payload =  $method->invokeArgs($sqsQueueInstance, [$mailable]);
+        $payload =  $method->invokeArgs($sqsQueueInstance, [$mailableObj]);
 
         $payloadSize = $this->getStringSizeinBytes($payload);
 
@@ -78,7 +77,39 @@ class BankingAccountMailTest extends TestCase
 
         foreach ($mailableClasses as $mailableClass)
         {
-            $this->assertStatusChangeMailableSQSPayloadSize($mailableClass);
+            $bankingAccount = $this->createBankingAccount();
+
+            $mailableObj = new SendQueuedMailable(new $mailableClass($bankingAccount['id']));
+
+            $this->assertStatusChangeMailableSQSPayloadSize($mailableObj);
         }
+    }
+
+    public function testXProActivationMailableSQSPayloadSize()
+    {
+        $bankingAccount = $this->createBankingAccount();
+
+        $mailableObj = new SendQueuedMailable(new BankingAccountMail\XProActivation($bankingAccount));
+
+        $this->assertStatusChangeMailableSQSPayloadSize($mailableObj);
+    }
+
+    public function testStatementMailableSQSPayloadSize()
+    {
+        $this->createBankingAccount();
+
+        $merchant = $this->fixtures->merchant->create();
+
+        $toEmails = ['test@razorpay.com'];
+
+        $fromDate = '946684800';
+
+        $toDate = '947684800';
+
+        $fileDownloadUrl = str_repeat("a",256); //maxlength for filename
+
+        $mailableObj = new SendQueuedMailable(new BankingAccountMail\StatementMail($merchant, $toEmails, $fromDate, $toDate, $fileDownloadUrl));
+
+        $this->assertStatusChangeMailableSQSPayloadSize($mailableObj);
     }
 }
