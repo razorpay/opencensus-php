@@ -1277,6 +1277,7 @@ class BasicAuth
             // Gets key for $this->dashboardHeaders, which is snake_cased header
             // with prefix removed.
             $key = substr($dashHeadersKey, $dashHeaderPrefixLen);
+
             $key = snake_case(camel_case($key));
 
             $this->dashboardHeaders[$key] = $headers->get($dashHeadersKey);

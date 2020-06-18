@@ -28,6 +28,8 @@ class Error extends Support\Fluent
         ErrorCode::BAD_REQUEST_2FA_SETUP_USER_2FA_NOT_ENABLED,
         ErrorCode::BAD_REQUEST_RESTRICTED_USER_CANNOT_SETUP_2FA,
         ErrorCode::BAD_REQUEST_REMINDER_NOT_APPLICABLE,
+        ErrorCode::BAD_REQUEST_USER_2FA_VALIDATION_REQUIRED,
+        ErrorCode::BAD_REQUEST_USER_2FA_SETUP_REQUIRED,
     ];
 
     const INTERNAL_ERROR_CODE   = 'internal_error_code';

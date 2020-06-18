@@ -706,7 +706,32 @@ class UserTest extends TestCase
         $this->startTest();
     }
 
-    public function testFailedLoginAccountLocked()
+    public function testLoginWithAccountLockedAndWith2Fa()
+    {
+        $this->enableRazorXTreatmentForRazorX();
+
+        $user = $this->fixtures->create('user', [
+            'password'              => 'hello123',
+            'account_locked'        => true,
+            'second_factor_auth'    => true,
+        ]);
+
+        $content = [
+            'email'             => $user['email'],
+            'password'          => 'hello123',
+            'captcha_disable'   => 'DISABLE_THE_CAPTCHA_YOU_SHALL',
+        ];
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['content'] = $content;
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
+    public function testLoginWithAccountLockedAndWithout2Fa()
     {
         $this->enableRazorXTreatmentForRazorX();
 
@@ -724,6 +749,11 @@ class UserTest extends TestCase
         ];
 
         $testData['request']['content'] = $content;
+
+        $testData['response']['content'] = [
+            'email'     => $user->getEmail(),
+            'id'        => $user->getId(),
+        ];
 
         $this->ba->appAuth();
 
@@ -831,6 +861,67 @@ class UserTest extends TestCase
         $this->fixtures->create('user:user_merchant_mapping', $mappingData);
 
         $this->assertTrue($user->getRestricted() === true);
+    }
+
+    public function testTriggerTwoFaOtpWithTwoFaSetup()
+    {
+        $user = $this->fixtures->create('user',
+            [
+                'contact_mobile'            => '9123456789',
+                'contact_mobile_verified'   => true,
+            ]);
+
+        $merchantId = $user
+                        ->merchants()
+                        ->get()
+                        ->pluck('id')
+                        ->toArray()[0];
+
+        $apiKey = 'rzp_live_'.$merchantId;
+
+        $this->ba->proxyAuth($apiKey, $user->getId());
+
+        $this->startTest();
+    }
+
+    public function testTriggerTwoFaOtpWithoutContactMobile()
+    {
+        $user = $this->fixtures->create('user',
+            [
+                'contact_mobile'    => null,
+            ]);
+
+        $merchantId = $user
+                        ->merchants()
+                        ->get()
+                        ->pluck('id')
+                        ->toArray()[0];
+
+        $apiKey = 'rzp_live_'.$merchantId;
+
+        $this->ba->proxyAuth($apiKey, $user->getId());
+
+        $this->startTest();
+    }
+
+    public function testTriggerTwoFaOtpWithoutContactMobileVerified()
+    {
+        $user = $this->fixtures->create('user',[
+            'contact_mobile'            => '9123456789',
+            'contact_mobile_verified'   => false,
+        ]);
+
+        $merchantId = $user
+                        ->merchants()
+                        ->get()
+                        ->pluck('id')
+                        ->toArray()[0];
+
+        $apiKey = 'rzp_live_'.$merchantId;
+
+        $this->ba->proxyAuth($apiKey, $user->getId());
+
+        $this->startTest();
     }
 
     public function testConfirmByToken()

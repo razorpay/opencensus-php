@@ -12,6 +12,7 @@ use RZP\Error\ErrorCode;
 use RZP\Http\RequestHeader;
 use RZP\Http\UserRolesScope;
 use Illuminate\Http\Request;
+use RZP\Http\RequestContext;
 use Illuminate\Routing\Router;
 use RZP\Http\BasicAuth\BasicAuth;
 use Razorpay\Trace\Logger as Trace;
@@ -20,6 +21,7 @@ use RZP\Exception\BadRequestException;
 use Illuminate\Foundation\Application;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Merchant\Balance\Type as ProductType;
+use RZP\Models\User\Metric as UserMetricCode;
 
 class UserAccess
 {
@@ -40,6 +42,11 @@ class UserAccess
      * @var Trace
      */
     protected $trace;
+
+    /**
+     * @var RequestContext
+     */
+    protected $reqCtx;
 
     /**
      * @var Router
@@ -68,6 +75,8 @@ class UserAccess
         $this->userRoleScope = new UserRolesScope();
 
         $this->trace = $app['trace'];
+
+        $this->reqCtx = $app['request.ctx'];
     }
 
     /**
@@ -112,6 +121,12 @@ class UserAccess
             $route = $this->router->currentRouteName();
 
             $this->ba->verifyAndSetUser();
+
+            // Check for routes requiring 2FA validation
+            if (in_array($route, Route::$twoFactorAuthRequiredRoutes, true) === true)
+            {
+                $this->validateUser2FaStatus();
+            }
 
             $routePolicyResponse = $this->validateUserRoutePolicy($route);
 
@@ -196,7 +211,7 @@ class UserAccess
 
     /**
      * Product gives the Product information (payment gateway or business banking).
-     * This is derived using $requestOriginProduct and some other parameters 
+     * This is derived using $requestOriginProduct and some other parameters
      * like route_name and internal app
      * This is useful for tagging logs with respective product info
      * Refer ApiTraceProcessor::addProduct()
@@ -300,6 +315,49 @@ class UserAccess
                     ErrorCode::BAD_REQUEST_UNAUTHORIZED);
             }
         }
+    }
+
+    private function validateUser2FaStatus()
+    {
+        $user = $this->ba->getUser();
+        $userId = $user->getId();
+
+        $merchantId = $this->ba->getMerchantId();
+
+        // currently keeping this feature under razorx
+        // keeping this razorx under merchantId for consistency with dashboard
+        // dashboard sends all razorx request with merchant context
+        $user2FaCheckExperimentVariant = $this->razorx->getTreatment(
+            $merchantId,
+            RazorxTreatment::VALIDATE_USER_2FA_STATUS,
+            $this->ba->getMode());
+
+        if (strtolower($user2FaCheckExperimentVariant) === 'on')
+        {
+            $user2FaVerified = $this->reqCtx->getUser2FAVerified();
+
+            $this->trace->count(UserMetricCode::USER_ACCESS_CRITICAL_ROUTE, [
+                'rote_name'             => $this->router->currentRouteName(),
+                'user_2fa_verified'     => $user2FaVerified,
+            ]);
+
+            if ($user2FaVerified === false)
+            {
+                $errorData = [
+                    'internal_error_code'       => ErrorCode::BAD_REQUEST_USER_2FA_VALIDATION_REQUIRED,
+                    'user'              => [
+                        'id'                => $userId,
+                        'contact_mobile'   => $user->getMaskedContactMobile(),
+                    ]
+                ];
+
+                throw new BadRequestException(
+                    ErrorCode::BAD_REQUEST_USER_2FA_VALIDATION_REQUIRED,
+                    null,
+                    $errorData);
+            }
+        }
+
     }
 
     /**

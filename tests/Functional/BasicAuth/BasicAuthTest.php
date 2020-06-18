@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\BasicAuth;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factory;
 
+use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Partner\PartnerTrait;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
@@ -471,7 +472,6 @@ class BasicAuthTest extends TestCase
         $this->startTest();
     }
 
-
     public function testRequestWithPartnerHeadersClientCredsNotPartner()
     {
         $client = $this->createOAuthApplicationAndGetClientByEnv('dev');
@@ -489,6 +489,45 @@ class BasicAuthTest extends TestCase
 
         $this->startTest();
     }
+
+    public function testRequestWithTwoFaRequiredWithTwoFaVerifiedTrue()
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->willReturn('on');
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant();
+
+        $this->ba->proxyAuth('rzp_live_10000000000000', $merchantUser->getId());
+
+        $this->startTest();
+    }
+
+    public function testRequestWithTwoFaRequiredWithTwoFaVerifiedFalse()
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->willReturn('on');
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant();
+
+        $this->ba->proxyAuth('rzp_live_10000000000000', $merchantUser->getId());
+
+        $this->startTest();
+    }
+
 
     public function startTest($testDataToReplace = array())
     {

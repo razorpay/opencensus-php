@@ -428,24 +428,35 @@ return [
         ],
     ],
 
-    'testFailedLoginAccountLocked' => [
+    'testLoginWithAccountLockedAndWith2Fa'  => [
+        'request'   => [
+            'url'       => '/users/login',
+            'method'    =>  'post',
+        ],
+
+        'response'  => [
+            'content'   => [
+                'error'     => [
+                    'code'          => ErrorCode::BAD_REQUEST_ERROR,
+                    'description'   => PublicErrorDescription::BAD_REQUEST_USER_2FA_LOCKED,
+                ],
+            ],
+            'status_code'   => 400,
+        ],
+        'exception' => [
+            'class'                 => 'RZP\exception\BadRequestException',
+            'internal_error_code'   => ErrorCode::BAD_REQUEST_USER_2FA_LOCKED,
+        ],
+    ],
+
+    'testLoginWithAccountLockedAndWithout2Fa' => [
         'request' => [
             'url'     => '/users/login',
             'method'  => 'POST',
             'content' => [],
         ],
         'response' => [
-            'content' => [
-                'error' => [
-                    'code'        => ErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_LOCKED_USER_LOGIN,
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'               => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_LOCKED_USER_LOGIN,
+            'status_code'   => 200,
         ],
     ],
 
@@ -459,14 +470,14 @@ return [
             'content' => [
                 'error' => [
                     'code'        => ErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_USER_LOGIN_2FA_SETUP_REQUIRED,
+                    'description' => PublicErrorDescription::BAD_REQUEST_USER_2FA_SETUP_REQUIRED,
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
             'class'               => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_USER_LOGIN_2FA_SETUP_REQUIRED,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_USER_2FA_SETUP_REQUIRED,
         ],
     ],
 
@@ -499,6 +510,67 @@ return [
         ],
         'response' => [
             'content' => [],
+        ],
+    ],
+
+    'testTriggerTwoFaOtpWithTwoFaSetup'   => [
+        'request'   => [
+            'url'       => '/users/2fa',
+            'method'    => 'POST',
+        ],
+
+        'response'  => [
+            'content'   => [],
+        ],
+    ],
+
+    'testTriggerTwoFaOtpWithoutContactMobile'   => [
+        'request'   => [
+            'url'       => '/users/2fa',
+            'method'    => 'POST',
+        ],
+
+        'response'  => [
+            'content'       => [
+                'error'     => [
+                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'   => PublicErrorDescription::BAD_REQUEST_USER_2FA_SETUP_REQUIRED,
+                    '_internal'     => [
+                        'internal_error_code'   => ErrorCode::BAD_REQUEST_USER_LOGIN_2FA_SETUP_REQUIRED,
+                    ],
+                ],
+            ],
+            'status_code'   => 400,
+        ],
+
+        'exception' => [
+            'class'                 => 'RZP\Exception\BadRequestException',
+            'internal_error_code'   => ErrorCode::BAD_REQUEST_USER_2FA_SETUP_REQUIRED,
+        ],
+    ],
+
+    'testTriggerTwoFaOtpWithoutContactMobileVerified'   => [
+        'request'   => [
+            'url'       => '/users/2fa',
+            'method'    => 'POST',
+        ],
+
+        'response'  => [
+            'content'       => [
+                'error'     => [
+                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'   => PublicErrorDescription::BAD_REQUEST_USER_2FA_SETUP_REQUIRED,
+                    '_internal'     => [
+                        'internal_error_code'   => ErrorCode::BAD_REQUEST_USER_LOGIN_2FA_SETUP_REQUIRED,
+                    ],
+                ],
+            ],
+            'status_code'   => 400,
+        ],
+
+        'exception' => [
+            'class'                 => 'RZP\Exception\BadRequestException',
+            'internal_error_code'   => ErrorCode::BAD_REQUEST_USER_2FA_SETUP_REQUIRED,
         ],
     ],
 

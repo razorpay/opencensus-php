@@ -1090,6 +1090,7 @@ class Route
         'user_access'                              => ['get',      'users/access',                                   'UserController@checkUserAccess'                                    ],
         'user_verify_second_factor_auth'           => ['post',     'users/2fa/verify',                               'UserController@verifyUserSecondFactorAuth'                         ],
         'user_resend_otp_2fa'                      => ['post',     'users/2fa/otp_resend',                           'UserController@resendOtp'                                          ],
+        'user_trigger_2fa_otp'                     => ['post',     'users/2fa',                                      'UserController@send2faOtp'                                         ],
 
         // mobile setup for 2fa
         'user_login_2fa_setup_mobile'              => ['patch',    'users/2fa_setup/contact_mobile',                 'UserController@setup2faContactMobile'                              ],
@@ -2749,6 +2750,9 @@ class Route
         // Virtual VPA Prefix
         'virtual_vpa_prefix_validate',
         'virtual_vpa_prefix_save',
+
+        // TwoFa validation routes
+        'user_trigger_2fa_otp',
 
         //payout downtime
         'fetch_payout_downtimes_enabled',
@@ -5253,6 +5257,15 @@ class Route
 
         'fund_transfer_attempt_process',
         'on_demand_settlement',
+    ];
+
+    // Routes for header X_DASHBOARD_USER_2FA_VERIFIED should be true
+    // By Sending this flag as true dashboard clarifies that user is verified by 2FA in its current
+    //
+    // NOTE: Currently this feature is under razorx with merchant id,
+    // so add only proxy auth routes which have merchant Id
+    public static $twoFactorAuthRequiredRoutes = [
+        'user_update_contact',
     ];
 
     public static $routesWithV2Prefix = [

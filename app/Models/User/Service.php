@@ -416,6 +416,13 @@ class Service extends Base\Service
         return (new Core)->resendOtp($user);
     }
 
+    public function send2faOtp()
+    {
+        $user = $this->auth->getUser();
+
+        return (new Core)->send2faOtp($user);
+    }
+
     public function setup2faVerifyMobileOnLogin(array $input): array
     {
         return (new Core)->setup2faVerifyMobileOnLogin($input);

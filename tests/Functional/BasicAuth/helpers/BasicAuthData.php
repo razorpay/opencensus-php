@@ -664,4 +664,52 @@ return [
             'status_code' => 400,
         ],
     ],
+
+    'testRequestWithTwoFaRequiredWithTwoFaVerifiedTrue'     => [
+        'request'       => [
+            'url'       => '/users/contact/update',
+            'method'    => 'PATCH',
+            'content'   => [
+                'contact_mobile'    => '9412345678',
+                'otp'               => '0007',
+            ],
+            'server'    => [
+                'HTTP_X-Dashboard-User-2FA-Verified'        => 'true',
+            ],
+        ],
+
+        'response'      => [
+            'content'       => [],
+        ]
+    ],
+
+    'testRequestWithTwoFaRequiredWithTwoFaVerifiedFalse'     => [
+        'request'       => [
+            'url'       => '/users/contact/update',
+            'method'    => 'PATCH',
+            'content'   => [
+                'contact_mobile'    => '9412345678',
+                // required due to backward compatibility
+                'otp'               => '0007',
+            ],
+        ],
+
+        'response'      => [
+            'content'       => [
+                'error'         => [
+                    'code'          => 'BAD_REQUEST_ERROR',
+                    '_internal'     => [
+                        'internal_error_code'       => 'BAD_REQUEST_USER_2FA_VALIDATION_REQUIRED',
+                    ],
+                ],
+            ],
+            'status_code'   => 400,
+        ],
+
+        'exception'     => [
+            'class'                 => RZP\Exception\BadRequestException::class,
+            'message'               => 'User\'s 2FA validation is required for this action',
+            'internal_error_code'   => 'BAD_REQUEST_USER_2FA_VALIDATION_REQUIRED',
+        ],
+    ],
 ];

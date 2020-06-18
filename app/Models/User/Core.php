@@ -158,11 +158,11 @@ class Core extends Base\Core
     {
         if ($user->isAccountLocked() === true)
         {
-            $this->trace->info(TraceCode::LOCKED_USER_LOGIN, ['user_id' => $user->getId()]);
+            $this->trace->info(TraceCode::USER_2FA_LOCKED, ['user_id' => $user->getId()]);
 
-            $this->trace->count(Metric::LOCKED_USER_LOGIN);
+            $this->trace->count(Metric::USER_2FA_LOCKED);
 
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_LOCKED_USER_LOGIN,
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_USER_2FA_LOCKED,
                     null,
                     [
                     'internal_error_code'  => ErrorCode::BAD_REQUEST_LOCKED_USER_LOGIN,
@@ -172,6 +172,30 @@ class Core extends Base\Core
                         'user_id'        => $user->getId(),
                         ],
                     ]);
+        }
+    }
+
+    private function check2faSetupDoneOrThrowException(Entity $user)
+    {
+        if ($user->isSecondFactorAuthSetup() === false)
+        {
+            $this->trace->info(TraceCode::USER_2FA_NOT_SETUP, ['user_id'=> $user->getId()]);
+
+            $this->trace->count(Metric::USER_2FA_NOT_SETUP);
+
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_USER_2FA_SETUP_REQUIRED,
+                null,
+                [
+                    'internal_error_code'    => ErrorCode::BAD_REQUEST_USER_LOGIN_2FA_SETUP_REQUIRED,
+                    'user_details'           => [
+                        'restricted'                => $user->getRestricted(),
+                        'user_id'                   => $user->getId(),
+                        'contact_mobile'            => $user->getContactMobile(),
+                        'account_locked'            => $user->isAccountLocked(),
+                    ],
+                ]);
+
         }
     }
 
@@ -284,8 +308,6 @@ class Core extends Base\Core
             return $this->get($user);
         }
 
-        $this->checkUserAccountNotLockedOrThrowException($user);
-
         //check if second factor auth is enabled for the user
         if (($user->isSecondFactorAuth() === true) or
             ($user->isSecondFactorAuthEnforced() === true))
@@ -294,30 +316,7 @@ class Core extends Base\Core
 
             $this->trace->count(Metric::LOGIN_USER_2FA_ENABLED);
 
-            if ($user->isSecondFactorAuthSetup() === true)
-            {
-                return $this->sendOtpForSecondFactorAuthOnLogin($user);
-            }
-            else
-            {
-                $this->trace->info(TraceCode::USER_LOGIN_2FA_ENABLED_NO_SETUP, ['user_id' => $user->getId()]);
-
-                $dimensions = ['restricted' => $user->getRestricted()];
-
-                $this->trace->count(Metric::LOGIN_USER_2FA_NOT_SETUP, $dimensions);
-
-                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_USER_LOGIN_2FA_SETUP_REQUIRED,
-                        null,
-                        [
-                            'internal_error_code'    => ErrorCode::BAD_REQUEST_USER_LOGIN_2FA_SETUP_REQUIRED,
-                            'user_details'           => [
-                                'restricted'     => $user->getRestricted(),
-                                'user_id'        => $user->getId(),
-                                'contact_mobile' => $user->getContactMobile(),
-                                'account_locked' => $user->isAccountLocked(),
-                            ],
-                        ]);
-            }
+            $this->sendOtpForSecondFactorAuthOnLogin($user);
         }
 
         $this->trace->count(Metric::LOGIN_2FA_SUCCESS);
@@ -374,12 +373,26 @@ class Core extends Base\Core
         }
     }
 
-    private function sendOtpForSecondFactorAuthOnLogin(Entity $user)
+    public function send2faOtp(Entity $user)
     {
+        $this->checkUserAccountNotLockedOrThrowException($user);
+
+        $this->check2faSetupDoneOrThrowException($user);
+
         $smsOtpAuth = $this->app['module']
-                            ->secondFactorAuth::make(AuthConstants::SMS_OTP_AUTH);
+            ->secondFactorAuth::make(AuthConstants::SMS_OTP_AUTH);
 
         $smsOtpAuth->sendOtp($this->getSmsOtpAuthBasePayload($user));
+
+        $this->trace->info(TraceCode::USER_2FA_OTP_SENT, ['user_id' => $user->getId()]);
+
+        return [];
+    }
+
+    private function sendOtpForSecondFactorAuthOnLogin(Entity $user)
+    {
+
+        $this->send2faOtp($user);
 
         $this->trace->info(TraceCode::USER_LOGIN_2FA_OTP_SENT, ['user_id' => $user->getId()]);
 

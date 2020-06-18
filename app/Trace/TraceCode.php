@@ -1771,13 +1771,16 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const LOCKED_USER_LOGIN                                     = 'LOCKED_USER_LOGIN';
     const USER_LOGIN_2FA_ENABLED                                = 'USER_LOGIN_2FA_ENABLED';
     const USER_LOGIN_2FA_ENABLED_NO_SETUP                       = 'USER_LOGIN_2FA_ENABLED_NO_SETUP';
+    const USER_2FA_NOT_SETUP                                    = 'USER_2FA_NOT_SETUP';
     const USER_LOGIN_2FA_WRONG_OTP                              = 'USER_LOGIN_2FA_WRONG_OTP';
     const USER_LOGIN_2FA_OTP_SENT                               = 'USER_LOGIN_2FA_OTP_SENT';
+    const USER_2FA_OTP_SENT                                     = 'USER_2FA_OTP_SENT';
     const USER_LOGIN_2FA_ACCOUNT_LOCKED                         = 'USER_LOGIN_2FA_ACCOUNT_LOCKED';
     const MERCHANT_RESTRICTED_SETTINGS                          = 'MERCHANT_RESTRICTED_SETTINGS';
     const USER_EMAIL_OTP_RESEND                                 = 'USER_EMAIL_OTP_RESEND';
     const USER_EMAIL_OTP_SEND                                   = 'USER_EMAIL_OTP_SEND';
     const USER_EMAIL_VERIFY_WITH_OTP                            = 'USER_EMAIL_VERIFY_WITH_OTP';
+    const USER_2FA_LOCKED                                       = 'USER_2FA_LOCKED';
 
     // Trace code for Invitation
     const INVITATION_CREATE                                     = 'INVITATION_CREATE';

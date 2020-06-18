@@ -121,6 +121,13 @@ class UserController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function send2FaOtp()
+    {
+        $data = $this->service()->send2faOtp();
+
+        return ApiResponse::json($data);
+    }
+
     public function setup2faVerifyMobileOnLogin()
     {
         $input = Request::all();

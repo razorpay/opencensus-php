@@ -33,6 +33,9 @@ class RequestHeader
 
     const X_DASHBOARD_IP                = 'X-Dashboard-Ip';
 
+    // Is user's identity verfied using 2FA?
+    const X_DASHBOARD_USER_2FA_VERIFIED = 'X-Dashboard-User-2FA-Verified';
+
     /**
      * To support Account Auth: Allows API requests to be served under the
      * scope of a merchant ID that is sent as the value to this header

@@ -140,6 +140,12 @@ final class RequestContext
     protected $userId;
 
     /**
+     * Dashboard user's 2FA verification status (from headers) in case of proxy auth
+     * @var bool
+     */
+    protected $user2FaVerified;
+
+    /**
      * To check if request context is already initialized or not.
      * @var null|string
      */
@@ -269,6 +275,11 @@ final class RequestContext
     public function getAuthFlowType(): string
     {
         return $this->authFlowType;
+    }
+
+    public function getUser2FAVerified(): bool
+    {
+        return $this->user2FaVerified;
     }
 
     public function getBearerTokenFromRequest()
@@ -510,6 +521,8 @@ final class RequestContext
             $this->mid  = $this->keyWithoutPrefix;
             $this->proxy = true;
             $this->userId = $this->request->headers->get(RequestHeader::X_DASHBOARD_USER_ID);
+
+            $this->user2FaVerified = $this->request->headers->get(RequestHeader::X_DASHBOARD_USER_2FA_VERIFIED) === 'true';
 
             return true;
         }

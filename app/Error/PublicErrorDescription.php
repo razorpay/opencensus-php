@@ -691,6 +691,7 @@ class PublicErrorDescription
 
     const BAD_REQUEST_USER_2FA_ALREADY_SETUP                                    = 'User already has a verified mobile number associated with the account';
     const BAD_REQUEST_LOCKED_USER_LOGIN                                         = 'User cannot login. User account is locked.';
+    const BAD_REQUEST_USER_2FA_LOCKED                                           = 'User can\'t trigger 2FA OTP since 2FA is locked on this account';
     const BAD_REQUEST_2FA_LOGIN_INCORRECT_OTP                                   = 'Verification failed because of incorrect OTP.';
     const BAD_REQUEST_2FA_SETUP_INCORRECT_OTP                                   = 'Second factor authentication setup failed because of incorrect OTP';
     const BAD_REQUEST_RESTRICTED_USER_CANNOT_SETUP_2FA                          = 'User is restricted by its associated merchant to perform the action';
@@ -705,6 +706,7 @@ class PublicErrorDescription
     const BAD_REQUEST_MERCHANT_RESTRICTED_SETTINGS_NOT_APPLIED                  = 'Merchant Restricted Settings failed to apply because users of merchant are associated with multiple merchants';
     const BAD_REQUEST_USER_OTP_REQUIRED                                         = 'OTP is required';
     const BAD_REQUEST_RESTRICTED_USER_CANNOT_PERFORM_ACTION                     = 'Restricted user cannot perform action';
+    const BAD_REQUEST_USER_2FA_VALIDATION_REQUIRED                              = 'User\'s 2FA validation is required for this action';
 
     const BAD_REQUEST_USER_WITH_ROLE_ALREADY_EXISTS                             = 'User with given role already exists';
     const BAD_REQUEST_ACTION_NOT_ALLOWED_FOR_SELF_USER                          = 'Action not allowed for self user';
