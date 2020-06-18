@@ -683,6 +683,7 @@ final class FactoryData
             'allow_sign_up' => false,
             'email_domains' => 'razorpay.com,rzp.io',
             'email'         => $faker->rzpEmail,
+            'from_email'    => $faker->email,
             'display_name'  => 'Razorpay',
             'business_name' => 'Razorpay Software Pvt Ltd',
             'auth_type'     => 'password',

@@ -19,6 +19,7 @@ use RZP\Constants\Table;
 use RZP\Models\Admin\Org;
 use RZP\Constants\Product;
 use RZP\Constants\Timezone;
+use RZP\Mail\User as UserMail;
 use RZP\Services\TokenService;
 use RZP\Jobs\MailChimpSubscribe;
 use RZP\Mail\User\Otp as OtpMail;
@@ -103,6 +104,21 @@ class Core extends Base\Core
         $user->setPasswordResetToken();
 
         $this->repo->saveOrFail($user);
+
+        $orgId = $this->app['basicauth']->getOrgId();
+
+        //get Org and send it to mailer, deal with other orgs as well.
+        $org = $this->repo->org->findByPublicId($orgId)->toArrayPublic();
+
+        $org['hostname'] = $this->app['basicauth']->getOrgHostName();
+
+        $requestOriginProduct = $this->app['basicauth']->getRequestOriginProduct();
+
+        $changedAt = Carbon::now(Timezone::IST)->format('g:ia \o\n l jS F Y');
+
+        $passwordChangedMail = new UserMail\PasswordChange($user, $org, $changedAt, $requestOriginProduct);
+
+        Mail::queue($passwordChangedMail);
 
         return $user;
     }

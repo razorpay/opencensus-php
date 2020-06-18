@@ -353,7 +353,9 @@ class Service extends Base\Service
     {
         $user = $this->user;
 
-        (new Core)->edit($user, $input, 'changePassword');
+        $user->getValidator()->validateInput('changePassword', $input);
+
+        (new Core)->setNewPassword($user, $input);
 
         return $user->toArrayPublic();
     }

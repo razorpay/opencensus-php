@@ -57,7 +57,7 @@ class Constants
         self::MS_CLKID
     ];
 
-    const PASSWORD_RESET_TOKEN_EXPIRY_TIME =  3600; //1 hour
+    const PASSWORD_RESET_TOKEN_EXPIRY_TIME =  86400; //24 hour
 
     const LINKED_ACCOUNT_CREATE_PASSOWRD_TOKEN_EXPIRY_TIME =  86400; //24 hours
 
