@@ -856,6 +856,55 @@ class Pricing extends Base
         $this->addPricingRulesToDb($rows);
     }
 
+    public function createInstantRefundsDefaultPricingV2Plan()
+    {
+        $pricingPlanId = Models\Pricing\Fee::DEFAULT_INSTANT_REFUNDS_PLAN_V2_ID;
+
+        $rows = [
+            [
+                'id'                  => 'DfltPricingP10',
+                'plan_id'             => $pricingPlanId,
+                'plan_name'           => 'IRDefltPricingPlan',
+                'feature'             => 'refund',
+                'payment_method'      => null,
+                'percent_rate'        => 0,
+                'fixed_rate'          => 799,
+                'amount_range_active' => 1,
+                'amount_range_min'    => 0,
+                'amount_range_max'    => 100000,
+                'org_id'              => '100000razorpay',
+            ],
+            [
+                'id'                  => 'DfltPricingP11',
+                'plan_id'             => $pricingPlanId,
+                'plan_name'           => 'IRDefltPricingPlan',
+                'feature'             => 'refund',
+                'payment_method'      => null,
+                'percent_rate'        => 0,
+                'fixed_rate'          => 1199,
+                'amount_range_active' => 1,
+                'amount_range_min'    => 100000,
+                'amount_range_max'    => 2500000,
+                'org_id'              => '100000razorpay',
+            ],
+            [
+                'id'                  => 'DfltPricingP12',
+                'plan_id'             => $pricingPlanId,
+                'plan_name'           => 'IRDefltPricingPlan',
+                'feature'             => 'refund',
+                'payment_method'      => null,
+                'percent_rate'        => 0,
+                'fixed_rate'          => 1499,
+                'amount_range_active' => 1,
+                'amount_range_min'    => 2500000,
+                'amount_range_max'    => 4294967295,
+                'org_id'              => '100000razorpay',
+            ],
+        ];
+
+        $this->addPricingRulesToDb($rows);
+    }
+
     public function createEmiMerchantSubventionPlan()
     {
         $pricingPlanId = '1EmiSubPricing';

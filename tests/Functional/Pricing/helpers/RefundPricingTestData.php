@@ -84,6 +84,35 @@ return [
         ],
     ],
 
+    'testCreateAndFetchDefaultPricingV2PlanAndNoMerchantSpecificPlan' => [
+        'request' => [
+            'url' => '/instant_refunds/pricing',
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                'custom_pricing' => false,
+                'rules' => [
+                    [
+                        'amount_range_min' => 0,
+                        'amount_range_max' => 100000,
+                        'fixed_rate'       => 799,
+                    ],
+                    [
+                        'amount_range_min' => 100000,
+                        'amount_range_max' => 2500000,
+                        'fixed_rate'       => 1199,
+                    ],
+                    [
+                        'amount_range_min' => 2500000,
+                        'amount_range_max' => 4294967295,
+                        'fixed_rate'       => 1499,
+                    ],
+                ],
+            ],
+        ],
+    ],
+
     'testCreateAndFetchMerchantSpecificMethodIndependentPlan' => [
         'request' => [
             'url' => '/instant_refunds/pricing',

@@ -4375,11 +4375,38 @@ class RefundTest extends TestCase
 
         $this->fixtures->pricing->createInstantRefundsDefaultPricingplan();
 
+        $this->fixtures->pricing->createInstantRefundsDefaultPricingV2Plan();
+
         // Adding specific amount to refund - this is meant to test successful instant refunds on scrooge -
         $refundFee = $this->paymentRefundFetchFee($payment['id'], 3471);
 
         $this->assertEquals(589, $refundFee['fee']);
         $this->assertEquals(90, $refundFee['tax']);
+
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                           ->setConstructorArgs([$this->app])
+                           ->setMethods(['getTreatment'])
+                           ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+                          ->will($this->returnCallback(
+                              function ($mid, $feature, $mode)
+                              {
+                                  if ($feature === 'instant_refunds_default_pricing_v2')
+                                  {
+                                      return 'on';
+                                  }
+
+                                  return 'off';
+                              }));
+
+        // Adding specific amount to refund - this is meant to test successful instant refunds on scrooge -
+        $refundFee = $this->paymentRefundFetchFee($payment['id'], 3471);
+
+        $this->assertEquals(943, $refundFee['fee']);
+        $this->assertEquals(144, $refundFee['tax']);
     }
 
     public function testInstantRefundFTAWithNullMerchantBillingLabel()

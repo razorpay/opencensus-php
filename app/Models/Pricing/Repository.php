@@ -242,7 +242,11 @@ class Repository extends Base\Repository
                     ->planId($planId)
                     ->where(Pricing\Entity::FEATURE, '=', $feature)
                     ->where(Pricing\Entity::ORG_ID, '=', $orgId)
-                    ->where(Pricing\Entity::PAYMENT_METHOD, '=', $method)
+                    ->where(function ($query) use ($method)
+                    {
+                        $query->where(Pricing\Entity::PAYMENT_METHOD, '=', $method)
+                              ->orWhereNull(Pricing\Entity::PAYMENT_METHOD);
+                    })
                     ->where(Pricing\Entity::TYPE, Pricing\Type::PRICING)
                     ->get();
     }

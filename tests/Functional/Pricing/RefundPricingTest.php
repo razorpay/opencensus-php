@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\Merchant;
 use Event;
 
 use RZP\Exception;
+use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -1031,6 +1032,42 @@ class RefundPricingTest extends TestCase
         $this->fixtures->merchant->editPricingPlanId('1hDYlICobzOCYt');
 
         $this->fixtures->pricing->createInstantRefundsDefaultPricingplan();
+
+        $this->fixtures->pricing->createInstantRefundsDefaultPricingV2Plan();
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testCreateAndFetchDefaultPricingV2PlanAndNoMerchantSpecificPlan()
+    {
+        $this->createPricingPlan();
+
+        $this->fixtures->merchant->editPricingPlanId('1hDYlICobzOCYt');
+
+        $this->fixtures->pricing->createInstantRefundsDefaultPricingplan();
+
+        $this->fixtures->pricing->createInstantRefundsDefaultPricingV2Plan();
+
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                           ->setConstructorArgs([$this->app])
+                           ->setMethods(['getTreatment'])
+                           ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+                          ->will($this->returnCallback(
+                            function ($mid, $feature, $mode)
+                            {
+                                if ($feature === 'instant_refunds_default_pricing_v2')
+                                {
+                                    return 'on';
+                                }
+
+                                return 'off';
+                            }));
 
         $this->ba->proxyAuth();
 
