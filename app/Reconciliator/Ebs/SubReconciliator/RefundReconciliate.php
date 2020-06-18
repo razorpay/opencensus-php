@@ -12,7 +12,7 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
      * Row Header Names
      *******************/
     const COLUMN_REFUND_ID          = ['merchant_ref_no', 'merchant_refno'];
-    const COLUMN_REFUND_AMOUNT      = 'credit';
+    const COLUMN_REFUND_AMOUNT      = 'debit';
 
     protected function getRefundId($row)
     {

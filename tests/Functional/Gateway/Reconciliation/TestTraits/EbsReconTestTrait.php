@@ -228,7 +228,7 @@ trait EbsReconTestTrait
                 $output['tax'] = 0;
                 $output['net'] = $debit;
                 $output['debit'] = $debit;
-                $output['credit'] = $debit;
+                $output['credit'] = 0;
         }
 
         return array_map(function($amount)
