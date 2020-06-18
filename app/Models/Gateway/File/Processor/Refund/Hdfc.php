@@ -7,7 +7,6 @@ use RZP\Models\Payment;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
-use RZP\Services\NbPlus\Netbanking;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Payment\Refund\Constants as RefundConstants;
 
@@ -35,7 +34,7 @@ class Hdfc extends Base
             $formattedData[] = [
                 'Sr No'            => $index + 1,
                 'Transaction date' => $date,
-                'Bank reference #' => $this->fetchBankPaymentId($row),
+                'Bank reference #' => $row['gateway']['bank_payment_id'],
                 'Order #'          => $row['payment']['id'],
                 'Order Amount'     => $row['payment']['amount'] / 100,
                 'Refund Amount'    => $row['refund']['amount'] / 100,
@@ -127,15 +126,5 @@ class Hdfc extends Base
         }
 
         return $input;
-    }
-
-    protected function fetchBankPaymentId($data)
-    {
-        if ($data['payment']['cps_route'] === Payment\Entity::NB_PLUS_SERVICE)
-        {
-            return $data['gateway'][Netbanking::BANK_TRANSACTION_ID]; // payment through nbplus service
-        }
-
-        return $data['gateway']['bank_payment_id'];
     }
 }

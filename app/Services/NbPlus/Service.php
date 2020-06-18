@@ -39,7 +39,6 @@ class Service
       Payment\Gateway::NETBANKING_KVB       => Payment\Method::NETBANKING,
       Payment\Gateway::NETBANKING_INDUSIND  => Payment\Method::NETBANKING,
       Payment\Gateway::NETBANKING_ICICI     => Payment\Method::NETBANKING,
-      Payment\Gateway::NETBANKING_HDFC      => Payment\Method::NETBANKING,
     ];
 
     protected $baseUrl;
