@@ -112,7 +112,7 @@ export default class PaymentReceipt extends React.Component {
 
                 <div class="doc-links">
                   <a
-                    href="https://razorpay.com/docs/payment-pages/receipt-80-g/#pdf-receipt-to-customers"
+                    href="https://razorpay.com/docs/payment-pages/receipt-80g/#pdf-receipt-to-customers"
                     target="_blank"
                   >
                     View Sample Receipt <i class="i i-external-link" />

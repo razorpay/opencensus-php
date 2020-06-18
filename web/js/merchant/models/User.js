@@ -565,6 +565,10 @@ export default class User {
     return this.isFeatureEnabled('paymentlinks_v2');
   }
 
+  get isPaymentlinksV2CompatEnabled() {
+    return this.isFeatureEnabled('paymentlinks_v2_compat');
+  }
+
   get isLoansEnabled() {
     return this.isFeatureEnabled('loan');
   }

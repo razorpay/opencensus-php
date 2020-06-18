@@ -184,8 +184,20 @@ export const fetchBatchStatsForPLV2 = batchId =>
     url: `payment_links/${batchId}/batch`,
   });
 
-export const fetchBatchInvoices = batchId =>
-  merchantFetch(`invoices?batch_id=${batchId}`);
+export const fetchBatchInvoices = (batchId, isPaymentlinksV2CompatEnabled) => {
+  const queryParams = {
+    batch_id: batchId,
+  };
+
+  if (isPaymentlinksV2CompatEnabled) {
+    queryParams.type = 'link';
+  }
+
+  return merchantFetch({
+    url: 'invoices',
+    params: queryParams,
+  });
+};
 
 const fetchBatchPaymentLinks = batchId =>
   merchantFetch(`payment_links?source_id=${batchId}`);
@@ -273,7 +285,7 @@ export const fetchPaymentLinkBatchesDetails = params => {
     promises.push(fetchBatchPaymentLinks(id));
   } else {
     promises.push(fetchBatchStats(id));
-    promises.push(fetchBatchInvoices(id));
+    promises.push(fetchBatchInvoices(id, user.isPaymentlinksV2CompatEnabled));
   }
 
   params.with_config = '1';
