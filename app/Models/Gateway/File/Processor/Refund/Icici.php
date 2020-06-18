@@ -13,7 +13,7 @@ use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
 use RZP\Models\Terminal\Type;
 use RZP\Models\Gateway\File\Status;
-use RZP\Models\Base\PublicCollection;
+use RZP\Services\NbPlus\Netbanking;
 use RZP\Exception\GatewayFileException;
 use RZP\Mail\Gateway\RefundFile\Base as RefundFileMail;
 
@@ -155,7 +155,7 @@ class Icici extends Base
                     'Sr No'                 => $srNo,
                     'Payee_id'              => $row['terminal']['gateway_merchant_id'],
                     'SPID'                  => $row['terminal']['gateway_merchant_id2'],
-                    'Bank Reference No.'    => $row['gateway']['bank_payment_id'],
+                    'Bank Reference No.'    => $this->fetchBankPaymentId($row),
                     'Transaction Date'      => $date,
                     'Transaction Amount'    => $row['payment']['amount'] / 100,
                     'Refund Amount'         => $row['refund']['amount'] / 100,
@@ -179,7 +179,7 @@ class Icici extends Base
                     'Sr No'                 => $srNo,
                     'Payee_id'              => $row['terminal']['gateway_merchant_id'],
                     'SPID'                  => $row['terminal']['gateway_merchant_id2'],
-                    'Bank Reference No.'    => $row['gateway']['bank_payment_id'],
+                    'Bank Reference No.'    => $this->fetchBankPaymentId($row),
                     'Transaction Date'      => $date,
                     'Transaction Amount'    => $row['payment']['amount'] / 100,
                     'Refund Amount'         => $row['refund']['amount'] / 100,
@@ -191,6 +191,16 @@ class Icici extends Base
         }
 
         return $formattedData;
+    }
+
+    protected function fetchBankPaymentId($data)
+    {
+        if ($data['payment']['cps_route'] === Payment\Entity::NB_PLUS_SERVICE)
+        {
+            return $data['gateway'][Netbanking::BANK_TRANSACTION_ID]; // payment through nbplus service
+        }
+
+        return $data['gateway']['bank_payment_id'];
     }
 
     protected function formatDataForMail(array $data)

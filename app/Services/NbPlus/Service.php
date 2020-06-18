@@ -38,6 +38,7 @@ class Service
       Payment\Gateway::NETBANKING_ALLAHABAD => Payment\Method::NETBANKING,
       Payment\Gateway::NETBANKING_KVB       => Payment\Method::NETBANKING,
       Payment\Gateway::NETBANKING_INDUSIND  => Payment\Method::NETBANKING,
+      Payment\Gateway::NETBANKING_ICICI     => Payment\Method::NETBANKING,
     ];
 
     protected $baseUrl;
