@@ -2,7 +2,8 @@
 <head>
     <style>
         body {
-            margin: 40px 100px;
+            margin: 40px 80px;
+            font-family: Arial;
         }
 
         .invoice__title {
@@ -21,9 +22,9 @@
         }
 
         .invoice__details {
+            min-width: 260px;
             float: right;
-            width: 50%;
-            text-align: right;
+            text-align: left;
         }
 
         table {
@@ -41,12 +42,31 @@
             border-bottom: 1px solid grey;
         }
 
+        tr th:first-child {
+            padding-left: 10px;
+        }
+
+        tr td:first-child {
+            padding-left: 10px;
+        }
+
+        tr th:last-child {
+            text-align: right;
+            padding-right: 10px;
+        }
+
+        tr td:last-child {
+            text-align: right;
+            padding-right: 10px;
+        }
+
         .large-row {
-            line-height: 50px;
+            line-height: 40px;
         }
 
         tr.space-under > td {
-            padding-top: 20px;
+            padding-top: 15px;
+            padding-bottom: 15px;
         }
 
         .highlighted {
@@ -91,17 +111,19 @@
 <div class="clear"></div>
 <div>
     <div class="invoice__partner-details">
-        <div>Partner Name: {{ $merchant['name'] }}</div>
+        <strong>Partner Name: {{ $merchant['name'] }}</strong>
         <div>{{ $address  }}</div>
-        <div>PAN No: {{ $pan  }}</div>
+        @isset($pan)
+        <div>PAN No: {{ Str::upper($pan)  }}</div>
+        @endisset
         @isset($gstin)
         <div>GSTIN: {{ $gstin  }}</div>
         @endisset
     </div>
 
     <div class="invoice__details">
-        <div>Invoice No: {{ $invoice['id']  }}</div>
-        <div> Invoice Date: {{ $created_at  }}</div>
+        <div><strong>Invoice No: {{ $invoice['id']  }}</strong></div>
+        <div>Invoice Date: {{ $created_at  }}</div>
     </div>
 </div>
 
@@ -136,7 +158,7 @@
         <td>&nbsp;</td>
         <td><span>{{ $invoice['line_items'][0]['sub_total_spread'][0]  }}</span>&nbsp;<span>{{ $invoice['line_items'][0]['sub_total_spread'][1]  }}</span><span>.{{ $invoice['line_items'][0]['sub_total_spread'][2]  }}</span></td>
     </tr>
-    <tr>
+    <tr class="space-under">
         <td colspan=2>&nbsp;</td>
         <td>Sub Total</td>
         <td><span>{{ $invoice['line_items'][0]['sub_total_spread'][0]  }}</span>&nbsp;<span>{{ $invoice['line_items'][0]['sub_total_spread'][1]  }}</span><span>.{{ $invoice['line_items'][0]['sub_total_spread'][2]  }}</span></td>
@@ -148,11 +170,6 @@
         <td><span>{{ $tax['tax_amount_spread'][0]  }}</span>&nbsp;<span>{{ $tax['tax_amount_spread'][1]  }}</span><span>.{{ $tax['tax_amount_spread'][2]  }}</span></td>
     </tr>
     @endforeach
-    <tr class="space-under">
-        <td colspan=2>&nbsp;</td>
-        <td>Rounding</td>
-        <td>0</td>
-    </tr>
     <tr class="highlighted large-row">
         <td colspan=2>&nbsp;</td>
         <td>Total</td>
@@ -166,10 +183,12 @@
     <div class="text-sm">For any clarifications on the Invoice, please revert within 15 days of receipt of the Invoice.</div>
 </div>
 
+@if($tds_percentage > 0)
 <div class="text-sm">Commission will be settled after deducting the TDS percentage of {{ $tds_percentage }}%</div>
+@endif
 
 <div class="invoice__footnote text-sm">
-    Note: This is an auto generated invoice, no signature required.
+    <div>Note: This invoice is issued on behalf of {{ $merchant['name'] }}. This is an auto generated invoice, no signature required.</div>
 </div>
 </body>
 </html>

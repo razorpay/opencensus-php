@@ -132,7 +132,7 @@ class CommissionOnHoldClear extends Job
 
             $totalCommission = $totalCommissionWithTax - $totalTax;
 
-            $totalTds = $core->calculateTds($partner, $totalCommission);
+            list($totalTds) = $core->calculateTds($partner, $totalCommission);
 
             $summary['total_tax']        = $totalTax;
             $summary['total_commission'] = $totalCommission;
@@ -152,6 +152,8 @@ class CommissionOnHoldClear extends Job
                 $invoice->setStatus(Invoice\Status::PROCESSED);
 
                 $this->repoManager->saveOrFail($invoice);
+
+                CommissionInvoiceAction::dispatch($this->mode, $invoice->getStatus(), $invoice->getId());
             }
 
             // dispatch for settlement bucketing if at least one commission transaction on hold is cleared

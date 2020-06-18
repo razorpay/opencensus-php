@@ -20,6 +20,7 @@ use RZP\Models\Tax\Gst\GstTaxIdMap;
 use RZP\Jobs\CommissionInvoiceAction;
 use RZP\Jobs\CommissionInvoiceGenerate;
 use RZP\Mail\Merchant\CommissionInvoice;
+use RZP\Mail\Merchant\CommissionProcessed;
 use RZP\Mail\Merchant\CommissionOpsInvoice;
 use RZP\Models\Admin\Permission\Name as Permission;
 
@@ -127,13 +128,22 @@ class Core extends Base\Core
         Mail::queue($opsInvoice);
     }
 
+    public function sendCommissionProcessedMail(Entity $invoice, string $pdfPath)
+    {
+        $data = $this->getTemplateData($invoice, $pdfPath);
+
+        $commissionInvoice = new CommissionProcessed($data);
+
+        Mail::queue($commissionInvoice);
+    }
+
     public function getTemplateData(Entity $invoice, $pdfPath = null): array
     {
         $month = $invoice->getMonth();
         $year  = $invoice->getYear();
 
-        $fromTimestamp = Carbon::createFromDate($year, $month, 1)->startOfMonth()->getTimestamp();
-        $endTimestamp  = Carbon::createFromDate($year, $month, 1)->endOfMonth()->getTimestamp();
+        $fromTimestamp = Carbon::createFromDate($year, $month, 1, Timezone::IST)->startOfMonth()->getTimestamp();
+        $endTimestamp  = Carbon::createFromDate($year, $month, 1, Timezone::IST)->endOfMonth()->getTimestamp();
 
         $relations = ['lineItems', 'lineItems.taxes'];
         $invoice->load($relations);
@@ -141,10 +151,15 @@ class Core extends Base\Core
         $merchant      = $invoice->merchant;
         $tdsPercentage = (new Commission\Core)->getTdsPercentage($merchant);
 
-        $data = [
+        $pan   = $merchant->merchantDetail->getPromoterPan();
+        $pan   = (empty($pan) === true) ? null : $pan;
+        $gstin = $merchant->merchantDetail->getGstin();
+        $gstin = (empty($gstin) === true) ? null : $gstin;
+
+        $data  = [
             'merchant'                 => $invoice->merchant->toArray(),
-            'pan'                      => $merchant->merchantDetail->getPromoterPan(),
-            'gstin'                    => $merchant->merchantDetail->getGstin(),
+            'pan'                      => $pan,
+            'gstin'                    => $gstin,
             'address'                  => $merchant->getBusinessRegisteredAddressAsText(),
             'start_date'               => Carbon::createFromTimestamp($fromTimestamp, Timezone::IST)->format('d-M-y'),
             'end_date'                 => Carbon::createFromTimestamp($endTimestamp, Timezone::IST)->format('d-M-y'),
@@ -221,15 +236,17 @@ class Core extends Base\Core
 
         $newInvoice->setStatus(Status::APPROVED);
 
+        $details = (new Commission\Core)->fetchAggregateCommissionDetails($merchant,[Commission\Constants::INVOICE_ID => $invoice->getId()]);
+
         $dirtyData = [
             Entity::ID          => $invoice->getId(),
             Entity::MERCHANT_ID => $invoice->getMerchantId(),
-            Entity::MONTH => $invoice->getMonth(),
-            Entity::YEAR => $invoice->getYear(),
-            Entity::STATUS => $newInvoice->getStatus(),
-            Entity::GROSS_AMOUNT => $invoice->getGrossAmount(),
-            Entity::TAX_AMOUNT => $invoice->getTaxAmount(),
+            Entity::MONTH       => $invoice->getMonth(),
+            Entity::YEAR        => $invoice->getYear(),
+            Entity::STATUS      => $newInvoice->getStatus(),
         ];
+
+        $dirtyData = array_merge($dirtyData, $details);
 
         $this->app['workflow']
             ->setPermission($routePermission)

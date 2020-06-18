@@ -84,6 +84,14 @@ class CommissionInvoiceAction extends Job
         (new Invoice\Core)->sendCommissionMail($this->invoice, $pdfPath);
     }
 
+    protected function handleProcessed()
+    {
+        $core    = new Invoice\Core;
+        $pdfPath = $core->createInvoicePdfAndGetFilePath($this->invoice);
+
+        $core->sendCommissionProcessedMail($this->invoice, $pdfPath);
+    }
+
     protected function getHandlerForJobEvent(): string
     {
         $handler = 'handle' . studly_case($this->event);

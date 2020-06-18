@@ -137,7 +137,7 @@ class Core extends Base\Core
             $totalTax        = $commissionAggregate[Constants::TOTAL_TAX];
         }
 
-        $totalTds = $this->calculateTds($partner, $totalCommission);
+        list($totalTds, $tdsPercentage) = $this->calculateTds($partner, $totalCommission);
 
         $netAmount = $totalCommission + $totalTax - $totalTds;
 
@@ -146,14 +146,17 @@ class Core extends Base\Core
             Constants::TOTAL_TDS        => $totalTds,
             Constants::TOTAL_COMMISSION => $totalCommission,
             Constants::TOTAL_NET_AMOUNT => $netAmount,
+            Constants::TDS_PERCENTAGE   => ($tdsPercentage/100),
         ];
     }
 
-    public function calculateTds(Merchant\Entity $partner, int $totalCommission): int
+    public function calculateTds(Merchant\Entity $partner, int $totalCommission): array
     {
         $tdsPercentage = $this->getTdsPercentage($partner);
 
-        return ((int) round(($tdsPercentage * $totalCommission) / 10000));
+        $tds = (int) round(($tdsPercentage * $totalCommission) / 10000);
+
+        return [$tds, $tdsPercentage];
     }
 
     public function getTdsPercentage(Merchant\Entity $partner): int

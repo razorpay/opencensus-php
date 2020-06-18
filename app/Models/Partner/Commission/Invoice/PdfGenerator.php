@@ -60,6 +60,10 @@ class PdfGenerator extends Base\Core
             'zoom'              => 1,
             'ignoreWarnings'    => false,
             'encoding'          => 'UTF-8',
+            'margin-top'        => 10,
+            'margin-right'      => 0,
+            'margin-bottom'     => 0,
+            'margin-left'       => 0,
         ];
 
         $pdf = (new Pdf($options))->addPage($html);

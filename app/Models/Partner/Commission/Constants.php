@@ -30,6 +30,8 @@ class Constants
     const TOTAL_TDS        = 'total_tds';
     const TOTAL_NET_AMOUNT = 'total_net_amount';
     const COMPONENTS       = 'components';
+    const TDS              = 'tds';
+    const TDS_PERCENTAGE   = 'tds_percentage';
 
     const ADJUSTMENT_TDS_DESCRIPTION = 'Tds deduction on commission payout';
 
