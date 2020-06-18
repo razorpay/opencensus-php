@@ -2758,7 +2758,13 @@ class RefundTest extends TestCase
         $this->assertEquals(true, $fta['is_fts']);
         $this->assertEquals('m2p', $fta['channel']);
         $this->assertEquals('CT', $fta['mode']);
-        $this->assertEquals(Carbon::now()->getTimestamp(), $fta['initiate_at']);
+        $this->assertNotNull($fta['initiate_at']);
+
+        //
+        // Asserting that initiate_at is immediate and not a future date.
+        // 10 second leeway - to help avoid drone failures during peak hours
+        //
+        $this->assertLessThanOrEqual(10, abs(Carbon::now()->getTimestamp()-$fta['initiate_at']));
 
         $this->assertEquals('Test Merchant Refund ' . substr($payment['id'], 4), $fta['narration']);
 
