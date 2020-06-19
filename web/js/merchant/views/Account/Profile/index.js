@@ -306,9 +306,8 @@ export default class Profile extends Component {
       <div class="content-wrapper content-sm">
         <div class="profile-container">
           <Alert type="error" message={this.state.errors} showDismiss={false} />
-          <ShowWhen additionalCondition={user => user.isUser2FAEnabled}>
-            <User2FASettings />
-          </ShowWhen>
+
+          <User2FASettings />
 
           <div class="panel panel-default">
             {user.current && (

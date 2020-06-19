@@ -5,6 +5,7 @@ import { toggleUser2FaEnforcement } from 'merchant/reducers/team';
 import { updateSession } from 'merchant/reducers/session';
 
 import User from 'merchant/models/User';
+import ShowWhen from 'merchant/components/ShowWhen';
 
 import Toggle2FA from '../../components/TwoFAVerification/Toggle2FA';
 
@@ -58,10 +59,12 @@ function DescriptionForUser2Fa() {
         Add an extra layer of security to your account by using a one-time
         verification code in addition to your password each time you log in.
       </p>
-      <p>
-        <strong>Note:</strong> You can setup 2FA for your team from{' '}
-        <Link to="/team">manage team</Link> page
-      </p>
+      <ShowWhen additionalCondition={user => user.isAllowedTeamManagement}>
+        <p>
+          <strong>Note:</strong> You can setup 2FA for your team from{' '}
+          <Link to="/team">manage team</Link> page
+        </p>
+      </ShowWhen>
     </>
   );
 }
