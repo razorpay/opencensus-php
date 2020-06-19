@@ -268,60 +268,63 @@ export default class FileUpload extends React.Component {
         id={`Dropzone-${name}`}
         onDragLeave={isDocPreUploaded ? undefined : this.toggleDragWithFile}
       >
-        {!isDocPreUploaded && (multi || !files.length) && (
-          <label
-            class={classList(
-              'Dropzone-cavity',
-              this.state.isFileDraggedInside && 'Dropzone-cavity--highlight'
-            )}
-            for={`fileInput-${name}`}
-            onDrop={isDocPreUploaded ? undefined : this.handleDrop}
-            onDragOver={isDocPreUploaded ? undefined : this.handleDragOver}
-            onDragEnter={isDocPreUploaded ? undefined : this.toggleDragWithFile}
-          >
-            <div class={`Dropzone-content ${size}`}>
-              {children || (
-                <React.Fragment>
-                  <img
-                    class="Dropzone-file-icon"
-                    src={'/dist/css/assets/files/file-placeholder.svg'}
-                    alt=""
-                  />
-                  <div class="Dropzone-content-desc">
-                    <p class="Dropzone-content-desc--primary">
-                      Drop file here or{' '}
-                      <b class="text-primary">Click to Upload</b>{' '}
-                      {maxSize && (
-                        <React.Fragment>
-                          ({readableFileSize(maxSize)} Max)
-                        </React.Fragment>
-                      )}
-                    </p>
-                    {do {
-                      const acceptedFileTypes = this.getAcceptedFileTypesInfo();
-
-                      if (acceptedFileTypes && showAcceptInfo) {
-                        <p class="Dropzone-content-desc--secondary text-muted small-text">
-                          {acceptedFileTypes}
-                        </p>;
-                      }
-                    }}
-                  </div>
-                  <input
-                    type="file"
-                    id={`fileInput-${name}`}
-                    onChange={this.handleFileInputChange}
-                    accept={
-                      accept && accept.map(fileType => fileTypesMap[fileType])
-                    }
-                    disabled={disabled}
-                    hidden
-                  />
-                </React.Fragment>
+        {!isDocPreUploaded &&
+          (multi || !files.length) && (
+            <label
+              class={classList(
+                'Dropzone-cavity',
+                this.state.isFileDraggedInside && 'Dropzone-cavity--highlight'
               )}
-            </div>
-          </label>
-        )}
+              for={`fileInput-${name}`}
+              onDrop={isDocPreUploaded ? undefined : this.handleDrop}
+              onDragOver={isDocPreUploaded ? undefined : this.handleDragOver}
+              onDragEnter={
+                isDocPreUploaded ? undefined : this.toggleDragWithFile
+              }
+            >
+              <div class={`Dropzone-content ${size}`}>
+                {children || (
+                  <React.Fragment>
+                    <img
+                      class="Dropzone-file-icon"
+                      src={'/dist/css/assets/files/file-placeholder.svg'}
+                      alt=""
+                    />
+                    <div class="Dropzone-content-desc">
+                      <p class="Dropzone-content-desc--primary">
+                        Drop file here or{' '}
+                        <b class="text-primary">Click to Upload</b>{' '}
+                        {maxSize && (
+                          <React.Fragment>
+                            ({readableFileSize(maxSize)} Max)
+                          </React.Fragment>
+                        )}
+                      </p>
+                      {do {
+                        const acceptedFileTypes = this.getAcceptedFileTypesInfo();
+
+                        if (acceptedFileTypes && showAcceptInfo) {
+                          <p class="Dropzone-content-desc--secondary text-muted small-text">
+                            {acceptedFileTypes}
+                          </p>;
+                        }
+                      }}
+                    </div>
+                    <input
+                      type="file"
+                      id={`fileInput-${name}`}
+                      onChange={this.handleFileInputChange}
+                      accept={
+                        accept && accept.map(fileType => fileTypesMap[fileType])
+                      }
+                      disabled={disabled}
+                      hidden
+                    />
+                  </React.Fragment>
+                )}
+              </div>
+            </label>
+          )}
         {!!(isDocPreUploaded || files.length) && (
           <div
             class={classList(

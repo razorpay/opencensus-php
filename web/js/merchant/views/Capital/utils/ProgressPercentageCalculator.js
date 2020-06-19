@@ -17,14 +17,10 @@ const getApplicationProgressPercentage = currentState => {
 
   const numerator = nonFailedStates.indexOf(currentState);
   const denominator = nonFailedStates.length;
-  const percentage = (numerator / (denominator - 1)) * 100;
+  const percentage = numerator / (denominator - 1) * 100;
   return !percentage
     ? 0
-    : percentage > 0
-    ? percentage > 100
-      ? 100
-      : Math.ceil(percentage)
-    : 0;
+    : percentage > 0 ? (percentage > 100 ? 100 : Math.ceil(percentage)) : 0;
 };
 
 export default getApplicationProgressPercentage;

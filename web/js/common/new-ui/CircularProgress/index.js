@@ -21,12 +21,10 @@ export default class CircularProgressBar extends React.Component {
       size > 50
         ? radius * Math.PI * 2
         : progress > 20
-        ? progress === 100
-          ? radius * Math.PI * 2
-          : radius * Math.PI * 2 - 4
-        : radius * Math.PI * 2;
+          ? progress === 100 ? radius * Math.PI * 2 : radius * Math.PI * 2 - 4
+          : radius * Math.PI * 2;
     // Scale 100% coverage overlay with the actual percent
-    const dashOffset = dashArray - (dashArray * progress) / 100;
+    const dashOffset = dashArray - dashArray * progress / 100;
 
     return (
       <div

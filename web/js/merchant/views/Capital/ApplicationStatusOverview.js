@@ -92,12 +92,8 @@ class ApplicationStatusOverview extends Component {
 
     const classList = [
       ...(isCurrentStateGroup
-        ? isFinalState
-          ? ['completed']
-          : ['active', 'highlight']
-        : this.stepFound
-        ? ['not_started']
-        : ['completed']),
+        ? isFinalState ? ['completed'] : ['active', 'highlight']
+        : this.stepFound ? ['not_started'] : ['completed']),
       ...(isPendingState ? ['pending'] : []),
       ...(isErrorState ? ['error'] : []),
     ];

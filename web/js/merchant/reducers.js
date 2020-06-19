@@ -46,6 +46,8 @@ import taxesReducer from 'merchant/reducers/taxes';
 import tokenReducer from 'merchant/reducers/token';
 import onboardingReducer from 'merchant/reducers/onboarding';
 import remindersReducer from 'merchant/reducers/reminders';
+import commissionInvoices from 'merchant/reducers/commissionInvoices/list';
+import commissionInvoice from 'merchant/reducers/commissionInvoices/details';
 
 import {
   refundBatchesReducer,
@@ -164,5 +166,7 @@ export default combineReducers({
   invitations: invitationsReducer,
   onboarding: onboardingReducer,
   reminders: remindersReducer,
+  commissionInvoices: commissionInvoices,
+  commissionInvoice: commissionInvoice,
   loanApplicationDetails: LoanApplicationReducer,
 });

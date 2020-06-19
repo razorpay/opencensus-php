@@ -11,6 +11,7 @@ import { isPresent } from 'common/utils/rzp-utils';
 
 import Transactional from './Transactional/List';
 import Daily from './Daily/List';
+import CommissionInvoicesList from './Invoices/List';
 
 export default class EarningsContainer extends Component {
   state = {
@@ -49,6 +50,13 @@ export default class EarningsContainer extends Component {
               Transactional Details
             </NavLink>
           </ShowWhen>
+          <ShowWhen
+            additionalCondition={user => user.isCommissionInvoicesEnabled}
+          >
+            <NavLink exact to="/partners/earnings/invoices">
+              Invoices
+            </NavLink>
+          </ShowWhen>
         </header>
         <content>
           <ShowWhen
@@ -80,6 +88,12 @@ export default class EarningsContainer extends Component {
             <ShowWhenRoute
               path="/partners/earnings/daily"
               component={Daily}
+              exact
+            />
+            <ShowWhenRoute
+              path="/partners/earnings/invoices"
+              component={CommissionInvoicesList}
+              additionalCondition={user => user.isCommissionInvoicesEnabled}
               exact
             />
           </Switch>

@@ -26,17 +26,20 @@ const Banner = React.forwardRef(
         className={`banner-message-wrapper ${type && `${type} border-left`}`}
       >
         <div className="banner-status-title-wrapper">
-          {type && type === 'success' && (
-            <i className={`i i-check-circle ${type} status-icon`} />
-          )}
-          {type && type === 'pending' && (
-            <div class="status-icon icon-pending">
-              <img src="/dist/css/assets/capital/pending.svg" />
-            </div>
-          )}
-          {type && type === 'error' && (
-            <i className={`i i-info-circle ${type} status-icon`} />
-          )}
+          {type &&
+            type === 'success' && (
+              <i className={`i i-check-circle ${type} status-icon`} />
+            )}
+          {type &&
+            type === 'pending' && (
+              <div class="status-icon icon-pending">
+                <img src="/dist/css/assets/capital/pending.svg" />
+              </div>
+            )}
+          {type &&
+            type === 'error' && (
+              <i className={`i i-info-circle ${type} status-icon`} />
+            )}
           {loading ? (
             <PlaceholderLoader />
           ) : (

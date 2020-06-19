@@ -8,8 +8,8 @@ function ApplicationOverviewLoadingSkeleton() {
     <div className="status-overview">
       <div className="loan-application-overview-header flex">
         <div class="section">
-          <h4 className="title no-margin PlaceholderLoader"></h4>
-          <p className="description text--secondary PlaceholderLoader"></p>
+          <h4 className="title no-margin PlaceholderLoader" />
+          <p className="description text--secondary PlaceholderLoader" />
         </div>
         <div className="loan-application-progress-wrapper flex">
           <CircularProgress progress={0} size={22} showPercentage={false} />

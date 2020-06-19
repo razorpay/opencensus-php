@@ -1,0 +1,147 @@
+import React from 'react';
+import { connect } from 'react-redux';
+import { Field } from 'redux-form';
+import { Link } from 'react-router-dom';
+
+import ListContainer from 'merchant/containers/ListContainer';
+import ListFilter from 'merchant/components/ListFilter';
+import EmptyList from 'merchant/components/EmptyList';
+import { CommissionInvoiceStatusLabel } from 'merchant/components/StatusLabel';
+import DataTable from 'common/ui/Table/DataTable';
+import Amount from 'common/ui/Amount';
+import Time from 'common/ui/Time';
+import Pager from 'common/ui/Pager';
+import Alert from 'common/ui/Forms/Alert';
+import Popover, { PopoverBody } from 'common/ui/Popover';
+import ProcessInvoice from './ProcessInvoice';
+
+import { fetchCommissionInvoices } from 'merchant/reducers/commissionInvoices/list';
+
+const Columns = {
+  invoiceId: {
+    title: 'Invoice ID',
+    value: item => (
+      <Link to={`/partners/earnings/invoices/${item.id}`}>{item.id}</Link>
+    ),
+  },
+
+  createdDate: {
+    title: 'Created Date',
+    value: item => <Time value={item.created_at} />,
+  },
+
+  status: {
+    title: 'Status',
+    value: item => <CommissionInvoiceStatusLabel status={item.status} />,
+  },
+
+  amount: {
+    title: (
+      <>
+        <span>Amount &nbsp;</span>
+        <small className="help-content">
+          <i class="i i-info-circle" />
+          <Popover align="right" theme="dark">
+            <PopoverBody>
+              <div>Amount will be paid after TDS has been deducted.</div>
+            </PopoverBody>
+          </Popover>
+        </small>
+      </>
+    ),
+    value: item => <Amount value={item.gross_amount} currency={'INR'} />,
+  },
+
+  ProcessInvoice: {
+    title: '',
+    value: item =>
+      item.status === 'issued' && (
+        <ProcessInvoice commissionInvoice={item} className="btn-xs" />
+      ),
+  },
+};
+
+@connect(state => ({ ...state.commissionInvoices }), {
+  fetchCommissionInvoices,
+})
+class CommissionInvoicesList extends ListContainer {
+  fetchEntityList(params) {
+    return this.props.fetchCommissionInvoices(params);
+  }
+
+  render() {
+    const status = this.state.status;
+    const { loading, commissionInvoices } = this.props;
+
+    return (
+      <div class="content-wrapper">
+        <ListFilter
+          form="CommissionInvoicesListFilter"
+          count={this.state.count}
+        >
+          <div class="form-group list-filter-item">
+            <label>Invoice Status</label>
+            <Field
+              name="status"
+              component="select"
+              class="form-control input-sm"
+            >
+              <option value="">All</option>
+              <option value="issued">Issued</option>
+              <option value="under_review">Under Review</option>
+              <option value="processed">Processed</option>
+            </Field>
+          </div>
+
+          <div class="form-group list-filter-item">
+            <label>Invoice Id</label>
+            <Field name="id" component="input" class="form-control input-sm" />
+          </div>
+        </ListFilter>
+
+        <Alert type={status.type} message={status.message} />
+
+        <DataTable
+          loading={loading}
+          items={commissionInvoices}
+          title="CommissionInvoicesList"
+          columns={[
+            Columns.invoiceId,
+            Columns.amount,
+            Columns.createdDate,
+            Columns.status,
+            Columns.ProcessInvoice,
+          ]}
+          EmptyComponent={EmptyListComponent}
+        />
+
+        <Pager
+          count={this.state.count}
+          skip={this.state.skip}
+          length={this.props.commissionInvoices.length}
+          onClick={params => {
+            this.paginate(params);
+          }}
+        />
+      </div>
+    );
+  }
+}
+
+function EmptyListComponent() {
+  return (
+    <EmptyList
+      description={
+        <React.Fragment>
+          <div>You don't have any invoices yet!</div>
+          <div>
+            Invoices for your commissions will show up here on 3rd of every
+            month!
+          </div>
+        </React.Fragment>
+      }
+    />
+  );
+}
+
+export default CommissionInvoicesList;

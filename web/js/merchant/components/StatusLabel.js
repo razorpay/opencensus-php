@@ -115,6 +115,13 @@ export const internationalStatusMap = {
   enabled: 'label-success',
 };
 
+export const commissionInvoiceStatusMap = {
+  issued: 'label-muted',
+  under_review: 'label-pending',
+  approved: 'label-info',
+  processed: 'label-success',
+};
+
 const entityMap = {
   payment: paymentStatusMap,
   refund: refundStatusMap,
@@ -131,6 +138,7 @@ const entityMap = {
   token: tokenStatusMap,
   offer: offerStatusMap,
   international: internationalStatusMap,
+  commissionInvoice: commissionInvoiceStatusMap,
 };
 
 export const InvoiceStatusLabel = StatusLabel(invoiceStatusMap);
@@ -148,5 +156,8 @@ export const TokenStatusLabel = StatusLabel(tokenStatusMap);
 export const OfferStatusLabel = StatusLabel(offerStatusMap);
 export const RefundStatusLabel = StatusLabel(refundStatusMap);
 export const InternationalStatusLabel = StatusLabel(internationalStatusMap);
+export const CommissionInvoiceStatusLabel = StatusLabel(
+  commissionInvoiceStatusMap
+);
 
 export default item => StatusLabel(entityMap[item.entity])(item);

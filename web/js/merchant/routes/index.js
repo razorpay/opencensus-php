@@ -26,6 +26,7 @@ import DisputeDetails from 'merchant/views/Transactions/Disputes/Details';
 import SubmerchantDetails from 'merchant/views/PartnerDashboard/SubMerchant/Details';
 import EarningTransactionalDetails from 'merchant/views/PartnerDashboard/Earnings/Transactional/Details';
 import EarningDailyDetails from 'merchant/views/PartnerDashboard/Earnings/Daily/Details';
+import CommissionInvoiceDetails from 'merchant/views/PartnerDashboard/Earnings/Invoices/Details';
 import SubventionTransactionalDetails from 'merchant/views/PartnerDashboard/Subvention/Transactional/Details';
 import SubventionDailyDetails from 'merchant/views/PartnerDashboard/Subvention/Daily/Details';
 import RegistrationLinkDetails from 'merchant/views/Subscriptions/RegistrationLinks/Details';
@@ -145,6 +146,13 @@ const entityDetailsMap = {
     component: SubventionDailyDetails,
     additionalCondition: user =>
       user.isAllowedView('earnings') && user.isHavingSubventionConfigs,
+  },
+  '/partners/earnings/invoices/:id': {
+    component: CommissionInvoiceDetails,
+    additionalCondition: user =>
+      user.isAllowedView('earnings') &&
+      user.isCommissionInvoicesEnabled &&
+      user.isHavingPartnerConfigs,
   },
   '/disputes/:id(disp_.+)': {
     component: DisputeDetails,
