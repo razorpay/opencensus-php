@@ -5791,3 +5791,6 @@ ALTER TABLE upi_transfers
 
 ALTER TABLE merchant_details
     ADD COLUMN `cin_verification_status` varchar(30) DEFAULT NULL;
+
+ALTER TABLE webhooks
+    ADD COLUMN deleted_at INTEGER;
