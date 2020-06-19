@@ -877,6 +877,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::BANK_TRANSFER, $bankTransfer);
     }
 
+    public function setPhonepeSwitch(bool $phonepeSwitch)
+    {
+        $this->setAttribute(self::PHONEPE_SWITCH, $phonepeSwitch);
+    }
+
     public function setEmi($emi)
     {
         assertTrue($this->isCardEnabled(), "Cannot enable emi without Card method");

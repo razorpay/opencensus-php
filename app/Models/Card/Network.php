@@ -22,10 +22,10 @@ class Network
     const UNKNOWN = 'UNKNOWN';
 
     /**
-     * Amex disabled by default
-     * Bin => 1111110
+     * | BAJAJ 0| RUPAY 1| JCB 0| Visa 1| MAES 1| MC 1| DICL 0| AMEX 0|
+     * Bin => 1011100
      */
-    const DEFAULT_CARD_NETWORKS = 126;
+    const DEFAULT_CARD_NETWORKS = 92;
 
     public static $fullName = [
         self::AMEX    => 'American Express',

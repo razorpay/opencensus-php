@@ -9,6 +9,7 @@ use Carbon\Carbon;
 use RZP\Constants\Mode;
 use RZP\Constants\Timezone;
 use RZP\Models\User\Role;
+use RZP\Models\Card\Network;
 use RZP\Models\Batch\Header;
 use Razorpay\OAuth\Application;
 use RZP\Mail\User\MappedToAccount;
@@ -169,15 +170,31 @@ class MerchantCreateTest extends TestCase
         $methods = $this->getEntityById('methods', '1X4hRFHFx4UiXt', true);
 
         $expectedMethods = [
-            'amex'          => true,
+            'amex'          => false,
             'mobikwik'      => true,
             'paytm'         => false,
             'jiomoney'      => true,
             'airtelmoney'   => true,
             'paylater'      => true,
+            'phonepeswitch' => true, 
         ];
 
         $this->assertArraySelectiveEquals($expectedMethods, $methods);
+
+        $cardNetworks = $methods[Entity::CARD_NETWORKS];
+
+        $expectedCardNetworks =  [
+            Network::BAJAJ  =>  0,
+            Network::RUPAY  =>  1,
+            Network::JCB    =>  0,
+            Network::VISA   =>  1,
+            Network::MAES   =>  1,
+            Network::MC     =>  1,
+            Network::DICL   =>  0,
+            Network::AMEX   =>  0,
+        ];
+
+        $this->assertArraySelectiveEquals($expectedCardNetworks, $cardNetworks);
     }
 
     protected function checkMerchantDetails()

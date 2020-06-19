@@ -372,9 +372,9 @@ class Core extends Base\Core
                 $methods->setAirtelmoney(true);
                 $methods->setAmazonpay(false);
                 $methods->setBankTransfer(true);
-                $methods->setAmex(true);
                 $methods->setJiomoney(true);
                 $methods->setPayLater(true);
+                $methods->setPhonepeSwitch(true); 
                 // Initializing Disabled bank with empty array
                 $methods->setDisabledBanks([]);
             }
