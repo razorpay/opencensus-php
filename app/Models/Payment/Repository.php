@@ -1193,9 +1193,12 @@ class Repository extends Base\Repository
         $rawCondition = rtrim($rawCondition, ',"');
         $rawCondition .= ')';
 
+        $nowMinus3Days = Carbon::today(Timezone::IST)->subDays(3)->getTimestamp();
+
         $query =  $this->newQueryWithConnection($this->getSlaveConnection())
                        ->whereRaw($rawCondition)
                        ->where(Entity::GATEWAY, $gateway)
+                       ->where(Entity::CREATED_AT, '>=', $nowMinus3Days)
                        ->select(Entity::ID)
                        ->get();
 
