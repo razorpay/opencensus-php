@@ -84,6 +84,7 @@ use RZP\Base\Database\Connectors\MySqlConnector;
  * @property Models\User\Repository                             $user
  * @property Models\Transfer\Repository                         $transfer
  */
+
 class RepositoryManager extends Illuminate\Support\Manager
 {
     public function __construct($app)

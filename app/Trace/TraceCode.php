@@ -2991,6 +2991,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     //Exception message while scrubbing user sensitive details in banking routes.
     const KEYS_BASED_SCRUBBING_BANKING_INFO_FAILURE_EXCEPTION = 'KEYS_BASED_SCRUBBING_BANKING_INFO_FAILURE_EXCEPTION';
 
+    const PROMOTION_EVENT_CREATE_REQUEST  = 'PROMOTION_EVENT_CREATE_REQUEST';
+    const PROMOTION_EVENT_CREATE_RESPONSE = 'PROMOTION_EVENT_CREATE_RESPONSE';
 
     //Payout downtime details
     const PAYOUT_DOWNTIME_CREATE                              = 'PAYOUT_DOWNTIME_CREATE';

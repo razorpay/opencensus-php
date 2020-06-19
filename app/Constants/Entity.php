@@ -349,9 +349,9 @@ class Entity
     const PAYMENTS_UPI_VPA_BANK_ACCOUNT = 'payments_upi_vpa_bank_account';
     const CONFIG                        = 'config';
 
+    const PROMOTION_EVENT = 'promotion_event';
     //payout downtime
     const PAYOUT_DOWNTIMES              = Table::PAYOUT_DOWNTIMES;
-
 
     /**
      * Defines a map of entites which are currently
@@ -672,7 +672,7 @@ class Entity
         self::MERCHANT_FRESHDESK_TICKETS    => \RZP\Models\Merchant\FreshdeskTicket::class,
 
         self::CONFIG                        => \RZP\Models\Payment\Config::class,
-
+        self::PROMOTION_EVENT               => \RZP\Models\Promotion\Event::class,
         self::PAYOUT_DOWNTIMES              => \RZP\Models\PayoutDowntime::class,
     ];
 
@@ -733,6 +733,7 @@ class Entity
 
         self::PAYMENT_DOWNTIME       => \RZP\Models\Payment\Downtime::class,
         self::BANKING_ACCOUNT_STATE  => \RZP\Models\BankingAccount\State::class,
+        self::PROMOTION_EVENT        => \RZP\Models\Promotion\Event::class,
     ];
 
     protected static $externalServiceClass = [

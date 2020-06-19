@@ -1717,13 +1717,13 @@ class ErrorCode
     //typeform Error codes
 
     const BAD_REQUEST_MERCHANT_ID_NOT_PRESENT                                       = 'BAD_REQUEST_MERCHANT_ID_NOT_PRESENT';
-
     const SERVER_ERROR_PAYMENT_LINK_SERVICE_FAILURE                                 = 'SERVER_ERROR_PAYMENT_LINK_SERVICE_FAILURE';
     const BAD_REQUEST_INVALID_WEBSITE                                               = 'BAD_REQUEST_INVALID_WEBSITE';
 
     // Salesforce Service
     const SERVER_ERROR_SALESFORCE_SERVICE_ERROR                                     = 'SERVER_ERROR_SALESFORCE_SERVICE_ERROR';
 
+    const BAD_REQUEST_ANOTHER_PROMOTION_EVENT_ALREADY_EXISTS                        = 'BAD_REQUEST_ANOTHER_PROMOTION_EVENT_ALREADY_EXISTS';
     const BAD_REQUEST_OTP_GENERATE_FAILURE                                          = 'BAD_REQUEST_OTP_GENERATE_FAILURE';
     const BAD_REQUEST_OTP_GENERATE_ALREADY_PROCESSED                                = 'BAD_REQUEST_OTP_GENERATE_ALREADY_PROCESSED';
     const BAD_REQUEST_INVALID_CHARGE_ACCOUNT                                        = 'BAD_REQUEST_INVALID_CHARGE_ACCOUNT';

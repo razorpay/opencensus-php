@@ -1771,6 +1771,7 @@ class Route
 
         //cron job to retry penny testing for initiated case
         'retry_penny_testing_cron'                => ['post',      'merchants/retry_penny_testing',                           'MerchantController@retryPennyTestingCron'                 ],
+        'create_promotions_events'                => ['post',      'promotions/events',                                        'PromotionEventController@create'],
 
 
         //payout downtime methods
@@ -3345,9 +3346,9 @@ class Route
         'create_payment_config_admin',
         'update_payment_config_admin',
         'admin_fetch_fund_account_validate',
+        'create_promotions_events',
 
-
-        // Banking webhook Stork
+       // Banking webhook Stork
         'webhook_stork_create_banking_bulk',
 
         //payout downtime
@@ -4045,6 +4046,7 @@ class Route
         'update_payment_config_admin'               => '*',
         'admin_fetch_fund_account_validate'         => '*',
 
+        'create_promotions_events'                  => Permission::CREATE_PROMOTION_EVENT,
         'fee_recovery_payout_admin'                 => Permission::PROCESS_FEE_RECOVERY,
         'fee_recovery_payout_schedule_task'         => Permission::ASSIGN_FEE_RECOVERY_SCHEDULE,
 

@@ -886,6 +886,9 @@ return [
             Permission::PROCESS_FEE_RECOVERY => [
                 'assignable' => true,
             ],
+            Permission::CREATE_PROMOTION_EVENT => [
+                'assignable' => true
+            ],
             Permission::ASSIGN_FEE_RECOVERY_SCHEDULE => [
                 'assignable' => true,
             ],
