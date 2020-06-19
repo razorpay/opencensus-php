@@ -105,13 +105,11 @@ export default class CongfigurationContainer extends Component {
       this.props.location.hash === '#instantfee' &&
       !this.props.refund_pricing.not_loaded
     ) {
-      if (!this.is_hash_loaded_once) {
-        this.props.openModal({
-          component: <InstantRefundFee pricing={this.props.refund_pricing} />,
-          size: 'small',
-        });
-        this.is_hash_loaded_once = true;
-      }
+      this.props.openModal({
+        component: <InstantRefundFee pricing={this.props.refund_pricing} />,
+        size: 'small',
+      });
+      this.resetHash();
     }
   };
 
