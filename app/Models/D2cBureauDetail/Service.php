@@ -226,6 +226,10 @@ class Service extends Base\Service
 
         $bureauDetail = $this->core()->getOrCreate($merchantDetails, $this->merchant, $this->user, $data);
 
+        $bureauDetail->edit($data);
+
+        $this->repo->saveOrFail($bureauDetail);
+
         $this->user->validateInput('verifyOtp', [
             'otp'               => $input['otp'],
             'token'             => $input['token'],
