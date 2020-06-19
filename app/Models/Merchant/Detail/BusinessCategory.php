@@ -273,7 +273,8 @@ class BusinessCategory
             Sub::CONSTRUCTION_MATERIALS,
             Sub::ACCESSORY_AND_APPAREL_STORES,
             Sub::SECOND_HAND_STORES,
-            Sub::FUEL_DEALERS
+            Sub::FUEL_DEALERS,
+            sub::FURNITURE_AND_HOME_FURNISHING_STORE,
         ],
 
         self::FOOD => [
@@ -294,6 +295,7 @@ class BusinessCategory
             Sub::CONSULTING_AND_OUTSOURCING,
             Sub::WEB_DEVELOPMENT,
             Sub::TECHNICAL_SUPPORT,
+            Sub::DATA_PROCESSING,
         ],
 
         self::GAMING => [
@@ -410,6 +412,8 @@ class BusinessCategory
             Sub::TRANSPORTATION_SERVICES,
             Sub::ELECTRIC_RAZOR_STORES,
             Sub::SERVICE_STATIONS,
+            sub::PHOTOGRAPHIC_STUDIO,
+            sub::PROFESSIONAL_SERVICES,
         ],
 
         self::HOUSING => [
@@ -437,6 +441,7 @@ class BusinessCategory
             Sub::AUTOMOBILE_ASSOCIATIONS_AND_CLUBS,
             Sub::POLITICAL_ORGANIZATIONS,
             Sub::COUNTRY_AND_ATHLETIC_CLUBS,
+            Sub::ASSOCIATIONS_AND_MEMBERSHIP,
         ],
 
         self::OTHERS => [

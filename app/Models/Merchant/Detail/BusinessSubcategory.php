@@ -150,10 +150,28 @@ class BusinessSubcategory
     const WEB_DEVELOPMENT                 = 'web_development';
     const WHOLESALE                       = 'wholesale';
 
+    const  AUTOMOBILE_PARTS_AND_EQUIPEMENTS                   = 'automobile_parts_and_equipements';
+    const  COMPUTERS_PERIPHERAL_EQUIPMENT_SOFTWARE            = 'computers_peripheral_equipment_software';
+    const  MEDICAL_EQUIPMENT_AND_SUPPLY_STORES                = 'medical_equipment_and_supply_stores';
+    const  INDUSTRIAL_SUPPLIES                                = 'industrial_supplies';
+    const  JEWELLERY_AND_WATCH_STORES                         = 'jewellery_and_watch_stores';
+    const  AUTOMOBILE_AND_TRUCK_DEALERS                       = 'automobile_and_truck_dealers';
+    const  SHOE_STORES_RETAIL                                 = 'shoe_stores_retail';
+    const  ACCESSORY_AND_APPAREL_STORES                       = 'accessory_and_apparel_stores';
+    const  FURNITURE_AND_HOME_FURNISHING_STORE                = 'furniture_and_home_furnishing_store';
+    const  COSMETIC_STORES                                    = 'cosmetic_stores';
+    const  RECREATIONAL_AND_SPORTING_CAMPS                    = 'recreational_and_sporting_camps';
+    const  PHOTOGRAPHIC_STUDIO                                = 'photographic_studio';
+    const  AUTOMOBILE_RENTALS                                 = 'automobile_rentals';
+    const  HEALTH_PRACTITIONERS_MEDICAL_SERVICES              = 'health_practitioners_medical_services';
+    const  DATA_PROCESSING                                    = 'data_processing';
+    const  PROFESSIONAL_SERVICES                              = 'professional_services';
+    const  ASSOCIATIONS_AND_MEMBERSHIP                        = 'associations_and_membership';
+
     //new business_subcategory
+    const  AUTOMOBILE_ASSOCIATIONS_AND_CLUBS                  = 'automobile_associations_and_clubs';
     const  CONSTRUCTION_SERVICES                              = 'construction_services';
     const  STAMPS_AND_COINS_STORES                            = 'stamps_and_coins_stores';
-    const  AUTOMOBILE_PARTS_AND_EQUIPEMENTS                   = 'automobile_parts_and_equipements';
     const  VOCATIONAL_AND_TRADE_SCHOOLS                       = 'vocational_and_trade_schools';
     const  SPORTING_CLUBS                                     = 'sporting_clubs';
     const  ARCHITECTURAL_SERVICES                             = 'architectural_services';
@@ -197,7 +215,6 @@ class BusinessSubcategory
     const  MEN_AND_BOYS_CLOTHING_STORES                       = 'men_and_boys_clothing_stores';
     const  NURSING_CARE_FACILITIES                            = 'nursing_care_facilities';
     const  DIRECT_MARKETING                                   = 'direct_marketing';
-    const  AUTOMOBILE_ASSOCIATIONS_AND_CLUBS                  = 'automobile_associations_and_clubs';
     const  VETERINARY_SERVICES                                = 'veterinary_services';
     const  PAINT_SUPPLY_STORES                                = 'paint_supply_stores';
     const  AFFLIATED_AUTO_RENTAL                              = 'affliated_auto_rental';
@@ -205,16 +222,12 @@ class BusinessSubcategory
     const  AIRPORT_FLYING_FIELDS                              = 'airport_flying_fields';
     const  TIRE_RETREADING_AND_REPAIR_SHOPS                   = 'tire_retreading_and_repair_shops';
     const  TELEVISION_CABLE_SERVICES                          = 'television_cable_services';
-    const  RECREATIONAL_AND_SPORTING_CAMPS                    = 'recreational_and_sporting_camps';
     const  AUTOMOTIVE_PARTS                                   = 'automotive_parts';
-    const  JEWELLERY_AND_WATCH_STORES                         = 'jewellery_and_watch_stores';
     const  AUTO_STORE_HOME_SUPPLY_STORES                      = 'auto_store_home_supply_stores';
     const  TENT_STORES                                        = 'tent_stores';
-    const  MEDICAL_EQUIPMENT_AND_SUPPLY_STORES                = 'medical_equipment_and_supply_stores';
     const  AGRICULTURAL_COOPERATIVES                          = 'agricultural_cooperatives';
     const  PETROLEUM_AND_PETROLEUM_PRODUCTS                   = 'petroleum_and_petroleum_products';
     const  DEPARTMENT_STORES                                  = 'department_stores';
-    const  SHOE_STORES_RETAIL                                 = 'shoe_stores_retail';
     const  CARPENTRY_CONTRACTORS                              = 'carpentry_contractors';
     const  MONEYSEND_FUNDING                                  = 'moneysend_funding';
     const  WRECKING_AND_SALVAGING_SERVICES                    = 'wrecking_and_salvaging_services';
@@ -266,7 +279,6 @@ class BusinessSubcategory
     const  RECREATIONAL_CAMPS                                 = 'recreational_camps';
     const  PODIATRISTS_AND_CHIROPODISTS                       = 'podiatrists_and_chiropodists';
     const  TAX_PREPARATION_SERVICES                           = 'tax_preparation_services';
-    const  COSMETIC_STORES                                    = 'cosmetic_stores';
     const  HOME_FURNISHING_STORES                             = 'home_furnishing_stores';
     const  BRIDGE_AND_ROAD_TOLLS                              = 'bridge_and_road_tolls';
     const  TELECOMMUNICATION_EQUIPMENT_STORES                 = 'telecommunication_equipment_stores';
@@ -290,7 +302,6 @@ class BusinessSubcategory
     const  AUTOMOTIVE_PAINT_SHOPS                             = 'automotive_paint_shops';
     const  DURABLE_GOODS_STORES                               = 'durable_goods_stores';
     const  FUR_SHOPS                                          = 'fur_shops';
-    const  INDUSTRIAL_SUPPLIES                                = 'industrial_supplies';
     const  MOTORCYCLE_SHOPS_AND_DEALERS                       = 'motorcycle_shops_and_dealers';
     const  CHILDREN_AND_INFANTS_WEAR_STORES                   = 'children_and_infants_wear_stores';
     const  CORRESPONDENCE_SCHOOLS                             = 'correspondence_schools';
@@ -316,10 +327,7 @@ class BusinessSubcategory
     const  OPHTHALMOLOGISTS                                   = 'ophthalmologists';
     const  BOAT_RENTALS                                       = 'boat_rentals';
     const  PERSONAL_SHOPPERS_AND_SHOPPING_CLUBS               = 'personal_shoppers_and_shopping_clubs';
-    const  COMPUTERS_PERIPHERAL_EQUIPMENT_SOFTWARE            = 'computers_peripheral_equipment_software';
     const  DOOR_TO_DOOR_SALES                                 = 'door_to_door_sales';
-    const  AUTOMOBILE_AND_TRUCK_DEALERS                       = 'automobile_and_truck_dealers';
-    const  AUTOMOBILE_RENTALS                                 = 'automobile_rentals';
     const  TRAVEL_RELATED_DIRECT_MARKETING                    = 'travel_related_direct_marketing';
     const  LOTTERY_AND_BETTING                                = 'lottery_and_betting';
     const  DIGITAL_GOODS                                      = 'digital_goods';
@@ -348,9 +356,7 @@ class BusinessSubcategory
     const  CLOTHING_RENTAL_STORES                             = 'clothing_rental_stores';
     const  TRANSPORTATION                                     = 'transportation';
     const  GOVERMENT_POSTAL_SERVICES                          = 'goverment_postal_services';
-    const  HEALTH_PRACTITIONERS_MEDICAL_SERVICES              = 'health_practitioners_medical_services';
     const  CONSTRUCTION_MATERIALS                             = 'construction_materials';
-    const  ACCESSORY_AND_APPAREL_STORES                       = 'accessory_and_apparel_stores';
     const  TESTING_LABORATORIES                               = 'testing_laboratories';
     const  DOCTORS                                            = 'doctors';
     const  CONTRACTORS                                        = 'contractors';
@@ -489,6 +495,7 @@ class BusinessSubcategory
         self::WEAPONS_AND_AMMUNITIONS         => 'Weapons and Ammunitions',
         self::WEB_DEVELOPMENT                 => 'Web designing, development and hosting',
         self::WHOLESALE                       => 'Wholesale/Bulk trade',
+
 
         //new business_subcategory
         self::CONSTRUCTION_SERVICES                              => 'GENERAL CONTRACTORS',
@@ -700,6 +707,11 @@ class BusinessSubcategory
         self::ELECTRIC_RAZOR_STORES                              => 'Electric Razor Stores-Sales and Service',
         self::FUEL_DEALERS                                       => 'Fuel Dealers-Coal, Fuel Oil, Liquefied Petroleum, Wood',
         self::SERVICE_STATIONS                                   => 'Service Stations with or without Ancillary Services',
+        self::FURNITURE_AND_HOME_FURNISHING_STORE                => 'Furniture and Home Furnishing store',
+        self::PHOTOGRAPHIC_STUDIO                                => 'Photographic studios',
+        self::DATA_PROCESSING                                    => 'Data processing',
+        self::PROFESSIONAL_SERVICES                              => 'Professional services',
+        self::ASSOCIATIONS_AND_MEMBERSHIP                        => 'Associations and membership',
     ];
 
     /**
