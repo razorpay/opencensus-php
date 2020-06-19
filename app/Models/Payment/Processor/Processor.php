@@ -1325,7 +1325,9 @@ class Processor
                 return;
             }
 
-            $variant = $this->getRazorxVariant($payment, self::NB_PLUS_PAYMENTS_PREFIX);
+            $prefix = $payment->getMethod() . '_' . self::NB_PLUS_PAYMENTS_PREFIX;
+
+            $variant = $this->getRazorxVariant($payment, $prefix);
 
             $this->setPaymentService($payment, $variant);
         }

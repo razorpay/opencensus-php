@@ -380,7 +380,7 @@ class GatewayController extends Controller
     {
         $input = Request::all();
 
-        return $this->preProcessStaticCallback($gateway, $input, $mode);
+        return $this->preProcessStaticCallback($method, $gateway, $input, $mode);
     }
 
     public function callbackKotakCancel()
@@ -575,7 +575,7 @@ class GatewayController extends Controller
         $publicKey = $this->getMerchantKeyForPayment($payment, $mode);
 
         $this->app['basicauth']->setAuthDetailsUsingPublicKey($publicKey);
-        
+
         if ($payment->getCallbackUrl() !== null)
         {
             $this->app['rzp.merchant_callback_url'] = $payment->getCallbackUrl();
@@ -726,9 +726,11 @@ class GatewayController extends Controller
         return Redirect::to($url);
     }
 
-    protected function preProcessStaticCallback($gateway, $input, $mode)
+    protected function preProcessStaticCallback($method, $gateway, $input, $mode)
     {
         $currentRoute = $this->route->getCurrentRouteName();
+
+        Payment\Method::validateMethod($method);
 
         if (($gateway === null) or
             (Gateway::isStaticCallbackGateway($gateway) === false))
@@ -773,7 +775,7 @@ class GatewayController extends Controller
             ]
         );
 
-        $paymentId = $this->callGatewayPreprocessCallback($gateway, $input, $mode);
+        $paymentId = $this->callGatewayPreprocessCallback($method, $gateway, $input, $mode);
 
         $paymentMode = $this->repo->determineLiveOrTestModeForEntity($paymentId, 'payment');
 
@@ -1319,7 +1321,7 @@ class GatewayController extends Controller
         ]);
     }
 
-    protected function callGatewayPreprocessCallback($gatewayName, $input, $mode)
+    protected function callGatewayPreprocessCallback($method, $gatewayName, $input, $mode)
     {
         $variant = null;
 
@@ -1329,7 +1331,8 @@ class GatewayController extends Controller
 
         if (Gateway::isNbPlusServiceGateway($gatewayName) === true)
         {
-            $featureFlag = Payment\Processor\Processor::NB_PLUS_PAYMENTS_PREFIX . '_' . $gatewayName;
+            // method is added as a part of feature flag because emandate and netbanking have same gateways.
+            $featureFlag = $method . '_' . Payment\Processor\Processor::NB_PLUS_PAYMENTS_PREFIX . '_' . $gatewayName;
 
             $variant = $this->app->razorx->getTreatment($this->app['request']->getTaskId(), $featureFlag, $mode);
 
