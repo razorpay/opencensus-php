@@ -196,4 +196,13 @@ class PayoutController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function processInitiateForBatchSubmittedPayouts()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->processInitiateForBatchSubmittedPayouts($input);
+
+        return ApiResponse::json($response);
+    }
 }

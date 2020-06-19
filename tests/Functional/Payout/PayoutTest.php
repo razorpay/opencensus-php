@@ -4499,4 +4499,53 @@ class PayoutTest extends TestCase
 
         Mail::assertNotQueued(LowBalanceAlert::class);
     }
+
+    // TODO: Remove this test once we remove bulk throttling (when file based uploads are started by FTS)
+    // Test creates 4 payouts (NEFT, RTGS, UPI and IMPS) [First 2 go to batch_submitted, remaining go to created]
+    public function testBulkPayoutWithThrottling()
+    {
+        $this->ba->batchAuth();
+
+        $headers = [
+            'HTTP_X_Batch_Id'    => 'C0zv9I46W4wiOq',
+        ];
+
+        // append headers
+        $this->testData[__FUNCTION__]['request']['server'] = $headers;
+
+        $this->startTest();
+
+        $payouts = $this->getDbEntities('payout');
+
+        // Assert status of all 4 payouts. [public status = processing has been asserted in response in payoutTestData]
+        $this->assertEquals(Payout\Status::BATCH_SUBMITTED, $payouts[0]['status']);
+        $this->assertEquals(Payout\Status::BATCH_SUBMITTED, $payouts[1]['status']);
+        $this->assertEquals(Payout\Status::CREATED, $payouts[2]['status']);
+        $this->assertEquals(Payout\Status::CREATED, $payouts[3]['status']);
+    }
+
+    public function testProcessBulkPayoutDelayedInitiation()
+    {
+        $this->testBulkPayoutWithThrottling();
+
+        $this->ba->cronAuth();
+
+        $this->startTest();
+
+        $payouts = $this->getDbEntities('payout');
+
+        // Assertions for first payout (NEFT)
+        $this->assertEquals(Payout\Mode::NEFT, $payouts[0]['mode']);
+        $this->assertEquals(Payout\Status::CREATED, $payouts[0]['status']);
+
+        // Assertion for second payout (RTGS)
+        // Payout got failed since there wasn't sufficient balance to process it.
+        $this->assertEquals(Payout\Mode::RTGS, $payouts[1]['mode']);
+        $this->assertEquals(Payout\Status::FAILED, $payouts[1]['status']);
+
+        $batchProcessingPayouts = $this->getDbEntities('payout', ['status' => Payout\Status::BATCH_SUBMITTED]);
+
+        // Assert that no payouts remain in batch_processing state
+        $this->assertEquals(0, $batchProcessingPayouts->count());
+    }
 }

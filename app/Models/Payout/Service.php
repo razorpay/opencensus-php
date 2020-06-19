@@ -499,6 +499,15 @@ class Service extends Base\Service
         return $summary;
     }
 
+    public function processInitiateForBatchSubmittedPayouts(array $input)
+    {
+        $merchantIds = $this->repo->payout->fetchMIDsWithBatchSubmittedPayouts();
+
+        $this->core->processInitiateForBatchSubmittedPayouts($merchantIds);
+
+        return $merchantIds;
+    }
+
     public function cancelPayout(string $payoutId)
     {
         /** @var Entity $payout */

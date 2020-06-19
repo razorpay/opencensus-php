@@ -31,6 +31,7 @@ use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Models\Settlement\Channel;
 use RZP\Models\Base\Traits\HasBalance;
 use RZP\Models\Base\Traits\NotesTrait;
+use RZP\Models\Payout\Mode as PayoutMode;
 use RZP\Models\Feature\Constants as Features;
 
 /**
@@ -81,6 +82,7 @@ class Entity extends Base\PublicEntity
     const REJECTED_AT            = 'rejected_at';
     const QUEUED_AT              = 'queued_at';
     const CANCELLED_AT           = 'cancelled_at';
+    const BATCH_SUBMITTED_AT     = 'batch_submitted_at';
     const SETTLED_ON             = 'settled_on';
     const TYPE                   = 'type';
     const MODE                   = 'mode';
@@ -158,6 +160,13 @@ class Entity extends Base\PublicEntity
     const CARD    = 'card';
     const NUMBER  = 'number';
 
+    // These are the modes for which we shall be throttling batch payouts from payout core side.
+    // For other modes, we shall pass on the request normally.
+    const BATCH_PAYOUTS_DELAYED_INITIATION_MODES = [
+        PayoutMode::NEFT,
+        PayoutMode::RTGS,
+    ];
+
     // Used exclusively for Elasticsearch queries
     const CONTACT_EMAIL_RAW = 'contact_email.raw';
 
@@ -212,6 +221,7 @@ class Entity extends Base\PublicEntity
         self::NARRATION,
         self::IDEMPOTENCY_KEY,
         self::PRICING_RULE_ID,
+        self::BATCH_SUBMITTED_AT,
     ];
 
     protected $visible = [
@@ -262,6 +272,7 @@ class Entity extends Base\PublicEntity
         self::UPDATED_AT,
         self::IDEMPOTENCY_KEY,
         self::PRICING_RULE_ID,
+        self::BATCH_SUBMITTED_AT,
     ];
 
     protected $public = [
@@ -402,6 +413,7 @@ class Entity extends Base\PublicEntity
         self::CANCELLED_AT,
         self::INITIATED_AT,
         self::SETTLED_ON,
+        self::BATCH_SUBMITTED_AT,
     ];
 
     protected $appends = [
@@ -697,6 +709,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::CANCELLED_AT);
     }
 
+    public function getBatchSubmittedAt()
+    {
+        return $this->getAttribute(self::BATCH_SUBMITTED_AT);
+    }
+
     public function hasBeenQueued()
     {
         return ($this->isAttributeNotNull(self::QUEUED_AT) === true);
@@ -737,6 +754,11 @@ class Entity extends Base\PublicEntity
     public function isStatusQueued()
     {
         return ($this->getStatus() === Status::QUEUED);
+    }
+
+    public function isStatusBatchSubmitted()
+    {
+        return ($this->getStatus() === Status::BATCH_SUBMITTED);
     }
 
     public function isStatusCancelled()
@@ -1623,6 +1645,17 @@ class Entity extends Base\PublicEntity
         }
 
         return $data;
+    }
+
+    public function shouldDelayInitiationForBatchPayout()
+    {
+        if ((empty($this->getBatchId()) === false) and
+            (in_array($this->getMode(), self::BATCH_PAYOUTS_DELAYED_INITIATION_MODES, true) === true))
+        {
+            return true;
+        }
+
+        return false;
     }
 
     protected static function serializeWorkflowStepRoles(array $step): array

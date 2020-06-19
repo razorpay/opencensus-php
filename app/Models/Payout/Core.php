@@ -32,6 +32,7 @@ use RZP\Constants\Timezone;
 use RZP\Models\BankingAccount;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Admin\Permission;
+use RZP\Jobs\BatchPayoutsProcess;
 use RZP\Models\Currency\Currency;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Jobs\QueuedPayoutsInitiate;
@@ -693,6 +694,76 @@ class Core extends Base\Core
                 },
                 self::PAYOUT_MUTEX_LOCK_TIMEOUT,
                 ErrorCode::BAD_REQUEST_PAYOUT_ALREADY_BEING_PROCESSED);
+    }
+
+    public function initiateProcessingOfBatchSubmittedPayouts(string $merchantId)
+    {
+        $limit = $this->getBatchPayoutsFetchLimit();
+
+        $payoutIds = $this->repo->payout->getBatchSubmittedPayoutIds($merchantId, $limit);
+
+        foreach ($payoutIds as $payoutId)
+        {
+            $traceData = [
+                'payout_id' => $payoutId
+            ];
+
+            try
+            {
+                $this->trace->info(
+                    TraceCode::PAYOUT_BATCH_PROCESS_STARTED,
+                    $traceData
+                );
+
+                $this->processBatchSubmittedPayouts($payoutId);
+
+                $this->trace->info(
+                    TraceCode::PAYOUT_BATCH_PROCESS_COMPLETED,
+                    $traceData
+                );
+            }
+            catch (\Throwable $ex)
+            {
+                $this->trace->traceException(
+                    $ex,
+                    null,
+                    TraceCode::PAYOUT_BATCH_PROCESS_FAILED,
+                    $traceData);
+            }
+        }
+    }
+
+    public function processBatchSubmittedPayouts(string $payoutId)
+    {
+        return $this->mutex->acquireAndRelease(
+            $payoutId,
+            function() use ($payoutId)
+            {
+                /** @var Entity $payout */
+                $payout = $this->repo->payout->findOrFail($payoutId);
+
+                $payout->getValidator()->validateProcessingBatchProcessingPayout();
+
+                //
+                // Currently, we support batch_submitted concept only for Fund Account type.
+                // If we are supporting for others, the processor call needs to be fixed here.
+                // Also, need to fix transaction.created event in the processor since
+                // we do that only for fund_account and not for others.
+                //
+                $payout = $this->getProcessor('fund_account_payout')
+                               ->setMerchant($payout->merchant)
+                               ->processBatchSubmittedPayout($payout);
+
+                //
+                // There might be some type of payouts where we don't want to dispatch FTA.
+                // Should handle that before adding any other type of payouts as batch_submitted.
+                //
+                $this->dispatchFtaInitiate($payout);
+
+                return $payout;
+            },
+            self::PAYOUT_MUTEX_LOCK_TIMEOUT,
+            ErrorCode::BAD_REQUEST_PAYOUT_ALREADY_BEING_PROCESSED);
     }
 
     public function cancelPayout(Entity $payout): Entity
@@ -1610,6 +1681,38 @@ class Core extends Base\Core
         );
     }
 
+    public function processInitiateForBatchSubmittedPayouts(array $merchantIds)
+    {
+        foreach ($merchantIds as $merchantId)
+        {
+            $traceInfo = [
+                'merchant_id' => $merchantId
+            ];
+
+            try
+            {
+                $this->trace->info(TraceCode::PAYOUT_BATCH_INITIATE_DISPATCH_JOB, $traceInfo);
+
+                BatchPayoutsProcess::dispatch($this->mode, $merchantId);
+
+                $this->trace->info(TraceCode::PAYOUT_BATCH_INITIATE_DISPATCH_COMPLETE, $traceInfo);
+            }
+            catch (\Throwable $e)
+            {
+                // If the dispatch fails due to any reason, cron will
+                // pick up these payouts again and attempt to dispatch.
+
+                $data = $traceInfo + [ 'message' => $e->getMessage() ];
+
+                $this->trace->traceException(
+                    $e,
+                    Trace::ERROR,
+                    TraceCode::PAYOUT_BATCH_INITIATE_DISPATCH_FAILED,
+                    $data);
+            }
+        }
+    }
+
     protected function getPublicErrorMessage(
         Entity $payout,
         string $ftaFailureReason = null,
@@ -1718,7 +1821,7 @@ class Core extends Base\Core
     protected function dispatchFtaInitiate(Entity $payout)
     {
         //
-        // For payouts with status=(queued, pending), we don't create any transaction or FTA.
+        // For payouts with status=(queued, pending, batch_submitted), we don't create any transaction or FTA.
         // We do it later when we actually process that payout.
         //
         if ($payout->isStatusBeforeCreate() === true)
@@ -1920,5 +2023,22 @@ class Core extends Base\Core
 
             $this->repo->saveOrFail($transaction);
         }
+    }
+
+    /**
+     * Returns limit from redis key. If empty, falls back to default value of 300.
+     *
+     * @return int
+     */
+    protected function getBatchPayoutsFetchLimit()
+    {
+        $limit = (new AdminService)->getConfigKey(['key' => ConfigKey::BATCH_PAYOUTS_FETCH_LIMIT]);
+
+        if (empty($limit) === true)
+        {
+            $limit = Repository::BATCH_PAYOUTS_FETCH_LIMIT;
+        }
+
+        return $limit;
     }
 }

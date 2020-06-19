@@ -12,28 +12,31 @@ use RZP\Models\Merchant\Balance\Entity as Balance;
 final class Metric
 {
     // Counters
-    const PAYOUT_CREATED_TOTAL   = 'payout_created_total';
-    const PAYOUT_PENDING_TOTAL   = 'payout_pending_total';
-    const PAYOUT_QUEUED_TOTAL    = 'payout_queued_total';
-    const PAYOUT_FAILED_TOTAL    = 'payout_failed_total';
-    const PAYOUT_REVERSED_TOTAL  = 'payout_reversed_total';
-    const PAYOUT_PROCESSED_TOTAL = 'payout_processed_total';
-    const PAYOUT_INITIATED_TOTAL = 'payout_initiated_total';
-    const PAYOUT_REJECTED_TOTAL  = 'payout_rejected_total';
-    const PAYOUT_CANCELLED_TOTAL = 'payout_cancelled_total';
+    const PAYOUT_CREATED_TOTAL          = 'payout_created_total';
+    const PAYOUT_PENDING_TOTAL          = 'payout_pending_total';
+    const PAYOUT_QUEUED_TOTAL           = 'payout_queued_total';
+    const PAYOUT_FAILED_TOTAL           = 'payout_failed_total';
+    const PAYOUT_REVERSED_TOTAL         = 'payout_reversed_total';
+    const PAYOUT_PROCESSED_TOTAL        = 'payout_processed_total';
+    const PAYOUT_INITIATED_TOTAL        = 'payout_initiated_total';
+    const PAYOUT_REJECTED_TOTAL         = 'payout_rejected_total';
+    const PAYOUT_CANCELLED_TOTAL        = 'payout_cancelled_total';
+    const PAYOUT_BATCH_SUBMITTED_TOTAL  = 'payout_batch_submitted_total';
 
     // Histograms
-    const PAYOUT_QUEUED_TO_CREATED_DURATION_SECONDS      = 'payout_queued_to_created_duration_seconds.histogram';
-    const PAYOUT_QUEUED_TO_CANCELLED_DURATION_SECONDS    = 'payout_queued_to_cancelled_duration_seconds.histogram';
-    const PAYOUT_PENDING_TO_REJECTED_DURATION_SECONDS    = 'payout_pending_to_rejected_duration_seconds.histogram';
-    const PAYOUT_PENDING_TO_QUEUED_DURATION_SECONDS      = 'payout_pending_to_queued_duration_seconds.histogram';
-    const PAYOUT_PENDING_TO_CREATED_DURATION_SECONDS     = 'payout_pending_to_created_duration_seconds.histogram';
-    const PAYOUT_CREATED_TO_INITIATED_DURATION_SECONDS   = 'payout_created_to_initiated_duration_seconds.histogram';
-    const PAYOUT_CREATED_TO_FAILED_DURATION_SECONDS      = 'payout_created_to_failed_duration_seconds.histogram';
-    const PAYOUT_INITIATED_TO_PROCESSED_DURATION_SECONDS = 'payout_initiated_to_processed_duration_seconds.histogram';
-    const PAYOUT_INITIATED_TO_REVERSED_DURATION_SECONDS  = 'payout_initiated_to_reversed_duration_seconds.histogram';
-    const PAYOUT_INITIATED_TO_FAILED_DURATION_SECONDS    = 'payout_initiated_to_failed_duration_seconds.histogram';
-    const PAYOUT_PROCESSED_TO_REVERSED_DURATION_SECONDS  = 'payout_processed_to_reversed_duration_seconds.histogram';
+    const PAYOUT_QUEUED_TO_CREATED_DURATION_SECONDS          = 'payout_queued_to_created_duration_seconds.histogram';
+    const PAYOUT_QUEUED_TO_CANCELLED_DURATION_SECONDS        = 'payout_queued_to_cancelled_duration_seconds.histogram';
+    const PAYOUT_PENDING_TO_REJECTED_DURATION_SECONDS        = 'payout_pending_to_rejected_duration_seconds.histogram';
+    const PAYOUT_PENDING_TO_QUEUED_DURATION_SECONDS          = 'payout_pending_to_queued_duration_seconds.histogram';
+    const PAYOUT_PENDING_TO_CREATED_DURATION_SECONDS         = 'payout_pending_to_created_duration_seconds.histogram';
+    const PAYOUT_CREATED_TO_INITIATED_DURATION_SECONDS       = 'payout_created_to_initiated_duration_seconds.histogram';
+    const PAYOUT_CREATED_TO_FAILED_DURATION_SECONDS          = 'payout_created_to_failed_duration_seconds.histogram';
+    const PAYOUT_INITIATED_TO_PROCESSED_DURATION_SECONDS     = 'payout_initiated_to_processed_duration_seconds.histogram';
+    const PAYOUT_INITIATED_TO_REVERSED_DURATION_SECONDS      = 'payout_initiated_to_reversed_duration_seconds.histogram';
+    const PAYOUT_INITIATED_TO_FAILED_DURATION_SECONDS        = 'payout_initiated_to_failed_duration_seconds.histogram';
+    const PAYOUT_PROCESSED_TO_REVERSED_DURATION_SECONDS      = 'payout_processed_to_reversed_duration_seconds.histogram';
+    const PAYOUT_BATCH_SUBMITTED_TO_CREATED_DURATION_SECONDS = 'payout_batch_submitted_to_created_duration_seconds.histogram';
+    const PAYOUT_BATCH_SUBMITTED_TO_FAILED_DURATION_SECONDS  = 'payout_batch_submitted_to_failed_duration_seconds.histogram';
 
     // Dimension constants
     const SOURCE     = 'source';
@@ -146,6 +149,28 @@ final class Metric
 
         app('trace')->histogram(
             self::PAYOUT_PENDING_TO_CREATED_DURATION_SECONDS,
+            $timeDuration,
+            $metricDimensions);
+    }
+
+    protected static function pushBatch_submittedToCreatedMetrics(Entity $payout)
+    {
+        $metricDimensions = self::getMetricDimensions($payout);
+        $timeDuration     = $payout->getInitiatedAt() - $payout->getBatchSubmittedAt();
+
+        app('trace')->histogram(
+            self::PAYOUT_BATCH_SUBMITTED_TO_CREATED_DURATION_SECONDS,
+            $timeDuration,
+            $metricDimensions);
+    }
+
+    protected static function pushBatch_submittedToFailedMetrics(Entity $payout)
+    {
+        $metricDimensions = self::getMetricDimensions($payout);
+        $timeDuration     = $payout->getFailedAt() - $payout->getBatchSubmittedAt();
+
+        app('trace')->histogram(
+            self::PAYOUT_BATCH_SUBMITTED_TO_FAILED_DURATION_SECONDS,
             $timeDuration,
             $metricDimensions);
     }

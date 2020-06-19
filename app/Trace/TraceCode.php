@@ -1246,12 +1246,22 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYOUT_RETRY_REQUEST                                  = 'PAYOUT_RETRY_REQUEST';
     const PAYOUT_QUEUE_DISPATCH_INIT                            = 'PAYOUT_QUEUE_DISPATCH_INIT';
     const PAYOUT_QUEUE_DISPATCH_COMPLETE                        = 'PAYOUT_QUEUE_DISPATCH_COMPLETE';
+    const PAYOUT_BATCH_INITIATE_DISPATCH_JOB                    = 'PAYOUT_BATCH_INITIATE_DISPATCH_JOB';
+    const PAYOUT_BATCH_INITIATE_DISPATCH_COMPLETE               = 'PAYOUT_BATCH_INITIATE_DISPATCH_COMPLETE';
+    const PAYOUT_BATCH_INITIATE_DISPATCH_FAILED                 = 'PAYOUT_BATCH_INITIATE_DISPATCH_FAILED';
     const PAYOUT_COMPOSITE_CREATE_REQUEST                       = 'PAYOUT_COMPOSITE_CREATE_REQUEST';
     const COMPOSITE_PAYOUT_CREATED                              = 'COMPOSITE_PAYOUT_CREATED';
     const PAYOUT_QUEUE_DISPATCH_FAILED                          = 'PAYOUT_QUEUE_DISPATCH_FAILED';
     const PAYOUT_QUEUE_REQUEST                                  = 'PAYOUT_QUEUE_REQUEST';
     const PAYOUT_QUEUE_JOB_FAILURE_EXCEPTION                    = 'PAYOUT_QUEUE_JOB_FAILURE_EXCEPTION';
     const PAYOUT_QUEUE_SUCCESS                                  = 'PAYOUT_QUEUE_SUCCESS';
+    const PAYOUT_BATCH_INITIATE_REQUEST                         = 'PAYOUT_BATCH_INITIATE_REQUEST';
+    const PAYOUT_BATCH_INITIATE_SUCCESS                         = 'PAYOUT_BATCH_INITIATE_SUCCESS';
+    const PAYOUT_BATCH_INITIATE_JOB_FAILED                      = 'PAYOUT_BATCH_INITIATE_JOB_FAILED';
+    const PAYOUT_BATCH_PROCESS_STARTED                          = 'PAYOUT_BATCH_PROCESS_STARTED';
+    const PAYOUT_BATCH_PROCESS_COMPLETED                        = 'PAYOUT_BATCH_PROCESS_COMPLETED';
+    const PAYOUT_BATCH_PROCESS_FAILED                           = 'PAYOUT_BATCH_PROCESS_FAILED';
+    const BATCH_SUBMITTED_PAYOUT_FAILED                         = 'BATCH_SUBMITTED_PAYOUT_FAILED';
     const PAYOUT_NOT_IN_QUEUED_STATUS                           = 'PAYOUT_NOT_IN_QUEUED_STATUS';
     const PAYOUT_DISPATCH_SUMMARY                               = 'PAYOUT_DISPATCH_SUMMARY';
     const PAYOUT_APPROVE_REQUEST                                = 'PAYOUT_APPROVE_REQUEST';
@@ -2237,6 +2247,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYOUT_QUEUED_INITIATE_DISPATCH_FAILED                = 'PAYOUT_QUEUED_INITIATE_DISPATCH_FAILED';
     const PAYOUT_QUEUED_PROCESSING_INITIATED                    = 'PAYOUT_QUEUED_PROCESSING_INITIATED';
     const PAYOUT_QUEUED_PROCESSING_COMPLETED                    = 'PAYOUT_QUEUED_PROCESSING_COMPLETED';
+    const BATCH_SUBMITTED_PAYOUT_CREATED                        = 'BATCH_SUBMITTED_PAYOUT_CREATED';
 
     const FEE_RECOVERY_PAYOUT_CREATE_REQUEST                        = 'FEE_RECOVERY_PAYOUT_CREATE_REQUEST';
     const FEE_RECOVERY_PAYOUT_CREATED                               = 'FEE_RECOVERY_PAYOUT_CREATED';
@@ -3007,7 +3018,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     // Logs for tracing payout to amex failures
     const PAYOUT_TO_AMEX_FAILURE = 'PAYOUT_TO_AMEX_FAILURE';
-  
+
 
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',

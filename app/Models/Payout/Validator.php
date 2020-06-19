@@ -449,6 +449,25 @@ class Validator extends Base\Validator
         $this->validateIsFundAccountPayout($payout);
     }
 
+    public function validateProcessingBatchProcessingPayout()
+    {
+        /** @var Entity $payout */
+        $payout = $this->entity;
+
+        if ($payout->isStatusBatchSubmitted() === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYOUT_NOT_BATCH_SUBMITTED_STATUS,
+                null,
+                [
+                    'payout_id' => $payout->getId(),
+                    'status'    => $payout->getStatus(),
+                ]);
+        }
+
+        $this->validateIsFundAccountPayout($payout);
+    }
+
     public function validateProcessingPendingPayout()
     {
         /** @var Entity $payout */

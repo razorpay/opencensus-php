@@ -205,6 +205,10 @@ return [
         'test'       =>  env('AWS_QUEUED_PAYOUTS_INITIATE_TEST_QUEUE'),
         'live'       =>  env('AWS_QUEUED_PAYOUTS_INITIATE_LIVE_QUEUE'),
     ],
+    'batch_payouts_process' => [
+        'test'       =>  env('AWS_BATCH_PAYOUTS_PROCESS_TEST_QUEUE'),
+        'live'       =>  env('AWS_BATCH_PAYOUTS_PROCESS_LIVE_QUEUE'),
+    ],
     'queued_payouts' => [
         'test'       => env('AWS_PAYOUTS_TEST_QUEUE'),
         'live'       => env('AWS_PAYOUTS_LIVE_QUEUE'),

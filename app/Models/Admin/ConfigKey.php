@@ -118,6 +118,7 @@ class ConfigKey
     const RX_PAYOUTS_CUSTOM_BATCH_FILE_LIMIT_MERCHANTS  = self::PREFIX . 'rx_payouts_custom_batch_file_limit_merchants';
     const RX_PAYOUTS_DEFAULT_MAX_BATCH_FILE_COUNT       = self::PREFIX . 'rx_payouts_default_max_batch_file_count';
 
+    const BATCH_PAYOUTS_FETCH_LIMIT                     = self::PREFIX . 'batch_payouts_fetch_limit';
 
     const PUBLIC_KEYS = [
         self::TERMINAL_SELECTION_LOG_VERBOSE,
@@ -176,6 +177,7 @@ class ConfigKey
         self::RX_PAYOUTS_CUSTOM_BATCH_FILE_LIMIT_MERCHANTS,
         self::RX_PAYOUTS_DEFAULT_MAX_BATCH_FILE_COUNT,
         self::CARD_PAYMENT_SERVICE_EMI_FETCH,
+        self::BATCH_PAYOUTS_FETCH_LIMIT,
     ];
 
     const REDIS_CONFIG_MAP = [

@@ -29,6 +29,7 @@ class Repository extends Base\Repository
 {
     const QUEUED_PAYOUTS_FETCH_LIMIT = 5000;
     const PENDING_PAYOUTS_FETCH_LIMIT = 5000;
+    const BATCH_PAYOUTS_FETCH_LIMIT = 300;
 
     protected $entity = 'payout';
 
@@ -922,5 +923,35 @@ class Repository extends Base\Repository
                     ->whereIn($payoutsIdColumn, $failedPayoutIds)
                     ->whereNotNull($payoutsFailedAtColumn)
                     ->first();
+    }
+
+    public function fetchMIDsWithBatchSubmittedPayouts()
+    {
+        $statusColumn = $this->repo->payout->dbColumn(Entity::STATUS);
+        $merchantIdColumn = $this->repo->payout->dbColumn(Entity::MERCHANT_ID);
+
+        return $this->newQuery()
+                    ->select($merchantIdColumn)
+                    ->where($statusColumn, '=', Status::BATCH_SUBMITTED)
+                    ->distinct()
+                    ->get()
+                    ->pluck(Entity::MERCHANT_ID)
+                    ->toArray();
+    }
+
+    public function getBatchSubmittedPayoutIds(string $merchantId, $limit = self::BATCH_PAYOUTS_FETCH_LIMIT)
+    {
+        $idColumn = $this->repo->payout->dbColumn(Entity::ID);
+        $statusColumn = $this->repo->payout->dbColumn(Entity::STATUS);
+        $merchantIdColumn = $this->repo->payout->dbColumn(Entity::MERCHANT_ID);
+
+        return $this->newQuery()
+                    ->select($idColumn)
+                    ->where($statusColumn, '=', Status::BATCH_SUBMITTED)
+                    ->where($merchantIdColumn, '=', $merchantId)
+                    ->limit($limit)
+                    ->get()
+                    ->pluck(Entity::ID)
+                    ->toArray();
     }
 }

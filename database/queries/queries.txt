@@ -5777,6 +5777,9 @@ UPDATE emi_plans SET method="card" WHERE network="BAJAJ" and deleted_at IS NULL 
 ALTER TABLE payment_links
     ADD COLUMN view_type VARCHAR(255) DEFAULT `page`;
 
+ALTER TABLE payouts
+    ADD COLUMN batch_submitted_at INT DEFAULT NULL;
+
 ALTER TABLE merchant_banks
     Add COLUMN cred TINYINT(1) NOT NULL DEFAULT 0;
 

@@ -979,6 +979,7 @@ class Route
         'payouts_process_queued_new'               => ['post',     'payouts/queued/process/new',                     'PayoutController@processInitiateForQueuedPayouts'                  ],
         // TODO : Remove this route. Has been kept here for backward compatibility
         'payouts_process_queued'                   => ['post',     'payouts/queued/process',                         'PayoutController@processDispatchForQueuedPayouts'                  ],
+        'payouts_process_batch'                    => ['post',     'payouts/batch/process',                          'PayoutController@processInitiateForBatchSubmittedPayouts'          ],
         'payouts_summary'                          => ['get',      'payouts/_meta/summary',                          'PayoutController@getSummary'                                       ],
         'payouts_workflow_summary'                 => ['get',      'payouts/_meta/workflows',                        'PayoutController@getWorkflowSummary'                               ],
 
@@ -2295,6 +2296,7 @@ class Route
         'create_fts_nodal_beneficiary',
         'payouts_process_queued',
         'payouts_process_queued_new',
+        'payouts_process_batch',
         'migration_multi_va_on_x',
         'update_fts_fund_transfer',
         'fund_account_validation_retry',
@@ -4113,6 +4115,7 @@ class Route
         'payout_fetch_reversals'                       => Permission::VIEW_PAYOUT_REVERSAL,
         'payouts_process_queued'                       => Permission::PROCESS_PAYOUT_QUEUED,
         'payouts_process_queued_new'                   => Permission::PROCESS_PAYOUT_QUEUED,
+        'payouts_process_batch'                        => Permission::PROCESS_PAYOUT_QUEUED,
         'payouts_summary'                              => Permission::VIEW_PAYOUT_SUMMARY,
         'payouts_workflow_summary'                     => Permission::VIEW_PAYOUT_WORKFLOW_SUMMARY,
         'payout_links_fetch_multiple'                  => Permission::VIEW_PAYOUT_LINKS,
@@ -4527,6 +4530,7 @@ class Route
             'scrooge_refund_verify_bulk',
             'payouts_process_queued',
             'payouts_process_queued_new',
+            'payouts_process_batch',
             'migration_multi_va_on_x',
             'scrooge_tagging_backfill',
             'payments_downtime_trigger_cron',
@@ -5159,6 +5163,7 @@ class Route
         'payout_fetch_reversals',
         'payouts_process_queued',
         'payouts_process_queued_new',
+        'payouts_process_batch',
         'payouts_summary',
         'payouts_workflow_summary',
 

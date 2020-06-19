@@ -14,16 +14,17 @@ class Status
     // FTA module to update the source status. Things will
     // get wrecked if these are removed.
     //
-    const PROCESSED     = 'processed';
-    const INITIATED     = Attempt\Status::INITIATED;
-    const REVERSED      = 'reversed';
-    const FAILED        = 'failed';
+    const PROCESSED         = 'processed';
+    const INITIATED         = Attempt\Status::INITIATED;
+    const REVERSED          = 'reversed';
+    const FAILED            = 'failed';
 
-    const CREATED       = 'created';
-    const PENDING       = 'pending';
-    const REJECTED      = 'rejected';
-    const QUEUED        = 'queued';
-    const CANCELLED     = 'cancelled';
+    const CREATED           = 'created';
+    const PENDING           = 'pending';
+    const REJECTED          = 'rejected';
+    const QUEUED            = 'queued';
+    const CANCELLED         = 'cancelled';
+    const BATCH_SUBMITTED   = 'batch_submitted';
 
     /**
      * Used only to expose publicly.
@@ -40,15 +41,16 @@ class Status
     ];
 
     public static $internalToPublicStatusMap = [
-        self::PENDING   => self::PENDING,
-        self::CREATED   => self::PROCESSING,
-        self::INITIATED => self::PROCESSING,
-        self::PROCESSED => self::PROCESSED,
-        self::REVERSED  => self::REVERSED,
-        self::REJECTED  => self::REJECTED,
-        self::QUEUED    => self::QUEUED,
-        self::CANCELLED => self::CANCELLED,
-        self::FAILED    => self::FAILED,
+        self::PENDING           => self::PENDING,
+        self::CREATED           => self::PROCESSING,
+        self::INITIATED         => self::PROCESSING,
+        self::PROCESSED         => self::PROCESSED,
+        self::REVERSED          => self::REVERSED,
+        self::REJECTED          => self::REJECTED,
+        self::QUEUED            => self::QUEUED,
+        self::CANCELLED         => self::CANCELLED,
+        self::FAILED            => self::FAILED,
+        self::BATCH_SUBMITTED   => self::PROCESSING
     ];
 
     /**
@@ -64,6 +66,7 @@ class Status
             self::CREATED,
             self::PENDING,
             self::QUEUED,
+            self::BATCH_SUBMITTED,
         ],
         self::QUEUED => [
             self::CREATED,
@@ -95,6 +98,10 @@ class Status
         self::FAILED => [
             // this is empty because it's the final status
         ],
+        self::BATCH_SUBMITTED => [
+            self::CREATED,
+            self::FAILED
+        ]
     ];
 
     /**
@@ -112,6 +119,7 @@ class Status
         self::REJECTED,
         self::QUEUED,
         self::CANCELLED,
+        self::BATCH_SUBMITTED,
     ];
 
     /**
@@ -123,6 +131,8 @@ class Status
     public static $preCreateStatuses = [
         self::QUEUED,
         self::PENDING,
+        self::BATCH_SUBMITTED,
+        self::FAILED,
     ];
 
     /**
