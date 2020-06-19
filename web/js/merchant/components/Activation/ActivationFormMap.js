@@ -162,7 +162,7 @@ const businessModel = [
       label: 'Business Model',
       name: 'business_model',
       info:
-        'Please give a brief explanation of your business model and future plans',
+        "Business model description should be at least 50 characters. Please select others only if you can't find your category and sub-category, as this will delay your account activation by a few days.",
       _cmp: Input.Textarea,
       _when: activation => {
         let { state, props } = activation;
@@ -457,8 +457,9 @@ const businessDetails = [
     label: 'LLPIN',
     name: 'company_cin',
     required: true, // It's mandatory only for LLP
-    info: 'Example : AAB2933',
+    info: 'Example : AAB-2933',
     className: 'Input--capitalize',
+    validator: value => validateCIN(value, 'LLPIN'),
     _when: activation =>
       activation.props.data.business_type &&
       LLPIN_BusinessTypes.indexOf(
@@ -527,6 +528,11 @@ const bankAccountFields = [
     info: getBeneficiaryInfo,
     maxLength: '120',
     minLength: '4',
+    validator: val => {
+      if (val && !/^[a-zA-Z0-9][a-zA-Z0-9-&\'._()\s–\/]{3,119}$/.test(val)) {
+        return 'Invalid name format';
+      }
+    },
     description: activation =>
       isUnregisteredBusiness(activation) ||
       activation.props.user.isRegAutoKYCEnabled
