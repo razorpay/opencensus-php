@@ -1001,6 +1001,7 @@ class Route
         'vendor_payment_get_tds_categories'        => ['get',      'vendor-payments/tds-categories',                 'VendorPaymentController@getTdsCategories'                          ],
         'vendor_payment_edit'                      => ['post',     'vendor-payments/{id}/edit',                      'VendorPaymentController@edit'                                      ],
         'vendor_payment_cancel'                    => ['post',     'vendor-payments/{id}/cancel',                    'VendorPaymentController@cancel'                                    ],
+        'vendor_payment_bulk_cancel'               => ['post',     'vendor-payments/bulk-cancel',                    'VendorPaymentController@bulkCancel'                                ],
 
         // Payout Links
         'payout_links_fetch_multiple'              => ['get',       'payout-links',                                  'PayoutLinkController@list'                                         ],
@@ -2738,6 +2739,7 @@ class Route
         'vendor_payment_create',
         'vendor_payment_edit',
         'vendor_payment_cancel',
+        'vendor_payment_bulk_cancel',
         'vendor_payment_execute',
 
         // Virtual VPA Prefix
@@ -4146,6 +4148,7 @@ class Route
         'vendor_payment_summary'                       => Permission::VIEW_VENDOR_PAYMENTS,
         'vendor_payment_edit'                          => Permission::EDIT_VENDOR_PAYMENTS,
         'vendor_payment_cancel'                        => Permission::CANCEL_VENDOR_PAYMENTS,
+        'vendor_payment_bulk_cancel'                   => Permission::CANCEL_VENDOR_PAYMENTS,
         'merchant_edit_config_logo'                    => Permission::MERCHANT_CONFIG_LOGO,
         'contact_get'                                  => Permission::VIEW_CONTACT,
         'contact_list'                                 => Permission::VIEW_CONTACT,
@@ -4935,6 +4938,7 @@ class Route
         'vendor_payment_create'                => [Feature::RX_VENDOR_PAYMENTS],
         'vendor_payment_edit'                  => [Feature::RX_VENDOR_PAYMENTS],
         'vendor_payment_cancel'                => [Feature::RX_VENDOR_PAYMENTS],
+        'vendor_payment_bulk_cancel'           => [Feature::RX_VENDOR_PAYMENTS],
         'vendor_payment_execute'               => [Feature::RX_VENDOR_PAYMENTS],
     ];
 
@@ -5196,6 +5200,7 @@ class Route
         'vendor_payment_get_tds_categories',
         'vendor_payment_edit',
         'vendor_payment_cancel',
+        'vendor_payment_bulk_cancel',
 
         'payout_links_added_fund_accounts',
         'payout_links_added_fund_accounts_cors',

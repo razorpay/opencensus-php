@@ -3,8 +3,10 @@
 namespace RZP\Tests\Functional\VendorPayment;
 
 use App;
+use Mockery;
 use RZP\Models\Admin\Service;
 use RZP\Models\Admin\ConfigKey;
+use RZP\Models\Feature\Constants;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
@@ -96,5 +98,27 @@ class VendorPaymentTest extends TestCase
         $this->assertEquals($payout1['id'], $payout2['id']);
 
     }
+
+    public function testVendorPaymentBulkCancel()
+    {
+        $this->ba->proxyAuth();
+
+        $this->fixtures->create('feature',
+                                [
+                                    'name'      => Constants::RX_VENDOR_PAYMENTS,
+                                    'entity_id' => '10000000000000'
+                                ]);
+
+        $vpMock = Mockery::mock('RZP\Services\VendorPayment');
+
+        $vpMock->shouldReceive('bulkCancel')->andReturn([]);
+
+        $this->app->instance('vendor-payment', $vpMock);
+
+        $this->startTest();
+
+        $vpMock->shouldHaveReceived('bulkCancel');
+    }
+
 
 }

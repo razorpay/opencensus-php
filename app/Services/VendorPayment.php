@@ -35,6 +35,7 @@ class VendorPayment
     const GET_TDS_CATEGORIES        = 'GetTdsCategory';
     const EDIT_VENDOR_PAYMENTS      = 'EditVendorPayment';
     const CANCEL_VENDOR_PAYMENTS    = 'CancelVendorPayment';
+    const BULK_CANCEL_VENDOR_PAYMENTS    = 'BulkCancelVP';
     const GET_INVOICE_SIGNED_URL    = 'GetInvoiceSignedURL';
     const VP_SUMMARY_API            = 'SummaryApi';
 
@@ -323,6 +324,22 @@ class VendorPayment
     public function summary(MerchantEntity $merchant, array $input)
     {
         $url = sprintf('%s/%s', $this->config['url'], self::VP_SUMMARY_API);
+
+        return $this->makeRequest($merchant, $url, $input);
+    }
+
+    public function bulkCancel(MerchantEntity $merchant,
+                           array $input,
+                           Entity $user = null)
+    {
+        $url = sprintf('%s/%s', $this->config['url'], self::BULK_CANCEL_VENDOR_PAYMENTS);
+
+        if ($user === null)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_USER_ID_HEADER_MISSING_FROM_REQUEST);
+        }
+
+        $input['cancelling_user_id'] = $user->getPublicId();
 
         return $this->makeRequest($merchant, $url, $input);
     }

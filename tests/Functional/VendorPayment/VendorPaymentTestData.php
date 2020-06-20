@@ -112,6 +112,24 @@ return [
         ]
 
     ],
+
+    'testVendorPaymentBulkCancel' => [
+        'request'  => [
+            'method' => 'POST',
+            'server'  => [
+                'HTTP_X-Dashboard-User-Id' => '20000000000000',
+            ],
+            'url'    => '/vendor-payments/bulk-cancel',
+            'content' => [
+                    'vendor_payments_ids' => ['vdpm_F2qwMZe97QTGG1'],
+                    'cancellation_reason' => 'some reson'
+            ],
+        ],
+        'response' => [
+            'content' => []
+        ]
+    ],
+
     'testCreatePayout' => [
         'request'  => [
             'method'  => 'POST',
