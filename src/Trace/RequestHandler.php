@@ -107,8 +107,6 @@ class RequestHandler
         // If the request was provided with a trace context header, we need to send it back with the response
         // including whether the request was sampled or not.
 
-        /* check if spanContext is fromHeader, only if it's not-null(could be first hop) */
-        // if (is_null($spanContext->spanId()) or $spanContext->fromHeader()) {
         if ($spanContext->fromHeader()) {
             $propagator->inject($spanContext, $this->headers);
         }
@@ -121,17 +119,19 @@ class RequestHandler
             $this->tracer = new NullTracer();
         }
 
+        $rootSpanName = $this->nameFromOptions($options) ?? $this->nameFromHeaders($this->headers->toArray());
+        $rootSpanAttrs = $this->spanAttrsFromOptions($options);
+        unset($options['root_span_options']);
+
         $spanOptions = $options + [
             'startTime' => $this->startTimeFromHeaders($this->headers->toArray()),
-            'name' => $this->nameFromHeaders($this->headers->toArray()),
-            'attributes' => [],
+            'name' => $rootSpanName,
+            'attributes' => $rootSpanAttrs,
             'kind' => Span::KIND_SERVER,
             'sameProcessAsParentSpan' => false
         ];
         $this->rootSpan = $this->tracer->startSpan($spanOptions);
         $this->scope = $this->tracer->withSpan($this->rootSpan);
-
-        // $propagator->inject($this->tracer->spanContext(), $this->headers);
 
         if (!array_key_exists('skipReporting', $options) || !$options['skipReporting']) {
             register_shutdown_function([$this, 'onExit']);
@@ -161,18 +161,6 @@ class RequestHandler
     {
         return $this->tracer;
     }
-
-
-    /**
-     * Return the propagator used for this request.
-     *
-     * @return PropagatorInterface
-     */
-    // public function propagator(): PropagatorInterface
-    // {
-    //     return $this->propagator;
-    // }
-
 
     /**
      * Instrument a callable by creating a Span that manages the startTime
@@ -324,6 +312,23 @@ class RequestHandler
             return $headers['REQUEST_TIME'];
         }
         return null;
+    }
+
+    private function nameFromOptions(array $options): string
+    {
+        $rootSpanOptions = array_key_exists('root_span_options', $options)
+                            ? $options['root_span_options']
+                            : array();
+
+        return array_key_exists('name', $rootSpanOptions) ? $rootSpanOptions['name'] : null;
+    }
+
+    private function spanAttrsFromOptions(array $options): array
+    {
+        $rootSpanOptions = array_key_exists('root_span_options', $options)
+                            ? $options['root_span_options']
+                            : array();
+        return array_key_exists('attributes', $rootSpanOptions) ? $rootSpanOptions['attributes'] : array();
     }
 
     private function nameFromHeaders(array $headers): string
