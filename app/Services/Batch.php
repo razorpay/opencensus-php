@@ -111,7 +111,7 @@ class Batch extends Job
             //
             $app = App::getFacadeRoot();
 
-            $redis = $app['redis']->connection();
+            $redis = $app['redis']->Connection('mutex_redis');
 
             $this->trace->debug(
                 TraceCode::KUBERNETES_BATCH_JOB_DEBUG,
@@ -119,7 +119,7 @@ class Batch extends Job
                     BatchModel\Entity::ID   => $this->id,
                 ]);
 
-            $redis->HDEL(Reconciliation::KUBERNETES_RECON_JOB_LIST, $this->id);
+            $redis->hDel(Reconciliation::KUBERNETES_RECON_JOB_LIST, $this->id);
         }
     }
 }
