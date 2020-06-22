@@ -21,15 +21,18 @@ class Upi
     const APGV = 'APGV';
     const APMC = 'APMC';
     const ASBL = 'ASBL';
+    const AUBL = 'AUBL';
     const AUGX = 'AUGX';
     const BACB = 'BACB';
     const BARB_R = 'BARB_R';
+    const BCBM = 'BCBM';
     const BDBL = 'BDBL';
     const BGBX = 'BGBX';
     const BGGX = 'BGGX';
     const BHUX = 'BHUX';
     const BKDN = 'BKDN';
     const BKID = 'BKID';
+    const BRDX = 'BRDX';
     const BRGX = 'BRGX';
     const BUGX = 'BUGX';
     const CBIN = 'CBIN';
@@ -53,6 +56,7 @@ class Upi
     const ESMF = 'ESMF';
     const FDRL = 'FDRL';
     const FINO = 'FINO';
+    const FSFB = 'FSFB';
     const GSCB = 'GSCB';
     const HCBL = 'HCBL';
     const HDFC = 'HDFC';
@@ -93,15 +97,18 @@ class Upi
     const MGRB = 'MGRB';
     const MRBX = 'MRBX';
     const MRTX = 'MRTX';
+    const MSBL = 'MSBL';
     const MSCI = 'MSCI';
     const MSLM = 'MSLM';
     const MSNU = 'MSNU';
     const MUBL = 'MUBL';
     const MZRX = 'MZRX';
     const NKGS = 'NKGS';
+    const NSPB = 'NSPB';
     const NTBL = 'NTBL';
     const ORBC = 'ORBC';
     const PASX = 'PASX';
+    const PGBX = 'PGBX';
     const PJSB = 'PJSB';
     const PKGB = 'PKGB';
     const PMCB = 'PMCB';
@@ -112,6 +119,7 @@ class Upi
     const PURX = 'PURX';
     const PYTM = 'PYTM';
     const RATN = 'RATN';
+    const RMGB = 'RMGB';
     const RNSB = 'RNSB';
     const SAGX = 'SAGX';
     const SBIN = 'SBIN';
@@ -165,15 +173,18 @@ class Upi
         self::APGV,
         self::APMC,
         self::ASBL,
+        self::AUBL,
         self::AUGX,
         self::BACB,
         self::BARB_R,
+        self::BCBM,
         self::BDBL,
         self::BGBX,
         self::BGGX,
         self::BHUX,
         self::BKDN,
         self::BKID,
+        self::BRDX,
         self::BRGX,
         self::BUGX,
         self::CBIN,
@@ -197,6 +208,7 @@ class Upi
         self::ESMF,
         self::FDRL,
         self::FINO,
+        self::FSFB,
         self::GSCB,
         self::HCBL,
         self::HDFC,
@@ -237,15 +249,18 @@ class Upi
         self::MGRB,
         self::MRBX,
         self::MRTX,
+        self::MSBL,
         self::MSCI,
         self::MSLM,
         self::MSNU,
         self::MUBL,
         self::MZRX,
         self::NKGS,
+        self::NSPB,
         self::NTBL,
         self::ORBC,
         self::PASX,
+        self::PGBX,
         self::PJSB,
         self::PKGB,
         self::PMCB,
@@ -256,6 +271,7 @@ class Upi
         self::PURX,
         self::PYTM,
         self::RATN,
+        self::RMGB,
         self::RNSB,
         self::SAGX,
         self::SBIN,
