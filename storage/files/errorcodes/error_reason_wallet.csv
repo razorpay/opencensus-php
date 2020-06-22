@@ -45,3 +45,4 @@ server_error_HASH_MISMATCH,The server encountered an error. The incident has bee
 BAD_REQUEST_VALIDATION_FAILURE,Failed checksum verification,server_error,Technical,internal,,payment_initiation,
 GATEWAY_ERROR_PAYMENT_DUPLICATE_REQUEST,Payment processing failed due to error at bank or wallet gateway,server_error,Technical,internal,,payment_initiation,
 GATEWAY_ERROR_PAYMENT_VERIFICATION_ERROR,Payment processing failed due to error at bank or wallet gateway,issuer_technical_error,,issuer,,payment_authorization,
+BAD_REQUEST_PAYMENT_CANNOT_BE_CANCELLED,Payment created long back and cannot be cancelled now,payment_cancelled,,customer,,payment_authentication,

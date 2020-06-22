@@ -83,3 +83,4 @@ BAD_REQUEST_PAYMENT_ACCOUNT_INSUFFICIENT_BALANCE,Account Balance is insufficient
 GATEWAY_ERROR_BENEFICIARY_INTERNAL_EXCEPTION,Payment processing failed due to error at bank or wallet gateway,gateway_technical_error,Technical,gateway,,payment_response,I
 BAD_REQUEST_PAYMENT_ALREADY_PROCESSED,same imps payment re-initiated by gateway while in process,gateway_technical_error,,gateway,,payment_debit_response,
 GATEWAY_ERROR_INVALID_REQUEST_BODY,,gateway_technical_error,,gateway,,payment_request,
+BAD_REQUEST_PAYMENT_CANNOT_BE_CANCELLED,Payment created long back and cannot be cancelled now,payment_cancelled,,customer,,payment_authentication,

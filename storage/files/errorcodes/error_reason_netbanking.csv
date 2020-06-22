@@ -45,3 +45,6 @@ SERVER_ERROR,Unknown error on payment processor,server_error,,internal,,payment_
 SERVER_ERROR_PRICING_RULE_ABSENT,Pricing is not defined for your mode of payment. The incident has been reported to admins.,server_error,,internal,,payment_initiation,
 BAD_REQUEST_PAYMENT_AMOUNT_MORE_THAN_ORDER_AMOUNT_DUE,Payment amount is more than order amount,input_validation_failed,,business,,payment_initiation,
 BAD_REQUEST_PAYMENT_NETBANKING_NOT_ENABLED_FOR_MERCHANT,Netbanking method is not enabled,payment_method_not_enabled,,business,,payment_initiation,
+BAD_REQUEST_PAYMENT_CANNOT_BE_CANCELLED,Payment created long back and cannot be cancelled now,payment_cancelled,,customer,,payment_authentication,
+BAD_REQUEST_URL_NOT_FOUND,The requested URL was not found on the server.,server_error,,internal,,payment_initiation,
+BAD_REQUEST_PAYMENT_ALREADY_PROCESSED,The payment has already been processed,bank_technical_error,,internal,,payment_authorization,
