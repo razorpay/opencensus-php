@@ -1481,6 +1481,8 @@ class Core extends Base\Core
                 'fee_split'         => $feesSplit->toArrayPublic(),
             ]);
 
+        $deadlockRetryAttempts = 2;
+
         try
         {
             $this->repo->transaction(function() use ($txn, $feesSplit)
@@ -1498,7 +1500,7 @@ class Core extends Base\Core
                         'transaction_id' => $txn->getId(),
                         'source_id'      => $txn->source->getPublicId(),
                     ]);
-            });
+            }, $deadlockRetryAttempts);
         }
         catch (\Throwable $ex)
         {
