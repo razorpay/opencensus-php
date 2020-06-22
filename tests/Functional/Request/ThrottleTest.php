@@ -6,6 +6,7 @@ use RZP\Trace\TraceCode;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Traits\TestsThrottle;
 use RZP\Http\Throttle\Constant as K;
+use Redis;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 
 /**
@@ -80,6 +81,44 @@ class ThrottleTest extends TestCase
     public function testMigrateThrottleKeysFromRedisLabs()
     {
         $this->ba->adminAuth();
+
+        $redisMockThrottle = $this->getMockBuilder(Redis::class)->setMethods(['hmset'])
+            ->getMock();
+
+        $configRedis = $this->getMockBuilder(Redis::class)->setMethods(['set'])
+            ->getMock();
+
+
+        $redisMockOld = $this->getMockBuilder(Redis::class)->setMethods(['smembers', 'hgetall', 'get'])
+            ->getMock();
+
+        Redis::shouldReceive('connection')
+            ->with('query_cache_redis')
+            ->andReturn($configRedis);
+
+        Redis::shouldReceive('connection')
+            ->with('throttle')
+            ->andReturn($redisMockThrottle);
+
+        Redis::shouldReceive('connection')
+            ->andReturn($redisMockOld);
+
+        $redisMockOld->method('smembers')
+            ->will($this->returnValue(array("MID1")));
+
+        $redisMockOld->method('hgetall')
+            ->will($this->returnValue(array("abc")));
+
+        $map = array(
+            array('{throttle:merchant:MID1}', array("abc")),
+            array('{throttle:merchant:MID1}', array("abc"))
+        );
+
+        $redisMockThrottle->method('hmset')->will($this->returnValueMap($map));
+
+        $redisMockOld->method('get')
+            ->will($this->returnValue(array("CONF1")));
+
 
         $this->makeRequestAndGetContent($this->testData['testMigrateThrottleKeysFromRedisLabs']['request']);
     }

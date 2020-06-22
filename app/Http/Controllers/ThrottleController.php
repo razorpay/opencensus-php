@@ -6,6 +6,7 @@ use Request;
 use Illuminate\Support\Facades\Redis;
 
 use ApiResponse;
+use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Key;
 use RZP\Trace\TraceCode;
 use RZP\Services\Throttle;
@@ -38,7 +39,7 @@ class ThrottleController extends Controller
                 $args = [];
                 foreach ($keys as $key)
                 {
-                    $args[] = Constant::KEYID_MID_KEY_PREFIX . $key->getPublicId();
+                    $args[] = "{".Constant::KEYID_MID_KEY_PREFIX.$key->getPublicId()."}";
                     $args[] = $key->getMerchantId();
                 }
 
@@ -67,49 +68,100 @@ class ThrottleController extends Controller
         return ApiResponse::json($response);
     }
 
-    public function migrateThrottleKeysFromRedisLabs()
+    protected function getRedisKey($input): string
     {
-        RuntimeManager::setMemoryLimit('256M');
-        RuntimeManager::setTimeLimit(1000);
-
-        $redisLabs = Redis::connection()->client();
-        $throttleEC = Redis::connection('throttle')->client();
-        $totalIteration = 0;
-        $failedKeys = 0;
-
-        $keysConfigMerchant = $redisLabs->keys("throttle:merchant:*");
-        $keysConfigRoute = $redisLabs->keys("throttle:route:*");
-        $oldKeys= $redisLabs->keys("throttle:t:*");
-
-        $allKeys = array_merge($keysConfigMerchant, $keysConfigRoute);
-        $allKeys = array_merge($allKeys, $oldKeys);
-
-        $this->trace->info(TraceCode::THROTTLE_REDIS_KEY_MIGRATE, [
-            'total_keys'            => count($allKeys),
-        ]);
-
-        $chunkedKeys = array_chunk($allKeys,1000);
-
-        foreach ($chunkedKeys as $keys)
+        if (empty($input['merchant_id']) === true)
         {
-            ++$totalIteration;
-            foreach ($keys as $key)
-            {
-                $value = $redisLabs->hgetall($key);
-                try
-                {
-                    $throttleEC->hmset($key, $value);
-                }
-                catch (\Throwable $e)
-                {
-                    ++$failedKeys;
-                    $this->trace->traceException($e, null, null, compact("key"));
-                }
 
-            }
+            return K::THROTTLE_PREFIX . K::CONFIGURATION_TYPE_ROUTE . ':' . $input['route'];
         }
 
-        $this->trace->info(TraceCode::THROTTLE_REDIS_KEY_MIGRATE, compact('totalIteration', '$failedKeys'));
+        return K::THROTTLE_PREFIX . K::CONFIGURATION_TYPE_MERCHANT . ':' . $input['merchant_id'];
+    }
+
+
+    public function migrateThrottleKeysFromRedisLabs()
+    {
+        $redisLabs = Redis::connection();
+        $throttleEC = Redis::connection('throttle');
+        $configRedis = Redis::connection('query_cache_redis');
+
+        // Merchant
+        $merchants = $redisLabs->smembers(K::CUSTOM_MERCHANT_SET);
+
+        $totalIteration = 0;
+        $failedIteration = 0;
+
+        foreach ($merchants as $merchantId)
+        {
+            ++$totalIteration;
+            $key = $this->getRedisKey(['merchant_id' => $merchantId]);
+
+            try
+            {
+                $rules = $redisLabs->hgetall($key);
+                $key = "{".$key."}";
+                $throttleEC->hmset($key, $rules);
+            }
+            catch (\Throwable $e)
+            {
+                echo $e->getMessage();
+                $this->trace->traceException($e, null, null, compact("key"));
+            }
+
+        }
+
+        $this->trace->info(TraceCode::THROTTLE_REDIS_KEY_MIGRATE, compact('totalIteration', 'failedIteration'));
+
+        //Routes
+        $totalIteration = 0;
+        $failedIteration = 0;
+
+        $routes    = $redisLabs->smembers(K::CUSTOM_ROUTE_SET);
+
+        foreach ($routes as $route)
+        {
+            ++$totalIteration;
+            $key = $this->getRedisKey(['route' => $route]);
+
+            try
+            {
+                $rules = $redisLabs->hgetall($key);
+                $key = "{".$key."}";
+                $throttleEC->hmset($key, $rules);
+            }
+            catch (\Throwable $e)
+            {
+                ++$failedIteration;
+                $this->trace->traceException($e, null, null, compact("key"));
+            }
+
+        }
+
+        $this->trace->info(TraceCode::THROTTLE_REDIS_KEY_MIGRATE, compact('totalIteration', 'failedIteration'));
+
+
+        // Config
+        $totalIteration = 0;
+        $failedIteration = 0;
+
+        foreach (ConfigKey::PUBLIC_KEYS as $key)
+        {
+            ++$totalIteration;
+            try
+            {
+                $value = $redisLabs->get($key);
+                $configRedis->set($key, $value);
+            }
+            catch (\Throwable $e)
+            {
+                ++$failedIteration;
+                $this->trace->traceException($e, null, null, compact("key"));
+            }
+
+        }
+
+        $this->trace->info(TraceCode::THROTTLE_REDIS_KEY_MIGRATE, compact('totalIteration', 'failedIteration'));
 
         return ApiResponse::json([]);
 
