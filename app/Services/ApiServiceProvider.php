@@ -126,6 +126,11 @@ class ApiServiceProvider extends BaseServiceProvider
             return new VendorPayment($app);
         });
 
+        $this->app->singleton('tax-payments', function($app)
+        {
+            return new TaxPayments($app);
+        });
+
         $this->app->singleton('gateway', function($app)
         {
             return new GatewayManager($app);

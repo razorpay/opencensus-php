@@ -1003,6 +1003,10 @@ class Route
         'vendor_payment_cancel'                    => ['post',     'vendor-payments/{id}/cancel',                    'VendorPaymentController@cancel'                                    ],
         'vendor_payment_bulk_cancel'               => ['post',     'vendor-payments/bulk-cancel',                    'VendorPaymentController@bulkCancel'                                ],
 
+        // Tax Payments
+        'tax_payments_get_all_settings'            => ['get',     'tax-payments/settings/',                          'TaxPaymentController@getAllSettings'                               ],
+        'tax_payments_add_or_update_settings'      => ['post',    'tax-payments/settings/',                          'TaxPaymentController@addOrUpdateSettings'                          ],
+
         // Payout Links
         'payout_links_fetch_multiple'              => ['get',       'payout-links',                                  'PayoutLinkController@list'                                         ],
         'payout_links_fetch_by_id'                 => ['get',       'payout-links/{id}',                             'PayoutLinkController@get'                                          ],
@@ -1282,6 +1286,8 @@ class Route
         'settings_fetch_defined'                   => ['get',      'settings/{module}/defined_keys',                 'SettingsController@getDefined'                                     ],
         'settings_fetch'                           => ['get',      'settings/{module}/{key?}',                       'SettingsController@get'                                            ],
         'settings_upsert'                          => ['post',     'settings/{module}',                              'SettingsController@upsert'                                         ],
+        'settings_fetch_internal'                  => ['get',      'settings_internal/{module}/',                    'SettingsController@get'                                            ],
+        'settings_upsert_internal'                 => ['post',     'settings_internal/{module}/',                    'SettingsController@upsert'                                         ],
 
         // OAuth routes
         'oauth_token_create'                       => ['post',     'oauth/tokens',                                   'OAuthTokenController@create'                                       ],
@@ -2370,6 +2376,8 @@ class Route
         'fts_bulk_attempts_initiate',
         'merchants_update_onboarding_category_to_normal_cron',
         'entity_bulk_update',
+        'settings_fetch_internal',
+        'settings_upsert_internal',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -2751,6 +2759,10 @@ class Route
 
         //payout downtime
         'fetch_payout_downtimes_enabled',
+
+        // tax payment routes
+        'tax_payments_get_all_settings',
+        'tax_payments_add_or_update_settings',
     ];
 
     //
@@ -4386,6 +4398,8 @@ class Route
             'vendor_payment_send_failure_email',
             'internal_merchant_fetch',
             'vendor_payment_composite_expands_helper',
+            'settings_fetch_internal',
+            'settings_upsert_internal',
         ],
 
         'dashboard' => [

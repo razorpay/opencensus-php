@@ -2228,6 +2228,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const VENDOR_PAYMENT_REQUEST                                = 'VENDOR_PAYMENT_REQUEST';
     const VENDOR_PAYMENT_RESPONSE                               = 'VENDOR_PAYMENT_RESPONSE';
 
+    const TAX_PAYMENT_REQUEST                                   = 'TAX_PAYMENT_REQUEST';
+    const TAX_PAYMENT_RESPONSE                                  = 'TAX_PAYMENT_RESPONSE';
+
     const OTP_VERIFICATION_FAILED_VENDOR_PAYOUT                 = 'OTP_VERIFICATION_FAILED_VENDOR_PAYOUT';
 
     const QUEUED_PAYOUT_CREATED                                 = 'QUEUED_PAYOUT_CREATED';

@@ -38,6 +38,7 @@ class VendorPayment
     const BULK_CANCEL_VENDOR_PAYMENTS    = 'BulkCancelVP';
     const GET_INVOICE_SIGNED_URL    = 'GetInvoiceSignedURL';
     const VP_SUMMARY_API            = 'SummaryApi';
+    const BASE_PATH                 = 'twirp/vendorpayments.Vendorpayments';
 
     protected $app;
 
@@ -156,7 +157,7 @@ class VendorPayment
 
     public function create(MerchantEntity $merchant, array $input, Entity $user = null)
     {
-        $url = sprintf('%s/%s', $this->config['url'], self::CREATE_VENDOR_PAYMENT);
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::CREATE_VENDOR_PAYMENT);
 
         if ($user === null)
         {
@@ -170,7 +171,7 @@ class VendorPayment
 
     public function getContactById(MerchantEntity $merchant, string $contactId)
     {
-        $url = sprintf('%s/%s', $this->config['url'], self::GET_CONTACT);
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::GET_CONTACT);
 
         $input = [self::CONTACT_ID => $contactId];
 
@@ -179,14 +180,14 @@ class VendorPayment
 
     public function createContact(MerchantEntity $merchant, array $input)
     {
-        $url = sprintf('%s/%s', $this->config['url'], self::CREATE_CONTACT);
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::CREATE_CONTACT);
 
         return $this->makeRequest($merchant, $url, $input);
     }
 
     public function updateContact(MerchantEntity $merchant, array $input, string $contactId)
     {
-        $url = sprintf('%s/%s', $this->config['url'], self::UPDATE_CONTACT);
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::UPDATE_CONTACT);
 
         $input[self::CONTACT_ID] = $contactId;
 
@@ -195,7 +196,7 @@ class VendorPayment
 
     public function listContacts(MerchantEntity $merchant, array $input)
     {
-        $url = sprintf('%s/%s', $this->config['url'], self::LIST_CONTACTS);
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::LIST_CONTACTS);
 
         if (key_exists(self::ID, $input) === true)
         {
@@ -209,14 +210,14 @@ class VendorPayment
 
     public function listVendorPayments(MerchantEntity $merchant, array $input)
     {
-        $url = sprintf('%s/%s', $this->config['url'], self::LIST_VENDOR_PAYMENTS);
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::LIST_VENDOR_PAYMENTS);
 
         return $this->makeRequest($merchant, $url, $input);
     }
 
     public function getTdsCategories(MerchantEntity $merchant)
     {
-        $url = sprintf('%s/%s', $this->config['url'], self::GET_TDS_CATEGORIES);
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::GET_TDS_CATEGORIES);
 
         return $this->makeRequest($merchant, $url);
     }
@@ -229,7 +230,7 @@ class VendorPayment
      */
     public function pushPayoutStatusUpdate(PayoutEntity $payout)
     {
-        $url = sprintf('%s/%s', $this->config['url'], self::PUSH_PAYOUT_STATUS_UPDATE);
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::PUSH_PAYOUT_STATUS_UPDATE);
 
         $input = [
             'payout_status' => $payout->getStatus(),
@@ -241,7 +242,7 @@ class VendorPayment
 
     public function getVendorPaymentById(MerchantEntity $merchant, string $vendorPaymentId)
     {
-        $url = sprintf('%s/%s', $this->config['url'], self::GET_VENDOR_PAYMENT);
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::GET_VENDOR_PAYMENT);
 
         $input = ['id' => $vendorPaymentId];
 
@@ -253,7 +254,7 @@ class VendorPayment
                             array $input,
                             Entity $user = null)
     {
-        $url = sprintf('%s/%s', $this->config['url'], self::EXECUTE_VENDOR_PAYMENT);
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::EXECUTE_VENDOR_PAYMENT);
 
         $input['id'] = $vendorPaymentId;
 
@@ -269,7 +270,7 @@ class VendorPayment
 
     public function uploadInvoice(MerchantEntity $merchant)
     {
-        $url = sprintf('%s/%s', $this->config['url'], self::UPLOAD_INVOICE);
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::UPLOAD_INVOICE);
         // The MS we are calling, expects JSON content,
         // so we are sending the contents of the file in
         // base_64 encoded byte array
@@ -285,7 +286,7 @@ class VendorPayment
                             string $vendorPaymentId,
                             array $input)
     {
-        $url = sprintf('%s/%s', $this->config['url'], self::EDIT_VENDOR_PAYMENTS);
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::EDIT_VENDOR_PAYMENTS);
 
         $input['id'] = $vendorPaymentId;
 
@@ -297,7 +298,7 @@ class VendorPayment
                            array $input,
                            Entity $user = null)
     {
-        $url = sprintf('%s/%s', $this->config['url'], self::CANCEL_VENDOR_PAYMENTS);
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::CANCEL_VENDOR_PAYMENTS);
 
         $input['id'] = $vendorPaymentId;
 
@@ -314,7 +315,7 @@ class VendorPayment
     public function getInvoiceSignedUrl(MerchantEntity $merchant,
                                         string $fileId)
     {
-        $url = sprintf('%s/%s', $this->config['url'], self::GET_INVOICE_SIGNED_URL);
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::GET_INVOICE_SIGNED_URL);
 
         $input = ['file_id' => $fileId];
 
@@ -323,7 +324,7 @@ class VendorPayment
 
     public function summary(MerchantEntity $merchant, array $input)
     {
-        $url = sprintf('%s/%s', $this->config['url'], self::VP_SUMMARY_API);
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::VP_SUMMARY_API);
 
         return $this->makeRequest($merchant, $url, $input);
     }
