@@ -6,7 +6,6 @@ use DB;
 use Mail;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Payment\Method;
-use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\TestCase;
@@ -494,16 +493,6 @@ class RefundWithNegativeBalanceTest extends TestCase
                 ]
             );
         }
-
-        $razorxMock = $this->getMockBuilder(RazorXClient::class)
-            ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
-            ->getMock();
-
-        $this->app->instance('razorx', $razorxMock);
-
-        $this->app->razorx->method('getTreatment')
-            ->willReturn('on');
     }
 
 }

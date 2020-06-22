@@ -2031,8 +2031,7 @@ trait Refund
             'refund_id'         => $refund->getId(),
         ];
 
-        $negativeBalanceEnabled = (new BalanceConfig\Core)->isNegativeBalanceEnabledForTxnAndMerchant(Transaction\Type::REFUND,
-                                                            $merchant->getId());
+        $negativeBalanceEnabled = (new BalanceConfig\Core)->isNegativeBalanceEnabledForTxnAndMerchant(Transaction\Type::REFUND);
 
         if ($merchant->getRefundSource() === RefundSource::CREDITS)
         {

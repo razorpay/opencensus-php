@@ -515,8 +515,7 @@ class Core extends Base\Core
         }
 
         $negativeBalanceEnabled = (new BalanceConfig\Core)->isNegativeBalanceEnabledForTxnAndMerchant($txn->getType(),
-                                                                                            $txn->merchant->getId(),
-                                                                                            $balanceType);
+                                                                                                        $balanceType);
 
         if ($negativeBalanceEnabled === true)
         {
@@ -565,11 +564,15 @@ class Core extends Base\Core
     {
         $balanceType = $merchantBalance->getType();
 
+        if ($balanceType !== Type::PRIMARY)
+        {
+            return;
+        }
+
         $merchantId = $merchantBalance->merchant->getId();
 
         $negativeBalanceEnabled = (new BalanceConfig\Core)->isNegativeBalanceEnabledForTxnAndMerchant($txnType,
-                                                                                            $merchantId,
-                                                                                            $balanceType);
+                                                                                                        $balanceType);
 
         if ($negativeBalanceEnabled === true)
         {

@@ -216,8 +216,7 @@ class Validator extends Base\Validator
         try
         {
             $negativeBalanceEnabled = (new BalanceConfig\Core)->isNegativeBalanceEnabledForTxnAndMerchant(
-                                                                Transaction\Type::TRANSFER,
-                                                                $merchant->getId());
+                                                                Transaction\Type::TRANSFER);
 
             (new Merchant\Balance\Core)->checkMerchantBalance($merchant, -1 * $debit,
                                                         Transaction\Type::TRANSFER,

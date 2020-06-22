@@ -256,7 +256,7 @@ class Core extends Base\Core
             ]);
     }
 
-    public function isNegativeBalanceEnabledForTxnAndMerchant(string $txnType, string $merchantId, string $balanceType = Balance\Type::PRIMARY) : bool
+    public function isNegativeBalanceEnabledForTxnAndMerchant(string $txnType, string $balanceType = Balance\Type::PRIMARY) : bool
     {
         if ((array_key_exists($balanceType, Balance\Core::NEGATIVE_FLOWS) === false) or
             (in_array($txnType, Balance\Core::NEGATIVE_FLOWS[$balanceType]) === false))
@@ -264,18 +264,6 @@ class Core extends Base\Core
             return false;
         }
 
-        $mode = $this->mode ?? 'live';
-
-        $response = $this->app->razorx->getTreatment($merchantId, self::NEGATIVE_BALANCE_FEATURE, $mode);
-
-        $this->trace->info(TraceCode::NEGATIVE_BALANCE_RAZORX_RESPONSE,
-            [
-                'mode'          => $mode,
-                'merchant_id'   => $merchantId,
-                'response'      => $response
-            ]
-        );
-
-        return $response === 'on';
+        return true;
     }
 }

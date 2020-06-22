@@ -6,7 +6,6 @@ use Mail;
 use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestException;
 use RZP\Services\Mock\Reminders;
-use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Mail\Merchant\BalancePositiveAlert;
 use RZP\Mail\Merchant\NegativeBalanceAlert;
@@ -863,16 +862,6 @@ class CaptureWithNegativeBalanceTest extends TestCase
             ]
         );
 
-        $razorxMock = $this->getMockBuilder(RazorXClient::class)
-            ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
-            ->getMock();
-
-        $this->app->instance('razorx', $razorxMock);
-
-        $this->app->razorx->method('getTreatment')
-            ->willReturn('on');
-
         $this->payment = $this->defaultAuthPayment();
 
         $this->ba->privateAuth();
@@ -907,16 +896,6 @@ class CaptureWithNegativeBalanceTest extends TestCase
                 'balance'     => -1000,
             ]
         );
-
-        $razorxMock = $this->getMockBuilder(RazorXClient::class)
-            ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
-            ->getMock();
-
-        $this->app->instance('razorx', $razorxMock);
-
-        $this->app->razorx->method('getTreatment')
-            ->willReturn('on');
 
         $this->payment = $this->defaultAuthPayment();
 
@@ -958,16 +937,6 @@ class CaptureWithNegativeBalanceTest extends TestCase
             ]
         );
 
-        $razorxMock = $this->getMockBuilder(RazorXClient::class)
-            ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
-            ->getMock();
-
-        $this->app->instance('razorx', $razorxMock);
-
-        $this->app->razorx->method('getTreatment')
-            ->willReturn('on');
-
         $this->payment = $this->defaultAuthPayment();
 
         $this->ba->privateAuth();
@@ -1001,16 +970,6 @@ class CaptureWithNegativeBalanceTest extends TestCase
 
         $this->fixtures->create('merchant_reminders', $reminderEntity);
         $this->assertNotNull($reminderEntity);
-
-        $razorxMock = $this->getMockBuilder(RazorXClient::class)
-            ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
-            ->getMock();
-
-        $this->app->instance('razorx', $razorxMock);
-
-        $this->app->razorx->method('getTreatment')
-            ->willReturn('on');
 
         $this->payment = $this->defaultAuthPayment();
 
@@ -1047,16 +1006,6 @@ class CaptureWithNegativeBalanceTest extends TestCase
     public function testCaptureAddBalanceToNegativeBalance()
     {
         Mail::fake();
-
-        $razorxMock = $this->getMockBuilder(RazorXClient::class)
-            ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
-            ->getMock();
-
-        $this->app->instance('razorx', $razorxMock);
-
-        $this->app->razorx->method('getTreatment')
-            ->willReturn('on');
 
         $this->fixtures->base->editEntity('balance', '10000000000000',
             [
@@ -1140,16 +1089,6 @@ class CaptureWithNegativeBalanceTest extends TestCase
             ]
         );
 
-        $razorxMock = $this->getMockBuilder(RazorXClient::class)
-            ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
-            ->getMock();
-
-        $this->app->instance('razorx', $razorxMock);
-
-        $this->app->razorx->method('getTreatment')
-            ->willReturn('on');
-
         $this->ba->privateAuth();
 
         return $payment['id'];
@@ -1216,16 +1155,6 @@ class CaptureWithNegativeBalanceTest extends TestCase
                 'fee_credits' => $feeCredits
             ]
         );
-
-        $razorxMock = $this->getMockBuilder(RazorXClient::class)
-            ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
-            ->getMock();
-
-        $this->app->instance('razorx', $razorxMock);
-
-        $this->app->razorx->method('getTreatment')
-            ->willReturn('on');
 
         $this->ba->privateAuth();
 

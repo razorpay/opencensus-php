@@ -3,7 +3,6 @@
 namespace RZP\Tests\Functional\Transfer;
 
 use Mail;
-use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Mail\Merchant\BalancePositiveAlert;
 use RZP\Mail\Merchant\NegativeBalanceAlert;
@@ -54,16 +53,6 @@ class TransferWithNegativeBalanceTest extends TestCase
         );
         $account = $this->fixtures->create('merchant:marketplace_account', ['id' => '10000000000002']);
 
-        $razorxMock = $this->getMockBuilder(RazorXClient::class)
-            ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
-            ->getMock();
-
-        $this->app->instance('razorx', $razorxMock);
-
-        $this->app->razorx->method('getTreatment')
-            ->willReturn('on');
-
         $payment = $this->doAuthAndCapturePayment();
 
         $transfers[0] = [
@@ -108,16 +97,6 @@ class TransferWithNegativeBalanceTest extends TestCase
         );
         $account = $this->fixtures->create('merchant:marketplace_account', ['id' => '10000000000002']);
 
-        $razorxMock = $this->getMockBuilder(RazorXClient::class)
-            ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
-            ->getMock();
-
-        $this->app->instance('razorx', $razorxMock);
-
-        $this->app->razorx->method('getTreatment')
-            ->willReturn('on');
-
         $payment = $this->doAuthAndCapturePayment();
 
         $transfers[0] = [
@@ -159,16 +138,6 @@ class TransferWithNegativeBalanceTest extends TestCase
         );
 
         $account = $this->fixtures->create('merchant:marketplace_account', ['id' => '10000000000002']);
-
-        $razorxMock = $this->getMockBuilder(RazorXClient::class)
-            ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
-            ->getMock();
-
-        $this->app->instance('razorx', $razorxMock);
-
-        $this->app->razorx->method('getTreatment')
-            ->willReturn('on');
 
         $payment = $this->doAuthAndCapturePayment();
 
@@ -213,16 +182,6 @@ class TransferWithNegativeBalanceTest extends TestCase
 
         $account = $this->fixtures->create('merchant:marketplace_account', ['id' => '10000000000002']);
 
-        $razorxMock = $this->getMockBuilder(RazorXClient::class)
-            ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
-            ->getMock();
-
-        $this->app->instance('razorx', $razorxMock);
-
-        $this->app->razorx->method('getTreatment')
-            ->willReturn('on');
-
         $payment = $this->doAuthAndCapturePayment();
 
         $transfers[0] = [
@@ -262,16 +221,6 @@ class TransferWithNegativeBalanceTest extends TestCase
 
         $account = $this->fixtures->create('merchant:marketplace_account', ['id' => '10000000000002']);
 
-        $razorxMock = $this->getMockBuilder(RazorXClient::class)
-            ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
-            ->getMock();
-
-        $this->app->instance('razorx', $razorxMock);
-
-        $this->app->razorx->method('getTreatment')
-            ->willReturn('on');
-
         $payment = $this->doAuthAndCapturePayment();
 
         $transfers[0] = [
@@ -306,16 +255,6 @@ class TransferWithNegativeBalanceTest extends TestCase
         $this->fixtures->merchant->editBalance(1000);
 
         $account = $this->fixtures->create('merchant:marketplace_account', ['id' => '10000000000002']);
-
-        $razorxMock = $this->getMockBuilder(RazorXClient::class)
-            ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
-            ->getMock();
-
-        $this->app->instance('razorx', $razorxMock);
-
-        $this->app->razorx->method('getTreatment')
-            ->willReturn('on');
 
         $payment = $this->doAuthAndCapturePayment();
 
@@ -363,16 +302,6 @@ class TransferWithNegativeBalanceTest extends TestCase
         $this->fixtures->merchant->editBalance(1000);
 
         $account = $this->fixtures->create('merchant:marketplace_account', ['id' => '10000000000002']);
-
-        $razorxMock = $this->getMockBuilder(RazorXClient::class)
-            ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
-            ->getMock();
-
-        $this->app->instance('razorx', $razorxMock);
-
-        $this->app->razorx->method('getTreatment')
-            ->willReturn('on');
 
         $payment = $this->doAuthAndCapturePayment();
 
