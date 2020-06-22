@@ -4639,6 +4639,7 @@ class Route
             'invoice_get_count',
             'customer_create',
             'order_fetch_by_id',
+            'merchant_features_fetch',
         ],
 
         'kotak' => [
