@@ -864,6 +864,15 @@ class Notifier extends Base\Core
 
                 break;
 
+            case Preferences::MID_STASHFIN:
+                $template = 'sms.custom_invoice.stashfin_eqx';
+                $params = [
+                    'invoice_link'            => $invoiceLink,
+                    'amount'                  => $this->invoice->getAmount() / 100,
+                ];
+
+                break;
+
             case Preferences::MID_CLIX_CAPITAL:
             case Preferences::MID_CLIX_CAPITAL_SERVICES:
             case Preferences::MID_CLIX_CAPITAL_SERVICES_1:
