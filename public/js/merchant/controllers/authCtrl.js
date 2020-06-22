@@ -445,6 +445,7 @@ app
                     .onbr()
                     .success('signup.display_signup_page', {
                       mode: $scope.eventsMode,
+                      version: 1,
                     })
                 );
                 $state.transitionTo(
