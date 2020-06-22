@@ -503,7 +503,7 @@ class VerifyTest extends TestCase
         $payment = $this->fixtures->create(
             'payment:netbanking_failed', ['created_at' => $createdAt]);
 
-        $createdAt = Carbon::now()->subMinutes(3)->getTimestamp();
+        $createdAt = Carbon::now()->subMinutes(4)->getTimestamp();
 
         $payment2 = $this->fixtures->create(
             'payment:netbanking_failed', ['created_at' => $createdAt]);
@@ -1642,7 +1642,7 @@ class VerifyTest extends TestCase
 
     protected function setupRedisMock($paymentArray = [])
     {
-        $redisMock = $this->getMockBuilder(Redis::class)->setMethods(['hGetAll','set', 'get', 'setex', 'client', 'exists'])
+        $redisMock = $this->getMockBuilder(Redis::class)->setMethods(['set', 'get', 'setex', 'client', 'exists'])
                           ->getMock();
 
         Redis::shouldReceive('connection')
@@ -1667,7 +1667,7 @@ class VerifyTest extends TestCase
         {
             foreach ($paymentArray as $payment)
             {
-                if ('mutex:' . $payment['id'] . '_verify' === $resourceId)
+                if ('mutex:ec' . $payment['id'] . '_verify' === $resourceId)
                 {
                         return null;
                 }
