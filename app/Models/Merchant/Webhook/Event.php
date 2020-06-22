@@ -27,6 +27,7 @@ class Event
     const P2P_CREATED                       = 'p2p.created';
     const P2P_REJECTED                      = 'p2p.rejected';
     const P2P_TRANSFERRED                   = 'p2p.transferred';
+    const SUBSCRIPTION_AUTHENTICATED        = 'subscription.authenticated';
     const SUBSCRIPTION_ACTIVATED            = 'subscription.activated';
     const SUBSCRIPTION_CHARGED              = 'subscription.charged';
     const SUBSCRIPTION_PENDING              = 'subscription.pending';
@@ -101,6 +102,7 @@ class Event
         self::P2P_CREATED,
         self::P2P_REJECTED,
         self::P2P_TRANSFERRED,
+        self::SUBSCRIPTION_AUTHENTICATED,
         self::SUBSCRIPTION_ACTIVATED,
         self::SUBSCRIPTION_CHARGED,
         self::SUBSCRIPTION_PENDING,
@@ -181,6 +183,7 @@ class Event
         self::P2P_CREATED,
         self::P2P_REJECTED,
         self::P2P_TRANSFERRED,
+        self::SUBSCRIPTION_AUTHENTICATED,
         self::SUBSCRIPTION_ACTIVATED,
         self::SUBSCRIPTION_PENDING,
         self::SUBSCRIPTION_HALTED,
@@ -323,6 +326,7 @@ class Event
         self::PAYMENT_LINK_PARTIALLY_PAID       => 8,
         self::PAYMENT_LINK_EXPIRED              => 9,
         self::PAYMENT_LINK_CANCELLED            => 10,
+        self::SUBSCRIPTION_AUTHENTICATED        => 11,
     ];
 
     /**
@@ -339,6 +343,7 @@ class Event
         self::INVOICE_PAID                      => [Product::PRIMARY],
         self::INVOICE_PARTIALLY_PAID            => [Product::PRIMARY],
         self::INVOICE_EXPIRED                   => [Product::PRIMARY],
+        self::SUBSCRIPTION_AUTHENTICATED        => [Product::PRIMARY],
         self::SUBSCRIPTION_ACTIVATED            => [Product::PRIMARY],
         self::SUBSCRIPTION_PENDING              => [Product::PRIMARY],
         self::SUBSCRIPTION_HALTED               => [Product::PRIMARY],
@@ -420,6 +425,7 @@ class Event
         self::INVOICE_PARTIALLY_PAID            => Entity::INVOICE,
         self::INVOICE_EXPIRED                   => Entity::INVOICE,
         self::ORDER_PAID                        => Entity::ORDER,
+        self::SUBSCRIPTION_AUTHENTICATED        => Entity::SUBSCRIPTION,
         self::SUBSCRIPTION_ACTIVATED            => Entity::SUBSCRIPTION,
         self::SUBSCRIPTION_PENDING              => Entity::SUBSCRIPTION,
         self::SUBSCRIPTION_HALTED               => Entity::SUBSCRIPTION,
@@ -476,6 +482,7 @@ class Event
     ];
 
     public static $eventsToFeatureMap = [
+        self::SUBSCRIPTION_AUTHENTICATED        => Feature\Constants::SUBSCRIPTIONS,
         self::SUBSCRIPTION_ACTIVATED            => Feature\Constants::SUBSCRIPTIONS,
         self::SUBSCRIPTION_PENDING              => Feature\Constants::SUBSCRIPTIONS,
         self::SUBSCRIPTION_HALTED               => Feature\Constants::SUBSCRIPTIONS,
