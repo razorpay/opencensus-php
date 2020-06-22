@@ -191,20 +191,18 @@ class Repository extends Base\Repository
     }
 
     /**
-     * Fetch Balance Ids for all payouts that got queued since the last process-queued-payouts cron ran
-     *
-     * @param $previousCronTime
+     * Fetch Balance Ids for all payouts that have at least one queued payout
      *
      * @return mixed
      */
-    public function getBalanceIdsWherePayoutsQueuedRecently($previousCronTime)
+    public function getBalanceIdsWithAtleastOneQueuedPayout()
     {
         $queuedAtColumn = $this->dbColumn(Entity::QUEUED_AT);
         $balanceIdColumn = $this->dbColumn(Entity::BALANCE_ID);
 
         return $this->newQuery()
                     ->select($balanceIdColumn)
-                    ->where($queuedAtColumn, '>=', $previousCronTime)
+                    ->whereNotNull($queuedAtColumn)
                     ->distinct()
                     ->get()
                     ->pluck(Entity::BALANCE_ID)

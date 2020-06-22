@@ -2273,8 +2273,6 @@ class RblBankingAccountStatementTest extends TestCase
                                $actualOutputAfterBalanceFetchCron[Balance\Entity::LAST_FETCHED_AT]);
 
         $this->assertArraySelectiveEquals($expectedResponse, $actualOutputAfterBalanceFetchCron);
-
-        Carbon::setTestNow();
     }
 
     // in this first balance fetch cron is run before banking Account statement fetch Cron.
@@ -2348,9 +2346,6 @@ class RblBankingAccountStatementTest extends TestCase
 
         $this->assertNotEquals($actualOutputAfterStmtCron[Balance\Entity::BALANCE],
                                $actualOutputAfterBalanceFetchCron[Balance\Entity::BALANCE]);
-
-        Carbon::setTestNow();
-
     }
 
     // in this first balance fetch cron is run before banking Account statement fetch Cron.

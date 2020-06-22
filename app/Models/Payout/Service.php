@@ -431,29 +431,24 @@ class Service extends Base\Service
         $balanceIdsWhitelist = $input[Entity::BALANCE_IDS] ?? [];
         $balanceIdsBlacklist = $input[Entity::BALANCE_IDS_NOT] ?? [];
 
-        $prevCronTime = $this->getProcessQueuedPayoutsCronLastRunAt();
-        $currentTime  = Carbon::now(Timezone::IST)->getTimestamp();
-
         $this->trace->info(TraceCode::PAYOUT_QUEUED_PROCESSING_INITIATED, [
-            'last_cron_run_at'  => $prevCronTime,
             'input'             => $input,
         ]);
 
-        $balanceIdsWhereBalanceUpdatedRecently = $this->repo
-                                                      ->balance
-                                                      ->getBankingBalanceIdsWhereBalanceUpdatedRecently($prevCronTime);
+        $balanceIds = $this->repo->payout->getBalanceIdsWithAtleastOneQueuedPayout();
 
-        $balanceIdsWhereGatewayBalanceUpdatedRecently = $this->repo
-                                                             ->banking_account
-                                                             ->getBalanceIdsWhereGatewayBalanceUpdatedRecently($prevCronTime);
+        // Filters the balance IDs for balances where balance changed in last 24 hours
+        $balanceIdsFilteredOnBalanceUpdate = $this->repo
+                                                  ->balance
+                                                  ->getBankingBalanceIdsWhereBalanceUpdatedRecently($balanceIds);
 
-        $balanceIdsWherePayoutsCreatedRecently = $this->repo
-                                                      ->payout
-                                                      ->getBalanceIdsWherePayoutsQueuedRecently($prevCronTime);
+        // Filters the balance IDs for balances where gateway balance changed in last 24 hours
+        $balanceIdsFilteredOnGatewayBalanceUpdate = $this->repo
+                                                         ->banking_account
+                                                         ->getBalanceIdsWhereGatewayBalanceUpdatedRecently($balanceIds);
 
-        $balanceIdList = array_unique(array_merge($balanceIdsWhereBalanceUpdatedRecently,
-                                                  $balanceIdsWherePayoutsCreatedRecently,
-                                                  $balanceIdsWhereGatewayBalanceUpdatedRecently));
+        $balanceIdList = array_unique(array_merge($balanceIdsFilteredOnBalanceUpdate,
+                                                  $balanceIdsFilteredOnGatewayBalanceUpdate));
 
         if (empty($balanceIdsWhitelist) === false)
         {
@@ -467,12 +462,7 @@ class Service extends Base\Service
 
         $this->core->dispatchBalanceIdsForQueuedPayouts($balanceIdList);
 
-        // Updating the Redis key only after the cron has ran successfully.
-        $this->setProcessQueuedPayoutsCronLastRunAt($currentTime);
-
         $this->trace->info(TraceCode::PAYOUT_QUEUED_PROCESSING_COMPLETED, [
-            'old_cron_run_at' => $prevCronTime,
-            'new_cron_run_at' => $currentTime,
             'balance_id_list' => $balanceIdList,
         ]);
 
@@ -940,33 +930,5 @@ class Service extends Base\Service
         }
 
         return $input;
-    }
-
-    protected function getProcessQueuedPayoutsCronLastRunAt()
-    {
-        $adminService = new Admin\Service;
-
-        $prevCronTime = $adminService->getConfigKey(
-            [
-                'key' => Admin\ConfigKey::RX_QUEUED_PAYOUTS_CRON_LAST_RUN_AT
-            ]);
-
-        // If the key isn't set, we shall run it from time 0. In that case, we shall run the cron
-        // for all merchants (ignoring the micro optimizations) which isn't that big an issue
-        if (empty($prevCronTime) === true)
-        {
-            return 0;
-        }
-
-        return $prevCronTime;
-    }
-
-    protected function setProcessQueuedPayoutsCronLastRunAt($currentTime)
-    {
-        $adminService = new Admin\Service;
-
-        $adminService->setConfigKeys([
-                                         Admin\ConfigKey::RX_QUEUED_PAYOUTS_CRON_LAST_RUN_AT => $currentTime
-                                     ]);
     }
 }

@@ -2,8 +2,10 @@
 
 namespace RZP\Models\Merchant\Balance;
 
+use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
+use RZP\Constants\Timezone;
 
 class Repository extends Base\Repository
 {
@@ -298,22 +300,25 @@ class Repository extends Base\Repository
     }
 
     /**
-     * Fetch Id for balances of type banking where balance has updated since the last process-queued-payouts cron ran
+     * Filter out Balance Id for balances where balance has updated in last 24 hours
      *
-     * @param $previousCronTime
+     * @param $balanceIdList
      *
      * @return mixed
      */
-    public function getBankingBalanceIdsWhereBalanceUpdatedRecently($previousCronTime)
+    public function getBankingBalanceIdsWhereBalanceUpdatedRecently(array $balanceIdList)
     {
         $idColumn = $this->dbColumn(Entity::ID);
         $typeColumn = $this->dbColumn(Entity::TYPE);
         $updatedAtColumn = $this->dbColumn(Entity::UPDATED_AT);
 
+        $oneDayEarlierTimeStamp = Carbon::now(Timezone::IST)->subHours(24)->getTimestamp();
+
         return $this->newQuery()
                     ->select($idColumn)
-                    ->where($updatedAtColumn, '>=', $previousCronTime)
+                    ->whereIn($idColumn, $balanceIdList)
                     ->where($typeColumn, '=', Type::BANKING)
+                    ->where($updatedAtColumn, '>=', $oneDayEarlierTimeStamp)
                     ->distinct()
                     ->get()
                     ->pluck(Entity::ID)

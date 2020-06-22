@@ -3,8 +3,10 @@
 namespace RZP\Models\BankingAccount;
 
 use RZP\Base;
+use Carbon\Carbon;
 use RZP\Constants\Table;
 use RZP\Models\Merchant;
+use RZP\Constants\Timezone;
 use RZP\Models\Admin\Admin\Entity as AdminEntity;
 
 class Repository extends Base\Repository
@@ -189,15 +191,25 @@ class Repository extends Base\Repository
         });
     }
 
-    public function getBalanceIdsWhereGatewayBalanceUpdatedRecently($previousCronTime)
+    /**
+     * Filter out Balance Id for balances where gateway balance has updated in last 24 hours
+     *
+     * @param array $balanceIdList
+     *
+     * @return mixed
+     */
+    public function getBalanceIdsWhereGatewayBalanceUpdatedRecently(array $balanceIdList)
     {
         $statusColumn    = $this->dbColumn(Entity::STATUS);
         $balanceIdColumn = $this->dbColumn(Entity::BALANCE_ID);
         $updatedAtColumn = $this->dbColumn(Entity::UPDATED_AT);
 
+        $oneDayEarlierTimeStamp = Carbon::now(Timezone::IST)->subHours(24)->getTimestamp();
+
         return $this->newQuery()
                     ->select($balanceIdColumn)
-                    ->where($updatedAtColumn, '>=', $previousCronTime)
+                    ->whereIn($balanceIdColumn, $balanceIdList)
+                    ->where($updatedAtColumn, '>=', $oneDayEarlierTimeStamp)
                     ->where($statusColumn, '=', Status::ACTIVATED)
                     ->distinct()
                     ->get()
