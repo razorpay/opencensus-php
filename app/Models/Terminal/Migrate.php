@@ -273,13 +273,19 @@ trait Migrate
 
     protected function compareFetchedTerminalIds($terminals, $fetchedTerminals) : bool
     {
-        $fetchedTerminalIds = array_map(function ($terminal) {
-            return $terminal[Terminal\Entity::ID];
-        }, $fetchedTerminals);
+        $fetchedTerminalIds = [];
 
-        $terminalIds = array_map(function ($terminal) {
-            return $terminal->getId();
-        }, $terminals->all());
+        foreach ($fetchedTerminals as $fetchedTerminal)
+        {
+            $fetchedTerminalIds[] = $fetchedTerminal[Entity::ID];
+        }
+
+        $terminalIds = [];
+
+        foreach ($terminals as $terminal)
+        {
+            $terminalIds[] = $terminal->getId();
+        }
 
         $fetchedTerminalIds = array_sort($fetchedTerminalIds);
 
