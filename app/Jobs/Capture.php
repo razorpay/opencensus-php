@@ -10,8 +10,8 @@ use RZP\Trace\TraceCode;
 
 class Capture extends Job
 {
-    const MAX_JOB_ATTEMPTS = 15;
-    const JOB_RELEASE_WAIT = 150;
+    const MAX_JOB_ATTEMPTS = 10;
+    const JOB_RELEASE_WAIT = 300;
 
     // Make sure that this is below 900 (seconds) because SQS doesn't support
     // delay over 15 minutes.
@@ -113,7 +113,7 @@ class Capture extends Job
 
     protected function getRetryTime()
     {
-        return $this->attempts() * self::JOB_RELEASE_WAIT;
+        return self::JOB_RELEASE_WAIT;
     }
 
     protected function raiseAlerts()
