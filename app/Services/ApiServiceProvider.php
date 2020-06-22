@@ -669,7 +669,7 @@ class ApiServiceProvider extends BaseServiceProvider
 
             $mutex = new Mutex($app);
 
-            $mutex->setRedisClient(Redis::Connection('mutex_redis'));
+            $mutex->setRedisClient($this->app['redisdualwrite']);
 
             return $mutex;
         });

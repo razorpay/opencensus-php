@@ -22,7 +22,7 @@ class Mutex
 
     protected $redis;
 
-    const PREFIX = 'mutex:ec';
+    const PREFIX = 'mutex:';
 
     protected $acquiredResources;
 
