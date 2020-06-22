@@ -136,7 +136,9 @@ class Purpose
 
         $custom = $this->getSettingsAccessor($merchant)->all()->toArray();
 
-        $all = array_merge($default, $custom);
+        // array_merge cannot be used here because numeric keys in php arrays
+        // can cause the function to give unexpected results.
+        $all = $custom + $default;
 
         $purposes = new PublicCollection;
 

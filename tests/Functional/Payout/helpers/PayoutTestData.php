@@ -3333,6 +3333,10 @@ return [
                 'count'     => 7,
                 'items'     =>  [
                     [
+                        'purpose'       => 'Give Mehul A Bonus',
+                        'purpose_type'  => 'settlement',
+                    ],
+                    [
                         'purpose'       => 'refund',
                         'purpose_type'  => 'refund',
                     ],
@@ -3354,10 +3358,6 @@ return [
                     ],
                     [
                         'purpose'       => 'vendor bill',
-                        'purpose_type'  => 'settlement',
-                    ],
-                    [
-                        'purpose'       => 'Give Mehul A Bonus',
                         'purpose_type'  => 'settlement',
                     ],
                 ],

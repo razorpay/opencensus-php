@@ -2640,7 +2640,10 @@ class PayoutTest extends TestCase
         $data['request']['content']['purpose'] = 1234;
         $data['request']['content']['purpose_type'] = 'settlement';
 
-        $this->startTest($data);
+        $response = $this->startTest($data);
+
+        $this->assertEquals(in_array('1234', array_column($response['items'], 'purpose'), false), true);
+        $this->assertEquals(in_array('settlement', array_column($response['items'], 'purpose_type'), true),true);
 
         $data['request']['content']['purpose'] = 'Payout Purpose 2';
         $data['request']['content']['purpose_type'] = 'settlement';
