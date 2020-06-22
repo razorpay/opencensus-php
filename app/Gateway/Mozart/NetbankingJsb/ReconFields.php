@@ -21,6 +21,7 @@ class ReconFields
         self::STATUS,
         self::TRANSACTION_DATE,
         self::MERCHANT_CODE,
-        self::MERCHANT_NAME
+        self::MERCHANT_CODE,
+        self::MERCHANT_NAME,
     ];
 }

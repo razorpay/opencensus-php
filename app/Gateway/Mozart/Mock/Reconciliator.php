@@ -601,8 +601,6 @@ class Reconciliator extends Base\Mock\PaymentReconciliator
 
         $this->fileToWriteName = 'Payment' . Carbon::now(Timezone::IST)->format('Ymdis');
 
-        $data[] = NetbankingJsb\ReconFields::RECON_FIELDS;
-
         foreach ($input as $row)
         {
             $date = Carbon::createFromTimestamp(

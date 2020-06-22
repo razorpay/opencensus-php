@@ -18,14 +18,6 @@ class Reconciliate extends Base\Reconciliate
         return self::PAYMENT;
     }
 
-    public function getNumLinesToSkip(array $fileDetails)
-    {
-        return [
-            FileProcessor::LINES_FROM_TOP    => 1,
-            FileProcessor::LINES_FROM_BOTTOM => 0,
-        ];
-    }
-
     public function getDelimiter()
     {
         return '|';

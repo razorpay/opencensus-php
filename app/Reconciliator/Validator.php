@@ -97,7 +97,8 @@ class Validator extends Base\Core
         RequestProcessor\Base::YES_BANK           => ["/Yes Bank_ MPR [0-9]{2}-[0-9]{2}-20[0-9]{2}/"],
         RequestProcessor\Base::HDFC_DEBIT_EMI     => ["/^DCEMI Reconciliation & Payment Summary Report/"],
         RequestProcessor\Base::UPI_JUSPAY         => ["/BAJAJ TXN DETAILS/"],
-        RequestProcessor\Base::NETBANKING_SVC     => ['/Razor pay file [0-9]{2}.[0-9]{2}.20[0-9]{2} to [0-9]{2}.[0-9]{2}.20[0-9]{2}/']
+        RequestProcessor\Base::NETBANKING_SVC     => ['/Razor pay file [0-9]{2}.[0-9]{2}.20[0-9]{2} to [0-9]{2}.[0-9]{2}.20[0-9]{2}/'],
+        RequestProcessor\Base::NETBANKING_JSB     => ["/Payment Gateway Reconcilation File from JFS/"],
     ];
 
     const GATEWAY_BODY_REGEX = [
@@ -147,6 +148,7 @@ class Validator extends Base\Core
         RequestProcessor\Base::CARDLESS_EMI_FLEXMONEY  => ["/Attached are the recon and refund files for [0-9]{2}\/[0-9]{2}\/[0-9]{2}/"],
         RequestProcessor\Base::PHONEPE                 => [".*/PFA the Settlement Report for transactions made through PhonePe/.*"],
         RequestProcessor\Base::UPI_JUSPAY              => ["/We have done the settlement for BAJAJ FINANCE/"],
+        RequestProcessor\Base::NETBANKING_JSB          => ["/Dear Sir, Please find the details of payments made by our customers./"],
     ];
 
     const GATEWAY_ATTACHMENT_COUNT = [
@@ -167,6 +169,7 @@ class Validator extends Base\Core
         RequestProcessor\Base::PHONEPE                  => 1,
         RequestProcessor\Base::HDFC_DEBIT_EMI           => 1,
         RequestProcessor\Base::NETBANKING_SVC           => 1,
+        RequestProcessor\Base::NETBANKING_JSB           => 1,
     ];
 
     // Add here too when being added in Validator::ACCEPTED_EXTENSIONS_MAP
@@ -340,6 +343,23 @@ class Validator extends Base\Core
             RequestProcessor\Base::NETBANKING_SVC);
 
         return ($validSubject and $validAttachmentCount);
+    }
+
+    public function validateNetbankingJsbEmail(array $emailDetails)
+    {
+        $validSubject = $this->validateEmailSubject(
+            $emailDetails[RequestProcessor\Mailgun::SUBJECT],
+            RequestProcessor\Base::NETBANKING_JSB);
+
+        $validBody = $this->validateEmailBody(
+            $emailDetails[RequestProcessor\Mailgun::BODY],
+            RequestProcessor\Base::NETBANKING_JSB);
+
+        $validAttachmentCount = $this->validateAttachmentCount(
+            $emailDetails[RequestProcessor\Base::ATTACHMENT_COUNT],
+            RequestProcessor\Base::NETBANKING_JSB);
+
+        return ($validSubject and $validAttachmentCount and $validBody);
     }
 
     public function validateNetbankingScbEmail(array $emailDetails)
