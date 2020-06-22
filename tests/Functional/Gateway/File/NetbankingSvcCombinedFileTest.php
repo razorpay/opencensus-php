@@ -108,6 +108,10 @@ class NetbankingSvcCombinedFileTest extends NbPlusPaymentServiceTest
 
                 $payment = $this->getDbLastEntityToArray(Entity::PAYMENT);
 
+                $this->fixtures->edit('transaction', $payment['transaction_id'], [
+                    'reconciled_at' => Carbon::tomorrow(Timezone::IST)->addHours(8)->timestamp
+                ]);
+
                 $this->assertEquals($payment[Payment::CPS_ROUTE], Payment::NB_PLUS_SERVICE);
 
                 return $this->getDbLastRefund();
