@@ -21,9 +21,9 @@
     </style>
     <!--[if !mso]><!-->
     <style type="text/css">
-        @media  only screen and (max-width:480px) {
+        @media only screen and (max-width:480px) {
             @-ms-viewport { width:320px; }
-            @viewport  { width:320px; }
+            @viewport { width:320px; }
         }
     </style>
     <!--<![endif]-->
@@ -43,7 +43,7 @@
 
 
     <style type="text/css">
-        @media  only screen and (min-width:480px) {
+        @media only screen and (min-width:480px) {
             .mj-column-per-100 { width:100% !important; max-width: 100%; }
         }
     </style>
@@ -100,7 +100,7 @@
                                             <td align="left" style="font-size:0px;padding:0px;word-break:break-word;">
 
                                                 <div style="font-family:Trebuchet MS;font-size:13px;line-height:1;text-align:left;color:#000000;">
-                                                    <div class="header" style="box-sizing: border-box; max-width: 100%;"><div class="content branding rzp" style="width: 85%; width: calc(46000% - 211600px); max-width: 460px; min-width: 308px; margin-left: auto; margin-right: auto; box-sizing: border-box; padding-left: 16px; padding-right: 16px; border-radius: 2px; padding-top: 12px; padding-bottom: 12px;"><div class="branding-content" style="text-align: center; width: fit-content; margin: 0 auto; font-size: 12px; line-height: 1.5; color: #8D92A4;"><div class="content-element logo" style="display: inline-block; vertical-align: middle; height: 18px; width: 85px; margin-left: 5px;"><img src="https://cdn.razorpay.com/logo_invert.png" style="height: 100%; width: 100%;"></div></div></div><div class="content title" style="width: 85%; width: calc(46000% - 211600px); max-width: 460px; min-width: 308px; margin-left: auto; margin-right: auto; box-sizing: border-box; padding-left: 16px; padding-right: 16px; border-radius: 2px; background-color: #FFFFFF; padding-top: 12px; border-bottom-left-radius: 0; border-bottom-right-radius: 0;"><div class="title-content" style="text-align: center; width: fit-content; margin: 0 auto;"><div class="center-align" style="text-align: center;"><img class="image small" src="https://cdn.razorpay.com/static/assets/email/document_orange.png" style="margin: 8px; background: transparent; height: 44px;" height="44"></div></div></div></div>
+                                                    <div class="header" style="box-sizing: border-box; max-width: 100%;"><div class="content branding rzp" style="width: 85%; max-width: 460px; min-width: 308px; margin-left: auto; margin-right: auto; box-sizing: border-box; padding-left: 16px; padding-right: 16px; border-radius: 2px; padding-top: 12px; padding-bottom: 12px;"><div class="branding-content" style="text-align: center; width: fit-content; margin: 0 auto; font-size: 12px; line-height: 1.5; color: #8D92A4;"><div class="content-element logo" style="display: inline-block; vertical-align: middle; height: 18px; width: 85px; margin-left: 5px;"><img src="https://cdn.razorpay.com/logo_invert.png" style="height: 100%; width: 100%;"></div></div></div><div class="content title" style="width: 85%; max-width: 460px; min-width: 308px; margin-left: auto; margin-right: auto; box-sizing: border-box; padding-left: 16px; padding-right: 16px; border-radius: 2px; background-color: #FFFFFF; padding-top: 12px; border-bottom-left-radius: 0; border-bottom-right-radius: 0;"><div class="title-content" style="text-align: center; width: fit-content; margin: 0 auto;"><div class="center-align" style="text-align: center;"><img class="image small" src="https://cdn.razorpay.com/static/assets/email/document_orange.png" style="margin: 8px; background: transparent; height: 44px;" height="44"></div></div></div></div>
                                                 </div>
 
                                             </td>
@@ -172,7 +172,7 @@
                                             <td align="left" style="font-size:0px;padding:0px;word-break:break-word;">
 
                                                 <div style="font-family:Trebuchet MS;font-size:13px;line-height:1;text-align:left;color:#000000;">
-                                                    <div class="card title" style="width: 85%; width: calc(46000% - 211600px); max-width: 460px; min-width: 308px; margin-left: auto; margin-right: auto; box-sizing: border-box; padding-left: 16px; padding-right: 16px; border-radius: 2px; background-color: #FFFFFF; padding-bottom: 16px; border-top-left-radius: 0; border-top-right-radius: 0;"><div class="center-align font-size-normal font-color-primary" style="text-align: center; font-size: 16px; line-height: 1.5; color: #0D2366;">Documents Under Review!</div><p class="center-align para-normal font-size-medium" style="text-align: center; font-size: 14px; line-height: 1.5; color: #515978;">Thank you for applying for a working capital loan.</p><div class="puck para" style="padding: 12px 0; margin: 0;"><div class="bar" style="margin: 0px auto; width: 24px; height: 4px; background-color: #3BD541;"></div></div><p class="center-align para-light font-size-medium" style="text-align: center; font-size: 14px; line-height: 1.5; color: #7B8199;">We are currently reviewing all the documents and should get back with a status update within 1-2 working days.</p></div>
+                                                    <div class="card title" style="width: 85%; max-width: 460px; min-width: 308px; margin-left: auto; margin-right: auto; box-sizing: border-box; padding-left: 16px; padding-right: 16px; border-radius: 2px; background-color: #FFFFFF; padding-bottom: 16px; border-top-left-radius: 0; border-top-right-radius: 0;"><div class="center-align font-size-normal font-color-primary" style="text-align: center; font-size: 16px; line-height: 1.5; color: #0D2366; padding-top: 4px;">Documents Under Review!</div><p class="center-align para-normal font-size-medium" style="text-align: center; font-size: 14px; line-height: 1.5; color: #515978; margin: 4px 0 13px;">Thank you for applying for a working capital loan.</p><div class="puck para" style="margin: 0;"><div class="bar" style="margin: 0px auto; width: 24px; height: 4px; background-color: #3BD541;"></div></div><p class="center-align para-light font-size-medium" style="text-align: center; font-size: 14px; line-height: 1.5; color: #7B8199;">We are currently reviewing all the documents and should get back with a status update within 1-2 working days.</p></div>
                                                 </div>
 
                                             </td>
@@ -244,7 +244,7 @@
                                             <td align="left" style="font-size:0px;padding:0px;word-break:break-word;">
 
                                                 <div style="font-family:Trebuchet MS;font-size:13px;line-height:1;text-align:left;color:#000000;">
-                                                    <div class="card descriptive" style="width: 85%; width: calc(46000% - 211600px); max-width: 460px; min-width: 308px; margin-left: auto; margin-right: auto; box-sizing: border-box; padding-left: 16px; padding-right: 16px; border-radius: 2px; background-color: #FFFFFF; padding-top: 20px; padding-bottom: 20px; margin-top: 8px;"><p class="center-align para-light font-size-medium" style="text-align: center; font-size: 14px; line-height: 1.5; color: #7B8199;">You can accept the offer check the status of the offer by visiting your dashboard. In case of any query kindly let us know.
+                                                    <div class="card descriptive" style="width: 85%; max-width: 460px; min-width: 308px; margin-left: auto; margin-right: auto; box-sizing: border-box; padding-left: 16px; padding-right: 16px; border-radius: 2px; background-color: #FFFFFF; padding-top: 20px; padding-bottom: 20px; margin-top: 8px;"><p class="center-align para-light font-size-medium" style="text-align: center; font-size: 14px; line-height: 1.5; color: #7B8199;">You can check the status of the offer by visiting your dashboard. In case of any query kindly let us know.
                                                             You can reach us on<a class="link" href="https://razorpay.com/support" target="_blank" style="text-decoration: none; color: #528FF0;"> razorpay.com/support</a> or drop us a mail on<a class="link" href="mailto:capital.support@razorpay.com" style="text-decoration: none; color: #528FF0;"> capital.support@razorpay.com.</a></p></div>
                                                 </div>
 
@@ -317,7 +317,7 @@
                                             <td align="left" style="font-size:0px;padding:0px;word-break:break-word;">
 
                                                 <div style="font-family:Trebuchet MS;font-size:13px;line-height:1;text-align:left;color:#000000;">
-                                                    <div class="card descriptive" style="width: 85%; width: calc(46000% - 211600px); max-width: 460px; min-width: 308px; margin-left: auto; margin-right: auto; box-sizing: border-box; padding-left: 16px; padding-right: 16px; border-radius: 2px; background-color: #FFFFFF; padding-top: 20px; padding-bottom: 20px; margin-top: 8px;"><div class="center-align para-light font-size-medium" style="text-align: center; font-size: 14px; line-height: 1.5; color: #7B8199;">Thanks & Regards</div><div class="center-align para-dark font-size-medium" style="text-align: center; font-size: 14px; line-height: 1.5;">Razorpay Team</div></div>
+                                                    <div class="card descriptive" style="width: 85%; max-width: 460px; min-width: 308px; margin-left: auto; margin-right: auto; box-sizing: border-box; padding-left: 16px; padding-right: 16px; border-radius: 2px; background-color: #FFFFFF; padding-top: 20px; padding-bottom: 20px; margin-top: 8px;"><div class="center-align para-light font-size-medium" style="text-align: center; font-size: 14px; line-height: 1.5; color: #7B8199;">Thanks & Regards</div><div class="center-align para-dark font-size-medium font-color-primary" style="color: #0D2366;text-align: center; font-size: 14px; line-height: 1.5;">Razorpay Team</div></div>
                                                 </div>
 
                                             </td>
@@ -346,6 +346,9 @@
 
     </div>
 
+    <tr>
+        <td style="padding:5px"></td>
+    </tr>
 
     <!--[if mso | IE]>
     </td>

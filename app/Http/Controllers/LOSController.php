@@ -278,7 +278,7 @@ class LOSController extends Controller
         $data   = $request->all();
         if ((isset($data['name']) === false) or
             (isset($data['email']) === false) or
-            (isset($data['fields']) === false) or
+            (isset($data['template']) === false) or
             (isset($data['subject']) === false))
         {
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_VALIDATION_FAILURE);
