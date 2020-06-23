@@ -3264,15 +3264,6 @@ class Core extends Base\Core
                 ($isUnregisteredBusiness === true));
     }
 
-    public function isRegisteredAutoKycBoardingEnabled(string $merchantId): bool
-    {
-        $mode = $this->mode;
-
-        $status = $this->app['razorx']->getTreatment($merchantId, Merchant\RazorxTreatment::REGISTERED_ONBOARDING_AUTO_KYC, $mode);
-
-        return (strtolower($status) === 'on');
-    }
-
     public function isAutoKycEnabled(Detail\Entity $merchantDetails, Entity $merchant): bool
     {
         $isRazorpayOrgId = ($merchant->getOrgId() === Org::RAZORPAY_ORG_ID);
@@ -3308,13 +3299,7 @@ class Core extends Base\Core
             return false;
         }
 
-        // if razorx experiemnt is enabled for merchant
-        if ($this->isRegisteredAutoKycBoardingEnabled($merchant->getId()) === true)
-        {
-            return true;
-        }
-
-        return false;
+        return true;
     }
 
     public function getAllMerchantsMappedToMerchantLegalEntity(Merchant\Entity $merchant): Base\PublicCollection

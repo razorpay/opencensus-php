@@ -1518,8 +1518,6 @@ class MerchantDetailTest extends OAuthTestCase
 
         Config::set('applications.kyc.mock', true);
 
-        $this->mockRazorX($test, 'registered_onboarding_auto_kyc', 'on', $merchantId);
-
         $testData = $this->testData[$test];
 
         $this->startTest($testData);
@@ -1601,8 +1599,6 @@ class MerchantDetailTest extends OAuthTestCase
 
         Config::set('applications.kyc.mock', true);
 
-        $this->mockRazorX($test, 'registered_onboarding_auto_kyc', 'on', $merchantId);
-
         $testData = $this->testData[$test];
 
         $this->runRequestResponseFlow($testData);
@@ -1647,8 +1643,6 @@ class MerchantDetailTest extends OAuthTestCase
                                       ]);
 
         $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id']);
-
-        $this->mockRazorX(__FUNCTION__, 'registered_onboarding_auto_kyc', 'on', $merchantDetail['merchant_id']);
 
         $this->createBalanceForSharedMerchant();
 
@@ -1706,8 +1700,6 @@ class MerchantDetailTest extends OAuthTestCase
 
         $this->fixtures->on('live')->edit('merchant_detail','10000000000000', $input);
         $this->fixtures->on('test')->edit('merchant_detail','10000000000000', $input);
-
-        $this->mockRazorX($test, 'registered_onboarding_auto_kyc', 'on', '10000000000000');
 
         $this->ba->proxyAuth();
 

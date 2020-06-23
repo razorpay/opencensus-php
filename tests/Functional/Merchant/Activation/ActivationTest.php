@@ -95,7 +95,11 @@ class ActivationTest extends OAuthTestCase
             'enabled'     => '1',
         ])['id'];
 
-        $this->fixtures->create('merchant_detail', ['merchant_id' => $merchantId]);
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id' => $merchantId,
+            'promoter_pan' => 'ABCPE0000Z',
+            'poi_verification_status' => 'verified',
+            ]);
 
         $this->fixtures->on('live')->create('methods:default_methods', [
             'merchant_id' => '1cXSLlUU8V9sXl'
@@ -148,7 +152,12 @@ class ActivationTest extends OAuthTestCase
 
         $this->fixtures->edit('merchant', $merchantId, ['website' => $website]);
 
-        $this->fixtures->create('merchant_detail', ['merchant_id' => $merchantId, 'business_website' => $website]);
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id'             => $merchantId,
+            'business_website'        => $website,
+            'promoter_pan'            => 'ABCPE0000Z',
+            'poi_verification_status' => 'verified',
+        ]);
 
         $this->fixtures->on('live')->create('methods:default_methods', [
             'merchant_id' => '1cXSLlUU8V9sXl'
@@ -178,7 +187,11 @@ class ActivationTest extends OAuthTestCase
 
         $balanceId = '12212121';
 
-        $this->fixtures->create('merchant_detail', ['merchant_id' => $merchantId]);
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id'             => $merchantId,
+            'promoter_pan'            => 'ABCPE0000Z',
+            'poi_verification_status' => 'verified',
+        ]);
 
         $this->fixtures->on('live')->create('methods:default_methods', [
             'merchant_id' => '1cXSLlUU8V9sXl'
@@ -419,14 +432,6 @@ class ActivationTest extends OAuthTestCase
 
         Config::set('applications.kyc.mock', true);
 
-        $featureVariantMap = [
-            'registered_onboarding_auto_kyc' => 'on',
-            'kyc_service_verification'       => 'on',
-            'poi_kyc_service_verification'   => 'on',
-        ];
-
-        $this->mockRazorXMultiFeature($test, $featureVariantMap);
-
         $testData = $this->testData[$test];
 
         $this->runRequestResponseFlow($testData);
@@ -560,7 +565,11 @@ class ActivationTest extends OAuthTestCase
     {
         $merchantId = '1cXSLlUU8V9sXl';
 
-        $this->fixtures->create('merchant_detail', ['merchant_id' => $merchantId]);
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id'             => $merchantId,
+            'promoter_pan'            => 'ABCPE0000Z',
+            'poi_verification_status' => 'verified',
+        ]);
 
         $this->fixtures->on('live')->create('methods:default_methods', [
             'merchant_id' => '1cXSLlUU8V9sXl'
@@ -579,7 +588,11 @@ class ActivationTest extends OAuthTestCase
     {
         $merchantId = '1cXSLlUU8V9sXl';
 
-        $this->fixtures->create('merchant_detail', ['merchant_id' => $merchantId]);
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id'             => $merchantId,
+            'promoter_pan'            => 'ABCPE0000Z',
+            'poi_verification_status' => 'verified',
+        ]);
 
         $this->fixtures->on('live')->create('methods:default_methods', [
             'merchant_id' => '1cXSLlUU8V9sXl'
@@ -613,7 +626,10 @@ class ActivationTest extends OAuthTestCase
 
     public function testUpdateActivationFlow()
     {
-        $merchantDetail = $this->fixtures->create('merchant_detail');
+        $merchantDetail = $this->fixtures->create('merchant_detail', [
+            'promoter_pan'            => 'ABCPE0000Z',
+            'poi_verification_status' => 'verified',
+        ]);
 
         $this->ba->proxyAuth('rzp_test_' . $merchantDetail[MerchantDetails::MERCHANT_ID]);
 
@@ -661,8 +677,10 @@ class ActivationTest extends OAuthTestCase
     public function testBlacklistInstantActivation()
     {
         $this->fixtures->create('merchant_detail', [
-            'merchant_id'   => self::DEFAULT_MERCHANT_ID,
-            'contact_email' => 'test@razorpay.com',
+            'merchant_id'             => self::DEFAULT_MERCHANT_ID,
+            'contact_email'           => 'test@razorpay.com',
+            'promoter_pan'            => 'ABCPE0000Z',
+            'poi_verification_status' => 'verified',
         ]);
 
         $this->ba->adminAuth();
@@ -676,8 +694,10 @@ class ActivationTest extends OAuthTestCase
     public function testGreylistInstantActivation()
     {
         $this->fixtures->create('merchant_detail', [
-            'merchant_id'   => self::DEFAULT_MERCHANT_ID,
-            'contact_email' => 'test@razorpay.com',
+            'merchant_id'             => self::DEFAULT_MERCHANT_ID,
+            'contact_email'           => 'test@razorpay.com',
+            'promoter_pan'            => 'ABCPE0000Z',
+            'poi_verification_status' => 'verified',
         ]);
 
         $this->ba->adminAuth();
@@ -695,7 +715,9 @@ class ActivationTest extends OAuthTestCase
     {
         $merchantDetail = $this->fixtures->create(
             'merchant_detail',
-            [MerchantDetails::ACTIVATION_FLOW => ActivationFlow::BLACKLIST,]);
+            [MerchantDetails::ACTIVATION_FLOW => ActivationFlow::BLACKLIST,
+             'promoter_pan'                   => 'ABCPE0000Z',
+             'poi_verification_status'        => 'verified',]);
 
         $this->ba->proxyAuth('rzp_test_' . $merchantDetail[MerchantDetails::MERCHANT_ID]);
 
@@ -1158,6 +1180,7 @@ class ActivationTest extends OAuthTestCase
             Entity::BUSINESS_CATEGORY    => 'ecommerce',
             Entity::BUSINESS_SUBCATEGORY => 'fashion_and_lifestyle',
             Entity::PROMOTER_PAN         => 'ABCDE1234E',
+            'poi_verification_status'    => 'verified',
             Entity::BUSINESS_NAME        => 'test',
             Entity::BUSINESS_WEBSITE     => 'https://www.example.com',
             Entity::BUSINESS_TYPE        => '1',
@@ -1530,7 +1553,7 @@ class ActivationTest extends OAuthTestCase
     {
         $this->fixtures->edit('merchant', $merchantId, ['international' => 0, 'org_id' => $orgId]);
 
-        $this->fixtures->create('merchant_detail', ['merchant_id' => $merchantId]);
+        $this->fixtures->create('merchant_detail', ['merchant_id' => $merchantId, 'poi_verification_status' => 'verified']);
 
         $this->fixtures->on('live')->create('methods:default_methods', [
             'merchant_id' => $merchantId
@@ -2111,12 +2134,13 @@ class ActivationTest extends OAuthTestCase
     public function testValidateNeedsClarificationStatusChange(): void
     {
         $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields',
-                                                  ['business_type'           => 1,
-                                                   'promoter_pan_name'       => 'pankaj kumar',
-                                                   'poa_verification_status' => 'verified',
-                                                   'submitted'               => 1,
-                                                   'activation_status'       => 'needs_clarification',
-                                                   'submitted_at'            => now()->getTimestamp()]);
+                                                  ['business_type'                    => 1,
+                                                   'promoter_pan_name'                => 'pankaj kumar',
+                                                   'poa_verification_status'          => 'verified',
+                                                   'bank_details_verification_status' => 'verified',
+                                                   'submitted'                        => 1,
+                                                   'activation_status'                => 'needs_clarification',
+                                                   'submitted_at'                     => now()->getTimestamp()]);
         $this->createDocumentEntities($merchantDetail[MerchantDetails::MERCHANT_ID],
                                       [
                                         'address_proof_url',
@@ -2253,8 +2277,6 @@ class ActivationTest extends OAuthTestCase
 
         $this->fixtures->on('live')->edit('merchant_detail', '10000000000000', $input);
         $this->fixtures->on('test')->edit('merchant_detail', '10000000000000', $input);
-
-        $this->mockRazorX($test, 'registered_onboarding_auto_kyc', 'on', '10000000000000');
 
         $this->ba->proxyAuth();
 

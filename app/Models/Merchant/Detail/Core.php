@@ -1737,6 +1737,9 @@ class Core extends Base\Core
             return;
         }
 
+        //
+        // if bank detail is already attempted then skip penny testing and send to manual queue .
+        //
         if ($merchantDetails->getBankDetailsVerificationStatus() !== null)
         {
             return;
@@ -1744,14 +1747,6 @@ class Core extends Base\Core
 
         // no penny testing for linked accounts
         if ($merchant->isLinkedAccount() === true)
-        {
-            return;
-        }
-
-        //
-        // if bank detail is already attempted then skip penny testing and send to manual queue .
-        //
-        if ($merchantDetails->getBankDetailsVerificationStatus() !== null)
         {
             return;
         }

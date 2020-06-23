@@ -200,15 +200,6 @@ class MerchantDocumentTest Extends TestCase
 
             $testData = &$this->testData[__FUNCTION__];
 
-            $featureVariantMap = [
-                'registered_onboarding_auto_kyc' => 'on',
-                'non_registered_onboarding'      => 'on',
-                'kyc_service_verification'       => 'on',
-                'poa_kyc_service_verification'   => 'on'
-            ];
-
-            $this->mockRazorXMultiFeature(__FUNCTION__, $featureVariantMap, 10000000000000);
-
             $testData['request']['content']['document_type'] = $documentType;
 
             $testData['response']['content']['documents'][$documentType] = [];

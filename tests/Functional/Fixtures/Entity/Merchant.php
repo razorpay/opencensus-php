@@ -69,12 +69,14 @@ class Merchant extends Base
         $this->fixtures->create('merchant', ['id' => '1MercShareTerm']);
 
         //Merchant for creating shared emi terminals
-        $this->fixtures->create('merchant', ['id' => '100000Razorpay']);
+        $this->fixtures->create('merchant', ['id' => '100000Razorpay', 'pricing_plan_id' => '1hDYlICobzOCYt',]);
 
         $this->fixtures->on('test')->create('terminal', ['id' => '1n25f6uN5S1Z5a', 'merchant_id' => '10000000000000']);
         $this->fixtures->on('live')->create('terminal', ['id' => '1n25f6uN5S1Z5a', 'merchant_id' => '10000000000000']);
         $this->fixtures->on('test')->create('balance', ['id' => '10000000000000', 'balance' => '1000000', 'merchant_id' => '10000000000000']);
         $this->fixtures->on('live')->create('balance', ['id' => '10000000000000', 'balance' => '0', 'merchant_id' => '10000000000000']);
+        $this->fixtures->on('test')->create('balance', ['id' => '100000Balance1', 'balance' => '500', 'merchant_id' => '100000Razorpay']);
+        $this->fixtures->on('live')->create('balance', ['id' => '100000Balance1', 'balance' => '500', 'merchant_id' => '100000Razorpay']);
         $this->fixtures->on('test')->create('key', ['merchant_id' => '10000000000000', 'id' => 'TheTestAuthKey'], 'test');
         $this->fixtures->on('live')->create('key', ['merchant_id' => '10000000000000', 'id' => 'TheLiveAuthKey'], 'live');
         $this->fixtures->on('live')->create('bank_account', ['merchant_id' => '10000000000000']);
