@@ -59,15 +59,6 @@ class DowntimeDetection
 
     const PAYMENT_INTERVAL  = 'payment_interval';
 
-    const DOWNTIME_V2_UNIQUE_KEYS = [
-        Entity::GATEWAY,
-        Entity::ISSUER,
-        Entity::METHOD,
-        Entity::SOURCE,
-        Entity::NETWORK,
-        Entity::VPA_HANDLE,
-    ];
-
     public function __construct()
     {
         /**
@@ -505,7 +496,7 @@ class DowntimeDetection
                 break;
         }
 
-        $downtime = $this->repo->gateway_downtime->getConflictingDowntime($input, self::DOWNTIME_V2_UNIQUE_KEYS);
+        $downtime = $this->repo->gateway_downtime->fetchMostRecentActive($input);
 
         if(empty($downtime) === true)
         {
