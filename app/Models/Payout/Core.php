@@ -10,6 +10,7 @@ use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Models\Card;
 use RZP\Models\Admin;
+use RZP\Models\State;
 use DeepCopy\DeepCopy;
 use RZP\Models\Payment;
 use RZP\Models\Pricing;
@@ -30,6 +31,7 @@ use RZP\Models\Transaction;
 use RZP\Models\FeeRecovery;
 use RZP\Constants\Timezone;
 use RZP\Models\BankingAccount;
+use RZP\Models\Workflow\Action;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Admin\Permission;
 use RZP\Jobs\BatchPayoutsProcess;
@@ -37,6 +39,7 @@ use RZP\Models\Currency\Currency;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Jobs\QueuedPayoutsInitiate;
 use RZP\Models\FundTransfer\Attempt;
+use RZP\Jobs\ScheduledPayoutsProcess;
 use RZP\Exception\BadRequestException;
 use RZP\Models\BankingAccountStatement;
 use RZP\Models\Merchant\Balance\Channel;
@@ -766,7 +769,81 @@ class Core extends Base\Core
             ErrorCode::BAD_REQUEST_PAYOUT_ALREADY_BEING_PROCESSED);
     }
 
-    public function cancelPayout(Entity $payout): Entity
+    public function processScheduledPayout(string $payoutId): Entity
+    {
+        return $this->mutex->acquireAndRelease(
+            $payoutId,
+            function() use ($payoutId)
+            {
+                /** @var Entity $payout */
+                $payout = $this->repo->payout->findOrFail($payoutId);
+
+                $payout->getValidator()->validateProcessingScheduledPayout();
+
+                if ($payout->isStatusPending() === true)
+                {
+                    $this->forceRejectPayout($payout);
+
+                    $this->trace->info(
+                        TraceCode::SCHEDULED_PAYOUT_AUTO_REJECTED,
+                        [
+                            'payout_id' => $payout->getId(),
+                        ]);
+
+                    $this->app->events->fire('api.payout.rejected', [$payout]);
+
+                    return $payout;
+                }
+
+                //
+                // Currently, we support scheduled payouts concept only for Fund Account type.
+                // If we are supporting for others, the processor call needs to be fixed here.
+                // Also, need to fix transaction.created event in the processor since
+                // we do that only for fund_account and not for others.
+                //
+                // Apart from this, we also have to handle dispatching FTA for scheduled payouts.
+                //
+                // We also have to handle the fund transfer destination while processing the scheduled payout.
+                //
+                $payout = $this->getProcessor('fund_account_payout')
+                               ->setMerchant($payout->merchant)
+                               ->processScheduledPayout($payout);
+
+                $this->dispatchFtaInitiate($payout);
+
+                return $payout;
+            },
+            self::PAYOUT_MUTEX_LOCK_TIMEOUT,
+            ErrorCode::BAD_REQUEST_PAYOUT_ALREADY_BEING_PROCESSED);
+    }
+
+    public function processDispatchForScheduledPayouts($scheduledPayouts)
+    {
+        $grouped = $scheduledPayouts->groupBy(Entity::BALANCE_ID);
+
+        $traceData = [];
+
+        foreach ($grouped as $balanceId => $payouts)
+        {
+            $dispatchedData = $this->dispatchAllScheduledPayouts($payouts);
+
+            $traceData[$balanceId] = [
+                'total_payout_count'        => count($payouts),
+                'dispatched_payout_count'   => $dispatchedData['dispatched_payout_count'],
+                'dispatched_payout_amount'  => ($dispatchedData['dispatched_payout_amount']),
+            ];
+        }
+
+        $this->trace->info(
+            TraceCode::PAYOUT_SCHEDULED_DISPATCH_SUMMARY,
+            $traceData
+        );
+
+        return $traceData;
+    }
+
+    public function cancelPayout(Entity $payout,
+                                 string $remarks = null): Entity
     {
         // If Payout has purpose 'rzp_fees' we won't allow merchant to cancel that
         if (Purpose::isInInternal($payout->getPurpose()) === true)
@@ -781,11 +858,13 @@ class Core extends Base\Core
 
         return $this->mutex->acquireAndRelease(
                 $payout->getId(),
-                function() use ($payout)
+                function() use ($payout, $remarks)
                 {
                     $payout->getValidator()->validateCancel();
 
                     $payout->setStatus(Status::CANCELLED);
+
+                    $payout->setRemarks($remarks);
 
                     $this->repo->saveOrFail($payout);
 
@@ -798,6 +877,36 @@ class Core extends Base\Core
     public function approvePayout(Entity $payout, array $input): Entity
     {
         $payout = $this->processWorkflowActionOnPayout($payout, true, $input);
+
+        return $payout;
+    }
+
+    public function forceRejectPayout(Entity $payout): Entity
+    {
+        $payout->getValidator()->validatePayoutStatusForApproveOrReject();
+
+        /** @var Workflow\Action\Entity|null $workflowAction */
+        $workflowAction = $this->getOpenWorkflowActionForPayout($payout);
+
+        if ($workflowAction === null)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'No further actions can be performed on this payout',
+                null,
+                ['payout_id' => $payout->getId()]);
+        }
+
+        $payout = $this->repo->transaction(
+            function() use ($payout, $workflowAction)
+            {
+                $state = State\Name::REJECTED;
+
+                (new Action\Core)->updateState($workflowAction, $state);
+
+                $payout = $this->rejectPendingPayout($payout);
+
+                return $payout;
+            });
 
         return $payout;
     }
@@ -992,6 +1101,58 @@ class Core extends Base\Core
              'balance_remaining'        => $totalBalance,
              'dispatched_payout_count'  => $dispatchedCount,
          ];
+    }
+
+    protected function dispatchAllScheduledPayouts(Base\PublicCollection $scheduledPayouts)
+    {
+        $dispatchedCount = 0;
+        $dispatchedAmount = 0;
+
+        foreach ($scheduledPayouts as $scheduledPayout)
+        {
+            $this->dispatchScheduledPayout($scheduledPayout);
+
+            $dispatchedCount += 1;
+            $dispatchedAmount += $scheduledPayout->getAmount();
+        }
+
+        return [
+            'dispatched_payout_amount' => $dispatchedAmount,
+            'dispatched_payout_count'  => $dispatchedCount,
+        ];
+    }
+
+    protected function dispatchScheduledPayout(Entity $payout)
+    {
+        $payoutId = $payout->getId();
+
+        $traceInfo = [
+            'payout_id' => $payoutId,
+            'amount'    => $payout->getAmount(),
+            'status'    => $payout->getStatus(),
+        ];
+
+        try
+        {
+            $this->trace->info(TraceCode::PAYOUT_SCHEDULED_DISPATCH_INIT, $traceInfo);
+
+            ScheduledPayoutsProcess::dispatch($this->mode, $payoutId);
+
+            $this->trace->info(TraceCode::PAYOUT_SCHEDULED_DISPATCH_COMPLETE, $traceInfo);
+        }
+        catch (\Throwable $e)
+        {
+            // If the dispatch fails due to any reason, cron will
+            // pick up these payouts again and attempt to dispatch.
+
+            $data = $traceInfo + [ 'message' => $e->getMessage() ];
+
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::PAYOUT_SCHEDULED_DISPATCH_FAILED,
+                $data);
+        }
     }
 
     protected function dispatchQueuedPayout(Entity $payout, int $fees, int $currentBalance)
@@ -1821,8 +1982,8 @@ class Core extends Base\Core
     protected function dispatchFtaInitiate(Entity $payout)
     {
         //
-        // For payouts with status=(queued, pending, batch_submitted), we don't create any transaction or FTA.
-        // We do it later when we actually process that payout.
+        // For payouts with status=(queued, pending, scheduled, rejected, failed, batch_submitted), we don't create any
+        // transaction or FTA. We do it later when we actually process that payout.
         //
         if ($payout->isStatusBeforeCreate() === true)
         {
@@ -1924,9 +2085,7 @@ class Core extends Base\Core
 
                 $payoutValidator->validateRejectPayout();
 
-                $payout->setStatus(Status::REJECTED);
-
-                $this->repo->saveOrFail($payout);
+                $payout = $this->rejectPendingPayout($payout);
 
                 $this->app->events->fire('api.payout.rejected', [$payout]);
 
@@ -1934,6 +2093,15 @@ class Core extends Base\Core
             },
             self::PAYOUT_MUTEX_LOCK_TIMEOUT,
             ErrorCode::BAD_REQUEST_PAYOUT_ALREADY_BEING_PROCESSED);
+    }
+
+    protected function rejectPendingPayout(Entity $payout)
+    {
+        $payout->setStatus(Status::REJECTED);
+
+        $this->repo->saveOrFail($payout);
+
+        return $payout;
     }
 
     protected function getQueuedPayoutsPaginationData()

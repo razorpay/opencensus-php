@@ -863,6 +863,7 @@ class PublicErrorDescription
     const BAD_REQUEST_COULD_NOT_READ_CARD_MAGNETIC_STRIPE                       = 'Could not read card magnetic stripe';
     const BAD_REQUEST_INVALID_CARD_DETAILS                                      = 'Invalid card details';
     const BAD_REQUEST_PAYOUT_NOT_QUEUED_STATUS                                  = 'The payout is not in queued status';
+    const BAD_REQUEST_PAYOUT_NOT_QUEUED_OR_SCHEDULED_STATUS                     = 'The payout is not in queued or scheduled status';
     const BAD_REQUEST_PAYOUT_NOT_PENDING_STATUS                                 = 'The payout is not in pending status';
     const BAD_REQUEST_PAYOUT_NOT_BATCH_SUBMITTED_STATUS                         = 'The payout is not in batch_submitted status';
     const BAD_REQUEST_PAYOUT_WORKFLOW_ACTION_FAILED                             = 'An error occurred performing this action';
@@ -894,6 +895,14 @@ class PublicErrorDescription
     const BAD_REQUEST_FEE_RECOVERY_INCORRECT_BALANCE_TYPE                       = 'Only Direct-Banking type balance is allowed';
     const BAD_REQUEST_FEE_RECOVERY_MANUAL_FOR_RZP_FEES_PAYOUT_NOT_SUPPORTED     = 'Manual recovery for rzp_fees type payouts is not supported';
     const BAD_REQUEST_FEE_RECOVERY_AMOUNT_ZERO                                  = 'Fee Recovery payout amount cannot be zero';
+
+    // Scheduled Payouts
+    const BAD_REQUEST_SCHEDULED_PAYOUT_AUTH_NOT_SUPPORTED                       = 'Scheduled Payouts can only be created via dashboard';
+    const BAD_REQUEST_SCHEDULED_PAYOUT_CANCEL_AUTH_NOT_SUPPORTED                = 'Scheduled Payouts can only be cancelled via dashboard';
+    const BAD_REQUEST_SCHEDULED_PAYOUT_INVALID_TIMESTAMP                        = 'Payouts can only be scheduled upto 3 months in advance';
+    const BAD_REQUEST_SCHEDULED_PAYOUT_INVALID_TIME_SLOT                        = 'We currently only support scheduling payouts at certain time slots';
+    const BAD_REQUEST_SCHEDULED_PAYOUT_CANCEL_REJECT_APPROVE_INVALID_TIMESTAMP  = 'No action can be performed on scheduled payouts that are ready to be processed';
+    const BAD_REQUEST_PAYOUT_NOT_SCHEDULED_STATUS                               = 'The payout is not in scheduled status';
 
     // payout links
     const BAD_REQUEST_PAYOUT_LINK_MICRO_SERVICE_FAILED                         = 'Error occurred at Payout Link Microservice';

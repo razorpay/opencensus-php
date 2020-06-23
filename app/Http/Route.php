@@ -980,8 +980,10 @@ class Route
         // TODO : Remove this route. Has been kept here for backward compatibility
         'payouts_process_queued'                   => ['post',     'payouts/queued/process',                         'PayoutController@processDispatchForQueuedPayouts'                  ],
         'payouts_process_batch'                    => ['post',     'payouts/batch/process',                          'PayoutController@processInitiateForBatchSubmittedPayouts'          ],
+        'payouts_process_scheduled'                => ['post',     'payouts/scheduled/process',                      'PayoutController@processInitiateForScheduledPayouts'                          ],
         'payouts_summary'                          => ['get',      'payouts/_meta/summary',                          'PayoutController@getSummary'                                       ],
         'payouts_workflow_summary'                 => ['get',      'payouts/_meta/workflows',                        'PayoutController@getWorkflowSummary'                               ],
+        'payouts_scheduled_time_slots'             => ['get',      'payouts/schedule/timeslots',                     'PayoutController@getScheduleSlotsForPayouts'                       ],
 
         //Vendor Payments
         'vendor_payment_composite_expands_helper'  => ['get',      'vendor-payments/composite-expands',             'VendorPaymentController@compositeExpandsHelper'                     ],
@@ -2305,6 +2307,7 @@ class Route
         'payouts_process_queued',
         'payouts_process_queued_new',
         'payouts_process_batch',
+        'payouts_process_scheduled',
         'migration_multi_va_on_x',
         'update_fts_fund_transfer',
         'fund_account_validation_retry',
@@ -2763,6 +2766,8 @@ class Route
         // tax payment routes
         'tax_payments_get_all_settings',
         'tax_payments_add_or_update_settings',
+
+        'payouts_scheduled_time_slots',
     ];
 
     //
@@ -4132,6 +4137,7 @@ class Route
         'payouts_process_queued'                       => Permission::PROCESS_PAYOUT_QUEUED,
         'payouts_process_queued_new'                   => Permission::PROCESS_PAYOUT_QUEUED,
         'payouts_process_batch'                        => Permission::PROCESS_PAYOUT_QUEUED,
+        'payouts_process_scheduled'                    => Permission::PROCESS_PAYOUT_SCHEDULED,
         'payouts_summary'                              => Permission::VIEW_PAYOUT_SUMMARY,
         'payouts_workflow_summary'                     => Permission::VIEW_PAYOUT_WORKFLOW_SUMMARY,
         'payout_links_fetch_multiple'                  => Permission::VIEW_PAYOUT_LINKS,
@@ -4233,6 +4239,7 @@ class Route
         'user_verify_through_email'                    => '*',
         'merchant_bank_account_change_status'          => '*',
         'reporting_consumer_restrictions'              => '*',
+        'payouts_scheduled_time_slots'                 => '*',
 
         // This should go away after the fix
         // https://razorpay.atlassian.net/browse/RX-1701
@@ -4550,6 +4557,7 @@ class Route
             'payouts_process_queued',
             'payouts_process_queued_new',
             'payouts_process_batch',
+            'payouts_process_scheduled',
             'migration_multi_va_on_x',
             'scrooge_tagging_backfill',
             'payments_downtime_trigger_cron',
@@ -5185,6 +5193,7 @@ class Route
         'payouts_process_queued',
         'payouts_process_queued_new',
         'payouts_process_batch',
+        'payouts_process_scheduled',
         'payouts_summary',
         'payouts_workflow_summary',
 

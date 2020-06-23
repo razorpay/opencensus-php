@@ -321,6 +321,7 @@ class Validator extends Base\Validator
         Entity::FILE_ID => 'required_without:file|public_id',
         Entity::OTP     => 'required|filled|min:4',
         Entity::TOKEN   => 'required|unsigned_id',
+        Entity::CONFIG  => 'sometimes'
     ];
 
     protected static $payoutValidateRules = [

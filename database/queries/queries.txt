@@ -5736,6 +5736,14 @@ ALTER TABLE invoices
     ADD COLUMN big_expire_by bigint(20) UNSIGNED DEFAULT NULL;
 // modify-expire-2038-bigint ends
 
+ALTER TABLE payouts
+    ADD COLUMN scheduled_at INT DEFAULT NULL,
+    ADD INDEX payouts_scheduled_at_index (scheduled_at);
+
+ALTER TABLE payouts
+    ADD COLUMN scheduled_on INT DEFAULT NULL,
+    ADD INDEX payouts_scheduled_on_index (scheduled_on);
+
 ALTER TABLE orders
     ADD COLUMN checkout_config_id CHAR(14) DEFAULT NULL;
 

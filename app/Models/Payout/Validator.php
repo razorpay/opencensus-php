@@ -44,7 +44,12 @@ class Validator extends Base\Validator
 
     const APPROVE_PAYOUT_RULES = 'approve_payout';
 
+    const CANCEL_PAYOUT = 'cancel_payout';
+
     const PROCESS_QUEUED_PAYOUTS_INITIATE = 'process_queued_payouts_initiate';
+
+    // Scheduled Payouts Initiate
+    const PROCESS_SCHEDULED_PAYOUTS = 'process_scheduled_payouts';
 
     //
     // This is required for build. Currently, build does not
@@ -67,6 +72,7 @@ class Validator extends Base\Validator
         Entity::NARRATION            => 'sometimes|nullable|string|max:30',
         Entity::QUEUE_IF_LOW_BALANCE => 'sometimes|filled|boolean',
         Entity::IDEMPOTENCY_KEY      => 'sometimes|nullable|string',
+        Entity::SCHEDULED_AT         => 'sometimes|filled|epoch',
     ];
 
     protected static $fundAccountPayoutCompositeRules = [
@@ -101,6 +107,7 @@ class Validator extends Base\Validator
         Entity::IDEMPOTENCY_KEY      => 'sometimes|nullable|string',
         Entity::PAYOUT_LINK_ID       => 'sometimes|filled|public_id',
         Entity::QUEUE_IF_LOW_BALANCE => 'sometimes|filled|boolean',
+        Entity::SCHEDULED_AT         => 'sometimes|filled|epoch|custom',
     ];
 
     protected static $customerWalletPayoutRules = [
@@ -158,6 +165,10 @@ class Validator extends Base\Validator
         Entity::QUEUE_IF_LOW_BALANCE => 'sometimes|filled|boolean',
     ];
 
+    protected static $cancelPayoutRules = [
+        Entity::REMARKS => 'sometimes|filled|string|max:255',
+    ];
+
     protected static $bulkApproveRules = [
         Entity::PAYOUT_IDS           => 'required|array',
         Entity::PAYOUT_IDS . '.*'    => 'required|public_id|size:19',
@@ -183,6 +194,11 @@ class Validator extends Base\Validator
         'type_and_amount',
     ];
 
+    protected static $processScheduledPayoutsRules = [
+        Entity::BALANCE_IDS     => 'sometimes|array',
+        Entity::BALANCE_IDS_NOT => 'sometimes|array',
+    ];
+
     protected function validateMethod($attribute, $method)
     {
         Method::validateMethod($method);
@@ -191,6 +207,11 @@ class Validator extends Base\Validator
     protected function validateMode($attribute, $value)
     {
         PayoutMode::validateMode($value);
+    }
+
+    protected function validateScheduledAt($attribute, $value)
+    {
+        Schedule::validateScheduledAt($value);
     }
 
     protected function validateTypeAndAmount($input)
@@ -449,6 +470,39 @@ class Validator extends Base\Validator
         $this->validateIsFundAccountPayout($payout);
     }
 
+    /**
+     * @param Entity $payout
+     *
+     * @throws Exception\BadRequestException
+     * @throws Exception\LogicException
+     */
+    public function validateProcessingScheduledPayout()
+    {
+        /** @var Entity $payout */
+        $payout = $this->entity;
+
+        //
+        // Triggered when payout was already processed by another queue job due to overlap of cron runs.
+        // Or if the payout has not yet been approved. We are not going to throw an error for payout in pending state,
+        // because we have a custom auto reject logic for that and we don't wish to throw any error here
+        //
+        if (($payout->isStatusScheduled() === true) or
+            ($payout->isStatusPending() === true))
+        {
+            $this->validateIsFundAccountPayout($payout);
+
+            return;
+        }
+
+        throw new Exception\BadRequestException(
+            ErrorCode::BAD_REQUEST_PAYOUT_NOT_SCHEDULED_STATUS,
+            null,
+            [
+                'payout_id' => $payout->getId(),
+                'status'    => $payout->getStatus(),
+            ]);
+    }
+
     public function validateProcessingBatchProcessingPayout()
     {
         /** @var Entity $payout */
@@ -485,6 +539,8 @@ class Validator extends Base\Validator
         }
 
         $this->validateIsFundAccountPayout($payout);
+
+        $this->validateCancelOrApproveOrRejectRequestForScheduledPayouts($payout);
     }
 
     public function validateRejectPayout()
@@ -504,6 +560,8 @@ class Validator extends Base\Validator
         }
 
         $this->validateIsFundAccountPayout($payout);
+
+        $this->validateCancelOrApproveOrRejectRequestForScheduledPayouts($payout);
     }
 
     public function validateIsFundAccountPayout(Entity $payout)
@@ -528,16 +586,33 @@ class Validator extends Base\Validator
         /** @var Entity $payout */
         $payout = $this->entity;
 
-        if ($payout->isStatusQueued() === false)
+        if (($payout->isStatusQueued() === false) and
+            ($payout->isStatusScheduled() === false))
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYOUT_NOT_QUEUED_STATUS,
+                ErrorCode::BAD_REQUEST_PAYOUT_NOT_QUEUED_OR_SCHEDULED_STATUS,
+                null,
+                [
+                    'payout_id'         => $payout->getId(),
+                    'current_status'    => $payout->getStatus(),
+                    'next_status'       => Status::CANCELLED,
+                ]);
+        }
+
+        $app = App::getFacadeRoot();
+
+        if (($payout->isStatusScheduled() === true) and
+            ($app['basicauth']->isProxyAuth() === false))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_SCHEDULED_PAYOUT_CANCEL_AUTH_NOT_SUPPORTED,
                 null,
                 [
                     'payout_id' => $payout->getId(),
-                    'status'    => $payout->getStatus(),
                 ]);
         }
+
+        $this->validateCancelOrApproveOrRejectRequestForScheduledPayouts($payout);
     }
 
     /**
@@ -567,4 +642,20 @@ class Validator extends Base\Validator
             );
         }
     }
+
+    /**
+     * @param Entity $payout
+     *
+     * @throws Exception\BadRequestException
+     */
+    private function validateCancelOrApproveOrRejectRequestForScheduledPayouts(Entity $payout)
+    {
+        if ($payout->toBeScheduled() === false)
+        {
+            return;
+        }
+
+        Schedule::validateCancelOrApproveOrRejectRequest($payout);
+    }
+
 }

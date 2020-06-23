@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Payout;
 
+use RZP\Exception;
 use RZP\Base\Fetch as BaseFetch;
 use RZP\Models\Settlement\Channel;
 use RZP\Http\BasicAuth\Type as AuthType;
@@ -35,6 +36,9 @@ class Fetch extends BaseFetch
             Entity::REVERSED_TO       => 'sometimes|epoch',
             Entity::CHANNEL           => 'sometimes|string|custom',
             // EsRepository::SEARCH_HITS => 'sometimes|boolean',
+            Entity::SCHEDULED_FROM    => 'sometimes|required_with:scheduled_to|epoch',
+            Entity::SCHEDULED_TO      => 'sometimes|epoch',
+            Entity::SORTED_ON         => 'sometimes|string|custom',
         ],
         AuthType::PROXY_AUTH => [
             self::EXPAND_EACH               => 'filled|string|in:user,reversal,fund_account,fund_account.contact,transaction',
@@ -79,6 +83,9 @@ class Fetch extends BaseFetch
             Entity::REVERSED_FROM,
             Entity::REVERSED_TO,
             Entity::PRODUCT,
+            Entity::SCHEDULED_FROM,
+            Entity::SCHEDULED_TO,
+            Entity::SORTED_ON,
         ],
         AuthType::PRIVILEGE_AUTH => [
             Entity::MERCHANT_ID,
@@ -118,6 +125,8 @@ class Fetch extends BaseFetch
         Entity::REVERSED_TO,
         Entity::PRODUCT,
         Entity::CONTACT_TYPE,
+        Entity::SCHEDULED_TO,
+        Entity::SCHEDULED_FROM,
     ];
 
     protected function validateMethod(string $attribute, string $value)
@@ -143,5 +152,16 @@ class Fetch extends BaseFetch
     protected function validateChannel(string $attribute, string $value)
     {
         Channel::validate($value);
+    }
+
+    // Currently we only allow sorting on these two timestamps
+    protected function validateSortedOn(string $attribute, string $value)
+    {
+        if (in_array($value, [Entity::CREATED_AT, Entity::SCHEDULED_AT], true) === true)
+        {
+            return;
+        }
+
+        throw new Exception\BadRequestValidationFailureException('Cannot sort payouts on: ' . $value);
     }
 }

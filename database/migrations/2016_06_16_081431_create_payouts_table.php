@@ -130,6 +130,9 @@ class CreatePayoutsTable extends Migration
             $table->char(Payout::PRICING_RULE_ID, Pricing\Entity::ID_LENGTH)
                   ->nullable();
 
+            $table->integer(Payout::SCHEDULED_AT)
+                  ->nullable();
+
             $table->integer(Payout::PROCESSED_AT)
                   ->nullable();
 
@@ -160,6 +163,9 @@ class CreatePayoutsTable extends Migration
             $table->integer(Payout::BATCH_SUBMITTED_AT)
                   ->nullable();
 
+            $table->integer(Payout::SCHEDULED_ON)
+                  ->nullable();
+
             $table->string(Payout::TYPE, 30)
                   ->default('default');
 
@@ -187,6 +193,10 @@ class CreatePayoutsTable extends Migration
             $table->index(Payout::CANCELLED_AT);
 
             $table->index(Payout::CREATED_AT);
+
+            $table->index(Payout::SCHEDULED_AT);
+
+            $table->index(Payout::SCHEDULED_ON);
 
             $table->index(Payout::METHOD);
 

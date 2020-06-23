@@ -337,6 +337,19 @@ class Service extends Base\Service
         return $newPayout->toArrayPublic();
     }
 
+    public function processInitiateForScheduledPayouts($input)
+    {
+        (new Validator)->validateInput(Validator::PROCESS_SCHEDULED_PAYOUTS, $input);
+
+        $balanceIdsWhitelist = $input[Entity::BALANCE_IDS] ?? [];
+        $balanceIdsBlacklist = $input[Entity::BALANCE_IDS_NOT] ?? [];
+
+        $scheduledPayoutList = $this->repo->payout->getScheduledPayoutsToBeProcessed($balanceIdsWhitelist,
+                                                                                     $balanceIdsBlacklist);
+
+        return $this->core->processDispatchForScheduledPayouts($scheduledPayoutList);
+    }
+
     public function getPurposes(): array
     {
         return (new Purpose)->getAll($this->merchant);
@@ -412,12 +425,13 @@ class Service extends Base\Service
         $queued = $this->getQueuedPayoutsSummary();
 
         $pending   = [];
-        $scheduled = [];
 
         if ($this->merchant->isFeatureEnabled(Features::PAYOUT_WORKFLOWS) === true)
         {
             $pending = $this->getPendingPayoutsSummary();
         }
+
+        $scheduled = $this->getScheduledPayoutsSummary();
 
         $completeSummary = $this->getCompleteSummary($pending, $queued, $scheduled);
 
@@ -498,12 +512,16 @@ class Service extends Base\Service
         return $merchantIds;
     }
 
-    public function cancelPayout(string $payoutId)
+    public function cancelPayout(string $payoutId, $input)
     {
+        (new Validator)->validateInput(Validator::CANCEL_PAYOUT, $input);
+
+        $remarks = $input[Entity::REMARKS] ?? null;
+
         /** @var Entity $payout */
         $payout = $this->repo->payout->findByPublicIdAndMerchant($payoutId, $this->merchant);
 
-        $payout = $this->core->cancelPayout($payout);
+        $payout = $this->core->cancelPayout($payout, $remarks);
 
         return $payout->toArrayPublic();
     }
@@ -640,7 +658,7 @@ class Service extends Base\Service
             }
         }
 
-        $this->trace->info(TraceCode::BATCH_SERVICE_PAYOUT_BULK_REQUEST, $payoutBatch->toArrayWithItems());
+        $this->trace->info(TraceCode::BATCH_SERVICE_PAYOUT_BULK_RESPONSE, $payoutBatch->toArrayWithItems());
 
         return $payoutBatch->toArrayWithItems();
     }
@@ -669,6 +687,11 @@ class Service extends Base\Service
         $payout = $this->core->updateTestPayoutStatus($payout, $input);
 
         return $payout->toArrayPublic();
+    }
+
+    public function getScheduleSlotsForPayouts()
+    {
+        return Schedule::getTimeSlotsForScheduledPayouts();
     }
 
     protected function getQueuedPayoutsSummary()
@@ -707,6 +730,88 @@ class Service extends Base\Service
         }
 
         return $queuedPayoutsSummary;
+    }
+
+    protected function getScheduledPayoutsSummary()
+    {
+        $scheduledPayoutsSummary = [];
+
+        $merchantId = $this->merchant->getId();
+
+        $allTimePeriods = Entity::SCHEDULED_PAYOUTS_SUMMARY;
+
+        $allScheduledPayouts = $this->repo->payout->fetchScheduledPayouts($merchantId);
+
+        $groupedScheduledPayouts = $allScheduledPayouts->groupBy(Entity::BALANCE_ID);
+
+        foreach ($groupedScheduledPayouts as $balanceId => $scheduledPayouts)
+        {
+            $bankingAccountId = $scheduledPayouts->first()->bankingAccount->getPublicId();
+
+            foreach ($allTimePeriods as $timePeriod)
+            {
+                $summaryForTimePeriod = $this->processScheduledSummaryForTimePeriod($timePeriod, $scheduledPayouts);
+
+                $scheduledPayoutsSummary[$bankingAccountId][Status::SCHEDULED][$timePeriod] = $summaryForTimePeriod;
+            }
+        }
+
+        return $scheduledPayoutsSummary;
+    }
+
+    protected function processScheduledSummaryForTimePeriod(string $timePeriod, $scheduledPayouts)
+    {
+        $currentBalance = $scheduledPayouts->first()->balance->getBalance();
+
+        $scheduledPayoutsForTimePeriod = $this->filterScheduledPayoutsBasedOnTimePeriod($scheduledPayouts, $timePeriod);
+
+        $totalAmount = $totalFees = 0;
+
+        foreach ($scheduledPayoutsForTimePeriod as $payout)
+        {
+            $totalAmount += $payout->getAmount();
+
+            list($fees, $tax, $feesSplit) = (new Pricing\Fee)->calculateMerchantFees($payout);
+
+            $totalFees += $fees;
+        }
+
+        return [
+            'balance'       => $currentBalance,
+            'count'         => count($scheduledPayoutsForTimePeriod),
+            'total_amount'  => $totalAmount,
+            'total_fees'    => $totalFees,
+        ];
+    }
+
+    protected function filterScheduledPayoutsBasedOnTimePeriod($scheduledPayouts, string $timePeriod)
+    {
+        switch ($timePeriod)
+        {
+            // To understand these timestamps :
+            // https://razorpay.slack.com/archives/CQMU9NMNY/p1591695297056900?thread_ts=1591612315.027000&cid=CQMU9NMNY
+            case Entity::TODAY:
+                $startTime  = Carbon::now(Timezone::IST)->getTimestamp();
+                $endTime    = Carbon::now(Timezone::IST)->endOfDay()->getTimestamp();
+                break;
+            case Entity::NEXT_TWO_DAYS:
+                $startTime  = Carbon::now(Timezone::IST)->addDays(1)->startOfDay()->getTimestamp();
+                $endTime    = Carbon::now(Timezone::IST)->addDays(2)->endOfDay()->getTimestamp();
+                break;
+            case Entity::NEXT_WEEK:
+                $startTime  = Carbon::now(Timezone::IST)->addDays(1)->startOfDay()->getTimestamp();
+                $endTime    = Carbon::now(Timezone::IST)->addDays(7)->endOfDay()->getTimestamp();
+                break;
+            case Entity::NEXT_MONTH:
+                $startTime  = Carbon::now(Timezone::IST)->addDays(1)->startOfDay()->getTimestamp();
+                $endTime    = Carbon::now(Timezone::IST)->addDays(30)->endOfDay()->getTimestamp();
+                break;
+            default:
+                return $scheduledPayouts;
+        }
+
+        return $scheduledPayouts->where(Entity::SCHEDULED_AT, '>=', $startTime)
+                                ->where(Entity::SCHEDULED_AT, '<=', $endTime);
     }
 
     protected function getPendingPayoutsSummary()
@@ -771,6 +876,38 @@ class Service extends Base\Service
                     'count'         => 0,
                     'total_amount'  => 0,
                 ],
+                Status::SCHEDULED => [
+                    Entity::TODAY   => [
+                        'balance'       => $balance,
+                        'count'         => 0,
+                        'total_amount'  => 0,
+                        'total_fees'    => 0,
+                    ],
+                    Entity::NEXT_TWO_DAYS   => [
+                        'balance'       => $balance,
+                        'count'         => 0,
+                        'total_amount'  => 0,
+                        'total_fees'    => 0,
+                    ],
+                    Entity::NEXT_WEEK   => [
+                        'balance'       => $balance,
+                        'count'         => 0,
+                        'total_amount'  => 0,
+                        'total_fees'    => 0,
+                    ],
+                    Entity::NEXT_MONTH   => [
+                        'balance'       => $balance,
+                        'count'         => 0,
+                        'total_amount'  => 0,
+                        'total_fees'    => 0,
+                    ],
+                    Entity::ALL_TIME   => [
+                        'balance'       => $balance,
+                        'count'         => 0,
+                        'total_amount'  => 0,
+                        'total_fees'    => 0,
+                    ],
+                ]
             ];
         }
 

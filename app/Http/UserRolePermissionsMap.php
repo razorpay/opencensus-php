@@ -96,6 +96,7 @@ class UserRolePermissionsMap
                  Permission::CREATE_VENDOR_PAYMENTS,
                  Permission::EDIT_VENDOR_PAYMENTS,
                  Permission::CANCEL_VENDOR_PAYMENTS,
+                 Permission::PROCESS_PAYOUT_SCHEDULED,
              ],
 
              BankingRole::ADMIN => [
@@ -175,6 +176,7 @@ class UserRolePermissionsMap
                  Permission::CREATE_VENDOR_PAYMENTS,
                  Permission::EDIT_VENDOR_PAYMENTS,
                  Permission::CANCEL_VENDOR_PAYMENTS,
+                 Permission::PROCESS_PAYOUT_SCHEDULED,
              ],
 
              BankingRole::FINANCE_L1 => [
@@ -244,6 +246,7 @@ class UserRolePermissionsMap
                  Permission::CREATE_VENDOR_PAYMENTS,
                  Permission::EDIT_VENDOR_PAYMENTS,
                  Permission::CANCEL_VENDOR_PAYMENTS,
+                 Permission::PROCESS_PAYOUT_SCHEDULED,
              ],
 
              BankingRole::OPERATIONS => [

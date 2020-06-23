@@ -4381,6 +4381,424 @@ return [
         ],
     ],
 
+    'testScheduledPayoutCreationPostPayoutApproval' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts/{id}/approve',
+            'content' => [
+                'token'        => 'BUIj3m2Nx2VvVj',
+                'otp'          => '0007',
+                'user_comment' => 'Approving',
+            ],
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
+    'testCreateScheduledPayout' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts_with_otp',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'purpose'         => 'refund',
+                'narration'       => 'Batman',
+                'mode'            => 'IMPS',
+                'fund_account_id' => 'fa_100000000000fa',
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'fund_account_id' => 'fa_100000000000fa',
+                'narration'       => 'Batman',
+                'purpose'         => 'refund',
+                'status'          => 'scheduled',
+                'mode'            => 'IMPS',
+                'tax'             => 0,
+                'fees'            => 0,
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+    ],
+
+    'testCreateScheduledPayoutInvalidTimeStamp' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts_with_otp',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'purpose'         => 'refund',
+                'narration'       => 'Batman',
+                'mode'            => 'IMPS',
+                'fund_account_id' => 'fa_100000000000fa',
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_SCHEDULED_PAYOUT_INVALID_TIMESTAMP,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_SCHEDULED_PAYOUT_INVALID_TIMESTAMP,
+        ],
+    ],
+
+    'testCreateScheduledPayoutWhereTimeStampOutOfTimeSlot' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts_with_otp',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'purpose'         => 'refund',
+                'narration'       => 'Batman',
+                'mode'            => 'IMPS',
+                'fund_account_id' => 'fa_100000000000fa',
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_SCHEDULED_PAYOUT_INVALID_TIME_SLOT,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_SCHEDULED_PAYOUT_INVALID_TIME_SLOT,
+        ],
+    ],
+
+    'testCreateScheduledPayoutPrivateAuth' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'purpose'         => 'refund',
+                'narration'       => 'Batman',
+                'mode'            => 'IMPS',
+                'fund_account_id' => 'fa_100000000000fa',
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_SCHEDULED_PAYOUT_AUTH_NOT_SUPPORTED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_SCHEDULED_PAYOUT_AUTH_NOT_SUPPORTED,
+        ],
+    ],
+
+    'testFiringOfWebhooksOnPayoutScheduled' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts_with_otp',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'purpose'         => 'refund',
+                'narration'       => 'Batman',
+                'mode'            => 'IMPS',
+                'fund_account_id' => 'fa_100000000000fa',
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'fund_account_id' => 'fa_100000000000fa',
+                'narration'       => 'Batman',
+                'purpose'         => 'refund',
+                'status'          => 'scheduled',
+                'mode'            => 'IMPS',
+                'tax'             => 0,
+                'fees'            => 0,
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+    ],
+
+    'testFiringOfWebhooksOnPayoutScheduledEventData' => [
+        'entity'   => 'event',
+        'event'    => 'payout.scheduled',
+        'contains' => [
+            'payout',
+        ],
+        'payload'  => [
+            'payout' => [
+                'entity' => [
+                    'entity' => 'payout',
+                    'status' => 'scheduled',
+                ],
+            ],
+        ],
+    ],
+
+    'testFiringOfWebhooksOnPayoutScheduledFromPending' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts/{id}/approve',
+            'content' => [
+                'token'        => 'BUIj3m2Nx2VvVj',
+                'otp'          => '0007',
+                'user_comment' => 'Approving',
+            ],
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
+    'testFiringOfWebhooksOnPayoutScheduledFromPendingEventData' => [
+        'entity'   => 'event',
+        'event'    => 'payout.pending',
+        'contains' => [
+            'payout',
+        ],
+        'payload' => [
+            'payout' => [
+                'entity' => [
+                    'entity'     => 'payout',
+                    'status'     => 'pending',
+                ],
+            ],
+        ],
+    ],
+
+    'testCancelScheduledPayout' => [
+        'request'  => [
+            'method'  => 'POST',
+        ],
+        'response'  => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'fund_account_id' => 'fa_100000000000fa',
+                'narration'       => 'Batman',
+                'purpose'         => 'refund',
+                'status'          => 'cancelled',
+                'mode'            => 'IMPS',
+                'tax'             => 0,
+                'fees'            => 0,
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+    ],
+
+    'testCancelScheduledPayoutPrivateAuth' => [
+        'request'  => [
+            'method'  => 'POST',
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_SCHEDULED_PAYOUT_CANCEL_AUTH_NOT_SUPPORTED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_SCHEDULED_PAYOUT_CANCEL_AUTH_NOT_SUPPORTED,
+        ],
+    ],
+
+    'testCancelScheduledPayoutWithComments' => [
+        'request'  => [
+            'method'  => 'POST',
+        ],
+        'response'  => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'fund_account_id' => 'fa_100000000000fa',
+                'narration'       => 'Batman',
+                'purpose'         => 'refund',
+                'status'          => 'cancelled',
+                'mode'            => 'IMPS',
+                'tax'             => 0,
+                'fees'            => 0,
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+    ],
+
+    'testCancelQueuedPayoutProxyAuth' => [
+        'request'  => [
+            'method'  => 'POST',
+        ],
+        'response'  => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 10000001,
+                'currency'        => 'INR',
+                'fund_account_id' => 'fa_100000000000fa',
+                'narration'       => 'Test Merchant Fund Transfer',
+                'purpose'         => 'refund',
+                'status'          => 'cancelled',
+                'mode'            => 'IMPS',
+                'tax'             => 0,
+                'fees'            => 0,
+            ],
+        ],
+    ],
+
+    'testCancelQueuedPayoutPrivateAuth' => [
+        'request'  => [
+            'method'  => 'POST',
+        ],
+        'response'  => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 10000001,
+                'currency'        => 'INR',
+                'fund_account_id' => 'fa_100000000000fa',
+                'narration'       => 'Test Merchant Fund Transfer',
+                'purpose'         => 'refund',
+                'status'          => 'cancelled',
+                'mode'            => 'IMPS',
+                'tax'             => 0,
+                'fees'            => 0,
+            ],
+        ],
+    ],
+
+    'testCancelQueuedPayoutWithComments' => [
+        'request'  => [
+            'method'  => 'POST',
+        ],
+        'response'  => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 10000001,
+                'currency'        => 'INR',
+                'fund_account_id' => 'fa_100000000000fa',
+                'narration'       => 'Test Merchant Fund Transfer',
+                'purpose'         => 'refund',
+                'status'          => 'cancelled',
+                'mode'            => 'IMPS',
+                'tax'             => 0,
+                'fees'            => 0,
+            ],
+        ],
+    ],
+
+    'testApproveScheduledPayoutAfterScheduledAtTime' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts/{id}/approve',
+            'content' => [
+                'token'        => 'BUIj3m2Nx2VvVj',
+                'otp'          => '0007',
+                'user_comment' => 'Approving',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_SCHEDULED_PAYOUT_CANCEL_REJECT_APPROVE_INVALID_TIMESTAMP,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_SCHEDULED_PAYOUT_CANCEL_REJECT_APPROVE_INVALID_TIMESTAMP,
+        ],
+    ],
+
+    'testCancelScheduledPayoutAfterScheduledAtTime' => [
+        'request'  => [
+            'method'  => 'POST',
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_SCHEDULED_PAYOUT_CANCEL_REJECT_APPROVE_INVALID_TIMESTAMP,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_SCHEDULED_PAYOUT_CANCEL_REJECT_APPROVE_INVALID_TIMESTAMP,
+        ],
+    ],
+
+    'testRejectScheduledPayoutAfterScheduledAtTime' => [
+        'request'  => [
+            'method'  => 'POST',
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_SCHEDULED_PAYOUT_CANCEL_REJECT_APPROVE_INVALID_TIMESTAMP,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_SCHEDULED_PAYOUT_CANCEL_REJECT_APPROVE_INVALID_TIMESTAMP,
+        ],
+    ],
+
     'testBulkPayoutWithNotes' => [
         'request'   => [
             'url'     => '/payouts/bulk',
@@ -4929,14 +5347,14 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_PAYOUT_NOT_QUEUED_STATUS,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PAYOUT_NOT_QUEUED_OR_SCHEDULED_STATUS,
                 ]
             ],
             'status_code' => 400,
         ],
         'exception' => [
             'class'               => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYOUT_NOT_QUEUED_STATUS,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYOUT_NOT_QUEUED_OR_SCHEDULED_STATUS,
         ],
     ],
 
@@ -5225,6 +5643,185 @@ return [
         ],
         'response' => [
             'content' => [
+            ],
+        ],
+    ],
+
+    'testScheduledPayoutProcessing' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts/scheduled/process'
+        ],
+        'response'  => [
+            'content' => [
+            ],
+        ],
+    ],
+
+    'testScheduledPayoutProcessingLowBalance' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts/scheduled/process'
+        ],
+        'response'  => [
+            'content' => [
+            ],
+        ],
+    ],
+
+    'testScheduledPayoutProcessingAutoReject' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts/scheduled/process'
+        ],
+        'response'  => [
+            'content' => [
+            ],
+        ],
+    ],
+
+    'testGetScheduleTimeSlotsForDashboard' =>  [
+        'request'  => [
+            'method'  => 'GET',
+            'url'     => '/payouts/schedule/timeslots'
+        ],
+        'response'  => [
+            'content' => [
+                '09',
+                '13',
+                '17',
+                '21',
+            ],
+        ],
+    ],
+
+    'testScheduledPayoutSummary' => [
+        'request'  => [
+            'method'  => 'GET',
+            'url'     => '/payouts/_meta/summary',
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
+    'testBulkScheduledPayouts' => [
+        'request'   => [
+            'url'     => '/payouts/bulk',
+            'method'  => 'POST',
+            'content' => [
+                [
+                    'razorpayx_account_number'  => '2224440041626905',
+                    'payout'                    => [
+                        'amount'                => '100',
+                        'currency'              => 'INR',
+                        'mode'                  => 'IMPS',
+                        'purpose'               => 'refund',
+                        'narration'             => '123',
+                        'reference_id'          => '',
+                        'scheduled_at'          => '1593835770'
+                    ],
+                    'fund'                      => [
+                        'account_type'          => 'bank_account',
+                        'account_name'          => 'Vivek Karna',
+                        'account_IFSC'          => 'HDFC0003780',
+                        'account_number'        => '50100244702362',
+                        'account_vpa'           => ''
+                    ],
+                    'contact'                   => [
+                        'type'                  => 'customer',
+                        'name'                  => 'Vivek Karna',
+                        'email'                 => 'sampleone@example.com',
+                        'mobile'                => '9988998899',
+                        'reference_id'          => ''
+                    ],
+                    'idempotency_key'           => 'batch_abc123'
+                ],
+                [
+                    'razorpayx_account_number'  => '2224440041626905',
+                    'payout'                    => [
+                        'amount'                => '100',
+                        'currency'              => 'INR',
+                        'mode'                  => 'UPI',
+                        'purpose'               => 'refund',
+                        'narration'             => '123',
+                        'reference_id'          => '',
+                        'scheduled_at'          => '1593835770'
+                    ],
+                    'fund'                      => [
+                        'account_type'          => 'vpa',
+                        'account_name'          => 'Debojyoti Chak',
+                        'account_IFSC'          => '',
+                        'account_number'        => '',
+                        'account_vpa'           => '8861655100@ybl'
+                    ],
+                    'contact'                   => [
+                        'type'                  => 'customer',
+                        'name'                  => 'Debojyoti Chak',
+                        'email'                 => 'sampletwo@example.com',
+                        'mobile'                => '9988998899',
+                        'reference_id'          => ''
+                    ],
+                    'idempotency_key'           => 'batch_abc124'
+                ]
+            ]
+        ],
+        'response'                                  => [
+            'content'                               => [
+                'entity'                            => 'collection',
+                'count'                             => 2,
+                'items'                             => [
+                    [
+                        'entity'                    => 'payout',
+                        'fund_account'              => [
+                            'entity'                => 'fund_account',
+                            'account_type'          => 'bank_account',
+                            'bank_account'          => [
+                                'ifsc'              => 'HDFC0003780',
+                                'bank_name'         => 'HDFC Bank',
+                                'name'              => 'Vivek Karna',
+                                'account_number'    => '50100244702362',
+                            ],
+                            'active'                => true,
+                        ],
+                        'amount'                    => 100,
+                        'currency'                  => 'INR',
+                        'fees'                      => 0,
+                        'tax'                       => 0,
+                        'status'                    => 'scheduled',
+                        'purpose'                   => 'refund',
+                        'utr'                       => null,
+                        'user_id'                   => null,
+                        'mode'                      => 'IMPS',
+                        'reference_id'              => null,
+                        'narration'                 => '123',
+                        'idempotency_key'           => 'batch_abc123'
+                    ],
+                    [
+                        'entity'                    => 'payout',
+                        'fund_account'              => [
+                            'entity'                => 'fund_account',
+                            'account_type'          => 'vpa',
+                            'vpa'                   => [
+                                'address'           => '8861655100@ybl'
+                            ],
+                            'active'                => true,
+                        ],
+                        'amount'                    => 100,
+                        'currency'                  => 'INR',
+                        'fees'                      => 0,
+                        'tax'                       => 0,
+                        'status'                    => 'scheduled',
+                        'purpose'                   => 'refund',
+                        'utr'                       => null,
+                        'user_id'                   => null,
+                        'mode'                      => 'UPI',
+                        'reference_id'              => null,
+                        'narration'                 => '123',
+                        'idempotency_key'           => 'batch_abc124'
+                    ]
+                ]
             ],
         ],
     ],

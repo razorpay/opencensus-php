@@ -315,6 +315,7 @@ class Name
     const CREATE_PAYOUT_PURPOSE               = 'create_payout_purpose';
     const VIEW_PAYOUT_REVERSAL                = 'view_payout_reversal';
     const PROCESS_PAYOUT_QUEUED               = 'process_payout_queued';
+    const PROCESS_PAYOUT_SCHEDULED            = 'process_payout_scheduled';
     const VIEW_PAYOUT_SUMMARY                 = 'view_payout_summary';
     const VIEW_PAYOUT_WORKFLOW_SUMMARY        = 'view_payout_workflow_summary';
     const VIEW_PAYOUT_LINKS                   = 'view_payout_links';

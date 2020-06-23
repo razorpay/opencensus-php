@@ -22,6 +22,7 @@ final class Metric
     const PAYOUT_REJECTED_TOTAL         = 'payout_rejected_total';
     const PAYOUT_CANCELLED_TOTAL        = 'payout_cancelled_total';
     const PAYOUT_BATCH_SUBMITTED_TOTAL  = 'payout_batch_submitted_total';
+    const PAYOUT_SCHEDULED_TOTAL        = 'payout_scheduled_total';
 
     // Histograms
     const PAYOUT_QUEUED_TO_CREATED_DURATION_SECONDS          = 'payout_queued_to_created_duration_seconds.histogram';
@@ -37,6 +38,9 @@ final class Metric
     const PAYOUT_PROCESSED_TO_REVERSED_DURATION_SECONDS      = 'payout_processed_to_reversed_duration_seconds.histogram';
     const PAYOUT_BATCH_SUBMITTED_TO_CREATED_DURATION_SECONDS = 'payout_batch_submitted_to_created_duration_seconds.histogram';
     const PAYOUT_BATCH_SUBMITTED_TO_FAILED_DURATION_SECONDS  = 'payout_batch_submitted_to_failed_duration_seconds.histogram';
+    const PAYOUT_SCHEDULED_TO_CREATED_DURATION_SECONDS       = 'payout_scheduled_to_created_duration_seconds.histogram';
+    const PAYOUT_SCHEDULED_TO_FAILED_DURATION_SECONDS        = 'payout_scheduled_to_failed_duration_seconds.histogram';
+    const PAYOUT_SCHEDULED_TO_REJECTED_DURATION_SECONDS      = 'payout_scheduled_to_rejected_duration_seconds.histogram';
 
     // Dimension constants
     const SOURCE     = 'source';
@@ -265,6 +269,43 @@ final class Metric
 
         app('trace')->histogram(
             self::PAYOUT_PROCESSED_TO_REVERSED_DURATION_SECONDS,
+            $timeDuration,
+            $metricDimensions);
+    }
+
+    protected static function pushScheduledToCreatedMetrics(Entity $payout)
+    {
+        $metricDimensions = self::getMetricDimensions($payout);
+        $timeDuration     = $payout->getInitiatedAt() - $payout->getScheduledAt();
+
+        app('trace')->histogram(
+            self::PAYOUT_SCHEDULED_TO_CREATED_DURATION_SECONDS,
+            $timeDuration,
+            $metricDimensions);
+    }
+
+    protected static function pushScheduledToFailedMetrics(Entity $payout)
+    {
+        $extraDimensions = [
+            Entity::FAILURE_REASON => $payout->getFailureReason(),
+        ];
+
+        $metricDimensions = self::getMetricDimensions($payout, $extraDimensions);
+        $timeDuration     = $payout->getFailedAt() - $payout->getScheduledAt();
+
+        app('trace')->histogram(
+            self::PAYOUT_SCHEDULED_TO_FAILED_DURATION_SECONDS,
+            $timeDuration,
+            $metricDimensions);
+    }
+
+    protected static function pushScheduledToRejectedMetrics(Entity $payout)
+    {
+        $metricDimensions = self::getMetricDimensions($payout);
+        $timeDuration     = $payout->getRejectedAt() - $payout->getScheduledAt();
+
+        app('trace')->histogram(
+            self::PAYOUT_SCHEDULED_TO_REJECTED_DURATION_SECONDS,
             $timeDuration,
             $metricDimensions);
     }

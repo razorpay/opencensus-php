@@ -95,6 +95,11 @@ class Entity extends Base\PublicEntity
     const PAYOUT_LINK_ID         = 'payout_link_id';
     const PRICING_RULE_ID        = 'pricing_rule_id';
 
+    // scheduled_at is the timestamp for when the merchant schedules the payout to be processed
+    const SCHEDULED_AT           = 'scheduled_at';
+    // scheduled_on is the timestamp of when the payout changes state to scheduled
+    const SCHEDULED_ON           = 'scheduled_on';
+
     // Public attribute
     const DESTINATION            = 'destination';
 
@@ -121,6 +126,11 @@ class Entity extends Base\PublicEntity
     const REVERSED_TO   = 'reversed_to';
     const PRODUCT       = 'product';
 
+    // Input/output for scheduled payouts
+    const SCHEDULED_FROM = 'scheduled_from';
+    const SCHEDULED_TO   = 'scheduled_to';
+    const SORTED_ON      = 'sorted_on';
+
     const PENDING_ON_ME    = 'pending_on_me';
     const PENDING_ON_ROLES = 'pending_on_roles';
     const PENDING_ON_USER  = 'pending_on_user';
@@ -139,7 +149,7 @@ class Entity extends Base\PublicEntity
 
     const PAYOUT_MODE     = 'payout_mode';
 
-    // Used for Queued Payout Processing
+    // Used for Queued and Scheduled Payout Processing
     const BALANCE_IDS     = 'balance_ids';
     const BALANCE_IDS_NOT = 'balance_ids_not';
 
@@ -169,6 +179,21 @@ class Entity extends Base\PublicEntity
 
     // Used exclusively for Elasticsearch queries
     const CONTACT_EMAIL_RAW = 'contact_email.raw';
+
+    // Constants used for scheduled payout summary
+    const TODAY         = 'today';
+    const NEXT_TWO_DAYS = 'next_two_days';
+    const NEXT_WEEK     = 'next_week';
+    const NEXT_MONTH    = 'next_month';
+    const ALL_TIME      = 'all_time';
+
+    const SCHEDULED_PAYOUTS_SUMMARY = [
+          self::TODAY,
+          self::NEXT_TWO_DAYS,
+          self::NEXT_WEEK,
+          self::NEXT_MONTH,
+          self::ALL_TIME
+    ];
 
     protected $queueFlag = false;
 
@@ -222,6 +247,8 @@ class Entity extends Base\PublicEntity
         self::IDEMPOTENCY_KEY,
         self::PRICING_RULE_ID,
         self::BATCH_SUBMITTED_AT,
+        self::SCHEDULED_AT,
+        self::SCHEDULED_ON,
     ];
 
     protected $visible = [
@@ -273,6 +300,8 @@ class Entity extends Base\PublicEntity
         self::IDEMPOTENCY_KEY,
         self::PRICING_RULE_ID,
         self::BATCH_SUBMITTED_AT,
+        self::SCHEDULED_AT,
+        self::SCHEDULED_ON,
     ];
 
     protected $public = [
@@ -311,6 +340,8 @@ class Entity extends Base\PublicEntity
         self::REJECTED_AT,
         self::FAILURE_REASON,
         self::CREATED_AT,
+        self::SCHEDULED_AT,
+        self::SCHEDULED_ON,
     ];
 
     protected $webhook = [
@@ -332,6 +363,7 @@ class Entity extends Base\PublicEntity
         self::BATCH_ID,
         self::FAILURE_REASON,
         self::CREATED_AT,
+        self::SCHEDULED_AT,
     ];
 
     protected static $modifiers = [
@@ -367,6 +399,7 @@ class Entity extends Base\PublicEntity
         self::TRANSACTION_ID,
         self::BATCH_ID,
         self::TRANSACTION,
+        self::SCHEDULED_ON,
     ];
 
     protected $defaults = [
@@ -414,6 +447,8 @@ class Entity extends Base\PublicEntity
         self::INITIATED_AT,
         self::SETTLED_ON,
         self::BATCH_SUBMITTED_AT,
+        self::SCHEDULED_AT,
+        self::SCHEDULED_ON,
     ];
 
     protected $appends = [
@@ -616,6 +651,13 @@ class Entity extends Base\PublicEntity
         return ($this->queueFlag === true);
     }
 
+    public function toBeScheduled(): bool
+    {
+        $scheduledAt = $this->getScheduledAt();
+
+        return (empty($scheduledAt) === false);
+    }
+
     public function shouldValidateAndUpdateBalances(): bool
     {
         return ($this->shouldValidateAndUpdateBalancesFlag === true);
@@ -721,6 +763,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::BATCH_SUBMITTED_AT);
     }
 
+    public function getScheduledAt()
+    {
+        return $this->getAttribute(self::SCHEDULED_AT);
+    }
+
     public function hasBeenQueued()
     {
         return ($this->isAttributeNotNull(self::QUEUED_AT) === true);
@@ -766,6 +813,11 @@ class Entity extends Base\PublicEntity
     public function isStatusBatchSubmitted()
     {
         return ($this->getStatus() === Status::BATCH_SUBMITTED);
+    }
+
+    public function isStatusScheduled()
+    {
+        return ($this->getStatus() === Status::SCHEDULED);
     }
 
     public function isStatusCancelled()
@@ -974,6 +1026,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::INITIATED_AT, $currentTime);
     }
 
+    public function setScheduledAt($scheduledAt)
+    {
+        $this->setAttribute(self::SCHEDULED_AT, $scheduledAt);
+    }
+
     /**
      * This is required for the FTA module.
      * FTA requires the sources to implement `setUtr`
@@ -1002,6 +1059,8 @@ class Entity extends Base\PublicEntity
      * This is required for the FTA module.
      * FTA requires the sources to implement `setRemarks`
      * function, to set the bank remarks.
+     *
+     * Now also being used by payouts to store comments when a user cancels a scheduled or queued payout
      *
      * @param string|null $remarks
      */
@@ -1043,6 +1102,11 @@ class Entity extends Base\PublicEntity
     public function setCancelledAt($date)
     {
         $this->setAttribute(self::CANCELLED_AT, $date);
+    }
+
+    public function setScheduledOn($date)
+    {
+        $this->setAttribute(self::SCHEDULED_ON, $date);
     }
 
     public function setPurpose(string $purpose)
@@ -1121,6 +1185,15 @@ class Entity extends Base\PublicEntity
             {
                 $timestampKey = self::INITIATED_AT;
             }
+
+            $currentTime = Carbon::now()->getTimestamp();
+
+            $this->setAttribute($timestampKey, $currentTime);
+        }
+
+        if (in_array($status, Status::$timestampedStatuses2, true) === true)
+        {
+            $timestampKey = $status . '_on';
 
             $currentTime = Carbon::now()->getTimestamp();
 
@@ -1398,6 +1471,22 @@ class Entity extends Base\PublicEntity
         if (app('basicauth')->isProxyOrPrivilegeAuth() === false)
         {
             unset($attributes[self::INITIATED_AT]);
+        }
+    }
+
+    public function setPublicScheduledOnAttribute(array & $attributes)
+    {
+        //
+        // We are currently exposing this timestamp only for dashboard.
+        // Going forward, we will have a proper auditing stuff for
+        // payouts, which will be exposed via API as well.
+        //
+
+        // TODO: Move to serializer
+
+        if (app('basicauth')->isProxyOrPrivilegeAuth() === false)
+        {
+            unset($attributes[self::SCHEDULED_ON]);
         }
     }
 

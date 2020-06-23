@@ -213,6 +213,10 @@ return [
         'test'       => env('AWS_PAYOUTS_TEST_QUEUE'),
         'live'       => env('AWS_PAYOUTS_LIVE_QUEUE'),
     ],
+    'scheduled_payouts_process' => [
+        'test'       =>  env('AWS_SCHEDULED_PAYOUTS_PROCESS_TEST_QUEUE'),
+        'live'       =>  env('AWS_SCHEDULED_PAYOUTS_PROCESS_LIVE_QUEUE'),
+    ],
     'es_sync' => [
         'test'       => env('AWS_ES_SYNC_QUEUE'),
         'live'       => env('AWS_ES_SYNC_QUEUE'),

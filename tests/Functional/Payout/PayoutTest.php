@@ -22,6 +22,7 @@ use RZP\Http\RequestHeader;
 use RZP\Constants\Timezone;
 use RZP\Models\Card\Issuer;
 use RZP\Models\Card\Network;
+use RZP\Models\Payout\Status;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\Base\PublicCollection;
@@ -954,6 +955,70 @@ class PayoutTest extends TestCase
         $this->assertEquals(0, $summary2[$bankingAccount->getPublicId()][Payout\Status::QUEUED]['total_amount']);
         $this->assertEquals(1, $summary2[$secondBankingAccount->getPublicId()][Payout\Status::QUEUED]['count']);
         $this->assertEquals(30000099, $summary2[$secondBankingAccount->getPublicId()][Payout\Status::QUEUED]['total_amount']);
+    }
+
+    public function testCancelQueuedPayoutProxyAuth()
+    {
+        $this->testCreateQueuedPayout();
+
+        $queuedPayout = $this->getDbLastEntity('payout');
+
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/payouts/' . $queuedPayout->getPublicId() . '/cancel';
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+
+        $cancelledPayout = $this->getDbLastEntity('payout');
+
+        // Assert that payout got cancelled
+        $this->assertEquals(Status::CANCELLED, $cancelledPayout['status']);
+        $this->assertEquals($this->bankingBalance['id'], $cancelledPayout['balance_id']);
+    }
+
+    public function testCancelQueuedPayoutPrivateAuth()
+    {
+        $this->testCreateQueuedPayout();
+
+        $queuedPayout = $this->getDbLastEntity('payout');
+
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/payouts/' . $queuedPayout->getPublicId() . '/cancel';
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+
+        $cancelledPayout = $this->getDbLastEntity('payout');
+
+        // Assert that payout got cancelled
+        $this->assertEquals(Status::CANCELLED, $cancelledPayout['status']);
+        $this->assertEquals($this->bankingBalance['id'], $cancelledPayout['balance_id']);
+    }
+
+    public function testCancelQueuedPayoutWithComments()
+    {
+        $this->testCreateQueuedPayout();
+
+        $queuedPayout = $this->getDbLastEntity('payout');
+
+        $userComment = "Payout cancelled by Mehul";
+
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/payouts/' . $queuedPayout->getPublicId() . '/cancel';
+        $testData['request']['content']['remarks'] = $userComment;
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+
+        $cancelledPayout = $this->getDbLastEntity('payout');
+
+        // Assert that payout got cancelled with comments
+        $this->assertEquals(Status::CANCELLED, $cancelledPayout['status']);
+        $this->assertEquals($this->bankingBalance['id'], $cancelledPayout['balance_id']);
+        $this->assertEquals($userComment, $cancelledPayout['remarks']);
     }
 
     public function testCreatePayoutToInactiveFundAccount()
@@ -3698,15 +3763,6 @@ class PayoutTest extends TestCase
         $this->ba->adminAuth('live','secondTokenAdminToken1234');
 
         $this->startTest();
-    }
-
-    protected function validateStorkWebhookFireEvent($event, $testData, $storkPayload, $mode='test')
-    {
-        $this->assertEquals('rx-' . $mode, $storkPayload['event']['service']);
-        $this->assertEquals($event, $storkPayload['event']['name']);
-        $this->assertEquals('merchant', $storkPayload['event']['owner_type']);
-        $this->assertEquals('10000000000000', $storkPayload['event']['owner_id']);
-        $this->assertArraySelectiveEquals($testData, json_decode($storkPayload['event']['payload'], true));
     }
 
     protected function setupRedisMock()

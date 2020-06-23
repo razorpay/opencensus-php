@@ -25,6 +25,7 @@ class Status
     const QUEUED            = 'queued';
     const CANCELLED         = 'cancelled';
     const BATCH_SUBMITTED   = 'batch_submitted';
+    const SCHEDULED         = 'scheduled';
 
     /**
      * Used only to expose publicly.
@@ -67,6 +68,7 @@ class Status
             self::PENDING,
             self::QUEUED,
             self::BATCH_SUBMITTED,
+            self::SCHEDULED,
         ],
         self::QUEUED => [
             self::CREATED,
@@ -76,6 +78,7 @@ class Status
             self::REJECTED,
             self::QUEUED,
             self::CREATED,
+            self::SCHEDULED,
         ],
         self::CREATED => [
             self::INITIATED,
@@ -101,11 +104,16 @@ class Status
         self::BATCH_SUBMITTED => [
             self::CREATED,
             self::FAILED
-        ]
+        ],
+        self::SCHEDULED => [
+            self::CREATED,
+            self::CANCELLED,
+            self::FAILED,
+        ],
     ];
 
     /**
-     * These statuses have corresponding timestamps column in payout
+     * These statuses have corresponding timestamps column in payout (_at)
      *
      * @var array
      */
@@ -123,6 +131,15 @@ class Status
     ];
 
     /**
+     * These statuses have corresponding timestamps column in payout (_on)
+     *
+     * @var array
+     */
+    public static $timestampedStatuses2 = [
+        self::SCHEDULED
+    ];
+
+    /**
      * Payout statuses that are prior to the created state.
      * Transactions and FTA are not created for these payouts yet.
      *
@@ -132,6 +149,9 @@ class Status
         self::QUEUED,
         self::PENDING,
         self::BATCH_SUBMITTED,
+        self::FAILED,
+        self::SCHEDULED,
+        self::REJECTED,
         self::FAILED,
     ];
 

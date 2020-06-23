@@ -140,6 +140,7 @@ trait TestsBusinessBanking
                 'merchant_id'    => '10000000000000',
                 'account_number' => '2224440041626905',
                 'account_ifsc'   => 'RAZRB000000',
+                'status'         => 'activated'
             ]);
 
         $bankingAccount->balance()->associate($bankingBalance);

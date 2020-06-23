@@ -18,6 +18,7 @@ class BatchHelper
     const PAYOUT                   = 'payout';
     const NOTES                    = 'notes';
     const BALANCE_ID               = 'balance_id';
+    const SCHEDULED_AT             = 'scheduled_at';
 
     public static function getPayoutInput(
         array $entry,
@@ -42,8 +43,13 @@ class BatchHelper
             // Notes is optional.
             PayoutModel\Entity::NOTES           => $entry[self::NOTES] ?? [],
             PayoutModel\Entity::IDEMPOTENCY_KEY => $entry[Entity::IDEMPOTENCY_KEY],
-
         ];
+
+        if ((isset($entry[self::PAYOUT][self::SCHEDULED_AT]) === true) and
+            (empty($entry[self::PAYOUT][self::SCHEDULED_AT]) === false))
+        {
+            $input[PayoutModel\Entity::SCHEDULED_AT] = $entry[self::PAYOUT][self::SCHEDULED_AT];
+        }
 
         $input[PayoutModel\Entity::NOTES] = self::formatNotesInput($input[PayoutModel\Entity::NOTES]);
 

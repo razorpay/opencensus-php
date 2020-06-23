@@ -215,21 +215,69 @@ trait PayoutTrait
 
     protected function createQueuedOrPendingPayout(array $attributes = [], string $authKey = null)
     {
+        $content = [
+            'account_number'        => $attributes['account_number'] ?? '2224440041626905',
+            'amount'                => $attributes['amount'] ?? 10000,
+            'currency'              => 'INR',
+            'purpose'               => 'refund',
+            'fund_account_id'       => $attributes['fund_account_id'] ?? 'fa_100000000000fa',
+            'mode'                  => 'NEFT',
+            'queue_if_low_balance'  => $attributes['queue_if_low_balance'] ?? 0,
+        ];
+
+        if (isset($attributes['scheduled_at']))
+        {
+            $content['scheduled_at'] = $attributes['scheduled_at'];
+        }
+
         $request = [
             'method'  => 'POST',
             'url'     => '/payouts',
-            'content' => [
-                'account_number'        => $attributes['account_number'] ?? '2224440041626905',
-                'amount'                => $attributes['amount'] ?? 10000,
-                'currency'              => 'INR',
-                'purpose'               => 'refund',
-                'fund_account_id'       => $attributes['fund_account_id'] ?? 'fa_100000000000fa',
-                'mode'                  => 'NEFT',
-                'queue_if_low_balance'  => $attributes['queue_if_low_balance'] ?? 0,
-            ],
+            'content' => $content,
         ];
 
         $this->ba->privateAuth($authKey);
+
+        $response = $this->sendRequest($request);
+
+        return json_decode($response->getContent(), true);
+    }
+
+    protected function createPayoutWithOtpWithWorkflow($payoutAttributes = [], $authKey = null, $merchantUser = null)
+    {
+        $this->disableWorkflowMocks();
+
+        return $this->createQueuedPendingOrScheduledPayoutWithOtp($payoutAttributes, $authKey, $merchantUser);
+    }
+
+    protected function createQueuedPendingOrScheduledPayoutWithOtp(array $attributes = [],
+                                                                   string $authKey = null,
+                                                                   $merchantUser = null)
+    {
+        $content = [
+            'account_number'        => $attributes['account_number'] ?? '2224440041626905',
+            'amount'                => $attributes['amount'] ?? 10000,
+            'currency'              => 'INR',
+            'purpose'               => 'refund',
+            'fund_account_id'       => $attributes['fund_account_id'] ?? 'fa_100000000000fa',
+            'mode'                  => 'NEFT',
+            'queue_if_low_balance'  => $attributes['queue_if_low_balance'] ?? 0,
+            'otp'                   => '0007',
+            'token'                 => 'BUIj3m2Nx2VvVj',
+        ];
+
+        if (isset($attributes['scheduled_at']))
+        {
+            $content['scheduled_at'] = $attributes['scheduled_at'];
+        }
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payouts_with_otp',
+            'content' => $content,
+        ];
+
+        $this->ba->proxyAuth($authKey, $merchantUser);
 
         $response = $this->sendRequest($request);
 
@@ -417,6 +465,34 @@ trait PayoutTrait
                                                                          'role'        => 'owner',
                                                                      ], 'live');
 
+    }
+
+    protected function validateStorkWebhookFireEvent($event, $testData, $storkPayload, $mode='test')
+    {
+        $this->assertEquals('rx-' . $mode, $storkPayload['event']['service']);
+        $this->assertEquals($event, $storkPayload['event']['name']);
+        $this->assertEquals('merchant', $storkPayload['event']['owner_type']);
+        $this->assertEquals('10000000000000', $storkPayload['event']['owner_id']);
+        $this->assertArraySelectiveEquals($testData, json_decode($storkPayload['event']['payload'], true));
+    }
+
+    protected function approvePayoutWithRole($payoutId, $authKey, $merchantUser)
+    {
+        $this->ba->proxyAuth($authKey, $merchantUser);
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payouts/' . $payoutId . '/approve',
+            'content' => [
+                'token'        => 'BUIj3m2Nx2VvVj',
+                'otp'          => '0007',
+                'user_comment' => 'Approving',
+            ],
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        return $response;
     }
 
     protected function updateFtaAndSource($payout_id, $status, $utr = '928337183')

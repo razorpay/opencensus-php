@@ -120,6 +120,13 @@ class Base extends BaseCore
                 return $payout;
             }
 
+            $this->schedulePayoutIfApplicable($payout);
+
+            if ($payout->isStatusScheduled() === true)
+            {
+                return $payout;
+            }
+
             if ($payout->shouldDelayInitiationForBatchPayout() === true)
             {
                 $payout->setStatus(Status::BATCH_SUBMITTED);
@@ -306,6 +313,93 @@ class Base extends BaseCore
         return $payout;
     }
 
+    public function processScheduledPayout(Payout\Entity $payout): Payout\Entity
+    {
+        $payout = $this->repo->transaction(
+            function () use ($payout)
+            {
+                $this->fundTransferDestination = $payout->fundAccount->account;
+
+                $payoutType = $this->getPayoutType();
+
+                $downstreamProcessor = new DownstreamProcessor($payoutType,
+                                                               $payout,
+                                                               $this->mode,
+                                                               $this->fundTransferDestination);
+
+                //
+                // Ensure that the queued flag in the payout entity is not set.
+                // We want scheduled payouts to fail in case there isn't enough balance
+                //
+                try
+                {
+                    $downstreamProcessor->process();
+                }
+                catch(\Exception $ex)
+                {
+                    $insufficientFundsErrorCode = ErrorCode::BAD_REQUEST_PAYOUT_NOT_ENOUGH_BALANCE_BANKING;
+
+                    //
+                    // If the error is due to insufficient balance, we shall mark the payout as failed.
+                    //
+                    if ($ex->getError()->getInternalErrorCode() === $insufficientFundsErrorCode)
+                    {
+                        $payout->setStatus(Status::FAILED);
+
+                        $payout->setFailureReason('Insufficient balance to process payout');
+
+                        $this->repo->saveOrFail($payout);
+
+                        $this->trace->info(
+                            TraceCode::SCHEDULED_PAYOUT_FAILED,
+                            [
+                                'payout_id'      => $payout->getId(),
+                                'transaction_id' => $payout->getTransactionId(),
+                                'payout_status'  => $payout->getStatus(),
+                            ]);
+
+                        return $payout;
+                    }
+                    else
+                    {
+                        throw $ex;
+                    }
+                }
+
+                $payout->setStatus(Payout\Status::CREATED);
+
+                $this->repo->saveOrFail($payout);
+
+                $this->trace->info(
+                    TraceCode::SCHEDULED_PAYOUT_CREATED,
+                    [
+                        'payout_id'      => $payout->getId(),
+                        'transaction_id' => $payout->getTransactionId(),
+                        'payout_status'  => $payout->getStatus(),
+                    ]);
+
+                return $payout;
+            });
+
+        $this->fireEventForPayoutStatus($payout);
+
+        //
+        // Refer to similar comment on processQueuedPayout.
+        // This needs to change if we want to handle for any other type apart from Fund Account Payout
+        //
+        // We can now also mark the payout as `failed`, `rejected` if the merchant does not have enough balance or if
+        // the payout hasn't been approved, in such a case,we wouldn't want to fire the transaction created webhook,
+        // since no transaction was created.
+        //
+        if (($payout->balance->getAccountType() === Merchant\Balance\AccountType::SHARED) and
+            ($payout->isStatusBeforeCreate() === false))
+        {
+            (new Transaction\Core)->dispatchEventForTransactionCreated($payout->transaction);
+        }
+
+        return $payout;
+    }
+
     public function processPendingPayout(Payout\Entity $payout, bool $queueFlag): Payout\Entity
     {
         /** @var Payout\Entity $payout */
@@ -319,6 +413,15 @@ class Base extends BaseCore
                 $this->fundTransferDestination = $payout->fundAccount->account;
 
                 $payoutType = $this->getPayoutType();
+
+                // We shall check if the payout needs to be scheduled, schedule it and return it from here.
+                // If the payout does not need to be scheduled, then it will get processed normally.
+                $this->schedulePayoutIfApplicable($payout);
+
+                if ($payout->isStatusScheduled() === true)
+                {
+                    return $payout;
+                }
 
                 $payout->setQueueFlag($queueFlag);
 
@@ -630,6 +733,11 @@ class Base extends BaseCore
 
         (new Payout\Purpose)->setPurposeAndTypeForPayout($payout, $payout->getPurpose(), $this->isInternal);
 
+        if (isset($input[Payout\Entity::SCHEDULED_AT]) === true)
+        {
+            (new Payout\Schedule)->updateScheduleTimeToStartOfHour($payout);
+        }
+
         return $payout;
     }
 
@@ -790,5 +898,24 @@ class Base extends BaseCore
                 );
             }
         }
+    }
+
+    /**
+     * @param Payout\Entity $payout
+     *
+     * @throws BadRequestException
+     */
+    protected function schedulePayoutIfApplicable(Payout\Entity & $payout)
+    {
+        if ($payout->toBeScheduled() === false)
+        {
+            return;
+        }
+
+        Payout\Schedule::validateScheduledAtTimeStamp($payout->getScheduledAt());
+
+        $payout->setStatus(Status::SCHEDULED);
+
+        $this->repo->saveOrFail($payout);
     }
 }

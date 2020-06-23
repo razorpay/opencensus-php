@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Payout;
 
+use Carbon\Carbon;
 use Illuminate\Database\Query\JoinClause;
 
 use RZP\Exception;
@@ -14,6 +15,7 @@ use RZP\Base\BuilderEx;
 use RZP\Models\Merchant;
 use RZP\Models\Workflow;
 use RZP\Models\Admin\Org;
+use RZP\Constants\Timezone;
 use RZP\Models\FundAccount;
 use RZP\Models\FeeRecovery;
 use RZP\Models\Workflow\Step;
@@ -30,6 +32,7 @@ class Repository extends Base\Repository
     const QUEUED_PAYOUTS_FETCH_LIMIT = 5000;
     const PENDING_PAYOUTS_FETCH_LIMIT = 5000;
     const BATCH_PAYOUTS_FETCH_LIMIT = 300;
+    const SCHEDULED_PAYOUTS_FETCH_LIMIT = 5000;
 
     protected $entity = 'payout';
 
@@ -188,6 +191,20 @@ class Repository extends Base\Repository
 
         return $query->limit(self::QUEUED_PAYOUTS_FETCH_LIMIT)
                      ->get();
+    }
+
+    public function fetchScheduledPayouts(string $merchantId)
+    {
+        $statusColumn       = $this->repo->payout->dbColumn(Entity::STATUS);
+        $scheduledAtColumn  = $this->repo->payout->dbColumn(Entity::SCHEDULED_AT);
+
+        return $this->newQuery()
+                    ->with(['balance', 'merchant'])
+                    ->whereIn($statusColumn, [Status::SCHEDULED, Status::PENDING])
+                    ->whereNotNull($scheduledAtColumn)
+                    ->merchantId($merchantId)
+                    ->limit(self::SCHEDULED_PAYOUTS_FETCH_LIMIT)
+                    ->get();
     }
 
     /**
@@ -870,6 +887,29 @@ class Repository extends Base\Repository
         $query->where($reversedAtCol, '<=', $reversedTo);
     }
 
+    protected function addQueryParamScheduledFrom($query, $params)
+    {
+        $scheduledFrom  = $params[Entity::SCHEDULED_FROM];
+        $scheduledAtCol = $this->dbColumn(Entity::SCHEDULED_AT);
+
+        $query->where($scheduledAtCol, '>=', $scheduledFrom);
+    }
+
+    protected function addQueryParamScheduledTo($query, $params)
+    {
+        $scheduledTo    = $params[Entity::SCHEDULED_TO];
+        $scheduledAtCol = $this->dbColumn(Entity::SCHEDULED_AT);
+
+        $query->where($scheduledAtCol, '<=', $scheduledTo);
+    }
+
+    protected function addQueryParamSortedOn($query, $params)
+    {
+        $sortedOn  = $params[Entity::SORTED_ON];
+
+        $query->orderBy($sortedOn, 'desc');
+    }
+
     // fetches when fee recovery was last made for CA
     public function fetchFeeLastDeductedAt(string $merchantId, string $balanceId)
     {
@@ -951,5 +991,34 @@ class Repository extends Base\Repository
                     ->get()
                     ->pluck(Entity::ID)
                     ->toArray();
+    }
+
+    public function getScheduledPayoutsToBeProcessed($balanceIdsWhitelist, $balanceIdsBlacklist)
+    {
+        $currentTimeStamp = Carbon::now(Timezone::IST)->getTimestamp();
+
+        $payoutsIdColumn            = $this->repo->payout->dbColumn(Entity::ID);
+        $payoutAmountColumn         = $this->repo->payout->dbColumn(Entity::AMOUNT);
+        $payoutStatusColumn         = $this->repo->payout->dbColumn(Entity::STATUS);
+        $payoutsBalanceIdColumn     = $this->repo->payout->dbColumn(Entity::BALANCE_ID);
+        $payoutsScheduledAtColumn   = $this->repo->payout->dbColumn(Entity::SCHEDULED_AT);
+
+        $query = $this->newQuery()
+                      ->select($payoutsBalanceIdColumn, $payoutStatusColumn, $payoutsIdColumn, $payoutAmountColumn)
+                      ->where($payoutsScheduledAtColumn, '<', $currentTimeStamp)
+                      ->whereIn($payoutStatusColumn, [Status::SCHEDULED, Status::PENDING]);
+
+        if (empty ($balanceIdsWhitelist) === false)
+        {
+            $query->whereIn($payoutsBalanceIdColumn, $balanceIdsWhitelist);
+        }
+
+        if (empty($balanceIdsBlacklist) === false)
+        {
+            $query->whereNotIn($payoutsBalanceIdColumn, $balanceIdsBlacklist);
+        }
+
+        return $query->limit(self::SCHEDULED_PAYOUTS_FETCH_LIMIT)
+                     ->get();
     }
 }

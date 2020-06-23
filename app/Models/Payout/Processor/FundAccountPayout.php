@@ -25,8 +25,8 @@ class FundAccountPayout extends Base
         $payout = parent::createPayout($input);
 
         //
-        // In case of payouts with status=(queued, pending), we don't create the transaction yet.
-        // This event will be dispatched later when we are actually processing the payout.
+        // In case of payouts with status=(queued, pending, scheduled, rejected, failed), we don't create the
+        // transaction yet. This event will be dispatched later when we are actually processing the payout.
         //
         if ($payout->isStatusBeforeCreate() === false)
         {
@@ -102,7 +102,12 @@ class FundAccountPayout extends Base
 
     protected function fireEventForPayoutStatus(Payout\Entity $payout)
     {
-        if ($payout->isStatusQueued() === true)
+        if ($payout->isStatusScheduled() === true)
+        {
+            // Keeping this block empty because we aren't adding a payout.scheduled webhook yet but at the same time,
+            // we don't want to send the payout.initiated webhook at this point which is the default behaviour
+        }
+        else if ($payout->isStatusQueued() === true)
         {
             $this->app->events->fire('api.payout.queued', [$payout]);
         }

@@ -23,7 +23,9 @@ class PayoutController extends Controller
      */
     public function postFundAccountPayoutWithOtp()
     {
-        $response = $this->service()->fundAccountPayoutWithOtp($this->input);
+        $input = Request::all();
+
+        $response = $this->service()->fundAccountPayoutWithOtp($input);
 
         return ApiResponse::json($response);
     }
@@ -161,7 +163,9 @@ class PayoutController extends Controller
 
     public function cancelPayout(string $payoutId)
     {
-        $data = $this->service()->cancelPayout($payoutId);
+        $input = Request::all();
+
+        $data = $this->service()->cancelPayout($payoutId, $input);
 
         return ApiResponse::json($data);
     }
@@ -202,6 +206,22 @@ class PayoutController extends Controller
         $input = Request::all();
 
         $response = $this->service()->processInitiateForBatchSubmittedPayouts($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function processInitiateForScheduledPayouts()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->processInitiateForScheduledPayouts($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function getScheduleSlotsForPayouts()
+    {
+        $response = $this->service()->getScheduleSlotsForPayouts();
 
         return ApiResponse::json($response);
     }
