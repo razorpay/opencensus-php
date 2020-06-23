@@ -388,6 +388,8 @@ class Constants
 
     const TRANSACTION_ON_HOLD            = 'transaction_on_hold';
 
+    const BEPG  = 'bepg';
+
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
         self::SUBSCRIPTIONS,
@@ -610,6 +612,7 @@ class Constants
         self::UPI_OTM                         => true,
         self::CHARGE_ACCOUNT                  => true,
         self::TRANSACTION_ON_HOLD             => true,
+        self::BEPG                            => true,
         self::LOAN                            => true,
         self::AMEX_RECURRING                  => true,
     ];
