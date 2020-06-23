@@ -297,6 +297,9 @@ class RequestHandler
         parse_str($headers['QUERY_STRING'], $queryParams);
 
         foreach ($queryParams as $key => $value) {
+            if(is_array($value)){
+                $value = implode(', ', $value);
+            }
             $this->tracer->addAttribute($key, $value, [
                 'spanId' => $this->rootSpan->spanId()
             ]);
