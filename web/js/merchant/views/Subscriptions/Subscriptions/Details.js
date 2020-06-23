@@ -124,12 +124,7 @@ export default class SubscriptionDetailsContainer extends React.Component {
       key => {
         this.key = key;
       },
-      error => {
-        this.props.showNotification({
-          type: 'error',
-          message: error.errors,
-        });
-      }
+      () => {}
     );
   }
 
