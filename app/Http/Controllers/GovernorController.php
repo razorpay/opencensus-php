@@ -220,10 +220,16 @@ class GovernorController extends Controller
             {
                 $this->app['trace']->info(TraceCode::GOVERNOR_EDIT_RULE_REQUEST_VIA_WORKFLOW, array_merge($routeParameters, $body));
 
-                $originalRule = array_merge($routeParameters, $body['old_rule']);
+                $originalRule = $routeParameters;
 
-                // removing old rule from body, required to populate workflow diff properly
-                unset($body['old_rule']);
+                // checking old rule key exist or not
+                if (isset($body['old_rule']) === true)
+                {
+                    $originalRule = array_merge($originalRule, $body['old_rule']);
+
+                    // removing old rule from body, required to populate workflow diff properly
+                    unset($body['old_rule']);
+                }
 
                 $this->app['workflow']
                     ->setEntityAndId(self::GOVERNOR_RULE_EDIT_ENTITY, substr($this->app['request']->getId(),0,12))
