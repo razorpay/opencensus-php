@@ -20,6 +20,8 @@ class Entity extends Base\PublicEntity
     const USED_COUNT  = 'used_count';
     const DELETED_AT  = 'deleted_at';
 
+    const COUPON_CODE = 'coupon_code';
+
     protected $entity = 'coupon';
 
     protected $generateIdOnCreate = true;

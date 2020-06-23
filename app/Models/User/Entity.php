@@ -76,6 +76,13 @@ class Entity extends Base\PublicEntity
 
     protected $entity = 'user';
 
+    const VERIFICATION_TYPE = 'verification_type';
+    const LINK              = 'link';
+
+    // cookie name clientId is taken as visitor Id.
+    const CLIENT_ID  = 'clientId';
+    const VISITOR_ID = 'visitorId';
+
     protected $fillable = [
         self::ID,
         self::NAME,

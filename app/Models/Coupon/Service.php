@@ -3,10 +3,12 @@
 namespace RZP\Models\Coupon;
 
 use App;
+use RZP\Diag\EventCode;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
+use Throwable;
 
 class Service extends Base\Service
 {
@@ -59,7 +61,7 @@ class Service extends Base\Service
      * If all validation passes it returns coupon's expire days and credit amount.
      * @param array $input
      * @return array
-     * @throws Exception\BadRequestException
+     * @throws Throwable
      */
     public function validateCouponAndGetDetails(array $input): array
     {
@@ -67,11 +69,9 @@ class Service extends Base\Service
 
         $this->trace->count(Merchant\Metric::COUPON_VALIDATE_TOTAL);
 
-        (new Validator)->validateInput('apply', $input);
-
         $merchant = app('basicauth')->getMerchant();
 
-        $coupon = $this->core()->validateAndGetDetails($merchant, $input);
+        $coupon = $this->validateCouponAndSendFailureEventsIfApplicable($merchant, $input);
 
         $promotion = $coupon->source;
 
@@ -87,6 +87,24 @@ class Service extends Base\Service
             'expire_days'   => $expireDays,
             'credit_amount' => $promotion->getCreditAmount(),
         ];
+    }
+
+    public function validateCouponAndSendFailureEventsIfApplicable(Merchant\Entity $merchant, array $input)
+    {
+        try
+        {
+            (new Validator)->validateInput('apply', $input);
+
+            return $this->core()->validateAndGetDetails($merchant, $input);
+        }
+        catch (Throwable $exception)
+        {
+            $code = $input[Entity::CODE] ?? '';
+
+            $this->app['diag']->trackOnboardingEvent(EventCode::SIGNUP_APPLY_COUPON_CODE_FAILED, $merchant, $exception, [Entity::COUPON_CODE => $code]);
+
+            throw  $exception;
+        }
     }
 
     public function apply(array $input): array

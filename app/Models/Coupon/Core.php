@@ -107,6 +107,8 @@ class Core extends Base\Core
 
     public function apply(Merchant\Entity $merchant, array $input): array
     {
+        $couponCode = $input[Entity::CODE] ?? '';
+
         try
         {
             $coupon = $this->validateAndGetDetails($merchant, $input);
@@ -115,12 +117,12 @@ class Core extends Base\Core
         }
         catch (\Throwable $exception)
         {
-            $this->app['diag']->trackOnboardingEvent(EventCode::SIGNUP_APPLY_COUPON_CODE_FAILED, $merchant, $exception);
+            $this->app['diag']->trackOnboardingEvent(EventCode::SIGNUP_APPLY_COUPON_CODE_FAILED, $merchant, $exception, [Entity::COUPON_CODE => $couponCode]);
 
             throw $exception;
         }
 
-        $this->app['diag']->trackOnboardingEvent(EventCode::SIGNUP_APPLY_COUPON_CODE_SUCCESS, $merchant, null);
+        $this->app['diag']->trackOnboardingEvent(EventCode::SIGNUP_APPLY_COUPON_CODE_SUCCESS, $merchant, null, [Entity::COUPON_CODE => $couponCode]);
 
         return [
             'message' => self::SUCCESS_MESSAGE

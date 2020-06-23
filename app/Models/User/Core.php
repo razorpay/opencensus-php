@@ -75,14 +75,19 @@ class Core extends Base\Core
         return $user;
     }
 
-    public function confirm(Entity $user)
+    public function confirm(Entity $user, string $verificationType = null)
     {
         $user->setConfirmTokenNull();
 
         $this->repo->saveOrFail($user);
 
-        $this->trackOnboardingEvent($user->getEmail(),
-                                    EventCode::SIGNUP_EMAIL_VERIFICATION_SUCCESS);
+        $mid = $user->getMerchantId();
+
+        $customProperties = [Entity::EMAIL             => $user->getEmail(),
+                             Entity::MERCHANT_ID       => $mid,
+                             Entity::VERIFICATION_TYPE => $verificationType ?? Entity::LINK];
+
+        $this->app['diag']->trackOnboardingEvent(EventCode::SIGNUP_EMAIL_VERIFICATION_SUCCESS, $this->merchant, null, $customProperties);
 
         return $user;
     }
@@ -1081,7 +1086,7 @@ class Core extends Base\Core
                 'merchantId'      => $merchant->getId(),
             ]);
 
-        $this->confirm($user);
+        $this->confirm($user, Entity::OTP);
 
         $data = $user->toArrayPublic();
 

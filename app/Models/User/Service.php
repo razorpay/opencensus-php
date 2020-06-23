@@ -144,8 +144,12 @@ class Service extends Base\Service
             $data = $this->createMerchantFromUser($merchantInputData, $user, $referrer);
         }
 
-        (new Core)->trackOnboardingEvent($user[Entity::EMAIL],
-                                         EventCode::SIGNUP_CREATE_ACCOUNT_SUCCESS);
+        $visitorId = $this->fetchVisitorIdFromCookie();
+
+        $customProperties = [Entity::EMAIL      => $user[Entity::EMAIL],
+                             Entity::VISITOR_ID => $visitorId];
+
+        $this->app['diag']->trackOnboardingEvent(EventCode::SIGNUP_CREATE_ACCOUNT_SUCCESS, $this->merchant, null, $customProperties);
 
         return $data;
     }
@@ -200,6 +204,10 @@ class Service extends Base\Service
 
         $response = [];
 
+        $customProperties = [Entity::EMAIL       => $user->getEmail(),
+                             Entity::MERCHANT_ID => $user->getMerchantId()];
+
+
         // If User is New Signed up and
         // Already Not confirmed and not razorx check is true and product is PG.
         if ((new Merchant\Core)->isEmailVerificationViaOtpRazorxEnabled($merchant->getId()) === true and
@@ -207,8 +215,7 @@ class Service extends Base\Service
         {
             $data = $this->sendOtpEmailVerification($merchant, $user);
 
-            (new Core)->trackOnboardingEvent($user->getEmail(),
-                                             EventCode::SIGNUP_SEND_VERIFICATION_EMAIL_OTP_SUCCESS);
+            $this->app['diag']->trackOnboardingEvent(EventCode::SIGNUP_SEND_VERIFICATION_EMAIL_OTP_SUCCESS, $merchant, null, $customProperties);
 
             // Add the response of token from Raven Service
             $response['token'] = $data['token'];
@@ -217,8 +224,7 @@ class Service extends Base\Service
         {
             $this->sendConfirmationMail($user);
 
-            (new Core)->trackOnboardingEvent($user->getEmail(),
-                                             EventCode::SIGNUP_SEND_VERIFICATION_EMAIL_SUCCESS);
+            $this->app['diag']->trackOnboardingEvent(EventCode::SIGNUP_SEND_VERIFICATION_EMAIL_SUCCESS, $merchant, null, $customProperties);
         }
 
         $response['id']    = $merchant->getId();
@@ -728,6 +734,23 @@ class Service extends Base\Service
         }
 
         return ['success' => true];
+    }
+
+    /**
+     * fetch clientId if present in cookie and return as visitorId
+     *
+     * @return string
+     */
+    public function fetchVisitorIdFromCookie()
+    {
+        if (empty(\Cookie::get(Entity::CLIENT_ID)) === false)
+        {
+            $clientId = \Cookie::get(Entity::CLIENT_ID);
+
+            return $clientId;
+        }
+
+        return '';
     }
 
     public function addUtmParameters(& $data)
