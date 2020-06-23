@@ -144,7 +144,9 @@ class SubscriptionProxy
             $treatment = $this->razorx->getTreatment(
                 $request->getId(),
                 RazorxTreatment::FORWARD_PASSPORT_TO_SUBSCRIPTIONS,
-                $this->ba->getMode()
+                // Mode can be null for direct routes being proxy-ed to subscriptions.
+                // E.g. https://api.razorpay.com/v1/l/subscriptions/sub_DS3QlJB0u9c7CV
+                $this->ba->getMode() ?? Mode::LIVE
             );
 
             if ($treatment === 'on')
