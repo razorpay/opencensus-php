@@ -2,10 +2,13 @@
 
 namespace RZP\Tests\Functional\Payment;
 
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use Str;
 use File;
 use Mail;
+use Excel;
 use Queue;
+use Mockery;
 use ZipArchive;
 use Carbon\Carbon;
 use RZP\Jobs\BeamJob;
@@ -16,6 +19,7 @@ use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 class EMIPaymentTest extends TestCase
 {
     use PaymentTrait;
+    use DbEntityFetchTrait;
 
     protected $emiPlan;
 
@@ -34,6 +38,17 @@ class EMIPaymentTest extends TestCase
         $this->emiPlan = $this->fixtures->create('emi_plan:default_emi_plans');
 
         $this->mockCardVault();
+    }
+
+    protected function setCardPaymentMockResponse($mockedResponse)
+    {
+        $mock = Mockery::mock(CardPaymentService::class)->makePartial();
+
+        $mock->shouldReceive([
+            'fetchAuthorizationData' => $mockedResponse
+        ]);
+
+        $this->app->instance('card.payments', $mock);
     }
 
     public function testEmiPaymentCreate()
@@ -101,7 +116,7 @@ class EMIPaymentTest extends TestCase
 
         $emiPlan = $this->emiPlan;
 
-        //Making transactions hapen yesterday
+        //Making transactions happen yesterday
         $yesterdayAtTen = Carbon::yesterday(Timezone::IST)->addHours(10)->timestamp;
 
         $this->fixtures->merchant->enableEmi();
@@ -109,7 +124,7 @@ class EMIPaymentTest extends TestCase
         $this->ba->publicAuth();
 
         //ICICI Card
-        $this->makeEmiPaymentOnCard('4076510000000033', 9, $yesterdayAtTen);
+        $iciciPayment1 = $this->makeEmiPaymentOnCard('4076510000000033', 9, $yesterdayAtTen);
 
         //Yes Bank
         $this->makeEmiPaymentOnCard('5318491050009999', 9 ,$yesterdayAtTen);
@@ -119,14 +134,29 @@ class EMIPaymentTest extends TestCase
         $this->fixtures->merchant->addFeatures(['emi_merchant_subvention']);
 
         //ICICI Merchant subvention Card
-        $this->makeEmiPaymentOnCard('4076510000000033', 9, $yesterdayAtTen, 0, null, null);
+        $iciciPayment2 = $this->makeEmiPaymentOnCard('4076510000000033', 9, $yesterdayAtTen, 0, null, null);
 
         ////Yes Bank Merchant subvention Card
         $this->makeEmiPaymentOnCard('5318491050009999', 9 ,$yesterdayAtTen, 0, null, null);
 
+        $this->setCardPaymentMockResponse(
+            [
+                $iciciPayment1['id'] => [
+                    'rrn'                    => '654321',
+                    'gateway_merchant_id'    => 'ABC1234',
+                    'gateway_transaction_id' => 'TRAN1234',
+                ],
+                $iciciPayment2['id'] => [
+                    'rrn'                    => '654321',
+                    'gateway_merchant_id'    => 'ABC1234',
+                    'gateway_transaction_id' => 'TRAN1234',
+                ],
+            ]
+        );
+
         $request = array(
-            'method' => 'POST',
-            'url' => '/emi/generate/excel',
+            'method'  => 'POST',
+            'url'     => '/emi/generate/excel',
             'content' => []);
 
         $this->ba->adminAuth();
@@ -137,6 +167,40 @@ class EMIPaymentTest extends TestCase
 
         $this->assertEquals(true, File::exists($content['ICIC']));
         $this->assertEquals(true, File::exists($content['YESB']));
+
+        // Assert ICICI file contents
+        $monthYear = Carbon::now(Timezone::IST)->format('mY');
+
+        $zip = new ZipArchive();
+        $zip->open($content['ICIC']);
+        $zip->setPassword('razorpay' . $monthYear);
+        $pathinfo = pathinfo($content['ICIC']);
+        $zip->extractTo($pathinfo['dirname']);
+        $filename = $zip->getNameIndex(0);
+        $zip->close();
+
+        $emiFileContents = Excel::load($pathinfo['dirname'] . '/' . $filename)->all()->toArray();
+
+        // Check if the fields are set correctly
+        $arrayContent = [
+            'emi_id'           => $iciciPayment1['id'],
+            'mid'              => null,
+            'tid'              => null,
+            'rrn'              => null,
+            'product_category' => null,
+        ];
+
+        $this->assertArraySelectiveEquals(
+            $arrayContent,
+            $emiFileContents[0]);
+
+        $arrayContent['emi_id'] = $iciciPayment2['id'];
+
+        $this->assertArraySelectiveEquals(
+            $arrayContent,
+            $emiFileContents[1]);
+
+        // Assert ICICI file contents done
 
         $this->fixtures->merchant->disableEmi();
 
@@ -161,10 +225,20 @@ class EMIPaymentTest extends TestCase
         $this->ba->publicAuth();
 
         //ICICI Card
-        $this->makeEmiPaymentOnCard('4076510000000033', 9, $yesterdayAtTen);
+        $iciciPayment1 = $this->makeEmiPaymentOnCard('4076510000000033', 9, $yesterdayAtTen);
 
         //Yes Bank
         $this->makeEmiPaymentOnCard('5318491050009999', 9 ,$yesterdayAtTen);
+
+        $this->setCardPaymentMockResponse(
+            [
+                $iciciPayment1['id'] => [
+                    'rrn'                    => '654321',
+                    'gateway_merchant_id'    => 'ABC1234',
+                    'gateway_transaction_id' => 'TRAN1234',
+                ],
+            ]
+        );
 
         $request = array(
             'method' => 'POST',
@@ -255,15 +329,16 @@ class EMIPaymentTest extends TestCase
         $this->doAuthAndCapturePayment($this->payment);
 
         // Set Payment Time
-        $payment = $this->getLastEntity('payment', true);
+        $payment = $this->getDbLastEntityToArray('payment');
 
         $this->fixtures->edit('payment', $payment['id'], [
-            'created_at'  => $paymentTime - 2,
+            'created_at'    => $paymentTime - 2,
             'authorized_at' => $paymentTime,
-            'captured_at' => $paymentTime + 2,
-            'updated_at' => $paymentTime + 2,
+            'captured_at'   => $paymentTime + 2,
+            'updated_at'    => $paymentTime + 2,
         ]);
 
+        return $this->getDbLastEntityToArray('payment');
     }
 
     public function testEmiPaymentEmiNotSupported()

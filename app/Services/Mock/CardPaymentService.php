@@ -9,6 +9,10 @@ use RZP\Services\CardPaymentService as BaseCardPaymentService;
 
 class CardPaymentService extends BaseCardPaymentService
 {
+    public function content(& $content, $action = '')
+    {
+        return $content;
+    }
 
     public function action(string $gateway, string $action, array $input): array
     {
@@ -35,7 +39,7 @@ class CardPaymentService extends BaseCardPaymentService
     {
         return [];
     }
-  
+
     public function fetchAuthorizationData(array $input)
     {
         $paymentId = $input['payment_ids'][0];
@@ -57,8 +61,12 @@ class CardPaymentService extends BaseCardPaymentService
             $response[$field] = $dummyData[$field] ?? null;
         }
 
-        return [
+        $return = [
             $paymentId => $response
         ];
+
+        $this->content($return, 'fetchAuthorizationData');
+
+        return $return;
     }
 }

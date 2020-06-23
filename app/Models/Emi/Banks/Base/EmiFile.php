@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Emi\Banks\Base;
 
+use App;
 use Str;
 use Mail;
 use Carbon\Carbon;
@@ -17,6 +18,7 @@ use RZP\Models\FileStore;
 use RZP\Trace\TraceCode;
 use RZP\Encryption\Type;
 use RZP\Mail\Base\Constants;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Services\Beam\Constants as BeamConstants;
 
 class EmiFile extends Base\Core
@@ -43,6 +45,16 @@ class EmiFile extends Base\Core
 
     // Signed Url Duration in Minutes
     const SIGNED_URL_DURATION = '15';
+
+    const CPS_AUTHORIZATION_RRN                    = 'rrn';
+    const CPS_AUTHORIZATION_GATEWAY_MERCHANT_ID    = 'gateway_merchant_id';
+    const CPS_AUTHORIZATION_GATEWAY_TRANSACTION_ID = 'gateway_transaction_id';
+
+    const CPS_PARAMS = [
+        self::CPS_AUTHORIZATION_RRN,
+        self::CPS_AUTHORIZATION_GATEWAY_MERCHANT_ID,
+        self::CPS_AUTHORIZATION_GATEWAY_TRANSACTION_ID,
+    ];
 
     public function generate($input, $email = null)
     {
@@ -258,5 +270,42 @@ class EmiFile extends Base\Core
     protected function getEncryptionParams()
     {
         return [];
+    }
+
+    protected function fetchDataFromCardPaymentService($input)
+    {
+
+        $paymentIds = array_pluck($input, 'id');
+
+        $request = [
+            'fields'        => self::CPS_PARAMS,
+            'payment_ids'   => $paymentIds,
+        ];
+
+        try
+        {
+            $response = App::getFacadeRoot()['card.payments']->fetchAuthorizationData($request);
+
+            $this->trace->info(
+                TraceCode::CARD_PAYMENT_SERVICE_RESPONSE,
+                [
+                    'payment_ids' => $paymentIds,
+                    'response'    => $response,
+                ]);
+        }
+        catch (\Exception $ex)
+        {
+            $this->trace->traceException(
+                $ex,
+                Trace::ERROR,
+                TraceCode::CARD_PAYMENT_SERVICE_ERROR,
+                [
+                    'request'   => $request,
+                ]);
+
+            throw $ex;
+        }
+
+        return $response;
     }
 }

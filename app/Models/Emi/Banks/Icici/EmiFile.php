@@ -4,6 +4,7 @@ namespace RZP\Models\Emi\Banks\Icici;
 
 use Carbon\Carbon;
 use Mail;
+use RZP\Exception;
 use RZP\Constants\Timezone;
 use RZP\Models\Emi;
 use RZP\Models\Emi\Banks\Base;
@@ -40,8 +41,27 @@ class EmiFile extends Base\EmiFile
 
         $totalTransactions = 0;
 
+        // This would be required in the future, so keeping it as a comment
+        // $cpsData = $this->fetchDataFromCardPaymentService($input);
+
         foreach ($input as $emiPayment)
         {
+            /*
+            // If CPS does not have the for this payment, don't send the file
+            if (empty($cpsData[$emiPayment['id']]) === true)
+            {
+                throw new Exception\LogicException(
+                    'Authorization Code cannot be empty.', null,
+                    [
+                        'payment_id' => $emiPayment->getPublicId(),
+                        'cps_data'   => $cpsData,
+                    ]);
+            }
+            */
+
+            // To be added in the future
+            // $authData = $cpsData[$emiPayment['id']];
+
             $emiPlan = $emiPayment->emiPlan;
 
             $principalAmount = $emiPayment->getAmount()/100;
@@ -49,8 +69,6 @@ class EmiFile extends Base\EmiFile
             $totalAmount = $totalAmount + $principalAmount;
 
             $totalTransactions++;
-
-            $merchantPayback = 'NA';
 
             $subventionAmount = 'NA';
 
@@ -74,31 +92,50 @@ class EmiFile extends Base\EmiFile
 
             $tenure = $emiPlan->getDuration();
 
+            $emiAmount = $this->getEmiAmount($principalAmount, $rate, $tenure);
+
             $issuerPlanId = $emiPlan->getIssuerPlanId();
 
             $data[] = [
-                'EMI ID'                       => $emiPayment->getId(),
-                'Transaction Date/Time'        => $this->formattedDateFromTimestamp($emiPayment->getAuthorizeTimestamp()),
-                'Card No.'                     => $this->getCardNumber($emiPayment->card),
-                'Amount'                       => $principalAmount,
-                'Auth Code/ Approval Code'     => $this->getAuthCode($emiPayment),
-                'Scheme Code'                  => $issuerPlanId,
-                'Tenure'                       => $tenure,
-                'Interest Rate'                => $rate,
-                'Merchant Subvention'          => $merchantPayback,
-                'Customer Subvention'          => 'NA',
-                'Discount/ Cashback Amount'    => 'NA',
-                'Discount/Cashback(%)'         => 'NA',
-                'Cashback (Y/N)'               => 'N',
-                'Manufacturer'                 => 'NA',
-                'Merchant Name'                => $emiPayment->merchant->getName(),
-                'Pinelabs Merchant Name'       => 'NA',
-                'Issuer'                       => 'ICICI Bank',
-                'Acquirer'                     => $acquirer,
-                'Settlement Time'              => $this->formattedDateFromTimestamp($emiPayment->getCaptureTimestamp()),
-                'Subvention Payable to Issuer' => 'NA',
-                'Subvention Amount (Rs.)'      => $subventionAmount,
-                'Addition Cashback'            => 'NA',
+                'EMI ID'                           => $emiPayment->getId(),
+                'Tx Time'                          => $this->formattedDateFromTimestamp($emiPayment->getAuthorizeTimestamp()),
+                'Card PAN'                         => $this->getCardNumber($emiPayment->card),
+                'Amount'                           => $principalAmount,
+                'Auth Code'                        => $this->getAuthCode($emiPayment),
+                'Scheme Code'                      => $issuerPlanId,
+                'MID'                              => '',
+                'TID'                              => '',
+                'Discount/ Cashback Amount'        => 'NA',
+                'Tenure'                           => $tenure,
+                'RRN'                              => '',
+                'Manufacturer'                     => 'Bank EMI',
+                'Merchant Name'                    => $emiPayment->merchant->getName(),
+                '<Aggregator> Merchant  Name'      => $emiPayment->merchant->getName(),
+                'Tx Status'                        => 'Settled',
+                'Status'                           => 'Ecom',
+                'Description'                      => '',
+                'Issuer'                           => 'ICICI Bank',
+                'Address1'                         => '',
+                'Store City'                       => '',
+                'Store State'                      => '',
+                'Acquirer'                         => $acquirer,
+                'Settlement Time'                  => $this->formattedDateFromTimestamp($emiPayment->getCaptureTimestamp()),
+                'Subvention Payable to Issuer'     => 'NA',
+                'Subvention Amount (Rs.)'          => $subventionAmount,
+                'Interest Rate'                    => $rate,
+                'Customer Processing Fee'          => '',
+                'Customer Processing Amount (Rs.)' => '',
+                'Product Category'                 => '',
+                'Product Sub-Category 1'           => '',
+                'Product Sub-Category 2'           => '',
+                'Model Name'                       => '',
+                'Card Hash'                        => '',
+                'EMI Amount'                       => $emiAmount,
+                'Loan Amount'                      => $principalAmount,
+                'Discount / Cashback %'            => 'NA',
+                'Is New Model'                     => '',
+                'Additional Cashback'              => '',
+                'Reward Point'                     => '',
             ];
         }
 
