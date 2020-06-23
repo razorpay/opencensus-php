@@ -1180,6 +1180,7 @@ class Repository extends Base\Repository
      * SELECT id FROM payments where id in
      * (id1 COLLATE utf8_general_ci, id2 COLLATE
      * utf8_general_ci,...) AND gateway= ?
+     * AND created_at >= ?
      */
     public function fetchPaymentIdsbyCapsPaymentIds($capsPaymentIds, $gateway)
     {
@@ -1193,12 +1194,12 @@ class Repository extends Base\Repository
         $rawCondition = rtrim($rawCondition, ',"');
         $rawCondition .= ')';
 
-        $nowMinus3Days = Carbon::today(Timezone::IST)->subDays(3)->getTimestamp();
+        $nowMinus5Days = Carbon::today(Timezone::IST)->subDays(5)->getTimestamp();
 
         $query =  $this->newQueryWithConnection($this->getSlaveConnection())
                        ->whereRaw($rawCondition)
                        ->where(Entity::GATEWAY, $gateway)
-                       ->where(Entity::CREATED_AT, '>=', $nowMinus3Days)
+                       ->where(Entity::CREATED_AT, '>=', $nowMinus5Days)
                        ->select(Entity::ID)
                        ->get();
 
