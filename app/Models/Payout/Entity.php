@@ -521,7 +521,14 @@ class Entity extends Base\PublicEntity
 
     public function getPayoutLinkId()
     {
-        return "poutlk_" . $this->getAttribute(self::PAYOUT_LINK_ID);
+        $payoutLinkId = $this->getAttribute(self::PAYOUT_LINK_ID);
+
+        if(empty($payoutLinkId) === true)
+        {
+            return null;
+        }
+
+        return "poutlk_" . $payoutLinkId;
     }
 
     public function getPurposeType()
