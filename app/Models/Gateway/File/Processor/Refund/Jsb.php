@@ -37,7 +37,7 @@ class Jsb extends Base
                 RefundFields::PAYMENT_ID            => $row['payment']['id'],
                 RefundFields::REFUND_AMOUNT         => number_format($row['refund']['amount'] / 100),
                 RefundFields::CURRENCY              => 'INR',
-                RefundFields::BANK_REFERENCE_NUMBER => $row['gateway']['data']['bank_payment_id'],
+                RefundFields::BANK_REFERENCE_NUMBER => $this->fetchBankPaymentId($row),
                 RefundFields::TRANSACTION_DATE      => $transactionDate,
             ];
         }
@@ -54,5 +54,15 @@ class Jsb extends Base
         $time = Carbon::now(Timezone::IST)->format('dmYis');
 
         return static::FILE_NAME . $time;
+    }
+
+    protected function fetchBankPaymentId($row)
+    {
+        if ($row['payment']['cps_route'] === Payment\Entity::NB_PLUS_SERVICE)
+        {
+            return $row['gateway']['bank_transaction_id']; // payment through nbplus service
+        }
+
+        return $row['gateway']['data']['bank_payment_id'];
     }
 }
