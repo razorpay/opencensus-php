@@ -145,6 +145,8 @@ class Preferences
     const MID_NSDL_MERCHANTS        = 'Anjg29UHP4PlvQ';
     const MID_AIRTEL                = 'AqUQQH9neAMkUG';
 
+    const MID_ADITYA_BIRLA_HEALTH   = 'F0sFCmi0LOeeGc';
+
     const DEMO_ACCOUNT         = '100DemoAccount';
     const MID_ENDURANCE        = [
         '9YAQd3b47mdIQY', '9ZO8jNaR0OORNH', '9Y9m9XscC6Kh4W',

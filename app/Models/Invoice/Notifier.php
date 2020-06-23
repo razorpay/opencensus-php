@@ -1055,6 +1055,18 @@ class Notifier extends Base\Core
 
                 break;
 
+            case Preferences::MID_ADITYA_BIRLA_HEALTH:
+                
+                $sender = 'ABCPRO';
+                $template = 'sms.custom_invoice.adityabirla_health';
+                $params   = [
+                    'first_name'    => $this->invoice->getCustomerName() ?? 'Customer',
+                    'policy_number' => $receipt,
+                    'invoice_link'  => $invoiceLink,
+                ];
+
+                break;
+
             default:
 
                 $subscriptionRegistration = $this->invoice->entity;
