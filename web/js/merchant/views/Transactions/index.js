@@ -92,7 +92,10 @@ export default class TransactionsContainer extends Component {
             <NavLink to="/orders">Orders</NavLink>
           </ShowWhen>
           <NavLink to="/disputes">Disputes</NavLink>
-          {no_settlement && pathname !== '/disputes' ? (
+          {no_settlement &&
+          (pathname === '/payments' ||
+            pathname === '/refunds' ||
+            pathname === '/orders') ? (
             <div class="text-right settlement-caption">
               {no_settlement.caption}
               {no_settlement.reason && (
@@ -112,7 +115,9 @@ export default class TransactionsContainer extends Component {
           {settlement_ux_revamp &&
           !no_settlement &&
           !nextSettlement &&
-          pathname !== '/disputes' ? (
+          (pathname === '/payments' ||
+            pathname === '/refunds' ||
+            pathname === '/orders') ? (
             <div class="text-right" style={{ width: '100%' }}>
               <strong>
                 <Amount
