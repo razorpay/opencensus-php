@@ -260,7 +260,7 @@ class GatewayDowntimeDetectionV2Test extends TestCase
 
         $this->assertNull($gatewayDowntime['end']);
 
-        $this->assertNull($paymentDowntime);
+        $this->assertNull($paymentDowntime['end']);
 
         $this->doAuthAndCapturePayment($payment);
         $this->doAuthAndCapturePayment($payment);
@@ -280,7 +280,7 @@ class GatewayDowntimeDetectionV2Test extends TestCase
 
         $this->assertEquals('HDFC', $gatewayDowntime['issuer']);
 
-        $this->assertNull($paymentDowntime);
+        $this->assertNotNull($paymentDowntime['end']);
     }
 
     public function getAllJobTypes()

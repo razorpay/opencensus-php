@@ -16,8 +16,6 @@ class NetbankingProcessor extends BaseProcessor
     {
         $gatewayDowntimes = $gatewayDowntimes->where(GatewayDowntime::METHOD, '=', $this->method);
 
-        $gatewayDowntimes = $gatewayDowntimes->where(GatewayDowntime::SOURCE, '!=', Source::DOWNTIME_V2);
-
         $unavailableBanks = $this->calculateUnavailableBanks($gatewayDowntimes);
 
         foreach ($unavailableBanks as $bank)
