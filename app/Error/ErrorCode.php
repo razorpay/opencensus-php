@@ -1732,4 +1732,9 @@ class ErrorCode
 
     const BAD_REQUEST_SETTLEMENTS_ERROR                                             = 'BAD_REQUEST_SETTLEMENTS_ERROR';
     const SERVER_ERROR_SETTLEMENTS                                                  = 'SERVER_ERROR_SETTLEMENTS';
+
+    // cred errors
+    const BAD_REQUEST_CRED_CUSTOMER_NOT_ELIGIBLE                                    = 'BAD_REQUEST_CRED_CUSTOMER_NOT_ELIGIBLE';
+    const BAD_REQUEST_MISSING_HEADERS                                               = 'BAD_REQUEST_MISSING_HEADERS';
+    const BAD_REQUEST_INVALID_TRACKING_ID                                           = 'BAD_REQUEST_INVALID_TRACKING_ID';
 }
