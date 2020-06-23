@@ -158,6 +158,17 @@ class Base extends Mailable
 
                 break;
 
+            case Preferences::MID_ADITYA_BIRLA_HEALTH:
+
+                if ($this->data['invoice']['entity_type'] === C\Entity::SUBSCRIPTION_REGISTRATION)
+                {
+                    $template = static::SUBJECT_TEMPLATES[$merchantId];
+
+                    $args = [ $this->data['invoice']['receipt'] ];
+                }
+
+                break;
+
             default:
 
                 break;

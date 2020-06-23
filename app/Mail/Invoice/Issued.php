@@ -17,6 +17,7 @@ class Issued extends Base
         Type::INVOICE                           => ' Invoice from %s',
         Preferences::MID_RBL_RETAIL_ASSETS      => ' Mandate registration link from RBL Bank',
         Preferences::MID_RBL_INTERIM_PROCESS2   => ' Mandate registration link from RBL Bank',
+        Preferences::MID_ADITYA_BIRLA_HEALTH    => ' Auto Debit Registration for Policy - %s',
         'pp_invoice'                            => ' Payment Page',
     ];
 
