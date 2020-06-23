@@ -17,10 +17,10 @@ class UpiProcessor extends BaseProcessor
     {
         $gatewayDowntimes = $gatewayDowntimes->where(GatewayDowntime::METHOD, '=', $this->method);
 
+        $vpaList = $this->getUnavailableVpaList($gatewayDowntimes);
+
         if ($this->impliesUpiDowntime($gatewayDowntimes) === true)
         {
-            $vpaList = $this->getApplicableVpaList($gatewayDowntimes);
-
             foreach ($vpaList as $vpa)
             {
                 $this->createPaymentDowntime($gatewayDowntimes, $vpa);
@@ -30,6 +30,10 @@ class UpiProcessor extends BaseProcessor
         if ($gatewayDowntimes->isEmpty() === true)
         {
             $this->endOngoingDowntimes();
+        }
+        elseif (empty($vpaList) === false)
+        {
+            $this->endOngoingDowntimes($vpaList);
         }
     }
 
@@ -127,7 +131,7 @@ class UpiProcessor extends BaseProcessor
         return [$gatewayDowntimeMaxStart, $gatewayDowntimeMinEnd];
     }
 
-    protected function getApplicableVpaList(Collection $gatewayDowntimes): array
+    protected function getUnavailableVpaList(Collection $gatewayDowntimes): array
     {
         $gatewaydowntimes = $gatewayDowntimes->unique(GatewayDowntime::VPA_HANDLE);
 

@@ -196,7 +196,7 @@ class Repository extends Base\Repository
         $query->where(function ($query)
         {
             $query->whereNull(Entity::END)
-                ->orWhere(Entity::END, '>=', Carbon::now()->getTimestamp());
+                ->orWhere(Entity::END, '>', Carbon::now()->getTimestamp());
         });
 
         if ($withoutTerminal === true)

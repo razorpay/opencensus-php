@@ -730,8 +730,7 @@ class PaymentDowntimeTest extends TestCase
 
         $addDowntimeRequest = [
             'content' => [
-                'begin'       => Carbon::now()->subMinutes(60)->timestamp,
-                'end'         => Carbon::now()->addMinutes(60)->timestamp,
+                'begin'       => Carbon::now()->timestamp,
                 'gateway'     => 'ALL',
                 'reason_code' => 'HIGHER_DECLINES',
                 'method'      => 'upi',
@@ -746,11 +745,35 @@ class PaymentDowntimeTest extends TestCase
 
         $downtime1 = $this->getLastEntity('gateway_downtime', true);
 
+        $id = $downtime1['id'];
+
         $this->assertEquals($downtime1['vpa_handle'], 'oksbi');
+        $this->assertNull($downtime1['end']);
 
         $downtime = $this->getLastEntity('payment.downtime', true);
 
         $this->assertEquals($downtime['vpa_handle'], 'oksbi');
+        $this->assertNull($downtime['end']);
+
+        Carbon::setTestNow(Carbon::now()->addMinute(10));
+
+        $resolveDowntimeRequest = [
+            'content' => [
+                'end'         => Carbon::now()->timestamp,
+            ],
+            'method' => 'PUT',
+            'url' => '/gateway/downtimes/'. $id
+        ];
+
+        $this->makeRequestAndGetContent($resolveDowntimeRequest);
+
+        $downtime1 = $this->getLastEntity('gateway_downtime', true);
+
+        $this->assertNotNull($downtime1['end']);
+
+        $downtime = $this->getLastEntity('payment.downtime', true);
+
+        $this->assertNotNull($downtime['end']);
     }
 
     public function testCreatePaymentDowntimeWithoutVPAHandle()
@@ -760,7 +783,6 @@ class PaymentDowntimeTest extends TestCase
         $addDowntimeRequest = [
             'content' => [
                 'begin'       => Carbon::now()->subMinutes(60)->timestamp,
-                'end'         => Carbon::now()->addMinutes(60)->timestamp,
                 'gateway'     => 'ALL',
                 'reason_code' => 'HIGHER_DECLINES',
                 'method'      => 'upi',
@@ -774,15 +796,39 @@ class PaymentDowntimeTest extends TestCase
 
         $downtime1 = $this->getLastEntity('gateway_downtime', true);
 
+        $id = $downtime1['id'];
+
         $this->assertEquals($downtime1['method'], 'upi');
 
         $this->assertNull($downtime1['vpa_handle']);
+
+        $this->assertNull($downtime1['end']);
 
         $downtime = $this->getLastEntity('payment.downtime', true);
 
         $this->assertEquals($downtime['method'], 'upi');
 
         $this->assertNull($downtime['vpa_handle']);
+
+        $this->assertNull($downtime['end']);
+
+        $resolveDowntimeRequest = [
+            'content' => [
+                'end'         => Carbon::now()->timestamp,
+            ],
+            'method' => 'PUT',
+            'url' => '/gateway/downtimes/'. $id
+        ];
+
+        $this->makeRequestAndGetContent($resolveDowntimeRequest);
+
+        $downtime1 = $this->getLastEntity('gateway_downtime', true);
+
+        $this->assertNotNull($downtime1['end']);
+
+        $downtime = $this->getLastEntity('payment.downtime', true);
+
+        $this->assertNotNull($downtime['end']);
     }
 
     public function testCreateMultiplePaymentDowntimeWithVPAHandle(){
@@ -791,7 +837,6 @@ class PaymentDowntimeTest extends TestCase
         $addDowntimeRequest = [
             'content' => [
                 'begin'       => Carbon::now()->subMinutes(60)->timestamp,
-                'end'         => Carbon::now()->addMinutes(60)->timestamp,
                 'gateway'     => 'ALL',
                 'reason_code' => 'HIGHER_DECLINES',
                 'method'      => 'upi',
@@ -805,7 +850,6 @@ class PaymentDowntimeTest extends TestCase
         $addDowntimeRequest2 = [
             'content' => [
                 'begin'       => Carbon::now()->subMinutes(10)->timestamp,
-                'end'         => Carbon::now()->addMinutes(30)->timestamp,
                 'gateway'     => 'ALL',
                 'reason_code' => 'HIGHER_DECLINES',
                 'method'      => 'upi',
@@ -816,29 +860,167 @@ class PaymentDowntimeTest extends TestCase
             'url' => '/gateway/downtimes'
         ];
 
-        $time1 = Carbon::now()->addMinutes(60)->timestamp;
-
-        $time2 = Carbon::now()->addMinutes(30)->timestamp;
-
         $this->makeRequestAndGetContent($addDowntimeRequest);
 
         $gatewayDowntime = $this->getLastEntity('gateway_downtime', true);
+
+        $gId1 = $gatewayDowntime['id'];
 
         $this->assertEquals($gatewayDowntime['vpa_handle'], 'oksbi');
 
         $downtime = $this->getLastEntity('payment.downtime', true);
 
+        $pId1 = $downtime['id'];
+
         $this->makeRequestAndGetContent($addDowntimeRequest2);
 
+        $gatewayDowntime2 = $this->getLastEntity('gateway_downtime', true);
+
+        $gId2 = $gatewayDowntime2['id'];
+
         $downtime2 = $this->getLastEntity('payment.downtime', true);
+
+        $pId2 = $downtime2['id'];
 
         $this->assertEquals($downtime['vpa_handle'], 'oksbi');
 
         $this->assertEquals($downtime2['vpa_handle'], 'ybl');
 
-        $this->assertEquals($downtime['end'], $time1);
+        Carbon::setTestNow(Carbon::now()->addMinute(10));
 
-        $this->assertEquals($downtime2['end'], $time2);
+        $resolveDowntimeRequest = [
+            'content' => [
+                'end'         => Carbon::now()->timestamp,
+            ],
+            'method' => 'PUT',
+            'url' => '/gateway/downtimes/'. $gId1
+        ];
+
+        $this->makeRequestAndGetContent($resolveDowntimeRequest);
+
+        $gatewayDowntime1 = $this->getEntityById('gateway_downtime', $gId1, true);
+
+        $this->assertNotNull($gatewayDowntime1['end']);
+
+        $paymentDowntime1 = $this->getEntityById('payment.downtime', $pId1, true);
+
+        $this->assertNotNull($paymentDowntime1['end']);
+
+        Carbon::setTestNow(Carbon::now()->addMinute(10));
+
+        $resolveDowntimeRequest = [
+            'content' => [
+                'end'         => Carbon::now()->timestamp,
+            ],
+            'method' => 'PUT',
+            'url' => '/gateway/downtimes/'. $gId2
+        ];
+
+        $this->makeRequestAndGetContent($resolveDowntimeRequest);
+
+        $gatewayDowntime2 = $this->getEntityById('gateway_downtime', $gId2, true);
+
+        $this->assertNotNull($gatewayDowntime2['end']);
+
+        $paymentDowntime2 = $this->getEntityById('payment.downtime', $pId2, true);
+
+        $this->assertNotNull($paymentDowntime2['end']);
+    }
+
+    public function testCreateMultiplePaymentDowntimeWithAndWithoutVPAHandle(){
+
+        $this->ba->adminAuth();
+
+        $addDowntimeRequest = [
+            'content' => [
+                'begin'       => Carbon::now()->subMinutes(60)->timestamp,
+                'gateway'     => 'ALL',
+                'reason_code' => 'HIGHER_DECLINES',
+                'method'      => 'upi',
+                'source'      => 'BANK',
+                'vpa_handle'  => 'oksbi',
+            ],
+            'method' => 'POST',
+            'url' => '/gateway/downtimes'
+        ];
+
+        $addDowntimeRequest2 = [
+            'content' => [
+                'begin'       => Carbon::now()->subMinutes(10)->timestamp,
+                'gateway'     => 'ALL',
+                'reason_code' => 'HIGHER_DECLINES',
+                'method'      => 'upi',
+                'source'      => 'OTHER',
+            ],
+            'method' => 'POST',
+            'url' => '/gateway/downtimes'
+        ];
+
+        $this->makeRequestAndGetContent($addDowntimeRequest);
+
+        $gatewayDowntime = $this->getLastEntity('gateway_downtime', true);
+
+        $gId1 = $gatewayDowntime['id'];
+
+        $this->assertEquals($gatewayDowntime['vpa_handle'], 'oksbi');
+
+        $downtime = $this->getLastEntity('payment.downtime', true);
+
+        $pId1 = $downtime['id'];
+
+        $this->makeRequestAndGetContent($addDowntimeRequest2);
+
+        $gatewayDowntime2 = $this->getLastEntity('gateway_downtime', true);
+
+        $gId2 = $gatewayDowntime2['id'];
+
+        $downtime2 = $this->getLastEntity('payment.downtime', true);
+
+        $pId2 = $downtime2['id'];
+
+        $this->assertEquals($downtime['vpa_handle'], 'oksbi');
+
+        $this->assertNull($downtime2['vpa_handle']);
+
+        Carbon::setTestNow(Carbon::now()->addMinute(10));
+
+        $resolveDowntimeRequest = [
+            'content' => [
+                'end'         => Carbon::now()->timestamp,
+            ],
+            'method' => 'PUT',
+            'url' => '/gateway/downtimes/'. $gId2
+        ];
+
+        $this->makeRequestAndGetContent($resolveDowntimeRequest);
+
+        $gatewayDowntime2 = $this->getEntityById('gateway_downtime', $gId2, true);
+
+        $this->assertNotNull($gatewayDowntime2['end']);
+
+        $paymentDowntime2 = $this->getEntityById('payment.downtime', $pId2, true);
+
+        $this->assertNotNull($paymentDowntime2['end']);
+
+        Carbon::setTestNow(Carbon::now()->addMinute(10));
+
+        $resolveDowntimeRequest = [
+            'content' => [
+                'end'         => Carbon::now()->timestamp,
+            ],
+            'method' => 'PUT',
+            'url' => '/gateway/downtimes/'. $gId1
+        ];
+
+        $this->makeRequestAndGetContent($resolveDowntimeRequest);
+
+        $gatewayDowntime1 = $this->getEntityById('gateway_downtime', $gId1, true);
+
+        $this->assertNotNull($gatewayDowntime1['end']);
+
+        $paymentDowntime2 = $this->getEntityById('payment.downtime', $pId1, true);
+
+        $this->assertNotNull($paymentDowntime2['end']);
     }
 
     public function testPaymentDowtimeEmailNotification()

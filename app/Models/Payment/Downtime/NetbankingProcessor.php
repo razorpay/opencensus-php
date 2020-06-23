@@ -65,6 +65,10 @@ class NetbankingProcessor extends BaseProcessor
             {
                 unset($input[Entity::STATUS]);
             }
+            if (isset($input[Entity::BEGIN]))
+            {
+                unset($input[Entity::BEGIN]);
+            }
 
             $downtime = (new Core)->edit($downtime, $input);
         }
