@@ -9,6 +9,7 @@ use RZP\Diag\Traits;
 
 class DiagClient extends EventTrackerClient
 {
+    use Traits\EmailEvent;
     use Traits\OrderEvent;
     use Traits\PaymentEvent;
     use Traits\SettlementEvent;

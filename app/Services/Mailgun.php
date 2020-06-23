@@ -5,6 +5,7 @@ namespace RZP\Services;
 use Http\Adapter\Guzzle6\Client as GuzzleClient;
 use Mailgun\Mailgun as MgClient;
 use RZP\Exception;
+use RZP\Diag\EventCode;
 
 class Mailgun
 {
@@ -12,8 +13,11 @@ class Mailgun
 
     protected $mgClient;
 
+    protected $app;
+
     public function __construct($app)
     {
+        $this->app = $app;
         $this->config = $app['config']->get('applications.mailgun');
         $this->mode = $app['rzp.mode'];
     }
@@ -60,9 +64,14 @@ class Mailgun
             if ((isset($res['message']) === false) or
                 (isset($res['id']) === false))
             {
+                $this->app['diag']->trackEmailEvent(EventCode::MAILGUN_ATTEMPT_FAILED, []);
+
                 throw new Exception\RuntimeException(
                     'Failed to send email message via mailgun');
             }
+
+            $this->app['diag']->trackEmailEvent(EventCode::MAILGUN_ATTEMPT_SUCCESS, []);
+
         }
 
         return $res;

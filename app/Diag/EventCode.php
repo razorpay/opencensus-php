@@ -592,4 +592,24 @@ class EventCode
         'group' => 'initiation',
         'name'  => 'payment_config.updation.initiated'
     ];
+  
+   const EMAIL_ATTEMPTED = [
+        'group' => 'email',
+        'name'  => 'email.attempted',
+    ];
+
+    const EMAIL_ATTEMPT_FAILED = [
+        'group' => 'email',
+        'name'  => 'email.attempt_failed',
+    ];
+
+    const MAILGUN_ATTEMPT_FAILED = [
+        'group' => 'email',
+        'name'  => 'email.mailgun_attempt_failed',
+    ];
+
+    const MAILGUN_ATTEMPT_SUCCESS = [
+        'group' => 'email',
+        'name'  => 'email.mailgun_attempt_success',
+    ];
 }

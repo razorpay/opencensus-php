@@ -3,6 +3,8 @@
 namespace RZP\Mail\Base;
 
 use App;
+use RZP\Diag\EventCode;
+use RZP\Constants\HashAlgo;
 use Illuminate\Bus\Queueable;
 use Illuminate\Container\Container;
 use Illuminate\Mail\Mailable as BaseMailable;
@@ -30,6 +32,8 @@ class Mailable extends BaseMailable
 
     protected $emailValidator;
 
+    protected $mid;
+
     public function __construct()
     {
         $app = App::getFacadeRoot();
@@ -38,6 +42,7 @@ class Mailable extends BaseMailable
         $this->mode          = $app['basicauth']->getMode();
         $this->originProduct = $app['basicauth']->getProduct();
         $this->queue         = $this->getQueueName();
+        $this->mid           = $app['basicauth']->getMerchantId();
     }
 
     public function build()
@@ -66,12 +71,28 @@ class Mailable extends BaseMailable
             return;
         }
 
+        $eventProperties = [];
+        $eventProperties['merchant_id']   = $this->mid ?? '';
+
         try
         {
             Container::getInstance()->call([$this, 'build']);
 
             if ($this->isValidRecipient() === true)
             {
+                // same html template can have different texts. Hence sending both in data lake.
+                $eventProperties['text_template'] = $this->textView ?? '';
+                $eventProperties['html_template'] = $this->view ?? '';
+
+                if ((isset($this->to[0])) and
+                    (isset($this->to[0]['address'])) and
+                    (is_string($this->to[0]['address'])))
+                {
+                    $eventProperties['recipient_email'] = hash(HashAlgo::SHA256, $this->to[0]['address']);
+                }
+
+                $app['diag']->trackEmailEvent(EventCode::EMAIL_ATTEMPTED, $eventProperties);
+
                 $mailer->send($this->buildView(), $this->buildViewData(), function ($message) {
                     $this->buildFrom($message)
                          ->buildRecipients($message)
@@ -83,6 +104,8 @@ class Mailable extends BaseMailable
         }
         catch (\Throwable $e)
         {
+            $app['diag']->trackEmailEvent(EventCode::EMAIL_ATTEMPT_FAILED, $eventProperties, $e);
+
             $trace->traceException($e,
                                    Trace::ERROR,
                                    TraceCode::MAILER_JOB_ERROR,
