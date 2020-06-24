@@ -2078,7 +2078,7 @@ class Gateway extends Base\Gateway
         {
             $response = [
                 'acquirer' => [
-                    Payment\Entity::VPA         => $input['payment']['vpa'] ?? $input['terminal']['gateway_merchant_id2'],
+                    Payment\Entity::VPA         => $mozartResponse['data']['vpa'] ?? $input['payment']['vpa'] ?? null,
                     Payment\Entity::REFERENCE16 => $mozartResponse['data']['rrn'] ?? null,
                 ]
             ];

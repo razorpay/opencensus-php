@@ -201,6 +201,10 @@ class UpiJuspayGatewayTest extends TestCase
         $payment->refresh();
 
         $this->assertEquals('authorized', $payment['status']);
+
+        $this->assertNotNull($payment->getVpa());
+
+        $this->assertSame('customer@xyz', $payment->getVpa());
     }
 
     public function testIntentPaymentWhenRefIdAbsent()

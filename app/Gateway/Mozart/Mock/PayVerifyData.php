@@ -86,6 +86,7 @@ class PayVerifyData extends Base\Mock\Server
                         'payerVpa' => 'customer@xyz',
                         'status' => 'collect_successful',
                         'transactionTimestamp' => '2016-11-25T00:00:00+05:30',
+                        'vpa'    => 'customer@xyz',
                         'type' => 'MERCHANT_CREDITED_VIA_COLLECT',
                         'udfParameters' => '{}',
                     ],
