@@ -54,7 +54,7 @@ class LowBalanceAlert extends Mailable
 
     protected function addSubject()
     {
-        $subject = '[Alert] Razorpay | Low Balance for Account No. ' . $this->data['masked_account_number'];
+        $subject = '[Alert] Razorpay X | Low Balance for Account No. ' . $this->data['masked_account_number'];
 
         $this->subject($subject);
 
