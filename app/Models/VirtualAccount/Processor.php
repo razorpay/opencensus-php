@@ -33,11 +33,10 @@ abstract class Processor extends Base\Core
      */
     protected $paymentProcessor;
 
-    const VIRTUAL_ACCOUNT_PAYMENT_AMOUNT_DOES_NOT_MATCH_ORDER_AMOUNT = 'VIRTUAL_ACCOUNT_PAYMENT_AMOUNT_DOES_NOT_MATCH_ORDER_AMOUNT';
-
     const VIRTUAL_ACCOUNT_NOT_FOUND = 'VIRTUAL_ACCOUNT_NOT_FOUND';
-
     const VIRTUAL_ACCOUNT_DUE_TO_BE_CLOSED = 'VIRTUAL_ACCOUNT_DUE_TO_BE_CLOSED';
+    const VIRTUAL_ACCOUNT_MERCHANT_NOT_LIVE = 'VIRTUAL_ACCOUNT_MERCHANT_NOT_LIVE';
+    const VIRTUAL_ACCOUNT_PAYMENT_AMOUNT_DOES_NOT_MATCH_ORDER_AMOUNT = 'VIRTUAL_ACCOUNT_PAYMENT_AMOUNT_DOES_NOT_MATCH_ORDER_AMOUNT';
 
     public function __construct()
     {
@@ -302,6 +301,8 @@ abstract class Processor extends Base\Core
         if (($merchant->isLive() === false) and
             ($this->isLiveMode() === true))
         {
+            $this->setUnexpectedReason($entity, self::VIRTUAL_ACCOUNT_MERCHANT_NOT_LIVE);
+
             return true;
         }
 
