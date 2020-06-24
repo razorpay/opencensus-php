@@ -4,11 +4,11 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "f6b6ba6b27476427a0a422bd506ef08e",
+    "content-hash": "280e0fb6bddbb01b18f1038ce141ec41",
     "packages": [
         {
             "name": "anlutro/l4-settings",
-            "version": "0.5.5",
+            "version": "v0.5.5",
             "source": {
                 "type": "git",
                 "url": "https://github.com/razorpay/laravel-settings.git",
@@ -27,13 +27,24 @@
             "require-dev": {
                 "illuminate/database": ">=4.1 <6.0",
                 "illuminate/filesystem": ">=4.1 <6.0",
-                "mockery/mockery": "0.9.*"
+                "mockery/mockery": "0.9.*",
+                "phpunit/phpunit": ">=4.8, <6"
             },
             "suggest": {
                 "illuminate/database": "Save settings to a database table.",
                 "illuminate/filesystem": "Save settings to a JSON file."
             },
             "type": "library",
+            "extra": {
+                "laravel": {
+                    "aliases": {
+                        "Setting": "anlutro\\LaravelSettings\\Facade"
+                    },
+                    "providers": [
+                        "anlutro\\LaravelSettings\\ServiceProvider"
+                    ]
+                }
+            },
             "autoload": {
                 "psr-4": {
                     "anlutro\\LaravelSettings\\": "src/"
@@ -50,9 +61,9 @@
             ],
             "description": "Persistent settings in Laravel.",
             "support": {
-                "source": "https://github.com/razorpay/laravel-settings/tree/0.5.5"
+                "source": "https://github.com/razorpay/laravel-settings/tree/v0.5.5"
             },
-            "time": "2017-12-11T11:53:04+00:00"
+            "time": "2020-06-11T16:18:36+00:00"
         },
         {
             "name": "aws/aws-sdk-php",
@@ -1807,6 +1818,47 @@
                 "xsd"
             ],
             "time": "2017-05-05T14:58:17+00:00"
+        },
+        {
+            "name": "google/protobuf",
+            "version": "v3.12.2",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/protocolbuffers/protobuf-php.git",
+                "reference": "571f9a4ba39826a18611ae568d97b6007954c070"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/protocolbuffers/protobuf-php/zipball/571f9a4ba39826a18611ae568d97b6007954c070",
+                "reference": "571f9a4ba39826a18611ae568d97b6007954c070",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.5.0"
+            },
+            "require-dev": {
+                "phpunit/phpunit": ">=4.8.0"
+            },
+            "suggest": {
+                "ext-bcmath": "Need to support JSON deserialization"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Google\\Protobuf\\": "src/Google/Protobuf",
+                    "GPBMetadata\\Google\\Protobuf\\": "src/GPBMetadata/Google/Protobuf"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "BSD-3-Clause"
+            ],
+            "description": "proto library for PHP",
+            "homepage": "https://developers.google.com/protocol-buffers/",
+            "keywords": [
+                "proto"
+            ],
+            "time": "2020-05-27T17:57:58+00:00"
         },
         {
             "name": "guzzlehttp/guzzle",
@@ -5783,6 +5835,59 @@
             "time": "2016-08-06T14:39:51+00:00"
         },
         {
+            "name": "psr/http-server-handler",
+            "version": "1.0.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/php-fig/http-server-handler.git",
+                "reference": "aff2f80e33b7f026ec96bb42f63242dc50ffcae7"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/php-fig/http-server-handler/zipball/aff2f80e33b7f026ec96bb42f63242dc50ffcae7",
+                "reference": "aff2f80e33b7f026ec96bb42f63242dc50ffcae7",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=7.0",
+                "psr/http-message": "^1.0"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "1.0.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Psr\\Http\\Server\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "PHP-FIG",
+                    "homepage": "http://www.php-fig.org/"
+                }
+            ],
+            "description": "Common interface for HTTP server-side request handler",
+            "keywords": [
+                "handler",
+                "http",
+                "http-interop",
+                "psr",
+                "psr-15",
+                "psr-7",
+                "request",
+                "response",
+                "server"
+            ],
+            "time": "2018-10-30T16:46:14+00:00"
+        },
+        {
             "name": "psr/log",
             "version": "1.0.2",
             "source": {
@@ -8609,6 +8714,70 @@
             "description": "CssToInlineStyles is a class that enables you to convert HTML-pages/files into HTML-pages/files with inline styles. This is very useful when you're sending emails.",
             "homepage": "https://github.com/tijsverkoyen/CssToInlineStyles",
             "time": "2016-09-20T12:50:39+00:00"
+        },
+        {
+            "name": "twirp/twirp",
+            "version": "v0.5.3",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/twirphp/twirp.git",
+                "reference": "01c839a92f159e22def7f7fae51749e5aa852426"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/twirphp/twirp/zipball/01c839a92f159e22def7f7fae51749e5aa852426",
+                "reference": "01c839a92f159e22def7f7fae51749e5aa852426",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^7.1",
+                "php-http/discovery": "^1.6",
+                "psr/http-client": "^1.0",
+                "psr/http-factory": "^1.0",
+                "psr/http-message": "^1.0",
+                "psr/http-server-handler": "^1.0"
+            },
+            "conflict": {
+                "google/protobuf": "<3.5"
+            },
+            "require-dev": {
+                "google/protobuf": "^3.5",
+                "guzzlehttp/psr7": "^1.4",
+                "http-interop/http-factory-guzzle": "^1.0",
+                "php-http/guzzle6-adapter": "^2.0",
+                "phpunit/phpunit": "^7.0 || ^8.0"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "0.6-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Twirp\\": "php/src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Márk Sági-Kazár",
+                    "email": "mark.sagikazar@gmail.com"
+                }
+            ],
+            "description": "PHP port of Twitch's Twirp RPC framework",
+            "homepage": "https://twirphp.readthedocs.io",
+            "keywords": [
+                "framework",
+                "idl",
+                "protobuf",
+                "rpc",
+                "twirp"
+            ],
+            "time": "2019-08-20T08:30:46+00:00"
         },
         {
             "name": "vlucas/phpdotenv",
