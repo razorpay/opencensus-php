@@ -217,7 +217,6 @@ class Entity extends Base\PublicEntity
         self::TOKEN,
         self::TRANSFERS,
         self::CHECKOUT_CONFIG_ID,
-        self::APP_OFFER,
     ];
 
     protected $casts = [
