@@ -15,6 +15,7 @@ use RZP\Constants\Mode;
 use RZP\Models\Feature;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
+use RZP\Http\RequestContextV2;
 use RZP\Models\Merchant\RazorxTreatment;
 
 class SubscriptionProxy
@@ -32,6 +33,11 @@ class SubscriptionProxy
      */
     protected $razorx;
 
+    /**
+     * @var RequestContextV2
+     */
+    protected $reqCtx;
+
     public function __construct(Application $app)
     {
         $this->requestTimeout = $app['config']->get('app.subscription_proxy_timeout');
@@ -47,6 +53,8 @@ class SubscriptionProxy
         $this->request = $this->initRequestObject();
 
         $this->razorx = $app['razorx'];
+
+        $this->reqCtx = $app['request.ctx.v2'];
     }
 
     protected function initRequestObject(): Requests_Session
@@ -139,7 +147,7 @@ class SubscriptionProxy
         // If passport exists in request(from edge) header then forward the same
         // to subscriptions service. And razorx is used to control ramp.
         $jwt = $request->headers->get(Passport::PASSPORT_JWT_V1);
-        if (empty($jwt) === false)
+        if ((empty($jwt) === false) and ($this->reqCtx->passportAttrsMismatch === false))
         {
             $treatment = $this->razorx->getTreatment(
                 $request->getId(),

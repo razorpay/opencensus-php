@@ -96,7 +96,10 @@ class Authenticate
             millitime() - $startAt,
             $this->ba->getRequestMetricDimensions());
 
-        (new PostAuthenticate)->handle($ret === null);
+        // Any not null $ret (e.g. 401, 403 etc) means the request was not authenticated.
+        // At the same time a null $ret, in case of direct route still means request was not authenticated(read- not required).
+        $authenticated = (($ret === null) and ($this->ba->isDirectAuth() === false));
+        (new PostAuthenticate)->handle($authenticated);
 
         // Post process after authentication completes
         $ret = (new FeatureAccess)->verifyFeatureAccess($ret, $bearerToken);
