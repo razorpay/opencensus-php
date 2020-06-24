@@ -1088,8 +1088,8 @@ class PublicErrorDescription
     const OFFER_NOT_APPLICABLE_ON_ISSUER                                            = 'Offer not applicable on selected issuer';
 
     const BAD_REQUEST_D2C_NON_OWNER_USER_NOT_ALLOWED                                = 'Access denied.';
-    const BAD_REQUEST_D2C_CREDIT_BUREAU_NO_RECORDS_FOUND                            = 'Sorry, we could not find a match for the given details. Please try again later with correct details. Please note that your phone number should be correct and name & date of birth should be as given in your PAN.';
-    const BAD_REQUEST_D2C_CREDIT_BUREAU_INVALID_EMAIL_OR_CONTACT                    = 'Looks like your phone number could not be found in our existing database. Please check your phone number';
+    const BAD_REQUEST_D2C_CREDIT_BUREAU_NO_RECORDS_FOUND                            = 'No records found. Please contact support.';
+    const BAD_REQUEST_D2C_CREDIT_BUREAU_INVALID_EMAIL_OR_CONTACT                    = 'The phone number entered isn\'t linked to your PAN. Please mention the correct phone number.';
 
     // Early Settlements and payouts
     const BAD_REQUEST_ES_ON_DEMAND_IMPS_AMOUNT_LIMIT_EXCEEDED                       = 'Please provide an amount less than 2 Lacs to get a settlement at this point of time.';
