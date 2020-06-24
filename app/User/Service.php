@@ -9,6 +9,7 @@ use Input;
 use Queue;
 use Config;
 use Session;
+use Request;
 use App\Base;
 use App\Generic;
 use App\Merchant;
@@ -88,7 +89,11 @@ class Service extends Base\Service
      */
     public function register($input)
     {
-        $request = new \App\Admin\ApiRequestAny();
+        // PG FE is sending this header
+        // we are forwarding this header to PG backend so we can send otp for verify email
+        $options['headers']['X-Send-Email-Otp'] = Request::header('X-Send-Email-OTP') ?? 'false';
+
+        $request = new \App\Admin\ApiRequestAny($options);
 
         list($error, $data) = $request->processInput($input)->send('users/register', 'POST');
 
