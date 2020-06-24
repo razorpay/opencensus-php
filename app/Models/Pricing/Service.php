@@ -21,6 +21,8 @@ use RZP\Exception\BadRequestException;
 
 class Service extends Base\Service
 {
+    const PAYOUTS_FILTER = 'payouts_filter';
+
     public function createPlan($input)
     {
         $ruleOrgId = $this->getRuleOrgId();
@@ -216,7 +218,8 @@ class Service extends Base\Service
                               Entity::CREATED_AT,
                               Entity::UPDATED_AT,
                               Entity::DELETED_AT,
-                              Entity::EXPIRED_AT]);
+                              Entity::EXPIRED_AT,
+                              self::PAYOUTS_FILTER]);
 
             $rules[$i][Entity::INTERNATIONAL] = $rules[$i][Entity::INTERNATIONAL] === true ? '1' : '0';
 
