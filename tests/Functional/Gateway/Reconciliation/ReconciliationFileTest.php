@@ -8,6 +8,7 @@ use RZP\Models\Batch;
 use RZP\Models\Payment;
 use RZP\Constants\Timezone;
 use RZP\Models\Batch\Status;
+use RZP\Models\Payment\Gateway;
 use RZP\Services\Mock\Scrooge;
 use RZP\Services\RazorXClient;
 use RZP\Models\Payment\Refund;
@@ -3745,6 +3746,86 @@ class ReconciliationFileTest extends TestCase
         $reconRrn = trim(str_replace("'", '', $entries[0]['Retrieval Reference Number'] ?? null));
 
         $this->assertEquals($reconRrn, $paymentEnity['reference1']);
+
+        $this->assertBatchStatus(Status::PROCESSED);
+    }
+
+    public function testMpgsIcicFDCpsReconPaymentFile()
+    {
+        $this->fixtures->create('terminal:shared_fss_terminal');
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $payment = $this->getNewPaymentEntity(false, true);
+
+        $this->assertNull($payment['reference1']);
+
+        // Make cps route = 2
+        $this->fixtures->payment->edit($payment['id'], ['cps_route' => 2, 'gateway' => Gateway::MPGS]);
+
+        $entries[] = $this->overrideFirstDataPayment($payment);
+        $file = $this->writeToExcelFile($entries, 'first_data');
+        $this->runForFiles([$file], 'FirstData');
+
+        $transactionEntity = $this->getDbLastEntity('transaction');
+
+        $this->assertNotNull($transactionEntity['reconciled_at']);
+        $this->assertNotNull($transactionEntity['reconciled_type']);
+
+        $this->assertNotNull($transactionEntity['settled_at']);
+        $this->assertNotNull($transactionEntity['gateway_fee']);
+        $this->assertNotNull($transactionEntity['gateway_service_tax']);
+
+        $this->assertBatchStatus(Status::PROCESSED);
+    }
+
+    public function testMpgsIcicFDCpsReconRefundFile()
+    {
+        $this->fixtures->create('terminal:shared_fss_terminal');
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $payment = $this->getNewPaymentEntity(false, true);
+
+
+        // Make cps route = 2
+        $this->fixtures->payment->edit($payment['id'], ['cps_route' => 2, 'gateway' => Gateway::MPGS]);
+
+        $refund = $this->refundPayment($payment['id']);
+
+        $this->assertNull($refund['acquirer_data']['arn']);
+
+
+        $entries[] = $this->overrideFirstDataRefund($payment);
+        $file = $this->writeToExcelFile($entries, 'first_data');
+
+        $scroogeResponse = [
+            'body' => [
+                'data' => [
+                    ltrim($entries[0]['ft_no'], '0') => [
+                        'payment_id'     => PublicEntity::stripDefaultSign($payment['id']),
+                        'refund_id'      => PublicEntity::stripDefaultSign($refund['id'])
+                    ]
+                ]
+            ]
+        ];
+        $scroogeMock = $this->getMockBuilder(Scrooge::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getRefundsFromPaymentIdAndGatewayId'])
+            ->getMock();
+        $this->app->instance('scrooge', $scroogeMock);
+        $this->app->scrooge->method('getRefundsFromPaymentIdAndGatewayId')->willReturn($scroogeResponse);
+
+        $this->runForFiles([$file], 'FirstData');
+
+        $updatedTransaction1 = $this->getDbEntity(
+            'transaction',
+            [
+                'type'      => 'refund',
+                'entity_id' => PublicEntity::stripDefaultSign($refund['id'])
+            ])->toArray();
+
+        $this->assertNotNull($updatedTransaction1['reconciled_at']);
 
         $this->assertBatchStatus(Status::PROCESSED);
     }

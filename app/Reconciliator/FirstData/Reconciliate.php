@@ -88,6 +88,8 @@ class Reconciliate extends Base\Reconciliate
         }
 
         $paymentIds = $this->repo->payment->fetchPaymentIdsbyCapsPaymentIds($capsPaymentIds, Gateway::FIRST_DATA);
+        $paymentIdsMpgs = $this->repo->payment->fetchPaymentIdsbyCapsPaymentIds($capsPaymentIds, Gateway::MPGS);
+        $paymentIds = array_merge($paymentIds, $paymentIdsMpgs);
 
         $capsKeyPaymentIdValue = [];
 
@@ -121,6 +123,8 @@ class Reconciliate extends Base\Reconciliate
         if (count($request) > 0)
         {
             $response = $this->getRefundIdFromScrooge($request, Gateway::FIRST_DATA);
+            $responseMpgs = $this->getRefundIdFromScrooge($request, Gateway::MPGS);
+            $response =  array_replace($response, $responseMpgs);
 
             foreach ($fileContents as &$row)
             {
