@@ -428,7 +428,14 @@ class Service extends Base\Service
 
         if ($this->merchant->isFeatureEnabled(Features::PAYOUT_WORKFLOWS) === true)
         {
-            $pending = $this->getPendingPayoutsSummary();
+            try
+            {
+                $pending = $this->getPendingPayoutsSummary();
+            }
+            catch(Exception\UserWorkflowNotApplicableException $exception)
+            {
+                // If user role is not a workflow role, pending will remain empty
+            }
         }
 
         $scheduled = $this->getScheduledPayoutsSummary();
@@ -814,6 +821,11 @@ class Service extends Base\Service
                                 ->where(Entity::SCHEDULED_AT, '<=', $endTime);
     }
 
+
+    /**
+     * @return array
+     * @throws Exception\UserWorkflowNotApplicableException
+     */
     protected function getPendingPayoutsSummary()
     {
         $user = $this->auth->getUser();

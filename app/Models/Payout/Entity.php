@@ -33,6 +33,7 @@ use RZP\Models\Base\Traits\HasBalance;
 use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Models\Payout\Mode as PayoutMode;
 use RZP\Models\Feature\Constants as Features;
+use RZP\Exception\UserWorkflowNotApplicableException;
 
 /**
  * @property Customer\Entity        $customer
@@ -1255,11 +1256,20 @@ class Entity extends Base\PublicEntity
 
         $user = $basicAuth->getUser();
 
-        // If the entity is a user(which implies the product is banking),
-        // then the role id for that user for the merchant in context
-        // will have to be fetched from the merchant_users table.
-        // This is because the role_map table doesn't have any merchant context.
-        $userRoleId = (new User\Core())->getUserRoleIdInMerchantForBanking($user->getId());
+        $userRoleId = [];
+
+        try
+        {
+            // If the entity is a user(which implies the product is banking),
+            // then the role id for that user for the merchant in context
+            // will have to be fetched from the merchant_users table.
+            // This is because the role_map table doesn't have any merchant context.
+            $userRoleId = (new User\Core())->getUserRoleIdInMerchantForWorkflow($user->getId());
+        }
+        catch (UserWorkflowNotApplicableException $exception)
+        {
+            // If user role is not a workflow role
+        }
 
         $permissionId = $repo->permission
                              ->retrieveIdsByNamesAndOrg(Permission\Name::CREATE_PAYOUT, Org\Entity::RAZORPAY_ORG_ID)

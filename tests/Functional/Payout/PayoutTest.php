@@ -549,9 +549,6 @@ class PayoutTest extends TestCase
 
     public function testDashboardSummary()
     {
-        //TODO: Can be fixed. (Only IMPS on Yesbank)
-        $this->markTestSkipped('Only IMPS on Yesbank');
-
         $this->liveSetUp();
 
         $secondBankingBalance = $this->createDirectBankingBalance();
@@ -596,10 +593,9 @@ class PayoutTest extends TestCase
 
         // Setup the payout workflow
 
-        $workflow = $this->setupWorkflowForLiveMode();
+        $this->createPayoutWorkflowWithBankingUsersLiveMode();
 
         $this->createPayoutWithWorkflow(
-            $workflow,
             [
                 'account_number'        =>  '2224440041626905',
                 'amount'                =>  54321
@@ -607,24 +603,24 @@ class PayoutTest extends TestCase
             'rzp_live_TheLiveAuthKey');
 
         $this->createPayoutWithWorkflow(
-            $workflow,
             [
                 'account_number'        =>  '2224440041626906',
                 'amount'                =>  12345
             ],
             'rzp_live_TheLiveAuthKey');
 
-        $role = $this->getDbEntityById('role', 'RzpChekrRoleId', 'live');
+        $merchantUser = $this->getDbEntity('merchant_user',['role' => 'owner','product' => 'banking'],'live')->toArray();
 
-        $user = $this->getDbEntityById('user','MerchantUser01', 'live');
+        $userId = $merchantUser['user_id'];
 
-        $user->roles()->attach($role);
-
-        $this->ba->proxyAuth('rzp_live_10000000000000');
+        $this->ba->proxyAuth('rzp_live_10000000000000',$userId);
 
         $completeSummary = $this->startTest();
 
-        $firstBankingAccountId = $bankingAccount->getPublicId();
+        $firstBankingAccountId = $this->getDbEntity('banking_account',
+            ['account_number' => '2224440041626905'],
+            'live')->getPublicId();
+
         $secondBankingAccountId = $secondBankingAccount->getPublicId();
 
         $queuedSummaryFirstAccount = $completeSummary[$firstBankingAccountId][Payout\Status::QUEUED];
@@ -2054,6 +2050,18 @@ class PayoutTest extends TestCase
         $this->startTest();
     }
 
+    public function testFetchMultiplePayoutsWithBankingProductParameterWithViewOnlyRole()
+    {
+        $this->testCreatePayout();
+
+        $viewOnlyRoleUser = $this->fixtures->user->createBankingUserForMerchant('10000000000000', [], 'view_only');
+
+        $userId = $viewOnlyRoleUser['id'];
+
+        $this->ba->proxyAuth('rzp_test_10000000000000',$userId);
+        $this->startTest();
+    }
+
     public function testFetchMultiplePayoutsWithPrimaryProductParameter()
     {
         $this->ba->proxyAuth();
@@ -3260,12 +3268,16 @@ class PayoutTest extends TestCase
         $virtualAccount->save();
 
         $secondBankingBalance->setAccountNumber($virtualAccount->bankAccount->getAccountNumber());
+
         $secondBankingBalance->save();
+
+        $mode = $this->getConnection()->getName();
 
         $balance = $this->getDbEntity('balance', [
             'merchant_id'   => '10000000000000',
             'account_type'  => 'direct'
-        ]);
+        ],
+            $mode);
 
         return $balance;
     }
@@ -3774,6 +3786,102 @@ class PayoutTest extends TestCase
             ->andReturn($redisMock);
 
         $redisMock->method('get')->will($this->returnValue('true'));
+    }
+
+    public function testDashboardSummaryForNonWorkflowRoles()
+    {
+        $this->liveSetUp();
+
+        $secondBankingBalance = $this->createDirectBankingBalance();
+
+        // Creating 2 banking accounts. First for the existing bankingBalance and second for the secondBankingBalance
+
+        $bankingAccountAttributes = [
+            'id'                    =>  'ABCde1234ABCde',
+            'account_number'        =>  '2224440041626998',
+            'balance_id'            =>  $this->bankingBalance->getId(),
+            'account_type'          =>  'nodal',
+        ];
+
+        $bankingAccount = $this->createBankingAccount($bankingAccountAttributes, 'live');
+
+        $secondBankingAccountAttributes = [
+            'id'                    =>  'DEcba4321DEcba',
+            'account_number'        =>  '2224440041626999',
+            'balance_id'            =>  $secondBankingBalance->getId(),
+            'account_type'          =>  'current',
+        ];
+
+        $secondBankingAccount = $this->createBankingAccount($secondBankingAccountAttributes, 'live');
+
+        // Create two queued payouts
+
+        $firstQueuedPayoutAttributes = [
+            'account_number'        =>  '2224440041626905',
+            'amount'                =>  20000099,
+            'queue_if_low_balance'  =>  1,
+        ];
+
+        $this->createQueuedOrPendingPayout($firstQueuedPayoutAttributes, 'rzp_live_TheLiveAuthKey');
+
+        $secondQueuedPayoutAttributes = [
+            'account_number'        =>  '2224440041626906',
+            'amount'                =>  30000099,
+            'queue_if_low_balance'  =>  1,
+        ];
+
+        $this->createQueuedOrPendingPayout($secondQueuedPayoutAttributes, 'rzp_live_TheLiveAuthKey');
+
+        // Setup the payout workflow with some banking users
+        $this->createPayoutWorkflowWithBankingUsersLiveMode();
+
+        $this->createPayoutWithWorkflow(
+            [
+                'account_number'        =>  '2224440041626905',
+                'amount'                =>  54321
+            ],
+            'rzp_live_TheLiveAuthKey');
+
+        $this->createPayoutWithWorkflow(
+            [
+                'account_number'        =>  '2224440041626906',
+                'amount'                =>  12345
+            ],
+            'rzp_live_TheLiveAuthKey');
+
+        $viewOnlyRoleUser = $this->fixtures->user->createBankingUserForMerchant('10000000000000', [], 'view_only','live');
+
+        $userId = $viewOnlyRoleUser['id'];
+
+        $this->ba->proxyAuth('rzp_live_10000000000000',$userId);
+
+        $completeSummary = $this->startTest();
+
+        $firstBankingAccountId = $this->getDbEntity('banking_account',
+                                                           ['account_number' => '2224440041626905'],
+                                                    'live')->getPublicId();
+
+        $secondBankingAccountId = $secondBankingAccount->getPublicId();
+
+        $queuedSummaryFirstAccount = $completeSummary[$firstBankingAccountId][Payout\Status::QUEUED];
+        $pendingSummaryFirstAccount = $completeSummary[$firstBankingAccountId][Payout\Status::PENDING];
+        $queuedSummarySecondAccount = $completeSummary[$secondBankingAccountId][Payout\Status::QUEUED];
+        $pendingSummarySecondAccount = $completeSummary[$secondBankingAccountId][Payout\Status::PENDING];
+
+
+        $this->assertEquals($queuedSummaryFirstAccount['count'],1);
+        $this->assertEquals($queuedSummaryFirstAccount['total_amount'],20000099);
+        $this->assertEquals($queuedSummaryFirstAccount['balance'],"10000000");
+
+        $this->assertEquals($pendingSummaryFirstAccount['count'],0);
+        $this->assertEquals($pendingSummaryFirstAccount['total_amount'],0);
+
+        $this->assertEquals($queuedSummarySecondAccount['count'],1);
+        $this->assertEquals($queuedSummarySecondAccount['total_amount'],30000099);
+        $this->assertEquals($queuedSummarySecondAccount['balance'],"10000000");
+
+        $this->assertEquals($pendingSummarySecondAccount['count'],0);
+        $this->assertEquals($pendingSummarySecondAccount['total_amount'],0);
     }
 
     public function testFiringOfWebhooksAndEmailOnPayoutReversal()

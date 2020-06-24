@@ -2,6 +2,7 @@
 
 namespace RZP\Models\User;
 
+use RZP\Exception;
 use RZP\Models\Feature;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
@@ -40,6 +41,8 @@ class BankingRole
         self::FINANCE_L1,
         self::FINANCE_L2,
         self::FINANCE_L3,
+        self::OWNER,
+        self::ADMIN,
     ];
 
     protected static $workflowRoleToNameMap = [
@@ -57,6 +60,10 @@ class BankingRole
         return (in_array($role, self::$workflowRoles, true) === true);
     }
 
+    /**
+     * @param string $roleId
+     * @return string
+     */
     public static function getNameForWorkflowRole(string $roleId): string
     {
         return self::$workflowRoleToNameMap[$roleId];

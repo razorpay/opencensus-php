@@ -784,6 +784,7 @@ class PublicErrorDescription
     const BAD_REQUEST_REQUIRED_PERMISSION_NOT_FOUND                             = 'Required permission not found';
     const BAD_REQUEST_PAYOUT_WORKFLOW_EDIT_IN_PROGRESS                          = 'Workflow edit on the same payout rule is active';
     const BAD_REQUEST_PAYOUT_INVALID_STATE                                      = 'Payout is not in pending state';
+    const BAD_REQUEST_USER_ROLE_NOT_SUPPORTED_FOR_WORKFLOW                      = 'User role is not supported for workflows';
 
     const BAD_REQUEST_SUPERADMIN_ACCESS_REQUIRED                                = 'This service can only be accessed by superadmins';
 

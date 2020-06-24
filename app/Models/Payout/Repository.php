@@ -267,11 +267,12 @@ class Repository extends Base\Repository
     }
 
     /**
-     * @param User\Entity     $user
+     * @param User\Entity $user
      * @param Merchant\Entity $merchant
      * @param string          $balanceType
      *
      * @return Base\Collection
+     * @throws Exception\UserWorkflowNotApplicableException
      */
     public function fetchPayoutsPendingOnUserRole(User\Entity $user,
                                                   Merchant\Entity $merchant,
@@ -284,11 +285,20 @@ class Repository extends Base\Repository
         $query = $this->newQuery()
                       ->select($this->getTableName() . ".*");
 
-        // If the entity is a user(which implies the product is banking),
-        // then the role id for that user for the merchant in context
-        // will have to be fetched from the merchant_users table.
-        // This is because the role_map table doesn't have any merchant context.
-        $userRoleId = (new User\Core())->getUserRoleIdInMerchantForBanking($user->getId());
+        $userRoleId = [];
+
+        try
+        {
+            // If the entity is a user(which implies the product is banking),
+            // then the role id for that user for the merchant in context
+            // will have to be fetched from the merchant_users table.
+            // This is because the role_map table doesn't have any merchant context.
+            $userRoleId = (new User\Core())->getUserRoleIdInMerchantForWorkflow($user->getId());
+        }
+        catch (Exception\UserWorkflowNotApplicableException $exception)
+        {
+            // If user role is not a workflow role
+        }
 
         $this->filterByRoleIds($query, $userRoleId, $user->getId());
 
@@ -649,11 +659,20 @@ class Repository extends Base\Repository
             return;
         }
 
-        // If the entity is a user(which implies the product is banking),
-        // then the role id for that user for the merchant in context
-        // will have to be fetched from the merchant_users table.
-        // This is because the role_map table doesn't have any merchant context.
-        $userRoleId = (new User\Core())->getUserRoleIdInMerchantForBanking($this->auth->getUser()->getId());
+        $userRoleId = [];
+
+        try
+        {
+            // If the entity is a user(which implies the product is banking),
+            // then the role id for that user for the merchant in context
+            // will have to be fetched from the merchant_users table.
+            // This is because the role_map table doesn't have any merchant context.
+            $userRoleId = (new User\Core())->getUserRoleIdInMerchantForWorkflow($this->auth->getUser()->getId());
+        }
+        catch(Exception\UserWorkflowNotApplicableException $exception)
+        {
+            // If user role is not a workflow role
+        }
 
         $this->filterByRoleIds($query, $userRoleId);
     }

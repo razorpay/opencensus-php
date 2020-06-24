@@ -2051,6 +2051,38 @@ return [
         ],
     ],
 
+    'testFetchMultiplePayoutsWithBankingProductParameterWithViewOnlyRole' => [
+        'request' => [
+            'url'    => '/payouts',
+            'method' => 'get',
+            'content' => [
+                'product' => 'banking',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count' => 1,
+                'items' => [
+                    [
+                        'entity'          => 'payout',
+                        'amount'          => 2000000,
+                        'currency'        => 'INR',
+                        'fund_account_id' => 'fa_100000000000fa',
+                        'narration'       => 'Batman',
+                        'purpose'         => 'refund',
+                        'status'          => 'processing',
+                        'tax'             => 162,
+                        'fees'            => 1062,
+                        'notes'           => [
+                            'abc' => 'xyz',
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
+
     'testFetchMultiplePayoutsWithPrimaryProductParameter' => [
         'request' => [
             'url'    => '/payouts',
@@ -2456,30 +2488,6 @@ return [
         ],
         'response' => [
             'content' => [
-                'bacc_ABCde1234ABCde' => [
-                    'queued' =>  [
-                        'balance'       => 10000000,
-                        'count'         => 1,
-                        'total_amount'  => 20000099,
-                        'total_fees'    => 1770,
-                    ],
-                    'pending' => [
-                        'count'         => 1,
-                        'total_amount'  => 54321,
-                    ]
-                ],
-                'bacc_DEcba4321DEcba' => [
-                    'queued' =>  [
-                        'balance'       => 10000000,
-                        'count'         => 1,
-                        'total_amount'  => 30000099,
-                        'total_fees'    => 1770,
-                    ],
-                    'pending' => [
-                        'count'         => 1,
-                        'total_amount'  => 12345,
-                    ]
-                ]
             ],
         ],
     ],
@@ -4150,6 +4158,17 @@ return [
         'exception' => [
             'class' => 'RZP\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_ACCESS_DENIED,
+        ],
+    ],
+
+    'testDashboardSummaryForNonWorkflowRoles' => [
+        'request'  => [
+            'method'  => 'GET',
+            'url'     => '/payouts/_meta/summary',
+        ],
+        'response' => [
+            'content' => [
+            ],
         ],
     ],
 

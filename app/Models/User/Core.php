@@ -784,19 +784,6 @@ class Core extends Base\Core
 
         $this->repo->attach($user, $product . Entity::MERCHANTS, [$merchantId => $mappingParams]);
 
-        if (BankingRole::isWorkflowRole($role) === true)
-        {
-            $role = $this->repo->role->findByOrgIdAndName(
-                Org\Entity::RAZORPAY_ORG_ID,
-                BankingRole::getNameForWorkflowRole($role));
-
-            $roleMapParams = [
-                'role_id' => $role->getId()
-            ];
-
-            $this->repo->attach($user, 'roles', $roleMapParams); // check detaching argument
-        }
-
         return $user->toArrayPublic();
     }
 
@@ -850,19 +837,6 @@ class Core extends Base\Core
         $this->repo->merchant->findOrFailPublic($input[Entity::MERCHANT_ID]);
 
         $this->repo->sync($user, $product . 'Merchants', [$merchantId => $mappingParams], false);
-
-        if (BankingRole::isWorkflowRole($role) === true)
-        {
-            $role = $this->repo->role->findByOrgIdAndName(
-                Org\Entity::RAZORPAY_ORG_ID,
-                BankingRole::getNameForWorkflowRole($role));
-
-            $roleMapParams = [
-                'role_id' => $role->getId()
-            ];
-
-            $this->repo->sync($user, 'roles', $roleMapParams); // check detaching argument
-        }
 
         return $user->toArrayPublic();
     }
@@ -1581,8 +1555,9 @@ class Core extends Base\Core
      *
      * @param string $userId
      * @return array
+     * @throws Exception\UserWorkflowNotApplicableException
      */
-    public function getUserRoleIdInMerchantForBanking(string $userId) : array
+    public function getUserRoleIdInMerchantForWorkflow(string $userId) : array
     {
         $mapping = $this->repo->merchant->getMerchantUserMapping($this->merchant->getId(),
             $userId,
@@ -1597,10 +1572,17 @@ class Core extends Base\Core
 
         $roleCode = $mapping->pivot->role;
 
-        $roleName = (new BankingRole())->getNameForWorkflowRole($roleCode);
+        $roleNamesArray = [];
+
+        if (BankingRole::isWorkflowRole($roleCode) === false)
+        {
+            throw new Exception\UserWorkflowNotApplicableException($roleCode);
+        }
+
+        $roleNamesArray []= (new BankingRole())->getNameForWorkflowRole($roleCode);
 
         $roleId = $this->repo->role->fetchIdsByOrgIdNames(Org\Entity::RAZORPAY_ORG_ID,
-                                                          [$roleName])
+                                                          $roleNamesArray)
                                                           ->pluck('id')
                                                           ->toArray();
 

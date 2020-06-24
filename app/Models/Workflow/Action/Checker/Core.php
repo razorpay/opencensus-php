@@ -77,7 +77,7 @@ class Core extends Base\Core
             // then the role id for that user for the merchant in context
             // will have to be fetched from the merchant_users table.
             // This is because the role_map table doesn't have any merchant context.
-            $checkerRoleIds = (new User\Core())->getUserRoleIdInMerchantForBanking($checkerEntity->getId());
+            $checkerRoleIds = (new User\Core())->getUserRoleIdInMerchantForWorkflow($checkerEntity->getId());
         }
 
         $currentLevel = $action->getCurrentLevel();
