@@ -657,6 +657,7 @@ class Validator extends Base\Validator
     {
         $rules = $plan->toArray();
 
+        /** @var Entity $newRule */
         $newRule = $this->entity;
 
         foreach ($rules as $rule)
@@ -674,7 +675,8 @@ class Validator extends Base\Validator
                 ($rule[Entity::AMOUNT_RANGE_MAX] === $newRule[Entity::AMOUNT_RANGE_MAX]) and
                 ($rule[Entity::FEATURE] === $newRule[Entity::FEATURE]) and
                 ($rule[Entity::EMI_DURATION] === $newRule[Entity::EMI_DURATION]) and
-                ($rule[Entity::RECEIVER_TYPE] === $newRule[Entity::RECEIVER_TYPE]))
+                ($rule[Entity::RECEIVER_TYPE] === $newRule[Entity::RECEIVER_TYPE]) and
+                ($this->isAccountTypeAndChannelSameForBothRules($rule, $newRule) === true))
             {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_PRICING_RULE_ALREADY_DEFINED);
@@ -691,6 +693,7 @@ class Validator extends Base\Validator
                 ($rule[Entity::FEATURE] === $newRule[Entity::FEATURE]) and
                 ($rule[Entity::EMI_DURATION] === $newRule[Entity::EMI_DURATION]) and
                 ($rule[Entity::RECEIVER_TYPE] === $newRule[Entity::RECEIVER_TYPE]) and
+                ($this->isAccountTypeAndChannelSameForBothRules($rule, $newRule) === true) and
                 (isset($newRule[Entity::AMOUNT_RANGE_ACTIVE]) === true) and
                 (isset($rule[Entity::AMOUNT_RANGE_ACTIVE]) === true))
             {
@@ -708,10 +711,11 @@ class Validator extends Base\Validator
                 ($rule[Entity::FEATURE] === $newRule[Entity::FEATURE]) and
                 ($rule[Entity::EMI_DURATION] === $newRule[Entity::EMI_DURATION]) and
                 ($rule[Entity::RECEIVER_TYPE] === $newRule[Entity::RECEIVER_TYPE]) and
+                ($this->isAccountTypeAndChannelSameForBothRules($rule, $newRule) === true) and
                 (empty($newRule[Entity::AMOUNT_RANGE_ACTIVE]) !== empty($rule[Entity::AMOUNT_RANGE_ACTIVE])))
             {
                 throw new Exception\BadRequestException(
-                     ErrorCode::BAD_REQUEST_PRICING_RULE_FOR_AMOUNT_RANGE_OVERLAP);
+                    ErrorCode::BAD_REQUEST_PRICING_RULE_FOR_AMOUNT_RANGE_OVERLAP);
             }
         }
     }
@@ -885,5 +889,40 @@ class Validator extends Base\Validator
                 }
             }
         }
+    }
+
+    protected function isAccountTypeAndChannelSameForBothRules(array $rule, Pricing\Entity $newRule) : bool
+    {
+        if (($this->isAccountTypeSameForBothRules($rule, $newRule) === true) and
+            ($this->isChannelSameForBothRules($rule, $newRule) === true))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    protected function isAccountTypeSameForBothRules(array $rule, Pricing\Entity $newRule) : bool
+    {
+        if ((isset($rule[Entity::ACCOUNT_TYPE]) === true) and
+            (isset($newRule[Entity::ACCOUNT_TYPE]) === true) and
+            ($rule[Entity::ACCOUNT_TYPE] !== $newRule[Entity::ACCOUNT_TYPE]))
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    protected function isChannelSameForBothRules(array $rule, Pricing\Entity $newRule) : bool
+    {
+        if ((isset($rule[Entity::CHANNEL]) === true) and
+            (isset($newRule[Entity::CHANNEL]) === true) and
+            ($rule[Entity::CHANNEL] === $newRule[Entity::CHANNEL]))
+        {
+            return false;
+        }
+
+        return true;
     }
 }

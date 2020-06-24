@@ -3263,4 +3263,65 @@ return [
             'status_code' => 200,
         ],
     ],
+
+    'testAddPricingPlanRulesForBankingProductWithBothSupportedAccountTypes' => [
+        'request' => [
+            'content' => [
+                'product'             => 'banking',
+                'feature'             => 'payout',
+                'payment_method'      => 'fund_transfer',
+                'percent_rate'        => 0,
+                'international'       => 0,
+                'amount_range_active' => 1,
+                'amount_range_max'    => 1500,
+                'amount_range_min'    => 0,
+                'account_type'        => 'shared',
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'plan_name'           => 'TestPlan1',
+                'payment_method'      => 'fund_transfer',
+                'feature'             => 'payout',
+                'product'             => 'banking',
+                'account_type'        => 'shared',
+                'percent_rate'        => 0,
+                'amount_range_max'    => 1500,
+                'amount_range_min'    => 0,
+                'international'       => false,
+                'amount_range_active' => true,
+            ]
+        ]
+    ],
+
+    'testAddDuplicatePricingPlanRulesForBankingProduct' => [
+        'request'   => [
+            'content' => [
+                'product'             => 'banking',
+                'feature'             => 'payout',
+                'payment_method'      => 'fund_transfer',
+                'percent_rate'        => 0,
+                'international'       => 0,
+                'amount_range_active' => 1,
+                'amount_range_max'    => 1500,
+                'amount_range_min'    => 0,
+                'account_type'        => 'shared',
+            ],
+            'method'  => 'POST'
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The new rule matches with an active existing rule',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PRICING_RULE_ALREADY_DEFINED,
+        ],
+    ],
 ];

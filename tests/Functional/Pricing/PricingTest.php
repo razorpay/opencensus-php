@@ -2140,4 +2140,83 @@ class PricingTest extends TestCase
             }
         }
     }
+
+    public function testAddPricingPlanRulesForBankingProductWithBothSupportedAccountTypes()
+    {
+        $this->ba->adminAuth();
+
+        $pricingPlan = $this->createPricingPlan();
+
+        $testData['request']['url'] = '/pricing/' . $pricingPlan['id'] . '/rule';
+
+        $this->startTest($testData);
+
+        $sharedAccountPricingRule = $this->getDbLastEntity('pricing')->toArray();
+
+        $testData['request']['content']['account_type'] = 'direct';
+        $testData['request']['content']['channel']      = 'rbl';
+
+        $testData['response']['content']['account_type']  = 'direct';
+        $testData['response']['content']['channel'] = 'rbl';
+
+        $this->startTest($testData);
+
+        $directAccountPricingRule = $this->getDbLastEntity('pricing')->toArray();
+
+        //Reload shared account rule to verify that it wasn't replaced
+        $sharedAccountPricingRule = $this->getDbEntityById('pricing', $sharedAccountPricingRule['id'])->toArray();
+
+        // Unset created_at and updated_at so that during array_diff, these 2 values are not taken into consideration.
+        // They can be same or different and we aren't concerned about them.
+        unset($sharedAccountPricingRule['created_at']);
+        unset($sharedAccountPricingRule['updated_at']);
+
+        unset($directAccountPricingRule['created_at']);
+        unset($directAccountPricingRule['updated_at']);
+
+        $differenceBetweenTwoRules = array_diff($sharedAccountPricingRule, $directAccountPricingRule);
+
+        // Assert that the two new rules have only two fields that have different value (id and account_type)
+        $this->assertEquals(2, count($differenceBetweenTwoRules));
+
+        // Assert that the two new rules have their respected account_types
+        $this->assertEquals('shared', $sharedAccountPricingRule['account_type']);
+        $this->assertEquals('direct', $directAccountPricingRule['account_type']);
+
+        // Assert that the two new rules have their respected channels
+        $this->assertEquals(null, $sharedAccountPricingRule['channel']);
+        $this->assertEquals('rbl', $directAccountPricingRule['channel']);
+
+        // Assert that the two new rules have different ids
+        $this->assertNotEquals($directAccountPricingRule['id'], $sharedAccountPricingRule['id']);
+    }
+
+    public function testAddDuplicatePricingPlanRulesForBankingProduct()
+    {
+        $this->ba->adminAuth();
+
+        $pricingPlan = $this->createPricingPlan();
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/pricing/' . $pricingPlan['id'] . '/rule',
+            'content' => [
+                'product'             => 'banking',
+                'feature'             => 'payout',
+                'payment_method'      => 'fund_transfer',
+                'percent_rate'        => 0,
+                'international'       => 0,
+                'amount_range_active' => 1,
+                'amount_range_max'    => 1500,
+                'amount_range_min'    => 0,
+                'account_type'        => 'shared',
+            ],
+        ];
+
+        $this->makeRequestAndGetContent($request);
+
+        $testData['request']['url'] = '/pricing/' . $pricingPlan['id'] . '/rule';
+
+        $this->startTest($testData);
+    }
 }
