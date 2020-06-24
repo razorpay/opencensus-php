@@ -448,6 +448,11 @@ class Gateway extends Base\Gateway
     {
         assertTrue ($this->mode === Mode::LIVE);
 
+        if($this->isEncryptedFlowTerminal())
+        {
+            return $this->config['live_hmac_hash_secret'];
+        }
+
         if ($this->tpv === true)
         {
             return $this->config['live_hash_secret_tpv'];
