@@ -140,6 +140,9 @@ class CreateOrders extends Migration
                 ->nullable()
                 ->default(null);
 
+            $table->tinyInteger(Order::APP_OFFER)
+                  ->default(false);
+
             // $table->integer(Order::VALIDITY)
             //       ->default(0);
 

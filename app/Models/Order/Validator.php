@@ -56,6 +56,7 @@ class Validator extends Base\Validator
         Entity::PHONEPE_SWITCH_CONTEXT             => 'sometimes|json|max:3000',
         Entity::PRODUCT_ID                         => 'required_with:product_type|alpha_num|size:14',
         Entity::PRODUCT_TYPE                       => 'required_with:product_id|string|max:32|custom',
+        Entity::APP_OFFER                          => 'sometimes|boolean',
     ];
 
     protected static $createValidators = [

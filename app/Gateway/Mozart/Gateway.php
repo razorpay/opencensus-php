@@ -17,6 +17,7 @@ use RZP\Gateway\Upi\Mindgate\Crypto;
 use RZP\Gateway\Base\AuthorizeFailed;
 use RZP\Gateway\Upi\Base\MandateTrait;
 use RZP\Gateway\Upi\Base\Entity as UpiEntity;
+use RZP\Models\Payment\Processor\App as AppMethod;
 use RZP\Gateway\Mozart\Entity as MozartEntity;
 use RZP\Models\Terminal\Entity as TerminalEntity;
 use RZP\Models\Payment\Verify\Action as VerifyAction;
@@ -196,9 +197,10 @@ class Gateway extends Base\Gateway
         }
 
         if (($input['payment']['method'] === 'upi') or
-            ($input['payment']['method'] === Payment\Method::CRED))
+            (($input['payment']['method'] === Payment\Method::APP) and
+             ($input['payment']['wallet'] === AppMethod::CRED)))
         {
-            $merchantId = ($input['payment']['method'] === Payment\Method::CRED) ? $input['terminal']['gateway_merchant_id'] :
+            $merchantId = ($input['payment']['method'] === Payment\Method::APP) ? $input['terminal']['gateway_merchant_id'] :
             $input['terminal']['gateway_merchant_id2'];
 
             return [

@@ -44,6 +44,7 @@ use RZP\Models\VirtualAccount\Receiver;
 use RZP\Models\Payment\Analytics\Metadata;
 use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Models\Payment\Processor\Constants;
+use RZP\Models\Payment\Processor\App as AppMethod;
 use RZP\Models\Payment\Refund\TransactionTrackerMessages;
 use RZP\Models\Partner\Commission\CommissionSourceInterface;
 
@@ -246,6 +247,8 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     const CHARGE_ACCOUNT                    = 'charge_account';
 
     const CHARGE_ACCOUNT_MERCHANT           = 'charge_account_merchant';
+
+    const APP_PRESENT                       = 'app_present';
 
     protected static $sign      = 'pay';
 
@@ -861,6 +864,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         {
             $this->metadata[Entity::UPI_PROVIDER] = $input[Entity::UPI_PROVIDER];
         }
+
+        if (isset($input[Entity::APP_PRESENT]) === true)
+        {
+            $this->metadata[Entity::APP_PRESENT] = (bool) $input[Entity::APP_PRESENT];
+        }
     }
 
     /**
@@ -934,7 +942,8 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     protected function generateWallet($input)
     {
         if (($input[Entity::METHOD] === Method::CARDLESS_EMI) or
-            ($input[Entity::METHOD] === Method::PAYLATER))
+            ($input[Entity::METHOD] === Method::PAYLATER) or
+            ($input[Entity::METHOD] === Method::APP))
         {
             $this->setAttribute(self::WALLET, $input[self::PROVIDER]);
         }
@@ -1900,9 +1909,10 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         return ($this->getAttribute(self::METHOD) === Payment\Method::WALLET);
     }
 
-    public function isMethodCred()
+    public function isAppCred()
     {
-        return ($this->getAttribute(self::METHOD) === Payment\Method::CRED);
+        return  (($this->getAttribute(self::METHOD) === Payment\Method::APP) and
+                 ($this->getAttribute(self::WALLET) === AppMethod::CRED));
     }
 
 

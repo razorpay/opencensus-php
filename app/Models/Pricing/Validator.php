@@ -20,6 +20,7 @@ use RZP\Models\Payment\Processor\Wallet;
 use RZP\Models\Payment\Processor\CardlessEmi;
 use RZP\Models\Pricing;
 use RZP\Models\Bank\IFSC;
+use RZP\Models\Payment\Processor\App as AppMethod;
 use RZP\Models\Admin\Org\Entity as Org;
 use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Models\BankingAccountStatement\Channel as BASChannel;
@@ -438,6 +439,15 @@ class Validator extends Base\Validator
             {
                 throw new Exception\BadRequestValidationFailureException(
                     'Payment network for bank should be a valid bank name');
+            }
+        }
+
+        if ($input[Entity::PAYMENT_METHOD] === Payment\Method::APP)
+        {
+            if (AppMethod::isValidApp($input[Entity::PAYMENT_NETWORK]) === false)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'Provider selected for app should be valid');
             }
         }
     }

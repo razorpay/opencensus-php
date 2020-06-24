@@ -113,7 +113,7 @@ class Validator extends Base\Validator
         'recurring_token.max_amount'    => 'sometimes_if:method,emandate,upi|filled|integer|min:500',
         'recurring_token.expire_by'     => 'sometimes_if:method,emandate,upi|filled|epoch:946684800,9223372036854775807',
         'offer_id'                      => 'filled|public_id|size:20',
-        'provider'                      => 'required_if:method,cardless_emi,paylater|string',
+        'provider'                      => 'required_if:method,cardless_emi,paylater,app|string',
         'ott'                           => 'sometimes_if:method,cardless_emi,paylater|string',
         'payment_id'                    => 'sometimes_if:method,cardless_emi',
         'application'                   => 'sometimes|filled|string|in:google_pay',
@@ -121,9 +121,7 @@ class Validator extends Base\Validator
         'currency_request_id'           => 'required_with:dcc_currency|string',
         'dcc_currency'                  => 'required_with:currency_request_id|string|max:3|custom',
         'charge_account'                => 'sometimes|string',
-        'cred'                          => 'sometimes_if:method,cred|associative_array',
-        'cred.app_offer'                => 'required_with:cred|sometimes|boolean',
-        'cred.app_present'              => 'required_with:cred|sometimes|boolean',
+        'app_present'                   => 'sometimes_if:method,app|boolean',
     ];
 
     protected static $editAcquirerRules = [
@@ -661,6 +659,15 @@ class Validator extends Base\Validator
                 {
                     throw new Exception\BadRequestValidationFailureException(
                         'Provider is not supported for Pay Later',
+                        'provider',
+                        $input['provider']);
+                }
+                break;
+            case Payment\Method::APP:
+                if (Payment\Processor\App::isValidApp($input['provider']) === false)
+                {
+                    throw new Exception\BadRequestValidationFailureException(
+                        'Provider is not supported for App',
                         'provider',
                         $input['provider']);
                 }

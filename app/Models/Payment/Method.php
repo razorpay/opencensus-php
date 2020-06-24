@@ -18,7 +18,7 @@ class Method
     const CARDLESS_EMI          = 'cardless_emi';
     const PAYLATER              = 'paylater';
     const NACH                  = 'nach';
-    const CRED                  = 'cred';
+    const APP                   = 'app';
 
     protected static $methods = [
         self::CARD                  => 'Card',
@@ -33,7 +33,7 @@ class Method
         self::CARDLESS_EMI          => 'Cardless EMI',
         self::PAYLATER              => 'Pay Later',
         self::NACH                  => 'nach',
-        self::CRED                  => 'cred',
+        self::APP                   => 'App',
     ];
 
     protected static $nonEsAutomaticMethods = [
@@ -67,7 +67,6 @@ class Method
 
     protected static $asynchronous = [
         self::UPI,
-        self::CRED,
     ];
 
     const INSTANT_REFUND_SUPPORTED_METHODS = [

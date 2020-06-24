@@ -2939,6 +2939,32 @@ return [
             ],
         ],
     ],
+    'testAddPricingPlanRuleWithFeatureCred' => [
+        'request' => [
+            'content' => [
+                'payment_method'      => 'app',
+                'payment_network'     => 'cred',
+                'percent_rate'        => 1000,
+                'international'       => 0,
+                'amount_range_active' => '0',
+                'amount_range_min'    => null,
+                'amount_range_max'    => null,
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'plan_name'           => 'TestPlan1',
+                'payment_method'      => 'app',
+                'payment_network'     => 'cred',
+                'percent_rate'        => 1000,
+                'international'       => false,
+                'amount_range_active' => false,
+                'amount_range_min'    => null,
+                'amount_range_max'    => null,
+            ],
+        ],
+    ],
     'testAddPricingPlanRuleWithFeatureRefund' => [
         'request' => [
             'content' => [

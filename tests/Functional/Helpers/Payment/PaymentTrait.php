@@ -1728,15 +1728,11 @@ trait PaymentTrait
     protected function getDefaultCredPayment()
     {
         $payment = $this->getDefaultPaymentArray();
-        $payment['method'] = 'cred';
+        $payment['method'] = 'app';
         $payment['amount'] = 100000;
+        $payment['provider'] = 'cred';
+        $payment['app_present'] = true;
 
-        unset($payment['card'], $payment['bank']);
-
-        $payment['cred'] = [
-            'app_offer'   => false,
-            'app_present' => true,
-        ];
         return $payment;
     }
 

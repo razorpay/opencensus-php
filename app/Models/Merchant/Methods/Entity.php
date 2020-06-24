@@ -9,6 +9,7 @@ use RZP\Models\Base\QueryCache\Cacheable;
 use RZP\Models\Card\SubType;
 use RZP\Models\Card\Type;
 use RZP\Models\Payment\Processor\Netbanking as NetbankingProcessor;
+use RZP\Models\Payment\Processor\App as AppMethod;
 
 class Entity extends Base\PublicEntity
 {
@@ -50,7 +51,7 @@ class Entity extends Base\PublicEntity
     const PHONEPE_SWITCH    = 'phonepeswitch';
     const PAYPAL            = 'paypal';
     const GOOGLE_PAY_CARDS  = 'google_pay_cards';
-    const CRED              = 'cred';
+    const APPS              = 'apps';
 
 
     const METHODS           = 'methods';
@@ -96,7 +97,7 @@ class Entity extends Base\PublicEntity
         self::PHONEPE,
         self::PHONEPE_SWITCH,
         self::PAYPAL,
-        self::CRED,
+        self::APPS,
 
     ];
 
@@ -134,7 +135,7 @@ class Entity extends Base\PublicEntity
         self::PHONEPE,
         self::PHONEPE_SWITCH,
         self::PAYPAL,
-        self::CRED,
+        self::APPS,
     ];
 
     protected $public = [
@@ -172,7 +173,7 @@ class Entity extends Base\PublicEntity
         self::PHONEPE_SWITCH,
         self::PAYLATER,
         self::PAYPAL,
-        self::CRED,
+        self::APPS,
     ];
 
     //
@@ -212,7 +213,7 @@ class Entity extends Base\PublicEntity
         self::PHONEPE        => false,
         self::PHONEPE_SWITCH => false,
         self::PAYPAL         => false,
-        self::CRED           => false,
+        self::APPS           => AppMethod::DEFAULT_APPS,
     );
 
     public static $defaultPaymentMethodsForSubmerchantByPartner = array(
@@ -246,7 +247,6 @@ class Entity extends Base\PublicEntity
         self::PHONEPE        => false,
         self::PHONEPE_SWITCH => false,
         self::PAYPAL         => false,
-        self::CRED           => false,
     );
 
     protected $wallets = array(
@@ -290,7 +290,7 @@ class Entity extends Base\PublicEntity
         self::PHONEPE,
         self::PHONEPE_SWITCH,
         self::PAYPAL,
-        self::CRED,
+        self::APPS,
     ];
 
     // Casts the attributes to native types
@@ -323,7 +323,6 @@ class Entity extends Base\PublicEntity
         self::PHONEPE       => 'bool',
         self::PHONEPE_SWITCH=> 'bool',
         self::PAYPAL        => 'bool',
-        self::CRED          => 'bool',
     ];
 
     public function merchant()
@@ -411,6 +410,16 @@ class Entity extends Base\PublicEntity
         return ((bool) $this->getCardNetworks()[$network]);
     }
 
+    public function isAppEnabled(string $app = ""): bool
+    {
+        if (AppMethod::isValidApp($app) === false)
+        {
+            return false;
+        }
+
+        return ((bool) $this->getApps()[$app]);
+    }
+
     public function isSubTypeEnabled(string $subtype): bool
     {
         if (SubType::isValidSubType($subtype) === false)
@@ -425,6 +434,7 @@ class Entity extends Base\PublicEntity
     {
         return ((bool) $this->getCardNetworks()[Network::AMEX]);
     }
+
 
     public function isPaytmEnabled()
     {
@@ -520,7 +530,7 @@ class Entity extends Base\PublicEntity
 
     public function isCredEnabled()
     {
-        return $this->getAttribute(self::CRED);
+        return ((bool) $this->getApps()[AppMethod::CRED]);
     }
 
     public function isPayLaterEnabled()
@@ -600,6 +610,11 @@ class Entity extends Base\PublicEntity
     public function getCardNetworks(): array
     {
         return $this->getAttribute(self::CARD_NETWORKS);
+    }
+
+    public function getApps(): array
+    {
+        return $this->getAttribute(self::APPS);
     }
 
     public function getEnabledBanks()
@@ -759,6 +774,17 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::CARD_NETWORKS, $cardNetworks);
     }
 
+    protected function setApps(string $app, int $value)
+    {
+        $apps = $this->getAttribute(self::APPS);
+
+        AppMethod::checkApp($app);
+
+        $apps[$app] = $value;
+
+        $this->setAttribute(self::APPS, $app);
+    }
+
     protected function setCardSubType(string $subtype, int $value)
     {
         $subTypes = $this->getAttribute(self::CARD_SUBTYPE);
@@ -910,6 +936,18 @@ class Entity extends Base\PublicEntity
         return $this->getEnabledCardNetworks();
     }
 
+    protected function getAppsAttribute()
+    {
+        return $this->getEnabledApps();
+    }
+
+    protected function getEnabledApps(): array
+    {
+        $apps = $this->attributes[self::APPS];
+
+        return AppMethod::getEnabledApps($apps);
+    }
+
     protected function getEnabledCardNetworks(): array
     {
         $networks = $this->attributes[self::CARD_NETWORKS];
@@ -945,6 +983,24 @@ class Entity extends Base\PublicEntity
         else
         {
             $this->attributes[self::CARD_NETWORKS] = $networks;
+        }
+    }
+
+    protected function setAppsAttribute($apps)
+    {
+        if (is_array($apps) === true)
+        {
+            $existingApps = $this->getApps();
+
+            $apps = array_merge($existingApps, $apps);
+
+            $value = AppMethod::getHexValue($apps);
+
+            $this->attributes[self::APPS] = $value;
+        }
+        else
+        {
+            $this->attributes[self::APPS] = $apps;
         }
     }
 

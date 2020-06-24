@@ -238,15 +238,6 @@ class PricingTest extends TestCase
         $this->startTest($testData);
     }
 
-    public function testAddPricingPlanCredRule()
-    {
-        $content = $this->createPricingPlan();
-
-        $testData['request']['url'] = '/pricing/'.$content['id'] . '/rule';
-
-        $this->startTest($testData);
-    }
-
     public function testAddPricingPlanEmi()
     {
         $content = $this->createPricingPlan();
@@ -1316,6 +1307,17 @@ class PricingTest extends TestCase
     }
 
     public function testAddPricingPlanRuleWithFeatureESAutomatic()
+    {
+        $this->ba->adminAuth();
+
+        $content = $this->createPricingPlan();
+
+        $testData['request']['url'] = '/pricing/'. $content['id'] . '/rule';
+
+        $this->startTest($testData);
+    }
+
+    public function testAddPricingPlanRuleWithFeatureCred()
     {
         $this->ba->adminAuth();
 

@@ -149,6 +149,10 @@ class Payment extends Base
         {
             $rule = $this->getRelevantPricingRuleForNach($rules);
         }
+        else if ($method === PaymentModel\Method::APP)
+        {
+            $rule = $this->getRelevantPricingRuleForAPP($rules);
+        }
         // else if ($method === PaymentModel\Method::TRANSFER)
         // {
         //     $rule = $this->getRelevantPricingRuleForTransfer($rules);
@@ -293,6 +297,30 @@ class Payment extends Base
         }
 
         return parent::validateAndGetOnePricingRule($pricing);
+    }
+
+    protected function getRelevantPricingRuleForApp($rules)
+    {
+        // All the rules for the current pricing plan will be put
+        // through various filters till the right pricing rule
+        // for the current case remains.
+
+        $payment = $this->entity;
+
+        $wallet = $payment->getWallet();
+
+        // Current Implementation
+        // * Filter based on wallet which is a provider
+
+        // Structure is as follows:
+        // Field name, Field value, Choose default (true/false), default value
+        $filter = array(
+            [Pricing\Entity::PAYMENT_NETWORK, $wallet, true, null]
+        );
+
+        $rules = $this->applyFiltersOnRules($rules, $filter);
+
+        return $this->validateAndGetOnePricingRule($rules);
     }
 
     protected function getRelevantPricingRuleForWalletPayment($rules)

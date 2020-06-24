@@ -48,10 +48,11 @@ class Validator extends Base\Validator
         Entity::MPESA              => 'sometimes|boolean',
         Entity::BANK_TRANSFER      => 'sometimes|boolean',
         Entity::CARDLESS_EMI       => 'sometimes|boolean',
-        Entity::CRED               => 'sometimes|boolean',
         Entity::PAYLATER           => 'sometimes|boolean',
         Entity::CARD_NETWORKS      => 'sometimes|array',
-        Entity::CARD_NETWORKS.'.*' => 'sometimes|boolean'
+        Entity::CARD_NETWORKS.'.*' => 'sometimes|boolean',
+        Entity::APPS               => 'sometimes|array',
+        Entity::APPS.'.*'          => 'sometimes|boolean',
     ];
 
     protected static $setMethodsValidators = [

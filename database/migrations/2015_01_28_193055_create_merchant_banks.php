@@ -7,6 +7,7 @@ use RZP\Constants\Table;
 use RZP\Models\Merchant;
 use RZP\Models\Card\Network;
 use RZP\Models\Merchant\Methods\Entity as Methods;
+use RZP\Models\Payment\Processor\App as AppMethod;
 
 class CreateMerchantBanks extends Migration
 {
@@ -118,11 +119,11 @@ class CreateMerchantBanks extends Migration
             $table->tinyInteger(Methods::PAYLATER)
                   ->default(0);
 
-            $table->tinyInteger(Methods::CRED)
-                  ->default(0);
-
             $table->unsignedSmallInteger(Methods::CARD_NETWORKS)
                   ->default(Network::DEFAULT_CARD_NETWORKS);
+
+            $table->unsignedSmallInteger(Methods::APPS)
+                  ->default(AppMethod::DEFAULT_APPS);
 
             $table->integer(Methods::CREATED_AT);
 

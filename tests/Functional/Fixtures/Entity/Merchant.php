@@ -16,6 +16,7 @@ use RZP\Models\Merchant\Credits;
 use RZP\Models\Settlement\Channel;
 use RZP\Tests\Functional\OAuth\OAuthTrait;
 use RZP\Models\Merchant\Balance\AccountType;
+use RZP\Models\Payment\Processor\App as AppMethod;
 use RZP\Models\Admin\Org\Entity as OrgEntity;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Models\Merchant\Methods\Entity as MerchantMethodEntity;
@@ -346,6 +347,17 @@ class Merchant extends Base
         $hexValue = Network::getHexValue($cardNetworks);
 
         return $this->fixtures->edit('methods', $id, ['card_networks' => $hexValue]);
+    }
+
+    public function enableApp($id = '10000000000000', $app)
+    {
+        $apps = AppMethod::getEnabledApps(AppMethod::DEFAULT_APPS);
+
+        $apps[$app] = 1;
+
+        $hexValue = AppMethod::getHexValue($apps);
+
+        return $this->fixtures->edit('methods', $id, ['apps' => $hexValue]);
     }
 
     public function enableCardSubType($id = '10000000000000', $subtype)

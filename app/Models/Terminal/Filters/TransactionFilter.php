@@ -99,8 +99,12 @@ class TransactionFilter extends Terminal\Filter
             case Method::NACH:
                 return $terminal->isNachEnabled();
 
-            case Method::CRED:
-                return $terminal->isCredEnabled();
+            case Method::APP:
+                if ($payment->isAppCred() === true) {
+                    return $terminal->isCredEnabled();
+                }
+
+                return false;
 
             default:
                 throw new Exception\LogicException(

@@ -67,6 +67,7 @@ use RZP\Models\Payment\TerminalAnalytics;
 use RZP\Gateway\Mozart\GetSimpl\Constants;
 use RZP\Gateway\Base\Action as GatewayAction;
 use RZP\Models\Payment\Processor\Netbanking;
+use RZP\Models\Payment\Processor\App as AppMethod;
 use RZP\Models\Payment\Processor\Constants as PaymentConstants;
 use RZP\Gateway\Enach\Npci\Netbanking\Gateway as enachNpciGateway;
 
@@ -2169,6 +2170,11 @@ trait Authorize
             $this->modifyAccountNumberForSpecificBanks($payment, $gatewayInput);
         }
 
+        if ($payment->isAppCred() === true)
+        {
+            $this->addCredParams($payment, $gatewayInput);
+        }
+
         // set token for local card saving in gateway input
         $gatewayInput['token'] = $payment->getGlobalOrLocalTokenEntity();
 
@@ -2182,6 +2188,27 @@ trait Authorize
         // subscriptions/terminals.
         //
         $this->setGatewayTokenInInput($payment, $gatewayInput);
+    }
+
+    protected function addCredParams($payment, array & $gatewayInput)
+    {
+        $gatewayInput['cred'][Payment\Entity::APP_PRESENT] = $payment->getMetadata(Payment\Entity::APP_PRESENT) ?? false;
+
+        $paymentAnalytics = $gatewayInput['payment_analytics'];
+
+        if ($paymentAnalytics === null)
+        {
+            return;
+        }
+
+        $gatewayInput['cred']['os'] = $paymentAnalytics->getOs() ?? null;
+        $gatewayInput['cred']['platform'] = $paymentAnalytics->getPlatform() ?? null;
+        $gatewayInput['cred']['device'] = $paymentAnalytics->getDevice() ?? null;
+
+        if ($payment->hasOrder() === true) {
+            $order = $payment->order;
+            $gatewayInput['cred']['app_offer'] = $order->getAppOffer();
+        }
     }
 
     protected function associateWalletTokenIfApplicable(Payment\Entity $payment)
@@ -3117,11 +3144,6 @@ trait Authorize
         if (($this->subscription === null) or ($this->subscription->isExternal() === false))
         {
             $this->setRecurringType($payment, $input);
-        }
-
-        if ($payment->isMethodCred() === true)
-        {
-            $gatewayInput['cred'] = $input['cred'] ?? [];
         }
 
         $this->setPreferredAuthIfApplicable($payment);
@@ -4069,8 +4091,8 @@ trait Authorize
                 $this->verifyNachEnabled();
                 break;
 
-            case Payment\Method::CRED:
-                $this->verifyCredEnabled();
+            case Payment\Method::APP:
+                $this->verifyAppEnabled($payment);
                 break;
 
             default:
@@ -5645,14 +5667,14 @@ trait Authorize
     {
         if ((Payment\Method::supportsAsync($payment->getMethod()) === true) and
             (Payment\Gateway::supportsAsync($payment->getGateway()) === true) and
-            ($payment->isMethodCred() === false) and
+            ($payment->isAppCred() === false) and
             (($payment->getMetadata('flow') !== 'intent') or
              ($payment->getMetadata(Payment\Entity::UPI_PROVIDER, null) !== null)))
         {
             return true;
         }
 
-        if (($payment->isMethodCred() === true) and
+        if (($payment->isAppCred() === true) and
             ($this->canRunAsyncPaymentFlowCred($payment, $request) === true))
         {
 
@@ -5676,7 +5698,7 @@ trait Authorize
 
     protected function canRunAsyncIntentPaymentFlowCred($payment, $request)
     {
-        if (($payment->getMethod() === Payment\Method::CRED) and
+        if (($payment->isAppCred() === true) and
             ($payment->getGateway() === Payment\Gateway::CRED) and
             (empty($request['data']['intent_url']) === false))
         {
@@ -5688,7 +5710,7 @@ trait Authorize
 
     protected function canRunAsyncPaymentFlowCred($payment, $request)
     {
-        if (($payment->getMethod() === Payment\Method::CRED) and
+        if (($payment->isAppCred() === true) and
             ($payment->getGateway() === Payment\Gateway::CRED) and
             (empty($request['data']['intent_url']) === true))
         {
@@ -6065,15 +6087,15 @@ trait Authorize
         }
     }
 
-    protected function verifyCredEnabled()
+    protected function verifyAppEnabled(Payment\Entity $payment)
     {
         $merchantMethods = $this->methods;
 
         if (($merchantMethods === null) or
-            ($merchantMethods->isCredEnabled() === false))
+            ($merchantMethods->isAppEnabled($payment->getWallet()) === false))
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_CRED_NOT_ENABLED_FOR_MERCHANT);
+                ErrorCode::BAD_REQUEST_PAYMENT_APP_NOT_ENABLED_FOR_MERCHANT);
         }
     }
 

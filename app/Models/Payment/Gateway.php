@@ -932,7 +932,7 @@ class Gateway
             self::PAYLATER,
         ],
 
-        Method::CRED => [
+        Method::APP => [
             self::CRED,
         ],
     ];

@@ -150,6 +150,8 @@ class Entity extends Base\PublicEntity
 
     const PHONEPE_SWITCH_CONTEXT = 'phonepe_switch_context';
 
+    const APP_OFFER = 'app_offer';
+
     protected $fillable = [
         self::DISCOUNT,
         self::AMOUNT,
@@ -167,6 +169,7 @@ class Entity extends Base\PublicEntity
         self::CHECKOUT_CONFIG_ID,
         self::PRODUCT_ID,
         self::PRODUCT_TYPE,
+        self::APP_OFFER,
     ];
 
     protected $generateIdOnCreate = true;
@@ -188,6 +191,7 @@ class Entity extends Base\PublicEntity
         self::LATE_AUTH_CONFIG_ID   => null,
         self::CHECKOUT_CONFIG_ID    => null,
         self::PROVIDER_CONTEXT      => null,
+        self::APP_OFFER             => false,
     ];
 
     protected $public = [
@@ -213,6 +217,7 @@ class Entity extends Base\PublicEntity
         self::TOKEN,
         self::TRANSFERS,
         self::CHECKOUT_CONFIG_ID,
+        self::APP_OFFER,
     ];
 
     protected $casts = [
@@ -226,6 +231,7 @@ class Entity extends Base\PublicEntity
         self::AUTHORIZED               => 'bool',
         self::ATTEMPTS                 => 'int',
         self::FORCE_OFFER              => 'bool',
+        self::APP_OFFER                => 'bool',
     ];
 
     protected $amounts = [
@@ -414,6 +420,11 @@ class Entity extends Base\PublicEntity
         return $this->setAttribute(self::AUTHORIZED, $authorized);
     }
 
+    public function setAppOffer($appOffer)
+    {
+        return $this->setAttribute(self::APP_OFFER, $appOffer);
+    }
+
     public function setAmountPaid(int $amountPaid)
     {
         $this->setAttribute(self::AMOUNT_PAID, $amountPaid);
@@ -522,6 +533,11 @@ class Entity extends Base\PublicEntity
     public function getAttempts()
     {
         return $this->getAttribute(self::ATTEMPTS);
+    }
+
+    public function getAppOffer()
+    {
+        return (bool) $this->getAttribute(self::APP_OFFER);
     }
 
     public function getBank()

@@ -18,7 +18,7 @@ class CredTest extends TestCase
 
         $this->sharedTerminal = $this->fixtures->create('terminal:direct_cred_terminal');
 
-        $this->fixtures->merchant->enableCred('10000000000000');
+        $this->fixtures->merchant->enableApp('10000000000000', 'cred');
     }
 
     public function testCredPaymentCreateResponseIntentFlow()
@@ -73,11 +73,18 @@ class CredTest extends TestCase
         $this->assertEquals(82300, $transaction['credit']);
     }
 
-    public function testCredPaymentCreateResponseCollectFlow()
-    {
-        $payment = $this->getDefaultCredPayment();
 
-        $payment['cred']['app_present'] = false;
+
+    public function testCredPaymentCreateResponseCollectFlowWithOrder()
+    {
+        $order = $this->createOrder(['app_offer' => true, 'amount' =>100000]);
+
+
+
+        $payment = $this->getDefaultCredPayment();
+        $payment['order_id'] = $order['id'];
+        unset($payment['app_present']);
+
 
         $request = [
             'method'  => 'POST',

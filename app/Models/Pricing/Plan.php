@@ -101,6 +101,9 @@ class Plan extends PublicCollection
                     case Method::WALLET:
                         $rule[Entity::PAYMENT_NETWORK_NAME] = Processor\Wallet::getName($network);
                         break;
+                    case Method::APP:
+                        $rule[Entity::PAYMENT_NETWORK_NAME] = Processor\App::getName($network);
+                        break;
 
                     default:
                         throw new LogicException(
