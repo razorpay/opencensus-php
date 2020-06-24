@@ -11,7 +11,9 @@ import Popover, { PopoverBody } from 'common/ui/Popover';
 import getApplicationProgressPercentage from './utils/ProgressPercentageCalculator';
 import { isPreceedingState } from './utils';
 import {
+  APPLICATION_STATE_DESCRIPTIONS,
   APPLICATION_STATES,
+  SIDE_NAVIGATION_STATE_GROUPS,
   TENURE_UNIT_LABELS,
   TOOLTIP_DESCRIPTIONS,
 } from './constants';
@@ -28,7 +30,29 @@ import {
   }
 )
 class ApplicationSummary extends Component {
+  _getParentStepLabel = step => {
+    return Object.values(SIDE_NAVIGATION_STATE_GROUPS).filter(meta =>
+      Object.values(meta.steps)
+        .reduce((acc, curr) => [...acc, ...curr], [])
+        .includes(step)
+    )[0].description;
+  };
+
   handleLoanOfferChange = () => {
+    const { meta, context } = this.props.loanApplicationDetails;
+    const canModify = isPreceedingState(
+      meta.data.application.status,
+      APPLICATION_STATES.PREVERIFICATION_UPLOAD_PENDING
+    );
+
+    const { activeState } = context;
+
+    this.gaEventDispatcher({
+      eventAction: `Right Info | ${canModify ? 'Modify' : 'View More'}`,
+      eventLabel: `${this._getParentStepLabel(activeState)}:${
+        APPLICATION_STATE_DESCRIPTIONS[activeState].short_description
+      }`,
+    });
     this.props.changeActiveState('BUSINESS_INFO_PENDING');
   };
 
@@ -117,6 +141,22 @@ class ApplicationSummary extends Component {
     ];
   };
 
+  gaEventDispatcher = eventObject => {
+    //TODO:remove this
+    eventObject['eventCategory'] = 'Dashboard - WCL LOS';
+    window.rzpAnalytics(eventObject);
+  };
+
+  trackMouseOver = type => {
+    const { meta } = this.props.loanApplicationDetails;
+    this.gaEventDispatcher({
+      eventAction: `TOOLTIP | ${type.toUpperCase()}`,
+      eventLabel: `Right Info | ${getApplicationProgressPercentage(
+        meta.data.application.status
+      )}`,
+    });
+  };
+
   getAcceptedOfferDetails = () => {
     const {
       accepted_offer_details,
@@ -189,7 +229,10 @@ class ApplicationSummary extends Component {
           <p className="sub-title">
             EWI
             <small className="help-content" style={{ paddingLeft: '4px' }}>
-              <i className="i i-info-outline" />
+              <i
+                className="i i-info-outline"
+                onMouseOver={() => this.trackMouseOver('ewi')}
+              />
               <Popover align="top" theme="dark">
                 <PopoverBody>
                   <div style={{ textAlign: 'left' }}>
@@ -208,7 +251,10 @@ class ApplicationSummary extends Component {
           <p className="sub-title">
             EDI
             <small className="help-content" style={{ paddingLeft: '4px' }}>
-              <i className="i i-info-outline" />
+              <i
+                className="i i-info-outline"
+                onMouseOver={() => this.trackMouseOver('edi')}
+              />
               <Popover align="top" theme="dark">
                 <PopoverBody>
                   <div style={{ textAlign: 'left' }}>

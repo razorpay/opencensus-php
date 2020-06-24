@@ -84,28 +84,42 @@ class DisbursalEntity extends Component {
             isDisbursal={true}
             disbursedAmount={disbursal_details.data.disbursal.disbursed_amount}
             showInstallmentDetails={false}
+            _fromWhere="Disbursal Details"
           />
           <div class="m-b">
             <SettlementAccountDetails
               user={this.props.user}
               showFinancerDetails={true}
               financer={lender_details.data.lender.name}
+              _fromWhere="Disbursal Details"
             />
           </div>
-          <RepaymentInformation amount={creditOffer.installment.amount} />
+          <RepaymentInformation
+            amount={creditOffer.installment.amount}
+            _fromWhere="Disbursal Details"
+          />
         </div>
         <div className="loan-offer-action pull-right">
           <Button.Transparent
-            onClick={() =>
-              this.props.changeActiveState(APPLICATION_STATES.RZP_APPROVED)
-            }
+            onClick={() => {
+              this.props._trackNavigationActions(
+                'BACK',
+                APPLICATION_STATES.RZP_APPROVED
+              );
+              this.props.changeActiveState(APPLICATION_STATES.RZP_APPROVED);
+            }}
           >
             <i className="i i-chevron-left" />
             Back
           </Button.Transparent>
           <button
             class="btn btn-outline m-l"
-            onClick={() => this.toggleModal(true)}
+            onClick={() => {
+              this.props._trackEvent({
+                eventAction: 'Application | Repayment Details',
+              });
+              this.toggleModal(true);
+            }}
           >
             View Repayment Details
           </button>

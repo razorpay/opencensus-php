@@ -2,7 +2,22 @@ import React from 'react';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 import { TOOLTIP_DESCRIPTIONS } from '../constants';
 
-function SettlementAccountDetails({ user, showFinancerDetails, financer }) {
+function SettlementAccountDetails({
+  user,
+  showFinancerDetails,
+  financer,
+  trackGAEvents = true,
+  _fromWhere,
+}) {
+  const trackMouseOver = () => {
+    if (!trackGAEvents) return;
+
+    window.rzpAnalytics({
+      eventCategory: 'Dashboard - WCL LOS',
+      eventAction: 'TOOLTIP | IFSC CODE',
+      eventLabel: `${_fromWhere}`,
+    });
+  };
   return (
     <div className={`loan-offer-details-wrapper`}>
       <div className="section loan-offer-summary-section">
@@ -15,7 +30,7 @@ function SettlementAccountDetails({ user, showFinancerDetails, financer }) {
           <p className="loan-offer-summary-title">
             IFSC Code
             <small className="help-content" style={{ paddingLeft: '4px' }}>
-              <i className="i i-info-outline" />
+              <i className="i i-info-outline" onMouseOver={trackMouseOver} />
               <Popover align="top" theme="dark">
                 <PopoverBody>
                   <div style={{ textAlign: 'left' }}>

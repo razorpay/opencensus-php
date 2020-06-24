@@ -213,11 +213,15 @@ class DocumentCollectionInformation extends Component {
         <div className="actions pull-right m-r">
           <button
             className="btn btn-link"
-            onClick={() =>
+            onClick={() => {
+              this.props._trackNavigationActions(
+                'BACK',
+                APPLICATION_STATES.SLOT_SELECTION_PENDING
+              );
               this.props.changeActiveState(
                 APPLICATION_STATES.SLOT_SELECTION_PENDING
-              )
-            }
+              );
+            }}
           >
             <i className="i i-chevron-left" />
             Back
@@ -226,11 +230,15 @@ class DocumentCollectionInformation extends Component {
             <AsyncBtn.Primary
               type="submit"
               class="btn btn-primary pull-right"
-              onClick={() =>
+              onClick={() => {
+                this.props._trackNavigationActions(
+                  'NEXT',
+                  APPLICATION_STATES.DOCUMENTS_UNDER_REVIEW
+                );
                 this.props.changeActiveState(
                   APPLICATION_STATES.DOCUMENTS_UNDER_REVIEW
-                )
-              }
+                );
+              }}
             >
               Next
               <i className="i i-chevron-right" />

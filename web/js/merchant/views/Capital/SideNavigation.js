@@ -9,6 +9,7 @@ import {
 } from './constants';
 import { connect } from 'react-redux';
 import { changeActiveState } from 'merchant/reducers/capital';
+import getApplicationProgressPercentage from './utils/ProgressPercentageCalculator';
 
 @connect(
   state => ({
@@ -27,6 +28,34 @@ class SideNavigation extends Component {
   componentDidUpdate(prevProps, prevState, snapshot) {
     this.stepFound = false;
   }
+
+  _getParentStepLabel = step => {
+    return Object.values(SIDE_NAVIGATION_STATE_GROUPS).filter(meta =>
+      Object.values(meta.steps)
+        .reduce((acc, curr) => [...acc, ...curr], [])
+        .includes(step)
+    )[0].description;
+  };
+
+  _getProgressPercentage = () => {
+    const { meta } = this.props.loanApplicationDetails;
+    if (!meta.data.application.status) return 0;
+    return getApplicationProgressPercentage(meta.data.application.status);
+  };
+
+  _trackNavigationEvent = (_to, _from) => {
+    const _toStepLabel = APPLICATION_STATE_DESCRIPTIONS[_to].short_description;
+    const _fromStepLabel =
+      APPLICATION_STATE_DESCRIPTIONS[_from].short_description;
+    this.gaEventDispatcher({
+      eventAction: 'Left Navigation | Steps',
+      eventLabel: `${this._getParentStepLabel(
+        _from
+      )}:${_fromStepLabel} to ${this._getParentStepLabel(
+        _to
+      )}:${_toStepLabel} | ${this._getProgressPercentage()}%`,
+    });
+  };
 
   getParentStep = (parentStep, parentStepMeta) => {
     const { meta, context } = this.props.loanApplicationDetails;
@@ -59,8 +88,8 @@ class SideNavigation extends Component {
       ...(this.stepFound
         ? ['not_started']
         : isCurrentStateGroup && !isFinalState
-          ? ['partial-complete', 'active']
-          : ['completed']),
+        ? ['partial-complete', 'active']
+        : ['completed']),
       ...(isPendingState ? ['pending'] : []),
       ...(isErrorState ? ['error'] : []),
     ];
@@ -81,13 +110,13 @@ class SideNavigation extends Component {
             !classList.includes('expanded') && (
               <a
                 className="link"
-                onClick={() =>
-                  this.props.changeActiveState(
-                    Object.values(
-                      SIDE_NAVIGATION_STATE_GROUPS[parentStep].steps
-                    )[0][0]
-                  )
-                }
+                onClick={() => {
+                  const targetStep = Object.values(
+                    SIDE_NAVIGATION_STATE_GROUPS[parentStep].steps
+                  )[0][0];
+                  this._trackNavigationEvent(targetStep, activeState);
+                  this.props.changeActiveState(targetStep);
+                }}
               >
                 View Details
                 <i className="i i-chevron-down" />
@@ -104,6 +133,8 @@ class SideNavigation extends Component {
   handleNavigation = (step, parentStepMeta) => {
     const { context, meta } = this.props.loanApplicationDetails;
     const currentState = meta.data.application.status;
+
+    this._trackNavigationEvent(step, context.activeState);
 
     if (parentStepMeta.steps[step].includes(currentState)) {
       this.props.changeActiveState(currentState);
@@ -144,8 +175,8 @@ class SideNavigation extends Component {
         ...(isCurrentStateGroup
           ? ['active']
           : stepFound
-            ? ['not_started']
-            : ['completed', 'parent-partial-complete']),
+          ? ['not_started']
+          : ['completed', 'parent-partial-complete']),
         ...(isPendingState ? ['pending'] : []),
         ...(isErrorState ? ['error'] : []),
       ];
@@ -175,13 +206,19 @@ class SideNavigation extends Component {
     });
   };
 
+  gaEventDispatcher = eventObject => {
+    eventObject['eventCategory'] = 'Dashboard - WCL LOS';
+    window.rzpAnalytics(eventObject);
+  };
+
   render() {
     return (
       <div class="progress-overview-container">
         <MultiLevelStepper>
-          {Object.entries(SIDE_NAVIGATION_STATE_GROUPS).map(
-            ([parentStep, parentStepMeta]) =>
-              this.getParentStep(parentStep, parentStepMeta)
+          {Object.entries(
+            SIDE_NAVIGATION_STATE_GROUPS
+          ).map(([parentStep, parentStepMeta]) =>
+            this.getParentStep(parentStep, parentStepMeta)
           )}
         </MultiLevelStepper>
       </div>

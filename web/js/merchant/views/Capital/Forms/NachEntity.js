@@ -49,7 +49,9 @@ class NachEntity extends Component {
     const { loanApplicationDetails, user } = this.props;
     const {
       meta,
-      promoter_details: { data: { applicant } },
+      promoter_details: {
+        data: { applicant },
+      },
       credit_offer_details,
       accepted_offer_details,
     } = loanApplicationDetails;
@@ -85,18 +87,14 @@ class NachEntity extends Component {
           auth_type: 'physical',
           max_amount: creditOffer.loan_attributes.credit_offered,
           nach: {
-            form_reference1: `Recurring payment for ${
-              applicant.kyc.first_name
-            }`,
+            form_reference1: `Recurring payment for ${applicant.kyc.first_name}`,
             form_reference2: 'Method Paper Nach',
             description: 'Paper NACH',
           },
           bank_account: {
             account_number: user.bank_account_number,
             ifsc_code: user.bank_branch_ifsc,
-            beneficiary_name: `${applicant.kyc.first_name} ${
-              applicant.kyc.second_name
-            }`,
+            beneficiary_name: `${applicant.kyc.first_name} ${applicant.kyc.second_name}`,
             beneficiary_email: applicant.emails[0].email_id,
             beneficiary_mobile: applicant.phones[0].phone_number,
             account_type: user.bank_account_type
@@ -226,14 +224,22 @@ class NachEntity extends Component {
   };
 
   handleNext = () => {
+    this.props._trackNavigationActions(
+      'NEXT',
+      APPLICATION_STATES.SLOT_SELECTION_PENDING
+    );
     return this.props.fetchLoanApplicationMeta(
       this.props.loanApplicationDetails.meta.data.application.id
     );
   };
 
   downloadSignedNach = () => {
-    const { nach_details } = this.props.loanApplicationDetails;
-
+    const { loanApplicationDetails } = this.props;
+    const { nach_details, _trackEvent } = loanApplicationDetails;
+    _trackEvent({
+      eventAction: 'Application | Download Signed Nach',
+      eventLabel: 'Complete Application | Nach Form',
+    });
     const entity = nach_details.data.nach ? nach_details.data.nach[0] : null;
     return downloadFromUFH(entity.file_store_id)
       .then(_ => {
@@ -250,6 +256,9 @@ class NachEntity extends Component {
         this.props.showNotification({
           type: 'error',
           message: 'Unable to download the signed Nach Form',
+        });
+        this.props._trackEvent({
+          eventAction: 'Download Nach Failed',
         });
       });
   };
@@ -292,36 +301,34 @@ class NachEntity extends Component {
                   </React.Fragment>
                 )}
               </a>
-              {this.state.error && (
-                <div className="panel-body no-padding m-t">
-                  <div>
-                    <p className="text--secondary">
-                      capital.support@razorpay.com
-                    </p>
-                    <span className="text-faded">Reach out to us at</span>
-                  </div>
-                </div>
-              )}
             </div>
           </div>
           <div className="actions pull-right m-r">
             <Button.Transparent
-              onClick={() =>
+              onClick={() => {
+                this.props._trackNavigationActions(
+                  'BACK',
+                  APPLICATION_STATES.CONTRACT_PENDING
+                );
                 this.props.changeActiveState(
                   APPLICATION_STATES.CONTRACT_PENDING
-                )
-              }
+                );
+              }}
             >
               <i className="i i-chevron-left" />
               Back
             </Button.Transparent>
             <Button.Primary
               class="m-l"
-              onClick={() =>
+              onClick={() => {
+                this.props._trackNavigationActions(
+                  'NEXT',
+                  APPLICATION_STATES.SLOT_SELECTION_PENDING
+                );
                 this.props.changeActiveState(
                   APPLICATION_STATES.SLOT_SELECTION_PENDING
-                )
-              }
+                );
+              }}
             >
               Next
               <i className="i i-chevron-right" />

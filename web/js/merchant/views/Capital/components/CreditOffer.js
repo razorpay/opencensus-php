@@ -10,6 +10,8 @@ const CreditOffer = ({
   showInstallmentDetails = true,
   isDisbursal = false,
   disbursedAmount,
+  trackGAEvents = true,
+  _fromWhere,
 }) => {
   const { loan_attributes, installment, charges } = offerDetails;
 
@@ -17,6 +19,16 @@ const CreditOffer = ({
     ...loan_attributes,
     ...installment,
     ...charges,
+  };
+
+  const trackMouseOver = type => {
+    if (!trackGAEvents) return;
+
+    window.rzpAnalytics({
+      eventCategory: 'Dashboard - WCL LOS',
+      eventAction: `TOOLTIP | ${type.toUpperCase()}`,
+      eventLabel: `${_fromWhere}`,
+    });
   };
 
   const {
@@ -115,7 +127,10 @@ const CreditOffer = ({
               <p className="loan-offer-summary-title">
                 Tenure
                 <small className="help-content" style={{ paddingLeft: '4px' }}>
-                  <i className="i i-info-outline" />
+                  <i
+                    className="i i-info-outline"
+                    onMouseOver={() => trackMouseOver('tenure')}
+                  />
                   <Popover align="top" theme="dark">
                     <PopoverBody>
                       <div style={{ textAlign: 'left' }}>
@@ -138,7 +153,10 @@ const CreditOffer = ({
               <p className="loan-offer-summary-title">
                 EWI
                 <small className="help-content" style={{ paddingLeft: '4px' }}>
-                  <i className="i i-info-outline" />
+                  <i
+                    className="i i-info-outline"
+                    onMouseOver={() => trackMouseOver('ewi')}
+                  />
                   <Popover align="top" theme="dark">
                     <PopoverBody>
                       <div style={{ textAlign: 'left' }}>

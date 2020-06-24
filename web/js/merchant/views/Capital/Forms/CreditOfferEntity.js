@@ -34,6 +34,10 @@ class CreditOfferEntity extends Component {
     };
     return this.props.acceptCreditOffer(data).then(response => {
       if (response && !response.errors) {
+        this.props._trackEvent({
+          eventAction: 'Application | Accept Offer',
+          eventLabel: 'Complete Application | Loan Offer',
+        });
         return Promise.all([
           this.props.fetchLoanApplicationMeta(
             this.props.loanApplicationDetails.meta.data.application.id
@@ -52,6 +56,10 @@ class CreditOfferEntity extends Component {
   };
 
   handleBack = () => {
+    this.props._trackNavigationActions(
+      'BACK',
+      APPLICATION_STATES.PREVERIFICATION_IN_PROGRESS
+    );
     this.props.changeActiveState(
       APPLICATION_STATES.PREVERIFICATION_IN_PROGRESS
     );
@@ -77,8 +85,11 @@ class CreditOfferEntity extends Component {
     return (
       <div class={'credit-offer-container'}>
         <div className="loan-offer-wrapper">
-          <CreditOffer offerDetails={creditOffer} />
-          <RepaymentInformation amount={creditOffer.installment.amount} />
+          <CreditOffer offerDetails={creditOffer} _fromWhere="Loan Offer" />
+          <RepaymentInformation
+            amount={creditOffer.installment.amount}
+            _fromWhere="Loan Offer"
+          />
           {!(
             accepted_offer_details.data &&
             accepted_offer_details.data.credit_offer_id
@@ -106,11 +117,15 @@ class CreditOfferEntity extends Component {
               <AsyncBtn.Primary
                 type="submit"
                 class="no-margin"
-                onClick={() =>
+                onClick={() => {
+                  this.props._trackNavigationActions(
+                    'NEXT',
+                    APPLICATION_STATES.CONTRACT_PENDING
+                  );
                   this.props.changeActiveState(
                     APPLICATION_STATES.CONTRACT_PENDING
-                  )
-                }
+                  );
+                }}
               >
                 Next
                 <i className="i i-chevron-right" />

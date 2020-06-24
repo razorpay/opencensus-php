@@ -101,13 +101,11 @@ class PreVerificationUpload extends Component {
       prevProps.loanApplicationDetails.meta.data.application.documents !==
         this.props.loanApplicationDetails.meta.data.application.documents
     ) {
-      console.log('Expect derive form data');
       this.deriveFormData();
     }
   }
 
   handleFooterActions = (indexChangeBy = 1) => {
-    console.log('Next', indexChangeBy, this.state.activeTabIndex);
     this.setState(prevState => ({
       activeTabIndex: prevState.activeTabIndex + indexChangeBy,
     }));
@@ -247,7 +245,6 @@ class PreVerificationUpload extends Component {
       // "data:text/xml;base64," which gets preprended to the encoded file
       file: encodedFile.substring(21),
     };
-    console.log('Bank Statement', data);
     return this.props
       .uploadBankStatement(data, progressTracker)
       .then(response => {
@@ -317,7 +314,6 @@ class PreVerificationUpload extends Component {
   };
 
   getEntityDocuments = tabIndex => {
-    console.log('Documents', this.state.documents);
     switch (this.tabs.find(tab => tab.index === tabIndex).value) {
       case 'address_proof':
         return this.state.documents.filter(document => {
@@ -429,7 +425,6 @@ class PreVerificationUpload extends Component {
   getTabContent = tabIndex => {
     const entityDocuments = this.getEntityDocuments(tabIndex);
 
-    console.log('entityDocuments', entityDocuments);
     return (
       <DocumentsUpload
         documents={entityDocuments}
@@ -446,7 +441,6 @@ class PreVerificationUpload extends Component {
   };
 
   handleDocumentTypeChange = (verificationDocument, masterDocumentType) => {
-    console.log(verificationDocument, masterDocumentType);
     this.setState(prevState => ({
       documents: prevState.documents.map(document => {
         if (document.id === verificationDocument.id) {
@@ -461,7 +455,6 @@ class PreVerificationUpload extends Component {
   };
 
   handleUploadModeChange = (document, selectedMode) => {
-    console.log('document', document, selectedMode);
     this.setState(
       prevState => ({
         selectedUploadModes: {
@@ -489,7 +482,6 @@ class PreVerificationUpload extends Component {
             document_group_id: document.document_group.id,
           })
             .then(response => {
-              console.log('NET BANKING RES', response);
               if (response && !response.errors) {
                 // ajax(
                 //   {
@@ -518,7 +510,6 @@ class PreVerificationUpload extends Component {
   render() {
     const { activeTabIndex } = this.state;
 
-    console.log('activeTabIndex', activeTabIndex);
     if (
       this.props.loanApplicationDetails.document_groups.loading ||
       !this.props.loanApplicationDetails.meta.data.application.documents
@@ -564,11 +555,15 @@ class PreVerificationUpload extends Component {
               </Button.Transparent>
             ) : (
               <Button.Transparent
-                onClick={() =>
+                onClick={() => {
+                  this.props._trackNavigationActions(
+                    'BACK',
+                    APPLICATION_STATES.CREDIT_PULL_PENDING
+                  );
                   this.props.changeActiveState(
                     APPLICATION_STATES.CREDIT_PULL_PENDING
-                  )
-                }
+                  );
+                }}
               >
                 <i className="i i-chevron-left" />
                 Back
@@ -592,11 +587,15 @@ class PreVerificationUpload extends Component {
                 <AsyncBtn.Primary
                   type="submit"
                   class="m-l"
-                  onClick={() =>
+                  onClick={() => {
                     this.props.changeActiveState(
                       APPLICATION_STATES.PREVERIFICATION_IN_PROGRESS
-                    )
-                  }
+                    );
+                    this.props._trackNavigationActions(
+                      'NEXT',
+                      APPLICATION_STATES.PREVERIFICATION_IN_PROGRESS
+                    );
+                  }}
                 >
                   Next
                   <i className="i i-chevron-right" />

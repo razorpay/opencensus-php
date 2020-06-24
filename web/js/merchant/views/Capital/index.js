@@ -17,7 +17,7 @@ import ApplicationStatusOverview from './ApplicationStatusOverview';
 import CircularProgress from 'common/new-ui/CircularProgress';
 import getApplicationProgressPercentage from './utils/ProgressPercentageCalculator';
 import ApplicationOverviewLoadingSkeleton from './components/ApplicationOverviewLoadingSkeleton';
-import { CAPITAL_LINKS } from './constants';
+import { APPLICATION_STATE_DESCRIPTIONS, CAPITAL_LINKS } from './constants';
 
 export const PROS = [
   <React.Fragment>
@@ -52,6 +52,15 @@ export const PROS = [
   }
 )
 class LoanApplicationOverview extends React.Component {
+  state = {
+    applications: [],
+  };
+
+  gaEventDispatcher = eventObject => {
+    eventObject['eventCategory'] = 'Dashboard - WCL LOS';
+    window.rzpAnalytics(eventObject);
+  };
+
   componentDidMount() {
     this.props
       .getApplications({
@@ -60,6 +69,9 @@ class LoanApplicationOverview extends React.Component {
       })
       .then(res => {
         if (res && !res.errors && res.data.applications) {
+          this.setState({
+            applications: res.data.applications,
+          });
           const activeApplications = res.data.applications.filter(
             application =>
               application.status !== 'RZP_REJECTED' &&
@@ -90,19 +102,62 @@ class LoanApplicationOverview extends React.Component {
     this.props.fetchSeedData();
   };
 
-  openLoanEntity = (applicationId, state) => {
+  _getToBeRenderedState = () => {
+    const { meta, context } = this.props.loanApplicationDetails;
+    const defaultState = 'NOT_STARTED';
+    if (context) {
+      return context.activeState
+        ? context.activeState
+        : meta.data.application
+        ? meta.data.application.status
+        : defaultState;
+    } else {
+      return meta.data.application
+        ? meta.data.application.status
+        : defaultState;
+    }
+  };
+
+  handleModalClose = () => {
+    const tobeRenderedState = this._getToBeRenderedState();
+    const activeStepLabel = APPLICATION_STATE_DESCRIPTIONS[tobeRenderedState];
+    this.gaEventDispatcher({
+      eventAction: 'Top | Save & Close',
+      eventLabel: `${activeStepLabel} | ${this.getProgressPercentage()}%`,
+    });
+    this.props.closeModal();
+  };
+
+  openLoanEntity = (applicationId, state, _targetStepTitle, _cta) => {
     if (state) {
       this.props.changeActiveState(state);
+      this.gaEventDispatcher({
+        eventAction: `Landing Steps | ${_cta}`,
+        eventLabel: `${_targetStepTitle} | ${
+          APPLICATION_STATE_DESCRIPTIONS[state].short_description
+        } | ${this.getProgressPercentage()}% | ${
+          this.state.applications.length
+        }`,
+      });
     } else {
       const { meta } = this.props.loanApplicationDetails;
-      this.props.changeActiveState(meta.data.application.status);
+      const status = meta.data.application.status;
+      this.props.changeActiveState(status);
+      this.gaEventDispatcher({
+        eventAction: `Landing Steps | ${_cta}`,
+        eventLabel: `${_targetStepTitle} | ${
+          APPLICATION_STATE_DESCRIPTIONS[status].short_description
+        } | ${this.getProgressPercentage()}% | ${
+          this.state.applications.length
+        }`,
+      });
     }
     this.fetchApplicationDetails(applicationId);
     this.props.openModal({
       size: 'full-screen',
       component: (
         <LoanEntity
-          onClose={this.props.closeModal}
+          onClose={this.handleModalClose}
           applicationId={applicationId}
         />
       ),

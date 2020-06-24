@@ -5,13 +5,23 @@ function Note({
   message,
   showRazorpaySupportInstruction = true,
   applicationId,
+  _trackSupportClick,
 }) {
   const raiseTicket = () => {
+    if (_trackSupportClick && _trackSupportClick.constructor === Function) {
+      _trackSupportClick();
+    }
     if (window.rzpTicketSystem) {
       const rzpTicketSystem = window.rzpTicketSystem;
       rzpTicketSystem.setPrefill('#request', ['merchant', 'other']);
       rzpTicketSystem.openModal('#ticket');
       setTimeout(() => {
+        if (
+          rzpTicketSystem.setEnvironment &&
+          rzpTicketSystem.setEnvironment.constructor === Function
+        ) {
+          rzpTicketSystem.setEnvironment('capital');
+        }
         rzpTicketSystem.modal.next();
       }, 0);
       setTimeout(() => {

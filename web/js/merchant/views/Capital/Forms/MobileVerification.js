@@ -10,6 +10,7 @@ import {
 } from 'merchant/reducers/capital';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
 import { FormLoader } from '../components/FormSectionLoadingSkeleton';
+import { APPLICATION_STATES } from '../constants';
 
 @connect(
   state => ({
@@ -129,13 +130,18 @@ class MobileVerification extends Component {
     }
   };
 
-  goBack = () => {
+  goBack = (isModifyPhoneNumberCta = false) => {
+    this.props._trackNavigationActions('BACK', 'PROMOTER_INFO_PENDING');
+    if (isModifyPhoneNumberCta) {
+      this.props._trackEvent({
+        eventAction: 'Modify Phone Number',
+      });
+    }
     this.props.changeActiveState('PROMOTER_INFO_PENDING');
   };
 
   render() {
     const { loanApplicationDetails } = this.props;
-    console.log('session', this.props.session);
     return (
       <div class="creditpull-verification-container">
         {this.state.generatingToken ? (
@@ -164,7 +170,7 @@ class MobileVerification extends Component {
                     className="text-primary m-l"
                     target="_blank"
                     //TODO: implement this
-                    onClick={this.goBack}
+                    onClick={() => this.goBack(true)}
                   >
                     Change Number
                   </a>

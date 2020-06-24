@@ -38,27 +38,37 @@ class LoanApproved extends Component {
       credit_offer => credit_offer.id === acceptedCreditOfferId
     );
 
-    console.log(creditOffer);
-
     return (
       <div class={'credit-offer-container'}>
         <div className="loan-offer-wrapper">
-          <CreditOffer offerDetails={creditOffer} approved={true} />
+          <CreditOffer
+            offerDetails={creditOffer}
+            approved={true}
+            _fromWhere="Loan Approved"
+          />
           <div class="m-b">
             <SettlementAccountDetails
               user={this.props.user}
               showFinancerDetails={false}
+              _fromWhere="Loan Approved"
             />
           </div>
-          <RepaymentInformation amount={creditOffer.installment.amount} />
+          <RepaymentInformation
+            amount={creditOffer.installment.amount}
+            _fromWhere="Loan Approved"
+          />
         </div>
         <div className="loan-offer-action pull-right">
           <Button.Transparent
-            onClick={() =>
+            onClick={() => {
+              this.props._trackNavigationActions(
+                'BACK',
+                APPLICATION_STATES.DOCUMENTS_UNDER_REVIEW
+              );
               this.props.changeActiveState(
                 APPLICATION_STATES.DOCUMENTS_UNDER_REVIEW
-              )
-            }
+              );
+            }}
           >
             <i className="i i-chevron-left" />
             Back
@@ -69,11 +79,15 @@ class LoanApproved extends Component {
           ) && (
             <Button.Primary
               class="no-margin"
-              onClick={() =>
+              onClick={() => {
+                this.props._trackNavigationActions(
+                  'NEXT',
+                  APPLICATION_STATES.CREDIT_DISBURSED
+                );
                 this.props.changeActiveState(
                   APPLICATION_STATES.CREDIT_DISBURSED
-                )
-              }
+                );
+              }}
             >
               Next
               <i className="i i-chevron-right" />

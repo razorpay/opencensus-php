@@ -81,7 +81,6 @@ class CreditScoreBreakdown extends Component {
   };
 
   generateRowData = (reportData, label, key, classes) => {
-    console.log('reportData', reportData);
     let rowData = [];
     for (let iter in label) {
       rowData.push({
@@ -90,7 +89,6 @@ class CreditScoreBreakdown extends Component {
         className: classes[iter],
       });
     }
-    console.log(rowData);
     return rowData;
   };
 
@@ -170,11 +168,15 @@ class CreditScoreBreakdown extends Component {
             </Button.Transparent>
             <AsyncBtn.Primary
               class="m-l"
-              onClick={() =>
+              onClick={() => {
+                this.props._trackNavigationActions(
+                  'NEXT',
+                  APPLICATION_STATES.PREVERIFICATION_UPLOAD_PENDING
+                );
                 changeActiveState(
                   APPLICATION_STATES.PREVERIFICATION_UPLOAD_PENDING
-                )
-              }
+                );
+              }}
             >
               Next
               <i className="i i-chevron-right" />

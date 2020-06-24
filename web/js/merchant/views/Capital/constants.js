@@ -141,6 +141,7 @@ export const APPLICATION_STATE_DESCRIPTIONS = {
     description:
       'Fill your details to check the loan eligibility and the' + ' loan offer',
     ctaText: 'view application',
+    short_description: 'Credit Report',
   },
   [APPLICATION_STATES.PREVERIFICATION_UPLOAD_PENDING]: {
     title: 'Upload your documents',
@@ -199,6 +200,7 @@ export const APPLICATION_STATE_DESCRIPTIONS = {
       'Please sign the NACH to move forward with the loan' +
       ' disbursal process',
     ctaText: 'Upload Nach Form',
+    short_description: 'Submit Nach Form',
   },
   [APPLICATION_STATES.NACH_UPLOAD_PENDING]: {
     title: 'Upload your NACH',
@@ -226,6 +228,7 @@ export const APPLICATION_STATE_DESCRIPTIONS = {
     title: 'Documents collection failed',
     description: 'Reach out to capital.support@razorpay for assitance',
     ctaText: 'view application',
+    short_description: 'Documents Review',
   },
   [APPLICATION_STATES.DOCUMENTS_UNDER_REVIEW]: {
     title: 'Documents review',

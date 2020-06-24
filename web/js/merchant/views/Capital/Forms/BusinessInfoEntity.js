@@ -28,7 +28,9 @@ const OutlineLockIcon = <i class="i i-outline-lock" />;
 @connect(
   state => {
     if (state.loanApplicationDetails.meta.data.application.id === 'new') {
-      const { session: { user } } = state;
+      const {
+        session: { user },
+      } = state;
       const {
         loan_attributes: loanAttributes,
         business_details,
@@ -73,7 +75,9 @@ const OutlineLockIcon = <i class="i i-outline-lock" />;
     }
     const {
       business_details,
-      meta: { data: { application } },
+      meta: {
+        data: { application },
+      },
     } = state.loanApplicationDetails;
     if (business_details.data.business) {
       return {
@@ -167,10 +171,14 @@ class BusinessInfoEntity extends Component {
       expected_tenure,
       credit_request_purpose,
     } = formData;
-    const { loanApplicationDetails, session: { user } } = this.props;
+    const {
+      loanApplicationDetails,
+      session: { user },
+    } = this.props;
 
     if (!this.canModify()) {
       this.props.changeActiveState('PROMOTER_INFO_PENDING');
+      this.props._trackNavigationActions('NEXT', 'PROMOTER_INFO_PENDING');
       return;
     }
     const businessExists = Boolean(
@@ -278,6 +286,7 @@ class BusinessInfoEntity extends Component {
         });
     } else {
       this.props.registerBusiness(payload);
+      this.props._trackNavigationActions('NEXT', 'PROMOTER_INFO_PENDING');
       this.props.changeActiveState('PROMOTER_INFO_PENDING');
       this.props.saveRequestedLoanAttributes(loanAttributes);
     }

@@ -93,7 +93,6 @@ const getStateBanner = (loanApplicationDetails, ref, changeActiveState) => {
     case 'SLOT_SELECTION_PENDING':
       const { schedule_details } = loanApplicationDetails;
       if (schedule_details.data && schedule_details.data.slot_timing) {
-        console.log(schedule_details.data.slot_date);
         return (
           <Banner
             title="Slot Selection Confirmed!"

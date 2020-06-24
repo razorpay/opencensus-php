@@ -33,10 +33,15 @@ import VerificationSlotSelection from './Forms/VerificationSlotSelection';
 import LoanApproved from './Forms/LoanApproved';
 import FormSectionLoadingSkeleton from './components/FormSectionLoadingSkeleton';
 import { isPreceedingState } from './utils';
-import { APPLICATION_STATES } from './constants';
+import {
+  APPLICATION_STATE_DESCRIPTIONS,
+  APPLICATION_STATES,
+  SIDE_NAVIGATION_STATE_GROUPS,
+} from './constants';
 import DocumentCollectionInformation from './Forms/DocumentCollectionInformation';
 import DisbursalEntity from './Forms/DisbursalEntity';
 import PendingState from './Forms/PendingState';
+import getApplicationProgressPercentage from './utils/ProgressPercentageCalculator';
 
 const StateMessageMap = {
   [APPLICATION_STATES.SCORE_GENERATION_PENDING]: (
@@ -748,7 +753,12 @@ class FormSectionRenderer extends Component {
         TobeRenderedFormComponent = stateFormMap[activeState];
         break;
     }
-    return <TobeRenderedFormComponent />;
+    return (
+      <TobeRenderedFormComponent
+        _trackNavigationActions={this._trackNavigationActions}
+        _trackEvent={this.gaEventDispatcher}
+      />
+    );
   };
 
   getToBeRenderedState = () => {
@@ -757,12 +767,42 @@ class FormSectionRenderer extends Component {
     if (context) {
       return context.activeState
         ? context.activeState
-        : meta.data.application ? meta.data.application.status : defaultState;
+        : meta.data.application
+        ? meta.data.application.status
+        : defaultState;
     } else {
       return meta.data.application
         ? meta.data.application.status
         : defaultState;
     }
+  };
+
+  gaEventDispatcher = eventObject => {
+    eventObject['eventCategory'] = 'Dashboard - WCL LOS';
+    window.rzpAnalytics(eventObject);
+  };
+
+  _getParentStepLabel = step => {
+    return Object.values(SIDE_NAVIGATION_STATE_GROUPS).filter(meta =>
+      Object.values(meta.steps)
+        .reduce((acc, curr) => [...acc, ...curr], [])
+        .includes(step)
+    )[0].description;
+  };
+
+  _getActiveStepLabel = () => {
+    const tobeRenderedState = this.getToBeRenderedState();
+    return APPLICATION_STATE_DESCRIPTIONS[tobeRenderedState];
+  };
+
+  _trackNavigationActions = (actionType, to) => {
+    const { meta } = this.props.loanApplicationDetails;
+    this.gaEventDispatcher({
+      eventAction: `Application | ${actionType}`,
+      eventLabel: `${this._getParentStepLabel(to)}:${
+        APPLICATION_STATE_DESCRIPTIONS[to].short_description
+      } | ${getApplicationProgressPercentage(meta.data.application.status)}%`,
+    });
   };
 
   render() {

@@ -89,14 +89,18 @@ class ContractEntity extends Component {
   };
 
   handleDownloadAgreement = () => {
+    const { loanApplicationDetails, _trackEvent } = this.props;
+    _trackEvent({
+      eventAction: 'Application | Download Loan Agreement',
+      eventLabel: 'Complete Application | Loan Agreement',
+    });
     this.setState({
       downloading: true,
       error: null,
     });
     const { showNotification } = this.props;
     return getLegalAgreementUrl({
-      application_id: this.props.loanApplicationDetails.meta.data.application
-        .id,
+      application_id: loanApplicationDetails.meta.data.application.id,
     })
       .then(res => {
         if (res && !res.errors) {
@@ -163,22 +167,30 @@ class ContractEntity extends Component {
               <div class="actions pull-right m-t">
                 <button
                   className="btn btn-link"
-                  onClick={() =>
+                  onClick={() => {
+                    this.props._trackNavigationActions(
+                      'BACK',
+                      APPLICATION_STATES.CREDIT_OFFER_GENERATED
+                    );
                     this.props.changeActiveState(
                       APPLICATION_STATES.CREDIT_OFFER_GENERATED
-                    )
-                  }
+                    );
+                  }}
                 >
                   <i className="i i-chevron-left" />
                   Back
                 </button>
                 <Button.Primary
                   class="no-margin"
-                  onClick={() =>
+                  onClick={() => {
+                    this.props._trackNavigationActions(
+                      'NEXT',
+                      APPLICATION_STATES.NACH_CREATION_PENDING
+                    );
                     this.props.changeActiveState(
                       APPLICATION_STATES.NACH_CREATION_PENDING
-                    )
-                  }
+                    );
+                  }}
                 >
                   Next
                   <i className="i i-chevron-right" />
@@ -200,11 +212,15 @@ class ContractEntity extends Component {
               />
               <div class="actions pull-right m-r">
                 <Button.Transparent
-                  onClick={() =>
+                  onClick={() => {
+                    this.props._trackNavigationActions(
+                      'BACK',
+                      APPLICATION_STATES.CREDIT_OFFER_GENERATED
+                    );
                     this.props.changeActiveState(
                       APPLICATION_STATES.CREDIT_OFFER_GENERATED
-                    )
-                  }
+                    );
+                  }}
                 >
                   <i className="i i-chevron-left" />
                   Back

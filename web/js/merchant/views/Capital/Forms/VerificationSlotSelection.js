@@ -99,6 +99,10 @@ class VerificationSlotSelection extends Component {
     } = this.props.loanApplicationDetails;
 
     if (!this.canModify()) {
+      this.props._trackNavigationActions(
+        'NEXT',
+        APPLICATION_STATES.DOCUMENT_COLLECTION_INITIATED
+      );
       this.props.changeActiveState(
         APPLICATION_STATES.DOCUMENT_COLLECTION_INITIATED
       );
@@ -287,11 +291,15 @@ class VerificationSlotSelection extends Component {
           </Input.Group>
           <div className="actions pull-right">
             <Button.Transparent
-              onClick={() =>
+              onClick={() => {
+                this.props._trackNavigationActions(
+                  'BACK',
+                  APPLICATION_STATES.NACH_CREATION_PENDING
+                );
                 this.props.changeActiveState(
                   APPLICATION_STATES.NACH_CREATION_PENDING
-                )
-              }
+                );
+              }}
             >
               <i className="i i-chevron-left" />
               Back

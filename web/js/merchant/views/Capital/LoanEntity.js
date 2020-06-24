@@ -6,6 +6,11 @@ import ApplicationSummary from './ApplicationSummary';
 import HelpSection from './components/HelpSection';
 import SideNavigation from './SideNavigation';
 import Button from 'common/new-ui/Button';
+import {
+  APPLICATION_STATE_DESCRIPTIONS,
+  SIDE_NAVIGATION_STATE_GROUPS,
+} from './constants';
+import getApplicationProgressPercentage from './utils/ProgressPercentageCalculator';
 
 @connect(
   state => ({
@@ -16,8 +21,33 @@ import Button from 'common/new-ui/Button';
   }
 )
 class LoanEntity extends Component {
+  _getParentStepLabel = step => {
+    return Object.values(SIDE_NAVIGATION_STATE_GROUPS).filter(meta =>
+      Object.values(meta.steps)
+        .reduce((acc, curr) => [...acc, ...curr], [])
+        .includes(step)
+    )[0].description;
+  };
+
+  handleClose = () => {
+    const { onClose, loanApplicationDetails } = this.props;
+    const {
+      meta,
+      context: { activeState },
+    } = loanApplicationDetails;
+
+    window.rzpAnalytics({
+      eventCategory: 'Dashboard - WCL LOS',
+      eventAction: 'Application | Save&Close',
+      eventLabel: `${this._getParentStepLabel(activeState)}:${
+        APPLICATION_STATE_DESCRIPTIONS[activeState].short_description
+      } | ${getApplicationProgressPercentage(meta.data.application.status)}%`,
+    });
+    onClose();
+  };
+
   render() {
-    const { onClose } = this.props;
+    const { meta, context } = this.props.loanApplicationDetails;
 
     return (
       <div class="loan-details-container">
@@ -30,7 +60,7 @@ class LoanEntity extends Component {
               />
             </div>
             <div className="title">Business Loan Application</div>
-            <Button.Transparent onClick={onClose}>
+            <Button.Transparent onClick={this.handleClose}>
               Close
               <i className="i i-close" />
             </Button.Transparent>
@@ -42,14 +72,14 @@ class LoanEntity extends Component {
           </div>
           <FormSectionRenderer
             loanApplicationDetails={this.props.loanApplicationDetails}
-            onClose={onClose}
+            onClose={this.handleClose}
           />
           <div className="application-summary">
             <ApplicationSummary />
             <HelpSection
-              applicationId={
-                this.props.loanApplicationDetails.meta.data.application.id
-              }
+              applicationId={meta.data.application.id}
+              activeState={context.activeState}
+              currentState={meta.data.application.status}
             />
           </div>
         </div>

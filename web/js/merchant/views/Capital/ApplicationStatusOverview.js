@@ -44,17 +44,27 @@ class ApplicationStatusOverview extends Component {
     }
   };
 
-  viewCompletedStateGroup = parentStep => {
+  viewCompletedStateGroup = (parentStep, _targetStepTitle) => {
     const { meta } = this.props.loanApplicationDetails;
 
     const targetStep = APPLICATION_STATE_GROUPS[parentStep][0];
-    this.props.openLoanEntity(meta.data.application.id, targetStep);
+    this.props.openLoanEntity(
+      meta.data.application.id,
+      targetStep,
+      _targetStepTitle,
+      'View Completed Steps'
+    );
   };
 
-  viewCurrentState = () => {
+  viewCurrentState = (_targetStepTitle, _stepCtaLabel) => {
     const { meta } = this.props.loanApplicationDetails;
 
-    this.props.openLoanEntity(meta.data.application.id);
+    this.props.openLoanEntity(
+      meta.data.application.id,
+      null,
+      _targetStepTitle,
+      _stepCtaLabel
+    );
   };
 
   getStepTobeShown = (classList, step) => {
@@ -90,18 +100,27 @@ class ApplicationStatusOverview extends Component {
       Object.keys(APPLICATION_STATE_GROUPS).indexOf(step) ===
       Object.keys(APPLICATION_STATE_GROUPS).length - 1;
 
-    const classList = [
-      ...(isCurrentStateGroup
-        ? isFinalState ? ['completed'] : ['active', 'highlight']
-        : this.stepFound ? ['not_started'] : ['completed']),
-      ...(isPendingState ? ['pending'] : []),
-      ...(isErrorState ? ['error'] : []),
-    ];
-
+    const classList = [];
     if (isCurrentStateGroup) {
       this.stepFound = true;
+      if (isFinalState) {
+        classList.push('completed');
+      } else {
+        classList.push('active');
+        classList.push('highlight');
+      }
+    } else if (this.stepFound) {
+      classList.push('not_started');
+    } else {
+      classList.push('completed');
     }
 
+    if (isPendingState) {
+      classList.push('pending');
+    }
+    if (isErrorState) {
+      classList.push('error');
+    }
     const descriptiveStep = classList.includes('completed')
       ? STATE_GROUP_COMPLETION_DESCRIPTION[step]
       : this.getStepTobeShown(classList, step);
@@ -115,7 +134,9 @@ class ApplicationStatusOverview extends Component {
           <div>
             {classList.includes('completed') ? (
               <a
-                onClick={() => this.viewCompletedStateGroup(step)}
+                onClick={() =>
+                  this.viewCompletedStateGroup(step, descriptiveStep.title)
+                }
                 className="link"
               >
                 View application steps
@@ -123,17 +144,27 @@ class ApplicationStatusOverview extends Component {
               </a>
             ) : classList.includes('active') ? (
               classList.includes('error') || classList.includes('pending') ? (
-                <a onClick={this.viewCurrentState} className="link">
+                <a
+                  onClick={() =>
+                    this.viewCurrentState(
+                      descriptiveStep.title,
+                      descriptiveStep.ctaText
+                    )
+                  }
+                  className="link"
+                >
                   View application
                   <i class="i i-chevron-right" />
                 </a>
               ) : (
                 <button
                   className="btn btn-primary multilevel-step__step-action"
-                  //get this id from api, if null, the id will
-                  // be new.
-                  //'new'
-                  onClick={this.viewCurrentState}
+                  onClick={() =>
+                    this.viewCurrentState(
+                      descriptiveStep.title,
+                      descriptiveStep.ctaText
+                    )
+                  }
                 >
                   {descriptiveStep.ctaText}
                 </button>

@@ -4,10 +4,13 @@ import { changeActiveState } from 'merchant/reducers/capital';
 import { connect } from 'react-redux';
 import Button from 'common/new-ui/Button';
 import { isPreceedingState } from '../utils';
+import getApplicationProgressPercentage from '../utils/ProgressPercentageCalculator';
+import { APPLICATION_STATE_DESCRIPTIONS } from '../constants';
 
 @connect(
   state => ({
     currentState: state.loanApplicationDetails.meta.data.application.status,
+    activeState: state.loanApplicationDetails.context.activeState,
     applicationId: state.loanApplicationDetails.meta.data.application.id,
   }),
   {
@@ -15,6 +18,22 @@ import { isPreceedingState } from '../utils';
   }
 )
 class PendingState extends Component {
+  gaEventDispatcher = eventObject => {
+    eventObject['eventCategory'] = 'Dashboard - WCL LOS';
+    window.rzpAnalytics(eventObject);
+  };
+
+  _trackSupportClick = () => {
+    const { activeState } = this.props;
+
+    this.gaEventDispatcher({
+      eventAction: 'Reach Support Cta Clicked',
+      eventLabel: `${
+        APPLICATION_STATE_DESCRIPTIONS[activeState].short_description
+      } | ${getApplicationProgressPercentage(activeState)}%`,
+    });
+  };
+
   render() {
     const {
       backState,
@@ -26,12 +45,25 @@ class PendingState extends Component {
     } = this.props;
     return (
       <div>
-        <Note message={message} applicationId={applicationId} />
+        <Note
+          message={message}
+          applicationId={applicationId}
+          _trackSupportClick={this._trackSupportClick}
+        />
         {showNavigation && (
           <div className="actions p-r pull-right m-r">
             {backState && (
               <Button.Transparent
-                onClick={() => this.props.changeActiveState(backState)}
+                onClick={() => {
+                  this.gaEventDispatcher({
+                    eventAction: 'Application | Back',
+                    eventLabel: `${
+                      APPLICATION_STATE_DESCRIPTIONS[this.props.activeState]
+                        .short_description
+                    } | ${getApplicationProgressPercentage(currentState)}%`,
+                  });
+                  this.props.changeActiveState(backState);
+                }}
               >
                 <i className="i i-chevron-left" />
                 Back
@@ -39,7 +71,16 @@ class PendingState extends Component {
             )}
             {!isPreceedingState(currentState, nextState) && (
               <Button.Primary
-                onClick={() => this.props.changeActiveState(nextState)}
+                onClick={() => {
+                  this.gaEventDispatcher({
+                    eventAction: 'Application | Next',
+                    eventLabel: `${
+                      APPLICATION_STATE_DESCRIPTIONS[this.props.activeState]
+                        .short_description
+                    } | ${getApplicationProgressPercentage(currentState)}%`,
+                  });
+                  this.props.changeActiveState(nextState);
+                }}
               >
                 Next
                 <i className="i i-chevron-right" />

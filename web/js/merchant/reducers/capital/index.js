@@ -523,6 +523,7 @@ export default function(state = initialState, action) {
         promoter_details: {
           loading: false,
           error: action.payload.errors,
+          data: state.promoter_details.data,
         },
       });
 

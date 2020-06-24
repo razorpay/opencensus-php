@@ -3,7 +3,17 @@ import Popover, { PopoverBody } from 'common/ui/Popover';
 import Amount from 'common/ui/Amount';
 import { TOOLTIP_DESCRIPTIONS } from '../constants';
 
-function RepaymentInformation({ amount }) {
+function RepaymentInformation({ amount, trackGAEvents = true, _fromWhere }) {
+  const trackMouseOver = () => {
+    if (!trackGAEvents) return;
+
+    window.rzpAnalytics({
+      eventCategory: 'Dashboard - WCL LOS',
+      eventAction: 'TOOLTIP | Repayment Details',
+      eventLabel: `${_fromWhere}`,
+    });
+  };
+
   return (
     <div className="loan-repayment-details-wrapper">
       <div className="loan-repayment-details">
@@ -11,7 +21,7 @@ function RepaymentInformation({ amount }) {
           <p className="loan-offer-detail-title">
             Daily Repayment Amount
             <small className="help-content" style={{ paddingLeft: '4px' }}>
-              <i className="i i-info-outline" />
+              <i className="i i-info-outline" onMouseOver={trackMouseOver} />
               <Popover align="top" theme="dark">
                 <PopoverBody>
                   <div style={{ textAlign: 'left' }}>

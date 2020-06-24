@@ -314,6 +314,10 @@ class PromoterDetailsEntity extends Component {
             this.props.changeActiveState(
               APPLICATION_STATES.CREDIT_PULL_PENDING
             );
+            this.props._trackNavigationActions(
+              'NEXT',
+              APPLICATION_STATES.CREDIT_PULL_PENDING
+            );
           } catch (e) {
             //TODO:show appropriate errors
             this.props.showNotification({
@@ -347,6 +351,10 @@ class PromoterDetailsEntity extends Component {
             ...payload,
           });
           this.props.changeActiveState(APPLICATION_STATES.CREDIT_PULL_PENDING);
+          this.props._trackNavigationActions(
+            'NEXT',
+            APPLICATION_STATES.CREDIT_PULL_PENDING
+          );
         } catch (e) {
           //TODO:show appropriate errors
           this.props.showNotification({
@@ -362,6 +370,10 @@ class PromoterDetailsEntity extends Component {
       }
     } else {
       this.props.changeActiveState(APPLICATION_STATES.CREDIT_PULL_PENDING);
+      this.props._trackNavigationActions(
+        'NEXT',
+        APPLICATION_STATES.CREDIT_PULL_PENDING
+      );
     }
   };
 
@@ -533,6 +545,12 @@ class PromoterDetailsEntity extends Component {
                 className="text-primary"
                 target="_blank"
                 href="https://razorpay.com/terms/"
+                onClick={() => {
+                  this.props._trackEvent({
+                    eventAction: 'Application | T&C',
+                    eventLabel: 'Check Loan Eligibility | Promoter Details',
+                  });
+                }}
               >
                 T&C
               </a>
@@ -541,6 +559,12 @@ class PromoterDetailsEntity extends Component {
                 className="text-primary"
                 target="_blank"
                 href="https://razorpay.com/terms/"
+                onClick={() => {
+                  this.props._trackEvent({
+                    eventAction: 'Application | T&C',
+                    eventLabel: 'Check Loan Eligibility | Promoter Details',
+                  });
+                }}
               >
                 Privacy Policy
               </a>
@@ -558,9 +582,13 @@ class PromoterDetailsEntity extends Component {
           </AsyncBtn.Primary>
           <button
             className="btn btn-link pull-right"
-            onClick={() =>
-              this.props.changeActiveState('BUSINESS_INFO_PENDING')
-            }
+            onClick={() => {
+              this.props._trackNavigationActions(
+                'BACK',
+                APPLICATION_STATES.BUSINESS_INFO_PENDING
+              );
+              this.props.changeActiveState('BUSINESS_INFO_PENDING');
+            }}
           >
             <i className="i i-chevron-left" />
             Back
