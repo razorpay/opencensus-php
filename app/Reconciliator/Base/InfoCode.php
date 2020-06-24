@@ -204,6 +204,8 @@ class InfoCode
 
     const RECON_UNIQUE_REFUND_NOT_FOUND                 = 'RECON_UNIQUE_REFUND_NOT_FOUND';
 
+    const RECON_MISSING_COLUMN_VALUE                    = 'RECON_MISSING_COLUMN_VALUE';
+
     public static $fileBasedReconInfoCodes = [
         self::COLUMN_HEADER_MISMATCH,
         self::RECON_BLACKLISTED_COLUMNS_NOT_DEFINED,

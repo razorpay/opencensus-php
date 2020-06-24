@@ -6,6 +6,7 @@ use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Base;
 use RZP\Models\Payment\Status;
+use RZP\Models\Payment\Gateway;
 use RZP\Models\Base\PublicEntity;
 use RZP\Gateway\Upi\Icici\Action;
 use Razorpay\Spine\Exception\DbQueryException;
@@ -36,37 +37,63 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         }
         else
         {
-            return $this->getPaymentIdFromUpi($row[self::BANK_TRANS_ID]);
+            return $this->getPaymentIdFromUpi($row);
         }
     }
 
     /**
-     * Fetch upi entity from upi using gateway_payment_id
+     * Fetch upi entity from upi using npci_reference_id
+     * and payment and gateway
      *
-     * @param string $bankReferenceId
+     * @param array $row
      * @return |null
      */
-    protected function getPaymentIdFromUpi(string $bankReferenceId)
+    protected function getPaymentIdFromUpi(array $row)
     {
-        try
-        {
-            $upiEntity = $this->repo->upi->fetchByGatewayPaymentIdAndAction($bankReferenceId);
+        $upiEntity = null;
 
-            return $upiEntity->getPaymentId();
-        }
-        catch (DbQueryException $ex)
+        $referenceNumber = $this->getReferenceNumber($row);
+
+        $paymentId = $row[self::MERCHANT_TRAN_ID] ?? null;
+
+        if ((empty($referenceNumber) === true) or (empty($paymentId) === true))
         {
-            $this->messenger->raiseReconAlert(
+            // Dont have enough info to get the payment ID,
+            // so trace it and return null
+            $this->trace->info(TraceCode::RECON_INFO_ALERT,
                 [
-                    'trace_code'           => TraceCode::RECON_MISMATCH,
-                    'info_code'            => Base\InfoCode::PAYMENT_ABSENT,
-                    'payment_reference_id' => $bankReferenceId,
+                    'info_code'            => Base\InfoCode::RECON_MISSING_COLUMN_VALUE,
+                    'payment_reference_id' => $referenceNumber,
+                    'payment_id'           => $paymentId,
                     'gateway'              => $this->gateway,
                     'batch_id'             => $this->batchId
                 ]);
 
             return null;
         }
+
+        $this->formatUpiRrn($referenceNumber);
+
+        $upiEntity = $this->repo->upi->fetchByNpciReferenceIdAndPaymentIdAndGateway($referenceNumber,
+                                                                                    $paymentId,
+                                                                                    Gateway::UPI_ICICI);
+
+        if ($upiEntity === null)
+        {
+            $this->messenger->raiseReconAlert(
+                [
+                    'trace_code'           => TraceCode::RECON_MISMATCH,
+                    'info_code'            => Base\InfoCode::PAYMENT_ABSENT,
+                    'payment_reference_id' => $row[self::BANK_TRANS_ID],
+                    'payment_id'           => $paymentId,
+                    'gateway'              => $this->gateway,
+                    'batch_id'             => $this->batchId
+                ]);
+
+            return null;
+        }
+
+        return $upiEntity->getPaymentId();
     }
 
     protected function getReconPaymentStatus(array $row)

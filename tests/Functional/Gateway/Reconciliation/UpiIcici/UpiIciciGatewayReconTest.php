@@ -297,7 +297,7 @@ class UpiIciciGatewayReconTest extends TestCase
 
         //reconciled for RRN 734122607521, Failed to reconcile for RRN 734122607522
         $this->assertEquals(2, $batch['total_count']);
-        
+
         $this->assertEquals(1, $batch['success_count']);
 
         $this->assertEquals(1, $batch['failure_count']);
@@ -309,11 +309,13 @@ class UpiIciciGatewayReconTest extends TestCase
 
     protected function overrideUpiIciciPayment(array $upiEntity, $gatewayPaymentId = null)
     {
-        $facade = $this->testData['upiIcici'];
+        $facade                   = $this->testData['upiIcici'];
+
+        $facade['amount']         = $upiEntity['amount'] / 100;
+
+        $facade['bankTranID']     = $gatewayPaymentId ?? $upiEntity['npci_reference_id'];
 
         $facade['merchantTranID'] = $upiEntity['payment_id'];
-
-        $facade['bankTranID'] = $gatewayPaymentId ?? $upiEntity['gateway_payment_id'];
 
         return $facade;
     }
@@ -428,7 +430,7 @@ class UpiIciciGatewayReconTest extends TestCase
 
             $upiEntity = $this->getDbLastEntity('upi');
 
-            $this->fixtures->edit('upi', $upiEntity['id'], ['gateway_payment_id' => $rrn]);
+            $this->fixtures->edit('upi', $upiEntity['id'], ['npci_reference_id' => $rrn, 'gateway' => 'upi_icici']);
         }
 
         foreach ($payments as $payment)

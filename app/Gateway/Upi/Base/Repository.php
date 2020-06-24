@@ -45,6 +45,16 @@ class Repository extends Base\Repository
                     ->first();
     }
 
+    public function fetchByNpciReferenceIdAndPaymentIdAndGateway(string $npciReferenceId, string $paymentId, string $gateway, $action = Action::AUTHORIZE)
+    {
+        return $this->newQuery()
+                    ->where(Entity::NPCI_REFERENCE_ID, '=', $npciReferenceId)
+                    ->where(Entity::PAYMENT_ID, '=', $paymentId)
+                    ->where('gateway', '=', $gateway)
+                    ->where('action', '=', $action)
+                    ->first();
+    }
+
     public function fetchByNpciReferenceIdAndActions(string $npciReferenceId, array $actions = [])
     {
         return $this->newQuery()
