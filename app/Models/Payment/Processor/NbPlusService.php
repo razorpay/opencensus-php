@@ -6,6 +6,8 @@ trait NbPlusService
 {
     public function callNbPlusServiceAction($payment, $gateway, $action, $gatewayData)
     {
-        return $this->app['nbplus.payments']->action($gateway, $action, $gatewayData);
+        $method = $payment->getMethod();
+
+        return $this->app['nbplus.payments']->action($method, $gateway, $action, $gatewayData);
     }
 }

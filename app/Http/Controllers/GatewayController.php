@@ -1342,7 +1342,7 @@ class GatewayController extends Controller
 
                 try
                 {
-                    return $this->app['nbplus.payments']->action($gatewayName, Nbplus\Action::PREPROCESS_CALLBACK, $inputData);
+                    return $this->app['nbplus.payments']->action($method, $gatewayName, Nbplus\Action::PREPROCESS_CALLBACK, $inputData);
                 }
                 catch (\Exception $e)
                 {

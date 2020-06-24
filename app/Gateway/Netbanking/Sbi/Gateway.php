@@ -270,7 +270,7 @@ class Gateway extends Base\Gateway
         ];
 
         $traceRequestArray = $requestArray;
-        
+
         unset($traceRequestArray[RequestFields::DEBIT_ACCOUNT_NUMBER]);
 
         $this->traceGatewayPaymentRequest(

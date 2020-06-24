@@ -23,7 +23,7 @@ class Netbanking extends Service
 
     protected $transactionType = self::RETAIL;
 
-    public function action(string $gateway, string $action, array $input)
+    public function action(string $method, string $gateway, string $action, array $input)
     {
         $this->action = $action;
 
@@ -61,8 +61,6 @@ class Netbanking extends Service
             Request::GATEWAY => $gateway,
             Request::INPUT   => $input
         ];
-
-        $method = Payment\Method::NETBANKING;
 
         $response = $this->sendRequest('POST', 'action/' . $action . '/' . $method, $content);
 

@@ -27,6 +27,7 @@ trait AuthorizeFailed
         try
         {
             $gateway = $input[Constants\Entity::PAYMENT][Entity::GATEWAY];
+            $method  = $input[Constants\Entity::PAYMENT][Entity::METHOD];
 
             // If payment went via card payment service then call do verification through card payment service
             if (($input[Constants\Entity::PAYMENT][Entity::CPS_ROUTE] === Entity::CARD_PAYMENT_SERVICE))
@@ -35,7 +36,7 @@ trait AuthorizeFailed
             }
             elseif (($input[Constants\Entity::PAYMENT][Entity::CPS_ROUTE] === Entity::NB_PLUS_SERVICE))
             {
-                $this->app['nbplus.payments']->action($gateway, PaymentAction::VERIFY, $input);
+                $this->app['nbplus.payments']->action($method, $gateway, PaymentAction::VERIFY, $input);
             }
             else
             {

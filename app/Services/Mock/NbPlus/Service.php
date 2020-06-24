@@ -9,9 +9,9 @@ use RZP\Services\NbPlus\Service as NbPlusService;
 
 class Service extends NbPlusService
 {
-    protected function getDriver($gateway)
+    protected function getDriver($method)
     {
-        $method = self::GATEWAY_TO_METHOD_MAP[$gateway];
+        Payment\Method::validateMethod($method);
 
         switch ($method)
         {

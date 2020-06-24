@@ -30,18 +30,6 @@ class Service
     // admin path
     const ADMIN_PATH = 'admin/entities/';
 
-    const GATEWAY_TO_METHOD_MAP = [
-      Payment\Gateway::ATOM                 => Payment\Method::NETBANKING,
-      Payment\Gateway::NETBANKING_CSB       => Payment\Method::NETBANKING,
-      Payment\Gateway::NETBANKING_CUB       => Payment\Method::NETBANKING,
-      Payment\Gateway::NETBANKING_SVC       => Payment\Method::NETBANKING,
-      Payment\Gateway::NETBANKING_ALLAHABAD => Payment\Method::NETBANKING,
-      Payment\Gateway::NETBANKING_KVB       => Payment\Method::NETBANKING,
-      Payment\Gateway::NETBANKING_INDUSIND  => Payment\Method::NETBANKING,
-      Payment\Gateway::NETBANKING_ICICI     => Payment\Method::NETBANKING,
-      Payment\Gateway::NETBANKING_JSB       => Payment\Method::NETBANKING,
-    ];
-
     protected $baseUrl;
     protected $config;
     protected $trace;
@@ -113,11 +101,11 @@ class Service
         return $headers;
     }
 
-    public function action(string $gateway, string $action, array $input)
+    public function action(string $method, string $gateway, string $action, array $input)
     {
-        $driver = $this->getDriver($gateway);
+        $driver = $this->getDriver($method);
 
-        return $driver->action($gateway, $action, $input);
+        return $driver->action($method, $gateway, $action, $input);
     }
 
     public function fetchMultiple(string $entityName, array $input)
@@ -407,9 +395,9 @@ class Service
         throw new Exception\ServerErrorException($e->getMessage(), $errorCode);
     }
 
-    protected function getDriver($gateway)
+    protected function getDriver($method)
     {
-        $method = self::GATEWAY_TO_METHOD_MAP[$gateway];
+        Payment\Method::validateMethod($method);
 
         switch ($method)
         {
