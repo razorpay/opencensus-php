@@ -357,6 +357,11 @@ trait Capture
                 $data['currency'] = Currency\Currency::INR;
             }
 
+            if ($payment->isUpiOtm() === true)
+            {
+                $data['upi'] = $payment->getUpiMetadata()->toArray();
+            }
+
             $this->captureOnGateway($data, $autoCaptured);
 
             $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_CAPTURE_PROCESSED, $payment);

@@ -19,6 +19,7 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Gateway\Base\AuthorizeFailed;
 use RZP\Gateway\Base\ScroogeResponse;
 use RZP\Gateway\Upi\Base\UpiErrorCodes;
+use RZP\Models\Payment\Processor\UpiTrait;
 use RZP\Models\Terminal;
 
 class Gateway extends Base\Gateway
@@ -152,6 +153,32 @@ class Gateway extends Base\Gateway
                 'vpa'   => $vpa
             ]
         ];
+    }
+
+    public function capture(array $input)
+    {
+        parent::capture($input);
+
+        if ($this->isMandateExecuteRequest($input) === true)
+        {
+            /**
+             * Checking if the upi entity is present.
+             */
+            $this->repo->findByPaymentIdAndActionOrFail($input['payment']['id'], Action::AUTHORIZE);
+
+            $upi = $this->repo->findByPaymentIdAndAction($input['payment']['id'], Action::CAPTURE);
+
+            if ($upi === null)
+            {
+                $data = $this->getGatewayEntityAttributes($input, Action::CAPTURE);
+
+                $this->createGatewayPaymentEntity($data, Action::CAPTURE);
+            }
+
+            return $this->mandateExecute($input);
+        }
+
+        return;
     }
 
     public function getIntentUrl(array $input)

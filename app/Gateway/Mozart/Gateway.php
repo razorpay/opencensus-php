@@ -368,14 +368,16 @@ class Gateway extends Base\Gateway
 
     public function mandateExecute($input)
     {
-        parent::action($input, Action::PAY_INIT);
+        parent::action($input, Action::CAPTURE);
 
         list($response, $attributes) = $this->sendMozartRequestAndGetResponse(
             $input,
             TraceCode::GATEWAY_MANDATE_EXECUTE_REQUEST,
-            TraceCode::GATEWAY_MANDATE_EXECUTE_RESPONSE);
+            TraceCode::GATEWAY_MANDATE_EXECUTE_RESPONSE, false);
 
-        $this->createGatewayPaymentEntity($attributes, $input, Action::MANDATE_EXECUTE);
+        $this->createGatewayPaymentEntity($attributes, $input, Action::CAPTURE);
+
+        $this->checkErrorsAndThrowExceptionFromMozartResponse($response);
 
         return;
     }
@@ -1465,6 +1467,7 @@ class Gateway extends Base\Gateway
                 Action::AUTH_INIT         => null,
                 Action::PAY_INIT          => null,
                 Action::PAY_VERIFY        => null,
+                Action::CAPTURE           => Action::PAY_INIT,
             ],
             Payment\Gateway::NETBANKING_KVB =>  [
                 Action::PAY_INIT    =>  null,
@@ -1612,6 +1615,7 @@ class Gateway extends Base\Gateway
                 Action::AUTH_INIT       => null,
                 Action::PAY_INIT        => null,
                 Action::PAY_VERIFY      => null,
+                Action::CAPTURE         => Action::AUTHORIZE,
             ],
             Payment\Gateway::UPI_SBI => [
                 Action::PAY_INIT        => null,

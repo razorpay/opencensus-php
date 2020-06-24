@@ -45,6 +45,13 @@ class Server extends Base\Mock\Server
         return $this->processMockResponse($input, $payInitObj, 'pay_init');
     }
 
+    public function capture($input)
+    {
+        $captureObj = new CaptureData();
+
+        return $this->processMockResponse($input, $captureObj, 'capture');
+    }
+
     public function payVerify($input)
     {
         $payVerifyObj = new PayVerifyData();

@@ -2,16 +2,20 @@
 
 namespace RZP\Tests\Functional\Gateway\Upi\Mindgate;
 
+use Carbon\Carbon;
 use RZP\Models\Payment;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Payment\Method;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Payment\UpiMetadata;
+use RZP\Exception\BadRequestException;
 use RZP\Gateway\Upi\Base\Entity as UpiEntity;
 use RZP\Tests\Functional\Fixtures\Entity\Terminal;
 use RZP\Tests\Functional\Helpers\MocksMetricTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Exception\BadRequestValidationFailureException;
+
 
 class UpiMindgateOtmTest extends TestCase
 {
@@ -114,7 +118,9 @@ class UpiMindgateOtmTest extends TestCase
     // Scenario: Mandate create with failure callback
     public function testUpiOtmFailedCallback()
     {
-        $payment = $this->createOtmPayment('failedCallback');
+        $payment = $this->createOtmPayment([
+            'description' => 'failedCallback',
+        ]);
 
         $content = $this->mockServer()->getAsyncCallbackResponseMandateCreate($payment);
 
@@ -130,7 +136,9 @@ class UpiMindgateOtmTest extends TestCase
 
     public function testUpiOtmFailedCallbackValidations()
     {
-        $payment = $this->createOtmPayment('failedValidations');
+        $payment = $this->createOtmPayment([
+            'description' => 'failedValidations'
+        ]);
 
         $content = $this->mockServer()->getAsyncCallbackResponseMandateCreate($payment);
 
@@ -144,16 +152,113 @@ class UpiMindgateOtmTest extends TestCase
         $this->assertSame('authorize', $mozart->getAction());
     }
 
+    public function testUpiOtmExecuteSuccess()
+    {
+        $payment = $this->createAuthorizedOtmPayment();
+
+        // Assert that the payment is authorized
+        $this->capturePayment($payment->getPublicId(), $payment->getAmount());
+
+        $payment->refresh();
+
+        $this->assertArraySubset([
+            'status'            => 'captured',
+            'gateway_captured'  => true,
+        ], $payment->toArray());
+
+        $mozart = $this->getDbLastMozart();
+
+        $this->assertSame('capture', $mozart->getAction());
+
+        $upi = $this->getDbLastEntity('upi');
+
+        $this->assertArraySubset([
+            UpiEntity::GATEWAY  => 'upi_mindgate',
+            UpiEntity::ACTION   => 'capture',
+            UpiEntity::TYPE     => 'collect',
+            UpiEntity::ACQUIRER => 'hdfc',
+            UpiEntity::BANK     => 'ICIC',
+        ], $upi->toArray());
+    }
+
+    public function testUpiOtmExecuteFailure()
+    {
+        $payment = $this->createAuthorizedOtmPayment([
+            'description'  => 'failedExecute'
+        ]);
+
+        $this->makeRequestAndCatchException(function () use ($payment)
+        {
+            $this->capturePayment($payment->getPublicId(), $payment->getAmount());
+        });
+
+        $payment->refresh();
+
+        $this->assertArraySubset([
+            'status'            => 'authorized',
+            'gateway_captured'  => false,
+        ], $payment->toArray());
+
+        $mozart = $this->getDbLastMozart();
+
+        $this->assertSame('capture', $mozart->getAction());
+    }
+
+    public function testUpiOtmExecuteInvalidTimeFails()
+    {
+        $this->payment['upi']['start_time'] = Carbon::now()->addDays(1)->getTimestamp();
+        $this->payment['upi']['end_time']   = Carbon::now()->addDays(2)->getTimestamp();
+
+        $payment = $this->createAuthorizedOtmPayment();
+
+        $this->assertSame('authorized', $payment->getStatus());
+
+        $upiMetadata = $this->getDbLastEntity('upi_metadata');
+
+        $this->assertArraySubset([
+            UpiMetadata\Entity::START_TIME => $this->payment['upi']['start_time'],
+            UpiMetadata\Entity::END_TIME   => $this->payment['upi']['end_time'],
+        ], $upiMetadata->toArray());
+
+        $this->makeRequestAndCatchException(function () use ($payment)
+        {
+            $this->capturePayment($payment->getPublicId(), $payment->getAmount());
+        },
+        BadRequestValidationFailureException::class,
+        'Execution only allowed between start time and end time');
+
+        Carbon::setTestNow(Carbon::now()->addDays(3));
+
+        $this->makeRequestAndCatchException(function () use ($payment)
+        {
+            $this->capturePayment($payment->getPublicId(), $payment->getAmount());
+        },
+        BadRequestValidationFailureException::class,
+        'Execution only allowed between start time and end time');
+    }
+
+    public function testUpiOtmExecuteWithPartialAmountFails()
+    {
+        $payment = $this->createAuthorizedOtmPayment();
+
+        $this->makeRequestAndCatchException(function () use ($payment)
+        {
+            $this->capturePayment($payment->getPublicId(), $payment->getAmount() - 100);
+        },
+        BadRequestException::class,
+        'Capture amount must be equal to the amount authorized');
+    }
+
     // Helpers: Create successful Payment, Return payment
     /**
      * @param string $description
      * @return Payment\Entity
      */
-    protected function createOtmPayment($description = "")
+    protected function createOtmPayment($input = [])
     {
-        $this->payment['description'] = $description;
+        $input = array_replace_recursive($this->payment, $input);
 
-        $response = $this->doAuthPaymentViaAjaxRoute($this->payment);
+        $response = $this->doAuthPaymentViaAjaxRoute($input);
 
         $paymentId = $response['payment_id'];
 
@@ -171,7 +276,7 @@ class UpiMindgateOtmTest extends TestCase
             UpiMetadata\Entity::TYPE       => 'otm',
             UpiMetadata\Entity::FLOW       => 'collect',
             UpiMetadata\Entity::PAYMENT_ID => $payment->getId(),
-            UpiMetadata\Entity::END_TIME   => $this->payment['upi']['end_time'],
+            UpiMetadata\Entity::END_TIME   => $input['upi']['end_time'],
         ], $upiMetadata->toArray());
 
         $this->assertArraySubset([
@@ -190,6 +295,23 @@ class UpiMindgateOtmTest extends TestCase
 
         // Mozart entity should have been created
         $this->assertSame('authorize', $mozartEntity->getAction());
+        return $payment;
+    }
+
+    /**
+     * @param string $description
+     * @return Payment\Entity
+     */
+    protected function createAuthorizedOtmPayment($input = [])
+    {
+        $payment = $this->createOtmPayment($input);
+
+        $content = $this->mockServer()->getAsyncCallbackResponseMandateCreate($payment);
+
+        $response = $this->makeS2sCallbackAndGetContent($content, 'upi_mindgate');
+
+        $payment->refresh();
+
         return $payment;
     }
 }
