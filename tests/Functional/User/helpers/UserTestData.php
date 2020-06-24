@@ -50,7 +50,7 @@ return [
         ],
     ],
 
-    'testRegisterWithOtp'  => [
+    'testRegisterWithOtp' => [
         'request'  => [
             'url'     => '/users/register',
             'method'  => 'POST',
@@ -59,6 +59,10 @@ return [
                 'password'              => 'hello123',
                 'password_confirmation' => 'hello123',
                 'captcha_disable'       => 'DISABLE_THE_CAPTCHA_YOU_SHALL',
+            ],
+            'server'  => [
+                'HTTP_X-Request-Origin' => 'https://dashboard.razorpay.com',
+                'HTTP_X-Send-Email-Otp' => 'true',
             ],
         ],
         'response' => [

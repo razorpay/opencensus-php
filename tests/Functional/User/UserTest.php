@@ -97,8 +97,6 @@ class UserTest extends TestCase
     {
         Mail::fake();
 
-        $this->enableRazorXTreatmentForRazorX();
-
         $adminId = Org::MAKER_ADMIN;
 
         $formData = json_decode(

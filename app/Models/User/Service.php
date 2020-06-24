@@ -17,6 +17,7 @@ use RZP\Models\Merchant;
 use RZP\Constants\Product;
 use RZP\Models\Invitation;
 use RZP\Models\Admin\Admin;
+use RZP\Http\RequestHeader;
 use RZP\Mail\User as UserMail;
 use RZP\Models\Admin\AdminLead;
 use RZP\Exception\BaseException;
@@ -141,7 +142,10 @@ class Service extends Base\Service
                 $merchantInputData[Merchant\Entity::ADMINS] = [$tokenData[AdminLead\Entity::ADMIN_ID]];
             }
 
-            $data = $this->createMerchantFromUser($merchantInputData, $user, $referrer);
+            $sendOtpEmail = filter_var($this->app['request']->header(RequestHeader::X_SEND_EMAIL_OTP, false),
+                                       FILTER_VALIDATE_BOOLEAN);
+
+            $data = $this->createMerchantFromUser($merchantInputData, $user, $referrer, $sendOtpEmail);
         }
 
         $visitorId = $this->fetchVisitorIdFromCookie();
@@ -155,14 +159,14 @@ class Service extends Base\Service
     }
 
     /**
-     * Creates Merchant for user.
      * @param array  $merchantInputData
      * @param array  $userData
+     * @param bool   $sendOtpEmail
      * @param string $referrer
      *
      * @return array
      */
-    protected function createMerchantFromUser(array $merchantInputData, array $userData, string $referrer = '')
+    protected function createMerchantFromUser(array $merchantInputData, array $userData, string $referrer = '', bool $sendOtpEmail = false)
     {
         $merchantData = (new Merchant\Service)->create($merchantInputData);
 
@@ -187,7 +191,7 @@ class Service extends Base\Service
 
         $merchant = $this->repo->merchant->findOrFailPublic($merchantData['id']);
 
-        $data = $this->sendConfirmationMailIfApplicable($user, $merchant);
+        $data = $this->sendConfirmationMailIfApplicable($user, $merchant, $sendOtpEmail);
 
         return $data;
     }
@@ -195,10 +199,11 @@ class Service extends Base\Service
     /**
      * @param Entity          $user
      * @param Merchant\Entity $merchant
+     * @param bool            $sendOtpEmail
      *
      * @return array
      */
-    protected function sendConfirmationMailIfApplicable(Entity $user, Merchant\Entity $merchant)
+    protected function sendConfirmationMailIfApplicable(Entity $user, Merchant\Entity $merchant, bool $sendOtpEmail = false)
     {
         $requestOriginProduct = $this->auth->getRequestOriginProduct();
 
@@ -208,10 +213,9 @@ class Service extends Base\Service
                              Entity::MERCHANT_ID => $user->getMerchantId()];
 
 
-        // If User is New Signed up and
-        // Already Not confirmed and not razorx check is true and product is PG.
-        if ((new Merchant\Core)->isEmailVerificationViaOtpRazorxEnabled($merchant->getId()) === true and
-            ($requestOriginProduct !== Product::BANKING) and ($user->getConfirmedAttribute() === false))
+        // If User is New Signed up with new auth flow and
+        // Already Not confirmed and product is PG.
+        if (($requestOriginProduct !== Product::BANKING) and $sendOtpEmail and ($user->getConfirmedAttribute() === false))
         {
             $data = $this->sendOtpEmailVerification($merchant, $user);
 
