@@ -132,7 +132,8 @@
             "app/Models/Customer"
         ],
         "psr-4": {
-            "RZP\\": "app/"
+            "RZP\\": "app/",
+            "": "generated/proto/"
         }
     },
     "scripts": {
@@ -145,6 +146,12 @@
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
             "php artisan package:discover"
+        ],
+        "proto-gen": [
+            "scripts/proto-gen.sh"
+        ],
+        "proto-clean": [
+            "rm -rf generated/proto"
         ]
     },
     "config": {

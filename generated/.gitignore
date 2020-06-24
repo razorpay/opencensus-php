@@ -1,0 +1,9 @@
+# Obviously ignore everything except this file.
+*
+!.gitignore
+
+# Temporarily the generated proto files are being committed.
+# There are some challenges in other approaches and while
+# those get sorted as part of separate task, lets live with this.
+!proto
+!proto/**
