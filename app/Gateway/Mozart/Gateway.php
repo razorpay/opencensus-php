@@ -1292,7 +1292,7 @@ class Gateway extends Base\Gateway
         return $url;
     }
 
-    protected function getAuthenticatedMozartRequestArray($url, $content, $mode = null, $gateway=null)
+    protected function getAuthenticatedMozartRequestArray($url, $content, $mode = null, $gateway = null)
     {
         $mode = $this->mode ?? $mode;
 
@@ -1300,7 +1300,8 @@ class Gateway extends Base\Gateway
         {
             $passwordConfig = $this->getWhitelistedConfig($mode, '.password');
         }
-        else {
+        else
+        {
             $passwordConfig = 'applications.mozart.' . $mode . '.password';
         }
 
@@ -1309,18 +1310,30 @@ class Gateway extends Base\Gateway
             $this->app['config']->get($passwordConfig)
         ];
 
-        return [
-            'url' => $url,
-            'method' => 'POST',
+        $mozartRequest = [
+            'url'     => $url,
+            'method'  => 'POST',
             'headers' => [
                 'Content-Type' => 'application/json',
                 'X-Task-ID'    => $this->app['request']->getTaskId(),
             ],
-            'content' => json_encode($content),
-            'options' => [
+            'content'  => json_encode($content),
+            'options'  => [
                 'auth' => $authentication
             ]
         ];
+
+        if ($this->app->environment('production') === false)
+        {
+            $testCaseId = $this->app['request']->header('X-RZP-TESTCASE-ID');
+
+            if (empty($testCaseId) === false)
+            {
+                $mozartRequest['headers']['X-RZP-TESTCASE-ID'] = $testCaseId;
+            }
+        }
+
+        return $mozartRequest;
     }
 
     protected function parseMerchantOnboardResponse($response, $input)
