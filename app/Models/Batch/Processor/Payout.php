@@ -8,8 +8,8 @@ class Payout extends Base
     {
         if (isset($input["config"]) === true) {
             $config = $input["config"];
-        }
 
-        $input["config"] = $config;
+            $input["config"] = $config;
+        }
     }
 }
