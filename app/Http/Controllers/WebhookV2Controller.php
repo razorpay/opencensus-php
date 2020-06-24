@@ -48,4 +48,11 @@ class WebhookV2Controller extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function delete(string $id)
+    {
+        (new Service)->delete($id);
+
+        return ApiResponse::json([]);
+    }
 }

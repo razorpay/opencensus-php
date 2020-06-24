@@ -54,6 +54,9 @@ class CreateWebhooks extends Migration
             $table->integer(Webhook::CREATED_AT);
             $table->integer(Webhook::UPDATED_AT);
 
+            $table->integer(Webhook::DELETED_AT)
+                  ->nullable();
+
             $table->text(Webhook::SECRET)
                   ->nullable();
 

@@ -2727,6 +2727,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     // API dual writes for Stork
     const CREATE_WEBHOOK_FOR_STORK_FAILED                       = 'CREATE_WEBHOOK_FOR_STORK_FAILED';
     const UPDATE_WEBHOOK_FOR_STORK_FAILED                       = 'UPDATE_WEBHOOK_FOR_STORK_FAILED';
+    const DELETE_WEBHOOK_FOR_STORK_FAILED                       = 'DELETE_WEBHOOK_FOR_STORK_FAILED';
 
     // Edge<>api integration.
     const PASSPORT_JWT_PARSE_INVOKED                            = 'PASSPORT_JWT_PARSE_INVOKED';

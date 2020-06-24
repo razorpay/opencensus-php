@@ -20,6 +20,7 @@ class Stork
 
     const WK_GET_ROUTE                = '/twirp/rzp.stork.webhook.v1.WebhookAPI/Get';
     const WK_LIST_ROUTE               = '/twirp/rzp.stork.webhook.v1.WebhookAPI/List';
+    const WK_DELETE_ROUTE             = '/twirp/rzp.stork.webhook.v1.WebhookAPI/Delete';
     const WK_EDIT_ROUTE               = '/twirp/rzp.stork.webhook.v1.WebhookAPI/Update';
     const WK_CREATE_ROUTE             = '/twirp/rzp.stork.webhook.v1.WebhookAPI/Create';
     const WK_GET_WITH_SECRET_ROUTE    = '/twirp/rzp.stork.webhook.v1.WebhookAPI/GetWithSecret';
@@ -154,6 +155,16 @@ class Stork
             'count'  => count($items),
             'items'  => $items,
         ];
+    }
+
+    public function delete(string $webhookId, string $ownerId)
+    {
+        $input = [];
+        $input['service']    = $this->service->service;
+        $input['owner_id']   = $ownerId;
+        $input['webhook_id'] = $webhookId;
+
+        $this->service->request(self::WK_DELETE_ROUTE, $input);
     }
 
     protected function formatWebhook(array $webhook)

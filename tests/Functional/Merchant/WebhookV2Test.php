@@ -46,7 +46,7 @@ class WebhookV2Test extends TestCase
         $this->addOAuthTag();
 
         $this->testData[__FUNCTION__]['request']['content']  = $this->getApiCreatePayloadForPrimary();
-        $this->testData[__FUNCTION__]['response']['content'] = $this->convertAllToUnixTimestamp($this->getApiCreateResponseBodyForOauth());
+        $this->testData[__FUNCTION__]['response']['content'] = $this->addCreatedUpdatedByEmail($this->convertAllToUnixTimestamp($this->getApiCreateResponseBodyForOauth()));
 
         $expected  = $this->getExpectedArgsForRequestMethod($this->getStorkCreatePayloadForPrimary(), '10000000000App', 'application', 'api-test');
         $mockeryOn = $this->attachEmptyWKCtxMatcherToArgsMatcher($this->getArgsMatcherForWebhook($expected));
@@ -72,7 +72,7 @@ class WebhookV2Test extends TestCase
         $this->fixtures->merchant->addFeatures(['payout']);
 
         $this->testData[__FUNCTION__]['request']['content']  = $this->getApiCreatePayloadForBanking();
-        $this->testData[__FUNCTION__]['response']['content'] = $this->convertAllToUnixTimestamp($this->getApiCreateResponseBodyForBanking());
+        $this->testData[__FUNCTION__]['response']['content'] = $this->addCreatedUpdatedByEmail($this->convertAllToUnixTimestamp($this->getApiCreateResponseBodyForBanking()));
 
         $this->mockServiceStorkRequest(
             function ($path, $payload)
@@ -287,7 +287,7 @@ class WebhookV2Test extends TestCase
         $this->fixtures->merchant->addFeatures(['payout']);
 
         $this->testData[__FUNCTION__]['request']['content'] = $this->getApiUpdatePayloadForBanking();
-        $this->testData[__FUNCTION__]['response']['content'] = $this->convertAllToUnixTimestamp($this->getApiUpdateResponseBodyForBanking());
+        $this->testData[__FUNCTION__]['response']['content'] = $this->addCreatedUpdatedByEmail($this->convertAllToUnixTimestamp($this->getApiUpdateResponseBodyForBanking()));
 
         $this->mockServiceStorkRequest(
             function ($path, $payload)
@@ -331,7 +331,7 @@ class WebhookV2Test extends TestCase
     public function testUpdateWebhookForPrimary()
     {
         $this->testData[__FUNCTION__]['request']['content'] = $this->getApiUpdatePayloadForPrimary();
-        $this->testData[__FUNCTION__]['response']['content'] = $this->convertAllToUnixTimestamp($this->getApiUpdateResponseBodyForPrimary());
+        $this->testData[__FUNCTION__]['response']['content'] = $this->addCreatedUpdatedByEmail($this->convertAllToUnixTimestamp($this->getApiUpdateResponseBodyForPrimary()));
 
         $expected  = $this->getExpectedArgsForRequestMethod($this->getStorkUpdatePayloadForPrimary(), '10000000000000', 'merchant', 'api-test');
         $mockeryOn = $this->attachEmptyWKCtxMatcherToArgsMatcher($this->getArgsMatcherForWebhook($expected));
@@ -447,5 +447,23 @@ class WebhookV2Test extends TestCase
         $ownerType !== '' ? $args['owner_type'] = $ownerType : null;
         $service   !== '' ? $args['service']    = $service   : null;
         return ['webhook' => $args];
+    }
+
+    protected function addCreatedUpdatedByEmail(array $input): array
+    {
+        $user = $this->app['repo']->user->find('MerchantUser01');
+        if (is_null($user) === true)
+        {
+            return $input;
+        }
+        if (isset($input['created_by']) === true)
+        {
+            $input['created_by_email'] = $user->email;
+        }
+        if (isset($input['updated_by']) === true)
+        {
+            $input['updated_by_email'] = $user->email;
+        }
+        return $input;
     }
 }

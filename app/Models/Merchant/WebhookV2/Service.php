@@ -15,17 +15,31 @@ use RZP\Error\ErrorCode;
 */
 class Service extends Base\Service
 {
-    const ID            = 'id';
-    const ACTIVE        = 'active';
-    const EVENTS        = 'events';
-    const WEBHOOK       = 'webhook';
-    const DISABLED      = 'disabled';
-    const MERCHANT      = 'merchant';
-    const OWNER_ID      = 'owner_id';
-    const OWNER_TYPE    = 'owner_type';
-    const APPLICATION   = 'application';
-    const CREATED_AT    = 'created_at';
-    const SUBSCRIPTIONS = 'subscriptions';
+    const ID                = 'id';
+    const ACTIVE            = 'active';
+    const EVENTS            = 'events';
+    const WEBHOOK           = 'webhook';
+    const CONTEXT           = 'context';
+    const SERVICE           = 'service';
+    const DISABLED          = 'disabled';
+    const MERCHANT          = 'merchant';
+    const OWNER_ID          = 'owner_id';
+    const CREATED_BY        = 'created_by';
+    const UPDATED_BY        = 'updated_by';
+    const CREATED_AT        = 'created_at';
+    const OWNER_TYPE        = 'owner_type';
+    const APPLICATION       = 'application';
+    const SUBSCRIPTIONS     = 'subscriptions';
+    const CREATED_BY_EMAIL  = 'created_by_email';
+    const UPDATED_BY_EMAIL  = 'updated_by_email';
+
+    /**
+     * minor optimization to avoid an extra call to db. Good to have under assumption
+     * that created_by & updated_by fields will be same in majority of situations
+     *
+     * @var array
+     */
+    var $userIdToEmail = [];
 
     /**
      * @var Validator
@@ -58,6 +72,8 @@ class Service extends Base\Service
     {
         $input = $this->apiToStorkFormat($input);
 
+        $this->unsetImplicitFields($input);
+
         $this->validator->validateStorkWebhookInput($input, $this->merchant);
         $this->validator->validatePartnerWithWebhooksAccess($this->merchant);
 
@@ -77,6 +93,8 @@ class Service extends Base\Service
     public function createForMerchant(array $input): array
     {
         $input = $this->apiToStorkFormat($input);
+
+        $this->unsetImplicitFields($input);
 
         $this->validator->validateStorkWebhookInput($input, $this->merchant);
 
@@ -98,6 +116,8 @@ class Service extends Base\Service
         {
             $this->checkAndFailIfWebhookExistsOnStork($input);
         }
+
+        $this->setUserIdForInputAndKey($input, self::CREATED_BY);
 
         $res = (new Stork($this->product))->create($input);
 
@@ -122,6 +142,8 @@ class Service extends Base\Service
     {
         $input = $this->apiToStorkFormat($input);
 
+        $this->unsetImplicitFields($input);
+
         if ($this->auth->isProductBanking() === true)
         {
             $this->checkAndFailIfWebhookNotExistsOnStork($webhookId);
@@ -132,6 +154,8 @@ class Service extends Base\Service
         $input[self::ID]         = $webhookId;
         $input[self::OWNER_ID]   = $this->merchant->getId();
         $input[self::OWNER_TYPE] = self::MERCHANT;
+
+        $this->setUserIdForInputAndKey($input, self::UPDATED_BY);
 
         $res = (new Stork($this->product))->edit($input);
 
@@ -175,6 +199,34 @@ class Service extends Base\Service
         $res['items'] = array_map(function ($v) { return $this->storkToApiFormat($v); }, $res['items']);
 
         return $res;
+    }
+
+    /**
+     * deletes a webhook having id = $webhookId
+     * @param string $webhookId
+     */
+    public function delete(string $webhookId)
+    {
+        (new Stork($this->product))->delete($webhookId, $this->merchant->getId());
+
+        // since product banking webhooks are only present on stork.
+        if ($this->auth->isProductBanking() === false)
+        {
+            try
+            {
+                // soft deleting the webhook enity in API.
+                $webhook = $this->repo->webhook->findByIdAndMerchant($webhookId, $this->merchant);
+                $this->repo->deleteOrFail($webhook);
+            }
+            catch (\Throwable $e)
+            {
+                $this->trace->traceException($e, Trace::CRITICAL,
+                    TraceCode::DELETE_WEBHOOK_FOR_STORK_FAILED,
+                    [
+                        'stork_wk_id' => $webhookId,
+                    ]);
+            }
+        }
     }
 
     //if webhook already exists on stork throw exception
@@ -245,6 +297,16 @@ class Service extends Base\Service
             $storkWk[self::SUBSCRIPTIONS] = [];
         }
 
+        if (isset($storkWk[self::CREATED_BY]) === true)
+        {
+            $storkWk[self::CREATED_BY_EMAIL] = $this->fetchEmailFromUserId($storkWk[self::CREATED_BY]);
+        }
+
+        if (isset($storkWk[self::UPDATED_BY]) === true)
+        {
+            $storkWk[self::UPDATED_BY_EMAIL] = $this->fetchEmailFromUserId($storkWk[self::UPDATED_BY]);
+        }
+
         $events = [];
 
         $apiWk = $storkWk;
@@ -277,5 +339,67 @@ class Service extends Base\Service
         $apiWk[self::EVENTS] = $events;
 
         return $apiWk;
+    }
+
+    /**
+     * This method unsets the fields for the given input.
+     * Safe fields are fields which should be inferred from the context of the
+     * request (user, auth). Operation should not depend on the values of these fields
+     * provided from the frontend. Wherever applicable, the flow which is using
+     * this method should set the value for these implicit fields on its own.
+     * Not failing the validations here because the FE tends to send the whole model
+     * during updation and they should not be expected to unset these fields before
+     * sending. Backend should control these things.
+     * @param array &$input reference to the user input
+     */
+    protected function unsetImplicitFields(array &$input)
+    {
+        unset($input[self::SERVICE]);
+        unset($input[self::OWNER_ID]);
+        unset($input[self::OWNER_TYPE]);
+        unset($input[self::CONTEXT]);
+        unset($input[self::CREATED_BY]);
+        unset($input[self::UPDATED_BY]);
+        unset($input[self::CREATED_BY_EMAIL]);
+        unset($input[self::UPDATED_BY_EMAIL]);
+    }
+
+    /**
+     * checks if user id is present in auth. If it is present
+     * it sets the user id aginst the key - $keyForId in the input.
+     * @param  array  &$input   reference to the input in which user id field needs to be set
+     * @param  string $keyForId key against which user id needs to be set in the input array passed
+     */
+    protected function setUserIdForInputAndKey(array &$input, string $keyForId)
+    {
+        $userId = is_null($this->user) === true ? '' : $this->user->getUserId();
+        if (empty($userId) === false)
+        {
+            $input[$keyForId] = $userId;
+        }
+    }
+
+    /**
+     * fetches the user email from the given user id.
+     * @param  string $userId userId of the user
+     * @return string         email id for the given user id
+     */
+    protected function fetchEmailFromUserId(string $userId): string
+    {
+        if (empty($userId) === true)
+        {
+            return '';
+        }
+
+        // minor optimization
+        if (isset($userIdToEmail[$userId]) === true)
+        {
+            return $userIdToEmail[$userId];
+        }
+
+        $user                   = $this->repo->user->find($userId, ['email']);
+        $userIdToEmail[$userId] = is_null($user) ? '' : $user->email;
+
+        return $userIdToEmail[$userId];
     }
 }

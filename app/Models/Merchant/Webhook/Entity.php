@@ -6,12 +6,15 @@ use Crypt;
 
 use RZP\Models\Base;
 use RZP\Models\Merchant;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
  * @property Merchant\Entity $merchant
  */
 class Entity extends Base\PublicEntity
 {
+    use SoftDeletes;
+
     const ID                 = 'id';
     const MERCHANT_ID        = 'merchant_id';
     const URL                = 'url';

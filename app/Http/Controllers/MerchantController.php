@@ -543,6 +543,11 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function deleteWebhook($id)
+    {
+        return (new WebhookV2Controller)->delete($id);
+    }
+
     public function postOAuthApplicationWebhook(string $appId)
     {
         if ($this->shouldUseWebhookV2Path() === true)
