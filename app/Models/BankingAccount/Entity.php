@@ -133,6 +133,10 @@ class Entity extends Base\PublicEntity
 
     const IDS           = 'ids';
 
+    // Additional attributes to search from admin dashboard
+    const MERCHANT_BUSINESS_NAME  = 'merchant_business_name';
+    const MERCHANT_EMAIL = 'merchant_email';
+
     // Slack channel for alerts
     const RX_CA_RBL_ALERTS = 'rx_ca_rbl_alerts';
 

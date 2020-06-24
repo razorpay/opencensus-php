@@ -796,6 +796,109 @@ return [
         ],
     ],
 
+    'testBankingAccountFetchForMerchantName' => [
+        'request' => [
+            'url'     => '/admin/banking_account',
+            'method'  => 'get',
+            'content' => [
+                'merchant_business_name' => '',
+                'expand'                 => ['merchant','merchant.merchantDetail']
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
+                    [
+                        'merchant' => [
+                            'merchant_detail' => [
+                                'business_name' => ''
+                            ]
+                        ]
+                    ]
+                ]
+            ],
+        ],
+    ],
+
+    'testBankingAccountFetchForMerchantNameMultipleMatch' => [
+        'request' => [
+            'url'     => '/admin/banking_account',
+            'method'  => 'get',
+            'content' => [
+                'merchant_business_name' => 'test account',
+                'expand'                 => ['merchant','merchant.merchantDetail']
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 2,
+                'items'  => [
+                    [
+                        'merchant' => [
+                            'merchant_detail' => [
+                                'business_name' => 'test account 2'
+                            ]
+                        ]
+                    ],
+                    [
+                        'merchant' => [
+                            'merchant_detail' => [
+                                'business_name' => 'Test ACCOUNT 1'
+                            ]
+                        ]
+                    ]
+                ]
+            ],
+        ],
+    ],
+
+    'testBankingAccountFetchForMerchantEmail' => [
+        'request' => [
+            'url'     => '/admin/banking_account',
+            'method'  => 'get',
+            'content' => [
+                'merchant_email' => 'razorpay@testemail.com',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
+                    [
+                        'merchant' => [
+                            'email' => 'razorpay@testemail.com'
+                        ]
+                    ]
+                ]
+            ],
+        ],
+    ],
+
+    'testBankingAccountFetchForRZPRefNo' => [
+        'request' => [
+            'url'     => '/admin/banking_account',
+            'method'  => 'get',
+            'content' => [
+                'bank_reference_number' => '191919',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
+                    [
+                        'bank_reference_number' => '191919',
+                    ]
+                ]
+            ],
+        ],
+    ],
+
     'testFetchBankingAccountsOfCreatedStatus'  => [
         'request'  => [
             'url'     => '/admin/banking_account',

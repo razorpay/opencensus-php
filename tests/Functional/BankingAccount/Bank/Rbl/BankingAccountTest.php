@@ -739,6 +739,136 @@ class BankingAccountTest extends TestCase
             ]);
     }
 
+    public function testBankingAccountFetchForMerchantName(string $dbName = 'Test Account123', string $searchName = "Test Account123")
+    {
+        $this->fixtures->create('merchant_detail',
+            [
+                'merchant_id'       => '10000000000000',
+                'business_name'     => $dbName
+            ]);
+
+        $ba = $this->createBankingAccount();
+
+        $this->testData[__FUNCTION__]['request']['content']['merchant_business_name'] = $searchName;
+
+        $this->testData[__FUNCTION__]['response']['content']['items'][0]['id'] = $ba['id'];
+        $this->testData[__FUNCTION__]['response']['content']['items'][0]['merchant']['merchant_detail']['business_name'] = $dbName;
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testBankingAccountFetchForMerchantNamePartialMatch()
+    {
+        $this->testBankingAccountFetchForMerchantName("Fullmatch", "Fullmat");
+    }
+
+    public function testBankingAccountFetchForMerchantNameCaseMismatch()
+    {
+        $this->testBankingAccountFetchForMerchantName("CaSe SeNsItIvE", "case sensitive");
+    }
+
+    public function testBankingAccountFetchForMerchantNameMultipleMatch()
+    {
+        $mid1 = '10000000000000';
+
+        $this->fixtures->create('merchant_detail',
+            [
+                "merchant_id"     => $mid1,
+                "business_name"   => "Test ACCOUNT 1"
+            ]);
+
+        $mid2 = '10000000000019';
+
+        $this->fixtures->edit('merchant_detail', $mid2,
+            [
+                "merchant_id"   => $mid2,
+                "business_name" => "test account 2"
+            ]);
+
+        $xBalance1 = $this->fixtures->create('balance',
+            [
+                'merchant_id'       => $mid1,
+                'type'              => 'banking',
+                'account_type'      => 'shared',
+                'account_number'    => '2224440041626905',
+                'balance'           => 200,
+            ]);
+
+        $xBalance2 = $this->fixtures->create('balance',
+            [
+                'merchant_id'       => $mid2,
+                'type'              => 'banking',
+                'account_type'      => 'shared',
+                'account_number'    => '1234567808',
+                'balance'           => 100000,
+            ]);
+
+        $ba1 = $this->fixtures->create('banking_account', [
+            'account_number'        => '2224440041626905',
+            'account_type'          => 'current',
+            'merchant_id'           => $mid1,
+            'channel'               => 'yesbank',
+            'status'                => 'created',
+            'pincode'               => '1',
+            'bank_reference_number' => '',
+            'account_ifsc'          => 'RATN0000156',
+        ]);
+
+        $ba2 = $this->createBankingAccount();
+
+        $this->fixtures->edit('banking_account', $ba1->getId(), [
+            'account_number' => '2224440041626905',
+            'balance_id'     => $xBalance1->getId(),
+        ]);
+
+        $this->fixtures->edit('banking_account', $ba2['id'], [
+            'account_number' => '1234567808',
+            'balance_id'     => $xBalance2->getId(),
+            'merchant_id'    => $mid2
+        ]);
+
+        $this->testData[__FUNCTION__]['response']['content']['items'][0]['id'] = $ba1['id'];
+        $this->testData[__FUNCTION__]['response']['content']['items'][0]['id'] = $ba2['id'];
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testBankingAccountFetchForMerchantEmail()
+    {
+        $ba = $this->createBankingAccount();
+
+        $this->fixtures->edit('merchant',
+            '10000000000000',
+            [
+                "email" => "razorpay@testemail.com"
+            ]);
+
+        $this->ba->adminAuth();
+
+        $this->testData[__FUNCTION__]['response']['content']['items'][0]['id'] = $ba['id'];
+
+        $this->startTest();
+    }
+
+    public function testBankingAccountFetchForRZPRefNo()
+    {
+        $response = $this->createBankingAccount();
+
+        $this->fixtures->edit('banking_account',
+            $response['id'],
+            [
+                "bank_reference_number" => "191919"
+            ]);
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
     public function testFetchBankingAccountsOfCreatedStatus()
     {
         Mail::fake();

@@ -216,4 +216,70 @@ class Repository extends Base\Repository
                     ->pluck(Entity::BALANCE_ID)
                     ->toArray();
     }
+
+    protected function joinQueryMerchantDetail(Base\BuilderEx $query)
+    {
+        $merchantDetailTable = $this->repo->merchant_detail->getTableName();
+
+        if ($query->hasJoin($merchantDetailTable) === true)
+        {
+            return;
+        }
+
+        $merchantIdColumn = $this->repo->merchant_detail->dbColumn(Merchant\Detail\Entity::MERCHANT_ID);
+
+        $bankingAccountMerchantIdColumn = $this->repo->banking_account->dbColumn(Entity::MERCHANT_ID);
+
+        $query->join($merchantDetailTable, $bankingAccountMerchantIdColumn, '=', $merchantIdColumn);
+    }
+
+    protected function joinQueryMerchant(Base\BuilderEx $query)
+    {
+        $merchantTable = $this->repo->merchant->getTableName();
+
+        if ($query->hasJoin($merchantTable) === true)
+        {
+            return;
+        }
+
+        $merchantIdColumn = $this->repo->merchant->dbColumn(Merchant\Entity::ID);
+
+        $bankingAccountMerchantIdColumn = $this->repo->banking_account->dbColumn(Entity::MERCHANT_ID);
+
+        $query->join($merchantTable, $bankingAccountMerchantIdColumn, '=', $merchantIdColumn);
+    }
+
+    public function addQueryParamMerchantBusinessName(Base\BuilderEx $query, array $params)
+    {
+        $this->joinQueryMerchantDetail($query);
+
+        // selecting only banking_accounts columns so that
+        // clashes between field names do not result in corrputed data
+        // For example, both merchants and banking_accounts have field 'channel'
+        $query->select($this->dbColumn('*'));
+
+        $merchantBusinessNameColumn = $this->repo->merchant_detail->dbColumn(Merchant\Detail\Entity::BUSINESS_NAME);
+
+        $merchantBusinessname = mb_strtolower($params[Entity::MERCHANT_BUSINESS_NAME]);
+
+        // case insensitive partial match for merchant name
+        $query->whereRaw("LOWER(".$merchantBusinessNameColumn.") LIKE '%".$merchantBusinessname."%'");
+    }
+
+    public function addQueryParamMerchantEmail(Base\BuilderEx $query, array $params)
+    {
+        $merchantEmailColumn = $this->repo->merchant->dbColumn(Merchant\Entity::EMAIL);
+
+        $this->joinQueryMerchant($query);
+
+        // selecting only banking_accounts columns so that
+        // clashes between field names do not result in corrputed data
+        // For example, both merchants and banking_accounts have field 'channel'
+        $query->select($this->dbColumn('*'));
+
+        // case insensitive exact match for merchant email
+        $email = mb_strtolower($params[Entity::MERCHANT_EMAIL]);
+
+        $query->where($merchantEmailColumn, '=', $email);
+    }
 }

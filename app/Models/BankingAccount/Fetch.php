@@ -2,7 +2,6 @@
 
 namespace RZP\Models\BankingAccount;
 
-use RZP\Http\BasicAuth;
 use RZP\Base\Fetch as BaseFetch;
 use RZP\Http\BasicAuth\Type as AuthType;
 
@@ -21,8 +20,12 @@ class Fetch extends BaseFetch
             Entity::ACCOUNT_TYPE          => 'sometimes|string',
             Entity::REVIEWER_ID           => 'sometimes|string',
         ],
-        BasicAuth\Type::PRIVILEGE_AUTH => [
+        AuthType::PRIVILEGE_AUTH => [
             self::EXPAND_EACH             => 'filled|string|in:merchant,merchant.merchantDetail,banking_account_details,reviewers',
+        ],
+        AuthType::ADMIN_AUTH => [
+            Entity::MERCHANT_EMAIL          => 'sometimes|string',
+            Entity::MERCHANT_BUSINESS_NAME  => 'sometimes|string'
         ]
     ];
 
@@ -40,6 +43,10 @@ class Fetch extends BaseFetch
             Entity::REVIEWER_ID,
             self::EXPAND_EACH,
         ],
+        AuthType::ADMIN_AUTH => [
+            Entity::MERCHANT_EMAIL,
+            Entity::MERCHANT_BUSINESS_NAME,
+        ]
     ];
 
     public function validateStatus(string $attribute, string $status)

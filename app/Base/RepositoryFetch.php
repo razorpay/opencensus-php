@@ -894,8 +894,8 @@ trait RepositoryFetch
 
     protected function addQueryOrder($query)
     {
-        $query->orderBy(Common::CREATED_AT, 'desc')
-              ->orderBy(Common::ID, 'desc');
+        $query->orderBy($this->dbColumn(Common::CREATED_AT), 'desc')
+              ->orderBy($this->dbColumn(Common::ID), 'desc');
     }
 
     protected function addQueryParamCount($query, $params)
