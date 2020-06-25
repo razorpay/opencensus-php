@@ -74,8 +74,8 @@ class NetbankingRecon extends Job
 
             $this->trace->traceException(
                 $ex,
-                Trace::ERROR,
-                TraceCode::RECON_INFO_ALERT,
+                Trace::CRITICAL,
+                TraceCode::RECON_CRITICAL_ALERT,
                 [
                     'info_code' => InfoCode::PAYMENT_RECON_NBPLUS_JOB_FAILURE_EXCEPTION,
                     'request'   => $request,

@@ -7,6 +7,7 @@ use RZP\Exception;
 
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
+use RZP\Error\ErrorCode;
 use RZP\Constants\Entity;
 use RZP\Gateway\Base\Verify;
 use RZP\Models\Base\PublicEntity;
@@ -39,6 +40,16 @@ class Netbanking extends Service
         if ($this->action === Action::AUTHORIZE_FAILED)
         {
             $action = Action::VERIFY;
+        }
+
+        if ($this->action === Action::FORCE_AUTHORIZE_FAILED)
+        {
+            if ($this->app['api.route']->getCurrentRouteName() === 'payment_force_authorize')
+            {
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_ACTION);
+            }
+
+            return true;
         }
 
         if (empty($input[Entity::TERMINAL]) === false)
