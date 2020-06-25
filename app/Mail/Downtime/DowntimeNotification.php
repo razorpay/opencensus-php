@@ -9,6 +9,7 @@ use RZP\Mail\Base\Mailable;
 use RZP\Mail\Base\Constants;
 use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Downtime\Entity;
+use RZP\Models\Payment\Processor\Netbanking;
 
 class DowntimeNotification extends Mailable
 {
@@ -27,6 +28,16 @@ class DowntimeNotification extends Mailable
         $this->data = $downtime;
 
         $this->status = $status;
+
+        if (isset($this->data[Entity::ISSUER]) && $this->data['method'] != Method::WALLET)
+        {
+            $bank = Netbanking::getName($this->data[Entity::ISSUER]);
+
+            if (isset($bank))
+            {
+                $this->data[Entity::ISSUER] = $bank;
+            }
+        }
 
         $dimension = null;
 
