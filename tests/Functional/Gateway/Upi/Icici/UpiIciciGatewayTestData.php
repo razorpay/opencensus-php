@@ -448,4 +448,46 @@ return [
             ],
         ],
     ],
+
+    'testValidateAccountVpa' => [
+        'request' => [
+            'url'    => '/payments/validate/account',
+            'method' => 'post',
+            'content' => [
+                'entity' => 'vpa',
+                'value'  => 'success@icici'
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'vpa'           => "success@icici",
+                'success'       => true,
+                'customer_name' => "Rohit",
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testValidateVpaInvalidVpa' => [
+        'request'   => [
+            'url'       => '/payment/validate/vpa',
+            'method'    => 'post',
+            'content'   => [
+                'vpa' => 'invalid@sbi',
+            ]
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::GATEWAY_ERROR,
+                    'description' => PublicErrorDescription::GATEWAY_ERROR,
+                ],
+            ],
+            'status_code' => 502,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\GatewayErrorException::class,
+            'internal_error_code' => ErrorCode::GATEWAY_ERROR_FATAL_ERROR
+        ],
+    ],
 ];

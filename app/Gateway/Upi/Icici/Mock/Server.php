@@ -4,7 +4,6 @@ namespace RZP\Gateway\Upi\Icici\Mock;
 
 use App;
 use Carbon\Carbon;
-use RZP\Gateway\Upi\Icici;
 use RZP\Models\Payment;
 use phpseclib\Crypt\RSA;
 use RZP\Gateway\Base;
@@ -401,6 +400,47 @@ class Server extends Base\Mock\Server
         ];
 
         $this->content($response);
+
+        return $response;
+    }
+
+    public function validateVpa($input)
+    {
+        $request = json_decode($input, true);
+
+        $response = $this->getValidateVpaResponseArray($request);
+
+        return $this->makeResponse($response);
+    }
+
+    private function getValidateVpaResponseArray(array $input)
+    {
+        $input = $input["entities"];
+
+        $vpa = $input['payment']['vpa'];
+
+        $response = [
+            'BankRRN'       => 'Random',
+            'MobileAppData' => 'SUCCESS,Mask Name=Rohit',
+            'SeqNo'         => random_alpha_string(35),
+            'UpiTranlogId'  => '293731967',
+            'UserProfile'   => 'random_id',
+            'message'       => 'Transaction Successful',
+            'response'      => '0',
+            'success'       => true,
+            'customer_name' => 'Rohit',
+        ];
+
+        if ($vpa === 'invalid@sbi')
+        {
+            $response['response']      = 'ZH';
+            $response['MobileAppData'] = null;
+            $response['message']       = 'INVALID VIRTUAL ADDRESS';
+            $response['success']       = false;
+            $response['customer_name'] = null;
+        }
+
+        $response["data"] = $response;
 
         return $response;
     }

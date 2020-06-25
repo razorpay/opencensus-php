@@ -1910,6 +1910,7 @@ class Gateway
         Mode::LIVE => [
             '9Q8w9weX9D1T27',
             'AK6NMmzbL6FPe4',
+            '6KTOhwf4XBOMns',
         ],
         Mode::TEST => [
             '1000SharpTrmnl',

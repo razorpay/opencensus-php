@@ -1401,4 +1401,80 @@ class Gateway extends Base\Gateway
                 $errorMessage);
         }
     }
+
+    public function validateVpa(array $input)
+    {
+        parent::action($input, Action::VALIDATE_VPA);
+
+        $request = [
+            'terminal' =>  $this->terminal,
+            'payment' => [
+                //payment_id is not used, but have to send anyway else the flow breaks @sendMozartRequest
+                'id' => 'NA',
+                'vpa' => $input['vpa'],
+            ],
+        ];
+
+        $traceData = $this->maskUpiDataForTracing($request['payment'], [
+            Entity::VPA             => Entity::VPA,
+        ]);
+
+        $this->trace->info('GATEWAY_VALIDATE_VPA_REQUEST',
+            [
+                'encrypted'  => false,
+                'vpa'        => $traceData,
+                'gateway'    => $this->gateway,
+            ]);
+
+        $response = $this->sendMozartRequest($request);
+
+        $this->checkErrorsAndThrowExceptionFromMozartResponse($response);
+
+        $data = $response['data'];
+
+        $traceData = $this->maskUpiDataForTracing($data, [
+            Entity::VPA             => 'MobileAppData',
+            Entity::VPA             => 'customer_name',
+        ]);
+
+        $this->trace->info(TraceCode::GATEWAY_VALIDATE_VPA_RESPONSE,
+            [
+                'encrypted'  => false,
+                'response'   => $traceData,
+                'gateway'    => $this->gateway,
+            ]);
+
+        $this->checkVpaResponseStatus($data['success']);
+
+        return $this->returnValidateVpaResponse($data);
+    }
+
+    /**
+     * @param string $status
+     * @throws GatewayErrorException
+     */
+    private function checkVpaResponseStatus(string $status)
+    {
+        if ($status === false)
+        {
+            $errorCode = $status['error'];
+
+            $errorMessage = $status['errorDesc'];
+
+            throw new GatewayErrorException($errorCode, $status, $errorMessage);
+        }
+    }
+
+    protected function returnValidateVpaResponse($data)
+    {
+        if ( isset($data['customer_name']))
+        {
+            return $data['customer_name'];
+        }
+        if (isset($response['MobileAppData']) === true and $response['MobileAppData'] != null)
+        {
+            $vpa = explode( '=', $response['MobileAppData']);
+            return $vpa[1];
+        }
+    }
 }

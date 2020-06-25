@@ -36,7 +36,12 @@ trait Vpa
 
         if (($this->mode === Mode::LIVE) and ($variant === Payment\Gateway::UPI_SBI))
         {
-            $terminalIds = ['AK6NMmzbL6FPe4', '9Q8w9weX9D1T27'];
+            $terminalIds = ['AK6NMmzbL6FPe4', '9Q8w9weX9D1T27', '6KTOhwf4XBOMns'];
+        }
+
+        if (($this->mode === Mode::LIVE) and ($variant === Payment\Gateway::UPI_ICICI))
+        {
+            $terminalIds = ['6KTOhwf4XBOMns', '9Q8w9weX9D1T27', 'AK6NMmzbL6FPe4'];
         }
 
         $terminals = $this->repo->terminal->findManyEnabledByIds($terminalIds);

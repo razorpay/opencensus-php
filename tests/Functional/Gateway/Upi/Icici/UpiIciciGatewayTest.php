@@ -8,6 +8,7 @@ use Carbon\Carbon;
 use RZP\Constants\Timezone;
 use Illuminate\Database\Eloquent\Factory;
 
+use RZP\Models\Payment\Gateway;
 use RZP\Gateway\Upi\Base\Entity;
 use RZP\Gateway\Upi\Icici\Fields;
 use RZP\Tests\Functional\TestCase;
@@ -1292,5 +1293,24 @@ EOT;
         $this->assertSame('icici', $upi->provider);
         $this->assertSame('ICIC', $upi->bank);
         $this->assertSame('0', $upi->status_code);
+    }
+
+    public function testValidateAccountVpa()
+    {
+        config()->set('gateway.validate_vpa_terminal_ids.test', '100UPIICICITml');
+
+        $this->ba->publicAuth();
+        $this->startTest();
+    }
+
+    public function testValidateVpaInvalidVpa()
+    {
+        config()->set('gateway.validate_vpa_terminal_ids.test', '100UPIICICITml');
+
+        $this->fixtures->merchant->addFeatures(['enable_vpa_validate']);
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
     }
 }
