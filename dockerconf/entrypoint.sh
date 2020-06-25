@@ -38,6 +38,8 @@ configure(){
   cp dockerconf/api.apache.conf /etc/apache2/conf.d/api.conf
   sed -i 's/^#ExtendedStatus\ On/ExtendedStatus\ On/g' /etc/apache2/conf.d/info.conf
   sed -i 's/^ServerSignature\ On/ServerSignature Off/g' /etc/apache2/httpd.conf
+  echo "setting max_input_vars to 2000"
+  sed -ie "s/; max_input_vars =.*/max_input_vars = 2000/g" /etc/php7/php.ini
   ## Enable newrelic only for prod and perf
   if [[ "${APP_MODE}" == "prod" ]] || [[ "${APP_MODE}" == "perf" ]]; then
     $ALOHOMORA_BIN cast --region ap-south-1 --env "$APP_MODE" --app api "dockerconf/newrelic.ini.j2"
