@@ -1389,7 +1389,7 @@ class Pricing extends Base
     {
         foreach ($rows as $row)
         {
-            $this->edit($row['id'], array_merge($attributes, $row));
+            $this->edit($row['id'], array_replace($row, $attributes));
         }
     }
 
