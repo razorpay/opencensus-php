@@ -25,7 +25,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 
     protected function getArn($row)
     {
-        return $row[self::COLUMN_ARN] ?? null;
+        return $row[self::COLUMN_RRN] ?? null;
     }
 
     protected function getGatewayTransactionId(array $row)

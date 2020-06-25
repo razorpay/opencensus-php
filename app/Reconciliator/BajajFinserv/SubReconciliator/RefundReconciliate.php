@@ -103,7 +103,7 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
 
     protected function getArn($row)
     {
-        return $row[self::COLUMN_ARN] ?? null;
+        return $row[self::COLUMN_RRN] ?? null;
     }
 
     protected function getReferenceNumber(array $row)
