@@ -106,10 +106,10 @@ function FileFormat({ logTemplate, configTemplate }) {
 }
 
 const logItemInfoMessages = {
-  created:
-    'Report is getting generated. At certain cases it might take a little longer to generate.',
+  'in-process':
+    'Report generation might take  anywhere between 2 min - 1 hour depending on the data volume. You can download here when report is ready.',
   'no-data':
-    'Report could not be generated as there is no data data available.',
+    'Report could not be generated as there is no data available.',
   'ready-for-download': 'Report has been successfully generated',
   error: 'Something went wrong, please try again after sometime.',
 };

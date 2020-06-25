@@ -31,6 +31,7 @@ export const getActualLogStatus = ({ status, fileId }) => {
   switch (status) {
     case 'created':
     case 'processing':
+    case 'retrying':
       return 'in-process';
     case 'processed':
       return fileId ? 'ready-for-download' : 'no-data';
