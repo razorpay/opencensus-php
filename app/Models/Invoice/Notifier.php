@@ -996,7 +996,7 @@ class Notifier extends Base\Core
 
                 $template = 'sms.custom_invoice.icici_prudential';
 
-                $sender = 'ICICPR';
+                $sender = 'ICICIP';
 
                 $params   = [
                     'invoice_link'     => $invoiceLink,
