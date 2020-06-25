@@ -8,6 +8,7 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\File;
 use Illuminate\Database\Connectors\MySqlConnector as BaseMySqlConnector;
 
+use PDO;
 use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Base\Database\DetectsLostConnections;
@@ -215,5 +216,18 @@ class MySqlConnector extends BaseMySqlConnector
     public function isWaitTimeoutActive()
     {
         return ($this->waitTimeout === self::ENABLE);
+    }
+
+    protected function setModes(PDO $connection, array $config)
+    {
+        if (isset($config['modes'])) {
+            $this->setCustomModes($connection, $config);
+        } elseif (isset($config['strict'])) {
+            if ($config['strict']) {
+                $connection->exec($this->strictMode($connection));
+            } else {
+                $connection->exec("set session sql_mode='NO_ENGINE_SUBSTITUTION'");
+            }
+        }
     }
 }
