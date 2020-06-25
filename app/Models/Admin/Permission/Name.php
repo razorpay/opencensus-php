@@ -249,6 +249,7 @@ class Name
     const VIEW_GATEWAY_DOWNTIME               = 'view_gateway_downtime';
     const UPDATE_GATEWAY_DOWNTIME             = 'update_gateway_downtime';
     const CREATE_PROMOTION_COUPON             = 'create_promotion_coupon';
+    const DEACTIVATE_PROMOTION                = 'deactivate_promotion';
     const RAZORX_APPROVERS                    = 'razorx_approvers';
     const USER_PASSWORD_RESET                 = 'user_password_reset';
     const MODIFY_SUBSCRIPTION_DATA            = 'modify_subscription_data';

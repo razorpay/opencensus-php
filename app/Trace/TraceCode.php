@@ -676,6 +676,13 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const INVOICE_PDF_GEN_SYNC                                  = 'INVOICE_PDF_GEN_SYNC';
 
     const PROMOTION_CREATE_REQUEST                              = 'PROMOTION_CREATE_REQUEST';
+    const PROMOTION_FOR_EVENT_CREATE_REQUEST                    = 'PROMOTION_FOR_EVENT_CREATE_REQUEST';
+
+    const PROMOTION_DEACTIVATE_REQUEST                          = 'PROMOTION_DEACTIVATE_REQUEST';
+    const PROMOTION_DEACTIVATE_RESPONSE                         = 'PROMOTION_DEACTIVATE_RESPONSE';
+    const PROMOTION_CREATE_RESPONSE                             = 'PROMOTION_CREATE_RESPONSE';
+    const PROMOTION_FOR_EVENT_CREATE_RESPONSE                   = 'PROMOTION_FOR_EVENT_CREATE_RESPONSE';
+
     const PROMOTION_UPDATE_REQUEST                              = 'PROMOTION_UPDATE_REQUEST';
     const PROMOTION_ACTIVATION_FAILED                           = 'PROMOTION_ACTIVATION_FAILED';
     const MERCHANT_PROMOTION_CREATED                            = 'MERCHANT_PROMOTION_CREATED';

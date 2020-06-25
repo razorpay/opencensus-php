@@ -336,6 +336,8 @@ class PublicErrorDescription
     const BAD_REQUEST_TRANSACTION_AMOUT_GREATER_THAN_REGISTERED_AMOUNT          = 'Transaction amount exceeds the allowed amount.';
     const BAD_REQUEST_FREQUENCY_DEBIT_LIMIT_EXCEEDED                            = 'The frequency of debit on the account has been exceeded.';
 
+    const BAD_REQUEST_ACTIVE_PROMOTION_FOR_EVENT_ALREADY_EXISTS                 = 'A promotion for given event already exists';
+
     const BAD_REQUEST_MERCHANT_ACTIVATION_FORM_NOT_SUBMITTED                    = 'The merchant has not submitted the activation form yet.';
     const BAD_REQUEST_MERCHANT_ALREADY_ACTIVATED                                = 'The merchant has already been activated';
     const BAD_REQUEST_MERCHANT_NOT_ACTIVATED                                    = 'The merchant has not been activated. This action can only be taken for activated merchants';

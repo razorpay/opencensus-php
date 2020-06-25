@@ -28,6 +28,9 @@ class CreatePromotionsTable extends Migration
 
             $table->string(Promotion::NAME, 50);
 
+            $table->string(Promotion::PRODUCT, 225)
+                  ->nullable();
+
             $table->integer(Promotion::CREDIT_AMOUNT)
                   ->unsigned()
                   ->default(0);
@@ -56,9 +59,45 @@ class CreatePromotionsTable extends Migration
             $table->char(Promotion::PARTNER_ID, Merchant::ID_LENGTH)
                   ->nullable();
 
+            $table->char(Promotion::EVENT_ID, PublicEntity::ID_LENGTH)
+                  ->nullable();
+
+            $table->integer(Promotion::START_AT)
+                  ->nullable();
+
+            $table->integer(Promotion::END_AT)
+                  ->nullable();
+
+            $table->integer(Promotion::ACTIVATED_AT)
+                  ->nullable();
+
+            $table->integer(Promotion::DEACTIVATED_AT)
+                  ->nullable();
+
+            $table->string(Promotion::STATUS, 255)
+                  ->nullable();
+
+            $table->string(Promotion::DEACTIVATED_BY, 255)
+                  ->nullable();
+
             $table->integer(Promotion::CREATED_AT);
 
             $table->integer(Promotion::UPDATED_AT);
+
+            $table->string(Promotion::REFERENCE1, 255)
+                  ->nullable();
+
+            $table->string(Promotion::REFERENCE2, 255)
+                  ->nullable();
+
+            $table->string(Promotion::REFERENCE3, 255)
+                  ->nullable();
+
+            $table->string(Promotion::REFERENCE4, 255)
+                  ->nullable();
+
+            $table->string(Promotion::REFERENCE5, 255)
+                  ->nullable();
 
             $table->foreign(Promotion::SCHEDULE_ID)
                   ->references(Schedule\Entity::ID)

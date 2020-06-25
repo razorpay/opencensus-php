@@ -52,6 +52,9 @@ class CreateBalance extends Migration
             $table->bigInteger(Balance::FEE_CREDITS)
                   ->default(0);
 
+            $table->bigInteger(Balance::REWARD_FEE_CREDITS)
+                  ->default(0);
+
             $table->bigInteger(Balance::REFUND_CREDITS)
                   ->default(0);
 

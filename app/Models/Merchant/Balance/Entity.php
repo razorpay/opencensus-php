@@ -23,17 +23,18 @@ use Razorpay\Spine\DataTypes\Dictionary;
  */
 class Entity extends Base\PublicEntity
 {
-    const ID             = 'id';
-    const MERCHANT_ID    = 'merchant_id';
-    const TYPE           = 'type';
-    const CURRENCY       = 'currency';
-    const NAME           = 'name';
-    const BALANCE        = 'balance';
-    const LOCKED_BALANCE = 'locked_balance';
-    const ON_HOLD        = 'on_hold';
-    const AMOUNT_CREDITS = 'credits';
-    const FEE_CREDITS    = 'fee_credits';
-    const REFUND_CREDITS = 'refund_credits';
+    const ID                    = 'id';
+    const MERCHANT_ID           = 'merchant_id';
+    const TYPE                  = 'type';
+    const CURRENCY              = 'currency';
+    const NAME                  = 'name';
+    const BALANCE               = 'balance';
+    const LOCKED_BALANCE        = 'locked_balance';
+    const ON_HOLD               = 'on_hold';
+    const AMOUNT_CREDITS        = 'credits';
+    const FEE_CREDITS           = 'fee_credits';
+    const REWARD_FEE_CREDITS    = 'reward_fee_credits';
+    const REFUND_CREDITS        = 'refund_credits';
 
     //
     // This is bank_accounts.account_number for bank_account's virtual_account

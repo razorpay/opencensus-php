@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Promotion;
 
+use Carbon\Carbon;
+
 use RZP\Models\Base;
 use RZP\Models\Pricing\DefaultPlan;
 use RZP\Models\Transaction\CreditType;
@@ -18,11 +20,28 @@ class Entity extends Base\PublicEntity
     const PARTNER_ID              = 'partner_id';
     const PURPOSE                 = 'purpose';
     const CREATOR_NAME            = 'creator_name';
+    const PRODUCT                 = 'product';
+    const EVENT_ID                = 'event_id';
+    const STATUS                  = 'status';
+    const START_AT                = 'start_at';
+    const END_AT                  = 'end_at';
+    const ACTIVATED_AT            = 'activated_at';
+    const DEACTIVATED_AT          = 'deactivated_at';
+    const DEACTIVATED_BY          = 'deactivated_by';
+    const REFERENCE1              = 'reference1';
+    const REFERENCE2              = 'reference2';
+    const REFERENCE3              = 'reference3';
+    const REFERENCE4              = 'reference4';
+    const REFERENCE5              = 'reference5';
 
     //These two variables are used to create schedule for promotion
     //in case the credits need to be expired and renewed
     const CREDITS_EXPIRY_PERIOD   = 'credits_expiry_period';
     const CREDITS_EXPIRY_INTERVAL = 'credits_expiry_interval';
+
+    const ACTIVATED                  = 'activated';
+    const DEACTIVATED                = 'deactivated';
+    const BANKING                    = 'banking';
 
     protected $entity      = 'promotion';
 
@@ -41,6 +60,13 @@ class Entity extends Base\PublicEntity
         self::PRICING_PLAN_ID,
         self::PURPOSE,
         self::CREATOR_NAME,
+        self::START_AT,
+        self::END_AT,
+        self::DEACTIVATED_AT,
+        self::DEACTIVATED_BY,
+        self::DEACTIVATED_AT,
+        self::STATUS,
+        self::PRODUCT,
     ];
 
     protected $visible = [
@@ -57,6 +83,14 @@ class Entity extends Base\PublicEntity
         self::PARTNER_ID,
         self::PURPOSE,
         self::CREATOR_NAME,
+        self::EVENT_ID,
+        self::ACTIVATED_AT,
+        self::START_AT,
+        self::END_AT,
+        self::ACTIVATED_AT,
+        self::DEACTIVATED_BY,
+        self::DEACTIVATED_AT,
+        self::STATUS,
     ];
 
     protected $defaults = [
@@ -74,6 +108,7 @@ class Entity extends Base\PublicEntity
 
     protected static $modifiers = [
         self::CREDITS_EXPIRE,
+        self::START_AT,
     ];
 
     protected function modifyCreditsExpire(array & $input)
@@ -81,6 +116,17 @@ class Entity extends Base\PublicEntity
         if (empty($input[self::CREDITS_EXPIRE]) === true)
         {
             $input[self::CREDITS_EXPIRE] = 0;
+        }
+    }
+
+    protected function modifyStartAt(array & $input)
+    {
+        if ((empty($input[self::START_AT]) === true) and
+            (isset($input[self::PRODUCT]) === true))
+        {
+            $time = Carbon::now()->getTimestamp();
+
+            $input[self::START_AT] = $time;
         }
     }
 
@@ -99,7 +145,17 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo(\RZP\Models\Merchant\Entity::class);
     }
 
+    public function event()
+    {
+        return $this->belongsTo(Event\Entity::class);
+    }
+
 // ----------------------- Getters ---------------------------------------------
+
+    public function getStatus()
+    {
+        return $this->getAttribute(self::STATUS);
+    }
 
     public function getName()
     {
@@ -129,5 +185,62 @@ class Entity extends Base\PublicEntity
     public function getPricingPlanId()
     {
         return $this->getAttribute(self::PRICING_PLAN_ID);
+    }
+
+    public function getProduct()
+    {
+        return $this->getAttribute(self::PRODUCT);
+    }
+
+    public function getStartAt()
+    {
+        return $this->getAttribute(self::START_AT);
+    }
+
+    public function getEndAt()
+    {
+        return $this->getAttribute(self::END_AT);
+    }
+    // setters
+
+    public function setActivatedAt($time = null)
+    {
+        $this->setAttribute(self::ACTIVATED_AT, $time);
+    }
+
+    public function setDeactivatedAt($time = null)
+    {
+        $this->setAttribute(self::DEACTIVATED_AT, $time);
+    }
+
+    public function setStatus(string $status)
+    {
+        $this->setAttribute(self::STATUS, $status);
+
+        $timestampKey = $status . '_at';
+
+        $currentTime = Carbon::now()->getTimestamp();
+
+        $this->setAttribute($timestampKey, $currentTime);
+    }
+
+    public function setProduct($product)
+    {
+        $this->setAttribute(self::PRODUCT, $product);
+    }
+
+    public function setStartAt($time = null)
+    {
+        if ($time === null)
+        {
+            $time = Carbon::now()->getTimestamp();
+        }
+
+        $this->setAttribute(self::START_AT, $time);
+    }
+
+    public function setEndAt($time = null)
+    {
+        $this->setAttribute(self::END_AT, $time);
     }
 }

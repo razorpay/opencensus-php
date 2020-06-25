@@ -5,14 +5,17 @@ namespace RZP\Models\Promotion;
 use Carbon\Carbon;
 
 use RZP\Exception;
+use RZP\Constants\Mode;
+use RZP\Error\ErrorCode;
 use RZP\Constants\Timezone;
 use RZP\Models\Schedule\Anchor;
+use RZP\Exception\BadRequestException;
 use RZP\Models\{Base, Schedule, Merchant};
 use RZP\Models\Merchant\Promotion as MerchantPromotion;
 
 class Core extends Base\Core
 {
-    public function create(array $input): Entity
+    public function create(array $input, Event\Entity $event = null): Entity
     {
         $partner = null;
 
@@ -26,7 +29,7 @@ class Core extends Base\Core
             unset($input[Entity::PARTNER_ID]);
         }
 
-        return $this->repo->transaction(function() use ($input, $partner)
+        return $this->repo->transaction(function() use ($input, $partner, $event)
         {
             $promotion = (new Entity)->build($input);
 
@@ -42,6 +45,23 @@ class Core extends Base\Core
                 $promotion->partner()->associate($partner);
             }
 
+            if (empty($event) === false)
+            {
+                $existingPromotion = $this->repo->promotion->checkIfActivatedPromotionForEventExists(
+                                                                    $promotion,
+                                                                    $event);
+
+                if ($existingPromotion !== null)
+                {
+                    throw new Exception\BadRequestException(
+                                    ErrorCode::BAD_REQUEST_ACTIVE_PROMOTION_FOR_EVENT_ALREADY_EXISTS);
+                }
+
+                $promotion->setStatus(Entity::ACTIVATED);
+
+                $promotion->event()->associate($event);
+            }
+
             $this->repo->saveOrFail($promotion);
 
             return $promotion;
@@ -54,6 +74,12 @@ class Core extends Base\Core
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Editing a used promotion is not allowed');
+        }
+
+        if ($promotion->getProduct() === Entity::BANKING)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Editing a banking promotion is not allowed');
         }
 
         return $this->repo->transaction(
@@ -74,6 +100,31 @@ class Core extends Base\Core
         });
     }
 
+    public function deactivatePromotion(Entity $promotion, array $input): Entity
+    {
+        if ($this->canPromotionBeDeactivated($promotion) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'The promotion cannot be deactivated');
+        }
+
+        if ($this->isDeactivated($promotion) === true)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Promotion already deactivated');
+        }
+
+        (new Validator)->validateInput(Validator::DEACTIVATE, $input);
+
+        $promotion->edit($input);
+
+        $promotion->setStatus(Entity::DEACTIVATED);
+
+        $this->repo->saveOrFail($promotion);
+
+        return $promotion;
+    }
+
     public function processTasks(Base\PublicCollection $tasks, int $timestamp): array
     {
         return (new MerchantPromotion\Core)->processTasks($tasks, $timestamp);
@@ -91,6 +142,30 @@ class Core extends Base\Core
         }
 
         return true;
+    }
+
+    public function isDeactivated(Entity $promotion): bool
+    {
+        $status = $promotion->getStatus();
+
+        if ($status === Entity::DEACTIVATED)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    protected function canPromotionBeDeactivated(Entity $promotion): bool
+    {
+        $product = $promotion->getProduct() ;
+
+        if ($product === Entity::BANKING)
+        {
+            return true;
+        }
+
+        return false;
     }
 
     protected function createSchedule(array $input): Schedule\Entity

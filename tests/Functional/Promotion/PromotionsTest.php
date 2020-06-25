@@ -2,12 +2,15 @@
 
 namespace RZP\Tests\Functional\Promotion;
 
+use RZP\Models\Promotion\Event;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 
 class PromotionsTest extends TestCase
 {
     use RequestResponseFlowTrait;
+    use DbEntityFetchTrait;
 
     public function setUp()
     {
@@ -143,5 +146,68 @@ class PromotionsTest extends TestCase
     public function testPromotionWithMissingPeriod()
     {
         $this->startTest();
+    }
+
+    public function testCreateBankingPromotion()
+    {
+        $this->ba->adminAuth('live');
+
+        $response = $this->makeEventForPromotion();
+
+        $this->testData[__FUNCTION__]['request']['content']['event_id']  = $response['id'];
+
+        $this->startTest();
+
+        $promotion = $this->getDbLastEntity('promotion', 'live');
+
+        $this->assertEquals('activated', $promotion['status']);
+
+        $this->assertEquals('reward_fee', $promotion['credit_type']);
+
+        $this->assertNull($promotion['end_at']);
+    }
+
+    public function testCreateBankingPromotionOverlap()
+    {
+        $this->testCreateBankingPromotion();
+
+        $event = $this->getDbLastEntity('promotion_event', 'live');
+
+        $this->testData[__FUNCTION__]['request']['content']['event_id']  = $event['id'];
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data);
+    }
+
+    public function testDeactivateBankingPromotion()
+    {
+        $this->testCreateBankingPromotion();
+
+        $promotion = $this->getDbLastEntity('promotion', 'live');
+
+        $this->ba->adminAuth('live');
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/promotions/'. $promotion->getId().'/deactivate';
+
+        $this->startTest();
+    }
+
+    protected function makeEventForPromotion()
+    {
+        $data = [
+            Event\Entity::NAME           => 'sign up',
+            Event\Entity::DESCRIPTION    => 'sign up related credits'
+        ];
+
+        $request = [
+            'content' => $data,
+            'url'     => '/promotions/events',
+            'method'  => 'post'
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        return $response;
     }
 }

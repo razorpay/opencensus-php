@@ -309,8 +309,12 @@ return [
             Permission::DELETE_TERMINAL                     => '',
             Permission::EDIT_TERMINAL                       => '',
             Permission::CREATE_SETTLEMENTS_RECONCILE        => '',
-            Permission::CREATE_RECONCILIATE                 => '',
+            Permission::DEACTIVATE_PROMOTION                 => [
+                'assignable' => true,
+                'description'   => 'allows deactivating a promotion'
+            ],
             Permission::CREATE_PROMOTION_COUPON             => '',
+            Permission::CREATE_RECONCILIATE                 => '',
             Permission::BATCH_API_CALL                      => '',
             Permission::MERCHANT_RESTRICT                   => '',
             Permission::UPDATE_USER_CONTACT_MOBILE          => '',

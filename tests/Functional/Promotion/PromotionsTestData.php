@@ -376,4 +376,66 @@ return [
         'period'   => 'monthly',
         'type'     => 'promotion',
     ],
+
+    'testCreateBankingPromotion' => [
+        'request' => [
+            'content' => [
+                'name'              => 'Test-Promotion',
+                'credit_amount'     => 100,
+                'credit_type'       => 'reward_fee',
+                'purpose'           => 'Promotion Testing',
+                'product'           => 'banking',
+                'event_id'          => ''
+            ],
+            'url'    => '/event_promotions',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'name'              => 'Test-Promotion',
+            ]
+        ]
+    ],
+
+    'testCreateBankingPromotionOverlap' => [
+        'request' => [
+            'content' => [
+                'name'              => 'Test-Promotion',
+                'purpose'           => 'Promotion Testing',
+                'product'           => 'banking',
+                'event_id'          => '',
+                'credit_type'       => 'reward_fee',
+                'credit_amount'     => 100,
+            ],
+            'url'    => '/event_promotions',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'A promotion for given event already exists'
+                ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ACTIVE_PROMOTION_FOR_EVENT_ALREADY_EXISTS
+        ]
+    ],
+
+    'testDeactivateBankingPromotion' => [
+        'request' => [
+            'content' => [
+            ],
+            'url'    => '/promotions',
+            'method' => 'PATCH'
+        ],
+        'response' => [
+            'content' => [
+                'status'              => 'deactivated',
+            ]
+        ]
+    ]
 ];

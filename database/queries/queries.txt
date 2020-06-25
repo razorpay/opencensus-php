@@ -5779,6 +5779,21 @@ ALTER TABLE merchant_banks
 ALTER TABLE terminals
     ADD COLUMN cred TINYINT(1) NOT NULL DEFAULT 0;
 
+ALTER TABLE promotions
+    ADD COLUMN product varchar(255) DEFAULT NULL,
+    ADD COLUMN event_id char(14) DEFAULT NULL,
+    ADD COLUMN start_at int DEFAULT NULL,
+    ADD COLUMN end_at int DEFAULT NULL,
+    ADD COLUMN activated_at int DEFAULT NULL,
+    ADD COLUMN deactivated_at int DEFAULT NULL,
+    ADD COLUMN status varchar(255) DEFAULT NULL,
+    ADD COLUMN deactivated_by varchar(255) DEFAULT NULL,
+    ADD COLUMN reference1 varchar(255) DEFAULT NULL,
+    ADD COLUMN reference2 varchar(255) DEFAULT NULL,
+    ADD COLUMN reference3 varchar(255) DEFAULT NULL,
+    ADD COLUMN reference4 varchar(255) DEFAULT NULL,
+    ADD COLUMN reference5 varchar(255) DEFAULT NULL;
+
 // update methods in emi_plans for bajajfinserv to card.
 UPDATE emi_plans SET method="card" WHERE network="BAJAJ" and deleted_at IS NULL LIMIT 11;
 

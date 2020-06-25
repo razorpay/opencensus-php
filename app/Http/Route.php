@@ -1139,7 +1139,9 @@ class Route
 
         // Promotion routes
         'promotion_create'                         => ['post',     'promotions',                                     'PromotionController@create'                                        ],
+        'promotion_create_for_event'               => ['post',     'event_promotions',                               'PromotionController@createPromotionForEvent'                                        ],
         'promotion_update'                         => ['patch',    'promotions/{id}',                                'PromotionController@update'                                        ],
+        'promotion_deactivate'                     => ['patch',    'promotions/{id}/deactivate',                     'PromotionController@deactivatePromotion'                           ],
 
         // Coupon routes
         'coupon_create'                            => ['post',     'coupons',                                        'CouponController@create'                                           ],
@@ -1779,6 +1781,8 @@ class Route
 
         //cron job to retry penny testing for initiated case
         'retry_penny_testing_cron'                => ['post',      'merchants/retry_penny_testing',                           'MerchantController@retryPennyTestingCron'                 ],
+        'create_promotions_events'                => ['post',      'promotions/events',                                        'PromotionEventController@create'],
+
         'create_promotions_events'                => ['post',      'promotions/events',                                        'PromotionEventController@create'],
 
 
@@ -3044,6 +3048,8 @@ class Route
         'payments_multiple_authorize_refund',
         'promotion_create',
         'promotion_update',
+        'promotion_deactivate',
+        'promotion_create_for_event',
         'refund_create_missing_txn',
         'refund_gateway_manual',
         'risk_create',
@@ -3729,7 +3735,11 @@ class Route
         'payment_force_authorize'                  => '*',
         'payments_multiple_authorize_refund'       => '*',
         'promotion_create'                         => Permission::CREATE_PROMOTION_COUPON,
-        'promotion_update'                         => Permission::CREATE_PROMOTION_COUPON,
+        'promotion_create_for_event'               => Permission::CREATE_PROMOTION_COUPON,
+        'promotion_update'                         => '*',
+        // keeping the permission same for rewards as well, as mostly marketing/sme team has
+        // this permission and so it won't be required to assign them a new promotion
+        'promotion_deactivate'                     => Permission::DEACTIVATE_PROMOTION,
         'refund_create_missing_txn'                => '*',
         'refund_gateway_manual'                    => '*',
         'risk_create'                              => '*',
@@ -4067,7 +4077,6 @@ class Route
         'create_payment_config_admin'               => '*',
         'update_payment_config_admin'               => '*',
         'admin_fetch_fund_account_validate'         => '*',
-
         'create_promotions_events'                  => Permission::CREATE_PROMOTION_EVENT,
         'fee_recovery_payout_admin'                 => Permission::PROCESS_FEE_RECOVERY,
         'fee_recovery_payout_schedule_task'         => Permission::ASSIGN_FEE_RECOVERY_SCHEDULE,
