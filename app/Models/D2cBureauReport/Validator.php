@@ -12,8 +12,9 @@ class Validator extends Base\Validator
 
     protected static $createRules = [
         Entity::PROVIDER            => 'required|string',
-        Entity::SCORE               => 'required|int',
-        Entity::REPORT              => 'required|json',
-        Entity::UFH_FILE_ID         => 'required|string',
+        Entity::ERROR_CODE          => 'sometimes|string',
+        Entity::SCORE               => 'sometimes|int',
+        Entity::REPORT              => 'sometimes|json',
+        Entity::UFH_FILE_ID         => 'sometimes|string',
     ];
 }

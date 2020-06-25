@@ -224,7 +224,17 @@ class Service extends Base\Service
                           ->strict(false)
                           ->validate();
 
+        /** @var Entity $bureauDetail */
         $bureauDetail = $this->core()->getOrCreate($merchantDetails, $this->merchant, $this->user, $data);
+
+
+        if ((isset($data[Entity::CONTACT_MOBILE]) === true) &&
+            ($data[Entity::CONTACT_MOBILE] !== $bureauDetail->getContactMobile()))
+        {
+            $bureauDetail[Entity::STATUS] = Status::CREATED;
+
+            $bureauDetail->setVerifiedAtNull();
+        }
 
         $bureauDetail->edit($data);
 

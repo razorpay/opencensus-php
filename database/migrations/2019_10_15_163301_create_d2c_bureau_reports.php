@@ -27,11 +27,17 @@ class CreateD2cBureauReports extends Migration
 
             $table->string(Entity::PROVIDER);
 
-            $table->unsignedSmallInteger(Entity::SCORE);
+            $table->string(Entity::ERROR_CODE)
+                  ->nullable();
 
-            $table->json(Entity::REPORT);
+            $table->unsignedSmallInteger(Entity::SCORE)
+                  ->nullable();
 
-            $table->char(Entity::UFH_FILE_ID);
+            $table->json(Entity::REPORT)
+                  ->nullable();
+
+            $table->char(Entity::UFH_FILE_ID)
+                  ->nullable();
 
             $table->char(Entity::CSV_REPORT_UFH_FILE_ID)
                   ->nullable();

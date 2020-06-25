@@ -6,13 +6,15 @@ use Mail;
 use Queue;
 use Config;
 
+use RZP\Error\ErrorCode;
+use RZP\Services\Mozart;
 use RZP\Models\Base\Entity;
 use RZP\Services\UfhService;
-use RZP\Services\Mock\Mozart;
 use RZP\Models\D2cBureauDetail;
 use RZP\Jobs\D2cCsvReportCreate;
 use RZP\Models\Feature\Constants;
 use RZP\Tests\Functional\TestCase;
+use RZP\Exception\GatewayErrorException;
 use RZP\Mail\D2CReport\D2cReportGenerated;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -46,12 +48,12 @@ class D2cBureauDetailsTest extends TestCase
             'entity_type'   => 'merchant',
         ]);
 
-        $mozartServiceMock = $this->getMockBuilder(Mozart::class)
+        $this->mozartServiceMock = $this->getMockBuilder(Mozart::class)
             ->setConstructorArgs([$this->app])
             ->setMethods(['sendMozartRequest'])
             ->getMock();
 
-        $mozartServiceMock->method('sendMozartRequest')
+        $this->mozartServiceMock->method('sendMozartRequest')
             ->will($this->returnCallback(
                 function ($namespace, $gateway, $action, $input, $version, $useMozartMappedInternalErrorCode)
                 {
@@ -79,7 +81,7 @@ class D2cBureauDetailsTest extends TestCase
                     ];
                 }));
 
-        $this->app->instance('mozart', $mozartServiceMock);
+        $this->app->instance('mozart', $this->mozartServiceMock);
 
     }
 
@@ -127,6 +129,62 @@ class D2cBureauDetailsTest extends TestCase
             'pan'             => 'ABCDE1234F',
 //            'created_at'      => 1586858252
         ], $d2cOwnerDetails);
+    }
+
+    public function testPostCreateInternalWithExperianFailure()
+    {
+        $mozartMockCopy = $this->mozartServiceMock;
+
+        $this->mozartServiceMock = $this->getMockBuilder(Mozart::class)
+                                        ->setConstructorArgs([$this->app])
+                                        ->setMethods(['sendMozartRequest'])
+                                        ->getMock();
+
+        $this->mozartServiceMock->method('sendMozartRequest')
+             ->will($this->returnCallback(
+                function ($namespace, $gateway, $action, $input, $version, $useMozartMappedInternalErrorCode)
+                {
+                    $this->assertArraySelectiveEquals([
+                        'first_name'    => 'john',
+                        'address'       => 'Adress',
+                        'city'          => 'city',
+                    ], $input['d2c_bureau_details']);
+
+                    throw new GatewayErrorException(ErrorCode::BAD_REQUEST_D2C_CREDIT_BUREAU_NO_RECORDS_FOUND);
+                }));
+
+        $this->app->instance('mozart', $this->mozartServiceMock);
+
+        $this->ba->appAuth('rzp_test', Config::get('applications.los')['secret']);
+
+        $this->startTest();
+
+        $d2cOwnerDetails = $this->getLastEntity('d2c_bureau_detail', true);
+
+        $this->assertArraySelectiveEquals([
+//            'id'              => 'd2cbd_EeKAdZlPeSM4mM',
+            'first_name'      => 'john',
+            'last_name'       => 'doe',
+            'date_of_birth'   => '1996-10-10',
+            'gender'          => 'male',
+            'contact_mobile'  => '9999999999',
+            'email'           => 'test@razorpay.com',
+            'address'         => 'Adress',
+            'city'            => 'city',
+            'state'           => 'PB',
+            'pincode'         => '560030',
+            'pan'             => 'ABCDE1234F',
+//            'created_at'      => 1586858252
+        ], $d2cOwnerDetails);
+
+        $d2cBureauReport = $this->getLastEntity('d2c_bureau_report', true);
+
+        $this->assertArraySelectiveEquals([
+            'error_code'        => 'BAD_REQUEST_D2C_CREDIT_BUREAU_NO_RECORDS_FOUND',
+            'provider'          => 'experian',
+        ], $d2cBureauReport);
+
+        $this->mozartServiceMock = $mozartMockCopy;
     }
 
     public function testPatchBureauDetails()

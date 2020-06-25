@@ -15,6 +15,7 @@ class Repository extends Base\Repository
                     ->where(Entity::PROVIDER, $provider)
                     ->where(Entity::MERCHANT_ID, $merchantId)
                     ->where(Entity::CREATED_AT, '>=', $after)
+                    ->whereNotNull(Entity::SCORE)
                     ->get()
                     ->last();
     }
@@ -24,12 +25,13 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->where(Entity::PROVIDER, $provider)
                     ->whereNull(Entity::CSV_REPORT_UFH_FILE_ID)
+                    ->whereNotNull(Entity::SCORE)
                     ->get();
     }
 
     public function findByParams(array $input, int $after)
     {
-        $query = $this->newQuery();
+        $query = $this->newQuery()->whereNotNull(Entity::SCORE);
 
         $query->where(Entity::MERCHANT_ID, $input[Entity::MERCHANT_ID]);
 

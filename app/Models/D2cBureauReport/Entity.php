@@ -23,6 +23,7 @@ class Entity extends Base\PublicEntity
     const USER_ID                   = 'user_id';
     const D2C_BUREAU_DETAIL_ID      = 'd2c_bureau_detail_id';
     const PROVIDER                  = 'provider';
+    const ERROR_CODE                = 'error_code';
     const SCORE                     = 'score';
     const REPORT                    = 'report';
     const UFH_FILE_ID               = 'ufh_file_id';
@@ -50,6 +51,7 @@ class Entity extends Base\PublicEntity
     protected $fillable = [
         self::ID,
         self::PROVIDER,
+        self::ERROR_CODE,
         self::SCORE,
         self::REPORT,
         self::INTERESTED,

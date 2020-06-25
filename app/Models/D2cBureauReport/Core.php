@@ -34,12 +34,34 @@ class Core extends Base\Core
         /** @var Mozart $mozartService */
         $mozartService = $this->app->mozart;
 
-        $response = $mozartService->sendMozartRequest(self::MOZART_NAMESPACE,
-                                                      Provider::EXPERIAN,
-                                                      self::MOZART_GET_REPORT_ACTION,
-                                                      $request,
-                                                      Mozart::DEFAULT_MOZART_VERSION,
-                                                      true);
+        try
+        {
+            $response = $mozartService->sendMozartRequest(self::MOZART_NAMESPACE,
+                                                          Provider::EXPERIAN,
+                                                          self::MOZART_GET_REPORT_ACTION,
+                                                          $request,
+                                                          Mozart::DEFAULT_MOZART_VERSION,
+                                                          true);
+        }
+        catch (\RZP\Exception\GatewayErrorException $e)
+        {
+            $input = [
+                Entity::PROVIDER    => Provider::EXPERIAN,
+                Entity::ERROR_CODE  => $e->getError()->getInternalErrorCode(),
+            ];
+
+            $report = (new Entity)->build($input);
+
+            $report->merchant()->associate($merchant);
+
+            $report->user()->associate($user);
+
+            $report->d2cBureauDetail()->associate($bureauDetail);
+
+            $this->repo->saveOrFail($report);
+
+            throw $e;
+        }
 
         // Response contains 3 keys:
         // 1. score: credit score of owner.
