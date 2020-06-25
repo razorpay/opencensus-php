@@ -10,10 +10,7 @@ Builds are done using Drone. See the `.drone.yml` file for details on these.
 #### Pre-requisites
 
 * Install [composer](https://getcomposer.org/download/) PHP package manager
-* Install [`node`](https://github.com/creationix/nvm) (`v6` or above)
-* Install [`yarn`](https://yarnpkg.com/en/docs/install)
-
-Note - Install node version 8.16 if you get problems while running npm build.
+* Install [`node`](https://github.com/creationix/nvm) (`v8`)
 
 # Setup instructions with Docker (for local development)
 
