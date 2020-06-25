@@ -611,17 +611,20 @@ class TerminalTest extends TestCase
                 'non_recurring'  => '1',
             ],
             'enabled'                   => 1,
+            'gateway_acquirer'          => 'dummy',
         ];
 
         $terminal = $this->fixtures->create('terminal', $attributes);
 
         $tid = $terminal['id'];
 
-        $data = ['international' => 0, 'mode' => Terminal\Mode::PURCHASE];
+        $data = ['international' => 0, 'mode' => Terminal\Mode::PURCHASE, 'gateway_acquirer' => 'random'];
 
         $content = $this->editTerminal($tid, $data);
 
         $this->assertEquals($content['international'], 0);
+
+        $this->assertEquals($content['gateway_acquirer'], 'random');
     }
 
     public function testCreatePaytmCardTerminal()
@@ -807,11 +810,81 @@ class TerminalTest extends TestCase
 
         $tid = $terminal['id'];
 
-        $data = ['gateway_terminal_id' => 'random', 'gateway_terminal_password' => 'random'];
+        $data = ['gateway_terminal_id' => 'random', 'gateway_terminal_password' => 'random', 'gateway_acquirer' => 'random'];
 
         $content = $this->editTerminal($tid, $data);
 
         $this->assertEquals($content['gateway_terminal_id'], 'random');
+
+        $this->assertEquals($content['gateway_acquirer'], 'random');
+    }
+
+    public function testEditCardFssTerminal()
+    {
+        $terminal = $this->fixtures->create(
+            'terminal',
+            [
+                'id'                   => 'AqdfGh5460opVt',
+                'merchant_id'          => '10000000000000',
+                'gateway'              => 'card_fss',
+                'gateway_acquirer'     => 'dummy',
+            ]);
+
+
+        $tid = $terminal['id'];
+
+        $data = ['gateway_acquirer' => 'random', 'gateway_merchant_id' => '123'];
+
+        $content = $this->editTerminal($tid, $data);
+
+        $this->assertEquals('random', $content['gateway_acquirer']);
+    }
+
+    public function testEditCybersourceTerminal()
+    {
+        $terminal = $this->fixtures->create(
+            'terminal',
+            [
+                'id'                   => 'AqdfGh5460opVt',
+                'merchant_id'          => '10000000000000',
+                'gateway'              => 'cybersource',
+                'gateway_acquirer'     => 'dummy',
+            ]);
+
+
+        $tid = $terminal['id'];
+
+        $data = ['gateway_acquirer' => 'random'];
+
+        $content = $this->editTerminal($tid, $data);
+
+        $this->assertEquals('random', $content['gateway_acquirer']);
+    }
+
+    public function testEditNetbankingAxisTerminal()
+    {
+        $terminal = $this->fixtures->create('terminal:shared_netbanking_axis_terminal');
+
+        $tid = $terminal['id'];
+
+        $data = ['gateway_acquirer' => 'random'];
+
+        $content = $this->editTerminal($tid, $data);
+
+        $this->assertEquals('random', $content['gateway_acquirer']);
+    }
+
+    public function testEditNetbankingCubTerminal()
+    {
+        $terminal = $this->fixtures->create('terminal:shared_netbanking_cub_terminal');
+
+        $tid = $terminal['id'];
+
+        $data = ['network_category' => 'random'];
+
+        $content = $this->editTerminal($tid, $data);
+
+        $this->assertEquals('random', $content['network_category']);
     }
 
     public function testEditNetbankingIciciTerminal()

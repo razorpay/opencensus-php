@@ -362,6 +362,7 @@ class Validator extends Base\Validator
 
     protected static $axisMigsEditTerminalRules = [
         Entity::GATEWAY                    => 'sometimes|in:axis_migs',
+        Entity::GATEWAY_ACQUIRER           => 'sometimes|string',
         Entity::GATEWAY_TERMINAL_ID        => 'sometimes',
         Entity::GATEWAY_TERMINAL_PASSWORD  => 'sometimes',
         Entity::CARD                       => 'sometimes|boolean|in:1',
@@ -452,6 +453,7 @@ class Validator extends Base\Validator
         Entity::MODE                       => 'sometimes|in:2,3',
         Entity::NETWORK_CATEGORY           => 'sometimes|string|max:30',
         Entity::CAPABILITY                 => 'sometimes',
+        Entity::GATEWAY_ACQUIRER           => 'sometimes|string',
     ];
 
     protected static $firstDataEditTerminalRules = [
@@ -469,6 +471,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_ACCESS_CODE        => 'sometimes|string',
         Entity::GATEWAY_TERMINAL_PASSWORD  => 'sometimes|string',
         Entity::GATEWAY_SECURE_SECRET2     => 'sometimes|string',
+        Entity::GATEWAY_ACQUIRER           => 'sometimes|string',
         Entity::GATEWAY                    => 'sometimes|in:cybersource',
         Entity::CARD                       => 'sometimes|boolean|in:1',
         Entity::INTERNATIONAL              => 'sometimes|boolean',
@@ -710,6 +713,7 @@ class Validator extends Base\Validator
 
     protected static $netbankingCubEditTerminalRules = [
         Entity::GATEWAY                    => 'sometimes|in:netbanking_cub',
+        Entity::NETWORK_CATEGORY           => 'sometimes|string',
         Entity::GATEWAY_MERCHANT_ID        => 'sometimes|string',
         Entity::GATEWAY_ACCESS_CODE        => 'sometimes|string',
         Entity::GATEWAY_SECURE_SECRET      => 'sometimes|string',
@@ -858,6 +862,7 @@ class Validator extends Base\Validator
         Entity::TYPE                       => 'sometimes|array',
         Entity::TPV                        => 'sometimes|in:0,1,2',
         Entity::CORPORATE                  => 'sometimes|int|in:0,1,2',
+        Entity::GATEWAY_ACQUIRER           => 'sometimes|string',
     ];
 
     protected static $nachCitiTerminalRules = [
@@ -1047,6 +1052,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_TERMINAL_ID         => 'sometimes|string',
         Entity::GATEWAY_TERMINAL_PASSWORD   => 'sometimes|string',
         Entity::GATEWAY_MERCHANT_ID2        => 'sometimes|string',
+        Entity::GATEWAY_ACQUIRER            => 'sometimes|string',
         Entity::GATEWAY_ACCESS_CODE         => 'sometimes|string',
         Entity::TYPE                        => 'sometimes|array',
         Entity::MODE                        => 'sometimes|integer|in:2,3',
