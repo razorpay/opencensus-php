@@ -43,6 +43,7 @@ class Repository extends Base\Repository
         Entity::PAYMENT_ID        => 'sometimes|string|min:14|max:18',
         Entity::RECEIPT           => 'sometimes|string|min:1|max:40',
         Entity::CUSTOMER_ID       => 'sometimes|string|min:14|max:19',
+        Entity::SUBSCRIPTION_ID   => 'sometimes|string|min:14|max:18',
     ];
 
     protected $proxyFetchParamRules = [

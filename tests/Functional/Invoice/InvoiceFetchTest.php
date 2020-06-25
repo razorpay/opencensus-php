@@ -194,4 +194,26 @@ class InvoiceFetchTest extends TestCase
             \RZP\Exception\BadRequestValidationFailureException::class,
             'The selected deleted is invalid.');
     }
+
+    public function testFetchInvoicesForSubscriptionId()
+    {
+        $this->ba->privateAuth();
+
+        $subscriptionAttributes = [
+            'id'          => '1000000subscri',
+            'total_count' => 3,
+            'notes'       => [],
+            'plan_id'     => '1000000000plan',
+            'schedule_id' => '100000schedule'
+        ];
+
+        $schedule     = $this->fixtures->create('schedule', ['id' => '100000schedule']);
+        $plan         = $this->fixtures->plan->create();
+        $subscription = $this->fixtures->create('subscription',$subscriptionAttributes);
+
+        $this->createDraftInvoice(['subscription_id' => $subscription->getId()]);
+
+        $this->startTest();
+
+    }
 }

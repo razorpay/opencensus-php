@@ -222,4 +222,22 @@ return [
             'content' => [],
         ],
     ],
+
+    'testFetchInvoicesForSubscriptionId' => [
+        'request' => [
+            'url'     => '/invoices/?subscription_id=sub_1000000subscri',
+            'method'  => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'count'  => 1,
+                'entity' => 'collection',
+                'items'  => [
+                    [
+                        'subscription_id' => 'sub_1000000subscri',
+                    ],
+                ],
+            ],
+        ],
+    ],
 ];

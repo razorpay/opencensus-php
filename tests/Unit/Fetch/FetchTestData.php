@@ -458,7 +458,48 @@ return [
         ],
     ],
 
-    E::INVOICE => [],
+    // Full test case for Invoices Fetch
+    E::INVOICE => [
+
+        Type::PRIVATE_AUTH => [
+            [
+                'type'            => 'invoice',
+                'payment_id'      => 'pay_F3abwoFneOLGrd',
+                'receipt'         => 'jfksfksfjsgkkk',
+                // as "The id provided does not exist" Exception is thrown, should be mocked TODO
+                // 'customer_id'     => 'F3abwoFneOLGrd',
+                'entity_type'     => 'invoices',
+                'international'   => false,
+                'subscription_id' => 'sub_F3aSpOE1PAXHDT',
+            ],
+        ],
+
+        Type::PROXY_AUTH => [
+            [
+                'type'             => 'invoice',
+                'payment_id'       => 'pay_F3abwoFneOLGrd',
+                'receipt'          => 'jfksfksfjsgkkk',
+                // as "The id provided does not exist" Exception is thrown, should be mocked TODO
+                // 'customer_id'     => 'F3abwoFneOLGrd',
+                // 'batch_id'        => '12345678901234',
+                // 'user_id' => 'F3abwoFneOLGrd',
+                'entity_type'      => 'invoices',
+                'international'    => false,
+                'subscription_id'  => 'sub_F3aSpOE1PAXHDT',
+                'status'           => 'issued',
+                'types'            => ['invoice'],
+                'statuses'         => ['issued'],
+                'customer_name'    => 'jayD',
+                'customer_contact' => '+919999999999',
+                'customer_email'   => 'j@j.com',
+                //'notes' => [],
+                'q'                => 'something',
+                'search_hits'      => true,
+                'subscriptions'    => true,
+                'expand.*'         => 'payments',
+            ],
+        ],
+    ],
 
     E::MERCHANT_INVOICE => [],
 
