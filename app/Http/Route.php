@@ -965,10 +965,7 @@ class Route
         'payout_reject_bulk'                       => ['post',     'payouts/reject/bulk',                            'PayoutController@bulkRejectFundAccountPayouts'                     ],
         'payout_approve'                           => ['post',     'payouts/{id}/approve',                           'PayoutController@postApproveFundAccountPayout'                     ],
         'payout_reject'                            => ['post',     'payouts/{id}/reject',                            'PayoutController@postRejectFundAccountPayout'                      ],
-        // TODO: 1. Change route name from reject to cancel.
-        //       2. Add functionality to cancel payouts in bulk rather than one by one.
-        //       3. Allow normal admin rather than SuperAdmin to cancel payouts.
-        'payout_reject_admin'                      => ['post',     'admin/payouts/{id}/reject',                      'PayoutController@postRejectFundAccountPayout'                      ],
+        'payout_reject_admin_bulk'                 => ['post',     'admin/payouts/cancel',                           'PayoutController@bulkRejectFundAccountPayouts'                     ],
         'payout_fetch_by_id'                       => ['get',      'payouts/{id}',                                   'PayoutController@getPayout'                                        ],
         'payout_fetch_by_id_internal'              => ['get',      'payouts_internal/{id}',                          'PayoutController@getPayout'                                        ],
         'payout_fetch_multiple'                    => ['get',      'payouts',                                        'PayoutController@getPayouts'                                       ],
@@ -2779,10 +2776,11 @@ class Route
     // of X-Admin-Token being passed.
     //
     public static $admin = [
+        'payout_reject_admin_bulk',
+        'emi_plans_migrate',
         'los_service_admin',
         'emi_plans_migrate',
         'ufh_admin_upload_file',
-        'payout_reject_admin',
         'd2c_create_csv_report',
         'offline_verification_service_get',
         'offline_verification_service_put',
@@ -3398,9 +3396,9 @@ class Route
     ];
 
     public static $routePermission = [
+        'payout_reject_admin_bulk'                 => Permission::REJECT_PAYOUT_BULK,
         'ufh_admin_upload_file'                    => '*',
         'los_service_admin'                        => Permission::LOANS_EDIT,
-        'payout_reject_admin'                      => Permission::REJECT_PAYOUT,
         'offline_verification_service_get'         => Permission::OFFLINE_VERIFICATION_SERVICE_VIEW,
         'offline_verification_service_post'        => Permission::OFFLINE_VERIFICATION_SERVICE_EDIT,
         'offline_verification_service_patch'       => Permission::OFFLINE_VERIFICATION_SERVICE_EDIT,

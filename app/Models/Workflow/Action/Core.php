@@ -617,24 +617,7 @@ class Core extends Base\Core
 
         $this->updateStateAndStateChanger($action, $state, $checkerEntity, $role);
 
-        try
-        {
-            (new Differ\Core)->updateStateInEs($actionId, $state);
-        }
-        catch(\Throwable $e)
-        {
-            // Since payout reject facility has been developed for
-            // rejecting payouts without ES data, this if condition ensures that
-            // no exception is thrown when superadmin is rejecting payout with
-            // no ES data.
-            if ($checkerEntity->isSuperAdmin() === false)
-            {
-                throw new Exception\ServerErrorException(
-                    'Payout not stored in ES',
-                    ErrorCode::SERVER_ERROR_PAYOUT_DATA_NOT_IN_ES
-                );
-            }
-        }
+        (new Differ\Core)->updateStateInEs($actionId, $state);
     }
 
     public function updateState(Entity $action, string $state)

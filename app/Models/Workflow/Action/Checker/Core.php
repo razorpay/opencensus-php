@@ -34,6 +34,8 @@ class Core extends Base\Core
 
         $permissionName = $action->permission->getName();
 
+        $isAdminAttemptingPayoutReject = false;
+
         /** @var BasicAuth $basicAuth */
         $basicAuth = $this->app['basicauth'];
 
@@ -47,10 +49,14 @@ class Core extends Base\Core
         if (Permission\Name::isMerchantPermission($permissionName) === true)
         {
             if (($checkerEntity === null) or
-                ($checkerEntity->isSuperAdmin() === false))
+                (in_array(Permission\Name::REJECT_PAYOUT_BULK, $checkerEntity->getPermissionsList()) === false))
             {
                 $checkerEntity = $basicAuth->getUser();
                 $checkerType   = 'user';
+            }
+            else
+            {
+                $isAdminAttemptingPayoutReject = true;
             }
         }
 
@@ -114,9 +120,21 @@ class Core extends Base\Core
         // steps in the same level and all the roles may belong to the
         // current checker in context that will lead to multiple $steps.
         //
-        $steps = $this->repo
-                      ->workflow_step
-                      ->findByLevelWorkflowIdAndRoleId($currentLevel, $workflowId, $checkerRoleIds);
+        // If Admin is rejecting a payout there are no relevant roles in
+        // workflow, hence we will fetch all open steps, so that admin
+        // can reject one of them
+        if ($isAdminAttemptingPayoutReject)
+        {
+            $steps = $this->repo
+                ->workflow_step
+                ->findByLevelAndWorkflowId($currentLevel, $workflowId);
+        }
+        else
+        {
+            $steps = $this->repo
+                ->workflow_step
+                ->findByLevelWorkflowIdAndRoleId($currentLevel, $workflowId, $checkerRoleIds);
+        }
 
         $checkNotRequired = false;
 
@@ -232,14 +250,34 @@ class Core extends Base\Core
 
         $checker->step()->associate($step);
 
-        $this->repo->transactionOnLiveAndTest(function() use ($action, $checker, $checkerEntity, $step)
+        $this->repo->transactionOnLiveAndTest(function() use ($action, $checker, $checkerEntity, $step, $isAdminAttemptingPayoutReject)
         {
             $this->repo->saveOrFail($checker);
 
             // State change if checker rejected
             if ($checker->isApproved() === false)
             {
-                (new Action\Core)->applyActionRejectionStateChanges($action, $checkerEntity, $step->role);
+                if ($isAdminAttemptingPayoutReject === true)
+                {
+                    try
+                    {
+                        (new Action\Core)->applyActionRejectionStateChanges($action, $checkerEntity, $checkerEntity->getPayoutRejectRole());
+                    }
+                    catch(\Throwable $throwable)
+                    {
+                        // Sometimes ES sync fails which results in action data not being
+                        // entered in ES. In this case too, admin should be allowed to bypass
+                        // this error, and reject the payout.
+                        if ($throwable->getCode() !== ErrorCode::BAD_REQUEST_WORKFLOW_ACTION_NOT_FOUND)
+                        {
+                            throw $throwable;
+                        }
+                    }
+                }
+                else
+                {
+                    (new Action\Core)->applyActionRejectionStateChanges($action, $checkerEntity, $step->role);
+                }
             }
             else
             {

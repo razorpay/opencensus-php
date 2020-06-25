@@ -41,6 +41,8 @@ class BankingRole
         self::FINANCE_L1,
         self::FINANCE_L2,
         self::FINANCE_L3,
+        // Owner and admin will also be possible workflow roles now,
+        // hence adding here.
         self::OWNER,
         self::ADMIN,
     ];
@@ -49,8 +51,6 @@ class BankingRole
         self::FINANCE_L1 => 'Finance L1',
         self::FINANCE_L2 => 'Finance L2',
         self::FINANCE_L3 => 'Finance L3',
-        // Owner and admin will also be possible workflow roles now,
-        // hence adding here.
         self::OWNER      => 'Owner',
         self::ADMIN      => 'Admin',
     ];

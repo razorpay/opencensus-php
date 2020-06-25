@@ -879,7 +879,7 @@ return [
                 'workflow'    => true,
             ],
             Permission::REJECT_PAYOUT => [
-                'description' => 'Allows SuperAdmin to reject payout',
+                'description' => 'Allows Admin to reject payout',
                 'assignable'  => false,
                 'workflow'    => true,
             ],

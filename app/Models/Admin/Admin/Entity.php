@@ -492,6 +492,30 @@ class Entity extends Base\Entity
         return null;
     }
 
+    /**
+     * @return mixed|null
+     *
+     * Returns the first role which has the reject_payout_bulk
+     * permission. This is used when an admin is trying to reject
+     * a payout, to fill state_changer_role_id in action_checker table.
+     */
+    public function getPayoutRejectRole()
+    {
+        $roles = $this->roles()->with(Entity::PERMISSIONS)->get();
+
+        foreach ($roles as $role)
+        {
+            $permissionNamesArray = array_column($role->permissions->toArray(), Entity::NAME);
+
+            if (in_array(Permission\Name::REJECT_PAYOUT_BULK, $permissionNamesArray))
+            {
+                return $role;
+            }
+        }
+
+        return null;
+    }
+
     public function isLocked()
     {
         return $this->getAttribute(self::LOCKED);

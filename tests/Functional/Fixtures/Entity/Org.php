@@ -30,8 +30,16 @@ class Org extends Base
     const CHECKER_ROLE_SIGNED       = 'role_RzpChekrRoleId';
     const CHECKER_ADMIN             = 'RzpChekrAdmnId';
     const CHECKER_ADMIN_SIGNED      = 'admin_RzpChekrAdmnId';
+
+    // Payout Workflow related roles
     const OWNER_ROLE                = 'RzpOwnerRoleId';
     const OWNER_ROLE_SIGNED         = 'role_RzpOwnerRoleId';
+    const BANKING_ADMIN_ROLE        = 'RzpBnkAdRoleId';
+    const BANKING_ADMIN_ROLE_SIGNED = 'role_RzpBnkAdRoleId';
+    const FINANCE_L1_ROLE           = 'RzpFinL1RoleId';
+    const FINANCE_L1_ROLE_SIGNED    = 'role_RzpFinL1RoleId';
+    const FINANCE_L2_ROLE           = 'RzpFinL2RoleId';
+    const FINANCE_L2_ROLE_SIGNED    = 'role_RzpFinL2RoleId';
     const FINANCE_L3_ROLE           = 'RzpFinL3RoleId';
     const FINANCE_L3_ROLE_SIGNED    = 'role_RzpFinL3RoleId';
 

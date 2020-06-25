@@ -4127,22 +4127,25 @@ return [
         ],
     ],
 
-    'testRejectPayoutWithSuperAdmin' => [
+    'testBulkRejectPayoutWithAdmin' => [
         'request'  => [
             'method'  => 'POST',
+            'url'     => '/admin/payouts/cancel',
             'content' => [
             ],
         ],
         'response' => [
             'content' => [
-                'status' => 'rejected',
+                'total_count' => 2,
+                'failed_ids'  => [],
             ],
         ],
     ],
 
-    'testRejectPayoutWithOrdinaryAdmin' => [
+    'testBulkRejectPayoutWithAdminWithFailure' => [
         'request'  => [
             'method'  => 'POST',
+            'url'     => '/admin/payouts/cancel',
             'content' => [
             ],
         ],
@@ -4150,14 +4153,14 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Access Denied',
+                    'description' => 'Payout is not in pending state',
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
             'class' => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_ACCESS_DENIED,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYOUT_INVALID_STATE,
         ],
     ],
 

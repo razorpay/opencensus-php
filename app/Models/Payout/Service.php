@@ -188,16 +188,8 @@ class Service extends Base\Service
     {
         $this->trace->info(TraceCode::PAYOUT_REJECT_REQUEST, ['id' => $id]);
 
-        if ($this->app['basicauth']->isAdminAuth() === true)
-        {
-            /** @var Entity $payout */
-            $payout = $this->repo->payout->findByPublicId($id);
-        }
-        else
-        {
-            /** @var Entity $payout */
-            $payout = $this->repo->payout->findByPublicIdAndMerchant($id, $this->merchant);
-        }
+        /** @var Entity $payout */
+        $payout = $this->repo->payout->findByPublicIdAndMerchant($id, $this->merchant);
 
         $payout->getValidator()->validatePayoutStatusForApproveOrReject();
 
@@ -212,7 +204,18 @@ class Service extends Base\Service
 
         (new Validator)->validateInput('bulk_reject', $input);
 
-        $payouts = $this->repo->payout->findManyByPublicIdsAndMerchant($input[Entity::PAYOUT_IDS], $this->merchant);
+        // Since this route can be used byb admins to reject payouts, we
+        // will avoid searching w.r.t merchant in this case
+        if ($this->app['basicauth']->isAdminAuth() === true)
+        {
+            /** @var Entity $payout */
+            $payouts = $this->repo->payout->findManyByPublicIds($input[Entity::PAYOUT_IDS]);
+        }
+        else
+        {
+            /** @var Entity $payout */
+            $payouts = $this->repo->payout->findManyByPublicIdsAndMerchant($input[Entity::PAYOUT_IDS], $this->merchant);
+        }
 
         foreach ($payouts as $payout)
         {
@@ -237,7 +240,7 @@ class Service extends Base\Service
                         'payout_id' => $payout->getId(),
                     ]);
 
-                $failedIds[] = $payout->getId();
+                $failedIds[] = [$payout->getPublicId(), $e->getMessage()];
             }
         }
 

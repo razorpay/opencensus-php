@@ -158,6 +158,27 @@ trait PayoutTrait
             'name'   => 'Owner',
         ]);
 
+        // Creating Banking Admin role corresponding to banking admin role
+        $this->fixtures->on('live')->create('role', [
+            'id'     => Org::BANKING_ADMIN_ROLE,
+            'org_id' => Org::RZP_ORG,
+            'name'   => 'Admin',
+        ]);
+
+        // Creating Finance L1 role corresponding to banking finance_l1 role
+        $this->fixtures->on('live')->create('role', [
+            'id'     => Org::FINANCE_L1_ROLE,
+            'org_id' => Org::RZP_ORG,
+            'name'   => 'Finance L1',
+        ]);
+
+        // Creating Finance L2 role corresponding to banking finance_l2 role
+        $this->fixtures->on('live')->create('role', [
+            'id'     => Org::FINANCE_L2_ROLE,
+            'org_id' => Org::RZP_ORG,
+            'name'   => 'Finance L2',
+        ]);
+
         // Creating Finance L3 role corresponding to banking finance_l3 role
         $this->fixtures->on('live')->create('role', [
             'id'     => Org::FINANCE_L3_ROLE,

@@ -3704,75 +3704,120 @@ class PayoutTest extends TestCase
         $this->startTest();
     }
 
-    public function testRejectPayoutWithSuperAdmin()
+    protected function prepareAdminForPayoutWorkflow($mode)
+    {
+        $admin = $this->fixtures->on($mode)->create('admin', [
+            'id' => 'poutRejtAdmnId',
+            'org_id' => Org::RZP_ORG,
+            'name' => 'Payout Rejecting Admin'
+        ]);
+
+        $role = $this->fixtures->on($mode)->create('role', [
+            'id'     => 'poutRejtRoleId',
+            'org_id' => '100000razorpay',
+            'name'   => 'Payout Reject Admin',
+        ]);
+
+        $permission = $this->fixtures->on($mode)->create('permission',[
+            'name'   => 'reject_payout_bulk'
+        ]);
+
+        $role->permissions()->attach($permission->getId());
+
+        $admin->roles()->attach($role);
+
+        return $admin;
+    }
+
+    public function testBulkRejectPayoutWithAdmin()
     {
         $this->liveSetUp();
 
         $this->createPayoutWorkflowWithBankingUsersLiveMode();
 
-        $payout = $this->createPayoutWithWorkflow([], 'rzp_live_TheLiveAuthKey');
+        $payout1 = $this->createPayoutWithWorkflow([], 'rzp_live_TheLiveAuthKey');
+        $payout2 = $this->createPayoutWithWorkflow([], 'rzp_live_TheLiveAuthKey');
 
         $testData = & $this->testData[__FUNCTION__];
-        $testData['request']['url'] = '/admin/payouts/' . $payout['id'] . '/reject';
+
+        $testData['request']['content']['payout_ids'] = [$payout1['id'], $payout2['id']];
 
         $this->mockRazorxTreatment('yesbank', 'on');
 
         $eventTestDataKey = 'testFiringOfWebhookOnRejectionOfPayoutEventData';
 
         $this->expectWebhookEventWithContents('payout.rejected', $eventTestDataKey);
+        $this->expectWebhookEventWithContents('payout.rejected', $eventTestDataKey);
 
-        $this->fixtures->on('live')->create('admin', [
-            'id' => 'RzrpySprAdmnId',
-            'org_id' => Org::RZP_ORG,
-            'name' => 'test admin'
-        ]);
+        // Need to do this for test as well because in testing env,
+        // admin authentication is done on test mode, even if live creds
+        // have been passed.
+        $adminForTest = $this->prepareAdminForPayoutWorkflow('test');
+        $adminForLive = $this->prepareAdminForPayoutWorkflow('live');
 
         $this->app['config']->set('database.default', 'live');
 
-        $this->ba->adminAuth('live');
+        $adminToken = $this->fixtures->on('test')->create('admin_token', [
+            'admin_id'   => $adminForTest->getId(),
+            'token'      => Hash::make('ThisIsATokenForTest'),
+        ]);
+
+        $token = 'ThisIsATokenForTest' . $adminToken->getId();
+
+        $this->ba->adminAuth('live', $token);
 
         $this->startTest();
 
-        $payout = $this->getDbEntityById('payout',$payout['id'],'live');
+        $payout1 = $this->getDbEntityById('payout',$payout1['id'],'live');
+        $payout2 = $this->getDbEntityById('payout',$payout2['id'],'live');
         $actionState = $this->getDbLastEntity('action_state','live');
+        $wfAction = $this->getDbLastEntity('workflow_action','live');
+        $actionChecker = $this->getDbLastEntity('action_checker','live');
 
-        $this->assertEquals($payout['status'],'rejected');
-        $this->assertEquals($actionState['admin_id'],'RzrpySprAdmnId');
+        $this->assertEquals($payout1['status'],'rejected');
+        $this->assertEquals($payout2['status'],'rejected');
+        $this->assertEquals($actionState['admin_id'],'poutRejtAdmnId');
         $this->assertEquals($actionState['name'],'rejected');
         $this->assertNull($actionState['merchant_id']);
         $this->assertNull($actionState['user_id']);
+        $this->assertEquals($wfAction['state'], 'rejected');
+        $this->assertEquals($wfAction['state_changer_type'], 'admin');
+        $this->assertEquals($wfAction['state_changer_id'], 'poutRejtAdmnId');
+        $this->assertEquals($actionChecker['checker_type'], 'admin');
+        $this->assertEquals($actionChecker['checker_id'], 'poutRejtAdmnId');
     }
 
-    public function testRejectPayoutWithOrdinaryAdmin()
+    public function testBulkRejectPayoutWithAdminWithFailure()
     {
         $this->liveSetUp();
 
         $this->createPayoutWorkflowWithBankingUsersLiveMode();
 
-        $payout = $this->createPayoutWithWorkflow([], 'rzp_live_TheLiveAuthKey');
+        $payout1 = $this->createPayoutWithWorkflow(['amount' => '5000001'], 'rzp_live_TheLiveAuthKey');
+        $payout2 = $this->createPayoutWithWorkflow([], 'rzp_live_TheLiveAuthKey');
 
         $testData = & $this->testData[__FUNCTION__];
-        $testData['request']['url'] = '/admin/payouts/' . $payout['id'] . '/reject';
-        $testData['request']['server'][] = ['HTTP_X-Razorpay-Account' => 'acc_10000000000000'];
 
-        $liveMode = $this->app['basicauth']->getLiveConnection();
+        $testData['request']['content']['payout_ids'] = [$payout1['id'], $payout2['id']];
 
-        $admin = $this->fixtures->on($liveMode)->create('admin', [
-            'id' => 'RzrpyRndAdmnId',
-            'org_id' => Org::RZP_ORG,
-            'name' => 'test admin'
-        ]);
+        $this->mockRazorxTreatment('yesbank', 'on');
 
-        $this->fixtures->on($liveMode)->create('admin_token', [
-            'id'        => 'AdminToken1234',
-            'token'     => Hash::make('secondToken'),
-            'admin_id'  => $admin->getId(),
-        ]);
+        // Need to do this for test as well because in testing env,
+        // admin authentication is done on test mode, even if live creds
+        // have been passed.
+        $adminForTest = $this->prepareAdminForPayoutWorkflow('test');
+        $adminForLive = $this->prepareAdminForPayoutWorkflow('live');
 
         $this->app['config']->set('database.default', 'live');
 
-        // Reject with Random Admin
-        $this->ba->adminAuth('live','secondTokenAdminToken1234');
+        $adminToken = $this->fixtures->on('test')->create('admin_token', [
+            'admin_id'   => $adminForTest->getId(),
+            'token'      => Hash::make('ThisIsATokenForTest'),
+        ]);
+
+        $token = 'ThisIsATokenForTest' . $adminToken->getId();
+
+        $this->ba->adminAuth('live', $token);
 
         $this->startTest();
     }
