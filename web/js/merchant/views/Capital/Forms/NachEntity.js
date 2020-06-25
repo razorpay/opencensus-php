@@ -49,9 +49,7 @@ class NachEntity extends Component {
     const { loanApplicationDetails, user } = this.props;
     const {
       meta,
-      promoter_details: {
-        data: { applicant },
-      },
+      promoter_details: { data: { applicant } },
       credit_offer_details,
       accepted_offer_details,
     } = loanApplicationDetails;
@@ -87,14 +85,18 @@ class NachEntity extends Component {
           auth_type: 'physical',
           max_amount: creditOffer.loan_attributes.credit_offered,
           nach: {
-            form_reference1: `Recurring payment for ${applicant.kyc.first_name}`,
+            form_reference1: `Recurring payment for ${
+              applicant.kyc.first_name
+            }`,
             form_reference2: 'Method Paper Nach',
             description: 'Paper NACH',
           },
           bank_account: {
             account_number: user.bank_account_number,
             ifsc_code: user.bank_branch_ifsc,
-            beneficiary_name: `${applicant.kyc.first_name} ${applicant.kyc.second_name}`,
+            beneficiary_name: `${applicant.kyc.first_name} ${
+              applicant.kyc.second_name
+            }`,
             beneficiary_email: applicant.emails[0].email_id,
             beneficiary_mobile: applicant.phones[0].phone_number,
             account_type: user.bank_account_type

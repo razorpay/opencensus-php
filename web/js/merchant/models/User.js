@@ -405,6 +405,10 @@ export default class User {
     );
   }
 
+  get isTwoFactorVerified() {
+    return this.user.two_fa_verified;
+  }
+
   getExpStatus(name) {
     return ((this.experiments || {})[name] || {}).result === 'on';
   }

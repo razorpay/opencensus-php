@@ -108,9 +108,7 @@ class LoanApplicationOverview extends React.Component {
     if (context) {
       return context.activeState
         ? context.activeState
-        : meta.data.application
-        ? meta.data.application.status
-        : defaultState;
+        : meta.data.application ? meta.data.application.status : defaultState;
     } else {
       return meta.data.application
         ? meta.data.application.status

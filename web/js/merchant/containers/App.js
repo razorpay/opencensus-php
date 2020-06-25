@@ -4,6 +4,7 @@ import { withRouter } from 'react-router';
 
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 import ModalDialog from 'common/ui/ModalDialog';
+
 import Notifications from 'common/ui/Notifications';
 import LocalStorageService from 'common/utils/localStorage';
 import debounce from 'common/utils/debounce';
@@ -15,9 +16,11 @@ import ActivationRequiredModal from 'merchant/components/ActivationRequiredModal
 import PasswordReLogin from 'merchant_common/components/PasswordReLogin';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import * as NotificationActions from 'merchant_common/reducers/notifications';
+import { updateTwoFactorVerified } from 'merchant_common/reducers/twoFactor';
 import * as SessionActions from 'merchant/reducers/session';
 import * as ConfigActions from 'merchant/reducers/config';
 import { applyTheme } from 'merchant_common/helpers/themes';
+import TwoFactorVerificationProvider from 'common/ui/TwoFactorVerification/TwoFactorVerificationProvider';
 import User, { setFeatures } from 'merchant/models/User';
 import { fetchFeaturesAjax } from 'merchant/reducers/config';
 import AddGST from 'merchant/views/Account/Profile/components/AddGST';
@@ -34,7 +37,7 @@ import {
 import { matchFullPageView } from 'merchant/routes';
 import { classList, isPresent } from 'common/utils/rzp-utils';
 
-import { merchantFetch } from 'merchant/utils/ajax';
+import ajax, { merchantFetch } from 'merchant/utils/ajax';
 import rolesList from 'merchant/helpers/permissions/roles-list';
 
 import initChat from 'merchant/components/Support/chat';
@@ -54,6 +57,7 @@ import qs from 'query-string';
     ...SessionActions,
     ...ConfigActions,
     ...NotificationActions,
+    updateTwoFactorVerified,
     fetchGST,
     resizeWindow,
   }
@@ -198,6 +202,9 @@ export default class App extends Component {
         }
 
         this.props.updateSession({ mode: currentMode });
+        this.props.updateTwoFactorVerified({
+          twoFactorVerified: user.isTwoFactorVerified,
+        });
         this.redirectToRoute(role);
         this.setLiveTransactionDone(user);
 
@@ -575,23 +582,31 @@ export default class App extends Component {
           this.renderFPView
         ) : (
           <React.Fragment>
-            <HeaderNav
-              user={user}
-              mode={mode}
-              modeFormatted={modeFormatted}
-              showGSTModal={hasGSTIN ? undefined : this.showGSTModal}
-              onSwitchMode={this.switchMode}
-              onSwitchMerchant={this.switchMerchant}
-              showMobileNav={this.props.windowWidth < 950}
-            />
-            <Sidebar
-              user={user}
-              logoURL={org.main_logo_url}
-              config={config.config}
-              org_custom_code={org.custom_code}
-            />
-            <Content user={user} modeFormatted={modeFormatted} />
-            <Footer showMobileNav={this.props.windowWidth < 950} user={user} />
+            <TwoFactorVerificationProvider
+              merchantFetch={merchantFetch}
+              ajax={ajax}
+            >
+              <HeaderNav
+                user={user}
+                mode={mode}
+                modeFormatted={modeFormatted}
+                showGSTModal={hasGSTIN ? undefined : this.showGSTModal}
+                onSwitchMode={this.switchMode}
+                onSwitchMerchant={this.switchMerchant}
+                showMobileNav={this.props.windowWidth < 950}
+              />
+              <Sidebar
+                user={user}
+                logoURL={org.main_logo_url}
+                config={config.config}
+                org_custom_code={org.custom_code}
+              />
+              <Content user={user} modeFormatted={modeFormatted} />
+              <Footer
+                showMobileNav={this.props.windowWidth < 950}
+                user={user}
+              />
+            </TwoFactorVerificationProvider>
           </React.Fragment>
         )}
 

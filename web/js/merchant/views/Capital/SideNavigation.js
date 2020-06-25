@@ -88,8 +88,8 @@ class SideNavigation extends Component {
       ...(this.stepFound
         ? ['not_started']
         : isCurrentStateGroup && !isFinalState
-        ? ['partial-complete', 'active']
-        : ['completed']),
+          ? ['partial-complete', 'active']
+          : ['completed']),
       ...(isPendingState ? ['pending'] : []),
       ...(isErrorState ? ['error'] : []),
     ];
@@ -175,8 +175,8 @@ class SideNavigation extends Component {
         ...(isCurrentStateGroup
           ? ['active']
           : stepFound
-          ? ['not_started']
-          : ['completed', 'parent-partial-complete']),
+            ? ['not_started']
+            : ['completed', 'parent-partial-complete']),
         ...(isPendingState ? ['pending'] : []),
         ...(isErrorState ? ['error'] : []),
       ];
@@ -215,10 +215,9 @@ class SideNavigation extends Component {
     return (
       <div class="progress-overview-container">
         <MultiLevelStepper>
-          {Object.entries(
-            SIDE_NAVIGATION_STATE_GROUPS
-          ).map(([parentStep, parentStepMeta]) =>
-            this.getParentStep(parentStep, parentStepMeta)
+          {Object.entries(SIDE_NAVIGATION_STATE_GROUPS).map(
+            ([parentStep, parentStepMeta]) =>
+              this.getParentStep(parentStep, parentStepMeta)
           )}
         </MultiLevelStepper>
       </div>

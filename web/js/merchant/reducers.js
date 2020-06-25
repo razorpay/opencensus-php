@@ -3,6 +3,7 @@ import { reducer as formReducer } from 'redux-form';
 import modalReducer from 'merchant_common/reducers/modals';
 import sliderReducer from 'merchant_common/reducers/slider';
 import notificationsReducer from 'merchant_common/reducers/notifications';
+import twoFactorReducer from 'merchant_common/reducers/twoFactor';
 import sessionReducer from 'merchant/reducers/session';
 import appReducer from 'merchant/reducers/app';
 import homeReducer from 'merchant/reducers/home';
@@ -169,4 +170,5 @@ export default combineReducers({
   commissionInvoices: commissionInvoices,
   commissionInvoice: commissionInvoice,
   loanApplicationDetails: LoanApplicationReducer,
+  twoFactor: twoFactorReducer,
 });

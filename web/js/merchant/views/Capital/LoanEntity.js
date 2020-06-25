@@ -31,10 +31,7 @@ class LoanEntity extends Component {
 
   handleClose = () => {
     const { onClose, loanApplicationDetails } = this.props;
-    const {
-      meta,
-      context: { activeState },
-    } = loanApplicationDetails;
+    const { meta, context: { activeState } } = loanApplicationDetails;
 
     window.rzpAnalytics({
       eventCategory: 'Dashboard - WCL LOS',
