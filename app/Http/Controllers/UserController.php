@@ -43,6 +43,7 @@ class UserController extends Controller
     public function getIndex()
     {
         $domain = \Request::server('SERVER_NAME');
+        $currentRouteName = \Route::currentRouteName();
 
         list($orgError, $org) = (new Admin\Service)->getOrg($domain);
         list($userError, $details) = (new User\Service)->getUserDetails();
@@ -82,6 +83,11 @@ class UserController extends Controller
         $data['requestPath']     = $requestPath;
         $data['rootPath']       = self::ROOT_PATH;
 
+        $data['newAuthFlow'] = false;
+        if (empty($currentRouteName) === false and $currentRouteName === "signup")
+        {
+            $data['newAuthFlow'] = true; // new pre-signup flow
+        }
 
         // $data is used to run diferent pieces of JS
         if (isset($data['user']) === true and isset($details['linked_account']) === true and $details['linked_account'] === true)

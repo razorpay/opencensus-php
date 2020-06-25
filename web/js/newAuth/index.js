@@ -1,0 +1,234 @@
+import 'regenerator-runtime/runtime.js';
+import React from 'react';
+import { render } from 'react-dom';
+import Styled, { ThemeProvider } from 'styled-components';
+import { lightTheme as theme } from '@razorpay/blade/src/tokens/theme';
+import SignUp from '@commander/shield/src/bootstrap/Wrapper/Wrapper';
+import Size from '@razorpay/blade/src/atoms/Size';
+import Text from '@razorpay/blade/src/atoms/Text';
+import Space from '@razorpay/blade/src/atoms/Space';
+import Button from '@commander/shield/src/shared/Button';
+import Link from '@commander/shield/src/shared/Link';
+import Flex from '@razorpay/blade/src/atoms/Flex';
+import View from '@razorpay/blade/src/atoms/View';
+
+const Container = Styled(View)`
+  overflow-y: auto;
+  background: linear-gradient(0deg, rgba(2, 42, 156, 0.3), rgba(2, 42, 156, 0.3)), linear-gradient(232.85deg, #020529 -52%, #000B8E 198.1%);
+`;
+
+const ContentContainer = Styled(View)`
+  margin: 0 auto;
+  @media (min-width: 415px) {
+    display: block;
+  }
+  @media (min-width: 769px) and (max-width: 900px) {
+    padding: 0 32px;
+  }
+`;
+
+const CustomLink = Styled(Link)`
+  color: ${({ theme }) => theme.colors.shade[950]};
+  text-decoration: underline;
+  &&:visited {
+    color: ${({ theme }) => theme.colors.shade[950]};
+  }
+  &&:hover {
+    color: ${({ theme }) => theme.colors.shade[950]};
+  }
+  &&:active {
+    color: ${({ theme }) => theme.colors.shade[950]};
+  }
+`;
+
+const HeaderView = Styled(View)`
+  background: linear-gradient(149.39deg, #2B4486 0%, #0B70E7 100%);
+  flex-shrink: 0;
+  &&& {
+    padding: 0;
+    height: 73px;
+    align-items: center;
+    justify-content: center;
+    @media (min-width: 415px) {
+      background: none;
+      height: auto;
+      padding: 48px 0 60px 0;
+      justify-content: center;
+      padding: 48px 42px 60px 42px;
+    }
+    @media (min-width: 769px) {
+      justify-content: space-between;
+      padding: 48px 0 60px 0;
+    }
+  }
+`;
+
+const AbsoluteView = Styled(View)`
+  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.05);
+  border-radius: 2px;
+  margin: 0 auto;
+  flex-grow: 1;
+  height: 100%;
+  max-width: 100%;
+  background-color: ${({ theme }) => theme.colors.background[100]};
+  @media (min-width: 415px) {
+    height: 577px;
+    max-width: 375px;
+  }
+  @media (min-width: 769px) {
+    flex-grow: initial;
+    position: absolute;
+    left: 32px;
+    top: -48px;
+    width: 320px;
+    height: calc(100% + 96px);
+  }
+`;
+
+const RelativeView = Styled(View)`
+  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.05);
+  height: calc(100% - 73px);
+  border-radius: 4px;
+  display: flex;
+  flex-grow: 1;
+  @media (min-width: 415px) {
+    height: auto;
+    margin-bottom: 30px;
+  }
+  @media (min-width: 769px) {
+    height: 480px;
+    flex-grow: initial;
+    display: block;
+    position: relative;
+    background: ${({ theme }) => theme.colors.background[400]};
+    padding-left: 384px;
+    margin: 48px 0;
+  }
+`;
+
+const BorderView = Styled(View)`
+  width: 50px;
+  height: 2px;
+  position relative;
+  left: 50%;
+  margin-left: -25px;
+  background: ${({ theme }) => theme.colors.shade[920]};
+`;
+
+const DesktopOnlyView = Styled(View)`
+  display: none;
+  @media (min-width: 769px) {
+    display: block;
+  }
+`;
+
+const handleContactUsClick = () => {
+  window.rzpQ.push(
+    window.rzpQ
+      .now()
+      .onbr()
+      .initiated('signup.secondary_links', { source: 'Contact us' })
+  );
+  window.rzpAnalytics({
+    eventCategory: 'Signup - Steps',
+    eventAction: 'Click - Contact Us',
+  });
+};
+
+const handleLoginClick = () => {
+  window.rzpQ.push(
+    window.rzpQ
+      .now()
+      .onbr()
+      .initiated('signup.secondary_links', { source: 'Login' })
+  );
+  window.location.href = '/#/access/signin';
+};
+
+render(
+  <ThemeProvider theme={theme}>
+    <Size height="100%">
+      <Container>
+        <Size maxWidth="830px" height="100%">
+          <Flex flexDirection="column">
+            <ContentContainer>
+              <Flex justifyContent="space-between">
+                <HeaderView>
+                  <Size maxWidth="150px">
+                    <img src="/img/logo_full.png" alt="Razorpay" />
+                  </Size>
+                  <DesktopOnlyView>
+                    <Flex alignItems="center">
+                      <View>
+                        <Text color="background.100" weight="bold">
+                          Already a user?
+                        </Text>
+                        <Space margin={[0, 0, 0, 2.25]}>
+                          <Button onClick={handleLoginClick}>Log In</Button>
+                        </Space>
+                      </View>
+                    </Flex>
+                  </DesktopOnlyView>
+                </HeaderView>
+              </Flex>
+              <RelativeView>
+                <AbsoluteView>
+                  <SignUp appName="dashboard" />
+                </AbsoluteView>
+                <DesktopOnlyView>
+                  <Space padding={[8, 5.5, 4, 0]}>
+                    <View>
+                      <Flex
+                        flexDirection="column"
+                        justifyContent="center"
+                        alignItems="center"
+                      >
+                        <View>
+                          <Space margin={[0, 0, 1, 0]}>
+                            <Text size="large" weight="bold">
+                              Why choose Razorpay?
+                            </Text>
+                          </Space>
+                          <Text size="small" color="shade.960">
+                            8,00,000+ businesses trust their payments with
+                            Razorpay
+                          </Text>
+                        </View>
+                      </Flex>
+                      <Space margin={[3.5, 0, 3.75, 0]}>
+                        <Size maxWidth="100%">
+                          <img src="/img/client-logos.png" alt="Clients" />
+                        </Size>
+                      </Space>
+                      <BorderView />
+                      <Space margin={[2.5, 0, 0, 0]}>
+                        <Flex justifyContent="center">
+                          <View>
+                            <Space margin={[0, 0.5, 0, 0]}>
+                              <Text as="span" size="xsmall" color="shade.960">
+                                Need help? We are just a click away.
+                              </Text>
+                            </Space>
+                            <CustomLink
+                              size="xsmall"
+                              href="https://razorpay.com/support/#request/merchant"
+                              target="_blank"
+                              onClick={handleContactUsClick}
+                            >
+                              Contact Us
+                            </CustomLink>
+                          </View>
+                        </Flex>
+                      </Space>
+                    </View>
+                  </Space>
+                </DesktopOnlyView>
+              </RelativeView>
+            </ContentContainer>
+          </Flex>
+        </Size>
+      </Container>
+    </Size>
+  </ThemeProvider>,
+  document.getElementById('react-root')
+);

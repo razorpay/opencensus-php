@@ -1,6 +1,6 @@
 const webpack = require('webpack');
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
-const isProd = require('process').env.NODE_ENV === 'production';
+const isProd = process.env.NODE_ENV === 'production';
 
 const babelPlugins = [
   ['@babel/plugin-proposal-decorators', { legacy: true }],
@@ -35,26 +35,8 @@ const stats = {
   chunkModules: false,
 };
 
-module.exports = {
+const webpackConfig = {
   mode: isProd ? 'production' : 'development',
-
-  externals: [].reduce.call(
-    (process.env.externals || '').split(/\s+/),
-    (prev, next, index, arr) => {
-      if (index % 2) {
-        prev[next.split('/')[0]] = arr[index - 1];
-      }
-      return prev;
-    },
-    {}
-  ),
-
-  entry: {
-    pokedex: './js/pokedex/index.js',
-    merchantLA: './js/merchantLA/index.js',
-    merchant: './js/merchant/index.js',
-    razorx: './js/razorx/index.js',
-  },
 
   output: {
     path: __dirname + '/../public/dist',
@@ -63,6 +45,7 @@ module.exports = {
 
   resolve: {
     modules: ['js', 'node_modules'],
+    extensions: ['.web.js', '.mjs', '.js', '.jsx', '.json'],
   },
 
   stats,
@@ -71,7 +54,7 @@ module.exports = {
     rules: [
       {
         test: /\.js$/,
-        exclude: /node_modules/,
+        exclude: /node_modules\/(?!(@commander|@razorpay|@universe)\/).*/,
         use: {
           loader: 'babel-loader',
           options: {
@@ -108,6 +91,22 @@ module.exports = {
           ],
         }),
       },
+      {
+        test: /\.(gif|png|jpe?g|ico|webp)$/i,
+        use: [
+          {
+            loader: 'file-loader',
+          },
+        ],
+      },
+      {
+        test: /\.(svg)$/,
+        use: [
+          {
+            loader: 'svg-url-loader',
+          },
+        ],
+      },
     ],
   },
 
@@ -122,3 +121,31 @@ module.exports = {
     }),
   ],
 };
+
+module.exports = [
+  {
+    ...webpackConfig,
+    entry: {
+      pokedex: './js/pokedex/index.js',
+      merchantLA: './js/merchantLA/index.js',
+      merchant: './js/merchant/index.js',
+      razorx: './js/razorx/index.js',
+    },
+    externals: [].reduce.call(
+      (process.env.externals || '').split(/\s+/),
+      (prev, next, index, arr) => {
+        if (index % 2) {
+          prev[next.split('/')[0]] = arr[index - 1];
+        }
+        return prev;
+      },
+      {}
+    ),
+  },
+  {
+    ...webpackConfig,
+    entry: {
+      newAuth: './js/newAuth/index.js',
+    },
+  },
+];

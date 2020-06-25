@@ -122,7 +122,8 @@ exports.watch = watch;
 exports.default = build;
 
 const { readFile } = require('fs');
-const webpackConfig = require('./webpack.config');
+let webpackConfig = require('./webpack.config');
+webpackConfig = webpackConfig[0];
 webpackConfig.output.filename = '[name]';
 webpackConfig.output.library = 'component';
 webpackConfig.output.libraryTarget = 'umd';

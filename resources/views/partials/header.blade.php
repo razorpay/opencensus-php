@@ -4,12 +4,24 @@
   <meta charset="utf-8">
   <meta name="google" value="notranslate" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Razorpay Dashboard">
   <meta name="author" content="Razorpay">
   <link rel="shortcut icon" href="/img/favicon.png">
-  <title>Razorpay Dashboard</title>
-  <meta name="description" content="Online payment gateway for India with the best in class API, integration procedure, robust security and powerful dashboard" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+  @include('partials/environment')
+  <script type="text/javascript">
+    // New signup flow: Redirect rule to pass extra URL params via Google Optimize
+    // Input: /signup?utm_expid=exp_id#/access/signup?email=email_id
+    // Output: /signup?utm_expid=exp_id&email=email_id
+    const regex = /#\/access\/signup\?/g;
+    if (location.pathname === "/signup" && location.hash.match(regex)) {
+        location.href = location.href.replace(regex, "&")
+    }
+  </script>
+  @if(env('APP_ENV') === 'production')
+    <script src="https://www.googleoptimize.com/optimize.js?id=GTM-NCWFQ39"></script>
+  @else
+    <script src="https://www.googleoptimize.com/optimize.js?id=GTM-WB43S6Q"></script>
+  @endif
   <script src="https://wchat.freshchat.com/js/widget.js" async defer></script>
   <script src="https://cdn.razorpay.com/static/ticket-system/bundle.js" async defer></script>
   <script type="text/javascript">
@@ -96,7 +108,7 @@
                 case 'bing': {
                     if (!checkAnalytics(data)) return;
                     analytics.track('bing', data.event);
-                    
+
                     break;
                 }
                 case 'twitter': {
@@ -193,4 +205,4 @@
             }
         }
     </script>
-    @include('partials/xhr_overwrite')
+@include('partials/xhr_overwrite')

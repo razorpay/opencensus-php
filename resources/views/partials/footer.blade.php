@@ -64,7 +64,7 @@
         analytics.init(
           ['perf', 'ga', 'fb', 'twitter', 'linkedin', 'bing', 'lj', 'quora', 'reddit'],
           {
-            ga: 'UA-53341507-2',
+            ga: appEnvironment === 'prod' ? 'UA-53341507-2' : 'UA-53341507-4',
             fb: '697927486977350',
             lj:'{{$ljKey}}',
           },
@@ -176,7 +176,7 @@
 
             var allParams = Object.keys(allParamsWithValues);
             var filteredParams = allParams.filter(function(param){
-                return privateParams.indexOf(param) === -1;  
+                return privateParams.indexOf(param) === -1;
             });
 
             var filteredParamsWithValues = {};
@@ -207,7 +207,7 @@
 
         var path = getPathWithoutPrivateData();
 
-        ga('set', 'page', path); 
+        ga('set', 'page', path);
         ga('old.set', 'page', path);
 
         window.addEventListener('load', function() {
@@ -216,7 +216,7 @@
             analytics.track('quora', 'ViewContent');
             analytics.track('bing', {action: 'pageLoad', path: path});
         });
-        
+
         try {
           var pendingAction = JSON.parse(analytics.utils.getCookie('pendingAction'));
           if (pendingAction && pendingAction.type === 'signup-form') {

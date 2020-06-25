@@ -5,11 +5,20 @@
 
 @if ($isConfirmed and $isPreSignupComplete)
 
-@else
+@elseif ($newAuthFlow === false)
   <link rel='stylesheet' href="{{$cdnDashboardUrl}}/css/generated/signup.css" type='text/css' />
+
 @endif
 
-@include('partials/common')
+@if ($newAuthFlow === true)
+  <title>Create your Razorpay Account - Razorpay</title>
+  <meta name="description" content="Welcome to Razorpay! Create your free Razorpay account today. Sign up for free to join the millions of users that trust us with their payments, banking & working capital." />
+  @include('partials/new-auth')
+@else
+  <title>Razorpay Dashboard</title>
+  <meta name="description" content="Online payment gateway for India with the best in class API, integration procedure, robust security and powerful dashboard" />
+  @include('partials/common')
+@endif
 
 <script>
   document.domain = window.location.hostname.split(".").slice(-2).join(".");
@@ -60,13 +69,17 @@
   <script type="text/javascript">
       window.session_id = "{!! $session_id !!}"
   </script>
-  <?php  ?>
-  @if($requestPath !== $rootPath)
+  @if($requestPath !== $rootPath and $newAuthFlow === false)
     <script>
       window.location.href = "{!! $redirectUrl !!}"
     </script>
   @endif
-  <script src='{{$cdnDashboardUrl}}/js/generated/signup.js'></script>
+
+  @if ($newAuthFlow === true)
+    <script src="{{$cdnDashboardUrl}}/dist/newAuth-entry.js"></script>
+  @else
+    <script src='{{$cdnDashboardUrl}}/js/generated/signup.js'></script>
+  @endif
 
 @endif
 

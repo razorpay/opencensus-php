@@ -1036,6 +1036,21 @@ app
         return $scope.onShowSignin && $scope.onShowSignin();
       };
 
+      // full page redirect to signup for running experiment
+      $scope.goToSignup = function() {
+        tracking.pushEvents({
+          event_name: 'non_login_actions',
+          event_type: 'initiated',
+          properties: {
+            action: 'click signup',
+          },
+        });
+        document.body.style.display = 'none'; // remove flicker during redirection
+        window.location.href = '/#/access/signup';
+        location.reload(); // doing reload to trigger the Google Optimize experiment
+      };
+
+      // client redirection to signup
       $scope.goToSignupLayout = function(data) {
         var signupData = data || {};
         if (!data) {

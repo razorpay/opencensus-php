@@ -19,6 +19,7 @@ pipeline:
     pull: false
     environment:
       CHROME_BIN: /usr/bin/chromium
+    secrets: [ npm_razorpay_token ]
     commands:
       # Fix for https://github.com/npm/uid-number/issues/3
       - npm config set unsafe-perm true
@@ -37,6 +38,7 @@ pipeline:
     pull: false
     environment:
       CHROME_BIN: /usr/bin/chromium
+    secrets: [ npm_razorpay_token ]
     commands:
       - npm test
     when:

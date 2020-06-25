@@ -12,6 +12,16 @@ Builds are done using Drone. See the `.drone.yml` file for details on these.
 * Install [composer](https://getcomposer.org/download/) PHP package manager
 * Install [`node`](https://github.com/creationix/nvm) (`v8`)
 
+After cloning the repo follow these steps:
+- Login to [registry.razorpay.com](https://registry.razorpay.com/)
+- Copy the token. You'll see this on the screen
+`npm config set //registry.razorpay.com/:_authToken "LONG_HASHED_TOKEN_STRING"` the string after `authToken` is your token
+- Open `~/.bashrc` or `~/.zshrc` in your editor and add this line 
+  ```
+  export NPM_RAZORPAY_TOKEN="<YOUR_TOKEN>"
+  ```
+- Run `source ~/.bashrc` or `source ~/.zshrc` based on in what file you added your token.
+
 # Setup instructions with Docker (for local development)
 
 #### Pre-requisites
