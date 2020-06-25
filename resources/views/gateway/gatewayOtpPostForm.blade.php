@@ -4,8 +4,9 @@
   <title></title>
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta charset="utf-8" />
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css?family=Muli:400,600,800" rel="stylesheet"/>
 </head>
 @if (isset($data['production']) and $data['production'] === true)
 <script>
@@ -42,7 +43,7 @@
     try { CheckoutBridge.setPaymentID(data.payment_id) } catch(e){}
   </script>
   <div id="app"></div>
-  <script type="text/javascript" src="{{$data['cdn']}}/static/payment_redirect/bundle.js" charset="utf-8"></script>
+  <script type="text/javascript" src="{{$data['cdn']}}/static/otp/bundle.js" charset="utf-8"></script>
   {{-- Do not remove below form — needed to run tests --}}
   <form class="card" id="otpform" name="otpform" action="{{$data['data']['request']['url']}}" method="post">
     <input id='otp' type="hidden" name="otp" maxlength="6">
