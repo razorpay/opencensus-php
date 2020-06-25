@@ -130,6 +130,19 @@ return [
         ]
     ],
 
+    'testVendorPaymentGetOcrData' => [
+        'request'  => [
+            'method' => 'GET',
+            'server'  => [
+                'HTTP_X-Dashboard-User-Id' => '20000000000000',
+            ],
+            'url'    => '/vendor-payments/get-ocr-data/ocr_1234556',
+        ],
+        'response' => [
+            'content' => []
+        ]
+    ],
+
     'testCreatePayout' => [
         'request'  => [
             'method'  => 'POST',

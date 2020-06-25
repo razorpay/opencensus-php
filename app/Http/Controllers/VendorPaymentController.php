@@ -116,7 +116,7 @@ class VendorPaymentController extends Controller
 
     public function uploadInvoice()
     {
-        return $this->service->uploadInvoice($this->ba->getMerchant());
+        return $this->service->uploadInvoice($this->ba->getMerchant(),$this->input);
     }
 
     public function executeVendorPayment(string $vendorPaymentId)
@@ -172,5 +172,10 @@ class VendorPaymentController extends Controller
     public function updateContact($contactId)
     {
         return $this->service->updateContact($this->ba->getMerchant(), $this->input, $contactId);
+    }
+
+    public function getOcrData(string $ocrReferenceId)
+    {
+        return $this->service->getOcrData($this->ba->getMerchant(), $ocrReferenceId);
     }
 }

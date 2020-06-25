@@ -120,5 +120,26 @@ class VendorPaymentTest extends TestCase
         $vpMock->shouldHaveReceived('bulkCancel');
     }
 
+    public function testVendorPaymentGetOcrData()
+    {
+        $this->ba->proxyAuth();
+
+        $this->fixtures->create('feature',
+                                [
+                                    'name'      => Constants::RX_VENDOR_PAYMENTS,
+                                    'entity_id' => '10000000000000'
+                                ]);
+
+        $vpMock = Mockery::mock('RZP\Services\VendorPayment');
+
+        $vpMock->shouldReceive('getOcrData')->andReturn([]);
+
+        $this->app->instance('vendor-payment', $vpMock);
+
+        $this->startTest();
+
+        $vpMock->shouldHaveReceived('getOcrData');
+    }
+
 
 }

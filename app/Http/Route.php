@@ -1005,6 +1005,7 @@ class Route
         'vendor_payment_edit'                      => ['post',     'vendor-payments/{id}/edit',                      'VendorPaymentController@edit'                                      ],
         'vendor_payment_cancel'                    => ['post',     'vendor-payments/{id}/cancel',                    'VendorPaymentController@cancel'                                    ],
         'vendor_payment_bulk_cancel'               => ['post',     'vendor-payments/bulk-cancel',                    'VendorPaymentController@bulkCancel'                                ],
+        'vendor_payment_get_ocr_data'              => ['get',      'vendor-payments/get-ocr-data/{ocr_reference_id}','VendorPaymentController@getOcrData'                                ],
 
         // Tax Payments
         'tax_payments_get_all_settings'            => ['get',     'tax-payments/settings/',                          'TaxPaymentController@getAllSettings'                               ],
@@ -2754,6 +2755,7 @@ class Route
         'vendor_payment_cancel',
         'vendor_payment_bulk_cancel',
         'vendor_payment_execute',
+        'vendor_payment_get_ocr_data',
 
         // Virtual VPA Prefix
         'virtual_vpa_prefix_validate',
@@ -4157,6 +4159,7 @@ class Route
         'payout_links_resend_notification'             => Permission::RESEND_PAYOUT_LINKS,
         'vendor_payment_contact_list'                  => Permission::VIEW_CONTACT,
         'vendor_payment_invoice_upload'                => Permission::CREATE_VENDOR_PAYMENTS,
+        'vendor_payment_get_ocr_data'                  => Permission::CREATE_VENDOR_PAYMENTS,
         'vendor_payment_invoice_get_signed_url'        => Permission::VIEW_VENDOR_PAYMENTS,
         'vendor_payment_contact_get'                   => Permission::VIEW_CONTACT,
         'vendor_payment_contact_create'                => Permission::CREATE_CONTACT,
@@ -4967,6 +4970,7 @@ class Route
         'vendor_payment_cancel'                => [Feature::RX_VENDOR_PAYMENTS],
         'vendor_payment_bulk_cancel'           => [Feature::RX_VENDOR_PAYMENTS],
         'vendor_payment_execute'               => [Feature::RX_VENDOR_PAYMENTS],
+        'vendor_payment_get_ocr_data'          => [Feature::RX_VENDOR_PAYMENTS],
     ];
 
     /*
@@ -5229,6 +5233,7 @@ class Route
         'vendor_payment_edit',
         'vendor_payment_cancel',
         'vendor_payment_bulk_cancel',
+        'vendor_payment_get_ocr_data',
 
         'payout_links_added_fund_accounts',
         'payout_links_added_fund_accounts_cors',

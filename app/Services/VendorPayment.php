@@ -38,6 +38,7 @@ class VendorPayment
     const BULK_CANCEL_VENDOR_PAYMENTS    = 'BulkCancelVP';
     const GET_INVOICE_SIGNED_URL    = 'GetInvoiceSignedURL';
     const VP_SUMMARY_API            = 'SummaryApi';
+    const GET_OCR_DATA              = 'GetOcrData';
     const BASE_PATH                 = 'twirp/vendorpayments.Vendorpayments';
 
     protected $app;
@@ -268,16 +269,16 @@ class VendorPayment
         return $this->makeRequest($merchant, $url, $input);
     }
 
-    public function uploadInvoice(MerchantEntity $merchant)
+    public function uploadInvoice(MerchantEntity $merchant,array $input)
     {
         $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::UPLOAD_INVOICE);
         // The MS we are calling, expects JSON content,
         // so we are sending the contents of the file in
         // base_64 encoded byte array
-        $input = [
-            'file'      => base64_encode(file_get_contents($_FILES['file']['tmp_name'])),
-            'file_name' => $_FILES['file']['name']
-        ];
+        
+        $input['file'] = base64_encode(file_get_contents($_FILES['file']['tmp_name']));
+        $input['file_name'] = $_FILES['file']['name'];
+
 
         return $this->makeRequest($merchant, $url, $input);
 
@@ -333,7 +334,7 @@ class VendorPayment
                            array $input,
                            Entity $user = null)
     {
-        $url = sprintf('%s/%s', $this->config['url'], self::BULK_CANCEL_VENDOR_PAYMENTS);
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::BULK_CANCEL_VENDOR_PAYMENTS);
 
         if ($user === null)
         {
@@ -341,6 +342,16 @@ class VendorPayment
         }
 
         $input['cancelling_user_id'] = $user->getPublicId();
+
+        return $this->makeRequest($merchant, $url, $input);
+    }
+
+    public function getOcrData(MerchantEntity $merchant,
+                         string $ocrReferenceId)
+    {
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::GET_OCR_DATA);
+
+        $input = ['ocr_reference_id' => $ocrReferenceId];
 
         return $this->makeRequest($merchant, $url, $input);
     }
