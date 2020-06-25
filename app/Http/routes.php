@@ -63,6 +63,7 @@ Route::group(['middleware' => ['web']], function () {
         Route::post('/unlock', 'UserController@postUnlockUserScreen')->name('unlock_route');
         Route::post('/2fa_setup/verify-mobile', 'UserController@postSetup2faVerifyMobile');
         Route::post('/2fa/otp-verify', 'UserController@postSetup2faVerifyOtp');
+        Route::post('/2fa', 'userController@post2faOtp');
         Route::patch('/2fa/contact', 'UserController@postUpdate2faContact');
         Route::post('/2fa/otp-resend', 'UserController@postResendOtp');
         Route::get('/session', 'UserController@getSessionData')->middleware(['auth:user']);

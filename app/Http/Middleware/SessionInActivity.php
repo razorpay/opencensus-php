@@ -6,6 +6,7 @@ use Auth;
 use Session;
 use Closure;
 use App\Http\AppResponse;
+use App\User\Constants as UserConstants;
 use Illuminate\Contracts\Auth\Guard;
 use Illuminate\Support\Facades\Crypt;
 
@@ -66,6 +67,10 @@ class SessionInActivity
             $userEmail = $user->user()->email ?? '';
 
             $user->logout();
+
+            // if session's value is not explicitly removed
+            // then it'll remain even after user is logged out
+            Session::forget(UserConstants::TWO_FA_VERIFIED);
 
             $path = '/#/access/signin';
 

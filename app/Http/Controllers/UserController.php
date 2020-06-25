@@ -209,6 +209,15 @@ class UserController extends Controller
         return AppResponse::jsonResponse($error, $data);
     }
 
+    public function post2faOtp()
+    {
+        $input = Input::all();
+
+        list($error, $data) = (new User\Service)->post2faOtp($input);
+
+        return AppResponse::jsonResponse($error, $data);
+    }
+
     public function postResendOtp()
     {
         $input = Input::all();
@@ -236,6 +245,8 @@ class UserController extends Controller
         $this->trace->info(TraceCode::USER_LOGOUT, $traceData);
 
         $user->logout();
+
+        Session::forget(User\Constants::TWO_FA_VERIFIED);
 
         return AppResponse::jsonResponse([]);
     }

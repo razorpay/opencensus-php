@@ -116,20 +116,31 @@ class Service extends Base\Service
      */
     public function postSetup2faVerifyOtp(array $input)
     {
-        $userId = Session::get('user_id', "");
+        $userFromGuard = Auth::guard('user')->user();
 
-        if (empty($userId) === false)
+        $userIdFromSession = Session::get('user_id', "");
+
+        if (empty($userFromGuard) === false)
         {
-            $options['headers']['X-Dashboard-User-Id'] = $userId;
-
-            $options['headers']['X-Dashboard-User-Session-Id'] = Session::getId();
+            $options['headers']['X-Dashboard-User-Id'] = $userFromGuard->id;
+        }
+        else if (empty($userIdFromSession) === false)
+        {
+            $options['headers']['X-Dashboard-User-Id'] = $userIdFromSession;
         }
         else
         {
             return [["User Not authenticated, please login"], []];
         }
 
+        $options['headers']['X-Dashboard-User-Session-Id'] = Session::getId();
+
         list($error, $genericUser) = $this->verify2faOtp($input, $options);
+
+        if (empty($error) === true)
+        {
+            Session::put(Constants::TWO_FA_VERIFIED, true);
+        }
 
         return $this->handleLoginResponse($error, $genericUser);
     }
@@ -171,6 +182,13 @@ class Service extends Base\Service
     public function postUpdate2faContact(array $input)
     {
         return $this->requestApiWithBasicSession($input, 'users/2fa_setup/contact_mobile', 'PATCH');
+    }
+
+    public function post2faOtp(array $input)
+    {
+        $request = new \App\Admin\APiRequestAny();
+
+        return $request->send('users/2fa', 'POST');
     }
 
     public function postResendOtp(array $input)
@@ -307,6 +325,11 @@ class Service extends Base\Service
         }
 
         list($error, $data) = $this->updatePasswordOnApi($input);
+
+        if (empty($error) === true)
+        {
+            Session::forget(Constants::TWO_FA_VERIFIED);
+        }
 
         $currentSessionId = Session::getId();
 
@@ -511,6 +534,10 @@ class Service extends Base\Service
         }
 
         $userDetails = $genericUser->toArray();
+
+        $userDetails[Constants::TWO_FA_VERIFIED] = Session::get(
+            Constants::TWO_FA_VERIFIED,
+            false); //default value is false
 
         $merchants = $userDetails['merchants'];
 

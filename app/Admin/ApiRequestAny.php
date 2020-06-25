@@ -14,6 +14,7 @@ use GuzzleHttp\Post\PostFile;
 use GuzzleHttp\Client as Guzzle;
 use Razorpay\Api\Errors as RZPErrors;
 use Lcobucci\JWT\Parser as JWTParser;
+use App\User\Constants as UserConstants;
 
 use App\Http\ApiUrl;
 use App\Trace\TraceCode;
@@ -58,6 +59,7 @@ class ApiRequestAny
         'BAD_REQUEST_RESTRICTED_USER_CANNOT_SETUP_2FA',
         'BAD_REQUEST_USER_2FA_ALREADY_SETUP',
         'BAD_REQUEST_2FA_SETUP_INCORRECT_OTP',
+        'BAD_REQUEST_USER_2FA_SETUP_REQUIRED',
     ];
 
     /**
@@ -178,6 +180,8 @@ class ApiRequestAny
                 {
                     $currentMerchant = $user->currentMerchant();
 
+                    $twoFaVerified = Session::get(UserConstants::TWO_FA_VERIFIED, false);
+
                     $this->options['headers']['X-Dashboard-User-Role'] = $currentMerchant->role;
 
                     $this->options['headers']['X-Dashboard-User-Id'] = $user->id;
@@ -185,6 +189,11 @@ class ApiRequestAny
                     $this->options['headers']['X-Dashboard-User-Email'] = $user->email;
 
                     $this->options['headers']['X-Dashboard-User-Session-Id'] = Session::getId();
+
+                    // Only string can be sent in http headers
+                    // bool value is converted to '1' for true & '0' for false
+                    $this->options['headers']['X-Dashboard-User-2FA-Verified'] =
+                        $twoFaVerified ? 'true' : 'false';
                 }
 
                 $accountId = Request::header(self::RAZORPAY_ACCOUNT_HEADER);
