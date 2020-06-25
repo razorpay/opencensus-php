@@ -637,7 +637,7 @@ class EnachNetbankingNpciGatewayTest extends TestCase
         $payment = $this->getDbEntityById('payment', $payment['id']);
 
         $this->assertEquals('failed', $payment['status']);
-        $this->assertEquals('GATEWAY_ERROR_REQUEST_ERROR', $payment['internal_error_code']);
+        $this->assertEquals('GATEWAY_ERROR_DEBIT_FAILED', $payment['internal_error_code']);
 
         $enach = $this->getDbEntities('enach', ['payment_id' => $payment['id']])->first()->toArray();
 

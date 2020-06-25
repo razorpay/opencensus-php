@@ -477,6 +477,16 @@ class PublicErrorDescription
     const BAD_REQUEST_EMANDATE_INVALID_AADHAAR_BANK_ACCOUNT_MAPPING             = 'EMandate registration failed because of invalid aadhaar bank account mapping';
     const BAD_REQUEST_EMANDATE_AADHAAR_NOT_MAPPED                               = 'EMandate aadhaar not mapped';
     const BAD_REQUEST_EMANDATE_CANCELLED_INACTIVE                               = 'Payment failed because emandate is cancelled or inactive';
+    const BAD_REQUEST_INVALID_IFSC_CODE                                         = 'The IFSC Code is invalid';
+    const BAD_REQUEST_EMANDATE_FREQUENCY_MISMATCH                               = 'Debit request is not as per mandate frequency';
+    const BAD_REQUEST_EMANDATE_EXPIRED                                          = 'The mandate has expired';
+    const BAD_REQUEST_EMANDATE_DEBIT_NOT_ALLOWED                                = 'Debiting the customer account is not allowed for this mandate';
+    const GATEWAY_ERROR_DEBIT_BEFORE_MANDATE_START                              = 'Debit request is before emandate start date';
+    const GATEWAY_ERROR_DEBIT_AFTER_MANDATE_END                                 = 'Debit request is after emandate end date';
+    const BAD_REQUEST_MANDATE_USER_MISMATCH                                     = 'User ID does not match with the registered ID';
+    const BAD_REQUEST_EMANDATE_REGISTRATION_ACTION_NEEDED                       = 'Customer should refer to the branch to enable the mandate';
+    const BAD_REQUEST_EMANDATE_SETTLEMENT_FAILED                                = 'Unable to settle funds for this payment';
+    const BAD_REQUEST_EMANDATE_DEBIT_TIME_BREACHED                              = 'Debit request initiated outside business hours';
 
     const BAD_REQUEST_GATEWAY_REFUND_ABSENT                                     = 'Refund not done on the gateway side.';
     const BAD_REQUEST_PAYMENT_REVERSAL_NOT_SUPPORTED                            = 'Void is not supported by the gateway';

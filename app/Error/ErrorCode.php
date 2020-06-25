@@ -1195,7 +1195,6 @@ class ErrorCode
     const BAD_REQUEST_DUPLICATE_UMRN                                                = 'BAD_REQUEST_DUPLICATE_UMRN';
     const CUSTOMER_REJECTED_PAYMENT                                                 = 'CUSTOMER_REJECTED_PAYMENT';
     const CUSTOMER_INSOLVENT                                                        = 'CUSTOMER_INSOLVENT';
-    const MANDATE_USER_MISMATCH                                                     = 'MANDATE_USER_MISMATCH';
     const CUSTOMER_DENIED                                                           = 'CUSTOMER_DENIED';
 
     const BAD_REQUEST_PAYMENT_ACCOUNT_WITHDRAWAL_FROZEN                             = 'BAD_REQUEST_PAYMENT_ACCOUNT_WITHDRAWAL_FROZEN';
@@ -1212,6 +1211,16 @@ class ErrorCode
     const BAD_REQUEST_EMANDATE_REGISTRATION_FAILED                                  = 'BAD_REQUEST_EMANDATE_REGISTRATION_FAILED';
     const BAD_REQUEST_EMANDATE_AADHAAR_NOT_MAPPED                                   = 'BAD_REQUEST_EMANDATE_AADHAAR_NOT_MAPPED';
     const BAD_REQUEST_EMANDATE_CANCELLED_INACTIVE                                   = 'BAD_REQUEST_EMANDATE_CANCELLED_INACTIVE';
+    const BAD_REQUEST_INVALID_IFSC_CODE                                             = 'BAD_REQUEST_INVALID_IFSC_CODE';
+    const BAD_REQUEST_EMANDATE_FREQUENCY_MISMATCH                                   = 'BAD_REQUEST_EMANDATE_FREQUENCY_MISMATCH';
+    const BAD_REQUEST_EMANDATE_EXPIRED                                              = 'BAD_REQUEST_EMANDATE_EXPIRED';
+    const BAD_REQUEST_EMANDATE_DEBIT_NOT_ALLOWED                                    = 'BAD_REQUEST_EMANDATE_DEBIT_NOT_ALLOWED';
+    const GATEWAY_ERROR_DEBIT_BEFORE_MANDATE_START                                  = 'GATEWAY_ERROR_DEBIT_BEFORE_MANDATE_START';
+    const GATEWAY_ERROR_DEBIT_AFTER_MANDATE_END                                     = 'GATEWAY_ERROR_DEBIT_AFTER_MANDATE_END';
+    const BAD_REQUEST_MANDATE_USER_MISMATCH                                         = 'BAD_REQUEST_MANDATE_USER_MISMATCH';
+    const BAD_REQUEST_EMANDATE_REGISTRATION_ACTION_NEEDED                           = 'BAD_REQUEST_EMANDATE_REGISTRATION_ACTION_NEEDED';
+    const BAD_REQUEST_EMANDATE_SETTLEMENT_FAILED                                    = 'BAD_REQUEST_EMANDATE_SETTLEMENT_FAILED';
+    const BAD_REQUEST_EMANDATE_DEBIT_TIME_BREACHED                                  = 'BAD_REQUEST_EMANDATE_DEBIT_TIME_BREACHED';
 
     const BAD_REQUEST_RECONCILIATION                                                = 'BAD_REQUEST_RECONCILIATION';
     const BAD_REQUEST_PAYMENT_ACCOUNT_INSUFFICIENT_BALANCE                          = 'BAD_REQUEST_PAYMENT_ACCOUNT_INSUFFICIENT_BALANCE';
