@@ -279,6 +279,7 @@ trait Migrate
         {
             $fetchedTerminalIds[] = $fetchedTerminal[Entity::ID];
         }
+        $fetchedTerminalIds= array_values($fetchedTerminalIds);
 
         $terminalIds = [];
 
@@ -287,9 +288,11 @@ trait Migrate
             $terminalIds[] = $terminal->getId();
         }
 
-        $fetchedTerminalIds = array_sort($fetchedTerminalIds);
+        $terminalIds = array_values($terminalIds);
 
-        $terminalIds = array_sort($terminalIds);
+        sort($fetchedTerminalIds);
+
+        sort($terminalIds);
 
         if ($fetchedTerminalIds !== $terminalIds)
         {
