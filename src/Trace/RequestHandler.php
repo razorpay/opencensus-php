@@ -300,6 +300,9 @@ class RequestHandler
             if(is_array($value)){
                 $value = implode(', ', $value);
             }
+
+            $key = 'http.query.params.' . $key;
+
             $this->tracer->addAttribute($key, $value, [
                 'spanId' => $this->rootSpan->spanId()
             ]);
