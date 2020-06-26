@@ -14,6 +14,7 @@ class SubType
      */
     const DEFAULT_CARD_SUBTYPE = [
         self::CONSUMER                    => 1,
+        self::BUSINESS                    => 1,
     ];
 
     protected static $subTypeBitPosition = [
