@@ -409,6 +409,10 @@ export default class User {
     return this.user.two_fa_verified;
   }
 
+  get isTwoFactorSetupDone() {
+    return this.user.contact_mobile && this.user.contact_mobile_verified;
+  }
+
   getExpStatus(name) {
     return ((this.experiments || {})[name] || {}).result === 'on';
   }

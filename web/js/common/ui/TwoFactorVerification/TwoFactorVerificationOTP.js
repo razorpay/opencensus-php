@@ -1,8 +1,17 @@
+import { connect } from 'react-redux';
+
 import ModalHeader from 'common/ui/ModalHeader';
 import OtpInput from 'common/new-ui/Input/OtpInput';
 import { AsyncBtn } from 'common/new-ui/Button';
 
+import { closeModal } from 'merchant_common/reducers/modals';
+
+@connect(null, { closeModal })
 export default class TwoFactorVerificationOTP extends React.Component {
+  static defaultProps = {
+    extraData: {},
+  };
+
   state = {};
 
   updateOtpValue = otp => {
@@ -11,13 +20,17 @@ export default class TwoFactorVerificationOTP extends React.Component {
 
   onCloseClick = () => {
     this.props.onClose && this.props.onClose();
+    this.props.closeModal();
   };
 
   onConfirm = () => {
     return this.props
-      .onConfirm(this.otpValue)
+      .onConfirm({
+        otp: this.otpValue,
+        ...this.props.extraData,
+      })
       .then(() => {
-        this.props.onClose();
+        this.onCloseClick();
         this.props.onSuccess();
       })
       .catch(() => {
