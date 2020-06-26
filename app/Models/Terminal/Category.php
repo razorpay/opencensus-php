@@ -121,6 +121,9 @@ class Category
      *
      * Keys are Merchant categories, values are Network categories
      */
+
+    // in case of any changes in gateway config, please contact smart routing team
+    // changes done here won't be reflected in routing
     const CATEGORIES = [
         Method::NETBANKING => [
             self::DEFAULT => self::ECOMMERCE,

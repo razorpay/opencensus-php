@@ -19,6 +19,8 @@ class NetworkName
     const BAJAJ   = 'Bajaj Finserv';
 
 
+    // in case of any changes in gateway config, please contact smart routing team
+    // changes done here won't be reflected in routing
     public static $codes = array(
         self::AMEX    => Network::AMEX,
         self::DICL    => Network::DICL,

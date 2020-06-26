@@ -215,6 +215,9 @@ class Preferences
     /**
      * We do not want to reject cybersource for these merchants
      */
+
+    // in case of any changes in gateway config, please contact smart routing team
+    // changes done here won't be reflected in routing
     const CYBERSOURCE_MERCHANT_WHITELIST = [
         self::MID_ZOMATO,
         self::MID_IPAY,

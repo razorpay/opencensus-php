@@ -886,6 +886,9 @@ class Selector extends Base\Core
 
     protected function getGatewayConfig()
     {
+        // in case of any changes in gateway config, please contact smart routing team
+        // changes done here won't be reflected in routing
+
         return [
             'cybersource_merchant_whitelist'       => Preferences::CYBERSOURCE_MERCHANT_WHITELIST,
             'mcc_filter_gateways'                  => Gateway::MCC_FILTER_GATEWAYS,

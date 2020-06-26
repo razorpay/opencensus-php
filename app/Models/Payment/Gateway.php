@@ -270,6 +270,8 @@ class Gateway
         self::WALLET_FREECHARGE
     ];
 
+    // in case of any changes in gateway config, please contact smart routing team
+    // changes done here won't be reflected in routing
     const MCC_FILTER_GATEWAYS = [
         self::HDFC,
         self::HITACHI,
@@ -364,6 +366,8 @@ class Gateway
     // Please keep this list sorted. The list of Live Banks in API E-Mandate is available at https://www.npci.org.in/nach-e-mandates-new
 
     // banks supported by enach_npci_netbanking gateway for auth type netbanking
+    // in case of any changes in gateway config, please contact smart routing team
+    // changes done here won't be reflected in routing
     const ENACH_NPCI_NB_AUTH_NETBANKING_BANKS = [
         IFSC::ANDB,
         Netbanking::BARB_R,
@@ -401,6 +405,8 @@ class Gateway
     ];
 
     // banks supported by enach_npci_netbanking gateway for auth type card
+    // in case of any changes in gateway config, please contact smart routing team
+    // changes done here won't be reflected in routing
     const ENACH_NPCI_NB_AUTH_CARD_BANKS = [
         IFSC::ANDB,
         IFSC::AUBL,
@@ -451,6 +457,9 @@ class Gateway
     // Please keep this list sorted
     // You can find the latest PDF version
     // at https://www.npci.org.in/nach-e-mandates
+
+    // in case of any changes in gateway config, please contact smart routing team
+    // changes done here won't be reflected in routing
     const EMANDATE_AADHAAR_BANKS = [
         IFSC::ABHY,
         IFSC::ACUX,
@@ -653,6 +662,8 @@ class Gateway
     ];
 
     // Esigner Digio is added here just for test cases
+    // in case of any changes in gateway config, please contact smart routing team
+    // changes done here won't be reflected in routing
     const EMANDATE_AADHAAR_GATEWAYS = [
         Gateway::ESIGNER_DIGIO,
         Gateway::ESIGNER_LEGALDESK,
@@ -1082,6 +1093,8 @@ class Gateway
         self::BAJAJ,
     ];
 
+    // in case of any changes in gateway config, please contact smart routing team
+    // changes done here won't be reflected in routing
     public static $headless = [
        self::CYBERSOURCE => [
             Network::VISA,
@@ -1134,6 +1147,9 @@ class Gateway
      *
      * @var array
      */
+
+    // in case of any changes in gateway config, please contact smart routing team
+    // changes done here won't be reflected in routing
     public static $cardNetworkMap = [
         self::HDFC => [
             Network::MC,
@@ -1215,6 +1231,8 @@ class Gateway
         ]
     ];
 
+    // in case of any changes in gateway config, please contact smart routing team
+    // changes done here won't be reflected in routing
     public static $bharatQrCardNetwork = [
         // IMP: Order of networks matter!
         self::HITACHI => [
@@ -1237,6 +1255,8 @@ class Gateway
         ],
     ];
 
+    // in case of any changes in gateway config, please contact smart routing team
+    // changes done here won't be reflected in routing
     public static $cardNetworkRecurringMap = [
         self::HITACHI => [
             Network::VISA,
@@ -1374,6 +1394,9 @@ class Gateway
      *
      * @var array
      */
+
+    // in case of any changes in gateway config, please contact smart routing team
+    // changes done here won't be reflected in routing
     public static $recurringGateways = [
         Gateway::CYBERSOURCE,
         Gateway::FIRST_DATA,
@@ -1431,6 +1454,8 @@ class Gateway
         self::HDFC_DEBIT_EMI,
     ];
 
+    // in case of any changes in gateway config, please contact smart routing team
+    // changes done here won't be reflected in routing
     public static $authTypeToEmandateGatewayMap = [
         AuthType::NETBANKING  => [
             Gateway::NETBANKING_AXIS,
@@ -1517,6 +1542,9 @@ class Gateway
      *
      * @var array
      */
+
+    // in case of any changes in gateway config, please contact smart routing team
+    // changes done here won't be reflected in routing
     public static $gatewaysEmandateBanksMap = [
         Gateway::NETBANKING_ICICI      => [
             AuthType::NETBANKING       => [ IFSC::ICIC],
@@ -1674,6 +1702,9 @@ class Gateway
      *
      * @var array
      */
+
+    // in case of any changes in gateway config, please contact smart routing team
+    // changes done here won't be reflected in routing
     public static $netbankingToGatewayMap = [
         //corp banks
         Netbanking::ICIC_C => Gateway::NETBANKING_ICICI,
@@ -1793,6 +1824,8 @@ class Gateway
      *
      * @var array
      */
+    // in case of any changes in gateway config, please contact smart routing team
+    // changes done here won't be reflected in routing
     public static $netbankingGateways = [
         Gateway::BILLDESK,
         Gateway::EBS,
@@ -1822,6 +1855,8 @@ class Gateway
         IFSC::BARB,
     ];
 
+    // in case of any changes in gateway config, please contact smart routing team
+    // changes done here won't be reflected in routing
     public static $emiBanksUsingCardTerminals = [
         IFSC::INDB,
         IFSC::KKBK,
@@ -1835,11 +1870,15 @@ class Gateway
         IFSC::BARB,
     ];
 
+    // in case of any changes in gateway config, please contact smart routing team
+    // changes done here won't be reflected in routing
     public static $emiBankToGatewayMapForRouteService = [
         IFSC::HDFC => Gateway::HDFC,
         IFSC::HSBC => Gateway::FIRST_DATA,
     ];
 
+    // in case of any changes in gateway config, please contact smart routing team
+    // changes done here won't be reflected in routing
     public static $emiBankToGatewayMap = [
         IFSC::HDFC => [
             Emi\Type::CREDIT => Gateway::HDFC,
@@ -1854,6 +1893,9 @@ class Gateway
      * This variable defines the mapping of gateway acquirer and the
      * supported ifsc on that acquirer
      */
+
+    // in case of any changes in gateway config, please contact smart routing team
+    // changes done here won't be reflected in routing
     public static $gatewayAcquirerIfscMapping = [
         Gateway::CARD_FSS => [
             self::ACQUIRER_FSS => [
@@ -1872,6 +1914,8 @@ class Gateway
         ],
     ];
 
+    // in case of any changes in gateway config, please contact smart routing team
+    // changes done here won't be reflected in routing
     public static $onlyAuthorizationGateway = [
         Gateway::HITACHI,
         Gateway::ENACH_RBL,
@@ -1884,10 +1928,15 @@ class Gateway
         Gateway::AXIS_MIGS   => Gateway::AXIS_MIGS,
     ];
 
+    // in case of any changes in gateway config, please contact smart routing team
+    // changes done here won't be reflected in routing
     public static $subscriptionOverOneYearGateways = [
         Gateway::AXIS_MIGS
     ];
 
+
+    // in case of any changes in gateway config, please contact smart routing team
+    // changes done here won't be reflected in routing
     public static $upiIntentGateways = [
         Gateway::UPI_ICICI,
         Gateway::UPI_HULK,

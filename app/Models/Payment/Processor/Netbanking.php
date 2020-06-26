@@ -180,6 +180,8 @@ class Netbanking
         ],
     ];
 
+    // in case of any changes in gateway config, please contact smart routing team
+    // changes done here won't be reflected in routing
     protected static $gatewaySupportedBanks = [
         Gateway::BILLDESK => [
             'retail' => [
