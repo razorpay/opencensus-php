@@ -3753,3 +3753,5 @@ where payments.id in
 'EO4adGjuIL5Z9t',
 'EONIPci7VOs4ld'
 ) and payments.status = 'failed' and payments.internal_error_code = 'BAD_REQUEST_PAYMENT_TIMED_OUT';
+
+ALTER TABLE merchant_banks MODIFY COLUMN card_networks smallint(5) unsigned NOT NULL DEFAULT '92';
