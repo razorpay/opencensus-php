@@ -74,6 +74,8 @@ export default class ImageCropper extends React.PureComponent {
             type: 'error',
             message: errors[0],
           });
+
+          this.props.onError && this.props.onError(errors[0]);
         });
     } else {
       this.props.showNotification({
@@ -81,6 +83,7 @@ export default class ImageCropper extends React.PureComponent {
         message: 'Select a valid Image',
       });
 
+      this.props.onError && this.props.onError('Select a valid Image');
       return;
     }
   }

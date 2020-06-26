@@ -1,5 +1,7 @@
 import { ModalMask, Modal, ModalContent } from 'common/new-ui/Modal';
 import { connect } from 'react-redux';
+import RTracking from 'react-tracking';
+
 import Form from 'common/new-ui/Form';
 import Button, { AsyncBtn } from 'common/new-ui/Button';
 import Input, { Label, Description } from 'common/new-ui/Input';
@@ -10,6 +12,7 @@ import { classList } from 'common/utils/rzp-utils';
 import Merchant80gDetails from './Merchant80gDetails';
 
 @connect(null, { openModal })
+@RTracking(() => window.rzpQ.component('PaymentReceipt'))
 export default class PaymentReceipt extends React.Component {
   constructor(props) {
     super(props);
@@ -41,17 +44,54 @@ export default class PaymentReceipt extends React.Component {
       };
     });
 
+    this.PAGE_ID = props.paymentPageEntity.id;
+    this.TEMPLATE = props.paymentPageEntity.description;
+    this.UUID = `payment_receipt_${Date.now()}`;
+
     this.state = {
       isInputFieldChecked: !!receipt.selected_udf_field,
       is80GDetailsChecked: receipt.enable_80g_details === '1',
       selectedInputField,
+      '80_details': '',
     };
+  }
+
+  trackReceipt = (event, options) => {
+    this.props.tracking.trackEvent(
+      window.rzpQ.paymentPages().success(
+        `pp.receipt.${event}`,
+        {
+          template: '',
+          page_id: this.PAGE_ID,
+        },
+        options
+      )
+    );
+  };
+
+  componentDidMount() {
+    this.trackReceipt('open_settings');
+  }
+
+  componentWillUnmount() {
+    this.trackReceipt('close_settings');
   }
 
   open80gDetailsModal = () => {
     this.props.openModal({
       size: 'medium',
-      component: <Merchant80gDetails />,
+      component: (
+        <Merchant80gDetails
+          trackFn={this.trackReceipt}
+          get80gDetails={this.get80gDetails}
+        />
+      ),
+    });
+  };
+
+  get80gDetails = data => {
+    this.setState({
+      '80_details': data,
     });
   };
 
@@ -68,6 +108,30 @@ export default class PaymentReceipt extends React.Component {
 
     this.props.handleSave(data);
     this.props.handleClose();
+    this.trackReceipt('save', {
+      '80_details': this.state['80_details'],
+      input_field: data.selected_udf_field,
+    });
+  };
+
+  trackSendingOptions = event => {
+    this.trackReceipt(event.target.value === '0' ? 'automated' : 'manual');
+  };
+
+  trackInputField = () => {
+    this.trackReceipt('select_input');
+  };
+
+  handleClose = () => {
+    this.trackReceipt('cancel', {
+      '80_details': this.state['80_details'],
+      input_field:
+        this.state.isInputFieldChecked && this.state.selectedInputField
+          ? this.state.selectedInputField.name
+          : '',
+    });
+
+    this.props.handleClose();
   };
 
   render() {
@@ -75,7 +139,7 @@ export default class PaymentReceipt extends React.Component {
 
     return (
       <ModalMask maskClosable={false} class="PaymentpagesReceipt">
-        <Modal class="PaymentpagesReceipt" onClose={props.handleClose}>
+        <Modal class="PaymentpagesReceipt" onClose={this.handleClose}>
           <ModalContent>
             <div class="main-title">Payment Receipts Settings</div>
 
@@ -89,6 +153,7 @@ export default class PaymentReceipt extends React.Component {
                           .enable_custom_serial_number
                       : ''
                   }
+                  onClick={this.trackSendingOptions}
                   options={[
                     {
                       label: (
@@ -165,6 +230,7 @@ export default class PaymentReceipt extends React.Component {
                       selectedInputField: option,
                     });
                   }}
+                  onBlur={this.trackInputField}
                   showClear={false}
                   searchEnabled={false}
                   disabled={!this.state.isInputFieldChecked}
@@ -191,6 +257,9 @@ export default class PaymentReceipt extends React.Component {
                       is80GDetailsChecked: e.target.checked,
                     });
                   }}
+                  onBlur={e => {
+                    this.trackReceipt(e.target.checked ? '80g_on' : '80g_off');
+                  }}
                   checked={this.state.is80GDetailsChecked}
                   defaultChecked={this.state.is80GDetailsChecked}
                   description={() => (
@@ -214,7 +283,7 @@ export default class PaymentReceipt extends React.Component {
               </div>
 
               <footer>
-                <Button.Transparent type="button" onClick={props.handleClose}>
+                <Button.Transparent type="button" onClick={this.handleClose}>
                   Cancel
                 </Button.Transparent>
                 <Button.Primary type="submit">Save</Button.Primary>

@@ -560,6 +560,10 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
 
           this.saveReceiptSettings(entityId, receipt)
             .then(() => {
+              window.rzpQ.paymentPages().interaction('pp.receipt.configured', {
+                page_id: this.props.id,
+              });
+
               this.onSaveSuccessActions(resp, isEditExistingId);
             })
             .catch(err => {

@@ -1,4 +1,5 @@
 import { connect } from 'react-redux';
+import RTracking from 'react-tracking';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import Form from 'common/new-ui/Form';
 import Input from 'common/new-ui/Input';
@@ -12,6 +13,7 @@ import { showNotification } from 'merchant_common/reducers/notifications';
 @connect(null, {
   showNotification,
 })
+@RTracking(() => window.rzpQ.component('PaymentReceiptModal'))
 export default class PaymentReceipt extends React.Component {
   state = {
     isActionInProgress: false,
@@ -44,6 +46,14 @@ export default class PaymentReceipt extends React.Component {
             showCustomReceiptInput: false,
           });
 
+          this.props.tracking.trackEvent(
+            window.rzpQ.paymentPages().success('pp.receipt.resend', {
+              receipt: this.state.receipt,
+              invoiceId: this.state.invoiceId,
+              type: this.state.showCustomReceiptInput && 'resend',
+            })
+          );
+
           this.props.showNotification({
             type: 'success',
             message: 'Receipt is sent successfully',
@@ -71,6 +81,14 @@ export default class PaymentReceipt extends React.Component {
       type: 'success',
       message: 'Receipt is downloading...',
     });
+
+    this.props.tracking.trackEvent(
+      window.rzpQ.paymentPages().success('pp.receipt.download', {
+        receipt: this.state.receipt,
+        invoiceId: this.state.invoiceId,
+        type: this.state.showCustomReceiptInput && 'download',
+      })
+    );
 
     if (receipt) {
       this.setState({
@@ -128,6 +146,13 @@ export default class PaymentReceipt extends React.Component {
     this.setState({
       showCustomReceiptInput: false,
     });
+
+    this.props.tracking.trackEvent(
+      window.rzpQ.paymentPages().success('pp.receipt.enter_custom_cancel', {
+        receipt: this.state.receipt,
+        invoiceId: this.state.invoiceId,
+      })
+    );
   };
 
   render() {
@@ -170,6 +195,16 @@ export default class PaymentReceipt extends React.Component {
             <button
               class="btn btn-primary"
               disabled={this.state.isActionInProgress}
+              onClick={() => {
+                this.props.tracking.trackEvent(
+                  window.rzpQ
+                    .paymentPages()
+                    .success('pp.receipt.enter_custom_save', {
+                      receipt: this.state.receipt,
+                      invoiceId: this.state.invoiceId,
+                    })
+                );
+              }}
             >
               {manualReceiptActionHandlerLabel}
               {this.state.isActionInProgress ? 'ing...' : ''}

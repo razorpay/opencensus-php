@@ -1,5 +1,6 @@
 import { connect } from 'react-redux';
 import Croppie from 'croppie';
+import RTracking from 'react-tracking';
 import { ModalMask, Modal, ModalContent } from 'common/new-ui/Modal';
 import ModalHeader from 'common/ui/ModalHeader';
 import Banner from 'common/ui/Banner';
@@ -20,6 +21,7 @@ import {
 const THUMBNAIL_SIZE_LIMIT = 500 * 1024; // 500 KB limit
 
 @connect(null, { closeModal, openModal, showNotification })
+@RTracking(() => window.rzpQ.component('Merchant80gDetails'))
 export default class Merchant80gDetails extends React.Component {
   state = {
     isLoading: true,
@@ -38,6 +40,10 @@ export default class Merchant80gDetails extends React.Component {
             text80g: res.data.text_80g_12a || '',
             signatoryImageFileUrl: res.data.image_url_80g,
           });
+
+          this.props.get80gDetails({
+            text_80g_12a: res.data.text_80g_12a,
+          });
         } else {
           throw new Error();
         }
@@ -50,6 +56,12 @@ export default class Merchant80gDetails extends React.Component {
           message: 'Some network error has occurred',
         });
       });
+
+    this.props.trackFn('80g_details_start');
+  }
+
+  componentWillUnmount() {
+    this.props.trackFn('80g_details_close');
   }
 
   onSubmit = formData => {
@@ -66,6 +78,10 @@ export default class Merchant80gDetails extends React.Component {
       .then(res => {
         this.setState({
           isSaving: false,
+        });
+
+        this.props.get80gDetails({
+          text_80g_12a: reqPayload.text_80g_12a,
         });
 
         if (res && res.success) {
@@ -118,6 +134,8 @@ export default class Merchant80gDetails extends React.Component {
       };
 
       reader.readAsDataURL(file);
+
+      this.props.trackFn('80g_upload_start');
     }
   };
 
@@ -126,6 +144,8 @@ export default class Merchant80gDetails extends React.Component {
       signatoryImageFile: null,
       signatoryImageFileUrl: null,
     });
+
+    this.props.trackFn('80g_upload_remove');
   };
 
   // This allows to re-upload the file
@@ -133,6 +153,10 @@ export default class Merchant80gDetails extends React.Component {
     this.setState({
       signatoryImageFile: null,
     });
+  };
+
+  onSave = () => {
+    this.props.trackFn('80g_upload_save');
   };
 
   render() {
@@ -193,6 +217,12 @@ export default class Merchant80gDetails extends React.Component {
                   imgFilePreviewUrl={this.state.signatoryImageFileUrl || null}
                   removeFileButtonLabel="Remove Signature"
                   showFileSize={false}
+                  onSave={this.onSave}
+                  onError={message => {
+                    this.props.trackFn('80g_upload_fail', {
+                      error: message,
+                    });
+                  }}
                 />
                 <Description text="For best results take the signature on a white paper and then scan it" />
               </div>
