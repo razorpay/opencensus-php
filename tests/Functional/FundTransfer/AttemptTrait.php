@@ -403,14 +403,15 @@ trait AttemptTrait
 
     protected function validationSettlementDestination(string $settlementId, string $destinationType, string $destinationId)
     {
-        $destinationPrefix = ($destinationType === Entity::FUND_TRANSFER_ATTEMPT) ? 'fta_' : 'stf_';
+        $input =  [
+            'settlement_id' => substr($settlementId, 5),
+            'destination_id' => substr($destinationId, 4)
+        ];
 
-        $content = $this->getLastEntity('settlement_destination', true);
+        $content = $this->getEntities('settlement_destination', $input, true);
 
-        $this->assertEquals($settlementId, 'setl_' . $content['settlement_id']);
+        $this->assertNotEmpty($content['items'][0]);
 
-        $this->assertEquals($destinationType, $content['destination_type']);
-
-        $this->assertEquals($destinationId, $destinationPrefix . $content['destination_id']);
+        $this->assertEquals($destinationType, $content['items'][0]['destination_type']);
     }
 }
