@@ -28,8 +28,6 @@ class Gateway extends Base\Gateway
         extractPaymentsProperties as extractPaymentsPropertiesAuthorizedFailedTrait;
     }
 
-    use MandateTrait;
-
     protected $gateway = 'mozart';
 
     const CACHE_KEY    = 'gateway:cache_key_%s';
@@ -2262,6 +2260,11 @@ class Gateway extends Base\Gateway
     protected function getCipherInstance($mode = null)
     {
         $key = config('gateway.upi_mindgate.gateway_encryption_key');
+
+        if ($mode === null)
+        {
+            return new Crypto($key);
+        }
 
         return new Crypto($key, $mode);
     }
