@@ -572,7 +572,6 @@ class DatabaseSeeder extends Seeder
                     'cardless_emi'  => '1',
                     'paylater'      => '1',
                     'nach'          => '1',
-                    'cred'          => '1',
                     'created_at'    => $currentTime,
                     'updated_at'    => $currentTime
                 )
