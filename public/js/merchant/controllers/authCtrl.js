@@ -1684,11 +1684,11 @@ app
 
       // trigger a hotjar survey on signup if user doesn't types email till 3 sec after page load
       $window.addEventListener('load', function() {
-        var isSignup = $location.path().includes('signup');
+        var isSignup = $location.path().includes('access/signup');
         if (isSignup) {
           setTimeout(function() {
             if (document.getElementById('email').value === '') {
-              hj && hj('trigger', 'signup-no-email-survey');
+              window.hj && window.hj('trigger', 'signup-no-email-survey');
             }
           }, 3000);
         }
