@@ -6,10 +6,6 @@ use RZP\Models\Base;
 
 class Repository extends Base\Repository
 {
-    const CARD         = 'card';
-
-    const BANK_ACCOUNT = 'bank_account';
-
     protected $entity = 'nodal_beneficiary';
 
     protected $appFetchParamRules = [
@@ -100,37 +96,5 @@ class Repository extends Base\Repository
                     ->where(Entity::CARD_ID, $cardId)
                     ->where(Entity::CHANNEL, $channel)
                     ->first();
-    }
-
-    /**
-     * (select bank_account_id from nodal_beneficiary limit 100 order by id desc)
-     *
-     * @param $accountType
-     * @param $previousCount
-     * @param $size
-     * @return mixed
-     */
-    public function fetchVerifiedBeneficiaryNotRegisteredOnFts($accountType, $previousCount, $size)
-    {
-        $query = $this->newQuery()
-                      ->where(Entity::REGISTRATION_STATUS, Status::VERIFIED)
-                      ->orderBy(Entity::CREATED_AT, 'asc');
-
-        if ($accountType === self::BANK_ACCOUNT)
-        {
-            $query->select(Entity::BANK_ACCOUNT_ID)
-                  ->whereNotNull(Entity::BANK_ACCOUNT_ID);
-        }
-
-        if ($accountType === self::CARD)
-        {
-            $query->select(Entity::CARD_ID)
-                  ->whereNotNull(Entity::CARD_ID);
-        }
-
-        return $query->skip($previousCount)
-                     ->take($size)
-                     ->pluck(Entity::BANK_ACCOUNT_ID)
-                     ->toArray();
     }
 }

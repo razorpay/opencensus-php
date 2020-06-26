@@ -85,13 +85,6 @@ class CreateAccount extends Base
 
         $this->channel     = null;
 
-        if ($status !== null)
-        {
-            $migratedKey = 'migrated_' . $type;
-
-            $this->redis->hincrby(ConfigKey::FTS_BENEFICIARY, $migratedKey, 1);
-        }
-
         $this->fetchAccountByType();
     }
 

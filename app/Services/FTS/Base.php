@@ -34,8 +34,6 @@ class Base
 
     protected $mode;
 
-    protected $redis;
-
     // Account related URIs
     const FUND_ACCOUNT_CREATE_URI  = '/account';
     const FUND_ACCOUNT_REGISTER_URI  = '/account/register';
@@ -110,8 +108,6 @@ class Base
         $this->key     = $this->config[$this->mode]['fts_key'];
 
         $this->secret  = $this->config[$this->mode]['fts_secret'];
-
-        $this->redis   = $app['redis']->connection();
 
         $this->setHeaders();
     }

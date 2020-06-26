@@ -16,7 +16,6 @@ use RZP\Models\FundTransfer\Attempt\Type as ProductType;
 
 class Core extends Base\Core
 {
-    const DEFAULT_SIZE = 100;
     /**
      * Create Nodal Beneficiary with bank account.
      *
@@ -235,48 +234,6 @@ class Core extends Base\Core
                 [
                     'error' => $e->getMessage()
                 ]);
-        }
-    }
-
-    /**
-     * @param array $input
-     * @return array
-     */
-    public function createFtsNodalBeneficiary(array $input)
-    {
-        (new Validator)->validateInput('fts_fund_account_create', $input);
-
-        $size        = ($input['size'] === 0) ? self::DEFAULT_SIZE : $input['size'];
-
-        $product     = $input['product'];
-
-        $accountType = $input['account_type'];
-
-        $redis = $this->app['redis']->connection();
-
-        $previousCount = (int) $redis->hget(ConfigKey::FTS_BENEFICIARY, $accountType);
-
-        $accIds = $this->repo
-                       ->nodal_beneficiary
-                       ->fetchVerifiedBeneficiaryNotRegisteredOnFts($accountType, $previousCount, $size);
-
-        $this->dispatchBulkToFtsForFundAccountCreate($accountType, $accIds, $product);
-
-        $currentCount = (int) $redis->hincrby(ConfigKey::FTS_BENEFICIARY, $accountType, count($accIds));
-
-        return [
-            'accountType'   => $accountType,
-            'product'       => $product,
-            'previousCount' => $previousCount,
-            'currentCount'  => $currentCount,
-        ];
-    }
-
-    protected function dispatchBulkToFtsForFundAccountCreate(string $accountType, array $accIds, string $product)
-    {
-        foreach($accIds as $accId)
-        {
-            CreateAccount::dispatch($this->mode, $accId, $accountType, $product, Status::VERIFIED);
         }
     }
 }
