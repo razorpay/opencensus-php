@@ -10,11 +10,11 @@ use Illuminate\Support\Facades\Validator as LaravelValidator;
 class Validator extends JitValidator
 {
     protected static $googlePayCardVerificationRules = [
-        RequestFields::PAYMENT_ID => 'required|public_id',
+        RequestFields::PAYMENT_ID => 'required',
     ];
 
     protected static $googlePayCardAuthorizationRules = [
-        RequestFields::PAYMENT_ID                 => 'required|public_id',
+        RequestFields::PAYMENT_ID                 => 'required',
         RequestFields::CARD_TYPE                  => 'required|in:DEBIT,CREDIT',
         RequestFields::CARD_NETWORK               => 'required|in:VISA,MASTERCARD',
         RequestFields::AMOUNT                     => 'required',
@@ -35,7 +35,7 @@ class Validator extends JitValidator
         'decryptedMessage.messageId'                                 => 'required',
         'decryptedMessage.paymentMethod'                             => 'required',
         'decryptedMessage.paymentMethodDetails.3dsCryptogram'        => 'required',
-        'decryptedMessage.paymentMethodDetails.3dsEciIndicator'      => 'required',
+        'decryptedMessage.paymentMethodDetails.3dsEciIndicator'      => 'sometimes',
         'decryptedMessage.paymentMethodDetails.authMethod'           => 'required',
         'decryptedMessage.paymentMethodDetails.expirationMonth'      => 'required',
         'decryptedMessage.paymentMethodDetails.expirationYear'       => 'required',

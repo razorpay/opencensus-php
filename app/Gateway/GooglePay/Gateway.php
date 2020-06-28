@@ -207,8 +207,25 @@ class Gateway extends Base\Gateway
 
         $paymentId = $this->getUnsignedId($publicPaymentId);
 
-        try {
-            $payment = (new Payment\Repository)->findOrFail($paymentId);
+        $paymentRepo = $this->app['repo']->payment;
+
+        $mode = $paymentRepo->determineLiveOrTestModeForEntityWithNotNullGateway($paymentId, 'google_pay');
+
+        if (is_null($mode) === true)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_NOT_FOUND,
+                null,
+                [
+                    'method'      => 'card',
+                    'application' => 'google_pay'
+                ]);
+        }
+
+        $this->app['basicauth']->setModeAndDbConnection($mode);
+
+        try
+        {
+            $payment = $paymentRepo->findOrFail($paymentId);
         }
         catch (\Exception $e)
         {
@@ -224,7 +241,7 @@ class Gateway extends Base\Gateway
         {
             $status = $payment->getStatus();
 
-            switch($status)
+            switch ($status)
             {
                 case Payment\Status::CAPTURED:
                 case Payment\Status::AUTHORIZED:
@@ -287,7 +304,19 @@ class Gateway extends Base\Gateway
 
     public function getUnsignedId($signedId)
     {
-        $paymentId = Payment\Entity::verifyIdAndStripSign($signedId);
+        try
+        {
+            $paymentId = Payment\Entity::verifyIdAndStripSign($signedId);
+        }
+        catch (\Exception $e)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_NOT_FOUND,
+                null,
+                [
+                    'method'      => 'card',
+                    'application' => 'google_pay'
+                ]);
+        }
 
         return $paymentId;
     }
