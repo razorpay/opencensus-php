@@ -7,6 +7,7 @@ use Lib\PhoneBook;
 use Requests_Response;
 use Razorpay\Trace\Logger;
 
+use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Trace\TraceCode;
 use RZP\Exception\BadRequestValidationFailureException;
 
@@ -36,10 +37,16 @@ class MyOperator
      */
     protected $config;
 
-    public function __construct(Logger $trace, array $config)
+    /**
+     * @var BasicAuth
+     */
+    private $auth;
+
+    public function __construct(Logger $trace, array $config, BasicAuth $auth)
     {
         $this->trace  = $trace;
         $this->config = $config;
+        $this->auth   = $auth;
     }
 
     /**
@@ -104,7 +111,7 @@ class MyOperator
             'timeout' => self::API_TIMEOUT,
         ];
         // MyOperator expects API token in post payload.
-        $payload += ['token' => $this->config['api_token']];
+        $payload += $this->getToken();
         $payload = json_encode($payload);
 
         return Requests::post($endpoint, $headers, $payload, $options);
@@ -141,5 +148,29 @@ class MyOperator
         }
 
         return $jsonResp;
+    }
+
+    /**
+     * Returns the array ["token" => "some_token"] based on the product(primary/banking)
+     *
+     * @return array
+     */
+    protected function getToken(): array
+    {
+        $isBanking = $this->auth->isProductBanking();
+        $token = null;
+        if($isBanking === true)
+        {
+            $token = $this->config['x_api_token'];
+        } else
+        {
+            $token = $this->config['api_token'];
+        }
+
+        if($token === null)
+        {
+            $this->trace->error("No token found for MyOperator");
+        }
+        return ['token' => $token];
     }
 }

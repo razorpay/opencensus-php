@@ -5132,6 +5132,46 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
+    public function testSubmitSupportCallRequestForBanking()
+    {
+        $this->enableRazorXTreatmentForXOnboarding("on");
+
+        $user = (new User())->createUserForMerchant();
+
+        $this->fixtures->edit('merchant',
+            '10000000000000',
+            ['activated' => true, 'business_banking' => true, 'category2' => "school"]);
+
+        $this->fixtures->create('merchant_detail',
+            [
+                'merchant_id' => '10000000000000',
+                'activation_status' => 'activated'
+            ]);
+
+        $this->fixtures->create('terminal:bank_account_terminal_for_business_banking',
+            ['merchant_id' => '100000Razorpay']);
+
+        // To create a virtual account we need to enable bank transfer
+        $this->fixtures->edit('methods', '10000000000000', ['bank_transfer' => true]);
+
+        $liveBankingAccount = $this->getDbEntity('banking_account',
+            [
+                'merchant_id' => '10000000000000',
+            ],
+            'live');
+
+        $this->assertNull($liveBankingAccount);
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', $user['id'], 'owner');
+
+        $this->testData[__FUNCTION__]['request']['server']['HTTP_X-Request-Origin'] = config('applications.banking_service_url');
+
+        // 5th Nov 2018, 10 AM, Monday
+        Carbon::setTestNow(Carbon::create(2018, 11, 5, 10, null, null, Timezone::IST));
+
+        $this->startTest();
+    }
+
     public function testSubmitSupportCallRequestWithInvalidContact()
     {
         $this->ba->proxyAuth();
@@ -6735,6 +6775,10 @@ class MerchantTest extends TestCase
                               function ($mid, $feature, $mode) use ($value)
                               {
                                   if ($feature === Merchant\RazorxTreatment::RAZORPAY_X_TEST_MODE_ONBOARDING)
+                                  {
+                                      return $value;
+                                  }
+                                  if ($feature === Merchant\RazorxTreatment::SUPPORT_CALL)
                                   {
                                       return $value;
                                   }

@@ -420,6 +420,7 @@ return [
     'myoperator' => [
         'mock'      => env('MYOPERATOR_MOCK'),
         'api_token' => env('MYOPERATOR_API_TOKEN'),
+        'x_api_token' => env('X_MYOPERATOR_API_TOKEN'),
     ],
 
     'vendor_payments' => [

@@ -919,8 +919,9 @@ class ApiServiceProvider extends BaseServiceProvider
         {
             $config = $this->app->config->get('applications.myoperator');
             $impl   = $config['mock'] ? Mock\MyOperator::class : MyOperator::class;
+            $auth   = $this->app['basicauth'];
 
-            return new $impl($this->app->trace, $config);
+            return new $impl($this->app->trace, $config, $auth);
         });
     }
 

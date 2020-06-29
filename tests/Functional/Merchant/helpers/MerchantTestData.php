@@ -4605,6 +4605,24 @@ return [
         ],
     ],
 
+    'testSubmitSupportCallRequestForBanking' => [
+        'request'  => [
+            'url'     => '/merchants/support_call',
+            'method'  => 'post',
+            'content' => [
+                'contact' => '9988998899',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'status'       => 'success',
+                'code'         => '200',
+                'message'      => 'Call queued successfully',
+                'reference_id' => '1000000000000000',
+            ],
+        ],
+    ],
+
     'testPartnerAcountsForMerchant' => [
         'request'  => [
             'url'     => '/merchant/parentaccount1/associated_accounts',
