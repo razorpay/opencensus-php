@@ -135,19 +135,22 @@ class Migration
             'message' => 'emi fetch disabled',
         ]);
 
-        (new Admin\Service)->setConfigKeys(
-            [Admin\ConfigKey::CARD_PAYMENT_SERVICE_EMI_FETCH => false]
-        );
+        if ($this->app['rzp.mode'] !== null and $this->app['rzp.mode'] !== 'test')
+        {
+            (new Admin\Service)->setConfigKeys(
+                [Admin\ConfigKey::CARD_PAYMENT_SERVICE_EMI_FETCH => false]
+            );
 
-        $this->app['slack']->queue(
-            TraceCode::CARD_PAYMENT_SERVICE_EMI_FETCH_DISABLING,
-            [
-                'message'        => 'emi fetch disabled',
-                'priority'       => 'P2',
-            ],
-            [
-                'channel'   => Config::get('slack.channels.card_payments_alert'),
-            ]);
+            $this->app['slack']->queue(
+                TraceCode::CARD_PAYMENT_SERVICE_EMI_FETCH_DISABLING,
+                [
+                    'message' => 'emi fetch disabled',
+                    'priority' => 'P2',
+                ],
+                [
+                    'channel' => Config::get('slack.channels.card_payments_alert'),
+                ]);
+        }
 
         return null;
 
