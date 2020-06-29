@@ -702,6 +702,13 @@ class Entity extends Base\PublicEntity
         return (Card\NetworkName::$codes[$network] === Card\Network::MAES);
     }
 
+    public function isMasterCard()
+    {
+        $network = $this->getNetwork();
+
+        return (Card\NetworkName::$codes[$network] === Card\Network::MC);
+    }
+
     public function isRuPay()
     {
         $network = $this->getNetwork();

@@ -4638,4 +4638,93 @@ class RefundTest extends TestCase
         $this->assertEquals(118, $refundFee['fee']);
         $this->assertEquals(18, $refundFee['tax']);
     }
+
+    public function testMcSpecificNarrationForModeCT()
+    {
+        $payment = $this->defaultAuthPayment();
+
+        $payment['card']['number'] = '6074667022059103';
+
+        $this->fixtures->create('iin',
+            [
+                'iin'    => '607466',
+                'issuer' => 'HDFC',
+                'type'   => 'debit',
+            ]);
+
+        $payment = $this->capturePayment($payment['id'], $payment['amount']);
+
+        $this->fixtures->card->edit(
+            $payment['card_id'],
+            [
+                'network'     => 'MasterCard',
+                'iin'         => '607466',
+                'type'        => 'debit',
+                'vault_token' => 'XXXXXXXXXXX',
+            ]
+        );
+
+        $card = $this->getDbLastEntity('card');
+
+        $iin = $this->getDbEntityById('iin', $card['iin']);
+
+        $this->assertEquals('debit', $iin['type']);
+
+        $this->gateway = 'hdfc';
+
+        $this->fixtures->pricing->createInstantRefundsDefaultPricingplan();
+
+        $this->fixtures->pricing->createInstantRefundsPricingPlan();
+
+        // Adding IMPS pricing as well to assert that the extra pricing rule is not affecting those refunds
+        // without a mode decisioned
+        $this->fixtures->pricing->createInstantRefundsModeLevelPricingPlan();
+
+        // Adding specific amount to refund - this is meant to test successful instant refunds on scrooge -
+        $refund = $this->refundPayment(
+            $payment['id'],
+            3471,
+            ['speed' => 'optimum', 'is_fta' => true, 'mode_requested' => 'CT']
+        );
+
+        $this->assertEquals('rfnd_', substr($refund['id'], 0, 5));
+
+        $fta = $this->getLastEntity('fund_transfer_attempt', true);
+
+        $this->assertEquals($fta['source'], $refund['id']);
+        $this->assertEquals($card['id'], $fta['card_id']);
+        $this->assertEquals('refund', $fta['purpose']);
+        $this->assertEquals('m2p', $fta['channel']);
+        $this->assertEquals('CT', $fta['mode']);
+        $this->assertNotNull($fta['initiate_at']);
+
+        $this->assertEquals('TestMerc' . substr($payment['id'], 4), $fta['narration']);
+
+        $this->fixtures->card->edit(
+            $payment['card_id'],
+            [
+                'network' => 'Maestro',
+            ]
+        );
+
+        // Adding specific amount to refund - this is meant to test successful instant refunds on scrooge -
+        $refund = $this->refundPayment(
+            $payment['id'],
+            3471,
+            ['speed' => 'optimum', 'is_fta' => true, 'mode_requested' => 'CT']
+        );
+
+        $this->assertEquals('rfnd_', substr($refund['id'], 0, 5));
+
+        $fta = $this->getLastEntity('fund_transfer_attempt', true);
+
+        $this->assertEquals($fta['source'], $refund['id']);
+        $this->assertEquals($card['id'], $fta['card_id']);
+        $this->assertEquals('refund', $fta['purpose']);
+        $this->assertEquals('m2p', $fta['channel']);
+        $this->assertEquals('CT', $fta['mode']);
+        $this->assertNotNull($fta['initiate_at']);
+
+        $this->assertEquals('TestMerc' . substr($payment['id'], 4), $fta['narration']);
+    }
 }

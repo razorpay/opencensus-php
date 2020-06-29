@@ -3001,7 +3001,7 @@ trait Refund
 
     protected function getFundTransferAttemptInput(Payment\Entity $payment, $data = []): array
     {
-        $defaultRefundNarration = $this->getDefaultRefundFundTransferAttemptNarration($payment);
+        $defaultRefundNarration = $this->getDefaultRefundFundTransferAttemptNarration($payment, $data);
 
         $input = [
             FundTransferAttempt\Entity::NARRATION => $defaultRefundNarration,
@@ -3040,8 +3040,33 @@ trait Refund
         return $input;
     }
 
-    protected function getDefaultRefundFundTransferAttemptNarration(Payment\Entity $payment): string
+    protected function getMcSpecificNarrationForCt(Payment\Entity $payment): string
     {
+        $merchant = $payment->merchant;
+
+        $merchantBillingLabel = $merchant->getBillingLabel();
+
+        // Max. chars allowed is 22. Alphanumeric. For refunds, merchant name followed by payment reference number
+        // Remove all characters other than a-z, A-Z, 0-9 (alphanumeric)
+        // If formattedLabel is non-empty, pick the first 8 chars, else fallback to 'Razorpay'
+        // Append 14 char razorpay payment id
+        $formattedLabel = preg_replace('/[^a-zA-Z0-9]+/', '', $merchantBillingLabel) ? : 'Razorpay';
+
+        $formattedLabel = Str::limit($formattedLabel, 8, '');
+
+        return $formattedLabel . $payment->getId();
+    }
+
+    protected function getDefaultRefundFundTransferAttemptNarration(Payment\Entity $payment, array $data): string
+    {
+        // For fund transfers via m2p channel & mode CT, Mastercard has specific requirements on narration
+        if ((isset($data[RefundEntity::MODE]) === true) and
+            ($data[RefundEntity::MODE] === FundTransfer\Mode::CT) and
+            (($payment->card->isMasterCard() === true) or ($payment->card->isMaestro() === true)))
+        {
+            return $this->getMcSpecificNarrationForCt($payment);
+        }
+
         $merchant = $payment->merchant;
 
         $merchantBillingLabel = $merchant->getBillingLabel();
@@ -3054,9 +3079,7 @@ trait Refund
 
         $formattedLabel = Str::limit($formattedLabel, 24, '');
 
-        $narration = $formattedLabel . ' Refund ' . $payment->getId();
-
-        return $narration;
+        return $formattedLabel . ' Refund ' . $payment->getId();
     }
 
     protected function isValidTiming($mode)
