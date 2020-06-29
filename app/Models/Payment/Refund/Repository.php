@@ -294,6 +294,14 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function findForPaymentAndBaseAmount($paymentId, $amount)
+    {
+        return $this->newQuery()
+                    ->where(Refund\Entity::PAYMENT_ID, $paymentId)
+                    ->where(Refund\Entity::BASE_AMOUNT, $amount)
+                    ->get();
+    }
+
     public function fetchEntitiesForReport($merchantId, $from, $to, $count, $skip, $relations = [])
     {
         return $this->fetchBetweenTimestampWithRelations(

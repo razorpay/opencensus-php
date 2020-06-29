@@ -22,7 +22,34 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
 
         $refundAmount = $this->getReconRefundAmount($row);
 
-        $refunds = $this->repo->refund->findForPaymentAndAmount($paymentId, $refundAmount);
+        try
+        {
+            $payment = $this->repo->payment->findOrFailPublic($paymentId);
+        }
+        catch (\Throwable $e)
+        {
+            $this->messenger->raiseReconAlert(
+                [
+                    'trace_code'    => TraceCode::RECON_INFO_ALERT,
+                    'info_code'     => Base\InfoCode::REFUND_PAYMENT_ABSENT,
+                    'payment_id'    => $paymentId,
+                    'gateway'       => $this->gateway,
+                    'batch_id'      => $this->batchId
+                ]);
+
+            return null;
+        }
+
+        $convertCurrency = $payment->getConvertCurrency();
+
+        if ($convertCurrency === true)
+        {
+            $refunds = $this->repo->refund->findForPaymentAndBaseAmount($paymentId, $refundAmount);
+        }
+        else
+        {
+            $refunds = $this->repo->refund->findForPaymentAndAmount($paymentId, $refundAmount);
+        }
 
         if (count($refunds) === 1)
         {
