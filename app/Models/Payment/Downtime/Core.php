@@ -50,6 +50,7 @@ class Core extends Base\Core
 
         // For now Not creating Downtimes From StatusCake -- Remove this as soon as issue fixed
         $gatewayDowntimes = $gatewayDowntimes->where(GatewayDowntime::SOURCE, '!=', Source::STATUSCAKE);
+        $gatewayDowntimes = $gatewayDowntimes->where(GatewayDowntime::SOURCE, '!=', Source::DOWNTIME_V2);
 
         foreach (Payment\Method::getAllPaymentMethods() as $method)
         {
