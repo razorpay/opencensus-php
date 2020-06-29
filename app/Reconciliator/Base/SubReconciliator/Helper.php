@@ -46,6 +46,5 @@ class Helper
             });
 
         return $row[$value] ?? null;
-
     }
 }
