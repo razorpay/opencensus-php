@@ -268,6 +268,8 @@ class Repository extends Base\Repository
             }
         }
 
+        $query = $query->where(Entity::GATEWAY, '!=', Entity::ALL);
+
         return $query->get();
     }
 

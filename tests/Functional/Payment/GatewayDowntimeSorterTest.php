@@ -280,7 +280,7 @@ class GatewayDowntimeSorterTest extends TestCase
         $this->assertEquals('hdfc', $payment['gateway']);
 
         // with downtime
-        $allGatewayAllIssuerAllNetworkHdfcAcquirerData = $this->testData['allGatewayAllIssuerAllNetworkHdfcAcquirerData'];
+        $allGatewayAllIssuerAllNetworkHdfcAcquirerData = $this->testData['hdfcAllNetworkAllIssuerHdfcAcquirerDowntimeData'];
         $this->fixtures->create('gateway_downtime:card', $allGatewayAllIssuerAllNetworkHdfcAcquirerData);
 
         $payment = $this->makePayment('555555555555558');
