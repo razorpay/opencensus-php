@@ -153,20 +153,16 @@ class GovernorController extends Controller
 
         $method = Request::method();
 
-        $rawContent = Request::getContent();
-
-        $routeParameters = Request::route()->parameters();
-
         $path = Request::path() . '?' . Request::getQueryString();
 
         // handling workflow here
-        if (strpos($path, 'w-actions') !== false)
+        if ($this->app['api.route']->isWorkflowExecuteOrApproveCall() === true)
         {
-            $this->routeToGovernorViaWorkflow($method, $path, $rawContent);
+            $this->routeToGovernorViaWorkflow($method, $path, $input);
         }
         else
         {
-            $this->routeToWorkflowIfApplicable($method, $path, $routeParameters, $input);
+            $this->routeToWorkflowIfApplicable($method, $path, $input);
         }
 
         $response = $this->app['governor']->sendRequestV1($method, $path, $input);
@@ -174,33 +170,20 @@ class GovernorController extends Controller
         return ApiResponse::json($response);
     }
 
-    protected function routeToGovernorViaWorkflow(&$method, &$path, $rawContent)
+    protected function routeToGovernorViaWorkflow(&$method, &$path, $input)
     {
-        $rawContentArr = explode('&', $rawContent);
+        $method = $input['governor_method'];
 
-        $content = array();
-
-        foreach ($rawContentArr as $val)
-        {
-            $tmp = explode('=', $val);
-
-            $content[$tmp[0]] = $tmp[1];
-        }
-
-        $method = $content['method'];
-
-        $path = $content['url'];
+        $path = $input['governor_path'];
 
         $this->app['trace']->info(TraceCode::GOVERNOR_CONTROLLER_WORKFLOW_REQUEST, [
             'path'              => $path,
             'method'            => $method,
-            'raw'               => $rawContent,
-            'body'              => Request::all(),
-            'params'            => Request::route()->parameters(),
+            'input'             => $input,
         ]);
     }
 
-    protected function routeToWorkflowIfApplicable($method, $path, $routeParameters, $body)
+    protected function routeToWorkflowIfApplicable($method, $path, $body)
     {
         // checking for rules related url
         if (strpos($path, self::RULES) !== false)
@@ -208,24 +191,22 @@ class GovernorController extends Controller
             // Checking for create/edit/delete rules here
             if ($method === self::POST)
             {
-                $paramsWithBody = array_merge($routeParameters, $body);
-
-                $this->app['trace']->info(TraceCode::GOVERNOR_CREATE_RULE_REQUEST_VIA_WORKFLOW, $paramsWithBody);
+                $this->app['trace']->info(TraceCode::GOVERNOR_CREATE_RULE_REQUEST_VIA_WORKFLOW, $body);
 
                 $this->app['workflow']
                     ->setEntityAndId(self::GOVERNOR_RULE_CREATE_ENTITY, substr($this->app['request']->getId(),0,12))
-                    ->handle([], $paramsWithBody);
+                    ->handle([], $body);
             }
             elseif ($method === self::PUT)
             {
-                $this->app['trace']->info(TraceCode::GOVERNOR_EDIT_RULE_REQUEST_VIA_WORKFLOW, array_merge($routeParameters, $body));
+                $this->app['trace']->info(TraceCode::GOVERNOR_EDIT_RULE_REQUEST_VIA_WORKFLOW, $body);
 
-                $originalRule = $routeParameters;
+                $originalRule  = [];
 
                 // checking old rule key exist or not
                 if (isset($body['old_rule']) === true)
                 {
-                    $originalRule = array_merge($originalRule, $body['old_rule']);
+                    $originalRule = $body['old_rule'];
 
                     // removing old rule from body, required to populate workflow diff properly
                     unset($body['old_rule']);
@@ -240,13 +221,13 @@ class GovernorController extends Controller
                 // fetching rule from governor for populating workflow diff
                 $rule = $this->app['governor']->sendRequestV1('GET', $path, $body);
 
-                $paramsWithBody = array_merge($routeParameters, $rule ?? []);
+                $originalRule = $rule ?? [];
 
-                $this->app['trace']->info(TraceCode::GOVERNOR_DELETE_RULE_REQUEST_VIA_WORKFLOW, $paramsWithBody);
+                $this->app['trace']->info(TraceCode::GOVERNOR_DELETE_RULE_REQUEST_VIA_WORKFLOW, $originalRule);
 
                 $this->app['workflow']
                     ->setEntityAndId(self::GOVERNOR_RULE_DELETE_ENTITY, substr($this->app['request']->getId(),0,12))
-                    ->handle($paramsWithBody, []);
+                    ->handle($originalRule, []);
             }
         }
     }
