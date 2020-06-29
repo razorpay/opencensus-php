@@ -2,11 +2,13 @@
 
 namespace RZP\Services;
 
+use Request;
+
 use RZP\Exception;
-use RZP\Http\RequestHeader;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use Illuminate\Support\Arr;
+use RZP\Http\RequestHeader;
 use RZP\Jobs\HubspotRequestJob;
 
 class HubspotClient
@@ -24,6 +26,12 @@ class HubspotClient
     protected $app;
 
     const APPLICATION_JSON = 'application/json';
+
+    const EPOS_APP = 'epos_app';
+
+    const EPOS = 'Epos';
+
+    const RAZORPAY_APP_HEADER = 'X-Razorpay-App';
 
     protected $relativeUrls = [
         'update_contact_properties_by_email' => 'contacts/v1/contact/createOrUpdate/email/',
@@ -57,7 +65,7 @@ class HubspotClient
 
         $payloadData['email'] = $input['email'];
 
-        $this->addSourceDetail($payloadData);
+        $this->addCommonProperties($payloadData);
 
         $this->dispatchRequestJob($payloadData);
     }
@@ -72,7 +80,7 @@ class HubspotClient
 
         $this->addMerchantContext($payloadData, $merchant);
 
-        $this->addSourceDetail($payloadData);
+        $this->addCommonProperties($payloadData);
 
         $this->dispatchRequestJob($payloadData);
     }
@@ -105,6 +113,23 @@ class HubspotClient
         }
     }
 
+    /**
+     * Adds request source based on  X-Razorpay-App header, if header value is Epos then source is epos-app
+     *
+     * @param array $payloadData
+     *
+     */
+    protected function addRequestSource(array & $payloadData)
+    {
+        $appHeader = Request::header(self::RAZORPAY_APP_HEADER);
+
+        if ((empty($appHeader) === false) and
+            (strcasecmp($appHeader, self::EPOS) === 0))
+        {
+            $payloadData['source'] = self::EPOS_APP;
+        }
+    }
+
     public function trackL1ContactProperties(array $input, Merchant\Entity $merchant, string $activationFlow = null)
     {
         $payloadData = $input;
@@ -120,7 +145,7 @@ class HubspotClient
 
         $payloadData['bucket'] = $activationFlow;
 
-        $this->addSourceDetail($payloadData);
+        $this->addCommonProperties($payloadData);
 
         $this->dispatchRequestJob($payloadData);
     }
@@ -137,7 +162,7 @@ class HubspotClient
 
         $this->addMerchantContext($payloadData, $merchant);
 
-        $this->addSourceDetail($payloadData);
+        $this->addCommonProperties($payloadData);
 
         $this->dispatchRequestJob($payloadData);
     }
@@ -282,11 +307,21 @@ class HubspotClient
         return $properties;
     }
 
-    private function addSourceDetail(array & $payloadData)
+    private function addProductType(array & $payloadData)
     {
         if (empty($this->app['basicauth']) === false)
         {
-           $payloadData['product_type'] = $this->app['basicauth']->getRequestOriginProduct();
+            $payloadData['product_type'] = $this->app['basicauth']->getRequestOriginProduct();
         }
+    }
+
+    /**
+     * @param $payloadData
+     */
+    private function addCommonProperties(&$payloadData): void
+    {
+        $this->addProductType($payloadData);
+
+        $this->addRequestSource($payloadData);
     }
 }
