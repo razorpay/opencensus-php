@@ -2648,6 +2648,8 @@ class Gateway
             self::AXIS_MIGS,
             self::AMEX,
             self::MPGS,
+            self::PAYSECURE,
+            self::FIRST_DATA,
         ];
 
         return (in_array($gateway, $gateways, true));
