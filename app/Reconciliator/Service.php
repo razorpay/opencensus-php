@@ -10,6 +10,7 @@ use RZP\Models\Base;
 use RZP\Models\Batch;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
+use RZP\Reconciliator\Base\SubReconciliator\NetbankingServiceRecon;
 use RZP\Trace\TraceCode;
 use RZP\Http\RequestHeader;
 use RZP\Models\Transaction;
@@ -286,13 +287,11 @@ class Service extends Base\Service
         );
     }
 
-    public function persistGatewayDataAfterNbPlusReconResponse(array $response, array $input, $entity)
+    public function persistGatewayDataAfterNbPlusReconResponse(array $response, array $input, $entity, $entityAttributes, $reconParams)
     {
         $paymentId = $input['payment_id'];
 
-        $misParams = $input['recon_params'];
-
-        $gatewayParams = $input['gateway_params'];
+        $reconData = $input['recon_file_data'];
 
         $dataToUpdate = [];
 
@@ -300,18 +299,25 @@ class Service extends Base\Service
 
         if (empty($responseData[$paymentId]) === false)
         {
-            foreach ($gatewayParams as $field)
+            foreach ($reconParams as $field)
             {
-                if (empty($misParams[$field]) === true)
+                if (empty($reconData[$field]) === true)
                 {
                     continue;
                 }
 
                 if (empty($responseData[$paymentId][$field]) === true)
                 {
-                    $dataToUpdate[$field] = $misParams[$field];
+                    if (in_array($field, $entityAttributes, true) === true)
+                    {
+                        $dataToUpdate[$field] = $reconData[$field];
+                    }
+                    else
+                    {
+                        $dataToUpdate['additional_data'][$field] = $reconData[$field];
+                    }
                 }
-                else if (trim($responseData[$paymentId][$field]) !== $misParams[$field])
+                else if (trim($responseData[$paymentId][$field]) !== $reconData[$field])
                 {
                     $this->trace->info(
                         TraceCode::RECON_MISMATCH,
@@ -319,8 +325,6 @@ class Service extends Base\Service
                             'info_code'                 => InfoCode::NBPLUS_DATA_MISMATCH,
                             'payment_id'                => $paymentId,
                             'field'                     => $field,
-                            'db_reference_number'       => $responseData[$paymentId][$field],
-                            'recon_reference_number'    => $misParams[$field],
                             'gateway'                   => $input['gateway'],
                             'batch_id'                  => $input['batch_id'],
                         ]
@@ -360,9 +364,10 @@ class Service extends Base\Service
         $this->trace->info(
             TraceCode::RECON_INFO,
             [
-                'info_code' => InfoCode::RECON_NBPLUS_QUEUE_DISPATCH,
-                'queue'     => $queueName,
-                'payload'   => json_encode($pushData),
+                'info_code'  => InfoCode::RECON_NBPLUS_QUEUE_DISPATCH,
+                'queue'      => $queueName,
+                'payment_id' => $paymentId,
+                'batch_id'   => $input['batch_id']
             ]
         );
     }

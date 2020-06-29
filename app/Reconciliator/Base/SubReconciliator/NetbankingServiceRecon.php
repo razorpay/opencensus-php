@@ -14,6 +14,28 @@ use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
 
 class NetbankingServiceRecon extends PaymentReconciliate
 {
+    //
+    // These are the attributes required from the netbanking entity on nbplus service
+    //
+    const NETBANKING_ATTRIBUTES = [
+        NetbankingService::GATEWAY_TRANSACTION_ID,
+        NetbankingService::BANK_TRANSACTION_ID,
+        NetbankingService::BANK_ACCOUNT_NUMBER,
+        NetbankingService::ADDITIONAL_DATA
+    ];
+
+    //
+    // These are the fields that need to be compared from the recon file with the data from nbplus service
+    // if the field is present in the recon file
+    //
+    const RECON_PARAMS = [
+        NetbankingService::GATEWAY_TRANSACTION_ID,
+        NetbankingService::BANK_TRANSACTION_ID,
+        NetbankingService::BANK_ACCOUNT_NUMBER,
+        NetbankingService::CREDIT_ACCOUNT_NUMBER,
+        NetbankingService::CUSTOMER_ID
+    ];
+
     protected function updateAndFetchGatewayPayment()
     {
         if ($this->payment->isRoutedThroughNbPlus() === true)
@@ -156,15 +178,31 @@ class NetbankingServiceRecon extends PaymentReconciliate
 
     protected function nbPlusPaymentServiceDispatch(array $rowDetails)
     {
+        $debitAccountNumber = null;
+
+        $creditAccountNumber = null;
+
+        $customerId = null;
+
+        if (isset($rowDetails[BaseReconciliate::ACCOUNT_DETAILS]) === true)
+        {
+            $debitAccountNumber  = $rowDetails[BaseReconciliate::ACCOUNT_DETAILS][BaseReconciliate::ACCOUNT_NUMBER] ?? null;
+            $creditAccountNumber = $rowDetails[BaseReconciliate::ACCOUNT_DETAILS][BaseReconciliate::CREDIT_ACCOUNT_NUMBER] ?? null;
+        }
+
+        if (isset($rowDetails[BaseReconciliate::CUSTOMER_DETAILS]) === true)
+        {
+            $customerId  = $rowDetails[BaseReconciliate::CUSTOMER_DETAILS][Base\Reconciliate::CUSTOMER_ID] ?? null;
+        }
+
         $data = [
             'payment_id' => $this->payment->getId(),
-            'recon_params'     => [
+            'recon_file_data'     => [
                 NetbankingService::GATEWAY_TRANSACTION_ID => $rowDetails[BaseReconciliate::GATEWAY_TRANSACTION_ID] ?? null,
-                NetbankingService::BANK_TRANSACTION_ID    => $rowDetails[BaseReconciliate::REFERENCE_NUMBER] ?? null
-            ],
-            'gateway_params' => [
-                NetbankingService::GATEWAY_TRANSACTION_ID,
-                NetbankingService::BANK_TRANSACTION_ID
+                NetbankingService::BANK_TRANSACTION_ID    => $rowDetails[BaseReconciliate::REFERENCE_NUMBER] ?? null,
+                NetbankingService::BANK_ACCOUNT_NUMBER    => $debitAccountNumber,
+                NetbankingService::CREDIT_ACCOUNT_NUMBER  => $creditAccountNumber,
+                NetbankingService::CUSTOMER_ID            => $customerId
             ],
             'mode'       => $this->mode,
             'gateway'    => $this->gateway,

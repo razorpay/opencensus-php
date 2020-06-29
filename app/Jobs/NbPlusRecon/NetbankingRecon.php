@@ -7,8 +7,10 @@ use App;
 use RZP\Jobs\Job;
 use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Service;
+use RZP\Services\NbPlus\Netbanking;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Reconciliator\Base\InfoCode;
+use RZP\Reconciliator\Base\SubReconciliator\NetbankingServiceRecon;
 
 class NetbankingRecon extends Job
 {
@@ -33,7 +35,7 @@ class NetbankingRecon extends Job
         parent::handle();
 
         $request = [
-            'fields'        => $this->data['gateway_params'],
+            'fields'        => NetbankingServiceRecon::NETBANKING_ATTRIBUTES,
             'payment_ids'   => [$this->data['payment_id']],
         ];
 
@@ -48,22 +50,30 @@ class NetbankingRecon extends Job
         {
             $response = App::getFacadeRoot()['nbplus.payments']->fetchNetbankingData($request);
 
-            // TODO: look at redaction?
-            $this->trace->info(
-                TraceCode::RECON_INFO,
-                [
-                    'info_code'     => InfoCode::NBPLUS_RESPONSE_DATA,
-                    'response'      => $response,
-                ]);
-
             if (empty($response) === false)
             {
-                (new Service)->persistGatewayDataAfterNbPlusReconResponse($response, $this->data, self::ENTITY);
+                $response = $this->extractAdditionalDataIfApplicable($response);
+
+                $redactedResponse = $this->redactResponse($response);
+
+                $this->trace->info(
+                    TraceCode::RECON_INFO,
+                    [
+                        'info_code'     => InfoCode::NBPLUS_RESPONSE_DATA,
+                        'response'      => $redactedResponse,
+                    ]);
+
+                (new Service)->persistGatewayDataAfterNbPlusReconResponse($response, $this->data, self::ENTITY, NetbankingServiceRecon::NETBANKING_ATTRIBUTES, NetbankingServiceRecon::RECON_PARAMS);
             }
 
             $this->trace->info(
                 TraceCode::PAYMENT_RECON_QUEUE_NBPLUS_SUCCESS,
-                $this->data
+                [
+                    'payment_id' => $this->data['payment_id'],
+                    'mode'       => $this->data['mode'],
+                    'gateway'    => $this->data['gateway'],
+                    'batch_id'   => $this->data['batch_id']
+                ]
             );
 
             $this->delete();
@@ -79,7 +89,9 @@ class NetbankingRecon extends Job
                 [
                     'info_code' => InfoCode::PAYMENT_RECON_NBPLUS_JOB_FAILURE_EXCEPTION,
                     'request'   => $request,
-                    'input'     => $this->data,
+                    'mode'       => $this->data['mode'],
+                    'gateway'    => $this->data['gateway'],
+                    'batch_id'   => $this->data['batch_id']
                 ]);
 
             $this->handleReconJobRelease($batchId);
@@ -93,7 +105,6 @@ class NetbankingRecon extends Job
             $this->trace->error(
                 TraceCode::PAYMENT_RECON_NBPLUS_QUEUE_DELETE,
                 [
-                    'data'         => $this->data,
                     'batch_id'     => $batchId,
                     'job_attempts' => $this->attempts(),
                     'message'      => 'Deleting the job after configured number of tries. Still unsuccessful.'
@@ -110,5 +121,34 @@ class NetbankingRecon extends Job
             //
             $this->release(self::JOB_RELEASE_WAIT);
         }
+    }
+
+    protected function extractAdditionalDataIfApplicable($response)
+    {
+        $paymentId = $this->data['payment_id'];
+
+        if ((empty($response['items'][$paymentId]) === false) and
+            (isset($response['items'][$paymentId][Netbanking::ADDITIONAL_DATA]) === true))
+        {
+            $additionalData = json_decode($response['items'][$paymentId][Netbanking::ADDITIONAL_DATA], true);
+
+            foreach ($additionalData as $key => $value)
+            {
+                $response['items'][$paymentId][$key] = $value;
+            }
+
+            unset($response['items'][$paymentId][Netbanking::ADDITIONAL_DATA]);
+        }
+
+        return $response;
+    }
+
+    protected function redactResponse($response)
+    {
+        unset($response['items'][$this->data['payment_id']][Netbanking::CREDIT_ACCOUNT_NUMBER]);
+
+        unset($response['items'][$this->data['payment_id']][Netbanking::BANK_ACCOUNT_NUMBER]);
+
+        return $response;
     }
 }

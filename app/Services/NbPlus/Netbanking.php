@@ -21,6 +21,11 @@ class Netbanking extends Service
     const GATEWAY_TRANSACTION_ID = 'gateway_transaction_id';
     const BANK_TRANSACTION_ID    = 'bank_transaction_id';
     const BANK_ACCOUNT_NUMBER    = 'bank_account_number';
+    const ADDITIONAL_DATA        = 'additional_data';
+
+    // attributes which are part of additional data in netbanking entity
+    const CREDIT_ACCOUNT_NUMBER  = 'credit_account_number';
+    const CUSTOMER_ID            = 'customer_id';
 
     protected $transactionType = self::RETAIL;
 
