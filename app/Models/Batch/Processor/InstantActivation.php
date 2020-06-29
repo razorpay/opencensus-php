@@ -24,19 +24,36 @@ class InstantActivation extends Base
         $this->merchantCore = new Merchant\Core();
     }
 
+    //protected function processEntry(array & $entry)
+    //{
+    //    if (empty($entry[Merchant\Entity::MERCHANT_ID]) === false)
+    //    {
+    //        $this->repo->transactionOnLiveAndTest(function() use (& $entry) {
+    //
+    //            $merchantDetails = $this->repo->merchant_detail->getByMerchantId(trim($entry[Merchant\Entity::MERCHANT_ID]));
+    //
+    //            $merchant = $this->repo->merchant->findOrFail(trim($entry[Merchant\Entity::MERCHANT_ID]));
+    //
+    //            $this->updateWhitelistedDomains($merchantDetails, $merchant);
+    //
+    //            $this->repo->merchant->saveOrFail($merchant);
+    //        });
+    //
+    //        $entry[Header::STATUS] = Status::SUCCESS;
+    //    }
+    //}
+
     protected function processEntry(array & $entry)
     {
         if (empty($entry[Merchant\Entity::MERCHANT_ID]) === false)
         {
             $this->repo->transactionOnLiveAndTest(function() use (& $entry) {
 
-                $merchantDetails = $this->repo->merchant_detail->getByMerchantId(trim($entry[Merchant\Entity::MERCHANT_ID]));
-
                 $merchant = $this->repo->merchant->findOrFail(trim($entry[Merchant\Entity::MERCHANT_ID]));
 
-                $this->updateWhitelistedDomains($merchantDetails, $merchant);
+                $merchant->setProductInternational('1111000000');
 
-                $this->repo->merchant->saveOrFail($merchant);
+                $this->repo->saveOrFail($merchant);
             });
 
             $entry[Header::STATUS] = Status::SUCCESS;

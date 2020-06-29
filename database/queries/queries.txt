@@ -5815,6 +5815,9 @@ ALTER TABLE upi_transfers
 ALTER TABLE merchant_details
     ADD COLUMN `cin_verification_status` varchar(30) DEFAULT NULL;
 
+ALTER TABLE merchants
+    ADD COLUMN product_international VARCHAR(50) DEFAULT '0000000000' AFTER international;
+
 ALTER TABLE merchant_banks
     Add COLUMN apps SMALLINT UNSIGNED DEFAULT 0;
 

@@ -80,6 +80,7 @@ class Entity extends Base\PublicEntity
     const CHANNEL                        = 'channel';
     const WEBSITE                        = 'website';
     const EXTERNAL_ID                    = 'external_id';
+    const PRODUCT_INTERNATIONAL          = 'product_international';
 
     // this is same as mcc in legal entity table.
     // This will be removed after migrating to legal entity
@@ -389,6 +390,7 @@ class Entity extends Base\PublicEntity
         self::DEFAULT_REFUND_SPEED,
         self::PARTNERSHIP_URL,
         self::EXTERNAL_ID,
+        self::PRODUCT_INTERNATIONAL,
      ];
 
     protected $defaults = [
@@ -1670,6 +1672,16 @@ class Entity extends Base\PublicEntity
         // similar as in checkout (instead of #000000 checkout has rgba(0, 0, 0, 0.85)),
         return $relativeLuminance < 0.5 ? '#FFFFFF' : '#000000';
 
+    }
+
+    public function getProductInternational()
+    {
+        return $this->getAttribute(self::PRODUCT_INTERNATIONAL);
+    }
+
+    public function setProductInternational($productInternational)
+    {
+        $this->setAttribute(self::PRODUCT_INTERNATIONAL, $productInternational);
     }
 
     public function getFullLogoUrlWithSize($size = self::ORIGINAL_SIZE)

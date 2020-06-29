@@ -77,6 +77,9 @@ class CreateMerchants extends Migration
             $table->tinyInteger(Merchant::INTERNATIONAL)
                   ->default(0);
 
+            $table->string(Merchant::PRODUCT_INTERNATIONAL, 50)
+                  ->default('0000000000');
+
             $table->string(Merchant::BILLING_LABEL)
                   ->nullable();
 

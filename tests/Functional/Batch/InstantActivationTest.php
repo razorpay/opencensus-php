@@ -48,6 +48,27 @@ class InstantActivationTest extends TestCase
     /**
      * verifies data Migration through batch
      */
+    //public function testVerifyBatchDataMigration()
+    //{
+    //    $merchantId = $this->createMerchantDetailFixture();
+    //
+    //    $input = [
+    //        [
+    //            DetailEntity::MERCHANT_ID => $merchantId,
+    //        ]
+    //    ];
+    //
+    //    $this->createAndPutExcelFileInRequest($input, __FUNCTION__);
+    //
+    //    $this->startTest();
+    //
+    //    $merchant = $this->getDbEntity('merchant', ['id' => $merchantId], 'live');
+    //
+    //    $whitelistedDomain = $merchant[Entity::WHITELISTED_DOMAINS] ?? [];
+    //
+    //    $this->assertEquals(['example.com','abc.com','webhook.com'], $whitelistedDomain);
+    //}
+
     public function testVerifyBatchDataMigration()
     {
         $merchantId = $this->createMerchantDetailFixture();
@@ -64,9 +85,9 @@ class InstantActivationTest extends TestCase
 
         $merchant = $this->getDbEntity('merchant', ['id' => $merchantId], 'live');
 
-        $whitelistedDomain = $merchant[Entity::WHITELISTED_DOMAINS] ?? [];
+        $prodInt = $merchant[Entity::PRODUCT_INTERNATIONAL];
 
-        $this->assertEquals(['example.com','abc.com','webhook.com'], $whitelistedDomain);
+        $this->assertEquals( '1111000000', $prodInt);
     }
 
     /**
