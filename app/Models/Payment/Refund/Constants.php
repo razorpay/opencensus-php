@@ -15,7 +15,7 @@ class Constants
     const REFUND_REFERENCE1              = 'refund_reference1';
     const INSTANT_REFUND_SUPPORT         = 'instant_refund_support';
     const MAX_REFUND_RETRY_ATTEMPTS      = 3;
-    const MAX_REFUND_VERIFY_REQUESTS     = 20;
+    const MAX_REFUND_VERIFY_REQUESTS     = 100;
     const SCROOGE_TAGGING_LIVE_TIMESTAMP = 1552646209;
     /**
      * We get the last 10 days refunds created of a gateway.
