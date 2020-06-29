@@ -27,7 +27,7 @@ trait Vpa
 
         $terminalIds = Payment\Gateway::getTerminalsForValidateVpaForMode($this->mode);
 
-        $variant = $this->app->razorx->getTreatment($this->app['request']->getTaskId(), 'validate_vpa_routing', Mode::LIVE);
+        $variant = $this->app->razorx->getTreatment($this->app['request']->getTaskId(), 'validate_vpa_routing_v2', Mode::LIVE);
 
         $this->trace->info(TraceCode::VALIDATE_VPA_REQUEST, [
             'variant'     => $variant,
