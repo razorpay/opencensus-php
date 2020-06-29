@@ -369,6 +369,15 @@ class Validator extends Base\Validator
         Header::NOTES                       => 'sometimes|nullable|notes',
     ];
 
+    protected static $creditTypeRowRules = [
+        Header::CREDITS_MERCHANT_ID                 => 'required|alpha_num|size:14',
+        Header::CREDIT_POINTS                       => 'required|integer',
+        Header::REMARKS                             => 'sometimes|string|nullable|max:255',
+        Header::CAMPAIGN                            => 'required|string|max:255',
+        Header::PRODUCT                             => 'required|string|in:banking',
+        Header::TYPE                                => 'required|string',
+    ];
+
     protected static $terminalNetbankingHdfcRules = [
         Header::HDFC_NB_MERCHANT_ID          => 'required|string|size:14',
         Header::HDFC_NB_GATEWAY_MERCHANT_ID  => 'required|string|max:30|alpha_dash_space',
@@ -437,6 +446,13 @@ class Validator extends Base\Validator
         Entity::NAME                 => 'filled|string|max:255',
         Entity::FILE                 => 'required|file|max:10240' . self::DEFAULT_MIME_RULE,
         Entity::FILE_ID              => 'required_without:file|public_id',
+    ];
+
+    protected static $creditCreateRules = [
+        Entity::TYPE    => 'required|in:credit',
+        Entity::NAME    => 'filled|string|max:255',
+        Entity::FILE    => 'required_without:file_id|file|max:10240' . self::CSV_MIME_RULE,
+        Entity::FILE_ID => 'required_without:file|public_id',
     ];
 
     public function validateConfig($attribute, $value)
@@ -883,6 +899,15 @@ class Validator extends Base\Validator
                     compact('totalPayoutAmount', 'bankingBalance'));
             }
         }
+    }
+
+
+    protected function validateCreditEntries(array & $entries, array $params, ME $merchant)
+    {
+        $this->validateEntriesWithPublicExceptionHandled($entries, function (array $entry)
+        {
+            $this->validateInput('creditTypeRow', $entry);
+        });
     }
 
     protected function validateLinkedAccountEntries(array & $entries, array $params, ME $merchant)

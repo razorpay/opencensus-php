@@ -806,6 +806,10 @@ return [
                 'description' => 'Upload batch file to create large reports from reporting',
                 'assignable'  => true,
             ],
+            Permission::CREDITS_BATCH_UPLOAD => [
+                'description' => 'Upload batch file to assign credits to merchants in bulk',
+                'assignable'  => true,
+            ]
         ],
 
         PermissionCategory::SHIELD => [

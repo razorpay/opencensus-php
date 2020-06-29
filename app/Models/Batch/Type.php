@@ -110,6 +110,8 @@ class Type
 
     const BANK_TRANSFER_EDIT    = 'bank_transfer_edit';
 
+    const CREDIT              = 'credit';
+
     public static $disabledTypes = [
         //
         // Removing till auth for this is figured out. Other parts of the code aren't
@@ -144,6 +146,7 @@ class Type
         self::ECOLLECT_ICICI,
         self::ECOLLECT_RBL,
         self::BANK_TRANSFER_EDIT,
+        self::CREDIT,
         self::MERCHANT_STATUS_ACTION,
         self::NACH_MIGRATION,
     ];
@@ -224,6 +227,7 @@ class Type
         self::PRICING_RULE,
         self::ADMIN_BATCH,
         self::ADJUSTMENT,
+        self::CREDIT,
     ];
 
     /**
@@ -303,6 +307,7 @@ class Type
         self::ADMIN_BATCH,
         self::RECONCILIATION,
         self::BANK_TRANSFER_EDIT,
+        self::CREDIT,
         self::TERMINAL_CREATION,
         self::NACH_MIGRATION,
         self::MPAN,
@@ -328,6 +333,7 @@ class Type
         self::REPORT,
         self::ADMIN_BATCH,
         self::BANK_TRANSFER_EDIT,
+        self::CREDIT,
         self::TERMINAL_CREATION,
         self::MERCHANT_STATUS_ACTION,
         self::NACH_MIGRATION,
@@ -345,6 +351,7 @@ class Type
     public static $batchToAdminPermissionMapping = [
         self::ADJUSTMENT    => Name::ADJUSTMENT_BATCH_UPLOAD,
         self::REPORT        => Name::REPORTING_BATCH_UPLOAD,
+        self::CREDIT        => Name::CREDITS_BATCH_UPLOAD,
     ];
 
     public static function exists(string $type)

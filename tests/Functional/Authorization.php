@@ -106,9 +106,9 @@ class Authorization
         $this->proxy = true;
     }
 
-    public function batchAuth()
+    public function batchAuth($user = 'rzp_test_10000000000000')
     {
-        $this->appAuth('rzp_test_10000000000000', \Config::get('applications.batch')['secret']);
+        $this->appAuth($user, \Config::get('applications.batch')['secret']);
 
         $this->proxy = true;
     }

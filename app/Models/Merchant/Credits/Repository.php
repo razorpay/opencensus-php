@@ -178,4 +178,13 @@ class Repository extends Base\Repository
 
         return $data;
     }
+
+    public function fetchByIdempotencyKey(string $idempotencyKey, string $batchId, Merchant\Entity $merchant)
+    {
+        return $this->newQuery()
+                    ->where(Entity::IDEMPOTENCY_KEY, '=', $idempotencyKey)
+                    ->where(Entity::BATCH_ID, $batchId)
+                    ->where(Entity::MERCHANT_ID, $merchant->getId())
+                    ->first();
+    }
 }

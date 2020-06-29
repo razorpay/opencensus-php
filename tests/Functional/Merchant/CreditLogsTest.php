@@ -2,15 +2,21 @@
 
 namespace RZP\Tests\Functional\Merchant;
 
+use Mail;
+
 use RZP\Models\Merchant;
+use RZP\Models\Batch\Header;
+use RZP\Services\RazorXClient;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Merchant\Credits;
-use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\TestCase;
+use RZP\Tests\Functional\Fixtures\Entity\Org;
+use RZP\Tests\Functional\Batch\BatchTestTrait;
+use RZP\Mail\Merchant\RazorpayX\Credits\ConfirmationForKycUsers;
 
 class CreditLogsTest extends TestCase
 {
-    use PaymentTrait;
+    use BatchTestTrait;
 
     public function setUp()
     {
@@ -201,5 +207,174 @@ class CreditLogsTest extends TestCase
     public function testAddFeeCreditsWithValueMoreThanUpperLimit()
     {
         $this->startTest();
+    }
+
+    public function testUploadBulkCreditFileWithPermission()
+    {
+        $entries = [
+            [
+                Header::CREDITS_MERCHANT_ID         => '10000000000000',
+                Header::CAMPAIGN                    => 'Churn rewards',
+                Header::REMARKS                     => '',
+                Header::CREDIT_POINTS               => 100,
+                Header::PRODUCT                     => 'banking',
+                Header::TYPE                        => 'reward_fee',
+            ],
+            [
+                Header::CREDITS_MERCHANT_ID         => '10000000000000',
+                Header::CAMPAIGN                    => 'Churn rewards',
+                Header::REMARKS                     => '38R00001',
+                Header::CREDIT_POINTS               => -50,
+                Header::PRODUCT                     => 'banking',
+                Header::TYPE                        => 'reward_fee',
+            ]
+        ];
+
+        $url = $this->writeToCsvFile($entries, 'file', null, 'files/batch');
+
+        $uploadedFile = $this->createUploadedFileCsv($url);
+
+        $content = [
+            'type' => 'credit',
+        ];
+
+        $this->mockRazorX();
+
+        $this->ba->adminAuth('live');
+
+        $response = $this->makeBatchRequest($content, $uploadedFile);
+
+        $this->assertEquals('CREATED', $response['status']);
+    }
+
+    public function testBulkCreditRoute()
+    {
+        Mail::fake();
+
+        $balance = $this->fixtures->on('live')->create('balance', [
+            'id'          => '10000SampleBal',
+            'type'        => 'credit',
+            'merchant_id' => '10000000000000',
+        ]);
+
+        $this->ba->batchAuth('rzp_live_10000000000000');
+
+        $admin = $this->fixtures->on('live')->create('admin', [
+            'id'     => Org::SUPER_ADMIN,
+            'org_id' => Org::RZP_ORG,
+        ]);
+
+        $headers = [
+            'HTTP_X_Batch_Id'          => 'C0zv9I46W4wiOq',
+            'HTTP_X_Creator_Id'        => 'RzrpySprAdmnId',
+            'HTTP_X_Creator_Type'      => 'admin',
+        ];
+        // append headers
+        $this->testData[__FUNCTION__]['request']['server'] = $headers;
+
+        $this->startTest();
+
+        Mail::assertQueued(ConfirmationForKycUsers::class, function ($mail)
+        {
+            $data = $mail->subject;
+
+            $this->assertEquals('Your Rs.100 worth Free Credits are waiting for you!', $data);
+
+            return true;
+        });
+
+    }
+
+    public function testBulkCreditRouteInTestMode()
+    {
+        $this->ba->batchAuth();
+
+        $headers = [
+            'HTTP_X_Batch_Id'          => 'C0zv9I46W4wiOq',
+            'HTTP_X_Creator_Id'        => 'RzrpySprAdmnId',
+            'HTTP_X_Creator_Type'      => 'admin',
+        ];
+        // append headers
+        $this->testData[__FUNCTION__]['request']['server'] = $headers;
+
+        $this->startTest();
+    }
+
+    public function testBulkCreditRouteEntities()
+    {
+        Mail::fake();
+
+        $this->ba->batchAuth('rzp_live_10000000000000');
+
+        $admin = $this->fixtures->on('live')->create('admin', [
+            'id'     => Org::SUPER_ADMIN,
+            'org_id' => Org::RZP_ORG,
+        ]);
+
+        $headers = [
+            'HTTP_X_Batch_Id'          => 'C0zv9I46W4wiOq',
+            'HTTP_X_Creator_Id'        => 'RzrpySprAdmnId',
+            'HTTP_X_Creator_Type'      => 'admin',
+        ];
+        // append headers
+        $this->testData[__FUNCTION__]['request']['server'] = $headers;
+
+        $response = $this->startTest();s($response);
+
+        $credit = $this->getDbLastEntity('credits', 'live');
+        $balance = $this->getDbLastEntity('credit_balance', 'live');
+
+        $this->assertEquals($balance['type'], $credit['type']);
+        $this->assertEquals(100, $balance['balance']);
+        $this->assertEquals($balance['id'], $credit['balance_id']);
+
+        Mail::assertQueued(ConfirmationForKycUsers::class, function ($mail)
+        {
+            $data = $mail->subject;
+
+            $this->assertEquals('Your Rs.100 worth Free Credits are waiting for you!', $data);
+
+            return true;
+        });
+    }
+
+    protected function makeBatchRequest($content, $file)
+    {
+        $request = [
+            'url' => '/admin/batches',
+            'method' => 'POST',
+            'content' => $content,
+            'files' => [
+                'file' => $file,
+            ]
+        ];
+
+        $this->mockRazorX();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        return $response;
+    }
+
+    protected function mockRazorx()
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx
+            ->method('getTreatment')
+            ->will($this->returnCallback(function ($mid, $feature, $mode)
+            {
+                if ($feature === 'batch_service_credit_migration')
+                {
+                    return 'on';
+                }
+
+                return 'off';
+            }));
     }
 }

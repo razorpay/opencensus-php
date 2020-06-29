@@ -13,18 +13,37 @@ class Validator extends Base\Validator
     const MAX_FEE_CREDITS    = 500000000;
     const MIN_CREDITS        = -1000000;
     const MAX_REFUND_CREDITS = 500000000;
+    const ADMIN_BATCH_UPLOAD = 'admin_batch_upload';
+
+    // confirm this limit with batch team
+    const MAX_BATCH_CREDITS_LIMIT = 15;
 
     protected static $createRules = [
-        Entity::CAMPAIGN     => 'required|alpha_dash|max:255',
+        Entity::CAMPAIGN                => 'required|string|max:255',
         # Value is in paise
-        Entity::VALUE        => 'required|integer',
-        Entity::TYPE         => 'sometimes|filled|string|max:20|in:amount,fee,refund',
-        Entity::EXPIRED_AT   => 'sometimes|integer',
-        Entity::PROMOTION_ID => 'sometimes|alpha_num|max:14',
+        Entity::VALUE                   => 'required|integer',
+        Entity::TYPE                    => 'sometimes|filled|string|max:20|in:amount,fee,refund,reward_fee',
+        Entity::EXPIRED_AT              => 'sometimes|integer',
+        Entity::PROMOTION_ID            => 'sometimes|alpha_num|max:14',
+        Entity::PRODUCT                 => 'sometimes|in:banking',
+        Entity::REMARKS                 => 'sometimes|nullable',
+        Entity::IDEMPOTENCY_KEY         => 'sometimes|string',
+        Entity::CREATOR_NAME            => 'sometimes|string',
+        Entity::BATCH_ID                => 'sometimes|string',
     ];
 
     protected static $editRules = [
         Entity::VALUE        => 'required|integer',
+    ];
+
+    protected static $adminBatchUploadRules = [
+        Entity::CAMPAIGN                => 'required|string',
+        Entity::VALUE                   => 'required|numeric',
+        Entity::MERCHANT_ID             => 'required|string|size:14',
+        Entity::REMARKS                 => 'sometimes|nullable',
+        Entity::IDEMPOTENCY_KEY         => 'required|string',
+        Entity::TYPE                    => 'required|string|max:20|in:reward_fee',
+        Entity::PRODUCT                 => 'required|string|in:banking',
     ];
 
     /**
@@ -158,6 +177,24 @@ class Validator extends Base\Validator
                 'value',
                 null,
                 'The value must be between -100000000 and 500000000.');
+        }
+    }
+
+     /**
+      * @param array $input
+      * Rate limit on number of credits creation in Bulk Route
+      *
+      * @throws BadRequestValidationFailureException
+      */
+    public function validateBulkCreditsCount(array $input)
+    {
+        if (count($input) > self::MAX_BATCH_CREDITS_LIMIT)
+        {
+            throw new BadRequestValidationFailureException(
+                'Current batch size ' . count($input) . ', max limit of Bulk Contact is ' . self::MAX_BATCH_CREDITS_LIMIT,
+                null,
+                null
+            );
         }
     }
 }

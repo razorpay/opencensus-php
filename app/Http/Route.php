@@ -291,6 +291,7 @@ class Route
         'merchant_balance_fetch_admin'             => ['get',      'admin_balances',                                 'MerchantController@getAccountBalances'                             ],
         'credits_create'                           => ['post',     'merchants/{id}/credits_log',                     'MerchantController@postCreateCreditsLog'                           ],
         'credits_create_bulk'                      => ['post',     'merchants/credits/bulk',                         'MerchantController@bulkCreateMerchantCredits'                      ],
+        'credits_create_bulk_batch'                => ['post',     'merchants/credits/bulk/batch',                   'MerchantController@bulkCreateMerchantCreditsBatch'                 ],
         'merchant_balance_bulk_backfill_ids'       => ['post',     'merchants/balances/backfill',                    'MerchantController@bulkRegenerateBalanceIds'                       ],
         'credits_edit'                             => ['put',      'merchants/{mid}/credits/{id}',                   'MerchantController@putCreditsLog'                                  ],
         'credits_fetch_by_id'                      => ['get',      'credits/{id}',                                   'MerchantController@getCreditsLog'                                  ],
@@ -2375,6 +2376,7 @@ class Route
         'merchant_create_terminal_internal',
         'retry_penny_testing_cron',
         'merchant_methods_edit_internal',
+        'credits_create_bulk_batch',
         'terminal_create_bulk',
         'mpans_bulk',
         'payment_links_bulk_expire',
@@ -4261,8 +4263,6 @@ class Route
 
         //fetches all the active downtime
         'fetch_payout_downtimes_enabled'               => '*',
-
-
     ];
 
     public static $direct = [
@@ -4793,6 +4793,7 @@ class Route
             'bank_transfer_process_rbl_internal',
             'update_admin_through_batch',
             'bank_transfer_edit_payer_account_internal',
+            'credits_create_bulk_batch',
             'terminal_create_bulk',
             'mpans_bulk',
         ],

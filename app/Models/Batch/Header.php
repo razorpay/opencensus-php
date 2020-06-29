@@ -869,6 +869,15 @@ class Header
     const BANK_TRANSFER_EDIT_IFSC_CODE              = 'IFSC_CODE';
     const BANK_TRANSFER_EDIT_PAYER_BANK_ACCOUNT_ID  = 'PAYER_BANK_ACCOUNT_ID';
 
+    // Reward Headers
+    const CREDIT_POINTS             = 'Credit Points';
+    const CREATED_AT                = 'Created At';
+    const REMARKS                   = 'Remarks';
+    const CREDITS_MERCHANT_ID       = 'Merchant Id';
+    const CAMPAIGN                  = 'Campaign';
+    const CREATOR_NAME              = 'Creator Name';
+    const PRODUCT                   = 'Product';
+    const TYPE                      = 'Type';
     // PL Service
     const PL_V2_REFERENCE_ID        = 'Reference Id';
 
@@ -2416,6 +2425,30 @@ class Header
                 self::ERROR_CODE,
                 self::ERROR_DESCRIPTION,
             ],
+        ],
+
+        Type::CREDIT => [
+          self::INPUT => [
+              self::CREDITS_MERCHANT_ID,
+              self::CREDIT_POINTS,
+              self::CAMPAIGN,
+              self::REMARKS,
+              self::PRODUCT,
+              self::TYPE,
+          ],
+          self::OUTPUT => [
+              self::ID,
+              self::CREDITS_MERCHANT_ID,
+              self::CREDIT_POINTS,
+              self::CAMPAIGN,
+              self::REMARKS,
+              self::PRODUCT,
+              self::TYPE,
+              self::CREATOR_NAME,
+              self::CREATED_AT,
+              self::ERROR_CODE,
+              self::ERROR_DESCRIPTION,
+          ]
         ],
 
         Type::LINKED_ACCOUNT_REVERSAL => [

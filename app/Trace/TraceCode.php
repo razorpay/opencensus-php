@@ -1612,7 +1612,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_BANK_ACCOUNT_BULK_UPDATE_REQUEST             = 'MERCHANT_BANK_ACCOUNT_BULK_UPDATE_REQUEST';
     const MERCHANT_BANK_ACCOUNT_BULK_UPDATE_RESPONSE            = 'MERCHANT_BANK_ACCOUNT_BULK_UPDATE_RESPONSE';
     const MERCHANT_CREDITS_BULK_REQUEST                         = 'MERCHANT_CREDITS_BULK_REQUEST';
+    const MERCHANT_CREDITS_BULK_RESPONSE                        = 'MERCHANT_CREDITS_BULK_RESPONSE';
     const MERCHANT_CREDITS_BULK_EXCEPTION                       = 'MERCHANT_CREDITS_BULK_EXCEPTION';
+    const MERCHANT_CREDITS_EXIST_WITH_SAME_IDEMPOTENCY_KEY      = 'MERCHANT_CREDITS_EXIST_WITH_SAME_IDEMPOTENCY_KEY';
+
 
     const MERCHANT_SCHEDULE_BULK_REQUEST                        = 'MERCHANT_SCHEDULE_BULK_REQUEST';
     const MERCHANT_SCHEDULE_BULK_EXCEPTION                      = 'MERCHANT_SCHEDULE_BULK_EXCEPTION';
@@ -3013,8 +3016,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     //Exception message while scrubbing user sensitive details in banking routes.
     const KEYS_BASED_SCRUBBING_BANKING_INFO_FAILURE_EXCEPTION = 'KEYS_BASED_SCRUBBING_BANKING_INFO_FAILURE_EXCEPTION';
 
-    const PROMOTION_EVENT_CREATE_REQUEST  = 'PROMOTION_EVENT_CREATE_REQUEST';
-    const PROMOTION_EVENT_CREATE_RESPONSE = 'PROMOTION_EVENT_CREATE_RESPONSE';
+    const CREDITS_EXIST_WITH_SAME_IDEMPOTENCY_KEY   = 'CREDITS_EXIST_WITH_SAME_IDEMPOTENCY_KEY';
+    const PROMOTION_EVENT_CREATE_REQUEST            = 'PROMOTION_EVENT_CREATE_REQUEST';
+    const PROMOTION_EVENT_CREATE_RESPONSE           = 'PROMOTION_EVENT_CREATE_RESPONSE';
 
     //Payout downtime details
     const PAYOUT_DOWNTIME_CREATE                              = 'PAYOUT_DOWNTIME_CREATE';
@@ -3043,6 +3047,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     // Logs for tracing payout to amex failures
     const PAYOUT_TO_AMEX_FAILURE = 'PAYOUT_TO_AMEX_FAILURE';
 
+    const CREDIT_BALANCE_CREATE_REQUEST = 'CREDIT_BALANCE_CREATE_REQUEST';
 
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',

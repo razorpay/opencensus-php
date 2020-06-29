@@ -74,6 +74,22 @@ class Validator extends \Razorpay\Spine\Validation\Validator
         }
     }
 
+    public function validateBatchCreatorId($batchCreatorId)
+    {
+        if (empty($batchCreatorId) === true)
+        {
+            throw new BadRequestValidationFailureException(Entity::CREATOR_ID . ' not present');
+        }
+    }
+
+    public function validateBatchCreatorType($batchCreatorType)
+    {
+        if (empty($batchCreatorType) === true)
+        {
+            throw new BadRequestValidationFailureException(Entity::CREATOR_TYPE . ' not present');
+        }
+    }
+
     /**
      * @param $idempotencyKey
      * @param $batchId

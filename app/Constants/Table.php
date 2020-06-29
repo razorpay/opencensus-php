@@ -211,6 +211,7 @@ class Table
 
     // Internal Purposes
     const CREDITS               = 'credits';
+    const CREDIT_BALANCE        = 'credit_balance';
 
     const NODAL_BENEFICIARIES    = 'nodal_beneficiaries';
 

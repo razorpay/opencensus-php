@@ -14,9 +14,30 @@ use RZP\Services\BatchMicroService as BaseBatchMicroService;
 
 class BatchMicroService extends BaseBatchMicroService
 {
-
     public function forwardToBatchServiceRequest(array $input, Merchant\Entity $merchant, FileStore\Entity $ufhFile = null)
     {
+        if (isset($input['type']) and
+            ($input['type'] === 'credit'))
+        {
+            return [
+                'id'               => substr($ufhFile->getName(), -14),
+                'created_at'       => 1551782255,
+                'updated_at'       => 1551782255,
+                'entity_id'        => 'C28Q0mJgoSfWC1',
+                'name'             => 0,
+                'batch_type_id'    => 'credit',
+                'is_scheduled'     => false,
+                'upload_count'     => 0,
+                'total_count'      => 1,
+                'failure_count'    => 0,
+                'success_count'    => 0,
+                'amount'           => 0,
+                'attempts'         => 0,
+                'status'           => 'CREATED',
+                'processed_amount' => 0
+            ];
+        }
+
         return [
             'id'               => 'C3fzDCb4hA4F6b',
             'created_at'       => 1551782255,

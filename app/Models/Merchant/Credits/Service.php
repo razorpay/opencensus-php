@@ -5,9 +5,15 @@ namespace RZP\Models\Merchant\Credits;
 use Mail;
 use RZP\Exception;
 use RZP\Models\Base;
-use RZP\Models\Merchant;
+use RZP\Error\Error;
+use RZP\Error\ErrorCode;
+use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
+use RZP\Http\RequestHeader;
 use RZP\Models\Merchant\Credits;
+use Razorpay\Trace\Logger as Trace;
+use RZP\Exception\BadRequestException;
+use RZP\Models\Merchant\Balance as MerchantBalance;
 
 class Service extends Base\Service
 {
@@ -95,5 +101,138 @@ class Service extends Base\Service
             'failed_count' => count($failedIds),
             'failed_ids'   => $failedIds
         ];
+    }
+
+    public function bulkCreateCreditsBatch(array $input)
+    {
+        $creditBatch = new Base\PublicCollection;
+
+        $validator = new Validator;
+
+        $validator->validateBulkCreditsCount($input);
+
+        $idempotencyKey = null;
+
+        $batchId = $this->app['request']->header(RequestHeader::X_Batch_Id, null);
+
+        $validator->validateBatchId($batchId);
+
+        $creatorId = $this->app['request']->header(RequestHeader::X_Creator_Id, null);
+
+        $validator->validateBatchCreatorId($creatorId);
+
+        $creatorType = $this->app['request']->header(RequestHeader::X_Creator_Type, null);
+
+        $validator->validateBatchCreatorType($creatorType);
+
+        foreach ($input as $item)
+        {
+            try
+            {
+                $this->trace->info(TraceCode::MERCHANT_CREDITS_BULK_REQUEST,
+                    [
+                        'input'     => $item,
+                        'batch_id'  => $batchId,
+                    ]);
+
+                $idempotencyKey = $item[Entity::IDEMPOTENCY_KEY] ?? null;
+
+                $validator->validateIdempotencyKey($idempotencyKey, $batchId);
+
+                (new Validator)->validateInput(Validator::ADMIN_BATCH_UPLOAD, $item);
+
+                $this->checkModeIfApplicableForProduct($item);
+
+                $merchant = $this->repo->merchant->findByPublicId($item[Entity::MERCHANT_ID]);
+
+                unset($item[Entity::MERCHANT_ID]);
+
+                $result = $this->repo->credits->fetchByIdempotencyKey(
+                                                    $item[Entity::IDEMPOTENCY_KEY],
+                                                    $batchId,
+                                                    $merchant);
+
+                if ($result !== null)
+                {
+                    $this->trace->info(TraceCode::MERCHANT_CREDITS_EXIST_WITH_SAME_IDEMPOTENCY_KEY,
+                        [
+                            Entity::INPUT => $result->toArrayPublic(),
+                        ]);
+
+                    $creditBatch->push($result->toArrayPublic());
+                }
+                else
+                {
+                    $item[Entity::IDEMPOTENCY_KEY] = $idempotencyKey;
+
+                    $item[Entity::BATCH_ID] = $batchId;
+
+                    if ($creatorType === 'admin')
+                    {
+                        $creator = $this->repo->admin->findOrFailPublic($creatorId);
+
+                        $item[Entity::CREATOR_NAME] = $creator->getName();
+                    }
+
+                    $result = (new Credits\Core)->assignCreditsToMerchant($item, $merchant);
+
+                    (new Credits\Core)->checkMerchantStateAndSendCreditEmail($merchant, $result);
+
+                    $creditBatch->push($result->toArrayPublic());
+                }
+            }
+            catch (Exception\BaseException $exception)
+            {
+                $this->trace->traceException($exception,
+                    Trace::INFO,
+                    TraceCode::BATCH_SERVICE_BULK_BAD_REQUEST);
+                $exceptionData = [
+                    Entity::BATCH_ID        => $batchId,
+                    Entity::IDEMPOTENCY_KEY => $idempotencyKey,
+                    'error'                 => [
+                        Error::DESCRIPTION       => $exception->getError()->getDescription(),
+                        Error::PUBLIC_ERROR_CODE => $exception->getError()->getPublicErrorCode(),
+                    ],
+                    Error::HTTP_STATUS_CODE => $exception->getError()->getHttpStatusCode(),
+                ];
+
+                $creditBatch->push($exceptionData);
+            }
+            catch (\Throwable $throwable)
+            {
+                $this->trace->traceException($throwable,
+                    Trace::CRITICAL,
+                    TraceCode::BATCH_SERVICE_BULK_EXCEPTION);
+
+                $exceptionData = [
+                    Entity::BATCH_ID        => $batchId,
+                    Entity::IDEMPOTENCY_KEY => $idempotencyKey,
+                    'error'                 => [
+                        Error::DESCRIPTION       => $throwable->getMessage(),
+                        Error::PUBLIC_ERROR_CODE => $throwable->getCode(),
+                    ],
+                    Error::HTTP_STATUS_CODE => 500,
+                ];
+
+                $creditBatch->push($exceptionData);
+            }
+        }
+
+        $this->trace->info(TraceCode::MERCHANT_CREDITS_BULK_RESPONSE,
+            ['credit_batch' => $creditBatch->toArrayWithItems()]);
+
+        return $creditBatch->toArrayWithItems();
+    }
+
+    protected function checkModeIfApplicableForProduct(array $input)
+    {
+        if (($this->mode === Mode::TEST) and
+            (isset($input[Entity::PRODUCT]) === true) and
+            ($input[Entity::PRODUCT] === 'banking'))
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_X_CREDITS_SUPPORTED_IN_ONLY_LIVE_MODE,
+                null,
+                ['input' => $input]);
+        }
     }
 }

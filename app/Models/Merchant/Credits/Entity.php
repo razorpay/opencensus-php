@@ -14,6 +14,18 @@ class Entity extends Base\PublicEntity
     const TYPE                      = 'type';
     const EXPIRED_AT                = 'expired_at';
     const USED                      = 'used';
+    const BATCH_ID                  = 'batch_id';
+    const BALANCE_ID                = 'balance_id';
+    const IDEMPOTENCY_KEY           = 'idempotency_key';
+    const CREDIT_SOURCE             = 'credit_source';
+    const CREDIT_VALUE_TYPE         = 'credit_value_type';
+    const CREATOR_NAME              = 'creator_name';
+    const REMARKS                   = 'remarks';
+    const PRODUCT                   = 'product';
+    const INPUT                     = 'input';
+
+    const BANKING                   = 'banking';
+    const CREDITS                   = 'credits';
 
     protected $entity               = 'credits';
 
@@ -29,6 +41,11 @@ class Entity extends Base\PublicEntity
         self::CAMPAIGN,
         self::VALUE,
         self::TYPE,
+        self::REMARKS,
+        self::CREATOR_NAME,
+        self::PRODUCT,
+        self::BATCH_ID,
+        self::IDEMPOTENCY_KEY
     ];
 
     protected $visible = [
@@ -40,8 +57,15 @@ class Entity extends Base\PublicEntity
         self::VALUE,
         self::TYPE,
         self::USED,
+        self::PRODUCT,
+        self::CREATOR_NAME,
+        self::IDEMPOTENCY_KEY,
+        self::BATCH_ID,
         self::EXPIRED_AT,
-        self::CREATED_AT
+        self::CREATED_AT,
+        self::MERCHANT_ID,
+        self::REMARKS,
+        self::BALANCE_ID,
     ];
 
     protected $public = [
@@ -51,8 +75,15 @@ class Entity extends Base\PublicEntity
         self::VALUE,
         self::TYPE,
         self::USED,
+        self::PRODUCT,
+        self::CREATOR_NAME,
+        self::IDEMPOTENCY_KEY,
+        self::BATCH_ID,
         self::EXPIRED_AT,
-        self::CREATED_AT
+        self::CREATED_AT,
+        self::MERCHANT_ID,
+        self::REMARKS,
+        self::BALANCE_ID
     ];
 
     protected $defaults = [
@@ -167,6 +198,11 @@ class Entity extends Base\PublicEntity
         return $this->getValue() - $this->getUsed();
     }
 
+    public function getProduct()
+    {
+       return $this->getAttribute(self::PRODUCT);
+    }
+
 // --------------------- End Getters -----------------------------------------
 
 // --------------------- Modifiers -------------------------------------------
@@ -199,6 +235,11 @@ class Entity extends Base\PublicEntity
     public function merchant()
     {
         return $this->belongsTo('RZP\Models\Merchant\Entity');
+    }
+
+    public function balance()
+    {
+        return $this->belongsTo(Balance\Entity::class);
     }
 
     public function promotion()

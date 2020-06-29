@@ -2282,9 +2282,17 @@ class BasicAuth
 
         $userId = $dashboardHeaders['user_id'] ?? null;
 
-        if($userId === null)
+        if ($userId === null)
         {
-            $userId = $this->request->headers->get(RequestHeader::X_Creator_Id);
+            $userId = $this->request->headers->get(RequestHeader::X_Creator_Id, null);
+
+            $userType = $this->request->headers->get(RequestHeader::X_Creator_Type, null);
+
+            if ((empty($userType) === false) and
+                ($userType === 'admin'))
+            {
+                return;
+            }
         }
 
         if (empty($userId) === false)

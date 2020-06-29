@@ -127,6 +127,7 @@ class Entity
     const CREDITNOTE_INVOICE         = 'creditnote_invoice';
     const MERCHANT_PROMOTION         = 'merchant_promotion';
     const CREDIT_TRANSACTION         = 'credit_transaction';
+    const CREDIT_BALANCE             = 'credit_balance';
     const MERCHANT_EMI_PLANS         = 'merchant_emi_plans';
     const COMMISSION_INVOICE         = 'commission_invoice';
     const TERMINAL_ANALYTICS         = 'terminal_analytics';
@@ -493,6 +494,7 @@ class Entity
         self::REFERRALS                 => \RZP\Models\Merchant\Referral::class,
         self::PAYMENT_ANALYTICS         => \RZP\Models\Payment\Analytics::class,
         self::CREDIT_TRANSACTION        => \RZP\Models\Merchant\Credits\Transaction::class,
+        self::CREDIT_BALANCE            => \RZP\Models\Merchant\Credits\Balance::class,
         self::MERCHANT_PROMOTION        => \RZP\Models\Merchant\Promotion::class,
         self::MERCHANT_INVOICE          => \RZP\Models\Merchant\Invoice::class,
         self::MERCHANT_EMI_PLANS        => \RZP\Models\Merchant\EmiPlans::class,

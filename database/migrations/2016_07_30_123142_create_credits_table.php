@@ -44,10 +44,29 @@ class CreateCreditsTable extends Migration
             $table->integer(Credits::CREATED_AT);
             $table->integer(Credits::UPDATED_AT);
 
+            $table->string(Credits::IDEMPOTENCY_KEY, 255)
+                  ->nullable();
+
+            $table->string(Credits::BATCH_ID, Credits::ID_LENGTH)
+                  ->nullable();
+
+            $table->string(Credits::BALANCE_ID, Credits::ID_LENGTH)
+                ->nullable();
+
+            $table->string(Credits::CREATOR_NAME, 255)
+                  ->nullable();
+
+            $table->string(Credits::REMARKS, 255)
+                  ->nullable();
+
+            $table->string(Credits::PRODUCT, 255)
+                  ->nullable();
+
             $table->index(Credits::CREATED_AT);
             $table->index(Credits::CAMPAIGN);
             $table->index(Credits::TYPE);
             $table->index(Credits::EXPIRED_AT);
+            $table->index([Credits::MERCHANT_ID, Credits::BALANCE_ID]);
 
             $table->foreign(Credits::MERCHANT_ID)
                 ->references(Merchant\Entity::ID)

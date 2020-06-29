@@ -152,9 +152,11 @@ class BatchMicroService
 
             if ($admin !== null)
             {
-                $headers['X-Creator-Type'] = 'admin';
+                $creatorType = 'admin';
 
-                $header['X-Creator-Id']    = $admin->getId();
+                $headers['X-Creator-Type'] = $creatorType;
+
+                $headers['X-Creator-Id']    = $admin->getId();
             }
 
             $response = $this->client->request(Requests::POST, $relativeUri, [

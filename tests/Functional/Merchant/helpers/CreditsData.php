@@ -1,9 +1,9 @@
 <?php
 
-use RZP\Gateway\Hdfc;
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
+use RZP\Models\Merchant\Credits\Entity;
 
 return [
 
@@ -394,4 +394,217 @@ return [
             'description' => 'The value must be between -100000000 and 500000000.',
         ],
     ],
+
+    'testBulkCreditRoute' => [
+        'request' => [
+            'url'       => '/merchants/credits/bulk/batch',
+            'method'    => 'post',
+            'server' => [],
+            'content'   => [
+                [
+                    Entity::IDEMPOTENCY_KEY => 'bkwydgsZPxiesSRCRKd',
+                    Entity::MERCHANT_ID     => '10000000000000',
+                    Entity::REMARKS         => 'some test credits',
+                    Entity::CAMPAIGN        => 'test credits',
+                    Entity::VALUE           => 100,
+                    Entity::PRODUCT         => 'banking',
+                    Entity::TYPE            => 'reward_fee',
+                ],
+                [
+                    Entity::IDEMPOTENCY_KEY => 'bkwydgsZPxiesSRCRe',
+                    Entity::MERCHANT_ID     => '10000000000000',
+                    Entity::REMARKS         => 'some test credits',
+                    Entity::CAMPAIGN        => 'test credits',
+                    Entity::VALUE           => -100,
+                    Entity::PRODUCT         => 'banking',
+                    Entity::TYPE            => 'reward_fee',
+                ],
+                [
+                    Entity::IDEMPOTENCY_KEY => 'bkwydgsZPxiesSRCRKf',
+                    Entity::MERCHANT_ID     => '10000000000000',
+                    Entity::REMARKS         => 'some test credits',
+                    Entity::CAMPAIGN        => 'test credits',
+                    Entity::VALUE           => -100,
+                    Entity::PRODUCT         => 'banking',
+                    Entity::TYPE            => 'reward_fee',
+                ],
+                [
+                    Entity::IDEMPOTENCY_KEY => 'bkwydgsZPxiesSRCRKg',
+                    Entity::MERCHANT_ID     => '10000000000000',
+                    Entity::REMARKS         => 'some test credits',
+                    Entity::CAMPAIGN        => 'test credits',
+                    Entity::VALUE           => 100,
+                    Entity::PRODUCT         => 'banking',
+                    Entity::TYPE            => 'reward_fee',
+                ],
+                [
+                    Entity::IDEMPOTENCY_KEY => 'bkwydgsZPxiesSRCRKd',
+                    Entity::MERCHANT_ID     => '10000000000000',
+                    Entity::REMARKS         => 'some test credits',
+                    Entity::CAMPAIGN        => 'test credits',
+                    Entity::VALUE           => 100,
+                    Entity::PRODUCT         => 'banking',
+                    Entity::TYPE            => 'reward_fee',
+                ],
+                [
+                    Entity::IDEMPOTENCY_KEY => 'bkwydgsZPxiesSRCRKf',
+                    Entity::REMARKS         => 'some test credits',
+                    Entity::CAMPAIGN        => 'test credits',
+                    Entity::VALUE           => 100,
+                    Entity::PRODUCT         => 'banking',
+                    Entity::TYPE            => 'reward_fee',
+                ],
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 6,
+                'items' => [
+                    [
+                        'merchant_id'           => "10000000000000",
+                        'campaign'              =>  "test credits",
+                        'value'                 =>  100,
+                        'remarks'               => "some test credits",
+                        'idempotency_key'       => "bkwydgsZPxiesSRCRKd",
+                        'batch_id'              =>  "C0zv9I46W4wiOq",
+                        'type'                  =>  "reward_fee",
+                        'product'               =>  "banking",
+                        'creator_name'          => "test admin",
+                    ],
+                    [
+                        'merchant_id'       => "10000000000000",
+                        'campaign'          =>  "test credits",
+                        'value'             =>  -100,
+                        'remarks'           => "some test credits",
+                        'idempotency_key'   => "bkwydgsZPxiesSRCRe",
+                        'batch_id'          =>  "C0zv9I46W4wiOq",
+                        'type'              =>  "reward_fee",
+                        'product'           =>  "banking",
+                        'creator_name'      => "test admin",
+                    ],
+
+                    [
+                        'error'=>
+                            [
+                                'description' =>  "Cannot update or add -1 reward_fee-credits. Merchant has only 0 reward_fee-credits.",
+                                'code'        => "BAD_REQUEST_ERROR",
+                            ],
+                        'http_status_code'    =>  400,
+                        'idempotency_key'     => "bkwydgsZPxiesSRCRKf",
+                        'batch_id'            =>  "C0zv9I46W4wiOq",
+                    ],
+
+                    [
+                        'merchant_id'       => "10000000000000",
+                        'campaign'          =>  "test credits",
+                        'value'             =>  100,
+                        'remarks'           => "some test credits",
+                        'idempotency_key'   => "bkwydgsZPxiesSRCRKg",
+                        'batch_id'          =>  "C0zv9I46W4wiOq",
+                        'type'              =>  "reward_fee",
+                        'product'           =>  "banking",
+                        'creator_name'      => "test admin",
+                    ],
+
+                    [
+                        'merchant_id'       => "10000000000000",
+                        'campaign'          =>  "test credits",
+                        'value'             =>  100,
+                        'remarks'           => "some test credits",
+                        'idempotency_key'   => "bkwydgsZPxiesSRCRKd",
+                        'batch_id'          =>  "C0zv9I46W4wiOq",
+                        'type'              =>  "reward_fee",
+                        'product'           =>  "banking",
+                        'creator_name'      => "test admin",
+                    ],
+
+                    [
+                        'error'=>
+                            [
+                                'description' =>  "The merchant id field is required.",
+                                'code'        => "BAD_REQUEST_ERROR",
+                            ],
+                        'http_status_code' =>  400,
+                        'idempotency_key'  => "bkwydgsZPxiesSRCRKf",
+                        'batch_id'         =>  "C0zv9I46W4wiOq",
+                    ],
+                ]
+            ]
+        ]
+    ],
+
+    'testBulkCreditRouteInTestMode' => [
+        'request' => [
+            'url'       => '/merchants/credits/bulk/batch',
+            'method'    => 'post',
+            'server' => [],
+            'content'   => [
+                [
+                    Entity::IDEMPOTENCY_KEY => 'bkwydgsZPxiesSRCRKd',
+                    Entity::MERCHANT_ID     => '10000000000000',
+                    Entity::REMARKS         => 'some test credits',
+                    Entity::CAMPAIGN        => 'test credits',
+                    Entity::VALUE           => 100,
+                    Entity::PRODUCT         => 'banking',
+                    Entity::TYPE            => 'reward_fee',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items' => [
+                    [
+                        'error'=>
+                            [
+                                'description' =>  "Bad request, X credits supported in only live mode",
+                                'code'        => "BAD_REQUEST_ERROR",
+                            ],
+                        'http_status_code' =>  400,
+                        'idempotency_key'  => "bkwydgsZPxiesSRCRKd",
+                    ],
+                ]
+            ],
+        ]
+    ],
+
+    'testBulkCreditRouteEntities' => [
+        'request' => [
+            'url'       => '/merchants/credits/bulk/batch',
+            'method'    => 'post',
+            'server' => [],
+            'content'   => [
+                [
+                    Entity::IDEMPOTENCY_KEY => 'bkwydgsZPxiesSRCRKd',
+                    Entity::MERCHANT_ID     => '10000000000000',
+                    Entity::REMARKS         => 'some test credits',
+                    Entity::CAMPAIGN        => 'test credits',
+                    Entity::VALUE           => 100,
+                    Entity::PRODUCT         => 'banking',
+                    Entity::TYPE            => 'reward_fee',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items' => [
+                    [
+                        'merchant_id'       => "10000000000000",
+                        'campaign'          =>  "test credits",
+                        'value'             =>  100,
+                        'remarks'           => "some test credits",
+                        'idempotency_key'   => "bkwydgsZPxiesSRCRKd",
+                        'batch_id'          =>  "C0zv9I46W4wiOq",
+                        'type'              =>  "reward_fee",
+                        'product'           =>  "banking",
+                        'creator_name'      => "test admin",
+                    ],
+                ]
+            ]
+        ]
+    ]
 ];

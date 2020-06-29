@@ -5794,6 +5794,14 @@ ALTER TABLE promotions
     ADD COLUMN reference4 varchar(255) DEFAULT NULL,
     ADD COLUMN reference5 varchar(255) DEFAULT NULL;
 
+ALTER TABLE credits
+    ADD COLUMN product VARCHAR(255) DEFAULT NULL,
+    ADD COLUMN remarks VARCHAR(255) DEFAULT NULL,
+    ADD COLUMN idempotency_key VARCHAR(255) DEFAULT NULL,
+    ADD COLUMN batch_id VARCHAR(255) DEFAULT NULL,
+    ADD COLUMN creator_name VARCHAR(255) DEFAULT NULL,
+    ADD COLUMN balance_id CHAR(14) DEFAULT NULL;
+
 // update methods in emi_plans for bajajfinserv to card.
 UPDATE emi_plans SET method="card" WHERE network="BAJAJ" and deleted_at IS NULL LIMIT 11;
 
