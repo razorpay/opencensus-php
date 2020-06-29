@@ -2386,17 +2386,6 @@ class Gateway extends Base\Gateway
 
     protected function getPaymentIdForUpiJuspay($response)
     {
-        // Getting the payment id from udf parameters in case of PAY api call
-        if ($response['body'][UpiJuspay\Fields::TYPE] === UpiJuspay\Fields::MERCHANT_CREDITED_VIA_PAY)
-        {
-            $udfParameters = json_decode($response['body'][UpiJuspay\Fields::UDF_PARAMETERS], true);
-
-            if (empty($udfParameters[UpiJuspay\Fields::REF_ID]) === false)
-            {
-                return $udfParameters[UpiJuspay\Fields::REF_ID];
-            }
-        }
-
         return $response['body'][UpiJuspay\Fields::MERCHANT_REQUEST_ID];
     }
 

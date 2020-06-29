@@ -236,7 +236,7 @@ class Server extends Base\Mock\Server
                         $udfParameters = [
                            'ref_id' => $payment['id'],
                         ];
-                        $content[UpiJuspay\Fields::MERCHANT_REQUEST_ID] = 'SOME_OTHER_ID';
+
                         $content[UpiJuspay\Fields::TYPE]                = 'MERCHANT_CREDITED_VIA_PAY';
                         $content[UpiJuspay\Fields::UDF_PARAMETERS]      = json_encode($udfParameters);
                         unset($content[UpiJuspay\Fields::EXPIRY]);
