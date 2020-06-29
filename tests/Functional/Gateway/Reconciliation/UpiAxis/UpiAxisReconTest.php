@@ -283,6 +283,14 @@ class UpiAxisReconTest extends TestCase
         $refund2 = $this->refundPayment('pay_' . $this->payment['id'], 20000);
         $refund3 = $this->refundPayment('pay_' . $this->payment['id'], 20000);
 
+        $refundEntity1 = $this->getEntityById('refund', $refund1['id'], true);
+        $refundEntity2 = $this->getEntityById('refund', $refund2['id'], true);
+        $refundEntity3 = $this->getEntityById('refund', $refund3['id'], true);
+
+        $this->assertNull($refundEntity1['reference1']);
+        $this->assertNull($refundEntity2['reference1']);
+        $this->assertNull($refundEntity3['reference1']);
+
         $entries[] = $this->mockRefundData('100.0');
         $entries[] = $this->mockRefundData('200.0');
         $entries[] = $this->mockRefundData('200.0');
@@ -294,6 +302,14 @@ class UpiAxisReconTest extends TestCase
         $transaction1 = $this->getEntities('transaction', ['type' => 'refund', 'entity_id' => $refund1['id']], true);
         $transaction2 = $this->getEntities('transaction', ['type' => 'refund', 'entity_id' => $refund2['id']], true);
         $transaction3 = $this->getEntities('transaction', ['type' => 'refund', 'entity_id' => $refund3['id']], true);
+
+        $refundEntity1 = $this->getEntityById('refund', $refund1['id'], true);
+        $refundEntity2 = $this->getEntityById('refund', $refund2['id'], true);
+        $refundEntity3 = $this->getEntityById('refund', $refund3['id'], true);
+
+        $this->assertNotNull($refundEntity1['reference1']);
+        $this->assertNull($refundEntity2['reference1']);
+        $this->assertNull($refundEntity3['reference1']);
 
         $this->assertNotNull($transaction1['items'][0]['reconciled_at']);
         $this->assertNull($transaction2['items'][0]['reconciled_at']);

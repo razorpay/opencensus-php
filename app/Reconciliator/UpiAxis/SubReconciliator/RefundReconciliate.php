@@ -70,6 +70,11 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
         return $row[self::RRN] ?? null;
     }
 
+    protected function getArn(array $row)
+    {
+        return $row[self::RRN] ?? null;
+    }
+
     protected function getReconRefundStatus(array $row)
     {
         $rowStatus = $row[self::RESPONSE] ?? null;
