@@ -175,9 +175,9 @@ class GatewayDowntimeDetectionV2Test extends TestCase
 
         $this->assertEquals('card', $gatewayDowntime['method']);
 
-        //$paymentDowntime = $this->getLastEntity('payment.downtime', true);
+        $paymentDowntime = $this->getLastEntity('payment.downtime', true);
 
-        //$this->assertNotNull($paymentDowntime);
+        $this->assertNotNull($paymentDowntime);
 
         $this->ba->adminAuth();
 
@@ -225,7 +225,7 @@ class GatewayDowntimeDetectionV2Test extends TestCase
 
         $gatewayDowntime = $this->getLastEntity('gateway_downtime', true);
 
-        //$paymentDowntime = $this->getLastEntity('payment.downtime', true);
+        $paymentDowntime = $this->getLastEntity('payment.downtime', true);
 
         $this->assertNull($gatewayDowntime['end']);
 
@@ -233,7 +233,7 @@ class GatewayDowntimeDetectionV2Test extends TestCase
 
         $this->assertEquals('okhdfcbank', $gatewayDowntime['vpa_handle']);
 
-        //$this->assertNotNull($paymentDowntime);
+        $this->assertNull($paymentDowntime);
     }
 
     public function testDowntimeDetectionForNetbanking()
@@ -256,11 +256,11 @@ class GatewayDowntimeDetectionV2Test extends TestCase
 
         $gatewayDowntime = $this->getLastEntity('gateway_downtime', true);
 
-        //$paymentDowntime = $this->getLastEntity('payment.downtime', true);
+        $paymentDowntime = $this->getLastEntity('payment.downtime', true);
 
         $this->assertNull($gatewayDowntime['end']);
 
-        //$this->assertNull($paymentDowntime['end']);
+        $this->assertNull($paymentDowntime['end']);
 
         $this->doAuthAndCapturePayment($payment);
         $this->doAuthAndCapturePayment($payment);
@@ -272,7 +272,7 @@ class GatewayDowntimeDetectionV2Test extends TestCase
 
         $gatewayDowntime = $this->getLastEntity('gateway_downtime', true);
 
-        //$paymentDowntime = $this->getLastEntity('payment.downtime', true);
+        $paymentDowntime = $this->getLastEntity('payment.downtime', true);
 
         $this->assertNotNull($gatewayDowntime['end']);
 
@@ -280,7 +280,7 @@ class GatewayDowntimeDetectionV2Test extends TestCase
 
         $this->assertEquals('HDFC', $gatewayDowntime['issuer']);
 
-        //$this->assertNotNull($paymentDowntime['end']);
+        $this->assertNotNull($paymentDowntime['end']);
     }
 
     public function getAllJobTypes()
@@ -329,13 +329,13 @@ class GatewayDowntimeDetectionV2Test extends TestCase
 
         $gatewayDowntime = $this->getLastEntity('gateway_downtime', true);
 
-        //$paymentDowntime = $this->getLastEntity('payment.downtime', true);
+        $paymentDowntime = $this->getLastEntity('payment.downtime', true);
 
         $this->assertNull($gatewayDowntime['end']);
 
         $this->assertEquals('upi', $gatewayDowntime['method']);
 
-        //$this->assertNotNull($paymentDowntime);
+        $this->assertNull($paymentDowntime);
     }
 
     protected function enablePaymentDowntimes()

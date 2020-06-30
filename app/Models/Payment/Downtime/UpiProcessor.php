@@ -17,6 +17,8 @@ class UpiProcessor extends BaseProcessor
     {
         $gatewayDowntimes = $gatewayDowntimes->where(GatewayDowntime::METHOD, '=', $this->method);
 
+        $gatewayDowntimes = $gatewayDowntimes->where(GatewayDowntime::SOURCE, '!=', Source::DOWNTIME_V2);
+
         $vpaList = $this->getUnavailableVpaList($gatewayDowntimes);
 
         if ($this->impliesUpiDowntime($gatewayDowntimes) === true)
