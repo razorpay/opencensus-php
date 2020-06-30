@@ -89,7 +89,7 @@ export default class PaymentReceipt extends React.Component {
     });
   };
 
-  get80gDetails = data => {
+get80gDetails = data => {
     this.setState({
       '80_details': data,
     });
@@ -106,7 +106,39 @@ export default class PaymentReceipt extends React.Component {
       enable_80g_details: formData.enable_80g_details ? '1' : '0',
     };
 
-    this.props.handleSave(data);
+    const promise = this.props.handleSave(data);
+
+    if (promise && promise.then) {
+      promise.then(resp => {
+        this.props.handleClose();
+      });
+    } else {
+      this.props.handleClose();
+    }
+
+    this.trackReceipt('save', {
+      '80_details': this.state['80_details'],
+      input_field: data.selected_udf_field,
+    });
+  };
+
+  trackSendingOptions = event => {
+    this.trackReceipt(event.target.value === '0' ? 'automated' : 'manual');
+  };
+
+  trackInputField = () => {
+    this.trackReceipt('select_input');
+  };
+
+  handleClose = () => {
+    this.trackReceipt('cancel', {
+      '80_details': this.state['80_details'],
+      input_field:
+        this.state.isInputFieldChecked && this.state.selectedInputField
+          ? this.state.selectedInputField.name
+          : '',
+    });
+
     this.props.handleClose();
     this.trackReceipt('save', {
       '80_details': this.state['80_details'],
@@ -286,7 +318,9 @@ export default class PaymentReceipt extends React.Component {
                 <Button.Transparent type="button" onClick={this.handleClose}>
                   Cancel
                 </Button.Transparent>
-                <Button.Primary type="submit">Save</Button.Primary>
+                <Button.Primary type="submit">
+                  {props.saveBtnLabel || 'Save'}
+                </Button.Primary>
               </footer>
             </Form>
           </ModalContent>

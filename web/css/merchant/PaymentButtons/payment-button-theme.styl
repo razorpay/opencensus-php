@@ -1,0 +1,107 @@
+$button-height = 40px
+$light-text-color = #FFF
+$dark-text-color = #072654
+
+.PaymentButton-Create-Preview
+  .ButtonDetailsPreview
+    margin: 28px auto
+
+.PaymentButton-Create-Content-container
+  .ButtonDetailsPreview
+    display: inline-block
+    height: $button-height
+    box-shadow: 0 0 20px rgba(0,0,0,0.08)
+
+  .PaymentButton-Button
+    position: relative
+    display: inline-block
+    min-width: 176px
+    height: $button-height
+    border-radius: 3px
+    text-align: center
+    font-style: italic
+    font-family: Muli, helvetica, sans-serif
+    overflow: hidden
+    border: 1px solid transparent
+
+  .PaymentButton-Button--light
+    color: $dark-text-color
+
+  .PaymentButton-Button--dark
+    color: $light-text-color
+
+  .PaymentButton-Button--rzpTheme
+    &::before
+      content: ''
+      position: absolute
+      left: -6px
+      top: 0
+      width: 46px
+      height: 100%
+      background: #1e40a0
+      border-radius: 2px 0 0 2px
+      transform: skew(-15deg, 0)
+
+  .PaymentButton-Button--rzp-dark-standard
+    background: #072654
+    border-color: #072654
+
+  .PaymentButton-Button--rzp-outline-standard
+    background: #EAF2FE
+    border-color: #1E40A0
+    &::before
+      box-shadow: 2px 0 4px rgba(0, 0, 0, 0.15)
+
+  .PaymentButton-Button--rzp-light-standard
+    background: #fff
+    border-color: #fff
+
+    &::before
+      box-shadow: 2px 0 4px rgba(0, 0, 0, 0.15)
+
+  svg
+    position: absolute
+    left: 0
+    margin: 9px 11px
+    svg path
+      fill: $light-text-color
+
+  .PaymentButton-Button--rzpTheme
+    svg path
+      fill: $light-text-color
+
+  .PaymentButton-Button--light:not(.PaymentButton-Button--rzpTheme)
+    svg path
+      fill: $dark-text-color
+
+  .PaymentButton-Button:not(.PaymentButton-Button--rzpTheme)
+    &::before
+      content: ''
+      position: absolute
+      bottom: 0
+      left: 0
+      top: 0
+      right: 0
+      background: linear-gradient(121deg, rgba(255,255,255, 0) 40%, rgba(255,255,255,.2) 100%)
+
+  .PaymentButton-Button-contents
+    padding: 4px 24px 4px 40px
+    margin: 1px 0
+
+  .PaymentButton-Button--rzpTheme
+    .PaymentButton-Button-contents
+      padding-left: 56px
+
+  .PaymentButton-Button-text
+    display: block
+    min-height: 18px
+    line-height: 18px
+    font-size: 14px
+    font-weight: 800
+    opacity: 0.95
+
+  .PaymentButton-Button-rzpBranding
+    opacity: 0.6
+    font-size: 8px
+    line-height: 10px
+

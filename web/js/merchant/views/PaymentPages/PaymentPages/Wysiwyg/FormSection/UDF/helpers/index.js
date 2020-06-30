@@ -24,7 +24,7 @@ export function getFieldTypes() {
     fUnits.dropdown,
   ];
 
-  return FIELD_TYPES;
+  return FIELD_TYPES; // JSON.parse(JSON.stringify(FIELD_TYPES)) is best way. But need to check if it breaks the selection in powerselect dropdown bcoz it works on object reference basis
 }
 
 export function flattenFIELD_TYPES() {
@@ -72,16 +72,14 @@ export function mapFieldToIndex(field) {
     } = fieldTypes[i].schema;
 
     const FIELD_TYPES_keys = Object.keys(restInDefinedSchema); //Needs to be separated since backend sometimes sends empty options when it's not required.
-    const FIELD_TYPES_opts_keys =
-      optionsInDefinedSchema && optionsInDefinedSchema.length
-        ? Object.keys(optionsInDefinedSchema)
-        : [];
+    const FIELD_TYPES_opts_keys = optionsInDefinedSchema
+      ? Object.keys(optionsInDefinedSchema)
+      : [];
 
     const field_keys = Object.keys(restInFieldSchema);
-    const field_opts_keys =
-      optionsInFieldSchema && optionsInFieldSchema.length
-        ? Object.keys(optionsInFieldSchema)
-        : [];
+    const field_opts_keys = optionsInFieldSchema
+      ? Object.keys(optionsInFieldSchema)
+      : [];
 
     let isMismatch = false;
 

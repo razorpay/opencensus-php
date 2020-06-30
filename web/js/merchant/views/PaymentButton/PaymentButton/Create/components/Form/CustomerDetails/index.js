@@ -1,0 +1,84 @@
+import { connect } from 'react-redux';
+
+import Button from 'common/new-ui/Button';
+import EditableDisplayField from './EditableDisplayField';
+import { getFieldTypes } from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/UDF/helpers';
+import { updateStepReviewProgress } from 'merchant/reducers/paymentbuttons/create';
+
+@connect(null, {
+  updateStepReviewProgress,
+})
+export default class CustomerDetails extends React.Component {
+  maxFieldsLimit = 5;
+
+  get defaultNewUDF() {
+    const newUDFField = getFieldTypes()[0].schema;
+
+    return newUDFField;
+  }
+
+  validateSameTitleExists = (title, indexInOrder) => {
+    const allFieldsTitles = this.props.udfFields.map(field => {
+      return field.title.toLowerCase();
+    });
+
+    const sameTitleIndex = allFieldsTitles.indexOf(title.toLowerCase());
+
+    if (sameTitleIndex > -1 && sameTitleIndex !== indexInOrder) {
+      return true;
+    }
+  };
+
+  goNext = () => {
+    this.props.goNext();
+
+    this.markReviewDone();
+  };
+
+  markReviewDone = () => {
+    this.props.updateStepReviewProgress({
+      isCustomerDetailsReviewed: true,
+    });
+  };
+
+  render() {
+    const { udfFields, paymentButtonEntity } = this.props;
+
+    return (
+      <div class="Form" style={{ display: this.props.isHidden ? 'none' : '' }}>
+        <div class="PaymentButtonForm-CustomerDetails Form-content">
+          {udfFields.map((field, index) => (
+            <EditableDisplayField
+              key={field.title}
+              indexInOrder={index}
+              field={field}
+              checkoutOptions={paymentButtonEntity.settings.checkout_options}
+              validateSameTitleExists={this.validateSameTitleExists}
+            />
+          ))}
+          {this.maxFieldsLimit !== udfFields.length && (
+            <EditableDisplayField
+              field={this.defaultNewUDF}
+              checkoutOptions={paymentButtonEntity.settings.checkout_options}
+              validateSameTitleExists={this.validateSameTitleExists}
+            >
+              <Button class="Button--primary--invert addFieldBtn">
+                + Add Another Input Field
+              </Button>
+            </EditableDisplayField>
+          )}
+        </div>
+
+        <div class="Form-controls">
+          <Button.Transparent type="button" onClick={this.props.goBack}>
+            Back
+          </Button.Transparent>
+
+          <Button.Primary type="button" onClick={this.goNext}>
+            Next <i class="i i-chevron-right" />
+          </Button.Primary>
+        </div>
+      </div>
+    );
+  }
+}

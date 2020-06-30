@@ -1,0 +1,29 @@
+import PreviewFormShell from '../PreviewFormShell';
+
+export default class CustomerDetailsPreview extends React.Component {
+  render() {
+    const { udfFields } = this.props;
+
+    return (
+      <PreviewFormShell
+        type="customer-details"
+        buttonTitle="PROCEED TO PAY"
+        {...this.props}
+      >
+        <div>
+          {/* TODO: Check for asterisk/optional RazorX experiment */}
+          {udfFields.map(field => {
+            return (
+              <div class="Field--dummy Field--dummy--udf" key={field.title}>
+                <div class="Field-label">{field.title}</div>
+                {/* TODO: add dropdown icon for dropdown field */}
+                <div class="Field-el" />
+                <div class="Field-description">{field.description}</div>
+              </div>
+            );
+          })}
+        </div>
+      </PreviewFormShell>
+    );
+  }
+}

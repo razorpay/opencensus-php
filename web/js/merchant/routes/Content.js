@@ -18,6 +18,8 @@ import InvoicesNew from 'merchant/views/Invoices/Invoices/New';
 import Subscriptions from 'merchant/views/Subscriptions';
 import Customers from 'merchant/views/Customers/List';
 import Marketplace from 'merchant/views/Marketplace/Index';
+import PaymentButton from 'merchant/views/PaymentButton';
+import PaymentButtonsDetails from 'merchant/views/PaymentButton/PaymentButton/Details';
 
 import Reports from 'merchant/views/Reports';
 import ReportsAsync from 'merchant/views/ReportsAsync/Home';
@@ -221,6 +223,24 @@ export default class Content extends Component {
             path="/paymentpages"
             component={PaymentPages}
             additionalCondition={user => user.isAllowedView('payment_pages')}
+          />
+
+          <ShowWhenRoute
+            path="/paymentbuttons/:id(pl_.+)/:entity_name(payments)"
+            component={PaymentButtonsDetails}
+            additionalCondition={user =>
+              user.isAllowedView('payment_buttons') &&
+              user.isPaymentButtonEnabledByRazorX
+            }
+          />
+
+          <ShowWhenRoute
+            path="/paymentbuttons"
+            component={PaymentButton}
+            additionalCondition={user =>
+              user.isAllowedView('payment_buttons') &&
+              user.isPaymentButtonEnabledByRazorX
+            }
           />
 
           <ShowWhenRoute

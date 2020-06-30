@@ -1,3 +1,5 @@
+import { NavLink } from 'react-router-dom';
+
 import * as items from './index';
 import * as id from './id';
 import { getAmount, getTime } from 'common/ui/item';
@@ -184,4 +186,26 @@ export const batchName = {
 export const role = {
   title: 'Role',
   value: item => (allRoles[item.role] || {}).label,
+};
+
+// Payment Button
+export const buttonTitle = {
+  title: 'Title',
+  value: item => (
+    <NavLink to={`/paymentbuttons/${item.id}/payments`}>{item.title}</NavLink>
+  ),
+};
+export const itemName = {
+  title: 'Item Name',
+  value: item =>
+    item.payment_page_items.map(payment_page_item => (
+      <div class="item-ellipsis">{payment_page_item.item.name}</div>
+    )),
+};
+export const unitsSold = {
+  title: 'Units Sold',
+  value: item =>
+    item.payment_page_items.map(payment_page_item => (
+      <div class="item-ellipsis">{payment_page_item.quantity_sold}</div>
+    )),
 };

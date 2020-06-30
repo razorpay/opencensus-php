@@ -276,6 +276,12 @@ export default class User {
     return isEnabled;
   }
 
+  get isPaymentButtonsEnabled() {
+    const { isEnabled } = getOnBoardingDataFromLocalState(RZPFeatures.PB);
+
+    return isEnabled;
+  }
+
   get currentMerchant() {
     return this.merchants[this.current];
   }
@@ -548,6 +554,10 @@ export default class User {
     return this.getExpStatus('emandate_nonzero_amount');
   }
 
+  get isPaymentButtonEnabledByRazorX() {
+    return this.getExpStatus('enable_payment_buttons');
+  }
+
   get isSellerAppRole() {
     const userRole = this.userRole;
     return (
@@ -559,7 +569,9 @@ export default class User {
     return this.getExpStatus('support_call') && this.isActivated;
   }
 
+  // TODO: Remove from razorX bcoz it's rolled out 100%
   get isPaymentPageReceiptsEnabled() {
+    return true;
     return this.getExpStatus('enable_payment_page_receipt');
   }
 

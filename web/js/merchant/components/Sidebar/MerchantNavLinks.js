@@ -54,6 +54,17 @@ export default function MerchantNavLinks(props) {
         additionalCondition={user => user.isAllowedView('payment_pages')}
       />
       <MainNavLink
+        isNew
+        label="Payment Button"
+        icon="i i-payment-button"
+        to={routes.paymentbuttons}
+        additionalCondition={user =>
+          user.isAllowedView('payment_buttons') &&
+          user.isPaymentButtonEnabledByRazorX
+        }
+        isNew
+      />
+      <MainNavLink
         label="Route"
         icon="i i-store text-success"
         to={routes.marketplace}

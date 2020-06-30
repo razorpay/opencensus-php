@@ -1063,6 +1063,7 @@ class Service extends Base\Service
             'instant_refunds_default_pricing_v2',
             'rx_scheduled_payouts_rollout',
             'rx_webhook_separation_announcement',
+            'enable_payment_buttons'
         ];
 
         $experimentsResults = $merchantService->getBulkTreatment($features);

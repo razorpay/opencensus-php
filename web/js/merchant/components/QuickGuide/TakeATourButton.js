@@ -25,6 +25,8 @@ export default class TakeATourButton extends React.Component {
           eventCategory: `Restart Tutorial (${this.props.feature})`,
           eventAction: `Need help? Take a Tour CTA `,
         });
+
+        this.props.onClick && this.props.onClick();
       },
     });
   };

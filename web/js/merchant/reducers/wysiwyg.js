@@ -148,7 +148,7 @@ export default function(state = initialState, action) {
       entityData.settings.allow_social_share =
         entityData.settings.allow_social_share === '1';
 
-      // 3.
+      // 3. TODO: remove this, was used in PP v1
       entityData.settings.allow_multiple_units =
         entityData.settings.allow_multiple_units === '1';
 

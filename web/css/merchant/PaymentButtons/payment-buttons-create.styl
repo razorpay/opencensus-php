@@ -1,0 +1,201 @@
+#payment-buttons-create-container
+  display: flex
+  min-height: 100vh
+  min-width: 854px
+  padding-top: 56px
+  background: #E7EBF1
+
+  .PaymentButton-Create-TopBar
+    position: fixed
+    width: 100%
+    padding: 9px 12px
+    min-height: 56px
+    line-height: 32px
+    top: 0
+    min-width: 854px
+    color: #fff
+    background-color: #2F3445
+    box-shadow: 0 2px 24px 0 rgba(0,0,0,0.24)
+    z-index: 9999
+
+    .TopBar-container
+      width: 100%
+      max-width: 1440px
+      margin: 0 auto
+      display: table
+      position: relative
+
+      > div
+        display: table-cell
+        vertical-align: middle
+
+      .TopBar-title
+        font-size: 18px
+        font-weight: bold
+        padding-left: 8px
+
+        span
+          opacity: 0.35
+          font-weight: 400
+
+      .TopBar-actions
+        float: right
+        margin-right: 56px
+
+        button
+          line-height: 10px
+          padding: 10px 8px
+          //height: 32px
+          vertical-align: middle
+          margin-left: 32px
+
+        .Button--transparent
+          padding: 10px 0
+
+    .close-btn
+      font-size: 24px
+      line-height: 14px
+      position: absolute
+      top: 4px
+      right: 4px
+      color: #fff
+      cursor: pointer
+      padding: 4px
+
+      &:hover
+        color: #fff
+        opacity: 0.7
+
+
+  .PaymentButton-Create-Content
+    position: relative
+    padding: 40px 0 0
+    margin: 0 auto
+    width: 100%
+    max-width: 1272px
+    min-width: 854px
+
+    .PaymentButton-Create-Content-container
+      display: table
+      table-layout: fixed
+      position: relative
+      height: 100%
+      width: 100%
+      border-radius: 4px
+      box-shadow: 0 0 10px rgba(11, 112, 231, 0.08)
+      background: #F9FBFE
+
+
+  .PaymentButton-Create-SideBar, .PaymentButton-Create-Form, .PaymentButton-Create-Preview
+    display: table-cell
+    height: 100%
+    vertical-align: top
+
+
+// These fields are shared Form and Preview
+.PaymentButton-Create-Content-container
+  .Input--checkboxTooltip, .Input--counterTooltip
+    position: absolute
+    top: 30px
+    right: 6px
+    cursor: not-allowed
+    z-index: 1
+
+  .Input--checkboxTooltip
+    .Input-checkbox
+      margin: 4px 0
+
+  .Input--counterTooltip
+    .Input-content
+      pointer-events: none
+
+      input
+        width: 96px
+        height: 24px
+        text-align: center
+
+      button:nth-of-type(1)
+        left: 0
+        border-top-left-radius: 1px
+        border-bottom-left-radius: 1px
+        border: none
+        border-right: 1px solid #e2e2e2
+        margin: 1px 0 0 1px
+
+      button:nth-of-type(2)
+        right: 0
+        border-top-right-radius: 1px
+        border-bottom-right-radius: 1px
+        border: none
+        border-left: 1px solid #e2e2e2
+        margin: 1px 1px 0 0
+
+      button
+        position: absolute
+        width: 28px
+        height: 22px
+        font-size: 20px
+        background: transparent
+        padding: 0 0 3px 1px
+        user-select: none
+        outline: 0
+        -webkit-tap-highlight-color: transparent
+        cursor: pointer
+        top: 0
+        line-height: 100%
+        font-weight: bold
+
+
+@media (max-width: 1242px)
+  #payment-buttons-create-container
+    .PaymentButton-Create-Content
+      max-width: 1142px
+      width: 98%
+
+    .PaymentButton-Create-SideBar
+      //display: none
+      display: table-caption
+      height: 64px
+      padding: 24px 40px
+      width: calc(100% - 300px)
+      top: 78px
+      margin-top: -64px
+      z-index: 1
+      border: 0
+
+      .ProgressBar-meter, .SideBar-title, .SideBar-stepsList, img
+        display: none
+
+      .ProgressBar-title
+        font-size: 14px
+        color: rgba(22,47,86,0.54)
+
+    .PaymentButton-Create-Form
+      padding-top: 36px
+      border-radius: 4px 0 0 4px
+
+.ProgressBar
+  position: relative
+  margin: 0 auto
+
+  .ProgressBar-title
+    font-weight: bold
+    font-size: 11px
+    line-height: 14px
+    color: rgba(22, 47, 86, 0.74)
+    margin-bottom: 8px
+
+  .ProgressBar-meter
+    position: relative
+    height: 4px
+    background: rgba(22, 47, 86, 0.1)
+
+    .ProgressBar-progress
+      position: absolute
+      left: 0
+      width: 100%
+      height: 100%
+      background: #4B95ED
+      transform-origin: left center
+      transition: .4s
+      transform: scale(0)

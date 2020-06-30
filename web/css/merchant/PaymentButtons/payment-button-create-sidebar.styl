@@ -1,0 +1,91 @@
+.PaymentButton-Create-SideBar
+  position: relative
+  width: 300px
+  padding: 32px
+  padding-bottom: 256px
+  border-right: 1px solid rgba(22, 47, 86, 0.1)
+
+  img
+    position: absolute
+    bottom: 0
+    right: 0
+
+  .SideBar-title
+    font-size: 20px
+    line-height: 30px
+    font-weight: bold
+    color: rgba(22, 47, 86, 0.54)
+    margin-bottom: 8px
+
+  .SideBar-stepsList
+    list-style: none
+    margin: 16px 0 24px 0
+    padding: 0
+    position: relative
+
+    .step
+      position: relative
+      padding: 16px 0
+      margin: 0
+
+
+      &:not(:first-of-type)
+        &::before
+          content: ''
+          position: absolute
+          width: 1px
+          height: 100%
+          background: rgba(22, 47, 86, 0.1)
+          left: 8px
+          top: -50%
+
+    .step-dot, .step-title
+      display: inline-block
+      vertical-align: top
+
+    .step-dot
+      position: relative
+      height: 16px
+      width: 16px
+      margin: 2px 8px 0 0
+      border-radius: 50%
+      border: 2px solid #2B83EA
+      transition: .4s
+      z-index: 1
+      background: #fafbfe
+
+      .i-check-circle
+        position: relative
+        line-height: 16px
+        left: -2px
+        top: -2px
+        color: #8cbe85
+        opacity: 0
+        transition: .12s
+
+      .i-outline-lock
+        color: #818FA4
+        font-size: 19px
+        line-height: 16px
+        left: -1px
+        position: relative
+
+    .step--done .step-dot
+      border-color: #8cbe85
+      background: transparent
+
+      .i-check-circle
+        opacity: 1
+
+    .step--disabled .step-dot
+      border: none
+
+    .step-title
+      font-size: 14px
+      line-height: 20px
+
+    .step-description
+      font-size: 11px
+      line-height: 14px
+      color: rgba(22, 47, 86, 0.54)
+

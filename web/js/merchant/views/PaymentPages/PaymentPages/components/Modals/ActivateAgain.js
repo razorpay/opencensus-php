@@ -82,6 +82,8 @@ export default class ActivateAgainModal extends React.Component {
   }
 
   render() {
+    let { title, description } = this.props;
+
     let msg = [];
     this.props.expireBy && msg.push('Kindly change the expiry to a later date');
     this.props.isCompleted &&
@@ -91,19 +93,25 @@ export default class ActivateAgainModal extends React.Component {
 
     msg = msg.join(' and ');
 
+    if (!title) {
+      title = 'Activate Page?';
+    }
+
+    if (!description) {
+      description =
+        'Once you activate the page, you will be able to accept payments.';
+    }
+
     return (
       <div>
-        <ModalHeader
-          title="Activate Page?"
-          onCloseClick={this.props.handleClose}
-        />
+        <ModalHeader title={title} onCloseClick={this.props.handleClose} />
 
         <div class="modal-body">
           <p>
             {!!msg.length && `${msg}.`}
             <br />
             <br />
-            Once you activate the page, you will be able to accept payments.
+            {description}
           </p>
 
           <div class="ModalForm ModalForm--ActivationAgain">

@@ -60,6 +60,7 @@ export default {
     RBL_SUPERVISOR,
   ],
   payment_pages: [OWNER, ADMIN, MANAGER, SELLERAPP],
+  payment_buttons: [OWNER, ADMIN, MANAGER, SELLERAPP],
   accounts: [OWNER, ADMIN, MANAGER],
   marketplace: [OWNER, ADMIN, MANAGER, OPERATIONS],
   subscriptions: [

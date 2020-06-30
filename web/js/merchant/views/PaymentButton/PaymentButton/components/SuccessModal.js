@@ -1,0 +1,69 @@
+import { withRouter, Link } from 'react-router-dom';
+
+import GetCodeModal from './GetCodeModal';
+
+@withRouter
+export default class SuccessModal extends React.Component {
+  onClickButtonSettings = () => {
+    this.props.history.push(
+      `/paymentbuttons/${this.props.paymentButton.id}/payments`
+    );
+
+    this.props.updateHighlightButtonSettings(this.props.paymentButton.id);
+  };
+
+  render() {
+    const { paymentButton, isEditExistingId } = this.props;
+
+    const title = isEditExistingId
+      ? 'Button updated successfully'
+      : 'Button created successfully';
+
+    const description = (
+      <>
+        <b>{paymentButton.title}</b> button is ready to go!
+      </>
+    );
+
+    const modalTitle = (
+      <>
+        <img src="/dist/css/assets/success-tick-green.svg" /> {title}
+      </>
+    );
+
+    const docLink = (
+      <div class="docs-link m-t">
+        How to use this code?{' '}
+        <a href="https://razorpay.com/docs/payment-button/">
+          See our documentation <i class="i i-external-link" />
+        </a>
+      </div>
+    );
+
+    return (
+      <GetCodeModal
+        paymentButton={paymentButton}
+        title={modalTitle}
+        description={description}
+        class="success-screen"
+        afterEmbedButton={docLink}
+      >
+        <div class="receipt-description">
+          <div class="description-title">
+            Actions After a Successful Payment
+          </div>
+          <div class="description-list">
+            <li> Show a custom message.</li>
+            <li> Send automated payment receipts.</li>
+            <div>
+              Configure these options in
+              <button class="btn-link" onClick={this.onClickButtonSettings}>
+                Button Settings <i class="i i-arrow-forward" />
+              </button>
+            </div>
+          </div>
+        </div>
+      </GetCodeModal>
+    );
+  }
+}

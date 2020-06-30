@@ -1,0 +1,186 @@
+.PaymentButton-Create-Form
+
+  .Modal-container
+    .OptionsDropdown
+      position: absolute
+      top: 48px
+      right: -12px
+
+    .OptionsDropdown-list
+      left: 50%
+      transform: translateX(-50%)
+      animation-name: dropdownAppearInCenter
+      animation-duration: .12s
+
+    .dropdown__trigger
+      width: 30px
+      display: inline-block
+      height: 32px
+      text-align: center
+      padding: 4px
+      color: #2B83EA
+      border-radius: 2px
+      border: 1px solid transparent
+
+      &:hover
+        background-color: rgba(216,216,216,0.27)
+
+      &:active
+        border: 1px solid $primary-color
+
+      button
+        margin-right: 0
+        color: #2B83EA
+        font-size: 24px
+        line-height: 24px
+
+  .FieldOptionsDropdown
+    .OptionsDropdown-item
+      padding: 0
+      & > div
+        padding: 6px 12px
+
+      i
+        color: #969caf
+
+      i.i-fix-sort
+        font-size: 10px
+
+      i.i-check
+        color: $primary-color
+
+    .OptionsDropdown-item--delete
+      color: #D26A6A
+      border-top: 2px solid #e8e9ee
+      .i
+        color: #D26A6A
+
+  .dropdown__content
+    position: relative
+
+  .OptionsDropdown-list
+    margin-bottom: 40px
+    width: 224px
+    max-height: 252px
+    top: 100%
+    border-radius: 4px
+    border: 1px solid rgba(82,143,240,0.16)
+    list-style: none
+    padding: 0
+    overflow: auto
+    background-color: #fff
+    box-shadow: 0 5px 9px 0 rgba(69,75,85,0.22)
+    animation: dropdownAppearIn 0.1s cubic-bezier(0.13, 1.04, 1, 1)
+    transform-origin: center bottom
+
+
+  .OptionsDropdown-title
+    margin: 8px 12px 4px
+    font-size: 12px
+    font-weight: bold
+    margin-right: 20px
+
+  .OptionsDropdown-item
+    position: relative
+    width: 100%
+    margin: 0
+    padding: 6px 12px
+    line-height: 24px
+    font-size: 14px
+    cursor: pointer
+
+    &:not(:last-child)::after
+      content: ''
+      position: absolute
+      bottom: 0
+      right: 12px
+      left: 12px
+      height: 1px
+      background: #F6F6F6
+
+    i
+      display: inline-block
+      vertical-align: top
+      font-size: 16px
+      margin-right: 8px
+      line-height: inherit
+      pointer-events: none
+
+    i + div
+      display: inline-block
+      vertical-align: top
+      width: 84%
+
+    .subOption
+      font-size: 12px
+      line-height: 15px
+      color: #8991AE
+
+    &:hover
+      background-color: #f5f7f9
+
+    .i-check
+      display: none
+      position: absolute
+      top: 8px
+      right: 8px
+      color: $primary-color
+
+  .OptionsDropdown-item--selected
+    background: #f5f7f9
+    .i-check
+      display: block
+
+  .FieldsDropdown--withInfo
+    .info
+      position: absolute
+      padding: 12px
+      width: 220px
+      min-height: 145px
+      left: 100%
+      top: 100%
+      margin-bottom: 40px
+      background: #f6f7fa
+      border: 1px solid #eee
+      box-shadow: 0 0 14px rgba(0,0,0,0.09)
+
+      img
+        display: none
+
+      .title
+        color: #0D2366
+        font-size: 13px
+        margin: 6px 0
+        font-weight: bold
+
+      .description
+        color: #515978
+        font-size: 12px
+        line-height: 17px
+
+    .dropdown__content
+      width: 240px
+
+    .OptionsDropdown-list
+      min-height: 145px
+      width: 240px
+
+
+@keyframes dropdownAppearIn
+  0%
+    opacity: 0
+    transform: scale(.8)
+
+  100%
+    opacity: 1
+    transform: scale(1)
+
+@keyframes dropdownAppearInCenter
+  0%
+    opacity: 0
+    transform: translateX(-50%) scale(.8)
+
+  100%
+    opacity: 1
+    transform: translateX(-50%) scale(1)
+

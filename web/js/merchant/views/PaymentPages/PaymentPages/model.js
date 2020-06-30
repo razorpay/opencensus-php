@@ -15,7 +15,7 @@ function pruneReqPayload(reqPayload) {
   }
 }
 
-export function createPaymentPage(data) {
+export function createPaymentPage(data, queryParams) {
   const reqPayload = { ...data };
 
   pruneReqPayload(reqPayload);
@@ -24,6 +24,7 @@ export function createPaymentPage(data) {
     url: 'payment_pages',
     method: 'post',
     data: reqPayload,
+    params: queryParams,
     headers: {
       'content-Type': 'application/json',
     },

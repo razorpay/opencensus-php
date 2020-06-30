@@ -10,6 +10,7 @@ const FETCH_LATE_AUTH_CONFIG = 'FETCH_LATE_AUTH_CONFIG';
 const CREATE_LATE_AUTH_CONFIG = 'CREATE_LATE_AUTH_CONFIG';
 const GET_ONBOARDING_STATUS = 'GET_ONBOARDING_STATUS';
 const FETCH_REFUND_PRICING = 'FETCH_REFUND_PRICING';
+const UPDATE_BRAND_COLOR_CONTRAST = 'UPDATE_BRAND_COLOR_CONTRAST';
 
 export const fetchConfigAjax = () => {
   return merchantFetch('account/config');
@@ -97,6 +98,13 @@ export const updateConfig = data => {
   };
 };
 
+export const updateBrandColorContrast = (isBrandColorDark = false) => {
+  return {
+    type: UPDATE_BRAND_COLOR_CONTRAST,
+    payload: isBrandColorDark,
+  };
+};
+
 export const getOnboardingStatus = gateway => {
   return {
     type: GET_ONBOARDING_STATUS,
@@ -173,6 +181,7 @@ let initialState = {
   error: null,
   refund_pricing: { rules: [], custom_pricing: true, not_loaded: true },
   config: {},
+  isBrandColorDark: false,
   features: [],
   lateAuthConfig: {
     loading: true,
@@ -248,6 +257,9 @@ export default function(state = initialState, action) {
 
     case `${GET_ONBOARDING_STATUS}::SUCCESS`:
       return set(state, 'paypal_terminals', action.payload.data.items);
+
+    case 'UPDATE_BRAND_COLOR_CONTRAST':
+      return set(state, 'isBrandColorDark', !!action.payload);
 
     default:
       return state;

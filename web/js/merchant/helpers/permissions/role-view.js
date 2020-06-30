@@ -103,6 +103,7 @@ export default {
     SELLERAPP_PLUS,
   ],
   payment_pages: [OWNER, ADMIN, MANAGER, OPERATIONS, FINANCE, SELLERAPP],
+  payment_buttons: [OWNER, ADMIN, MANAGER, OPERATIONS, FINANCE, SELLERAPP],
   accounts: [OWNER, ADMIN, MANAGER],
   marketplace: [OWNER, ADMIN, MANAGER, OPERATIONS],
   subscriptions: [

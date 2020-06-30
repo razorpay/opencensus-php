@@ -1,0 +1,232 @@
+.PaymentButton-Create-Form
+  position: relative
+  background: #FFF
+  box-shadow: 0 0 15px rgba(11, 112, 231, 0.08)
+
+  .Form-container
+    display: flex
+    flex-direction: column
+    margin: 0 auto
+    height: 100%
+    padding: 32px 40px
+
+  .Form-title
+    margin-bottom: 40px
+    font-size: 24px
+    line-height: 36px
+    font-weight: bold
+    color: #162F56
+
+  .Form-description
+    font-size: 12px
+    line-height: 18px
+    font-weight: normal
+    color: rgba(22, 47, 86, 0.38)
+
+  .Form
+    flex-basis: 100%
+    display: flex
+    flex-wrap: wrap
+
+  .Form-controls
+    display: flex
+    align-self: flex-end
+    width: 100%
+    justify-content: flex-end
+
+    button
+      font-weight: bold
+      margin: 0
+
+      &.Button--transparent
+        margin-right: 32px
+
+      i
+        font-size: 24px
+        line-height: 10px
+
+  .Form-content
+    flex-basis: 100%
+    display: flex
+    flex-wrap: wrap
+    justify-content: space-between
+
+    &.PaymentButtonForm-ButtonDetails
+      align-content: flex-start
+
+    .InputGroup
+      .Input
+        width: 100%
+        display: block
+
+      > .Input + .Input
+          margin-top: 4px
+
+    .Input--enum-list .Input-content
+      max-height: 232px
+      overflow-y: scroll
+      border: 1px solid #e7e9ee
+      border-radius: 3px
+
+    .Input
+      width: 45%
+      margin: 0 0 40px 0
+
+    .InputGroup
+      margin: 0
+      .Input
+        margin: 0
+
+    .Input-error
+      font-size: 13px
+
+    .Input-desc
+      color: rgba(22, 47, 86, 0.38)
+      overflow-wrap: break-word
+
+    .Input-el
+      background: rgba(224, 228, 249, 0.1)
+      border-radius: 2px 2px 0 0
+      border-bottom: 1px solid
+      border-width: 0 0 1px 0
+      border-color: rgba(22,47,86,0.1)
+
+    .Input--PowerSelect
+      padding: 0
+
+      .Input-el
+        border: none
+        padding: 0
+
+      .Input-el-PaymentButtonForm
+        height: 100%
+        padding: 0 12px
+        border-radius: 2px 2px 0 0
+        border-bottom: 1px solid
+        border-width: 0 0 1px 0
+        border-color: rgba(22,47,86,0.1)
+        background: none
+
+        .PowerSelect__TriggerLabel
+          padding-left: 0
+
+
+    $height-currency = 24px
+    .Input--CurrencyAmount
+      .Input--Currency
+        position: absolute
+        left: 6px
+        top: 6px
+        width: 48px
+        font-size: 13px
+        height: $height-currency
+        margin: 0
+        z-index: 2
+        background: rgba(224, 228, 249, 0.38)
+        border-radius: 2px
+
+        .Input-content
+          margin: 0
+
+        .value
+          background: none
+          border: none
+          line-height: 24px
+          margin: 0
+
+        .Input-el
+          border: none
+          height: $height-currency
+          font-size: 13px
+
+        .Input--Currency-dropdown
+          border: none
+          height: $height-currency
+          background: inherit
+
+          .PowerSelect__TriggerLabel
+            padding: 0 0 0 2px
+            overflow: visible
+
+          .PowerSelect__Trigger, .PowerSelect__TriggerLabel, .PowerSelect__TriggerStatus
+            height: $height-currency
+
+      .Input--Amount
+        z-index: 1
+
+        .Input-content
+          margin: 0
+
+        .Input-el
+          padding-left: 60px
+
+  .PaymentButtonForm-ReviewAndCreate
+    justify-content: space-evenly
+    margin-bottom: 32px
+    align-items: flex-start
+    visibility: collapse
+    animation: .13s visible-fade-in 0s forwards
+    overflow: hidden
+    flex-wrap: nowrap
+
+.Input-el-PaymentButtonForm__Tether
+  z-index: 99999
+
+.Input-el-PaymentButtonForm__Tether .PowerSelect__Menu
+  margin-top: 4px
+  border-radius: 3px
+  border: 1px solid #EDF0F5
+  box-shadow: 0 2px 8px rgba(43, 47, 60, 0.16409)
+
+  .PowerSelect__Option
+    padding: 8px 12px
+    position: relative
+
+    i
+      display: inline-block
+      vertical-align: top
+      font-size: 16px
+      margin-right: 8px
+      line-height: inherit
+      pointer-events: none
+
+    .i-fix-alphabet, .i-fix-number, .i-fix-sort
+      font-size: 10px
+
+    .i-fix-arrow-down
+      font-size: 13px
+
+    .i-fix-arrow-down::before
+      border-radius: 50%
+      border: 1px solid
+      border-color: inherit
+      width: 24px
+      height: 20px
+
+    .i-check
+      display: none
+      color: #528ff0
+      position: absolute
+      top: 8px
+      right: 8px
+
+  .PowerSelect__Option--highlighted
+    .i-check
+      display: unset
+
+
+@media (max-width: 1242px)
+  .PaymentButton-CreateForm
+    .Form-container
+      padding: 32px 28px
+
+
+@keyframes visible-fade-in
+  0%
+    opacity: 0
+
+  100%
+    opacity: 1
+    visibility: visible
+
+

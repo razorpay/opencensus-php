@@ -1,0 +1,247 @@
+.PaymentButtons--ListingPage
+  .item-ellipsis
+    max-width: 120px
+    white-space: nowrap
+    text-overflow: ellipsis
+    line-height: 24px
+    overflow: hidden
+
+  .action-col
+    text-align: right
+    width: 150px
+
+  .status-col
+    width: 100px
+
+  .get-code-btn
+    font-size: 11px
+    padding: 3px 6px
+    border-radius: 2px
+    color: #528ff0
+    font-weight: bold
+
+.Entity--paymentbutton
+  .content-header
+    &:before
+      content: unset
+
+  .page-options
+    display: flex
+    align-items: center
+    justify-content: flex-end
+    margin-right: -30px
+
+    .Button--primary--invert
+      padding: 9px 20px
+      &:hover
+        background-color: rgba(11, 112, 231, 0.05)
+        border-color: #528ff0
+
+    .dropdown
+      &:before, &:after
+        content: unset
+
+    .dropdown-menu
+      top: 57px
+      background: #FFFFFF
+      box-shadow: 0px 2px 8px rgba(43, 47, 60, 0.16409)
+      border: 0
+      border-radius: 3px
+      padding: 0
+      left: -128%
+      border: 0
+
+      .option
+        min-width: 200px
+        color: #58666E
+        padding: 16px
+        line-height: 1
+        display: flex
+        align-items: center
+
+      li:first-child .option
+        padding-top: 16px
+        i
+          margin-top: -9px
+
+      li:last-child .option
+        padding-bottom: 16px
+        justify-content: space-between
+
+      .i:first-child
+        margin-right: 8px
+
+      .option-description
+        font-size: 12px
+        margin-top: 4px
+
+      .i-arrow-forward
+        color: #2B83EA
+
+  .Modal-container--PaymentpagesReceipt
+    top: 0
+    margin-top: 65px
+    transform: translate(-50%, 0%)
+
+  .collapsable-btn
+    border: 0
+
+.PaymentButton-empty-list
+  display: flex
+  align-items: center
+  justify-content: center
+  padding: 45px
+
+  .description
+    margin-left: 30px
+
+.GetCodeModal
+  position: absolute
+  left: 0
+  right: 0
+  top: 50%
+  transform: translate(0px, -50%);
+  margin: 0 auto
+  width: 328px
+
+  .embed-button-form
+    background: #FFFFFF
+    border: 1px solid rgba(22, 47, 86, 0.1)
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15)
+    border-radius: 3px
+    word-break: break-all
+
+    position: relative
+    margin: 16px -48px 16px
+    padding: 24px;
+    margin-left: -48px;
+    margin-right: -48px;
+
+
+    textarea
+      overflow-y: scroll
+
+    .Input,
+    .Input-label
+      margin: 0
+
+    .Input-el
+      height: 56px
+
+    .description
+      margin-bottom: 12px
+      display: flex
+      align-items: center
+      justify-content: space-between
+
+      .Input-label
+        font-weight: normal
+
+      .ClipboardCustom
+        margin: 0
+
+    .copy-btn
+      background: #2B83EA
+      border-radius: 2px
+      color: #fff
+      font-size: 10px
+      letter-spacing: 0.5px
+      font-weight: bold
+
+  .docs-link
+    margin: 24px 0
+
+  .btn-toolbar .btn
+    margin: 0
+
+
+  .success-screen
+    img
+      height: 20px
+      margin: 0
+      vertical-align: sub
+
+    .docs-link
+      font-weight: 13px
+      margin: 12px 0 0 0
+
+  .receipt-description
+    margin: 24px 0
+
+    button
+      padding: 0
+      margin: 0 0 0 4px
+      border: 0
+      text-decoration: none
+
+    .description-title
+      font-weight: bold
+      margin-bottom: 8px
+
+    .description-list
+      line-height: 24px
+
+.ButtonSettingsModal
+  background: #fff
+
+  .Input--checkbox
+    margin: 0
+
+  .Input-inlineLabel
+    font-weight: bold
+
+  hr
+    margin: 16px -20px
+
+  .modal-body
+    padding: 24px
+
+  .receipt-heading
+    display: flex
+    align-items: center
+    justify-content: space-between
+
+    .btn-link
+      padding: 0
+      margin: 0
+      border: 0
+
+  .description
+    margin: 8px 0 0 0
+
+  .btn-link
+    text-decoration: none
+
+  .custom-message-input
+    margin-top: 12px
+
+    .chars-pressed
+      position: absolute
+      right: 10px
+      top: 42px
+
+  .Modal__actions
+    text-align: right
+    padding: 16px 24px
+    background: #f6f6f6
+
+    .btn
+      padding: 8px 12px
+
+.Modal-mask--PaymentButton--Templates
+  .TemplateCard
+    border-radius: 4px
+    min-height: 276px
+
+    .TemplateCard-title
+      text-align: center
+      font-size: 16px
+      color: #0D2366
+
+    .TemplateCard-desc
+      white-space: pre-line
+
+    .link
+      margin: 0 -20px
+      i
+        right: 20px

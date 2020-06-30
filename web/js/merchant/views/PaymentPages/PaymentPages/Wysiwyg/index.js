@@ -387,12 +387,10 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
       receipt,
     } = paymentPageEntity;
 
-    // Remove Email and Phone in all cases before sending to API.
-    const formItems = [...FORM_ITEMS]; // Separate UDF and amount fields from FORM ITEMS.
-
     const udf_schema = [],
       paymentPageItems = [];
 
+    // Separate UDF and amount fields from FORM ITEMS.
     FORM_ITEMS.forEach((fi, ix) => {
       fi.settings = fi.settings || {};
       fi.settings.position = ix; // Updating the position of each item (both udf and amount fields)

@@ -38,6 +38,7 @@ const BASE_ROUTES = {
   marketplace: '/route/payments',
   paymentlinks: '/paymentlinks',
   paymentpages: '/paymentpages',
+  paymentbuttons: '/paymentbuttons',
   subscriptions: '/subscriptions',
   chargeAtWill: '/recurring_payments',
   partnerDashboard: '/submerchants',

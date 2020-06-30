@@ -127,6 +127,7 @@ export const RZPFeatures = {
   VA: 'virtual_accounts',
   PP: 'payment_pages',
   PL: 'payment_links',
+  PB: 'payment_buttons',
   INVOICE: 'invoices',
   OFFERS: 'offers',
 };

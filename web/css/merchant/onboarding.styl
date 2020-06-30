@@ -337,6 +337,7 @@
 .OnBoarding--Route,
 .OnBoarding--PaymentPages,
 .OnBoarding--PaymentLinks,
+.OnBoarding--PaymentButtons,
 .OnBoarding--Invoices,
 .OnBoarding--Offers,
 .OnBoarding--SmartCollect
@@ -400,6 +401,14 @@
 
     img
       transform: translate(0, -25%)  rotateY(-180deg)
+
+.OnBoarding--PaymentButtons
+  .Landing--Image
+    &:before
+      content: unset
+
+    img
+      left: 0
 
 .OnBoarding--Offers
   .Landing--Image

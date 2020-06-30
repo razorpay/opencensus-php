@@ -9,6 +9,7 @@ import SettlementDetails from 'merchant/views/Settlements/Details';
 import PaymentLinkDetails from 'merchant/views/PaymentLinks/PaymentLinks/Details';
 import PaymentLinkCreate from 'merchant/views/PaymentLinks/PaymentLinks/Create/index';
 import PaymentPagesWysiwyg from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg';
+import PaymentButtonCreate from 'merchant/views/PaymentButton/PaymentButton/Create';
 import PaymentsDetails from 'merchant/views/Transactions/Payments/Details';
 import RefundDetails from 'merchant/views/Transactions/Refunds/Details';
 import OrderDetails from 'merchant/views/Transactions/Orders/Details';
@@ -218,6 +219,18 @@ const fullPageViewsMap = {
   '/paymentpages/:id(pl_.+)/edit': {
     component: PaymentPagesWysiwyg,
     additionalCondition: user => user.isAllowedEdit('payment_pages'),
+  },
+  '/paymentbuttons/new': {
+    component: PaymentButtonCreate,
+    additionalCondition: user =>
+      user.isAllowedEdit('payment_pages') &&
+      user.isPaymentButtonEnabledByRazorX,
+  },
+  '/paymentbuttons/:id(pl_.+)/edit': {
+    component: PaymentButtonCreate,
+    additionalCondition: user =>
+      user.isAllowedEdit('payment_pages') &&
+      user.isPaymentButtonEnabledByRazorX,
   },
 };
 
