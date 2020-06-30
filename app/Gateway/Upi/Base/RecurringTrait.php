@@ -21,8 +21,27 @@ trait RecurringTrait
 
     protected function authorizeRecurring(array $input)
     {
-        $gateway = $this->app['gateway']->gateway('mozart');
+        $gateway = $this->getMozartGatewayWithModeSet();
 
-        return $gateway->authorize($input);
+        return $gateway->authorizeRecurring($input);
+    }
+
+    protected function recurringMandateCreateCallback(array $input)
+    {
+        $gateway = $this->getMozartGatewayWithModeSet();
+
+        return $gateway->callback($input);
+    }
+
+    protected function firstDebit(array $input)
+    {
+        $gateway = $this->getMozartGatewayWithModeSet();
+
+        return $gateway->debit($input);
+    }
+
+    public function isFirstUpiRecurringPayment($payment): bool
+    {
+        return ($payment['method'] === 'upi' and $payment['recurring_type'] === 'initial');
     }
 }

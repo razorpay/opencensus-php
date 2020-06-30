@@ -31,7 +31,11 @@ class UpiRecurringPaymentCreateTest extends TestCase
     {
         $orderId = $this->createUpiRecurringOrder();
 
-        $payment = $this->getDefaultUpiRecurringPaymentArray($orderId);
+        $payment = $this->getDefaultUpiRecurringPaymentArray();
+
+        $payment['order_id'] = $orderId;
+
+        $payment['customer_id'] = 'cust_100000customer';
 
         $this->doAuthPayment($payment);
 
@@ -52,9 +56,9 @@ class UpiRecurringPaymentCreateTest extends TestCase
 
         $orderId = $this->createUpiRecurringOrder(['customer_id' => 'cust_10000gcustomer']);
 
-        $payment = $this->getDefaultUpiRecurringPaymentArray($orderId);
+        $payment = $this->getDefaultUpiRecurringPaymentArray();
 
-        unset($payment['customer_id']);
+        $payment['order_id'] = $orderId;
 
         $this->doAuthPayment($payment);
 
@@ -73,7 +77,7 @@ class UpiRecurringPaymentCreateTest extends TestCase
     {
         $payment = $this->getDefaultUpiRecurringPaymentArray();
 
-        unset ($payment['order_id']);
+        $payment['customer_id'] = 'cust_100000customer';
 
         $data = $this->testData[__FUNCTION__];
 
@@ -87,7 +91,11 @@ class UpiRecurringPaymentCreateTest extends TestCase
     {
         $orderId = $this->createUpiRecurringOrder();
 
-        $payment = $this->getDefaultUpiRecurringPaymentArray($orderId);
+        $payment = $this->getDefaultUpiRecurringPaymentArray();
+
+        $payment['order_id'] = $orderId;
+
+        $payment['customer_id'] = 'cust_100000customer';
 
         $payment['amount'] = 200;
 
@@ -103,7 +111,11 @@ class UpiRecurringPaymentCreateTest extends TestCase
     {
         $orderId = $this->createUpiRecurringOrder();
 
-        $payment = $this->getDefaultUpiRecurringPaymentArray($orderId);
+        $payment = $this->getDefaultUpiRecurringPaymentArray();
+
+        $payment['order_id'] = $orderId;
+
+        $payment['customer_id'] = 'cust_100000customer';
 
         $payment['amount'] = 0;
 
@@ -119,7 +131,9 @@ class UpiRecurringPaymentCreateTest extends TestCase
     {
         $orderId = $this->createUpiRecurringOrder();
 
-        $payment = $this->getDefaultUpiRecurringPaymentArray($orderId);
+        $payment = $this->getDefaultUpiRecurringPaymentArray();
+
+        $payment['order_id'] = $orderId;
 
         unset($payment['vpa']);
 
@@ -137,7 +151,9 @@ class UpiRecurringPaymentCreateTest extends TestCase
     {
         $orderId = $this->createUpiOrder();
 
-        $payment = $this->getDefaultUpiRecurringPaymentArray($orderId);
+        $payment = $this->getDefaultUpiRecurringPaymentArray();
+
+        $payment['order_id'] = $orderId;
 
         $data = $this->testData[__FUNCTION__];
 

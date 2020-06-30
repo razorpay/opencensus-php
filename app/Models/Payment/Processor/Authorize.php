@@ -3839,6 +3839,7 @@ trait Authorize
         {
             $token = $this->savePaymentMethod($customer, $payment, null, $input);
 
+
             // If payment is upi recurring, we will update the mandate entity with the token id. We have already
             // validated that for upi recurring, the order has upi mandate entity linked.
             if (($payment->isUpiRecurring() === true) and ($token !== null))
@@ -4333,15 +4334,15 @@ trait Authorize
         $this->eventTokenStatus($token, $oldRecurringStatus);
     }
 
-    protected function updateTokenOnCreatedIfRequired($payment, $data)
+    protected function updateTokenOnCreatedIfRequired($payment, $response)
     {
         if ($payment->isUpiRecurring() === true)
         {
             $token = $payment->getGlobalOrLocalTokenEntity();
 
-            if (empty($data['data']['recurring_status']) === false)
+            if (empty($response['data']['token']['recurring_status']) === false)
             {
-                $gatewayRecurringStatus = $data['data']['recurring_status'];
+                $gatewayRecurringStatus = $response['data']['token']['recurring_status'];
 
                 $token->setRecurringStatus($gatewayRecurringStatus);
 
@@ -4400,9 +4401,10 @@ trait Authorize
         {
             $this->updateTokenOnAuthorizedForEmandateRecurring($token, $data, $payment);
         }
-        else if ($payment->isUpiRecurring() === true)
+        else if($payment->isUpi() === true)
         {
-            $this->updateTokenOnAuthorizedForUpiRecurring($token, $data, $payment);
+            $token->setRecurring(true);
+            $token->setRecurringStatus(Token\RecurringStatus::CONFIRMED);
         }
 
         // Not required as we only use terminals through

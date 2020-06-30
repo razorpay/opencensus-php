@@ -16,6 +16,7 @@ use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Upi\Mindgate\Crypto;
 use RZP\Gateway\Base\AuthorizeFailed;
 use RZP\Gateway\Upi\Base\MandateTrait;
+use RZP\Gateway\Upi\Base\RecurringTrait;
 use RZP\Gateway\Upi\Base\Entity as UpiEntity;
 use RZP\Models\Payment\Processor\App as AppMethod;
 use RZP\Gateway\Mozart\Entity as MozartEntity;
@@ -27,6 +28,8 @@ class Gateway extends Base\Gateway
     use AuthorizeFailed {
         extractPaymentsProperties as extractPaymentsPropertiesAuthorizedFailedTrait;
     }
+
+    use RecurringTrait;
 
     protected $gateway = 'mozart';
 
@@ -364,6 +367,42 @@ class Gateway extends Base\Gateway
         ];
     }
 
+    public function authorizeRecurring($input)
+    {
+        parent::action($input, Action::AUTH_INIT);
+
+        $request = $this->getMozartRequestArray($input);
+
+        $traceReq = [
+            'method' => $request['method'],
+            'url'    => $request['url'],
+        ];
+
+        $this->traceGatewayPaymentRequest($traceReq, $input, TraceCode::GATEWAY_MANDATE_CREATE_REQUEST);
+
+        $response = $this->sendGatewayRequest($request);
+
+        $traceRes = $this->getRedactedData($response);
+
+        $this->traceGatewayPaymentResponse($traceRes, $input, TraceCode::GATEWAY_MANDATE_CREATE_RESPONSE);
+
+        $this->checkErrorsAndThrowExceptionFromMozartResponse($response);
+
+        $attributes = $this->getMappedAttributes($response);
+
+        $this->createGatewayPaymentEntity($attributes, $input, Action::MANDATE_CREATE);
+
+        return [
+            'data'   => [
+                Payment\Entity::VPA            => $input['payment']['vpa'] ?? null,
+                'token' => [
+                    Token\Entity::RECURRING_STATUS => Token\RecurringStatus::INITIATED,
+                ],
+            ],
+            'upi' => array_only($response['data'], (new UpiEntity())->getFillable()),
+        ];
+    }
+
     public function mandateExecute($input)
     {
         parent::action($input, Action::CAPTURE);
@@ -515,6 +554,7 @@ class Gateway extends Base\Gateway
         {
             $this->authorize($input);
         }
+
         else if ($this->isDebitGateway($input))
         {
             parent::action($input,Action::DEBIT);
@@ -545,7 +585,34 @@ class Gateway extends Base\Gateway
                 true,
                 Action::AUTHORIZE
             );
+
             $this->checkErrorsAndThrowExceptionFromMozartResponse($response);
+        }
+
+        else if ($this->isFirstUpiRecurringPayment($input['payment']) === true)
+        {
+            parent::action($input, Action::PAY_INIT);
+
+            $request = $this->getMozartRequestArray($input);
+
+            $traceReq = [
+                'method' => $request['method'],
+                'url' => $request['url'],
+            ];
+
+            $this->traceGatewayPaymentRequest($traceReq, $input, TraceCode::GATEWAY_PAYMENT_DEBIT_REQUEST);
+
+            $response = $this->sendGatewayRequest($request);
+
+            $traceRes = $this->getRedactedData($response);
+
+            $this->traceGatewayPaymentResponse($traceRes, $input, TraceCode::GATEWAY_PAYMENT_DEBIT_RESPONSE);
+
+            $this->checkErrorsAndThrowExceptionFromMozartResponse($response);
+
+            return [
+                'upi' => array_only($response['data'], (new UpiEntity())->getFillable()),
+            ];
         }
         else
         {
@@ -594,6 +661,11 @@ class Gateway extends Base\Gateway
 
         else if ($this->fullyEncryptedFlow($input['payment']['gateway']) === false)
         {
+            if ($this->isFirstUpiRecurringPayment($input['payment']) === true)
+            {
+                parent::action($input, Action::AUTH_VERIFY);
+            }
+
             $gateway = $input['gateway'];
 
             $gateway = $this->parsegatewayresponse($input, $gateway);
@@ -1476,6 +1548,7 @@ class Gateway extends Base\Gateway
             ],
             Payment\Gateway::UPI_MINDGATE => [
                 Action::AUTH_INIT         => null,
+                Action::AUTH_VERIFY       => null,
                 Action::PAY_INIT          => null,
                 Action::PAY_VERIFY        => null,
                 Action::CAPTURE           => Action::PAY_INIT,
@@ -1624,6 +1697,7 @@ class Gateway extends Base\Gateway
             ],
             Payment\Gateway::UPI_MINDGATE => [
                 Action::AUTH_INIT       => null,
+                Action::AUTH_VERIFY     => null,
                 Action::PAY_INIT        => null,
                 Action::PAY_VERIFY      => null,
                 Action::CAPTURE         => Action::AUTHORIZE,
@@ -2078,12 +2152,29 @@ class Gateway extends Base\Gateway
 
            return $response;
         }
-        if (($input['payment']['recurring_type'] === Payment\RecurringType::INITIAL) and
-            ($input['payment']['method'] === Payment\Method::UPI))
+        if ($this->isFirstUpiRecurringPayment($input['payment']) === true)
         {
-            $response = [
-                'recurring_status' => 'confirmed'
-            ];
+            if ($input['gateway']['redirect']['mandateDtls'][0]['mandateType'] === 'CREATE')
+            {
+                $response = [
+                    'acquirer' => [
+                        Payment\Entity::VPA         => $mozartResponse['data']['vpa'] ?? $input['payment']['vpa'] ?? null,
+                        Payment\Entity::REFERENCE16 => $mozartResponse['data']['rrn'] ?? null,
+                    ],
+                    'mandate' => [
+                        'order_id'      => $input['payment']['order_id'],
+                        'status'        => 'confirmed',
+                        'umn'           => $mozartResponse['data']['umn'] ?? null,
+                        'npci_txn_id'   => $mozartResponse['data']['npci_txn_id'] ?? null,
+                        'rrn'           => $mozartResponse['data']['rrn'] ?? null,
+                    ],
+                    'upi' => array_only($mozartResponse['data'], (new UpiEntity())->getFillable()),
+                ];
+            }
+            else
+            {
+                throw new Exception\LogicException('Only mandate create is handled on UPI');
+            }
         }
         elseif ($input['payment']['method'] === Payment\Method::UPI)
         {

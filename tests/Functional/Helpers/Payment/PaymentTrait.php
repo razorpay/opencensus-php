@@ -1471,15 +1471,11 @@ trait PaymentTrait
         return $payment;
     }
 
-    protected function getDefaultUpiRecurringPaymentArray($orderId = null, $customer_id = 'cust_100000customer')
+    protected function getDefaultUpiRecurringPaymentArray()
     {
         $payment = $this->getDefaultUpiPaymentArray();
 
         $payment['recurring'] = true;
-
-        $payment['order_id'] = $orderId;
-
-        $payment['customer_id'] = $customer_id;
 
         return $payment;
     }

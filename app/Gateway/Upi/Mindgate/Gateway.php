@@ -95,7 +95,15 @@ class Gateway extends Base\Gateway
 
         if ($this->isFirstRecurringPayment($input) === true)
         {
-            return $this->authorizeRecurring($input);
+            $data = $this->getGatewayEntityAttributes($input);
+
+            $gatewayPayment = $this->createGatewayPaymentEntity($data, Action::AUTHENTICATE);
+
+            $response = $this->authorizeRecurring($input);
+
+            $this->updateGatewayPaymentResponse($gatewayPayment, $response['upi'], false);
+
+            return $response;
         }
 
         if ($this->isMandateCreateRequest($input) === true)
@@ -153,6 +161,21 @@ class Gateway extends Base\Gateway
                 'vpa'   => $vpa
             ]
         ];
+    }
+
+    public function debit(array $input)
+    {
+        parent::debit($input);
+
+        $data = $this->getGatewayEntityAttributes($input);
+
+        $gatewayPayment = $this->createGatewayPaymentEntity($data, Action::AUTHORIZE);
+
+        $response = $this->firstDebit($input);
+
+        $this->updateGatewayPaymentResponse($gatewayPayment, $response['upi'], false);
+
+        return $response;
     }
 
     public function capture(array $input)
@@ -543,8 +566,32 @@ class Gateway extends Base\Gateway
     {
         parent::callback($input);
 
+        if ($this->isFirstUpiRecurringPayment($input['payment']) === true)
+        {
+            if ($input['gateway']['mandateDtls'][0]['mandateType'] === 'CREATE')
+            {
+                $response = $this->recurringMandateCreateCallback($input);
+
+                $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail($input['payment']['id'], Action::AUTHENTICATE);
+
+                $this->updateGatewayPaymentResponse($gatewayPayment, $response['upi'], false);
+
+                return $response;
+            }
+        }
+
         if ($this->isMandateProcessedCallback($input) === true)
         {
+            if ($input['gateway']['mandateDtls'][0]['mandateType'] === 'CREATE')
+            {
+                return $this->recurringMandateCreateCallback($input);
+            }
+
+            if ($input['gateway']['mandateDtls'][0]['mandateType'] === 'UPDATE')
+            {
+                return $this->mandateUpdateCallback($input);
+            }
+
             return $this->mandateCreateCallback($input);
         }
 

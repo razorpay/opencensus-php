@@ -25,9 +25,12 @@ use RZP\Models\Payment\Status;
 use RZP\Models\Customer\Token;
 use RZP\Models\Merchant\Methods;
 use RZP\Models\Plan\Subscription;
+use RZP\Models\UpiMandate\Entity;
+use RZP\Gateway\Upi\Base\RecurringTrait;
 
 trait Callback
 {
+    use RecurringTrait;
 
     /**
      * After payment initiation, bank redirects to us
@@ -410,9 +413,53 @@ trait Callback
             $data = $this->callGatewayFunction(Payment\Action::CALLBACK, $input);
         }
 
-        $this->callGatewayFunction(Payment\Action::DEBIT, $input);
+        // For First UPI Recurring, we are supposed to hit First debit right away
+        // If first debit fails for the payment an exception will be thrown here
+        // Or we will receive failure in callback, in both cases payment is marked failed.
+        if ($input['payment']['method'] === Payment\Method::UPI)
+        {
+            if ($this->isFirstUpiRecurringPayment($input['payment']) === false)
+            {
+                return $data;
+            }
+            // TODO:: Move this resource identification to mandate.id
+            $orderId = array_pull($data['mandate'], 'order_id');
+
+            $upiMandate = $this->repo->upi_mandate->findByOrderId($orderId);
+
+            // Mandate Status must be confirmed at this stage
+            $upiMandate = $this->updateUpiMandateOnCallback($upiMandate, $data['mandate']);
+
+            // TODO:: Rename the upi_mandate key to just mandate
+            $input['upi_mandate'] = $upiMandate->toArray();
+
+            //TODO:: Add upi metadata also in upi block.
+            $input['upi']['expiry_time'] = 5;
+
+            $this->callGatewayFunction(Payment\Action::DEBIT, $input);
+        }
+        else
+        {
+            $this->callGatewayFunction(Payment\Action::DEBIT, $input);
+        }
 
         return $data;
+    }
+
+    protected function updateUpiMandateOnCallback (Entity $upiMandate, $attributes)
+    {
+        $status = array_pull($attributes, 'status');
+
+        $upiMandate->edit($attributes);
+
+        if ($status !== null)
+        {
+            $upiMandate->setStatus($status);
+        }
+
+        $this->repo->saveOrFail($upiMandate);
+
+        return $upiMandate;
     }
 
     protected function checkForRecentFailedPayment($payment)

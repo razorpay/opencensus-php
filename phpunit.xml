@@ -122,6 +122,7 @@
           <directory>./tests/Functional/FundAccounts/</directory>
           <directory>./tests/Functional/FeeRecovery/</directory>
           <directory>./tests/Functional/PayoutLink/</directory>
+          <file>./tests/Functional/Gateway/Mozart/UpiMindgateRecurringTest.php</file>
       </testsuite>
       <testsuite name="Payment Test Suite">
           <directory>./tests/Functional/Payment/</directory>
@@ -149,6 +150,7 @@
           <directory>./tests/Functional/Gateway/Hitachi/</directory>
           <directory>./tests/Functional/Gateway/CardlessEmi</directory>
           <directory>./tests/Functional/Gateway/Mozart/</directory>
+          <exclude>./tests/Functional/Gateway/Mozart/UpiMindgateRecurringTest.php</exclude>
           <directory>./tests/Functional/Gateway/PayLater</directory>
           <directory>./tests/Functional/Gateway/Wallet/</directory>
           <directory>./tests/Functional/Gateway/FirstData/</directory>

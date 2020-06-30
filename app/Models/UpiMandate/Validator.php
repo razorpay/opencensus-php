@@ -21,6 +21,13 @@ class Validator extends Base\Validator
         Entity::END_TIME               => 'required|epoch',
     ];
 
+    protected static $editRules = [
+        Entity::UMN                   => 'sometimes|string',
+        Entity::NPCI_TXN_ID           => 'sometimes|string',
+        Entity::RRN                   => 'sometimes|string',
+        Entity::GATEWAY_REFERENCE_ID  => 'sometimes|string',
+    ];
+
     protected static $createValidators = [
       'time',
     ];

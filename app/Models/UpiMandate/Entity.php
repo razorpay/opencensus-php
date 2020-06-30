@@ -88,13 +88,15 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo(Order\Entity::class);
     }
 
-    public function setTokenId(string $tokenId = null)
+    public function setTokenId(string $tokenId)
     {
         $this->setAttribute(self::TOKEN_ID, $tokenId);
     }
 
     public function setStatus(string $status)
     {
+        Status::validateUpiMandateStatus($status);
+
         $this->setAttribute(self::STATUS, $status);
     }
 }
