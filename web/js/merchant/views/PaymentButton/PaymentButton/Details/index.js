@@ -202,8 +202,8 @@ export default class PaymentButtonDetails extends React.Component {
 
                 return resp;
               })
-              .catch(error => {
-                let err = error.errors;
+              .catch(({ errors }) => {
+                let err = errors;
 
                 if (Array.isArray(err)) {
                   err = [];
