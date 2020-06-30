@@ -135,7 +135,8 @@ class Migration
             'message' => 'emi fetch disabled',
         ]);
 
-        if ($this->app['rzp.mode'] !== null and $this->app['rzp.mode'] !== 'test')
+        if ((empty($this->app['rzp.mode']) === true) or
+            ((empty($this->app['rzp.mode']) !== true) and ($this->app['rzp.mode'] !== 'test')))
         {
             (new Admin\Service)->setConfigKeys(
                 [Admin\ConfigKey::CARD_PAYMENT_SERVICE_EMI_FETCH => false]
