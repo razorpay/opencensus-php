@@ -1451,6 +1451,60 @@ class VerifyTest extends TestCase
         $this->assertEquals('paid', $order['status']);
     }
 
+    public function testLateAuthMerchantDefaultConfigVerifyPaymentWithPaymentCapture()
+    {
+        $this->setMockGatewayTrue();
+
+        $this->fixtures->merchant->edit(
+            '10000000000000',
+            [
+                'auto_capture_late_auth' => true,
+            ]);
+
+        $this->fixtures->merchant->addFeatures(['disable_amount_check']);
+
+        $this->fixtures->create('config', ['type' => 'late_auth', 'is_default' => true,
+            'config'     => '{
+                "capture": "manual",
+                "capture_options": {
+                    "manual_expiry_period": 20,
+                    "automatic_expiry_period": 13,
+                    "refund_speed": "normal"
+                }
+            }']);
+
+        $data = $this->testData['testTimeoutPaymentVerify'];
+
+        $payments = $this->createMultipleFailedPaymentWithOrder($data);
+
+        $this->ba->cronAuth();
+
+        $request = [
+            'url'    => '/payments/verify/all',
+            'method' => 'post'
+        ];
+
+        $time = Carbon::now(Timezone::IST);
+
+        $time->addMinutes(5);
+
+        Carbon::setTestNow($time);
+
+        $this->makeRequestAndGetContent($request);
+
+        $payment = $this->getEntityById('payment', $payments[0], true);
+
+        $this->assertEquals('captured', $payment['status']);
+
+        $payment = $this->getEntityById('payment', $payments[1], true);
+
+        $this->assertEquals('captured', $payment['status']);
+
+        $order = $this->getDbLastEntityPublic('order');
+
+        $this->assertEquals('paid', $order['status']);
+    }
+
     public function testLateAuthMerchantOrderConfigVerifyPaymentBeforeTimeout()
     {
         $this->setMockGatewayTrue();

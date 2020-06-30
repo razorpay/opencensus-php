@@ -3367,9 +3367,13 @@ class Processor
 
         $lateAuthConfigId = null;
 
+        $paymentCaptureFlag = null;
+
         if (isset($order) === true)
         {
             $lateAuthConfigId = $order->getLateAuthConfigId();
+
+            $paymentCaptureFlag = $order->getPaymentCapture();
         }
 
         $merchant = $this->merchant;
@@ -3379,6 +3383,19 @@ class Processor
         if (isset($lateAuthConfigId) === false)
         {
             $configEntity = $this->repo->config->fetchDefaultConfigByMerchantIdAndType($merchant->getId(), 'late_auth');
+
+            if (isset($configEntity) === true)
+            {
+                $lateAuthConfig = json_decode($configEntity->config, true);
+
+                $captureValue = $lateAuthConfig['capture'];
+
+                if (($paymentCaptureFlag === true and $captureValue === 'manual') or
+                    ($paymentCaptureFlag === false and $captureValue === 'automatic'))
+                {
+                    $configEntity = null;
+                }
+            }
         }
         else
         {
