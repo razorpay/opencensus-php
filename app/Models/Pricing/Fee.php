@@ -320,18 +320,16 @@ class Fee extends Base\Core
             $pricingPlan = $pricingPlan->merge($rules);
         }
 
-        // @TODO: Visit this later when visiting account_type and channel filter
-        // https://razorpay.atlassian.net/browse/RX-2659
         //
         // Add default pricing rules, only when no rules are already defined for Direct accounts.
         // If ANY custom pricing rules have been added for banking payouts, we do not attach
         // default pricing rules
         //
-        //if ($pricingPlan->hasBankingDirectAccountPayoutRule() === false)
-        //{
-        //    $rules       = $this->repo->getBankingDirectAccountDefaultPricingRules(Feature::PAYOUT, $merchant);
-        //    $pricingPlan = $pricingPlan->merge($rules);
-        //}
+        if ($pricingPlan->hasBankingDirectAccountPayoutRule() === false)
+        {
+            $rules       = $this->repo->getBankingDirectAccountDefaultPricingRules(Feature::PAYOUT, $merchant);
+            $pricingPlan = $pricingPlan->merge($rules);
+        }
 
         return $pricingPlan;
     }

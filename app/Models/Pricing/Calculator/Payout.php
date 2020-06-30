@@ -69,18 +69,11 @@ class Payout extends Base
     {
         $balance = $this->entity->balance;
 
-        // account_type filter has been commented out because we want to have same pricing for shared and direct
-        // accounts as of now.
-
-        /*
-        @TODO: Revisit account_type and channel filter.
-        https://razorpay.atlassian.net/browse/RX-2659
-        */
-        //$accountType = $balance->getAccountType();
+        $accountType = $balance->getAccountType();
         $channel     = $balance->getChannel();
 
         $filters = [
-            //[Pricing\Entity::ACCOUNT_TYPE, $accountType, false, null],
+            [Pricing\Entity::ACCOUNT_TYPE, $accountType, false, null],
             [Pricing\Entity::CHANNEL,      $channel,     true, null],
         ];
 
