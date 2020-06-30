@@ -35,7 +35,6 @@ use RZP\Reconciliator\Axis\SubReconciliator\RefundReconciliate as AxisRefundReco
 use RZP\Reconciliator\HDFC\SubReconciliator\RefundReconciliate as HdfcRefundRecon;
 use RZP\Reconciliator\HDFC\SubReconciliator\PaymentReconciliate as HDFCPaymentRecon;
 use RZP\Reconciliator\Axis\SubReconciliator\PaymentReconciliate as AxisPaymentRecon;
-use RZP\Reconciliator\Atom\SubReconciliator\PaymentReconciliate as AtomPaymentRecon;
 use RZP\Reconciliator\FirstData\SubReconciliator\PaymentReconciliate as FDPaymentRecon;
 use RZP\Reconciliator\Hitachi\SubReconciliator\RefundReconciliate as HitachiRefundRecon;
 use RZP\Reconciliator\VirtualAccRbl\SubReconciliator\PaymentReconciliate as VirtualAccRbl;
@@ -1147,7 +1146,7 @@ class ReconciliationFileTest extends TestCase
         $this->assertNotEquals($entries[2]['sender_ifsc'], $bankAccount['ifsc_code']);
 
         // Beneficiary name should be overridden by the one in the file.
-        $this->assertEquals($entries[2]['sender_name'], $bankAccount['beneficiary_name']);
+        $this->assertEquals($entries[2]['sender_acct_name'], $bankAccount['beneficiary_name']);
     }
 
     public function testAxisCyberSourceReconPaymentFile()

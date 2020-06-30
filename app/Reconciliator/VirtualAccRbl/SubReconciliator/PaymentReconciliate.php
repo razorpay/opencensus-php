@@ -16,9 +16,8 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
     const COLUMN_UTR                = ReconciliationFields::UTR_NUMBER;
     const COLUMN_RRN_NUMBER         = ReconciliationFields::RRN_NUMBER;
     const COLUMN_AMOUNT             = ReconciliationFields::AMOUNT;
-    const COLUMN_PAYER_NAME         = ReconciliationFields::SENDER_NAME;
+    const COLUMN_PAYER_NAME         = ReconciliationFields::SENDER_ACCOUNT_NAME;
     const COLUMN_PAYEE_ACCOUNT      = ReconciliationFields::BENEFICIARY_ACCOUNT_NUMBER;
-    const COLUMN_PAYER_IFSC         = ReconciliationFields::SENDER_IFSC;
     const COLUMN_TRANSACTION_TYPE   = ReconciliationFields::TRANSACTION_TYPE;
 
     const BLACKLISTED_COLUMNS = [
@@ -27,12 +26,11 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 
     const PII_COLUMNS = [
         ReconciliationFields::SENDER_ACCOUNT_NUMBER,
-        ReconciliationFields::SENDER_NAME,
+        ReconciliationFields::SENDER_ACCOUNT_NAME,
         ReconciliationFields::BENEFICIARY_ACCOUNT_NUMBER,
-        ReconciliationFields::BENENAME,
+        ReconciliationFields::BENEF_NAME,
         ReconciliationFields::SENDER_INFORMATION,
         'sender_acct_no',
-        'benef_name',
         'sender_info',
         'beneficiary_num',
     ];
@@ -66,13 +64,11 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 
         $payeeAccount = $row[self::COLUMN_PAYEE_ACCOUNT];
 
-        $bankTransfer = $this->repo
-                             ->bank_transfer
-                             ->findByUtrAndPayeeAccount($utr, $payeeAccount);
+        $bankTransfer = $this->repo->bank_transfer->findByUtrAndPayeeAccount($utr, $payeeAccount);
 
         if ($bankTransfer === null)
         {
-            $this->alertUnexpectedBankTransferIfApplicable($row);
+            $this->alertUnexpectedBankTransferIfApplicable($utr, $payeeAccount);
 
             $this->setFailUnprocessedRow(true);
 
@@ -137,21 +133,32 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
                             $utr = $impsUtr;
                         }
                         break;
+
+                    default:
+                        // we receive UTR narration in this format: 006713653919-ACCOUNT_VALIDATION
+                        // 006713653919 is the UTR
+                        $pieces = explode('-', $row[self::COLUMN_RRN_NUMBER]);
+                        $defaultUtr = $pieces[0];
+
+                        if (strlen($defaultUtr) === 12)
+                        {
+                            $utr = $defaultUtr;
+                        }
                 }
         }
 
         return $utr;
     }
 
-    protected function alertUnexpectedBankTransferIfApplicable(array $row)
+    protected function alertUnexpectedBankTransferIfApplicable($utr, $payeeAccount)
     {
         $this->trace->info(
             TraceCode::BANK_TRANSFER_UNEXPECTED,
             [
                 'message'       => 'Unexpected bank transfer',
                 'info_code'     => Base\InfoCode::PAYMENT_ABSENT,
-                'utr'           => $row[self::COLUMN_UTR],
-                'payee_account' => $row[self::COLUMN_PAYEE_ACCOUNT],
+                'utr'           => $utr,
+                'payee_account' => $payeeAccount,
                 'gateway'       => $this->gateway,
                 'batch_id'      => $this->batchId,
             ]);
@@ -210,11 +217,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
      */
     public function getGatewayPayment($paymentId)
     {
-        $bankTransfer = $this->repo
-                             ->bank_transfer
-                             ->findByPaymentId($paymentId);
-
-        return $bankTransfer;
+        return $this->repo->bank_transfer->findByPaymentId($paymentId);
     }
 
     /**
@@ -230,9 +233,12 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 
         $payerBankAccount = $bankTransfer->payerBankAccount;
 
-        $payerBankAccount->setBeneficiaryName($customerName);
+        if ($payerBankAccount !== null)
+        {
+            $payerBankAccount->setBeneficiaryName($customerName);
 
-        $this->repo->saveOrFail($payerBankAccount);
+            $this->repo->saveOrFail($payerBankAccount);
+        }
     }
 
     /**
@@ -265,11 +271,6 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 
     protected function getCustomerName(array $row)
     {
-        if (empty($row[self::COLUMN_PAYER_NAME]) === false)
-        {
-            return $row[self::COLUMN_PAYER_NAME];
-        }
-
-        return null;
+        return $row[self::COLUMN_PAYER_NAME] ?? null;
     }
 }
