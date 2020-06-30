@@ -1110,7 +1110,8 @@ class Gateway
             Network::MC,
             Network::VISA,
             Network::MAES,
-            Network::DICL
+            Network::DICL,
+            Network::RUPAY,
         ],
         self::FIRST_DATA => [
             Network::MC,

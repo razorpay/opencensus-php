@@ -3495,6 +3495,7 @@ class OtpPaymentTest extends TestCase
             ]
         ]);
 
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
 
         $this->mockCardVault();
         $this->mockOtpElfForRupay();
@@ -3739,6 +3740,7 @@ class OtpPaymentTest extends TestCase
             ]
         ]);
 
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
 
         $this->mockCardVault();
         $this->mockOtpElfForRupay();
@@ -4015,6 +4017,8 @@ class OtpPaymentTest extends TestCase
             ]
         ]);
 
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
         $this->fixtures->iin->create([
             'iin'     => '607384',
             'country' => 'IN',
@@ -4079,6 +4083,41 @@ class OtpPaymentTest extends TestCase
         $content = $this->getJsonContentFromResponse($response, null);
 
         $this->assertEquals('test_data', $content[0]);
+    }
+
+    public function testHeadlessOtpOnHdfcRupay()
+    {
+        $this->mockCardVault();
+        $this->mockOtpElfForRupay();
+
+        $this->fixtures->iin->create([
+            'iin'     => '607384',
+            'country' => 'IN',
+            'issuer'  => 'PUNB',
+            'network' => 'RuPay',
+            'flows'   => [
+                '3ds'          => '1',
+                'headless_otp' => '1',
+            ]
+        ]);
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '6073849700004947';
+        $payment['auth_type'] = 'otp';
+
+        $this->setOtp('213433');
+
+        $response = $this->doAuthPayment($payment);
+
+        self::assertArrayHasKey('razorpay_payment_id', $response);
+
+        $payment = $this->getEntityById('payment', $response['razorpay_payment_id'], true);
+
+        self::assertTrue($this->otpFlow);
+        self::assertEquals('authorized', $payment['status']);
+        self::assertEquals('headless_otp', $payment['auth_type']);
+        self::assertEquals('hdfc', $payment['gateway']);
+        self::assertEquals('1n25f6uN5S1Z5a', $payment['terminal_id']);
     }
 
     public function testHeadlessOtpAuthenticationPaymentS2SJsonRedirectFlowMultipleRedirectFailure()
