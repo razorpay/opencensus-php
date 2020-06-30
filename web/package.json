@@ -15,7 +15,7 @@
     "@babel/plugin-transform-react-jsx-source": "^7.9.0",
     "@babel/preset-env": "^7.9.0",
     "@babel/preset-react": "^7.9.4",
-    "@commander/shield": "0.0.52",
+    "@commander/shield": "0.0.55",
     "@razorpay/blade": "https://github.com/razorpay/blade.git#e9e9d8b",
     "axios": "^0.19.2",
     "babel-loader": "^8.1.0",
