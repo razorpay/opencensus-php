@@ -19,6 +19,7 @@ class Service extends Base\Service
     const ACTIVE            = 'active';
     const EVENTS            = 'events';
     const WEBHOOK           = 'webhook';
+    const WEBHOOK_ID        = 'webhook_id';
     const CONTEXT           = 'context';
     const SERVICE           = 'service';
     const DISABLED          = 'disabled';
@@ -227,6 +228,20 @@ class Service extends Base\Service
                     ]);
             }
         }
+    }
+
+    /**
+     * Fetches webhook delivery metrics from Stork for a webhookId & merchant with the input filters.
+     *
+     * @param string $id
+     * @param array $input
+     * @return array
+     */
+    public function getAnalytics(string $id, array $input)
+    {
+        $input[self::WEBHOOK_ID] = $id;
+        $input[self::OWNER_ID] = $this->merchant->getId();
+        return (new Stork($this->product))->getAnalytics($input);
     }
 
     //if webhook already exists on stork throw exception

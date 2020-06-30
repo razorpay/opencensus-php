@@ -531,6 +531,11 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function getWebhookAnalytics($id)
+    {
+        return (new WebhookV2Controller)->getAnalytics($id);
+    }
+
     public function getWebhooks()
     {
         if ($this->shouldUseWebhookV2Path() === true)

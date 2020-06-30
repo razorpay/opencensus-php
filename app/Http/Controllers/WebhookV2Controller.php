@@ -55,4 +55,10 @@ class WebhookV2Controller extends Controller
 
         return ApiResponse::json([]);
     }
+
+    public function getAnalytics(string $id)
+    {
+        $res = (new Service)->getAnalytics($id, $this->input);
+        return ApiResponse::json($res);
+    }
 }

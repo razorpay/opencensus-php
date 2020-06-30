@@ -25,6 +25,7 @@ class Stork
     const WK_CREATE_ROUTE             = '/twirp/rzp.stork.webhook.v1.WebhookAPI/Create';
     const WK_GET_WITH_SECRET_ROUTE    = '/twirp/rzp.stork.webhook.v1.WebhookAPI/GetWithSecret';
     const WK_LIST_WITH_SECRET_ROUTE   = '/twirp/rzp.stork.webhook.v1.WebhookAPI/ListWithSecret';
+    const WK_GET_ANALYTICS_ROUTE      = '/twirp/rzp.stork.webhook.v1.WebhookAPI/GetAnalytics';
 
     public function __construct(string $product)
     {
@@ -165,6 +166,12 @@ class Stork
         $input['webhook_id'] = $webhookId;
 
         $this->service->request(self::WK_DELETE_ROUTE, $input);
+    }
+
+    public function getAnalytics(array $payload)
+    {
+        $response = $this->service->request(self::WK_GET_ANALYTICS_ROUTE, $payload);
+        return json_decode($response->body, true) ?: [];
     }
 
     protected function formatWebhook(array $webhook)

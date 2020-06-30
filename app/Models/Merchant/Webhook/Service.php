@@ -64,7 +64,7 @@ class Service extends Base\Service
         return $this->core()->webhookStorkRecon($input);
     }
 
-    
+
     public function webhookStorkCreateBankingBulk(array $input): array
     {
         return $this->core()->webhookStorkCreateBankingBulk($input);
