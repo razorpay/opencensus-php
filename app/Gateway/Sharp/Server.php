@@ -171,6 +171,12 @@ class Server extends Base\Mock\Server
             {
                 $response['status'] = 'failed';
             }
+
+            if ((isset($payment['vpa']) === true) and
+                ($payment['vpa'] === Vpa::REJECTED))
+            {
+                $response['status'] = 'failed';
+            }
         }
 
         return $response;

@@ -124,21 +124,7 @@ class Gateway extends Base\Gateway
 
         if ($input['payment']['method'] === Payment\Method::UPI)
         {
-            if ($this->isMandateCreateRequest($input) === true)
-            {
-                $token = $this->app['repo']->token->getByTokenIdAndCustomerId($input['token']['id'], $input['payment']['customer_id']);
-
-                $token->setRecurringStatus('initiated');
-
-                $this->repo->saveOrFail($token);
-
-                $this->processTestUpiPayment($input['payment']);
-
-                return true;
-            }
-
             $this->processTestUpiPayment($input['payment']);
-
 
             if ((isset($input['upi']['flow']) === true) and
                 ($input['upi']['flow'] === 'intent'))
@@ -176,7 +162,7 @@ class Gateway extends Base\Gateway
         return $response;
     }
 
-    protected function isMandateCreateRequest(array $input): bool
+    protected function isUpiRecurringCreateRequest(array $input): bool
     {
         return ((isset($input['payment']) === true) and
                 ($input['payment'][Payment\Entity::METHOD] === Payment\Method::UPI) and
@@ -379,13 +365,24 @@ class Gateway extends Base\Gateway
 
         $this->addRecurringDataIfApplicable($input, $acquirerData);
 
-        if ($this->isMandateCreateRequest($input['payment']) === true)
+        if ($this->isUpiRecurringCreateRequest($input) === true)
         {
-            $response = [
-                'recurring_status' => 'confirmed'
-            ];
+            if ($input['gateway']['status'] === 'rejected')
+            {
+                throw new Exception\GatewayErrorException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_UPI_COLLECT_REQUEST_REJECTED);
+            }
 
-            return $response;
+            $acquirerData = [
+                'acquirer' => $acquirerData['acquirer'],
+                'mandate' => [
+                    'order_id'      => $input['payment']['order_id'],
+                    'status'        => 'confirmed',
+                    'umn'           => sprintf('%s@razorpay', $input['payment']['id']),
+                    'npci_txn_id'   => 'RZP12345678910111213141516',
+                    'rrn'           => '001000100001',
+                ]
+            ];
         }
 
         return $this->getCallbackResponseData($input, $acquirerData);
