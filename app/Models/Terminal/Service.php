@@ -15,7 +15,6 @@ use RZP\Error\PublicErrorCode;
 use RZP\Exception\BaseException;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Jobs\TerminalsServiceMigrateJob;
-use RZP\Models\TerminalOnboardingDetail;
 use RZP\Models\Gateway\Terminal\Constants;
 use RZP\Models\Batch\Processor\TerminalCreation;
 

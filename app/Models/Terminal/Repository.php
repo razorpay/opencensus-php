@@ -12,7 +12,6 @@ use RZP\Models\Merchant;
 use RZP\Models\Terminal;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Base\PublicCollection;
-use RZP\Models\TerminalOnboardingDetail;
 use RZP\Models\Base\QueryCache\CacheQueries;
 
 class Repository extends Base\Repository
@@ -651,27 +650,6 @@ class Repository extends Base\Repository
 
         return $query->limit($input['count'])
                      ->get();
-    }
-
-    public function fetchTerminalsForActivation($count)
-    {
-        $terminalId = $this->dbColumn(Entity::ID);
-
-        $termininalOnboardingDetailRepo = $this->repo->terminal_onboarding_detail;
-
-        $terminalOnboardingTerminalId = $termininalOnboardingDetailRepo->dbColumn(TerminalOnboardingDetail\Entity::TERMINAL_ID);
-
-        $terminalOnboardingStatus = $termininalOnboardingDetailRepo->dbColumn(TerminalOnboardingDetail\Entity::STATUS);
-
-        $currentTimestamp = Carbon::now()->getTimestamp();
-
-        return $this->newQuery()
-                    ->select($this->getTableName() . '.*')
-                    ->join(Table::TERMINAL_ONBOARDING_DETAIL, $terminalOnboardingTerminalId, '=', $terminalId)
-                    ->where($terminalOnboardingStatus, '=', TerminalOnboardingDetail\Status::PENDING)
-                    ->where(TerminalOnboardingDetail\Entity::VERIFY_AT, '<', $currentTimestamp)
-                    ->limit($count)
-                    ->get();
     }
 
     public function findByMerchantIdGatewayAndCurrency(string $merchantId, string $gateway, string $currency)

@@ -13,8 +13,6 @@ use RZP\Models\Terminal;
 use RZP\Models\Merchant;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Payment\Gateway;
-use RZP\Jobs\TerminalOnboardingCreateJob;
-use RZP\Models\TerminalOnboardingDetail;
 use RZP\Exception\BaseException;
 use RZP\Models\Mpan\Entity as MpanEntity;
 use RZP\Models\Gateway\Terminal\Constants;
@@ -129,19 +127,6 @@ class Service extends Base\Service
         $terminals = $this->repo->terminal->fetch($input, $merchantId);
 
         return $terminals->toArrayPublic();
-    }
-
-    public function verifyTerminals($input)
-    {
-        (new TerminalOnboardingDetail\Validator())->validateInput('verify_terminal', $input);
-
-        $count = $input['count'] ?? 500;
-
-        $terminals = $this->repo->terminal->fetchTerminalsForActivation($count);
-
-        $response = (new GatewayTerminalService)->verifyTerminals($terminals);
-
-        return $response;
     }
 
     public function initiateOnboarding($input)

@@ -4,14 +4,10 @@ namespace RZP\Models\Gateway\Terminal;
 class Constants
 {
     const DEFAULT_CONTACT_NAME                   =   "Razorpay";
-    const WORLDLINE_ACTIVATION_RETRY_LIMIT       =   5;
-    const WORLDLINE_ACTIVATION_NEXT_RETRY_MINS   =   10; // mins
-    const WORLDLINE_ACTIVATION_DEFAULT_TIME      =   45; // time taken by a worldline terminal to be activated, after creating on gateway
 
     // Actions
     const MERCHANT_ONBOARD      = 'merchantOnboard';
     const CREATE_TERMINAL       = 'create_terminal';
-    const VERIFY_TERMINAL       = 'verify_terminal';
     const DISABLE_TERMINAL      = 'disable_terminal';
     const ENABLE_TERMINAL       = 'enable_terminal';
 
@@ -45,22 +41,12 @@ class Constants
     const GATEWAY_ERROR_CODE                      =   'gateway_error_code';
     const GATEWAY_ERROR_DESCRIPTION               =   'gateway_error_description';
     const GATEWAY_FAILURE_ERROR_CODE              =   '05';
-    const DUPLICATE_MERCHANT_CODE                 =   'Duplicate Merchant code';
 
-    const TERMINAL_ACTIVATION_SUCCESSFULL         =   'terminal_activation_successful';
-    const TERMINAL_ACTIVATION_FAILED              =   'terminal_activation_failed';
     const TERMINAL_DEACTIVATION_SUCCESSFUL        =   'terminal_deactivation_successful';
     const TERMINAL_REACTIVATION_SUCCESSFUL        =   'terminal_reactivation_successful';
 
     const MERCHANT_IS_ALREADY_IN_DEACTIVE_STATE   =   'Merchant is already in deactive state';
     const MERCHANT_IS_ALREADY_IN_ACTIVE_STATE     =   'Merchant is already in active state';
-
-    // cron Response
-    const ACTIVATED_TERMINALS                     =   'activated_terminals';
-    const PENDING_TERMINALS                       =   'pending_terminals';
-    const ACTIVATION_FAILED_TERMINALS             =   'activation_failed_terminals';
-    const NOT_APPLICABLE_TERMINALS                =   'not_applicable_terminals'; // terminals which are acquired or already been processed by other mutex
-    const VERIFICATION_ERROR_TERMINALS            =   'verification_error_terminals';
 
     // new batch service related constants
     const IDEMPOTENCY_KEY             = 'idempotency_key';

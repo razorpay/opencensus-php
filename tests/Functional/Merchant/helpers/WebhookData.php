@@ -1658,68 +1658,6 @@ return [
         ],
     ],
 
-    'testTerminalOnboardingVerificationWebhook' => [
-        'request' => [
-            'url'     => '/terminals/onboard/verification',
-            'content' => [
-                'count'    => 100,
-            ],
-            'method'  => 'POST',
-        ],
-        'response'  => [
-            'content'      => [],
-            'status_code'  => 200,
-        ],
-    ],
-
-    'testTerminalOnboardingVerificationWebhookData' => [
-        'mode' => 'test',
-        'event' => [
-            'entity' => 'event',
-            'event' => 'terminal.activated',
-            'contains' => ['terminal'],
-            'payload' => [
-                'terminal' => [
-                    'entity' => [
-                        'entity'            => 'terminal',
-                        'status'            => 'activated',
-                        'enabled'           =>  true,
-                    ],
-                ],
-            ],
-        ],
-    ],
-
-    'testTerminalOnboardingActivationFailedWebhook' => [
-        'request' => [
-            'url'     => '/terminals/onboard/verification',
-            'method'  => 'POST',
-        ],
-        'response'  => [
-            'content'      => [],
-            'status_code'  => 200,
-        ],
-    ],
-
-    'testTerminalOnboardingActivationFailedWebhookData' => [
-        'mode' => 'test',
-        'event' => [
-            'entity' => 'event',
-            'event' => 'terminal.failed',
-            'contains' => ['terminal'],
-            'payload' => [
-                'terminal' => [
-                    'entity' => [
-                        'entity'            => 'terminal',
-                        'status'            => 'failed',
-                        'enabled'           =>  false,
-                        'error_code'        => 'SERVER_ERROR_TERMINAL_ONBOARDING_FAILED',
-                    ],
-                ],
-            ],
-        ],
-    ],
-
     'testTerminalOnboardingStatusActivatedWebhook'  =>  [
         'request' => [
             'url'     => '/terminals/bulk',

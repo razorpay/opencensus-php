@@ -785,52 +785,6 @@ class Server extends Base\Mock\Server
         return $response;
     }
 
-    public function verifyTerminal($body)
-    {
-        $mockCase = $this->app['config']->get('worldline_terminal_onboarding_verification.case');
-
-        switch ($mockCase)
-        {
-            case "1":
-            default:
-                $responseBody = [
-                    'data' => [
-                        'description'   => 'Success',
-                        'res_code'      => '00',
-                        'status'        => 'terminal_activation_successful',
-                        '_raw'          => '{\'TID\':\'9137251R\',\'REQRRN\':null,\'RESDTTM\':\'23082019134719\',\'RESCODE\':\'00\',\'RESDESC\':\'Success\',\'REQTYPE\':\'N\',\'BANKCODE\':\'00031\',\'MID\':\'999122000040351\'}'
-                    ],
-                    'error'             => [],
-                    'external_trace_id' => '',
-                    'mozart_id'         => 'blfq216r1gunssphbs01',
-                    'next'              => null,
-                    'success'           => true,
-                ];
-                break;
-            case "2":
-                $responseBody = [
-                    'data' => [
-                        'description'   => 'Failed',
-                        'res_code'      => '00',
-                        'status'        => 'terminal_activation_failed',
-                        '_raw'          => '{\'TID\':\'9137251R\',\'REQRRN\':null,\'RESDTTM\':\'23082019134719\',\'RESCODE\':\'00\',\'RESDESC\':\'Success\',\'REQTYPE\':\'N\',\'BANKCODE\':\'00031\',\'MID\':\'999122000040351\'}'
-                    ],
-                    'error'             => [],
-                    'external_trace_id' => '',
-                    'mozart_id'         => 'blfq216r1gunssphbs01',
-                    'next'              => null,
-                    'success'           => true,
-                ];
-                break;
-        }
-
-        $response = \Response::make($responseBody);
-
-        $response->headers->set('Content-Type', 'application/json; charset=UTF-8');
-
-        return $response;
-    }
-
     public function decrypt($input)
     {
         $data = json_decode($input, true);

@@ -13,7 +13,6 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Gateway;
 use RZP\Error\PublicErrorDescription;
-use RZP\Models\TerminalOnboardingDetail;
 use RZP\Models\Mpan\Entity as MpanEntity;
 use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Models\Gateway\Terminal\Service as GatewayTerminalService;

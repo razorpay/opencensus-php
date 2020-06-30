@@ -15,7 +15,6 @@ use RZP\Models\Payment\Gateway;
 use RZP\Models\Base\UniqueIdEntity;
 use Illuminate\Support\Facades\Redis;
 use RZP\Models\Gateway\Terminal\Constants;
-use RZP\Models\TerminalOnboardingDetail;
 use RZP\Models\Gateway\Terminal\GatewayProcessor\BaseGatewayProcessor;
 
 
@@ -26,7 +25,7 @@ class GatewayProcessor extends BaseGatewayProcessor
     // Atos and Worldline refers to same gateway, key on redis is atos
     const WORLDLINE_MID_INDEX_KEY                     = 'atos_gateway_terminal_creation_mid_index';
     const WORLDLINE_MID_OFFSET                        = 999000000000000;
-    const TERMINAL_ONBOARDING_VERIFICATION_MUTEX_LOCK = 'TERMINAL_ONBOARDING_VERIFICATION_MUTEX_LOCK';
+    const TERMINAL_ONBOARDING_MUTEX_LOCK              = 'TERMINAL_ONBOARDING_MUTEX_LOCK';
 
     // For worldline, if terminal status is one of below, then it means merchant is onboarded on gateway successfully
     const MERCHANT_ONBOARDED_ON_GATEWAY_STATUSES      =   [Terminal\Status::PENDING, Terminal\Status::ACTIVATED, Terminal\Status::DEACTIVATED];
@@ -140,9 +139,9 @@ class GatewayProcessor extends BaseGatewayProcessor
         );
     }
 
-    public function getLockResource($terminal, $gateway, $gatewayInput)
+    public function getLockResource($merchant, $gateway, $gatewayInput)
     {
-        return $terminal->getId() . '_' . self::TERMINAL_ONBOARDING_VERIFICATION_MUTEX_LOCK;
+        return $merchant->getId() . '_' . self::TERMINAL_ONBOARDING_MUTEX_LOCK;
     }
 
     protected function getGatewayRequestArrayForMerchantOnboarding($subMerchant, $input)
@@ -317,129 +316,6 @@ class GatewayProcessor extends BaseGatewayProcessor
             }
 
             $merchantDetail->setContactName($contactName);
-        }
-    }
-
-    public function getGatewayRequestArrayForVerification($terminal)
-    {
-        $gatewayRequestArray = [
-            'method'            =>    "POST",
-            'gateway'           =>    $terminal->getGateway(),
-            'terminal'          =>    $terminal->toArrayWithPassword(),
-            'request_details'   =>    $this->getRequestDetails($terminal),
-        ];
-
-        return $gatewayRequestArray;
-    }
-
-    // This function is actually being called from inside the queue job
-    public function updateTerminalDetailsBasedOnCreationResponse($response, $terminal)
-    {
-        $terminalOnboardingDetail = $terminal->terminalOnboardingDetail;
-
-        if (isset($response[Constants::SUCCESS]) === true and $response[Constants::SUCCESS] === true)
-        {
-            $terminalOnboardingDetail->setStatus(TerminalOnboardingDetail\Status::PENDING);
-
-            $verifyAt = Carbon::now()->addMinutes(Constants::WORLDLINE_ACTIVATION_DEFAULT_TIME)->getTimestamp();
-
-            $terminalOnboardingDetail->setVerifyAt($verifyAt);
-
-            $terminal->setStatus(Terminal\Status::PENDING);
-
-            $terminal->setEnabled(true);
-
-            $terminal->save();
-
-            $terminalOnboardingDetail->save();
-
-            $this->app['events']->fire('api.terminal.created', ['main' => $terminal]);
-        }
-
-        // If error description is "Duplicate Merchant code, it means first type of request (onboard merchant was sent twice - maybe in race condition),
-        // in this case, we should keep the status to created only, so that this terminal will get picked up again by next cron and will be sent
-        // as additional tid request
-        else if ((isset($response[Constants::DATA][Constants::DESCRIPTION]) === true) and
-                  ($response[Constants::DATA][Constants::DESCRIPTION] === Constants::DUPLICATE_MERCHANT_CODE))
-        {
-
-            $terminalOnboardingDetail->setStatus(TerminalOnboardingDetail\Status::CREATED);
-
-            $terminal->setStatus(Terminal\Status::CREATED);
-
-            $terminal->save();
-
-            $terminalOnboardingDetail->save();
-        }
-        else
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_ERROR, null, $response);
-        }
-    }
-
-    public function updateTerminalDetailsBasedOnVerifyResponse($response, $terminal)
-    {
-        $terminalOnboardingDetail = $terminal->terminalOnboardingDetail;
-
-        $terminalOnboardingDetail->incrementVerifyBucket();
-
-        $status = $this->getTerminalVerificationStatusFromResponse($response);
-
-        if ($status === Constants::TERMINAL_ACTIVATION_SUCCESSFULL)
-        {
-            $this->updateTerminalDetailsOnVerifyCallbackSuccesful($terminal, $terminalOnboardingDetail);
-        }
-        else
-        {
-            $this->updateTerminalDetailsOnVerifyCallbackFailure($terminal, $terminalOnboardingDetail);
-        }
-
-        $terminal->save();
-
-        $terminalOnboardingDetail->save();
-    }
-
-    protected function getTerminalVerificationStatusFromResponse($response)
-    {
-        if (empty($response[Constants::DATA][Constants::STATUS]) === true)
-        {
-            $status = Constants::TERMINAL_ACTIVATION_FAILED;
-        }
-        else
-        {
-            $status = $response[Constants::DATA][Constants::STATUS];
-        }
-
-        return $status;
-    }
-
-    protected function updateTerminalDetailsOnVerifyCallbackSuccesful($terminal, $terminalOnboardingDetail)
-    {
-        $terminal->setStatus(Terminal\Status::ACTIVATED);
-
-        $terminal->setEnabled(true);
-
-        $terminalOnboardingDetail->setStatus(TerminalOnboardingDetail\Status::ACTIVATED);
-
-        $terminalOnboardingDetail->setVerifyAt(null);
-
-        $this->app['events']->fire('api.terminal.activated', ['main' => $terminal]);
-    }
-
-    protected function updateTerminalDetailsOnVerifyCallbackFailure($terminal, $terminalOnboardingDetail)
-    {
-        $timeStamp = (Carbon::now()->addMinutes(Constants::WORLDLINE_ACTIVATION_NEXT_RETRY_MINS))->getTimestamp();
-
-        $terminalOnboardingDetail->setVerifyAt($timeStamp);
-
-        if ($terminalOnboardingDetail->getVerifyBucket() >= Constants::WORLDLINE_ACTIVATION_RETRY_LIMIT)
-        {
-            $terminalOnboardingDetail->setStatus(TerminalOnboardingDetail\Status::ACTIVATION_FAILED);
-
-            $terminal->setStatus(Terminal\Status::FAILED);
-
-            $this->app['events']->fire('api.terminal.failed', ['main' => $terminal]);
         }
     }
 

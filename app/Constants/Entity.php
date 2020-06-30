@@ -149,7 +149,6 @@ class Entity
     const BANKING_ACCOUNT_STATEMENT  = 'banking_account_statement';
     const MERCHANT_FRESHDESK_TICKETS = 'merchant_freshdesk_tickets';
     const MERCHANT_ATTRIBUTE         = 'merchant_attribute';
-    const TERMINAL_ONBOARDING_DETAIL = 'terminal_onboarding_detail';
     const PAYMENT_META               = 'payment_meta';
 
     const VIRTUAL_VPA_PREFIX            = 'virtual_vpa_prefix';

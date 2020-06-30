@@ -780,27 +780,6 @@ class Gateway extends Base\Gateway
         return $response;
     }
 
-    public function verifyTerminal(array $input)
-    {
-        parent::verifyTerminal($input);
-
-        $request = $this->getTerminalOnboardingMozartRequestArray($input);
-
-        $traceReq = [
-            'method'    => $request['method'],
-            'url'       => $request['url'],
-            'content'   => $request['content'],
-        ];
-
-        $this->traceGatewayTerminalOnboarding($traceReq, 'request', $input, TraceCode::GATEWAY_VERIFY_TERMINAL_REQUEST);
-
-        $response = $this->sendGatewayRequest($request);
-
-        $this->traceGatewayTerminalOnboarding($response, 'response', $input, TraceCode::GATEWAY_VERIFY_TERMINAL_RESPONSE);
-
-        return $response;
-    }
-
     public function decrypt(array $input)
     {
         $this->input = $input;
@@ -2241,7 +2220,7 @@ class Gateway extends Base\Gateway
 
     protected function getGateway($input)
     {
-        $nonPaymentActions = [Action::CREATE_TERMINAL, ACTION::VERIFY_TERMINAL, Action::DISABLE_TERMINAL, Action::ENABLE_TERMINAL, ACTION::MERCHANT_ONBOARD];
+        $nonPaymentActions = [Action::CREATE_TERMINAL, Action::DISABLE_TERMINAL, Action::ENABLE_TERMINAL, ACTION::MERCHANT_ONBOARD];
 
         if (
             (in_array($this->action, $nonPaymentActions)) or

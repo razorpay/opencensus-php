@@ -1209,12 +1209,6 @@ class Entity extends Base\PublicEntity
             'RZP\Models\Admin\Org\Entity');
     }
 
-    public function terminalOnboardingDetail()
-    {
-        return $this->hasOne(
-            'RZP\Models\TerminalOnboardingDetail\Entity');
-    }
-
     public function toArrayWithPassword()
     {
         $terminal = $this->toArray();

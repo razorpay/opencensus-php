@@ -31,8 +31,6 @@ class Action
 
     const CREATE_TERMINAL       = 'create_terminal';
 
-    const VERIFY_TERMINAL       = 'verify_terminal';
-
     const DISABLE_TERMINAL      = 'disable_terminal';
 
     const ENABLE_TERMINAL       = 'enable_terminal';

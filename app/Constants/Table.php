@@ -128,7 +128,6 @@ class Table
     const FUND_ACCOUNT_VALIDATION    = 'fund_account_validations';
     const SUBSCRIPTION_REGISTRATION  = 'subscription_registrations';
     const MERCHANT_FRESHDESK_TICKETS = 'merchant_freshdesk_tickets';
-    const TERMINAL_ONBOARDING_DETAIL = 'terminal_onboarding_details';
     const MERCHANT_ATTRIBUTE         = 'merchant_attributes';
     const UPI_TRANSFER_REQUEST       = 'upi_transfer_requests';
     const BANK_TRANSFER_REQUEST      = 'bank_transfer_requests';

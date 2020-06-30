@@ -3,22 +3,15 @@
 namespace RZP\Tests\Functional\Merchant;
 
 use Mockery;
-use Carbon\Carbon;
 use RZP\Models\Terminal;
 use RZP\Models\Merchant;
-use RZP\Error\ErrorCode;
 use RZP\Tests\Functional\TestCase;
-use Illuminate\Support\Facades\Redis;
 use RZP\Models\Terminal\Repository as TerminalRepo;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
-use RZP\Models\Gateway\Terminal\GatewayProcessor\Worldline;
-use RZP\Tests\Functional\Fixtures\Entity\Base as BaseFixture;
 use RZP\Tests\Functional\Fixtures\Entity\Terminal as TerminalFixture;
 use RZP\Tests\Functional\Mpan\MpanTrait;
 use RZP\Tests\Functional\Partner\PartnerTrait;
 use RZP\Models\Feature\Constants as FeatureConstants;
-use RZP\Exception\ServerErrorException;
-use RZP\Exception\BadRequestException;
 
 class PartnerTerminalOnboardingTest extends TestCase
 {
@@ -682,142 +675,6 @@ class PartnerTerminalOnboardingTest extends TestCase
         $fetchedTerminal = (new TerminalRepo)->findEnabledTerminalByMpanAndGatewayMerchantId('90000000002', 'worldline', '1234567890123456');
 
         $this->assertEmpty($fetchedTerminal); 
-    }
-
-    public function testTerminalOnboardingVerificationCronCase1()
-    {
-        $this->markTestSkipped();
-
-        $this->app['config']->set('gateway.mock_mozart', true);
-
-        $this->app['config']->set('worldline_terminal_onboarding_verification.case', "1");
-
-        $this->ba->cronAuth();
-
-        $terminal = $this->fixtures->create('terminal', [
-            'enabled'     => false,
-            'gateway'     => 'worldline',
-            'status'      => 'pending'
-        ]);
-
-        $merchant = $terminal->merchant;
-        $merchant->setCategory("742");
-        $merchant->save();
-
-        $activationTime = Carbon::now()->subMinutes(10);
-
-        $terminalOnboardingDetail = $this->fixtures->create('terminal_onboarding_detail', [
-            'terminal_id'       => $terminal->getId(),
-            'status'            => 'pending',
-            'verify_bucket'     => 0,
-            'verify_at'         => $activationTime->getTimestamp(),
-        ]);
-
-        $this->startTest();
-
-        $updatedTerminalOnboardingDetail = $this->getEntityById(
-            'terminal_onboarding_detail',
-            $terminalOnboardingDetail->getId(),
-            true
-        );
-
-        $terminal->reload();
-
-        $this->assertEquals($terminal['status'], 'activated');
-
-        $this->assertEquals($updatedTerminalOnboardingDetail['status'], 'activated');
-        $this->assertNull($updatedTerminalOnboardingDetail['verify_at']);
-        $this->assertEquals($terminal['enabled'], true);
-    }
-
-    // Failure case
-    public function testTerminalOnboardingVerificationCronCase2()
-    {
-        $this->markTestSkipped();
-
-        $this->app['config']->set('gateway.mock_mozart', true);
-
-        $this->app['config']->set('worldline_terminal_onboarding_verification.case', "2");
-
-        $this->ba->cronAuth();
-
-        $terminal = $this->fixtures->create('terminal', [
-            'enabled'     => false,
-            'gateway'     => 'worldline',
-            'status'      => 'pending'
-        ]);
-
-        $merchant = $terminal->merchant;
-        $merchant->setCategory("742");
-        $merchant->save();
-
-        $activationTime = Carbon::now()->subMinutes(10);
-
-        $terminalOnboardingDetail = $this->fixtures->create('terminal_onboarding_detail', [
-            'terminal_id'       => $terminal->getId(),
-            'status'            => 'pending',
-            'verify_bucket'     => 0,
-            'verify_at'         => $activationTime->getTimestamp(),
-        ]);
-
-        $this->startTest();
-
-        $updatedTerminalOnboardingDetail = $this->getEntityById(
-            'terminal_onboarding_detail',
-            $terminalOnboardingDetail->getId(),
-            true
-        );
-
-        $terminal->reload();
-
-        $this->assertEquals($terminal['status'], 'pending');
-
-        $this->assertEquals($updatedTerminalOnboardingDetail['status'], 'pending');
-    }
-
-    // Failure case with exhausted retry
-    public function testTerminalOnboardingVerificationCronCase3()
-    {
-        $this->markTestSkipped();
-
-        $this->app['config']->set('gateway.mock_mozart', true);
-
-        $this->app['config']->set('worldline_terminal_onboarding_verification.case', "2");
-
-        $this->ba->cronAuth();
-
-        $terminal = $this->fixtures->create('terminal', [
-            'enabled'     => false,
-            'gateway'     => 'worldline',
-            'status'      => 'pending'
-        ]);
-
-        $merchant = $terminal->merchant;
-        $merchant->setCategory("742");
-        $merchant->save();
-
-        $activationTime = Carbon::now()->subMinutes(10);
-
-        $terminalOnboardingDetail = $this->fixtures->create('terminal_onboarding_detail', [
-            'terminal_id'       => $terminal->getId(),
-            'status'            => 'pending',
-            'verify_bucket'     => 9,
-            'verify_at'         => $activationTime->getTimestamp(),
-        ]);
-
-        $this->startTest();
-
-        $updatedTerminalOnboardingDetail = $this->getEntityById(
-            'terminal_onboarding_detail',
-            $terminalOnboardingDetail->getId(),
-            true
-        );
-
-        $terminal->reload();
-
-        $this->assertEquals($terminal['status'], 'failed');
-
-        $this->assertEquals($updatedTerminalOnboardingDetail['status'], 'activation_failed');
     }
 
     protected function mockGateway()

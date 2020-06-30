@@ -23,7 +23,6 @@ class Action
     const VERIFY_REFUND    = 'verify_refund';
     const OMNI_PAY         = 'omni_pay';
     const CREATE_TERMINAL  = 'create_terminal';
-    const VERIFY_TERMINAL  = 'verify_terminal';
     const ENABLE_TERMINAL  = 'enable_terminal';
     const DISABLE_TERMINAL = 'disable_terminal';
     const DEBIT            = 'debit';

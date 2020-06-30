@@ -662,11 +662,6 @@ class Gateway extends Base\Gateway
         return $this->app['gateway']->call(BaseEntity::MOZART, Mozart\Action::CREATE_TERMINAL, $input, $this->getMode());
     }
 
-    public function verifyTerminal(array $input)
-    {
-        return $this->app['gateway']->call(BaseEntity::MOZART, Mozart\Action::VERIFY_TERMINAL, $input, $this->getMode());
-    }
-
     public function disableTerminal(array $input)
     {
         return $this->app['gateway']->call(BaseEntity::MOZART, Mozart\Action::DISABLE_TERMINAL, $input, $this->getMode());
