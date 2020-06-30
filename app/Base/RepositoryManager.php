@@ -83,6 +83,7 @@ use RZP\Base\Database\Connectors\MySqlConnector;
  * @property Models\PayoutDowntime\Repository                   $payout_downtimes
  * @property Models\User\Repository                             $user
  * @property Models\Transfer\Repository                         $transfer
+ * @property Models\BankTransferRequest\Repository              $bank_transfer_request
  */
 
 class RepositoryManager extends Illuminate\Support\Manager

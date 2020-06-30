@@ -942,4 +942,10 @@ return [
             'description'    => 'NEFT payment of 50,000 rupees',
         ],
     ],
+
+    'cancelInvoice' => [
+        'url'     => '/invoices/inv_1000000invoice/cancel',
+        'method'  => 'post',
+        'content' => [],
+    ],
 ];

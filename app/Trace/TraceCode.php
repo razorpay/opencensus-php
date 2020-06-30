@@ -1135,6 +1135,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const VIRTUAL_VPA_PREFIX_UPDATING                           = 'VIRTUAL_VPA_PREFIX_UPDATING';
     const VIRTUAL_VPA_PREFIX_UPDATED                            = 'VIRTUAL_VPA_PREFIX_UPDATED';
 
+    const BANK_TRANSFER_SAVE_REQUEST                            = 'BANK_TRANSFER_SAVE_REQUEST';
     const BANK_TRANSFER_PROCESS_REQUEST                         = 'BANK_TRANSFER_PROCESS_REQUEST';
     const BANK_TRANSFER_PROCESSING                              = 'BANK_TRANSFER_PROCESSING';
     const BANK_TRANSFER_PROCESSING_REDIRECTED                   = 'BANK_TRANSFER_PROCESSING_REDIRECTED';

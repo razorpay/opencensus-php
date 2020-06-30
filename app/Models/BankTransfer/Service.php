@@ -17,6 +17,7 @@ use RZP\Models\BankAccount;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Exception\LogicException;
 use RZP\Models\BankTransferHistory;
+use RZP\Models\BankTransferRequest;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\VirtualAccount\Provider;
 use RZP\Reconciliator\RequestProcessor;
@@ -49,6 +50,29 @@ class Service extends Base\Service
         $this->ip = $this->app['request']->ip();
 
         $this->mutex = $this->app['api.mutex'];
+    }
+
+    public function saveRequestAndProcess(
+        array $input,
+        string $provider = null,
+        bool $checkForIfsc = false,
+        $requestPayload = null
+    )
+    {
+        try
+        {
+            (new BankTransferRequest\Core())->create(
+                $input,
+                $provider ?? $this->provider,
+                $requestPayload ?? $input
+            );
+        }
+        catch (\Exception $ex)
+        {
+            $this->trace->traceException($ex);
+        }
+
+        return $this->process($input, $provider, $checkForIfsc);
     }
 
     /**

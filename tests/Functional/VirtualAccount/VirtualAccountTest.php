@@ -253,6 +253,12 @@ class VirtualAccountTest extends TestCase
         $payment = $this->getLastEntity('payment', true);
 
         $this->assertEquals('authorized', $payment['status']);
+
+        $bankTransfer = $this->getLastEntity('bank_transfer', true);
+
+        $this->assertEquals(false, $bankTransfer['expected']);
+
+        $this->assertEquals('VIRTUAL_ACCOUNT_DUE_TO_BE_CLOSED', $bankTransfer['unexpected_reason']);
     }
 
     public function testVirtualAccountClosedAt()

@@ -5,6 +5,7 @@ namespace RZP\Models\BankTransferRequest;
 
 use RZP\Constants;
 use RZP\Models\Base;
+use RZP\Models\BankTransfer;
 
 class Entity extends Base\PublicEntity
 {
@@ -25,6 +26,8 @@ class Entity extends Base\PublicEntity
     const TIME              = 'time';
     const REQUEST_PAYLOAD   = 'request_payload';
 
+    const TRANSACTION_ID    = 'transaction_id';
+
     protected static $sign = 'btr';
 
     protected $entity = Constants\Entity::BANK_TRANSFER_REQUEST;
@@ -32,4 +35,83 @@ class Entity extends Base\PublicEntity
     protected $primaryKey = self::ID;
 
     protected $generateIdOnCreate = true;
+
+    protected $fillable = [
+        self::GATEWAY,
+        self::UTR,
+        self::MODE,
+        self::PAYEE_NAME,
+        self::PAYEE_ACCOUNT,
+        self::PAYEE_IFSC,
+        self::PAYER_NAME,
+        self::PAYER_ACCOUNT,
+        self::PAYER_IFSC,
+        self::AMOUNT,
+        self::DESCRIPTION,
+        self::NARRATION,
+        self::TIME,
+        self::REQUEST_PAYLOAD,
+    ];
+
+    protected $visible = [
+        self::ID,
+        self::GATEWAY,
+        self::IS_CREATED,
+        self::ERROR_MESSAGE,
+        self::UTR,
+        self::MODE,
+        self::PAYEE_NAME,
+        self::PAYEE_ACCOUNT,
+        self::PAYEE_IFSC,
+        self::PAYER_NAME,
+        self::PAYER_ACCOUNT,
+        self::PAYER_IFSC,
+        self::AMOUNT,
+        self::DESCRIPTION,
+        self::NARRATION,
+        self::TIME,
+        self::REQUEST_PAYLOAD
+    ];
+
+    protected static $generators = [
+        self::UTR,
+    ];
+
+    protected static $unsetCreateInput = [
+        BankTransfer\Entity::PAYER_ACCOUNT_TYPE,
+        BankTransfer\Entity::PAYER_ADDRESS,
+        BankTransfer\Entity::ATTEMPT,
+    ];
+
+    protected $casts = [
+        self::IS_CREATED    => 'bool',
+        self::AMOUNT        => 'int',
+    ];
+
+    public function generateUtr($input)
+    {
+        $this->setAttribute(self::UTR, $input[self::TRANSACTION_ID]);
+    }
+
+    public function setAmountAttribute(float $amount)
+    {
+        $amount = (int) number_format(($amount * 100), 0, '.', '');
+
+        $this->attributes[self::AMOUNT] = $amount;
+    }
+
+    public function setUtr(string $utr)
+    {
+        $this->setAttribute(self::UTR, $utr);
+    }
+
+    public function setGateway($gateway)
+    {
+        $this->setAttribute(self::GATEWAY, $gateway);
+    }
+
+    public function setRequestPayload($requestPayload)
+    {
+        $this->setAttribute(self::REQUEST_PAYLOAD, $requestPayload);
+    }
 }

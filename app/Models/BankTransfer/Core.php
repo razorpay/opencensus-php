@@ -16,6 +16,7 @@ use RZP\Models\BankAccount;
 use RZP\Models\VirtualAccount;
 use RZP\Models\Currency\Currency;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Models\BankTransferRequest;
 use RZP\Models\Payment\Refund as PaymentRefund;
 use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
 
@@ -85,6 +86,8 @@ class Core extends Base\Core
 
         $paymentSuccess = false;
 
+        $errorMessage = null;
+
         try
         {
             $bankTransfer = $this->create($input, $provider);
@@ -107,6 +110,8 @@ class Core extends Base\Core
         {
             $paymentSuccess = false;
 
+            $errorMessage = $ex->getMessage();
+
             return $this->alertException($ex, $input);
         }
         finally
@@ -116,7 +121,11 @@ class Core extends Base\Core
             if ($bankTransfer !== null)
             {
                 $isExpected = $bankTransfer->isExpected();
+
+                $errorMessage = $errorMessage ?? $bankTransfer->getUnexpectedReason();
             }
+
+            $this->updateBankTransferRequest($input[Entity::REQ_UTR], $paymentSuccess, $errorMessage);
 
             (new VirtualAccount\Metric())->pushPaymentMetrics(Constants\Entity::BANK_TRANSFER, $isExpected, $paymentSuccess);
 
@@ -642,5 +651,24 @@ class Core extends Base\Core
         }
 
         return $array;
+    }
+
+    protected function updateBankTransferRequest(string $utr, bool $isCreated, string $errorMessage = null)
+    {
+        $data = [
+            BankTransferRequest\Entity::IS_CREATED      => $isCreated,
+            BankTransferRequest\Entity::ERROR_MESSAGE   => $errorMessage,
+        ];
+
+        try
+        {
+            $this->repo
+                 ->bank_transfer_request
+                 ->updateByUtr($utr, $data);
+        }
+        catch (\Exception $ex)
+        {
+            $this->trace->traceException($ex);
+        }
     }
 }

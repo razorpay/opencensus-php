@@ -7,26 +7,28 @@ use Carbon\Carbon;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Queue;
 
+use RZP\Models\Pricing\Fee;
 use RZP\Constants\Timezone;
 use RZP\Models\Batch\Header;
-use RZP\Models\Payment\Gateway;
 use RZP\Models\Payment\Refund;
 use RZP\Models\Payment\Status;
-use RZP\Models\Pricing\Fee;
+use RZP\Models\Payment\Gateway;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Settlement\Channel;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\VirtualAccount\Provider;
 use RZP\Models\BankTransfer\Entity as E;
+use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 use RZP\Tests\Functional\FundTransfer\AttemptTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
-use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
+use RZP\Tests\Unit\Models\Invoice\Traits\CreatesInvoice;
 use RZP\Tests\Functional\FundTransfer\AttemptReconcileTrait;
 use RZP\Tests\Functional\Helpers\VirtualAccount\VirtualAccountTrait;
 
 class BankTransferTest extends TestCase
 {
     use AttemptTrait;
+    use CreatesInvoice;
     use FileHandlerTrait;
     use DbEntityFetchTrait;
     use VirtualAccountTrait;
@@ -1599,6 +1601,11 @@ class BankTransferTest extends TestCase
         $this->assertEquals('10000000000000', $attempt['merchant_id']);
         $this->assertEquals($refund['bank_account_id'], $attempt['bank_account_id']);
         $this->assertEquals('ACC DOESNT EXIST-'.$bankTransfer['utr'], $attempt['narration']);
+
+        $this->runBankTransferRequestAssertions(
+            true,
+            'VIRTUAL_ACCOUNT_NOT_FOUND'
+        );
     }
 
     public function testBankTransferYesBankRefundsNotAllowed()
@@ -2874,7 +2881,7 @@ class BankTransferTest extends TestCase
         return $response;
     }
 
-    public function testBankTransferToClosedVaUnexpectedReason()
+    public function testBankTransferToClosedVa()
     {
         $accountNumber = $this->bankAccount['account_number'];
         $ifsc = $this->bankAccount['ifsc'];
@@ -2882,40 +2889,95 @@ class BankTransferTest extends TestCase
         $this->closeVirtualAccount($this->virtualAccountId);
 
         $response = $this->processBankTransfer($accountNumber, $ifsc);
-
         $this->assertEquals(true, $response['valid']);
-
         $this->assertNull($response['message']);
 
         $bankTransfer = $this->getLastEntity('bank_transfer', true);
-
         $this->assertEquals(false, $bankTransfer['expected']);
-
         $this->assertEquals('VIRTUAL_ACCOUNT_NOT_FOUND', $bankTransfer['unexpected_reason']);
+
+        $this->runBankTransferRequestAssertions(
+            true,
+            'VIRTUAL_ACCOUNT_NOT_FOUND'
+        );
     }
 
-    public function testBankTransferToDueToBeClosedVaUnexpectedReason()
+    public function testBankTransferForCustomerFeeBearerWithPercentRate()
     {
-        $currentTimestamp = Carbon::now(Timezone::IST)->getTimestamp();
+        $this->fixtures->merchant->enableConvenienceFeeModel('10000000000000');
 
-        $bankAccount = $this->createVirtualAccount(['close_by' => $currentTimestamp + (20 * 60)]);
+        $this->fixtures->pricing->editDefaultPlan(['fee_bearer' => 'customer']);
 
-        $accountNumber = $bankAccount['account_number'];
-        $ifsc = $bankAccount['ifsc'];
+        $accountNumber = $this->bankAccount['account_number'];
+        $ifsc = $this->bankAccount['ifsc'];
 
-        // When close_by time has passed but the next cron execution time is still due.
-        $this->fixtures->edit('virtual_account', $this->virtualAccountId, ['close_by' => $currentTimestamp - 60]);
-
-        $response = $this->processBankTransfer($accountNumber, $ifsc);
-
-        $this->assertEquals(true, $response['valid']);
-
+        $response = $this->processBankTransfer($accountNumber, $ifsc, null, 100);
+        $this->assertEquals(false, $response['valid']);
         $this->assertNull($response['message']);
 
-        $bankTransfer = $this->getLastEntity('bank_transfer', true);
+        $this->runBankTransferRequestAssertions(
+            false,
+            'Payment failed because fees or tax was tampered'
+        );
+    }
 
-        $this->assertEquals(false, $bankTransfer['expected']);
+    public function testBankTransferForCustomerFeeBearerWithPaymentLessThanFee()
+    {
+        $this->fixtures->merchant->enableConvenienceFeeModel('10000000000000');
 
-        $this->assertEquals('VIRTUAL_ACCOUNT_DUE_TO_BE_CLOSED', $bankTransfer['unexpected_reason']);
+        $this->fixtures->pricing->editDefaultPlan(
+            [
+                'fee_bearer'    => 'customer',
+                'percent_rate'  => '0',
+                'fixed_rate'    => '1000',
+            ]
+        );
+
+        $accountNumber = $this->bankAccount['account_number'];
+        $ifsc = $this->bankAccount['ifsc'];
+
+        $response = $this->processBankTransfer($accountNumber, $ifsc, null, 5);
+        $this->assertEquals(false, $response['valid']);
+        $this->assertNull($response['message']);
+
+        $this->runBankTransferRequestAssertions(
+            false,
+            'Fee calculated is greater than the payment amount.'
+        );
+    }
+
+    public function testBankTransferForCancelledInvoice()
+    {
+        $this->createInvoice(['status' => 'issued']);
+
+        $order = $this->getDbLastEntity('order');
+
+        $response = $this->createVirtualAccountForOrder($order);
+
+        $accountNumber = $response['receivers'][0]['account_number'];
+        $ifsc = $response['receivers'][0]['ifsc'];
+
+        $request = $this->testData['cancelInvoice'];
+
+        $this->ba->privateAuth();
+        $this->makeRequestAndGetContent($request);
+
+        $response = $this->processBankTransfer($accountNumber, $ifsc, null, 1000);
+        $this->assertEquals(false, $response['valid']);
+        $this->assertNull($response['message']);
+
+        $this->runBankTransferRequestAssertions(
+            false,
+            'Invoice is not payable in cancelled status.'
+        );
+    }
+
+    protected function runBankTransferRequestAssertions(bool $isCreated, string $errorMessage)
+    {
+        $bankTransferRequest = $this->getDbLastEntity('bank_transfer_request');
+
+        $this->assertNotNull($bankTransferRequest['request_payload']);
+        $this->assertEquals($isCreated, $bankTransferRequest['is_created']);
+        $this->assertEquals($errorMessage, $bankTransferRequest['error_message']);
     }
 }

@@ -22,7 +22,7 @@ class BankTransferController extends Controller
     {
         $input = Request::all();
 
-        $response = $this->service()->process($input);
+        $response = $this->service()->saveRequestAndProcess($input, null, false, $input);
 
         return ApiResponse::json($response);
     }
@@ -49,7 +49,7 @@ class BankTransferController extends Controller
     {
         $input = Request::all();
 
-        $response = $this->service()->process($input, Provider::ICICI, true);
+        $response = $this->service()->saveRequestAndProcess($input, Provider::ICICI, true, $input);
 
         return ApiResponse::json($response);
     }
@@ -95,7 +95,7 @@ class BankTransferController extends Controller
         {
             $input = $this->modifyRblDataToEntity($input);
 
-            $response = $this->service()->process($input, Provider::RBL);
+            $response = $this->service()->saveRequestAndProcess($input, Provider::RBL, false, Request::all());
 
             if (boolval($response['valid']) === false)
             {
