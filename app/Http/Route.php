@@ -1239,6 +1239,11 @@ class Route
             'shield/merchants/{merchant_id}/lists/{list_id}/list_items/{list_item_id}',
             'ShieldController@proxyRequest'
         ],
+        'shield_settings_ui' => [
+            'get',
+            'shield/settings/ui',
+            'ShieldController@proxyRequest'
+        ],
 
         // Scrooge Routes
         'scrooge_dashboard_init'                   => ['get',      'scrooge/dashboard-init',                         'ScroogeController@dashboardInit'                                   ],
@@ -3112,6 +3117,7 @@ class Route
         'shield_list_items_add_multiple',
         'shield_list_items_purge',
         'shield_list_items_delete',
+        'shield_settings_ui',
 
         'razorx_route',
         'user_fetch_admin',
@@ -3806,6 +3812,7 @@ class Route
         'shield_list_items_add_multiple'           => Permission::CREATE_SHIELD_LISTS,
         'shield_list_items_purge'                  => Permission::DELETE_SHIELD_LISTS,
         'shield_list_items_delete'                 => Permission::DELETE_SHIELD_LISTS,
+        'shield_settings_ui'                       => '*',
         'user_fetch_admin'                         => '*',
         'refund_edit_status'                       => Permission::EDIT_REFUND,
         'refund_mark_processed_bulk'               => Permission::EDIT_REFUND,
