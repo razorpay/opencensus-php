@@ -1786,9 +1786,19 @@ class MerchantTest extends TestCase
         $this->ba->publicLiveAuth();
 
         $this->fixtures->merchant->activate('10000000000000');
-        $this->fixtures->merchant->addFeatures(Constants::AMEX_RECURRING);
         $this->fixtures->merchant->addFeatures(Constants::CHARGE_AT_WILL);
         $this->fixtures->merchant->enableMethod('10000000000000', 'card');
+        $attributes = array(
+            'merchant_id'               => '10000000000000',
+            'gateway'                   => 'amex',
+            'card'                      => 1,
+            'gateway_merchant_id'       => 'razorpay axis_genius',
+            'gateway_terminal_id'       => 'nodal account axis_genius',
+            'gateway_terminal_password' => 'razorpay_password',
+            'type'                      => [
+                'recurring_3ds'  => '1',
+            ],        );
+        $this->fixtures->on('live')->create('terminal', $attributes);
 
         $this->startTest();
     }

@@ -421,6 +421,21 @@ class Repository extends Base\Repository
         return $query->pluck(Entity::ID)->all();
     }
 
+    public function getRecurringTerminalsByMidAndGateway($mid, $gateway)
+    {
+        $query = $this->newQuery()
+            ->where(Entity::GATEWAY, $gateway)
+            ->type([Terminal\Type::RECURRING_3DS])
+            ->enabled();
+
+        $cacheTag = Entity::getCacheTag($mid);
+        $query->remember($this->getCacheTtl())
+            ->cachetags($cacheTag);
+
+        $this->addMerchantWhereCondition($query, [$mid]);
+        return $query->first();
+    }
+
     public function getSharedTerminalForGateway($gateway)
     {
         return $this->newQuery()

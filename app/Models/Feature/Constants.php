@@ -137,7 +137,6 @@ class Constants
     const EXPOSE_GATEWAY_PROVIDER         = 'expose_gateway_provider';
     const EXPOSE_FA_VALIDATION_UTR        = 'expose_fa_validation_utr';
     const GOOGLE_PAY_CARDS                = 'google_pay_cards';
-    const AMEX_RECURRING                  = 'amex_recurring';
 
     const ENACH_INTERMEDIATE              = 'enach_intermediate';
     const SAVE_VPA                        = 'save_vpa';
@@ -614,7 +613,6 @@ class Constants
         self::TRANSACTION_ON_HOLD             => true,
         self::BEPG                            => true,
         self::LOAN                            => true,
-        self::AMEX_RECURRING                  => true,
     ];
 
     // Entity type constants

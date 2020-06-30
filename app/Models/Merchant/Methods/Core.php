@@ -11,6 +11,7 @@ use RZP\Models\Admin;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
+use RZP\Models\Payment\Gateway;
 use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
 use RZP\Models\Pricing\Fee;
@@ -252,9 +253,12 @@ class Core extends Base\Core
     {
         if ($methods->isCreditCardEnabled() === true)
         {
+
+            // If atleast 1 3ds Amex recurring type terminal is present, it will send Amex Recurring in Preferences
+            $recurringAmexTerminals = $this->repo->terminal->getRecurringTerminalsByMidAndGateway($merchant->getId(), Gateway::AMEX);
             $supportedNetworksForCreditCardRecurring = Payment\Gateway::getNetworksSupportedForCardRecurring();
 
-            if ($merchant->isFeatureEnabled(Constants::AMEX_RECURRING) === false)
+            if (empty($recurringAmexTerminals) === true)
             {
                 unset($supportedNetworksForCreditCardRecurring[array_search(Network::AMEX, $supportedNetworksForCreditCardRecurring)]);
             }
@@ -374,7 +378,7 @@ class Core extends Base\Core
                 $methods->setBankTransfer(true);
                 $methods->setJiomoney(true);
                 $methods->setPayLater(true);
-                $methods->setPhonepeSwitch(true); 
+                $methods->setPhonepeSwitch(true);
                 // Initializing Disabled bank with empty array
                 $methods->setDisabledBanks([]);
             }
