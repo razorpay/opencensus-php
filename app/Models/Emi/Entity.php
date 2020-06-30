@@ -84,7 +84,7 @@ class Entity extends Base\PublicEntity
         self::MIN_AMOUNT       => 300000,
         self::BANK             => null,
         self::NETWORK          => null,
-        self::TYPE             => null,
+        self::TYPE             => Type::CREDIT,
         self::ISSUER_PLAN_ID   => null,
         self::SUBVENTION       => Subvention::CUSTOMER,
         self::MERCHANT_PAYBACK => 0,

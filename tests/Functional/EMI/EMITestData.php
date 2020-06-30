@@ -140,6 +140,29 @@ return [
         ],
     ],
 
+    'testAddBOBEmiPlanWithoutType' => [
+        'request' => [
+            'content' => [
+                'network'     => 'BAJAJ',
+                'duration'    => 3,
+                'rate'        => 1045,
+                'min_amount'  => 400000,
+                'merchant_id' => '100000Razorpay',
+            ],
+            'method' => 'POST',
+            'url'    => '/emi',
+        ],
+        'response' => [
+            'content' => [
+                'network'     => 'BAJAJ',
+                'duration'    => 3,
+                'rate'        => 1045,
+                'min_amount'  => 400000,
+                'merchant_id' => '100000Razorpay',
+            ],
+        ],
+    ],
+
     'testEnableMerchantSubvention' => [
         'request' => [
             'content' => [
