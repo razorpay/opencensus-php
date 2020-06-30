@@ -658,6 +658,8 @@ class ViewDataSerializer extends Base\Core
 
             $title = $externalEntity->getAttribute(PaymentLink\Entity::TITLE);
 
+            $viewType = $externalEntity->getAttribute(PaymentLink\Entity::VIEW_TYPE);
+
             $order = $this->invoice->order;
 
             $payment = $this->getCapturedPaymentForOrder($order);
@@ -687,6 +689,7 @@ class ViewDataSerializer extends Base\Core
                 'selected_input_field' => $selectedInputField,
                 'title'                => $title,
                 'payment'              => $paymentFormatted,
+                'view_type'            => $viewType,
             ];
         }
         else

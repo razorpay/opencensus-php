@@ -442,6 +442,92 @@ class PaymentLinkTest extends TestCase
         $this->startTest();
     }
 
+    public function testFetchButtonPreferences()
+    {
+        $this->testCreatePaymentButtonWithMultipleItems();
+
+        $entity = $this->getDbLastEntity("payment_link");
+
+        $id = $entity->getId();
+
+        $this->ba->publicAuth();
+
+        $response = $this->call('GET', "/v1/payment_buttons/pl_{$id}/button_preferences");
+
+        $response->assertStatus(200);
+
+        $content = json_decode($response->getContent(), true);
+
+        $this->assertArrayKeysExist($content, ['preferences', 'is_test_mode']);
+
+        $this->assertEquals($content['preferences']['payment_button_text'], 'Please pay');
+
+        $this->assertEquals($content['preferences']['payment_button_theme'], 'rzp-dark-standard');
+
+        $this->assertArrayHasKey("merchant_brand_color", $content['preferences']);
+    }
+
+    public function testFetchGetButtonHostedView()
+    {
+        $this->testCreatePaymentButtonWithMultipleItems();
+
+        $entity = $this->getDbLastEntity("payment_link");
+
+        $id = $entity->getId();
+
+        $this->ba->publicAuth();
+
+        $response = $this->call('GET', "/v1/payment_buttons/pl_{$id}/view");
+
+        $response->assertStatus(200);
+
+        $this->assertContains($id, $response->getContent());
+    }
+
+    public function testFetchPostButtonHostedView()
+    {
+        $this->testCreatePaymentButtonWithMultipleItems();
+
+        $entity = $this->getDbLastEntity("payment_link");
+
+        $id = $entity->getId();
+
+        $this->ba->publicAuth();
+
+        $response = $this->call('POST', "/v1/payment_buttons/pl_{$id}/view");
+
+        $response->assertStatus(200);
+
+        $this->assertContains($id, $response->getContent());
+
+        $this->assertContains("udf_schema", $response->getContent());
+
+        $this->assertContains("payment_button_text", $response->getContent());
+    }
+
+    public function testFetchPublicButtonDetails()
+    {
+        $this->testCreatePaymentButtonWithMultipleItems();
+
+        $entity = $this->getDbLastEntity("payment_link");
+
+        $id = $entity->getId();
+
+        $this->ba->publicAuth();
+
+        $response = $this->call('GET', "/v1/payment_buttons/pl_{$id}/button_details");
+
+        $response->assertStatus(200);
+
+        $content = json_decode($response->getContent(), true);
+
+        $this->assertArrayKeysExist($content, ['data', 'udf_schema']);
+
+        $this->assertArrayKeysExist($content['data'], ['base_url', 'payment_link', 'merchant', 'key_id', 'is_test_mode', 'environment']);
+
+        $this->assertEquals($content['data']['payment_link']['id'], $entity->getPublicId());
+    }
+
     public function testUpdatePaymentLinkWithBadExpireBy()
     {
         $this->createPaymentLinkWithMultipleItem();

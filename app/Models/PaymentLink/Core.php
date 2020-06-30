@@ -2,6 +2,7 @@
 
 namespace RZP\Models\PaymentLink;
 
+use Cache;
 use RZP\Models\Base;
 use RZP\Models\Item;
 use RZP\Models\User;
@@ -9,6 +10,7 @@ use RZP\Models\Order;
 use RZP\Models\Invoice;
 use RZP\Diag\EventCode;
 use RZP\Models\Payment;
+use RZP\Constants\Mode;
 use RZP\Models\Customer;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
@@ -1184,6 +1186,31 @@ class Core extends Base\Core
         }
 
         return $view;
+    }
+
+    /**
+     * Returns settings required to load button on client side
+     * Has to be cached in redis after mvp
+     * @param  Entity $paymentLink
+     *
+     * @return array
+     */
+    public function getHostedButtonPreferences(Entity $paymentLink)
+    {
+        $settings =  Settings\Accessor::for($paymentLink, Settings\Module::PAYMENT_LINK)->all();
+
+        $merchant = $paymentLink->merchant;
+
+        $merchantBrandColor = get_rgb_value($merchant->getBrandColorOrDefault());
+
+        $preferences = array_intersect_key($settings->toArray(), array_flip(Entity::BUTTON_PREFERENCES_KEYS));
+
+        $preferences['merchant_brand_color'] = $merchantBrandColor;
+
+        return [
+            'is_test_mode'   => $this->isTestMode(),
+            'preferences'    => $preferences,
+        ];
     }
 
     /**

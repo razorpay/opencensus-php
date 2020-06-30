@@ -53,7 +53,8 @@ class Validator extends Base\Validator
         Entity::SETTINGS . '.' . Entity::PAYMENT_BUTTON_LABEL         => 'string|max:16',
         Entity::SETTINGS . '.' . Entity::PP_BUTTON_DISABLE_BRANDING   => 'nullable|string|in:0,1',
         Entity::SETTINGS . '.' . Entity::PP_BUTTON_THEME              => 'nullable|string|max:32',
-        Entity::SETTINGS . '.' . Entity::PP_BUTTON_TEXT               => 'string|max:16',
+        Entity::SETTINGS . '.' . Entity::PP_BUTTON_TEXT               => 'string|max:20',
+        Entity::SETTINGS . '.' . Entity::PAYMENT_BUTTON_TEMPLATE_TYPE => 'string|max:32',
         Entity::PAYMENT_PAGE_ITEMS => 'required|sequential_array|min:1',
     ];
 

@@ -220,8 +220,8 @@ return [
                     'sample_key' => 'Sample notes',
                 ],
                 'settings'=>[
-                    'pp_button_text' => 'Please pay',
-                    'pp_button_theme'=> 'rzp-dark-standard',
+                    'payment_button_text' => 'Please pay',
+                    'payment_button_theme'=> 'rzp-dark-standard',
                 ],
                 'payment_page_items' => [
                     [

@@ -197,7 +197,16 @@ class Base extends Mailable
 
         $appendText = $startText. "receipt for your successful transaction on ";
 
-        $template = $this->data['invoice'][C\Entity::PAYMENT_PAGE]['title'] ?? static::SUBJECT_TEMPLATES['pp_invoice'];
+        $viewType = $this->data['invoice'][C\Entity::PAYMENT_PAGE]['view_type'];
+
+        if ($viewType === 'button')
+        {
+            $template = $this->data['merchant']['name'];
+        }
+        else
+        {
+            $template = $this->data['invoice'][C\Entity::PAYMENT_PAGE]['title'];
+        }
 
         $template = $appendText. $template;
 

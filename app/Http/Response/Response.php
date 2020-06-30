@@ -417,6 +417,8 @@ class Response
             'payment_validate_account',
             'payment_page_create_order',
             'payment_page_create_order_option',
+            'payment_page_hosted_button_details',
+            'payment_page_hosted_button_preferences',
             'payment_links_demo',
             'payment_links_demo_cors',
         ];

@@ -104,9 +104,9 @@ class Entity extends Base\PublicEntity
 
     //Settings applicable to Payment Button only
     const PP_BUTTON_DISABLE_BRANDING   = 'pp_button_disable_branding';
-    const PP_BUTTON_THEME              = 'pp_button_theme';
-    const PP_BUTTON_TEXT               = 'pp_button_text';
-
+    const PP_BUTTON_THEME              = 'payment_button_theme';
+    const PP_BUTTON_TEXT               = 'payment_button_text';
+    const PAYMENT_BUTTON_TEMPLATE_TYPE = 'payment_button_template_type';
     const DEFAULT_THEME                = 'light';
 
     const SETTINGS_KEYS                = [
@@ -122,6 +122,7 @@ class Entity extends Base\PublicEntity
         self::PP_BUTTON_DISABLE_BRANDING,
         self::PP_BUTTON_TEXT,
         self::PP_BUTTON_THEME,
+        self::PAYMENT_BUTTON_TEMPLATE_TYPE,
     ];
 
     const INVOICE_DETAILS_KEYS          = [
@@ -129,6 +130,12 @@ class Entity extends Base\PublicEntity
         self::SELECTED_INPUT_FIELD,
         self::CUSTOM_SERIAL_NUMBER,
         self::ENABLE_80G_DETAILS,
+    ];
+
+    const BUTTON_PREFERENCES_KEYS = [
+        self::PP_BUTTON_DISABLE_BRANDING,
+        self::PP_BUTTON_TEXT,
+        self::PP_BUTTON_THEME,
     ];
 
     /**

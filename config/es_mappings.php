@@ -437,6 +437,9 @@ return [
             'status_reason' => [
                 'type'  => 'keyword',
             ],
+            'view_type' => [
+                'type'  => 'keyword',
+            ],
             'receipt' => [
                 'type'  => 'keyword',
             ],

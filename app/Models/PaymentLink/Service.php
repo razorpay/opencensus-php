@@ -2,6 +2,10 @@
 
 namespace RZP\Models\PaymentLink;
 
+use Request;
+use Illuminate\Http\Request  as CurrentRequest;
+
+use RZP\Constants\Mode;
 use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
@@ -106,6 +110,38 @@ class Service extends Base\Service
         return $paymentLink->toArrayPublic();
     }
 
+    public function getButtonViewNameAndPayload(string $id, array $input, CurrentRequest $request)
+    {
+        $view = 'payment_button.index';
+
+        $payload = [
+            'base_url'           => $this->app['config']['app']['url'],
+            'environment'        => $this->app->environment(),
+            'is_test_mode'       => ($this->mode === Mode::TEST),
+            'payment_button_id'  => $id,
+        ];
+
+        $payload[Entity::REQUEST_PARAMS] = $input;
+
+        if (empty($error = Request::get(Entity::ERROR)) === false)
+        {
+            $payload[Entity::ERROR] = $error;
+        }
+
+        if ($request->method() === 'POST')
+        {
+            $paymentLink = $this->repo->payment_link->findActiveByPublicId($id);
+
+            $buttonPayload = $this->core->getHostedViewPayload($paymentLink);
+
+            $payload['button'] = $buttonPayload;
+
+            $this->appendAmountIfPossible($id, $input, $payload);
+        }
+
+        return [$view, $payload];
+    }
+
     public function getViewNameAndPayload(string $id)
     {
         $this->trace->count(Metric::PAYMENT_PAGE_VIEW_TOTAL);
@@ -118,6 +154,20 @@ class Service extends Base\Service
         $view = $this->core->getHostedViewTemplate($paymentLink);
 
         return [$view, $viewPayload];
+    }
+
+    public function getHostedButtonDetails(string $id)
+    {
+        $paymentLink = $this->repo->payment_link->findActiveByPublicId($id);
+
+        return $this->core->getHostedViewPayload($paymentLink);
+    }
+
+    public function getHostedButtonPreferences(string $id)
+    {
+        $paymentLink = $this->repo->payment_link->findActiveByPublicId($id);
+
+        return $this->core->getHostedButtonPreferences($paymentLink);
     }
 
     /**

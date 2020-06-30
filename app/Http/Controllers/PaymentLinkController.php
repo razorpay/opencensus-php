@@ -5,6 +5,7 @@ namespace RZP\Http\Controllers;
 use View;
 use Request;
 use ApiResponse;
+use Illuminate\Http\Request  as CurrentRequest;
 
 use RZP\Error\ErrorCode;
 use RZP\Models\PaymentLink\Entity;
@@ -74,6 +75,13 @@ class PaymentLinkController extends Controller
         return ApiResponse::json(compact('exists'));
     }
 
+    public function buttonHostedView(string $id, CurrentRequest $request)
+    {
+        list ($view, $payload) = $this->service()->getButtonViewNameAndPayload($id, $this->input, $request);
+
+        return View::make($view)->with('data', $payload);
+    }
+
     /**
      * Renders the hosted view for Payment link with given id
      *
@@ -120,6 +128,20 @@ class PaymentLinkController extends Controller
         $this->ba->setModeAndDbConnection($slugMetadata['mode']);
 
         return $this->view($slugMetadata['id']);
+    }
+
+    public function getHostedButtonDetails(string $id)
+    {
+        $data = $this->service()->getHostedButtonDetails($id);
+
+        return ApiResponse::json($data);
+    }
+
+    public function getHostedButtonPreferences(string $id)
+    {
+        $data = $this->service()->getHostedButtonPreferences($id);
+
+        return ApiResponse::json($data);
     }
 
     /**

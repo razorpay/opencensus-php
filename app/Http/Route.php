@@ -747,7 +747,9 @@ class Route
         'payment_page_get_invoice_details'         => ['get',      'payment_pages/{payment_id}/receipt',             'PaymentLinkController@getInvoiceDetails'                           ],
         'payment_page_send_receipt'                => ['post',     'payment_pages/{payment_id}/send_receipt',        'PaymentLinkController@sendReceipt'                                 ],
         'payment_page_save_receipt_for_payment'    => ['post',     'payment_pages/{payment_id}/save_receipt',        'PaymentLinkController@saveReceiptForPayment'                       ],
-
+        'payment_page_hosted_button_details'       => ['get',      'payment_buttons/{x_entity_id}/button_details',    'PaymentLinkController@getHostedButtonDetails'                     ],
+        'payment_page_hosted_button_preferences'   => ['get',      'payment_buttons/{x_entity_id}/button_preferences','PaymentLinkController@getHostedButtonPreferences'                 ],
+        'payment_button_hosted_view'               => ['get,post', 'payment_buttons/{x_entity_id}/view',              'PaymentLinkController@buttonHostedView'                           ],
         // end of payment page section
         // payment link service end points
         'payment_links_service_hosted_page'        => ['get,post', 'hosted/payment_links/{path?}',                   'PlinkController@sendRequest'                                       ],
@@ -757,7 +759,7 @@ class Route
         'payment_links_demo'                       => ['post',     'payment_links_demo',                             'PlinkController@plDemo'                                            ],
         'payment_links_demo_cors'                  => ['options',  'payment_links_demo',                             'PlinkController@plDemoCors'                                        ],
         'payment_links_bulk_expire'                => ['post',     'payment_links_bulk_expire',                      'PlinkController@sendRequest'                                       ],
-
+        // end of payment link service end points
         'app_delete_token'                         => ['delete',   'apps/tokens/{token}',                            'CustomerController@deleteTokenForGlobalCustomer'                   ],
         'app_fetch_tokens'                         => ['get',      'apps/tokens',                                    'CustomerController@fetchTokensForGlobalCustomer'                   ],
         'app_fetch_payments'                       => ['get',      'apps/payments',                                  'CustomerController@fetchPaymentsForGlobalCustomer'                 ],
@@ -1835,6 +1837,8 @@ class Route
         'invoice_send_notification',
         'invoice_get_pdf',
         'pages_view',
+        'payment_page_hosted_button_preferences',
+        'payment_page_hosted_button_details',
         'payment_page_view_get',
         'merchant_public_get_banks',
         'merchant_methods',
@@ -1896,7 +1900,8 @@ class Route
         'payout_links_initiate_cors',
         'payout_links_added_fund_accounts_cors',
         'payout_links_status',
-        'payout_links_status_cors'
+        'payout_links_status_cors',
+        'payment_button_hosted_view',
     ];
 
     public static $device = [
