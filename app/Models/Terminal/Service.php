@@ -68,7 +68,7 @@ class Service extends Base\Service
 
         if (Migrate::shouldRunComparison() === true)
         {
-            $this->runGetTerminalsForMerchantComparison($terminals, $merchant);
+            $this->runGetTerminalsForMerchantComparison($terminals, $merchant, $subMerchantFlag);
         }
 
         return $terminals->toArrayAdmin($subMerchantFlag);
@@ -430,7 +430,7 @@ class Service extends Base\Service
         unset($input['attributes']['enabled']);
 
         // TODO: make this usable by all gateways
-        if (($enabled === true) and 
+        if (($enabled === true) and
             (in_array($input['attributes']['status'], Terminal\Status::POSSIBLE_STATUS_FOR_WORLDLINE_ENABLED_TERMINAL) === false))
         {
             throw new Exception\BadRequestException(
@@ -454,7 +454,7 @@ class Service extends Base\Service
                 $this->core()->toggle($terminal, $enabled);
 
                 // dispatch terminal.activated or terminal.failed webhook, if required
-                if (isset($input['attributes'][Entity::STATUS]) === true) 
+                if (isset($input['attributes'][Entity::STATUS]) === true)
                 {
                     if ($input['attributes'][Entity::STATUS] === Status::FAILED)
                     {
@@ -542,7 +542,7 @@ class Service extends Base\Service
                 Constants::BATCH_ERROR_CODE => $exception->getPublicError(),
             ];
 
-            $result[Constants::BATCH_HTTP_STATUS_CODE] = $exception->getCode();        
+            $result[Constants::BATCH_HTTP_STATUS_CODE] = $exception->getCode();
         }
         catch (\Throwable $throwable)
         {
@@ -895,11 +895,19 @@ class Service extends Base\Service
         }
     }
 
-    public function runGetTerminalsForMerchantComparison($terminals, Merchant\Entity $merchant)
+    public function runGetTerminalsForMerchantComparison($terminals, Merchant\Entity $merchant, bool $submerchantFlag)
     {
         try
         {
-            $fetchedTerminals = $this->app['terminals_service']->getTerminalsByMerchantId($merchant->getId());
+            $content = ["merchant_ids" => [$merchant->getId()]];
+
+            $content["sub_merchant"] = $submerchantFlag;
+
+            $content["status"] = Status::ACTIVATED;
+
+            $path = "v1/merchants/terminals";
+
+            $fetchedTerminals = $this->app['terminals_service']->proxyTerminalService($content, "POST", $path);
 
             $this->compareFetchedTerminals($terminals, $fetchedTerminals);
         }
@@ -914,7 +922,6 @@ class Service extends Base\Service
         {
             return;
         }
-
         foreach ($fetchedTerminals as $fetchedTerminal)
         {
             $terminal = $terminals->find($fetchedTerminal[Terminal\Entity::ID]);

@@ -160,6 +160,7 @@ class TerminalsService
 
         $path = sprintf($params[self::PATH], $merchantId);
 
+
         $response = $this->sendRequest($path, '', $params[self::METHOD]);
 
         return $this->parseAndReturnResponse($response)[self::DATA] ?? [];
@@ -192,9 +193,7 @@ class TerminalsService
 
     public function proxyTerminalService($input, $method, $path) : array
     {
-        $params = self::PARAMS[self::ADD_MERCHANT_TO_TERMINAL];
-
-        $response = $this->sendRequest($params[self::PATH], json_encode($input), $method);
+        $response = $this->sendRequest($path, json_encode($input), $method);
 
         return $this->parseAndReturnResponse($response)[self::DATA] ?? [];
     }

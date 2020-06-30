@@ -1551,11 +1551,13 @@ class TerminalMigrationTest extends TestCase
         $this->mockTerminalsServiceSendRequest(function ($path, $content, $method) use ($terminal) {
             $response = new \Requests_Response;
 
-            $this->assertEquals(Requests::GET, $method);
+            $this->assertEquals(Requests::POST, $method);
 
-            $this->assertEquals("v1/merchants/10000000000000/terminals", $path);
+            $this->assertEquals("v1/merchants/terminals", $path);
 
-            $this->assertEquals("", $content);
+            $expectedContent = ["merchant_ids" => ["10000000000000"], "sub_merchant"=> false, "status"=> "activated"];
+
+            $this->assertEquals(json_encode($expectedContent), $content);
 
             $data = $this->terminalRepository->getByMerchantId('10000000000000')->toArray();
 
@@ -1610,11 +1612,13 @@ class TerminalMigrationTest extends TestCase
         $this->mockTerminalsServiceSendRequest(function ($path, $content, $method) {
             $response = new \Requests_Response;
 
-            $this->assertEquals(Requests::GET, $method);
+            $this->assertEquals(Requests::POST, $method);
 
-            $this->assertEquals("v1/merchants/10000000000000/terminals", $path);
+            $this->assertEquals("v1/merchants/terminals", $path);
 
-            $this->assertEquals("", $content);
+            $expectedContent = ["merchant_ids" => ["10000000000000"], "sub_merchant"=> false, "status"=> "activated"];
+
+            $this->assertEquals(json_encode($expectedContent), $content);
 
             $data = ['data' => [
                 $this->terminalRepository->getByMerchantId('10000000000000')->first(),
@@ -1658,11 +1662,13 @@ class TerminalMigrationTest extends TestCase
         $this->mockTerminalsServiceSendRequest(function ($path, $content, $method) use ($terminal) {
             $response = new \Requests_Response;
 
-            $this->assertEquals(Requests::GET, $method);
+            $this->assertEquals(Requests::POST, $method);
 
-            $this->assertEquals("v1/merchants/10000000000000/terminals", $path);
+            $this->assertEquals("v1/merchants/terminals", $path);
 
-            $this->assertEquals("", $content);
+            $expectedContent = ["merchant_ids" => ["10000000000000"], "sub_merchant"=> false, "status"=> "activated"];
+
+            $this->assertEquals(json_encode($expectedContent), $content);
 
             $data = $this->terminalRepository->getByMerchantId('10000000000000')->toArray();
 
