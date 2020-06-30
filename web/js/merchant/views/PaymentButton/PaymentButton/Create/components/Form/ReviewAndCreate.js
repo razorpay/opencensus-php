@@ -33,7 +33,7 @@ export default class ReviewAndCreate extends React.Component {
           </Button.Transparent>
 
           <Button.Primary onClick={this.props.submitPaymentButtonForm}>
-            Create Button <i class="i i-chevron-right" />
+            Create Button
           </Button.Primary>
         </div>
       </div>

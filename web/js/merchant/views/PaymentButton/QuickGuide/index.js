@@ -92,7 +92,7 @@ export const getPaymentButtonsQuickGuideIsClosed = props => {
 
   props.paymentbuttons.items.forEach(page => {
     if (page.status === 'paid' || page.status === 'partially_paid') {
-      setQuickGuideIsClosedInLocalStorage(RZPFeatures.PL, true);
+      setQuickGuideIsClosedInLocalStorage(RZPFeatures.PB, true);
 
       return false;
     }
