@@ -108,6 +108,8 @@ class ApiRequestAny
 
         $clientIp = end($requestedClientIPS);
 
+        $requestId = app('request')->requestId;
+
         $defaultHeaders = [
             'X-Dashboard'       => 'true',
             'X-User-Agent'      => Request::header('User-Agent'),
@@ -115,6 +117,7 @@ class ApiRequestAny
             'X-IP-Address'      => Request::ip(),
             'X-Org-Hostname'    => $domain,
             'X-Request-Origin'  => $originDomain,
+            'X-Request-TraceId' => $requestId,
         ];
 
         $headers = $options['headers'] ?? [];
