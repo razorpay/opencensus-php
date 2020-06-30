@@ -16,6 +16,8 @@ class CardProcessor extends BaseProcessor
     {
         $gatewayDowntimes = $gatewayDowntimes->where(GatewayDowntime::METHOD, '=', $this->method);
 
+        $gatewayDowntimes = $gatewayDowntimes->where(GatewayDowntime::SOURCE, '!=', Source::STATUSCAKE);
+
         $unavailableNetworks = $this->calculateUnavailableNetworks($gatewayDowntimes);
         $unavailableIssuer = $this->calculateUnavailableIssuer($gatewayDowntimes);
 

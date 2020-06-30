@@ -48,9 +48,6 @@ class Core extends Base\Core
     {
         $gatewayDowntimes = $this->repo->gateway_downtime->fetchCurrentAndFutureDowntimes($withoutTerminal = true);
 
-        // For now Not creating Downtimes From StatusCake -- Remove this as soon as issue fixed
-        $gatewayDowntimes = $gatewayDowntimes->where(GatewayDowntime::SOURCE, '!=', Source::STATUSCAKE);
-
         foreach (Payment\Method::getAllPaymentMethods() as $method)
         {
             $downtimeProcessor = __NAMESPACE__ . '\\' . studly_case($method) . 'Processor';
