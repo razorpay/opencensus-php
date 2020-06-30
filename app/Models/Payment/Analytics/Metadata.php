@@ -110,6 +110,7 @@ class Metadata
     const ARASTTA       = 'arastta';
     const PRESTASHOP    = 'prestashop';
     const WIX           = 'wix';
+    const GRAVITYFORMS  = 'gravityforms';
 
     const INTEGRATION_VALUES = [
         self::WOOCOMMERCE   => 1,
@@ -121,6 +122,7 @@ class Metadata
         self::ARASTTA       => 7,
         self::PRESTASHOP    => 8,
         self::WIX           => 9,
+        self::GRAVITYFORMS  => 10,
     ];
 
     // fraud detection keys
