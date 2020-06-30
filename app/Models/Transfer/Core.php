@@ -94,52 +94,23 @@ class Core extends Base\Core
 
         (new Validator)->validateTransfers($payment, $input, $orderTransfers);
 
-        $totalTransferAmount = 0;
-
-        $israzorxenabled = false;
-
-        try
-        {
-            $israzorxenabled =   strtolower($this->razorx->getTreatment($merchant->getId(),
-                                            RazorxTreatment::PAYMENT_TRANSFER_ASYNC,
-                                            $this->mode)) ===  'on';
-        }
-        catch (\Exception $ex)
-        {
-            $israzorxenabled = false;
-
-            $this->trace->warning(
-                TraceCode::PAYMENT_TRANSFER_RAZORX_REQUEST_FAILED,
-                ['transfer' => $input]);
-        }
-
         foreach ($input as $transfer)
         {
-            $transfer = $this->makeTransfer($transfer, $payment, $merchant,$israzorxenabled);
-
-            $totalTransferAmount += $transfer['amount'];
+            $transfer = $this->makeTransfer($transfer, $payment, $merchant,true);
 
             $transfers->push($transfer);
         }
-        //introducing razorflag for async if flag is false should go normal flow
 
-        if($israzorxenabled === false)
-        {
-            $this->updatePaymentAmountTransferred($payment, $totalTransferAmount);
 
-            (new Metric)->pushCreateSuccessMetrics(current($input));
-        }
-        else
-        {
-            $this->trace->info(
+        $this->trace->info(
                 TraceCode::PAYMENT_TRANSFER_RAZORX_SQS_PUSH,
                 ['transfer' => $input,
                 'paymentId' =>$payment->getId(),
                 'transferId'=>$transfer->getId()
                 ]);
 
-            TransferProcess::dispatch($this->mode, $payment->getId(), Constant::PAYMENT);
-        }
+        TransferProcess::dispatch($this->mode, $payment->getId(), Constant::PAYMENT);
+
 
         return $transfers;
     }
@@ -334,7 +305,7 @@ class Core extends Base\Core
      * @throws Exception\BadRequestException
      * @throws Exception\BadRequestValidationFailureException
      */
-    protected function makeTransfer(array $input, Base\Entity $source, Merchant\Entity $merchant,$israzorxenabled = false) : Entity
+    protected function makeTransfer(array $input, Base\Entity $source, Merchant\Entity $merchant, $asyncTransfer = false) : Entity
     {
         $validator = new Validator;
 
@@ -352,7 +323,7 @@ class Core extends Base\Core
 
             $input[Entity::STATUS] = Status::CREATED;
 
-            return $this->accountTransfer($id, $source, $input, $merchant,$israzorxenabled);
+            return $this->accountTransfer($id, $source, $input, $merchant,$asyncTransfer);
         }
     }
 
@@ -407,7 +378,7 @@ class Core extends Base\Core
      *
      * @return Entity
      */
-    protected function accountTransfer(string $accountId, Base\Entity $source, array $input, Merchant\Entity $merchant, bool $israzorxenabled)
+    protected function accountTransfer(string $accountId, Base\Entity $source, array $input, Merchant\Entity $merchant, bool $aysncTransfer)
     {
         $this->trace->info(
             TraceCode::PAYMENT_TRANSFER_TO_ACCOUNT,
@@ -429,7 +400,7 @@ class Core extends Base\Core
         $merchant->getValidator()->validateMerchantForMarketplaceTransfer($to, $this->mode);
 
 
-        if($israzorxenabled === true)
+        if($aysncTransfer === true)
         {
             $transfer = $this->buildTransferEntity($source, $to, $input, $merchant);
 
