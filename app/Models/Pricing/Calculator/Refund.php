@@ -4,12 +4,9 @@ namespace RZP\Models\Pricing\Calculator;
 
 use RZP\Exception;
 use RZP\Models\Pricing;
-use RZP\Models\Merchant;
-use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Admin\Org;
 use RZP\Models\Base as BaseModel;
-use RZP\Models\Payment\Refund\Constants as RefundConstants;
 
 /**
  * Class Refund
@@ -61,11 +58,7 @@ class Refund extends Base
             {
                 $rules = (new Pricing\Fee)->getInstantRefundsDefaultPricingPlanForMethod($this->entity);
 
-                $this->traceRefundRules($rules, 'default_pricing_plan');
-
                 $rules = $this->applyRefundModeFilters($rules);
-
-                $this->traceRefundRules($rules, 'refund_mode_filtered');
 
                 $rule = $this->applyAmountRangeFilterAndReturnOneRule($rules);
             }
@@ -101,81 +94,6 @@ class Refund extends Base
         ];
 
         return $this->applyFiltersOnRules($rules, $filters);
-    }
-
-    protected function applyAmountRangeFilterAndReturnOneRule($rules)
-    {
-        $payment = $this->entity;
-
-        $amount = $this->amount;
-
-        $filters = [
-            [Pricing\Entity::AMOUNT_RANGE_ACTIVE, true, true, false]
-        ];
-
-        $rules = $this->applyFiltersOnRules($rules, $filters);
-
-        $this->traceRefundRules($rules, 'amount_range_active_filtered');
-
-        if (count($rules) === 0)
-        {
-            throw new Exception\LogicException(
-                'Invalid rule count: 0, Merchant Id: ' . $payment->getMerchantId(),
-                ErrorCode::SERVER_ERROR_PRICING_RULE_ABSENT,
-                [
-                    'payment_id' => $payment->getId(),
-                    'method'     => $payment->getMethod(),
-                ]);
-        }
-
-        $rule = $this->chooseRuleWithAmount($rules, $amount);
-
-        if ($rule === null)
-        {
-            throw new Exception\LogicException(
-                'Failed to find a valid pricing rule for the payment, Merchant Id: ' . $payment->getMerchantId(),
-                ErrorCode::SERVER_ERROR_LOGICAL_ERROR,
-                [
-                    'payment_id' => $payment->getId(),
-                    'method'     => $payment->getMethod(),
-                ]);
-        }
-
-        return $rule;
-    }
-
-    protected function traceRefundRules($rules, $message)
-    {
-        $merchantId = $this->entity->merchant->getId();
-
-        $variant = $this->app->razorx->getTreatment(
-            $merchantId,
-            Merchant\RazorxTreatment::LOG_REFUND_PRICING_RULES,
-            $this->mode
-        );
-
-        if ($variant !== RefundConstants::RAZORX_VARIANT_ON)
-        {
-            return;
-        }
-
-        // This is sending a lot of traces and so for
-        // this tracing is not required.
-        $array = [];
-
-        foreach ($rules as $rule)
-        {
-            $array[] = $rule->toArray();
-        }
-
-        $this->trace->info(
-            TraceCode::PRICING_RULE_SELECTION,
-            [
-                'refund_id'   => $this->entity->getId(),
-                'merchant_id' => $merchantId,
-                'rules'       => $array,
-                'message'     => $message,
-            ]);
     }
 
     protected function getBasicPricingRuleFilters($product, $feature, $method) : array
