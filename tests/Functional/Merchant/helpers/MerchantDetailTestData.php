@@ -790,6 +790,72 @@ return [
         ],
     ],
 
+    'testVaCreationTestModeInPreSignup' => [
+        'request'  => [
+            'content' => [
+                'business_type'      => '1',
+                'transaction_volume' => '1',
+                'contact_name'       => 'Razorpay',
+                'contact_mobile'     => '9087654321',
+            ],
+            'url'     => '/pre_signup',
+            'method'  => 'PUT',
+        ],
+        'response' => [
+            'content' => [
+                'business_type'      => '1',
+                'transaction_volume' => '1',
+                'contact_name'       => 'Razorpay',
+                'contact_mobile'     => '9087654321',
+                'role'               => null,
+            ],
+        ],
+    ],
+
+    'testVaNotCreatedForBusinessBankingDisabledInTestModePreSignup' => [
+        'request'  => [
+            'content' => [
+                'business_type'      => '1',
+                'transaction_volume' => '1',
+                'contact_name'       => 'Razorpay',
+                'contact_mobile'     => '9087654321',
+            ],
+            'url'     => '/pre_signup',
+            'method'  => 'PUT',
+        ],
+        'response' => [
+            'content' => [
+                'business_type'      => '1',
+                'transaction_volume' => '1',
+                'contact_name'       => 'Razorpay',
+                'contact_mobile'     => '9087654321',
+                'role'               => null,
+            ],
+        ],
+    ],
+
+    'testVaNotCreatedInTestModeWhenMockedPreSignup' => [
+        'request'  => [
+            'content' => [
+                'business_type'      => '1',
+                'transaction_volume' => '1',
+                'contact_name'       => 'Razorpay',
+                'contact_mobile'     => '9087654321',
+            ],
+            'url'     => '/pre_signup',
+            'method'  => 'PUT',
+        ],
+        'response' => [
+            'content' => [
+                'business_type'      => '1',
+                'transaction_volume' => '1',
+                'contact_name'       => 'Razorpay',
+                'contact_mobile'     => '9087654321',
+                'role'               => null,
+            ],
+        ],
+    ],
+
     'testPutPreSignupDetailsForUnregisteredBusiness' => [
         'request'  => [
             'content' => [

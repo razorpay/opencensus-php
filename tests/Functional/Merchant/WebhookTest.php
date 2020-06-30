@@ -31,6 +31,7 @@ use RZP\Tests\Functional\Fixtures\Entity\Pricing;
 use RZP\Tests\Functional\FundTransfer\AttemptTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use Http\Client\Common\Exception\ClientErrorException;
+use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Tests\Functional\FundTransfer\AttemptReconcileTrait;
 use RZP\Tests\Functional\Fixtures\Entity\Base as BaseFixture;
@@ -49,6 +50,7 @@ class WebhookTest extends TestCase
     use TestsWebhookEvents;
     use DbEntityFetchTrait;
     use PartnerTrait;
+    use TestsBusinessBanking;
 
     protected $sharedTerminal;
 
@@ -273,6 +275,8 @@ class WebhookTest extends TestCase
     {
         $this->fixtures->merchant->addFeatures(['payout']);
 
+        $this->fixtures->terminal->createBankAccountTerminalForBusinessBanking();
+
         $this->mockServiceStorkRequest(
             function ($path, $payload)
             {
@@ -295,11 +299,13 @@ class WebhookTest extends TestCase
     {
         $this->fixtures->merchant->addFeatures(['payout']);
 
+        $this->fixtures->terminal->createBankAccountTerminalForBusinessBanking();
+
         $this->mockServiceStorkRequest(
             function ($path, $payload)
             {
                 return $this->getStorkListResponseEmpty();
-            })->once();
+            })->times(2);
 
         $this->startTest();
     }
@@ -307,6 +313,8 @@ class WebhookTest extends TestCase
     public function testEditWebhookForProductBankingWithStork()
     {
         $this->fixtures->merchant->addFeatures(['payout']);
+
+        $this->fixtures->terminal->createBankAccountTerminalForBusinessBanking();
 
         $this->mockServiceStorkRequest(
             function ($path, $payload)
@@ -327,6 +335,8 @@ class WebhookTest extends TestCase
     public function testGetWebhooksProductBankingWithStork()
     {
         $this->fixtures->merchant->addFeatures(['payout']);
+
+        $this->fixtures->terminal->createBankAccountTerminalForBusinessBanking();
 
         $this->mockServiceStorkRequest(
             function ($path, $payload)

@@ -855,6 +855,20 @@ class Service extends Base\Service
             $zapierData = $this->getZapierData($this->merchant, $input);
 
             (new Core)->postFormSubmissionToZapier($zapierData, 'signups', $this->merchant);
+
+            //Creating virtual account for a merchant in test mode.
+            //Handling within try catch to avoid any breaking of pre sign up flow.
+            try
+            {
+                (new Merchant\Activate)->activateBusinessBankingIfApplicable($this->merchant);
+            }
+            catch (\Throwable $e)
+            {
+                $this->trace->traceException(
+                    $e,
+                    Trace::ERROR,
+                    TraceCode::BANKING_ACCOUNT_CREATION_TEST_MODE_FAILED);
+            }
         }
 
         $preSignupDetails = $this->getPreSignupDetails();

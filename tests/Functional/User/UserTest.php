@@ -2076,19 +2076,18 @@ class UserTest extends TestCase
 
     public function testEditContactMobileByUserOnBankingWithoutAuthToken()
     {
-        $user = $this->fixtures->create('user');
+        $user = $this->fixtures->user->createUserForMerchant('10000000000000', ['email' => 'test@razorpay.com']);
 
-        $merchantIds = $user->merchants()->get()->pluck('id')->toArray();
+        $this->setUpMerchantForBusinessBanking(false, 10000000);
 
-        $this->fixtures->merchant->setRestricted(true, $merchantIds[0]);
+        $this->fixtures->merchant->setRestricted(true, '10000000000000');
 
-        $this->ba->proxyAuth('rzp_test_' . $merchantIds[0], $user['id'], 'owner');
+        $this->ba->proxyAuth('rzp_test_' . '10000000000000', $user['id'], 'owner');
 
         $this->testData[__FUNCTION__]['request']['server']['HTTP_X-Request-Origin'] = config('applications.banking_service_url');
 
         $this->startTest();
     }
-
     protected function mockRedisSuccess($funcName, $userId)
     {
         $token = $this->app['token_service']->generate($userId);

@@ -18,11 +18,13 @@ use RZP\Models\Merchant\Document\Source;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\OAuth\OAuthTestCase;
 use RZP\Models\Merchant\Detail\ActivationFlow;
+use RZP\Tests\Functional\Fixtures\Entity\User;
 use RZP\Tests\Functional\Helpers\MocksDnsTrait;
 use RZP\Models\Merchant\Detail\BusinessCategory;
 use RZP\Models\Merchant\Detail\BusinessSubcategory;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 use RZP\Models\Merchant\Detail\GSTINVerificationStatus;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 use RZP\Models\Merchant\Detail\Entity as MerchantDetails;
@@ -37,6 +39,7 @@ class MerchantDetailTest extends OAuthTestCase
     use HeimdallTrait;
     use MocksDnsTrait;
     use DbEntityFetchTrait;
+    use TestsBusinessBanking;
 
     const PARTNER                = 'partner';
     const ACTIVATION             = 'activation';
@@ -737,6 +740,338 @@ class MerchantDetailTest extends OAuthTestCase
         $this->mockHubSpotClient('trackPreSignupEvent');
 
         $this->startTest();
+    }
+
+    public function testVaCreationTestModeInPreSignup()
+    {
+        $this->testData[__FUNCTION__]['request']['server']['HTTP_X-Request-Origin'] = config('applications.banking_service_url');
+
+        $pricingPlanId = $this->fixtures->create('pricing', [
+            'product'        => 'banking',
+            'id'             => '1zE31zbybacac1',
+            'plan_id'        => '1hDYlICobzOCYt',
+            'plan_name'      => 'testDefaultPlan',
+            'feature'        => 'fund_account_validation',
+            'payment_method' => 'bank_account',
+            'percent_rate'   => 900,
+            'org_id'         => '100000razorpay',
+        ]);
+
+        $this->fixtures->merchant->edit('10000000000000', [
+            'pricing_plan_id'  => $pricingPlanId['id'],
+            'activated'        => false,
+            'business_banking' => true,
+            'international'    => 0,
+            'category2'        => null
+        ]);
+
+        $this->verifyOnboardingEvent('banking');
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', [
+            Entity::BUSINESS_TYPE => '1',
+            'merchant_id'         => '10000000000000',
+        ]);
+
+        $user = $this->fixtures->user->createUserForMerchant($merchantDetail[MerchantDetails::MERCHANT_ID], [], 'owner', 'live');
+
+        $this->fixtures->user->createUserMerchantMapping([
+                                                             'merchant_id' => $merchantDetail[MerchantDetails::MERCHANT_ID],
+                                                             'user_id'     => $user['id'],
+                                                             'product'     => 'banking',
+                                                             'role'        => 'owner',
+                                                         ], 'live');
+
+        $this->fixtures->terminal->createBankAccountTerminalForBusinessBanking();
+
+        $this->ba->proxyAuth('rzp_live_' . $merchantDetail['merchant_id']);
+
+        $this->startTest();
+
+        $bankAccount = DB::table('bank_accounts')->where('merchant_id', '=', $merchantDetail[MerchantDetails::MERCHANT_ID])
+                         ->where('type', '=', 'virtual_account')
+                         ->get();
+
+        $this->assertNotNull($bankAccount);
+
+        $this->assertTrue(count($bankAccount) === 1);
+
+        $entityId = $bankAccount[0]->entity_id;
+
+        $bankAccountId = $bankAccount[0]->id;
+
+        $virtualAccount = DB::table('virtual_accounts')->where('merchant_id', '=', $merchantDetail[MerchantDetails::MERCHANT_ID])
+                            ->where('id', '=', $entityId)
+                            ->where('bank_account_id', '=', $bankAccountId)
+                            ->get();
+
+        $this->assertNotNull($virtualAccount);
+
+        $this->assertTrue(count($virtualAccount) === 1);
+
+        $balanceId = $virtualAccount[0]->balance_id;
+
+        $balance = DB::table('balance')->where('merchant_id', '=', $merchantDetail[MerchantDetails::MERCHANT_ID])
+                     ->where('type', '=', 'banking')
+                     ->where('account_type', '=', 'shared')
+                     ->where('id', '=', $balanceId)
+                     ->get();
+
+        $this->assertNotNull($balance);
+
+        $this->assertTrue(count($balance) === 1);
+
+        $accountNumber = $balance[0]->account_number;
+
+        $bankingAccount = DB::table('banking_accounts')->where('merchant_id', '=', $merchantDetail[MerchantDetails::MERCHANT_ID])
+                            ->where('account_type', '=', 'nodal')
+                            ->where('account_number', '=', $accountNumber)
+                            ->where('balance_id', '=', $balanceId)
+                            ->get();
+
+        $this->assertNotNull($bankingAccount);
+
+        $this->assertTrue(count($bankingAccount) === 1);
+
+        $bankAccountLiveMode = $this->getDbEntity('bank_account',
+                                                  [
+                                                      'merchant_id' => $merchantDetail[MerchantDetails::MERCHANT_ID],
+                                                      'type'        => 'virtual_account'
+                                                  ], 'live');
+
+        $this->assertNull($bankAccountLiveMode);
+
+        $virtualAccountLiveMode = $this->getDbEntity('virtual_account',
+                                                     [
+                                                         'merchant_id' => $merchantDetail[MerchantDetails::MERCHANT_ID]
+                                                     ], 'live');
+
+        $this->assertNull($virtualAccountLiveMode);
+
+        $balanceLiveMode = $this->getDbEntity('balance',
+                                              [
+                                                  'merchant_id'  => $merchantDetail[MerchantDetails::MERCHANT_ID],
+                                                  'type'         => 'banking',
+                                                  'account_type' => 'shared'
+                                              ], 'live');
+
+        $this->assertNull($balanceLiveMode);
+
+        $bankingAccountLiveMode = $this->getDbEntity('banking_account',
+                                                     [
+                                                         'merchant_id'  => $merchantDetail[MerchantDetails::MERCHANT_ID],
+                                                         'account_type' => 'nodal'
+                                                     ], 'live');
+
+        $this->assertNull($bankingAccountLiveMode);
+
+    }
+
+    public function testVaNotCreatedForBusinessBankingDisabledInTestModePreSignup()
+    {
+        $this->testData[__FUNCTION__]['request']['server']['HTTP_X-Request-Origin'] = config('applications.banking_service_url');
+
+        $pricingPlanId = $this->fixtures->create('pricing', [
+            'product'        => 'banking',
+            'id'             => '1zE31zbybacac1',
+            'plan_id'        => '1hDYlICobzOCYt',
+            'plan_name'      => 'testDefaultPlan',
+            'feature'        => 'fund_account_validation',
+            'payment_method' => 'bank_account',
+            'percent_rate'   => 900,
+            'org_id'         => '100000razorpay',
+        ]);
+
+        $this->fixtures->merchant->edit('10000000000000', [
+            'pricing_plan_id'  => $pricingPlanId['id'],
+            'activated'        => false,
+            'business_banking' => false,
+            'international'    => 0,
+            'category2'        => null
+        ]);
+
+        $this->verifyOnboardingEvent('banking');
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', [
+            Entity::BUSINESS_TYPE => '1',
+            'merchant_id'         => '10000000000000',
+        ]);
+
+        $user = $this->fixtures->user->createUserForMerchant($merchantDetail[MerchantDetails::MERCHANT_ID], [], 'owner', 'live');
+
+        $this->fixtures->user->createUserMerchantMapping([
+                                                             'merchant_id' => $merchantDetail[MerchantDetails::MERCHANT_ID],
+                                                             'user_id'     => $user['id'],
+                                                             'product'     => 'banking',
+                                                             'role'        => 'owner',
+                                                         ], 'live');
+
+        $this->fixtures->terminal->createBankAccountTerminalForBusinessBanking();
+
+        $this->ba->proxyAuth('rzp_live_'.$merchantDetail['merchant_id']);
+
+        $this->startTest();
+
+        $bankAccount = DB::table('bank_accounts')->where('merchant_id', '=', $merchantDetail[MerchantDetails::MERCHANT_ID])
+                         ->where('type', '=', 'virtual_account')
+                         ->get();
+
+        $this->assertTrue(count($bankAccount) === 0);
+
+        $virtualAccount = DB::table('virtual_accounts')->where('merchant_id', '=', $merchantDetail[MerchantDetails::MERCHANT_ID])
+                            ->get();
+
+        $this->assertTrue(count($virtualAccount) === 0);
+
+        $balance = DB::table('balance')->where('merchant_id', '=', $merchantDetail[MerchantDetails::MERCHANT_ID])
+                     ->where('type', '=', 'banking')
+                     ->where('account_type', '=', 'shared')
+                     ->get();
+
+        $this->assertTrue(count($balance) === 0);
+
+        $bankingAccount = DB::table('banking_accounts')->where('merchant_id', '=', $merchantDetail[MerchantDetails::MERCHANT_ID])
+                            ->where('account_type', '=', 'nodal')
+                            ->get();
+
+        $this->assertTrue(count($bankingAccount) === 0);
+
+        $bankAccountLiveMode = $this->getDbEntity('bank_account',
+                                                  [
+                                                      'merchant_id' => $merchantDetail[MerchantDetails::MERCHANT_ID],
+                                                      'type' => 'virtual_account'
+                                                  ], 'live');
+
+        $this->assertNull($bankAccountLiveMode);
+
+        $virtualAccountLiveMode = $this->getDbEntity('virtual_account',
+                                                     [
+                                                         'merchant_id' => $merchantDetail[MerchantDetails::MERCHANT_ID]
+                                                     ], 'live');
+
+        $this->assertNull($virtualAccountLiveMode);
+
+        $balanceLiveMode = $this->getDbEntity('balance',
+                                              [
+                                                  'merchant_id'  => $merchantDetail[MerchantDetails::MERCHANT_ID],
+                                                  'type'         => 'banking',
+                                                  'account_type' => 'shared'
+                                              ], 'live');
+
+        $this->assertNull($balanceLiveMode);
+
+        $bankingAccountLiveMode = $this->getDbEntity('banking_account',
+                                                     [
+                                                         'merchant_id'  => $merchantDetail[MerchantDetails::MERCHANT_ID],
+                                                         'account_type' => 'nodal'
+                                                     ], 'live');
+
+        $this->assertNull($bankingAccountLiveMode);
+
+    }
+
+    public function testVaNotCreatedInTestModeWhenMockedPreSignup()
+    {
+        $this->mockRazorxTreatment();
+
+        $this->testData[__FUNCTION__]['request']['server']['HTTP_X-Request-Origin'] = config('applications.banking_service_url');
+
+        $pricingPlanId = $this->fixtures->create('pricing', [
+            'product'        => 'banking',
+            'id'             => '1zE31zbybacac1',
+            'plan_id'        => '1hDYlICobzOCYt',
+            'plan_name'      => 'testDefaultPlan',
+            'feature'        => 'fund_account_validation',
+            'payment_method' => 'bank_account',
+            'percent_rate'   => 900,
+            'org_id'         => '100000razorpay',
+        ]);
+
+        $this->fixtures->merchant->edit('10000000000000', [
+            'pricing_plan_id'  => $pricingPlanId['id'],
+            'activated'        => false,
+            'business_banking' => true,
+            'international'    => 0,
+            'category2'        => null
+        ]);
+
+        $this->verifyOnboardingEvent('banking');
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', [
+            Entity::BUSINESS_TYPE => '1',
+            'merchant_id'         => '10000000000000',
+        ]);
+
+        $user = $this->fixtures->user->createUserForMerchant($merchantDetail[MerchantDetails::MERCHANT_ID], [], 'owner', 'live');
+
+        $this->fixtures->user->createUserMerchantMapping([
+                                                             'merchant_id' => $merchantDetail[MerchantDetails::MERCHANT_ID],
+                                                             'user_id'     => $user['id'],
+                                                             'product'     => 'banking',
+                                                             'role'        => 'owner',
+                                                         ], 'live');
+
+        $this->fixtures->terminal->createBankAccountTerminalForBusinessBanking();
+
+        $this->ba->proxyAuth('rzp_live_'.$merchantDetail['merchant_id']);
+
+        $this->startTest();
+
+        $bankAccount = DB::table('bank_accounts')->where('merchant_id', '=', $merchantDetail[MerchantDetails::MERCHANT_ID])
+                         ->where('type', '=', 'virtual_account')
+                         ->get();
+
+        $this->assertTrue(count($bankAccount) === 0);
+
+        $virtualAccount = DB::table('virtual_accounts')->where('merchant_id', '=', $merchantDetail[MerchantDetails::MERCHANT_ID])
+                            ->get();
+
+        $this->assertTrue(count($virtualAccount) === 0);
+
+        $balance = DB::table('balance')->where('merchant_id', '=', $merchantDetail[MerchantDetails::MERCHANT_ID])
+                     ->where('type', '=', 'banking')
+                     ->where('account_type', '=', 'shared')
+                     ->get();
+
+        $this->assertTrue(count($balance) === 0);
+
+        $bankingAccount = DB::table('banking_accounts')->where('merchant_id', '=', $merchantDetail[MerchantDetails::MERCHANT_ID])
+                            ->where('account_type', '=', 'nodal')
+                            ->get();
+
+        $this->assertTrue(count($bankingAccount) === 0);
+
+        $bankAccountLiveMode = $this->getDbEntity('bank_account',
+                                                  [
+                                                      'merchant_id' => $merchantDetail[MerchantDetails::MERCHANT_ID],
+                                                      'type' => 'virtual_account'
+                                                  ], 'live');
+
+        $this->assertNull($bankAccountLiveMode);
+
+        $virtualAccountLiveMode = $this->getDbEntity('virtual_account',
+                                                     [
+                                                         'merchant_id' => $merchantDetail[MerchantDetails::MERCHANT_ID]
+                                                     ], 'live');
+
+        $this->assertNull($virtualAccountLiveMode);
+
+        $balanceLiveMode = $this->getDbEntity('balance',
+                                              [
+                                                  'merchant_id'  => $merchantDetail[MerchantDetails::MERCHANT_ID],
+                                                  'type'         => 'banking',
+                                                  'account_type' => 'shared'
+                                              ], 'live');
+
+        $this->assertNull($balanceLiveMode);
+
+        $bankingAccountLiveMode = $this->getDbEntity('banking_account',
+                                                     [
+                                                         'merchant_id'  => $merchantDetail[MerchantDetails::MERCHANT_ID],
+                                                         'account_type' => 'nodal'
+                                                     ], 'live');
+
+        $this->assertNull($bankingAccountLiveMode);
+
     }
 
     public function testPutPreSignupDetailsForUnregisteredBusiness()

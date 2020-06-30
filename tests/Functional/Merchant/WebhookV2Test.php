@@ -10,12 +10,14 @@ use Illuminate\Database\Eloquent\Factory;
 use RZP\Tests\Functional\Helpers\WebhookV2Trait;
 use RZP\Tests\Functional\Helpers\MocksDnsTrait;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
+use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 
 class WebhookV2Test extends TestCase
 {
     use WebhookV2Trait;
     use RequestResponseFlowTrait;
     use MocksDnsTrait;
+    use TestsBusinessBanking;
 
     // Used in webhook trait
     protected $storkMock;
@@ -71,6 +73,8 @@ class WebhookV2Test extends TestCase
     {
         $this->fixtures->merchant->addFeatures(['payout']);
 
+        $this->fixtures->terminal->createBankAccountTerminalForBusinessBanking();
+
         $this->testData[__FUNCTION__]['request']['content']  = $this->getApiCreatePayloadForBanking();
         $this->testData[__FUNCTION__]['response']['content'] = $this->addCreatedUpdatedByEmail($this->convertAllToUnixTimestamp($this->getApiCreateResponseBodyForBanking()));
 
@@ -88,7 +92,7 @@ class WebhookV2Test extends TestCase
                     return $this->getStorkResponse(['webhook' => $this->getStorkCreateResponseBodyForBanking()]);
                 }
                 return new \Requests_Response();
-            })->times(2);
+            })->times(3);
 
         $this->startTest();
     }
@@ -96,6 +100,8 @@ class WebhookV2Test extends TestCase
     public function testCreateWebhookForBankingAlreadyExistsFailure()
     {
         $this->fixtures->merchant->addFeatures(['payout']);
+
+        $this->fixtures->terminal->createBankAccountTerminalForBusinessBanking();
 
         $this->testData[__FUNCTION__]['request']['content']  = $this->getApiCreatePayloadForBanking();
 
@@ -184,6 +190,8 @@ class WebhookV2Test extends TestCase
 
     public function testGetWebhookForBanking()
     {
+        $this->fixtures->terminal->createBankAccountTerminalForBusinessBanking();
+
         $this->testData[__FUNCTION__]['response']['content'] = $this->convertAllToUnixTimestamp($this->getApiGetResponseBody());
 
         $expected  = $this->getStorkGetPayloadForBanking();
@@ -248,6 +256,8 @@ class WebhookV2Test extends TestCase
             'items'  => array_map(function ($v) { return $this->convertAllToUnixTimestamp($v); }, $this->getApiListResponseBody()),
         ];
 
+        $this->fixtures->terminal->createBankAccountTerminalForBusinessBanking();
+
         $expected  = $this->getStorkListPayloadForBanking();
         $mockeryOn = $this->getArgsMatcherForWebhook($expected);
 
@@ -286,6 +296,8 @@ class WebhookV2Test extends TestCase
     {
         $this->fixtures->merchant->addFeatures(['payout']);
 
+        $this->fixtures->terminal->createBankAccountTerminalForBusinessBanking();
+
         $this->testData[__FUNCTION__]['request']['content'] = $this->getApiUpdatePayloadForBanking();
         $this->testData[__FUNCTION__]['response']['content'] = $this->addCreatedUpdatedByEmail($this->convertAllToUnixTimestamp($this->getApiUpdateResponseBodyForBanking()));
 
@@ -309,7 +321,7 @@ class WebhookV2Test extends TestCase
 
                 return new \Requests_Response();
 
-            })->times(2);
+            })->times(3);
 
         $this->startTest();
     }
@@ -317,6 +329,8 @@ class WebhookV2Test extends TestCase
     public function testUpdateWebhookForBankingNotExistsFailure()
     {
         $this->fixtures->merchant->addFeatures(['payout']);
+
+        $this->fixtures->terminal->createBankAccountTerminalForBusinessBanking();
 
         $this->testData[__FUNCTION__]['request']['content'] = $this->getApiUpdatePayloadForBanking();
 

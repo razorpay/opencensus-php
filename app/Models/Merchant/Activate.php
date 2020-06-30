@@ -661,32 +661,6 @@ class Activate extends Base\Core
 
     protected function onBoardMerchantOnRazorpayxInTestMode(Entity $merchant)
     {
-        $isMerchantActive = $merchant->isActivated();
-
-        try
-        {
-            // Perform these checks only if the merchant is not active
-            if ($isMerchantActive === false)
-            {
-                /** @var Merchant\Validator $merchantValidator */
-                $merchantValidator = $merchant->getValidator();
-
-                $merchantValidator->validateInstantActivationMandatoryAttributes();
-            }
-        }
-        catch (\Throwable $e)
-        {
-            $this->trace->traceException(
-                $e,
-                Trace::ERROR,
-                TraceCode::MERCHANT_RAZORPAYX_ACTIVATION_PRE_VALIDATION_FAILURE,
-                [
-                    'mode'  => Mode::TEST
-                ]);
-
-            return false;
-        }
-
         $experimentActive = $this->onBoardMerchantOnRazorpayx($merchant, Mode::TEST);
 
         return ($experimentActive === true);

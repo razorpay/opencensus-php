@@ -5712,7 +5712,78 @@ class MerchantTest extends TestCase
      */
     public function testMerchantSwitchProductWhenMerchantNotActivatedAndL1Incomplete()
     {
-        $this->testMerchantSwitchProductWhenMerchantNotActivatedAndXOnboardingExperimentOff('on', null);
+        $this->enableRazorXTreatmentForXOnboarding('on');
+
+        $user = (new User())->createUserForMerchant();
+
+        $this->fixtures->edit('merchant',
+                              '10000000000000',
+                              ['activated' => false, 'business_banking' => true, 'category2' => null]);
+
+        $this->fixtures->create('merchant_detail',
+                                [
+                                    'merchant_id' => '10000000000000',
+                                    'activation_status' => 'pending'
+                                ]);
+
+        $this->fixtures->create('terminal:bank_account_terminal_for_business_banking',
+                                ['merchant_id' => '100000Razorpay']);
+
+        // To create a virtual account we need to enable bank transfer
+        $this->fixtures->edit('methods', '10000000000000', ['bank_transfer' => true]);
+
+        $liveBankingAccount = $this->getDbEntity('banking_account',
+                                                 [
+                                                     'merchant_id' => '10000000000000',
+                                                 ],
+                                                 'live');
+
+        $this->assertNull($liveBankingAccount);
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', $user['id'], 'owner');
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $testData['request']['server']['HTTP_X-Request-Origin'] = config('applications.banking_service_url');
+
+        $this->startTest();
+
+        $liveBankingAccount = $this->getDbEntity('banking_account',
+                                                 [
+                                                     'merchant_id' => '10000000000000',
+                                                 ],
+                                                 'live');
+
+        $this->assertNull($liveBankingAccount);
+
+        /** @var BankingAccount\Entity $bankingAccount */
+        $bankingAccount = $this->getDbLastEntity('banking_account');
+
+        $this->assertNotNull($bankingAccount);
+
+        $merchants = DB::connection('test')->table('merchant_users')
+                       ->where('user_id', '=', $user['id'])
+                       ->pluck('merchant_id', 'product');
+
+        $this->assertEquals(count($merchants), 2);
+
+        $this->assertArrayHasKey('banking', $merchants);
+
+        $testFeaturesArray = $this->getDbEntity('feature',
+                                                [
+                                                    'entity_id' => '10000000000000',
+                                                    'entity_type' => 'merchant'
+                                                ]);
+
+        $liveFeaturesArray = $this->getDbEntity('feature',
+                                                [
+                                                    'entity_id' => '10000000000000',
+                                                    'entity_type' => 'merchant'
+                                                ],
+                                                'live');
+
+        $this->assertNotNull($testFeaturesArray);
+        $this->assertNull($liveFeaturesArray);
     }
 
     public function testMerchantSwitchProductSendsInterestDetailsToSalesforce($timesMethodCalled = 1, $banking = false)
