@@ -35,6 +35,24 @@ class Service extends Base\Service
         return $entity->toArrayPublic();
     }
 
+    public function fetchMultiple(array $input): array
+    {
+        $this->modifyInputForFetch($input);
+
+        $entities = $this->entityRepo
+            ->fetch($input, $this->merchant->getId());
+
+        return $entities->toArrayPublic();
+    }
+
+    protected function modifyInputForFetch(array & $input)
+    {
+        if ((isset($input[Entity::VIEW_TYPE]) === false) || (empty($input[Entity::VIEW_TYPE]) === true))
+        {
+            $input[Entity::VIEW_TYPE] = Entity::VIEW_TYPE_PAGE;
+        }
+    }
+
     public function fetchWithDetailsForDashboard(string $id, array $input)
     {
         $entity = $this->entityRepo->findByPublicIdAndMerchant($id, $this->merchant, $input);

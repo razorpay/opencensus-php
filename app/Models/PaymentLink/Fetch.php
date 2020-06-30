@@ -13,6 +13,7 @@ class Fetch extends BaseFetch
             Entity::USER_ID       => 'filled|alpha_num|size:14',
             Entity::RECEIPT       => 'filled|string|min:2|max:40',
             Entity::TITLE         => 'filled|string|min:2|max:255',
+            Entity::VIEW_TYPE     => 'filled|custom',
             Entity::STATUS        => 'filled|required_with:status_reason|custom',
             Entity::STATUS_REASON => 'filled|custom',
             self::EXPAND_EACH     => 'filled|string|in:user',
@@ -27,6 +28,7 @@ class Fetch extends BaseFetch
             Entity::TITLE,
             Entity::STATUS,
             Entity::STATUS_REASON,
+            Entity::VIEW_TYPE,
             self::EXPAND_EACH,
         ],
         AuthType::PRIVILEGE_AUTH => [
@@ -40,6 +42,7 @@ class Fetch extends BaseFetch
 
     const ES_FIELDS = [
         Entity::TITLE,
+        Entity::VIEW_TYPE,
     ];
 
     const COMMON_FIELDS = [
@@ -58,5 +61,10 @@ class Fetch extends BaseFetch
     protected function validateStatusReason(string $attribute, string $value)
     {
         StatusReason::checkStatusReason($value);
+    }
+
+    protected function validateViewType(string $attribute, string $value)
+    {
+        ViewType::checkViewType($value);
     }
 }

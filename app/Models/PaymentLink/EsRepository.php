@@ -13,6 +13,7 @@ class EsRepository extends Base\EsRepository
         Entity::USER_ID,
         Entity::STATUS,
         Entity::STATUS_REASON,
+        Entity::VIEW_TYPE,
         Entity::RECEIPT,
         Entity::TITLE,
         Entity::CREATED_AT,
@@ -21,6 +22,7 @@ class EsRepository extends Base\EsRepository
     protected $queryFields = [
         Entity::RECEIPT,
         Entity::TITLE,
+        Entity::VIEW_TYPE,
     ];
 
     public function buildQueryForUserId(array & $query, string $value)
@@ -41,5 +43,10 @@ class EsRepository extends Base\EsRepository
     public function buildQueryForReceipt(array & $query, string $value)
     {
         $this->addTermFilter($query, Entity::RECEIPT, $value);
+    }
+
+    public function buildQueryForViewType(array & $query, string $value)
+    {
+        $this->addTermFilter($query, Entity::VIEW_TYPE, $value);
     }
 }

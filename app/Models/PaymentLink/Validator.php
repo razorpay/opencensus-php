@@ -41,7 +41,7 @@ class Validator extends Base\Validator
         Entity::TERMS           => 'nullable|string|min:5|max:2048',
         Entity::SETTINGS        => 'nullable|array',
         Entity::TEMPLATE_TYPE   => 'sometimes|string|max:24',
-        Entity::VIEW_TYPE       => 'sometimes|string|in:button,page',
+        Entity::VIEW_TYPE       => 'sometimes|string|custom',
 
         Entity::SETTINGS . '.' . Entity::THEME                        => 'nullable|string|in:light,dark',
         Entity::SETTINGS . '.' . Entity::UDF_SCHEMA                   => 'nullable|json',
@@ -51,7 +51,9 @@ class Validator extends Base\Validator
         Entity::SETTINGS . '.' . Entity::PAYMENT_SUCCESS_MESSAGE      => 'nullable|string|min:5|max:2048',
         Entity::SETTINGS . '.' . Entity::CHECKOUT_OPTIONS             => 'array',
         Entity::SETTINGS . '.' . Entity::PAYMENT_BUTTON_LABEL         => 'string|max:16',
-
+        Entity::SETTINGS . '.' . Entity::PP_BUTTON_DISABLE_BRANDING   => 'nullable|string|in:0,1',
+        Entity::SETTINGS . '.' . Entity::PP_BUTTON_THEME              => 'nullable|string|max:32',
+        Entity::SETTINGS . '.' . Entity::PP_BUTTON_TEXT               => 'string|max:16',
         Entity::PAYMENT_PAGE_ITEMS => 'required|sequential_array|min:1',
     ];
 
@@ -76,6 +78,9 @@ class Validator extends Base\Validator
         Entity::SETTINGS . '.' . Entity::PAYMENT_SUCCESS_MESSAGE      => 'nullable|string|min:5|max:2048',
         Entity::SETTINGS . '.' . Entity::CHECKOUT_OPTIONS             => 'array',
         Entity::SETTINGS . '.' . Entity::PAYMENT_BUTTON_LABEL         => 'string|max:16',
+        Entity::SETTINGS . '.' . Entity::PP_BUTTON_DISABLE_BRANDING   => 'nullable|string|in:0,1',
+        Entity::SETTINGS . '.' . Entity::PP_BUTTON_THEME              => 'nullable|string|max:32',
+        Entity::SETTINGS . '.' . Entity::PP_BUTTON_TEXT               => 'string|max:16',
 
         Entity::PAYMENT_PAGE_ITEMS => 'sometimes|sequential_array|min:1|max:25',
     ];
@@ -522,5 +527,10 @@ class Validator extends Base\Validator
         null,
         null,
         'Input field not present');
+    }
+
+    public function validateViewType(string $attribute,string $value)
+    {
+        ViewType::checkViewType($value);
     }
 }

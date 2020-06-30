@@ -440,6 +440,9 @@ return [
             'receipt' => [
                 'type'  => 'keyword',
             ],
+            'view_type' => [
+                'type'  => 'keyword',
+            ],
             'title' => [
                 'type'            => 'text',
                 'analyzer'        => 'edge_ngram_analyzer',

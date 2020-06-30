@@ -382,6 +382,23 @@ class PaymentLinkTest extends TestCase
     public function testCreatePaymentLinkWithMultiplePaymentPageItem()
     {
         $this->startTest();
+
+        $entity = $this->getDbLastEntity("payment_link");
+
+        $entityArray = $entity->toArray();
+
+        self::assertEquals($entityArray['view_type'], 'page');
+    }
+
+    public function testCreatePaymentButtonWithMultipleItems()
+    {
+        $this->startTest();
+
+        $entity = $this->getDbLastEntity("payment_link");
+
+        $entityArray = $entity->toArray();
+
+        self::assertEquals($entityArray['view_type'], 'button');
     }
 
     public function testCreatePaymentLinkWithoutAmountOrCurrency()
@@ -403,8 +420,25 @@ class PaymentLinkTest extends TestCase
 
     public function testFetchPaymentLinks()
     {
-        $this->createPaymentLinkWithMultipleItem();
+        $this->testCreatePaymentLinkWithMultiplePaymentPageItem();
+        $this->startTest();
+    }
 
+    public function testFetchPaymentButtons()
+    {
+        $this->testCreatePaymentButtonWithMultipleItems();
+        $this->startTest();
+    }
+
+    public function testFetchButtonNotInPagesList()
+    {
+        $this->testCreatePaymentLinkWithMultiplePaymentPageItem();
+        $this->startTest();
+    }
+
+    public function testFetchPageNotInButtonList()
+    {
+        $this->testCreatePaymentButtonWithMultipleItems();
         $this->startTest();
     }
 

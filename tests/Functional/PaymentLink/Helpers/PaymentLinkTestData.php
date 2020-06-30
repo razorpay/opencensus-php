@@ -207,6 +207,109 @@ return [
         ],
     ],
 
+    'testCreatePaymentButtonWithMultipleItems' => [
+        'request'  => [
+            'url'     => '/payment_pages',
+            'method'  => 'post',
+            'content' => [
+                'view_type'     => 'button',
+                'receipt'       => '00000000000001',
+                'title'         => 'Sample title',
+                'description'   => '[{"insert":"Sample description"},{"insert":"\\n"}]',
+                'notes'         => [
+                    'sample_key' => 'Sample notes',
+                ],
+                'settings'=>[
+                    'pp_button_text' => 'Please pay',
+                    'pp_button_theme'=> 'rzp-dark-standard',
+                ],
+                'payment_page_items' => [
+                    [
+                        'item' => [
+                            'name'        =>  'amount',
+                            'description' => NULL,
+                            'amount'      => 100000,
+                            'currency'    => 'INR',
+                        ],
+                        'mandatory'         => TRUE,
+                        'image_url'         => NULL,
+                        'stock'             => NULL,
+                        'min_purchase'      => NULL,
+                        'max_purchase'      => NULL,
+                        'min_amount'        => NULL,
+                        'max_amount'        => NULL,
+                    ],
+                    [
+                        'item' => [
+                            'name'        =>  'donate',
+                            'description' => NULL,
+                            'amount'      => 500000,
+                            'currency'    => 'INR',
+                        ],
+                        'mandatory'         => FALSE,
+                        'image_url'         => NULL,
+                        'stock'             => 10000,
+                        'min_purchase'      => NULL,
+                        'max_purchase'      => NULL,
+                        'min_amount'        => NULL,
+                        'max_amount'        => NULL,
+                    ]
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'user_id'       => User::MERCHANT_USER_ID,
+                'receipt'       => '00000000000001',
+                'amount'        => NULL,
+                'currency'      => 'INR',
+                'title'         => 'Sample title',
+                'description'   => '[{"insert":"Sample description"},{"insert":"\\n"}]',
+                'notes'         => [
+                    'sample_key' => 'Sample notes',
+                ],
+                'payment_page_items' => [
+                    [
+                        'item' => [
+                            'name' =>  'amount',
+                            'description' => NULL,
+                            'amount' => 100000,
+                            'currency' => 'INR',
+                            'type' => 'payment_page',
+                        ],
+                        'mandatory' => TRUE,
+                        'image_url' => NULL,
+                        'stock' => NULL,
+                        'quantity_sold' => 0,
+                        'total_amount_paid' => 0,
+                        'min_purchase' => NULL,
+                        'max_purchase' => NULL,
+                        'min_amount' => NULL,
+                        'max_amount' => NULL,
+                    ],
+                    [
+                        'item' => [
+                            'name' =>  'donate',
+                            'description' => NULL,
+                            'amount' => 500000,
+                            'currency' => 'INR',
+                            'type' => 'payment_page',
+                        ],
+                        'mandatory' => FALSE,
+                        'image_url' => NULL,
+                        'stock' => 10000,
+                        'quantity_sold' => 0,
+                        'total_amount_paid' => 0,
+                        'min_purchase' => NULL,
+                        'max_purchase' => NULL,
+                        'min_amount' => NULL,
+                        'max_amount' => NULL,
+                    ]
+                ],
+            ],
+        ],
+    ],
+
     'testCreatePaymentLinkWithMultiplePaymentPageItem' => [
         'request'  => [
             'url'     => '/payment_pages',
@@ -729,16 +832,65 @@ return [
                 'count' => 1,
                 'items' => [
                     [
-                        'id'          => 'pl_100000000000pl',
                         'user_id'     => User::MERCHANT_USER_ID,
                         'receipt'     => '00000000000001',
                         'amount'      => NULL,
                         'currency'    => 'INR',
                         'title'       => 'Sample title',
-                        'description' => '{"value":[{"insert":"Sample description"}],"metaText":"Sample description"}',
+                        'description' => '[{"insert":"Sample description"},{"insert":"\\n"}]',
                         'notes'       => [],
                     ],
                 ],
+            ],
+        ],
+    ],
+
+    'testFetchPaymentButtons' => [
+        'request'  => [
+            'url'     => '/payment_pages?view_type=button',
+            'method'  => 'get',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'count' => 1,
+                'items' => [
+                    [
+                        'user_id'     => User::MERCHANT_USER_ID,
+                        'receipt'     => '00000000000001',
+                        'amount'      => NULL,
+                        'currency'    => 'INR',
+                        'title'       => 'Sample title',
+                        'description' => '[{"insert":"Sample description"},{"insert":"\\n"}]',
+                        'notes'       => [],
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testFetchButtonNotInPagesList' => [
+        'request'  => [
+            'url'     => '/payment_pages?view_type=button',
+            'method'  => 'get',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'count' => 0,
+            ],
+        ],
+    ],
+
+    'testFetchPageNotInButtonList' => [
+        'request'  => [
+            'url'     => '/payment_pages',
+            'method'  => 'get',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'count' => 0,
             ],
         ],
     ],

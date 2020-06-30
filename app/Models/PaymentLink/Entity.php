@@ -102,6 +102,11 @@ class Entity extends Base\PublicEntity
     const CUSTOM_SERIAL_NUMBER         = 'enable_custom_serial_number';
     const ENABLE_80G_DETAILS           = 'enable_80g_details';
 
+    //Settings applicable to Payment Button only
+    const PP_BUTTON_DISABLE_BRANDING   = 'pp_button_disable_branding';
+    const PP_BUTTON_THEME              = 'pp_button_theme';
+    const PP_BUTTON_TEXT               = 'pp_button_text';
+
     const DEFAULT_THEME                = 'light';
 
     const SETTINGS_KEYS                = [
@@ -114,6 +119,9 @@ class Entity extends Base\PublicEntity
         self::CHECKOUT_OPTIONS,
         self::PAYMENT_BUTTON_LABEL,
         self::VERSION,
+        self::PP_BUTTON_DISABLE_BRANDING,
+        self::PP_BUTTON_TEXT,
+        self::PP_BUTTON_THEME,
     ];
 
     const INVOICE_DETAILS_KEYS          = [
@@ -176,6 +184,7 @@ class Entity extends Base\PublicEntity
         self::CREATED_AT,
         self::UPDATED_AT,
         self::DELETED_AT,
+        self::VIEW_TYPE,
     ];
 
     protected $appends = [
