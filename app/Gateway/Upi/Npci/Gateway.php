@@ -67,7 +67,13 @@ class Gateway extends Base\Gateway
         $subType = $params['challengeType'];
         $method = 'ReqListKeys';
 
-        extract($this->getCommonVariables());
+        $commonVars = $this->getCommonVariables();
+        $txnId      = $commonVars['txnId'];
+        $ts         = $commonVars['ts'];
+        $orgId      = $commonVars['orgId'];
+        $msgId      = $commonVars['msgId'];
+        $ids        = $commonVars['ids'];
+        $refUrl     = $commonVars['refUrl'];
 
         // NPCI asks for these details
         assertTrue(strlen($customer['contact']) === 12);
@@ -369,7 +375,13 @@ EOT;
         $method = $input['method'];
         $params = $input['params'];
 
-        extract($this->getCommonVariables());
+        $commonVars = $this->getCommonVariables();
+        $txnId      = $commonVars['txnId'];
+        $ts         = $commonVars['ts'];
+        $orgId      = $commonVars['orgId'];
+        $msgId      = $commonVars['msgId'];
+        $ids        = $commonVars['ids'];
+        $refUrl     = $commonVars['refUrl'];
 
         $this->cacheRequestOrResponse($input, $msgId, $txnId);
 
