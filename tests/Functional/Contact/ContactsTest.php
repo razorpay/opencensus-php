@@ -624,8 +624,32 @@ class ContactsTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateContactWithUnnecessarySpaces()
+    {
+        $this->startTest();
+    }
+
     public function testCreateContactWithIdempotencyKey()
     {
+        $this->startTest();
+    }
+
+    public function testCreateContactWithUnnecessarySpacesAndProxyAuth()
+    {
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testUpdateContactWithUnnecessarySpaces()
+    {
+        $this->fixtures->create('contact', ['id' => '1000000contact', 'type' => 'self', 'reference_id' => '213']);
+
+        $this->startTest();
+
+        // Test with Proxy Auth
+        $this->ba->proxyAuth();
+
         $this->startTest();
     }
 

@@ -7,9 +7,11 @@ use Request;
 
 class PayoutController extends Controller
 {
+    use Traits\ProcessRequest;
+
     public function postFundAccountPayout()
     {
-        $input = Request::all();
+        $input = $this->trimSpaces(Request::all());
 
         $data = $this->service()->fundAccountPayout($input);
 
@@ -23,7 +25,7 @@ class PayoutController extends Controller
      */
     public function postFundAccountPayoutWithOtp()
     {
-        $input = Request::all();
+        $input = $this->trimSpaces(Request::all());
 
         $response = $this->service()->fundAccountPayoutWithOtp($input);
 
@@ -110,7 +112,7 @@ class PayoutController extends Controller
 
     public function postPurpose()
     {
-        $input = Request::all();
+        $input = $this->trimSpaces(Request::all());
 
         $data = $this->service()->postPurpose($input);
 
@@ -176,7 +178,7 @@ class PayoutController extends Controller
      */
     public function createPayoutBulk()
     {
-        $input = Request::all();
+        $input = $this->trimSpaces(Request::all());
 
         $response = $this->service()->createBulkPayout($input);
 

@@ -14,6 +14,8 @@ use ApiResponse;
  */
 trait HasCrudMethods
 {
+    use ProcessRequest;
+
     public function get(string $id)
     {
         $entity = $this->service()->fetch($id);
@@ -32,7 +34,7 @@ trait HasCrudMethods
 
     public function create()
     {
-        $input = Request::all();
+        $input = $this->trimSpaces(Request::all());
 
         $entity = $this->service()->create($input);
 
@@ -41,7 +43,7 @@ trait HasCrudMethods
 
     public function update(string $id)
     {
-        $input = Request::all();
+        $input = $this->trimSpaces(Request::all());
 
         $entity = $this->service()->update($id, $input);
 
