@@ -56,15 +56,16 @@ class Constants
     const RESPONSE_BODY          = 'body';
     const RESPONSE_DATA          = 'data';
 
+    const BIN             = 'bin';
+    const VPA             = 'vpa';
+    const AMOUNT          = 'amount';
     const ISSUER          = 'issuer';
     const METHOD          = 'method';
-    const CARD_TYPE       = 'card_type';
-    const NETWORK_CODE    = 'network_code';
-    const AMOUNT          = 'amount';
-    const TRANSFER_METHOD = 'transfer_method';
-    const SOURCE_VPA      = 'source_vpa';
-    const VPA             = 'vpa';
     const VPA_ADDRESS     = 'address';
+    const CARD_TYPE       = 'card_type';
+    const SOURCE_VPA      = 'source_vpa';
+    const NETWORK_CODE    = 'network_code';
+    const TRANSFER_METHOD = 'transfer_method';
 
     /**
      * razorx experiments related constants

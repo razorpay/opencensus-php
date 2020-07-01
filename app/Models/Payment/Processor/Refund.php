@@ -3230,8 +3230,9 @@ trait Refund
             }
 
             $queryParams[RefundConstants::NETWORK_CODE] = $payment->card->getNetworkCode();
-            $queryParams[RefundConstants::ISSUER] = $iin->getIssuer();
-            $queryParams[RefundConstants::CARD_TYPE] = strtolower($iin->getType());
+            $queryParams[RefundConstants::ISSUER]       = $iin->getIssuer();
+            $queryParams[RefundConstants::CARD_TYPE]    = strtolower($iin->getType());
+            $queryParams[RefundConstants::BIN]          = $iin->getIin();
         }
 
         $response = $this->app['scrooge']->getInstantRefundsMode($payment->getMerchantId(), $queryParams);

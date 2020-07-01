@@ -34,6 +34,9 @@ class Issuer
     const ORBC = 'ORBC';    // Oriental Bank of Commerce
     const FDRL = 'FDRL';    // The Federal Bank Ltd
     const SIBL = 'SIBL';    // The South Indian Bank Ltd
+    const CBIN = 'CBIN';    // Central Bank of India
+    const IDIB = 'IDIB';    // Indian Bank
+    const JAKA = 'JAKA';    // Jammu And Kashmir Bank Ltd
 
     protected static $issuers = [
         self::ALLA,
@@ -67,6 +70,9 @@ class Issuer
         self::ORBC,
         self::FDRL,
         self::SIBL,
+        self::CBIN,
+        self::IDIB,
+        self::JAKA,
     ];
 
     public static function getAllIssuers():array
