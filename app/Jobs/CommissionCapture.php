@@ -31,9 +31,24 @@ class CommissionCapture extends Job
     {
         parent::handle();
 
+        $this->trace->info(
+            TraceCode::COMMISSION_TRANSACTION_CAPTURE_REQUEST,
+            [
+                'mode' => $this->mode,
+                'id' => $this->commissionIds,
+            ]
+        );
+
         try
         {
             $commissions = $this->repoManager->commission->findManyByPublicIds($this->commissionIds);
+
+            $this->trace->info(
+                TraceCode::COMMISSION_TRANSACTION_CAPTURE_FETCH,
+                [
+                    'id' => $commissions->getIds(),
+                ]
+            );
 
             $core = new Commission\Core;
 
@@ -42,8 +57,6 @@ class CommissionCapture extends Job
                 try
                 {
                     $core->capture($commission);
-
-                    $this->delete();
                 }
                 catch (\Throwable $e)
                 {
@@ -58,6 +71,8 @@ class CommissionCapture extends Job
                     );
                 }
             }
+
+            $this->delete();
         }
         catch (\Throwable $e)
         {
