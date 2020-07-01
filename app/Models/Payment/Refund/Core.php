@@ -11,6 +11,7 @@ use RZP\Constants\Entity as E;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\FundTransfer\Attempt;
+use RZP\Reconciliator\Base\InfoCode;
 
 class Core extends Base\Core
 {
@@ -234,6 +235,9 @@ class Core extends Base\Core
     {
         $refundIds = [];
 
+        // Adding a temporary variable for testing nbEquitas persist arn change
+        $nbEquitasRefundIds = [];
+
         foreach ($data as $refundData)
         {
             $gateway = $refundData[E::PAYMENT][Payment\Entity::GATEWAY] ?? null;
@@ -241,12 +245,100 @@ class Core extends Base\Core
             if (in_array($gateway, Gateway::$refundsReconcileNetbankingGateways, true) === true)
             {
                 $refundIds[] = $refundData[E::REFUND][Refund\Entity::ID];
+
+                if ($gateway === Gateway::NETBANKING_EQUITAS)
+                {
+                    $nbEquitasRefundIds[] = $refundData[E::REFUND][Refund\Entity::ID];
+                }
             }
         }
 
         if (empty($refundIds) === false)
         {
             $this->repo->transaction->bulkReconciliationUpdate($refundIds);
+        }
+
+        if (empty($nbEquitasRefundIds) === false)
+        {
+            try
+            {
+                $this->RequestScroogeForReference1Update($nbEquitasRefundIds);
+            }
+            catch (\Exception $e)
+            {
+                $this->trace->info(TraceCode::RECON_INFO,
+                    [
+                        'info_code' => InfoCode::RECON_PERSIST_REFERENCE_NUMBER_FAILED,
+                        'error_msg' => $e->getMessage(),
+                        'gateway'   => $this->gateway
+                    ]);
+            }
+
+        }
+    }
+
+    /**
+     * This function fetches all refund rows by refund ids
+     * and send a request to scrooge service to update refunds arn as payment arn
+     *
+     * @param $refundIds
+     */
+    protected function RequestScroogeForReference1Update(array $refundIds)
+    {
+        $refunds = $this->repo->refund->fetchRefundByRefundIds($refundIds);
+
+        // Contain refundId as key and and payment reference1 from payment as value
+        //we are doing this so that we can send this data to scrooge service in order to update
+        //reference1 of refund
+        $refundsData = [];
+
+        foreach ($refunds as $refund)
+        {
+            $scroogeInputObject = (object)[];
+
+            $paymentReference1 = $refund->payment->getReference1();
+
+            $refundReference1  = $refund->getReference1();
+
+            if (empty($refundReference1) === false)
+            {
+                // Do not update the refund reference1 as it is already present
+                continue;
+            }
+
+            if (empty($paymentReference1) === false)
+            {
+                $refundId = $refund->getId();
+
+                $scroogeInputObject->id          = $refundId;
+                $scroogeInputObject->reference1  = $paymentReference1;
+
+                $refundsData[] = $scroogeInputObject;
+            }
+            else
+            {
+                $this->trace->info(TraceCode::RECON_INFO,
+                    [
+                        'info_code'     => InfoCode::REFUND_AUTO_RECON_PAYMENT_REFERENCE_ID_EMPTY,
+                        'refund_id'     => $refund->getId(),
+                        'payment_id'    => $refund->payment->getId(),
+                        'gateway'       => $refund->getGateway()
+                    ]);
+            }
+
+            // Empty allocated memory
+            $scroogeInputObject = null;
+        }
+
+        if (empty($refundsData) === false)
+        {
+            $response = $this->app['scrooge']->bulkUpdateRefundReference1($refundsData);
+
+            $this->trace->info(TraceCode::RECON_INFO,
+                [
+                    'info_code' => InfoCode::SCROOGE_RESPONSE_ON_REFERENCE1_UPDATE,
+                    'response'  => $response
+                ]);
         }
     }
 

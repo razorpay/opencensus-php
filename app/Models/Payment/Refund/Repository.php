@@ -341,6 +341,22 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    /**
+     * Fetches payment details along with refund using refund ID
+     *
+     * @param $refundId
+     * @return mixed
+     */
+    public function fetchRefundByRefundIds($refundIds)
+    {
+        return $this->newQuery()
+                    ->select(Table::REFUND. '.' . Refund\Entity::PAYMENT_ID,
+                             Table::REFUND. '.' . Refund\Entity::REFERENCE1,
+                             Table::REFUND. '.' . Refund\Entity::ID)
+                    ->whereIn(Table::REFUND. '.' . Refund\Entity::ID, $refundIds)
+                    ->get();
+    }
+
     public function fetchGatewayRefundedRefundsWithoutTxns()
     {
         $refundAttrs = $this->dbColumn('*');

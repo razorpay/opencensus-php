@@ -2583,6 +2583,15 @@ trait PaymentTrait
             ],
         ];
 
+        $scroogeResponseForRef1Update = json_decode('{
+            "api_failed_count": 0,
+            "api_failures": [],
+            "scrooge_failed_count": 0,
+            "scrooge_failures": [],
+            "success_count": 1,
+            "time_taken": 0.24121499061584473
+        }', true);
+
         foreach ($refundEntities as $refundEntity)
         {
             $scroogeResponse['body']['data'][] = [
@@ -2600,13 +2609,16 @@ trait PaymentTrait
 
         $scroogeMock = $this->getMockBuilder(Scrooge::class)
                             ->setConstructorArgs([$this->app])
-                            ->setMethods(['getFileBasedRefunds'])
+                            ->setMethods(['getFileBasedRefunds', 'bulkUpdateRefundReference1'])
                             ->getMock();
 
         $this->app->instance('scrooge', $scroogeMock);
 
         $this->app->scrooge->method('getFileBasedRefunds')
                            ->willReturn($scroogeResponse);
+
+        $this->app->scrooge->method('bulkUpdateRefundReference1')
+                           ->willReturn($scroogeResponseForRef1Update);
     }
 
     protected function callFTAPatchRoute($content = [])
