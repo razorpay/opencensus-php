@@ -1,0 +1,704 @@
+on: [push]
+jobs:
+  cancel:
+    runs-on: [self-hosted]
+    name: Cancel Previous Runs
+    steps:
+    - uses: styfle/cancel-workflow-action@d57d93c
+      name: cancel old workflows
+      id: cancel
+      with:
+        workflow_id: 1508274
+        access_token: ${{ github.token }}
+  validate_php_syntax:
+    runs-on: [self-hosted]
+    needs: [cancel]
+    continue-on-error: false
+    name: Validate PHP Syntax
+    steps:
+    - name: checkout
+      id: checkout
+      uses: actions/checkout@v2
+    - name: prepare_test
+      id: prepare_test
+      uses: docker://razorpay/onggi:php-7.2
+      env:
+        GIT_TOKEN: ${{ secrets.GIT_ACTION_TOKEN }}
+      with:
+        entrypoint: /bin/sh
+        args: ci-assets/prepare_test.sh
+    - name: validate_php_syntax
+      id: validate_php_syntax
+      uses: docker://php:7.2-cli-alpine
+      with:
+        entrypoint: /bin/sh
+        args: ci-assets/validate_php_syntax.sh
+  build-app:
+    runs-on: [self-hosted]
+    needs: [cancel]
+    continue-on-error: false
+    name: Build App
+    steps:
+      - name: checkout
+        id: checkout
+        uses: actions/checkout@v2
+      - name: build
+        uses: docker/build-push-action@v1
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+          repository: razorpay/api
+          tags: ${{ github.sha }}
+          build_args: GIT_COMMIT_HASH=${{ github.sha }},GIT_TOKEN=${{ secrets.GIT_ACTION_TOKEN }},GIT_USERNAME=rzp
+  build-checkout:
+    runs-on: [self-hosted]
+    needs: [cancel]
+    continue-on-error: false
+    name: Build Checkout
+    steps:
+      - name: checkout
+        id: checkout
+        uses: actions/checkout@v2
+      - name: build
+        uses: docker/build-push-action@v1
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+          repository: razorpay/api
+          tags: checkout-${{ github.sha }}
+          dockerfile: Dockerfile.checkout
+          build_args: GIT_COMMIT_HASH=${{ github.sha }},GIT_TOKEN=${{ secrets.GIT_ACTION_TOKEN }},GIT_USERNAME=rzp
+  build-openresty:
+    runs-on: [self-hosted]
+    needs: [cancel]
+    continue-on-error: false
+    name: Build Openresty
+    steps:
+      - name: checkout
+        id: checkout
+        uses: actions/checkout@v2
+      - name: build
+        uses: docker/build-push-action@v1
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+          repository: razorpay/api
+          tags: openresty-${{ github.sha }}
+          dockerfile: Dockerfile.openresty
+          build_args: GIT_COMMIT_HASH=${{ github.sha }},GIT_TOKEN=${{ secrets.GIT_ACTION_TOKEN }},GIT_USERNAME=rzp
+  application_test_suite:
+    runs-on: [self-hosted]
+    needs: [cancel]
+    continue-on-error: false
+    name: Application Test Suite
+    steps:
+    - name: checkout
+      id: checkout
+      uses: actions/checkout@v2
+      env:
+        ACTIONS_STEP_DEBUG: true
+    - name: prepare_test
+      id: prepare_test
+      uses: docker://razorpay/onggi:php-7.2
+      env:
+        GIT_TOKEN: ${{ secrets.GIT_ACTION_TOKEN }}
+      with:
+        entrypoint: /bin/sh
+        args: ci-assets/prepare_test.sh
+    - name: application_test_suite
+      id: application_test_suite
+      uses: docker://razorpay/onggi:php-7.2-apache-api
+      with:
+        entrypoint: /bin/sh
+        args: ci-assets/application_test_suite.sh
+      env:
+        DB_LIVE_HOST: mysql
+        DB_TEST_HOST: mysql
+        DB_AUTH_HOST: mysql
+        DB_LIVE_DATABASE: api_live
+        DB_TEST_DATABASE: api_test
+        DB_AUTH_DATABASE: api_auth
+        REDIS_HOST: redis
+        REDIS_LABS_HOST: redis
+        QUERY_CACHE_REDIS_HOST: redis
+        QUERY_CACHE_REDIS_PORT: 6379
+        MUTEX_REDIS_HOST: redis
+        MUTEX_REDIS_PORT: 6379
+        THROTTLE_REDIS_HOST: redis
+        THROTTLE_REDIS_PORT: 6379
+        ES_HOST: elasticsearch
+        ES_AUDIT_HOST: elasticsearch
+    services:
+      redis:
+        image: redis
+      mysql:
+        image: mysql:5.7
+        env:
+          MYSQL_DATABASE: api
+          MYSQL_ROOT_PASSWORD: root
+      elasticsearch:
+        image: elasticsearch:5.2-alpine
+        env:
+          ES_JAVA_OPTS: -Xms512m -Xmx512m
+  features_test_suite:
+    runs-on: [self-hosted]
+    needs: [cancel]
+    continue-on-error: false
+    name: Features-1 Test Suite
+    steps:
+    - name: checkout
+      id: checkout
+      uses: actions/checkout@v2
+    - name: prepare_test
+      id: prepare_test
+      uses: docker://razorpay/onggi:php-7.2
+      env:
+        GIT_TOKEN: ${{ secrets.GIT_ACTION_TOKEN }}
+      with:
+        entrypoint: /bin/sh
+        args: ci-assets/prepare_test.sh
+    - name: features_test_suite
+      id: features_test_suite
+      uses: docker://razorpay/onggi:php-7.2-apache-api
+      with:
+        entrypoint: /bin/sh
+        args: ci-assets/features_test_suite.sh
+      env:
+        DB_LIVE_HOST: mysql
+        DB_TEST_HOST: mysql
+        DB_AUTH_HOST: mysql
+        DB_LIVE_DATABASE: api_live
+        DB_TEST_DATABASE: api_test
+        DB_AUTH_DATABASE: api_auth
+        REDIS_HOST: redis
+        REDIS_LABS_HOST: redis
+        QUERY_CACHE_REDIS_HOST: redis
+        QUERY_CACHE_REDIS_PORT: 6379
+        MUTEX_REDIS_HOST: redis
+        MUTEX_REDIS_PORT: 6379
+        THROTTLE_REDIS_HOST: redis
+        THROTTLE_REDIS_PORT: 6379
+        ES_HOST: elasticsearch
+        ES_AUDIT_HOST: elasticsearch
+    services:
+      redis:
+        image: redis
+      mysql:
+        image: mysql:5.7
+        env:
+          MYSQL_DATABASE: api
+          MYSQL_ROOT_PASSWORD: root
+      elasticsearch:
+        image: elasticsearch:5.2-alpine
+        env:
+          ES_JAVA_OPTS: -Xms512m -Xmx512m
+  features_2_test_suite:
+    runs-on: [self-hosted]
+    needs: [cancel]
+    continue-on-error: false
+    name: Features-2 Test Suite
+    steps:
+    - name: checkout
+      id: checkout
+      uses: actions/checkout@v2
+    - name: prepare_test
+      id: prepare_test
+      uses: docker://razorpay/onggi:php-7.2
+      env:
+        GIT_TOKEN: ${{ secrets.GIT_ACTION_TOKEN }}
+      with:
+        entrypoint: /bin/sh
+        args: ci-assets/prepare_test.sh
+    - name: features_2_test_suite
+      id: features_2_test_suite
+      uses: docker://razorpay/onggi:php-7.2-apache-api
+      with:
+        entrypoint: /bin/sh
+        args: ci-assets/features_2_test_suite.sh
+      env:
+        DB_LIVE_HOST: mysql
+        DB_TEST_HOST: mysql
+        DB_AUTH_HOST: mysql
+        DB_LIVE_DATABASE: api_live
+        DB_TEST_DATABASE: api_test
+        DB_AUTH_DATABASE: api_auth
+        REDIS_HOST: redis
+        REDIS_LABS_HOST: redis
+        QUERY_CACHE_REDIS_HOST: redis
+        QUERY_CACHE_REDIS_PORT: 6379
+        MUTEX_REDIS_HOST: redis
+        MUTEX_REDIS_PORT: 6379
+        THROTTLE_REDIS_HOST: redis
+        THROTTLE_REDIS_PORT: 6379
+        ES_HOST: elasticsearch
+        ES_AUDIT_HOST: elasticsearch
+    services:
+      redis:
+        image: redis
+      mysql:
+        image: mysql:5.7
+        env:
+          MYSQL_DATABASE: api
+          MYSQL_ROOT_PASSWORD: root
+      elasticsearch:
+        image: elasticsearch:5.2-alpine
+        env:
+          ES_JAVA_OPTS: -Xms512m -Xmx512m
+  features_3_test_suite:
+    runs-on: [self-hosted]
+    needs: [cancel]
+    continue-on-error: false
+    name: Features-3 Test Suite
+    steps:
+    - name: checkout
+      id: checkout
+      uses: actions/checkout@v2
+    - name: prepare_test
+      id: prepare_test
+      uses: docker://razorpay/onggi:php-7.2
+      env:
+        GIT_TOKEN: ${{ secrets.GIT_ACTION_TOKEN }}
+      with:
+        entrypoint: /bin/sh
+        args: ci-assets/prepare_test.sh
+    - name: features_3_test_suite
+      id: features_3_test_suite
+      uses: docker://razorpay/onggi:php-7.2-apache-api
+      with:
+        entrypoint: /bin/sh
+        args: ci-assets/features_3_test_suite.sh
+      env:
+        DB_LIVE_HOST: mysql
+        DB_TEST_HOST: mysql
+        DB_AUTH_HOST: mysql
+        DB_LIVE_DATABASE: api_live
+        DB_TEST_DATABASE: api_test
+        DB_AUTH_DATABASE: api_auth
+        REDIS_HOST: redis
+        REDIS_LABS_HOST: redis
+        QUERY_CACHE_REDIS_HOST: redis
+        QUERY_CACHE_REDIS_PORT: 6379
+        MUTEX_REDIS_HOST: redis
+        MUTEX_REDIS_PORT: 6379
+        THROTTLE_REDIS_HOST: redis
+        THROTTLE_REDIS_PORT: 6379
+        ES_HOST: elasticsearch
+        ES_AUDIT_HOST: elasticsearch
+    services:
+      redis:
+        image: redis
+      mysql:
+        image: mysql:5.7
+        env:
+          MYSQL_DATABASE: api
+          MYSQL_ROOT_PASSWORD: root
+      elasticsearch:
+        image: elasticsearch:5.2-alpine
+        env:
+          ES_JAVA_OPTS: -Xms512m -Xmx512m
+  features_4_test_suite:
+    runs-on: [self-hosted]
+    needs: [cancel]
+    continue-on-error: false
+    name: Features-4 Test Suite
+    steps:
+    - name: checkout
+      id: checkout
+      uses: actions/checkout@v2
+    - name: prepare_test
+      id: prepare_test
+      uses: docker://razorpay/onggi:php-7.2
+      env:
+        GIT_TOKEN: ${{ secrets.GIT_ACTION_TOKEN }}
+      with:
+        entrypoint: /bin/sh
+        args: ci-assets/prepare_test.sh
+    - name: features_4_test_suite
+      id: features_4_test_suite
+      uses: docker://razorpay/onggi:php-7.2-apache-api
+      with:
+        entrypoint: /bin/sh
+        args: ci-assets/features_4_test_suite.sh
+      env:
+        DB_LIVE_HOST: mysql
+        DB_TEST_HOST: mysql
+        DB_AUTH_HOST: mysql
+        DB_LIVE_DATABASE: api_live
+        DB_TEST_DATABASE: api_test
+        DB_AUTH_DATABASE: api_auth
+        REDIS_HOST: redis
+        REDIS_LABS_HOST: redis
+        QUERY_CACHE_REDIS_HOST: redis
+        QUERY_CACHE_REDIS_PORT: 6379
+        MUTEX_REDIS_HOST: redis
+        MUTEX_REDIS_PORT: 6379
+        THROTTLE_REDIS_HOST: redis
+        THROTTLE_REDIS_PORT: 6379
+        ES_HOST: elasticsearch
+        ES_AUDIT_HOST: elasticsearch
+    services:
+      redis:
+        image: redis
+      mysql:
+        image: mysql:5.7
+        env:
+          MYSQL_DATABASE: api
+          MYSQL_ROOT_PASSWORD: root
+      elasticsearch:
+        image: elasticsearch:5.2-alpine
+        env:
+          ES_JAVA_OPTS: -Xms512m -Xmx512m
+  features_6_test_suite:
+    runs-on: [self-hosted]
+    needs: [cancel]
+    continue-on-error: false
+    name: Features-6 Test Suite
+    steps:
+    - name: checkout
+      id: checkout
+      uses: actions/checkout@v2
+    - name: prepare_test
+      id: prepare_test
+      uses: docker://razorpay/onggi:php-7.2
+      env:
+        GIT_TOKEN: ${{ secrets.GIT_ACTION_TOKEN }}
+      with:
+        entrypoint: /bin/sh
+        args: ci-assets/prepare_test.sh
+    - name: features_6_test_suite
+      id: features_6_test_suite
+      uses: docker://razorpay/onggi:php-7.2-apache-api
+      with:
+        entrypoint: /bin/sh
+        args: ci-assets/features_6_test_suite.sh
+      env:
+        DB_LIVE_HOST: mysql
+        DB_TEST_HOST: mysql
+        DB_AUTH_HOST: mysql
+        DB_LIVE_DATABASE: api_live
+        DB_TEST_DATABASE: api_test
+        DB_AUTH_DATABASE: api_auth
+        DB_UPI_PAYMENTS_MOCKED: "false"
+        DB_UPI_PAYMENTS_LIVE_HOST: mysql
+        DB_UPI_PAYMENTS_TEST_HOST: mysql
+        REDIS_HOST: redis
+        REDIS_LABS_HOST: redis
+        QUERY_CACHE_REDIS_HOST: redis
+        QUERY_CACHE_REDIS_PORT: 6379
+        MUTEX_REDIS_HOST: redis
+        MUTEX_REDIS_PORT: 6379
+        THROTTLE_REDIS_HOST: redis
+        THROTTLE_REDIS_PORT: 6379
+        ES_HOST: elasticsearch
+        ES_AUDIT_HOST: elasticsearch
+    services:
+      redis:
+        image: redis
+      mysql:
+        image: mysql:5.7
+        env:
+          MYSQL_DATABASE: api
+          MYSQL_ROOT_PASSWORD: root
+      elasticsearch:
+        image: elasticsearch:5.2-alpine
+        env:
+          ES_JAVA_OPTS: -Xms512m -Xmx512m
+  gateway_1_test_suite:
+    runs-on: [self-hosted]
+    needs: [cancel]
+    continue-on-error: false
+    name: Gateway-1 Test Suite
+    steps:
+    - name: checkout
+      id: checkout
+      uses: actions/checkout@v2
+    - name: prepare_test
+      id: prepare_test
+      uses: docker://razorpay/onggi:php-7.2
+      env:
+        GIT_TOKEN: ${{ secrets.GIT_ACTION_TOKEN }}
+      with:
+        entrypoint: /bin/sh
+        args: ci-assets/prepare_test.sh
+    - name: gateway_1_test_suite
+      id: gateway_1_test_suite
+      uses: docker://razorpay/onggi:php-7.2-apache-api
+      with:
+        entrypoint: /bin/sh
+        args: ci-assets/gateway_1_test_suite.sh
+      env:
+        DB_LIVE_HOST: mysql
+        DB_TEST_HOST: mysql
+        DB_AUTH_HOST: mysql
+        DB_LIVE_DATABASE: api_live
+        DB_TEST_DATABASE: api_test
+        DB_AUTH_DATABASE: api_auth
+        DB_UPI_PAYMENTS_MOCKED: "false"
+        DB_UPI_PAYMENTS_LIVE_HOST: mysql
+        DB_UPI_PAYMENTS_TEST_HOST: mysql
+        REDIS_HOST: redis
+        REDIS_LABS_HOST: redis
+        QUERY_CACHE_REDIS_HOST: redis
+        QUERY_CACHE_REDIS_PORT: 6379
+        MUTEX_REDIS_HOST: redis
+        MUTEX_REDIS_PORT: 6379
+        THROTTLE_REDIS_HOST: redis
+        THROTTLE_REDIS_PORT: 6379
+        ES_HOST: elasticsearch
+        ES_AUDIT_HOST: elasticsearch
+    services:
+      redis:
+        image: redis
+      mysql:
+        image: mysql:5.7
+        env:
+          MYSQL_DATABASE: api
+          MYSQL_ROOT_PASSWORD: root
+      elasticsearch:
+        image: elasticsearch:5.2-alpine
+        env:
+          ES_JAVA_OPTS: -Xms512m -Xmx512m
+  gateway_2_test_suite:
+    runs-on: [self-hosted]
+    needs: [cancel]
+    continue-on-error: false
+    name: Gateway-2 Test Suite
+    steps:
+    - name: checkout
+      id: checkout
+      uses: actions/checkout@v2
+    - name: prepare_test
+      id: prepare_test
+      uses: docker://razorpay/onggi:php-7.2
+      env:
+        GIT_TOKEN: ${{ secrets.GIT_ACTION_TOKEN }}
+      with:
+        entrypoint: /bin/sh
+        args: ci-assets/prepare_test.sh
+    - name: gateway_2_test_suite
+      id: gateway_2_test_suite
+      uses: docker://razorpay/onggi:php-7.2-apache-api
+      with:
+        entrypoint: /bin/sh
+        args: ci-assets/gateway_2_test_suite.sh
+      env:
+        DB_LIVE_HOST: mysql
+        DB_TEST_HOST: mysql
+        DB_AUTH_HOST: mysql
+        DB_LIVE_DATABASE: api_live
+        DB_TEST_DATABASE: api_test
+        DB_AUTH_DATABASE: api_auth
+        DB_UPI_PAYMENTS_MOCKED: "false"
+        DB_UPI_PAYMENTS_LIVE_HOST: mysql
+        DB_UPI_PAYMENTS_TEST_HOST: mysql
+        REDIS_HOST: redis
+        REDIS_LABS_HOST: redis
+        QUERY_CACHE_REDIS_HOST: redis
+        QUERY_CACHE_REDIS_PORT: 6379
+        MUTEX_REDIS_HOST: redis
+        MUTEX_REDIS_PORT: 6379
+        THROTTLE_REDIS_HOST: redis
+        THROTTLE_REDIS_PORT: 6379
+        ES_HOST: elasticsearch
+        ES_AUDIT_HOST: elasticsearch
+    services:
+      redis:
+        image: redis
+      mysql:
+        image: mysql:5.7
+        env:
+          MYSQL_DATABASE: api
+          MYSQL_ROOT_PASSWORD: root
+      elasticsearch:
+        image: elasticsearch:5.2-alpine
+        env:
+          ES_JAVA_OPTS: -Xms512m -Xmx512m
+  gateway_3_test_suite:
+    runs-on: [self-hosted]
+    needs: [cancel]
+    continue-on-error: false
+    name: Gateway-3 Test Suite
+    steps:
+    - name: checkout
+      id: checkout
+      uses: actions/checkout@v2
+    - name: prepare_test
+      id: prepare_test
+      uses: docker://razorpay/onggi:php-7.2
+      env:
+        GIT_TOKEN: ${{ secrets.GIT_ACTION_TOKEN }}
+      with:
+        entrypoint: /bin/sh
+        args: ci-assets/prepare_test.sh
+    - name: gateway_3_test_suite
+      id: gateway_3_test_suite
+      uses: docker://razorpay/onggi:php-7.2-apache-api
+      with:
+        entrypoint: /bin/sh
+        args: ci-assets/gateway_3_test_suite.sh
+      env:
+        DB_LIVE_HOST: mysql
+        DB_TEST_HOST: mysql
+        DB_AUTH_HOST: mysql
+        DB_LIVE_DATABASE: api_live
+        DB_TEST_DATABASE: api_test
+        DB_AUTH_DATABASE: api_auth
+        DB_UPI_PAYMENTS_MOCKED: "false"
+        DB_UPI_PAYMENTS_LIVE_HOST: mysql
+        DB_UPI_PAYMENTS_TEST_HOST: mysql
+        REDIS_HOST: redis
+        REDIS_LABS_HOST: redis
+        QUERY_CACHE_REDIS_HOST: redis
+        QUERY_CACHE_REDIS_PORT: 6379
+        MUTEX_REDIS_HOST: redis
+        MUTEX_REDIS_PORT: 6379
+        THROTTLE_REDIS_HOST: redis
+        THROTTLE_REDIS_PORT: 6379
+        ES_HOST: elasticsearch
+        ES_AUDIT_HOST: elasticsearch
+    services:
+      redis:
+        image: redis
+      mysql:
+        image: mysql:5.7
+        env:
+          MYSQL_DATABASE: api
+          MYSQL_ROOT_PASSWORD: root
+      elasticsearch:
+        image: elasticsearch:5.2-alpine
+        env:
+          ES_JAVA_OPTS: -Xms512m -Xmx512m
+  payment_test_suite:
+    runs-on: [self-hosted]
+    needs: [cancel]
+    continue-on-error: false
+    name: Payment Test Suite
+    steps:
+    - name: checkout
+      id: checkout
+      uses: actions/checkout@v2
+    - name: prepare_test
+      id: prepare_test
+      uses: docker://razorpay/onggi:php-7.2
+      env:
+        GIT_TOKEN: ${{ secrets.GIT_ACTION_TOKEN }}
+      with:
+        entrypoint: /bin/sh
+        args: ci-assets/prepare_test.sh
+    - name: payment_test_suite
+      id: payment_test_suite
+      uses: docker://razorpay/onggi:php-7.2-apache-api
+      with:
+        entrypoint: /bin/sh
+        args: ci-assets/payment_test_suite.sh
+      env:
+        DB_LIVE_HOST: mysql
+        DB_TEST_HOST: mysql
+        DB_AUTH_HOST: mysql
+        DB_LIVE_DATABASE: api_live
+        DB_TEST_DATABASE: api_test
+        DB_AUTH_DATABASE: api_auth
+        DB_UPI_PAYMENTS_MOCKED: "false"
+        DB_UPI_PAYMENTS_LIVE_HOST: mysql
+        DB_UPI_PAYMENTS_TEST_HOST: mysql
+        REDIS_HOST: redis
+        REDIS_LABS_HOST: redis
+        QUERY_CACHE_REDIS_HOST: redis
+        QUERY_CACHE_REDIS_PORT: 6379
+        MUTEX_REDIS_HOST: redis
+        MUTEX_REDIS_PORT: 6379
+        THROTTLE_REDIS_HOST: redis
+        THROTTLE_REDIS_PORT: 6379
+        ES_HOST: elasticsearch
+        ES_AUDIT_HOST: elasticsearch
+    services:
+      redis:
+        image: redis
+      mysql:
+        image: mysql:5.7
+        env:
+          MYSQL_DATABASE: api
+          MYSQL_ROOT_PASSWORD: root
+      elasticsearch:
+        image: elasticsearch:5.2-alpine
+        env:
+          ES_JAVA_OPTS: -Xms512m -Xmx512m
+  workflow_status:
+    runs-on: [self-hosted]
+    continue-on-error: false
+    name: github/combined-status-check
+    needs: [
+      validate_php_syntax,
+      application_test_suite,
+      features_test_suite,
+      features_2_test_suite,
+      features_3_test_suite,
+      features_4_test_suite,
+      features_6_test_suite,
+      gateway_1_test_suite,
+      gateway_2_test_suite,
+      gateway_3_test_suite,
+      payment_test_suite,
+      build-app,
+      build-checkout,
+      build-openresty
+      ]
+    if: always()
+    steps:
+    - name: Failed
+      id: failed
+      if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')
+      run: |
+        echo 'Failing the workflow for github status check.'
+        exit 1
+    - name: Success
+      if: steps.failed.conclusion == 'skipped'
+      run: |
+        echo 'Status check has passed!'
+        exit 0
+  slack-notify:
+    runs-on : [self-hosted]
+    name: Notify build
+    needs: [workflow_status]
+    if: always()
+    steps:
+    - name: Sending build success notification to tech_builds (Slack)
+      if: github.ref != 'master' && needs.workflow_status.result == 'success'
+      env:
+        SLACK_MESSAGE: 'Build Success.'
+        SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+        SLACK_USERNAME: Github Actions # Optional. (defaults to webhook app)
+        SLACK_CHANNEL: tech_builds # Optional. (defaults to webhook)
+        SLACK_ICON: https://avatars3.githubusercontent.com/u/9919?s=40&v=4 # Optional. can be (repository, sender, an URL) (defaults to webhook app avatar)
+      uses:  rtCamp/action-slack-notify@v2.0.2
+    - name: Sending build failed notification to tech_builds (Slack)
+      if: github.ref != 'master' && needs.workflow_status.result != 'success'
+      env:
+        SLACK_MESSAGE: 'Build failed.'
+        SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+        SLACK_COLOR: '#8B0000'
+        SLACK_USERNAME: Github Actions # Optional. (defaults to webhook app)
+        SLACK_CHANNEL: tech_builds # Optional. (defaults to webhook)
+        SLACK_ICON: https://avatars3.githubusercontent.com/u/9919?s=40&v=4 # Optional. can be (repository, sender, an URL) (defaults to webhook app avatar)
+      uses:  rtCamp/action-slack-notify@ca2febb
+    - name: Sending build failed notification to tech_backend (Slack)
+      if: github.ref == 'master' && needs.workflow_status.result != 'success'
+      env:
+        SLACK_MESSAGE: 'Master Build failed.'
+        SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+        SLACK_COLOR: '#8B0000'
+        SLACK_USERNAME: Github Actions # Optional. (defaults to webhook app)
+        SLACK_CHANNEL: tech_backend # Optional. (defaults to webhook)
+        SLACK_ICON: https://avatars3.githubusercontent.com/u/9919?s=40&v=4 # Optional. can be (repository, sender, an URL) (defaults to webhook app avatar)
+      uses:  rtCamp/action-slack-notify@ca2febb
+  trigger_regression_suite:
+    runs-on: [self-hosted]
+    name: Regression Suite
+    needs: [workflow_status]
+    if: github.ref == 'master'
+    steps:
+    - name: Webhook
+      run: |
+        curl -X POST -H "Content-Type: application/json" \
+        -d '{ "branch" : "master" , "commit" : "${{ github.sha }}" , "repo" : "api" }' \
+        https://${{ secrets.SPINNAKER_BASIC_AUTH }}@deploy-github-actions.razorpay.com/webhooks/webhook/x-regression

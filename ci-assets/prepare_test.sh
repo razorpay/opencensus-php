@@ -1,0 +1,12 @@
+cp ./environment/.env.drone ./environment/.env.testing
+touch /etc/php7/conf.d/assertion.ini
+echo "zend.assertions=1" >> /etc/php7/conf.d/assertion.ini
+echo "assert.exception=1" >> /etc/php7/conf.d/assertion.ini
+php -m
+chmod 777 -R storage
+git config --global user.name $GIT_USERNAME
+composer config --global github-oauth.github.com $GIT_TOKEN
+composer config -g repos.packagist composer https://packagist.rzp.io
+composer global require hirak/prestissimo
+composer install --no-interaction --optimize-autoloader
+mkdir -p /opt/razorpay/certs/first_data
