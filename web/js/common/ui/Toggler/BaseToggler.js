@@ -11,7 +11,7 @@ export default class BaseToggler extends Component {
       show: !this.state.show,
     });
 
-    if (!this.state.show && this.props.onToggleClick) {
+    if (this.props.onToggleClick) {
       return this.props.onToggleClick();
     }
   };

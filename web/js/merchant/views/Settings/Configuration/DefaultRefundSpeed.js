@@ -12,7 +12,10 @@ import Amount from 'common/ui/Amount';
 import EnableInstantRefundsModal from 'merchant/views/Transactions/Payments/components/EnableInstantRefundsModal';
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
 import InstantRefundFee from 'merchant/views/Transactions/Payments/components/InstantRefundFee';
-import { fetchRefundPricing } from 'merchant/reducers/config';
+import {
+  fetchRefundPricing,
+  createLateAuthConfig,
+} from 'merchant/reducers/config';
 import RTracking from 'react-tracking';
 
 @connect(
@@ -22,6 +25,7 @@ import RTracking from 'react-tracking';
       refund_pricing: state.config.refund_pricing,
       features: state.config.features,
       default_refund_speed: state.config.config.default_refund_speed,
+      lateAuthConfig: state.config.lateAuthConfig,
     };
   },
   {
@@ -30,6 +34,7 @@ import RTracking from 'react-tracking';
     updateConfig,
     openModal,
     fetchRefundPricing,
+    createLateAuthConfig,
   }
 )
 @RTracking(() => window.rzpQ.component('DefaultRefundSpeed'))
@@ -93,12 +98,15 @@ export default class DefaultRefundSpeed extends Component {
         default_refund_speed: speed,
       })
       .then(r => {
-        if (r.data) {
-          this.setState({
+        this.setState(
+          {
             default_refund_speed: speed,
-          });
-          this.props.closeModal();
-        }
+          },
+          () => {
+            this.updateLateAuthConfig(speed);
+          }
+        );
+        this.props.closeModal();
       })
       .catch(({ errors }) => {
         if (errors) {
@@ -108,6 +116,33 @@ export default class DefaultRefundSpeed extends Component {
           });
         }
       });
+  };
+
+  updateLateAuthConfig = speed => {
+    const { data: { items }, error } = this.props.lateAuthConfig;
+
+    if (error) return;
+
+    if (items.length === 0) return;
+    else {
+      let capture_config = items[0];
+      capture_config.config.capture_options['refund_speed'] = speed;
+      delete capture_config.name;
+      delete capture_config.merchant_id;
+      delete capture_config.entity;
+      delete capture_config.is_default;
+      capture_config.type = 'late_auth';
+
+      if (
+        capture_config.config.capture_options.automatic_expiry_period === null
+      )
+        delete capture_config.config.capture_options.automatic_expiry_period;
+
+      if (capture_config.config.capture_options.manual_expiry_period === null)
+        delete capture_config.config.capture_options.manual_expiry_period;
+
+      this.props.createLateAuthConfig(capture_config, 'patch');
+    }
   };
 
   render() {

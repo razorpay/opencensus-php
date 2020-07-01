@@ -3,11 +3,13 @@ import ModalHeader from 'common/ui/ModalHeader';
 import Input from 'common/new-ui/Input';
 import TimeInput from './TimeInput';
 import { classList } from 'common/utils/rzp-utils';
+import { parseTimeoutValues, renderTimeoutAsString, capitalize } from './util';
+import Popover, { PopoverBody } from 'common/ui/Popover';
 
 const refund_options = [
   { label: 'Select Option', name: '' },
-  { label: 'Normal Refund', name: 'Normal Refund' },
-  { label: 'Instant Refund', name: 'Instant Refund' },
+  { label: 'Normal Refund', name: 'normal' },
+  { label: 'Instant Refund', name: 'optimum' },
 ];
 
 export default class PaymentsCaptureConfigurationModal extends Component {
@@ -16,11 +18,37 @@ export default class PaymentsCaptureConfigurationModal extends Component {
 
     this.state = {
       activeStep: this.props.captureType === 'automatic' ? 1 : 2,
+      skipped: false,
       completedSteps: [],
       refundValue: null,
       automatic: {},
       manual: {},
     };
+  }
+
+  componentDidMount() {
+    if (!this.props.lateAuthConfig) return;
+
+    const capture_options = this.props.lateAuthConfig.config.capture_options;
+    let automatic = {};
+    let manual = {};
+
+    if (capture_options['automatic_expiry_period']) {
+      automatic = parseTimeoutValues(
+        capture_options,
+        'automatic_expiry_period'
+      );
+    }
+
+    if (capture_options['manual_expiry_period']) {
+      manual = parseTimeoutValues(capture_options, 'manual_expiry_period');
+    }
+
+    this.setState({
+      automatic,
+      manual,
+      refundValue: capture_options.refund_speed,
+    });
   }
 
   handleAutomaticTimeoutValues = (value, type) => {
@@ -44,6 +72,12 @@ export default class PaymentsCaptureConfigurationModal extends Component {
         completedSteps: [...prevState.completedSteps, prevState.activeStep],
       };
     });
+
+    window.rzpAnalytics({
+      eventCategory: 'Dashboard - Payments Capture Settings',
+      eventAction: 'Next',
+      eventLabel: 'Entered value | Next',
+    });
   };
 
   handleBack = () => {
@@ -60,28 +94,73 @@ export default class PaymentsCaptureConfigurationModal extends Component {
     });
   };
 
-  handleSave = () =>
+  handleSkip = () => {
+    this.setState(prevState => {
+      return {
+        activeStep: prevState.activeStep + 1,
+        completedSteps: [...prevState.completedSteps, prevState.activeStep],
+        skipped: true,
+      };
+    });
+
+    window.rzpAnalytics({
+      eventCategory: 'Dashboard - Payments Capture Settings',
+      eventAction: 'Skip',
+      eventLabel: `${
+        Object.keys(this.state.manual).length > 0
+          ? 'Entered value | Skip'
+          : 'Did not enter value | Skip'
+      }`,
+    });
+  };
+
+  handleSave = () => {
+    let { captureType } = this.props;
+    let { refundValue } = this.state;
+
     this.props.createLateAuthConfig(this.state, this.props.captureType);
 
+    window.rzpAnalytics({
+      eventCategory: 'Dashboard - Payments Capture Settings',
+      eventAction: 'Save and Close',
+      eventLabel: `${capitalize(captureType)} - Select ${capitalize(
+        refundValue
+      )} speed - Hover tool tip `,
+    });
+  };
+  // top: 144px;
+  // height: 290px;
   renderStylesWhenActive = () => {
     let _l = Object.keys(this.state.manual).length;
 
     if (this.props.captureType === 'manual') {
-      return { top: '78px', height: _l > 0 ? '301px' : '253px' };
+      return { top: '99px', height: _l > 0 ? '295px' : '253px' };
     } else {
-      return { top: '124px', height: _l > 0 ? '301px' : '253px' };
+      return { top: '166px', height: _l > 0 ? '290px' : '243px' };
     }
   };
 
   handleDropdownSelection = e => this.setState({ refundValue: e.target.value });
 
-  renderManualTimeout = () => {
-    const _strings = Object.keys(this.state.manual).map(key => {
-      return `${this.state.manual[key]} ${key}`;
+  onTooltipHover = () => {
+    window.rzpAnalytics({
+      eventCategory: 'Dashboard - Payments Capture Settings',
+      eventAction: 'Save and Close',
+      eventLabel: `${capitalize(captureType)} - Select ${capitalize(
+        refundValue
+      )} speed - Hover tool tip `,
     });
-
-    return _strings.join(' and ');
   };
+
+  getContentHeightAutomatic = _ =>
+    this.state.refundValue === 'optimum'
+      ? 'full-span-modal-automatic-optimum'
+      : 'full-span-modal-automatic-normal';
+
+  getContentHeightManual = _ =>
+    this.state.refundValue === 'optimum'
+      ? 'full-span-modal-manual-optimum'
+      : 'full-span-modal-manual-normal';
 
   render() {
     const { captureType } = this.props;
@@ -90,7 +169,11 @@ export default class PaymentsCaptureConfigurationModal extends Component {
       <div
         class={classList(
           'payment-capture-configuration-container',
-          this.state.activeStep === 3 ? 'full-span-modal' : ''
+          this.state.activeStep === 3
+            ? captureType === 'automatic'
+              ? this.getContentHeightAutomatic()
+              : this.getContentHeightManual()
+            : null
         )}
       >
         <ModalHeader
@@ -100,18 +183,32 @@ export default class PaymentsCaptureConfigurationModal extends Component {
           }}
         />
         <div class="configuration-content">
+          {captureType === 'automatic' && (
+            <div class="custom-timeout-subtitle">
+              Setup Custom Timeout{' '}
+              <strong
+                style={{ color: '#2B83EA' }}
+                onClick={() => {
+                  this.props.onChangeClick('automatic');
+                }}
+              >
+                Change
+              </strong>
+            </div>
+          )}
           <div
             class={classList(
               'configuration-row__automatic',
               this.state.activeStep === 1 ? 'highlight' : ''
             )}
+            style={{ marginTop: '20px' }}
           >
             {this.state.activeStep === 1 && captureType === 'automatic' ? (
               <>
                 <div class="content-header">Set Automatic Capture Timeout</div>
                 <div
                   class="vertical-connector"
-                  style={{ top: '79px', height: '182px' }}
+                  style={{ top: '121px', height: '170px' }}
                 />
                 <div class="content-subtitle">
                   Capture all payments authorised within
@@ -121,7 +218,7 @@ export default class PaymentsCaptureConfigurationModal extends Component {
                     handleValueChange={this.handleAutomaticTimeoutValues}
                     values={this.state.automatic}
                   />
-                  <p>Enter value between 30 mins and 5 days</p>
+                  <p>Enter value between 12 mins and 5 days</p>
                 </div>
                 <div class="content-action">
                   <button
@@ -150,7 +247,7 @@ export default class PaymentsCaptureConfigurationModal extends Component {
                   >
                     Set Automatic Capture Timeout
                   </div>
-                  <div class="vertical-connector" style={{ top: '80px' }} />
+                  <div class="vertical-connector" style={{ top: '122px' }} />
                 </>
               )
             )}
@@ -168,7 +265,7 @@ export default class PaymentsCaptureConfigurationModal extends Component {
                   {captureType === 'automatic' && (
                     <button
                       class="btn btn-xs btn-default"
-                      onClick={this.handleNext}
+                      onClick={this.handleSkip}
                     >
                       Skip
                     </button>
@@ -190,15 +287,17 @@ export default class PaymentsCaptureConfigurationModal extends Component {
                     handleValueChange={this.handleManualTimeoutValues}
                     values={this.state.manual}
                   />
-                  <p>Enter value between 60 mins and 5 days</p>
+                  <p>Enter value between 12 mins and 5 days</p>
                 </div>
                 {Object.keys(this.state.manual).length > 0 && (
                   <div class="info-text">
                     <div />
                     <p>
                       Payments authorised after{' '}
-                      <strong>{this.renderManualTimeout()}</strong> will be
-                      refunded.
+                      <strong>
+                        {renderTimeoutAsString(this.state.manual)}
+                      </strong>{' '}
+                      will be refunded.
                     </p>
                   </div>
                 )}
@@ -236,8 +335,8 @@ export default class PaymentsCaptureConfigurationModal extends Component {
                   style={{
                     top:
                       this.state.activeStep === 3
-                        ? captureType === 'manual' ? '80px' : '125px'
-                        : '272px',
+                        ? captureType === 'manual' ? '100px' : '167px'
+                        : '305px',
                   }}
                 />
               </>
@@ -262,7 +361,29 @@ export default class PaymentsCaptureConfigurationModal extends Component {
                   <Input.Select
                     options={refund_options}
                     onChange={this.handleDropdownSelection}
+                    defaultValue={this.state.refundValue}
                   />
+                  {this.state.refundValue === 'optimum' && (
+                    <p>
+                      Late authorised payments would be refunded instantly
+                      <i
+                        class="i i-info-circle"
+                        style={{ paddingLeft: '5px' }}
+                        onMouseEnter={this.onTooltipHover}
+                      >
+                        <Popover align="bottom" theme="dark">
+                          <PopoverBody>
+                            <div style={{ fontStyle: 'normal' }}>
+                              A minimal fee would be charged for payments
+                              refunded instantly. Currently supported for UPI,
+                              netbanking and select credit cards only. Normal
+                              speed will apply on other payment methods.
+                            </div>
+                          </PopoverBody>
+                        </Popover>
+                      </i>
+                    </p>
+                  )}
                 </div>
                 <div class="content-action">
                   <button class="btn btn-default" onClick={this.handleBack}>
@@ -278,7 +399,14 @@ export default class PaymentsCaptureConfigurationModal extends Component {
                 </div>
               </>
             ) : (
-              <div class="content-header">Set Refund Speed</div>
+              <div
+                class="content-header"
+                style={{
+                  paddingBottom: this.state.activeStep !== 3 ? '20px' : '',
+                }}
+              >
+                Set Refund Speed
+              </div>
             )}
           </div>
         </div>

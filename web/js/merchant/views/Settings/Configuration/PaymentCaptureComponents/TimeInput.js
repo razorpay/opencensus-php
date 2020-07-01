@@ -8,16 +8,30 @@ export default class TimeInput extends Component {
   }
 
   handleDaysChange = e => {
-    this.hrInput.current.focus();
-    this.props.handleValueChange(e.target.value, 'days');
+    let _val = e.target.value;
+
+    if (_val >= 6) return;
+
+    _val.length >= 1 ? this.hrInput.current.focus() : null;
+    this.props.handleValueChange(_val, 'days');
   };
 
   handleHoursChange = e => {
-    e.target.value.length >= 2 ? this.minutesInput.current.focus() : null;
-    this.props.handleValueChange(e.target.value, 'hrs');
+    let _val = e.target.value;
+
+    if (_val >= 24 || _val === 0) return;
+
+    if (_val >= 3 && _val <= 9) _val = `0${_val}`;
+
+    _val.length >= 2 ? this.minutesInput.current.focus() : null;
+    this.props.handleValueChange(_val, 'hrs');
   };
 
   handleMinutesChange = e => {
+    let _val = e.target.value;
+
+    if (_val >= 61) return;
+
     this.props.handleValueChange(e.target.value, 'mins');
   };
 
@@ -33,6 +47,7 @@ export default class TimeInput extends Component {
             autoFocus
             onChange={this.handleDaysChange}
             value={values.days ? values.days : ''}
+            type="number"
           />
         </div>
         <div class="input-mask" data-attr="hr :">
@@ -42,6 +57,7 @@ export default class TimeInput extends Component {
             ref={this.hrInput}
             onChange={this.handleHoursChange}
             value={values.hrs ? values.hrs : ''}
+            type="number"
           />
         </div>
         <div class="input-mask" data-attr="minutes">
@@ -51,6 +67,7 @@ export default class TimeInput extends Component {
             ref={this.minutesInput}
             onChange={this.handleMinutesChange}
             value={values.mins ? values.mins : ''}
+            type="number"
           />
         </div>
       </div>

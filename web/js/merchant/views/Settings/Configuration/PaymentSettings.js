@@ -10,7 +10,8 @@ import * as ModalActions from 'merchant_common/reducers/modals';
 import CaptureSettingsModal from 'merchant/views/Settings/Configuration/PaymentCaptureComponents/CaptureSettingsModal';
 import AutomaticCaptureModal from 'merchant/views/Settings/Configuration/PaymentCaptureComponents/AutomaticCaptureModal';
 import PaymentsCaptureConfigurationModal from 'merchant/views/Settings/Configuration/PaymentCaptureComponents/PaymentsCaptureConfigurationModal';
-import HorizontalTimeline from 'merchant/views/Settings/Configuration/PaymentCaptureComponents/HorizontalTimeline';
+import Timeouts from 'merchant/views/Settings/Configuration/PaymentCaptureComponents/Timeouts';
+import moment from 'moment';
 
 @connect(
   state => {
@@ -19,6 +20,7 @@ import HorizontalTimeline from 'merchant/views/Settings/Configuration/PaymentCap
       features: state.config.features,
       lateAuthConfig: state.config.lateAuthConfig,
       createdLateAuthConfig: state.config.createdLateAuthConfig,
+      default_refund_speed: state.config.config.default_refund_speed,
     };
   },
   {
@@ -34,75 +36,42 @@ export default class PaymentSettings extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      capture_mode: '',
-      timeout_action: '',
-      authorisation_timeout: '',
-      lateConfigExist: null,
-      timelineItems: [
-        {
-          title: 'Payment Creation',
-          time: 'T',
-          description: 'Payments captured automatically',
-        },
-        {
-          title: 'Auto Capture Timeout',
-          time: 'T+60 min',
-          description: 'Payments captured manually',
-        },
-        {
-          title: 'Manual Capture Timeout',
-          time: 'T+2 days',
-          description: 'Payments are refunded with optimum speed',
-        },
-        {
-          title: '5 days',
-          time: 'T+5 days',
-          description: '',
-        },
-      ],
+      isToggleActive: false,
     };
   }
 
   componentDidMount() {
-    // this.props.fetchLateAuthConfig();
+    this.props.fetchLateAuthConfig();
   }
 
   componentWillReceiveProps(nextProps) {
-    if (
-      nextProps.lateAuthConfig.error ||
-      Object.keys(nextProps.createdLateAuthConfig.data).length > 0
-    )
-      return;
+    if (nextProps.lateAuthConfig.error) {
+      this.props.showNotification({
+        type: 'error',
+        message: `Couldn't fetch payment capture settings`,
+      });
+    }
 
-    if (nextProps.lateAuthConfig.data.items.length === 0) return;
-    else {
-      let config = nextProps.lateAuthConfig.data.items[0].config;
-      const { capture, refund } = config;
-      this.setState({
-        authorisation_timeout: capture.timeout_duration.toString(),
-        capture_mode: parseInt(capture.value),
-        timeout_action: refund ? refund.speed : 'default',
-        doesConfigExist: true,
+    if (nextProps.createdLateAuthConfig.error) {
+      this.props.showNotification({
+        type: 'error',
+        message: `${nextProps.createdLateAuthConfig.error[0]}`,
       });
     }
   }
 
   handleCreateLateAuthConfig = (body, authType) => {
-    console.log(body, authType);
+    const { data: { items }, error } = this.props.lateAuthConfig;
     this.props.closeModal();
-    this.setState({
-      lateConfigExist: authType,
-    });
-    return;
+
     let method = '';
 
     let payload = {
       type: 'late_auth',
-      config: { capture: {} },
+      config: { capture: authType, capture_options: {} },
     };
 
-    // config already exists, edit request - send only type and  //
-    if (this.state.doesConfigExist) {
+    if (items.length !== 0) {
       method = 'patch';
     } else {
       method = 'post';
@@ -110,39 +79,66 @@ export default class PaymentSettings extends Component {
       payload.is_default = true;
     }
 
-    // timeout action value can be either default or refund, depends on selection //
-    payload.config.capture.value = parseInt(this.state.capture_mode);
-    payload.config.capture.timeout_duration = parseInt(
-      this.state.authorisation_timeout
-    );
-    payload.config.capture.timeout_action =
-      this.state.timeout_action === 'default' ? 'default' : 'refund';
+    // For capture type automatic
+    if (authType === 'automatic') {
+      const automaticTimeoutValue = this.getTimeoutValue(body.automatic);
+      payload.config.capture_options.automatic_expiry_period = automaticTimeoutValue;
 
-    // If timeout action !== default, add a refund object to payment, otherwise ! //
-    if (this.state.timeout_action !== 'default') {
-      payload.config.refund = {
-        speed: this.state.timeout_action,
-      };
+      // Sending manual if not skipped
+      if (!body.skipped && body.manual) {
+        const manualTimeoutValue = this.getTimeoutValue(body.manual);
+        payload.config.capture_options.manual_expiry_period = manualTimeoutValue;
+      }
+    } else {
+      // For capture type manual
+      const timeoutValue = this.getTimeoutValue(body.manual);
+      payload.config.capture_options.manual_expiry_period = timeoutValue;
     }
 
-    // this.props.createLateAuthConfig(payload, method).then(() => {
-    //   this.props.showNotification({
-    //     type: 'success',
-    //     message: this.state.doesConfigExist
-    //       ? 'Config updated successfully'
-    //       : 'Config created successfully',
-    //   });
-    // });
+    payload.config.capture_options.refund_speed = body.refundValue;
+
+    if (payload.config.capture_options.automatic_expiry_period === null)
+      delete payload.config.capture_options.automatic_expiry_period;
+
+    if (payload.config.capture_options.manual_expiry_period === null)
+      delete payload.config.capture_options.manual_expiry_period;
+
+    this.props.createLateAuthConfig(payload, method).then(() => {
+      this.props.showNotification({
+        type: 'success',
+        message: this.state.doesConfigExist
+          ? 'Preference Updated'
+          : 'Preference Saved',
+      });
+      this.props.fetchLateAuthConfig();
+      this.setState({
+        isToggleActive: false,
+      });
+    });
   };
 
-  validateCaptureTimeout = () => {
-    if (this.state.authorisation_timeout === '') return;
+  getTimeoutValue = obj => {
+    let timeoutValue = 0;
 
-    if (
-      this.state.authorisation_timeout < 30 ||
-      this.state.authorisation_timeout > 7200
-    )
-      return 'red';
+    if (obj['days']) {
+      let daysInMinutes = moment
+        .duration(parseInt(obj['days']), 'days')
+        .asMinutes();
+      timeoutValue = timeoutValue + daysInMinutes;
+    }
+
+    if (obj['hrs']) {
+      let hrsInMinutes = moment
+        .duration(parseInt(obj['hrs']), 'hours')
+        .asMinutes();
+      timeoutValue = timeoutValue + hrsInMinutes;
+    }
+
+    if (obj['mins']) {
+      timeoutValue = timeoutValue + parseInt(obj['mins']);
+    }
+
+    return timeoutValue;
   };
 
   configureNow = () => {
@@ -155,21 +151,42 @@ export default class PaymentSettings extends Component {
         />
       ),
     });
+
+    window.rzpAnalytics({
+      eventCategory: 'Dashboard - Payments Capture Settings',
+      eventAction: 'Configure Now',
+      eventLabel: 'Configure now - Onboarding - New User',
+    });
   };
 
   handleCaptureInitiationDone = selectedLateAuthType => {
     this.props.closeModal();
-    this.props.openModal({
-      size: 'small',
-      component: (
-        <AutomaticCaptureModal
-          closeModal={this.props.closeModal}
-          handleDone={this.automaticCaptureDone}
-          handleBack={this.automaticCaptureBack}
-          selectedLateAuthType={selectedLateAuthType}
-        />
-      ),
-    });
+    if (selectedLateAuthType === 'automatic') {
+      this.props.openModal({
+        size: 'small',
+        component: (
+          <AutomaticCaptureModal
+            closeModal={this.props.closeModal}
+            handleDone={this.automaticCaptureDone}
+            handleBack={this.automaticCaptureBack}
+            selectedLateAuthType={selectedLateAuthType}
+          />
+        ),
+      });
+      window.rzpAnalytics({
+        eventCategory: 'Dashboard - Payments Capture Settings',
+        eventAction: 'Done',
+        eventLabel:
+          'Configure now - Capture Settings - Automatic Capture - Done',
+      });
+    } else {
+      this.handleManualCaptureClick();
+      window.rzpAnalytics({
+        eventCategory: 'Dashboard - Payments Capture Settings',
+        eventAction: 'Done',
+        eventLabel: 'Configure now - Capture Settings - Manual Capture - Done',
+      });
+    }
   };
 
   automaticCaptureDone = (authType, configureTime) => {
@@ -178,16 +195,42 @@ export default class PaymentSettings extends Component {
       authType === 'automatic'
         ? this.handleAutomaticCaptureClick()
         : this.handleManualCaptureClick();
+
+      window.rzpAnalytics({
+        eventCategory: 'Dashboard - Payments Capture Settings',
+        eventAction: 'Done',
+        eventLabel:
+          'Configure now - Automatic capture - Set Custom Timeout - Done',
+      });
     } else {
       // set default config for that auth-type
       // make api call here
-      this.handleCreateLateAuthConfig({}, authType);
+      this.handleCreateLateAuthConfig(
+        {
+          refundValue: this.props.default_refund_speed,
+          automatic: { days: 5 },
+          skipped: false,
+        },
+        authType
+      );
+
+      window.rzpAnalytics({
+        eventCategory: 'Dashboard - Payments Capture Settings',
+        eventAction: 'Done',
+        eventLabel:
+          'Configure now - Automatic capture - Capture payments automatically - Done',
+      });
     }
   };
 
   automaticCaptureBack = () => {
     this.props.closeModal();
     this.configureNow();
+    window.rzpAnalytics({
+      eventCategory: 'Dashboard - Payments Capture Settings',
+      eventAction: 'Back',
+      eventLabel: 'Configure now - Automatic Capture - Back',
+    });
   };
 
   handleAutomaticCaptureClick = () => {
@@ -198,6 +241,8 @@ export default class PaymentSettings extends Component {
           captureType="automatic"
           closeModal={this.props.closeModal}
           createLateAuthConfig={this.handleCreateLateAuthConfig}
+          lateAuthConfig={this.props.lateAuthConfig.data.items[0]}
+          onChangeClick={this.handleCaptureInitiationDone}
         />
       ),
     });
@@ -211,19 +256,64 @@ export default class PaymentSettings extends Component {
           captureType="manual"
           closeModal={this.props.closeModal}
           createLateAuthConfig={this.handleCreateLateAuthConfig}
+          lateAuthConfig={this.props.lateAuthConfig.data.items[0]}
         />
       ),
     });
   };
 
+  computeHeight = (captureType, panelType) => {
+    if (captureType === panelType && this.state.isToggleActive === true) {
+      return '205px';
+    } else {
+      return '100px';
+    }
+  };
+
+  handleContentToggle = _ => {
+    this.setState(prevState => {
+      return {
+        isToggleActive: !prevState.isToggleActive,
+      };
+    });
+  };
+
+  isConfigDefault = configOptions => {
+    if (
+      !configOptions.automatic_expiry_period &&
+      !configOptions.manual_expiry_period
+    )
+      return true;
+    else return false;
+  };
+
   render() {
+    const { data: { items }, error } = this.props.lateAuthConfig;
+    const { isToggleActive } = this.state;
+    const { role } = this.props.user;
+
+    if (error || !items) {
+      return null;
+    }
+
+    // If config exists and is as per old schema - return null
+    if (items[0]) {
+      if (items[0].config.capture && items[0].config.refund) {
+        return null;
+      }
+    }
+
     return (
       <div class="panel panel-default">
         <div class="panel-heading">
           <span class="title">Payment Capture</span>
 
           <span class="toggler-btn">
-            <a>
+            <a
+              href="https://razorpay.com/docs/capture-settings/"
+              target="_blank"
+              rel="noreferrer"
+            >
               Know More{' '}
               <i class="i i-external-link" style={{ marginLeft: '5px' }} />
             </a>
@@ -231,74 +321,156 @@ export default class PaymentSettings extends Component {
         </div>
 
         <div class="panel-body payment-capture-panel">
-          {this.state.lateConfigExist && (
+          {items.length !== 0 && (
             <div class="payment-capture-panel-row">
               <div class="panel-content">
                 <div
                   class={`left-panel ${
-                    this.state.lateConfigExist === 'automatic'
-                      ? 'is-active'
-                      : ''
+                    items[0].config.capture === 'automatic' ? 'is-active' : ''
                   }`}
-                  style={{ marginRight: '5px' }}
+                  style={{
+                    marginRight: '5px',
+                    height: this.computeHeight(
+                      items[0].config.capture,
+                      'automatic'
+                    ),
+                  }}
                 >
                   <div class="panel-header">
                     <h4>
                       <b>Automatic Capture</b>
                     </h4>
-                    <input
-                      type="radio"
-                      checked={this.state.lateConfigExist === 'automatic'}
-                      onClick={() => {
-                        this.handleCaptureInitiationDone('automatic');
-                      }}
-                    />
+                    {role === 'owner' && (
+                      <input
+                        type="radio"
+                        checked={items[0].config.capture === 'automatic'}
+                        onClick={() => {
+                          this.handleCaptureInitiationDone('automatic');
+                          window.rzpAnalytics({
+                            eventCategory:
+                              'Dashboard - Payments Capture Settings',
+                            eventAction: 'Configure Now',
+                            eventLabel:
+                              'Configure now - Automatic Capture - Returning User',
+                          });
+                        }}
+                      />
+                    )}
                   </div>
                   <div class="panel-description">
                     <p>Payments will be captured automatically</p>
                   </div>
+                  {items[0].config.capture === 'automatic' &&
+                    !this.isConfigDefault(items[0].config.capture_options) && (
+                      <div style={{ paddingLeft: '15px' }}>
+                        <div
+                          class="text-primary timeoutview-toggler"
+                          onClick={this.handleContentToggle}
+                        >
+                          Timeouts{' '}
+                          <i
+                            className={
+                              'i i-chevron-' + (isToggleActive ? 'up' : 'down')
+                            }
+                          />
+                        </div>
+                        {isToggleActive && (
+                          <Timeouts
+                            config={items[0].config}
+                            onEditTimeoutClick={() => {
+                              this.handleCaptureInitiationDone('automatic');
+                            }}
+                            role={role}
+                          />
+                        )}
+                      </div>
+                    )}
                 </div>
                 <div
                   class={`right-panel ${
-                    this.state.lateConfigExist === 'manual' ? 'is-active' : ''
+                    items[0].config.capture === 'manual' ? 'is-active' : ''
                   }`}
-                  style={{ marginLeft: '5px' }}
+                  style={{
+                    marginLeft: '5px',
+                    height: this.computeHeight(
+                      items[0].config.capture,
+                      'manual'
+                    ),
+                  }}
                 >
                   <div class="panel-header">
                     <h4>
                       <b>Manual Capture</b>
                     </h4>
-                    <input
-                      type="radio"
-                      checked={this.state.lateConfigExist === 'manual'}
-                      onClick={() => {
-                        this.handleCaptureInitiationDone('manual');
-                      }}
-                    />
+                    {role === 'owner' && (
+                      <input
+                        type="radio"
+                        checked={items[0].config.capture === 'manual'}
+                        onClick={() => {
+                          this.handleCaptureInitiationDone('manual');
+                          window.rzpAnalytics({
+                            eventCategory:
+                              'Dashboard - Payments Capture Settings',
+                            eventAction: 'Configure Now',
+                            eventLabel:
+                              'Configure now - Manual Capture - Returning User',
+                          });
+                        }}
+                      />
+                    )}
                   </div>
                   <div class="panel-description">
                     <p>Capture the payments manually</p>
                   </div>
+                  {items[0].config.capture === 'manual' &&
+                    !this.isConfigDefault(items[0].config.capture_options) && (
+                      <div style={{ paddingLeft: '15px' }}>
+                        <div
+                          class="text-primary timeoutview-toggler"
+                          onClick={this.handleContentToggle}
+                        >
+                          Timeouts{' '}
+                          <i
+                            className={
+                              'i i-chevron-' + (isToggleActive ? 'up' : 'down')
+                            }
+                          />
+                        </div>
+                        {isToggleActive && (
+                          <Timeouts
+                            config={items[0].config}
+                            onEditTimeoutClick={() => {
+                              this.handleCaptureInitiationDone('manual');
+                            }}
+                            role={role}
+                          />
+                        )}
+                      </div>
+                    )}
                 </div>
               </div>
               <div class="description">
-                All payments authorised within 5 days of creation will be
-                captured automatically.
+                Capture value passed in Orders API will override these settings
+                if there is any conflict
               </div>
-              <HorizontalTimeline timelineItems={this.state.timelineItems} />
             </div>
           )}
-          {this.state.lateConfigExist === null && (
+          {items.length === 0 && (
             <>
               <div class="description">
                 Payments must be captured once they get authorised or else
                 payments will be auto refunded to customers. Set default capture
                 and auto refund settings to control your payments better.
               </div>
+              <p>
+                Capture value passed in Orders API will override these settings
+                if there is any conflict
+              </p>
               <button
                 class="btn btn-primary"
                 onClick={this.configureNow}
                 style={{ marginTop: '15px' }}
+                disabled={role !== 'owner' ? true : false}
               >
                 Configure Now
               </button>

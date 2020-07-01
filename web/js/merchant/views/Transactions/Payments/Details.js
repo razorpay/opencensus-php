@@ -94,6 +94,8 @@ export default class PaymentDetailsContainer extends Component {
         eventAction: 'Open Details - Payments',
         eventLabel: `payment_id=${id}`,
       });
+
+    this.props.fetchMerchantManualAction(id);
   }
 
   componentWillUnmount() {
@@ -312,6 +314,7 @@ export default class PaymentDetailsContainer extends Component {
       bankTransfer,
       upiTransfer,
       config,
+      merchantManualAction,
     } = this.props;
     let statusMsg = {};
 
@@ -345,6 +348,7 @@ export default class PaymentDetailsContainer extends Component {
           viewSettlementOverview={this.viewSettlementOverview}
           config={config}
           user={this.props.user}
+          merchantManualAction={merchantManualAction}
         />
 
         <ShowWhen

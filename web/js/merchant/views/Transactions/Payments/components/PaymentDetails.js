@@ -35,6 +35,7 @@ export default props => {
     viewSettlementOverview,
     config,
     user,
+    merchantManualAction,
   } = props;
 
   return (
@@ -59,19 +60,31 @@ export default props => {
           </div>
 
           <div class="SliderPanel__Body">
-            {payment.status === 'authorized' && (
-              <Banner
-                cta={isRoleAllowedEdit ? 'Capture Payment' : ''}
-                ctaOnClick={() => {
-                  props.confirmCapture(payment);
-                }}
-              >
-                <span>
-                  This payment will be auto-refunded if not captured within 5
-                  days of creation.
-                </span>
-              </Banner>
-            )}
+            {payment.status === 'authorized' &&
+            Object.keys(merchantManualAction.details).length > 0 ? (
+              <div class="payments-manual-actions">
+                {merchantManualAction.details.capture &&
+                  isRoleAllowedEdit && (
+                    <button
+                      onClick={() => {
+                        props.confirmCapture(payment);
+                      }}
+                      class="btn btn-primary"
+                    >
+                      Capture Payment
+                    </button>
+                  )}
+                {merchantManualAction.details.refund && (
+                  <button
+                    onClick={openRefundModal}
+                    class="btn btn-primary"
+                    style={{ marginLeft: '5px' }}
+                  >
+                    Refund Payment
+                  </button>
+                )}
+              </div>
+            ) : null}
 
             <div class="panel-body">
               <Alert type={statusMsg.type} message={statusMsg.message} />

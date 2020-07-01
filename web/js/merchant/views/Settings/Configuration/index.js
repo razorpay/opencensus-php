@@ -142,7 +142,7 @@ export default class CongfigurationContainer extends Component {
             {this.props.user.isOrgAllowedFunctionality('flashcheckout') && (
               <FlashCheckout />
             )}
-            {/* <PaymentSettings /> */}
+            <PaymentSettings />
             {this.props.user.isActivated &&
             this.props.mode === 'live' &&
             config.fee_bearer !== 'customer' ? (

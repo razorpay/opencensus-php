@@ -323,6 +323,25 @@ class Constants
             ],
         ],
         [
+            'title'       => 'Payments Capture',
+            'description' => 'Enable auto capturing of your payments and have a better control of your payment system.',
+            'start_ts'    => 1593581451,
+            'end_ts'      => 1606800651,
+            'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/Capture_Settings.svg',
+            'buttons'     => [
+                [
+                    'type'  => 'button',
+                    'label' => 'Configure Now',
+                    'url'   => '/config',
+                ],
+                [
+                    'type'  => 'primary-inverted',
+                    'label' => 'Know More',
+                    'url'   => 'https://razorpay.com/docs/capture-settings/',
+                ]
+            ],
+        ],
+        [
             'title'       => 'RazorpayX Payout Link',
             'description' => 'Send money easily and instantly without Bank Account Details.',
             'icon'        => 'https://cdn.razorpay.com/static/assets/rx-payout.svg',
