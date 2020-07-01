@@ -2630,6 +2630,21 @@ class AdminFetch
                     Fetch::TYPE => Fetch::TYPE_BOOLEAN,
                 ],
             ],
+
+            Entity::BANK_TRANSFER_REQUEST => [
+                'is_created' => [
+                    Fetch::LABEL => 'Bank Transfer Created',
+                    Fetch::TYPE => Fetch::TYPE_BOOLEAN,
+                ],
+                'utr' => [
+                    Fetch::LABEL => 'UTR',
+                    Fetch::TYPE => Fetch::TYPE_STRING,
+                ],
+                'payee_account' => [
+                    Fetch::LABEL => 'Payee Account',
+                    Fetch::TYPE => Fetch::TYPE_STRING,
+                ],
+            ],
         ];
 
         //

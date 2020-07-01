@@ -561,6 +561,8 @@ return [
 
     E::IDEMPOTENCY_KEY => [],
 
+    E::BANK_TRANSFER_REQUEST => [],
+
     E::BALANCE_CONFIG => [
         Type::PROXY_AUTH => [
             [
