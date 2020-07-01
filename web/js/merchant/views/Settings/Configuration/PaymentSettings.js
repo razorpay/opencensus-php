@@ -323,6 +323,11 @@ export default class PaymentSettings extends Component {
         <div class="panel-body payment-capture-panel">
           {items.length !== 0 && (
             <div class="payment-capture-panel-row">
+              <p style={{ paddingBottom: '10px' }}>
+                Capture settings are applicable only if Orders API is used to
+                create the payment. Capture values passed in the Order API will
+                override these settings if there is any conflict.
+              </p>
               <div class="panel-content">
                 <div
                   class={`left-panel ${
@@ -449,22 +454,19 @@ export default class PaymentSettings extends Component {
                     )}
                 </div>
               </div>
-              <div class="description">
-                Capture value passed in Orders API will override these settings
-                if there is any conflict
-              </div>
             </div>
           )}
           {items.length === 0 && (
             <>
               <div class="description">
-                Payments must be captured once they get authorised or else
-                payments will be auto refunded to customers. Set default capture
-                and auto refund settings to control your payments better.
+                Capture settings are applicable only if Orders API is used to
+                create the payment. Capture values passed in the Order API will
+                override these settings if there is any conflict.
               </div>
               <p>
-                Capture value passed in Orders API will override these settings
-                if there is any conflict
+                Payments must be captured once they are authorized. If not, they
+                are auto-refunded. Use the default capture and auto-refund
+                settings to better control this.
               </p>
               <button
                 class="btn btn-primary"

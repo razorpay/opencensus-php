@@ -142,6 +142,9 @@ export default class PaymentsCaptureConfigurationModal extends Component {
 
   handleDropdownSelection = e => this.setState({ refundValue: e.target.value });
 
+  capitalizeFirstLetter = string =>
+    string.charAt(0).toUpperCase() + string.slice(1);
+
   onTooltipHover = () => {
     window.rzpAnalytics({
       eventCategory: 'Dashboard - Payments Capture Settings',
@@ -177,7 +180,7 @@ export default class PaymentsCaptureConfigurationModal extends Component {
         )}
       >
         <ModalHeader
-          title="Automatic Capture"
+          title={`${this.capitalizeFirstLetter(captureType)} Capture`}
           onCloseClick={() => {
             this.props.closeModal();
           }}
