@@ -35,23 +35,23 @@ class ThrottleController extends Controller
         Key\Entity::select('id', 'merchant_id')
             ->orderBy(Key\Entity::ID)
             ->chunk($chunkSize, function($keys) use (&$totalIteration, &$failedIteration) {
-                ++$totalIteration;
-                $args = [];
                 foreach ($keys as $key)
                 {
-                    $args[] = "{".Constant::KEYID_MID_KEY_PREFIX.$key->getPublicId()."}";
-                    $args[] = $key->getMerchantId();
+                    ++$totalIteration;
+                    $mkey = Constant::KEYID_MID_KEY_PREFIX.$key->getPublicId();
+                    $mvalue = $key->getMerchantId();
+                    try
+                    {
+                        Redis::connection('throttle')->client()->set($mkey, $mvalue);
+                    }
+                    catch (\Throwable $e)
+                    {
+                        ++$failedIteration;
+                        $this->trace->traceException($e, null, null, $key);
+                    }
+
                 }
 
-                try
-                {
-                    Redis::connection('throttle')->client()->mset(...$args);
-                }
-                catch (\Throwable $e)
-                {
-                    ++$failedIteration;
-                    $this->trace->traceException($e, null, null, compact($args));
-                }
             });
 
         $this->trace->info(TraceCode::BOOTSTRAP_KEY_CACHE_SUMMARY, compact('totalIteration', 'failedIteration'));
@@ -105,7 +105,7 @@ class ThrottleController extends Controller
             }
             catch (\Throwable $e)
             {
-                echo $e->getMessage();
+                ++$failedIteration;
                 $this->trace->traceException($e, null, null, compact("key"));
             }
 
