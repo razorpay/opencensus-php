@@ -25,7 +25,7 @@ class Validator extends Base\Validator
         Entity::CUSTOMER_ID                     => 'filled|public_id|size:19',
         Entity::ORDER_ID                        => 'filled|public_id|size:20',
         Entity::RECEIVERS                       => 'bail|required|array|custom',
-        Entity::RECEIVERS . '.' . Entity::TYPES => 'present|array',
+        Entity::RECEIVERS . '.' . Entity::TYPES => 'present|array|min:1',
         Entity::NOTES                           => 'sometimes|notes',
         Entity::CLOSE_BY                        => 'filled|epoch|custom',
         Entity::CUSTOMER                        => 'sometimes|array',
