@@ -727,6 +727,37 @@ class PaymentLinkTest extends TestCase
         $this->createPaymentPageItem(self::TEST_PPI_ID, self::TEST_PL_ID, []);
 
         $this->startTest();
+
+    }
+
+    public function testCreateOrderForPaymentLinkAndVerifyProductTypePage()
+    {
+        $this->createPaymentLink(self::TEST_PL_ID);
+
+        $this->createPaymentPageItem(self::TEST_PPI_ID, self::TEST_PL_ID, []);
+
+        $this->startTest();
+
+        $order = $this->getDbLastEntity("order");
+
+        $this->assertEquals($order->getProductType(), 'payment_page');
+
+        $this->assertEquals($order->getProductId(), self::TEST_PL_ID);
+    }
+
+    public function testCreateOrderForPaymentLinkAndVerifyProductTypeButton()
+    {
+        $this->createPaymentLink(self::TEST_PL_ID,  ['view_type' => 'button']);
+
+        $this->createPaymentPageItem(self::TEST_PPI_ID, self::TEST_PL_ID, []);
+
+        $this->startTest();
+
+        $order = $this->getDbLastEntity("order");
+
+        $this->assertEquals($order->getProductType(), 'payment_button');
+
+        $this->assertEquals($order->getProductId(), self::TEST_PL_ID);
     }
 
     public function testCreateOrderForPaymentLinkWithMultipleItem()

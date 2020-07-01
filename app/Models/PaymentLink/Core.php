@@ -413,7 +413,7 @@ class Core extends Base\Core
                 Order\Entity::CURRENCY          => $paymentLink->getCurrency(),
                 Order\Entity::PAYMENT_CAPTURE   => true,
                 Order\Entity::NOTES             => $input[Order\Entity::NOTES] ?? [],
-                Order\Entity::PRODUCT_TYPE      => Order\ProductType::PAYMENT_PAGE,
+                Order\Entity::PRODUCT_TYPE      => $paymentLink->getProductType(),
                 Order\Entity::PRODUCT_ID        => $paymentLink->getId(),
             ],
             $paymentLink->merchant

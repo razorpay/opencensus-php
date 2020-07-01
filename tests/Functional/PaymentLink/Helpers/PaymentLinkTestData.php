@@ -1266,6 +1266,68 @@ return [
         ],
     ],
 
+    'testCreateOrderForPaymentLinkAndVerifyProductTypePage' => [
+        'request' => [
+            'url'    => '/payment_pages/pl_100000000000pl/order',
+            'method' => 'post',
+            'content' => [
+                'line_items' => [
+                    [
+                        'payment_page_item_id' => 'ppi_10000000000ppi',
+                        'amount'               => 10000,
+                    ]
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'order' => [
+                    'amount' => 10000,
+                ],
+                'line_items' => [
+                    [
+                        'item_id'  => 'item_10000000000ppi',
+                        'ref_id'   => 'ppi_10000000000ppi',
+                        'ref_type' => 'payment_page_item',
+                        'amount'   => 10000,
+                        'currency' => 'INR',
+                    ]
+                ]
+            ],
+        ],
+    ],
+
+    'testCreateOrderForPaymentLinkAndVerifyProductTypeButton' => [
+        'request' => [
+            'url'    => '/payment_pages/pl_100000000000pl/order',
+            'method' => 'post',
+            'content' => [
+                'line_items' => [
+                    [
+                        'payment_page_item_id' => 'ppi_10000000000ppi',
+                        'amount'               => 10000,
+                    ]
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'order' => [
+                    'amount' => 10000,
+                ],
+                'line_items' => [
+                    [
+                        'item_id'  => 'item_10000000000ppi',
+                        'ref_id'   => 'ppi_10000000000ppi',
+                        'ref_type' => 'payment_page_item',
+                        'amount'   => 10000,
+                        'currency' => 'INR',
+                    ]
+                ]
+            ],
+        ],
+    ],
+
     'testCreateOrderForPaymentLinkWithAmountLessThanMinAmount' => [
         'request' => [
             'url'    => '/payment_pages/pl_100000000000pl/order',

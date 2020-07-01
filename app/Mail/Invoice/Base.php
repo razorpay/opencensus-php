@@ -195,17 +195,17 @@ class Base extends Mailable
             $startText = "Donation ";
         }
 
-        $appendText = $startText. "receipt for your successful transaction on ";
+        $appendText = $startText. "receipt for your successful transaction ";
 
         $viewType = $this->data['invoice'][C\Entity::PAYMENT_PAGE]['view_type'];
 
         if ($viewType === 'button')
         {
-            $template = $this->data['merchant']['name'];
+            $template = "with ".$this->data['merchant']['name'];
         }
         else
         {
-            $template = $this->data['invoice'][C\Entity::PAYMENT_PAGE]['title'];
+            $template = "on ".$this->data['invoice'][C\Entity::PAYMENT_PAGE]['title'];
         }
 
         $template = $appendText. $template;

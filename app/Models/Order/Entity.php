@@ -589,6 +589,16 @@ class Entity extends Base\PublicEntity
         return self::ALLOWED_LINE_ITEM_TYPES;
     }
 
+    public function getProductType()
+    {
+        return $this->getAttribute(self::PRODUCT_TYPE);
+    }
+
+    public function getProductId()
+    {
+        return $this->getAttribute(self::PRODUCT_ID);
+    }
+
     /** End Setters And Getters */
 
     /** Other Functions */

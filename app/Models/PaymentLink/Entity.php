@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 use RZP\Models\Base;
 use RZP\Models\User;
+use RZP\Models\Order;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
 use RZP\Models\Settings;
@@ -412,6 +413,21 @@ class Entity extends Base\PublicEntity
     public function getVersion(): string
     {
         return $this->getSettings()[Entity::VERSION] ?? Version::V1;
+    }
+
+    public function getViewType(): string
+    {
+        return $this->getAttribute(self::VIEW_TYPE);
+    }
+
+    public function getProductType(): string
+    {
+        if ($this->getViewType() === self::VIEW_TYPE_BUTTON)
+        {
+            return Order\ProductType::PAYMENT_BUTTON;
+        }
+
+        return Order\ProductType::PAYMENT_PAGE;
     }
 
     public function isActive(): bool
