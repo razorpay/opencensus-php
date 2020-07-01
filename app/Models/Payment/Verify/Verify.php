@@ -5,6 +5,7 @@ namespace RZP\Models\Payment\Verify;
 use App;
 use Config;
 use Carbon\Carbon;
+use RedisDualWrite;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
 use RZP\Models\Base;
@@ -222,7 +223,7 @@ class Verify extends Base\Core
 
         $this->mutex = $this->app['api.mutex'];
 
-        $this->redis = $this->app['redis'];
+        $this->redis = $this->app['redisdualwrite'];
 
         $this->slack = $this->app['slack'];
 

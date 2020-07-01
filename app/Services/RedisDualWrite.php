@@ -35,9 +35,7 @@ class RedisDualWrite
 
         try
         {
-            $keyWithPrefix = $this->appendPrefix($key);
-
-            $redisEcResponse = $redisEc->set($keyWithPrefix, $value, $expireResolution, $expireTTL, $flag);
+            $redisEcResponse = $redisEc->set($key, $value, $expireResolution, $expireTTL, $flag);
 
             $redisLabsResponse = $redis->set($key, $value, $expireResolution, $expireTTL, $flag);
 
@@ -58,12 +56,10 @@ class RedisDualWrite
 
             $redis->del($key);
 
-            $redisEc->del($keyWithPrefix);
+            $redisEc->del($key);
 
             throw $e;
         }
-
-        return $response;
     }
 
     public function get($key)
@@ -74,9 +70,7 @@ class RedisDualWrite
 
         try
         {
-            $keyWithPrefix = $this->appendPrefix($key);
-
-            $redisEcResponse = $redisEc->get($keyWithPrefix);
+            $redisEcResponse = $redisEc->get($key);
 
             $redisLabsResponse = $redis->get($key);
 
@@ -109,9 +103,7 @@ class RedisDualWrite
 
         try
         {
-            $keyWithPrefix = $this->appendPrefix($key);
-
-            $redisEcResponse = $redisEc->ttl($keyWithPrefix);
+            $redisEcResponse = $redisEc->ttl($key);
 
             $redisLabsResponse = $redis->ttl($key);
 
@@ -148,9 +140,7 @@ class RedisDualWrite
 
         try
         {
-            $redisEcKey = $this->appendPrefix($key);
-
-            $redisEcResponse = $redisEc->del($redisEcKey);
+            $redisEcResponse = $redisEc->del($key);
 
             $redisLabsResponse = $redis->del($key);
 
@@ -183,9 +173,7 @@ class RedisDualWrite
 
         try
         {
-            $keyWithPrefix = $this->appendPrefix($key);
-
-            $redisEcResponse = $redisEc->hGetAll($keyWithPrefix);
+            $redisEcResponse = $redisEc->hGetAll($key);
 
             $redisLabsResponse = $redis->hGetAll($key);
 
@@ -215,8 +203,6 @@ class RedisDualWrite
         $data = null;
         $ttl = null;
 
-        $redisLabskey = $this->appendPrefix($key);
-
         $redis = Redis::Connection();
 
         $redisEc = Redis::Connection('mutex_redis');
@@ -245,13 +231,201 @@ class RedisDualWrite
         return [$data, $ttl];
     }
 
+    protected function hBackup($key, $field)
+    {
+        $data = null;
+        $ttl = null;
+
+        $redis = Redis::Connection();
+
+        $redisEc = Redis::Connection('mutex_redis');
+
+        try
+        {
+            $data = $redis->hGet($key, $field);
+            $ttl  =  $redis->ttl($key);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::CRITICAL,
+                TraceCode::REDIS_DUAL_WRITE_BACKUP_ERROR,
+                ['key' => $key]);
+
+        }
+
+        if ($data === null)
+        {
+            $data = $redisEc->hGet($key, $field);
+            $ttl =  $redisEc->ttl($key);
+        }
+
+        return [$data, $ttl];
+    }
+
     protected function restore($key, $data, $ttl)
     {
         $this->set($key, $data, 'ex', $ttl, 'nx');
     }
 
-    protected function appendPrefix($key)
+    public function hSet($key, $field, $value)
     {
-        return self::PREFIX . $key;
+        $redis = Redis::Connection();
+
+        $redisEc = Redis::Connection('mutex_redis');
+
+        try
+        {
+            $redisEcResponse = $redisEc->hSet($key, $field, $value);
+
+            if ($this->shouldReadRedisLabs === true)
+            {
+                return $redis->hSet($key, $field, $value);
+            }
+
+            return $redisEcResponse;
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::CRITICAL,
+                TraceCode::REDIS_DUAL_WRITE_READ_ERROR,
+                ['key' => $key]);
+
+            $redisEc->hdel($key, $value);
+
+            $redis->hdel($key, $value);
+
+            throw $e;
+        }
+    }
+
+    public function hGet($key, $field)
+    {
+        $redis = Redis::Connection();
+
+        $redisEc = Redis::Connection('mutex_redis');
+
+        try
+        {
+            $redisEcResponse = $redisEc->hGet($key, $field);
+
+            if ($this->shouldReadRedisLabs === true)
+            {
+                return $redis->hGet($key, $field);;
+            }
+
+            return $redisEcResponse;
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::CRITICAL,
+                TraceCode::REDIS_DUAL_WRITE_READ_ERROR,
+                ['key' => $key]);
+
+            throw $e;
+        }
+    }
+
+    public function hDel($key, $field)
+    {
+        $redis = Redis::Connection();
+
+        $redisEc = Redis::Connection('mutex_redis');
+
+        list($data, $ttl) = $this->hBackup($key, $field);
+
+        try
+        {
+            $redisEcResponse = $redisEc->hdel($key, $field);
+
+            if ($this->shouldReadRedisLabs === true)
+            {
+                return $redis->hdel($key, $field);;
+            }
+
+            return $redisEcResponse;
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::CRITICAL,
+                TraceCode::REDIS_DUAL_WRITE_DELETE_ERROR,
+                ['key' => $key]);
+
+            $redis->hSet($key, $field, $data);
+
+            throw $e;
+        }
+    }
+
+    public function expire($key, $ttl)
+    {
+        $redis = Redis::Connection();
+
+        $redisEc = Redis::Connection('mutex_redis');
+
+        try
+        {
+            $redisEcResponse = $redisEc->expire($key, $ttl);
+
+            if ($this->shouldReadRedisLabs === true)
+            {
+                return $redis->expire($key, $ttl);;
+            }
+
+            return $redisEcResponse;
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::CRITICAL,
+                TraceCode::REDIS_DUAL_WRITE_READ_ERROR,
+                ['key' => $key]);
+
+            throw $e;
+        }
+    }
+
+    public function incr($key)
+    {
+        $redis = Redis::Connection();
+
+        $redisEc = Redis::Connection('mutex_redis');
+
+        $redisLabsResponse = $redis->incr($key);
+
+        try
+        {
+            if ($redisEc->get($key) !== null)
+            {
+                $redisEc->incr($key);
+
+                return;
+            }
+
+            $redisEc->set($key, $redisLabsResponse);
+
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::CRITICAL,
+                TraceCode::REDIS_DUAL_WRITE_READ_ERROR,
+                ['key' => $key]);
+
+            $redisEc->del($key);
+
+            $redis->decr($key);
+
+            throw $e;
+        }
     }
 }

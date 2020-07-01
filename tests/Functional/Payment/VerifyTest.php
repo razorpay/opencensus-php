@@ -3,10 +3,10 @@
 namespace RZP\Tests\Functional\Payment;
 
 use DB;
-use Redis;
 use Carbon\Carbon;
 use RZP\Models\Payment;
 use RZP\Constants\Timezone;
+use RZP\Services\RedisDualWrite;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -1696,28 +1696,32 @@ class VerifyTest extends TestCase
 
     protected function setupRedisMock($paymentArray = [])
     {
-        $redisMock = $this->getMockBuilder(Redis::class)->setMethods(['hGetAll','set', 'get', 'setex', 'client', 'exists'])
+        $redisMock = $this->getMockBuilder(RedisDualWrite::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['hGetAll','set', 'get', 'setex', 'client', 'exists', 'hDel', 'hSet', 'incr', 'expire', 'hGet'])
                           ->getMock();
 
-        Redis::shouldReceive('connection')
-               ->andReturn($redisMock);
+        $this->app->instance('redisdualwrite', $redisMock);
 
-        Redis::shouldReceive('hGetAll')
-            ->andReturn([]);
+        $redisMock->method('hGetAll')
+            ->willReturn([]);
 
-        Redis::shouldReceive('hDel')
-            ->andReturn([]);
+        $redisMock->method('hGet')
+            ->willReturn([]);
 
-        Redis::shouldReceive('hSet')
-            ->andReturn(null);
+        $redisMock->method('hDel')
+            ->willReturn([]);
 
-        Redis::shouldReceive('incr')
-            ->andReturn(1);
+        $redisMock->method('hSet')
+            ->willReturn(null);
 
-        Redis::shouldReceive('expire')
-            ->andReturn(true);
+        $redisMock->method('incr')
+            ->willReturn(1);
 
-        $redisMock->method('set')->will($this->returnCallback(function ($resourceId, $requestId) use ($paymentArray)
+        $redisMock->method('expire')
+            ->willReturn(true);
+
+        $redisMock->method('set')->willReturnCallback(function ($resourceId, $requestId) use ($paymentArray)
         {
             foreach ($paymentArray as $payment)
             {
@@ -1727,7 +1731,7 @@ class VerifyTest extends TestCase
                 }
             }
             return true;
-        }));
+        });
 
         $store = \Cache::store();
 
@@ -1757,30 +1761,40 @@ class VerifyTest extends TestCase
 
     protected function setupRedisMockForBlockedGateway($paymentArray = [])
     {
-        $conn = Redis::connection();
+        $redisMock = $this->getMockBuilder(RedisDualWrite::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['hGetAll','set', 'get', 'setex', 'client', 'exists', 'hDel', 'hSet', 'incr', 'expire', 'hGet'])
+            ->getMock();
 
-        Redis::shouldReceive('connection')
-             ->andReturnUsing(function() use($conn){
-                return $conn;
-             });
+        $this->app->instance('redisdualwrite', $redisMock);
 
-        Redis::shouldReceive('hGetAll')
-            ->andReturn(
-                [],
-                [
-                    'ebs'=> Carbon::now()->getTimestamp() + 900
-                ]);
-        Redis::shouldReceive('hDel')
-            ->andReturn([]);
+        $redisMock->method('hGetAll')
+            ->willReturn(
+                [], [
+                    'ebs'=> Carbon::now()->getTimestamp() + 900]
+                , [
+                'ebs'=> Carbon::now()->getTimestamp() + 900
+            ],[
+                'ebs'=> Carbon::now()->getTimestamp() + 900
+            ],[
+                'ebs'=> Carbon::now()->getTimestamp() + 900
+            ],[
+                'ebs'=> Carbon::now()->getTimestamp() + 900
+            ],[
+                'ebs'=> Carbon::now()->getTimestamp() + 900
+            ]);
 
-        Redis::shouldReceive('hSet')
-            ->andReturn(null);
+        $redisMock->method('hDel')
+            ->willReturn([]);
 
-        Redis::shouldReceive('incr')
-            ->andReturn(101);
+        $redisMock->method('hSet')
+            ->willReturn(null);
 
-        Redis::shouldReceive('set')
-            ->andReturnUsing(
+        $redisMock->method('incr')
+            ->willReturn(101);
+
+        $redisMock->method('set')
+            ->willReturnCallback(
                 function ($arg) use ($paymentArray)
                 {
                     foreach ($paymentArray as $payment)
@@ -1793,37 +1807,40 @@ class VerifyTest extends TestCase
                     return true;
                 });
 
-        Redis::shouldReceive('get')
-            ->andReturn(true);
+        $redisMock->method('get')
+            ->willReturn(true);
     }
 
     protected function setupRedisMockForBlockedPayments()
     {
-        $conn = Redis::connection();
+        $redisMock = $this->getMockBuilder(RedisDualWrite::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['hGetAll','set', 'get', 'setex', 'client', 'exists', 'hDel', 'hSet', 'incr', 'expire', 'hGet'])
+            ->getMock();
 
-        Redis::shouldReceive('connection')
-             ->andReturnUsing(function() use($conn){
-                return $conn;
-             });
+        $this->app->instance('redisdualwrite', $redisMock);
 
-        Redis::shouldReceive('hGetAll')
-            ->andReturn(
+        $redisMock->method('hGetAll')
+            ->willReturn(
                 [],
+                [
+                    'ebs'=> Carbon::now()->getTimestamp() + 900
+                ],
                 [
                     'ebs'=> Carbon::now()->getTimestamp() + 900
                 ]);
 
-        Redis::shouldReceive('hDel')
-            ->andReturn([]);
+        $redisMock->method('hDel')
+            ->willReturn([]);
 
-        Redis::shouldReceive('hSet')
-            ->andReturn(null);
+        $redisMock->method('hSet')
+            ->willReturn(null);
 
-        Redis::shouldReceive('set')
-            ->andReturn(true);
+        $redisMock->method('set')
+            ->willReturn(true);
 
-        Redis::shouldReceive('get')
-            ->andReturn(true);
+        $redisMock->method('get')
+            ->willReturn(true);
     }
 
     protected function runCreateVerify()
