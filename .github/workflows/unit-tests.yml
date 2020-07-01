@@ -3,13 +3,19 @@ jobs:
   cancel:
     runs-on: [self-hosted]
     name: Cancel Previous Runs
+    if: always()
     steps:
     - uses: styfle/cancel-workflow-action@d57d93c
+      if: github.ref != 'refs/heads/master'
       name: cancel old workflows
       id: cancel
       with:
-        workflow_id: 1508274
         access_token: ${{ github.token }}
+    - if: github.ref == 'refs/heads/master'
+      name: Don't cancel old workflows
+      id: dont_cancel
+      run: |
+        echo "Don't cancel old workflow"
   validate_php_syntax:
     runs-on: [self-hosted]
     needs: [cancel]
@@ -663,16 +669,16 @@ jobs:
     if: always()
     steps:
     - name: Sending build success notification to tech_builds (Slack)
-      if: github.ref != 'master' && needs.workflow_status.result == 'success'
+      if: github.ref != 'refs/heads/master' && needs.workflow_status.result == 'success'
       env:
         SLACK_MESSAGE: 'Build Success.'
         SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
         SLACK_USERNAME: Github Actions # Optional. (defaults to webhook app)
         SLACK_CHANNEL: tech_builds # Optional. (defaults to webhook)
         SLACK_ICON: https://avatars3.githubusercontent.com/u/9919?s=40&v=4 # Optional. can be (repository, sender, an URL) (defaults to webhook app avatar)
-      uses:  rtCamp/action-slack-notify@v2.0.2
+      uses:  rtCamp/action-slack-notify@ca2febb
     - name: Sending build failed notification to tech_builds (Slack)
-      if: github.ref != 'master' && needs.workflow_status.result != 'success'
+      if: github.ref != 'refs/heads/master' && needs.workflow_status.result != 'success'
       env:
         SLACK_MESSAGE: 'Build failed.'
         SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
@@ -682,7 +688,7 @@ jobs:
         SLACK_ICON: https://avatars3.githubusercontent.com/u/9919?s=40&v=4 # Optional. can be (repository, sender, an URL) (defaults to webhook app avatar)
       uses:  rtCamp/action-slack-notify@ca2febb
     - name: Sending build failed notification to tech_backend (Slack)
-      if: github.ref == 'master' && needs.workflow_status.result != 'success'
+      if: github.ref == 'refs/heads/master' && needs.workflow_status.result != 'success'
       env:
         SLACK_MESSAGE: 'Master Build failed.'
         SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
@@ -695,7 +701,7 @@ jobs:
     runs-on: [self-hosted]
     name: Regression Suite
     needs: [workflow_status]
-    if: github.ref == 'master'
+    if: github.ref == 'refs/heads/master'
     steps:
     - name: Webhook
       run: |
