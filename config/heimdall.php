@@ -937,6 +937,21 @@ return [
                 'assignable'    => true
             ],
         ],
+
+        PermissionCategory::INSTRUMENT_REQUESTS => [
+            Permission::VIEW_INTERNAL_INSTRUMENT_REQUESTS => [
+                'description'   => 'View single/bulk internal instrument requests',
+                'assignable'    => true,
+            ],
+            Permission::UPDATE_INTERNAL_INSTRUMENT_REQUESTS => [
+                'description'   => 'Update single/bulk internal instrument requests',
+                'assignable'    => true,
+            ],
+            Permission::DELETE_INTERNAL_INSTRUMENT_REQUESTS => [
+                'description'   => 'Delete internal instrument requests',
+                'assignable'    => true,
+            ],
+        ],
     ],
 
     'workflows' => [

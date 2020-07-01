@@ -1788,6 +1788,14 @@ class Route
 
         //cron job to retry penny testing for initiated case
         'retry_penny_testing_cron'                => ['post',      'merchants/retry_penny_testing',                           'MerchantController@retryPennyTestingCron'                 ],
+
+        'get_internal_instrument_request_by_id'   => ['get',       'internal_instrument_request/{id}',                          'InstrumentRequestController@getInternalInstrumentRequestById'   ],
+        'patch_internal_instrument_request_by_id' => ['patch',     'internal_instrument_request/{id}',                          'InstrumentRequestController@patchInternalInstrumentRequestById' ],
+        'delete_internal_instrument_request_by_id'=> ['delete',    'internal_instrument_request/{id}',                          'InstrumentRequestController@deleteInternalInstrumentRequestById'],
+        'fetch_internal_instrument_requests'      => ['post',      'internal_instrument_request_fetch',                         'InstrumentRequestController@fetchInternalInstrumentRequests'    ],
+        'patch_internal_instrument_requests'      => ['patch',     'internal_instrument_request',                               'InstrumentRequestController@patchInternalInstrumentRequests'    ],
+        'instrument_request_razorx_admin'         => ['get',       'instrument_request/razorx/admin',                           'InstrumentRequestController@getRazorxForAdminDashboard'         ],
+
         'create_promotions_events'                => ['post',      'promotions/events',                                        'PromotionEventController@create'],
 
         'create_promotions_events'                => ['post',      'promotions/events',                                        'PromotionEventController@create'],
@@ -3398,6 +3406,14 @@ class Route
         // API<->Stork webhook recon route
         'admin_webhook_recon',
 
+        // instrument requests
+        'get_internal_instrument_request_by_id',
+        'patch_internal_instrument_request_by_id',
+        'delete_internal_instrument_request_by_id',
+        'fetch_internal_instrument_requests',
+        'patch_internal_instrument_requests',
+        'instrument_request_razorx_admin',
+
         'setl_admin_fetch',
         'setl_schedule_get',
         'setl_schedule_get_ids',
@@ -4108,6 +4124,14 @@ class Route
 
         // Merchant Attribute
         'merchants_update_onboarding_category_to_normal_cron'     => '*',
+
+        // Instrument requests
+        'get_internal_instrument_request_by_id'       => Permission::VIEW_INTERNAL_INSTRUMENT_REQUESTS,
+        'patch_internal_instrument_request_by_id'     => Permission::UPDATE_INTERNAL_INSTRUMENT_REQUESTS,
+        'delete_internal_instrument_request_by_id'    => Permission::DELETE_INTERNAL_INSTRUMENT_REQUESTS,
+        'fetch_internal_instrument_requests'          => Permission::VIEW_INTERNAL_INSTRUMENT_REQUESTS,
+        'patch_internal_instrument_requests'          => Permission::UPDATE_INTERNAL_INSTRUMENT_REQUESTS,
+        'instrument_request_razorx_admin'             => '*',
 
         //payout downtime fetch from X dashboard
         'fetch_payout_downtimes_enabled'           => '*',

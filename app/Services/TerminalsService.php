@@ -23,7 +23,7 @@ class TerminalsService
 
     protected $request;
 
-    const X_RAZORPAY_TASKID = 'X-Razorpay-TaskId';
+    const X_RAZORPAY_TASKID         = 'X-Razorpay-TaskId';
 
     const GATEWAY           = 'gateway';
     const MERCHANT_ID       = 'merchant_id';
@@ -191,9 +191,18 @@ class TerminalsService
         return $this->parseAndReturnResponse($response)[self::DATA] ?? [];
     }
 
-    public function proxyTerminalService($input, $method, $path) : array
+    public function proxyTerminalService($input, $method, $path, $options = [], $headers = []) : array
     {
-        $response = $this->sendRequest($path, json_encode($input), $method);
+        if ($input === [])
+        {
+            $input = '';
+        }
+        else
+        {
+            $input = json_encode($input);
+        }
+
+        $response = $this->sendRequest($path, $input, $method, $options, $headers);
 
         return $this->parseAndReturnResponse($response)[self::DATA] ?? [];
     }
@@ -281,11 +290,12 @@ class TerminalsService
         return $this->parseAndReturnResponse($response)[self::DATA] ?? [];
     }
 
-    protected function sendRequest(string $path, $content = '', string $method = Requests::POST, array $addditionalOptions = []): \Requests_Response
+    protected function sendRequest(string $path, $content = '', string $method = Requests::POST, array $addditionalOptions = [],
+                                   array $additionalHeaders = []): \Requests_Response
     {
         $url = $this->getBaseUrl() . $path;
 
-        $headers = $this->getHeaders();
+        $headers = $this->getHeaders($additionalHeaders);
 
         $options = $this->getOptions($addditionalOptions);
 
@@ -320,12 +330,12 @@ class TerminalsService
 
             if ($response->status_code >= 500)
             {
-                    throw new Exception\IntegrationException('Terminals service request failed with status code : ' . $response->status_code,
-                        ErrorCode::SERVER_ERROR_TERMINALS_SERVICE_INTEGRATION_ERROR,
-                        [
-                            self::RESPONSE      => $parsedResponse,
-                            self::STATUS_CODE   => $response->status_code,
-                        ]);
+                throw new Exception\IntegrationException('Terminals service request failed with status code : ' . $response->status_code,
+                    ErrorCode::SERVER_ERROR_TERMINALS_SERVICE_INTEGRATION_ERROR,
+                    [
+                        self::RESPONSE      => $parsedResponse,
+                        self::STATUS_CODE   => $response->status_code,
+                    ]);
             }
 
             if ($response->status_code >= 400)
@@ -384,12 +394,14 @@ class TerminalsService
         return $this->app['config']->get($urlConfig);
     }
 
-    protected function getHeaders()
+    protected function getHeaders(array $additionalHeaders)
     {
-        return [
+        $defaultHeaders = [
             self::CONTENT_TYPE      => 'application/json',
             self::X_RAZORPAY_TASKID => $this->request->getTaskId()
         ];
+
+        return array_merge($defaultHeaders, $additionalHeaders);
     }
 
     protected function getOptions(array $additionalOptions = [])

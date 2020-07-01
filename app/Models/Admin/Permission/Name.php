@@ -385,6 +385,11 @@ class Name
     const CREDITS_BATCH_UPLOAD                = 'credits_batch_upload';
     const UPDATE_MERCHANT_2FA_SETTING         = 'update_merchant_2fa_setting';
     const CREATE_WEBHOOK_STORK_BANKING_BULK   = 'create_webhook_stork_banking_bulk';
+
+    const VIEW_INTERNAL_INSTRUMENT_REQUESTS   = 'view_internal_insturment_request';
+    const UPDATE_INTERNAL_INSTRUMENT_REQUESTS = 'update_internal_insturment_request';
+    const DELETE_INTERNAL_INSTRUMENT_REQUESTS = 'delete_internal_insturment_request';
+
     const MANAGE_PAYOUT_DOWNTIME              = 'manage_payout_downtime';
     const VIEW_PAYOUT_DOWNTIME                = 'view_payout_downtime';
     const VAULT_TOKEN_CREATE                  = 'vault_token_create';
