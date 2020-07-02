@@ -416,6 +416,15 @@ app
                 'Click - Create Account (Success)'
               );
             }
+            window.rzpQ.push(
+              window.rzpQ
+                .now()
+                .onbr()
+                .success('signup.create_account', {
+                  mode: $scope.eventsMode,
+                  version: 1,
+                })
+            );
 
             window.trackHubs({
               id: 'SIGNUP_COMPLETE',
