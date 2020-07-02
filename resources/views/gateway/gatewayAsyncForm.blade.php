@@ -172,7 +172,7 @@
     var $ =  function (id) {
       return document.getElementById(id);
     }
-    
+
     if (!Date.now) {
       Date.now = function () { return +new Date(); };
     }
@@ -180,6 +180,10 @@
     var form = $('form');
     var CheckoutBridge = window.CheckoutBridge;
     var isIntentFlow = CheckoutBridge && data.type === 'intent';
+
+    if (data.type === 'async' && data.method === 'app' && data.provider === 'cred') {
+        $('message-txt').innerText = 'Please complete the payment on the CRED app';
+    }
 
     var lastXhr, lastPollTS, lastPollUrl;
     var threshold = 1000 * 20;{{-- 20 seconds --}}
