@@ -85,4 +85,36 @@ class TaxPaymentTests extends TestCase
         // assert that the Payout Update Status was called when feature was enabled
         $tpMock->shouldHaveReceived('addOrUpdateSettings');
     }
+
+    public function testGetTaxPaymentCallsServiceMethod()
+    {
+        $this->ba->proxyAuth();
+
+        $tpMock = Mockery::mock('RZP\Services\TaxPayments');
+
+        $tpMock->shouldReceive('getTaxPayment')->andReturn([]);
+
+        $this->app->instance('tax-payments', $tpMock);
+
+        $this->startTest();
+
+        // assert that the Payout Update Status was called when feature was enabled
+        $tpMock->shouldHaveReceived('getTaxPayment');
+    }
+
+    public function testListTaxPaymentCallsServiceMethod()
+    {
+        $this->ba->proxyAuth();
+
+        $tpMock = Mockery::mock('RZP\Services\TaxPayments');
+
+        $tpMock->shouldReceive('listTaxPayments')->andReturn([]);
+
+        $this->app->instance('tax-payments', $tpMock);
+
+        $this->startTest();
+
+        // assert that the Payout Update Status was called when feature was enabled
+        $tpMock->shouldHaveReceived('listTaxPayments');
+    }
 }

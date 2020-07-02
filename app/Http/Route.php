@@ -1010,6 +1010,9 @@ class Route
         // Tax Payments
         'tax_payments_get_all_settings'            => ['get',     'tax-payments/settings/',                          'TaxPaymentController@getAllSettings'                               ],
         'tax_payments_add_or_update_settings'      => ['post',    'tax-payments/settings/',                          'TaxPaymentController@addOrUpdateSettings'                          ],
+        'tax_payments_list'                        => ['get',     'tax-payments/',                                    'TaxPaymentController@listTaxPayments'                             ],
+        'tax_payments_get_by_id'                   => ['get',     'tax-payments/{id}',                                'TaxPaymentController@getTaxPayment'                               ],
+
 
         // Payout Links
         'payout_links_fetch_multiple'              => ['get',       'payout-links',                                  'PayoutLinkController@list'                                         ],
@@ -2789,6 +2792,8 @@ class Route
         // tax payment routes
         'tax_payments_get_all_settings',
         'tax_payments_add_or_update_settings',
+        'tax_payments_list',
+        'tax_payments_get_by_id',
 
         'payouts_scheduled_time_slots',
     ];
@@ -4300,6 +4305,12 @@ class Route
 
         //fetches all the active downtime
         'fetch_payout_downtimes_enabled'               => '*',
+
+        // tax payment permission
+        'tax_payments_get_all_settings'                => '*',
+        'tax_payments_add_or_update_settings'          => '*',
+        'tax_payments_list'                            => '*',
+        'tax_payments_get_by_id'                       => '*',
     ];
 
     public static $direct = [
@@ -5011,6 +5022,10 @@ class Route
         'vendor_payment_cancel'                => [Feature::RX_VENDOR_PAYMENTS],
         'vendor_payment_bulk_cancel'           => [Feature::RX_VENDOR_PAYMENTS],
         'vendor_payment_execute'               => [Feature::RX_VENDOR_PAYMENTS],
+        'tax_payments_get_all_settings'        => [Feature::RX_VENDOR_PAYMENTS],
+        'tax_payments_add_or_update_settings'  => [Feature::RX_VENDOR_PAYMENTS],
+        'tax_payments_list'                    => [Feature::RX_VENDOR_PAYMENTS],
+        'tax_payments_get_by_id'               => [Feature::RX_VENDOR_PAYMENTS],
         'vendor_payment_get_ocr_data'          => [Feature::RX_VENDOR_PAYMENTS],
     ];
 
@@ -5325,6 +5340,11 @@ class Route
 
         'fund_transfer_attempt_process',
         'on_demand_settlement',
+
+        'tax_payments_get_all_settings',
+        'tax_payments_add_or_update_settings',
+        'tax_payments_list',
+        'tax_payments_get_by_id',
     ];
 
     public static $routesWithV2Prefix = [];

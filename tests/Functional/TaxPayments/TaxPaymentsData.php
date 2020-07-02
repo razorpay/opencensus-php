@@ -52,5 +52,23 @@ return [
         'response' => [
             'content' => []
         ]
+    ],
+    'testGetTaxPaymentCallsServiceMethod'                 => [
+        'request'  => [
+            'method' => 'GET',
+            'url'    => '/tax-payments/txpy_1234',
+        ],
+        'response' => [
+            'content' => []
+        ]
+    ],
+    'testListTaxPaymentCallsServiceMethod'                => [
+        'request'  => [
+            'method' => 'GET',
+            'url'    => '/tax-payments',
+        ],
+        'response' => [
+            'content' => []
+        ]
     ]
 ];

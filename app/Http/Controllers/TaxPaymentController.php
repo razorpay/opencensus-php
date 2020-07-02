@@ -17,6 +17,11 @@ class TaxPaymentController extends Controller
         $this->service = $this->app['tax-payments'];
     }
 
+    public function listTaxPayments()
+    {
+        return $this->service->listTaxPayments($this->ba->getMerchant(), $this->input);
+    }
+
     /*
      * returns all the tax-payment related settings
      */
@@ -28,6 +33,11 @@ class TaxPaymentController extends Controller
     public function addOrUpdateSettings()
     {
         return $this->service->addOrUpdateSettings($this->ba->getMerchant(), $this->input, $this->ba->getUser());
+    }
+
+    public function getTaxPayment(string $taxPaymentId)
+    {
+        return $this->service->getTaxPayment($this->ba->getMerchant(), $taxPaymentId, $this->input);
     }
 
 }

@@ -21,6 +21,8 @@ class TaxPayments
     const BASE_PATH              = 'twirp/razorpay.vendorpayments.taxpayments.Taxpayments';
     const GET_ALL_SETTINGS       = 'GetAllSettings';
     const ADD_OR_UPDATE_SETTINGS = 'AddOrUpdateSettings';
+    const GET_TAX_PAYMENT_BY_ID  = 'GetTaxPayment';
+    const LIST_TAX_PAYMENTS      = 'ListTaxPayments';
 
 
     protected $app;
@@ -61,6 +63,22 @@ class TaxPayments
         $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::ADD_OR_UPDATE_SETTINGS);
 
         $input['user_id'] = $user->getPublicId();
+
+        return $this->makeRequest($merchant, $url, $input);
+    }
+
+    public function listTaxPayments(MerchantEntity $merchant, array $input)
+    {
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::LIST_TAX_PAYMENTS);
+
+        return $this->makeRequest($merchant, $url, $input);
+    }
+
+    public function getTaxPayment(MerchantEntity $merchant, string $taxPaymentId, array $input)
+    {
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::GET_TAX_PAYMENT_BY_ID);
+
+        $input['tax_payment_id'] = $taxPaymentId;
 
         return $this->makeRequest($merchant, $url, $input);
     }
