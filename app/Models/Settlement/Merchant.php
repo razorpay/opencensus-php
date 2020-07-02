@@ -44,6 +44,7 @@ class Merchant
     protected $env;
     protected $merchantSettleToPartner;
     protected $isAggregateSettlement;
+    protected $isNewService;
 
     /**
      * @var \RZP\Http\BasicAuth\BasicAuth
@@ -57,7 +58,8 @@ class Merchant
                                 $repo = null,
                                 $logging = false,
                                 array $merchantSettleToPartner = [],
-                                bool $isAggregateSettlement = false)
+                                bool $isAggregateSettlement = false,
+                                bool $isNewService = false)
     {
         $this->app = App::getFacadeRoot();
 
@@ -74,6 +76,8 @@ class Merchant
         $this->merchantSettleToPartner = $merchantSettleToPartner;
 
         $this->isAggregateSettlement = $isAggregateSettlement;
+
+        $this->isNewService = $isNewService;
 
         // Get settlement bank account
         $this->attachSettlementBankAccount();
@@ -385,6 +389,19 @@ class Merchant
 
         $setl->balance()->associate($balance);
 
+        // in case of test mode set settlement status to initiated
+        if ($this->doMockAttemptProcessed() === true)
+        {
+            $setl->setStatus(Status::INITIATED);
+        }
+
+        if ($this->isNewService === true)
+        {
+            $this->setl = $setl;
+
+            return;
+        }
+
         $mid = $this->merchant->getId();
 
         if (isset($merchantSettleToPartner[$mid]) === true)
@@ -398,12 +415,6 @@ class Merchant
         else
         {
             $setl->bankAccount()->associate($this->bankAccount);
-        }
-
-        // in case of test mode set settlement status to initiated
-        if ($this->doMockAttemptProcessed() === true)
-        {
-            $setl->setStatus(Status::INITIATED);
         }
 
         $this->setl = $setl;
@@ -637,6 +648,11 @@ class Merchant
      */
     protected function attachSettlementBankAccount()
     {
+        if ($this->isNewService === true)
+        {
+            return null;
+        }
+
         $mode = $this->ba->getMode();
 
         $mid = $this->merchant->getId();
@@ -734,11 +750,11 @@ class Merchant
             // Create Settlement Details entity
             $this->createSettlementDetailsEntities();
 
-            // update schedule tasks
-            $this->updateMerchantScheduleTask();
+            // Save settlement Entity to database
+            $this->repo->saveOrFail($this->setl);
 
-            // save settlement and details
-            $this->saveSettlementEntitiesToDb();
+            // Save settlement Details Entity to database
+            $this->repo->saveOrFailCollection($this->setlDetails);
 
             //create transaction corresponding to settlement
             $this->createTransaction($this->setl);

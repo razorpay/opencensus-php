@@ -1068,23 +1068,60 @@ class Processor extends Base\Core
      */
     public function createSettlementEntry($input)
     {
-        $merchant = $this->repo->merchant->findOrFail($input['merchant_id']);
+        $data =  $this->repo->settlement->findBySettlementId($input['settlement_id']);
 
-        $channel = $input['channel'];
+        if ($data->count() != 0)
+        {
+            return [
+                'transaction_id' => $data[0]->getTransactionId(),
+                'duplicate'      => true,
+                'error'          => null,
+            ];
+        }
 
-        $isAggregateSettlement = $input['type'] === Feature\Constants::AGGREGATE_SETTLEMENT;
+        try
+        {
+            $merchant = $this->repo->merchant->findOrFail($input['merchant_id']);
 
-        $merchantSettler = new SetlMerchant(
-            $merchant,
-            $channel,
-            $this->repo,
-            false,
-            [],
-            $isAggregateSettlement
-        );
+            $channel = $input['channel'];
 
-        $balance = $this->repo->balance->getMerchantBalanceByType($merchant->getId(), $input['balance_type']);
+            $isAggregateSettlement = $input['type'] === Feature\Constants::AGGREGATE_SETTLEMENT;
 
-        return $merchantSettler->createSettlementFromNewService($balance, $input);
+            $merchantSettler = new SetlMerchant(
+                $merchant,
+                $channel,
+                $this->repo,
+                false,
+                [],
+                $isAggregateSettlement,
+                true
+            );
+
+            $balance = $this->repo->balance->getMerchantBalanceByType($merchant->getId(), $input['balance_type']);
+
+            $response = $merchantSettler->createSettlementFromNewService($balance, $input);
+
+            return [
+                'transaction_id' => $response->getTransactionId(),
+                'duplicate'      => false,
+                'error'          => null,
+            ];
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::SETTLEMENT_CREATE_FAILED_FOR_SERVICE,
+                [
+                   'input' => $input,
+                ]);
+
+            return [
+                'transaction_id' => null,
+                'duplicate'      => null,
+                'error'          => $e->getMessage(),
+            ];
+        }
     }
 }

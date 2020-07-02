@@ -24,11 +24,14 @@ class Service extends Base\Service
 {
     public function createSettlementEntry($input)
     {
+        // since in new service all these details are in capital letters thus to accommodate that added these
+        $input['channel']      = strtolower($input['channel']);
+        $input['balance_type'] = strtolower($input['balance_type']);
+        $input['status']       = strtolower($input['status']);
+
         (new Validator)->validateInput('settlement_service_create', $input);
 
-        $data = (new Processor)->createSettlementEntry($input);
-
-        return $data;
+        return (new Processor)->createSettlementEntry($input);
     }
 
     public function getMerchantSettlementAmount($input)

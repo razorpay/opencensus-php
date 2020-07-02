@@ -111,7 +111,7 @@ class Validator extends Base\Validator
         'fees'                      => 'required|integer',
         'tax'                       => 'required|integer',
         'settlement_id'             => 'required|string|size:14',
-        'status'                    => 'required|string',
+        'status'                    => 'required|string|in:created,processed',
         'type'                      => 'required|string',
         'details'                   => 'required|array',
     ];

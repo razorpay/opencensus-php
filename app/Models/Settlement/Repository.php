@@ -131,4 +131,11 @@ class Repository extends Base\Repository
 
         return $count;
     }
+
+    public function findBySettlementId(string $settlementId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::ID, $settlementId)
+                    ->get();
+    }
 }
