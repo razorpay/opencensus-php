@@ -293,16 +293,14 @@ class Authenticate
      */
     protected function postHandle(Response $res): Response
     {
-        //
-        // If request is from qa environment and there exists passport
-        // attributes mismatch returns a header to let qa build fail.
-        // See: PostAuthenticate.php.
-        //
+        // Todo: For sometime, returns this header always.
+        // To undo and return only for qa env, where it is used for tests.
+
         /** @var \RZP\Http\RequestContextV2 $reqCtx */
         $reqCtx = $this->app['request.ctx.v2'];
-        if (($this->app->isEnvironmentQA() === true) and ($reqCtx->passportAttrsMismatch === true))
+        if ($reqCtx->hasPassportJwt === true)
         {
-            $res->headers->set(Header::X_PASSPORT_ATTRS_MISMATCH, 1);
+            $res->headers->set(Header::X_PASSPORT_ATTRS_MISMATCH, (int) $reqCtx->passportAttrsMismatch);
         }
 
         return $res;

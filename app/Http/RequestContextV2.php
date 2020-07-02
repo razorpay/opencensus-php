@@ -15,6 +15,12 @@ final class RequestContextV2
     public $passport;
 
     /**
+     * The $passport will always exists, whether request came directly or via edge(hence carrying passport jwt).
+     * @var boolean
+     */
+    public $hasPassportJwt = false;
+
+    /**
      * Value is true if attributes of passport from edge do not match with what is evaluated at api's end.
      * Note that $passport variable is (updated to)correct value still and should only be used in application.
      * This flag is used to send response header for functional environment only for coverage.
