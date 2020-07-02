@@ -20,10 +20,7 @@ import { PaymentPagesStatusLabel } from 'merchant/components/StatusLabel';
 import ListFilter from './ListFilter';
 import GetCodeModal from '../components/GetCodeModal'; // SuccessModal
 
-import {
-  handleProductQuickGuide,
-  getCurrentProductOnBoardingDetails,
-} from 'merchant/reducers/onboarding';
+import { handleProductQuickGuide } from 'merchant/reducers/onboarding';
 import { openModal } from 'merchant_common/reducers/modals';
 import { fetchPaymentButtonsList as fetchAll } from 'merchant/reducers/paymentbuttons/list';
 import { setIsPaymentButtonCodeUsed } from '../../utils';
@@ -56,10 +53,6 @@ export const status = {
   state => ({
     ...state.paymentbuttons,
     ...state.session,
-    paymentPageProductOnBoarding: getCurrentProductOnBoardingDetails(
-      state,
-      RZPFeatures.PB
-    ),
   }),
   { fetchAll, openModal, handleProductQuickGuide }
 )
@@ -67,19 +60,6 @@ export default class PaymentButtonsList extends ListContainer {
   state = {
     isPaymentButtonOpen: false,
   };
-
-  componentWillUnmount() {
-    const { paymentPageProductOnBoarding } = this.props;
-
-    if (paymentPageProductOnBoarding.isTour) {
-      this.props.handleProductQuickGuide({
-        ...paymentPageProductOnBoarding,
-        showOnboarding: false,
-        isQuickGuideOpen: this.state.isPaymentButtonOpen,
-        isTour: this.state.isPaymentButtonOpen,
-      });
-    }
-  }
 
   openGetCodeModal = paymentButtonEntity => {
     this.props.openModal({
