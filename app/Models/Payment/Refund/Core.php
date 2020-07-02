@@ -235,8 +235,8 @@ class Core extends Base\Core
     {
         $refundIds = [];
 
-        // Adding a temporary variable for testing nbEquitas persist arn change
-        $nbEquitasRefundIds = [];
+        // Adding a temporary variable for testing nbScb persist arn change
+        $nbScbRefundIds = [];
 
         foreach ($data as $refundData)
         {
@@ -246,9 +246,9 @@ class Core extends Base\Core
             {
                 $refundIds[] = $refundData[E::REFUND][Refund\Entity::ID];
 
-                if ($gateway === Gateway::NETBANKING_EQUITAS)
+                if ($gateway === Gateway::NETBANKING_SCB)
                 {
-                    $nbEquitasRefundIds[] = $refundData[E::REFUND][Refund\Entity::ID];
+                    $nbScbRefundIds[] = $refundData[E::REFUND][Refund\Entity::ID];
                 }
             }
         }
@@ -258,19 +258,18 @@ class Core extends Base\Core
             $this->repo->transaction->bulkReconciliationUpdate($refundIds);
         }
 
-        if (empty($nbEquitasRefundIds) === false)
+        if (empty($nbScbRefundIds) === false)
         {
             try
             {
-                $this->RequestScroogeForReference1Update($nbEquitasRefundIds);
+                $this->RequestScroogeForReference1Update($nbScbRefundIds);
             }
             catch (\Exception $e)
             {
                 $this->trace->info(TraceCode::RECON_INFO,
                     [
                         'info_code' => InfoCode::RECON_PERSIST_REFERENCE_NUMBER_FAILED,
-                        'error_msg' => $e->getMessage(),
-                        'gateway'   => $this->gateway
+                        'error_msg' => $e->getMessage()
                     ]);
             }
 
