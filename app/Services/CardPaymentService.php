@@ -34,6 +34,7 @@ class CardPaymentService
 
     const REQUEST_TIMEOUT = 75; // Seconds
     const MAX_RETRY_COUNT = 1;
+    const CPS_BULK_LIMIT  = 500;
 
     // request and response fields
     const GATEWAY   = 'gateway';
@@ -106,6 +107,40 @@ class CardPaymentService
         $response = $this->sendRawRequest($request);
 
         return $this->jsonToArray($response->body);
+    }
+
+    public function fetchPaymentIdFromCapsPIDs(array $input)
+    {
+        $responses = [];
+
+        foreach (array_chunk($input, self::CPS_BULK_LIMIT) as $chunk)
+        {
+            $request = [
+                'url'     => $this->getBaseUrl() . 'entities/all',
+                'method'  => 'POST',
+                'content' => [
+                    'authorization' => [
+                        'fields' => ['payment_id'],
+                    ],
+                    'ref_ids' => $chunk,
+                ],
+                'headers' => [
+                    'task_id' => $this->app['request']->getTaskId(),
+                    'request_id' => $this->app['request']->getId(),
+                ],
+            ];
+
+            $rawResponse = $this->sendRawRequest($request);
+
+            $response = $this->jsonToArray($rawResponse->body);
+
+            foreach ($response as $key => $value)
+            {
+                $responses[$key] = $value;
+            }
+        }
+
+        return $responses;
     }
 
     protected function getBaseUrl(): string

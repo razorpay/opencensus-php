@@ -18,6 +18,7 @@ use Illuminate\Http\UploadedFile;
 use RZP\Tests\Functional\TestCase;
 use RZP\Reconciliator\Base\Constants;
 use RZP\Reconciliator\Base\Reconciliate;
+use RZP\Services\Mock\CardPaymentService;
 use RZP\Gateway\Mpi\Blade\Mock\CardNumber;
 use RZP\Exception\GatewayRequestException;
 use RZP\Reconciliator\RequestProcessor\Base;
@@ -187,6 +188,30 @@ class ReconciliationFileTest extends TestCase
         $this->app->instance('scrooge', $scroogeMock);
 
         $this->app->scrooge->method('getRefundsFromPaymentIdAndGatewayId')->willReturn($scroogeResponse);
+
+        $cpsResponse = [
+            'body' => [
+                strtoupper(PublicEntity::stripDefaultSign($payment1['id'])) => [
+                    'authorization' => [
+                        'payment_id' => $payment1['id']
+                    ]
+                ],
+                strtoupper(PublicEntity::stripDefaultSign($payment2['id'])) => [
+                    'authorization' => [
+                        'payment_id' => $payment2['id']
+                    ]
+                ],
+            ]
+        ];
+
+        $cpsMock = $this->getMockBuilder(CardPaymentService::class)
+                        ->setConstructorArgs([$this->app])
+                        ->setMethods(['fetchPaymentIdFromCapsPIDs'])
+                        ->getMock();
+
+        $this->app->instance('card.payments', $cpsMock);
+
+        $this->app['card.payments']->method('fetchPaymentIdFromCapsPIDs')->willReturn($cpsResponse);
 
         $this->runForFiles([$file], 'FirstData');
 

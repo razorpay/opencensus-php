@@ -2,6 +2,8 @@
 
 namespace RZP\Reconciliator\FirstData;
 
+use App;
+
 use RZP\Reconciliator\Base;
 use RZP\Models\Payment\Entity;
 use RZP\Models\Payment\Gateway;
@@ -87,15 +89,41 @@ class Reconciliate extends Base\Reconciliate
             return;
         }
 
-        $paymentIds = $this->repo->payment->fetchPaymentIdsbyCapsPaymentIds($capsPaymentIds, Gateway::FIRST_DATA);
-        $paymentIdsMpgs = $this->repo->payment->fetchPaymentIdsbyCapsPaymentIds($capsPaymentIds, Gateway::MPGS);
-        $paymentIds = array_merge($paymentIds, $paymentIdsMpgs);
+        // Get distinct entities, there will be multiple entries in case of a payment and
+        // refund row are encountered, since Firstdata sends caps pids for refunds as well.
+        $capsPaymentIds = array_unique($capsPaymentIds);
 
-        $capsKeyPaymentIdValue = [];
+        $responseFromCps = App::getFacadeRoot()['card.payments']->fetchPaymentIdFromCapsPIDs($capsPaymentIds);
 
-        foreach ($paymentIds as $paymentId)
+        foreach ($capsPaymentIds as $key => $value)
         {
-            $capsKeyPaymentIdValue[strtoupper($paymentId)] = $paymentId;
+            if (isset($responseFromCps[$value]) === true)
+            {
+                unset($capsPaymentIds[$key]);
+            }
+        }
+
+        $pIdsFromPaymentsRepoFd = [];
+        $pIdsFromPaymentsRepoMpgs = [];
+
+        if (count($capsPaymentIds) > 0)
+        {
+            $pIdsFromPaymentsRepoFd = $this->repo->payment->fetchPaymentIdsbyCapsPaymentIds($capsPaymentIds, Gateway::FIRST_DATA);
+
+            if (count($pIdsFromPaymentsRepoFd) !== count($capsPaymentIds))
+            {
+                $capsPIdsFromPaymentsRepoFD = array_map('strtoupper', $pIdsFromPaymentsRepoFd);
+                $capsPIdsForMpgs = array_diff($capsPaymentIds, $capsPIdsFromPaymentsRepoFD);
+
+                $pIdsFromPaymentsRepoMpgs = $this->repo->payment->fetchPaymentIdsbyCapsPaymentIds($capsPIdsForMpgs, Gateway::MPGS);
+            }
+        }
+
+        $pIdsFromPaymentsRepo = array_merge($pIdsFromPaymentsRepoFd, $pIdsFromPaymentsRepoMpgs);
+
+        foreach ($pIdsFromPaymentsRepo as $paymentId)
+        {
+            $responseFromCps[strtoupper($paymentId)]['authorization']['payment_id'] = $paymentId;
         }
 
         foreach ($fileContents as &$row)
@@ -103,7 +131,7 @@ class Reconciliate extends Base\Reconciliate
             if (empty($row[PaymentReconciliate::COLUMN_RZP_ENTITY_ID]) === false)
             {
                 $capsPaymentId = $row[PaymentReconciliate::COLUMN_RZP_ENTITY_ID];
-                $row[PaymentReconciliate::COLUMN_RZP_ENTITY_ID] = $capsKeyPaymentIdValue[$capsPaymentId] ?? $capsPaymentId;
+                $row[PaymentReconciliate::COLUMN_RZP_ENTITY_ID] = $responseFromCps[$capsPaymentId]['authorization']['payment_id'] ?? $capsPaymentId;
             }
         }
 
@@ -118,13 +146,13 @@ class Reconciliate extends Base\Reconciliate
             }
         }
 
-        $request = $this->buildRequestForScrooge($refundsArray);
+        $requestForScrooge = $this->buildRequestForScrooge($refundsArray);
 
-        if (count($request) > 0)
+        if (count($requestForScrooge) > 0)
         {
-            $response = $this->getRefundIdFromScrooge($request, Gateway::FIRST_DATA);
-            $responseMpgs = $this->getRefundIdFromScrooge($request, Gateway::MPGS);
-            $response =  array_replace($response, $responseMpgs);
+            $responseFD = $this->getRefundIdFromScrooge($requestForScrooge, Gateway::FIRST_DATA);
+            $responseMpgs = $this->getRefundIdFromScrooge($requestForScrooge, Gateway::MPGS);
+            $responseFromScrooge =  array_replace($responseFD, $responseMpgs);
 
             foreach ($fileContents as &$row)
             {
@@ -132,9 +160,9 @@ class Reconciliate extends Base\Reconciliate
                 {
                     $txnId = ltrim($row[RefundReconciliate::GATEWAY_TRANSACTION_ID], '0');
 
-                    if (empty($response[$txnId]) === false)
+                    if (empty($responseFromScrooge[$txnId]) === false)
                     {
-                        $row[PaymentReconciliate::COLUMN_RZP_ENTITY_ID] = $response[$txnId]['refund_id'];
+                        $row[PaymentReconciliate::COLUMN_RZP_ENTITY_ID] = $responseFromScrooge[$txnId]['refund_id'];
                     }
                 }
             }

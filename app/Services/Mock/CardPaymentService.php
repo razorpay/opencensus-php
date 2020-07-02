@@ -69,4 +69,9 @@ class CardPaymentService extends BaseCardPaymentService
 
         return $return;
     }
+
+    public function fetchPaymentIdFromCapsPIDs(array $input)
+    {
+        return [];
+    }
 }
