@@ -1471,9 +1471,9 @@ class Gateway extends Base\Gateway
         {
             return $data['customer_name'];
         }
-        if (isset($response['MobileAppData']) === true and $response['MobileAppData'] != null)
+        if (isset($data['MobileAppData']) === true and $data['MobileAppData'] != null)
         {
-            $vpa = explode( '=', $response['MobileAppData']);
+            $vpa = explode( '=', $data['MobileAppData']);
             return $vpa[1];
         }
     }
