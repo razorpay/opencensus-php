@@ -165,6 +165,11 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('RZP\Models\Merchant\Entity');
     }
 
+    public function virtualAccountTpv()
+    {
+        return $this->hasMany('RZP\Models\VirtualAccountTpv\Entity');
+    }
+
     public function entity()
     {
         return $this->morphTo();

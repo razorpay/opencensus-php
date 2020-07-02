@@ -134,6 +134,7 @@ class Entity
     const SETTLEMENT_TRANSFER        = 'settlement_transfer';
     const MERCHANT_ACCESS_MAP        = 'merchant_access_map';
     const BATCH_FUND_TRANSFER        = 'batch_fund_transfer';
+    const VIRTUAL_ACCOUNT_TPV        = 'virtual_account_tpv';
     const PAPER_MANDATE_UPLOAD       = 'paper_mandate_upload';
     const CUSTOMER_TRANSACTION       = 'customer_transaction';
     const UPI_TRANSFER_REQUEST       = 'upi_transfer_request';

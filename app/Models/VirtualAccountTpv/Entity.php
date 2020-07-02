@@ -1,0 +1,91 @@
+<?php
+
+
+namespace RZP\Models\VirtualAccountTpv;
+
+use RZP\Constants;
+use RZP\Models\Base;
+
+class Entity extends Base\PublicEntity
+{
+    const VIRTUAL_ACCOUNT_ID            = 'virtual_account_id';
+    const ENTITY_TYPE                   = 'entity_type';
+    const ENTITY_ID                     = 'entity_id';
+    const IS_ACTIVE                     = 'is_active';
+    const DEACTIVATED_AT                = 'deactivated_at';
+
+    protected static $sign = 'vatpv';
+
+    protected $entity = Constants\Entity::VIRTUAL_ACCOUNT_TPV;
+
+    protected $primaryKey = self::ID;
+
+    protected $generateIdOnCreate = true;
+
+    protected $fillable = [
+        self::VIRTUAL_ACCOUNT_ID,
+        self::ENTITY_TYPE,
+        self::ENTITY_ID,
+        self::IS_ACTIVE,
+        self::DEACTIVATED_AT,
+    ];
+
+    protected $visible = [
+        self::ID,
+        self::VIRTUAL_ACCOUNT_ID,
+        self::ENTITY_TYPE,
+        self::ENTITY_ID,
+        self::IS_ACTIVE,
+        self::DEACTIVATED_AT,
+        self::CREATED_AT,
+        self::UPDATED_AT,
+    ];
+
+    protected $casts = [
+        self::IS_ACTIVE         => 'bool',
+    ];
+
+    // -------------------- Associations --------------------
+
+    public function virtualAccount()
+    {
+        return $this->belongsTo('RZP\Models\VirtualAccount\Entity');
+    }
+
+    public function entity()
+    {
+        return $this->morphTo()->withTrashed();
+    }
+
+    // -------------------- End Associations --------------------
+
+    // -------------------- Getters --------------------
+
+    public function getEntityType()
+    {
+        return $this->getAttribute(self::ENTITY_TYPE);
+    }
+
+    // -------------------- End Getters --------------------
+
+    // -------------------- Setters --------------------
+
+    public function setIsActive(bool $isActive)
+    {
+        $this->setAttribute(self::IS_ACTIVE, $isActive);
+    }
+
+    public function setDeactivatedAt(string $deactivatedAt)
+    {
+        $this->setAttribute(self::DEACTIVATED_AT, $deactivatedAt);
+    }
+
+    // -------------------- End Setters --------------------
+
+    public function deactivate(string $deactivatedAt)
+    {
+        $this->setIsActive(false);
+
+        $this->setDeactivatedAt($deactivatedAt);
+    }
+}
