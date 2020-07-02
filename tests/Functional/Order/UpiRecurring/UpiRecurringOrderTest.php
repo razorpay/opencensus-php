@@ -90,4 +90,21 @@ class UpiRecurringOrderTest extends TestCase
 
         $this->assertNull($upiMandate);
     }
+
+    public function testCreateOrderWithoutStartAndEndTime()
+    {
+        $this->startTest();
+
+        $upiMandate = $this->getDbLastEntity('upi_mandate');
+
+        $order = $this->getDbLastEntity('order');
+
+        $this->assertNotNull($upiMandate);
+
+        $this->assertNotNull($order);
+
+        $this->assertNotNull($upiMandate['start_time']);
+
+        $this->assertNotNull($upiMandate['end_time']);
+    }
 }

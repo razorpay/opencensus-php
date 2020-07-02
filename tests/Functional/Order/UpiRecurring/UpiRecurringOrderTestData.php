@@ -171,4 +171,29 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
         ],
     ],
+    'testCreateOrderWithoutStartAndEndTime' => [
+        'request' => [
+            'content' => [
+                'amount'          => 50000,
+                'currency'        => 'INR',
+                'method'          => 'upi',
+                'customer_id'     => 'cust_100000customer',
+                'payment_capture' => 1,
+                'token'           => [
+                    'max_amount'      => 150000,
+                    'frequency'       => 'monthly',
+                    'recurring_type'  => 'before',
+                    'recurring_value' => 30,
+                ]
+            ],
+            'method'    => 'POST',
+            'url'       => '/orders',
+        ],
+        'response' => [
+            'content' => [
+                'amount'        => 50000,
+                'currency'      => 'INR',
+            ],
+        ],
+    ]
 ];

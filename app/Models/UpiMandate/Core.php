@@ -2,6 +2,7 @@
 
 namespace RZP\Models\UpiMandate;
 
+use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Models\Order;
 use RZP\Models\Customer;
@@ -20,6 +21,16 @@ class Core extends Base\Core
                 'input'        => $input,
             ]
         );
+
+        if (isset($input['start_time']) === false)
+        {
+            $input['start_time'] = Carbon::now()->getTimestamp();
+        }
+
+        if (isset($input['end_time']) === false)
+        {
+            $input['end_time'] = Carbon::now()->addYears(10)->getTimestamp();
+        }
 
         $upiMandate = (new Entity)->build($input);
 

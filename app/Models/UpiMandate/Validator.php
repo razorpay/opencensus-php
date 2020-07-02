@@ -6,6 +6,7 @@ use Carbon\Carbon;
 
 use RZP\Base;
 use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Models\Card\IIN\Category;
 
 class Validator extends Base\Validator
 {
@@ -15,10 +16,10 @@ class Validator extends Base\Validator
         Entity::FREQUENCY              => 'required|string|custom',
         Entity::RECURRING_TYPE         => 'required|string|custom',
         Entity::RECURRING_VALUE        => 'required|integer|nullable',
-        Entity::MAX_AMOUNT             => 'required|integer|max:200000',
+        Entity::MAX_AMOUNT             => 'required|integer|max:200000|min:100',
         Entity::RECEIPT                => 'sometimes|nullable|string|max:40',
-        Entity::START_TIME             => 'required|epoch',
-        Entity::END_TIME               => 'required|epoch',
+        Entity::START_TIME             => 'sometimes|epoch',
+        Entity::END_TIME               => 'sometimes|epoch',
     ];
 
     protected static $editRules = [
@@ -54,9 +55,9 @@ class Validator extends Base\Validator
     {
         $currentTime = Carbon::now()->getTimestamp();
 
-        $startTime = $input[Entity::START_TIME];
+        $startTime = $input[Entity::START_TIME] ?? Carbon::now()->getTimestamp();
 
-        $endTime = $input[Entity::END_TIME];
+        $endTime = $input[Entity::END_TIME] ?? Carbon::now()->addYears(10)->getTimestamp();
 
         if (($startTime < $currentTime) or ($startTime > $endTime))
         {
