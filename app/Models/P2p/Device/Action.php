@@ -56,6 +56,9 @@ class Action extends Base\Action
         self::INITIATE_GET_TOKEN_SUCCESS      => [
             Entity::AUTH_TOKEN                => 'default',
         ],
+        self::GET_TOKEN_SUCCESS               => [
+            Entity::AUTH_TOKEN                => 'default',
+        ],
     ];
 
     protected static $updateAllowedActions = [

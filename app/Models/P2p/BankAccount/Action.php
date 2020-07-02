@@ -39,4 +39,33 @@ class Action extends Base\Action
         self::INITIATE_SET_UPI_PIN         => Requests::P2P_CUSTOMER_BA_SET_UPI_PIN,
         self::INITIATE_FETCH_BALANCE       => Requests::P2P_CUSTOMER_BA_FETCH_BALANCE,
     ];
+
+    protected $redactRules = [
+        self::INITIATE_SET_UPI_PIN                  => [
+            // Request with card details
+            Entity::CARD                            => [
+                Base\Libraries\Card::LAST6          => 'verbose',
+                Base\Libraries\Card::EXPIRY_MONTH   => 'verbose',
+                Base\Libraries\Card::EXPIRY_YEAR    => 'verbose',
+            ],
+
+            // Response to Axis SDK
+            Base\Entity::REQUEST                    => [
+                'content'                           => [
+                    'card'                          => 'default',
+                    'expiry'                        => 'default',
+                ]
+            ],
+        ],
+
+        self::FETCH_BALANCE                         => [
+            'sdk'                                   => [
+                'balance'                           => 'default',
+            ],
+        ],
+
+        self::FETCH_BALANCE_SUCCESS                 => [
+            Entity::BALANCE                         => 'default',
+        ],
+    ];
 }

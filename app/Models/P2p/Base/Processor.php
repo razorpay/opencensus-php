@@ -188,7 +188,7 @@ class Processor
             'action'    => $this->action,
             'entity'    => $entity,
             'gateway'   => $gateway,
-            'input'     => $this->input,
+            'input'     => $this->redactForAction($this->input->toArray()),
         ]);
 
         // We are using context directly to pass to gateway. This is experimental and may change in future.
@@ -355,11 +355,60 @@ class Processor
             return $input;
         }
 
-        foreach ($rules as $field => $rule)
+        $output = $this->redactNested($input, $rules);
+
+        return $output;
+    }
+
+    protected function redactNested(array $input, $rules)
+    {
+        $output = $input;
+
+        foreach ($rules as $key => $rule)
         {
-            array_set($input, $field, '[redacted]');
+            if (isset($input[$key]) === false)
+            {
+                continue;
+            }
+
+            $existing = $input[$key];
+
+            // String, numeric, bool and null
+            if (is_scalar($rule) === true)
+            {
+                $value = '[redacted]';
+
+                // Disabling verbose for now
+                //            if ($rule === 'verbose')
+                //            {
+                //                $size  = is_scalar($input[$key]) ? strlen($input[$key]) : sizeof($input[$key]);
+                //                $value = gettype($input[$key]) . '|' . $size;
+                //            }
+
+                $output[$key] = $value;
+
+                continue;
+            }
+
+            if (is_array($rule))
+            {
+                if (is_array($existing) === false)
+                {
+                    if ($existing instanceof ArrayBag)
+                    {
+                        $existing = $existing->toArray();
+                    }
+                    else
+                    {
+                        // Should never happen
+                        continue;
+                    }
+                }
+
+                $output[$key] = $this->redactNested($existing, $rule);
+            }
         }
 
-        return $input;
+        return $output;
     }
 }
