@@ -632,7 +632,7 @@ jobs:
   workflow_status:
     runs-on: [self-hosted]
     continue-on-error: false
-    name: github/combined-status-check
+    name: Update Status Check
     needs: [
       validate_php_syntax,
       application_test_suite,
@@ -655,12 +655,18 @@ jobs:
       id: failed
       if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')
       run: |
-        echo 'Failing the workflow for github status check.'
+        echo 'Failing the workflow for github status check.'\
+        curl -X POST -H "Content-Type: application/json" -H "Authorization: token ${{ github.token }}" \
+        -d '{ "state" : "failure" , "context" : "github/combined-status-check" , "description" : "github/combined-status-check", "target_url" : "https://github.com/razorpay/api" }' \
+        https://api.github.com/repos/razorpay/api/statuses/${{ github.sha }}
         exit 1
     - name: Success
       if: steps.failed.conclusion == 'skipped'
       run: |
         echo 'Status check has passed!'
+        curl -X POST -H "Content-Type: application/json" -H "Authorization: token ${{ github.token }}" \
+        -d '{ "state" : "success" , "context" : "github/combined-status-check" , "description" : "github/combined-status-check", "target_url" : "https://github.com/razorpay/api" }' \
+        https://api.github.com/repos/razorpay/api/statuses/${{ github.sha }}
         exit 0
   slack-notify:
     runs-on : [self-hosted]
