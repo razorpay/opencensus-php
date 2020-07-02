@@ -62,6 +62,9 @@ class Entity extends Base\PublicEntity
     // order_id is a valid request parameter, but is mapped to entity_id
     const ORDER_ID             = 'order_id';
 
+    // For TPV details in request
+    const ALLOWED_PAYERS       = 'allowed_payers';
+
     // Used for creating shared virtual account
     const SHARED_ID            = 'ShrdVirtualAcc';
 
@@ -86,6 +89,7 @@ class Entity extends Base\PublicEntity
         self::AMOUNT_PAID,
         self::CUSTOMER_ID,
         self::RECEIVERS,
+        self::ALLOWED_PAYERS,
         self::CLOSE_BY,
         self::CLOSED_AT,
         self::CREATED_AT,
@@ -118,6 +122,7 @@ class Entity extends Base\PublicEntity
 
     protected $appends = [
         self::RECEIVERS,
+        self::ALLOWED_PAYERS,
     ];
 
     protected $dates = [
@@ -335,6 +340,18 @@ class Entity extends Base\PublicEntity
         return $receivers;
     }
 
+    protected function getAllowedPayersAttribute()
+    {
+        $allowedPayers = [];
+
+        foreach ($this->virtualAccountTpv()->get() as $virtualAccountTpv)
+        {
+            $allowedPayers[] = $virtualAccountTpv->getAllowedPayerDetails();
+        }
+
+        return $allowedPayers;
+    }
+
     public function getReceiverBuilder()
     {
         return new Receiver($this);
@@ -448,4 +465,20 @@ class Entity extends Base\PublicEntity
         return $this->getStatus() === Status::CLOSED;
     }
 
+    public function isTpvEnabled()
+    {
+        return $this->virtualAccountTpv()->count() !== 0;
+    }
+
+    public function toArrayPublic()
+    {
+        $array = parent::toArrayPublic();
+
+        if ($this->isTpvEnabled() === false)
+        {
+            unset($array[self::ALLOWED_PAYERS]);
+        }
+
+        return $array;
+    }
 }

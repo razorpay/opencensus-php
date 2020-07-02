@@ -13,6 +13,7 @@ class Entity extends Base\PublicEntity
     const ENTITY_ID                     = 'entity_id';
     const IS_ACTIVE                     = 'is_active';
     const DEACTIVATED_AT                = 'deactivated_at';
+    const TYPE                          = 'type';
 
     protected static $sign = 'vatpv';
 
@@ -87,5 +88,20 @@ class Entity extends Base\PublicEntity
         $this->setIsActive(false);
 
         $this->setDeactivatedAt($deactivatedAt);
+    }
+
+    public function getAllowedPayerDetails()
+    {
+        $tpvEntity = $this->entity()->first();
+
+        if ($tpvEntity === null)
+        {
+            return [];
+        }
+
+        $allowedPayer[self::TYPE]             = $this->getEntityType();
+        $allowedPayer[$this->getEntityType()] = $tpvEntity->getVirtualAccountTpvData();
+
+        return $allowedPayer;
     }
 }
