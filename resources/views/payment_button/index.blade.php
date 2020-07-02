@@ -20,13 +20,7 @@
 
     <link
         rel="stylesheet"
-        href="https://betacdn.razorpay.com/static/widget/payment-form.css"
-    />
-    <!-- TODO: Lazy load fonts -->
-    <link
-        href="https://fonts.googleapis.com/css?family=Lato:300,400,700"
-        rel="stylesheet"
-        type="text/css"
+        href="{{env('AWS_CF_CDN_URL')}}/static/widget/payment-form.css"
     />
 
     @if (isset($data['environment']))
@@ -61,7 +55,7 @@
 
     <script
         type="text/javascript"
-        src="https://betacdn.razorpay.com/static/widget/payment-form.js"
+        src="{{env('AWS_CF_CDN_URL')}}/static/widget/payment-form.js"
         onload="loadRazorpayPaymentForm()"
         defer
     ></script>
