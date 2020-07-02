@@ -28,6 +28,7 @@ use RZP\Constants\Timezone;
 use RZP\Models\Pricing;
 use RZP\Models\Transaction;
 use RZP\Models\BankingAccount;
+use RZP\Models\Payout\Purpose;
 use RZP\Services\RazorXClient;
 use RZP\Mail\User\MappedToAccount;
 use RZP\Mail\Merchant\EsEnabledNotify;
@@ -7081,6 +7082,108 @@ class MerchantTest extends TestCase
 
         $this->assertArrayHasKey('offers', $response);
 
+    }
+
+    public function testCronTrimMerchantData()
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                           ->setConstructorArgs([$this->app])
+                           ->setMethods(['getTreatment'])
+                           ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+                          ->willReturn('on');
+
+        $created_merchant = $this->fixtures->create('merchant');
+
+        $merchant = $this->getDbEntityById('merchant', $created_merchant['id']);
+
+        $fund_account = $this->fixtures->create('fund_account:bank_account', ['id' => '100000000000fa']);
+
+        $this->fixtures->edit('bank_account',
+            $fund_account['account_id'],
+            [
+                'merchant_id'      => $created_merchant['id'],
+                'beneficiary_name' => 'name   ',
+                'account_number'   => "11111111
+                "
+            ]
+        );
+
+        $this->fixtures->edit('fund_account',
+            $fund_account['id'],
+            [
+                'merchant_id' => $created_merchant['id']
+            ]
+        );
+
+        $payout = $this->fixtures->create('payout');
+
+        $purpose_obj = new Purpose;
+
+        $custom_purpose = 'custom_purpose  ';
+
+        $purpose_obj->addNewCustom($custom_purpose, 'refund', $merchant);
+
+        $this->fixtures->edit('payout',
+            $payout['id'],
+            [
+                'merchant_id' => $created_merchant['id'],
+                'purpose'     => $custom_purpose
+            ]
+        );
+
+        $this->fixtures->create('contact',
+            [
+                'id'          => '1000011contact',
+                'contact'     => '8888888888',
+                'email'       => '',
+                'name'        => 'test user   ',
+                'type'        => '  employee   ',
+                'merchant_id' => $created_merchant['id']
+            ]);
+
+        $bank_account = $this->getLastEntity('bank_account', true);
+
+        $payout = $this->getLastEntity('payout', true);
+
+        $contact = $this->getLastEntity('contact', true);
+
+        $this->assertTrue(array_key_exists($custom_purpose, $purpose_obj->getCustom($merchant)));
+
+        $this->ba->adminAuth();
+
+        $this->testData[__FUNCTION__]['request']['content']['merchant_ids'] = [$created_merchant['id']];
+
+        $this->startTest();
+
+        $bank_account_updated = $this->getLastEntity('bank_account', true);
+
+        $payout_updated = $this->getLastEntity('payout', true);
+
+        $contact_updated = $this->getLastEntity('contact', true);
+
+        $updated_purpose = $purpose_obj->getCustom($merchant);
+
+        $this->assertFalse(array_key_exists($custom_purpose, $updated_purpose));
+        $this->assertTrue(array_key_exists(trim($custom_purpose), $updated_purpose));
+
+        $this->assertNotEquals($payout['purpose'], $payout_updated['purpose']);
+        $this->assertEquals(trim($payout['purpose']), $payout_updated['purpose']);
+
+        $this->assertNotEquals($bank_account['beneficiary_name'], $bank_account_updated['beneficiary_name']);
+        $this->assertEquals(trim($bank_account['beneficiary_name']), $bank_account_updated['beneficiary_name']);
+
+        $this->assertNotEquals($bank_account['account_number'], $bank_account_updated['account_number']);
+        $this->assertEquals(trim($bank_account['account_number']), $bank_account_updated['account_number']);
+
+        $this->assertNotEquals($contact['name'], $contact_updated['name']);
+        $this->assertEquals(trim($contact['name']), $contact_updated['name']);
+
+        $this->assertNotEquals($contact['type'], $contact_updated['type']);
+        $this->assertEquals(trim($contact['type']), $contact_updated['type']);
     }
 }
 

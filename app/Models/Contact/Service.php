@@ -115,4 +115,55 @@ class Service extends Base\Service
 
         return $flag;
     }
+
+    public function trimContactNameAndType(Merchant\Entity $merchant)
+    {
+        $merchantId = $merchant->getId();
+
+        $contacts = $this->repo->contact->fetchContactWithMerchantIdAndLimit1000($merchantId);
+
+        while (count($contacts) > 0)
+        {
+            $lastContactCreatedAt = 0;
+
+            foreach ($contacts as $contact)
+            {
+                $contactType = $contact->getType();
+
+                $trimmedContactType = trim($contactType);
+
+                $contactName = $contact->getName();
+
+                $trimmedContactName = trim($contactName);
+
+                if (($contactType > $trimmedContactType) ||
+                    ($contactName > $trimmedContactName))
+                {
+                    $contact->setType($trimmedContactType);
+
+                    $contact->setName($trimmedContactName);
+
+                    $contact->saveOrFail();
+
+                    $this->trace->info(
+                        TraceCode::CONTACT_NAME_AND_TYPE_TRIMMED,
+                        [
+                            'contact_id' => $contact->getId(),
+                        ]
+                    );
+                }
+
+                $lastContactCreatedAt = $contact->getCreatedAt();
+            }
+
+            $contacts = $this->repo->contact->fetchContactWithMerchantIdAndLimit1000($merchantId, $lastContactCreatedAt);
+        }
+
+        $this->trace->info(
+            TraceCode::CONTACT_NAME_AND_TYPE_TRIMMED_FOR_MERCHANT,
+            [
+                'merchant_id' => $merchant->getId()
+            ]
+        );
+    }
 }
