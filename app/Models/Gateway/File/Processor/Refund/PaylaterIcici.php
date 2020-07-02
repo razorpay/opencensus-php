@@ -10,16 +10,17 @@ use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
 use RZP\Models\Base\PublicCollection;
 use RZP\Gateway\Mozart\PaylaterIcici\RefundFields;
+use RZP\Models\Payment\Refund\Constants as RefundConstants;
 
 class PaylaterIcici extends Base
 {
-    const FILE_NAME                   = 'Icici_Paylater_Refunds';
-    const EXTENSION                   = FileStore\Format::XLSX;
-    const FILE_TYPE                   = FileStore\Type::ICICI_PAYLATER_REFUND;
-    const GATEWAY                     = Payment\Gateway::PAYLATER_ICICI;
-    const PAYMENT_TYPE_ATTRIBUTE      = Payment\Entity::WALLET;
-    const ACQUIRER                    = Payment\Processor\PayLater::ICICI;
-    const PAYLATER                    = Payment\Gateway::PAYLATER;
+    const FILE_NAME              = 'Icici_Paylater_Refunds';
+    const EXTENSION              = FileStore\Format::XLSX;
+    const FILE_TYPE              = FileStore\Type::ICICI_PAYLATER_REFUND;
+    const GATEWAY                = Payment\Gateway::PAYLATER_ICICI;
+    const PAYMENT_TYPE_ATTRIBUTE = Payment\Entity::WALLET;
+    const ACQUIRER               = Payment\Processor\PayLater::ICICI;
+    const PAYLATER               = Payment\Gateway::PAYLATER;
 
     protected function formatDataForFile(array $data)
     {
@@ -33,16 +34,16 @@ class PaylaterIcici extends Base
                 $row['payment']['created_at'], Timezone::IST)->format('jS F Y');
 
                 $formattedData[] = [
-                    RefundFields::SERIAL_NO             => $count++,
-                    RefundFields::PAYEE_ID              => $row['terminal']['gateway_merchant_id'],
-                    RefundFields::SPID                  => '',
-                    RefundFields::BANK_REFERENCE_ID     => $row['gateway']['data']['bank_payment_id'],
-                    RefundFields::TRANSACTION_DATE      => $date,
-                    RefundFields::TRANSACTION_AMOUNT    => $row['payment']['amount'] / 100,
-                    RefundFields::REFUND_AMOUNT         => $row['refund']['amount'] / 100,
-                    RefundFields::TRANSACTION_ID        => $row['payment']['id'],
-                    RefundFields::REFUND_MODE           => 'C',
-                    RefundFields::REMARKS               => '',
+                    RefundFields::SERIAL_NO          => $count++,
+                    RefundFields::PAYEE_ID           => $row['terminal']['gateway_merchant_id'],
+                    RefundFields::SPID               => '',
+                    RefundFields::BANK_REFERENCE_ID  => $row['gateway']['data']['bank_payment_id'],
+                    RefundFields::TRANSACTION_DATE   => $date,
+                    RefundFields::TRANSACTION_AMOUNT => $row['payment']['amount'] / 100,
+                    RefundFields::REFUND_AMOUNT      => $row['refund']['amount'] / 100,
+                    RefundFields::TRANSACTION_ID     => $row['payment']['id'],
+                    RefundFields::REFUND_MODE        => 'C',
+                    RefundFields::REMARKS            => '',
                 ];
         }
 
@@ -67,13 +68,13 @@ class PaylaterIcici extends Base
 
         $signedUrl = (new FileStore\Accessor)->getSignedUrlOfFile($file);
 
-            $mailData = [
-                'file_name'  => $file->getLocation(),
-                'signed_url' => $signedUrl,
-                'count'      => count($data),
-                'amount'     => $totalAmount,
-                'date'       => $today,
-            ];
+        $mailData = [
+            'file_name'  => $file->getLocation(),
+            'signed_url' => $signedUrl,
+            'count'      => count($data),
+            'amount'     => $totalAmount,
+            'date'       => $today,
+        ];
 
         return $mailData;
     }
@@ -100,4 +101,34 @@ class PaylaterIcici extends Base
     }
 
 
+    /**
+     * @param int $from
+     * @param int $to
+     * @param array $refundIds
+     * @return array
+     */
+    protected function getScroogeQuery(int $from, int $to, $refundIds = []): array
+    {
+        $input = [
+            RefundConstants::SCROOGE_QUERY => [
+                RefundConstants::SCROOGE_REFUNDS => [
+                    RefundConstants::SCROOGE_GATEWAY => static::PAYLATER,
+                    RefundConstants::SCROOGE_CREATED_AT => [
+                        RefundConstants::SCROOGE_GTE => $from,
+                        RefundConstants::SCROOGE_LTE => $to,
+                    ],
+                    RefundConstants::SCROOGE_BASE_AMOUNT => [
+                        RefundConstants::SCROOGE_GT => 0,
+                    ],
+                ],
+            ],
+            RefundConstants::SCROOGE_COUNT => $this->fetchFromScroogeCount,
+        ];
+
+        if (empty($refundIds) === false) {
+            $input[RefundConstants::SCROOGE_QUERY][RefundConstants::SCROOGE_REFUNDS][RefundConstants::SCROOGE_ID] = $refundIds;
+        }
+
+        return $input;
+    }
 }

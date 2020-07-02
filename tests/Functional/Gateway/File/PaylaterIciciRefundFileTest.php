@@ -45,6 +45,12 @@ class PaylaterIciciRefundFileTest extends TestCase
         $refund = $this->refundPayment($payment['id']);
 
         $this->assertEquals($refund['status'], 'processed');
+        
+        $refundEntity = $this->getDbLastEntity('refund');
+
+        $this->assertEquals(1, $refundEntity['is_scrooge']);
+
+        $this->setFetchFileBasedRefundsFromScroogeMockResponse([$refundEntity]);
 
         $this->ba->adminAuth();
 
