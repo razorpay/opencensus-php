@@ -906,6 +906,7 @@ class EnachNetbankingNpciGatewayTest extends TestCase
         return $this->makeRequestAndGetContent($request);
     }
 
+    // enach refund migration to scrooge
     public function testDebitFileReconciliationRefund()
     {
         $this->makeDebitPayment();
@@ -932,7 +933,8 @@ class EnachNetbankingNpciGatewayTest extends TestCase
 
         $this->assertNotNull($transaction['reconciled_at']);
 
-        $response = $this->refundPayment('pay_' . $payment['id']);
+        // $response = $this->refundPayment('pay_' . $payment['id']);
+        $response = $this->refundPayment('pay_' . $payment['id'], null, ['is_fta' => true]);
 
         $refund  = $this->getLastEntity('refund', true);
 
@@ -940,7 +942,8 @@ class EnachNetbankingNpciGatewayTest extends TestCase
 
         $this->assertEquals('pay_' . $payment['id'], $refund['payment_id']);
 
-        $this->assertEquals('initiated', $refund['status']);
+        // $this->assertEquals('initiated', $refund['status']);
+        $this->assertEquals('created', $refund['status']);
 
         $fundTransferAttempt  = $this->getLastEntity('fund_transfer_attempt', true);
 
@@ -989,7 +992,8 @@ class EnachNetbankingNpciGatewayTest extends TestCase
 
         $refund = $this->getLastEntity('refund', true);
 
-        $this->assertEquals(Refund\Status::PROCESSED, $refund['status']);
+        // $this->assertEquals(Refund\Status::PROCESSED, $refund['status']);
+        $this->assertEquals(Refund\Status::INITIATED, $refund['status']);
         $this->assertEquals(1, $refund['attempts']);
         $this->assertNotNull($attempt['utr']);
     }

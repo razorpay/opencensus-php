@@ -276,6 +276,7 @@ class EnachNetbankingNpciYesbTest extends EnachNetbankingNpciGatewayTest
         $this->assertEquals('created', $payment['status']);
     }
 
+    // enach refund migration to scrooge
     public function testDebitFileReconciliationRefund()
     {
         $this->makeDebitPayment();
@@ -302,7 +303,7 @@ class EnachNetbankingNpciYesbTest extends EnachNetbankingNpciGatewayTest
 
         $this->assertNotNull($transaction['reconciled_at']);
 
-        $response = $this->refundPayment('pay_' . $payment['id']);
+        $response = $this->refundPayment('pay_' . $payment['id'], null, ['is_fta' => true]);
 
         $refund  = $this->getLastEntity('refund', true);
 
@@ -310,7 +311,8 @@ class EnachNetbankingNpciYesbTest extends EnachNetbankingNpciGatewayTest
 
         $this->assertEquals('pay_' . $payment['id'], $refund['payment_id']);
 
-        $this->assertEquals('initiated', $refund['status']);
+        // $this->assertEquals('initiated', $refund['status']);
+        $this->assertEquals('created', $refund['status']);
 
         $fundTransferAttempt  = $this->getLastEntity('fund_transfer_attempt', true);
 

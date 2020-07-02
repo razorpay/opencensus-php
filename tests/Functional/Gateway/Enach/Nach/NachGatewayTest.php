@@ -69,6 +69,7 @@ class NachGatewayTest extends TestCase
         $this->assertEquals('created', $payment['status']);
     }
 
+    // enach refund migration to scrooge
     public function testNachDebitRefund()
     {
         $this->testGatewayFileDebitBankResponseSuccess();
@@ -77,13 +78,17 @@ class NachGatewayTest extends TestCase
 
         $this->capturePayment($payment['id'], $payment['amount']);
 
-        $this->refundPayment($payment['id']);
+        $this->gateway = 'nach_citi';
+
+        // $this->refundPayment($payment['id']);
+        $this->refundPayment($payment['id'], $payment['amount'], ['is_fta' => true]);
 
         $refund = $this->getLastEntity('refund', true);
 
         $this->assertEquals(false, $refund['gateway_refunded']);
 
-        $this->assertEquals('initiated', $refund['status']);
+        // $this->assertEquals('initiated', $refund['status']);
+        $this->assertEquals('created', $refund['status']);
 
         $this->assertTrue(empty($refund['bank_account_id']) === false);
     }
