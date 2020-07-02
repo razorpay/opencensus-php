@@ -49,7 +49,16 @@ class Otp extends Mailable
 
     protected function addSender()
     {
-        $this->from(Constants::MAIL_ADDRESSES[Constants::NOREPLY]);
+        switch ($this->input['action'])
+        {
+            //in verify_email email goes from support support@razorpay.com
+            case 'verify_email':
+                $this->from(Constants::MAIL_ADDRESSES[Constants::SUPPORT]);
+                break;
+
+            default:
+                $this->from(Constants::MAIL_ADDRESSES[Constants::NOREPLY]);
+        }
 
         return $this;
     }
