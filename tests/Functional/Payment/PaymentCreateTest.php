@@ -3505,13 +3505,21 @@ class PaymentCreateTest extends TestCase
 
         $payment = $this->getLastEntity('payment', true );
 
+        $card = $this->getLastEntity('card', true );
+
+        $this->assertEquals($card['sub_type'], 'consumer');
+
         $this->assertEquals($payment['international'], true);
 
-        $this->fixtures->edit('iin', '555555', ['country' => 'IN']);
+        $this->fixtures->edit('iin', '555555', ['country' => 'IN', 'sub_type' => 'business']);
 
         $this->doS2SPrivateAuthPayment($paymentArray);
 
         $payment = $this->getLastEntity('payment', true );
+
+        $card = $this->getLastEntity('card', true );
+
+        $this->assertEquals($card['sub_type'], 'business');
 
         $this->assertEquals($payment['international'], false);
     }

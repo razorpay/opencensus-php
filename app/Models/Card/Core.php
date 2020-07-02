@@ -152,6 +152,12 @@ class Core extends Base\Core
                         $card->setInternational($card->iinRelation->isInternational());
                     }
 
+                    if (($card->iinRelation !== null) &&
+                       ($card->getSubType() !== $card->iinRelation->getSubType()))
+                    {
+                        $card->setSubtype($card->iinRelation->getSubType());
+                    }
+
                     $this->repo->saveOrFail($card);
                 }
 
