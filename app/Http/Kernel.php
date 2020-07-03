@@ -57,7 +57,6 @@ class Kernel extends HttpKernel
         Middleware\MerchantIpFilter::class,
         Middleware\EventTracker::class,
         Middleware\P2p::class,
-        Middleware\IdempotentHandler::class,
         Middleware\MerchantIdempotencyHandler::class,
         Middleware\RequestContextHandler::class,
 
@@ -86,7 +85,6 @@ class Kernel extends HttpKernel
         'merchant_ip_filter'            => Middleware\MerchantIpFilter::class,
         'event_tracker'                 => Middleware\EventTracker::class,
         'p2p'                           => Middleware\P2p::class,
-        'idempotent'                    => Middleware\IdempotentHandler::class,
         'merchant_idempotency_handler'  => Middleware\MerchantIdempotencyHandler::class,
         'failure_interceptor'           => Middleware\FailureEventsInterceptor::class,
         'request_context'               => Middleware\RequestContextHandler::class,

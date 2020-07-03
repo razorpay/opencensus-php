@@ -4432,13 +4432,6 @@ class Route
     ];
 
     /**
-     * List of routes, required to check DeDuplication or Idempotency
-     */
-    public static $idempotent = [
-        'invoice_create',
-    ];
-
-    /**
      * Throttling middleware (and hence, rate limiting) is applied for all routes, except for the ones
      * defined here
      *
@@ -5701,11 +5694,6 @@ class Route
         if (in_array($name, self::$session, true) === true)
         {
             $route->middleware('web');
-        }
-
-        if (in_array($name, self::$idempotent, true) === true)
-        {
-            $route->middleware('idempotent');
         }
 
         // Add the 'throttle' middleware to all routes, EXCEPT those defined in the `$skipThrottling` array
