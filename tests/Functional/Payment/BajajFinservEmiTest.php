@@ -247,7 +247,7 @@ class BajajFinservEmiTest extends TestCase
 
     public function testBajajFinservVerify()
     {
-        $this->ba->cronAuth();
+        $this->ba->adminAuth();
 
         $this->fixtures->emiPlan->createMerchantSpecificEmiPlans();
 
@@ -293,6 +293,8 @@ class BajajFinservEmiTest extends TestCase
         $this->fixtures->create('payment_analytics', ['ip' => '127.0.0.1', 'payment_id' => $payment->getId()]);
 
         $data = $this->testData[__FUNCTION__];
+
+        $data['request']['url'] = '/payments/pay_'. $payment->getId() .'/verify';
 
         $this->runRequestResponseFlow($data);
 

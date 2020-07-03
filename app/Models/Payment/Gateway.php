@@ -1355,6 +1355,7 @@ class Gateway
         self::HDFC_DEBIT_EMI,
         self::NETBANKING_SVC,
         self::NETBANKING_JSB,
+        self::BAJAJFINSERV,
     ];
 
     public static $captureVerifyEnabled = [
