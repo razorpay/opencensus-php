@@ -103,14 +103,9 @@ class PhonepeGatewayTest extends TestCase
             }
         });
 
-        $data = $this->testData[__FUNCTION__];
-
         $content = $this->getMockServer()->getAsyncCallbackContentWalletPhonepe($payment);
 
-        $this->runRequestResponseFlow($data, function() use ($content)
-        {
-            $response = $this->makeS2SCallbackAndGetContent($content, 'wallet_phonepe');
-        });
+        $response = $this->makeS2SCallbackAndGetContent($content, 'wallet_phonepe');
 
         $payment = $this->getLastEntity('payment', true);
 

@@ -115,33 +115,44 @@ trait Callback
             $this->getCallbackMutexResource($payment),
             function() use ($payment, $gatewayInput)
             {
-                // Reload in case it's processed by another thread.
-                $this->repo->reload($payment);
-
-                // In case of non - corporate payments, this case is fine.
-                // In case of corporate and payment already having been authorized
-                if ($this->shouldProcessSecondS2sCallback($payment) === false)
+                try
                 {
-                    $this->app['segment']->trackPayment(
-                        $payment, ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCESSED);
+                    // Reload in case it's processed by another thread.
+                    $this->repo->reload($payment);
 
-                    throw new Exception\BadRequestException(
-                        ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCESSED,
-                        null,
-                        [
-                            'payment_id' => $payment->getId(),
-                            'gateway'    => $payment->getGateway(),
-                            'status'     => $payment->getStatus(),
-                        ]);
+                    // In case of non - corporate payments, this case is fine.
+                    // In case of corporate and payment already having been authorized
+                    if ($this->shouldProcessSecondS2sCallback($payment) === false)
+                    {
+                        $this->app['segment']->trackPayment(
+                            $payment, ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCESSED);
+
+                        throw new Exception\BadRequestException(
+                            ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCESSED,
+                            null,
+                            [
+                                'payment_id' => $payment->getId(),
+                                'gateway'    => $payment->getGateway(),
+                                'status'     => $payment->getStatus(),
+                            ]);
+                    }
+
+                    $isS2sCallback = true;
+
+                    $this->processPaymentCallback($payment, $gatewayInput, $isS2sCallback);
+
+                    $this->postPaymentAuthorizeOfferProcessing($payment);
+
+                    $this->autoCapturePaymentIfApplicable($payment);
                 }
-
-                $isS2sCallback = true;
-
-                $this->processPaymentCallback($payment, $gatewayInput, $isS2sCallback);
-
-                $this->postPaymentAuthorizeOfferProcessing($payment);
-
-                $this->autoCapturePaymentIfApplicable($payment);
+                catch (\Exception $ex)
+                {
+                    //this is a hack to send success response to PhonePe as they expect us to acknowledge the webhook with a 200 status else they keep on sending webhook's
+                    if ($payment->getGateway() !== Payment\Gateway::WALLET_PHONEPE)
+                    {
+                        throw $ex;
+                    }
+                }
             },
             60,
             ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS,
