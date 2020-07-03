@@ -98,7 +98,7 @@ class Service extends Base\Service
 
     public function getConvertedAmount($baseAmount, $rate, $markUpPercent)
     {
-        $rate = number_format($rate, 2);
+        $rate = number_format($rate, 6);
 
         $convertedAmount = $baseAmount * $rate;
 

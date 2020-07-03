@@ -5840,3 +5840,6 @@ ALTER TABLE d2c_bureau_reports
     MODIFY COLUMN score smallint(5) UNSIGNED DEFAULT NULL,
     MODIFY COLUMN report json DEFAULT NULL,
     MODIFY COLUMN ufh_file_id char(255) DEFAULT NULL;
+
+ALTER TABLE payment_meta
+    MODIFY COLUMN forex_rate decimal(20,6);

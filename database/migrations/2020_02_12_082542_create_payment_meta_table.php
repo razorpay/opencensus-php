@@ -32,7 +32,7 @@ class CreatePaymentMetaTable extends Migration
             $table->char(PaymentMeta::GATEWAY_CURRENCY, 3)
                 ->nullable();
 
-            $table->decimal(PaymentMeta::FOREX_RATE, 9, 2)
+            $table->decimal(PaymentMeta::FOREX_RATE, 20, 6)
                 ->nullable();
 
             $table->tinyInteger(PaymentMeta::DCC_OFFERED)
