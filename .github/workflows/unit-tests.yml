@@ -655,7 +655,7 @@ jobs:
       id: failed
       if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')
       run: |
-        echo 'Failing the workflow for github status check.'\
+        echo 'Failing the workflow for github status check.'
         curl -X POST -H "Content-Type: application/json" -H "Authorization: token ${{ github.token }}" \
         -d '{ "state" : "failure" , "context" : "github/combined-status-check" , "description" : "github/combined-status-check", "target_url" : "https://github.com/razorpay/api" }' \
         https://api.github.com/repos/razorpay/api/statuses/${{ github.sha }}
