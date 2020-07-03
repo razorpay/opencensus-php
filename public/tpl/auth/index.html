@@ -64,7 +64,7 @@
           <button ng-if="!rightLayout && !isLoggedIn" class="btn btn-layout-change" ng-click="goToSigninLayout()">Log in</button>
           <button ng-if="isLoggedIn" class="btn btn-layout-change" ng-click="logoutAndGoToLogin()">Log in</button>
           <button ng-if="lockme" class="btn btn-layout-change" ng-click="logoutAndGoToLogin()">Log out</button>
-          <button ng-if="rightLayout && !isLoggedIn && !lockme" class="btn btn-layout-change" ng-click="goToSignupLayout()">Sign Up</button>
+          <button ng-if="rightLayout && !isLoggedIn && !lockme" class="btn btn-layout-change" ng-click="goToSignup()">Sign Up</button>
         </div>
       </div>
 
