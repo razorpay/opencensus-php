@@ -30,6 +30,7 @@ class SFMerchantPocUpdate extends Job
 
     public $timeout = 4000;
 
+
     public function __construct(string $mode, array $value, array $currentAdminIds)
     {
         parent::__construct($mode);
@@ -68,7 +69,25 @@ class SFMerchantPocUpdate extends Job
 
             // linked accounts assuming that merchant's is already marketplace account
             // either in test Mode or Live Mode
-            $associatedAccounts = $merchant->accounts->getIds();
+
+            // Skipping Merchants associated account who has more than 2000 associated accounts this is temporary
+            $noOfMerchantIds = $this->repoManager->merchant->fetchLinkedAccountsCount($merchantId);
+
+            if ($noOfMerchantIds > 2000)
+            {
+                $this->trace->info(TraceCode::SF_POC_MERCHANT_LINKED_SKIPPED,
+                                   [
+                                       'message'    => 'Merchant POC Linked account skipped for Below merchants inside SFMerchantPocUpdate job',
+                                       'merchantId' => $merchantId
+                                   ]
+                );
+
+                $associatedAccounts = [];
+            }
+            else
+            {
+                $associatedAccounts = $this->repoManager->merchant->fetchLinkedAccountMids($merchantId);
+            }
 
             $merchantAndAssociatedAccounts =  array_unique(array_merge([$merchantId], $associatedAccounts));
 

@@ -1049,14 +1049,6 @@ class Service extends Base\Service
         return $result;
     }
 
-    protected function fetchLinkedAccountDetails(string $merchantId)
-    {
-        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
-
-        $associatedAccounts = $merchant->accounts->getIds();
-
-        return $associatedAccounts;
-    }
 
     /**
      * @param array $input
@@ -1077,7 +1069,24 @@ class Service extends Base\Service
 
                 $merchantId = $value['Merchant_ID__c'];
 
-                $merchantIds = $this->fetchLinkedAccountDetails($merchantId);
+                $noOfMerchantIds = $this->repo->merchant->fetchLinkedAccountsCount($merchantId);
+
+                // Skipping Merchants associated account who has more than 2000 associated accounts this is temporary
+                if ($noOfMerchantIds > 2000)
+                {
+                    $merchantIds = [];
+
+                    $this->trace->info(TraceCode::SF_POC_MERCHANT_LINKED_SKIPPED,
+                                       [
+                                           'message'    => 'Merchant POC Linked account skipped for Below merchants inside merchantPocUpdateOperation',
+                                           'merchantId' => $merchantId
+                                       ]
+                    );
+                }
+                else
+                {
+                    $merchantIds = $this->repo->merchant->fetchLinkedAccountMids($merchantId);
+                }
             }
             catch (\Exception $e)
             {

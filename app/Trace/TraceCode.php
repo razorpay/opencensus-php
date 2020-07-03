@@ -2886,6 +2886,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SF_POC_ADMINS_REMOVAL_ERROR                           = 'SF_POC_ADMINS_REMOVAL_ERROR';
     const SF_POC_GROUP_REMOVAL_ERROR                            = 'SF_POC_GROUP_REMOVAL_ERROR';
     const REMOVAL_HISTORICAL_ADMINS_FROM_GROUP                  = 'REMOVAL_HISTORICAL_ADMINS_FROM_GROUP';
+    const SF_POC_MERCHANT_LINKED_SKIPPED                        = 'SF_POC_MERCHANT_LINKED_SKIPPED';
+
 
     // Trace Code for Workflow Rules
     const WORKFLOW_PAYOUT_RULES_ATTACHMENT                      = 'WORKFLOW_PAYOUT_RULES_ATTACHMENT';

@@ -1016,4 +1016,27 @@ class Repository extends Base\Repository
 
         return $historicalClaimedMerchantIds;
     }
+
+    public function fetchLinkedAccountMids($merchantId)
+    {
+        $childMerchantIds = $this->newQuery()
+                                 ->select(Entity::ID)
+                                 ->where('parent_id', $merchantId)
+                                 ->get()
+                                 ->pluck(Entity::ID)
+                                 ->toArray();
+
+        return $childMerchantIds;
+    }
+
+    public function fetchLinkedAccountsCount($merchantId)
+    {
+        $childMerchantIds = $this->newQuery()
+                                 ->select(Entity::ID)
+                                 ->where('parent_id', $merchantId)
+                                 ->count();
+
+        return $childMerchantIds;
+    }
+
 }
