@@ -2252,6 +2252,11 @@ class Gateway
         return (in_array($gateway, self::$gatewaysSupportingGetRedirectForm, true));
     }
 
+    public static function isGatewayPhonepeSwitch($gateway)
+    {
+        return ($gateway === Payment\Gateway::WALLET_PHONEPESWITCH);
+    }
+
     /**
      * If network code is null, the function returns back whether the
      * given gateway has support for authAndCapture or not.

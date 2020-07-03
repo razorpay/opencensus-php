@@ -524,6 +524,11 @@ class PaymentCreateController extends Controller
                     {
                         list($gateway, $time) = explode('__', \Crypt::decrypt($data['gateway']));
 
+                        if (Payment\Gateway::isGatewayPhonepeSwitch($gateway) === true)
+                        {
+                            return $this->redirectToPhonepeSwitchGetUrl($data);
+                        }
+
                         if (Payment\Gateway::isGatewaySupportingGetRedirectForm($gateway) === true)
                         {
                             return $this->redirectToGatewayGetForm($data);
@@ -924,6 +929,16 @@ class PaymentCreateController extends Controller
         $postFormData['nobranding'] = $merchant->isFeatureEnabled(Feature::PAYMENT_NOBRANDING);
 
         return View::make('gateway.gatewayGetForm')
+            ->with('data', $postFormData);
+    }
+
+    protected function redirectToPhonepeSwitchGetUrl($data)
+    {
+        $merchant = $this->app['basicauth']->getMerchant();
+        $postFormData = $data;
+        $postFormData['production'] = $this->app->environment() === Environment::PRODUCTION;
+        $postFormData['merchant_id'] = $merchant->getId();
+        return View::make('gateway.phonepeSwitchFormSubmit')
             ->with('data', $postFormData);
     }
 
