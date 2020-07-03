@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Payout;
+use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Base\EsDao;
@@ -91,8 +92,8 @@ class Core extends Base\Core
             $diff = $esResponse[0]['_source'][Entity::DIFF];
         }
 
-        $diff["old"] = $this->transformFileIdsToUrls($diff["old"], $merchantId);
-        $diff["new"] = $this->transformFileIdsToUrls($diff["new"], $merchantId);
+        $diff['old'] = $this->transformFileIdsToUrls($diff['old'], $merchantId);
+        $diff['new'] = $this->transformFileIdsToUrls($diff['new'], $merchantId);
 
         return $diff;
     }
@@ -124,7 +125,7 @@ class Core extends Base\Core
                         return $detailService->getSignedUrl($value, $merchantId, $source);
                     }
 
-                    return "";
+                    return '';
 
                 })($value);
             }
@@ -193,7 +194,7 @@ class Core extends Base\Core
                     if ((empty($key) === true) or
                         (is_numeric($key) === true))
                     {
-                        $notesDict["notes_key_" . $pos++] = $val;
+                        $notesDict['notes_key_' . ($pos++)] = $val;
                     }
                     else
                     {
@@ -378,8 +379,13 @@ class Core extends Base\Core
                 // array_values() is used to re-set indexes
                 // [54 => 'YESB'] => [0 => 'YESB']
 
-                $orgDirtyDiff = array_values(array_diff($originalData, $dirtyData));
-                $dirtyOrgDiff = array_values(array_diff($dirtyData, $originalData));
+                $orgDirtyDiff = array_values(array_diff(array_map('serialize',$originalData),
+                                                        array_map('serialize', $dirtyData)));
+                $dirtyOrgDiff = array_values(array_diff(array_map('serialize',$dirtyData),
+                                                        array_map('serialize', $originalData)));
+
+                $orgDirtyDiff = array_map('unserialize', $orgDirtyDiff);
+                $dirtyOrgDiff = array_map('unserialize', $dirtyOrgDiff);
 
                 if ((empty($orgDirtyDiff) === false) or
                     (empty($dirtyOrgDiff) === false))
