@@ -468,6 +468,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::DEDUCT_AT_ONSET);
     }
 
+    public function getReasonCode()
+    {
+        return $this->getAttribute(self::REASON_CODE);
+    }
+
     public function isChildDispute(): bool
     {
         return $this->isAttributeNotNull(self::PARENT_ID);

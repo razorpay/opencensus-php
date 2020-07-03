@@ -592,7 +592,7 @@ class EventCode
         'group' => 'initiation',
         'name'  => 'payment_config.updation.initiated'
     ];
-  
+
    const EMAIL_ATTEMPTED = [
         'group' => 'email',
         'name'  => 'email.attempted',
@@ -611,5 +611,15 @@ class EventCode
     const MAILGUN_ATTEMPT_SUCCESS = [
         'group' => 'email',
         'name'  => 'email.mailgun_attempt_success',
+    ];
+
+    const DISPUTE_CREATED = [
+        'group' => 'dispute',
+        'name'  => 'dispute.created'
+    ];
+
+    const DISPUTE_PROCESSED = [
+        'group' => 'dispute',
+        'name'  => 'dispute.processed'
     ];
 }

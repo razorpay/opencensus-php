@@ -8,6 +8,7 @@ use Carbon\Carbon;
 
 use RZP\Exception;
 use RZP\Services\Mutex;
+use RZP\Diag\EventCode;
 use RZP\Trace\TraceCode;
 use RZP\Mail\Base\Constants;
 use RZP\Models\Admin\Action;
@@ -111,6 +112,8 @@ class Core extends Base\Core
 
                 $this->sendDisputeMailToMerchant($dispute, $merchant, $input);
 
+                $this->app['diag']->trackDisputeEvent(EventCode::DISPUTE_CREATED, $dispute);
+
                 $this->firePaymentDisputeWebhookEvent($payment, $dispute, WebhookEvent::PAYMENT_DISPUTE_CREATED);
 
                 return $dispute;
@@ -156,9 +159,19 @@ class Core extends Base\Core
 
                     $this->repo->saveOrFail($dispute);
 
+                    $this->generateDisputeEvent($dispute);
+
                     return $dispute;
                 });
             });
+    }
+
+    protected function generateDisputeEvent(Entity $dispute)
+    {
+        if ($dispute->isClosed() === false)
+        {
+            $this->app['diag']->trackDisputeEvent(EventCode::DISPUTE_PROCESSED, $dispute);
+        }
     }
 
     /**
