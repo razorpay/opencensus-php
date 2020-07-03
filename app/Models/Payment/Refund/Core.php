@@ -235,8 +235,8 @@ class Core extends Base\Core
     {
         $refundIds = [];
 
-        // Adding a temporary variable for testing nbScb persist arn change
-        $nbScbRefundIds = [];
+        // Adding a temporary variable for testing nbScb or nbAxis persist arn change
+        $nbRefundIds = [];
 
         foreach ($data as $refundData)
         {
@@ -246,9 +246,9 @@ class Core extends Base\Core
             {
                 $refundIds[] = $refundData[E::REFUND][Refund\Entity::ID];
 
-                if ($gateway === Gateway::NETBANKING_SCB)
+                if (($gateway === Gateway::NETBANKING_SCB) or ($gateway === Gateway::NETBANKING_AXIS))
                 {
-                    $nbScbRefundIds[] = $refundData[E::REFUND][Refund\Entity::ID];
+                    $nbRefundIds[] = $refundData[E::REFUND][Refund\Entity::ID];
                 }
             }
         }
@@ -258,11 +258,11 @@ class Core extends Base\Core
             $this->repo->transaction->bulkReconciliationUpdate($refundIds);
         }
 
-        if (empty($nbScbRefundIds) === false)
+        if (empty($nbRefundIds) === false)
         {
             try
             {
-                $this->RequestScroogeForReference1Update($nbScbRefundIds);
+                $this->RequestScroogeForReference1Update($nbRefundIds);
             }
             catch (\Exception $e)
             {
@@ -287,8 +287,8 @@ class Core extends Base\Core
         $refunds = $this->repo->refund->fetchRefundByRefundIds($refundIds);
 
         // Contain refundId as key and and payment reference1 from payment as value
-        //we are doing this so that we can send this data to scrooge service in order to update
-        //reference1 of refund
+        // we are doing this so that we can send this data to scrooge service in order to update
+        // reference1 of refund
         $refundsData = [];
 
         foreach ($refunds as $refund)
@@ -331,7 +331,11 @@ class Core extends Base\Core
 
         if (empty($refundsData) === false)
         {
-            $response = $this->app['scrooge']->bulkUpdateRefundReference1($refundsData);
+            $scroogeInputData = [];
+
+            $scroogeInputData['refund_reference1'] = $refundsData;
+
+            $response = $this->app['scrooge']->bulkUpdateRefundReference1($scroogeInputData);
 
             $this->trace->info(TraceCode::RECON_INFO,
                 [
