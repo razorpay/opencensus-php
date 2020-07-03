@@ -6,19 +6,13 @@ import Input from 'common/new-ui/Input';
 import ModalHeader from 'common/ui/ModalHeader';
 import CustomClipboard from 'common/ui/Clipboard/Custom';
 
-import { closeModal } from 'merchant_common/reducers/modals';
 import { fetchPaymentPageEntity as fetchPaymentButtonEntity } from 'merchant/views/PaymentPages/PaymentPages/model';
 import { setIsPaymentButtonCodeUsed } from '../../utils';
 
-@connect(
-  state => ({
-    user: state.session.user,
-    mode: state.session.mode,
-  }),
-  {
-    closeModal,
-  }
-)
+@connect(state => ({
+  user: state.session.user,
+  mode: state.session.mode,
+}))
 export default class GetCodeModal extends React.Component {
   constructor(props) {
     super(props);

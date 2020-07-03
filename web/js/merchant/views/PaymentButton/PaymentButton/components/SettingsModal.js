@@ -2,7 +2,6 @@ import { connect } from 'react-redux';
 
 import Input from 'common/new-ui/Input';
 import ModalHeader from 'common/ui/ModalHeader';
-import Popover, { PopoverBody } from 'common/ui/Popover';
 
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
@@ -19,7 +18,7 @@ export default class SettingsModal extends React.Component {
     this.state = {
       isSending: false,
       isUpdated: false,
-      paymentSuccessMessage: props.paymentSuccessMessage,
+      paymentSuccessMessage: props.paymentSuccessMessage || '',
       showCustomMessage: !!props.paymentSuccessMessage,
     };
   }
@@ -34,13 +33,13 @@ export default class SettingsModal extends React.Component {
   handleShowCustomMessage = () => {
     this.setState({
       showCustomMessage: !this.state.showCustomMessage,
-      isUpdated: true,
     });
   };
 
   onClickSave = () => {
     this.setState({
       isSending: true,
+      isUpdated: false,
     });
 
     return this.props
@@ -64,12 +63,6 @@ export default class SettingsModal extends React.Component {
       });
   };
 
-  togglePageReceiptModal = () => {
-    this.props.togglePageReceiptModal();
-
-    this.props.preservePaymentSuccessMessage(this.state.paymentSuccessMessage);
-  };
-
   render() {
     const { closeModal } = this.props;
     const {
@@ -80,30 +73,13 @@ export default class SettingsModal extends React.Component {
     } = this.state;
 
     const isDisabled =
-      !isUpdated ||
-      isSending ||
-      (paymentSuccessMessage && paymentSuccessMessage.length < 5);
+      !isUpdated || isSending || paymentSuccessMessage.length < 5;
 
     return (
       <div class="ButtonSettingsModal">
         <ModalHeader title="Button Settings" />
 
         <div class="modal-body">
-          <div class="payment-receipt">
-            <div class="receipt-heading">
-              <strong>Payment Receipts</strong>
-              <button class="btn-link" onClick={this.togglePageReceiptModal}>
-                Configure <i class="i i-arrow-forward" />
-              </button>
-            </div>
-            <div class="description">
-              Send automated payment receipts to your customers on successful
-              payments.
-            </div>
-          </div>
-
-          <hr />
-
           <Input.Check
             fieldLabel="Show custom message after a payment"
             onChange={this.handleShowCustomMessage}

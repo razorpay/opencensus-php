@@ -26,57 +26,47 @@
       content: unset
 
   .page-options
-    display: flex
-    align-items: center
-    justify-content: flex-end
     margin-right: -30px
+    width: 30%
+    text-align: right
 
     .Button--primary--invert
-      padding: 9px 20px
+      padding: 9px
       &:hover
         background-color: rgba(11, 112, 231, 0.05)
         border-color: #528ff0
 
+    .i
+      font-size: 16px
+
+    .i-copy
+      font-size: 18px
+
     .dropdown
+      line-height: 1
+      display: inline-block
       &:before, &:after
         content: unset
 
     .dropdown-menu
-      top: 57px
+      top: 34px
       background: #FFFFFF
       box-shadow: 0px 2px 8px rgba(43, 47, 60, 0.16409)
       border: 0
       border-radius: 3px
       padding: 0
-      left: -128%
+      left: -172px
       border: 0
+      width: 226px
 
-      .option
-        min-width: 200px
-        color: #58666E
+      li
         padding: 16px
         line-height: 1
-        display: flex
-        align-items: center
+        color: #58666E
 
-      li:first-child .option
-        padding-top: 16px
-        i
-          margin-top: -9px
-
-      li:last-child .option
-        padding-bottom: 16px
-        justify-content: space-between
-
-      .i:first-child
-        margin-right: 8px
-
-      .option-description
-        font-size: 12px
-        margin-top: 4px
-
-      .i-arrow-forward
-        color: #2B83EA
+        &:hover
+          background: rgba(224, 228, 249, 0.24)
+          cursor pointer
 
   .Modal-container--PaymentpagesReceipt
     top: 0

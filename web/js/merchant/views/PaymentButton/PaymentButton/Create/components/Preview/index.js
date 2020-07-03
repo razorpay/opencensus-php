@@ -82,6 +82,29 @@ export default class Preview extends React.Component {
       >
         <div class="Preview-title">Preview</div>
         {content}
+
+        <div class="GuideBox">
+          <div class="title">
+            {/* TODO: Compress the icons svg file */}
+            <i class="i i-help-outline" />
+            Need help
+          </div>
+
+          {/* 
+            <div class="see-video-btn">
+              TODO: For i-play compress the svg file
+              See video guide for button <i class="i i-play" />
+            </div> 
+          */}
+
+          <a
+            class="doc-link"
+            target="_blank"
+            href="https://razorpay.com/docs/payment-button/"
+          >
+            Visit our Documentation <i class="i i-external-link" />
+          </a>
+        </div>
       </div>
     );
   }

@@ -20,8 +20,8 @@ import { PaymentPagesStatusLabel } from 'merchant/components/StatusLabel';
 import ListFilter from './ListFilter';
 import GetCodeModal from '../components/GetCodeModal'; // SuccessModal
 
+import { openModal, closeModal } from 'merchant_common/reducers/modals';
 import { handleProductQuickGuide } from 'merchant/reducers/onboarding';
-import { openModal } from 'merchant_common/reducers/modals';
 import { fetchPaymentButtonsList as fetchAll } from 'merchant/reducers/paymentbuttons/list';
 import { setIsPaymentButtonCodeUsed } from '../../utils';
 
@@ -54,7 +54,7 @@ export const status = {
     ...state.paymentbuttons,
     ...state.session,
   }),
-  { fetchAll, openModal, handleProductQuickGuide }
+  { fetchAll, openModal, closeModal, handleProductQuickGuide }
 )
 export default class PaymentButtonsList extends ListContainer {
   state = {
@@ -69,6 +69,7 @@ export default class PaymentButtonsList extends ListContainer {
         <GetCodeModal
           title="Copy Button Code"
           paymentButton={paymentButtonEntity}
+          closeModal={this.props.closeModal}
         />
       ),
     });

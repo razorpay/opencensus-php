@@ -522,9 +522,12 @@ export default class PaymentButtonCreate extends React.Component {
           <Button.Transparent
             type="button"
             style={{ color: '#fff' }}
+            class="payment-receipt-btn"
             onClick={this.handleTogglePageReceiptModal}
           >
-            <span>Payment Receipts</span>
+            <span>
+              <i class="i i-document" /> Payment Receipts
+            </span>
           </Button.Transparent>
         )}
       </React.Fragment>

@@ -67,27 +67,12 @@ export default class PaymentButtonEntity extends React.Component {
       detailsCollapse: true,
       isExportInProgress: false,
       isPageReceiptModalOpened: false,
-      paymentSuccessMessage:
-        props.paymentButtonEntity.settings.payment_success_message,
     };
   }
 
   componentDidMount() {
     if (!this.props.reportConfigs) {
       this.props.saveReportConfigs();
-    }
-  }
-
-  componentWillReceiveProps(nextProps, prevState) {
-    if (
-      nextProps.paymentButtonEntity.settings &&
-      nextProps.paymentButtonEntity.settings.payment_success_message !==
-        prevState.paymentSuccessMessage
-    ) {
-      this.setState({
-        paymentSuccessMessage:
-          nextProps.paymentButtonEntity.settings.payment_success_message,
-      });
     }
   }
 
@@ -176,56 +161,30 @@ export default class PaymentButtonEntity extends React.Component {
         <GetCodeModal
           title="Copy Button Code"
           paymentButton={this.props.paymentButtonEntity}
+          closeModal={this.props.closeModal}
         />
       ),
     });
   };
 
-  openButtonSettings = () => {
+  openSettingsModal = () => {
     this.props.openModal({
       size: 'medium',
       component: (
         <SettingsModal
-          paymentSuccessMessage={this.state.paymentSuccessMessage}
-          paymentButtonEntity={this.props.paymentButtonEntity}
-          togglePageReceiptModal={this.togglePageReceiptModal}
-          preservePaymentSuccessMessage={this.handlePaymentSuccessMessage}
+          paymentSuccessMessage={
+            this.props.paymentButtonEntity.settings.payment_success_message
+          }
           editPaymentButton={this.props.editPaymentButton}
         />
       ),
     });
   };
 
-  handlePaymentSuccessMessage = paymentSuccessMessage => {
-    this.setState({
-      paymentSuccessMessage,
-    });
-  };
-
   togglePageReceiptModal = () => {
-    if (this.state.isPageReceiptModalOpened) {
-      this.setState(
-        {
-          isPageReceiptModalOpened: false,
-        },
-        () => {
-          this.openButtonSettings();
-        }
-      );
-
-      return;
-    }
-
-    this.setState(
-      {
-        isPageReceiptModalOpened: true,
-      },
-      () => {
-        if (this.state.isPageReceiptModalOpened) {
-          this.props.closeModal();
-        }
-      }
-    );
+    this.setState({
+      isPageReceiptModalOpened: !this.state.isPageReceiptModalOpened,
+    });
   };
 
   handleSavePaymentReceipt = receipt => {
@@ -289,12 +248,29 @@ export default class PaymentButtonEntity extends React.Component {
             <div class="panel-heading">
               <div class="text">{paymentButtonEntity.title}</div>
               <div class="page-options pull-right">
+                <Link
+                  class="Button Button--primary--invert"
+                  to={`/paymentbuttons/${paymentButtonEntity.id}/edit`}
+                >
+                  <i class="i i-edit-outline" />
+                </Link>
+
+                <Link
+                  class="Button Button--primary--invert"
+                  to={`/paymentbuttons/new?duplicate_id=${
+                    paymentButtonEntity.id
+                  }`}
+                >
+                  <i class="i i-copy" />
+                </Link>
+
                 <Dropdown>
                   <DropdownTrigger
                     class="dropdown-toggle Button Button--primary--invert"
                     onClick={this.onClickOptions}
                   >
-                    Options <i class="i i-chevron-down" />
+                    <i class="i i-settings-outline" />
+                    <i class="i i-chevron-down" />
                     {highlightButtonSettings && (
                       <Popover align="top" theme="dark" persistent={true}>
                         <PopoverBody>
@@ -306,37 +282,12 @@ export default class PaymentButtonEntity extends React.Component {
                   </DropdownTrigger>
                   <DropdownContent>
                     <ul class="dropdown-menu nav nav-stacked">
-                      <li>
-                        <a class="option" onClick={this.openButtonSettings}>
-                          <i class="i i-settings-outline" />
-                          <div>
-                            Button Settings
-                            <div class="option-description">
-                              Manage Receipts, Post Payment Message
-                            </div>
-                          </div>
-                        </a>
+                      <li onClick={this.togglePageReceiptModal}>
+                        <i class="i i-document" /> Payment Receipts
                       </li>
-                      <li>
-                        <Link
-                          class="option"
-                          to={`/paymentbuttons/${paymentButtonEntity.id}/edit`}
-                        >
-                          <i class="i i-edit-outline" /> Edit Button
-                        </Link>
-                      </li>
-                      <li>
-                        <Link
-                          class="option"
-                          to={`/paymentbuttons/new?duplicate_id=${
-                            paymentButtonEntity.id
-                          }`}
-                        >
-                          <span>
-                            <i class="i i-copy" /> Duplicate Button
-                          </span>
-                          <i class="i i-arrow-forward pull-right" />
-                        </Link>
+                      <li onClick={this.openSettingsModal}>
+                        {/* TODO:  Compress the i-checked-document svg icon */}
+                        <i class="i i-checked-document" /> Post Payment Message
                       </li>
                     </ul>
                   </DropdownContent>

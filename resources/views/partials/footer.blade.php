@@ -44,6 +44,9 @@
       },
       now: function() {
         return window.rzpQ;
+      },
+      paymentButtons: function() {
+        return window.rzpQ;
       }
     };
 
@@ -157,6 +160,16 @@
               propertyName: 'event_group',
               value: 'invoice_dashboard'
             },
+          ],
+          paymentButtons: [
+            {
+              propertyName: 'event_type',
+              value: 'paymentbuttons'
+            },
+            {
+              propertyName: 'event_group',
+              value: 'paymentbuttons-dashboard'
+            }
           ]
         });
 
