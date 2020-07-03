@@ -417,15 +417,6 @@ app
                 'Click - Create Account (Success)'
               );
             }
-            window.rzpQ.push(
-              window.rzpQ
-                .now()
-                .onbr()
-                .success('signup.create_account', {
-                  mode: $scope.eventsMode,
-                  version: 1,
-                })
-            );
 
             window.trackHubs({
               id: 'SIGNUP_COMPLETE',
@@ -448,6 +439,19 @@ app
                   $scope.goToDashboard();
                 }
               } else {
+                window.rzpQ &&
+                  window.rzpQ.push(
+                    window.rzpQ
+                      .now()
+                      .onbr()
+                      .success('signup.create_account', {
+                        mode: $scope.eventsMode,
+                        version: 1,
+                        emailId: data.user.email,
+                        userid: data.user.id,
+                        mid: data.current,
+                      })
+                  );
                 hideSpinner();
                 $state.transitionTo(
                   'access.pre_signup',
@@ -467,6 +471,19 @@ app
               id: 'SIGNUP_FAILED',
               value: data.errors[0],
             });
+
+            window.rzpQ &&
+              window.rzpQ.push(
+                window.rzpQ
+                  .now()
+                  .onbr()
+                  .failed('signup.create_account', {
+                    mode: $scope.eventsMode,
+                    version: 1,
+                    emailId: payload.data.email,
+                  })
+              );
+
             let firstError = '';
             if (data.errors && data.errors.length) {
               firstError = data.errors[0];
