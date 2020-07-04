@@ -1064,8 +1064,12 @@ app
           },
         });
         document.body.style.display = 'none'; // remove flicker during redirection
+
+        // doing reload to trigger the Google Optimize experiment
         window.location.href = '/#/access/signup';
-        location.reload(); // doing reload to trigger the Google Optimize experiment
+        if (!location.search.includes('next')) {
+          location.reload();
+        }
       };
 
       // client redirection to signup
