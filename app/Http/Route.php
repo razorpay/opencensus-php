@@ -1815,6 +1815,7 @@ class Route
 
         // Routes related to payments rearch for fetching/writing data
         'api_entity_fetch'                        => ['get',     'entities/{entity}/{id}',                                 'CardPSController@FetchEntity'                                  ],
+        'cps_backfill_entities'                   => ['get',     'cardps/backfill/{entity}/{column}',                      'CardPSController@BackfillRouteProxy'                           ],
 
         'merchant_verify_attributes'              => ['post',    'merchant/verify/{verificationType}',                      'MerchantController@postVerifyMerchantAttributes'              ],
 
@@ -2171,6 +2172,7 @@ class Route
     // If a route needs access from the Dashboard
     // Put it in the Admin Array instead
     public static $internal = [
+        'cps_backfill_entities',
         'vendor_payment_composite_expands_helper',
         'los_mail',
         'api_entity_fetch',
@@ -4656,6 +4658,7 @@ class Route
             'tokens_upi_vpa_bulk_cron',
             'terminals_proxy_delete_submerchant',
             'terminals_proxy_create_submerchant',
+            'cps_backfill_entities'
         ],
 
         'subscriptions' => [

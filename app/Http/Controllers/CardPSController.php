@@ -19,4 +19,18 @@ class CardPSController extends Controller
 
         return ApiResponse::json($data->toArrayAdmin());
     }
+
+    public function BackfillRouteProxy($entity, $column)
+    {
+        $path = '/v1/entities/backfill/' . $entity . '/' . $column;
+
+        if (Request::has('limit') === true)
+        {
+            $path = $path . '?limit=' . Request::Query('limit');
+        }
+
+        $response = $this->app['card.payments']->sendRequest('GET', $path);
+
+        return ApiResponse::json($response);
+    }
 }
