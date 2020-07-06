@@ -17,6 +17,7 @@ use App\AdminLead;
 use App\Http\ApiUrl;
 use App\Trace\TraceCode;
 use App\MerchantDetails;
+use App\Admin\ApiRequestAny;
 use App\Providers\GenericUser;
 use App\Session as SessionTable;
 use App\Merchant\GenericMerchant;
@@ -139,10 +140,25 @@ class Service extends Base\Service
 
         if (empty($error) === true)
         {
-            Session::put(Constants::TWO_FA_VERIFIED, true);
+            $this->markUserTwoFactorVerified();
         }
 
         return $this->handleLoginResponse($error, $genericUser);
+    }
+
+    public function verifyOtpAndMarkUserTwoFactorVerified(array $input)
+    {
+        // no need of extracting data from response
+        list($error) = (new ApiRequestAny(['client_type' => 'merchant']))
+            ->processInput($input)
+            ->send('users/2fa/verify', 'POST');
+
+        if (empty($error) === true)
+        {
+            $this->markUserTwoFactorVerified();
+        }
+
+        return [$error, []];
     }
 
     public function postloginNo2fa(array $input)
@@ -186,7 +202,7 @@ class Service extends Base\Service
 
     public function post2faOtp(array $input)
     {
-        $request = new \App\Admin\APiRequestAny();
+        $request = new \App\Admin\ApiRequestAny();
 
         return $request->send('users/2fa', 'POST');
     }
@@ -1090,6 +1106,11 @@ class Service extends Base\Service
             }
 
         return false;
+    }
+
+    private function markUserTwoFactorVerified()
+    {
+        Session::put(Constants::TWO_FA_VERIFIED, true);
     }
 
     protected function isPartnerIntentTrue(array $data): bool

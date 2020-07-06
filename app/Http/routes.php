@@ -137,6 +137,8 @@ Route::group(['middleware' => ['web']], function () {
         Route::get('/reports/{log_id}', 'MerchantController@downloadReport');
 
         Route::get('ufh/file/{file_id}', 'MerchantController@downloadFileFromUFH');
+
+        Route::post('/user/otp/verify', 'UserController@verifyUserViaOtp');
     });
 
     Route::group(['middleware'  =>  ['admin', 'admin_access']], function()

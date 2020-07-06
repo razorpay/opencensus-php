@@ -204,6 +204,19 @@ class UserController extends Controller
     }
 
     /**
+     * Forwards OTP verification request to API
+     */
+    public function verifyUserViaOtp()
+    {
+        $input = Input::all();
+
+        list($error, $data) = (new User\Service)
+            ->verifyOtpAndMarkUserTwoFactorVerified($input);
+
+        return AppResponse::jsonResponse($error, $data);
+    }
+
+    /**
      * @return \Illuminate\Http\Response
     */
     public function postUpdate2faContact()
