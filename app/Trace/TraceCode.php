@@ -2295,6 +2295,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYOUT_SCHEDULED_DISPATCH_COMPLETE                        = 'PAYOUT_SCHEDULED_DISPATCH_COMPLETE';
     const PAYOUT_SCHEDULED_DISPATCH_FAILED                          = 'PAYOUT_SCHEDULED_DISPATCH_FAILED';
     const SCHEDULED_PAYOUT_AUTO_REJECTED                            = 'SCHEDULED_PAYOUT_AUTO_REJECTED';
+    const SCHEDULED_PAYOUT_TO_BATCH_SUBMITTED                       = 'SCHEDULED_PAYOUT_TO_BATCH_SUBMITTED';
 
     const REFUND_REVERSAL_CREATED                               = 'REFUND_REVERSAL_CREATED';
     const REFUND_REVERSAL_INITIATED                             = 'REFUND_REVERSAL_INITIATED';

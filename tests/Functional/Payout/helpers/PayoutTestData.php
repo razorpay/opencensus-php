@@ -5918,4 +5918,15 @@ return [
             ],
         ],
     ],
+
+    'testProcessBulkScheduledPayouts' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts/scheduled/process',
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
 ];

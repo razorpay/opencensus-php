@@ -796,6 +796,26 @@ class Core extends Base\Core
                 }
 
                 //
+                // If scheduled payouts were created via batch uploads, then it may lead to increased processing times
+                // for certain merchants, hence we send these to batch_submitted state so that when dispatching,
+                // we don't starve any single merchant
+                //
+                if (empty($payout->getBatchId()) === false)
+                {
+                    $payout->setStatus(Status::BATCH_SUBMITTED);
+
+                    $this->repo->saveOrFail($payout);
+
+                    $this->trace->info(
+                        TraceCode::SCHEDULED_PAYOUT_TO_BATCH_SUBMITTED,
+                        [
+                            'payout_id' => $payout->getId(),
+                        ]);
+
+                    return $payout;
+                }
+
+                //
                 // Currently, we support scheduled payouts concept only for Fund Account type.
                 // If we are supporting for others, the processor call needs to be fixed here.
                 // Also, need to fix transaction.created event in the processor since

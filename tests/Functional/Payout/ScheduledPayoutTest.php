@@ -748,7 +748,7 @@ class ScheduledPayoutTest extends TestCase
 
     public function testBulkScheduledPayouts()
     {
-        // Hard-coding current time as May 1, we are passing epoch of June 4th 9AM (randomly chosen) as scheduled_at
+        // Hard-coding current time as May 1, we are passing epoch of July 4th 9AM (randomly chosen) as scheduled_at
         Carbon::setTestNow(Carbon::create(2020,05,01));
 
         $this->ba->batchAuth();
@@ -884,5 +884,45 @@ class ScheduledPayoutTest extends TestCase
         ];
 
         $this->assertArraySelectiveEquals($expectedResponse, $responseFromSummaryAPI);
+    }
+
+    public function testProcessBulkScheduledPayouts()
+    {
+        // setTestNow is called inside this function and it sets current date as May 1.
+        // We are scheduling the two bulk payouts for July 4 (randomly chosen)
+        $this->testBulkScheduledPayouts();
+
+        $scheduledAtTime = Carbon::create(2020, 07,04,9,30,00, Timezone::IST)->getTimestamp();
+        $scheduledAtStartOfHour = Carbon::createFromTimestamp($scheduledAtTime, Timezone::IST)->startOfHour()->getTimestamp();
+
+        $bulkPayouts = $this->getDbEntities('payout')->toArray();
+
+        $bulkScheduledPayout1Id = $bulkPayouts[0]['id'];
+        $bulkScheduledPayout2Id = $bulkPayouts[1]['id'];
+
+        $this->createPayoutWithOtpWithWorkflow(
+            [
+                'scheduled_at' => $scheduledAtTime
+            ],
+            'rzp_test_10000000000000');
+
+        $scheduledPayout = $this->getDbLastEntity('payout')->toArray();
+
+        $scheduledPayoutId = $scheduledPayout['id'];
+
+        // Setting this to 1 second after the start of the time slot
+        Carbon::setTestNow(Carbon::createFromTimestamp($scheduledAtStartOfHour+1, Timezone::IST));
+
+        $this->ba->cronAuth();
+
+        $this->startTest();
+
+        $bulkScheduledPayout1 = $this->getDbEntityById('payout', $bulkScheduledPayout1Id)->toArray();
+        $bulkScheduledPayout2 = $this->getDbEntityById('payout', $bulkScheduledPayout2Id)->toArray();
+        $scheduledPayout1 = $this->getDbEntityById('payout', $scheduledPayoutId)->toArray();
+
+        $this->assertEquals('batch_submitted', $bulkScheduledPayout1['status']);
+        $this->assertEquals('batch_submitted', $bulkScheduledPayout2['status']);
+        $this->assertEquals('created', $scheduledPayout1['status']);
     }
 }
