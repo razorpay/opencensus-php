@@ -48,7 +48,7 @@ export default function AppDetails(props) {
               src={
                 isConnected
                   ? data.application.logo_url
-                  : data.logo_url || 'img/default-app-logo.svg'
+                  : data.logo_url || '/img/default-app-logo.svg'
               }
               alt=""
             />

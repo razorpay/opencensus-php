@@ -189,7 +189,7 @@ export default class NotificationsDropdown extends Component {
               ) : (
                 <div class="Notifications-content-empty">
                   <img
-                    src="img/notifications/no-notification.png"
+                    src="/img/notifications/no-notification.png"
                     width="72px"
                   />
                   <div class="title">No announcements right now</div>

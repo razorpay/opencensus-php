@@ -414,7 +414,7 @@ export default class RequestEarlyAccessForm extends Component {
           <div class="features-list">
             <div class="feature-item">
               <div class="feature-icon">
-                <img src="img/early_settlements/es-icon-1.png" />
+                <img src="/img/early_settlements/es-icon-1.png" />
               </div>
               <div class="feature-content">
                 <span class="feature-title">Better Budgeting</span>
@@ -425,7 +425,7 @@ export default class RequestEarlyAccessForm extends Component {
             </div>
             <div class="feature-item">
               <div class="feature-icon">
-                <img src="img/early_settlements/es-icon-2.png" />
+                <img src="/img/early_settlements/es-icon-2.png" />
               </div>
               <div class="feature-content">
                 <span class="feature-title">Zero Backlogs</span>
@@ -436,7 +436,7 @@ export default class RequestEarlyAccessForm extends Component {
             </div>
             <div class="feature-item">
               <div class="feature-icon">
-                <img src="img/early_settlements/es-icon-3.png" />
+                <img src="/img/early_settlements/es-icon-3.png" />
               </div>
               <div class="feature-content">
                 <span class="feature-title">Easy Financing</span>
@@ -447,7 +447,7 @@ export default class RequestEarlyAccessForm extends Component {
             </div>
             <div class="feature-item">
               <div class="feature-icon">
-                <img src="img/early_settlements/es-icon-4.png" />
+                <img src="/img/early_settlements/es-icon-4.png" />
               </div>
               <div class="feature-content">
                 <span class="feature-title">Manage Settlements</span>
@@ -476,13 +476,13 @@ const SuccessScreen = closeScreen => (
     <div class="success-banner-cnt">
       <img
         class="banner-header"
-        src="img/early_settlements/es-banner-1-header.png"
+        src="/img/early_settlements/es-banner-1-header.png"
       />
       <button class="close" onClick={() => closeScreen('Close Buuton')}>
         <i class="i i-close" />
       </button>
 
-      <img class="banner" src="img/early_settlements/es-banner-2.png" />
+      <img class="banner" src="/img/early_settlements/es-banner-2.png" />
       <h3 class="modal-title">Instant Settlements Requested</h3>
       <div class="help-block">
         You shall be activated soon for Instant Settlements. A confirmation
@@ -500,7 +500,7 @@ const SuccessScreen = closeScreen => (
 
       <img
         class="banner-footer"
-        src="img/early_settlements/es-banner-1-footer.png"
+        src="/img/early_settlements/es-banner-1-footer.png"
       />
     </div>
   </div>
