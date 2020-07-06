@@ -29,6 +29,7 @@ class Validator extends Base\Validator
         Entity::NOTES                           => 'sometimes|notes',
         Entity::CLOSE_BY                        => 'filled|epoch|custom',
         Entity::CUSTOMER                        => 'sometimes|array',
+        Entity::ALLOWED_PAYERS                  => 'sometimes|array|min:1|max:5',
     ];
 
     protected static $createForBankingRules = [
@@ -68,6 +69,11 @@ class Validator extends Base\Validator
         'SubscriberId' => 'required|string',
         'TxnId'        => 'required|string',
         'MerchantKey'  => 'nullable|string',
+    ];
+
+    public static $addReceiverRules = [
+        Entity::RECEIVERS                       => 'bail|required|array|custom',
+        Entity::RECEIVERS . '.' . Entity::TYPES => 'present|array|min:1',
     ];
 
     protected static $createValidators = [

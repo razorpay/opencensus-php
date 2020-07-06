@@ -28,6 +28,8 @@ class Service extends Base\Service
         Receiver::BANK_ACCOUNT,
     ];
 
+    const VA_ADD_RECEIVER            = 'va_add_receiver';
+
     public function __construct()
     {
         parent::__construct();
@@ -382,6 +384,8 @@ class Service extends Base\Service
     {
         $this->trace->info(TraceCode::VIRTUAL_ACCOUNT_ADD_RECEIVER, $input);
 
+        (new Validator())->validateInput('addReceiver', $input);
+
         $virtualAccount = $this->repo
                                ->virtual_account
                                ->findByPublicIdAndMerchant($id, $this->merchant);
@@ -396,7 +400,18 @@ class Service extends Base\Service
 
         $this->verifyMerchantIsLiveForLiveRequest();
 
-        $virtualAccount = $this->core->addReceiver($virtualAccount, $input, $this->merchant);
+        $virtualAccount = $this->mutex->acquireAndRelease(
+            self::VA_ADD_RECEIVER . "_" . $virtualAccount->getPublicId(),
+            function() use ($input, $virtualAccount)
+            {
+                return $this->core->addReceiver($virtualAccount, $input);
+            },
+            10,
+            ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_ADD_RECEIVER_IN_PROGRESS,
+            5,
+            200,
+            400
+        );
 
         return $virtualAccount->toArrayPublic();
     }

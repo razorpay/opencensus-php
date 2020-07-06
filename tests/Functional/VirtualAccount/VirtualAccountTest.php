@@ -2019,4 +2019,79 @@ class VirtualAccountTest extends TestCase
                                   return 'off';
                               }));
     }
+
+    public function testCreateVirtualBankAccountWithTpv()
+    {
+        $response = $this->createVirtualAccount($this->testData['createVAWithAllowedPayer']);
+
+        $expectedResponse = $this->testData[__FUNCTION__];
+
+        $this->assertArraySelectiveEquals($expectedResponse, $response);
+    }
+
+    public function testCreateVirtualVpaWithTpv()
+    {
+        $response = $this->createVirtualAccount($this->testData['createVAWithAllowedPayer'], false, null, null, true, 'virtualVpa');
+
+        $expectedResponse = $this->testData[__FUNCTION__];
+
+        $this->assertArraySelectiveEquals($expectedResponse, $response);
+    }
+
+    public function testCreateVirtualVpaForIciciWithTpv()
+    {
+        $this->fixtures->create('terminal:vpa_shared_terminal_icici');
+
+        $this->enableRazorXTreatmentForRazorXVpaIcici();
+
+        $expectedResponse = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($expectedResponse, function()
+        {
+            $this->createVirtualAccount($this->testData['createVAWithAllowedPayer'], false, null, null, true, 'virtualVpa');
+        });
+    }
+
+    public function testCreateVirtualAccountWithInvalidAllowedPayerType()
+    {
+        $this->createAndTestVirtualAccountWithTPV(__FUNCTION__);
+    }
+
+    public function testCreateVirtualAccountWithMissingAllowedPayerDetails()
+    {
+        $this->createAndTestVirtualAccountWithTPV(__FUNCTION__);
+    }
+
+    protected function createAndTestVirtualAccountWithTPV($testFunction)
+    {
+        $data = $this->testData[$testFunction];
+
+        $allowedPayerDetails = $data['request'];
+
+        unset($data['request']);
+
+        $this->runRequestResponseFlow($data, function() use ($allowedPayerDetails)
+        {
+            $this->createVirtualAccount($allowedPayerDetails);
+        });
+    }
+
+    public function testWebhookVirtualAccountCreatedWithAllowedPayers()
+    {
+        $expectedEvent = $this->testData[__FUNCTION__]['event'];
+        $this->expectWebhookEventWithContents('virtual_account.created', $expectedEvent);
+
+        $this->createVirtualAccount($this->testData['createVAWithAllowedPayer']);
+    }
+
+    public function testFetchVirtualAccountWithAllowedPayer()
+    {
+        $response = $this->createVirtualAccount($this->testData['createVAWithAllowedPayer']);
+
+        $response = $this->fetchVirtualAccount($response['id']);
+
+        $expectedResponse = $this->testData[__FUNCTION__];
+
+        $this->assertArraySelectiveEquals($expectedResponse, $response);
+    }
 }

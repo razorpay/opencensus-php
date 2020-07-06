@@ -11,6 +11,7 @@ use RZP\Exception;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant\Detail;
+use RZP\Models\Bank\IFSC as BankIFSC;
 use RZP\Exception\BadRequestValidationFailureException;
 
 class Validator extends Base\Validator
@@ -83,6 +84,12 @@ class Validator extends Base\Validator
         Entity::IFSC            => 'required|alpha_num|size:11',
         Entity::ACCOUNT_NUMBER  => 'required|regex:/^[a-zA-Z0-9]+$/|between:5,35',
         Entity::NAME            => 'sometimes|regex:/^[a-zA-Z0-9][a-zA-Z0-9-&\'._()\s–\/]+/|max:60|string',
+    ];
+
+    protected static $addTpvBankAccountForVaRules = [
+        Entity::IFSC                => 'required|alpha_num|size:11|custom',
+        Entity::ACCOUNT_NUMBER      => 'required|alpha_num|between:5,35',
+        Entity::BENEFICIARY_NAME    => 'sometimes|string',
     ];
 
     protected static $addBankAccountValidators = [
@@ -232,5 +239,20 @@ class Validator extends Base\Validator
         return (
             in_array($bankAccountNumber, self::BLACKLISTED_ACCOUNTS, true) === true
         );
+    }
+
+    protected function validateIfsc($key, $value)
+    {
+        $bankCode = substr($value, 0, 4);
+
+        if (BankIFSC::exists($bankCode) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_INVALID_PAYER_IFSC,
+                null,
+                $value,
+                $bankCode . ' is not a valid bank code.'
+            );
+        }
     }
 }

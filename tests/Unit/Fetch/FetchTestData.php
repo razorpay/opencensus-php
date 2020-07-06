@@ -563,6 +563,8 @@ return [
 
     E::BANK_TRANSFER_REQUEST => [],
 
+    E::VIRTUAL_ACCOUNT_TPV => [],
+
     E::BALANCE_CONFIG => [
         Type::PROXY_AUTH => [
             [

@@ -233,14 +233,13 @@ class UpiTransferTest extends TestCase
             $this->ba->privateAuth('rzp_live_' . $merchantId);
         }
 
-        $request = $this->testData[__FUNCTION__];
+        $request = array_merge($this->testData[__FUNCTION__], $additionalFields);
 
         if ($vpaDescriptor !== null)
         {
             $request['content']['receivers']['vpa']['descriptor'] = $vpaDescriptor;
         }
-
-        $response = $this->makeRequestAndGetContent($request + $additionalFields);
+        $response = $this->makeRequestAndGetContent($request);
 
         $this->virtualAccountId = $response['id'];
 
@@ -406,5 +405,35 @@ class UpiTransferTest extends TestCase
         $this->assertEquals(false, $upiTransfer['expected']);
 
         $this->assertEquals('VIRTUAL_ACCOUNT_DUE_TO_BE_CLOSED', $upiTransfer['unexpected_reason']);
+    }
+
+    public function testUpiTransferValidateTpvWithValidPayeeDetails()
+    {
+        $this->processUpiTransferForVaWithTpvEnabled(__FUNCTION__, true);
+    }
+
+    public function testUpiTransferValidateTpvWitInvalidPayeeDetails()
+    {
+        $this->processUpiTransferForVaWithTpvEnabled(__FUNCTION__, false);
+    }
+
+    protected function processUpiTransferForVaWithTpvEnabled($testFunction, $tpvStatus)
+    {
+        $this->createVirtualAccount('test', '10000000000000', 'testvpatpv', $this->testData['createVAWithAllowedPayer']);
+
+        $this->processUpiTransfer($testFunction);
+
+        $upiTransfer = $this->getLastEntity('upi_transfer', true);
+        $payment     = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('upi', $payment['method']);
+        $this->assertEquals(Gateway::UPI_MINDGATE, $payment['gateway']);
+        $this->assertEquals('vpa', $payment['receiver_type']);
+
+        $this->assertEquals($upiTransfer['payment_id'], $payment['id']);
+        $this->assertEquals($upiTransfer['expected'], true);
+
+        $paymentStatus = ($tpvStatus === true) ? 'captured' : 'refunded';
+        $this->assertEquals($paymentStatus, $payment['status']);
     }
 }

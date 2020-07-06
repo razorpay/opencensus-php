@@ -639,10 +639,17 @@ class Entity extends Base\PublicEntity
         return $data;
     }
 
-    public function getVirtualAccountTpvData()
+    public function getVirtualAccountTpvData(bool $bankCode = false)
     {
+        $ifsc = $this->getIfscCode();
+
+        if ($bankCode === true)
+        {
+            $ifsc = substr($ifsc, 0, 4);
+        }
+
         return [
-            self::IFSC              => $this->getIfscCode(),
+            self::IFSC              => $ifsc,
             self::ACCOUNT_NUMBER    => $this->getAccountNumber(),
         ];
     }

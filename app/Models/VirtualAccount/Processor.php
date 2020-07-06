@@ -9,6 +9,7 @@ use RZP\Models\Payment;
 use RZP\Diag\EventCode;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
+use RZP\Models\BankAccount;
 use RZP\Models\VirtualAccount;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Error\PublicErrorDescription;
@@ -152,6 +153,16 @@ abstract class Processor extends Base\Core
             if ($this->shouldRefundOrderPayment($entity) === true)
             {
                 $paymentProcessor->refundAuthorizedPayment($paymentProcessor->getPayment());
+            }
+            else if ($this->verifyPayerUsingTpv($entity) === false)
+            {
+                $refundNotes = [
+                    'notes' => [
+                        'refund_reason' => 'Bank Account Validation Failed'
+                    ]
+                ];
+
+                $paymentProcessor->refundAuthorizedPayment($paymentProcessor->getPayment(), $refundNotes);
             }
             else if ($entity->payment->hasBeenCaptured() === false)
             {
@@ -402,5 +413,56 @@ abstract class Processor extends Base\Core
         {
             $entity->setUnexpectedReason($unexpectedReason);
         }
+    }
+
+    protected function verifyPayerUsingTpv(Base\PublicEntity $entity) : bool
+    {
+        $allowedPayers = $this->virtualAccount->virtualAccountTpv()->get();
+
+        if ($allowedPayers->count() === 0)
+        {
+            return true;
+        }
+
+        $this->trace->info(
+            TraceCode::VIRTUAL_ACCOUNT_PAYMENT_PAYER_VALIDATION_INITIATED,
+            [
+                'id' => $entity->getPublicId(),
+            ]
+        );
+
+        switch ($entity->getEntityName())
+        {
+            case Constants\Entity::BANK_TRANSFER:
+            case Constants\Entity::UPI_TRANSFER:
+                $payerDetails = [
+                    BankAccount\Entity::IFSC            => substr($entity->getPayerIfsc(), 0, 4),
+                    BankAccount\Entity::ACCOUNT_NUMBER  => $entity->getPayerAccount(),
+                ];
+                
+                break;
+
+            default:
+                return true;
+        }
+
+        foreach ($allowedPayers as $allowedPayer)
+        {
+            $allowedPayerDetails = $allowedPayer->entity->getVirtualAccountTpvData(true);
+
+            if ($payerDetails === $allowedPayerDetails)
+            {
+                return true;
+            }
+        }
+
+        $this->trace->info(
+            TraceCode::VIRTUAL_ACCOUNT_PAYMENT_PAYER_VALIDATION_FAILED,
+            [
+                'id' => $entity->getPublicId(),
+            ]
+        );
+
+        return false;
     }
 }

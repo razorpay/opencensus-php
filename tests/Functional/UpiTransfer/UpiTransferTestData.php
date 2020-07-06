@@ -83,4 +83,41 @@ return [
             'meRes'        => '1861365267|paysucc123|100.00|2018:09:18 03:02:15|SUCCESS|Transaction success|00|NA|7013562166@okhdfcbank|826115528405|NA|null|null|null|null|null|State Bank Of India!00000020261329233!SBIN0014823!917013562166|PAY!http://www.npci.co.in!NA!YESB762207F7C3CC5D93E05400144FF8FAF!NA!|rzpy.test000000anothervpa@hdfcbank!NA!NA|NA|NA'
         ],
     ],
+
+    'createVAWithAllowedPayer' => [
+        'content' => [
+            'receivers'      => [
+                'types' => [
+                    'vpa'
+                ],
+            ],
+            'allowed_payers' => [
+                [
+                    'type'         => 'bank_account',
+                    'bank_account' => [
+                        'ifsc'           => 'SBIN0014823',
+                        'account_number' => '765432123456789'
+                    ]
+                ],
+            ],
+        ],
+    ],
+
+    'testUpiTransferValidateTpvWithValidPayeeDetails' => [
+        'url'     => '/test/upi/callback/hdfc/upi_mindgate',
+        'method'  => 'post',
+        'content' => [
+            'pgMerchantId' => 'HDFCVPATEST',
+            'meRes'        => '1861365267|paysucc123|100.00|2018:09:18 03:02:15|SUCCESS|Transaction success|00|NA|7013562166@okhdfcbank|826115528405|NA|null|null|null|null|null|State Bank Of India!765432123456789!SBIN0014823!917013562166|PAY!http://www.npci.co.in!NA!YESB762207F7C3CC5D93E05400144FF8FAF!NA!|rzpy.test000000testvpatpv@hdfcbank!NA!NA|NA|NA'
+        ],
+    ],
+
+    'testUpiTransferValidateTpvWitInvalidPayeeDetails' => [
+        'url'     => '/test/upi/callback/hdfc/upi_mindgate',
+        'method'  => 'post',
+        'content' => [
+            'pgMerchantId' => 'HDFCVPATEST',
+            'meRes'        => '1861365267|paysucc123|100.00|2018:09:18 03:02:15|SUCCESS|Transaction success|00|NA|7013562166@okhdfcbank|826115528405|NA|null|null|null|null|null|State Bank Of India!00000020261329233!SBIN0014823!917013562166|PAY!http://www.npci.co.in!NA!YESB762207F7C3CC5D93E05400144FF8FAF!NA!|rzpy.test000000testvpatpv@hdfcbank!NA!NA|NA|NA'
+        ],
+    ],
 ];

@@ -48,6 +48,7 @@ use RZP\Models\VirtualAccount;
 use RZP\Models\BankingAccount;
 use RZP\Gateway\GatewayManager;
 use RZP\Models\Workflow\Action;
+use RZP\Models\VirtualAccountTpv;
 use RZP\Models\Plan\Subscription;
 use RZP\Models\Partner\Commission;
 use Razorpay\Trace\Logger as Trace;
@@ -734,6 +735,7 @@ class ApiServiceProvider extends BaseServiceProvider
             'vpa'                       => Vpa\Entity::class,
             'virtual_account'           => VirtualAccount\Entity::class,
             'bank_transfer'             => BankTransfer\Entity::class,
+            'virtual_account_tpv'       => VirtualAccountTpv\Entity::class,
 
             'subscription'              => Subscription\Entity::class,
             'promotion'                 => Promotion\Entity::class,

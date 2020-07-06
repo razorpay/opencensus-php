@@ -14,6 +14,7 @@ use RZP\Trace\TraceCode;
 use RZP\Models\EntityOrigin;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Merchant\Balance;
+use RZP\Models\VirtualAccountTpv;
 use RZP\Jobs\VirtualAccountMigrate;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\Order\Entity as Order;
@@ -23,7 +24,6 @@ use RZP\Models\Merchant\Entity as Merchant;
 class Core extends Base\Core
 {
     const VA_BANK_ACCOUNT_GENERATION = 'va_bank_account_generation';
-    const VA_ADD_RECEIVER            = 'va_add_receiver';
 
     public function __construct()
     {
@@ -204,6 +204,8 @@ class Core extends Base\Core
             $this->buildReceivers($virtualAccount, $input[Entity::RECEIVERS]);
 
             $this->repo->saveOrFail($virtualAccount);
+
+            (new VirtualAccountTpv\Core())->buildAllowedPayers($virtualAccount, $input);
 
             (new EntityOrigin\Core)->createEntityOrigin($virtualAccount);
 
@@ -680,21 +682,16 @@ class Core extends Base\Core
 
     public function addReceiver(Entity $virtualAccount, array $input)
     {
-        $virtualAccount = $this->mutex->acquireAndRelease(
-            self::VA_ADD_RECEIVER . "_" . $virtualAccount->getPublicId(),
-            function() use ($input, $virtualAccount) {
+        $virtualAccount = $this->repo->transaction(function () use ($virtualAccount, $input)
+        {
+            $this->buildReceivers($virtualAccount, $input[Entity::RECEIVERS]);
 
-                $this->buildReceivers($virtualAccount, $input[Entity::RECEIVERS]);
+            (new VirtualAccountTpv\Core())->validateReceiversForTpv($virtualAccount);
 
-                $this->repo->saveOrFail($virtualAccount);
+            $this->repo->saveOrFail($virtualAccount);
 
-                return $virtualAccount;
-            },
-            10,
-            ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_ADD_RECEIVER_IN_PROGRESS,
-            5,
-            200,
-            400);
+            return $virtualAccount;
+        });
 
         return $virtualAccount;
     }
@@ -703,6 +700,8 @@ class Core extends Base\Core
     {
         $virtualAccount = $this->repo->transaction(function () use ($virtualAccount)
         {
+            $this->deactivatePayers($virtualAccount);
+
             $bankAccount = $virtualAccount->bankAccount;
 
             if ($bankAccount !== null)
@@ -736,5 +735,27 @@ class Core extends Base\Core
         });
 
         return $virtualAccount;
+    }
+
+    protected function deactivatePayers(Entity $virtualAccount)
+    {
+        if ($virtualAccount->isTpvEnabled() === false)
+        {
+            $this->trace->info(
+                TraceCode::VIRTUAL_ACCOUNT_NO_ALLOWED_PAYERS_TO_DEACTIVATE,
+                [
+                    Entity::ID      => $virtualAccount->getPublicId(),
+                ]
+            );
+
+            return;
+        }
+
+        foreach ($virtualAccount->virtualAccountTpv()->get() as $virtualAccountTpv)
+        {
+            $this->repo->deleteOrFail($virtualAccountTpv->entity);
+
+            (new VirtualAccountTpv\Core())->deactivate($virtualAccountTpv);
+        }
     }
 }

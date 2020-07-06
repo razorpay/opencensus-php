@@ -17,6 +17,7 @@ use RZP\Tests\Functional\TestCase;
 use RZP\Models\Settlement\Channel;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\VirtualAccount\Provider;
+use RZP\Tests\Traits\TestsWebhookEvents;
 use RZP\Models\BankTransfer\Entity as E;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 use RZP\Tests\Functional\FundTransfer\AttemptTrait;
@@ -30,6 +31,7 @@ class BankTransferTest extends TestCase
     use AttemptTrait;
     use CreatesInvoice;
     use FileHandlerTrait;
+    use TestsWebhookEvents;
     use DbEntityFetchTrait;
     use VirtualAccountTrait;
     use AttemptReconcileTrait;
@@ -2306,9 +2308,9 @@ class BankTransferTest extends TestCase
             $this->ba->privateAuth('rzp_live_' . $merchantId);
         }
 
-        $request = $this->testData[__FUNCTION__];
+        $request = array_merge($this->testData[__FUNCTION__], $additionalFields);
 
-        $response = $this->makeRequestAndGetContent($request + $additionalFields);
+        $response = $this->makeRequestAndGetContent($request);
 
         $this->virtualAccountId = $response['id'];
 
@@ -2979,5 +2981,90 @@ class BankTransferTest extends TestCase
         $this->assertNotNull($bankTransferRequest['request_payload']);
         $this->assertEquals($isCreated, $bankTransferRequest['is_created']);
         $this->assertEquals($errorMessage, $bankTransferRequest['error_message']);
+    }
+
+    public function testBankTransferValidateTpvWithValidPayeeDetails()
+    {
+        $this->processBankTransferForVaWithTpvEnabled($this->testData['bankTransferValidateTpv']);
+
+        $bankTransfer = $this->getLastEntity('bank_transfer', true);
+        $this->assertEquals(true, $bankTransfer['expected']);
+        $this->assertNotNull($bankTransfer['payment_id']);
+
+        // Payment is automatically captured
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals('bank_transfer', $payment['method']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals($bankTransfer['payment_id'], $payment['id']);
+        $this->assertEquals('bank_account', $payment['receiver_type']);
+    }
+
+    public function testBankTransferValidateTpvWithInvalidPayeeDetails()
+    {
+        $testData = $this->testData['bankTransferValidateTpv'];
+        $testData['request']['content']['payer_account'] = strtoupper(random_alphanum_string(16));
+
+        $this->processBankTransferForVaWithTpvEnabled($testData);
+
+        $bankTransfer = $this->getLastEntity('bank_transfer', true);
+        $this->assertEquals(true, $bankTransfer['expected']);
+        $this->assertNotNull($bankTransfer['payment_id']);
+
+        // Payment is automatically captured
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals('bank_transfer', $payment['method']);
+        $this->assertEquals('refunded', $payment['status']);
+        $this->assertEquals($bankTransfer['payment_id'], $payment['id']);
+        $this->assertEquals('bank_account', $payment['receiver_type']);
+    }
+
+    public function testBankTransferValidateTpvWithPayerBankCode()
+    {
+        $testData = $this->testData['bankTransferValidateTpv'];
+        $testData['request']['content']['payer_ifsc']    = 'HDFC0000000';
+
+        $this->processBankTransferForVaWithTpvEnabled($testData);
+
+        $bankTransfer = $this->getLastEntity('bank_transfer', true);
+        $this->assertEquals(true, $bankTransfer['expected']);
+        $this->assertNotNull($bankTransfer['payment_id']);
+
+        // Payment is automatically captured
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals('bank_transfer', $payment['method']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals($bankTransfer['payment_id'], $payment['id']);
+        $this->assertEquals('bank_account', $payment['receiver_type']);
+    }
+
+    public function processBankTransferForVaWithTpvEnabled($testData)
+    {
+        $bankAccount = $this->createVirtualAccount('test', '10000000000000', $this->testData['createVAWithAllowedPayer']);
+
+        $testData['request']['content']['payee_account'] = $bankAccount['account_number'];
+        $testData['request']['content']['payee_ifsc']    = $bankAccount['ifsc'];
+
+        $this->ba->appAuth();
+
+        $this->startTest($testData);
+    }
+
+    public function testWebhookVirtualAccountCreditedWithAllowedPayer()
+    {
+        $expectedEvent = $this->testData[__FUNCTION__]['event'];
+        $this->expectWebhookEventWithContents('virtual_account.credited', $expectedEvent);
+
+        $this->processBankTransferForVaWithTpvEnabled($this->testData['bankTransferValidateTpv']);
+    }
+
+    public function testWebhookRefundProcessedForTpvFailure()
+    {
+        $expectedEvent = $this->testData[__FUNCTION__]['event'];
+        $this->expectWebhookEventWithContents('refund.processed', $expectedEvent);
+
+        $testData = $this->testData['bankTransferValidateTpv'];
+        $testData['request']['content']['payer_account'] = strtoupper(random_alphanum_string(16));
+
+        $this->processBankTransferForVaWithTpvEnabled($testData);
     }
 }

@@ -948,4 +948,169 @@ return [
         'method'  => 'post',
         'content' => [],
     ],
+
+    'createVAWithAllowedPayer' => [
+        'content' => [
+            'receivers'      => [
+                'types' => [
+                    'bank_account'
+                ]
+            ],
+            'allowed_payers' => [
+                [
+                    'type'         => 'bank_account',
+                    'bank_account' => [
+                        'ifsc'           => 'HDFC0000053',
+                        'account_number' => '765432123456789'
+                    ]
+                ],
+                [
+                    'type'         => 'bank_account',
+                    'bank_account' => [
+                        'ifsc'           => 'UTIB0000013',
+                        'account_number' => '000123499988'
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'bankTransferValidateTpv' => [
+        'request'  => [
+            'url'     => '/ecollect/validate',
+            'method'  => 'post',
+            'content' => [
+                'payee_account'  => null,
+                'payee_ifsc'     => null,
+                'payer_name'     => 'Name of account holder',
+                'payer_account'  => '765432123456789',
+                'payer_ifsc'     => 'HDFC0000053',
+                'mode'           => 'neft',
+                'transaction_id' => strtoupper(random_alphanum_string(22)),
+                'time'           => 148415544000,
+                'amount'         => 50000,
+                'description'    => 'NEFT payment of 50,000 rupees',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'valid'   => true,
+                'message' => null,
+            ],
+        ],
+    ],
+
+    'testWebhookVirtualAccountCreditedWithAllowedPayer' => [
+        'event' => [
+            'entity' => 'event',
+            'event' => 'virtual_account.credited',
+            'contains' => [
+                'payment',
+                'virtual_account',
+                'bank_transfer',
+            ],
+            'payload' => [
+                'payment' => [
+                    'entity' => [
+                        'entity'            => 'payment',
+                        'amount'            => 5000000,
+                        'currency'          => 'INR',
+                        'base_amount'       => 5000000,
+                        'status'            => 'captured',
+                        'order_id'          => null,
+                        'invoice_id'        => null,
+                        'international'     => false,
+                        'method'            => 'bank_transfer',
+                        'amount_refunded'   => 0,
+                        'amount_transferred'=> 0,
+                        'refund_status'     => null,
+                        'captured'          => true,
+                        'description'       => 'NEFT payment of 50,000 rupees',
+                        'vpa'               => null,
+                        'email'             => null,
+                        'contact'           => null,
+                        'fee'               => 5900,
+                        'tax'               => 900,
+                        'error_code'        => null,
+                        'error_description' => null,
+                    ],
+                ],
+                'virtual_account' => [
+                    'entity' => [
+                        'name'            => 'Test Merchant',
+                        'entity'          => 'virtual_account',
+                        'status'          => 'active',
+                        'amount_expected' => null,
+                        'amount_paid' => 5000000,
+                        'customer_id' => null,
+                        'allowed_payers' => [
+                            [
+                                'type'         => 'bank_account',
+                                'bank_account' => [
+                                    'ifsc'           => 'HDFC0000053',
+                                    'account_number' => '765432123456789'
+                                ],
+                            ],
+                            [
+                                'type'         => 'bank_account',
+                                'bank_account' => [
+                                    'ifsc'           => 'UTIB0000013',
+                                    'account_number' => '000123499988'
+                                ],
+                            ],
+                        ],
+                        'close_by' => null,
+                        'closed_at' => null,
+                        'receivers' => [
+                            [
+                                'entity'    => 'bank_account',
+                                'ifsc'      => 'RAZR0000001',
+                                'name'      => 'Test Merchant',
+                            ],
+                        ],
+                    ],
+                ],
+                'bank_transfer' => [
+                    'entity' => [
+                        'entity'             => 'bank_transfer',
+                        'mode'               => 'NEFT',
+                        'amount'             => 5000000,
+                        'payer_bank_account' => [
+                            'entity' => 'bank_account',
+                            'ifsc' => 'HDFC0000053',
+                            'account_number' => '765432123456789'
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testWebhookRefundProcessedForTpvFailure' => [
+        'event' => [
+            'entity'   => 'event',
+            'event'    => 'refund.processed',
+            'contains' => [
+                'refund',
+            ],
+            'payload'  => [
+                'refund' => [
+                    'entity' => [
+                        'entity'          => 'refund',
+                        'amount'          => 5000000,
+                        'currency'        => 'INR',
+                        'notes'           => [
+                            'refund_reason' => 'Bank Account Validation Failed'
+                        ],
+                        'receipt'         => null,
+                        'status'          => 'processed',
+                        'speed_requested' => 'normal',
+                        'speed_processed' => 'normal',
+                        'acquirer_data'   => [
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
 ];

@@ -2645,6 +2645,24 @@ class AdminFetch
                     Fetch::TYPE => Fetch::TYPE_STRING,
                 ],
             ],
+
+            Entity::VIRTUAL_ACCOUNT_TPV => [
+                'virtual_account_id' => [
+                    Fetch::LABEL => 'Virtual Account ID',
+                    Fetch::TYPE => Fetch::TYPE_STRING,
+                ],
+                'entity_type' => [
+                    Fetch::LABEL => 'Entity Type',
+                    Fetch::TYPE => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => [
+                        'bank_account'
+                    ],
+                ],
+                'entity_id' => [
+                    Fetch::LABEL => 'Entity ID',
+                    Fetch::TYPE => Fetch::TYPE_STRING,
+                ],
+            ],
         ];
 
         //
