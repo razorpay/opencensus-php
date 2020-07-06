@@ -41,6 +41,7 @@ class PaymentEvent extends Event
         {
             $properties['payment'] += [
                 'card_iin'      => $input['card']['iin'],
+                'card_last4'    => $input['card']['last4'],
                 'card_network'  => $input['card']['network'],
                 'card_type'     => $input['card']['type'],
                 'card_country'  => $input['card']['country'],
@@ -107,6 +108,7 @@ class PaymentEvent extends Event
 
             $properties['payment'] += [
                 'card_iin'          => $card->getIin(),
+                'card_last4'        => $card->getLast4(),
                 'card_iin_headless' => $card->isHeadLessOtp(),
                 'card_network'      => $card->getNetwork(),
                 'card_type'         => $card->getType(),
