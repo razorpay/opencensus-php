@@ -2601,6 +2601,8 @@ class ReconciliationFileTest extends TestCase
 
         $this->assertEquals($entries[0][HitachiPaymentRecon::COLUMN_AUTH_CODE], $updatedPayment2['reference2']);
 
+        $this->assertEquals($entries[0][HitachiPaymentRecon::COLUMN_ARN], $updatedPayment2['reference1']);
+
         $this->assertTrue($updatedPayment2['gateway_captured']);
 
         $this->assertEquals('authorized', $updatedPayment2['status']);

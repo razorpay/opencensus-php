@@ -258,6 +258,57 @@ class UpiIciciGatewayReconTest extends TestCase
         $this->assertFailedPaymentRecon();
     }
 
+    public function testUpiIciciForceAuthorizePayment()
+    {
+        $createdAt = Carbon::yesterday(Timezone::IST)->addHours(3)->getTimestamp();
+
+        $rrn = '734122607521';
+
+        $this->makeUpiIciciPaymentsSince($createdAt, $rrn, 1);
+
+        $upiEntity = $this->getDbLastEntityToArray('upi');
+
+        $this->fixtures->payment->edit($upiEntity['payment_id'],
+            [
+                'status'                => 'failed',
+                'error_code'            => 'BAD_REQUEST_ERROR',
+                'internal_error_code'   => 'BAD_REQUEST_PAYMENT_TIMED_OUT',
+                'error_description'     => 'Payment was not completed on time.',
+            ]);
+
+        $payment = $this->getDbLastEntityToArray('payment');
+
+        $this->assertEquals('failed', $payment['status']);
+
+        $entries[] = $this->overrideUpiIciciPayment($upiEntity);
+
+        $file = $this->writeToExcelFile($entries, 'mis_report','files/settlement','Recon MIS');
+
+        $uploadedFile = $this->createUploadedFile($file);
+
+        $this->reconcile($uploadedFile, 'UpiIcici');
+
+        $payments = $this->getEntities('payment', [], true);
+
+        $payment = $payments['items'][0];
+
+        $transactionId = $payment['transaction_id'];
+
+        $transaction = $this->getEntityById('transaction', $transactionId, true);
+
+        $this->assertNotNull($transaction['reconciled_at']);
+
+        $upi = $this->getDbLastEntity('upi');
+
+        $this->assertNotNull($upi['npci_reference_id']);
+
+        $this->assertEquals($upi['npci_reference_id'], '734122607521');
+
+        $this->assertNotNull($payment['reference16']);
+
+        $this->assertEquals($upi['npci_reference_id'], $payment['reference16']);
+    }
+
     public function testPaymentReconciliationUsingRRN()
     {
         $createdAt = Carbon::yesterday(Timezone::IST)->addHours(3)->getTimestamp();

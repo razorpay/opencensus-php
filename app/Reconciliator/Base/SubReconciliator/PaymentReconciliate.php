@@ -799,6 +799,15 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
 
     protected function handleVerifyAuthorized()
     {
+        $dirty = $this->payment->getDirty();
+
+        // In case of UPI payment we are setting reference16, there are dirty data
+        // saving it before re-initiating the payment
+        if (empty($dirty) === false)
+        {
+            $this->repo->saveOrFail($this->payment);
+        }
+
         $this->payment = $this->paymentRepo->findOrFail($this->payment->getId());
 
         // Set the payment transaction for the row.
