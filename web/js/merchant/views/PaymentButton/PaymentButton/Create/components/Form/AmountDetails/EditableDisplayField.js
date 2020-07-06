@@ -22,6 +22,8 @@ import {
   updateStepReviewProgress,
 } from 'merchant/reducers/paymentbuttons/create';
 
+import track from '../../../track';
+
 @connect(null, {
   updateAmountField,
   deleteAmountField,
@@ -112,12 +114,16 @@ export default class EditableDisplayField extends React.Component {
     this.props.updateAmountField(fieldData, this.props.indexInOrder); // If index is undefined, it'll be added as new field
 
     this.markReviewUnDone();
+
+    track.lj.trackAmountFieldSaveSuccess();
   };
 
   handleDeleteField = () => {
     this.props.deleteAmountField(this.props.indexInOrder);
 
     this.markReviewUnDone();
+
+    track.lj.trackAmountFormDeleteField();
   };
 
   markReviewUnDone = () => {
@@ -143,7 +149,8 @@ export default class EditableDisplayField extends React.Component {
         }
         class={classList(
           'EditableAmount EditableDisplayField',
-          children && 'EditableDisplayField--disabled'
+          children && 'EditableDisplayField--disabled',
+          isEditModeOpened && 'EditableDisplayField--editMode'
         )}
       >
         {children || (

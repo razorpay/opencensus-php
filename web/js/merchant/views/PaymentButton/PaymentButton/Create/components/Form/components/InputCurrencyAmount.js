@@ -31,6 +31,14 @@ export default class InputCurrencyAmount extends React.Component {
     this.props.onChange && this.props.onChange(data);
   };
 
+  onBlur = event => {
+    this.props.onBlur &&
+      this.props.onBlur({
+        currency: this.state.currency,
+        value: event.target.value,
+      });
+  };
+
   render() {
     const {
       className,
@@ -40,6 +48,8 @@ export default class InputCurrencyAmount extends React.Component {
       required,
       defaultValueAmount,
       disabledCurrency,
+      disabledAmount,
+      autoFocus,
     } = this.props;
 
     return (
@@ -83,6 +93,9 @@ export default class InputCurrencyAmount extends React.Component {
             }
             currency={this.state.currency} // This is hack to make this amount Input to re-evaluate error when it's changed
             required={required}
+            onBlur={this.onBlur}
+            autoFocus={autoFocus}
+            disabled={disabledAmount}
           />
         </div>
       </Input.Group>

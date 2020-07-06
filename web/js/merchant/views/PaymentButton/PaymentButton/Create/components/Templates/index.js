@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { ModalMask, Modal, ModalContent } from 'common/new-ui/Modal';
 import { classList } from 'common/utils/rzp-utils';
 import META from './meta';
+import track from '../../track';
 
 export default class TemplateSelection extends React.PureComponent {
   selectTemplate = templateKey => () => {
@@ -44,6 +45,9 @@ export default class TemplateSelection extends React.PureComponent {
                       description={META[m].card.description}
                       img={META[m].card.img}
                       selectTemplate={this.selectTemplate(META[m].key)}
+                      onMouseEnter={() =>
+                        track.lj.trackTemplateHover(META[m].card.title)
+                      }
                     />
                   );
                 }
@@ -66,10 +70,20 @@ class TemplateCard extends React.PureComponent {
   }
 
   render() {
-    const { title, description, img, selectTemplate } = this.props;
+    const {
+      title,
+      description,
+      img,
+      selectTemplate,
+      onMouseEnter,
+    } = this.props;
 
     return (
-      <div class="TemplateCard" onClick={selectTemplate}>
+      <div
+        class="TemplateCard"
+        onClick={selectTemplate}
+        onMouseEnter={onMouseEnter}
+      >
         <img src={this.state.isLoaded ? img : null} />
         <div class="TemplateCard-details">
           <div class="TemplateCard-title">{title}</div>

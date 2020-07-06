@@ -1,12 +1,18 @@
 import { Field } from 'redux-form';
 import ListFilter from 'merchant/components/ListFilter';
+import track from './track';
 
 export default props => {
   return (
     <ListFilter {...props}>
       <div class="form-group list-filter-item">
         <label>Title</label>
-        <Field name="title" component="input" class="form-control input-sm" />
+        <Field
+          name="title"
+          component="input"
+          class="form-control input-sm"
+          onBlur={track.lj.trackSearchTitle}
+        />
       </div>
 
       <div class="form-group list-filter-item">
@@ -27,6 +33,7 @@ export default props => {
           max={100}
           type="number"
           class="form-control input-sm"
+          onBlur={track.lj.trackSearchCount}
         />
       </div>
     </ListFilter>

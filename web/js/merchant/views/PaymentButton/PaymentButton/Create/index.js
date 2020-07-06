@@ -1,5 +1,6 @@
 import { withRouter } from 'react-router';
 import { connect } from 'react-redux';
+import RTracking from 'react-tracking';
 
 import { Link } from 'react-router-dom';
 import Button from 'common/new-ui/Button';
@@ -33,6 +34,8 @@ import { showNotification } from 'merchant_common/reducers/notifications';
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import { getURLQueryParams, rupeesToPaise } from 'common/utils/rzp-utils';
 
+import track from './track';
+
 @withRouter
 @connect(
   state => ({
@@ -51,6 +54,7 @@ import { getURLQueryParams, rupeesToPaise } from 'common/utils/rzp-utils';
     updateHighlightButtonSettings,
   }
 )
+@RTracking(() => window.rzpQ.component('PaymentButtonCreate'))
 export default class PaymentButtonCreate extends React.Component {
   static contextTypes = {
     confirm: PropTypes.func,
@@ -79,6 +83,8 @@ export default class PaymentButtonCreate extends React.Component {
     } else {
       this.fetchIfIntentDuplicate();
     }
+
+    this.initTracker();
   }
 
   componentWillReceiveProps(nextProps) {
@@ -99,6 +105,8 @@ export default class PaymentButtonCreate extends React.Component {
         this.resetPageData();
         this.fetchDetails(nextProps.id);
       }
+
+      this.initTracker(nextProps);
     } else if (!nextProps.id && this.props.id != nextProps.id) {
       // Handle only when both are not /new
       const searchQuery = getURLQueryParams(this.props.location.search);
@@ -115,6 +123,8 @@ export default class PaymentButtonCreate extends React.Component {
       ) {
         this.fetchIfIntentDuplicate(searchQueryNext.duplicate_id);
       }
+
+      this.initTracker(nextProps);
     }
   }
 
@@ -122,6 +132,24 @@ export default class PaymentButtonCreate extends React.Component {
     setWindowTitle(docTitles.DEFAULT); // Revert title of dashboard
     this.props.closeModal();
   }
+
+  // Tracker initialization
+
+  initTracker = (props = this.props) => {
+    const { tracking, location, id } = props;
+
+    const searchQuery = getURLQueryParams(location.search);
+
+    const isNew = !(id || searchQuery.duplicate_id);
+
+    const config = {
+      is_new: isNew,
+      payment_button_id: id || searchQuery.duplicate_id,
+      is_intent_edit: !!id,
+      is_intent_duplicate: !!searchQuery.duplicate_id,
+    };
+    track.lj.init(tracking.trackEvent, config);
+  };
 
   /*
   *
@@ -388,6 +416,8 @@ export default class PaymentButtonCreate extends React.Component {
           } else {
             this.onSaveSuccessActions(resp, isEditExistingId);
           }
+
+          track.lj.trackCreateOrEditSuccess();
         } else {
           throw new Error(resp.errors);
         }
@@ -411,6 +441,8 @@ export default class PaymentButtonCreate extends React.Component {
         if (!err) {
           err = `Some network error has occured`;
         }
+
+        track.lj.trackCreateOrEditFail(err);
 
         this.props.showNotification({
           type: 'error',
@@ -454,11 +486,20 @@ export default class PaymentButtonCreate extends React.Component {
   };
 
   openSuccessView = (isEditExistingId, paymentButtonEntity) => {
+    track.lj.trackShowCode(paymentButtonEntity.id);
+
     const modalContent = (
       <SuccessModal
         isEditExistingId={isEditExistingId}
         paymentButton={paymentButtonEntity}
         updateHighlightButtonSettings={this.props.updateHighlightButtonSettings}
+        onCodeCopy={() => track.lj.trackCodeCopy(paymentButtonEntity.id)}
+        onClickSeeDocumentation={() =>
+          track.lj.trackOpenDocs(paymentButtonEntity.id)
+        }
+        onClickButtonSettings={() => {
+          track.lj.trackOnClickButtonSettings();
+        }}
       />
     );
 
@@ -554,9 +595,11 @@ export default class PaymentButtonCreate extends React.Component {
     return (
       <TemplatesMask
         onClose={this.handleCloseTemplateSelection}
-        selectTemplate={templateKey =>
-          this.props.updateTemplateType(null, templateKey)
-        }
+        selectTemplate={templateKey => {
+          this.props.updateTemplateType(null, templateKey);
+
+          track.lj.trackTemplateSelect(templateKey);
+        }}
       />
     );
   }

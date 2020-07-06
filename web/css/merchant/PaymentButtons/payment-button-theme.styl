@@ -2,6 +2,13 @@ $button-height = 40px
 $light-text-color = #FFF
 $dark-text-color = #072654
 
+/*
+ *
+ * NOTE: These styles are to be exact same as the consumer facing 'Payment Button'
+ * Code: https://github.com/razorpay/static/blob/master/svelte3/src/widget/payment-button/components/Button/Button.svelte#L33-L152
+ *
+*/
+
 .PaymentButton-Create-Preview
   .ButtonDetailsPreview
     margin: 28px auto
@@ -15,7 +22,7 @@ $dark-text-color = #072654
   .PaymentButton-Button
     position: relative
     display: inline-block
-    min-width: 176px
+    min-width: 160px
     height: $button-height
     border-radius: 3px
     text-align: center
@@ -62,6 +69,7 @@ $dark-text-color = #072654
   svg
     position: absolute
     left: 0
+    top: 0
     margin: 9px 11px
     svg path
       fill: $light-text-color
@@ -85,12 +93,12 @@ $dark-text-color = #072654
       background: linear-gradient(121deg, rgba(255,255,255, 0) 40%, rgba(255,255,255,.2) 100%)
 
   .PaymentButton-Button-contents
-    padding: 4px 24px 4px 40px
+    padding: 4px 28px 4px 44px
     margin: 1px 0
 
   .PaymentButton-Button--rzpTheme
     .PaymentButton-Button-contents
-      padding-left: 56px
+      padding-left: 60px
 
   .PaymentButton-Button-text
     display: block

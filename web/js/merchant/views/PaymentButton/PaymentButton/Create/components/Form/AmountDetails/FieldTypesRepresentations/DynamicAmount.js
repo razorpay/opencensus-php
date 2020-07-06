@@ -4,7 +4,7 @@ import { getCurrency } from 'common/ui/Amount';
 
 export default class DynamicAmount extends React.Component {
   render() {
-    const { field, currency, children } = this.props;
+    const { field, currency, isDonationsTemplate, children } = this.props;
 
     const minAmount = `${getCurrency(currency).symbol} ${Number(
       field.min_amount || 0
@@ -22,7 +22,9 @@ export default class DynamicAmount extends React.Component {
           parentQuerySelector=".Modal-content--PaymentButton-CreateForm"
         >
           <PopoverBody>
-            Customers can fill custom amount
+            {isDonationsTemplate
+              ? 'Supporters can fill custom amount'
+              : 'Customers can fill custom amount'}
             <br />
             {/* TODO: As per the actual limits */}
             (Min: {minAmount}, Max: {maxAmount})

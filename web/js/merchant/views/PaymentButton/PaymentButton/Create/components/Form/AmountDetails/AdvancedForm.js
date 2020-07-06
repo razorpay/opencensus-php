@@ -101,7 +101,7 @@ export default class AdvancedForm extends React.PureComponent {
 class FieldWithPurchaseLimits extends React.Component {
   state = {
     hasPurchaseLimits:
-      this.props.field.min_purchase && this.props.field.max_purchase
+      this.props.field.min_purchase || this.props.field.max_purchase
         ? true
         : false, // Assuming that 0 a value is not allowed
   };
@@ -193,6 +193,7 @@ class FieldWithPurchaseLimits extends React.Component {
                 placeholder={this.minPurchaseAllowed}
                 validator={this.validateMinPurchaseLimit}
                 addonAfter="Min"
+                autoFocus
               />
             </div>
 
@@ -221,9 +222,9 @@ class FieldWithPurchaseLimits extends React.Component {
 *
 *
 * */
-class FieldWithAmountLimits extends React.Component {
+export class FieldWithAmountLimits extends React.Component {
   state = {
-    hasAmountLimits: this.props.field.minimum && this.props.field.maximum, // Assuming that 0 as minimum is not allowed
+    hasAmountLimits: this.props.field.minimum || this.props.field.maximum, // Assuming that 0 as minimum is not allowed
   };
 
   get minAmountAllowed() {
@@ -276,20 +277,39 @@ class FieldWithAmountLimits extends React.Component {
   setRefMaxAmountLimit = el => (this.maxAmountLimit = el);
 
   render() {
-    const { field, currency } = this.props;
+    const { field, currency, toggleButtonText } = this.props;
 
     const minAmount = field.min_amount || '',
       maxAmount = field.max_amount || '';
 
     const { hasAmountLimits } = this.state;
 
-    return (
-      <Input.Group>
+    let togglerContent;
+
+    if (toggleButtonText) {
+      if (!hasAmountLimits) {
+        togglerContent = (
+          <Button.Transparent
+            type="button"
+            onClick={this.toggleAddAmountLimits}
+          >
+            <b>{toggleButtonText}</b>
+          </Button.Transparent>
+        );
+      }
+    } else {
+      togglerContent = (
         <Input.Check
           fieldLabel="Limit the amount per order"
           defaultChecked={hasAmountLimits}
           onChange={this.toggleAddAmountLimits}
         />
+      );
+    }
+
+    return (
+      <Input.Group>
+        {togglerContent}
         {hasAmountLimits && (
           <Input.Group class="InputGroup--inline Input--limits">
             <div class="Input--limits-content">
@@ -307,6 +327,7 @@ class FieldWithAmountLimits extends React.Component {
                 placeholder={Number(this.minAmountAllowed).toFixed(2)}
                 validator={this.validateMinAmountLimit}
                 addonAfter="Min"
+                autoFocus
               />
             </div>
 
@@ -330,6 +351,8 @@ class FieldWithAmountLimits extends React.Component {
               />
             </div>
           </Input.Group>
+
+          // TODO: Add delete button
         )}
       </Input.Group>
     );
@@ -391,11 +414,11 @@ class FieldWithStockLimit extends React.Component {
             name="stock"
             setRef={this.setRefStockLimit}
             placeholder="Add stock availability here"
-            autoFocus
             step="1"
             pattern="\d+"
             validator={this.validateStockLimit}
             defaultValue={field.stock || ''}
+            autoFocus
           />
         )}
       </Input.Group>

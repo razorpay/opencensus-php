@@ -54,17 +54,34 @@ export default class SettingsModal extends React.Component {
         this.setState({
           isSending: false,
         });
+
+        const track = this.props.track;
+
+        track && track.save();
+
         this.props.closeModal();
       })
       .catch(err => {
         this.setState({
           isSending: false,
         });
+
+        track && track.saveFail(err);
       });
   };
 
+
+  onCustomInputBlur = e => {
+    this.props.track && this.props.track.customMessage(e.target.value);
+  };
+
+  closeModal = () => {
+    this.props.closeModal();
+
+    this.props.track && this.props.track.closeModal();
+  };
+
   render() {
-    const { closeModal } = this.props;
     const {
       isSending,
       isUpdated,
@@ -103,11 +120,12 @@ export default class SettingsModal extends React.Component {
                   ' / 80'}
               </span>
             }
+            onBlur={this.onCustomInputBlur}
           />
         </div>
 
         <div class="Modal__actions">
-          <button class="btn btn-link m-r" onClick={closeModal}>
+          <button class="btn btn-link m-r" onClick={this.closeModal}>
             Cancel
           </button>
           <button

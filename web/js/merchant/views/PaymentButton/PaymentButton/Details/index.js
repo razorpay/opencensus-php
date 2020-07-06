@@ -21,6 +21,7 @@ import NoEntityResultsFound from 'common/ui/NoEntityResultsFound';
 import ActivateAgain from 'merchant/views/PaymentPages/PaymentPages/components/Modals/ActivateAgain';
 
 import Details from './Details';
+import track from './track';
 
 @withRouter
 @connect(null, {
@@ -40,6 +41,15 @@ export default class PaymentButtonDetails extends React.Component {
 
   get entityId() {
     return this.props.id || this.props.match.params.id;
+  }
+
+  componentDidMount() {
+    track.lj.init({
+      track: this.props.tracking.trackEvent,
+      button_id: this.entityId,
+    });
+
+    track.lj.trackDetailsStart();
   }
 
   componentWillMount() {

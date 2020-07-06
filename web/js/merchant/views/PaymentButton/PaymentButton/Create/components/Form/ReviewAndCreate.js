@@ -5,6 +5,8 @@ import CustomerDetailsPreview from '../Preview/Types/CustomerDetailsPreview';
 
 import { templateTypes } from 'merchant/views/PaymentButton/PaymentButton/Create/components/Templates/meta';
 
+import track from '../../track';
+
 export default class ReviewAndCreate extends React.Component {
   get isQuickPayTemplate() {
     const { paymentButtonEntity } = this.props;
@@ -28,7 +30,14 @@ export default class ReviewAndCreate extends React.Component {
         </div>
 
         <div class="Form-controls">
-          <Button.Transparent type="submit" onClick={this.props.goBack}>
+          <Button.Transparent
+            type="submit"
+            onClick={() => {
+              this.props.goBack();
+
+              track.lj.trackReviewScreenBackSuccess();
+            }}
+          >
             Back
           </Button.Transparent>
 

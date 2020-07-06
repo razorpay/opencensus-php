@@ -13,6 +13,7 @@ import {
   getFieldTypes,
   mapFieldToIndex,
 } from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/UDF/helpers';
+import track from '../../../track';
 
 const udfFieldTypeOptionComponent = ({ option }) => (
   <div>
@@ -71,15 +72,25 @@ export default class BaseForm extends React.Component {
   };
 
   handleToggleMakeOptional = () => {
-    this.setState({
-      isRequired: !this.state.isRequired,
-    });
+    this.setState(
+      {
+        isRequired: !this.state.isRequired,
+      },
+      () => {
+        track.lj.trackCustomerScreenToggleMakeOptional(this.state.isRequired);
+      }
+    );
   };
 
   handleToggleAddDescription = () => {
-    this.setState({
-      hasDescription: !this.state.hasDescription,
-    });
+    this.setState(
+      {
+        hasDescription: !this.state.hasDescription,
+      },
+      () => {
+        track.lj.trackCustomerScreenDescriptionField(this.state.hasDescription);
+      }
+    );
   };
 
   onChangeFieldType = option => {
@@ -87,6 +98,8 @@ export default class BaseForm extends React.Component {
       selectedOptionInFieldTypes: option,
       enumOptions: option.schema.hasOwnProperty('enum') ? [] : null,
     });
+
+    track.lj.trackCustomerScreenFieldType(option);
   };
 
   onChangeEnumList = (enumList = []) => {
@@ -123,7 +136,9 @@ export default class BaseForm extends React.Component {
     return (
       <FieldOptionsDropdown
         trigger={
-          <Button.Transparent>
+          <Button.Transparent
+            onClick={track.lj.trackCustomerScreenInputFieldMoreOptions}
+          >
             <i class="i i-ellipsis-v" />
           </Button.Transparent>
         }
@@ -168,7 +183,11 @@ export default class BaseForm extends React.Component {
         <button
           type="button"
           class="cancel-btn Button--transparent Button"
-          onClick={this.props.handleClose}
+          onClick={() => {
+            this.props.handleClose();
+
+            track.lj.trackCustomerScreenCancelFieldChanges();
+          }}
         >
           <span>&times;</span>
           Cancel

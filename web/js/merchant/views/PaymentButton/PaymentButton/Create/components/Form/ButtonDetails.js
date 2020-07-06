@@ -18,6 +18,7 @@ import {
   updateAmountField,
   updateStepReviewProgress,
 } from 'merchant/reducers/paymentbuttons/create';
+import track from '../../track';
 
 export const maxLengthForButtonLabel = 20;
 
@@ -73,6 +74,8 @@ export default class ButtonDetails extends React.Component {
     this.props.goNext();
 
     this.markReviewDone(true);
+
+    track.lj.trackButtonScreenNextSuccess();
   };
 
   get isQuickPayTemplate() {
@@ -109,6 +112,8 @@ export default class ButtonDetails extends React.Component {
       return;
     }
 
+    track.lj.trackButtonTypeChange();
+
     this.context.confirm({
       header: 'Change Button Type?',
       message: () => (
@@ -120,6 +125,11 @@ export default class ButtonDetails extends React.Component {
       abortLabel: 'Cancel',
       action: () => {
         this.props.onChangeButtonTemplate(option.value);
+
+        track.lj.trackButtonTypeDiscardYes(option.value);
+      },
+      abort: () => {
+        track.lj.trackButtonTypeDiscardNo();
       },
     });
   };
@@ -146,6 +156,8 @@ export default class ButtonDetails extends React.Component {
     this.props.updatePaymentButtonData(data);
 
     this.markReviewDone(false);
+
+    track.lj.trackButtonTheme(option);
   };
 
   toggleDisableSubmit = e => {
@@ -157,7 +169,7 @@ export default class ButtonDetails extends React.Component {
 
     setTimeout(() => {
       const form = this.formEl;
-      let disableSubmit = !!form.querySelectorAll('.is-invalid').length;
+      let disableSubmit = form && !!form.querySelectorAll('.is-invalid').length;
 
       if (this.state.disableSubmit !== disableSubmit) {
         this.setState({ disableSubmit });
@@ -237,6 +249,7 @@ export default class ButtonDetails extends React.Component {
               }
               required
               disabledCurrency={isEditExistingId}
+              onBlur={track.lj.trackButtonAmount}
             />
           )}
 
@@ -257,6 +270,7 @@ export default class ButtonDetails extends React.Component {
                 return `Maximum ${maxLengthForButtonLabel} characters are allowed`;
               }
             }}
+            onBlur={track.lj.trackButtonLabel}
           />
 
           <InputDropdown

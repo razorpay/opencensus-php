@@ -2,14 +2,26 @@ import { connect } from 'react-redux';
 
 import Button from 'common/new-ui/Button';
 import EditableDisplayField from './EditableDisplayField';
+
 import { getFieldTypes } from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/UDF/helpers';
 import { updateStepReviewProgress } from 'merchant/reducers/paymentbuttons/create';
+import { templateTypes } from 'merchant/views/PaymentButton/PaymentButton/Create/components/Templates/meta';
+
+import track from '../../../track';
 
 @connect(null, {
   updateStepReviewProgress,
 })
 export default class CustomerDetails extends React.Component {
-  maxFieldsLimit = 5;
+  maxFieldsLimit = this.isDonationsTemplate ? 8 : 5;
+
+  get isDonationsTemplate() {
+    const { paymentButtonEntity } = this.props;
+    const templateType =
+      paymentButtonEntity.settings.payment_button_template_type;
+
+    return templateType === templateTypes.donation.key;
+  }
 
   get defaultNewUDF() {
     const newUDFField = getFieldTypes()[0].schema;
@@ -33,6 +45,8 @@ export default class CustomerDetails extends React.Component {
     this.props.goNext();
 
     this.markReviewDone();
+
+    track.lj.trackCustomerScreenNextSuccess();
   };
 
   markReviewDone = () => {
@@ -62,15 +76,25 @@ export default class CustomerDetails extends React.Component {
               checkoutOptions={paymentButtonEntity.settings.checkout_options}
               validateSameTitleExists={this.validateSameTitleExists}
             >
-              <Button class="Button--primary--invert addFieldBtn">
-                + Add Another Input Field
+              <Button
+                class="Button--primary--invert addFieldBtn"
+                onClick={track.lj.trackCustomerScreenInputField}
+              >
+                <b>+ Add Another Input Field</b>
               </Button>
             </EditableDisplayField>
           )}
         </div>
 
         <div class="Form-controls">
-          <Button.Transparent type="button" onClick={this.props.goBack}>
+          <Button.Transparent
+            type="button"
+            onClick={() => {
+              this.props.goBack();
+
+              track.lj.trackCustomerScreenBackSuccess();
+            }}
+          >
             Back
           </Button.Transparent>
 

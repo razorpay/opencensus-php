@@ -53,6 +53,8 @@ export default class GetCodeModal extends React.Component {
       mid: this.props.user.current,
       mode: this.props.mode,
     });
+
+    this.props.onCodeCopy && this.props.onCodeCopy();
   };
 
   onClickTextArea = () => {
@@ -73,7 +75,7 @@ export default class GetCodeModal extends React.Component {
       );
     }
 
-    const { className, title, closeModal, afterEmbedButton } = this.props;
+    const { className, title, afterEmbedButton, closeModal } = this.props;
 
     const { paymentButton } = this.state;
 
@@ -91,7 +93,11 @@ export default class GetCodeModal extends React.Component {
       children = (
         <div class="docs-link m-t">
           How to use this code?{' '}
-          <a href="https://razorpay.com/docs/payment-button/">
+          <a
+            target="_black"
+            href="https://razorpay.com/docs/payment-button/"
+            onClick={this.props.onClickSeeDocumentation}
+          >
             See documentation <i class="i i-external-link" />
           </a>
         </div>

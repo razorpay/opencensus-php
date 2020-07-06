@@ -16,6 +16,8 @@ import {
   updateStepReviewProgress,
 } from 'merchant/reducers/paymentbuttons/create';
 
+import track from '../../../track';
+
 @connect(null, {
   updateUDFField,
   deleteUDFField,
@@ -62,11 +64,16 @@ export default class EditableDisplayField extends React.Component {
     this.props.updateUDFField(newFieldSchema, this.props.indexInOrder); // If index is undefined, it'll be added as new field
 
     this.markReviewUnDone();
+
+    track.lj.trackCustomerScreenFieldSaveSuccess();
   };
 
   handleDeleteField = () => {
     this.props.deleteUDFField(this.props.indexInOrder);
+
     this.markReviewUnDone();
+
+    track.lj.trackCustomerScreenDeleteField();
   };
 
   get isCheckoutOption() {
@@ -113,7 +120,8 @@ export default class EditableDisplayField extends React.Component {
         onClick={!isEditModeOpened ? this.handleToggleEditMode : () => {}}
         class={classList(
           'EditableUDF EditableDisplayField',
-          children && 'EditableDisplayField--disabled'
+          children && 'EditableDisplayField--disabled',
+          isEditModeOpened && 'EditableDisplayField--editMode'
         )}
       >
         {children || (

@@ -1,33 +1,44 @@
 import ButtonDetails from './ButtonDetails';
 import AmountDetails from './AmountDetails';
+import DonationAmountDetails from './DonationAmountDetails';
 import CustomerDetails from './CustomerDetails';
 import ReviewAndCreate from './ReviewAndCreate';
 
 import { templateTypes } from 'merchant/views/PaymentButton/PaymentButton/Create/components/Templates/meta';
+import track from '../../track';
 
-const buttonDetailsTab = () => ({
+const buttonDetailsTab = context => ({
   component: ButtonDetails,
   title: 'Button Details',
-  description: 'Customers will see this button to initiate a transaction',
+  description: context.isDonationsTemplate
+    ? 'Supporters will see this button to initiate a transaction'
+    : 'Customers will see this button to initiate a transaction',
 });
 
 const amountDetailsTab = context => ({
-  component: AmountDetails,
+  component: context.isDonationsTemplate
+    ? DonationAmountDetails
+    : AmountDetails,
   title: context.isDonationsTemplate ? 'Donation Amount' : 'Amount Details',
-  // TODO: Change description as per template selection
-  description: 'Customers will fill this form before making the final payment',
+  description: context.isDonationsTemplate
+    ? 'Configure how supporters will see the donation options'
+    : 'Customers can buy one or more items with support for quantity selection',
 });
 
-const customerDetailsTab = () => ({
+const customerDetailsTab = context => ({
   component: CustomerDetails,
-  title: 'Customer Details',
-  description: 'Customers will fill this form before making the final payment',
+  title: context.isDonationsTemplate ? 'Donor Details' : 'Customer Details',
+  description: context.isDonationsTemplate
+    ? 'Supporters will fill this form before making the final payment'
+    : 'Customers will fill this form before making the final payment',
 });
 
-const reviewAndCreateTab = () => ({
+const reviewAndCreateTab = context => ({
   component: ReviewAndCreate,
   title: 'Review and Create',
-  description: 'Customers will see the button and forms as shown below ',
+  description: context.isDonationsTemplate
+    ? 'Supporters will see the button and forms as shown below'
+    : 'Customers will see the button and forms as shown below',
 });
 
 export default class Form extends React.Component {
@@ -50,12 +61,26 @@ export default class Form extends React.Component {
     this.tabContents = tabContents;
   }
 
+  componentDidMount() {
+    track.lj.setConfig({
+      template: this.props.paymentButtonEntity.template_type,
+    });
+  }
+
   get isQuickPayTemplate() {
     const { paymentButtonEntity } = this.props;
     const templateType =
       paymentButtonEntity.settings.payment_button_template_type;
 
     return templateType === templateTypes.quickPay.key;
+  }
+
+  get isBuyNowTemplate() {
+    const { paymentButtonEntity } = this.props;
+    const templateType =
+      paymentButtonEntity.settings.payment_button_template_type;
+
+    return templateType === templateTypes.buyNow.key;
   }
 
   get isDonationsTemplate() {

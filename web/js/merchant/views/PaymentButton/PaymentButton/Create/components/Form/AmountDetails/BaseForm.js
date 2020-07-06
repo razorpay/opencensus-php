@@ -25,6 +25,8 @@ import FIELD_TYPES from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSe
 import { isMandatoryToBool } from '../../../../../../PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/helpers';
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
 
+import track from '../../../track';
+
 @connect(null, {
   openModal,
   closeModal,
@@ -54,6 +56,7 @@ export default class BaseForm extends React.Component {
   onSubmitAdvancedForm = formData => {
     const { field } = this.state;
 
+    // TODO: HERE....
     // TODO: Can be merged with constructAmountField which handles extra cases as well, but not straightforward
     if (formData.hasOwnProperty('min_purchase') && !formData.min_purchase) {
       formData.min_purchase = 0; // Cannot be null (inorder to differentiate field definition from fixed price optional field)
@@ -162,12 +165,19 @@ export default class BaseForm extends React.Component {
     this.setState({
       field: newField,
     });
+
+    track.lj.trackToggleMakeMandatory(mandatory);
   };
 
   handleToggleAddDescription = () => {
-    this.setState({
-      hasDescription: !this.state.hasDescription,
-    });
+    this.setState(
+      {
+        hasDescription: !this.state.hasDescription,
+      },
+      () => {
+        track.lj.trackAmountFieldDescription(this.state.hasDescription);
+      }
+    );
   };
 
   handleToggleAdvancedOptionsForm = toOpen => {
@@ -179,6 +189,8 @@ export default class BaseForm extends React.Component {
   onChangeCurrency = selectedCurrency => {
     // TODO: Add onUpdateCurrency
     const newCurrencyISO = selectedCurrency.name;
+
+    track.lj.trackChangeCurrency();
 
     this.setState({
       currency: newCurrencyISO,
@@ -225,7 +237,9 @@ export default class BaseForm extends React.Component {
     return (
       <FieldOptionsDropdown
         trigger={
-          <Button.Transparent>
+          <Button.Transparent
+            onClick={track.lj.trackAmountScreenOpenMoreOptions}
+          >
             <i class="i i-ellipsis-v" />
           </Button.Transparent>
         }
@@ -245,7 +259,13 @@ export default class BaseForm extends React.Component {
         </OptionsItem>
 
         <OptionsItem>
-          <div onClick={() => this.handleToggleAdvancedOptionsForm(true)}>
+          <div
+            onClick={() => {
+              this.handleToggleAdvancedOptionsForm(true);
+
+              track.lj.trackOpenAdvanceOptions();
+            }}
+          >
             <i class="i i-options" />
             <div>
               Advanced Options
@@ -280,7 +300,11 @@ export default class BaseForm extends React.Component {
         <button
           type="button"
           class="cancel-btn Button--transparent Button"
-          onClick={this.props.handleClose}
+          onClick={() => {
+            this.props.handleClose();
+
+            track.lj.trackAmountFieldCancel();
+          }}
         >
           <span>&times;</span>
           Cancel

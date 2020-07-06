@@ -18,4 +18,51 @@ export const FIXED_FIELDS = {
       ...fUnits.phone.schema,
     };
   },
+
+  // Below fields are used to prefill empty donation template
+
+  get name() {
+    return {
+      name: 'name',
+      title: 'Name',
+      required: true,
+      ...fUnits.str.schema,
+    };
+  },
+
+  get address() {
+    return {
+      name: 'address',
+      title: 'Address',
+      required: true,
+      ...fUnits.textarea.schema,
+    };
+  },
+
+  get city() {
+    return {
+      name: 'city',
+      title: 'City',
+      required: true,
+      ...fUnits.alphabets.schema,
+    };
+  },
+
+  get pincode() {
+    return {
+      name: 'pincode',
+      title: 'Pincode',
+      required: true,
+      ...fUnits.pincode.schema,
+    };
+  },
+
+  get state() {
+    return {
+      name: 'state',
+      title: 'State',
+      required: true,
+      ...fUnits.alphabets.schema,
+    };
+  },
 };

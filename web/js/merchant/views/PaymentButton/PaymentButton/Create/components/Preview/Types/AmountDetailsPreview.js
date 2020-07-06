@@ -10,14 +10,12 @@ import {
 import { getCurrency } from 'common/ui/Amount';
 import FIELD_TYPES from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/helpers/fieldTypes';
 import { mapFieldToAmountFieldType } from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/helpers';
+import { templateTypes } from 'merchant/views/PaymentButton/PaymentButton/Create/components/Templates/meta';
 
-@connect(state => ({
-  payment_button: state.payment_button_create,
-}))
 export default class AmountDetailsPreview extends React.Component {
   getDummyAmountInputField(field) {
-    const { payment_button } = this.props;
-    const currency = payment_button.paymentButtonEntity.currency,
+    const { paymentButtonEntity } = this.props;
+    const currency = paymentButtonEntity.currency,
       currencySymbol = getCurrency(currency).symbol;
 
     const amount = field.item.amount;
@@ -48,8 +46,8 @@ export default class AmountDetailsPreview extends React.Component {
   }
 
   getAmountField(field) {
-    const { payment_button } = this.props;
-    const currency = payment_button.paymentButtonEntity.currency,
+    const { paymentButtonEntity } = this.props;
+    const currency = paymentButtonEntity.currency,
       fieldType = mapFieldToAmountFieldType(field);
 
     switch (fieldType) {
@@ -66,6 +64,7 @@ export default class AmountDetailsPreview extends React.Component {
             field={field}
             currency={currency}
             key={field.item.name}
+            isDonationsTemplate={this.isDonationsTemplate}
           >
             {this.getDummyAmountInputField(field, true)}
           </DynamicAmount>
@@ -80,14 +79,22 @@ export default class AmountDetailsPreview extends React.Component {
     }
   }
 
+  get isDonationsTemplate() {
+    const { paymentButtonEntity } = this.props;
+    const templateType =
+      paymentButtonEntity.settings.payment_button_template_type;
+
+    return templateType === templateTypes.donation.key;
+  }
+
   render() {
     const { amountFields } = this.props;
 
     let previewContent;
 
     if (amountFields && amountFields.length) {
-      previewContent = amountFields.map(field => (
-        <div class="Field--dummy Field--dummy--amount" key={field.item.name}>
+      previewContent = amountFields.map((field, index) => (
+        <div class="Field--dummy Field--dummy--amount" key={index}>
           {this.getAmountField(field)}
         </div>
       ));

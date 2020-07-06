@@ -1,5 +1,6 @@
-.PaymentButton-Create-Form
+$height-currency = 24px
 
+.PaymentButton-Create-Form
   .Form-content.PaymentButtonForm-AmountDetails
     .EditableDisplayField
       .Input--withCurrency
@@ -21,6 +22,37 @@
 
       .Input-el--before
         padding-left: 60px
+
+  .Form-content.PaymentButtonForm-AmountDetails--donation
+    > .Form
+      position: relative
+      display: flex
+      justify-content: space-between
+      flex-basis: auto
+      flex-wrap: unset
+
+      .Button--transparent
+        margin-top: 4px
+
+      .Input.Input--description
+        margin-top: 10px
+
+    .togglePresetsContainer
+      margin: 20px 0 32px
+
+      div > *
+        vertical-align: middle
+
+    .remove-preset-btn
+      position: absolute
+      right: -24px
+      top: 32px
+      cursor: pointer
+      opacity: .9
+
+      &:hover
+        opacity: 0.7
+
 
   .Form-content.PaymentButtonForm-CustomerDetails, .Form-content.PaymentButtonForm-AmountDetails
     flex-direction: column
@@ -59,6 +91,9 @@
         margin: 0 -24px 0 -24px
         padding: 0 24px
         margin-bottom: 112px
+
+      &.EditableDisplayField--editMode
+        cursor: initial
 
       &:not(.EditableDisplayField--disabled)
         &::before
@@ -99,21 +134,21 @@
     .Input
       margin: 0
 
-    .Input--TextareaAutoResize
-      font-size:  12px
-      color: #58666e
+  .Input--TextareaAutoResize
+    font-size:  12px
+    color: #58666e
 
-      textarea.Input-el
-        min-height: 28px
+    textarea.Input-el
+      min-height: 28px
 
-      textarea.Input-el, .Input-el--resizer
-        height: 28px
-        font-size: 12px
-        line-height: 28px
-        padding: 0 12px
+    textarea.Input-el, .Input-el--resizer
+      height: 28px
+      font-size: 12px
+      line-height: 28px
+      padding: 0 12px
 
-      .Input-el--resizer
-        padding-right: 12px
+    .Input-el--resizer
+      padding-right: 12px
 
 
   .CreatorModal-BaseForm, .CreatorModal-AdvancedForm
@@ -208,8 +243,6 @@
       border-radius: 3px
 
 
-    $height-currency = 24px
-
     .Input--Currency
       position: absolute
       left: 6px
@@ -222,41 +255,45 @@
       background: rgba(224, 228, 249, 0.38)
       border-radius: 2px
 
-      .Input-content
-        margin: 0 !important
 
-      .value
-        background: none
-        border: none
-        line-height: 24px
+  .Modal-container--CreatorModal-BaseForm .Input--Currency,
+  .Input--CurrencyAmount .Input--Currency,
+  .PaymentButtonForm-AmountDetails--donation .Input--limits .Input--Currency
+    .Input-content
+      margin: 0 !important
+
+    .value
+      background: none
+      border: none
+      line-height: 24px
+      margin: 0
+
+    .Input-el
+      border: none
+      height: $height-currency
+      font-size: 13px
+
+    .Input--Currency-dropdown
+      border: none
+      height: $height-currency
+      background: inherit
+
+      .PowerSelect__TriggerLabel
+        padding: 0 0 0 2px
+        overflow: visible
+
+      .PowerSelect__Trigger, .PowerSelect__TriggerLabel, .PowerSelect__TriggerStatus
+        height: $height-currency
+
+    & + .Input--Amount
+      z-index: 1
+      display: block
+
+      .Input-content
         margin: 0
 
       .Input-el
-        border: none
-        height: $height-currency
-        font-size: 13px
-
-      .Input--Currency-dropdown
-        border: none
-        height: $height-currency
-        background: inherit
-
-        .PowerSelect__TriggerLabel
-          padding: 0 0 0 2px
-          overflow: visible
-
-        .PowerSelect__Trigger, .PowerSelect__TriggerLabel, .PowerSelect__TriggerStatus
-          height: $height-currency
-
-      & + .Input--Amount
-        z-index: 1
-        display: block
-
-        .Input-content
-          margin: 0
-
-        .Input-el
-          padding-left: 60px
+        padding-left: 60px
 
     .Alert
       position: relative
@@ -305,9 +342,9 @@
     transform: none
     left: unset
     right: -20px
-    bottom: -60px
+    bottom: -84px
     top: unset
-    z-index: 10000
+    //z-index: 10000
 
     .Form
       flex-direction: column
@@ -321,46 +358,62 @@
       .InputGroup > .Input + .Input
         margin-top: 8px
 
-      .InputGroup.InputGroup--inline
-        display: flex
-        justify-content: space-between
+  .InputGroup.InputGroup--inline.Input--limits
+    display: flex !important
+    justify-content: space-between
 
-      .Input--limits
-        .separator
-          line-height: 36px
+    .separator
+      line-height: 36px
 
-        .Input--limits-content
-          width: 45%
+    .Input--limits-content
+      width: 45%
 
-          .Input
-            margin: 0
+      .Input
+        margin: 0
 
-          .Input-addons--after
-            border-radius: 12px
-            height: 20px
-            font-size: 12px
-            width: 40px
-            top: 8px
-            right: 4px
-            line-height: 21px
+    .Input-addons--after
+      border-radius: 12px
+      height: 20px
+      font-size: 12px
+      width: 40px
+      top: 8px
+      right: 4px
+      line-height: 21px
 
-      .Input.Input--Currency
-        .value
-          position: absolute
-          border: transparent
-          border-radius: 3px
-          height: 24px
-          font-size: 12px
-          width: 40px
-          top: 6px
-          left: 6px
-          line-height: 24px
-          background: rgba(224,228,249,.6)
+    .Input.Input--Currency
+      .value
+        position: absolute
+        border: transparent
+        border-radius: 3px
+        height: 24px
+        font-size: 12px
+        width: 40px
+        top: 6px
+        left: 6px
+        line-height: 24px
+        background: rgba(224,228,249,.6)
 
-        & + .Input .Input-el
-          padding-left: 50px
-          font-size: 13px
+      & + .Input .Input-el
+        padding-left: 50px
+        font-size: 13px
 
+  .Input--Currency--fullDisplay + .InputGroup
+    .Input-el
+      padding-right: 8px
+
+    .Input--limits
+      .Input-error
+        font-size: 11px
+        margin-top: 16px
+
+      .Input-addons--after
+        top: 36px
+        right: 0
+        background: none !important
+        width: unset
+        text-transform: uppercase
+        opacity: .55
+        font-size: 11px
 
 
 @keyframes modalAppearIn-EditableDisplayField

@@ -29,6 +29,8 @@ import PaymentsList from './PaymentsList';
 import GetCodeModal from '../components/GetCodeModal';
 import SettingsModal from '../components/SettingsModal';
 
+import track from './track';
+
 /*
   Human readable reason to be displayed
   TODO: Only completed will be ever used for Payment Button product, other statuses are for compatibility since payment pages entity is used internally
@@ -154,6 +156,8 @@ export default class PaymentButtonEntity extends React.Component {
   };
 
   openGetCodeModal = () => {
+    track.lj.trackOpenGetCodeModal();
+
     this.props.openModal({
       size: 'medium',
       className: 'GetCodeModal',
@@ -161,13 +165,21 @@ export default class PaymentButtonEntity extends React.Component {
         <GetCodeModal
           title="Copy Button Code"
           paymentButton={this.props.paymentButtonEntity}
-          closeModal={this.props.closeModal}
+          closeModal={() => {
+            this.props.closeModal();
+
+            track.lj.trackCloseGetCodeModal();
+          }}
+          onCodeCopy={track.lj.trackCopyCode}
+          onClickSeeDocumentation={track.lj.trackSeeDocumentation}
         />
       ),
     });
   };
 
   openSettingsModal = () => {
+    track.lj.trackOptionsOpenSettings();
+
     this.props.openModal({
       size: 'medium',
       component: (
@@ -176,12 +188,22 @@ export default class PaymentButtonEntity extends React.Component {
             this.props.paymentButtonEntity.settings.payment_success_message
           }
           editPaymentButton={this.props.editPaymentButton}
+          track={{
+            customMessage: track.lj.trackSettingsCustomMessage,
+            closeModal: track.lj.trackSettingsCancel,
+            save: track.lj.trackSettingsSave,
+            saveFail: track.lj.trackSettingsSaveFail,
+          }}
         />
       ),
     });
   };
 
   togglePageReceiptModal = () => {
+    if (this.state.isPageReceiptModalOpened) {
+      track.lj.trackSettingsReceiptConfigure();
+    }
+
     this.setState({
       isPageReceiptModalOpened: !this.state.isPageReceiptModalOpened,
     });
@@ -211,6 +233,8 @@ export default class PaymentButtonEntity extends React.Component {
     if (this.props.currentHighlightedButtonSettings) {
       this.props.updateHighlightButtonSettings(null);
     }
+
+    track.lj.trackOptionsOpen();
   };
 
   render() {
@@ -251,6 +275,7 @@ export default class PaymentButtonEntity extends React.Component {
                 <Link
                   class="Button Button--primary--invert"
                   to={`/paymentbuttons/${paymentButtonEntity.id}/edit`}
+                  onClick={track.lj.trackOptionsOpenEdit}
                 >
                   <i class="i i-edit-outline" />
                 </Link>
@@ -260,6 +285,7 @@ export default class PaymentButtonEntity extends React.Component {
                   to={`/paymentbuttons/new?duplicate_id=${
                     paymentButtonEntity.id
                   }`}
+                  onClick={track.lj.trackOptionsOpenDuplicate}
                 >
                   <i class="i i-copy" />
                 </Link>

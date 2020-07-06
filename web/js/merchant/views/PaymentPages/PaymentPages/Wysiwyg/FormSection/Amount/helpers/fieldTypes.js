@@ -40,7 +40,7 @@ export default FIELD_TYPES;
 
 //////////////////////////////////////////////
 /*
-* Below schemas are just blueprints and not having exact values for their keys.
+* Below schemas are just blueprints and not having exact values for their keys. Check fn. getBaseFieldForAmountFieldType.
 * Existence of keys defines the definition of that field type
 * */
 /*

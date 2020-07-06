@@ -1,5 +1,6 @@
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
+import RTracking from 'react-tracking';
 
 import { RZPFeatures } from 'merchant/helpers/data';
 import {
@@ -24,6 +25,7 @@ import { openModal, closeModal } from 'merchant_common/reducers/modals';
 import { handleProductQuickGuide } from 'merchant/reducers/onboarding';
 import { fetchPaymentButtonsList as fetchAll } from 'merchant/reducers/paymentbuttons/list';
 import { setIsPaymentButtonCodeUsed } from '../../utils';
+import track from './track';
 
 const getActions = openGetCodeModal => ({
   title: 'Actions',
@@ -56,12 +58,21 @@ export const status = {
   }),
   { fetchAll, openModal, closeModal, handleProductQuickGuide }
 )
+@RTracking(() => window.rzpQ.component('PaymentButtonsList'))
 export default class PaymentButtonsList extends ListContainer {
   state = {
     isPaymentButtonOpen: false,
   };
 
+  componentDidMount() {
+    track.lj.init({
+      track: this.props.tracking.trackEvent,
+    });
+  }
+
   openGetCodeModal = paymentButtonEntity => {
+    track.lj.trackGetCode(paymentButtonEntity.id);
+
     this.props.openModal({
       size: 'medium',
       className: 'GetCodeModal',
@@ -69,7 +80,16 @@ export default class PaymentButtonsList extends ListContainer {
         <GetCodeModal
           title="Copy Button Code"
           paymentButton={paymentButtonEntity}
-          closeModal={this.props.closeModal}
+          closeModal={() => {
+            this.props.closeModal();
+
+            track.lj.trackGetCodeModalClosed(paymentButtonEntity.id);
+          }}
+          onClickCopy={() => track.lj.trackCopyCode(paymentButtonEntity.id)}
+          onCodeCopy={() => track.lj.trackCodeCopy(paymentButtonEntity.id)}
+          onClickSeeDocumentation={() =>
+            track.lj.trackOpenDocs(paymentButtonEntity.id)
+          }
         />
       ),
     });
@@ -97,6 +117,8 @@ export default class PaymentButtonsList extends ListContainer {
   };
 
   openPaymentButtonsNewPage = () => {
+    track.lj.trackCreateEnter();
+
     this.setState(
       {
         isPaymentButtonOpen: true,
@@ -138,6 +160,7 @@ export default class PaymentButtonsList extends ListContainer {
         <ListFilter
           form="paymentButtonListFilter"
           count={this.state.count}
+          onClearAnalytics={track.lj.trackSearchClear}
           onSubmit={this.search}
         />
 
@@ -154,9 +177,16 @@ export default class PaymentButtonsList extends ListContainer {
           ]}
           count={this.state.count}
           skip={this.state.skip}
-          paginate={this.paginate}
+          paginate={(params, type) => {
+            track.lj.trackPaginate(params, type);
+
+            this.paginate(params, type);
+          }}
           {...this.props}
           EmptyComponent={EmptyComponent}
+          onErrorCloseClick={() => {
+            track.lj.trackErrorCloseClick(this.state.status.message);
+          }}
         />
       </div>
     );

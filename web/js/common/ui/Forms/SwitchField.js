@@ -68,16 +68,18 @@ export default class SwitchField extends React.Component {
     let { checked, isActionPending } = this.state;
     checked = this.isControlled ? this.props.checked : checked;
 
-    let buttonClass = this.buttonClass + ' checkbox-knob--' + this.props.type;
-    if (checked) {
-      buttonClass += ' checked';
-    }
+    let typeClasses = this.props.type
+      .split(' ')
+      .map(type => `checkbox-knob--${type}`);
+    typeClasses = typeClasses.join(' ');
 
     return (
       <button
         {...this.props}
         class={classList(
-          buttonClass,
+          this.buttonClass,
+          checked && 'checked',
+          typeClasses,
           isActionPending && 'checkbox-knob--pending'
         )}
         value={checked}

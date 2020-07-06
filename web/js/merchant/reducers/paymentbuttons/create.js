@@ -7,11 +7,15 @@ import {
   push,
   deepMerge,
 } from 'common/utils/immutable';
+
+import { getCurrency } from 'common/ui/Amount';
 import { paiseToRupees } from 'common/utils/rzp-utils';
 import { fetchPaymentPageEntity as getPaymentButtonDetails } from 'merchant/views/PaymentPages/PaymentPages/model';
 import { FIXED_FIELDS } from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/UDF/helpers/preAddedFields';
 import { buttonThemes } from 'merchant/views/PaymentButton/PaymentButton/Create/constants/buttonThemes';
 import { templateTypes } from 'merchant/views/PaymentButton/PaymentButton/Create/components/Templates/meta';
+import FIELD_TYPES from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/helpers/fieldTypes';
+import { getBaseFieldForAmountFieldType } from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/helpers';
 
 const FETCH_PAYMENT_BUTTON_ENTITY = 'FETCH_PAYMENT_BUTTON_ENTITY';
 const RESET_PAYMENT_BUTTON_DATA = 'RESET_PAYMENT_BUTTON_DATA';
@@ -22,6 +26,7 @@ const DELETE_AMOUNT_FIELD = 'DELETE_AMOUNT_FIELD';
 const UPDATE_UDF_FIELD = 'UPDATE_UDF_FIELD';
 const DELETE_UDF_FIELD = 'DELETE_UDF_FIELD';
 
+const INIT_PAYMENT_BUTTON_TEMPALTE_DATA = 'INIT_PAYMENT_BUTTON_TEMPALTE_DATA';
 const UPDATE_PAYMENT_BUTTON_DATA = 'UPDATE_PAYMENT_BUTTON_DATA';
 const UPDATE_PAYMENT_BUTTON_RECEIPT_DETAILS =
   'UPDATE_PAYMENT_BUTTON_RECEIPT_DETAILS';
@@ -30,19 +35,54 @@ const UPDATE_STEP_REVIEW_PROGRESS = 'UPDATE_STEP_REVIEW_PROGRESS';
 
 const UPDATE_BUTTON_SETTINGS_HIGHLIGHTER = 'UPDATE_BUTTON_SETTINGS_HIGHLIGHTER';
 
+const DEFAULT_CURRENCY = 'INR';
+
 /*
 * Save all the default configs related to template.
 * 'data' can be used to pass presets like pre-defined amountFields / udfFields
 * TODO: Use this to pre-add the payment_button_text
 * */
 export const updateTemplateType = (data, templateKey) => {
+  let paymentButtonText = 'Pay Now';
+  let amountFields = [];
+  let udfFields = [FIXED_FIELDS.email, FIXED_FIELDS.phone]; // Email and Phone are added by default to display in UI and will NOW be sent in
+
+  if (templateKey === templateTypes.donation.key) {
+    // 1.
+    paymentButtonText = 'Donate Now';
+
+    // 2.
+    const donationAmountField = getBaseFieldForAmountFieldType(
+      FIELD_TYPES.dynamic_price.key
+    );
+    donationAmountField.item.name = 'Donate an Amount of your Choice';
+    donationAmountField.mandatory = true;
+    donationAmountField.min_amount = paiseToRupees(
+      getCurrency(DEFAULT_CURRENCY).min_value
+    );
+
+    amountFields.push(donationAmountField);
+
+    // 3.
+    udfFields.push(
+      FIXED_FIELDS.name,
+      FIXED_FIELDS.address,
+      FIXED_FIELDS.city,
+      FIXED_FIELDS.pincode,
+      FIXED_FIELDS.state
+    );
+  }
+
   return {
-    type: UPDATE_PAYMENT_BUTTON_DATA,
+    type: INIT_PAYMENT_BUTTON_TEMPALTE_DATA,
     payload: {
-      settings: {
-        payment_button_template_type: templateKey,
-        payment_button_text:
-          templateKey === templateTypes.donation.key ? 'Donate Now' : 'Pay Now',
+      amountFields,
+      udfFields,
+      paymentButtonEntity: {
+        settings: {
+          payment_button_template_type: templateKey,
+          payment_button_text: paymentButtonText,
+        },
       },
     },
   };
@@ -116,7 +156,7 @@ export const updateHighlightButtonSettings = id => {
 let initialState = {
   paymentButtonId: null,
   paymentButtonEntity: {
-    currency: 'INR', // Initialising with INR currency
+    currency: DEFAULT_CURRENCY, // Initialising with INR currency
     settings: {
       template_type: null, // Note: until the template is loaded, the UI won't be shown bcoz it's critical part of flow unlike in case of Payment Page
       payment_button_label: null, // Not used for Payment Button product
@@ -135,7 +175,7 @@ let initialState = {
     },
   },
   amountFields: [],
-  udfFields: [FIXED_FIELDS.email, FIXED_FIELDS.phone], // Email and Phone are added by default to display in UI and will NOW be sent in
+  udfFields: [],
   current_highlighted_button_settings: null,
   stepsProgress: {
     isButtonDetailsReviewed: false,
@@ -263,6 +303,10 @@ export default function(state = initialState, action) {
           action.payload
         ),
       };
+    }
+
+    case INIT_PAYMENT_BUTTON_TEMPALTE_DATA: {
+      return deepMerge(state, action.payload);
     }
 
     case DELETE_AMOUNT_FIELD: {

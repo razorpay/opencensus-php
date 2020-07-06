@@ -12,9 +12,9 @@ export default class CustomerDetailsPreview extends React.Component {
       >
         <div>
           {/* TODO: Check for asterisk/optional RazorX experiment */}
-          {udfFields.map(field => {
+          {udfFields.map((field, index) => {
             return (
-              <div class="Field--dummy Field--dummy--udf" key={field.title}>
+              <div class="Field--dummy Field--dummy--udf" key={index}>
                 <div class="Field-label">{field.title}</div>
                 {/* TODO: add dropdown icon for dropdown field */}
                 <div class="Field-el" />

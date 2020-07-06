@@ -10,10 +10,12 @@ export default class SuccessModal extends React.Component {
     );
 
     this.props.updateHighlightButtonSettings(this.props.paymentButton.id);
+
+    this.props.onClickButtonSettings && this.props.onClickButtonSettings();
   };
 
   render() {
-    const { paymentButton, isEditExistingId } = this.props;
+    const { paymentButton, isEditExistingId, ...extraProps } = this.props;
 
     const title = isEditExistingId
       ? 'Button updated successfully'
@@ -34,7 +36,11 @@ export default class SuccessModal extends React.Component {
     const docLink = (
       <div class="docs-link m-t">
         How to use this code?{' '}
-        <a href="https://razorpay.com/docs/payment-button/">
+        <a
+          target="_blank"
+          href="https://razorpay.com/docs/payment-button/"
+          onClick={this.props.onClickSeeDocumentation}
+        >
           See our documentation <i class="i i-external-link" />
         </a>
       </div>
@@ -47,6 +53,7 @@ export default class SuccessModal extends React.Component {
         description={description}
         class="success-screen"
         afterEmbedButton={docLink}
+        {...extraProps}
       >
         <div class="receipt-description">
           <div class="description-title">

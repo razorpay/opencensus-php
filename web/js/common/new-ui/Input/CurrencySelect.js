@@ -1,6 +1,7 @@
 import { connect } from 'react-redux';
 import { PowerSelect } from 'react-power-select';
 import { setNativeValue } from 'common/utils/rzp-utils';
+import { Label } from 'common/new-ui/Input';
 import { AmountTooltip } from 'common/ui/Amount';
 import { classList } from 'common/utils/rzp-utils';
 
@@ -135,9 +136,12 @@ export default class extends React.Component {
           'Input Input--Currency',
           this.props.fullDisplay && 'Input--Currency--fullDisplay',
           (!this.isInternationalEnabled || this.props.disabled) &&
-            'Input--noMargin'
+            'Input--noMargin',
+          this.props.className
         )}
       >
+        {this.props.label && <Label text={this.props.label} />}
+
         {this.isInternationalEnabled && !this.props.disabled ? (
           <div class="Input-content">
             <div class="Input-elWrapper">

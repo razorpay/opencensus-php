@@ -9,15 +9,7 @@ import { getBaseFieldForAmountFieldType } from 'merchant/views/PaymentPages/Paym
 import FIELD_TYPES from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/helpers/fieldTypes';
 import { updateStepReviewProgress } from 'merchant/reducers/paymentbuttons/create';
 
-export function getAmountFieldTypes() {
-  const fieldTypes = [
-    FIELD_TYPES.fixed_price,
-    FIELD_TYPES.dynamic_price,
-    FIELD_TYPES.multiple_purchase,
-  ];
-
-  return fieldTypes;
-}
+import track from '../../../track';
 
 @connect(null, {
   updateStepReviewProgress,
@@ -70,6 +62,8 @@ export default class AmountDetails extends React.Component {
     this.props.goNext();
 
     this.markReviewDone();
+
+    track.lj.trackAmountScreenNextSuccess();
   };
 
   markReviewDone = () => {
@@ -104,14 +98,21 @@ export default class AmountDetails extends React.Component {
         </div>
 
         <div class="Form-controls">
-          <Button.Transparent type="button" onClick={this.props.goBack}>
+          <Button.Transparent
+            type="button"
+            onClick={() => {
+              this.props.goBack();
+
+              track.lj.trackAmountScreenBackSuccess();
+            }}
+          >
             Back
           </Button.Transparent>
 
           <Button.Primary
             type="button"
-            onClick={this.goNext}
             disabled={!amountFields.length}
+            onClick={this.goNext}
           >
             Next <i class="i i-chevron-right" />
           </Button.Primary>
@@ -164,8 +165,11 @@ class AddAmountFieldButton extends React.Component {
           type="amount"
           options={allowedAmountTypesList}
           trigger={
-            <Button class="Button--primary--invert addFieldBtn">
-              + Add Amount Field
+            <Button
+              class="Button--primary--invert addFieldBtn"
+              onClick={track.lj.trackOnClickAmountField}
+            >
+              <b>+ Add Amount Field</b>
             </Button>
           }
           onSelect={this.onSelectAmountType}
