@@ -5206,7 +5206,7 @@ return [
         'response' => [
             'content' => [
                 'international'     => false,
-                'convert_currency'  => null,
+                'convert_currency'  => false,
             ],
             'status_code' => 200,
         ],

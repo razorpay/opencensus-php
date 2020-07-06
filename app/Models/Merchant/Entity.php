@@ -417,7 +417,7 @@ class Entity extends Base\PublicEntity
         self::FEE_MODEL                      => FeeModel::PREPAID,
         self::REFUND_SOURCE                  => RefundSource::BALANCE,
         self::CHANNEL                        => Settlement\Channel::AXIS2,
-        self::CONVERT_CURRENCY               => null,
+        self::CONVERT_CURRENCY               => false,
         self::ARCHIVED_AT                    => null,
         self::SUSPENDED_AT                   => null,
         self::NOTES                          => [],

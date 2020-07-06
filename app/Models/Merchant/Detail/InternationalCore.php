@@ -44,8 +44,6 @@ class InternationalCore extends Base\Core
     {
         $merchant->disableInternational();
 
-        $merchant->setCurrencyConversion(null);
-
         $merchantDetails = (new Detail\Core)->getMerchantDetails($merchant);
 
         $this->trace->info(

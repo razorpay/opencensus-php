@@ -90,6 +90,8 @@ class MerchantCreateTest extends TestCase
 
         $content = $this->createMerchant();
 
+        $this->assertEquals($content['convert_currency'], false);
+
         $this->assertSame($content['activated'], false);
 
         $this->checkSettlementSchedule($content);
