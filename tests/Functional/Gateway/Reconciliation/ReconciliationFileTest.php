@@ -1602,6 +1602,74 @@ class ReconciliationFileTest extends TestCase
 
         $this->assertBatchStatus(Status::PARTIALLY_PROCESSED);
     }
+
+    public function testAtomCombinedFileReconViaBatchServiceRoute()
+    {
+        $this->fixtures->create('terminal:shared_atom_terminal');
+
+        $payment = $this->getDefaultNetbankingPaymentArray();
+
+        $payment = $this->doAuthAndCapturePayment($payment);
+
+        $gatewayPayment = $this->getLastEntity('atom', true);
+
+        $paymentData = $this->overrideAtomPayment($gatewayPayment, 'atom_v2');
+
+        $refund1 = $this->refundPayment($payment['id'], '10000');
+
+        $refund2 = $this->refundPayment($payment['id'], '20000');
+
+        $refund3 = $this->refundPayment($payment['id'], '20000');
+
+        $refundData1 = $this->overrideAtomRefund($gatewayPayment, $refund1['amount']/100, 'atom_v2');
+
+        $refundData2 = $this->overrideAtomRefund($gatewayPayment, $refund2['amount']/100, 'atom_v2');
+
+        $refundData3 = $this->overrideAtomRefund($gatewayPayment, $refund3['amount']/100, 'atom_v2');
+
+        $entries[] = $paymentData;
+
+        $entries[] = $refundData1;
+
+        $entries[] = $refundData2;
+
+        $entries[] = $refundData3;
+
+        // add metadata info to each row
+        foreach ($entries as $key => $entry)
+        {
+            $entry[Constants::GATEWAY]          = 'Atom';
+            $entry[Constants::SUB_TYPE]         = 'combined';
+            $entry[Constants::SOURCE]           = 'manual';
+            $entry[Constants::SHEET_NAME]       = 'sheet0';
+            $entry[Constants::IDEMPOTENT_ID]    = 'batch_' . str_random(14);
+
+            $entries[$key] = $entry;
+        }
+
+        $this->runWithData($entries);
+
+        $payment = $this->getEntityById('payment', PublicEntity::stripDefaultSign($payment['id']), true);
+        $refundEntity1 = $this->getEntityById('refund', PublicEntity::stripDefaultSign($refund1['id']), true);
+        $refundEntity2 = $this->getEntityById('refund', PublicEntity::stripDefaultSign($refund2['id']), true);
+        $refundEntity3 = $this->getEntityById('refund', PublicEntity::stripDefaultSign($refund3['id']), true);
+
+        $paymentTransaction  = $this->getEntityById('transaction', $payment['transaction_id'], true);
+        $updatedTransaction1 = $this->getEntityById('transaction', $refundEntity1['transaction_id'], true);
+        $updatedTransaction2 = $this->getEntityById('transaction', $refundEntity2['transaction_id'], true);
+        $updatedTransaction3 = $this->getEntityById('transaction', $refundEntity3['transaction_id'], true);
+
+        //
+        // One payment and one refund row get reconciled, other 2 refunds
+        // remain unreconciled, as we could not identify the refund uniquely.
+        //
+        $this->assertNotNull($paymentTransaction['reconciled_at']);
+        $this->assertNotNull($updatedTransaction1['reconciled_at']);
+
+        $this->assertNull($updatedTransaction2['reconciled_at']);
+        $this->assertNull($updatedTransaction3['reconciled_at']);
+    }
+
     //For success case of Bill desk reconciliation
     public function testBillDeskReconRefundFileFailure()
     {
@@ -2188,9 +2256,9 @@ class ReconciliationFileTest extends TestCase
         return $facade;
     }
 
-    private function overrideAtomPayment(array $gatewayPayment)
+    private function overrideAtomPayment(array $gatewayPayment, string $format = 'atom')
     {
-        $facade = $this->testData['facades']['atom'];
+        $facade = $this->testData['facades'][$format];
 
         $facade['Atom Txn Id']           = $gatewayPayment['gateway_payment_id'];
         $facade['Merchant Txn Id']       = $gatewayPayment['payment_id'];
@@ -2207,9 +2275,9 @@ class ReconciliationFileTest extends TestCase
         return $facade;
     }
 
-    private function overrideAtomRefund(array $gatewayPayment, $refundAmount)
+    private function overrideAtomRefund(array $gatewayPayment, $refundAmount, $format = 'atom')
     {
-        $facade = $this->overrideAtomPayment($gatewayPayment);
+        $facade = $this->overrideAtomPayment($gatewayPayment, $format);
 
         $facade['Txn State']        = 'Full Refund';
         $facade['Gross Txn Amount'] = $refundAmount;
