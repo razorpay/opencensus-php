@@ -41,7 +41,7 @@ class CommissionCapture extends Job
 
         try
         {
-            $commissions = $this->repoManager->commission->findManyByPublicIds($this->commissionIds);
+            $commissions = $this->repoManager->commission->findMultipleByPublicIds($this->commissionIds);
 
             $this->trace->info(
                 TraceCode::COMMISSION_TRANSACTION_CAPTURE_FETCH,

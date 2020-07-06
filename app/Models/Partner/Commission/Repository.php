@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Partner\Commission;
 
+use RZP\Models\Base;
 use RZP\Base\BuilderEx;
 use RZP\Models\Base\PublicEntity;
 use RZP\Models\Partner\Config\CommissionModel;
@@ -70,6 +71,14 @@ class Repository extends BaseRepository
                               ->getPublicIds();
 
         return $commissionIds;
+    }
+
+    public function findMultipleByPublicIds(array $ids): Base\PublicCollection
+    {
+        $ids = Entity::verifyIdAndStripSignMultiple($ids);
+
+        return $this->newQuery()
+                    ->findManyOrFailPublic($ids);
     }
 
     public function fetchAggregateFeesAndTax(string $partnerId, int $start, int $end)

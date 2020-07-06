@@ -47,6 +47,8 @@ use RZP\Models\Transaction\FeeBreakup\Name as FeeBreakupName;
  */
 class Calculator extends Base\Core
 {
+    const COMMISSION_CAPTURE_DELAY = 120; // seconds
+
     /**
      * @var Merchant\Entity
      */
@@ -674,7 +676,7 @@ class Calculator extends Base\Core
             $this->traceContext(TraceCode::COMMISSION_SAVED, ['commission_id' => $commission->getId()]);
 
             // send to queue to create transaction and update balance of partner
-            CommissionCapture::dispatch($this->mode, $commission->getPublicId());
+            CommissionCapture::dispatch($this->mode, $commission->getPublicId())->delay(self::COMMISSION_CAPTURE_DELAY);;
         }
     }
 
