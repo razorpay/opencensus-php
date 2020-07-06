@@ -7,12 +7,12 @@ use RZP\Error\P2p\ErrorCode;
 use RZP\Gateway\P2p\Base\Request;
 use RZP\Gateway\P2p\Base\Response;
 use RZP\Gateway\P2p\Upi\Contracts;
+use RZP\Gateway\P2p\Upi\ErrorCodes;
 use RZP\Models\P2p\Transaction\Action;
 use RZP\Models\P2p\Transaction\Entity;
 use RZP\Gateway\P2p\Upi\Mock\Scenario;
 use RZP\Gateway\P2p\Upi\Npci\ClAction;
 use RZP\Models\P2p\Transaction\Concern;
-use RZP\Gateway\Base\ErrorCodes\Upi\ErrorCodes;
 
 class TransactionGateway extends Gateway implements Contracts\TransactionGateway
 {

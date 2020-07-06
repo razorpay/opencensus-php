@@ -4,7 +4,7 @@ namespace RZP\Gateway\P2p\Upi\Axis;
 
 use RZP\Error\P2p\ErrorCode;
 
-use RZP\Gateway\Base\ErrorCodes\Upi;
+use RZP\Gateway\P2p\Upi\ErrorCodes;
 
 class ErrorMap
 {
@@ -60,9 +60,9 @@ class ErrorMap
 
     public static function gatewayMap(string $gatewayCode)
     {
-        if (isset(Upi\ErrorCodes::$errorCodeMap[$gatewayCode]) === true)
+        if (isset(ErrorCodes::$errorCodeMap[$gatewayCode]) === true)
         {
-            return Upi\ErrorCodes::$errorCodeMap[$gatewayCode];
+            return ErrorCodes::$errorCodeMap[$gatewayCode];
         }
 
         return ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE;

@@ -95,7 +95,7 @@ class Scenario extends Mock\Scenario
             self::DE401 => [
                 self::ERROR => [
                     Error::PUBLIC_ERROR_CODE    => Code::GATEWAY_ERROR,
-                    Error::DESCRIPTION          => Description::GATEWAY_ERROR,
+                    Error::DESCRIPTION          => Description::GATEWAY_ERROR_TECHNICAL_ERROR,
                 ],
             ],
             self::BA101 => [
@@ -103,7 +103,7 @@ class Scenario extends Mock\Scenario
             self::BA102 => [
                 self::ERROR => [
                     Error::PUBLIC_ERROR_CODE    => Code::GATEWAY_ERROR,
-                    Error::DESCRIPTION          => Description::GATEWAY_ERROR,
+                    Error::DESCRIPTION          => Description::GATEWAY_ERROR_TECHNICAL_ERROR,
                 ],
             ],
             self::BA201 => [
@@ -115,7 +115,7 @@ class Scenario extends Mock\Scenario
             self::BA202 => [
                 self::ERROR => [
                     Error::PUBLIC_ERROR_CODE    => Code::GATEWAY_ERROR,
-                    Error::DESCRIPTION          => Description::GATEWAY_ERROR,
+                    Error::DESCRIPTION          => Description::GATEWAY_ERROR_TECHNICAL_ERROR,
                 ],
             ],
             self::BA203 => [
@@ -193,7 +193,7 @@ class Scenario extends Mock\Scenario
             self::VA202 => [
                 self::ERROR => [
                     Error::PUBLIC_ERROR_CODE    => Code::GATEWAY_ERROR,
-                    Error::DESCRIPTION          => Description::GATEWAY_ERROR,
+                    Error::DESCRIPTION          => Description::GATEWAY_ERROR_TECHNICAL_ERROR,
                 ],
             ],
             self::VA203 => [
@@ -225,7 +225,7 @@ class Scenario extends Mock\Scenario
             self::VA302 => [
                 self::ERROR => [
                     Error::PUBLIC_ERROR_CODE    => Code::GATEWAY_ERROR,
-                    Error::DESCRIPTION          => Description::GATEWAY_ERROR,
+                    Error::DESCRIPTION          => Description::GATEWAY_ERROR_TECHNICAL_ERROR,
                 ],
             ],
             self::VA303 => [
@@ -291,7 +291,7 @@ class Scenario extends Mock\Scenario
             self::VA802 => [
                 self::ERROR => [
                     Error::PUBLIC_ERROR_CODE    => Code::GATEWAY_ERROR,
-                    Error::DESCRIPTION          => Description::GATEWAY_ERROR,
+                    Error::DESCRIPTION          => Description::GATEWAY_ERROR_TECHNICAL_ERROR,
                 ],
             ],
             self::VA901 => [
