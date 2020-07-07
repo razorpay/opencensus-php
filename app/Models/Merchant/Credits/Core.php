@@ -8,6 +8,7 @@ use Mail;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
+use RZP\Models\Promotion;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Product;
 use RZP\Models\Admin\Action;
@@ -25,7 +26,7 @@ class Core extends Base\Core
         Product::BANKING => 1
     ];
 
-    public function getCreditInMoney($credits, $product = Product::BANKING)
+    public function getCreditInAmount($credits, $product = Product::BANKING)
     {
         $ratio = self::$productSubProductCreditPointsToMoneyRatio[$product] ?? null;
 
@@ -203,8 +204,10 @@ class Core extends Base\Core
                 Merchant\Entity::EMAIL  => $merchant->getEmail(),
                 Merchant\Entity::NAME   => $merchant->getName(),
             ],
-            Entity::CREDITS  => $this->getCreditInMoney($credit->getValue(), $credit->getProduct()),
+            Entity::CREDITS  => $this->getCreditInAmount($credit->getValue(), $credit->getProduct()),
         ];
+
+        $data[Entity::CREDITS] = $this->getFormattedAmount($data[Entity::CREDITS]);
 
         if ($data[Entity::CREDITS] < 0)
         {
@@ -226,5 +229,24 @@ class Core extends Base\Core
         }
 
         Mail::queue($mail);
+    }
+
+    public function checkIfCreditsAlreadyAppliedForBankingPromotion(Promotion\Entity $promotion, Merchant\Entity $merchant)
+    {
+        $credit = null;
+
+        if ($promotion->getProduct() === Product::BANKING)
+        {
+            $credit = $this->repo->credits->findExistingCreditsForMerchantAndPromotion($promotion, $merchant);
+        }
+
+        return $credit;
+    }
+
+    protected function getFormattedAmount($amount)
+    {
+        $formattedAmount = number_format($amount / 100, 2, '.', '');
+
+        return $formattedAmount;
     }
 }

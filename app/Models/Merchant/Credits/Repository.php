@@ -5,6 +5,7 @@ namespace RZP\Models\Merchant\Credits;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
+use RZP\Models\Promotion;
 
 class Repository extends Base\Repository
 {
@@ -184,6 +185,14 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->where(Entity::IDEMPOTENCY_KEY, '=', $idempotencyKey)
                     ->where(Entity::BATCH_ID, $batchId)
+                    ->where(Entity::MERCHANT_ID, $merchant->getId())
+                    ->first();
+    }
+
+    public function findExistingCreditsForMerchantAndPromotion(Promotion\Entity $promotion, Merchant\Entity $merchant)
+    {
+        return $this->newQuery()
+                    ->where(Entity::PROMOTION_ID, $promotion->getId())
                     ->where(Entity::MERCHANT_ID, $merchant->getId())
                     ->first();
     }

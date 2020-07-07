@@ -29,6 +29,8 @@ class Entity extends Base\PublicEntity
 
     protected $entity               = 'credits';
 
+    protected static $sign      = 'credits';
+
     protected $generateIdOnCreate = true;
 
     protected $revisionEnabled = true;
@@ -86,6 +88,11 @@ class Entity extends Base\PublicEntity
         self::BALANCE_ID
     ];
 
+    protected $publicSetters = [
+        self::ID,
+        self::VALUE,
+    ];
+
     protected $defaults = [
         self::VALUE             => 0,
         self::CAMPAIGN          => null,
@@ -103,9 +110,6 @@ class Entity extends Base\PublicEntity
     protected $dates = [
         self::EXPIRED_AT,
     ];
-
-    protected static $sign      = 'credits';
-
 // --------------------- Setters ----------------------------------------
 
     public function setCampaign(string $campaignName)
@@ -131,6 +135,11 @@ class Entity extends Base\PublicEntity
     public function setUsed(int $used)
     {
         $this->setAttribute(self::USED, $used);
+    }
+
+    public function setPublicValueAttribute(array &$attributes)
+    {
+        $attributes[self::VALUE] = (new Core)->getCreditInAmount($this->getValue(), $this->getProduct());
     }
 
 // --------------------- End Setters -------------------------------------

@@ -14,8 +14,10 @@ use RZP\Models\Coupon;
 use RZP\Diag\EventCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
+use RZP\Models\Promotion;
 use RZP\Models\Admin\Org;
 use RZP\Constants\Timezone;
+use RZP\Models\Promotion\Event;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Merchant\Constants;
 use RZP\Models\Merchant\Action as Action;
@@ -823,7 +825,16 @@ class Service extends Base\Service
 
         $this->trace->count(Merchant\Metric::PRE_EDIT_SIGNUP_TOTAL);
 
+        $merchant = $this->app['basicauth']->getMerchant();
+
         $this->applyCoupon($input);
+
+        $originProduct = $this->auth->getRequestOriginProduct();
+
+        $promotion = (new Promotion\Core)->applyPromotion(
+                                                $merchant,
+                                                $originProduct,
+                                                Event\Constants::SIGN_UP);
 
         $this->handlePreSignUpOptionalFields( $input);
 
@@ -1164,5 +1175,42 @@ class Service extends Base\Service
         $merchant = $this->repo->merchant->findOrFailPublic($this->merchant->getMerchantId());
 
         return (new Core())->verifyMerchantAttributes($merchant, $verificationType, $input);
+    }
+
+    protected function applyPromotion(array $input, string $eventName)
+    {
+        $product = null;
+
+        $isProductBanking = $this->auth->isProductBanking();
+
+        if ($isProductBanking === false)
+        {
+            // we are not supporting normal promotions through this flow.
+            // This to avoid the code to run into unknown issues.
+            // If PG plans to use this flow for promotion, after modifying
+            // the flow accordingly they can disable this check
+            return;
+        }
+        else
+        {
+            $product = Merchant\Balance\Type::BANKING;
+        }
+
+        if ($this->mode === Mode::TEST)
+        {
+            // banking promotions will run only in live mode.
+            return;
+        }
+
+        $this->trace->info(TraceCode::PROMOTION_APPLY_REQUEST, $input);
+
+        $merchant = $this->auth->getMerchant();
+
+        $merchantPromotion = (new Promotion\Core)->applyEventPromotionToMerchant(
+                                        $eventName,
+                                        $product,
+                                        $merchant);
+
+        return $merchantPromotion;
     }
 }

@@ -31,6 +31,7 @@ use RZP\Models\Schedule;
 use RZP\Models\Settings;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Models\Promotion;
 use RZP\Models\Admin\Org;
 use RZP\Http\RequestHeader;
 use RZP\Constants\Timezone;
@@ -4128,6 +4129,10 @@ class Service extends Base\Service
             }
 
             (new Activate)->activateBusinessBankingIfApplicable($merchant);
+
+            // creating a user mapping for a merchant on X is equivalent to him signing up on X
+            // platform, so we will check if sign up has any promotion running and will assign rewards
+             (new Promotion\Core)->applyPromotion($merchant, $product, Promotion\Event\Constants::SIGN_UP);
         });
     }
 

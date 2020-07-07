@@ -6,6 +6,7 @@ use Mail;
 use Hash;
 use Config;
 use Carbon\Carbon;
+use Illuminate\Hashing\BcryptHasher;
 
 use RZP\Exception;
 use RZP\Models\Base;
@@ -22,7 +23,6 @@ use RZP\Mail\User as UserMail;
 use RZP\Models\Admin\AdminLead;
 use RZP\Exception\BaseException;
 use RZP\Models\Merchant\Account;
-use Illuminate\Hashing\BcryptHasher;
 
 class Service extends Base\Service
 {

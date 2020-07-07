@@ -1551,7 +1551,25 @@ class Core extends Base\Core
             $response[Merchant\Entity::BANKING_ACCOUNT] = $bankingAccount->toArrayPublic();
         }
 
+        $response[Merchant\Entity::CREDIT_BALANCE]  = $this->fetchBankingCreditBalances(
+                                                                            $merchant->getId(),
+                                                                            Product::BANKING);
+
         return $response;
+    }
+
+    protected function fetchBankingCreditBalances($merchantId, $product)
+    {
+        $creditBalances = $this->repo->credit_balance->getMerchantCreditBalanceByProduct($merchantId, $product);
+
+        $result = [];
+
+        foreach ($creditBalances as $balance)
+        {
+            $result[] = $balance->toArrayPublic();
+        }
+
+        return $result;
     }
 
     /**

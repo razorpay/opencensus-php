@@ -6,7 +6,7 @@ use App;
 use RZP\Mail\Base\Mailable;
 use RZP\Mail\Base\Constants;
 
-class ConfirmationForKycUsers extends Mailable
+class SignUpCredits extends Mailable
 {
     protected $data;
 
@@ -19,7 +19,7 @@ class ConfirmationForKycUsers extends Mailable
 
     protected function addHtmlView()
     {
-        $this->view('emails.credits.razorpayx.kyc_users');
+        $this->view('emails.credits.razorpayx.signup_credits');
 
         return $this;
     }
@@ -38,7 +38,7 @@ class ConfirmationForKycUsers extends Mailable
 
     protected function addSubject()
     {
-        $subject = 'Your ₹' . $this->data['credits'] . ' worth Free Credits are waiting for you!';
+        $subject = 'Wohoo! Your have earned ₹' . $this->data['credits'] . ' Credits!';
 
         $this->subject($subject);
 

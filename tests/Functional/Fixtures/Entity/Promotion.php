@@ -70,6 +70,22 @@ class Promotion extends Base
         return $promotion;
     }
 
+    public function createBankingPromotion(array $attributes = [])
+    {
+        $defaultValues = [
+            'product'       => 'banking',
+            'credit_type'   => 'reward_fee',
+            '
+            purpose'       => 'test sign up promotion'
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        $promotion = $this->fixtures->create('promotion', $attributes);
+
+        return $promotion;
+    }
+
     public function create(array $attributes = [])
     {
         $defaultValues = [

@@ -3,8 +3,6 @@
 namespace RZP\Models\Merchant\Credits\Balance;
 
 use RZP\Models\Base;
-use RZP\Base\BuilderEx;
-use RZP\Models\Merchant\Credits;
 
 class Repository extends Base\Repository
 {
@@ -25,5 +23,14 @@ class Repository extends Base\Repository
                      ->where(Entity::TYPE, $balanceType)
                      ->where(Entity::PRODUCT, $product)
                      ->first();
+    }
+
+    public function getMerchantCreditBalanceByProduct(string $merchantId, string $product)
+    {
+        $query = $this->newQuery();
+
+        return $query->where(Entity::MERCHANT_ID, $merchantId)
+                     ->where(Entity::PRODUCT, $product)
+                     ->get();
     }
 }

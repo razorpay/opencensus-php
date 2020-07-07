@@ -42,6 +42,7 @@ class Entity extends Base\PublicEntity
     const ACTIVATED                  = 'activated';
     const DEACTIVATED                = 'deactivated';
     const BANKING                    = 'banking';
+    const CREDITS                    = 'credits';
 
     protected $entity      = 'promotion';
 

@@ -2,8 +2,8 @@
 
 namespace RZP\Models\Merchant\Credits\Balance;
 
-use RZP\Models\Merchant;
 use RZP\Models\Base;
+use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 
 class Core extends Base\Core
@@ -68,5 +68,13 @@ class Core extends Base\Core
         return $creditBalance;
     }
 
+    public function getCreditsBalancesOfMerchantForProduct(Merchant\Entity $merchant, string $product)
+    {
+        $creditBalances = $this->repo->credit_balance->getMerchantCreditBalanceByProduct(
+                                                                $merchant->getId(),
+                                                                $product);
+
+        return $creditBalances;
+    }
 }
 

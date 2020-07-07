@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Promotion;
 
+use Carbon\Carbon;
 use RZP\Models\Base;
 
 class Repository extends Base\Repository
@@ -62,5 +63,17 @@ class Repository extends Base\Repository
                       });
 
         return $query->first();
+    }
+
+    public function getActivePromotionsRunningCurrentlyForEvent(Event\Entity $event, string $product)
+    {
+        $timestamp = Carbon::now()->getTimestamp();
+
+        return $this->newQuery()
+                    ->where(Entity::EVENT_ID, $event->getId())
+                    ->where(Entity::PRODUCT, $product)
+                    ->where(Entity::START_AT, '<=', $timestamp)
+                    ->where(Entity::STATUS, Entity::ACTIVATED)
+                    ->get();
     }
 }

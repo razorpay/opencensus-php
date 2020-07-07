@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Promotion;
 
+use RZP\Services\HubspotClient;
 use RZP\Models\Promotion\Event;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
@@ -193,6 +194,44 @@ class PromotionsTest extends TestCase
         $this->startTest();
     }
 
+    public function testMerchantSignUpWithBankingPromotion()
+    {
+        $this->testCreateBankingPromotion();
+
+        $event = $this->getDbLastEntity('promotion_event', 'live');
+
+        $promotion = $this->getDbLastEntity('promotion', 'live');
+
+        $this->testData[__FUNCTION__]['request']['server']['HTTP_X-Request-Origin'] = config('applications.banking_service_url');
+
+        $merchantDetail = $this->fixtures->on('live')->create('merchant_detail');
+
+        $this->ba->proxyAuth('rzp_live_' . $merchantDetail['merchant_id']);
+
+        $this->mockHubSpotClient('trackPreSignupEvent');
+
+        $this->startTest();
+
+        $credit = $this->getDbLastEntity('credits', 'live');
+        $this->assertEquals(100, $credit['value']);
+
+        $creditBalance = $this->getDbLastEntity('credit_balance', 'live');
+        $this->assertEquals(100, $creditBalance['balance']);
+
+        // test merchant dashboard API call to fetch credit balances of merchant
+        $this->ba->proxyAuth('rzp_live_' . $merchantDetail['merchant_id']);
+
+        $request = [
+            'url' => '/merchants/credits/balance/banking',
+            'method' => 'GET',
+            'content' => []
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals('reward_fee', $response[0]['type']);
+    }
+
     protected function makeEventForPromotion()
     {
         $data = [
@@ -210,4 +249,19 @@ class PromotionsTest extends TestCase
 
         return $response;
     }
+
+    protected function mockHubSpotClient($methodName)
+    {
+        $hubSpotMock = $this->getMockBuilder(HubspotClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods([$methodName])
+            ->getMock();
+
+        $this->app->instance('hubspot', $hubSpotMock);
+
+        $hubSpotMock->expects($this->exactly(1))
+            ->method($methodName);
+    }
+
+
 }

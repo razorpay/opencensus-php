@@ -12,6 +12,8 @@ use RZP\Models\Merchant\Credits;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Batch\BatchTestTrait;
+use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+
 use RZP\Mail\Merchant\RazorpayX\Credits\ConfirmationForKycUsers;
 
 class CreditLogsTest extends TestCase
@@ -278,7 +280,7 @@ class CreditLogsTest extends TestCase
         {
             $data = $mail->subject;
 
-            $this->assertEquals('Your Rs.100 worth Free Credits are waiting for you!', $data);
+            $this->assertEquals('Your ₹1.00 worth Free Credits are waiting for you!', $data);
 
             return true;
         });
@@ -319,8 +321,7 @@ class CreditLogsTest extends TestCase
         // append headers
         $this->testData[__FUNCTION__]['request']['server'] = $headers;
 
-        $response = $this->startTest();s($response);
-
+        $this->startTest();
         $credit = $this->getDbLastEntity('credits', 'live');
         $balance = $this->getDbLastEntity('credit_balance', 'live');
 
@@ -332,7 +333,7 @@ class CreditLogsTest extends TestCase
         {
             $data = $mail->subject;
 
-            $this->assertEquals('Your Rs.100 worth Free Credits are waiting for you!', $data);
+            $this->assertEquals('Your ₹1.00 worth Free Credits are waiting for you!', $data);
 
             return true;
         });

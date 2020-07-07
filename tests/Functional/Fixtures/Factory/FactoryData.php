@@ -1431,5 +1431,10 @@ final class FactoryData
             'value'              => 'normal',
 
         ]);
+
+        $factory(\RZP\Models\Promotion\Event\Entity::class, [
+            'id'                 => $faker->uniqueid,
+
+        ]);
     }
 }

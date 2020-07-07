@@ -296,6 +296,7 @@ class Route
         'credits_edit'                             => ['put',      'merchants/{mid}/credits/{id}',                   'MerchantController@putCreditsLog'                                  ],
         'credits_fetch_by_id'                      => ['get',      'credits/{id}',                                   'MerchantController@getCreditsLog'                                  ],
         'credits_fetch_multiple'                   => ['get',      'credits',                                        'MerchantController@getCreditsLogs'                                 ],
+        'merchant_credits_balance_fetch'           => ['get',      'merchants/credits/balance/{product}',            'MerchantController@getCreditsBalancesOfMerchantForProduct'         ],
         'merchant_features_fetch'                  => ['get',      'merchants/me/features',                          'MerchantController@getMerchantFeatures'                            ],
         'merchant_features_update'                 => ['post',     'merchants/me/features',                          'MerchantController@updateMerchantFeatures'                         ],
         'merchant_partner_configs_fetch'           => ['get',      'merchants/me/partner/configs',                   'PartnerConfigController@fetchConfigByPartner'                      ],
@@ -2794,9 +2795,9 @@ class Route
         // tax payment routes
         'tax_payments_get_all_settings',
         'tax_payments_add_or_update_settings',
+        'merchant_credits_balance_fetch',
         'tax_payments_list',
         'tax_payments_get_by_id',
-
         'payouts_scheduled_time_slots',
     ];
 
@@ -4307,6 +4308,7 @@ class Route
 
         //fetches all the active downtime
         'fetch_payout_downtimes_enabled'               => '*',
+        'merchant_credits_balance_fetch'               => '*',
 
         // tax payment permission
         'tax_payments_get_all_settings'                => '*',

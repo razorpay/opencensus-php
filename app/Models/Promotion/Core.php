@@ -6,7 +6,9 @@ use Carbon\Carbon;
 
 use RZP\Exception;
 use RZP\Constants\Mode;
+use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
+use RZP\Constants\Product;
 use RZP\Constants\Timezone;
 use RZP\Models\Schedule\Anchor;
 use RZP\Exception\BadRequestException;
@@ -130,6 +132,57 @@ class Core extends Base\Core
         return (new MerchantPromotion\Core)->processTasks($tasks, $timestamp);
     }
 
+    public function applyEventPromotionToMerchant(string $eventName, string $product, Merchant\Entity $merchant)
+    {
+        $event = $this->repo->promotion_event->getEventByName($eventName);
+
+        if ($event === null)
+        {
+            return;
+        }
+
+        $existingPromotions = $this->repo
+                                    ->promotion
+                                    ->getActivePromotionsRunningCurrentlyForEvent(
+                                        $event,
+                                        $product);
+
+        if ($existingPromotions->count() === 0)
+        {
+            return;
+        }
+
+        if ($existingPromotions->count() > 1)
+        {
+            throw new Exception\LogicException(
+                'found more than 1 active promotions for an event',
+                [
+                    'count'    => $existingPromotions->count(),
+                    'event_id' => $event->getId(),
+                ]);
+        }
+
+        $promotion = $existingPromotions[0];
+
+        $existingMerchantPromotion = $this->repo->merchant_promotion->checkIfMerchantPromotionAlreadyExists($merchant, $promotion);
+
+        if ($existingMerchantPromotion !== null)
+        {
+            return;
+        }
+
+        $merchantPromotionCore = (new MerchantPromotion\Core);
+
+        $merchantPromotion = $merchantPromotionCore->create($merchant, $promotion);
+
+        // we will assign rewards once the merchant signs up but
+        // the consumption will be restricted to when he is going
+        // to make payouts
+        $merchantPromotionCore->activate($merchantPromotion);
+
+        return $merchantPromotion;
+    }
+
     public function isUsed(Entity $promotion): bool
     {
         $usedCount = $this->repo
@@ -142,6 +195,38 @@ class Core extends Base\Core
         }
 
         return true;
+    }
+
+    public function applyPromotion(Merchant\Entity $merchant, string $product = null, string $eventName = null)
+    {
+        if ($product !== Product::BANKING)
+        {
+            // we are not supporting normal promotions through this flow.
+            // This to avoid the code to run into unknown issues.
+            // If PG plans to use this flow for promotion, after modifying
+            // the flow accordingly they can disable this check
+            return;
+        }
+
+        if ($this->mode === Mode::TEST)
+        {
+            // banking promotions will run only in live mode.
+            return;
+        }
+
+        $this->trace->info(TraceCode::PROMOTION_APPLY_REQUEST,
+            [
+                'merchant_id' => $merchant->getId(),
+                'product_id'  => $product,
+                'event'       => $eventName,
+            ]);
+
+        $merchantPromotion = $this->applyEventPromotionToMerchant(
+                                            $eventName,
+                                            $product,
+                                            $merchant);
+
+        return $merchantPromotion;
     }
 
     public function isDeactivated(Entity $promotion): bool

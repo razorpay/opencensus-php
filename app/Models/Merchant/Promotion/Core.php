@@ -2,8 +2,6 @@
 
 namespace RZP\Models\Merchant\Promotion;
 
-use Carbon\Carbon;
-
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
@@ -163,6 +161,21 @@ class Core extends Base\Core
 
             $promotion = $merchantPromotion->promotion;
 
+            $credits = (new Credits\Core)->checkIfCreditsAlreadyAppliedForBankingPromotion($promotion, $merchant);
+
+            if ($credits !== null)
+            {
+                $this->trace->info(
+                    TraceCode::MERCHANT_PROMOTION_CREDITS_ALREADY_ASSIGNED,
+                    [
+                        'merchant_id'  => $merchantPromotion->merchant->getId(),
+                        'promotion_id' => $merchantPromotion->promotion->getId(),
+                        'credit_id'    => $credits->getId(),
+                    ]);
+
+                return;
+            }
+
             if ($promotion->doCreditsExpire() === true)
             {
                 $scheduleTask = $this->createScheduleTask($merchant, $promotion);
@@ -202,9 +215,25 @@ class Core extends Base\Core
             $creditInput[Credits\Entity::EXPIRED_AT] = $scheduleTask->getNextRunAt();
          }
 
-        $credit = $this->creditCore->create($merchant, $creditInput);
+        // for banking promotions, merchant will be having a single balance
+        // corresponding to all his/her accounts. For PG this balance is tied
+        // to primary balance of the merchant.
+        if ($promotion->getProduct() === Promotion\Entity::BANKING)
+        {
+            $creditInput[Credits\Entity::PRODUCT] = Promotion\Entity::BANKING;
 
-        $credit->promotion()->associate($promotion);
+            $credit = $this->creditCore->assignCreditsToMerchant($creditInput, $merchant);
+
+            $credit->promotion()->associate($promotion);
+
+            (new Notify)->notifyCreditViaEmail($credit);
+        }
+        else
+        {
+            $credit = $this->creditCore->create($merchant, $creditInput);
+
+            $credit->promotion()->associate($promotion);
+        }
 
         $this->trace->info(
             TraceCode::CREDITS_ADDED,
@@ -216,6 +245,8 @@ class Core extends Base\Core
         );
 
         $this->repo->saveOrFail($credit);
+
+        return $credit;
     }
 
     protected function expireCredits(Merchant\Entity $merchant, Promotion\Entity $promotion, int $timestamp)

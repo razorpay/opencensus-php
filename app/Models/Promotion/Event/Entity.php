@@ -49,4 +49,9 @@ class Entity extends PublicEntity
     {
         $this->setAttribute(self::DESCRIPTION, $description);
     }
+
+    public function getName()
+    {
+        return $this->getAttribute(self::NAME);
+    }
 }

@@ -714,6 +714,9 @@ class Core extends Base\Core
                                                                                  Merchant\Balance\Entity::CURRENCY]),
                         Merchant\Entity::BANKING_ACCOUNT      => $bankingAccount->toArrayPublic(),
                         Merchant\Entity::ACCOUNTS             => $this->fetchBankingAccountWithBalance($merchant['id']),
+                        Merchant\Entity::CREDIT_BALANCE       => $this->fetchBankingCreditBalances(
+                                                                                    $merchant['id'],
+                                                                                    Product::BANKING)
                     ];
             },
             $merchants);
@@ -732,6 +735,20 @@ class Core extends Base\Core
             $bankingAccountArray['banking_balance'] = optional($bankingAccount->balance)->toArrayPublic();
 
             $result[] = $bankingAccountArray;
+        }
+
+        return $result;
+    }
+
+    protected function fetchBankingCreditBalances($merchantId, $product)
+    {
+        $creditBalances = $this->repo->credit_balance->getMerchantCreditBalanceByProduct($merchantId, $product);
+
+        $result = [];
+
+        foreach ($creditBalances as $balance)
+        {
+            $result[] = $balance->toArrayPublic();
         }
 
         return $result;

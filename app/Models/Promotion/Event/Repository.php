@@ -14,4 +14,11 @@ class Repository extends Base\Repository
                     ->where(Entity::NAME, $input[Entity::NAME])
                     ->get();
     }
+
+    public function getEventByName(string $name)
+    {
+        return $this->newQuery()
+                    ->where(Entity::NAME, $name)
+                    ->first();
+    }
 }

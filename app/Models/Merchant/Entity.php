@@ -231,6 +231,8 @@ class Entity extends Base\PublicEntity
     const CREATE_SUBMERCHANT        = 'create_submerchant';
 
     const BANKING_ACTIVATED_AT      = 'banking_activated_at';
+    const PROMOTION                 = 'promotion';
+    const CREDIT_BALANCE            = 'credit_balance';
 
     protected $entity = 'merchant';
 

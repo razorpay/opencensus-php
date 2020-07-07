@@ -17,4 +17,9 @@ class Validator extends Base\Validator
     {
         Type::exists($value);
     }
+
+    public function validateProduct(string $product)
+    {
+        Product::exists($product);
+    }
 }

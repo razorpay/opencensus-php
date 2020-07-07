@@ -3,6 +3,8 @@
 namespace RZP\Models\Merchant\Promotion;
 
 use RZP\Models\Base;
+use RZP\Models\Merchant;
+use RZP\Models\Promotion;
 
 class Repository extends Base\Repository
 {
@@ -34,5 +36,13 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->merchantId($merchantId)
                     ->get();
+    }
+
+    public function checkIfMerchantPromotionAlreadyExists(Merchant\Entity $merchant, Promotion\Entity $promotion)
+    {
+        return $this->newQuery()
+                    ->merchantId($merchant->getId())
+                    ->where(Entity::PROMOTION_ID, $promotion->getId())
+                    ->first();
     }
 }

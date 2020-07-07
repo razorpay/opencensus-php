@@ -173,6 +173,25 @@ class MerchantAttributeTest extends TestCase
         $this->assertTrue($methodCalled);
     }
 
+    public function testMerchantBankingPromotionOnProductSwitch(string $expVal = 'on', string $expectedValue = 'self_serve')
+    {
+        $this->mockRazorxTreatment($expVal);
+
+        $methodCalled = false;
+
+        $this->mockLumberjackEventTracked('trackOnboardingEvent', $methodCalled, EventCode::MERCHANT_ONBOARDING_CATEGORY_SET);
+
+        $this->mockSalesforceEventTracked('captureInterestOfPrimaryMerchantInBanking');
+
+        $this->testSwitchProductScenario();
+
+        $merchantAttribute = $this->getLastEntity('merchant_attribute', true);
+
+        $this->assertEquals($merchantAttribute['value'], $expectedValue);
+
+        $this->assertTrue($methodCalled);
+    }
+
     public function testMerchantOnboardingCategoryAttributeCreatedOnSwitchProductOff()
     {
         $this->testMerchantOnboardingCategoryAttributeCreatedOnSwitchProductOn('off', 'normal');

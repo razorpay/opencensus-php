@@ -872,6 +872,14 @@ class MerchantController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function getCreditsBalancesOfMerchantForProduct(Credits\Balance\Service $service, $product)
+    {
+        $response = $service->getCreditsBalancesOfMerchantForProduct($product);
+
+        return ApiResponse::json($response);
+    }
+
 // --------------------- End Credits API Handlers -----------------------------------------
 
 
