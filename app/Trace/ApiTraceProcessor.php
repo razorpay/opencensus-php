@@ -5,6 +5,7 @@ namespace RZP\Trace;
 use App;
 use Request;
 
+use RZP\Http\RequestHeader;
 use RZP\Http\Route;
 use RZP\Constants\Product;
 use Razorpay\Trace\Logger;
@@ -109,6 +110,8 @@ class ApiTraceProcessor
         $this->addDashboardHeaders($record);
 
         $this->addProduct($record);
+
+        $this->addTraceId($record);
 
         $this->addRouteNameForExceptions($record);
 
@@ -409,5 +412,15 @@ class ApiTraceProcessor
     protected function overrideRequestAttributes(array &$record)
     {
         $record['request']['url'] = $this->app->request->getUri();
+    }
+
+    private function addTraceId(array &$record)
+    {
+        if ($this->app['basicauth']->isProxyOrPrivilegeAuth() === true)
+        {
+            $traceId = $this->app->request->headers->get(RequestHeader::X_REQUEST_TRACE_ID);
+
+            $record['request']['x_request_trace_id'] = $traceId;
+        }
     }
 }

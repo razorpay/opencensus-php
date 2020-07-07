@@ -37,4 +37,21 @@ class  RequestContextHandlerTest extends TestCase
 
 
     }
+
+    public function testContextTraceIdGenerated()
+    {
+        $this->ba->appAuth();
+
+        $headers = [
+            'HTTP_X_Request_TraceId'    => '1234123412341234',
+            'HTTP_X_Batch_Id'    => 'C0zv9I46W4wiOq'
+        ];
+        $this->testData[__FUNCTION__]['request']['server'] = $headers;
+
+        $this->startTest();
+
+        $traceId = $this->app->request->headers->get(RequestHeader::X_REQUEST_TRACE_ID);
+
+        $this->assertNotNull($traceId);
+    }
 }

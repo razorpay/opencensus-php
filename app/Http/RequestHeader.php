@@ -80,4 +80,6 @@ class RequestHeader
 
     // For testing purpose
     const X_RZP_TESTCASE_ID             = 'X-RZP-TESTCASE-ID';
+
+    const X_REQUEST_TRACE_ID            = 'X-Request-TraceId';
 }

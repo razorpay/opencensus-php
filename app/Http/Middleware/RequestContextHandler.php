@@ -7,7 +7,6 @@ use ApiResponse;
 use RZP\Error\ErrorCode;
 use Illuminate\Http\Request;
 use Illuminate\Foundation\Application;
-use RZP\Http\RequestHeader;
 use RZP\Models\Base\UniqueIdEntity;
 
 /**
