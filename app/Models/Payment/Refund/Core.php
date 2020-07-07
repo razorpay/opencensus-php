@@ -235,9 +235,6 @@ class Core extends Base\Core
     {
         $refundIds = [];
 
-        // Adding a temporary variable for testing nbScb or nbAxis persist arn change
-        $nbRefundIds = [];
-
         foreach ($data as $refundData)
         {
             $gateway = $refundData[E::PAYMENT][Payment\Entity::GATEWAY] ?? null;
@@ -245,24 +242,16 @@ class Core extends Base\Core
             if (in_array($gateway, Gateway::$refundsReconcileNetbankingGateways, true) === true)
             {
                 $refundIds[] = $refundData[E::REFUND][Refund\Entity::ID];
-
-                if (($gateway === Gateway::NETBANKING_SCB) or ($gateway === Gateway::NETBANKING_AXIS))
-                {
-                    $nbRefundIds[] = $refundData[E::REFUND][Refund\Entity::ID];
-                }
             }
         }
 
         if (empty($refundIds) === false)
         {
             $this->repo->transaction->bulkReconciliationUpdate($refundIds);
-        }
 
-        if (empty($nbRefundIds) === false)
-        {
             try
             {
-                $this->RequestScroogeForReference1Update($nbRefundIds);
+                $this->RequestScroogeForReference1Update($refundIds);
             }
             catch (\Exception $e)
             {
