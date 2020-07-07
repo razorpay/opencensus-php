@@ -37,7 +37,7 @@ class ContactController extends Controller
 
     public function postType()
     {
-        $input = $this->trimSpaces(Request::all());
+        $input = Request::all();
 
         $data = $this->service()->postType($input);
 
@@ -46,7 +46,7 @@ class ContactController extends Controller
 
     public function create()
     {
-        $input = $this->trimSpaces(Request::all());
+        $input = Request::all();
 
         $data = $this->service()->create($input);
 

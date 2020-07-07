@@ -22,7 +22,7 @@ class FundAccountController extends Controller
 
     public function create()
     {
-        $input = $this->trimSpaces(Request::all());
+        $input = Request::all();
 
         $data = $this->service()->create($input);
 
@@ -58,7 +58,7 @@ class FundAccountController extends Controller
      */
     public function createFundAccountBulk()
     {
-        $input = $this->trimSpaces(Request::all());
+        $input = Request::all();
 
         $response = $this->service()->createBulkFundAccount($input);
 

@@ -4648,18 +4648,6 @@ class PayoutTest extends TestCase
         $this->assertEquals('created', $ftaForPayout->getStatus());
     }
 
-    public function testCreatePayoutWithUnnecessarySpaces()
-    {
-        $this->startTest();
-    }
-
-    public function testCreatePayoutWithOtpAndUnnecessarySpaces()
-    {
-        $this->ba->proxyAuth();
-
-        $this->startTest();
-    }
-
     public function testLowBalanceAlertForQueuedPayouts()
     {
         Mail::fake();

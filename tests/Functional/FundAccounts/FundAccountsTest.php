@@ -896,22 +896,6 @@ class FundAccountsTest extends TestCase
         $this->startTest();
     }
 
-    public function testCreateFundAccountWithUnnecessarySpaces()
-    {
-        $this->fixtures->create('contact', ['id' => '1000000contact']);
-
-        $this->startTest();
-    }
-
-    public function testCreateFundAccountWithUnnecessarySpacesAndProxyAuth()
-    {
-        $this->fixtures->create('contact', ['id' => '1000000contact']);
-
-        $this->ba->proxyAuth();
-
-        $this->startTest();
-    }
-
     public function testCreateRuPayCard()
     {
         Queue::fake();
