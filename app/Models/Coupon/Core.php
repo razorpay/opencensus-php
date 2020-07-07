@@ -124,6 +124,10 @@ class Core extends Base\Core
 
         $this->app['diag']->trackOnboardingEvent(EventCode::SIGNUP_APPLY_COUPON_CODE_SUCCESS, $merchant, null, [Entity::COUPON_CODE => $couponCode]);
 
+        $hubspotInput = [Entity::COUPON_CODE => $couponCode];
+
+        $this->app->hubspot->trackPreSignupEvent($hubspotInput, $merchant);
+
         return [
             'message' => self::SUCCESS_MESSAGE
         ];
