@@ -507,36 +507,44 @@ export default class InvoiceLineItem extends React.Component {
                     Edit
                   </button>
                 )}
-              <InlineField
-                keepValueInBG={false}
-                formName="newInvoice"
-                name={`${fieldName}.item_id`}
-                class="material-input"
-                disabled={disabled}
-                component={TypeAhead}
-                labelWhenSearchTermBlank="Create new Item"
-                labelWhenSearchTermValid="Add ':_searchTerm_:' as an Item"
-                maxSearchTermLength="12"
-                options={items}
-                selected={selectedOption}
-                optionLabelPath="name"
-                placeholder="Select an item"
-                showClear={false}
-                onOptionChange={this.updateLineItemRow}
-                onQuickAdd={this.quickCreateItem}
-                disabled={disabled}
-                normalizeValue={value => {
-                  let selected =
-                    findBy(items || [], 'id', value) || selectedOption;
-                  if (selected) {
-                    return selected.name;
-                  }
-                  return value;
-                }}
-                onOpen={() => {
-                  this.props.trackLineItem('item');
-                }}
-              />
+              {disabled ? (
+                <InlineField
+                  formName="newInvoice"
+                  name={`${fieldName}.name`}
+                  component="input"
+                  class="material-input"
+                  readOnly
+                />
+              ) : (
+                <InlineField
+                  keepValueInBG={false}
+                  formName="newInvoice"
+                  name={`${fieldName}.item_id`}
+                  class="material-input"
+                  component={TypeAhead}
+                  labelWhenSearchTermBlank="Create new Item"
+                  labelWhenSearchTermValid="Add ':_searchTerm_:' as an Item"
+                  maxSearchTermLength="12"
+                  options={items}
+                  selected={selectedOption}
+                  optionLabelPath="name"
+                  placeholder="Select an item"
+                  showClear={false}
+                  onOptionChange={this.updateLineItemRow}
+                  onQuickAdd={this.quickCreateItem}
+                  normalizeValue={value => {
+                    let selected =
+                      findBy(items || [], 'id', value) || selectedOption;
+                    if (selected) {
+                      return selected.name;
+                    }
+                    return value;
+                  }}
+                  onOpen={() => {
+                    this.props.trackLineItem('item');
+                  }}
+                />
+              )}
             </div>
             <p class="lineItem__description">{selectedOption.description}</p>
             {itemHSNSAC &&
