@@ -337,7 +337,7 @@ class Constants
                 [	
                     'type'  => 'primary-inverted',	
                     'label' => 'Know More',	
-                    'url'   => 'https://razorpay.com/docs/capture-settings/',	
+                    'url'   => 'https://razorpay.com/docs/payment-gateway/payments/capture-settings/',	
                 ]	
             ],	
         ],

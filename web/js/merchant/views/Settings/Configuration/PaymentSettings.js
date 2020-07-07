@@ -310,7 +310,7 @@ export default class PaymentSettings extends Component {
 
           <span class="toggler-btn">
             <a
-              href="https://razorpay.com/docs/capture-settings/"
+              href="https://razorpay.com/docs/payment-gateway/payments/capture-settings/"
               target="_blank"
               rel="noreferrer"
             >
@@ -323,10 +323,20 @@ export default class PaymentSettings extends Component {
         <div class="panel-body payment-capture-panel">
           {items.length !== 0 && (
             <div class="payment-capture-panel-row">
-              <p style={{ paddingBottom: '10px' }}>
-                Capture settings are applicable only if Orders API is used to
-                create the payment. Capture values passed in the Order API will
-                override these settings if there is any conflict.
+              <p style={{ paddingBottom: '15px' }}>
+                <strong>
+                  Capture settings are applicable only if Orders API is used to
+                  create the payment. Capture values passed in the{' '}
+                  <a
+                    style={{ paddingRight: '2px' }}
+                    href="https://razorpay.com/docs/api/orders"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Orders API
+                  </a>
+                  will override these settings if there is any conflict.
+                </strong>
               </p>
               <div class="panel-content">
                 <div
@@ -459,9 +469,19 @@ export default class PaymentSettings extends Component {
           {items.length === 0 && (
             <>
               <div class="description">
-                Capture settings are applicable only if Orders API is used to
-                create the payment. Capture values passed in the Order API will
-                override these settings if there is any conflict.
+                <strong>
+                  Capture settings are applicable only if Orders API is used to
+                  create the payment. Capture values passed in the{' '}
+                  <a
+                    style={{ paddingRight: '2px' }}
+                    href="https://razorpay.com/docs/api/orders"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Orders API
+                  </a>
+                  will override these settings if there is any conflict.
+                </strong>
               </div>
               <p>
                 Payments must be captured once they are authorized. If not, they
