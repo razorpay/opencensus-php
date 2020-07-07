@@ -1,5 +1,6 @@
 import { fireAnalyticsEvents } from 'common/utils/googleAnalytics';
 import { addPrefixToObjectKeys, isPresent } from 'common/utils/rzp-utils';
+import QueryString from 'query-string';
 
 import { BUSINESS_TYPE_OPTIONS } from './AccountActivationFormMap';
 import {
@@ -191,11 +192,11 @@ function doesHaveAdditionalDocs(activation) {
   return false;
 }
 
-function getDefaultAdditionalDoc(activation) {
-  const bizCatSubCatPair = getBizCatSubCatPair(
-    activation.state,
-    activation.props
-  );
+function getDefaultAdditionalDoc(activation, bizCatSubCatPair) {
+  if (!bizCatSubCatPair) {
+    bizCatSubCatPair = getBizCatSubCatPair(activation.state, activation.props);
+  }
+
   const defaultAdditionalDocMapKey = getValuesSeparatedBySymbol(
     bizCatSubCatPair,
     '-'
@@ -214,11 +215,11 @@ function getDefaultAdditionalDoc(activation) {
   return DEFAULT_ADDITIONAL_DOC_REG_BIZ[defaultAdditionalDocMapKey];
 }
 
-function getAdditionalDocOptions(activation) {
-  const bizCatSubCatPair = getBizCatSubCatPair(
-    activation.state,
-    activation.props
-  );
+function getAdditionalDocOptions(activation, bizCatSubCatPair) {
+  if (!bizCatSubCatPair) {
+    bizCatSubCatPair = getBizCatSubCatPair(activation.state, activation.props);
+  }
+
   const additionalDocsMapKey = getValuesSeparatedBySymbol(
     bizCatSubCatPair,
     '-'
@@ -296,6 +297,14 @@ function hasAPIL1Error({
   return false;
 }
 
+function isRXV2Onboarding(activation) {
+  const query = QueryString.parse(window.location.search);
+  const isSourceRX = !!(query && query.merchant && query.merchant === 'x');
+  const isRXV2OnboardingExp = activation.props.user.isRXV2OnboardingEnabled;
+
+  return isRXV2OnboardingExp && isSourceRX;
+}
+
 export {
   differentAddress,
   isUnregisteredBusiness,
@@ -321,4 +330,5 @@ export {
   getAdditionalDocCount,
   isAdditonalDocRequired,
   hasAPIL1Error,
+  isRXV2Onboarding,
 };

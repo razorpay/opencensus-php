@@ -39,6 +39,7 @@ import {
   doesHaveAdditionalDocs,
   getAdditionalDocCount,
   isAdditonalDocRequired,
+  isRXV2Onboarding,
 } from './ActivationUtils';
 
 import { ADDITIONAL_DOCS_LABEL_VALUE_MAP } from './Constants';
@@ -152,10 +153,15 @@ const businessModel = [
       _cmp: Input.Select,
       options: [],
       _disabledWhen: function(activation) {
-        return (
-          isL1Completed(activation) &&
-          !!activation.props.user.showInstantActivation
-        );
+        if (isRXV2Onboarding(activation)) {
+          const { activated, activation_flow } = activation.props.user;
+          return activated || !!activation_flow;
+        } else {
+          return (
+            isL1Completed(activation) &&
+            !!activation.props.user.showInstantActivation
+          );
+        }
       },
     },
     {
@@ -238,10 +244,15 @@ const businessModel = [
         return hasBusinessCategory;
       },
       _disabledWhen: activation => {
-        return (
-          isL1Completed(activation) &&
-          !!activation.props.user.showInstantActivation
-        );
+        if (isRXV2Onboarding(activation)) {
+          const { activated, activation_flow } = activation.props.user;
+          return activated || !!activation_flow;
+        } else {
+          return (
+            isL1Completed(activation) &&
+            !!activation.props.user.showInstantActivation
+          );
+        }
       },
     },
   ],
@@ -831,7 +842,9 @@ const uploadFields = [
   },
   {
     getLabel: activation => {
-      const { additional_doc } = activation.state;
+      const additionalDocKey =
+        activation.state.dirty.additional_doc ||
+        activation.state.additional_doc;
 
       const userSelectedCategory =
         activation.state.dirty.business_category ||
@@ -842,7 +855,7 @@ const uploadFields = [
 
       const additionalDocMapKey = `${userSelectedCategory}-${userSelectedSubcategory}`;
       const additionalDoc =
-        ADDITIONAL_DOCS_LABEL_VALUE_MAP[additionalDocMapKey][additional_doc];
+        ADDITIONAL_DOCS_LABEL_VALUE_MAP[additionalDocMapKey][additionalDocKey];
 
       return additionalDoc.label;
     },
