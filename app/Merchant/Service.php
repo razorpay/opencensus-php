@@ -654,21 +654,4 @@ class Service extends Base\Service
         return [$error, $data];
     }
 
-    public function getPayoutCount($mode)
-    {
-        $request = new ApiRequestAny(['client_type' => 'merchant', 'mode' => $mode]);
-
-        list($error, $data) = $request->send("payouts?count=1&product=banking", 'GET');
-
-        if (empty($error) === false)
-        {
-            throw new BadRequestError(
-                $error[0],
-                ErrorCode::BAD_REQUEST_ERROR,
-                400
-            );
-        }
-
-        return $data['count'];
-    }
 }

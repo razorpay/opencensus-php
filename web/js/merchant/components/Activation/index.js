@@ -1253,23 +1253,6 @@ export default class ActivationWizard extends React.Component {
     if (fieldName === 'business_subcategory') {
       sideEffectFieldsToUpdate.business_category =
         dirty.business_category || data.business_category;
-
-      const bizCatSubCatPair = [
-        sideEffectFieldsToUpdate.business_category,
-        fieldValue,
-      ];
-      const additionalDoc = getDefaultAdditionalDoc(this, bizCatSubCatPair);
-      const additionalDocOptions = getAdditionalDocOptions(
-        this,
-        bizCatSubCatPair
-      );
-      const ADDITIONAL_DOC_SELECT_FIELD_INDEX = 9;
-
-      FORM_TABS_CONTENT[DOCUMENT_UPLOAD_STEP][
-        ADDITIONAL_DOC_SELECT_FIELD_INDEX
-      ].options = additionalDocOptions;
-
-      sideEffectFieldsToUpdate.additional_doc = additionalDoc;
     }
 
     /* Step 6: Business website must have http/https prepended */
