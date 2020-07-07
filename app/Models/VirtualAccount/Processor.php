@@ -434,12 +434,21 @@ abstract class Processor extends Base\Core
         switch ($entity->getEntityName())
         {
             case Constants\Entity::BANK_TRANSFER:
+                $payerBankAccount = $entity->payerBankAccount;
+
+                $payerDetails = [
+                    BankAccount\Entity::IFSC            => substr($payerBankAccount->getIfscCode(), 0, 4),
+                    BankAccount\Entity::ACCOUNT_NUMBER  => $payerBankAccount->getAccountNumber(),
+                ];
+
+                break;
+
             case Constants\Entity::UPI_TRANSFER:
                 $payerDetails = [
                     BankAccount\Entity::IFSC            => substr($entity->getPayerIfsc(), 0, 4),
                     BankAccount\Entity::ACCOUNT_NUMBER  => $entity->getPayerAccount(),
                 ];
-                
+
                 break;
 
             default:

@@ -1113,4 +1113,29 @@ return [
             ],
         ],
     ],
+
+    'testBankTransferImpsWithNbinValidateTpv' => [
+        'request'  => [
+            'url'     => '/ecollect/validate',
+            'method'  => 'post',
+            'content' => [
+                'payee_account'  => null,
+                'payee_ifsc'     => null,
+                'payer_name'     => 'Name of account holder',
+                'payer_account'  => '765432123456789',
+                'payer_ifsc'     => '9240',
+                'mode'           => 'imps',
+                'transaction_id' => strtoupper(random_alphanum_string(22)),
+                'time'           => 148415544000,
+                'amount'         => 50000,
+                'description'    => 'NEFT payment of 50,000 rupees',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'valid'   => true,
+                'message' => null,
+            ],
+        ],
+    ],
 ];

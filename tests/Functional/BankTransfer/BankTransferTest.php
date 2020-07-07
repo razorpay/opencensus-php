@@ -3067,4 +3067,28 @@ class BankTransferTest extends TestCase
 
         $this->processBankTransferForVaWithTpvEnabled($testData);
     }
+
+    public function testBankTransferImpsWithNbinValidateTpv()
+    {
+        $this->fixtures->terminal->createBankAccountTerminal();
+
+        $bankAccount = $this->createVirtualAccount('test', '10000000000000', $this->testData['createVAWithAllowedPayer']);
+
+        $testData = $this->testData[__FUNCTION__];
+        $testData['request']['content']['payee_account'] = $bankAccount['account_number'];
+        $testData['request']['content']['payee_ifsc'] = $bankAccount['ifsc'];
+
+        $this->ba->yesbankAuth();
+        $this->startTest($testData);
+
+        $bankTransfer = $this->getDbLastEntity('bank_transfer');
+        $this->assertEquals(true, $bankTransfer['expected']);
+        $this->assertNotNull($bankTransfer['payment_id']);
+
+        $payment = $this->getDbLastEntity('payment');
+        $this->assertEquals($bankTransfer['payment_id'], $payment['id']);
+        $this->assertEquals('bank_transfer', $payment['method']);
+        $this->assertEquals('bank_account', $payment['receiver_type']);
+        $this->assertEquals('captured', $payment['status']);
+    }
 }
