@@ -407,15 +407,4 @@ class Repository extends Base\Repository
                     ->orderByCreatedAt()
                     ->get();
     }
-
-    public function fetchBankAccountWithMerchantIdAndLimit1000(string $merchantId,
-                                                               $lastBankAccountCreatedAt = 0)
-    {
-        return $this->newQuery()
-                    ->where(Entity::CREATED_AT, '>', $lastBankAccountCreatedAt)
-                    ->merchantId($merchantId)
-                    ->orderBy(Entity::CREATED_AT, 'asc')
-                    ->limit(1000)
-                    ->get();
-    }
 }

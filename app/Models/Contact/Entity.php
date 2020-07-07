@@ -167,11 +167,6 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::TYPE, $type);
     }
 
-    public function setName(string $name = null)
-    {
-        $this->setAttribute(self::NAME, $name);
-    }
-
     // ------------- End Setters -------------
 
     // ----------- Public Setters ------------

@@ -229,12 +229,6 @@ class Validator extends Base\Validator
         'merchant_ids.*' => 'required|alpha_num|size:14',
     ];
 
-    protected static $trimMerchantDataRules = [
-        'merchant_ids'   => 'required|sequential_array',
-        'merchant_ids.*' => 'required|alpha_num|size:14',
-    ];
-
-
     protected static $editConfigValidators = [
         'csv_email',
     ];

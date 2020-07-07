@@ -200,19 +200,4 @@ class Purpose
     {
         return Settings\Accessor::for($merchant, Settings\Module::PAYOUT_PURPOSE, Mode::LIVE);
     }
-
-    public function trimPurpose(Merchant\Entity $merchant, string $purpose, string $type)
-    {
-        $this->getSettingsAccessor($merchant)
-             ->delete($purpose)
-             ->save();
-
-        $data = [
-            trim($purpose) => $type
-        ];
-
-        $this->getSettingsAccessor($merchant)
-             ->upsert($data)
-             ->save();
-    }
 }

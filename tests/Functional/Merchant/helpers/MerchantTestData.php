@@ -6031,22 +6031,4 @@ return [
             ],
         ],
     ],
-
-    'testCronTrimMerchantData' => [
-        'request'  => [
-            'method'  => 'PATCH',
-            'url'     => '/merchants/trim_space',
-            'content' => [
-                'merchant_ids' => ['10000000000001']
-            ]
-        ],
-        'response' => [
-            'content'     => [
-                'status'        => 'updated',
-                'updated_count' => 1,
-                'total_count'   => 1
-            ],
-            'status_code' => 200,
-        ],
-    ],
 ];
