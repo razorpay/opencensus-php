@@ -729,7 +729,8 @@ class Service extends Base\Service
                 $data['pre_signup_complete'] = true;
             }
 
-            if ($currentMerchant->role !== 'owner')
+            if (($currentMerchant->role !== 'owner') and
+                ($currentMerchant->banking_role !== 'owner'))
             {
                 $data['pre_signup_complete'] = true;
             }
