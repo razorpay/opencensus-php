@@ -1258,25 +1258,28 @@ export default class ActivationWizard extends React.Component {
         sideEffectFieldsToUpdate.business_category,
         fieldValue,
       ];
-      const additionalDoc = getDefaultAdditionalDoc(this, bizCatSubCatPair);
-      const additionalDocOptions = getAdditionalDocOptions(
-        this,
-        bizCatSubCatPair
-      );
-      const ADDITIONAL_DOC_SELECT_FIELD_INDEX = 9;
 
-      if (
-        FORM_TABS_CONTENT[DOCUMENT_UPLOAD_STEP] &&
-        FORM_TABS_CONTENT[DOCUMENT_UPLOAD_STEP][
-          ADDITIONAL_DOC_SELECT_FIELD_INDEX
-        ]
-      ) {
-        FORM_TABS_CONTENT[DOCUMENT_UPLOAD_STEP][
-          ADDITIONAL_DOC_SELECT_FIELD_INDEX
-        ].options = additionalDocOptions;
+      if (doesHaveAdditionalDocs(this, bizCatSubCatPair)) {
+        const additionalDoc = getDefaultAdditionalDoc(this, bizCatSubCatPair);
+        const additionalDocOptions = getAdditionalDocOptions(
+          this,
+          bizCatSubCatPair
+        );
+        const ADDITIONAL_DOC_SELECT_FIELD_INDEX = 9;
+
+        if (
+          FORM_TABS_CONTENT[DOCUMENT_UPLOAD_STEP] &&
+          FORM_TABS_CONTENT[DOCUMENT_UPLOAD_STEP][
+            ADDITIONAL_DOC_SELECT_FIELD_INDEX
+          ]
+        ) {
+          FORM_TABS_CONTENT[DOCUMENT_UPLOAD_STEP][
+            ADDITIONAL_DOC_SELECT_FIELD_INDEX
+          ].options = additionalDocOptions;
+        }
+
+        sideEffectFieldsToUpdate.additional_doc = additionalDoc;
       }
-
-      sideEffectFieldsToUpdate.additional_doc = additionalDoc;
     }
 
     /* Step 6: Business website must have http/https prepended */

@@ -172,11 +172,11 @@ function hasSelectedBlacklistedCategory(activation) {
 }
 
 // Additional Docs required for only some Reg. Biz based on Biz Cat. and Biz Subcat.
-function doesHaveAdditionalDocs(activation) {
-  const bizCatSubCatPair = getBizCatSubCatPair(
-    activation.state,
-    activation.props
-  );
+function doesHaveAdditionalDocs(activation, bizCatSubCatPair) {
+  if (!bizCatSubCatPair) {
+    bizCatSubCatPair = getBizCatSubCatPair(activation.state, activation.props);
+  }
+
   const additionalDocReqMapKey = getValuesSeparatedBySymbol(
     bizCatSubCatPair,
     '-'
