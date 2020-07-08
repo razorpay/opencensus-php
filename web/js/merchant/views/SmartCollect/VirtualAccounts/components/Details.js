@@ -129,7 +129,7 @@ export default class extends React.Component {
       mode === 'test' && virtualaccount.status === 'active';
 
     return (
-      <div class="content-wrapper content-sm txn-details">
+      <div class="content-wrapper content-sm txn-details VirtualAccount--Details">
         {isLoading ? (
           <div class="page-spinner-container">
             <Spinner />
@@ -207,6 +207,14 @@ export default class extends React.Component {
                   <EntityDetailRow label="Status">
                     <VirtualAccountStatusLabel status={virtualaccount.status} />
                   </EntityDetailRow>
+
+                  {virtualaccount.allowed_payers && (
+                    <EntityDetailRow label="Third Party Validation">
+                      <AllowedPayersList
+                        allowedPayers={virtualaccount.allowed_payers}
+                      />
+                    </EntityDetailRow>
+                  )}
 
                   <EntityDetailRow
                     label="Account Description"
@@ -304,3 +312,22 @@ export default class extends React.Component {
     );
   }
 }
+
+const AllowedPayersList = ({ allowedPayers }) => (
+  <table class="allowed-payers-list">
+    <thead>
+      <tr>
+        <th>IFSC Code</th>
+        <th>Acc. Number</th>
+      </tr>
+    </thead>
+    <tbody>
+      {allowedPayers.map(({ bank_account }) => (
+        <tr>
+          <td>{bank_account.ifsc}</td>
+          <td>{bank_account.account_number}</td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+);

@@ -9,6 +9,7 @@ import QuickAdd from 'common/ui/Select/QuickAdd';
 import Form from 'common/new-ui/Form';
 import Input from 'common/new-ui/Input';
 import Spinner from 'common/ui/Spinner';
+import Popover, { PopoverBody } from 'common/ui/Popover';
 
 import { classList } from 'common/utils/rzp-utils';
 import {
@@ -29,6 +30,7 @@ import CustomerCreation from 'merchant/views/Customers/New';
 
 import AccountDetailsSummary from '../components/Modals/AccountDetailsSummary';
 import VPAPrefixModal from './VPAPrefixModal';
+import ConfigureBankAccountsModal from '../components/Modals/ConfigureBankAccounts';
 
 import {
   DESCRIPTOR_LENGTH_BANK_ACCOUNT,
@@ -63,6 +65,10 @@ import {
   }
 )
 export default class CreateVirtualAccount extends React.Component {
+  static contextTypes = {
+    confirm: PropTypes.func,
+  };
+
   constructor(props) {
     super();
 
@@ -80,6 +86,7 @@ export default class CreateVirtualAccount extends React.Component {
         vpa: '',
         bank_account: '',
       },
+      allowedPayers: [],
     };
   }
 
@@ -130,7 +137,7 @@ export default class CreateVirtualAccount extends React.Component {
 
   handleSubmit = formData => {
     const { descriptorVPA, descriptorBankAccount, description } = formData;
-    const { notes, close_by, _internals, customer } = this.state;
+    const { notes, close_by, _internals, customer, allowedPayers } = this.state;
 
     let transformedNotes = notes;
 
@@ -168,6 +175,11 @@ export default class CreateVirtualAccount extends React.Component {
         ? { descriptor: descriptorVPA }
         : {};
     }
+
+    reqPayload.allowed_payers = allowedPayers.map(bankAccount => ({
+      type: 'bank_account',
+      bank_account: bankAccount,
+    }));
 
     this.setState({
       isUpdating: true,
@@ -309,7 +321,7 @@ export default class CreateVirtualAccount extends React.Component {
           if (additionalOptionsElement) {
             additionalOptionsElement.scrollIntoView({
               behavior: 'smooth',
-              block: 'center',
+              block: 'nearest',
             });
           }
 
@@ -342,6 +354,39 @@ export default class CreateVirtualAccount extends React.Component {
     });
   };
 
+  openConfigureBankAccountsModal = () => {
+    this.props.openModal({
+      size: 'medium',
+      className: 'ConfigureBankAccounts',
+      component: (
+        <ConfigureBankAccountsModal
+          bankAccounts={this.state.allowedPayers}
+          onSave={allowedPayers => {
+            this.setState({
+              allowedPayers,
+            });
+          }}
+        />
+      ),
+    });
+  };
+
+  handleRemoveAllowedPayers = () => {
+    this.context.confirm({
+      header: 'Remove Third Party Validation?',
+      message:
+        'Authorised account(s) linked to this virtual account will be removed and payments will be accepted from all accounts.',
+      abortLabel: 'No, Dont’t',
+      affirmativeLabel: 'Yes, Remove',
+      affirmativePendingLabel: 'Removing...',
+      action: () => {
+        this.setState({
+          allowedPayers: [],
+        });
+      },
+    });
+  };
+
   render() {
     let { customers = [], onClose, va_config, user, isTestMode } = this.props;
 
@@ -353,6 +398,7 @@ export default class CreateVirtualAccount extends React.Component {
       isLoading,
       isUpdating,
       descriptors,
+      allowedPayers,
     } = this.state;
 
     const disableSubmit =
@@ -391,6 +437,10 @@ export default class CreateVirtualAccount extends React.Component {
       showVPADescriptor = false;
       showVPAPrefix = false;
     }
+
+    const additionalOptionsText = `${
+      showAdditionalOptions ? 'Hide' : 'View'
+    } Advance Options`;
 
     const content = (
       <div class="VirtualAccount--CreateV2 Wizard">
@@ -534,7 +584,7 @@ export default class CreateVirtualAccount extends React.Component {
                         options={customers}
                         class="ps-in-modal"
                         searchIndices={['id', 'name', 'email', 'contact']}
-                        placeholder="Select a customer"
+                        placeholder="Select or Add a New Customer"
                         showClear={true}
                         selected={this.state.customer}
                         selectedOptionLabelPath="selectedDisplayName"
@@ -550,7 +600,10 @@ export default class CreateVirtualAccount extends React.Component {
                     </div>
                   </div>
 
-                  <div class="additional-options-btn">
+                  <div
+                    class="additional-options-btn"
+                    onClick={this.handleAdditionalOptions}
+                  >
                     <button
                       type="button"
                       onClick={this.handleAdditionalOptions}
@@ -561,7 +614,9 @@ export default class CreateVirtualAccount extends React.Component {
                       <i
                         class={classList(
                           'i',
-                          showAdditionalOptions ? 'i-arrow-up' : 'i-arrow-down'
+                          showAdditionalOptions
+                            ? 'i-chevron-up'
+                            : 'i-chevron-down'
                         )}
                       />
                     </button>
@@ -569,12 +624,75 @@ export default class CreateVirtualAccount extends React.Component {
 
                   {showAdditionalOptions && (
                     <div class="AdditionalOptions">
+                      <div class="third-party-validation">
+                        <div>
+                          <strong>Third Party Validation</strong>
+
+                          <span class="m-l">
+                            <i class="i i-info-outline" />
+                            <Popover
+                              align="top"
+                              theme="dark"
+                              parentQuerySelector={
+                                IS_MODAL_VIEW && '.VirtualAccount--CreateV2'
+                              }
+                            >
+                              <PopoverBody>
+                                Only authorised accounts will be able to make
+                                payments to this virtual account.
+                              </PopoverBody>
+                            </Popover>
+                          </span>
+                        </div>
+                        <div class="description">
+                          {!!allowedPayers.length
+                            ? `Configured with ${
+                                allowedPayers.length
+                              } authorised accounts.`
+                            : 'Not Configured'}
+
+                          <div class="actions">
+                            {!!allowedPayers.length ? (
+                              <>
+                                <button
+                                  type="button"
+                                  class="btn-link"
+                                  onClick={this.openConfigureBankAccountsModal}
+                                >
+                                  Edit
+                                </button>{' '}
+                                |
+                                <button
+                                  type="button"
+                                  class="btn-link"
+                                  onClick={this.handleRemoveAllowedPayers}
+                                >
+                                  Remove
+                                </button>
+                              </>
+                            ) : (
+                              <button
+                                type="button"
+                                class="btn-link"
+                                onClick={this.openConfigureBankAccountsModal}
+                              >
+                                Configure
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      <hr />
+
                       <Input.TextareaAutoResize
                         class="Input--vTop"
                         name="description"
                         label="Account Description"
                         description="Description is shown only on the dashboard and not to customers"
                       />
+
+                      <hr />
 
                       <Input.DateTime
                         class="Input--vTop"
@@ -584,6 +702,8 @@ export default class CreateVirtualAccount extends React.Component {
                         description="You won’t be able to recieve payments after the specified date"
                         isInline
                       />
+
+                      <hr />
 
                       <Input.PairList
                         class="Input--vTop"

@@ -12,6 +12,7 @@ const fields = [
   'receivers',
   'notes',
   'close_by',
+  'allowed_payers',
 ];
 
 export default class VirtualAccount extends GenericEntity {
