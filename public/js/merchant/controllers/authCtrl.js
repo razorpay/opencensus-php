@@ -106,6 +106,8 @@ app
         settings: {
           partner_intent: role === 'partner',
         },
+        mid: '',
+        userid: '',
         data: {
           email: email,
           password: '',
@@ -439,6 +441,8 @@ app
                   $scope.goToDashboard();
                 }
               } else {
+                $scope.signup.userid = data.user.id;
+                $scope.signup.mid = data.current;
                 window.rzpQ &&
                   window.rzpQ.push(
                     window.rzpQ
@@ -612,10 +616,6 @@ app
           );
         }
 
-        // IMPORTANT: DO NOT REMOVE THESE (USED FOR MARKETING PURPOSES - TRACK SIGNUP ATTEMPTS)
-        window.ga && ga('send', 'event', 'sign-up-form-success');
-        window.ga && ga('old.send', 'event', 'sign-up-form-success');
-
         pushToDrip();
         invokeAdroll();
         invokeGtag();
@@ -671,6 +671,20 @@ app
             });
             // else
           } else {
+            window.rzpQ &&
+              window.rzpQ.push(
+                window.rzpQ
+                  .now()
+                  .onbr()
+                  .failed('signup.finish_signup', {
+                    mode: $scope.eventsMode,
+                    emailId: $scope.signup.data.email,
+                    mid: $scope.signup.mid,
+                    userid: $scope.signup.userid,
+                    error: data.errors ? data.errors[0] : '',
+                    version: 1,
+                  })
+              );
             angular.forEach(data.errors, function(value) {
               $scope.alerts.addAlert('danger', value);
 
@@ -995,6 +1009,10 @@ app
             .initiated('signup.finish_signup', {
               source: type,
               mode: $scope.eventsMode,
+              mid: $scope.signup.mid,
+              emailId: $scope.signup.data.email,
+              userid: $scope.signup.userid,
+              version: 1,
             })
         );
 
@@ -1183,6 +1201,9 @@ app
               // if pre sign up pending
               $scope.isLoggedIn = true;
               $scope.login.data.email = userDetails.email;
+              $scope.signup.mid = userDetails.current;
+              $scope.signup.userid = userDetails.user.id;
+              $scope.signup.data.email = userDetails.email;
               $scope.signup.settings.partner_intent =
                 userDetails.partner_intent;
               if (!user.isPreSignupDone()) {
@@ -2146,6 +2167,24 @@ app
         }
 
         window.ga && window.ga('send', 'event', ec, ea, el);
+
+        // IMPORTANT: DO NOT REMOVE THESE (USED FOR MARKETING PURPOSES - TRACK SIGNUP ATTEMPTS)
+        window.ga && ga('send', 'event', 'sign-up-form-success');
+        window.ga && ga('old.send', 'event', 'sign-up-form-success');
+
+        window.rzpQ &&
+          window.rzpQ.push(
+            window.rzpQ
+              .now()
+              .onbr()
+              .success('signup.finish_signup', {
+                mode: $scope.eventsMode,
+                emailId: $scope.signup.data.email,
+                mid: $scope.signup.mid,
+                userid: $scope.signup.userid,
+                version: 1,
+              })
+          );
 
         facebookEvents.forEach(function(event) {
           window.rzpAnalytics({
