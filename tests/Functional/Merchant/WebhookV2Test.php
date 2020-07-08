@@ -1,12 +1,14 @@
 <?php
 
 namespace RZP\Tests\Functional\Merchant;
+use Mail;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Exception\ServerErrorException;
 use Illuminate\Database\Eloquent\Factory;
+use RZP\Mail\Merchant\Webhook as WebhookMail;
 use RZP\Tests\Functional\Helpers\WebhookV2Trait;
 use RZP\Tests\Functional\Helpers\MocksDnsTrait;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
@@ -390,6 +392,26 @@ class WebhookV2Test extends TestCase
         $this->testData[__FUNCTION__]['request']['content']  = $this->getApiUpdatePayloadForBanking();
 
         $this->startTest();
+    }
+
+    public function testSendDisableWebhookEmailForStork()
+    {
+        Mail::fake();
+
+        $this->startTest();
+
+        $testData = $this->testData[__FUNCTION__.'Data'];
+        // test mail sent
+        Mail::assertQueued(WebhookMail::class, function ($mail) use ($testData)
+        {
+            $this->assertEquals($mail->viewData['url'], $testData['url']);
+
+            $this->assertEquals($mail->viewData['mode'], $testData['mode']);
+
+            $this->assertEquals($mail->viewData['subject'], $testData['subject']);
+
+            return ($mail->hasFrom('alerts@razorpay.com') and ($mail->hasTo($testData['alert_email'])));
+        });
     }
 
     protected function addOAuthTag(string $merchantId = '10000000000000')

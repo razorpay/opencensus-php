@@ -61,4 +61,13 @@ class WebhookV2Controller extends Controller
         $res = (new Service)->getAnalytics($id, $this->input);
         return ApiResponse::json($res);
     }
+
+    public function sendEmail(string $emailType)
+    {
+        $input = Request::all();
+
+        (new Service)->sendEmail($emailType, $input);
+
+        return ApiResponse::json([]);
+    }
 }

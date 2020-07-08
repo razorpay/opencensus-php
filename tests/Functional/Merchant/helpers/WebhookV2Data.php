@@ -226,4 +226,31 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
+
+    'testSendDisableWebhookEmailForStork' => [
+        'request' => [
+            'url' => '/v1/webhooks-email/deactivate',
+            'content' => [
+                'webhook' => [
+                    'id'          => 'webhook0000001',
+                    'url'         => 'http://www.test.webhook.razorpay.com',
+                    'owner_id'    => '10000000000000',
+                    'owner_type'  => 'merchant',
+                    'alert_email' => 'alert_email@dummy.razorpay.com'
+                ]
+            ],
+            'method' => 'POST',
+        ],
+        'response' => [
+            'content'  => [],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testSendDisableWebhookEmailForStorkData' => [
+        'subject'     => 'Razorpay | Webhook deactivated after 24 hours from last successful delivery for Test Merchant',
+        'mode'        => 'test',
+        'url'         => 'http://www.test.webhook.razorpay.com',
+        'alert_email' => 'alert_email@dummy.razorpay.com',
+    ],
 ];

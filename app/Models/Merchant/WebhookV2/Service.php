@@ -2,11 +2,14 @@
 
 namespace RZP\Models\Merchant\WebhookV2;
 
+use Mail;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
+use Razorpay\Trace\Logger as Trace;
+use RZP\Mail\Merchant\Webhook as WebhookMail;
 
 /**
 * API working as a proxy layer. Forwards request to stork with minimum
@@ -25,10 +28,12 @@ class Service extends Base\Service
     const DISABLED          = 'disabled';
     const MERCHANT          = 'merchant';
     const OWNER_ID          = 'owner_id';
+    const EMAIL_TYPE        = 'type';
     const CREATED_BY        = 'created_by';
     const UPDATED_BY        = 'updated_by';
     const CREATED_AT        = 'created_at';
     const OWNER_TYPE        = 'owner_type';
+    const ALERT_EMAIL       = 'alert_email';
     const APPLICATION       = 'application';
     const SUBSCRIPTIONS     = 'subscriptions';
     const CREATED_BY_EMAIL  = 'created_by_email';
@@ -244,6 +249,18 @@ class Service extends Base\Service
         return (new Stork($this->product))->getAnalytics($input);
     }
 
+    /**
+     * sends email for the given email type and input data
+     * @param string $emailType type of email to be sent
+     * @param array $input      input containing data to build the mail.
+     */
+    public function sendEmail(string $emailType, array $input)
+    {
+        $this->validator->validateSendEmailInput($emailType, $input);
+        $fn = 'sendEmailFor' . studly_case($emailType);
+        $this->$fn($input);
+    }
+
     //if webhook already exists on stork throw exception
     protected function checkAndFailIfWebhookExistsOnStork(array $input)
     {
@@ -417,4 +434,77 @@ class Service extends Base\Service
 
         return $userIdToEmail[$userId];
     }
+
+    protected function sendEmailForDeactivate(array $data)
+    {
+        $options = [
+            'mode' => $this->mode,
+            'type' => 'deactivate',
+        ];
+
+        $webhook = $data[self::WEBHOOK];
+
+
+        $this->trace->info(
+            TraceCode::WEBHOOK_DEACTIVATE_EMAIL_FOR_STORK,
+            [
+                'stork_wk_id' => $webhook[self::ID],
+            ]);
+
+        //will be removed later
+        $this->disableWebhookOnApi($webhook[self::ID]);
+
+        if (isset($webhook[self::ALERT_EMAIL]) === true)
+        {
+            // if present email sent to this instead of transaction_report_email of the merchant
+            $options['recipient_email'] = $webhook[self::ALERT_EMAIL];
+        }
+
+        // merchant object is required for transaction_report_email and billing_label.
+        $merchantEntity = $this->repo->merchant->findOrFail($webhook[self::OWNER_ID]);
+
+        if ($merchantEntity->isLinkedAccount() === true)
+        {
+            return;
+        }
+
+        $merchantEntity = $merchantEntity->toArrayPublic();
+
+        // $webhook array passed to this should contain 'url' and 'id' field (both are mandatory)
+        $webhookMail = new WebhookMail($webhook, $merchantEntity, $options);
+
+        Mail::queue($webhookMail);
+    }
+
+    protected function disableWebhookOnApi(string $wkID)
+    {
+        try
+        {
+            $wkEntity = $this->repo->webhook->findOrFailPublic($wkID);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e, Trace::WARNING,
+                TraceCode::DISABLE_WEBHOOK_ON_API_FIND_ENTITY_FAILED,
+                [
+                    'stork_wk_id' => $wkID,
+                ]);
+            return;
+        }
+
+        try
+        {
+            $wkEntity->deactivate();
+            $this->repo->saveOrFail($wkEntity);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e, Trace::CRITICAL,
+                TraceCode::DISABLE_WEBHOOK_ON_API_FOR_STORK_FAILED,
+                [
+                    'stork_wk_id' => $wkID,
+                ]);
+        }
+    }
+
 }

@@ -410,6 +410,7 @@ class Route
         'webhook_stork_migrate'                    => ['post',     'webhooks/migrate/stork',                         'WebhookController@webhookStorkMigrate'                             ],
         'webhook_stork_create_banking_bulk'        => ['post',     'webhooks/create/stork/banking/bulk',             'WebhookController@webhookStorkCreateBankingBulk'                   ],
         'webhook_deactivate'                       => ['post',     'webhooks/{id}/deactivate',                       'WebhookController@webhookDeactivate'                               ],
+        'webhook_send_email'                       => ['post',     'webhooks-email/{emailType}',                     'WebhookV2Controller@sendEmail'                                     ],
         'admin_webhook_recon'                      => ['post',     'admin/webhooks/recon',                           'WebhookController@webhookStorkRecon'                               ],
         'merchant_create_key'                      => ['post',     'keys',                                           'KeyController@postCreateKeys'                                      ],
         'merchant_fetch_keys'                      => ['get',      'keys',                                           'KeyController@getKeys'                                             ],
@@ -2367,6 +2368,7 @@ class Route
         'transfer_failed_process',
         'merchant_mtu_update',
         'webhook_deactivate',
+        'webhook_send_email',
         'transaction_settled_data_fix',
         'contact_get_internal',
         'contact_create_internal',
@@ -4847,7 +4849,8 @@ class Route
             // Storks needs connected applications against a merchant to fan
             // out the same event to former entities as well.
             'merchant_get_app_access_mapping',
-            'webhook_deactivate'
+            'webhook_deactivate',
+            'webhook_send_email',
         ],
 
         'mtu_lambda' => [

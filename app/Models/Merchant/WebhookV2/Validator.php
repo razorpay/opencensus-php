@@ -5,6 +5,7 @@ namespace RZP\Models\Merchant\WebhookV2;
 use RZP\Exception;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
+use RZP\Base\JitValidator;
 
 /**
  * Since webhookV2 is a proxy layer this file contains
@@ -12,10 +13,32 @@ use RZP\Error\ErrorCode;
  */
 class Validator extends \RZP\Base\Validator
 {
+    const ID            = 'id';
+    const URL           = 'url';
+    const WEBHOOK       = 'webhook';
+    const OWNER_ID      = 'owner_id';
+    const OWNER_TYPE    = 'owner_type';
+    const ALERT_EMAIL   = 'alert_email';
+
     // keys peresent in the payload
     const SUBSCRIPTIONS = 'subscriptions';
     const EVENT_META    = 'eventmeta';
     const EVENT_NAME    = 'name';
+
+    const EMAIL_TYPE = 'type';
+    // deactivate is a type of email which can be sent.
+    const EMAIL_DEACTIVATE = 'deactivate';
+    // valid email types which can be sent.
+    const VALID_EMAIL_TYPES = [self::EMAIL_DEACTIVATE];
+
+    // validation rules for the webhook array which needs to be passed to send a webhook disable email.
+    protected static $deactivateEmailRules = [
+        self::ID          => 'required|string|size:14',
+        self::URL         => 'required|string|url|max:255|min:3',
+        self::OWNER_ID    => 'required|string|size:14',
+        self::OWNER_TYPE  => 'required|string|in:merchant',
+        self::ALERT_EMAIL => 'sometimes|email',
+    ];
 
     /**
      * This method validates the stork input. Includes validations
@@ -91,5 +114,37 @@ class Validator extends \RZP\Base\Validator
                     Merchant\Entity::PARTNER_TYPE => $merchant->getPartnerType(),
                 ]);
         }
+    }
+
+    /**
+     * @param string $emailType type of email to be sent
+     * @param array  $data      to build the email
+     *
+     * @throws Exception\BadRequestException
+     */
+    public function validateSendEmailInput(string $emailType, array $input)
+    {
+        if (in_array(strtolower($emailType), self::VALID_EMAIL_TYPES, true) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException('email type is not mentioned or is incorret');
+        }
+
+        $fn = 'validate' . studly_case($emailType) . 'EmailData';
+        $this->$fn($input);
+    }
+
+    /**
+     * @param array $data
+     *
+     * @throws Exception\BadRequestException
+     */
+    protected function validateDeactivateEmailData(array $data)
+    {
+        if (isset($data[self::WEBHOOK]) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException('Invalid payload. webhook not present');
+        }
+
+        (new JitValidator)->setStrictFalse()->rules(self::$deactivateEmailRules)->input($data[self::WEBHOOK])->validate();
     }
 }
