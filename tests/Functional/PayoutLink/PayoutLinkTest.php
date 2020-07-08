@@ -1708,4 +1708,99 @@ class PayoutLinkTest extends TestCase
         }
     }
 
+    public function testGetFundAccountsOfContact()
+    {
+        $contact = $this->fixtures->create('contact',
+            [
+                'id'      => '1000020contact',
+                'contact' => '8888888888',
+                'email'   => '',
+                'name'    => 'test user'
+            ]);
+
+        $this->fixtures->create('fund_account:bank_account',
+            [
+                'id'          => '100000000010fa',
+                'source_type' => 'contact',
+                'source_id'   => '1000020contact',
+                'merchant_id' => $this->contact->merchant->getId()
+            ]);
+
+        $this->fixtures->create('fund_account:bank_account',
+            [
+                'id'          => '100000000011fa',
+                'source_type' => 'contact',
+                'source_id'   => '1000020contact',
+                'merchant_id' => $this->contact->merchant->getId()
+            ]);
+
+        $this->fixtures->create('fund_account:bank_account',
+            [
+                'id'          => '100000000012fa',
+                'source_type' => 'contact',
+                'source_id'   => '1000020contact',
+                'merchant_id' => $this->contact->merchant->getId()
+            ]);
+
+        $payoutLink = $this->fixtures->create('payout_link',
+            [
+                'contact_id'  => $contact->getId(),
+                'balance_id'  => $this->bankingBalance->getId()
+            ]);
+
+        $this->mockRedisSuccess(__FUNCTION__ , $payoutLink->getPublicId());
+
+        $this->setUrl(__FUNCTION__, $payoutLink->getPublicId(), 'fund-accounts');
+
+        $this->startTest();
+    }
+
+    public function testGetFundAccountsOfContactWithInactiveFundAccount()
+    {
+        $contact = $this->fixtures->create('contact',
+            [
+                'id'      => '1000021contact',
+                'contact' => '8888888888',
+                'email'   => '',
+                'name'    => 'test user'
+            ]);
+
+        $this->fixtures->create('fund_account:bank_account',
+            [
+                'id'          => '100000000010fa',
+                'source_type' => 'contact',
+                'source_id'   => '1000021contact',
+                'merchant_id' => $this->contact->merchant->getId()
+            ]);
+
+        $this->fixtures->create('fund_account:bank_account',
+            [
+                'id'          => '100000000011fa',
+                'source_type' => 'contact',
+                'source_id'   => '1000021contact',
+                'merchant_id' => $this->contact->merchant->getId(),
+                'active'      => 0
+            ]);
+
+        $this->fixtures->create('fund_account:bank_account',
+            [
+                'id'          => '100000000012fa',
+                'source_type' => 'contact',
+                'source_id'   => '1000021contact',
+                'merchant_id' => $this->contact->merchant->getId()
+            ]);
+
+        $payoutLink = $this->fixtures->create('payout_link',
+            [
+                'contact_id'  => $contact->getId(),
+                'balance_id'  => $this->bankingBalance->getId()
+            ]);
+
+        $this->mockRedisSuccess(__FUNCTION__ , $payoutLink->getPublicId());
+
+        $this->setUrl(__FUNCTION__, $payoutLink->getPublicId(), 'fund-accounts');
+
+        $this->startTest();
+    }
+
 }

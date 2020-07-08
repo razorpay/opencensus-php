@@ -1806,4 +1806,89 @@ return [
             ],
         ],
     ],
+
+    'testGetFundAccountsOfContact' => [
+        'request'  => [
+            'method' => 'POST',
+            'url'    => '',
+        ],
+        'response' => [
+            'content' => [
+                'entity'  => 'collection',
+                'count'   => 3,
+                'items'   => [
+                    [
+                        "id" => "fa_100000000010fa",
+                        "account_type" => "bank_account",
+                        "bank_account" => [
+                            "ifsc" => "RZPB0000000",
+                            "bank_name" => "Razorpay",
+                            "name" => "random_name",
+                            "notes" => [],
+                            "account_number" => "XXXXXXX1011"
+                        ]
+                    ],
+                    [
+                        "id" => "fa_100000000011fa",
+                        "account_type" => "bank_account",
+                        "bank_account" => [
+                            "ifsc" => "RZPB0000000",
+                            "bank_name" => "Razorpay",
+                            "name" => "random_name",
+                            "notes" => [],
+                            "account_number" => "XXXXXXX1011"
+                        ]
+                    ],
+                    [
+                        "id" => "fa_100000000012fa",
+                        "account_type" => "bank_account",
+                        "bank_account" => [
+                            "ifsc" => "RZPB0000000",
+                            "bank_name" => "Razorpay",
+                            "name" => "random_name",
+                            "notes" => [],
+                            "account_number" => "XXXXXXX1011"
+                        ]
+                    ],
+                ],
+            ],
+        ]
+    ],
+
+    'testGetFundAccountsOfContactWithInactiveFundAccount' => [
+        'request'  => [
+            'method' => 'POST',
+            'url'    => '',
+        ],
+        'response' => [
+            'content' => [
+                'entity'  => 'collection',
+                'count'   => 2,
+                'items'   => [
+                    [
+                        "id" => "fa_100000000010fa",
+                        "account_type" => "bank_account",
+                        "bank_account" => [
+                            "ifsc" => "RZPB0000000",
+                            "bank_name" => "Razorpay",
+                            "name" => "random_name",
+                            "notes" => [],
+                            "account_number" => "XXXXXXX1011"
+                        ]
+                    ],
+                    [
+                        "id" => "fa_100000000012fa",
+                        "account_type" => "bank_account",
+                        "bank_account" => [
+                            "ifsc" => "RZPB0000000",
+                            "bank_name" => "Razorpay",
+                            "name" => "random_name",
+                            "notes" => [],
+                            "account_number" => "XXXXXXX1011"
+                        ]
+                    ],
+                ],
+            ],
+        ]
+    ],
 ];

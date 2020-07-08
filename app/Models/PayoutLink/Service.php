@@ -410,7 +410,11 @@ class Service extends Base\Service
 
             $fundAccounts = $this->core->getFundAccountsOfContact($payoutLink, $input);
 
-            return $fundAccounts->toArrayPublic();
+            $fundAccountsArray = $fundAccounts->toArrayPublic();
+
+            $this->formatFundAccountsArray($fundAccountsArray);
+
+            return $fundAccountsArray;
         }
 
         return $this->app['payout-links']->getFundAccountsOfContact($payoutLinkId, $input);
@@ -589,5 +593,14 @@ class Service extends Base\Service
         }
         $input['merchant_id'] = $this->merchant->getId();
         return $this->app['payout-links']->fetchMultiple($input);
+    }
+
+    protected function formatFundAccountsArray(array &$fundAccountsArray)
+    {
+        $oldFundAccountsItems = $fundAccountsArray["items"];
+
+        $newFundAccountsItems = array_values($oldFundAccountsItems);
+
+        $fundAccountsArray["items"] = $newFundAccountsItems;
     }
 }
