@@ -176,6 +176,8 @@ class PartnerTest extends OAuthTestCase
         $this->assertTrue($merchant->isPartner());
 
         $this->assertEquals($merchant->getPartnerType(), Merchant\Constants::RESELLER);
+
+        $this->assertTrue($merchant->isFeatureEnabled(Feature\Constants::GENERATE_PARTNER_INVOICE));
     }
 
     public function testApprovingMarkAsPartnerWebsiteMissingMerchantRequest()
