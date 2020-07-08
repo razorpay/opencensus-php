@@ -9,6 +9,11 @@ use RZP\Reconciliator\FileProcessor;
 
 class Reconciliate extends Base\Reconciliate
 {
+    const COMBINED_FILE_NAMES = [
+        'merchantreconcilationreport',
+        'merchantpaymentsummaryreport',
+    ];
+
     // Override this from base, since we need to know the file name instead of the sheet name
     protected function getFileName(array $extraDetails): string
     {
@@ -17,9 +22,12 @@ class Reconciliate extends Base\Reconciliate
 
     protected function getTypeName($fileName)
     {
-        if (strpos($fileName, 'merchantreconcilationreport') === 0)
+        foreach (self::COMBINED_FILE_NAMES as $name)
         {
-            return self::COMBINED;
+            if (strpos($fileName, $name) === 0)
+            {
+                return self::COMBINED;
+            }
         }
     }
 
