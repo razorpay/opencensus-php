@@ -612,6 +612,10 @@ class Service extends Base\Service
 
                     $data = $this->updateInstantActivationExperiment($data);
 
+                    $data = $this->updateRXOnboardingV2Experiment($merchant, $data);
+                    
+                    $data = $this->appendBankingDetails($data);
+
                     if (((bool) $merchant['activated']) === true)
                     {
                         $data['experiments']['support_call'] = $merchantService->getTreatment('support_call');
@@ -1092,6 +1096,27 @@ class Service extends Base\Service
         return $data;
     }
 
+    // To rollout the new RX onboarding flow in phases only for new signups after 1st July 2020
+    // Phase 1 - 10% of new signups on RX
+    // This function will be removed after 100% rollout    
+    protected function updateRXOnboardingV2Experiment(array $merchant, array $data): array
+    {
+        $merchantService = new Merchant\Service;
+
+        // TODO: update timestamp before release
+        // Timestamp - "07 Jul 2020, 12:00:00 AM IST"
+        if ($merchant['created_at'] > 1594060200)
+        {
+            $data['experiments']['rx_onboarding_v2'] = $merchantService->getTreatment('rx_onboarding_v2');
+        }
+        else
+        {
+            $data['experiments']['rx_onboarding_v2'] = ['result' => 'off'];
+        }
+
+        return $data;
+    }
+
     protected function isExperimentOnAndIsUnregisteredBusinessType(array $data): bool
     {
 
@@ -1119,5 +1144,44 @@ class Service extends Base\Service
             isset($data['partner_intent']) and
             $data['partner_intent'] === true
         );
+    }
+
+    protected function appendBankingDetails(array $data): array
+    {
+        $merchantService = new Merchant\Service;
+        $isBankingRequest = ApiUrl::isBankingOriginRequest();
+
+        if ($isBankingRequest) 
+        {
+            $data['banking_details'] = array();
+
+            try {
+                $testCount = $merchantService->getPayoutCount('test');
+                $data['banking_details']['is_test_payout_created'] = $testCount > 0;
+            }
+            catch (\Razorpay\Api\Errors\Error $e)
+            {
+                $data['banking_details']['is_test_payout_created'] = false;
+            }
+
+            try {
+
+                if ($data['activation_status'] === 'activated') 
+                {
+                    $liveCount = $merchantService->getPayoutCount('live');
+                    $data['banking_details']['is_live_payout_created'] = $liveCount > 0;
+                } 
+                else 
+                {
+                    $data['banking_details']['is_live_payout_created'] = false;
+                }
+            }
+            catch (\Razorpay\Api\Errors\Error $e)
+            {
+                $data['banking_details']['is_live_payout_created'] = false;
+            }
+        }
+
+        return $data;
     }
 }
