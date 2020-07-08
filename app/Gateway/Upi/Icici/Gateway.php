@@ -26,6 +26,7 @@ use RZP\Gateway\Base as GatewayBase;
 use RZP\Error\PublicErrorDescription;
 use RZP\Gateway\Base\AuthorizeFailed;
 use RZP\Models\BharatQr;
+use RZP\Reconciliator\Base\Reconciliate;
 use RZP\Models\Payment\Verify\Action as VerifyAction;
 
 class Gateway extends Base\Gateway
@@ -255,7 +256,8 @@ class Gateway extends Base\Gateway
      */
     protected function parseGatewayResponse(string $response, bool $forceDecryption = false, bool $isUpiTransfer = false): array
     {
-        if ($forceDecryption === false)
+        if (($forceDecryption === false) or
+            (Reconciliate::$isReconRunning === true))
         {
             $this->trace->info(TraceCode::GATEWAY_PAYMENT_RESPONSE, [
                 'body'      => $response,

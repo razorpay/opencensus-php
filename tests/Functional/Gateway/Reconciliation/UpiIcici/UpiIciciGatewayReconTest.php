@@ -14,11 +14,14 @@ use RZP\Tests\Functional\TestCase;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Tests\Functional\Batch\BatchTestTrait;
 use RZP\Tests\Functional\Helpers\Reconciliator\ReconTrait;
+use RZP\Tests\Functional\Helpers\VirtualAccount\VirtualAccountTrait;
+use RZP\Reconciliator\UpiIcici\SubReconciliator\PaymentReconciliate;
 
 class UpiIciciGatewayReconTest extends TestCase
 {
     use ReconTrait;
     use BatchTestTrait;
+    use VirtualAccountTrait;
 
     /**
      * @var array
@@ -307,6 +310,68 @@ class UpiIciciGatewayReconTest extends TestCase
         $this->assertNotNull($payment['reference16']);
 
         $this->assertEquals($upi['npci_reference_id'], $payment['reference16']);
+    }
+
+    public function testUpiIciciUnexpectedBqrPaymentCreateViaRecon()
+    {
+        $reconRow = $this->testData['upiIcici'];
+
+        $this->fixtures->merchant->enableMethod('10000000000000', 'bank_transfer');
+
+        $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
+
+        $this->fixtures->merchant->addFeatures('bharat_qr');
+
+        $this->fixtures->merchant->addFeatures(['virtual_accounts']);
+
+        $this->t2 = $this->fixtures->create('terminal:bharat_qr_terminal_upi');
+
+        $va = $this->createVirtualAccount(['receiver_types'  => 'qr_code']);
+
+        $qrCode = $this->getDbLastEntity('qr_code');
+
+        $this->assertSame($va['receivers'][0]['reference'], $qrCode->getReference());
+
+        $reconRow['merchantID']         = $this->t2->getGatewayMerchantId();
+        $reconRow['merchantTranID']     = $qrCode->getReference();
+        $reconRow['subMerchantName']    = 'RAZORPAY BHARAT QR';
+        $reconRow[PaymentReconciliate::UNEXPECTED_PAYMENT_RRN] = $reconRow['bankTranID'];
+
+        $entries[] = $reconRow;
+
+        $file = $this->writeToExcelFile($entries, 'mis_report','files/settlement','Recon MIS');
+
+        $uploadedFile = $this->createUploadedFile($file);
+
+        $this->reconcile($uploadedFile, 'UpiIcici');
+
+        $payment = $this->getDbLastEntity('payment');
+
+        $this->assertArraySubset([
+            'method'                    => 'upi',
+            'status'                    => 'captured',
+            'receiver_id'               => $qrCode->getId(),
+            'receiver_type'             => 'qr_code',
+            'auto_captured'             => true,
+            'gateway'                   => 'upi_icici',
+            'gateway_captured'          => true,
+            'vpa'                       => $reconRow['payerVA'],
+            'reference16'               => $reconRow['bankTranID'],
+        ], $payment->toArray(), true);
+
+        $transactionId = $payment['transaction_id'];
+        $transaction = $this->getDbEntityById('transaction', $transactionId);
+
+        $this->assertNotNull($transaction['reconciled_at']);
+
+        // Assert UPI entity
+        $upi = $this->getDbLastEntity('upi');
+
+        $this->assertArraySubset([
+            'payment_id'            => $payment->getId(),
+            'npci_reference_id'     => $reconRow['bankTranID'],
+            'merchant_reference'    => $qrCode->getId(),
+        ], $upi->toArray());
     }
 
     public function testPaymentReconciliationUsingRRN()

@@ -2,7 +2,9 @@
 
 namespace RZP\Reconciliator\UpiIcici\SubReconciliator;
 
+use Carbon\Carbon;
 use RZP\Models\Payment;
+use RZP\Models\BharatQr;
 use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Base;
 use RZP\Models\Payment\Status;
@@ -11,6 +13,7 @@ use RZP\Models\Base\PublicEntity;
 use RZP\Gateway\Upi\Icici\Action;
 use Razorpay\Spine\Exception\DbQueryException;
 use RZP\Gateway\Upi\Icici\Status as UpiStatus;
+use RZP\Gateway\Upi\Icici\Fields as UpiIciciFields;
 
 class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 {
@@ -25,20 +28,179 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
     const AMOUNT            = 'amount';
     const PAYER_VPA         = 'payerva';
 
+    const MERCHANT_ID        = 'merchantid';
+    const DATE               = 'date';
+    const TIME               = 'time';
+
     const BLACKLISTED_COLUMNS = [
         self::PAYER_VPA,
+    ];
+
+    // This column indicates if we should create unexpected payment
+    const UNEXPECTED_PAYMENT_RRN    = 'unexpected_payment_rrn';
+
+    const CALL_BACK_FIELD_MAPPING = [
+        UpiIciciFields::MERCHANT_ID         => self::MERCHANT_ID,
+        UpiIciciFields::SUBMERCHANT_ID      => self::SUB_MERCHANT_NAME,
+        UpiIciciFields::BANK_RRN            => self::BANK_TRANS_ID,
+        UpiIciciFields::MERCHANT_TRAN_ID    => self::MERCHANT_TRAN_ID,
+        UpiIciciFields::PAYER_VA            => self::PAYER_VPA,
+        UpiIciciFields::PAYER_AMOUNT        => self::AMOUNT,
+        UpiIciciFields::TXN_STATUS          => self::STATUS,
+        UpiIciciFields::TXN_INIT_DATE       => self::DATE,
+        UpiIciciFields::TXN_COMPLETION_DATE => self::TIME,
     ];
 
     protected function getPaymentId(array $row)
     {
         if (strpos($row[self::SUB_MERCHANT_NAME], 'BHARAT QR') !== false)
         {
-            return $this->getPaymentIdFromBharatQr($row[self::BANK_TRANS_ID], $row);
+            return $this->getPaymentIdFromBharatQrEntity($row);
         }
         else
         {
             return $this->getPaymentIdFromUpi($row);
         }
+    }
+
+    protected function getPaymentIdFromBharatQrEntity(array $row)
+    {
+        $referenceNumber = $this->getReferenceNumber($row);
+
+        if (empty($referenceNumber) === true)
+        {
+            return null;
+        }
+
+        // Fetch payment ID from bharat_qr
+        $bharatQr = $this->repo->bharat_qr->findByProviderReferenceId($referenceNumber);
+
+        if ($bharatQr != null)
+        {
+            return $bharatQr->payment->getId();
+        }
+        else
+        {
+            if (empty($row[self::UNEXPECTED_PAYMENT_RRN]) === true)
+            {
+                //
+                // We create unexpected payment only when this extra column is explicitly
+                // set by FinOps team. This is to avoid un-intentional payment creation
+                // in case someone upload an old MIS file.
+                //
+
+                $this->alertUnexpectedBharatQrPayment($referenceNumber, $row);
+
+                $this->setFailUnprocessedRow(false);
+
+                return null;
+            }
+
+            // ELSE proceed to create
+
+            // Generate callback data from recon row if possible
+            $callbackData = $this->generateCallbackData($row);
+
+            if ($callbackData === null)
+            {
+                return null;
+            }
+
+            $paymentId = null;
+
+            $this->trace->info(
+                TraceCode::RECON_INFO,
+                [
+                    'info_code' => Base\InfoCode::RECON_UNEXPECTED_PAYMENT_CREATE_INITIATED,
+                    'rrn'       => $referenceNumber,
+                    'gateway'   => $this->gateway,
+                    'batch_id'  => $this->batchId
+                ]
+            );
+
+            // For ICICI the input is a string, usually it's encrypted string but the gateway can handle plaintext
+            $response = (new BharatQr\Service)->processPayment(json_encode($callbackData), 'upi_icici');
+
+            // Fetch and raise alert if payment still not created
+            $bharatQr = $this->repo->bharat_qr->findByProviderReferenceId($referenceNumber);
+
+            if ($bharatQr === null)
+            {
+                $this->trace->info(
+                    TraceCode::RECON_INFO_ALERT,
+                    [
+                        'infoCode'      => Base\InfoCode::RECON_UNEXPECTED_PAYMENT_CREATION_FAILED,
+                        'rrn'           => $referenceNumber,
+                        'response'      => $response,
+                        'gateway'       => $this->gateway,
+                        'batch_id'      => $this->batchId,
+                    ]);
+
+                return null;
+            }
+            else
+            {
+                $paymentId = $bharatQr->payment->getId();
+
+                $this->trace->info(
+                    TraceCode::RECON_INFO,
+                    [
+                        'infoCode'      => Base\InfoCode::RECON_UNEXPECTED_PAYMENT_CREATED,
+                        'payment_id'    => $paymentId,
+                        'rrn'           => $referenceNumber,
+                        'gateway'       => $this->gateway,
+                        'batch_id'      => $this->batchId,
+                    ]);
+            }
+
+            return $paymentId;
+        }
+    }
+
+    protected function generateCallbackData(array $row)
+    {
+        $callbackData = [];
+
+        foreach (self::CALL_BACK_FIELD_MAPPING as $callbackField => $reconColumn)
+        {
+            if (empty($row[$reconColumn]) === true)
+            {
+                // Required data missing
+                $this->trace->info(
+                    TraceCode::RECON_INFO_ALERT,
+                    [
+                        'info_code' => Base\InfoCode::RECON_INSUFFICIENT_DATA_FOR_ENTITY_CREATION,
+                        'message'   => 'Data missing to create Payment via Recon',
+                        'rrn'       => $this->getReferenceNumber($row),
+                        'gateway'   => $this->gateway,
+                        'batch_id'  => $this->batchId,
+                    ]
+                );
+
+                return null;
+            }
+
+            $callbackData[$callbackField] = $row[$reconColumn];
+        }
+
+        //
+        // For the below fields, we are not getting the data in MIS directly, so
+        // add the data accordingly
+        //
+        $callbackData[UpiIciciFields::TERMINAL_ID]  = null;
+        $callbackData[UpiIciciFields::PAYER_NAME]   = null;
+        $callbackData[UpiIciciFields::PAYER_MOBILE] = '0000000000';
+
+        // txn init time and completion time can be formulated using Date and time column
+        $dateTime = $row[self::DATE] . ' ' . $row[self::TIME];
+
+        // Format date to required format .i.e 20200703202700
+        $formattedDate = Carbon::parse($dateTime)->format('YdmHis');
+
+        $callbackData[UpiIciciFields::TXN_INIT_DATE] = $formattedDate;
+        $callbackData[UpiIciciFields::TXN_COMPLETION_DATE] = $formattedDate;
+
+        return $callbackData;
     }
 
     /**
