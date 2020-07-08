@@ -364,7 +364,6 @@ class Entity extends Base\PublicEntity
         self::BATCH_ID,
         self::FAILURE_REASON,
         self::CREATED_AT,
-        self::SCHEDULED_AT,
     ];
 
     protected static $modifiers = [
