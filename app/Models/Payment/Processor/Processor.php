@@ -3253,6 +3253,12 @@ class Processor
             return true;
         }
 
+        if ((($order->isPaid() === true) and
+                ($order->merchant->isFeatureEnabled(Feature::DISABLE_AMOUNT_CHECK) === false)))
+        {
+            return false;
+        }
+
         $captureConfig = $this->shouldAutoCapturePaymentConfig($payment);
 
         if ($captureConfig === true)
@@ -3264,9 +3270,7 @@ class Processor
             return false;
         }
 
-        if ((($order->isPaid() === true) and
-            ($order->merchant->isFeatureEnabled(Feature::DISABLE_AMOUNT_CHECK) === false)) or
-            ($order->getPaymentCapture() === false))
+        if ($order->getPaymentCapture() === false)
         {
             return false;
         }
