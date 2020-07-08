@@ -74,7 +74,7 @@ class Core extends Base\Core
                     $e,
                     Trace::ERROR,
                     TraceCode::SCHEDULE_TASK_PROCESSING_FAILED,
-                    $scheduleTask->getId());
+                    [$scheduleTask->getId()]);
 
                 $failedIds[] = $scheduleTask->getId();
             }

@@ -49,6 +49,10 @@ class Entity extends Transaction\Entity
         self::BALANCE,
         self::SOURCE,
         self::CREATED_AT,
+        self::CREDIT_TYPE,
+        self::CREDITS,
+        self::FEE,
+        self::TAX,
     ];
 
     protected $publicSetters = [
@@ -152,6 +156,7 @@ class Entity extends Transaction\Entity
                 Payout\Entity::TAX,
                 Payout\Entity::UTR,
                 Payout\Entity::NOTES,
+                Payout\Entity::FEE_TYPE,
                 Payout\Entity::CREATED_AT,
             ]);
     }

@@ -22,4 +22,28 @@ class Repository extends Base\Repository
                     ->orderBy(Entity::ID, 'desc')
                     ->get();
     }
+
+    public function getCreditTransactionsForSource(string $sourceId, string $sourceType)
+    {
+        return $this->newQuery()
+                    ->where(Entity::ENTITY_ID, $sourceId)
+                    ->where(Entity::ENTITY_TYPE, $sourceType)
+                    ->get();
+    }
+
+    public function getSumOfCreditTransactionsForSource(string $sourceId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::ENTITY_ID, $sourceId)
+                    ->sum('credits_used');
+    }
+
+    public function getReverseCreditTransactionsForSource(string $sourceId, string $sourceType)
+    {
+        return $this->newQuery()
+                    ->where(Entity::ENTITY_ID, $sourceId)
+                    ->where(Entity::ENTITY_TYPE, $sourceType)
+                    ->where(Entity::CREDITS_USED, '<', 0)
+                    ->get();
+    }
 }

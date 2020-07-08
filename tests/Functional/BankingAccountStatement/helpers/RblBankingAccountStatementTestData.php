@@ -166,6 +166,48 @@ return [
         ]
     ],
 
+    'testRblAccountStatementTxnMappingForRewardPayout' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/banking_account_statement/process',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'channel'         => 'rbl',
+            ],
+        ],
+        'response' => [
+            'content' => []
+        ]
+    ],
+
+    'testRblAccountStatementTxnMappingForMultipleRewardsPayout' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/banking_account_statement/process',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'channel'         => 'rbl',
+            ],
+        ],
+        'response' => [
+            'content' => []
+        ]
+    ],
+
+    'testRblAccountStatementTxnMappingForLessRewardsAndBankingBalancePayout' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/banking_account_statement/process',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'channel'         => 'rbl',
+            ],
+        ],
+        'response' => [
+            'content' => []
+        ]
+    ],
+
     'testLastFetchedAtWhenNewDataIsPresent' => [
         'request'  => [
             'method'  => 'GET',

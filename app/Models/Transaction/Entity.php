@@ -124,6 +124,7 @@ class Entity extends Base\PublicEntity
         self::SETTLED_AT,
         self::SETTLEMENT_ID,
         self::POSTED_AT,
+        self::CREDIT_TYPE,
     ];
 
     /**
@@ -716,6 +717,11 @@ class Entity extends Base\PublicEntity
     public function isFeeCredits()
     {
         return ($this->getAttribute(self::CREDIT_TYPE) === CreditType::FEE);
+    }
+
+    public function isRewardFeeCredits()
+    {
+        return ($this->getAttribute(self::CREDIT_TYPE) === CreditType::REWARD_FEE);
     }
 
     public function isRefundCredits()

@@ -75,8 +75,7 @@ class Promotion extends Base
         $defaultValues = [
             'product'       => 'banking',
             'credit_type'   => 'reward_fee',
-            '
-            purpose'       => 'test sign up promotion'
+            'purpose'       => 'test sign up promotion'
         ];
 
         $attributes = array_merge($defaultValues, $attributes);

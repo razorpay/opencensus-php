@@ -10,4 +10,5 @@ class CreditType
     const FEE               = 'fee';
     const AMOUNT            = 'amount';
     const REFUND            = 'refund';
+    const REWARD_FEE        = 'reward_fee';
 }

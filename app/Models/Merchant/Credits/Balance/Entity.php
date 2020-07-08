@@ -55,6 +55,11 @@ class Entity extends PublicEntity
         $this->increment(self::BALANCE, $credits);
     }
 
+    public function decrementBalance($credits)
+    {
+        $this->decrement(self::BALANCE, $credits);
+    }
+
     public function merchant()
     {
         return $this->belongsTo('RZP\Models\Merchant\Entity');

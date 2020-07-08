@@ -1434,7 +1434,14 @@ final class FactoryData
 
         $factory(\RZP\Models\Promotion\Event\Entity::class, [
             'id'                 => $faker->uniqueid,
-
         ]);
+
+        $factory(\RZP\Models\Merchant\Credits\Balance\Entity::class, [
+                'id'            => $faker->uniqueid,
+                'merchant_id'   => '10000000000000',
+                'type'          => 'reward_fee',
+                'product'       => 'banking',
+            ]
+        );
     }
 }

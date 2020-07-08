@@ -26,6 +26,7 @@ class Entity extends Base\PublicEntity
 
     const BANKING                   = 'banking';
     const CREDITS                   = 'credits';
+    const DEAFULT                   = 'default';
 
     protected $entity               = 'credits';
 
@@ -47,7 +48,7 @@ class Entity extends Base\PublicEntity
         self::CREATOR_NAME,
         self::PRODUCT,
         self::BATCH_ID,
-        self::IDEMPOTENCY_KEY
+        self::IDEMPOTENCY_KEY,
     ];
 
     protected $visible = [
@@ -85,7 +86,7 @@ class Entity extends Base\PublicEntity
         self::CREATED_AT,
         self::MERCHANT_ID,
         self::REMARKS,
-        self::BALANCE_ID
+        self::BALANCE_ID,
     ];
 
     protected $publicSetters = [
@@ -212,6 +213,10 @@ class Entity extends Base\PublicEntity
        return $this->getAttribute(self::PRODUCT);
     }
 
+    public function getExpiredAt()
+    {
+        return $this->getAttribute(self::EXPIRED_AT);
+    }
 // --------------------- End Getters -----------------------------------------
 
 // --------------------- Modifiers -------------------------------------------
@@ -255,6 +260,5 @@ class Entity extends Base\PublicEntity
     {
         return $this->belongsTo('RZP\Models\Promotion\Entity');
     }
-
 // --------------------- End Foreign Key Relations ---------------------------
 }

@@ -83,6 +83,24 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function getCreditsSortedByExpiryWithBalance(int $timestamp, string $merchantId, string $type, string $balanceId)
+    {
+        return $this->newQuery()
+            ->merchantId($merchantId)
+            ->where(Entity::TYPE, '=', $type)
+            ->where(Entity::BALANCE_ID, $balanceId)
+            ->whereRaw(Entity::VALUE . '>' . Entity::USED)
+            ->where(function ($query) use ($timestamp)
+            {
+                $query->where(Entity::EXPIRED_AT, '>', $timestamp)
+                    ->orWhereNull(Entity::EXPIRED_AT);
+            }
+            )
+            // This is done because we want to keep the null EXPIRED at the bottom
+            ->orderBy(\DB::raw('-`expired_at`'), 'desc')
+            ->get();
+    }
+
     /**
      * Returns Credit entities
      *
@@ -195,5 +213,14 @@ class Repository extends Base\Repository
                     ->where(Entity::PROMOTION_ID, $promotion->getId())
                     ->where(Entity::MERCHANT_ID, $merchant->getId())
                     ->first();
+    }
+
+    public function getCreditLockForUpdate($credit)
+    {
+        assertTrue ($this->isTransactionActive());
+
+        return Entity::lockForUpdate()->newQuery()
+                                      ->where(Entity::ID, $credit->getId())
+                                      ->firstOrFail();
     }
 }

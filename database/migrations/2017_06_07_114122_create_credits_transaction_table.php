@@ -25,12 +25,19 @@ class CreateCreditsTransactionTable extends Migration
             $table->char(CreditTransaction::ID, CreditTransaction::ID_LENGTH)
                   ->primary();
 
-            $table->char(CreditTransaction::TRANSACTION_ID, Transaction::ID_LENGTH);
+            $table->char(CreditTransaction::TRANSACTION_ID, Transaction::ID_LENGTH)
+                  ->nullable();
 
             $table->char(CreditTransaction::CREDITS_ID, Credits\Entity::ID_LENGTH);
 
-            $table->integer(CreditTransaction::CREDITS_USED)
-                  ->default(0);
+            $table->char(CreditTransaction::ENTITY_ID, Credits\Entity::ID_LENGTH)
+                  ->nullable();
+
+            $table->char(CreditTransaction::ENTITY_TYPE, 255)
+                  ->nullable();
+
+             $table->integer(CreditTransaction::CREDITS_USED)
+                   ->default(0);
 
             $table->integer(CreditTransaction::CREATED_AT);
 

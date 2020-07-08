@@ -19,6 +19,7 @@ use RZP\Models\BankingAccount;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\Currency\Currency;
 use RZP\Exception\BadRequestException;
+use RZP\Models\Transaction\CreditType;
 use RZP\Models\Settlement\SlackNotification;
 
 class Core extends Base\Core
@@ -87,6 +88,12 @@ class Core extends Base\Core
     public function handlePayoutStatusUpdate(Payout\Entity $payout,
                                              Reversal\Entity $reversal = null)
     {
+        if (($payout->getFeeType() !== null) and
+            ($payout->getFeeType() === CreditType::REWARD_FEE))
+        {
+            return;
+        }
+
         $payoutStatus = $payout->getStatus();
 
         // We shall make a new entry in the fee_recovery table of type credit when

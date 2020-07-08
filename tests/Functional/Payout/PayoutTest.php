@@ -302,6 +302,193 @@ class PayoutTest extends TestCase
         $this->assertNotNull($txn['posted_at']);
     }
 
+    public function testPayoutReversalWithRewards()
+    {
+        $this->fixtures->edit('card', '100000000lcard', ['last4' => '1112']);
+
+        $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 1500 , 'campaign' => 'test rewards', 'type' => 'reward_fee', 'product' => 'banking']);
+
+        $this->fixtures->create('credit_balance', ['merchant_id' => '10000000000000', 'balance' => 1500 ]);
+
+        $creditBalanceEntity = $this->getDbLastEntity('credit_balance');
+
+        $creditEntity = $this->getDbLastEntity('credits');
+
+        $this->fixtures->edit('credits', $creditEntity['id'], ['balance_id' => $creditBalanceEntity['id']]);
+
+        $balance = $this->getLastEntity('balance', true);
+
+        $balanceBefore = $balance['balance'];
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+
+        $payout = $this->getLastEntity('payout', true);
+        $this->assertNull($payout['user_id']);
+        $this->assertEquals(0, $payout['tax']);
+        $this->assertEquals(900, $payout['fees']);
+        $this->assertEquals('reward_fee', $payout['fee_type']);
+
+        $txn = $this->getLastEntity('transaction', true);
+        $this->assertEquals($payout['transaction_id'], $txn['id']);
+        $this->assertNotNull($txn['balance_id']);
+        $this->assertEquals(0, $txn['tax']);
+        $this->assertEquals(900, $txn['fee']);
+        $this->assertEquals('reward_fee', $txn['credit_type']);
+        $this->assertEquals(900, $txn['fee_credits']);
+
+
+        $balance = $this->getLastEntity('balance', true);
+        $this->assertEquals('shared', $balance['account_type']);
+
+        $this->assertEquals($balanceBefore - 2000000, $balance['balance']);
+        $creditBalanceEntity = $this->getLastEntity('credit_balance', true);
+        $this->assertEquals(600, $creditBalanceEntity['balance']);
+
+        $creditEntity = $this->getLastEntity('credits', true);
+        $this->assertEquals(900, $creditEntity['used']);
+
+        $creditTxnEntity = $this->getLastEntity('credit_transaction', true);
+        $this->assertEquals('payout', $creditTxnEntity['entity_type']);
+        $this->assertEquals($payout['id'], 'pout_' . $creditTxnEntity['entity_id']);
+        $this->assertEquals(900, $creditTxnEntity['credits_used']);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $payoutId = $payout->getId();
+
+        (new Payout\Core)->updateStatusAfterFtaRecon($payout, [
+            'fta_status'        => 'failed',
+            'failure_reason'    => '',
+            'bank_status_code'  => 'YB_NS_E10282323'
+        ]);
+
+        $updatedPayout = $this->getDbEntityById('payout',$payoutId)->toArray();
+
+        $this->assertEquals($updatedPayout[Payout\Entity::FAILURE_REASON],
+            'Payout failed. Contact support for help');
+        $this->assertEquals($updatedPayout[Payout\Entity::STATUS],Payout\Status::REVERSED);
+        $this->assertNotNull($updatedPayout[Payout\Entity::REVERSED_AT]);
+
+        //get reversal and check posted_at in reversal txn
+        $payoutReversal = $this->getDbLastEntity('reversal');
+
+        $txn = $this->getLastEntity('transaction', true);
+        $this->assertNotNull($txn['posted_at']);
+
+        $creditBalanceEntity = $this->getLastEntity('credit_balance', true);
+        $this->assertEquals(1500, $creditBalanceEntity['balance']);
+
+        $creditEntity = $this->getLastEntity('credits', true);
+        $this->assertEquals(0, $creditEntity['used']);
+
+        $creditTxnEntity = $this->getLastEntity('credit_transaction', true);
+        $this->assertEquals('reversal', $creditTxnEntity['entity_type']);
+        $this->assertEquals(-900, $creditTxnEntity['credits_used']);
+    }
+
+    public function testPayoutReversalWithMultipleRewards()
+    {
+        $this->fixtures->edit('card', '100000000lcard', ['last4' => '1112']);
+
+        $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 100 , 'campaign' => 'test rewards', 'type' => 'reward_fee', 'product' => 'banking']);
+
+        $this->fixtures->create('credit_balance', ['merchant_id' => '10000000000000', 'balance' => 1500 ]);
+
+        $creditBalanceEntity = $this->getDbLastEntity('credit_balance');
+
+        $creditEntity = $this->getDbLastEntity('credits');
+
+        $this->fixtures->edit('credits', $creditEntity['id'], ['balance_id' => $creditBalanceEntity['id']]);
+
+        $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 1400 , 'campaign' => 'test rewards', 'type' => 'reward_fee', 'product' => 'banking']);
+
+        $creditBalanceEntity = $this->getDbLastEntity('credit_balance');
+
+        $creditEntity = $this->getDbLastEntity('credits');
+
+        $this->fixtures->edit('credits', $creditEntity['id'], ['balance_id' => $creditBalanceEntity['id']]);
+
+        $balance = $this->getLastEntity('balance', true);
+
+        $balanceBefore = $balance['balance'];
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+
+        $payout = $this->getLastEntity('payout', true);
+        $this->assertNull($payout['user_id']);
+        $this->assertEquals(0, $payout['tax']);
+        $this->assertEquals(900, $payout['fees']);
+        $this->assertEquals('reward_fee', $payout['fee_type']);
+
+        $txn = $this->getLastEntity('transaction', true);
+        $this->assertEquals($payout['transaction_id'], $txn['id']);
+        $this->assertNotNull($txn['balance_id']);
+        $this->assertEquals(0, $txn['tax']);
+        $this->assertEquals(900, $txn['fee']);
+        $this->assertEquals('reward_fee', $txn['credit_type']);
+        $this->assertEquals(900, $txn['fee_credits']);
+
+        $creditEntities = $this->getDbEntities('credits');
+        $this->assertEquals(100, $creditEntities[0]['used']);
+        $this->assertEquals(800, $creditEntities[1]['used']);
+
+        $creditTxnEntities = $this->getDbEntities('credit_transaction');
+        $this->assertEquals('payout', $creditTxnEntities[0]['entity_type']);
+        $this->assertEquals($payout['id'], 'pout_' . $creditTxnEntities[0]['entity_id']);
+        $this->assertEquals(100, $creditTxnEntities[0]['credits_used']);
+        $this->assertEquals('payout', $creditTxnEntities[1]['entity_type']);
+        $this->assertEquals($payout['id'], 'pout_' . $creditTxnEntities[1]['entity_id']);
+        $this->assertEquals(800, $creditTxnEntities[1]['credits_used']);
+
+        $balance = $this->getLastEntity('balance', true);
+        $this->assertEquals('shared', $balance['account_type']);
+        $this->assertEquals($balanceBefore - 2000000, $balance['balance']);
+
+        $creditBalanceEntity = $this->getLastEntity('credit_balance', true);
+        $this->assertEquals(600, $creditBalanceEntity['balance']);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $payoutId = $payout->getId();
+
+        (new Payout\Core)->updateStatusAfterFtaRecon($payout, [
+            'fta_status'        => 'failed',
+            'failure_reason'    => '',
+            'bank_status_code'  => 'YB_NS_E10282323'
+        ]);
+
+        $updatedPayout = $this->getDbEntityById('payout', $payoutId)->toArray();
+
+        $this->assertEquals($updatedPayout[Payout\Entity::FAILURE_REASON],
+            'Payout failed. Contact support for help');
+        $this->assertEquals($updatedPayout[Payout\Entity::STATUS],Payout\Status::REVERSED);
+        $this->assertNotNull($updatedPayout[Payout\Entity::REVERSED_AT]);
+
+        //get reversal and check posted_at in reversal txn
+        $payoutReversal = $this->getDbLastEntity('reversal');
+
+        $txn = $this->getLastEntity('transaction', true);
+        $this->assertNotNull($txn['posted_at']);
+
+        $creditBalanceEntity = $this->getLastEntity('credit_balance', true);
+        $this->assertEquals(1500, $creditBalanceEntity['balance']);
+
+        $creditEntities = $this->getDbEntities('credits');
+        $this->assertEquals(0, $creditEntities[0]['used']);
+        $this->assertEquals(0, $creditEntities[1]['used']);
+
+        $creditTxnEntities = $this->getDbEntities('credit_transaction');
+
+        $this->assertEquals('reversal', $creditTxnEntities[2]['entity_type']);
+        $this->assertEquals(-100, $creditTxnEntities[2]['credits_used']);
+        $this->assertEquals('reversal', $creditTxnEntities[3]['entity_type']);
+        $this->assertEquals(-800, $creditTxnEntities[3]['credits_used']);
+    }
+
     public function testPublicErrorCodeMappingWithEmptyPublicError()
     {
         $this->testCreatePayout();
@@ -4358,6 +4545,45 @@ class PayoutTest extends TestCase
         $this->ba->privateAuth();
 
         $this->startTest();
+    }
+
+    public function testCreatePayoutWithIfQueueLowBalanceFalseWithCredits()
+    {
+        $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 100, 'campaign' => 'test rewards', 'type' => 'reward_fee', 'product' => 'banking']);
+
+        $this->fixtures->create('credit_balance', ['merchant_id' => '10000000000000', 'balance' => 700]);
+
+        $creditBalanceEntity = $this->getDbLastEntity('credit_balance');
+
+        $creditEntity = $this->getDbLastEntity('credits');
+
+        $this->fixtures->edit('credits', $creditEntity['id'], ['balance_id' => $creditBalanceEntity['id']]);
+
+        $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 600 , 'campaign' => 'test rewards type', 'type' => 'reward_fee', 'product' => 'banking']);
+
+        $creditEntity = $this->getDbLastEntity('credits');
+
+        $this->fixtures->edit('credits', $creditEntity['id'], ['balance_id' => $creditBalanceEntity['id']]);
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+
+        $payout = $this->getLastEntity('payout', true);
+        $this->assertNull($payout);
+
+        $txn = $this->getLastEntity('transaction', true);
+        $this->assertNull($txn);
+
+        $creditBalanceEntity = $this->getLastEntity('credit_balance', true);
+        $this->assertEquals(700, $creditBalanceEntity['balance']);
+
+        $creditEntities = $this->getDbEntities('credits');
+        $this->assertEquals(0, $creditEntities[0]['used']);
+        $this->assertEquals(0, $creditEntities[1]['used']);
+
+        $creditTxnEntities = $this->getDbEntities('credit_transaction');
+        $this->assertEquals(0, count($creditTxnEntities));
     }
 
     public function testPayoutFetchById()

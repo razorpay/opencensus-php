@@ -16,6 +16,7 @@ use RZP\Models\Adjustment;
 use RZP\Models\Transaction;
 use RZP\Models\Payment\Refund;
 use RZP\Constants\Entity as E;
+use RZP\Models\Merchant\Credits;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\BankingAccountStatement\Channel;
 use RZP\Models\Adjustment\Core as AdjustmentCore;
@@ -400,9 +401,44 @@ class Core extends Base\Core
             (new Transaction\Core)->dispatchEventForTransactionCreated($reversal->transaction);
         }
 
+        if ($this->shouldHandleRewardForReversalsForSource($reversal) === true)
+        {
+            (new Credits\Transaction\Core)->reverseCreditTransactionsForSource(
+                                                        $reversal->getEntityId(),
+                                                        $reversal->getEntityType(),
+                                                        $reversal);
+        }
+
         $this->repo->saveOrFail($reversal);
 
         return $reversal;
+    }
+
+    protected function shouldHandleRewardForReversalsForSource(Reversal\Entity $reversal)
+    {
+        // this checks if rewards were used for the payout
+        if (($reversal->getEntityType() === E::PAYOUT) and
+            ($reversal->entity->getFeeType() === Transaction\CreditType::REWARD_FEE))
+        {
+            $sourceId = $reversal->getEntityId();
+
+            $sourceType = $reversal->getEntityType();
+
+            // this check if by any flow other flow credits were reversed, then don't
+            // reverse credits again
+            $creditTxns = (new Credits\Transaction\Core)->getReverseCreditTransactionsForSource(
+                                                                            $sourceId,
+                                                                            $sourceType);
+
+            if ($creditTxns->count() > 0)
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        return false;
     }
 
     /**

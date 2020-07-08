@@ -23,19 +23,35 @@ class Core extends Base\Core
     // so not adding the concept of a sub product like payouts, FAV etc
     // for payouts currently 1 CP = 1 Rupee.
     protected static $productSubProductCreditPointsToMoneyRatio = [
-        Product::BANKING => 1
+        Product::BANKING => [
+            Entity::DEAFULT => 1
+        ]
     ];
 
-    public function getCreditInAmount($credits, $product = Product::BANKING)
+   // gives the relation of point to money
+    public function getCreditInAmount($credits, $product = Product::BANKING, $subProduct = 'default')
     {
-        $ratio = self::$productSubProductCreditPointsToMoneyRatio[$product] ?? null;
+        $ratio = self::$productSubProductCreditPointsToMoneyRatio[$product][$subProduct] ?? null;
 
         if ($ratio === null)
         {
             return $credits;
         }
 
-        return $credits * $ratio;
+        return (int) ($credits * $ratio);
+    }
+
+    // gives the value of a certain amount in points
+    public function getCreditInPoints($amount, $product = Product::BANKING, $subProduct = 'default')
+    {
+        $ratio = self::$productSubProductCreditPointsToMoneyRatio[$product][$subProduct] ?? null;
+
+        if ($ratio === null)
+        {
+            return $amount;
+        }
+
+        return (int) ($amount * (1 / $ratio));
     }
 
     public function create($merchant, $input)

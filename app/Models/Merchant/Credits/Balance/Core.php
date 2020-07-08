@@ -5,6 +5,7 @@ namespace RZP\Models\Merchant\Credits\Balance;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
+use RZP\Models\Merchant\Credits;
 
 class Core extends Base\Core
 {
@@ -42,7 +43,7 @@ class Core extends Base\Core
 
         if ($creditsExpiry === null)
         {
-            $creditBalance = $this->repo->credit_balance->getMerchantCreditBalanceByTypeAndProduct(
+            $creditBalance = $this->repo->credit_balance->findMerchantCreditBalanceByTypeAndProduct(
                                                                     $merchant->getId(),
                                                                     $type,
                                                                     $product);
@@ -66,6 +67,21 @@ class Core extends Base\Core
         $creditBalance = $this->create($merchant, $input);
 
         return $creditBalance;
+    }
+
+    public function getMerchantCreditBalanceAggregatedByProductForEveryType(string $merchantId, string $product)
+    {
+        $credits = $this->repo->credit_balance->getMerchantCreditBalanceAggregatedByProductForEveryType(
+                                                                                $merchantId,
+                                                                                $product);
+        $data = [];
+
+        foreach ($credits as $type => $credit)
+        {
+            $data[$type] = (new Credits\Core)->getCreditInAmount($credit, $product);
+        }
+
+        return $data;
     }
 
     public function getCreditsBalancesOfMerchantForProduct(Merchant\Entity $merchant, string $product)

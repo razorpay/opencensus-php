@@ -33,6 +33,7 @@ use RZP\Constants\Timezone;
 use RZP\Models\BankingAccount;
 use RZP\Models\Workflow\Action;
 use RZP\Models\Admin\ConfigKey;
+use RZP\Models\Merchant\Credits;
 use RZP\Models\Admin\Permission;
 use RZP\Jobs\BatchPayoutsProcess;
 use RZP\Models\Currency\Currency;
@@ -1739,6 +1740,19 @@ class Core extends Base\Core
 
                 $payout->setFailureReason($ftaFailureReason);
 
+                $this->mutex->acquireAndRelease(
+                    $payout->getId(),
+                    function () use ($payout)
+                    {
+                        if ($this->shouldHandleRewardForFailedPayout($payout) === true)
+                        {
+                            (new Credits\Transaction\Core)->reverseCreditTransactionsForSource(
+                                $payout->getId(),
+                                Constants\Entity::PAYOUT,
+                                $payout);
+                        }
+                    });
+
                 $this->repo->saveOrFail($payout);
 
                 if ($payout->isBalanceAccountTypeDirect() === true)
@@ -2226,5 +2240,27 @@ class Core extends Base\Core
         }
 
         return $limit;
+    }
+
+    protected function shouldHandleRewardForFailedPayout(Entity $payout)
+    {
+        // this checks if rewards were used for the payout
+        if ($payout->getFeeType() !== Transaction\CreditType::REWARD_FEE)
+        {
+            return false;
+        }
+
+        // this check if by any flow other flow credits were reversed, then don't
+        // reverse credits again
+        $creditTxns = (new Credits\Transaction\Core)->getReverseCreditTransactionsForSource(
+                                                                   $payout->getId(),
+                                                                   Constants\Entity::PAYOUT);
+
+        if ($creditTxns->count() > 0)
+        {
+            return false;
+        }
+
+        return true;
     }
 }

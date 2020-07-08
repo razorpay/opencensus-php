@@ -9,6 +9,8 @@ class Entity extends Base\PublicEntity
     const TRANSACTION_ID = 'transaction_id';
     const CREDITS_ID     = 'credits_id';
     const CREDITS_USED   = 'credits_used';
+    const ENTITY_ID      = 'entity_id';
+    const ENTITY_TYPE    = 'entity_type';
 
     protected $entity = 'credit_transaction';
 
@@ -20,6 +22,10 @@ class Entity extends Base\PublicEntity
 
     protected $fillable = [
         self::CREDITS_USED,
+    ];
+
+    protected $ignoredRelations = [
+        'entity',
     ];
 
     public function transaction()
@@ -35,6 +41,11 @@ class Entity extends Base\PublicEntity
     public function getCreditsUsed()
     {
         return $this->getAttribute(self::CREDITS_USED);
+    }
+
+    public function entity()
+    {
+        return $this->morphTo();
     }
 
     public function updateCreditsUsed(int $used)

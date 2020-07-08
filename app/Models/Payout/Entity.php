@@ -95,12 +95,12 @@ class Entity extends Base\PublicEntity
     const INITIATED_AT           = 'initiated_at';
     const PAYOUT_LINK_ID         = 'payout_link_id';
     const PRICING_RULE_ID        = 'pricing_rule_id';
+    const FEE_TYPE               = 'fee_type';
 
     // scheduled_at is the timestamp for when the merchant schedules the payout to be processed
     const SCHEDULED_AT           = 'scheduled_at';
     // scheduled_on is the timestamp of when the payout changes state to scheduled
     const SCHEDULED_ON           = 'scheduled_on';
-
     // Public attribute
     const DESTINATION            = 'destination';
 
@@ -248,6 +248,7 @@ class Entity extends Base\PublicEntity
         self::IDEMPOTENCY_KEY,
         self::PRICING_RULE_ID,
         self::BATCH_SUBMITTED_AT,
+        self::FEE_TYPE,
         self::SCHEDULED_AT,
         self::SCHEDULED_ON,
     ];
@@ -301,6 +302,7 @@ class Entity extends Base\PublicEntity
         self::IDEMPOTENCY_KEY,
         self::PRICING_RULE_ID,
         self::BATCH_SUBMITTED_AT,
+        self::FEE_TYPE,
         self::SCHEDULED_AT,
         self::SCHEDULED_ON,
     ];
@@ -341,6 +343,7 @@ class Entity extends Base\PublicEntity
         self::REJECTED_AT,
         self::FAILURE_REASON,
         self::CREATED_AT,
+        self::FEE_TYPE,
         self::SCHEDULED_AT,
         self::SCHEDULED_ON,
     ];
@@ -793,6 +796,10 @@ class Entity extends Base\PublicEntity
         return ($this->getStatus() === Status::REVERSED);
     }
 
+    public function getFeeType()
+    {
+        return $this->getAttribute(self::FEE_TYPE);
+    }
     /**
      * This is required for the FTA module.
      * FTA requires the sources to implement either `isStatusFailed` or `isStatusReversedOrFailed`
@@ -1006,7 +1013,8 @@ class Entity extends Base\PublicEntity
         // getting triggered twice
         if (($currentStatus === Status::CREATED) and
             ($status === Status::INITIATED) and
-            ($this->isBalanceAccountTypeDirect() === true))
+            ($this->isBalanceAccountTypeDirect() === true) and
+            ($this->getFeeType() !== Transaction\CreditType::REWARD_FEE))
         {
             (new FeeRecovery\Core)->createFeeRecoveryEntityForSource($this);
         }
@@ -1159,6 +1167,11 @@ class Entity extends Base\PublicEntity
     public function setAmount($amount)
     {
         $this->setAttribute(self::AMOUNT, $amount);
+    }
+
+    public function setFeeType($fee)
+    {
+        $this->setAttribute(self::FEE_TYPE, $fee);
     }
 
     // ============================= END SETTERS =============================

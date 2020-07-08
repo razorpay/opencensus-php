@@ -5835,6 +5835,11 @@ ALTER TABLE orders
 ALTER TABLE webhooks
     ADD COLUMN deleted_at INTEGER;
 
+ALTER TABLE credit_transaction
+    MODIFY COLUMN transaction_id CHAR(14) DEFAULT NULL,
+    ADD COLUMN entity_id CHAR(14) DEFAULT NULL,
+    ADD COLUMN entity_type VARCHAR(255) DEFAULT NULL;
+
 ALTER TABLE d2c_bureau_reports
     ADD COLUMN error_code varchar(255) DEFAULT NULL,
     MODIFY COLUMN score smallint(5) UNSIGNED DEFAULT NULL,

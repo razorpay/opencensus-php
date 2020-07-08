@@ -101,6 +101,71 @@ class FeeRecoveryTest extends TestCase
         $this->assertNull($feeRecovery['recovery_payout_id']);
     }
 
+    public function testCreateFeeRecoveryAtPayoutCreationForRBLPayoutsWithRewards()
+    {
+        $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 100 , 'campaign' => 'test rewards', 'type' => 'reward_fee', 'product' => 'banking']);
+
+        $this->fixtures->create('credit_balance', ['merchant_id' => '10000000000000', 'balance' => 700 ]);
+
+        $creditBalanceEntity = $this->getDbLastEntity('credit_balance');
+
+        $creditEntity = $this->getDbLastEntity('credits');
+
+        $this->fixtures->edit('credits', $creditEntity['id'], ['balance_id' => $creditBalanceEntity['id']]);
+
+        $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 600 , 'campaign' => 'test rewards type', 'type' => 'reward_fee', 'product' => 'banking']);
+
+        $creditEntity = $this->getDbLastEntity('credits');
+
+        $this->fixtures->edit('credits', $creditEntity['id'], ['balance_id' => $creditBalanceEntity['id']]);
+
+        $this->ba->privateAuth();
+
+        $this->createPayout($this->balance);
+
+        $payout = $this->getDbLastEntity('payout')->toArray();
+
+        $feeRecovery = $this->getDbLastEntity('fee_recovery');
+
+        $this->assertNull($feeRecovery);
+        $this->assertEquals(500, $payout['fees']);
+        $this->assertEquals(0, $payout['tax']);
+    }
+
+    public function testCreateFeeRecoveryAtPayoutCreationForRBLPayoutsReversedWithRewards()
+    {
+        $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 100 , 'campaign' => 'test rewards', 'type' => 'reward_fee' , 'product' => 'banking']);
+
+        $this->fixtures->create('credit_balance', ['merchant_id' => '10000000000000', 'balance' => 700 ]);
+
+        $creditBalanceEntity = $this->getDbLastEntity('credit_balance');
+
+        $creditEntity = $this->getDbLastEntity('credits');
+
+        $this->fixtures->edit('credits', $creditEntity['id'], ['balance_id' => $creditBalanceEntity['id']]);
+
+        $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 600 , 'campaign' => 'test rewards type', 'type' => 'reward_fee', 'product' => 'banking']);
+
+        $creditEntity = $this->getDbLastEntity('credits');
+
+        $this->fixtures->edit('credits', $creditEntity['id'], ['balance_id' => $creditBalanceEntity['id']]);
+
+        $this->ba->privateAuth();
+
+        $this->createPayout($this->balance);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        // Reverse the  payout
+        $this->updateFtaAndSource($payout, Payout\Status::REVERSED,'944926344925');
+
+        $feeRecovery = $this->getDbLastEntity('fee_recovery');
+
+        $this->assertNull($feeRecovery);
+        $this->assertEquals(500, $payout['fees']);
+        $this->assertEquals(0, $payout['tax']);
+    }
+
     public function testCreateVAPayoutNoFeeRecoveryCreated()
     {
         $balance = $this->createVirtualBankingAccount();

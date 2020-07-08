@@ -54,6 +54,7 @@ abstract class Base extends BaseCore
 
     protected $feeCredits;
 
+    protected $rewardFeeCredits;
 
     public function __construct(BaseEntity $source)
     {
@@ -324,6 +325,15 @@ abstract class Base extends BaseCore
         $this->txn->setCredits($feeCredits);
 
         $this->txn->setCreditType(Transaction\CreditType::FEE);
+    }
+
+    protected function calculateFeeForRewardFeeCredit()
+    {
+        $rewardFeeCredits = $this->fees;
+
+        $this->txn->setCredits($rewardFeeCredits);
+
+        $this->txn->setCreditType(Transaction\CreditType::REWARD_FEE);
     }
 
     public function calculateSettledAtTimestamp($timestamp, $addDays, $ignoreBankHolidays = false)

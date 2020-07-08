@@ -5,12 +5,16 @@ namespace RZP\Models\Payout\Processor\DownstreamProcessor\FundAccountPayout\Dire
 use RZP\Models\Pricing;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Models\Merchant;
+use RZP\Constants\Product;
 use RZP\Models\Payout\Mode;
 use RZP\Models\Payout\Core;
 use RZP\Models\Payout\Entity;
 use RZP\Models\Payout\Status;
 use RZP\Models\Base\PublicEntity;
 use RZP\Exception\LogicException;
+use RZP\Models\Merchant\Credits;
+use RZP\Models\Transaction\CreditType;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Payout\Processor\DownstreamProcessor\FundAccountPayout;
 
@@ -120,6 +124,8 @@ class Base extends FundAccountPayout\Base
             throw new LogicException('No Pricing Rule ID set for payout: ' . $payout->getId());
         }
 
+        $this->adjustMerchantFeesThroughCreditsForPayout($payout, $fees, $tax);
+
         $payout->setFees($fees);
 
         $payout->setTax($tax);
@@ -143,5 +149,38 @@ class Base extends FundAccountPayout\Base
         }
 
         return [$fees, $tax, $pricingRuleId];
+    }
+
+    // consuming reward fee credits here directly. Ideally there will be many
+    // credits like amount, fee etc and there will also be a order here
+    // to consume those rewards.
+
+    protected function adjustMerchantFeesThroughCreditsForPayout(Entity $payout, & $fees, & $tax)
+    {
+        $merchantCredits = $this->repo->credits->getTypeAggregatedMerchantCredits($payout->merchant->getId());
+
+        $rewardFeeCredits = $merchantCredits[CreditType::REWARD_FEE] ?? 0;
+
+        if (($rewardFeeCredits < $fees - $tax) or
+            ($fees === 0))
+        {
+            return;
+        }
+
+        if ($rewardFeeCredits !== 0)
+        {
+            $rewardUsed = $fees = $fees - $tax;
+
+            $tax = 0;
+
+            (new Credits\Transaction\Core)->subtractMerchantCreditBalanceAndCreateTransactions(
+                                                            $this->merchant,
+                                                            CreditType::REWARD_FEE,
+                                                            Product::BANKING,
+                                                            $rewardUsed,
+                                                            $payout);
+
+            $payout->setFeeType(CreditType::REWARD_FEE);
+        }
     }
 }

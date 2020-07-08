@@ -172,6 +172,9 @@ class CreatePayoutsTable extends Migration
             $table->string(Payout::MODE, 30)
                   ->nullable();
 
+            $table->string(Payout::FEE_TYPE, 255)
+                  ->nullable();
+
             $table->integer(Payout::CREATED_AT);
 
             $table->integer(Payout::UPDATED_AT);

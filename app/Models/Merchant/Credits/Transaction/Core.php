@@ -2,10 +2,12 @@
 
 namespace RZP\Models\Merchant\Credits\Transaction;
 
-use App;
+use Carbon\Carbon;
 
+use App;
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Models\Transaction;
 use RZP\Models\Merchant\Credits;
@@ -17,6 +19,23 @@ class Core extends Base\Core
         $creditTxn = new Entity;
 
         $creditTxn->transaction()->associate($txn);
+
+        $credit->updateUsed($creditsUsed);
+
+        $creditTxn->credits()->associate($credit);
+
+        $creditTxn->updateCreditsUsed($creditsUsed);
+
+        $this->repo->saveOrFail($credit);
+
+        $this->repo->saveOrFail($creditTxn);
+    }
+
+    public function createTransactionForSource(Credits\Entity $credit, Base\PublicEntity $source, string $creditsUsed)
+    {
+        $creditTxn = new Entity;
+
+        $creditTxn->entity()->associate($source);
 
         $credit->updateUsed($creditsUsed);
 
@@ -170,6 +189,155 @@ class Core extends Base\Core
 
             $creditAmount = 0;
         }
+
+        return $creditsUsed;
+    }
+
+    /**
+     * @param Merchant\Entity $merchant
+     * @param string $creditType
+     * @param string $product
+     * @param $amount
+     * @param Base\PublicEntity $source
+     * We will first get all the credit balances of a merchant for a type and product
+     * which are not expired yet and have some balance amount set.
+     * There is only one balance as of now which does not have expiry. The code takes
+     * care of handling balances by consuming them in the order of expiry. But if
+     * any specific order has to be used for consuming credits, please change this
+     * method
+     * Now each balance, we get the credits where value > used and which have not
+     * expired yet. We go through each credit and see if we can consume it and
+     * make credit txn entry for the same.
+     * We need to take lock on balance at all the time and a lock on credit
+     * record while updating it.
+     */
+    public function subtractMerchantCreditBalanceAndCreateTransactions(
+                                                               Merchant\Entity $merchant,
+                                                               string $creditType,
+                                                               string $product,
+                                                               $amount,
+                                                               Base\PublicEntity $source)
+    {
+        $amount = $amountInPoints = (new Credits\Core)->getCreditInPoints($amount);
+
+        $creditBalances = $this->repo->credit_balance->getCreditBalanceByTypeAndProduct($merchant, $creditType, $product);
+
+        foreach ($creditBalances as $balance)
+        {
+            if (($amountInPoints <= $balance->getBalance()) and
+                ($amountInPoints !== 0))
+            {
+                $currentTimestamp = Carbon::now()->getTimestamp();
+
+                $credits = $this->repo->credits->getCreditsSortedByExpiryWithBalance(
+                    $currentTimestamp, $merchant->getId(), $creditType, $balance->getId());
+
+                //
+                // The amount of credits to be deducted will be reflected in the credit log
+                // specifying how many credits are used from what log.
+                //
+                $this->repo->transaction(function() use ($credits, $amount, $source, $balance)
+                {
+                    foreach ($credits as $credit)
+                    {
+                        // When all the credit logs are updated with used amount
+                        if ($amount === 0)
+                        {
+                            break;
+                        }
+
+                        $this->repo->credits->getCreditLockForUpdate($credit);
+
+                        // Get number of credits used from particular credit entry
+                        $creditsUsed = $this->getCreditsUsedAndUpdateCreditAmount($credit, $amount);
+
+                        $this->createTransactionForSource($credit, $source, $creditsUsed);
+
+                        $balance->decrementBalance($creditsUsed);
+                    }
+                });
+            }
+        }
+    }
+
+    public function checkIfCreditTransactionsExistForSource($sourceId, $sourceType)
+    {
+        $creditTxns = $this->repo->credit_transaction->getCreditTransactionsForSource($sourceId, $sourceType);
+
+        if ($creditTxns->count() > 0)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    public function getReverseCreditTransactionsForSource($sourceId, $sourceType)
+    {
+        $creditTxns = $this->repo->credit_transaction->getReverseCreditTransactionsForSource($sourceId, $sourceType);
+
+        return $creditTxns;
+    }
+
+    public function reverseCreditTransactionsForSource(
+        string $sourceId,
+        string $sourceType,
+        Base\PublicEntity $forwardSource)
+    {
+        $creditTransactions = $this->repo->credit_transaction->getCreditTransactionsForSource($sourceId, $sourceType);
+
+        $creditIds = $creditTransactions->pluck(Entity::CREDITS_ID)
+                                        ->toArray();
+
+        $creditsUsed = $creditTransactions->pluck(Entity::CREDITS_USED)
+                                          ->toArray();
+
+        $creditsToReverse = [];
+
+        foreach ($creditIds as $key => $creditId)
+        {
+            $toReverse = $creditsUsed[$key];
+
+            $creditsToReverse[$creditId] = -1 * $toReverse;
+        }
+
+        $credits = $this->repo->credits->getCreditEntities(array_keys($creditsToReverse));
+
+        foreach ($credits as $credit)
+        {
+            $currentTimestamp = Carbon::now()->getTimestamp();
+
+            // this will fail reversal creation. Logic to handle reversals needs
+            // to be thought properly. We can add a new type of credit like
+            // reward_fee_refund credit but then there things like order in
+            // which credits should be consumed will also be required. For
+            // now not allowing expired credits to get reversed.
+            if (($credit->getExpiredAt() !== null) and
+                ($credit->getExpiredAt() <= $currentTimestamp))
+            {
+                throw new Exception\LogicException(
+                    'Expired Credit cannot be reversed',
+                    null,
+                    [
+                        'credit_id' => $credit->getId(),
+                    ]);
+            }
+
+            $balance = $credit->balance ;
+
+            $this->repo->credits->getCreditLockForUpdate($credit);
+
+            $creditsToBeReversed = $creditsToReverse[$credit->getId()];
+
+            $this->createTransactionForSource($credit, $forwardSource, $creditsToBeReversed);
+
+            $balance->incrementBalance(-1 * $creditsToBeReversed);
+        }
+    }
+
+    public function getCreditsForSource(Base\PublicEntity $source)
+    {
+        $creditsUsed = $this->repo->credit_transaction->getSumOfCreditTransactionsForSource($source->getId());
 
         return $creditsUsed;
     }
