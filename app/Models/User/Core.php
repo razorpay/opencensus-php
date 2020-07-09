@@ -1133,26 +1133,30 @@ class Core extends Base\Core
      */
     protected function getTokenAndRavenOtpReqParams(array $input, Merchant\Entity $merchant, Entity $user): array
     {
-        $token    = $input['token'] ?? Entity::generateUniqueId();
+        $token = $input['token'] ?? Entity::generateUniqueId();
 
-        $context  = sprintf('%s:%s:%s:%s', $merchant->getId(), $user->getId(), $input[Entity::ACTION], $token);
+        $context = sprintf('%s:%s:%s:%s', $merchant->getId(), $user->getId(), $input[Entity::ACTION], $token);
 
         if ($input[Entity::ACTION] === 'verify_email')
         {
+            $expires_at = 20;
+
             $receiver = $user->getEmail();
         }
         else
         {
             $receiver = $input[Entity::CONTACT_MOBILE] ?? $user->getContactMobile();
         }
-        // Should have used api.user.{action} similar to post sms request to Raven. But in Raven otp.source is 10 char.
-        $source   = 'api';
 
+        // Should have used api.user.{action} similar to post sms request to Raven. But in Raven otp.source is 10 char.
+        $source = 'api';
+        
         return compact(
             'token',
             'receiver',
             'context',
-            'source');
+            'source',
+            'expires_at');
     }
 
     protected function upsertSettings(Entity $user, array $settings)
