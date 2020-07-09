@@ -3,8 +3,11 @@
 namespace RZP\Tests\Functional\Merchant;
 
 use DB;
+use App;
 use Mail;
+use Queue;
 use Config;
+
 use Carbon\Carbon;
 use RZP\Constants\Mode;
 use RZP\Services\RazorXClient;
@@ -13,6 +16,7 @@ use RZP\Models\Currency\Currency;
 use RZP\Jobs\FundAccountValidation;
 use RZP\Models\Merchant\Detail\Entity;
 use RZP\Models\Merchant\Document\Type;
+use RZP\Jobs\OnboardingKycVerification;
 use RZP\Tests\Functional\Partner\Constants;
 use RZP\Models\Merchant\Detail\PennyTesting;
 use RZP\Tests\Functional\OAuth\OAuthTestCase;
@@ -28,8 +32,8 @@ use RZP\Models\Merchant\Detail\Entity as MerchantDetails;
 use RZP\Models\Merchant\Detail\Constants as DetailConstants;
 use RZP\Models\FundAccount\Validation\Entity as ValidationEntity;
 use RZP\Models\Merchant\Detail\Constants as MerchantDetailsConstant;
-use RZP\Mail\Merchant\NeedsClarificationEmail as NeedsClarificationEmail;
 use RZP\Tests\Functional\Helpers\FundAccount\FundAccountValidationTrait;
+use RZP\Mail\Merchant\NeedsClarificationEmail as NeedsClarificationEmail;
 
 /**
  * @group dns-sensitive
@@ -2254,12 +2258,16 @@ class ActivationTest extends OAuthTestCase
                                ]
         );
 
+        Queue::fake();
+
         $this->cinVerification('cinVerification', 'failure', 'failed',
                                [
                                    'company_cin'       => '06abtpk8080c2zf',
                                    'business_name'     => 'company_name',
                                    'promoter_pan_name' => 'pankaj kumar',
                                ]);
+
+        Queue::assertPushed(OnboardingKycVerification::class);
 
         $this->cinVerification('cinVerification', 'success', 'not_matched',
                                [
@@ -2289,6 +2297,84 @@ class ActivationTest extends OAuthTestCase
         $merchantDetail = $merchant->merchantDetail;
 
         $this->assertEquals($merchantDetail->getCinVerificationStatus(), $cinVerificationStatus);
+    }
+
+    public function cinVerificationRetry(string $mockStatus, $cinVerificationStatus, array $input)
+    {
+        Config::set('applications.kyc.cin_authentication', $mockStatus);
+
+        Config::set('applications.kyc.mock', true);
+
+        $this->fixtures->on('live')->edit('merchant_detail', '10000000000000', $input);
+        $this->fixtures->on('test')->edit('merchant_detail', '10000000000000', $input);
+
+        $app = App::getFacadeRoot();
+
+        $app['rzp.mode'] = 'test';
+
+        OnboardingKycVerification::dispatch('test', 'CIN', '10000000000000');
+
+        $merchant = $this->getDbEntityById('merchant', 10000000000000);
+
+        $merchantDetail = $merchant->merchantDetail;
+
+        $this->assertEquals($merchantDetail->getCinVerificationStatus(), $cinVerificationStatus);
+    }
+
+    public function testVerifyCinDetailsRetries()
+    {
+        $this->fixtures->create('merchant_detail', ['merchant_id' => '10000000000000', 'business_type' => '4', 'cin_verification_status' => 'failed']);
+
+        $this->cinVerificationRetry('success', 'verified',
+                                    [
+                                        'company_cin'             => '06abtpk8080c2zf',
+                                        'business_name'           => 'company_name',
+                                        'promoter_pan_name'       => 'pankaj kumar',
+                                        'cin_verification_status' => 'failed'
+                                    ]);
+
+        $this->cinVerificationRetry('success', null,
+                                    [
+                                        'company_cin'             => '06abtpk8080c2zf',
+                                        'business_name'           => 'company_name',
+                                        'promoter_pan_name'       => 'pankaj kumar',
+                                        'business_type'           => '1',
+                                        'cin_verification_status' => 'failed'
+                                    ]);
+
+        $this->cinVerificationRetry('success', 'verified',
+                                    [
+                                        'company_cin'             => '06abtpk8080c2zf',
+                                        'business_name'           => 'company_name',
+                                        'promoter_pan_name'       => 'pankaj kumar',
+                                        'business_type'           => '4',
+                                        'cin_verification_status' => 'failed'
+                                    ]);
+
+        $this->cinVerificationRetry('incorrect_details', 'incorrect_details',
+                                    [
+                                        'company_cin'             => '06abtpk8080c2zf',
+                                        'business_name'           => 'company_name',
+                                        'promoter_pan_name'       => 'pankaj kumar',
+                                        'cin_verification_status' => 'failed'
+                                    ]
+        );
+
+        $this->cinVerificationRetry('failure', 'failed',
+                                    [
+                                        'company_cin'             => '06abtpk8080c2zf',
+                                        'business_name'           => 'company_name',
+                                        'promoter_pan_name'       => 'pankaj kumar',
+                                        'cin_verification_status' => 'failed'
+                                    ]);
+
+        $this->cinVerificationRetry('success', 'not_matched',
+                                    [
+                                        'company_cin'             => '06abtpk8080c2zf',
+                                        'business_name'           => 'mahinadra finance',
+                                        'promoter_pan_name'       => 'pankaj kumar',
+                                        'cin_verification_status' => 'failed'
+                                    ]);
     }
 
 }

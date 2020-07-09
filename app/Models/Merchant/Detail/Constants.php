@@ -6,6 +6,9 @@ use Razorpay\IFSC\Bank;
 
 class Constants
 {
+    //verification retry constants
+    const RETRY_DELAY_IN_SECONDS = 300;
+
     // Input params for cin verification
     const SIGNATORY_DETAILS = 'signatory_details';
     const COMPANY_CIN       = 'company_cin';
@@ -31,6 +34,7 @@ class Constants
     const COMPANY_PAN_VERIFICATION_STATUS  = 'company_pan_verification_status';
     const EXTERNAL_VERIFIER                = 'external_verifier';
     const BUSINESS_TYPE                    = 'business_type';
+    const IS_RETRY                         = 'is_retry';
 
     // pan verifier response types
     const INCORRECT_DETAILS = 'incorrect_details';
