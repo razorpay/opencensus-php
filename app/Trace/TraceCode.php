@@ -206,6 +206,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYMENT_TRANSFER_TO_CUSTOMER                          = 'PAYMENT_TRANSFER_TO_CUSTOMER';
     const PAYMENT_CAPTURE_UPDATE_TRANSACTION                    = 'PAYMENT_CAPTURE_UPDATE_TRANSACTION';
     const PAYMENT_CAPTURE_ORDER_UPDATE                          = 'PAYMENT_CAPTURE_ORDER_UPDATE';
+    const PAYMENT_CAPTURE_SET                                   = 'PAYMENT_CAPTURE_SET';
     const PAYMENT_ORDER_AMOUNT_MISMATCH                         = 'PAYMENT_ORDER_AMOUNT_MISMATCH';
     const PAYMENT_TRANSACTION_OLD                               = 'PAYMENT_TRANSACTION_OLD';
     const PAYMENT_USER_AGENT_ANOMALY                            = 'PAYMENT_USER_AGENT_ANOMALY';

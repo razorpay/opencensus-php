@@ -101,6 +101,7 @@ class Validator extends Base\Validator
         '_'                             => 'sometimes|array',
         'test_success'                  => 'sometimes|boolean',
         'subscription_card_change'      => 'sometimes|boolean',
+        'capture'                       => 'sometimes|boolean',
         'upi'                           => 'sometimes_if:method,upi|array',
         'upi.expiry_time'               => 'sometimes_if:method,upi|integer|between:5,5760|filled',
         'auth_type'                     => 'sometimes_if:method,emandate,card,emi,nach|string|max:20|filled',

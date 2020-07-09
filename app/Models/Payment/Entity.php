@@ -124,7 +124,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     const BATCH_ID              = 'batch_id';
     const REFERENCE1            = 'reference1';
     const REFERENCE2            = 'reference2';
-    const REFERENCE3            = 'reference3';
+    const CAPTURE               = 'reference3';
     const CPS_ROUTE             = 'cps_route';
     const REFERENCE5            = 'reference5';
     const REFERENCE6            = 'reference6';
@@ -551,6 +551,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::AUTO_CAPTURED        => 0,
         self::ON_HOLD              => 0,
         self::ON_HOLD_UNTIL        => null,
+        self::CAPTURE              => false,
         self::SAVE                 => false,
         self::FEE                  => null,
         self::MDR                  => null,
@@ -1175,6 +1176,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     public function setAutoCapturedTrue()
     {
         $this->setAttribute(self::AUTO_CAPTURED, true);
+    }
+
+    public function setCaptureTrue()
+    {
+        $this->setAttribute(self::CAPTURE, true);
     }
 
     public function setAutoCaptured($autoCaptured)
@@ -2346,6 +2352,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     public function getAutoCaptured()
     {
         return $this->getAttribute(self::AUTO_CAPTURED);
+    }
+
+    public function getCapture(): bool
+    {
+        return $this->getAttribute(self::CAPTURE) ?? false;
     }
 
     public function getErrorCode()

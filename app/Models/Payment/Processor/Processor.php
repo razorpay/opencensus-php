@@ -2433,6 +2433,8 @@ class Processor
 
         $this->addOrderIdToInputForSubscriptionIfApplicable($input, $payment);
 
+        $this->setCaptureForS2sCapturePayment($payment, $input);
+
         $this->validateAndSetOrderDetailsIfApplicable($payment, $input);
 
         $this->validateAndSetPaymentLinkIfApplicable($payment, $input);
@@ -2641,6 +2643,47 @@ class Processor
         }
 
         return $this->order;
+    }
+
+    /**
+     * S2S payment do not require separate amount validation via a capture call or order creation
+     * We can allow merchants to send a simple payment request and queue a capture
+     */
+    protected function setCaptureForS2sCapturePayment(
+        Payment\Entity $payment,
+        array &$input
+    )
+    {
+        if ($this->isCaptureRequired($input) === false)
+        {
+            return;
+        }
+
+        $this->trace->info(
+            TraceCode::PAYMENT_CAPTURE_SET,
+            [
+                'payment_id' => $payment->getPublicId(),
+            ]);
+
+        $payment->setCaptureTrue();
+    }
+
+    protected function isCaptureRequired(array $input): bool
+    {
+        // Can only do this when:
+        // - Request is made via S2S, since that's the only time payment amount is sent by the merchant, not the customer
+        // - Orders API is not being used
+        // - The capture flag in the payment request is set to true
+        //
+        if (($this->app['api.route']->isS2SPaymentRoute() === true) and
+            (empty($input[Payment\Entity::ORDER_ID]) === true) and
+            (isset($input['capture']) === true) and
+            (boolval($input['capture']) === true))
+        {
+            return true;
+        }
+
+        return false;
     }
 
     protected function validateAndSetOrderDetailsIfApplicable(
@@ -3096,6 +3139,15 @@ class Processor
         // capture this late auth payment since order is fullfilled by some other payment made for this order.
         if (($payment->isDirectSettlement() === true) and
             ($payment->hasOrder() === false))
+        {
+            return true;
+        }
+
+        //
+        // We do an auto capture if the payment is set to be captured
+        // This happens for s2s payments where capture=1 is part of the request
+        //
+        if ($payment->getCapture() === true)
         {
             return true;
         }

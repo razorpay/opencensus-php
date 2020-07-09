@@ -987,6 +987,57 @@ class PaymentCreateTest extends TestCase
         });
     }
 
+    public function testPaymentS2SAutoCaptureWithoutOrder()
+    {
+        $this->ba->privateAuth();
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['capture'] = true;
+
+        $this->fixtures->merchant->addFeatures(['s2s']);
+
+        $response = $this->doS2SPrivateAuthPayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals($payment['status'], 'captured');
+    }
+
+    public function testPaymentS2SAutoCaptureWithoutOrderCaptureFalse()
+    {
+        $this->ba->privateAuth();
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['capture'] = false;
+
+        $this->fixtures->merchant->addFeatures(['s2s']);
+
+        $response = $this->doS2SPrivateAuthPayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals($payment['status'], 'authorized');
+    }
+
+    public function testPaymentS2SAutoCaptureWithOrder()
+    {
+        $this->ba->privateAuth();
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $order = $this->fixtures->create('order', ['amount' => 50000]);
+
+        $payment['capture'] = true;
+        $payment['order_id'] = $order->getPublicId();
+
+        $this->fixtures->merchant->addFeatures(['s2s']);
+
+        $response = $this->doS2SPrivateAuthPayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals($payment['status'], 'authorized');
+    }
+
     public function testPaymentS2SOnPrivateAuth()
     {
         $this->ba->privateAuth();
