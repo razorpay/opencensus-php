@@ -37,14 +37,20 @@ class MockPayoutOndemandWebhook extends Job
         {
             parent::handle();
 
-            $this->mockWebhookRequest($this->settlementOndemandPayout);
+            $this->app = App::getFacadeRoot();
+            $this->repo = $this->app['repo'];
+
+            $this->repo->transaction(function()
+            {
+                $this->mockWebhookRequest($this->settlementOndemandPayout);
+            });
         }
         catch (\Throwable $e)
         {
             $this->trace->traceException(
                 $e,
                 Trace::ERROR,
-                TraceCode::SETTLEMENT_ONDEMAND_TEST_MODE_PAYOUT_UPDATE_WEBKOOH_FAILURE,
+                TraceCode::SETTLEMENT_ONDEMAND_TEST_MODE_PAYOUT_UPDATE_WEBHOOK_FAILURE,
                 [
                     'payout_id' => $this->settlementOndemandPayout['id'],
                 ]);

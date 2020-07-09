@@ -650,6 +650,22 @@ class SettlementOndemandTest extends TestCase
 
         $reversal = $this->getLastEntity('reversal',true);
 
+        if ($transactions['items'][0]['type'] === 'reversal')
+        {
+            $reversalTxn = $transactions['items'][0];
+            $settlementOndemandTxn = $transactions['items'][1];
+        }
+        else if ($transactions['items'][1]['type'] === 'reversal')
+        {
+            $reversalTxn = $transactions['items'][1];
+            $settlementOndemandTxn = $transactions['items'][0];
+        }
+        else
+        {
+            $reversalTxn = $transactions['items'][2];
+            $settlementOndemandTxn = $transactions['items'][0];
+        }
+
         $this->assertArraySelectiveEquals([
             //             'id'                    => 'txn_F1aL3bkJd2t5fK',
             //             'entity_id'             => 'sod_F1aL3U2O8oHd5e',
@@ -662,7 +678,7 @@ class SettlementOndemandTest extends TestCase
                             'currency'              => 'INR',
             //             'settled_at'            => '1582000200',
             //             'created_at'          => 1582000200,
-                                    ], $transactions['items'][0]);
+                                    ], $reversalTxn);
 
         $this->assertArraySelectiveEquals([
         //             'id'                    => 'txn_F1aL3bkJd2t5fK',
@@ -676,7 +692,7 @@ class SettlementOndemandTest extends TestCase
                         'currency'              => 'INR',
         //             'settled_at'            => '1582000200',
         //             'created_at'          => 1582000200,
-                                ], $transactions['items'][1]);
+                                ], $settlementOndemandTxn);
 
         $this->assertArraySelectiveEquals([
             //      'id'                    => 'rvrsl_F2enlXFQyGJqje',

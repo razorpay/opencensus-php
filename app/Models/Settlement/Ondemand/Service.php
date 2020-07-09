@@ -76,7 +76,7 @@ class Service extends Base\Service
 
             ];
 
-            $adjustment = (new Adjustment\Service)->addAdjustment($adjInput);
+            (new Adjustment\Service)->addAdjustment($adjInput);
         }
 
         CreateSettlementOndemandPayoutJobs::dispatch($this->mode, $settlementOndemand->getId(),
@@ -108,7 +108,7 @@ class Service extends Base\Service
 
     public function createReversal($settlementOndemandPayoutId, $merchantId, $reversalReason)
     {
-        $settlementOndemandPayout = (new OndemandPayout\Repository)->findByIdAndMerchantId
+        $settlementOndemandPayout = (new OndemandPayout\Repository)->findByIdAndMerchantIdWithLock
                                                 ($settlementOndemandPayoutId , $merchantId);
 
         $this->core()->createReversal($settlementOndemandPayout, $reversalReason);
@@ -128,9 +128,8 @@ class Service extends Base\Service
 
         if (isset($input['expand']) === true && boolval($input['expand']) === true)
         {
-
             $settlementOndemandPayouts = (new OndemandPayout\Repository)
-                                         ->fetchByOndemandIdAndMerchant($settlementOndemand->getId(),
+                                         ->fetchByOndemandIdAndMerchantId($settlementOndemand->getId(),
                                                                         $settlementOndemand->getMerchantId())->all();
 
             return $this->getResponse($settlementOndemand, $settlementOndemandPayouts);

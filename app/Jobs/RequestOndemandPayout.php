@@ -47,13 +47,23 @@ class RequestOndemandPayout extends Job
                 'ondemand_payout_id'   => $this->settlementOndemandPayoutId,
             ]);
 
-            $this->settlementOndemandPayout = (new OndemandPayout\Repository)->findByIdAndMerchantId(
-                                                    $this->settlementOndemandPayoutId, $this->merchantId);
+            $this->app = App::getFacadeRoot();
+            $this->repo = $this->app['repo'];
 
-            [$payoutStatus, $payoutId, $response] = (new OndemandPayout\Service)
-                                                    ->makePayoutRequest($this->settlementOndemandPayoutId, $this->currency);
 
-            (new OndemandPayout\Service)->updateStatusAfterPayoutRequest($payoutStatus, $payoutId, $this->settlementOndemandPayout);
+            $this->repo->transaction(function()
+            {
+                $this->settlementOndemandPayout = (new OndemandPayout\Repository)->findByIdAndMerchantIdWithLock(
+                                                        $this->settlementOndemandPayoutId,
+                                                        $this->merchantId);
+
+                [$payoutStatus, $payoutId, $response] = (new OndemandPayout\Service)
+                    ->makePayoutRequest($this->settlementOndemandPayoutId, $this->currency);
+
+                (new OndemandPayout\Service)->updateStatusAfterPayoutRequest($payoutStatus,
+                                                                             $payoutId,
+                                                                             $this->settlementOndemandPayout);
+            });
         }
         catch (\Throwable $e)
         {
@@ -62,8 +72,8 @@ class RequestOndemandPayout extends Job
                 Trace::ERROR,
                 TraceCode::SETTLEMENT_ONDEMAND_PAYOUT_REQUEST_FAILURE,
                 [
-                    'merchant'                      => $this->settlementOndemandPayout->getMerchantId(),
-                    'settlement_ondemand_payout_id' => $this->settlementOndemandPayout->getId(),
+                    'merchant'                      => $this->merchantId,
+                    'settlement_ondemand_payout_id' => $this->settlementOndemandPayoutId,
                 ]);
 
             if ($this->attempts() <= self::MAX_ALLOWED_ATTEMPTS)

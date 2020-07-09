@@ -131,7 +131,7 @@ class Core extends Base\Core
             function() use ($settlementOndemandPayout, $reversalReason)
             {
                 /** @var Entity $settlementOndemand */
-                $settlementOndemand = (new Repository)->findByIdAndMerchantId(
+                $settlementOndemand = (new Repository)->findByIdAndMerchantIdWithLock(
                                             $settlementOndemandPayout->getOndemandId(),
                                             $settlementOndemandPayout->getMerchantId());
 

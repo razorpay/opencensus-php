@@ -2,7 +2,9 @@
 
 namespace RZP\Jobs;
 
+use App;
 use Mail;
+
 use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Settlement\Ondemand;
@@ -35,26 +37,23 @@ class CreateSettlementOndemandPayoutReversal extends Job
     {
         parent::handle();
 
-        $this->trace->info(TraceCode::SETTLEMENT_ONDEMAND_PAYOUT_REVERSAL_JOB, [
-            'settlement_ondemand_payout_id'   => $this->settlementOndemandPayoutId,
-            'reversal_reason'                 => $this->reversalReason,
-        ]);
-
         try
         {
-            (new Ondemand\Service)->createReversal($this->settlementOndemandPayoutId, $this->merchantId ,$this->reversalReason);
+            $this->trace->info(TraceCode::SETTLEMENT_ONDEMAND_PAYOUT_REVERSAL_JOB, [
+                'settlement_ondemand_payout_id'   => $this->settlementOndemandPayoutId,
+                'reversal_reason'                 => $this->reversalReason,
+            ]);
+
+            $this->app = App::getFacadeRoot();
+            $this->repo = $this->app['repo'];
+
+            $this->repo->transaction(function()
+            {
+                (new Ondemand\Service)->createReversal($this->settlementOndemandPayoutId, $this->merchantId ,$this->reversalReason);
+            });
         }
         catch(\Exception $e)
         {
-            if ($this->attempts() <= self::MAX_ATTEMPTS)
-            {
-                $this->release(1);
-            }
-            else
-            {
-                $this->delete();
-            }
-
             $this->trace->traceException(
                 $e,
                 Trace::ERROR,
@@ -64,6 +63,15 @@ class CreateSettlementOndemandPayoutReversal extends Job
                     'reversal_reason'                 => $this->reversalReason,
                 ]
             );
+
+            if ($this->attempts() <= self::MAX_ATTEMPTS)
+            {
+                $this->release(1);
+            }
+            else
+            {
+                $this->delete();
+            }
         }
     }
 }

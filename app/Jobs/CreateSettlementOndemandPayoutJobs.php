@@ -45,7 +45,7 @@ class CreateSettlementOndemandPayoutJobs extends Job
             ]);
 
             $settlementOndemandPayoutIds = (new OndemandPayout\Repository)
-                                ->fetchIdsByOndemandIdAndMerchant($this->settlementOndemand->getId(), $this->settlementOndemand->getMerchantId());
+                                ->fetchIdsByOndemandIdAndMerchantId($this->settlementOndemand->getId(), $this->settlementOndemand->getMerchantId());
 
             foreach($settlementOndemandPayoutIds as $settlementOndemandPayoutId)
             {

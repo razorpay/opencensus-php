@@ -146,11 +146,13 @@ class Core extends Base\Core
         return $settlementOndemandPayouts;
     }
 
-    public function updateStatusAfterPayoutRequest($payoutStatus, $payoutId, $settlementOndemandPayout)
+    public function updateStatusAfterPayoutRequest($payoutStatus, $payoutId, Entity $settlementOndemandPayout)
     {
         if ($payoutStatus !== self::PAYOUT_PROCESSING_STATUS || empty($payoutId) === true)
         {
-            $this->initiateReversal($settlementOndemandPayout, 'payout creation request failed');
+            $this->initiateReversal($settlementOndemandPayout->getId(),
+                                    $settlementOndemandPayout->getMerchantId(),
+                                    'payout creation request failed');
         }
         else
         {
@@ -176,7 +178,7 @@ class Core extends Base\Core
     {
         $response = [];
 
-        $settlementOndemandPayout = (new Repository)->findbyIdAndPayoutId($payoutData['reference_id'], $payoutData['id']);
+        $settlementOndemandPayout = (new Repository)->findbyIdAndPayoutIdWithLock($payoutData['reference_id'], $payoutData['id']);
 
         switch($event)
         {
@@ -219,7 +221,7 @@ class Core extends Base\Core
         $this->repo->transaction(
             function() use ($settlementOndemandPayout, $utr)
             {
-                $settlementOndemand = (new Ondemand\Repository)->findByIdAndMerchantId(
+                $settlementOndemand = (new Ondemand\Repository)->findByIdAndMerchantIdWithLock(
                                                             $settlementOndemandPayout->getOndemandId(),
                                                             $settlementOndemandPayout->getMerchantId());
 

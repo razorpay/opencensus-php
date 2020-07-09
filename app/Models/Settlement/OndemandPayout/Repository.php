@@ -8,16 +8,20 @@ class Repository extends Base\Repository
 {
     protected $entity = 'settlement.ondemand_payout';
 
-    public function findbyIdAndPayoutId($id, $payoutId): Entity
+    public function findbyIdAndPayoutIdWithLock($id, $payoutId): Entity
     {
+        assertTrue ($this->isTransactionActive());
+
         return Entity::lockForUpdate()
                     ->newQuery()
                     ->where(Entity::ID, $id)
                     ->where(Entity::PAYOUT_ID, $payoutId)
                     ->firstOrFail();
     }
-    public function findByIdAndMerchantId($id, $merchantId): Entity
+    public function findByIdAndMerchantIdWithLock($id, $merchantId): Entity
     {
+        assertTrue ($this->isTransactionActive());
+
         return Entity::lockForUpdate()
                     ->newQuery()
                     ->where(Entity::ID, $id)
@@ -25,7 +29,7 @@ class Repository extends Base\Repository
                     ->first();
     }
 
-    public function fetchIdsByOndemandIdAndMerchant($settlementOndemandId, $merchantId)
+    public function fetchIdsByOndemandIdAndMerchantId($settlementOndemandId, $merchantId)
     {
         return $this->newQuery()
                     ->where(Entity::SETTLEMENT_ONDEMAND_ID, $settlementOndemandId)
@@ -34,10 +38,9 @@ class Repository extends Base\Repository
                     ->toArray();
     }
 
-    public function fetchByOndemandIdAndMerchant($settlementOndemandId, $merchantId)
+    public function fetchByOndemandIdAndMerchantId($settlementOndemandId, $merchantId)
     {
-        return Entity::lockForUpdate()
-                    ->newQuery()
+        return $this->newQuery()
                     ->where(Entity::SETTLEMENT_ONDEMAND_ID, $settlementOndemandId)
                     ->merchantId($merchantId)
                     ->get();
