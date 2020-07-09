@@ -965,6 +965,7 @@ return [
                 'handle'              => 'LOLO',
                 'invoice_label_field' => 'business_name',
                 'display_name'        => 'Display',
+                'fee_bearer'          => 'customer',
             ],
             'url'     => '/account/config',
             'method'  => 'put',
@@ -980,6 +981,7 @@ return [
                 'handle'              => 'LOLO',
                 'invoice_label_field' => 'business_name',
                 'display_name'        => 'Display',
+                'fee_bearer'          => 'customer',
             ]
         ]
     ],

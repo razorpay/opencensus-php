@@ -123,7 +123,8 @@ class Validator extends Base\Validator
         Entity::HANDLE                   => 'sometimes|nullable|min:3|max:4|custom|unique:merchants,handle,null',
         Entity::DISPLAY_NAME             => 'sometimes|nullable|string|min:3|max:255',
         Entity::FEE_CREDITS_THRESHOLD    => 'sometimes|integer|nullable',
-        Entity::DEFAULT_REFUND_SPEED     => 'sometimes|filled|string|in:normal,optimum'
+        Entity::DEFAULT_REFUND_SPEED     => 'sometimes|filled|string|in:normal,optimum',
+        Entity::FEE_BEARER               => 'sometimes|in:customer,platform',
     ];
 
     protected static $actionRules = [
