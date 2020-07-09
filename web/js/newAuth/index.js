@@ -122,6 +122,34 @@ const DesktopOnlyView = Styled(View)`
   }
 `;
 
+const MobileOnlyView = Styled(View)`
+  display: none;
+  @media (max-width: 768px) {
+    display: block;
+  }
+`;
+
+const CustomLoginButton = Styled(Button)`
+  background-color: ${({ theme }) => theme.colors.background[100]};
+  border: 1px solid ${({ theme }) => theme.colors.background[100]};
+  > div{
+   color: ${({ theme }) => theme.colors.primary[800]};
+  }
+  :hover, :focus{
+   background-color: ${({ theme }) => theme.colors.background[800]};
+   border: 1px solid ${({ theme }) => theme.colors.background[800]};
+  }
+  :active{
+   background-color: ${({ theme }) => theme.colors.background[600]};
+   border: 1px solid ${({ theme }) => theme.colors.background[600]};
+   }
+
+`;
+
+const FullHeightFlex = Styled(Flex)`
+  height: 100%;
+`;
+
 const handleContactUsClick = () => {
   window.rzpQ.push(
     window.rzpQ
@@ -142,6 +170,12 @@ const handleLoginClick = () => {
       .onbr()
       .initiated('signup.secondary_links', { source: 'Login' })
   );
+
+  window.rzpAnalytics({
+    eventCategory: 'Signup - Email Password',
+    eventAction: 'Click - Login',
+  });
+
   window.location.href = '/#/access/signin';
 };
 
@@ -152,12 +186,12 @@ render(
         <Size maxWidth="830px" height="100%">
           <Flex flexDirection="column">
             <ContentContainer>
-              <Flex justifyContent="space-between">
-                <HeaderView>
-                  <Size maxWidth="150px">
-                    <img src="/img/logo_full.png" alt="Razorpay" />
-                  </Size>
-                  <DesktopOnlyView>
+              <DesktopOnlyView>
+                <Flex justifyContent="space-between">
+                  <HeaderView>
+                    <Size maxWidth="150px">
+                      <img src="/img/logo_full.png" alt="Razorpay" />
+                    </Size>
                     <Flex alignItems="center">
                       <View>
                         <Text color="background.100" weight="bold">
@@ -168,9 +202,33 @@ render(
                         </Space>
                       </View>
                     </Flex>
-                  </DesktopOnlyView>
+                  </HeaderView>
+                </Flex>
+              </DesktopOnlyView>
+
+              <MobileOnlyView>
+                <HeaderView>
+                  <FullHeightFlex
+                    justifyContent="space-around"
+                    alignItems="center"
+                  >
+                    <View>
+                      <Size maxWidth="120px">
+                        <img src="/img/logo_full.png" alt="Razorpay" />
+                      </Size>
+                      <Space margin={[3, 0, 0, 8]}>
+                        <CustomLoginButton
+                          size="small"
+                          onClick={handleLoginClick}
+                        >
+                          Log in
+                        </CustomLoginButton>
+                      </Space>
+                    </View>
+                  </FullHeightFlex>
                 </HeaderView>
-              </Flex>
+              </MobileOnlyView>
+
               <RelativeView>
                 <AbsoluteView>
                   <SignUp appName="dashboard" />
