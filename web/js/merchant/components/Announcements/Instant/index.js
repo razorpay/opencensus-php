@@ -69,15 +69,6 @@ export default class InstantActivationAnnouncements extends Component {
         title = 'Bank Verification Failed';
         content =
           'We were unable to verify your bank account. Please upload bank account proof.';
-      } else if (
-        user.isActivated &&
-        user.poi_verification_status == 'verified' &&
-        user.company_pan_verification_status === 'verified'
-      ) {
-        theme = 'success';
-        title = 'Account Activated';
-        content =
-          'PAN verification successful. You can start accepting domestic payments.';
       } else if (user.business_type == 11) {
         if (user.isActivated && user.poi_verification_status == 'verified') {
           theme = 'success';
@@ -161,7 +152,7 @@ export default class InstantActivationAnnouncements extends Component {
         title = 'KYC Under Review';
         if (user.instantActivation.isWhitelistFlow) {
           if (payments && payments.items.length > 0 && mode === 'live') {
-            content = `We are reviewing your KYC details. This process usually takes 1-2 days from the date of the first transaction, we will reach out to you if we need any clarifications.`;
+            content = `We are reviewing your KYC details. This process usually takes 1-2 days from the date of the first transaction, we will reach out to you on your registered email ID if we need any clarifications.`;
           } else {
             title = 'Accept Payments';
             content = (
