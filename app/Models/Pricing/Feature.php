@@ -14,6 +14,7 @@ class Feature
     const ESAUTOMATIC             = 'esautomatic';
     const FUND_ACCOUNT_VALIDATION = 'fund_account_validation';
     const REFUND                  = 'refund';
+    const SETTLEMENT_ONDEMAND     = 'settlement_ondemand';
 
     const FEATURE_LIST = [
         self::PAYMENT,
@@ -23,6 +24,7 @@ class Feature
         self::EMI,
         self::ESAUTOMATIC,
         self::FUND_ACCOUNT_VALIDATION,
+        self::SETTLEMENT_ONDEMAND
     ];
 
     /**

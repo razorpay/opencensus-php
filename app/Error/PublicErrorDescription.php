@@ -394,6 +394,10 @@ class PublicErrorDescription
     const BAD_REQUEST_HDFC_DEBIT_EMI_CUSTOMER_NOT_ELIGIBLE                      = 'EMI is not available on your HDFC debit card. To check your eligibility, SMS from your registered mobile number DCEMI<space><last 4 digits of Debit Card number> to <56767>.';
     const BAD_REQUEST_DEBIT_EMI_HDFC_MAXIMUM_AMOUNT_LIMIT                       = 'Transaction Value is greater than pre-approved limit. To check your Debit Card Pre approved limit send SMS, MYHDFC to 5676712';
 
+    //on_demand
+    const BAD_REQUEST_INSUFFICIENT_BALANCE                                      = 'Amount requested for the on_demand settlement exceeds the settlement balance.';
+    const BAD_REQUEST_ONDEMAND_SETTLEMENT_AMOUNT_MAX_LIMIT_EXCEEDED             = 'Amount requested is more than the max limit for ondemand settlement';
+
     const BAD_REQUEST_DOCUMENT_TYPE_INVALID                                     = 'invalid document type';
     const INVALID_ARGUMENT_INVALID_FILE_HANDLER_SOURCE                          = 'Server error';
 

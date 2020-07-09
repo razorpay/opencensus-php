@@ -467,6 +467,42 @@ class Pricing extends Base
         return $rows;
     }
 
+    public function createOndemandPercentRatePricingPlan()
+    {
+        $pricingPlanId = self::DEFAULT_PRICING_PLAN_ID;
+
+        $rows = [
+            [
+                'id'                  => '1GuENK6Hl2BWGg',
+                'plan_id'             => $pricingPlanId,
+                'plan_name'           => 'testDefaultPlan',
+                'feature'             => 'settlement_ondemand',
+                'payment_method'      => 'fund_transfer',
+                'percent_rate'        => 200,
+                'org_id'              => '100000razorpay',
+            ],
+        ];
+        $this->addPricingRulesToDb($rows);
+    }
+
+    public function createOndemandFixedRatePricingPlan()
+    {
+        $pricingPlanId = self::DEFAULT_PRICING_PLAN_ID;
+
+        $rows = [
+            [
+                'id'                  => '1GuENK6Hl2BWGg',
+                'plan_id'             => $pricingPlanId,
+                'plan_name'           => 'testDefaultPlan',
+                'feature'             => 'settlement_ondemand',
+                'payment_method'      => 'fund_transfer',
+                'fixed_rate'          => 500,
+                'org_id'              => '100000razorpay',
+            ],
+        ];
+        $this->addPricingRulesToDb($rows);
+    }
+
     public function createInstantRefundsPricingPlanWithDefaultMethodNull()
     {
         $pricingPlanId = self::DEFAULT_PRICING_PLAN_ID;

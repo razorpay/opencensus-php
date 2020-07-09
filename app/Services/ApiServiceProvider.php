@@ -383,6 +383,8 @@ class ApiServiceProvider extends BaseServiceProvider
 
         $this->registerCustomSessionProvider();
 
+        $this->registerRazorpayXClient();
+
         $this->registerCustomCacheProvider();
 
         $this->registerSettlementsDashboard();
@@ -683,6 +685,18 @@ class ApiServiceProvider extends BaseServiceProvider
             $mock = $app['config']->get('applications.mozart.mock');
 
             $implementation = $mock ? Mock\Mozart::class : Mozart::class;
+
+            return new $implementation($app);
+        });
+    }
+
+    public function registerRazorpayXClient()
+    {
+        $this->app->bind('razorpayXClient', function($app)
+        {
+            $mock = $app['config']->get('applications.razorpayx_client.' . $this->app['rzp.mode'] . '.mock');
+
+            $implementation = $mock ? Mock\RazorpayXClient::class : RazorpayXClient::class;
 
             return new $implementation($app);
         });

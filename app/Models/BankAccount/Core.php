@@ -6,6 +6,7 @@ use Mail;
 
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\Feature;
 use RZP\Constants\Mode;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
@@ -13,6 +14,7 @@ use RZP\Models\BankAccount;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Document;
 use RZP\Models\Merchant\Document\FileHandler;
+use RZP\Models\Settlement\OndemandFundAccount;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Models\Merchant\Detail\Entity as DetailEntity;
 use RZP\Models\Merchant\Document\Core as DocumentCore;
@@ -112,7 +114,25 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($bankAccount);
 
+        $this->updateOndemandFundAccountIfRequired($bankAccount);
+
         return $bankAccount;
+    }
+
+    public function updateOndemandFundAccountIfRequired($bankAccount)
+    {
+        $merchantId = $bankAccount[Entity::MERCHANT_ID];
+
+        if ($bankAccount->getType() === Type::MERCHANT)
+        {
+            /** @var Merchant\Entity $merchant */
+            $merchant = $this->repo->merchant->find($merchantId);
+
+            if ($merchant->isFeatureEnabled(Feature\Constants::ES_ON_DEMAND) === true)
+            {
+                (new OndemandFundAccount\Service)->dispatchSettlementOndemandFundAccountUpdateJob($merchantId);
+            }
+        }
     }
 
     /**
@@ -201,6 +221,8 @@ class Core extends Base\Core
 
                     $this->repo->merchant_detail->saveOrFail($merchantDetails);
                 }
+
+                $this->updateOndemandFundAccountIfRequired($ba);
 
                 return $ba;
             });

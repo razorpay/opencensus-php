@@ -18,6 +18,8 @@ use RZP\Models\Payment\Refund;
 use RZP\Constants\Entity as E;
 use RZP\Models\Merchant\Credits;
 use RZP\Models\Merchant\Balance;
+use RZP\Models\Settlement\Ondemand;
+use RZP\Models\Settlement\OndemandPayout;
 use RZP\Models\BankingAccountStatement\Channel;
 use RZP\Models\Adjustment\Core as AdjustmentCore;
 
@@ -439,6 +441,38 @@ class Core extends Base\Core
         }
 
         return false;
+    }
+
+    /**
+     * Create reversal for settlement.ondemand entity based on which ondemandPayout got reversed
+     *
+     * @param Ondemand\Entity $settlementOndemand
+     * @param OndemandPayout\Entity $settlementOndemandPayout
+     */
+    public function partialReversalForSettlementOndemand($settlementOndemand, $settlementOndemandPayout): Entity
+    {
+        $amount = $settlementOndemandPayout->getAmount();
+
+        $reversalInput = [
+            Entity::AMOUNT   => $amount,
+            Entity::CURRENCY => $settlementOndemand->getCurrency(),
+        ];
+
+        $reversal = $this->create($reversalInput);
+
+        $reversal->merchant()->associate($settlementOndemand->merchant);
+
+        $reversal->entity()->associate($settlementOndemand);
+
+        $txn = (new Transaction\Core)->createFromOndemandPartialReversal($reversal);
+
+        //(new Transaction\Core)->dispatchEventForTransactionCreated($reversal->transaction);
+
+        $this->repo->saveOrFail($txn);
+
+        $this->repo->saveOrFail($reversal);
+
+        return $reversal;
     }
 
     /**

@@ -111,6 +111,11 @@ abstract class Base extends BaseModel\Core
     {
         $entityType = $entity->getEntity();
 
+        if (strpos($entityType, '.') !== false)
+        {
+            $entityType = str_replace('.', '_', $entityType);
+        }
+
         $calculator = __NAMESPACE__. '\\' .studly_case($entityType);
 
         return new $calculator($entity, $product);

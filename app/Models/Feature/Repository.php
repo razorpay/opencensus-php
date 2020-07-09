@@ -100,6 +100,17 @@ class Repository extends Base\Repository
         return $merchantIds;
     }
 
+    public function fetchMerchantIdsWithFeatureInChunks(string $featureName, $skip, $limit)
+    {
+        return $this->newQuery()
+                    ->where(Entity::NAME, $featureName)
+                    ->where(Entity::ENTITY_TYPE, Constants::MERCHANT)
+                    ->skip($skip)
+                    ->take($limit)
+                    ->pluck(Entity::ENTITY_ID)
+                    ->toArray();
+    }
+
     public function getMerchantIdsHavingFeature(string $featureName, array $merchantIds)
     {
         return $this->newQuery()

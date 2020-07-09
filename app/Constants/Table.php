@@ -254,10 +254,15 @@ class Table
     const P2P_REGISTER_TOKEN    = 'p2p_register_tokens';
     const P2P_UPI_TRANSACTION   = 'p2p_upi_transactions';
 
+    const SETTLEMENT_ONDEMAND          = 'settlement_ondemands';
+    const SETTLEMENT_ONDEMAND_PAYOUT   = 'settlement_ondemand_payouts';
+
     // Payments UPI Service, Store in different database
     const PAYMENTS_UPI_VPA              = 'vpas';
     const PAYMENTS_UPI_BANK_ACCOUNT     = 'bank_accounts';
     const PAYMENTS_UPI_VPA_BANK_ACCOUNT = 'vpas_bank_accounts';
+
+    const SETTLEMENT_ONDEMAND_FUND_ACCOUNT = 'settlement_ondemand_fund_accounts';
 
     const CREDITNOTE           = 'creditnote';
 
@@ -280,16 +285,19 @@ class Table
     const PAYOUT_DOWNTIMES     = 'payout_downtimes';
 
     protected static $entityToTableMap = [
-        Entity::AXIS_MIGS           => self::MIGS,
-        Entity::AXIS_GENIUS         => self::MIGS,
-        Entity::AMEX                => self::MIGS,
-        Entity::WALLET_FREECHARGE   => self::WALLET,
-        Entity::WALLET_OLAMONEY     => self::WALLET,
-        Entity::WALLET_AIRTELMONEY  => self::WALLET,
-        Entity::WALLET_PAYUMONEY    => self::WALLET,
-        Entity::MPI_BLADE           => self::BLADE,
-        Entity::MPI_ENSTAGE         => self::BLADE,
-        Entity::PAYMENT_DOWNTIME    => self::PAYMENT_DOWNTIME,
+        Entity::AXIS_MIGS                        => self::MIGS,
+        Entity::AXIS_GENIUS                      => self::MIGS,
+        Entity::AMEX                             => self::MIGS,
+        Entity::WALLET_FREECHARGE                => self::WALLET,
+        Entity::WALLET_OLAMONEY                  => self::WALLET,
+        Entity::WALLET_AIRTELMONEY               => self::WALLET,
+        Entity::WALLET_PAYUMONEY                 => self::WALLET,
+        Entity::MPI_BLADE                        => self::BLADE,
+        Entity::MPI_ENSTAGE                      => self::BLADE,
+        Entity::PAYMENT_DOWNTIME                 => self::PAYMENT_DOWNTIME,
+        Entity::SETTLEMENT_ONDEMAND_FUND_ACCOUNT => self::SETTLEMENT_ONDEMAND_FUND_ACCOUNT,
+        Entity::SETTLEMENT_ONDEMAND              => self::SETTLEMENT_ONDEMAND,
+        Entity::SETTLEMENT_ONDEMAND_PAYOUT       => self::SETTLEMENT_ONDEMAND_PAYOUT,
     ];
 
     public static function getTableNameForEntity(string $entity)

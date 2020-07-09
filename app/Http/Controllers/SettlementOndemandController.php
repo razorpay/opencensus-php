@@ -1,0 +1,67 @@
+<?php
+
+namespace RZP\Http\Controllers;
+
+use App;
+use Request;
+use ApiResponse;
+
+use RZP\Constants\Mode;
+use RZP\Constants\Entity;
+
+class SettlementOndemandController extends Controller
+{
+    public function postSettlementOndemand()
+    {
+        $input = Request::all();
+
+        $data = $this->service(Entity::SETTLEMENT_ONDEMAND)->create($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function createFundAccount()
+    {
+        $data = $this->service(Entity::SETTLEMENT_ONDEMAND_FUND_ACCOUNT)->createFundAccount();
+
+        return ApiResponse::json($data);
+    }
+
+    public function getSettlementOndemand(string $id)
+    {
+        $input = Request::all();
+
+        $data = $this->service(Entity::SETTLEMENT_ONDEMAND)->fetch($id, $input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function ondemandPayoutUpdate()
+    {
+        //since razorpayx_webhook is adirect route the mode will not be set by default
+        //setting the mode to 'live' as only in live mode  in prod this route will be hit
+        //in test mode and in stage env the statusUpdate service merthod will be called directly
+        $this->app = App::getFacadeRoot();
+
+        $this->app['rzp.mode'] = Mode::LIVE;
+
+        $rawContent = Request::getContent();
+
+        $input = Request::all();
+
+        $headers = Request::header();
+
+        $data = $this->service(Entity::SETTLEMENT_ONDEMAND_PAYOUT)->statusUpdate($input, $headers, $rawContent);
+
+        return ApiResponse::json($data);
+    }
+
+    public function calculateFees()
+    {
+        $input = Request::all();
+
+        $data = $this->service(Entity::SETTLEMENT_ONDEMAND)->calculateFees($input);
+
+        return ApiResponse::json($data);
+    }
+}

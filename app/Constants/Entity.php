@@ -152,6 +152,11 @@ class Entity
     const MERCHANT_ATTRIBUTE         = 'merchant_attribute';
     const PAYMENT_META               = 'payment_meta';
 
+    //ondemand
+    const SETTLEMENT_ONDEMAND_FUND_ACCOUNT  = 'settlement.ondemand_fund_account';
+    const SETTLEMENT_ONDEMAND               = 'settlement.ondemand';
+    const SETTLEMENT_ONDEMAND_PAYOUT        = 'settlement.ondemand_payout';
+
     const VIRTUAL_VPA_PREFIX            = 'virtual_vpa_prefix';
     const VIRTUAL_VPA_PREFIX_HISTORY    = 'virtual_vpa_prefix_history';
 
@@ -530,6 +535,11 @@ class Entity
         self::UPI_METADATA              => \RZP\Models\Payment\UpiMetadata::class,
         self::MERCHANT_ATTRIBUTE        => \RZP\Models\Merchant\Attribute::class,
 
+        //ondemand
+        self::SETTLEMENT_ONDEMAND_FUND_ACCOUNT  => \RZP\Models\Settlement\OndemandFundAccount::class,
+        self::SETTLEMENT_ONDEMAND               => \RZP\Models\Settlement\Ondemand::class,
+        self::SETTLEMENT_ONDEMAND_PAYOUT        => \RZP\Models\Settlement\OndemandPayout::class,
+
         // gateways
         self::EBS                    => \RZP\Gateway\Ebs::class,
         self::ATOM                   => \RZP\Gateway\Atom::class,
@@ -736,6 +746,10 @@ class Entity
         self::PAYMENT_DOWNTIME       => \RZP\Models\Payment\Downtime::class,
         self::BANKING_ACCOUNT_STATE  => \RZP\Models\BankingAccount\State::class,
         self::PROMOTION_EVENT        => \RZP\Models\Promotion\Event::class,
+
+        self::SETTLEMENT_ONDEMAND_FUND_ACCOUNT  => \RZP\Models\Settlement\OndemandFundAccount::class,
+        self::SETTLEMENT_ONDEMAND               => \RZP\Models\Settlement\Ondemand::class,
+        self::SETTLEMENT_ONDEMAND_PAYOUT        => \RZP\Models\Settlement\OndemandPayout::class,
     ];
 
     protected static $externalServiceClass = [

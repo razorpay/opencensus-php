@@ -20,6 +20,7 @@ use RZP\Mail\Merchant\FeatureEnabled;
 use RZP\Mail\Merchant\EsEligible;
 use RZP\Models\Merchant\SlackActions;
 use RZP\Models\Feature\Constants as Feature;
+use RZP\Models\Settlement\OndemandFundAccount;
 use RZP\Models\Merchant\Notify as NotifyTrait;
 use RZP\Models\Merchant\Request as MerchantRequest;
 use RZP\Models\Merchant\Detail\Entity as MerchantDetail;
@@ -99,9 +100,11 @@ class Core extends Base\Core
 
         $this->notifyFeatureUpdateOnSlack($feature);
 
-        if(($feature->getName() === Feature::ES_ON_DEMAND) && ($feature->getEntityType() === Constants::MERCHANT))
+        if (($feature->getName() === Feature::ES_ON_DEMAND) && ($feature->getEntityType() === Constants::MERCHANT))
         {
             (new Merchant\Service)->addMerchantToOnDemandEnabledMailingList($feature->getEntityId());
+
+            (new OndemandFundAccount\Service)->dispatchSettlementOndemandFundAccountUpdateJob($feature->getEntityId());
         }
 
         $this->notifyMerchantOfFeatureActivationIfApplicable($entityType, $entityId, $feature, $shouldSync);

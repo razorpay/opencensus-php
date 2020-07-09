@@ -1,0 +1,169 @@
+<?php
+
+namespace RZP\Models\Settlement\Ondemand;
+
+use Config;
+
+use RZP\Exception;
+use RZP\Error\Error;
+use RZP\Models\Base;
+use RZP\Models\User;
+use RZP\Models\Feature;
+use RZP\Error\ErrorCode;
+use RZP\Trace\TraceCode;
+use RZP\Models\Merchant;
+use RZP\Models\Adjustment;
+use RZP\Base\JitValidator;
+use RZP\Models\FundAccount;
+use Razorpay\Trace\Logger as Trace;
+use RZP\Jobs\MockPayoutOndemandWebhook;
+use RZP\Models\Settlement\OndemandPayout;
+use RZP\Jobs\CreateSettlementOndemandPayoutJobs;
+
+class Service extends Base\Service
+{
+    protected $settlementOndemandPayout;
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->settlementOndemandPayout = new OndemandPayout\Service();
+
+        $this->user = $this->app['basicauth']->getUser();
+    }
+
+    public function calculateFees(array $input): array
+    {
+        $finalFeesSplit= $this->core()->getFeesSplit($input, $this->merchant, $this->user);
+
+        return $finalFeesSplit;
+    }
+
+    public function create(array $input): array
+    {
+        if (isset($input['notes']) === true)
+        {
+            $input['notes'] = json_encode($input['notes']);
+        }
+
+        (new Validator)->validateInput(Validator::SETTLEMENT_ONDEMAND_INPUT, $input);
+
+        $this->trace->info(TraceCode::SETTLEMENT_ONDEMAND_CREATE, [
+            'merchant_id'   => $this->merchant->getId(),
+            'user_id'       => isset($this->user) ? ($this->user->getId()) : null,
+            'input'         => $input,
+        ]);
+
+        $this->validateIfOndemandMerchant();
+
+        [$settlementOndemand, $settlementOndemandPayouts] = $this->repo->transaction(function() use ($input)
+        {
+            return $this->core()->createSettlementOndemand($input, $this->merchant , $this->user);
+        });
+
+        if($this->mode === 'live')
+        {
+            $ondemandXMerchantId = Config::get('applications.razorpayx_client.live.ondemand_x_merchant.id');
+
+            $adjInput = [
+                Adjustment\Entity::MERCHANT_ID  => $ondemandXMerchantId,
+                Adjustment\Entity::AMOUNT       => $settlementOndemand->getAmountToBeSettled(),
+                Adjustment\Entity::DESCRIPTION  => 'adding funds to Ondemand-X merchant for OndemandID - ' .
+                                                    $settlementOndemand->getId(),
+                Adjustment\Entity::CURRENCY     => 'INR',
+                Adjustment\Entity::TYPE         => Merchant\Balance\Type::BANKING,
+
+            ];
+
+            $adjustment = (new Adjustment\Service)->addAdjustment($adjInput);
+        }
+
+        CreateSettlementOndemandPayoutJobs::dispatch($this->mode, $settlementOndemand->getId(),
+            $settlementOndemand->getMerchantId());
+
+        $settlementOndemand->setStatus(Status::INITIATED);
+
+        $this->repo->saveOrFail($settlementOndemand);
+
+        $mockRazorpayX = Config::get('applications.razorpayx_client.' . $this->mode . '.mock_webhook');
+
+        if ($mockRazorpayX === true)
+        {
+            foreach($settlementOndemandPayouts as $settlementOndemandPayout)
+            {
+                MockPayoutOndemandWebhook::dispatch($this->mode, $settlementOndemandPayout);
+            }
+        }
+
+        if (isset($input['expand']) === true && boolval($input['expand']) === true)
+        {
+            return $this->getResponse($settlementOndemand, $settlementOndemandPayouts);
+        }
+        else
+        {
+            return $this->getResponse($settlementOndemand);
+        }
+    }
+
+    public function createReversal($settlementOndemandPayoutId, $merchantId, $reversalReason)
+    {
+        $settlementOndemandPayout = (new OndemandPayout\Repository)->findByIdAndMerchantId
+                                                ($settlementOndemandPayoutId , $merchantId);
+
+        $this->core()->createReversal($settlementOndemandPayout, $reversalReason);
+    }
+
+    public function validateIfOndemandMerchant()
+    {
+        if ($this->merchant->isFeatureEnabled(Feature\Constants::ES_ON_DEMAND) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(ErrorCode::BAD_REQUEST_NON_ES_ON_DEMAND_MERCHANTS_NOT_ALLOWED);
+        }
+    }
+
+    public function fetch(string $id, array $input): array
+    {
+        $settlementOndemand = (new Repository)->findByIdAndMerchantId($id, $this->merchant->getId());
+
+        if (isset($input['expand']) === true && boolval($input['expand']) === true)
+        {
+
+            $settlementOndemandPayouts = (new OndemandPayout\Repository)
+                                         ->fetchByOndemandIdAndMerchant($settlementOndemand->getId(),
+                                                                        $settlementOndemand->getMerchantId())->all();
+
+            return $this->getResponse($settlementOndemand, $settlementOndemandPayouts);
+        }
+        else
+        {
+            return $this->getResponse($settlementOndemand);
+        }
+    }
+
+    public function getResponse($settlementOndemand, $settlementOndemandPayouts = null)
+    {
+        if (isset($settlementOndemand['notes']) === true)
+        {
+            $settlementOndemand['notes'] = json_decode($settlementOndemand['notes']);
+        }
+
+        if (isset($settlementOndemandPayouts) === true)
+        {
+            $settlementOndemandPayoutArray = [];
+
+            foreach($settlementOndemandPayouts as $settlementOndemandPayout)
+            {
+                array_push($settlementOndemandPayoutArray, $settlementOndemandPayout->toArrayPublic());
+            }
+
+            return $settlementOndemand->toArrayPublic() + [
+                'payouts'   => $settlementOndemandPayoutArray,
+            ];
+        }
+        else
+        {
+            return $settlementOndemand->toArrayPublic();
+        }
+    }
+}

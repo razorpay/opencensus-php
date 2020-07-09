@@ -83,6 +83,9 @@ use RZP\Base\Database\Connectors\MySqlConnector;
  * @property Models\PayoutDowntime\Repository                   $payout_downtimes
  * @property Models\User\Repository                             $user
  * @property Models\Transfer\Repository                         $transfer
+ * @property Models\Settlement\Ondemand\Repository              $settlement_ondemand
+ * @property Models\Settlement\OndemandPayout\Repository        $settlement_ondemand_payout
+ * @property Models\Settlement\OndemandFundAccount\Repository   $settlement_ondemand_fund_account
  * @property Models\BankTransferRequest\Repository              $bank_transfer_request
  */
 

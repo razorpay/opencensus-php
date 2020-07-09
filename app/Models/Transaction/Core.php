@@ -758,6 +758,40 @@ class Core extends Base\Core
         return $txn;
     }
 
+    public function createFromOndemandPartialReversal(Reversal\Entity $reversal): Entity
+    {
+        $txn = new Transaction\Entity;
+
+        $amount = $reversal->getAmount();
+
+        $data = [
+            Transaction\Entity::DEBIT           => 0,
+            Transaction\Entity::CREDIT          => $amount,
+            Transaction\Entity::CURRENCY        => Currency\Currency::INR,
+            Transaction\Entity::GATEWAY_FEE     => 0,
+            Transaction\Entity::API_FEE         => 0,
+            Transaction\Entity::RECONCILED_AT   => null,
+            Transaction\Entity::RECONCILED_TYPE => ReconciledType::NA,
+            Transaction\Entity::SETTLED         => 0,
+            Transaction\Entity::SETTLED_AT      => time(),
+            Transaction\Entity::FEE             => 0,
+            Transaction\Entity::TAX             => 0,
+            Transaction\Entity::AMOUNT          => $amount,
+            Transaction\Entity::TYPE            => Transaction\Type::REVERSAL,
+            Transaction\Entity::CHANNEL         => $reversal->merchant->getChannel(),
+        ];
+
+        $txn->fillAndGenerateId($data);
+
+        $txn->merchant()->associate($reversal->merchant);
+
+        $txn->sourceAssociate($reversal);
+
+        $this->updateBalances($txn, false);
+
+        return $txn;
+    }
+
     public function createFromPayoutReversal(Reversal\Entity $reversal): Entity
     {
         $txnProcessor = (new TransactionProcessor\Reversal($reversal));

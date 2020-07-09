@@ -19,6 +19,7 @@ class Type
     const SETTLEMENT              = 'settlement';
     const COMMISSION              = 'commission';
     const BANK_TRANSFER           = 'bank_transfer';
+    const SETTLEMENT_ONDEMAND     = 'settlement.ondemand';
     const SETTLEMENT_TRANSFER     = 'settlement_transfer';
     const FUND_ACCOUNT_VALIDATION = 'fund_account_validation';
 
@@ -54,6 +55,11 @@ class Type
     public static function validateType(string $type)
     {
         $key = __CLASS__ . '::' . strtoupper($type);
+
+        if (strpos($key, '.') !== false)
+        {
+            $key = str_replace('.', '_', $key);
+        }
 
         if ((defined($key) === false) or (constant($key) !== $type))
         {

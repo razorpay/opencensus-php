@@ -22,6 +22,25 @@ return [
         'secret'    => env('MOCK_GATEWAY_SECRET'),
     ],
 
+    'razorpayx_client' => [
+        'test' => [
+            'mock' => env('ONDEMAND_X_MOCK_TEST', true),
+            'mock_webhook' => env('ONDEMAND_X_WEBHOOK_TEST', true),
+        ],
+        'live' => [
+            'mock' => env('ONDEMAND_X_MOCK_LIVE', false),
+            'mock_webhook' => env('ONDEMAND_X_WEBHOOK_LIVE', false),
+            'razorpayx_url' => env('RAZORPAYX_URL_LIVE'),
+            'ondemand_x_merchant' => [
+                'id'                => env('ONDEMAND_X_MERCHANT_LIVE_ID'),
+                'username'          => env('ONDEMAND_X_MERCHANT_LIVE_USER_NAME'),
+                'secret'            => env('ONDEMAND_X_MERCHANT_LIVE_SECRET'),
+                'account_number'    => env('ONDEMAND_X_MERCHANT_LIVE_ACCOUNT_NUMBER'),
+                'webhook_key'       => env('ONDEMAND_X_MERCHANT_LIVE_WEBHOOK_KEY'),
+            ],
+        ]
+    ],
+
     'express' => [
         'secret'    => env('EXPRESS_SECRET'),
     ],

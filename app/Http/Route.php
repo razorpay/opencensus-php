@@ -1311,6 +1311,16 @@ class Route
         'settings_fetch_internal'                  => ['get',      'settings_internal/{module}/',                    'SettingsController@get'                                            ],
         'settings_upsert_internal'                 => ['post',     'settings_internal/{module}/',                    'SettingsController@upsert'                                         ],
 
+        //Ondemand routes
+        'settlement_ondemand_create'               => ['post',      'settlement/ondemand',                           'SettlementOndemandController@postSettlementOndemand'               ],
+        'bulk_create_fund_accounts'                => ['post',      'settlement/ondemand/create_fund_account',       'SettlementOndemandController@createFundAccount'                    ],
+        'settlement_ondemand_razorpayx_webhook'    => ['post',      'settlement/ondemand/update',                    'SettlementOndemandController@ondemandPayoutUpdate'                 ],
+        'settlement_ondemand_fees'                 => ['get',       'settlement/ondemand/fees',                      'SettlementOndemandController@calculateFees'                        ],
+        'settlement_ondemand_create_dashboard'     => ['post',      'settlement/ondemand/dashboard',                 'SettlementOndemandController@postSettlementOndemand'               ],
+        'settlement_ondemand_fees_dashboard'       => ['get',       'settlement/ondemand/fees/dashboard',            'SettlementOndemandController@calculateFees'                        ],
+        'settlement_ondemand_fetch_by_id'          => ['get',       'settlement/ondemand/{id}',                      'SettlementOndemandController@getSettlementOndemand'                ],
+
+
         // OAuth routes
         'oauth_token_create'                       => ['post',     'oauth/tokens',                                   'OAuthTokenController@create'                                       ],
         'oauth_token_fetch_multiple'               => ['get',      'oauth/tokens',                                   'OAuthTokenController@getAll'                                       ],
@@ -1959,6 +1969,9 @@ class Route
     ];
 
     public static $private = [
+        'settlement_ondemand_fees',
+        'settlement_ondemand_create',
+        'settlement_ondemand_fetch_by_id',
         'payment_links_service_main_route',
         'payment_links_service_sub_route',
         'payment_links_service_count_route',
@@ -2488,6 +2501,8 @@ class Route
     ];
 
     public static $proxy = [
+        'settlement_ondemand_create_dashboard',
+        'settlement_ondemand_fees_dashboard',
         'merchant_verify_attributes',
         'feature_get_status',
         'feature_get_all',
@@ -2820,6 +2835,7 @@ class Route
         'los_service_admin',
         'emi_plans_migrate',
         'ufh_admin_upload_file',
+        'bulk_create_fund_accounts',
         'd2c_create_csv_report',
         'offline_verification_service_get',
         'offline_verification_service_put',
@@ -3446,6 +3462,7 @@ class Route
     ];
 
     public static $routePermission = [
+        'bulk_create_fund_accounts'                => '*',
         'payout_reject_admin_bulk'                 => Permission::REJECT_PAYOUT_BULK,
         'ufh_admin_upload_file'                    => '*',
         'los_service_admin'                        => Permission::LOANS_EDIT,
@@ -4328,6 +4345,7 @@ class Route
     ];
 
     public static $direct = [
+        'settlement_ondemand_razorpayx_webhook',
         'payment_links_service_hosted_page',
         'third_party_health_check',
         'channel_health_check',
@@ -5001,6 +5019,11 @@ class Route
         'la_fetch'                             => [Feature::MARKETPLACE],
         'on_demand_settlement'                 => [Feature::ES_ON_DEMAND],
         'on_demand_settlement_fees'            => [Feature::ES_ON_DEMAND],
+        'settlement_ondemand_create'           => [Feature::ES_ON_DEMAND],
+        'settlement_ondemand_fetch_by_id'      => [Feature::ES_ON_DEMAND],
+        'settlement_ondemand_create_dashboard' => [Feature::ES_ON_DEMAND],
+        'settlement_ondemand_fees'             => [Feature::ES_ON_DEMAND],
+        'settlement_ondemand_fees_dashboard'   => [Feature::ES_ON_DEMAND],
         'card_issuer_validate'                 => [Feature::BIN_ISSUER_VALIDATOR],
         'iin_list_by_flow'                     => [Feature::IIN_LISTING],
         'mpans_issue'                          => [Feature::ISSUE_MPANS],

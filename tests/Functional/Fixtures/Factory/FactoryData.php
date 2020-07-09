@@ -1323,6 +1323,14 @@ final class FactoryData
             ]
         );
 
+        $factory(\RZP\Models\Settlement\OndemandFundAccount\Entity::class, [
+            'id'                        => $faker->uniqueid,
+            'merchant_id'               => '10000000000000',
+            'contact_id'                => 'cont_EwjVv4aprYdlR5',
+            'fund_account_id'           => 'fa_EwjVzEQdVIqqxW',
+            ]
+        );
+
         $factory(\RZP\Models\Workflow\PayoutAmountRules\Entity::class, [
             'id'                => 12345,
             'merchant_id'       => '10000000000000',
