@@ -22,7 +22,43 @@ class Core extends Base\Core
 
         $paymentPageItem->paymentLink()->associate($paymentLink);
 
+        $this->stripSignsIfNecessary($input);
+
         $paymentPageItem->build($input);
+
+        $this->addItemAsRequired($input, $merchant, $paymentLink, $paymentPageItem);
+
+        $this->upsertSettings($paymentPageItem, $input[Entity::SETTINGS] ?? []);
+
+        $this->modifyDataIfRequired($paymentPageItem, $input);
+
+        $this->repo->saveOrFail($paymentPageItem);
+
+        $this->repo->loadRelations($paymentPageItem);
+
+        return $paymentPageItem;
+    }
+
+    protected function addItemAsRequired(
+        array & $input,
+        Merchant\Entity $merchant,
+        PaymentLink\Entity $paymentLink,
+        Entity & $paymentPageItem)
+    {
+        $validator = new Validator;
+
+        $validator->validateItemPresent($input, $paymentPageItem);
+
+        if ($paymentPageItem->doesPlanExists() === true)
+        {
+            $planDetails = $this->getItemAndPlanDetailsFromPlan($merchant, $paymentPageItem);
+
+            $item = $planDetails[0];
+
+            $input[Entity::ITEM] = $item;
+
+            $input[Entity::PRODUCT_CONFIG]['plan_details'] = $planDetails[1];
+        }
 
         $item = (new Item\Core)->getOrCreateItemForType(
             $input,
@@ -30,17 +66,52 @@ class Core extends Base\Core
             Item\Type::PAYMENT_PAGE
         );
 
-        (new Validator)->validateItemCurrency($item, $paymentLink);
+        $validator->validateItemCurrency($item, $paymentLink);
 
         $paymentPageItem->item()->associate($item);
+    }
 
-        $this->upsertSettings($paymentPageItem, $input[Entity::SETTINGS] ?? []);
+    protected function getItemAndPlanDetailsFromPlan(
+        Merchant\Entity $merchant,
+        Entity & $paymentPageItem)
+    {
+        $planId = $paymentPageItem->getPlanId();
 
-        $this->repo->saveOrFail($paymentPageItem);
+        $responseJson = $this->app['module']->subscription->fetchPlan('plan_'.$planId, $merchant);
 
-        $this->repo->loadRelations($paymentPageItem);
+        $itemFromPlan = $responseJson[Entity::ITEM];
 
-        return $paymentPageItem;
+        $itemInput = [
+            Item\Entity::NAME           => $itemFromPlan[Item\Entity::NAME],
+            Item\Entity::AMOUNT         => $itemFromPlan[Item\Entity::AMOUNT],
+            Item\Entity::CURRENCY       => $itemFromPlan[Item\Entity::CURRENCY],
+            Item\Entity::DESCRIPTION    => $itemFromPlan[Item\Entity::DESCRIPTION],
+        ];
+
+        $planDetails = [
+            'interval' => $responseJson['interval'],
+            'period'   => $responseJson['period'],
+        ];
+
+        return [$itemInput, $planDetails];
+    }
+
+    protected function modifyDataIfRequired(Entity & $paymentPageItem, array $input)
+    {
+        if (isset($input[Entity::PRODUCT_CONFIG]) === true)
+        {
+            $paymentPageItem->setProductConfig(json_encode($input[Entity::PRODUCT_CONFIG]));
+        }
+    }
+
+    public function stripSignsIfNecessary(& $input)
+    {
+       if (isset($input[Entity::PLAN_ID]) === true)
+       {
+           $planId = PaymentLink\Entity::stripDefaultSign($input['plan_id']);
+
+           $input[Entity::PLAN_ID] = $planId;
+       }
     }
 
     public function fetch(string $id, Merchant\Entity $merchant)

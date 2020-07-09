@@ -27,7 +27,7 @@ class Validator extends Base\Validator
     const EMPTY_STRING_FOR_INTEGERS = 'empty_string_for_integers';
 
     protected static $createRules = [
-        Entity::ITEM            => 'required|array',
+        Entity::ITEM            => 'nullable|array',
         Entity::MANDATORY       => 'filled|bool',
         Entity::IMAGE_URL       => 'sometimes|nullable|string|max:512',
         Entity::STOCK           => 'sometimes|nullable|mysql_unsigned_int|min:1',
@@ -36,7 +36,12 @@ class Validator extends Base\Validator
         Entity::MIN_AMOUNT      => 'sometimes|nullable|mysql_unsigned_int',
         Entity::MAX_AMOUNT      => 'sometimes|nullable|mysql_unsigned_int',
         Entity::SETTINGS        => 'nullable|array',
-
+        Entity::PLAN_ID         => 'sometimes|alpha_num|size:14',
+        Entity::PRODUCT_CONFIG  => 'nullable|array|custom',
+        Entity::PRODUCT_CONFIG . '.' . Entity::SUBSCRIPTION_DETAILS => 'nullable|array',
+        Entity::PRODUCT_CONFIG . '.' . Entity::SUBSCRIPTION_DETAILS . '.' . Entity::SUBSCRIPTION_QUANTITY => 'nullable|int|min:1|max:1000',
+        Entity::PRODUCT_CONFIG . '.' . Entity::SUBSCRIPTION_DETAILS . '.' . Entity::SUBSCRIPTION_TOTAL_COUNT => 'int|min:1|max:1000',
+        Entity::PRODUCT_CONFIG . '.' . Entity::SUBSCRIPTION_DETAILS . '.' . Entity::SUBSCRIPTION_CUSTOMER_NOTIFY => 'nullable|boolean',
         Entity::SETTINGS . '.' . Entity::POSITION => 'nullable|int|min:0|max:1000',
     ];
 
@@ -132,6 +137,60 @@ class Validator extends Base\Validator
                 }
 
                 $paymentPageItemIds[$paymentPageItemDetails[Entity::ID]] = true;
+            }
+        }
+    }
+
+    public function validateProductConfig(string $attribute, array $input)
+    {
+        if (empty($input) === true)
+        {
+            return;
+        }
+
+        $extraKeys = array_values(array_diff(array_keys($input), Entity::ALLOWED_PRODUCT_CONFIG_CREATE_KEYS));
+        if (empty($extraKeys) === false)
+        {
+            throw new BadRequestValidationFailureException(
+                'Extra keys must not be sent - ' . implode(', ', $extraKeys) . '.',
+                Entity::ALLOWED_PRODUCT_CONFIG_CREATE_KEYS);
+        }
+
+        if (isset($input[Entity::SUBSCRIPTION_DETAILS]) === false)
+        {
+            return;
+        }
+
+        $subscriptionDetails = $input[Entity::SUBSCRIPTION_DETAILS];
+
+        if (empty($subscriptionDetails) === true)
+        {
+            return;
+        }
+
+        $extraKeys = array_values(array_diff(array_keys($subscriptionDetails), Entity::SUBSCRIPTION_KEYS));
+        if (empty($extraKeys) === false)
+        {
+            throw new BadRequestValidationFailureException(
+                'Extra keys must not be sent - ' . implode(', ', $extraKeys) . '.',
+                Entity::SUBSCRIPTION_KEYS);
+        }
+    }
+
+    public function validateItemPresent(array $input, Entity $paymentPageItem)
+    {
+        if ($paymentPageItem->doesPlanExists() === true)
+        {
+            if (isset($input[Entity::ITEM]) === true)
+            {
+                throw new BadRequestValidationFailureException('item must not be sent when plan exists');
+            }
+        }
+        else
+        {
+            if (isset($input[Entity::ITEM]) === false)
+            {
+                throw new BadRequestValidationFailureException('item must be sent');
             }
         }
     }

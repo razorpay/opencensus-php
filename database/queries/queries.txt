@@ -5848,3 +5848,6 @@ ALTER TABLE d2c_bureau_reports
 
 ALTER TABLE payment_meta
     MODIFY COLUMN forex_rate decimal(20,6);
+
+ALTER TABLE payment_page_items
+    ADD COLUMN product_config json DEFAULT NULL;

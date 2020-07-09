@@ -419,8 +419,10 @@ class Response
             'payment_page_create_order_option',
             'payment_page_hosted_button_details',
             'payment_page_hosted_button_preferences',
+            'hosted_subscription_button_details',
             'payment_links_demo',
             'payment_links_demo_cors',
+            'subscription_button_create_subscription',
         ];
 
         if (in_array($route, $routes, true) === true)

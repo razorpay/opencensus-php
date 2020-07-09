@@ -14,6 +14,7 @@ class ViewType
 {
     const BUTTON     = 'button';
     const PAGE       = 'page';
+    const SUBSCRIPTION_BUTTON = 'subscription_button';
 
     public static function isValid(string $viewType): bool
     {

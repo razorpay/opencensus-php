@@ -115,6 +115,11 @@ class Validator extends Base\Validator
         Entity::AMOUNT => 'required|integer|min_amount'
     ];
 
+    protected static $createSubscriptionRules = [
+        Entity::PAYMENT_PAGE_ITEM_ID => 'required|string|size:18',
+        Entity::NOTES       => 'sometimes|notes',
+    ];
+
     protected static $createValidators = [
         Entity::SETTINGS,
         Entity::PAYMENT_PAGE_ITEMS,

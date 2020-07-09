@@ -99,6 +99,51 @@ class Core extends Base\Core
         return $paymentLink;
     }
 
+    public function createSubscription(string $id, array $input, Merchant\Entity $merchant)
+    {
+        $ppItemId = $input[Entity::PAYMENT_PAGE_ITEM_ID];
+
+        $ppItemId = Entity::stripDefaultSign($ppItemId);
+
+        $ppItem = $this->repo->payment_page_item->findOrFailPublic($ppItemId);
+
+        $planId = $ppItem->getPlanId();
+
+        if (empty($planId) === true)
+        {
+            throw new BadRequestValidationFailureException(
+                'plan is not present to create a subscription'
+            );
+        }
+
+        $subscriptionDetails = $ppItem->getProductConfig(PaymentPageItem\Entity::SUBSCRIPTION_DETAILS);
+
+        $subscriptionInput = $this->buildInputForSubscription($planId, $subscriptionDetails, $input);
+
+        $responseJson = $this->app['module']->subscription->createSubscription($subscriptionInput, $merchant);
+
+        return ['subscription_id' => $responseJson['id']];
+    }
+
+    protected function buildInputForSubscription(string $planId, $subscriptionDetails, array $input)
+    {
+        $totalCount = $subscriptionDetails['total_count'] ?? 120;
+
+        $quantity = $subscriptionDetails['quantity'] ?? 1;
+
+        $customerNotify = $subscriptionDetails['customer_notify'] ?? 1;
+
+        $inputForSubscription = [
+            'plan_id'        => 'plan_'.$planId,
+           'total_count'     => $totalCount,
+           'quantity'        => $quantity,
+           'customer_notify' => $customerNotify,
+           'notes'           => $input[Entity::NOTES] ?? null,
+       ];
+
+        return $inputForSubscription;
+    }
+
     /**
      * @param  Entity $paymentLink
      * @param  array  $input

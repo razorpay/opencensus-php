@@ -29,6 +29,13 @@ class Entity extends Base\PublicEntity
     const MAX_PURCHASE      = 'max_purchase';
     const MIN_AMOUNT        = 'min_amount';
     const MAX_AMOUNT        = 'max_amount';
+    const PRODUCT_CONFIG    = 'product_config';
+    const SUBSCRIPTION_DETAILS  = 'subscription_details';
+    const PLAN_DETAILS          = 'plan_details';
+
+    const SUBSCRIPTION_TOTAL_COUNT = 'total_count';
+    const SUBSCRIPTION_QUANTITY     = 'quantity';
+    const SUBSCRIPTION_CUSTOMER_NOTIFY = 'customer_notify';
 
     // Input keys
     const ITEM               = 'item';
@@ -64,6 +71,9 @@ class Entity extends Base\PublicEntity
         self::CREATED_AT,
         self::UPDATED_AT,
         self::DELETED_AT,
+        self::PLAN_ID,
+        self::PLAN_DETAILS,
+        self::PRODUCT_CONFIG,
     ];
 
     protected $public = [
@@ -81,6 +91,9 @@ class Entity extends Base\PublicEntity
         self::MIN_AMOUNT,
         self::MAX_AMOUNT,
         self::SETTINGS,
+        self::PLAN_ID,
+        self::PLAN_DETAILS,
+        self::PRODUCT_CONFIG,
     ];
 
     protected $fillable = [
@@ -95,12 +108,17 @@ class Entity extends Base\PublicEntity
         self::MAX_PURCHASE,
         self::MIN_AMOUNT,
         self::MAX_AMOUNT,
+        self::PLAN_ID,
+        self::PLAN_DETAILS,
+        self::PRODUCT_CONFIG,
     ];
 
     protected $publicSetters = [
         self::ID,
         self::ENTITY,
         self::PAYMENT_LINK_ID,
+        self::PLAN_ID,
+        self::PRODUCT_CONFIG,
     ];
 
     protected $defaults = [
@@ -142,7 +160,21 @@ class Entity extends Base\PublicEntity
         self::MIN_AMOUNT,
         self::MAX_AMOUNT,
         self::SETTINGS,
+        self::PLAN_ID,
+        self::PLAN_DETAILS,
+        self::SUBSCRIPTION_DETAILS,
+        self::PRODUCT_CONFIG,
     ];
+
+   const SUBSCRIPTION_KEYS = [
+       self::SUBSCRIPTION_CUSTOMER_NOTIFY,
+       self::SUBSCRIPTION_TOTAL_COUNT,
+       self::SUBSCRIPTION_QUANTITY,
+   ];
+
+   const ALLOWED_PRODUCT_CONFIG_CREATE_KEYS = [
+       self::SUBSCRIPTION_DETAILS,
+   ];
 
     public function getQuantitySold(): int
     {
@@ -152,6 +184,11 @@ class Entity extends Base\PublicEntity
     public function getItemId(): string
     {
         return $this->getAttribute(self::ITEM_ID);
+    }
+
+    public function getPlanId()
+    {
+        return $this->getAttribute(self::PLAN_ID);
     }
 
     public function getTotalAmountPaid(): int
@@ -230,6 +267,56 @@ class Entity extends Base\PublicEntity
         $attributes[self::PAYMENT_LINK_ID] = PaymentLink\Entity::getSignedIdOrNull($paymentLinkId);
     }
 
+    public function setPublicPlanIdAttribute(array & $attributes)
+    {
+        $paymentLinkId = $this->getAttribute(self::PLAN_ID);
+
+        if (empty($paymentLinkId) === true)
+        {
+            return;
+        }
+
+        $attributes[self::PLAN_ID] = 'plan_'.$paymentLinkId;
+    }
+
+    public function setPublicProductConfigAttribute(array & $attributes)
+    {
+
+        $productConfig = $this->getAttribute(self::PRODUCT_CONFIG);
+
+        if (empty($productConfig) === true)
+        {
+            return;
+        }
+
+        $attributes[self::PRODUCT_CONFIG] = json_decode($productConfig);
+    }
+
+    public function setProductConfig(string $productConfig)
+    {
+        $this->setAttribute(self::PRODUCT_CONFIG, $productConfig);
+    }
+
+    public function getProductConfig($key = null)
+    {
+        $productConfig = $this->getAttribute(self::PRODUCT_CONFIG);
+
+        if (empty($productConfig) === true)
+        {
+            return null;
+        }
+
+        $productConfigArray = json_decode($productConfig, true);
+
+        if ($key === null)
+        {
+            return $productConfigArray;
+        }
+
+        return $productConfigArray[$key] ?? null;
+    }
+
+
     public function incrementQuantitySold(int $incrementValue)
     {
         $this->setAttribute(self::QUANTITY_SOLD, ($this->getQuantitySold() + $incrementValue));
@@ -262,6 +349,18 @@ class Entity extends Base\PublicEntity
         $remainingStock = $this->getStock() - $this->getQuantitySold();
 
         return $remainingStock >= $slot;
+    }
+
+    public function doesPlanExists(): bool
+    {
+        $planId = $this->getPlanId();
+
+        if (empty($planId) === true)
+        {
+            return false;
+        }
+
+        return true;
     }
 
     public function merchant()

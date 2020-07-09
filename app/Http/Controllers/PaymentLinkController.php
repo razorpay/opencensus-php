@@ -2,6 +2,7 @@
 
 namespace RZP\Http\Controllers;
 
+
 use View;
 use Request;
 use ApiResponse;
@@ -9,6 +10,7 @@ use Illuminate\Http\Request  as CurrentRequest;
 
 use RZP\Error\ErrorCode;
 use RZP\Models\PaymentLink\Entity;
+use RZP\Models\PaymentLink\ViewType;
 use RZP\Exception\BadRequestException;
 use RZP\Http\Controllers\Traits\HasCrudMethods;
 
@@ -80,6 +82,20 @@ class PaymentLinkController extends Controller
         list ($view, $payload) = $this->service()->getButtonViewNameAndPayload($id, $this->input, $request);
 
         return View::make($view)->with('data', $payload);
+    }
+
+    public function subscriptionButtonHostedView(string $id, CurrentRequest $request)
+    {
+        list ($view, $payload) = $this->service()->getButtonViewNameAndPayload($id, $this->input, $request, ViewType::SUBSCRIPTION_BUTTON);
+
+        return View::make($view)->with('data', $payload);
+    }
+
+    public function createSubscription(string $id)
+    {
+        $response = $this->service()->createSubscription($id, $this->input);
+
+        return ApiResponse::json($response);
     }
 
     /**

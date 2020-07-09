@@ -422,12 +422,12 @@ class Entity extends Base\PublicEntity
 
     public function getProductType(): string
     {
-        if ($this->getViewType() === self::VIEW_TYPE_BUTTON)
+        if ($this->getViewType() === self::VIEW_TYPE_PAGE)
         {
-            return Order\ProductType::PAYMENT_BUTTON;
+            return Order\ProductType::PAYMENT_PAGE;
         }
 
-        return Order\ProductType::PAYMENT_PAGE;
+        return Order\ProductType::PAYMENT_BUTTON;
     }
 
     public function isActive(): bool

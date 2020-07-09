@@ -110,9 +110,23 @@ class Service extends Base\Service
         return $paymentLink->toArrayPublic();
     }
 
-    public function getButtonViewNameAndPayload(string $id, array $input, CurrentRequest $request)
+    public function createSubscription(string $id, array $input): array
     {
-        $view = 'payment_button.index';
+        (new Validator)->validateInput('createSubscription', $input);
+
+        return $this->core->createSubscription($id, $input, $this->merchant);
+    }
+
+    public function getButtonViewNameAndPayload(string $id, array $input, CurrentRequest $request, $viewType = null)
+    {
+        if ($viewType === ViewType::SUBSCRIPTION_BUTTON)
+        {
+            $view = 'payment_button.subscription';
+        }
+        else
+        {
+            $view = 'payment_button.index';
+        }
 
         $payload = [
             'base_url'           => $this->app['config']['app']['url'],

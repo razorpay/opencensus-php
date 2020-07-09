@@ -749,8 +749,14 @@ class Route
         'payment_page_send_receipt'                => ['post',     'payment_pages/{payment_id}/send_receipt',        'PaymentLinkController@sendReceipt'                                 ],
         'payment_page_save_receipt_for_payment'    => ['post',     'payment_pages/{payment_id}/save_receipt',        'PaymentLinkController@saveReceiptForPayment'                       ],
         'payment_page_hosted_button_details'       => ['get',      'payment_buttons/{x_entity_id}/button_details',    'PaymentLinkController@getHostedButtonDetails'                     ],
+
         'payment_page_hosted_button_preferences'   => ['get',      'payment_buttons/{x_entity_id}/button_preferences','PaymentLinkController@getHostedButtonPreferences'                 ],
         'payment_button_hosted_view'               => ['get,post', 'payment_buttons/{x_entity_id}/view',              'PaymentLinkController@buttonHostedView'                           ],
+        'subscription_button_hosted_view'          => ['get,post', 'subscription_buttons/{x_entity_id}/view',         'PaymentLinkController@subscriptionButtonHostedView'               ],
+
+        'hosted_subscription_button_details'       => ['get',      'subscription_buttons/{x_entity_id}/button_details',       'PaymentLinkController@getHostedButtonDetails'             ],
+        'subscription_button_create_subscription'  => ['post',     'subscription_buttons/{x_entity_id}/create_subscription',  'PaymentLinkController@createSubscription'                 ],
+
         // end of payment page section
         // payment link service end points
         'payment_links_service_hosted_page'        => ['get,post', 'hosted/payment_links/{path?}',                   'PlinkController@sendRequest'                                       ],
@@ -1852,6 +1858,7 @@ class Route
         'pages_view',
         'payment_page_hosted_button_preferences',
         'payment_page_hosted_button_details',
+        'hosted_subscription_button_details',
         'payment_page_view_get',
         'merchant_public_get_banks',
         'merchant_methods',
@@ -1915,6 +1922,8 @@ class Route
         'payout_links_status',
         'payout_links_status_cors',
         'payment_button_hosted_view',
+        'subscription_button_hosted_view',
+        'subscription_button_create_subscription',
     ];
 
     public static $device = [

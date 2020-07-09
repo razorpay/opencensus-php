@@ -141,7 +141,7 @@ class External extends Base
     public function fetchSubscriptionForInvoice(string $subscriptionId, Merchant\Entity $merchant)
     {
         $this->getsEntityResponse = false;
-        
+
         $headers = [
             self::MERCHANT_HEADER_KEY => $merchant->getId(),
             self::MODE_HEADER_KEY     => $this->mode
@@ -187,7 +187,7 @@ class External extends Base
     public function fetchSubscriptionInfo(array $input, Merchant\Entity $merchant, $callback = false, $appTokenPresent = false)
     {
         $this->getsEntityResponse = true;
-        
+
         $amount             = $input[Payment\Entity::AMOUNT] ?? null;
         $isCardChange       = $input[Subscription\Entity::SUBSCRIPTION_CARD_CHANGE] ?? false;
         $isCardPresent      = (isset($input[Payment\Entity::CARD]) === true);
@@ -223,6 +223,38 @@ class External extends Base
         $url = 'subscriptions/' . $subscriptionId . '/info';
 
         return $this->sendRequest($url, Requests::GET, $requestBody, $headers);
+    }
+
+    public function createSubscription(array $input, Merchant\Entity $merchant)
+    {
+        $this->traceRequest($input);
+
+        $headers = [
+            self::MERCHANT_HEADER_KEY => $merchant->getId(),
+            self::MODE_HEADER_KEY     => $this->mode,
+            'X-Razorpay-Auth'         => $this->app['basicauth']->getAuthType(),
+        ];
+
+        $url = 'subscriptions';
+
+        return $this->sendRequest($url, Requests::POST, $input, $headers);
+    }
+
+    public function fetchPlan(string $planId, Merchant\Entity $merchant)
+    {
+        $this->getsEntityResponse = false;
+
+        $this->traceRequest([$planId]);
+
+        $headers = [
+            self::MERCHANT_HEADER_KEY => $merchant->getId(),
+            self::MODE_HEADER_KEY     => $this->mode,
+            'X-Razorpay-Auth'         => $this->app['basicauth']->getAuthType(),
+        ];
+
+        $url = 'plans/' . $planId;
+
+        return $this->sendRequest($url, Requests::GET, [], $headers);
     }
 
     protected function sendRequest(
