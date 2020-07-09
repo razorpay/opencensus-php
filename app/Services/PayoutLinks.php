@@ -58,6 +58,7 @@ class PayoutLinks
     const RECEIPT                                  = 'receipt';
     const MODE                                     = 'mode';
     const NOTES                                    = 'notes';
+    const COUNT                                    = 'count';
 
     protected $baseUrl;
 
@@ -101,25 +102,15 @@ class PayoutLinks
 
         $url = sprintf('%s/%s', $this->baseUrl, self::CREATE_PAYOUT_LINK_PATH);
 
+        $sendSms = array_pull($input, self::SEND_SMS, "false");
+
+        $sendMail = array_pull($input, self::SEND_EMAIL, "false");
+
         $input[self::MERCHANT_ID] = $merchant->getId();
-        /*
-         * TODO use array_pull https://razorpay.atlassian.net/browse/RX-2633
-         */
-        if (key_exists(self::SEND_SMS, $input) === true)
-        {
-            $input[self::SEND_SMS] = strval($input[self::SEND_SMS]);
-        }else
-        {
-            $input[self::SEND_SMS] = "false";
-        }
-        if (key_exists(self::SEND_EMAIL, $input) === true)
-        {
-            $input[self::SEND_EMAIL] = strval($input[self::SEND_EMAIL]);
-        }
-        else
-        {
-            $input[self::SEND_EMAIL] = "false";
-        }
+
+        $input[self::SEND_SMS] = strval($sendSms);
+
+        $input[self::SEND_EMAIL] = strval($sendMail);
 
         $response = $this->makeRequest($url, $input);
 
@@ -138,17 +129,12 @@ class PayoutLinks
         $url = $this->getConstructedUrl(self::GET_SETTINGS_PAYOUT_LINK_PATH);
 
         $request = [
-            'merchantId' => $merchantId
+            self::MERCHANT_ID => $merchantId
         ];
 
         $response = $this->makeRequest($url, $request);
 
-        if (key_exists(self::MODE, $response))
-        {
-            return $response[self::MODE];
-        }
-
-        return [];
+        return array_pull($response, self::MODE, []);
     }
 
     public function updateSettings(string $merchantId, array $input)
@@ -161,18 +147,13 @@ class PayoutLinks
         $url = $this->getConstructedUrl(self::UPDATE_SETTINGS_PAYOUT_LINK_PATH);
 
         $request = [
-            'merchantId' => $merchantId,
-            'mode'       => $input
+            self::MERCHANT_ID  => $merchantId,
+            self::MODE         => $input
         ];
 
         $response = $this->makeRequest($url, $request);
 
-        if (key_exists(self::MODE, $response))
-        {
-            return $response[self::MODE];
-        }
-
-        return [];
+        return array_pull($response, self::MODE, []);
     }
 
     public function cancel(string $payoutLinkId)
@@ -206,7 +187,7 @@ class PayoutLinks
 
         if($merchantId != "")
         {
-            $request['merchant_id'] = $merchantId;
+            $request[self::MERCHANT_ID] = $merchantId;
         }
 
         $response = $this->makeRequest($url, $request);
@@ -257,7 +238,7 @@ class PayoutLinks
 
         $response =  $this->makeRequest($url, $request);
 
-        return [Mode::LIVE, $response['settings']['merchantId']];
+        return [Mode::LIVE, $response['settings'][self::MERCHANT_ID]];
     }
 
     public function initiate(MerchantEntity $merchant, array $input, string $payoutLinkId): array
@@ -294,10 +275,7 @@ class PayoutLinks
 
         $response = $this->makeRequest($url, $input);
 
-        if (key_exists('count', $response) === false)
-        {
-            $response['count'] = 0;
-        }
+        $response[self::COUNT] = array_pull($response, self::COUNT, 0);
 
         return $response;
     }
@@ -312,14 +290,9 @@ class PayoutLinks
 
         $response = $this->makeRequest($url, $request);
 
-        $payoutLinkInfo = $response['payoutlinkresponse'];
+        $payoutLinkInfo = $response['payout_link_response'];
 
-        $settings = [];
-
-        if (key_exists(self::MODE, $response['settings']))
-        {
-            $settings = $response['settings'][self::MODE];
-        }
+        $settings = array_pull($response['settings'], self::MODE, []);
 
         $allowUpi = $this->allowUpi($payoutLinkInfo, $settings, $merchant);
 
@@ -419,7 +392,7 @@ class PayoutLinks
         $url = $this->getConstructedUrl(self::ON_BOARDING_STATUS);
 
         $request = [
-            'merchant_id' => $merchantId
+            self::MERCHANT_ID => $merchantId
         ];
 
         return $this->makeRequest($url, $request);
@@ -430,7 +403,7 @@ class PayoutLinks
         $url = $this->getConstructedUrl(self::SUMMARY);
 
         $request = [
-            'merchant_id' => $merchantId
+            self::MERCHANT_ID => $merchantId
         ];
 
         return $this->makeRequest($url, $request);
@@ -567,20 +540,11 @@ class PayoutLinks
 
     protected function addEmptyParameters(array &$payoutLink)
     {
-        if (key_exists(self::FUND_ACCOUNT_ID, $payoutLink) === false)
-        {
-            $payoutLink[self::FUND_ACCOUNT_ID] = null;
-        }
+        $payoutLink[self::FUND_ACCOUNT_ID] = array_pull($payoutLink, self::FUND_ACCOUNT_ID, null);
 
-        if (key_exists(self::CANCELLED_AT, $payoutLink) === false)
-        {
-            $payoutLink[self::CANCELLED_AT] = null;
-        }
+        $payoutLink[self::CANCELLED_AT] = array_pull($payoutLink, self::CANCELLED_AT, null);
 
-        if (key_exists(self::ATTEMPT_COUNT, $payoutLink) === false)
-        {
-            $payoutLink[self::ATTEMPT_COUNT] = 0;
-        }
+        $payoutLink[self::ATTEMPT_COUNT] = array_pull($payoutLink, self::ATTEMPT_COUNT, 0);
 
         if (sizeof($payoutLink[self::PAYOUTS]) === 0)
         {
@@ -596,20 +560,12 @@ class PayoutLinks
             $payoutLink[self::USER] = null;
         }
 
-        if (key_exists(self::USER_ID, $payoutLink) === false)
-        {
-            $payoutLink[self::USER_ID] = null;
-        }
+        $payoutLink[self::USER_ID] = array_pull($payoutLink, self::USER_ID, null);
 
-        if (key_exists(self::RECEIPT, $payoutLink) === false)
-        {
-            $payoutLink[self::RECEIPT] = null;
-        }
+        $payoutLink[self::RECEIPT] = array_pull($payoutLink, self::RECEIPT, null);
 
-        if (key_exists(self::NOTES, $payoutLink) === false)
-        {
-            $payoutLink[self::NOTES] = [];
-        }
+        $payoutLink[self::NOTES] = array_pull($payoutLink, self::NOTES, []);
+
         $payoutLink[self::SEND_SMS] = filter_var($payoutLink[self::SEND_SMS], FILTER_VALIDATE_BOOLEAN);
 
         $payoutLink[self::SEND_EMAIL] = filter_var($payoutLink[self::SEND_EMAIL], FILTER_VALIDATE_BOOLEAN);
