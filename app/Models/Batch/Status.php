@@ -23,6 +23,7 @@ class Status
     const FAILED              = 'failed';
     const PROCESSED           = 'processed';
     const CANCELLED           = 'cancelled';
+    const SCHEDULED           = 'scheduled';
 
     //
     // Additional constants used as values of STATUS
@@ -37,11 +38,13 @@ class Status
         self::FAILED,
         self::PROCESSED,
         self::CANCELLED,
+        self::SCHEDULED,
     ];
 
     const BATCH_STATUSES_VALID_FOR_CANCEL = [
         self::PARTIALLY_PROCESSED,
         self::PROCESSED,
+        self::SCHEDULED,
     ];
 
     public static function validateStatus(string $type)

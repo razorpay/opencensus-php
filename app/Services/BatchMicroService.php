@@ -106,6 +106,14 @@ class BatchMicroService
             ]);
         }
 
+        if (isset($input['schedule']))
+        {
+            array_push($multipartData, [
+                'name'     => 'schedule',
+                'contents' => $input['schedule'],
+            ]);
+        }
+
         $this->trace->info(TraceCode::BATCH_SERVICE_MULTIPART_PAYLOAD, ['multipartData' => $multipartData]);
 
         $response = $this->sendToBatchService($multipartData, $merchant, $relativeUri);
@@ -359,6 +367,9 @@ class BatchMicroService
 
             case 'CANCELLED':
                 return Batch\Status::CANCELLED;
+
+            case 'SCHEDULED':
+                return Batch\Status::SCHEDULED;
 
             default:
                 return Batch\Status::PARTIALLY_PROCESSED;

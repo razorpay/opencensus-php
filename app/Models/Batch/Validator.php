@@ -77,24 +77,28 @@ class Validator extends Base\Validator
         Entity::TYPE                 => 'required|custom',
         Entity::NAME                 => 'filled|string|max:255',
         Entity::FILE                 => 'required|file|max:1024' . self::DEFAULT_MIME_RULE,
+        Entity::SCHEDULE             => 'sometimes|numeric',
     ];
 
     protected static $irctcSettlementCreateRules = [
         Entity::TYPE                 => 'required|in:irctc_settlement',
         Entity::NAME                 => 'filled|string|max:255',
         Entity::FILE                 => 'required|file|max:5120' . self::DEFAULT_MIME_RULE,
+        Entity::SCHEDULE             => 'sometimes|numeric',
     ];
 
     protected static $irctcRefundCreateRules = [
         Entity::TYPE                 => 'required|in:irctc_refund',
         Entity::NAME                 => 'filled|string|max:255',
         Entity::FILE                 => 'required|file|max:5120' . self::DEFAULT_MIME_RULE,
+        Entity::SCHEDULE             => 'sometimes|numeric',
     ];
 
     protected static $irctcDeltaRefundCreateRules = [
         Entity::TYPE                 => 'required|in:irctc_delta_refund',
         Entity::NAME                 => 'filled|string|max:255',
         Entity::FILE                 => 'required|file|max:5120' . self::DEFAULT_MIME_RULE,
+        Entity::SCHEDULE             => 'sometimes|numeric',
     ];
 
     protected static $paymentLinkCreateRules = [
@@ -106,6 +110,7 @@ class Validator extends Base\Validator
         Invoice\Entity::SMS_NOTIFY      => 'filled|in:0,1',
         Invoice\Entity::EMAIL_NOTIFY    => 'filled|in:0,1',
         Entity::CONFIG                  => 'filled|array',
+        Entity::SCHEDULE                => 'sometimes|numeric',
     ];
 
     protected static $paymentLinkV2CreateRules = [
@@ -116,6 +121,7 @@ class Validator extends Base\Validator
         Invoice\Entity::SMS_NOTIFY      => 'filled|in:0,1',
         Invoice\Entity::EMAIL_NOTIFY    => 'filled|in:0,1',
         Entity::CONFIG                  => 'filled|array',
+        Entity::SCHEDULE                => 'sometimes|numeric',
     ];
 
     protected static $linkedAccountReversalCreateRules = [
@@ -123,6 +129,7 @@ class Validator extends Base\Validator
         Entity::NAME                    => 'filled|string|max:255',
         Entity::FILE                    => 'required_without:file_id|file|max:10240' . self::DEFAULT_MIME_RULE,
         Entity::FILE_ID                 => 'required_without:file|public_id',
+        Entity::SCHEDULE                => 'sometimes|numeric',
     ];
 
     protected static $directDebitCreateRules = [
@@ -131,6 +138,7 @@ class Validator extends Base\Validator
         Entity::NAME            => 'filled|string|max:255',
         Entity::TOKEN           => 'required_without:file_id|max:255|alpha_num',
         Entity::FILE_ID         => 'required_without:file|public_id',
+        Entity::SCHEDULE        => 'sometimes|numeric',
     ];
 
     protected static $recurringChargeCreateRules = [
@@ -138,6 +146,7 @@ class Validator extends Base\Validator
         Entity::FILE            => 'required_without:file_id|file|max:10240' . self::DEFAULT_MIME_RULE,
         Entity::NAME            => 'filled|string|max:255',
         Entity::FILE_ID         => 'required_without:file|public_id',
+        Entity::SCHEDULE        => 'sometimes|numeric',
     ];
 
     protected static $tokenRules = [
@@ -149,6 +158,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY         => 'required|string|max:25',
         Entity::FILE            => 'required|file',
         Entity::CONFIG          => 'filled|array',
+        Entity::SCHEDULE        => 'sometimes|numeric',
     ];
 
     protected static $emandateCreateRules = [
@@ -156,6 +166,7 @@ class Validator extends Base\Validator
         Entity::TYPE        => 'required|in:emandate',
         Entity::SUB_TYPE    => 'required|string|in:register,debit,acknowledge',
         Entity::GATEWAY     => 'required|string',
+        Entity::SCHEDULE    => 'sometimes|numeric',
     ];
 
     protected static $nachCreateRules = [
@@ -163,6 +174,7 @@ class Validator extends Base\Validator
         Entity::TYPE        => 'required|in:nach',
         Entity::SUB_TYPE    => 'required|string|in:register,debit',
         Entity::GATEWAY     => 'required|string',
+        Entity::SCHEDULE    => 'sometimes|numeric',
     ];
 
     protected static $nachMigrationCreateRules = [
@@ -170,18 +182,21 @@ class Validator extends Base\Validator
         Entity::FILE_ID     => 'required_without:file|public_id',
         Entity::TYPE        => 'required|in:nach_migration',
         Entity::CONFIG      => 'required|array',
+        Entity::SCHEDULE    => 'sometimes|numeric',
     ];
 
     protected static $nachMigrationValidateRules = [
         Entity::FILE        => 'required|file|max:102400' . self::DEFAULT_MIME_RULE,    // in KB
         Entity::TYPE        => 'required|in:nach_migration',
         Entity::CONFIG      => 'required|array',
+        Entity::SCHEDULE    => 'sometimes|numeric',
     ];
 
     protected static $merchantOnboardingCreateRules = [
-        Entity::FILE    => 'required|file' . self::DEFAULT_MIME_RULE,
-        Entity::TYPE    => 'required|in:merchant_onboarding',
-        Entity::GATEWAY => 'required|string',
+        Entity::FILE        => 'required|file' . self::DEFAULT_MIME_RULE,
+        Entity::TYPE        => 'required|in:merchant_onboarding',
+        Entity::GATEWAY     => 'required|string',
+        Entity::SCHEDULE    => 'sometimes|numeric',
     ];
 
     protected static $terminalCreateRules = [
@@ -189,18 +204,21 @@ class Validator extends Base\Validator
         Entity::SUB_TYPE             => 'required|string|custom',
         Entity::NAME                 => 'filled|string|max:255',
         Entity::FILE                 => 'required|file|max:1024' . self::DEFAULT_MIME_RULE,
+        Entity::SCHEDULE             => 'sometimes|numeric',
     ];
 
     protected static $virtualBankAccountCreateRules = [
         Entity::TYPE                 => 'required|in:virtual_bank_account',
         Entity::FILE                 => 'required|file' . self::DEFAULT_MIME_RULE,
+        Entity::SCHEDULE             => 'sometimes|numeric',
     ];
 
     protected static $elfinCreateRules = [
-        Entity::TYPE   => 'required|custom',
-        Entity::NAME   => 'filled|string|max:255',
-        Entity::FILE   => 'required|file|max:1024' . self::DEFAULT_MIME_RULE,
-        Entity::CONFIG => 'filled|array',
+        Entity::TYPE        => 'required|custom',
+        Entity::NAME        => 'filled|string|max:255',
+        Entity::FILE        => 'required|file|max:1024' . self::DEFAULT_MIME_RULE,
+        Entity::CONFIG      => 'filled|array',
+        Entity::SCHEDULE    => 'sometimes|numeric',
     ];
 
     protected static $entityMappingCreateRules = [
@@ -210,6 +228,7 @@ class Validator extends Base\Validator
         Entity::CONFIG                       => 'required|array',
         Entity::CONFIG . '.entity_from_type' => 'required|string',
         Entity::CONFIG . '.entity_to_type'   => 'required|string',
+        Entity::SCHEDULE                     => 'sometimes|numeric',
     ];
 
     protected static $authLinkCreateRules = [
@@ -220,30 +239,35 @@ class Validator extends Base\Validator
         Entity::CONFIG                  => 'filled|array',
         Invoice\Entity::SMS_NOTIFY      => 'filled|in:0,1',
         Invoice\Entity::EMAIL_NOTIFY    => 'filled|in:0,1',
+        Entity::SCHEDULE                => 'sometimes|numeric',
     ];
 
     protected static $iinNpciRupayCreateRules = [
         Entity::TYPE                 => 'required|custom',
         Entity::NAME                 => 'filled|string|max:255',
         Entity::FILE                 => 'required|file|max:4096' . self::DEFAULT_MIME_RULE,
+        Entity::SCHEDULE             => 'sometimes|numeric',
     ];
 
     protected static $iinHitachiVisaCreateRules = [
         Entity::TYPE                 => 'required|custom',
         Entity::NAME                 => 'filled|string|max:255',
         Entity::FILE                 => 'required|file|max:102400' . self::DEFAULT_MIME_RULE,
+        Entity::SCHEDULE             => 'sometimes|numeric',
     ];
 
     protected static $iinMcMastercardCreateRules = [
         Entity::TYPE                 => 'required|custom',
         Entity::NAME                 => 'filled|string|max:255',
         Entity::FILE                 => 'required|file|max:102400' . self::DEFAULT_MIME_RULE,
+        Entity::SCHEDULE             => 'sometimes|numeric',
     ];
 
     protected static $mdrAdjustmentCreateRules = [
         Entity::TYPE                 => 'required|custom',
         Entity::NAME                 => 'filled|string|max:255',
         Entity::FILE                 => 'required|file|max:102400' . self::DEFAULT_MIME_RULE,
+        Entity::SCHEDULE             => 'sometimes|numeric',
     ];
     /**
      * Defines the required keys to be present in emandate hdfc register file
@@ -280,10 +304,11 @@ class Validator extends Base\Validator
     ];
 
     protected static $subMerchantCreateRules = [
-        Entity::TYPE   => 'required|in:sub_merchant',
-        Entity::NAME   => 'filled|string|max:255',
-        Entity::FILE   => 'required|file|max:10240' . self::DEFAULT_MIME_RULE,
-        Entity::CONFIG => 'filled|array',
+        Entity::TYPE        => 'required|in:sub_merchant',
+        Entity::NAME        => 'filled|string|max:255',
+        Entity::FILE        => 'required|file|max:10240' . self::DEFAULT_MIME_RULE,
+        Entity::CONFIG      => 'filled|array',
+        Entity::SCHEDULE    => 'sometimes|numeric',
     ];
 
     protected static $subMerchantConfigRules = [
@@ -305,30 +330,35 @@ class Validator extends Base\Validator
         OMHelper::CLIENT_ID    => 'required|string|size:14',
         OMHelper::USER_ID      => 'required|string|size:14',
         OMHelper::REDIRECT_URI => 'required|url',
+        Entity::SCHEDULE       => 'sometimes|numeric',
     ];
 
     protected static $fundAccountCreateRules = [
-        Entity::TYPE    => 'required|in:fund_account',
-        Entity::NAME    => 'filled|string|max:255',
-        Entity::FILE    => 'required_without:file_id|file|max:10240' . self::CSV_MIME_RULE,
-        Entity::FILE_ID => 'required_without:file|public_id',
+        Entity::TYPE        => 'required|in:fund_account',
+        Entity::NAME        => 'filled|string|max:255',
+        Entity::FILE        => 'required_without:file_id|file|max:10240' . self::CSV_MIME_RULE,
+        Entity::FILE_ID     => 'required_without:file|public_id',
+        Entity::SCHEDULE    => 'sometimes|numeric',
     ];
 
     protected static $payoutCreateRules = [
-        Entity::TYPE    => 'required|in:payout',
-        Entity::NAME    => 'filled|string|max:255',
-        Entity::FILE    => 'required_without:file_id|file|max:10240' . self::CSV_MIME_RULE,
-        Entity::FILE_ID => 'required_without:file|public_id',
-        Entity::OTP     => 'required|filled|min:4',
-        Entity::TOKEN   => 'required|unsigned_id',
-        Entity::CONFIG  => 'sometimes'
+
+        Entity::TYPE        => 'required|in:payout',
+        Entity::NAME        => 'filled|string|max:255',
+        Entity::FILE        => 'required_without:file_id|file|max:10240' . self::CSV_MIME_RULE,
+        Entity::FILE_ID     => 'required_without:file|public_id',
+        Entity::OTP         => 'required|filled|min:4',
+        Entity::TOKEN       => 'required|unsigned_id',
+        Entity::SCHEDULE    => 'sometimes|numeric',
+        Entity::CONFIG      => 'sometimes'
     ];
 
     protected static $payoutValidateRules = [
-        Entity::TYPE    => 'required|in:payout',
-        Entity::NAME    => 'filled|string|max:255',
-        Entity::FILE    => 'required_without:file_id|file|max:10240' . self::CSV_MIME_RULE,
-        Entity::FILE_ID => 'required_without:file|public_id',
+        Entity::TYPE        => 'required|in:payout',
+        Entity::NAME        => 'filled|string|max:255',
+        Entity::FILE        => 'required_without:file_id|file|max:10240' . self::CSV_MIME_RULE,
+        Entity::FILE_ID     => 'required_without:file|public_id',
+        Entity::SCHEDULE    => 'sometimes|numeric',
     ];
 
     protected static $fundAccountTypeRowRules = [
@@ -403,6 +433,7 @@ class Validator extends Base\Validator
         Entity::NAME                            => 'filled|string|max:255',
         Entity::FILE                            => 'required|file|max:1024' . self::DEFAULT_MIME_RULE,
         Entity::CONFIG                          => 'filled|array',
+        Entity::SCHEDULE                        => 'sometimes|numeric',
     ];
 
     protected static $entityUpdateActionCreateRules = [
@@ -410,6 +441,7 @@ class Validator extends Base\Validator
         Entity::NAME            => 'filled|string|max:255',
         Entity::FILE            => 'required|file|max:3072' . self::DEFAULT_MIME_RULE,
         Entity::CONFIG          => 'required|array|custom',
+        Entity::SCHEDULE        => 'sometimes|numeric',
     ];
 
     protected static $entityUpdateActionConfigRules = [
@@ -420,10 +452,11 @@ class Validator extends Base\Validator
 
 
     protected static $merchantStatusActionCreateRules = [
-        Entity::TYPE   => 'required|in:merchant_status_action',
-        Entity::NAME   => 'filled|string|max:255',
-        Entity::FILE   => 'required|file|max:3072' . self::DEFAULT_MIME_RULE,
-        Entity::CONFIG => 'required|array|custom',
+        Entity::TYPE        => 'required|in:merchant_status_action',
+        Entity::NAME        => 'filled|string|max:255',
+        Entity::FILE        => 'required|file|max:3072' . self::DEFAULT_MIME_RULE,
+        Entity::CONFIG      => 'required|array|custom',
+        Entity::SCHEDULE    => 'sometimes|numeric',
     ];
 
 
@@ -432,6 +465,7 @@ class Validator extends Base\Validator
         Entity::NAME                 => 'filled|string|max:255',
         Entity::FILE                 => 'required|file|max:102400' . self::DEFAULT_MIME_RULE,
         Entity::FILE_ID              => 'required_without:file|public_id',
+        Entity::SCHEDULE             => 'sometimes|numeric',
     ];
 
     protected static $ecollectIciciCreateRules = [
@@ -439,6 +473,7 @@ class Validator extends Base\Validator
         Entity::NAME                 => 'filled|string|max:255',
         Entity::FILE                 => 'required|file|max:102400' . self::DEFAULT_MIME_RULE,
         Entity::FILE_ID              => 'required_without:file|public_id',
+        Entity::SCHEDULE             => 'sometimes|numeric',
     ];
 
     protected static $bankTransferEditCreateRules = [
@@ -446,6 +481,7 @@ class Validator extends Base\Validator
         Entity::NAME                 => 'filled|string|max:255',
         Entity::FILE                 => 'required|file|max:10240' . self::DEFAULT_MIME_RULE,
         Entity::FILE_ID              => 'required_without:file|public_id',
+        Entity::SCHEDULE             => 'sometimes|numeric',
     ];
 
     protected static $creditCreateRules = [

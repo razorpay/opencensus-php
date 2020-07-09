@@ -24,6 +24,7 @@ class Entity extends Base\PublicEntity
     const CREATOR                   = 'creator';
     const CREATOR_ID                = 'creator_id';
     const CREATOR_TYPE              = 'creator_type';
+    const SCHEDULE                  = 'schedule';
 
     /**
      * Fields below are used for accepting payload
