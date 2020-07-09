@@ -1809,8 +1809,6 @@ class Route
 
         'create_promotions_events'                => ['post',      'promotions/events',                                        'PromotionEventController@create'],
 
-        'create_promotions_events'                => ['post',      'promotions/events',                                        'PromotionEventController@create'],
-
 
         //payout downtime methods
         'create_payout_downtime'                  => ['post',      'payouts/downtime',                                        'PayoutDowntimeController@createPayoutDowntime'              ],
