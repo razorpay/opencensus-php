@@ -5,6 +5,8 @@ import { set, merge } from 'common/utils/immutable';
 import { titleCase } from 'common/utils/rzp-utils';
 
 const UPDATE_SESSION = 'UPDATE_SESSION';
+const UPDATE_USER_ASYNC = 'UPDATE_USER_ASYNC';
+const UPDATE_USER = 'UPDATE_USER';
 const USER_FETCH = 'USER_FETCH';
 const ORG_FETCH = 'ORG_FETCH';
 export const USER_LOGOUT = 'USER_LOGOUT';
@@ -84,6 +86,13 @@ export default function(state = initialState, action) {
         modeFormatted: titleCase(action.payload.mode),
       });
 
+    // when action involves async API call
+    case `${UPDATE_USER_ASYNC}::SUCCESS`:
+      return onUpdateUser(state, action.payload.data);
+
+    case UPDATE_USER:
+      return onUpdateUser(state, action.data);
+
     case `${USER_FETCH}::SUCCESS`:
       return set(state, 'user', action.payload.data);
 
@@ -97,4 +106,16 @@ export default function(state = initialState, action) {
     default:
       return state;
   }
+}
+
+function onUpdateUser(state, data) {
+  return merge(state, {
+    user: new User({
+      ...state.user,
+      user: {
+        ...state.user.user,
+        ...data,
+      },
+    }),
+  });
 }

@@ -15,7 +15,7 @@ export const triggerTwoFactorVerificationOtp = asyncCall =>
 export const verifyTwoFactorOtp = (twoFactorOptions, asyncCall) => ({
   type: MARK_TWO_FACTOR_VERIFIED,
   payload: asyncCall({
-    url: '/user/2fa/otp-verify',
+    url: '/user/otp/verify',
     appendModeInURL: false,
     method: 'POST',
     data: {

@@ -160,17 +160,28 @@ const MerchantDetails = ({
         label="Contact Number"
         value={() => (
           <span>
-            {user.user.contact_mobile || '--'}
+            {user.user.contact_mobile || null}
             <ShowWhen
-              additionalCondition={user => user.isContactMobileChangeAllowed}
+              additionalCondition={user =>
+                user.isContactMobileChangeAllowed && !user.isTwoFactorSetupDone
+              }
             >
               <a
                 class="p-l"
                 onClick={changeContactMobile}
                 title="Edit contact mobile"
               >
-                <i class="i i-edit" />
+                {user.user.contact_mobile ? (
+                  <i class="i i-edit" />
+                ) : (
+                  'Set Contact Number'
+                )}
               </a>
+            </ShowWhen>
+            <ShowWhen additionalCondition={user => user.isTwoFactorSetupDone}>
+              <span class="text-success p-l">
+                <i class="i i-done-all" />
+              </span>
             </ShowWhen>
           </span>
         )}

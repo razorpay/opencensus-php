@@ -27,7 +27,6 @@ export default class TwoFactorVerificationOTP extends React.Component {
     return this.props
       .onConfirm({
         otp: this.otpValue,
-        ...this.props.extraData,
       })
       .then(() => {
         this.onCloseClick();

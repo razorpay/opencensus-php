@@ -34,34 +34,40 @@ export default class UpdateContactMobile extends React.Component {
     return this.props.onSubmit(data);
   };
 
+  onComplete = () => {
+    // Passing contact_mobile_verified hardcoded as true in callback
+    // Ideally this should come from API, but BE is unable send that as response
+    // in current state
+    return this.props.onComplete({ contact_mobile_verified: true });
+  };
+
   onSubmit = () => {
     const data = {
       contact_mobile: this.state.contactMobile,
     };
 
-    return (
-      this.props
-        .onSubmit(data)
-        // there will no .then since it will fail from API always
-        .catch(({ errors }) => {
-          const error = (errors || [])[0];
-          if (error === 'OTP is required') {
-            this.props.openModal({
-              size: 'small',
-              component: (
-                <TwoFactorVerificationOTP
-                  contactMobile={this.state.contactMobile}
-                  onSuccess={this.props.onSuccess}
-                  onClose={this.props.onClose}
-                  onConfirm={this.props.onSubmit}
-                  onResend={this.onOtpResend}
-                  extraData={{ contact_mobile: this.state.contactMobile }}
-                />
-              ),
-            });
-          }
-        })
-    );
+    return this.props
+      .onSubmit(data)
+      .then(() => {
+        this.props.openModal({
+          size: 'small',
+          component: (
+            <TwoFactorVerificationOTP
+              contactMobile={this.state.contactMobile}
+              onSuccess={this.onComplete}
+              onClose={this.props.onClose}
+              onConfirm={this.props.onOtpConfirm}
+              onResend={this.onSubmit}
+            />
+          ),
+        });
+      })
+      .catch(({ errors }) => {
+        this.props.showNotification({
+          type: 'error',
+          message: errors[0],
+        });
+      });
   };
 
   onChange = ({ target }) => {

@@ -5,7 +5,7 @@ import {
   triggerTwoFactorVerificationOtp,
   verifyTwoFactorOtp,
 } from 'merchant_common/reducers/twoFactor';
-import { updateContactMobile } from 'merchant_common/reducers/user';
+import { updateContactMobile, updateUser } from 'merchant_common/reducers/user';
 
 import UpdateContactMobile from 'common/ui/UpdateContactMobile';
 
@@ -22,10 +22,11 @@ import TwoFaVerificationContext from './TwoFactorVerificationContext';
     closeModal,
     verifyTwoFactorOtp,
     updateContactMobile,
+    updateUser,
   }
 )
 export default class TwoFaVerificationContextProvider extends React.Component {
-  onConfirm = data => {
+  onOtpConfirm = data => {
     return this.props.verifyTwoFactorOtp(
       {
         otp: data.otp,
@@ -38,18 +39,25 @@ export default class TwoFaVerificationContextProvider extends React.Component {
     return this.props.updateContactMobile(data, this.props.merchantFetch);
   };
 
+  onContactMobileUpdated = ({ onUserTwoFaVerified }) => userData => {
+    this.props.updateUser(userData);
+    // After contact mobile is updated
+    // user is marked as two_fa_verified implicitly
+    return onUserTwoFaVerified();
+  };
+
+  onOtpResend = () => {
+    return triggerTwoFactorVerificationOtp(this.props.merchantFetch);
+  };
+
   criticalFlow = ({ onUserTwoFaVerified }) => {
     const { user, twoFactorVerified } = this.props;
 
     if (!user.isTwoFactorSetupDone) {
-      this.updateAndVerifiyContactMobile({
-        onContactMobileUpdated: () => {
-          // TODO: After contact mobile updated
-          // user will be marked as 2FA verified
-          // Once backend supports above change,
-          // user need not do OTP veriification again
-          this.verifyUserViaTwoFactorOtp({ onUserTwoFaVerified });
-        },
+      return this.updateAndVerifiyContactMobile({
+        onContactMobileUpdated: this.onContactMobileUpdated({
+          onUserTwoFaVerified,
+        }),
       });
     } else if (!twoFactorVerified) {
       this.verifyUserViaTwoFactorOtp({ onUserTwoFaVerified });
@@ -65,8 +73,9 @@ export default class TwoFaVerificationContextProvider extends React.Component {
       component: (
         <UpdateContactMobile
           contactMobile={user.contact_mobile}
-          onSuccess={onContactMobileUpdated}
+          onComplete={onContactMobileUpdated}
           onSubmit={this.onContactMobileSubmit}
+          onOtpConfirm={this.onOtpConfirm}
         />
       ),
     });
@@ -80,8 +89,8 @@ export default class TwoFaVerificationContextProvider extends React.Component {
         component: (
           <TwoFactorVerificationOTP
             contactMobile={user.contact_mobile}
-            onConfirm={this.onConfirm}
-            onResend={this.props.triggerTwoFaVerificationOtp}
+            onConfirm={this.onOtpConfirm}
+            onResend={this.onOtpResend}
             onClose={this.props.closeModal}
             onSuccess={onUserTwoFaVerified}
           />

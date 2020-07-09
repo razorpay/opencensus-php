@@ -1,13 +1,18 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import RTracking from 'react-tracking';
+
 import Alert from 'common/ui/Forms/Alert';
 import Spinner from 'common/ui/Spinner';
+import UpdateContactMobile from 'common/ui/UpdateContactMobile';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
+import { updateContactMobile, updateUser } from 'merchant_common/reducers/user';
+import { verifyTwoFactorOtp } from 'merchant_common/reducers/twoFactor';
 import * as ProfileActions from 'merchant/reducers/profile';
 import ShowWhen from 'merchant/components/ShowWhen';
 
+import ajax, { merchantFetch } from 'merchant/utils/ajax';
 import User from 'merchant/models/User';
 import MerchantDetails from 'merchant/views/Account/Profile/components/MerchantDetails';
 import GST from 'merchant/views/Account/Profile/components/GST';
@@ -42,6 +47,9 @@ import User2FASettings from './components/User2FASettings';
     fetchUser,
     updateDisplayName,
     updateSession,
+    updateContactMobile,
+    verifyTwoFactorOtp,
+    updateUser,
   }
 )
 @RTracking(() => window.rzpQ.component('Profile'))
@@ -127,6 +135,19 @@ export default class Profile extends Component {
       hasMerchant,
     });
   }
+
+  onUpdateContactMobileSubmit = data => {
+    return this.props.updateContactMobile(data, merchantFetch);
+  };
+
+  onContactMobileOtpConfirm = data => {
+    return this.props.verifyTwoFactorOtp(data, ajax);
+  };
+
+  onUpdateContactMobileComplete = userData => {
+    this.props.updateUser(userData);
+    this.props.closeModal();
+  };
 
   acceptInvitation = invite => {
     let message = 'You have accepted the invite.';
@@ -227,7 +248,13 @@ export default class Profile extends Component {
   openChangeContactMobile = () => {
     this.props.openModal({
       size: 'small',
-      component: <UpdateSelfContactMobile onSuccess={this.props.closeModal} />,
+      component: (
+        <UpdateContactMobile
+          onSubmit={this.onUpdateContactMobileSubmit}
+          onComplete={this.onUpdateContactMobileComplete}
+          onOtpConfirm={this.onContactMobileOtpConfirm}
+        />
+      ),
     });
   };
 
