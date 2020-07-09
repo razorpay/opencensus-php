@@ -20,8 +20,8 @@ const MODAL_CONTENT = {
             <br />
             <p>
               KYC Review process usually takes 1-2 days from the date of the
-              first transaction, we will reach out to you if we need any
-              clarifications.
+              first transaction, we will reach out to you on your registered
+              email ID if we need any clarifications.
             </p>
           </div>
         ) : (

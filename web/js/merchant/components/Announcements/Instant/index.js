@@ -168,8 +168,8 @@ export default class InstantActivationAnnouncements extends Component {
               <React.Fragment>
                 You can start using our products to accept payments right away.
                 KYC Review process usually takes 1-2 days from the date of the
-                first transaction, we will reach out to you if we need any
-                clarifications.
+                first transaction, we will reach out to you on your registered
+                email ID if we need any clarifications.
                 <span class="big-dot-separator" />
                 <a
                   href="https://razorpay.freshdesk.com/support/solutions/articles/11000092582"
