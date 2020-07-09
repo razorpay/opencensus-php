@@ -110,8 +110,7 @@ return [
         'url'            => env('KYC_URL'),
         'password'       => env('KYC_PASSWORD'),
         'authentication' => env('KYC_AUTH_NAME'),
-        'x_service_id'   => env('KYC_SERVICE_ID'),
-        'retry_delay'    => env('KYC_SERVICE_RETRY_DELAY_IN_SECONDS'),
+        'x_service_id'   => env('KYC_SERVICE_ID')
     ],
 
     'reminders' => [

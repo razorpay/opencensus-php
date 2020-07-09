@@ -31,7 +31,6 @@ use RZP\Models\Merchant\Document;
 use RZP\Models\Merchant\Constants;
 use RZP\Models\Merchant\LegalEntity;
 use RZP\Listeners\ApiEventSubscriber;
-use RZP\Jobs\OnboardingKycVerification;
 use RZP\Models\Merchant\Action as Action;
 use RZP\Models\Merchant\Notify as NotifyTrait;
 use RZP\Models\Admin\Admin\Entity as AdminEntity;
@@ -51,15 +50,6 @@ class Core extends Base\Core
 {
     use NotifyTrait;
     use DispatchesJobs;
-
-    protected $kycServiceRetryDelayInSecond;
-
-    public function __construct()
-    {
-        parent::__construct();
-
-        $this->kycServiceRetryDelayInSecond = (int) $this->app['config']['applications.kyc']['retry_delay'];
-    }
 
     public function saveMerchantDetails(array $input,
                                         Merchant\Entity $merchant,
@@ -2373,12 +2363,11 @@ class Core extends Base\Core
     /**
      * @param Entity          $merchantDetails
      * @param Merchant\Entity $merchant
-     * @param bool            $isRetryFlow
-     *
-     * @throws \Throwable
+     * @param array           $input
      */
-    public function verifyCINDetailsIfApplicable(Entity $merchantDetails, Merchant\Entity $merchant, bool $isRetryFlow = false)
+    protected function verifyCINDetailsIfApplicable(Entity $merchantDetails, Merchant\Entity $merchant, array $input)
     {
+
         if (BusinessType::isCinVerificationEnableBusinessTypes($merchantDetails->getBusinessTypeValue()) === false)
         {
             $merchantDetails->setCinVerificationStatus(null);
@@ -2396,18 +2385,9 @@ class Core extends Base\Core
         $fields = [Detail\Entity::COMPANY_CIN, Detail\Entity::PROMOTER_PAN_NAME, Detail\Entity::BUSINESS_NAME];
 
         //
-        // If we don't have all params to make api call then don't call the api
+        // 1. If we have all the require params to call
         //
-        if ($this->hasAllRequiredFields($merchantDetails, [], $fields) === false)
-        {
-            return;
-        }
-
-        //
-        // in retry flow , retry only for failed cin verification status
-        //
-        if (($isRetryFlow === true) and
-            ($merchantDetails->getCinVerificationStatus() !== CinVerificationStatus::FAILED))
+        if ($this->hasAllRequiredFields($merchantDetails, $input, $fields) === false)
         {
             return;
         }
@@ -2426,11 +2406,6 @@ class Core extends Base\Core
             ];
 
             $verificationStatus = (new AutoKyc\Core())->verifyCIN($merchantDetails, $input);
-
-            if ($verificationStatus === CinVerificationStatus::FAILED)
-            {
-                throw new \Exception("cin verification failed");
-            }
         }
         catch (\Throwable $e)
         {
@@ -2438,37 +2413,19 @@ class Core extends Base\Core
                                          null,
                                          TraceCode::MERCHANT_CIN_VERIFICATION_FAILED);
 
-            //
-            // Retry is handled by sqs , so in case of retry don't fail silently
-            // Throw exception so that automatic retry can happen
-            //
-            if ($isRetryFlow === false)
-            {
-                $this->trace->info(TraceCode::MERCHANT_CIN_VERIFICATION_RETRY, [
-                    DetailConstants::MERCHANT_ID => $merchantDetails->getMerchantId(),
-                ]);
-
-                OnboardingKycVerification::dispatch($this->mode ?? 'live', DEConstants::CIN, $merchantDetails->getMerchantId())->delay($this->kycServiceRetryDelayInSecond);
-            }
-            else
-            {
-                throw $e;
-            }
         }
-        finally
-        {
-            $merchantDetails->setCinVerificationStatus($verificationStatus);
 
-            $dimension = $this->fetchCinMetricDimensions($verificationStatus);
+        $merchantDetails->setCinVerificationStatus($verificationStatus);
 
-            $this->trace->count(DetailMetric::CIN_VERIFICATION_STATUS_TOTAL, $dimension);
-        }
+        $dimension = $this->fetchCinMetricDimensions($merchantDetails);
+
+        $this->trace->count(DetailMetric::CIN_VERIFICATION_STATUS_TOTAL, $dimension);
     }
 
-    protected function fetchCinMetricDimensions(string $verificationStatus): array
+    protected function fetchCinMetricDimensions(Entity $merchantDetail): array
     {
         return [
-            Detail\Constants::CIN_STATUS => $verificationStatus,
+            Detail\Constants::CIN_STATUS => $merchantDetail->getCinVerificationStatus()
         ];
     }
 
@@ -2481,7 +2438,6 @@ class Core extends Base\Core
      *
      * @return array
      * @throws LogicException
-     * @throws \Throwable
      */
     public function verifyMerchantAttributes(Merchant\Entity $merchant, string $verificationType, array $input) : array
     {
@@ -2496,13 +2452,11 @@ class Core extends Base\Core
         {
             case DetailConstants::CIN :
 
-                $merchantDetails = $this->repo->merchant_detail->findOrFail($merchant->getId());
+                $merchantDetails = $merchant->merchantDetail;
 
-                $merchant = $merchantDetails->merchant;
-                
                 $merchantDetails->edit($input, 'cin_verification');
 
-                $this->verifyCINDetailsIfApplicable($merchantDetails, $merchant);
+                $this->verifyCINDetailsIfApplicable($merchantDetails, $merchant, $input);
 
                 $this->repo->saveOrFail($merchantDetails);
 

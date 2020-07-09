@@ -269,6 +269,7 @@ class Core extends Base\Core
         $data = $processorResponse->getResponseData();
 
         return $data;
+
     }
 
     /**

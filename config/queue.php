@@ -458,11 +458,6 @@ return [
         'live'      =>  env('TERMINALS_SERVICE_MIGRATE_QUEUE'),
     ],
 
-    'onboarding_kyc_verification' => [
-        'test'       => env('AWS_ONBOARDING_KYC_VERIFICATION_QUEUE'),
-        'live'       => env('AWS_ONBOARDING_KYC_VERIFICATION_QUEUE'),
-    ],
-
     /*
     |--------------------------------------------------------------------------
     | Queue Connections
