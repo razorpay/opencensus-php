@@ -442,6 +442,10 @@ export default class User {
     return this.isFeatureEnabled('ES_ON_DEMAND');
   }
 
+  get isSettlementOndemandRouteEnabled() {
+    return this.isFeatureEnabled('use_settlement_ondemand');
+  }
+
   get isAutomaticSettlementEnabled() {
     return this.isFeatureEnabled('ES_AUTOMATIC');
   }
