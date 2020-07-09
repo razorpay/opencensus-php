@@ -6863,6 +6863,12 @@ class MerchantTest extends TestCase
                                   {
                                       return $value;
                                   }
+
+                                  if($feature == Merchant\RazorxTreatment::RAZORPAY_X_ACL_DENY_UNAUTHORISED)
+                                  {
+                                      return $value;
+                                  }
+
                                   return 'off';
                               }));
     }

@@ -4187,6 +4187,7 @@ class Route
         'fetch_merchant_balance_configs'               => '*',
         'balance_fetch'                                => '*',
         'setl_amount'                                  => '*',
+        'merchant_submit_support_call_request'         => '*',
         // Specific to Banking
         'payout_bulk_create'                           => Permission::CREATE_PAYOUT_BULK,
         'payout_approve_bulk'                          => Permission::APPROVE_PAYOUT_BULK,
