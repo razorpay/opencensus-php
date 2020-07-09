@@ -298,6 +298,11 @@ class Constants
      */
     const LOAN = 'loan';
 
+    /**
+     * Flag to use settlement/ondemand route for ondemand settlement .
+     */
+    const USE_SETTLEMENT_ONDEMAND      = 'use_settlement_ondemand';
+
     // Different actions for feature activation flow
     const CREATE           = 'create';
     const UPDATE           = 'update';
@@ -606,6 +611,7 @@ class Constants
         self::TRANSACTION_ON_HOLD             => true,
         self::BEPG                            => true,
         self::LOAN                            => true,
+        self::USE_SETTLEMENT_ONDEMAND         => true,
     ];
 
     // Entity type constants
@@ -794,6 +800,11 @@ class Constants
             'feature'       => self::GENERATE_PARTNER_INVOICE,
             'display_name'  => 'Generate Partner Invoice',
             'documentation' => 'Commissions',
+        ],
+        self::USE_SETTLEMENT_ONDEMAND  => [
+            'feature'       => self::USE_SETTLEMENT_ONDEMAND,
+            'display_name'  => 'Use the settlement/ondemand route for ondemand settlement',
+            'documentation' => '',
         ],
     ];
 
