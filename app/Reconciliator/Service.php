@@ -10,7 +10,6 @@ use RZP\Models\Base;
 use RZP\Models\Batch;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
-use RZP\Reconciliator\Base\SubReconciliator\NetbankingServiceRecon;
 use RZP\Trace\TraceCode;
 use RZP\Http\RequestHeader;
 use RZP\Models\Transaction;
@@ -88,17 +87,7 @@ class Service extends Base\Service
             return [];
         }
 
-        $this->postReconciliationProcess($input);
-
         return $summary;
-    }
-
-    protected function postReconciliationProcess(array $input)
-    {
-        if ($this->isLambdaRequest() === true)
-        {
-            (new RequestProcessor\Lambda)->deleteFromAws($input[RequestProcessor\Lambda::KEY]);
-        }
     }
 
     public function reconciliateCancelledTransactions($gateway, array $input = [])
