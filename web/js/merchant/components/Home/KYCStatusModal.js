@@ -4,24 +4,39 @@ import { activationDuration } from 'merchant/helpers/data';
 
 const MODAL_CONTENT = {
   KYC_ACTIVATION_SUBMIT_MODAL: {
-    title: 'KYC under review',
-    subtitle: 'Your KYC Form has been submitted',
+    title: args =>
+      args.isWhitelistFlow ? 'KYC Submitted' : 'KYC Under Review',
+    subtitle: args =>
+      args.isWhitelistFlow
+        ? 'KYC will be processed post your first transaction'
+        : 'Your KYC Form is submitted',
     body: args => (
       <div>
-        {args.isWhitelistFlow && (
-          <p>Meanwhile, you can continue to accept payments using Razorpay.</p>
+        {args.isWhitelistFlow ? (
+          <div>
+            <p>
+              You can start using our products to accept payments right away.
+            </p>
+            <br />
+            <p>
+              KYC Review process usually takes 1-2 days from the date of the
+              first transaction, we will reach out to you if we need any
+              clarifications.
+            </p>
+          </div>
+        ) : (
+          <div>
+            We will reach out on your contact email for further clarifications
+            if needed. The review process usually takes {activationDuration}.
+          </div>
         )}
-        <div>
-          We will reach out on your contact email for further clarifications if
-          needed. The review process usually takes {activationDuration}.
-        </div>
       </div>
     ),
     background: 'pending',
   },
   KYC_CLARIFICATION_SUBMIT_MODAL: {
-    title: 'KYC under review',
-    subtitle: 'Clarifications successfully submitted',
+    title: args => 'KYC under review',
+    subtitle: args => 'Clarifications successfully submitted',
     body: args => (
       <div>
         <p>Great, thank you for providing requested clarifications!</p>
@@ -37,13 +52,32 @@ const MODAL_CONTENT = {
   },
 };
 
-const KYCStatusModal = ({
-  onClose,
-  onGoToDashboard,
-  isWhitelistFlow,
-  user,
-  modalType,
-}) => {
+const ModalButtons = ({ args }) => {
+  if (args.isWhitelistFlow) {
+    return (
+      <>
+        <a
+          className="btn btn-default KYC__more_details"
+          href="https://razorpay.freshdesk.com/a/solutions/articles/11000092582&sa=D&ust=1594198150522000&usg=AFQjCNHDpL3kI_n5NQwp8zP8yPBj7RszJQ"
+          target="_blank"
+        >
+          Know More
+        </a>
+        <button className="btn btn-primary" onClick={args.onGoToDashboard}>
+          Accept Payments
+        </button>
+      </>
+    );
+  }
+
+  return (
+    <button className="btn btn-primary" onClick={args.onGoToDashboard}>
+      Go to Dashboard
+    </button>
+  );
+};
+
+const KYCStatusModal = ({ onClose, onGoToDashboard, user, modalType }) => {
   const content = MODAL_CONTENT[modalType];
   let defaultSubtitle = 'Ready to accept domestic payments';
 
@@ -52,22 +86,20 @@ const KYCStatusModal = ({
   }
 
   const args = {
-    isWhitelistFlow,
-    user,
+    isWhitelistFlow: user.instantActivation.isWhitelistFlow,
+    onGoToDashboard: onGoToDashboard,
   };
 
   return (
     <ModalMask>
       <Modal className="pan-status-modal" onClose={onClose}>
         <div className={`modal-header ${content.background}`}>
-          <h1>{content.title}</h1>
-          <p>{content.subtitle || defaultSubtitle}</p>
+          <h1>{content.title(args)}</h1>
+          <p>{content.subtitle(args) || defaultSubtitle}</p>
         </div>
         <div className="modal-body">
           <div className="modal-description">{content.body(args)}</div>
-          <button className="btn btn-primary" onClick={onGoToDashboard}>
-            Go to Dashboard
-          </button>
+          <ModalButtons args={args} />
         </div>
       </Modal>
     </ModalMask>

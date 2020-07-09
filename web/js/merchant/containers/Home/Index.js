@@ -849,7 +849,6 @@ export default class HomeContainer extends Component {
               iaActivations.trackClose(activation_flow);
               this.onInstantActivationSuccess();
             }}
-            isWhitelistFlow={user.instantActivation.isWhitelistFlow}
             user={user}
             modalType={kycStatusModalType}
           />

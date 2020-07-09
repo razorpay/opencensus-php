@@ -1,4 +1,5 @@
 import React, { Component, Fragment } from 'react';
+import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
 import ModalHeader from 'common/ui/ModalHeader';
 import Amount from 'common/ui/Amount';
@@ -34,6 +35,10 @@ export default class SettlementDetail extends Component {
     }
   };
 
+  handleCompleteKYC = () => {
+    this.props.closeModal();
+  };
+
   isOnHold = () => {
     if (
       this.props.settlementAmount.next_settlement_time === null &&
@@ -45,6 +50,88 @@ export default class SettlementDetail extends Component {
       return false;
     }
   };
+
+  get onHoldTitle() {
+    const user = this.props.user;
+    if (user.instantActivation.isWhitelistFlow) {
+      if (user.activation_status === 'under_review') {
+        return 'Your Settlements are currently on Hold';
+      }
+      if (!user.isSubmitted) {
+        return 'Your Settlements will be processed post KYC submission';
+      }
+    }
+    return 'Settlements on hold';
+  }
+
+  get onHoldSubtitle() {
+    const user = this.props.user;
+    if (user.instantActivation.isWhitelistFlow) {
+      if (user.activation_status === 'under_review') {
+        return 'We are reviewing your documents.';
+      }
+      if (!user.isSubmitted) {
+        return 'Complete KYC to enable settlements for your account.';
+      }
+    }
+    return 'Your settlements are currently not being processed.';
+  }
+
+  get onHoldSubtext() {
+    const user = this.props.user;
+    if (user.instantActivation.isWhitelistFlow) {
+      if (user.activation_status === 'under_review') {
+        return 'We have received your KYC information. The review process will take approximately 1-2 days. Post-approval, your settlements will be enabled. We will reach out to you on your registered email ID in case we require more information or documents.';
+      }
+      if (!user.isSubmitted) {
+        return 'Once you have submitted your KYC documents, our team will review and approve the same. Your settlements will be enabled post KYC verification. This process usually takes 1-2 working days.';
+      }
+    }
+    return 'Because of some risk issues with your payments or with your razorpay account, your settlements have been put on hold.';
+  }
+
+  get actionButtons() {
+    const user = this.props.user;
+    const isOnHold = this.isOnHold();
+
+    if (user.instantActivation.isWhitelistFlow && !user.isSubmitted) {
+      return (
+        <>
+          <div>
+            <a
+              class="btn btn-default"
+              href="https://razorpay.freshdesk.com/a/solutions/articles/11000092582&sa=D&ust=1594198150522000&usg=AFQjCNHDpL3kI_n5NQwp8zP8yPBj7RszJQ"
+              target="_blank"
+            >
+              KYC Process Details
+            </a>
+          </div>
+
+          <Link to="/activation">
+            <button class="btn btn-primary" onClick={this.handleCompleteKYC}>
+              Complete KYC
+            </button>
+          </Link>
+        </>
+      );
+    }
+
+    return (
+      <>
+        {isOnHold && (
+          <div>
+            <button class="btn btn-default" onClick={this.handleContactSupport}>
+              Contact Support
+            </button>
+          </div>
+        )}
+
+        <a href="https://razorpay.com/settlement" target="_blank">
+          <button class="btn btn-primary">Settlement Guide</button>
+        </a>
+      </>
+    );
+  }
 
   render() {
     const isOnHold = this.isOnHold();
@@ -73,7 +160,7 @@ export default class SettlementDetail extends Component {
                 <div class="settlement-alert-warning">
                   <span style={{ fontWeight: 'bold', fontSize: '15px' }}>
                     {isOnHold ? (
-                      <b>Settlements on hold</b>
+                      <b>{this.onHoldTitle}</b>
                     ) : (
                       <Fragment>
                         <strong>
@@ -96,9 +183,7 @@ export default class SettlementDetail extends Component {
                   </span>{' '}
                   <p>
                     {isOnHold ? (
-                      <span>
-                        Your settlements are currently not being processed.
-                      </span>
+                      <span>{this.onHoldSubtitle}</span>
                     ) : (
                       <Fragment>
                         The actual time taken for the settled amount to reflect
@@ -117,9 +202,7 @@ export default class SettlementDetail extends Component {
                       </span>
                     ) : (
                       <span class="grey" style={{ opacity: '.7' }}>
-                        Because of some risk issues with your payments or with
-                        your razorpay account, your settlements have been put on
-                        hold.
+                        {this.onHoldSubtext}
                       </span>
                     )}
                   </p>
@@ -140,20 +223,7 @@ export default class SettlementDetail extends Component {
                 padding: '15px',
               }}
             >
-              {isOnHold && (
-                <div>
-                  <button
-                    class="btn btn-default"
-                    onClick={this.handleContactSupport}
-                  >
-                    Contact Support
-                  </button>
-                </div>
-              )}
-
-              <a href="https://razorpay.com/settlement" target="_blank">
-                <button class="btn btn-primary">Settlement Guide</button>
-              </a>
+              {this.actionButtons}
             </div>
           </Fragment>
         </div>

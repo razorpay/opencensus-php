@@ -27,6 +27,7 @@ import Popover, { PopoverBody } from 'common/ui/Popover';
       ...state.session,
       settlement_amount: state.home.settlement_amount,
       config: state.config.config,
+      payments: state.payments,
     };
   },
   { fetchSettlementAmount, openModal }
@@ -95,7 +96,10 @@ export default class TransactionsContainer extends Component {
           {no_settlement &&
           (pathname === '/payments' ||
             pathname === '/refunds' ||
-            pathname === '/orders') ? (
+            pathname === '/orders') &&
+          (mode === 'live' &&
+            this.props.payments &&
+            this.props.payments.items.length > 0) ? (
             <div class="text-right settlement-caption">
               {no_settlement.caption}
               {no_settlement.reason && (
@@ -152,6 +156,7 @@ export default class TransactionsContainer extends Component {
                     size: 'medium',
                     component: (
                       <SettlementDetail
+                        user={user}
                         settlementAmount={this.props.settlement_amount.data}
                       />
                     ),
@@ -169,21 +174,22 @@ export default class TransactionsContainer extends Component {
             </div>
           ) : null}
         </header>
-        {showInstantActivation && !isSubmitted && mode === 'live' ? (
-          <EnableSettlementsBanner source={pathname.substr(1)} />
-        ) : (
-          <TestModeBanner />
-        )}
-        {nextSettlement &&
+
+        <TestModeBanner />
+
+        {mode === 'live' &&
+        nextSettlement &&
         no_settlement &&
-        no_settlement.on_hold === true &&
-        isSubmitted === true ? (
+        no_settlement.on_hold === true ? (
           <OnHoldBanner
+            payments={this.props.payments}
+            user={user}
             ctaOnClick={() => {
               this.props.openModal({
                 size: 'medium',
                 component: (
                   <SettlementDetail
+                    user={user}
                     settlementAmount={this.props.settlement_amount.data}
                   />
                 ),

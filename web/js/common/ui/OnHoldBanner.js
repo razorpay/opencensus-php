@@ -1,10 +1,43 @@
+import React from 'react';
 import Banner from 'common/ui/Banner';
 
-export default ({ ctaOnClick }) => {
+const onHoldBanner = ({ ctaOnClick, user, payments }) => {
+  if (
+    user.instantActivation.isWhitelistFlow &&
+    payments &&
+    payments.items.length === 0
+  ) {
+    return null;
+  }
+
+  let content = (
+    <>Your settlements are not being processed. They have been put on hold.</>
+  );
+
+  if (user.instantActivation.isWhitelistFlow) {
+    if (user.activation_status === 'under_review') {
+      content = (
+        <>
+          Your Settlements are not being processed currently because your KYC is
+          under review. It generally takes 1-2 working days from the first
+          transaction for the review process to be complete.
+        </>
+      );
+    } else if (user.isActivated && !user.isSubmitted) {
+      content = (
+        <>
+          Your Settlements are not being processed currently. Once your KYC is
+          submitted and approved, settlements will be processed.
+        </>
+      );
+    }
+  }
+
   return (
     <div class="TestModeBanner">
       <Banner>
-        Your settlements are not being processed. They have been put on hold.{' '}
+        {content}
+        &nbsp;
         <span onClick={ctaOnClick} class="btn-link">
           View Details
         </span>
@@ -12,3 +45,5 @@ export default ({ ctaOnClick }) => {
     </div>
   );
 };
+
+export default onHoldBanner;

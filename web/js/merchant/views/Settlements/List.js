@@ -50,6 +50,7 @@ import Time from 'common/ui/Time';
     settlement_amount: state.home.settlement_amount,
     holidayList: state.settlement.holidayList,
     config: state.config.config,
+    payments: state.payments,
     ...state.home,
     ...state.settlements,
   }),
@@ -291,21 +292,21 @@ export default class SettlementsListContainer extends ListContainer {
             <NavLink to="/settlements">Settlements</NavLink>
           </header>
 
-          {showInstantActivation && mode === 'live' && !isSubmitted ? (
-            <EnableSettlementsBanner source="Settlements" />
-          ) : (
-            <TestModeBanner />
-          )}
-          {nextSettlement === null &&
-          isSubmitted === true &&
+          <TestModeBanner />
+
+          {mode === 'live' &&
+          nextSettlement === null &&
           no_settlement &&
           no_settlement.on_hold === true ? (
             <OnHoldBanner
+              payments={this.props.payments}
+              user={user}
               ctaOnClick={() => {
                 this.props.openModal({
                   size: 'medium',
                   component: (
                     <SettlementDetail
+                      user={user}
                       settlementAmount={this.props.settlement_amount.data}
                     />
                   ),
@@ -408,7 +409,10 @@ export default class SettlementsListContainer extends ListContainer {
                         )}
                       </span>
                       <br />
-                      {no_settlement && (
+                      {mode === 'live' &&
+                      no_settlement &&
+                      this.props.payments &&
+                      this.props.payments.items.length > 0 ? (
                         <span style={{ fontSize: '13px' }}>
                           {no_settlement.caption}
                           {no_settlement.reason && (
@@ -422,7 +426,7 @@ export default class SettlementsListContainer extends ListContainer {
                             </>
                           )}
                         </span>
-                      )}
+                      ) : null}
                       {nextSettlement &&
                         !no_settlement && (
                           <span style={{ fontSize: '13px' }}>
@@ -460,6 +464,7 @@ export default class SettlementsListContainer extends ListContainer {
                                   size: 'medium',
                                   component: (
                                     <SettlementDetail
+                                      user={user}
                                       settlementAmount={
                                         this.props.settlement_amount.data
                                       }

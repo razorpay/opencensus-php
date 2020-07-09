@@ -248,7 +248,10 @@ class AnalyticsDesktop extends Component {
                       )}
                     </span>
                     <br />
-                    {no_settlement ? (
+                    {no_settlement &&
+                    payments &&
+                    payments.items.length > 0 &&
+                    mode === 'live' ? (
                       <div class="text-right" style={{ width: '100%' }}>
                         {no_settlement.caption}
                         {no_settlement.reason && (
@@ -300,6 +303,7 @@ class AnalyticsDesktop extends Component {
                               size: 'medium',
                               component: (
                                 <SettlementDetail
+                                  user={user}
                                   settlementAmount={settlement_amount.data}
                                 />
                               ),
@@ -346,24 +350,6 @@ class AnalyticsDesktop extends Component {
           </div>
         </Header>
         {/* </Sticky> */}
-        {nextSettlement && no_settlement && no_settlement.on_hold === true ? (
-          <OnHoldBanner
-            ctaOnClick={() => {
-              this.props.openModal({
-                size: 'medium',
-                component: (
-                  <SettlementDetail settlementAmount={settlement_amount.data} />
-                ),
-              });
-
-              window.rzpAnalytics({
-                eventCategory: 'Settlement Revamp',
-                eventAction: 'View details - Funds on Hold',
-                eventLabel: `Home`,
-              });
-            }}
-          />
-        ) : null}
         <div className="dashboard">
           <div className="row">
             <div className="col-md-12">

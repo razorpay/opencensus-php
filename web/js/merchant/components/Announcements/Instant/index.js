@@ -26,7 +26,32 @@ export default class InstantActivationAnnouncements extends Component {
       content,
       isPaymentsOfTypeObject = payments instanceof Object;
     if (!user.isSubmitted) {
-      if (payments && payments.items.length > 0 && !user.isAccepted) {
+      if (
+        user.instantActivation.isWhitelistFlow &&
+        !user.isAccepted &&
+        mode === 'live'
+      ) {
+        if (payments && payments.items.length === 0) {
+          title = 'Accept Payments';
+          content = (
+            <span>
+              You can start using our products to accept payments right away.
+              Meanwhile, we will await your KYC Details, that can be filled{' '}
+              <Link to="/activation">here</Link>.
+            </span>
+          );
+        } else if (payments && payments.items.length > 0) {
+          title = 'Enable Settlements';
+          content = (
+            <span>
+              Your settlements are on hold, kindly fill your KYC Form to enabled
+              settlements.
+              <span class="big-dot-separator" />
+              <Link to="/activation">Fill KYC Form</Link>
+            </span>
+          );
+        }
+      } else if (payments && payments.items.length > 0 && !user.isAccepted) {
         title = 'Enable Settlements';
         content = (
           <span>
@@ -133,8 +158,31 @@ export default class InstantActivationAnnouncements extends Component {
           );
         }
       } else {
-        title = 'KYC under review';
-        content = `We are reviewing your KYC details. This process usually takes ${activationDuration}.`;
+        title = 'KYC Under Review';
+        if (user.instantActivation.isWhitelistFlow) {
+          if (payments && payments.items.length > 0 && mode === 'live') {
+            content = `We are reviewing your KYC details. This process usually takes 1-2 days from the date of the first transaction, we will reach out to you if we need any clarifications.`;
+          } else {
+            title = 'Accept Payments';
+            content = (
+              <React.Fragment>
+                You can start using our products to accept payments right away.
+                KYC Review process usually takes 1-2 days from the date of the
+                first transaction, we will reach out to you if we need any
+                clarifications.
+                <span class="big-dot-separator" />
+                <a
+                  href="https://razorpay.freshdesk.com/support/solutions/articles/11000092582"
+                  target="_blank"
+                >
+                  Know more
+                </a>
+              </React.Fragment>
+            );
+          }
+        } else {
+          content = `We are reviewing your KYC details. This process usually takes ${activationDuration}.`;
+        }
       }
     }
     return (

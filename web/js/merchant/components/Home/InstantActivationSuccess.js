@@ -30,21 +30,11 @@ export default ({
             <p>{content}</p>
           ) : (
             <>
-              <p>You can start accepting payments for your account now.</p>
+              <p>Congratulations, your account has been instantly activated.</p>
               <p>
-                Settlements are subject to account approval based on KYC and
-                risk review. If we need any clarification we will reach out to
-                you on your registered email ID.
-              </p>
-              <p>
-                For more information refer to our{' '}
-                <a
-                  href="https://razorpay.com/terms/"
-                  target="_blank"
-                  rel="noopener"
-                >
-                  terms and conditions
-                </a>.
+                You can start using our products to accept payments right away.
+                Go ahead and make your first transaction, meanwhile we will
+                await your KYC details.
               </p>
             </>
           )}
@@ -55,7 +45,7 @@ export default ({
             Complete KYC
           </button>
           <button className="btn btn-primary" onClick={onGoToDashboard}>
-            Start Accepting Payments
+            Accept Payments
           </button>
         </modal-body>
       </Modal>
