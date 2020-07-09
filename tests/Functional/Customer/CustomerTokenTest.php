@@ -23,29 +23,9 @@ class CustomerTokenTest extends TestCase
 
     public function testGetTokenWithBankDetails()
     {
-        $this->fixtures->merchant->addFeatures(['token_bank_details']);
-
         $this->ba->privateAuth();
 
         $this->startTest();
-    }
-
-    public function testGetTokenWithoutBankDetails()
-    {
-        //bank details only when method is emandage and feature flag is set
-        $token = $this->getTokenById('token_100000emandate');
-        self::assertArrayNotHasKey(Token\Entity::BANK_DETAILS, $token);
-
-        $this->fixtures->merchant->addFeatures(['token_bank_details']);
-
-        $token = $this->getTokenById('token_1000custwallet');
-        self::assertArrayNotHasKey(Token\Entity::BANK_DETAILS, $token);
-
-        $token = $this->getTokenById('token_100001custcard');
-        self::assertArrayNotHasKey(Token\Entity::BANK_DETAILS, $token);
-
-        $token = $this->getTokenById('token_100000custbank');
-        self::assertArrayNotHasKey(Token\Entity::BANK_DETAILS, $token);
     }
 
     public function testGetTokenMaxAmount()

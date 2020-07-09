@@ -204,12 +204,6 @@ class Constants
     const CUST_CONTACT_EMAIL_NULL         = 'cust_contact_email_null';
 
     /**
-     * This will control if the bank details will be returned in the fetch token response.
-     * Bank details will contain beneficiary_name, account_number, ifsc and account_type
-     */
-    const TOKEN_BANK_DETAILS              = 'token_bank_details';
-
-    /**
      * Skips uniqueness checks on the `receipt` attribute on invoice and payment links
      */
     const INVOICE_NO_RECEIPT_UNIQUE       = 'invoice_no_receipt_unique';
@@ -541,7 +535,6 @@ class Constants
         self::DISABLE_REFUNDS                 => true,
         self::DISABLE_CARD_REFUNDS            => true,
         self::DISABLE_AUTO_REFUNDS            => true,
-        self::TOKEN_BANK_DETAILS              => true,
         self::INVOICE_RECEIPT_MANDATORY       => true,
         self::INVOICE_NO_EXPIRY_EMAIL         => true,
         self::INVOICE_EXPIRE_BY_REQD          => true,
