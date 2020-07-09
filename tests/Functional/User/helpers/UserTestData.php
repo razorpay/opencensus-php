@@ -1350,16 +1350,9 @@ return [
         ],
         'response'  => [
             'content'     => [
-                'error' => [
-                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_USER_OTP_REQUIRED,
-                ],
+                'contact_mobile'            => '8877666666',
+                'contact_mobile_verified'   => false,
             ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'               => RZP\Exception\BadRequestException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_USER_OTP_REQUIRED,
         ],
     ],
 
@@ -1392,10 +1385,9 @@ return [
 
     'testEditContactMobileByUserAndVerify' => [
         'request'  => [
-            'url'     => '/users/contact/update',
-            'method'  => 'patch',
+            'url'     => '/users/2fa/verify',
+            'method'  => 'post',
             'content' => [
-                'contact_mobile' => '8877666666',
                 'otp'            => '0007',
             ],
             'server'  => [
@@ -1405,6 +1397,31 @@ return [
         'response' => [
             'content'     => [],
             'status_code' => 200,
+        ],
+    ],
+
+    'testEditContactMobileWhichIsVerifiedByUser'    => [
+        'request'       => [
+            'url'           => '/users/contact/update',
+            'method'        => 'PATCH',
+            'content'       => [
+                'contact_mobile'        => '9123456789',
+            ],
+        ],
+        'response'  => [
+            'content'       => [
+                'error'         => [
+                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'   => PublicErrorDescription::BAD_REQUEST_USER_2FA_ALREADY_SETUP,
+                ]
+            ],
+
+            'status_code'   => 400,
+        ],
+
+        'exception' => [
+            'class'                 => RZP\Exception\BadRequestException::class,
+            'internal_error_code'   => ErrorCode::BAD_REQUEST_USER_2FA_ALREADY_SETUP,
         ],
     ],
 
@@ -1509,12 +1526,51 @@ return [
         ]
     ],
 
+    'testEditContactMobileWhichIsVerifiedByUserOnBanking'       => [
+        'request'       => [
+            'url'           => '/users/contact/update',
+            'method'        => 'PATCH',
+            'content'       => [
+                'contact_mobile'        => '9987654321',
+            ],
+            'server'        => [
+                'HTTP_X-Request-Origin'     => config('applications.banking_service_url'),
+            ],
+        ],
+
+        'response'      => [
+            'content'       => [
+                'contact_mobile'            => '9987654321',
+                'contact_mobile_verified'   => false,
+            ],
+        ],
+    ],
+
+    'testEditContactMobileByUserOnBankingWithOauthToken'        => [
+        'request'       => [
+            'url'           => '/users/contact/update',
+            'method'        => 'PATCH',
+            'content'       => [
+                'contact_mobile'        => '9876543219',
+            ],
+            'server'        => [
+                'HTTP_X-Request-Origin'     => config('applications.banking_service_url'),
+            ],
+        ],
+
+        'response'      => [
+            'content'       => [
+                'contact_mobile'            => '9876543219',
+                'contact_mobile_verified'   => false,
+            ],
+        ],
+    ],
+
     'testEditContactMobileByUserAndVerifyForBanking' => [
         'request'  => [
-            'url'     => '/users/contact/update',
-            'method'  => 'patch',
+            'url'     => '/users/2fa/verify',
+            'method'  => 'post',
             'content' => [
-                'contact_mobile' => '8877666666',
                 'otp'            => '0007',
             ],
             'server'  => [

@@ -1021,6 +1021,14 @@ class Service extends Base\Service
 
             $this->app['token_service']->verify($token, $this->user->getId());
         }
+        // Temporarily not allowing users to change contact mobile
+        // If they already have a verified contact mobile
+        // only for requests coming from PG dashboard
+        else if ($this->user->isSecondFactorAuthSetup() === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_USER_2FA_ALREADY_SETUP);
+        }
 
         return $this->core()->editContactMobile($input, $this->user);
     }

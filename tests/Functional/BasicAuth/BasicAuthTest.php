@@ -5,6 +5,8 @@ namespace RZP\Tests\Functional\BasicAuth;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factory;
 
+use RZP\Models\Key;
+
 use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Partner\PartnerTrait;
@@ -502,9 +504,22 @@ class BasicAuthTest extends TestCase
         $this->app->razorx->method('getTreatment')
             ->willReturn('on');
 
-        $merchantUser = $this->fixtures->user->createUserForMerchant();
+        $merchant = $this->fixtures->create('merchant:with_keys');
 
-        $this->ba->proxyAuth('rzp_live_10000000000000', $merchantUser->getId());
+        $merchantId = $merchant->getId();
+
+        $key = $this->fixtures->key->create([
+            Key\Entity::ID                  => 'exampleexample',
+            Key\Entity::MERCHANT_ID         => $merchantId,
+        ]);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId, [], 'owner');
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/keys/rzp_test_'.$key->getId();
+
+        $this->ba->proxyAuth('rzp_test_'.$merchantId, $merchantUser->getId());
 
         $this->startTest();
     }
@@ -521,7 +536,15 @@ class BasicAuthTest extends TestCase
         $this->app->razorx->method('getTreatment')
             ->willReturn('on');
 
+        $key = $this->fixtures->key->create([
+            Key\Entity::MERCHANT_ID             => '10000000000000',
+        ]);
+
         $merchantUser = $this->fixtures->user->createUserForMerchant();
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/keys/rzp_live_'.$key->getId();
 
         $this->ba->proxyAuth('rzp_live_10000000000000', $merchantUser->getId());
 

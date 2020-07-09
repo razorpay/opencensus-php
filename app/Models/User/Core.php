@@ -1282,36 +1282,15 @@ class Core extends Base\Core
 
         $smsOtpAuthPayload = $this->getSmsOtpAuthBasePayload($user, $input);
 
-        if (isset($input[Entity::OTP]) === false)
-        {
-            $smsOtpAuth->sendOtp($smsOtpAuthPayload);
+        $smsOtpAuth->sendOtp($smsOtpAuthPayload);
 
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_USER_OTP_REQUIRED);
-        }
-        else
-        {
-            $smsOtpAuthPayload[Entity::OTP] = $input[Entity::OTP];
+        $user->setContactMobile($input[Entity::CONTACT_MOBILE]);
 
-            if ($smsOtpAuth->is2faCredentialValid($smsOtpAuthPayload) === true)
-            {
-                $user->setContactMobile($input[Entity::CONTACT_MOBILE]);
+        $this->repo->saveOrFail($user);
 
-                $this->repo->saveOrFail($user);
+        $this->notifyUserAboutContactMobileUpdate($user, $this->merchant);
 
-                $user->setContactMobileVerified(true);
-
-                $this->repo->saveOrFail($user);
-
-                $this->notifyUserAboutContactMobileUpdate($user, $this->merchant);
-
-                return $user;
-            }
-            else
-            {
-                // Wrong OTP or Mobile number verified.
-                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INCORRECT_OTP);
-            }
-        }
+        return $user;
     }
 
     /**

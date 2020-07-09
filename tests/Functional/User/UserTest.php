@@ -1928,15 +1928,13 @@ class UserTest extends TestCase
 
     public function testEditContactMobileByUserAndVerify()
     {
-        $user = $this->fixtures->create('user');
+        $user = $this->fixtures->create('user', [
+            UserEntity::CONTACT_MOBILE      => '9123456789',
+        ]);
 
         $merchantIds = $user->merchants()->get()->pluck('id')->toArray();
 
-        $this->fixtures->merchant->setRestricted(true, $merchantIds[0]);
-
         $this->ba->proxyAuth('rzp_test_' . $merchantIds[0], $user['id'], 'owner');
-
-        $testData = &$this->testData[__FUNCTION__];
 
         $response = $this->startTest();
 
@@ -1944,9 +1942,26 @@ class UserTest extends TestCase
 
         $this->assertEquals($response['contact_mobile_verified'], true);
 
-        $this->assertEquals($response['contact_mobile_verified'], $userDb['contact_mobile_verified']);
+        $this->assertEquals(
+            $response['contact_mobile_verified'],
+            $userDb['contact_mobile_verified']);
+    }
 
-        $this->assertEquals($testData['request']['content']['contact_mobile'], $userDb['contact_mobile']);
+    public function testEditContactMobileWhichIsVerifiedByUser()
+    {
+        $user = $this->fixtures->create('user', [
+            UserEntity::CONTACT_MOBILE              => '9123456789',
+            UserEntity::CONTACT_MOBILE_VERIFIED     => true,
+        ]);
+
+        $merchantIds = $user->merchants()->get()->pluck('id')->toArray();
+
+        $this->ba->proxyAuth(
+            'rzp_test_' . $merchantIds[0],
+            $user['id'],
+            'owner');
+
+        $this->startTest();
     }
 
     public function testUpdateContactMobile()
@@ -2095,19 +2110,70 @@ class UserTest extends TestCase
         $this->testData[$funcName]['request']['content']['otp_auth_token'] = $token;
     }
 
+    public function testEditContactMobileWhichIsVerifiedByUserOnBanking()
+    {
+        $user = $this->fixtures->user->createUserForMerchant('10000000000000', [
+                UserEntity::CONTACT_MOBILE              => '9123456789',
+                UserEntity::CONTACT_MOBILE_VERIFIED     => true,
+            ]);
+
+        $this->setUpMerchantForBusinessBanking(false, 10000000);
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', $user->getId(), 'owner');
+
+        $this->mockRedisSuccess(__FUNCTION__, $user->getId());
+
+        $response = $this->startTest();
+
+        $userEntityFromDb = $this->getDbEntityById('user', $user->getId());
+
+        $this->assertEquals(
+            $response['contact_mobile_verified'],
+            $userEntityFromDb['contact_mobile_verified']);
+
+        $this->assertEquals(
+            $response['contact_mobile'],
+            $userEntityFromDb['contact_mobile']);
+
+    }
+
+    public function testEditContactMobileByUserOnBankingWithOauthToken()
+    {
+        $user = $this->fixtures->user->createUserForMerchant('10000000000000', [
+            UserEntity::CONTACT_MOBILE              => '9123456789',
+            UserEntity::CONTACT_MOBILE_VERIFIED     => true,
+        ]);
+
+        $this->setUpMerchantForBusinessBanking(false, 10000000);
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', $user->getId(), 'owner');
+
+        $this->mockRedisSuccess(__FUNCTION__, $user->getId());
+
+        $response = $this->startTest();
+
+        $userEntityFromDb = $this->getDbEntityById('user', $user->getId());
+
+        $this->assertEquals(
+            $response['contact_mobile_verified'],
+            $userEntityFromDb['contact_mobile_verified']);
+
+        $this->assertEquals(
+            $response['contact_mobile'],
+            $userEntityFromDb['contact_mobile']);
+    }
+
     public function testEditContactMobileByUserAndVerifyForBanking()
     {
-        $user = $this->fixtures->create('user');
+        $user = $this->fixtures->create('user', [
+            UserEntity::CONTACT_MOBILE      => '8877666666',
+        ]);
 
         $merchantIds = $user->merchants()->get()->pluck('id')->toArray();
 
         $this->fixtures->merchant->setRestricted(true, $merchantIds[0]);
 
         $this->ba->proxyAuth('rzp_test_' . $merchantIds[0], $user['id'], 'owner');
-
-        $testData = &$this->testData[__FUNCTION__];
-
-        $this->mockRedisSuccess(__FUNCTION__ , $user->getId());
 
         $response = $this->startTest();
 
@@ -2117,7 +2183,7 @@ class UserTest extends TestCase
 
         $this->assertEquals($response['contact_mobile_verified'], $userDb['contact_mobile_verified']);
 
-        $this->assertEquals($testData['request']['content']['contact_mobile'], $userDb['contact_mobile']);
+        $this->assertEquals($response['contact_mobile'], $userDb['contact_mobile']);
     }
 
     public function testSendOtpViaEMail()

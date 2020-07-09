@@ -5364,7 +5364,7 @@ class Route
     // NOTE: Currently this feature is under razorx with merchant id,
     // so add only proxy auth routes which have merchant Id
     public static $twoFactorAuthRequiredRoutes = [
-        'user_update_contact',
+        'merchant_replace_key',
     ];
 
     /**

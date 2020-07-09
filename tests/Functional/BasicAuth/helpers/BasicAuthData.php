@@ -667,14 +667,14 @@ return [
 
     'testRequestWithTwoFaRequiredWithTwoFaVerifiedTrue'     => [
         'request'       => [
-            'url'       => '/users/contact/update',
-            'method'    => 'PATCH',
+            // URL will be set in the function
+            'method'    => 'PUT',
             'content'   => [
-                'contact_mobile'    => '9412345678',
-                'otp'               => '0007',
+                'delay_roll'       => '1',
             ],
             'server'    => [
                 'HTTP_X-Dashboard-User-2FA-Verified'        => 'true',
+                'HTTP_X-Dashboard-User-Role'                => 'owner',
             ],
         ],
 
@@ -685,12 +685,10 @@ return [
 
     'testRequestWithTwoFaRequiredWithTwoFaVerifiedFalse'     => [
         'request'       => [
-            'url'       => '/users/contact/update',
-            'method'    => 'PATCH',
+            // url is set in the function
+            'method'    => 'PUT',
             'content'   => [
-                'contact_mobile'    => '9412345678',
-                // required due to backward compatibility
-                'otp'               => '0007',
+                'delay_roll'    => '1',
             ],
         ],
 
