@@ -549,6 +549,15 @@ class CreateAccount extends Base
             $input);
     }
 
+    //Bulk patch route function for fts source account update.
+    public function updateSourceAccount(array $input)
+    {
+        return $this->createAndSendRequest(
+            parent::BULK_SOURCE_ACCOUNT_UPDATE_URI,
+            Requests::PATCH,
+            $input);
+    }
+
     public function getAccount()
     {
         return $this->account;

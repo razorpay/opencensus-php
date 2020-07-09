@@ -162,6 +162,7 @@ class Name
     const EDIT_PERMISSION                     = 'edit_permission';
     const REMINDER_OPERATION                  = 'reminder_operation';
     const GATEWAY_PVT                         = 'gateway_pvt';
+    const FTS_SOURCE_ACCOUNT_UPDATE           = 'fts_source_account_update';
     // @todo
     // Rename delete_merchant_features to delete_features as features
     // have now been extended to applications as well.

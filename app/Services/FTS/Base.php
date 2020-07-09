@@ -46,6 +46,8 @@ class Base
 
     const SOURCE_ACCOUNT_DELETE_URI = '/source_account';
 
+    const BULK_SOURCE_ACCOUNT_UPDATE_URI = '/source_accounts/update';
+
     const FUND_ACCOUNT_FETCH_URI  = '/account';
 
     const FUND_TRANSFER_FETCH_URI = '/transfer';
