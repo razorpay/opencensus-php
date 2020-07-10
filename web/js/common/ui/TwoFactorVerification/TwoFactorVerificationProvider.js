@@ -53,14 +53,18 @@ export default class TwoFaVerificationContextProvider extends React.Component {
   criticalFlow = ({ onUserTwoFaVerified }) => {
     const { user, twoFactorVerified } = this.props;
 
-    if (!user.isTwoFactorSetupDone) {
-      return this.updateAndVerifiyContactMobile({
-        onContactMobileUpdated: this.onContactMobileUpdated({
-          onUserTwoFaVerified,
-        }),
-      });
-    } else if (!twoFactorVerified) {
-      this.verifyUserViaTwoFactorOtp({ onUserTwoFaVerified });
+    if (user.isCriticalRouteExperimentEnabled) {
+      if (!user.isTwoFactorSetupDone) {
+        return this.updateAndVerifiyContactMobile({
+          onContactMobileUpdated: this.onContactMobileUpdated({
+            onUserTwoFaVerified,
+          }),
+        });
+      } else if (!twoFactorVerified) {
+        this.verifyUserViaTwoFactorOtp({ onUserTwoFaVerified });
+      } else {
+        onUserTwoFaVerified();
+      }
     } else {
       onUserTwoFaVerified();
     }

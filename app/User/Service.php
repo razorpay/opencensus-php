@@ -613,7 +613,7 @@ class Service extends Base\Service
                     $data = $this->updateInstantActivationExperiment($data);
 
                     $data = $this->updateRXOnboardingV2Experiment($merchant, $data);
-                    
+
                     $data = $this->appendBankingDetails($data);
 
                     if (((bool) $merchant['activated']) === true)
@@ -1084,8 +1084,9 @@ class Service extends Base\Service
             'instant_refunds_default_pricing_v2',
             'rx_scheduled_payouts_rollout',
             'rx_webhook_separation_announcement',
+            'validate_user_2fa_status',
             'enable_payment_buttons',
-            'enable_subscription_buttons'
+            'enable_subscription_buttons',
         ];
 
         $experimentsResults = $merchantService->getBulkTreatment($features);
@@ -1100,7 +1101,7 @@ class Service extends Base\Service
 
     // To rollout the new RX onboarding flow in phases only for new signups after 1st July 2020
     // Phase 1 - 10% of new signups on RX
-    // This function will be removed after 100% rollout    
+    // This function will be removed after 100% rollout
     protected function updateRXOnboardingV2Experiment(array $merchant, array $data): array
     {
         $merchantService = new Merchant\Service;
@@ -1153,7 +1154,7 @@ class Service extends Base\Service
         $merchantService = new Merchant\Service;
         $isBankingRequest = ApiUrl::isBankingOriginRequest();
 
-        if ($isBankingRequest) 
+        if ($isBankingRequest)
         {
             $data['banking_details'] = array();
 
@@ -1168,12 +1169,12 @@ class Service extends Base\Service
 
             try {
 
-                if ($data['activation_status'] === 'activated') 
+                if ($data['activation_status'] === 'activated')
                 {
                     $liveCount = $merchantService->getPayoutCount('live');
                     $data['banking_details']['is_live_payout_created'] = $liveCount > 0;
-                } 
-                else 
+                }
+                else
                 {
                     $data['banking_details']['is_live_payout_created'] = false;
                 }

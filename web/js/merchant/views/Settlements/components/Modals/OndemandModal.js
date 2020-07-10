@@ -25,9 +25,15 @@ export default class OndemandModal extends Component {
   constructor(props) {
     super(props);
 
-    this.getFeesUrl = () => this.props.user.isSettlementOndemandRouteEnabled ? 'settlement/ondemand/fees/dashboard' : '/merchant/payout/demand/fees';
+    this.getFeesUrl = () =>
+      this.props.user.isSettlementOndemandRouteEnabled
+        ? 'settlement/ondemand/fees/dashboard'
+        : '/merchant/payout/demand/fees';
 
-    this.getUrl = () => this.props.user.isSettlementOndemandRouteEnabled ? '/settlement/ondemand/dashboard': '/merchant/payout/demand';
+    this.getUrl = () =>
+      this.props.user.isSettlementOndemandRouteEnabled
+        ? '/settlement/ondemand/dashboard'
+        : '/merchant/payout/demand';
 
     this.state = {
       isSaving: false,

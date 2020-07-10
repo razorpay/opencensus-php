@@ -5,13 +5,24 @@ import TableBody from 'common/ui/TableBody';
 import Time from 'common/ui/Time';
 import Key from 'merchant/models/Key';
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
-// import RegenerateKey from 'merchant/models/Key'
+import { useTwoFactorVerificationContext } from 'common/ui/TwoFactorVerification/TwoFactorVerificationContext';
 
 import EditWebsiteDetailsModal from 'merchant/views/Account/Profile/components/EditWebsiteDetailsModal';
 
 const KeysListItem = props => {
   let mode = props.mode;
   let { id, created_at, expired_at } = props.apiKey;
+
+  const context = useTwoFactorVerificationContext();
+
+  const onRegenerateKeys = () => {
+    return context.criticalFlow({
+      onUserTwoFaVerified: () => {
+        props.showRollKeyModal({ id });
+      },
+    });
+  };
+
   return (
     <tr>
       <td>{id}</td>
@@ -30,12 +41,7 @@ const KeysListItem = props => {
           'None'
         ) : (
           <div class="row-action">
-            <button
-              class="btn btn-xs btn-primary"
-              onClick={() => {
-                props.showRollKeyModal({ id });
-              }}
-            >
+            <button class="btn btn-xs btn-primary" onClick={onRegenerateKeys}>
               <i class="i i-refresh" />
               <span>Regenerate {mode} Key</span>
             </button>

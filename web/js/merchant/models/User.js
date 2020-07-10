@@ -583,6 +583,10 @@ export default class User {
     return this.getExpStatus('enable_payment_buttons');
   }
 
+  get isCriticalRouteExperimentEnabled() {
+    return this.getExpStatus('validate_user_2fa_status');
+  }
+
   get isSubscriptionButtonEnabledByRazorX() {
     return this.getExpStatus('enable_subscription_buttons');
   }
