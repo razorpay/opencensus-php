@@ -61,7 +61,10 @@ class Service extends Base\Service
             'event'                            => $input['event'],
         ]);
 
-        return $this->core()->updateOndemandPayoutStatus($event, $payoutData);
+        return $this->repo->transaction(function() use ($event, $payoutData)
+        {
+            return $this->core()->updateOndemandPayoutStatus($event, $payoutData);
+        });
     }
 
     public function updateStatusAfterPayoutRequest($payoutStatus, $payoutId, $settlementOndemandPayout)
