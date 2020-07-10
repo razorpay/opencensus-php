@@ -57,10 +57,15 @@ export default function MerchantNavLinks(props) {
         isNew
         label="Payment Button"
         icon="i i-payment-button"
-        to={routes.paymentbuttons}
-        additionalCondition={user =>
-          user.isAllowedView('payment_buttons') &&
+        to={
           user.isPaymentButtonEnabledByRazorX
+            ? routes.paymentbuttons
+            : routes.subscription_buttons
+        }
+        additionalCondition={user =>
+          user.isAllowedMultiple('payment_buttons subscription_buttons') &&
+          (user.isPaymentButtonEnabledByRazorX ||
+            user.isSubscriptionButtonEnabledByRazorX)
         }
         isNew
       />

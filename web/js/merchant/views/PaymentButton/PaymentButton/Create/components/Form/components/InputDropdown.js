@@ -81,6 +81,8 @@ export default class InputDropdown extends React.Component {
       optionLabelPath,
       optionValuePath,
       optionComponent,
+      selectedOptionComponent,
+      searchEnabled = false,
       disabled,
     } = this.props;
 
@@ -107,10 +109,11 @@ export default class InputDropdown extends React.Component {
                 options={options}
                 optionLabelPath={optionLabelPath}
                 optionComponent={optionComponent}
+                selectedOptionComponent={selectedOptionComponent}
                 onChange={this.handleChange}
                 selected={selectedOption}
                 showClear={false}
-                searchEnabled={false}
+                searchEnabled={searchEnabled}
                 disabled={disabled}
               />
             </div>

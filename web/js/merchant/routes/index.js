@@ -10,6 +10,7 @@ import PaymentLinkDetails from 'merchant/views/PaymentLinks/PaymentLinks/Details
 import PaymentLinkCreate from 'merchant/views/PaymentLinks/PaymentLinks/Create/index';
 import PaymentPagesWysiwyg from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg';
 import PaymentButtonCreate from 'merchant/views/PaymentButton/PaymentButton/Create';
+import SubscriptionButtonCreate from 'merchant/views/PaymentButton/SubscriptionButton/Create';
 import PaymentsDetails from 'merchant/views/Transactions/Payments/Details';
 import RefundDetails from 'merchant/views/Transactions/Refunds/Details';
 import OrderDetails from 'merchant/views/Transactions/Orders/Details';
@@ -231,6 +232,18 @@ const fullPageViewsMap = {
     additionalCondition: user =>
       user.isAllowedEdit('payment_pages') &&
       user.isPaymentButtonEnabledByRazorX,
+  },
+  '/subscription_buttons/new': {
+    component: SubscriptionButtonCreate,
+    additionalCondition: user =>
+      user.isAllowedEdit('subscription_buttons') &&
+      user.isSubscriptionButtonEnabledByRazorX,
+  },
+  '/subscription_buttons/:id(pl_.+)/edit': {
+    component: SubscriptionButtonCreate,
+    additionalCondition: user =>
+      user.isAllowedEdit('subscription_buttons') &&
+      user.isSubscriptionButtonEnabledByRazorX,
   },
 };
 

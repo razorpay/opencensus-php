@@ -12,6 +12,8 @@ import paymentlinksReducer from 'merchant/reducers/paymentlinks/list';
 import paymentlinkReducer from 'merchant/reducers/paymentlinks/details';
 import paymentButtonsReducer from 'merchant/reducers/paymentbuttons/list';
 import paymentButtonCreateReducer from 'merchant/reducers/paymentbuttons/create';
+import subscriptionButtonsReducer from 'merchant/reducers/subscriptionButtons/list';
+import subscriptionButtonCreateReducer from 'merchant/reducers/subscriptionButtons/create';
 import invoiceDetailsReducer from 'merchant/reducers/invoices/details';
 import profileReducer from 'merchant/reducers/profile';
 import customersReducer from 'merchant/reducers/customers';
@@ -110,6 +112,8 @@ export default combineReducers({
   paymentBatchIds: PaymentBatchIdsReducer,
   paymentbuttons: paymentButtonsReducer,
   payment_button_create: paymentButtonCreateReducer,
+  subscription_buttons: subscriptionButtonsReducer,
+  subscription_button_create: subscriptionButtonCreateReducer,
   refundbatches: refundBatchesReducer,
   batchDetails: batchDetailsReducer,
   bMerchant: bMerchantReducer,

@@ -25,6 +25,7 @@ const SETTINGS_ROUTES_REGEX = /^\/(config|webhooks|keys|applications)/;
 const INVOICES_ROUTES_REGEX = /^\/(invoices|items)/;
 const MARKETPLACE_ROUTES_REGEX = /^\/route\/(payments|transfers|reversals|accounts)/;
 const PAYMENTLINKS_ROUTES_REGEX = /^\/paymentlinks(\/batchuploads)?/;
+const PAYMENTBUTTON_ROUTES_REGEX = /^\/paymentbuttons(\/subscription_buttons)?/;
 const SUBSCRIPTIONS_ROUTES_REGEX = /^\/(subscriptions(\/batchuploads)?|plans|addons|recurring_payments|tokens|authlinks)/;
 const PARTNER_DASHBOARD_REGEX = /^\/(submerchants(\/(applications|settings))?|commissions)/;
 
@@ -39,6 +40,7 @@ const BASE_ROUTES = {
   paymentlinks: '/paymentlinks',
   paymentpages: '/paymentpages',
   paymentbuttons: '/paymentbuttons',
+  subscription_buttons: '/subscription_buttons',
   subscriptions: '/subscriptions',
   chargeAtWill: '/recurring_payments',
   partnerDashboard: '/submerchants',
@@ -124,6 +126,9 @@ export default class Sidebar extends Component {
     } else if (PAYMENTLINKS_ROUTES_REGEX.test(pathname)) {
       routes.paymentlinks = pathname.match(PAYMENTLINKS_ROUTES_REGEX)[0];
       this.prevRoute = 'paymentlinks';
+    } else if (PAYMENTBUTTON_ROUTES_REGEX.test(pathname)) {
+      routes.paymentbuttons = pathname.match(PAYMENTBUTTON_ROUTES_REGEX)[0];
+      this.prevRoute = 'paymentbuttons';
     } else if (PARTNER_DASHBOARD_REGEX.test(pathname)) {
       routes.partnerDashboard = pathname.match(PARTNER_DASHBOARD_REGEX)[0];
       this.prevRoute = 'partnerDashboard';

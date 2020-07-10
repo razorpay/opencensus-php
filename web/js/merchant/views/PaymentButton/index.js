@@ -5,6 +5,7 @@ import { RZPFeatures } from 'merchant/helpers/data';
 
 import TestModeBanner from 'merchant/components/TestModeBanner';
 import PaymentButtonList from 'merchant/views/PaymentButton/PaymentButton/List';
+import SubscriptionButtonList from 'merchant/views/PaymentButton/SubscriptionButton/List';
 
 import {
   handleProductQuickGuide,
@@ -97,9 +98,17 @@ export default class PaymentButtonsContainer extends React.Component {
         )}
 
         <header id="link-header">
-          <NavLink exact to="/paymentbuttons">
-            Payment Buttons
-          </NavLink>
+          {this.props.user.isPaymentButtonEnabledByRazorX && (
+            <NavLink exact to="/paymentbuttons">
+              Payment Buttons
+            </NavLink>
+          )}
+
+          {this.props.user.isSubscriptionButtonEnabledByRazorX && (
+            <NavLink exact to="/subscription_buttons">
+              Subscription Buttons
+            </NavLink>
+          )}
         </header>
 
         <TestModeBanner />
@@ -107,6 +116,10 @@ export default class PaymentButtonsContainer extends React.Component {
         <content>
           <Switch>
             <Route path="/paymentbuttons" component={PaymentButtonList} />
+            <Route
+              path="/subscription_buttons"
+              component={SubscriptionButtonList}
+            />
           </Switch>
         </content>
       </tabbed-container>

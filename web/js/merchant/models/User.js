@@ -477,6 +477,8 @@ export default class User {
   }
 
   get isInttCurrenciesEnabled() {
+    return true;
+
     return (
       !!this.international && this.getExpStatus('international_currencies')
     );
@@ -579,6 +581,10 @@ export default class User {
 
   get isPaymentButtonEnabledByRazorX() {
     return this.getExpStatus('enable_payment_buttons');
+  }
+
+  get isSubscriptionButtonEnabledByRazorX() {
+    return this.getExpStatus('enable_subscription_buttons');
   }
 
   get isSellerAppRole() {

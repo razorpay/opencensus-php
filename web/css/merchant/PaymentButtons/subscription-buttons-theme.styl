@@ -1,0 +1,152 @@
+.WidgetPreview
+  font-family: Muli,ubuntu,helvetica,sans-serif
+  position: relative
+  width: 100%
+  max-width: 256px
+  padding: 18px
+  text-align: left
+  background: #FCFDFD
+  border: 1px solid #E3E9EB
+  border-radius: 4px
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15)
+  color: rgba(0, 0, 0, 0.8)
+
+  .PaymentButton
+    margin-top: 4px
+
+  .item-label--empty
+    font-size: 12px
+    opacity: .6
+
+    .item-details
+      margin: 0
+
+    .item-details::before, .item-details::after
+      content: unset
+
+
+  .item-label
+    position: relative
+    margin-bottom: 12px
+    display: block
+    cursor: pointer
+    font-weight: 400
+
+  input[type="radio"]:checked + .item
+    .item-details
+      background: #F6FBFF
+      border-color: #3964A8
+
+      &::before
+        border-color: #3964a8
+        background: #3964a8
+
+      &::after
+        opacity: 0
+        width: 0.34em
+        height: 0
+        border-width: 2px
+        border-color: #fff
+
+  .item-title
+    font-size: 12px
+    line-height: 20px
+    font-weight: 600
+
+  .item-description
+    font-size: 11px
+    line-height: 14px
+    color: rgba(0, 0, 0, 0.4)
+    overflow-wrap: break-word
+
+  .item-details
+    position: relative
+    padding: 6px 10px
+    margin-top: 6px
+    background: #FFFFFF
+    border: 1px solid #E3E9EB
+    box-sizing: border-box
+    box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.05)
+    border-radius: 2px
+
+    &::before, &::after
+      content: ''
+      position: absolute
+
+    &::before
+      top: 11px
+      right: 8px
+      width: 11px
+      height: 11px
+      border-radius: 50%
+      border: 1px solid #dce2e4
+
+    &::after
+      top: 18px
+      right: 14px
+      width: 0.23em
+      height: 0.5em
+      border-right: 1px solid #dce2e4
+      border-top: 1px solid #dce2e4
+      transform: scaleX(-1) rotate(135deg)
+      transform-origin: left top
+
+
+  .item-details-description
+    font-style: italic
+    font-weight: 600
+    font-size: 10px
+    line-height: 20px
+
+  .amount
+    font-size: 12px
+    line-height: 17px
+
+  .amount-decimal
+    font-size: 11px
+    line-height: 16px
+
+
+.ButtonDetailsPreview.ButtonDetailsPreview--subscriptionButton
+  height: 28px
+  margin: 0
+  width: 100%
+  margin-top: 4px
+
+  .PaymentButton-Button
+    width: 100%
+    height: 36px
+
+    svg
+      height: 16px
+
+    .PaymentButton-Button-contents
+      padding: 4px 44px !important
+
+    .PaymentButton-Button-text
+      line-height: 24px
+      font-size: 11px
+
+  .PaymentButton-Button-rzpBranding
+    position: relative
+    //margin-top: 6px
+    text-align: center
+
+    opacity: initial
+    font-size: initial
+    line-height: initial
+
+    .powered-by-razorpay
+      font-size: 9px
+      font-weight: 500
+      color: #072654
+      font-style: italic
+      display: block
+
+    img
+      height: 13px
+      margin: 2px 0
+
+    span, img
+      display: inline-block
+      vertical-align: middle

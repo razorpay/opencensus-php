@@ -20,6 +20,7 @@ import Customers from 'merchant/views/Customers/List';
 import Marketplace from 'merchant/views/Marketplace/Index';
 import PaymentButton from 'merchant/views/PaymentButton';
 import PaymentButtonsDetails from 'merchant/views/PaymentButton/PaymentButton/Details';
+import SubscriptionButtonDetails from 'merchant/views/PaymentButton/SubscriptionButton/Details';
 
 import Reports from 'merchant/views/Reports';
 import ReportsAsync from 'merchant/views/ReportsAsync/Home';
@@ -240,6 +241,23 @@ export default class Content extends Component {
             additionalCondition={user =>
               user.isAllowedView('payment_buttons') &&
               user.isPaymentButtonEnabledByRazorX
+            }
+          />
+          <ShowWhenRoute
+            path="/subscription_buttons"
+            component={PaymentButton}
+            additionalCondition={user =>
+              user.isAllowedView('subscription_buttons') &&
+              user.isSubscriptionButtonEnabledByRazorX
+            }
+          />
+
+          <ShowWhenRoute
+            path="/subscription_buttons/:id(pl_.+)/:entity_name(payments)"
+            component={SubscriptionButtonDetails}
+            additionalCondition={user =>
+              user.isAllowedView('payment_buttons') &&
+              user.isSubscriptionButtonEnabledByRazorX
             }
           />
 

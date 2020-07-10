@@ -1,0 +1,156 @@
+import { connect } from 'react-redux';
+
+import Input from 'common/new-ui/Input';
+import BaseForm from './BaseForm';
+
+import { getCurrency } from 'common/ui/Amount';
+import { classList, paiseToRupees } from 'common/utils/rzp-utils';
+import { getPeriodLabel } from '../../../constants/billingCycle';
+
+import {
+  updatePlanField,
+  deletePlanField,
+  updatePaymentButtonData,
+  updateStepReviewProgress,
+} from 'merchant/reducers/subscriptionButtons/create';
+
+// import track from '../../../track';
+
+@connect(null, {
+  updatePlanField,
+  deletePlanField,
+  updatePaymentButtonData,
+  updateStepReviewProgress,
+})
+export default class EditableDisplayField extends React.Component {
+  state = {
+    isEditModeOpened: false,
+  };
+
+  get currencySymbol() {
+    const currency = this.props.currency;
+    const _currencySymbol = getCurrency(currency).symbol;
+
+    return _currencySymbol;
+  }
+
+  handleToggleEditMode = () => {
+    this.setState({
+      isEditModeOpened: !this.state.isEditModeOpened,
+    });
+  };
+
+  onSubmitBaseForm = fieldData => {
+    const newPlanField = fieldData;
+
+    // Update currency so it could be used everywhere, in preview, in descriptions, for filtering plans as per currency etc.
+    const currency = newPlanField.item.currency;
+    this.props.updatePaymentButtonData({
+      currency,
+    });
+
+    if (!newPlanField) {
+      throw 'Invalid field data';
+    }
+
+    this.props.updatePlanField(newPlanField, this.props.indexInOrder); // If index is undefined, it'll be added as new field
+
+    this.markReviewUnDone();
+
+    // track.lj.trackCustomerScreenFieldSaveSuccess();
+  };
+
+  handleDeleteField = () => {
+    this.props.deletePlanField(this.props.indexInOrder);
+
+    this.markReviewUnDone();
+
+    // track.lj.trackCustomerScreenDeleteField();
+  };
+
+  findSelectedOptionInPlanOptions() {
+    const { field } = this.props;
+
+    return null;
+  }
+
+  markReviewUnDone = () => {
+    this.props.updateStepReviewProgress({
+      isCustomerDetailsReviewed: false,
+    });
+  };
+
+  render() {
+    const {
+      field,
+      children,
+      plansOptions,
+      currency,
+      indexInOrder,
+    } = this.props;
+    const { isEditModeOpened } = this.state;
+
+    let descriptionOfPlanFrequency;
+
+    if (!children) {
+      const planDetails = field.product_config.plan_details;
+      descriptionOfPlanFrequency = (
+        <span>
+          <b>
+            {this.currencySymbol} {Number(field.item.amount).toFixed(2)}
+          </b>{' '}
+          to be charged{' '}
+          {getPeriodLabel(planDetails.period, planDetails.interval)}
+        </span>
+      );
+    }
+
+    return (
+      <div
+        onClick={!isEditModeOpened ? this.handleToggleEditMode : () => {}}
+        class={classList(
+          'EditableUDF EditableDisplayField',
+          children && 'EditableDisplayField--disabled',
+          isEditModeOpened && 'EditableDisplayField--editMode'
+        )}
+      >
+        {children || (
+          <React.Fragment>
+            <span class="btn btn-link edit-btn">
+              Click to Edit This Field
+              <i class="i i-edit" />
+            </span>
+
+            <Input
+              label="Plan"
+              class="Input--vTop Input--dummy"
+              value={field.item.name}
+              description={descriptionOfPlanFrequency}
+              readOnly
+            />
+
+            <Input
+              label="No. of Billing Cycles"
+              class="Input--vTop Input--dummy"
+              value={field.product_config.subscription_details.total_count}
+              readOnly
+            />
+          </React.Fragment>
+        )}
+
+        {isEditModeOpened &&
+          plansOptions && (
+            <BaseForm
+              indexInOrder={indexInOrder} // Index in the ordered schema. If not defined, tells that it's a new field
+              field={field}
+              currency={currency}
+              plansOptions={plansOptions}
+              handleDeleteField={this.handleDeleteField}
+              handleClose={this.handleToggleEditMode}
+              onSubmit={this.onSubmitBaseForm}
+            />
+          )}
+      </div>
+    );
+  }
+}

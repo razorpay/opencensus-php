@@ -85,6 +85,10 @@
       color: rgba(22, 47, 86, 0.38)
       overflow-wrap: break-word
 
+      b
+        color: inherit
+        font-weight: bold
+
     .Input-el
       background: rgba(224, 228, 249, 0.1)
       border-radius: 2px 2px 0 0
@@ -111,6 +115,9 @@
         .PowerSelect__TriggerLabel
           padding-left: 0
 
+    .Input-el-PaymentButtonForm, .Input--Currency-dropdown
+      .PowerSelect__TriggerLabel
+        line-height: 24px
 
     $height-currency = 24px
     .Input--CurrencyAmount
@@ -169,6 +176,34 @@
     animation: .13s visible-fade-in 0s forwards
     overflow: hidden
     flex-wrap: nowrap
+
+.Input-el-PlansDropdown.Input-el-PaymentButtonForm__Tether
+  .PowerSelect__Option--highlighted
+    background: rgba(224, 228, 249, 0.24)
+
+  .PowerSelect__Option
+    i.i-check
+      top: 18px
+
+  .option-title
+    font-size: 14px
+    line-height: 20px
+    color: rgba(22, 47, 86, 0.87)
+
+  .big-dot-separator
+    width: 5px
+    height: 5px
+    margin: 0 8px
+
+  .option-description
+    font-size: 13px
+    line-height: 18px
+    color: rgba(22, 47, 86, 0.54)
+    text-transform: capitalize
+
+    > span
+      display: inline-block
+      vertical-align: middle
 
 .Input-el-PaymentButtonForm__Tether
   z-index: 99999
