@@ -471,9 +471,16 @@ app
           } else {
             hideSpinner();
 
+            var signupError = 'Something went wrong. Please try again.';
+            if (data.errors && data.errors.length) {
+              signupError = data.errors[0].includes('Internal Server Error')
+                ? signupError
+                : data.errors[0];
+            }
+
             window.trackHubs({
               id: 'SIGNUP_FAILED',
-              value: data.errors[0],
+              value: signupError,
             });
 
             window.rzpQ &&
@@ -485,6 +492,7 @@ app
                     mode: $scope.eventsMode,
                     version: 1,
                     emailId: payload.data.email,
+                    error: signupError,
                   })
               );
 
