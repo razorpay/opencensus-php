@@ -23,7 +23,7 @@ class Core extends Base\Core
     {
         if (isset($input[Entity::MAX_BALANCE]) === true && boolval($input[Entity::MAX_BALANCE]) === true)
         {
-            $amount = $merchant->balance->getBalance();
+            $amount = $merchant->primaryBalance->getBalance();
 
             $input[Entity::AMOUNT] = $amount;
         }
@@ -31,11 +31,15 @@ class Core extends Base\Core
         {
             $amount = $input[Entity::AMOUNT];
 
-            if ($amount > $merchant->balance->getBalance())
+            if ($amount > $merchant->primaryBalance->getBalance())
             {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_INSUFFICIENT_BALANCE,
-                    null);
+                    null,
+                    [
+                        'amount'  => $amount,
+                        'balance' => $merchant->primaryBalance->getBalance(),
+                    ]);
             }
         }
 

@@ -35,6 +35,8 @@ class Service extends Base\Service
 
     public function calculateFees(array $input): array
     {
+        (new Validator)->validateInput(Validator::SETTLEMENT_ONDEMAND_FEES_INPUT, $input);
+
         $finalFeesSplit= $this->core()->getFeesSplit($input, $this->merchant, $this->user);
 
         return $finalFeesSplit;
