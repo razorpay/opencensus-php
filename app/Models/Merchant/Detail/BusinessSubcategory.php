@@ -150,6 +150,9 @@ class BusinessSubcategory
     const WEB_DEVELOPMENT                 = 'web_development';
     const WHOLESALE                       = 'wholesale';
 
+    const COMPUTER_PROGRAMMING_DATA_PROCESSING = 'computer_programming_data_processing';
+    const UTILITIES_ELECTRIC_GAS_OIL_WATER     = 'utilities_electric_gas_oil_water';
+
     const  AUTOMOBILE_PARTS_AND_EQUIPEMENTS                   = 'automobile_parts_and_equipements';
     const  COMPUTERS_PERIPHERAL_EQUIPMENT_SOFTWARE            = 'computers_peripheral_equipment_software';
     const  MEDICAL_EQUIPMENT_AND_SUPPLY_STORES                = 'medical_equipment_and_supply_stores';
@@ -496,7 +499,6 @@ class BusinessSubcategory
         self::WEB_DEVELOPMENT                 => 'Web designing, development and hosting',
         self::WHOLESALE                       => 'Wholesale/Bulk trade',
 
-
         //new business_subcategory
         self::CONSTRUCTION_SERVICES                              => 'GENERAL CONTRACTORS',
         self::STAMPS_AND_COINS_STORES                            => 'Stamps & Coins Stores',
@@ -712,6 +714,8 @@ class BusinessSubcategory
         self::DATA_PROCESSING                                    => 'Data processing',
         self::PROFESSIONAL_SERVICES                              => 'Professional services',
         self::ASSOCIATIONS_AND_MEMBERSHIP                        => 'Associations and membership',
+        self::COMPUTER_PROGRAMMING_DATA_PROCESSING               => 'Computer Programming/Data Processing',
+        self::UTILITIES_ELECTRIC_GAS_OIL_WATER                   => 'Utilities–Electric, Gas, Water, Oil',
     ];
 
     /**

@@ -30,142 +30,102 @@ class BusinessCategory
     const SOCIAL                  = 'social';
     const OTHERS                  = 'others';
 
+    //subcategory moved to top level categories
+    const  COUPONS                              = 'coupons';
+    const  REPAIR_AND_CLEANING                  = 'repair_and_cleaning';
+    const  ACCOUNTING                           = 'accounting';
+    const  TELECOMMUNICATION_SERVICE            = 'telecommunication_service';
+    const  SERVICE_CENTRE                       = 'service_centre';
+    const  COWORKING                            = 'coworking';
+    const  CAB_HAILING                          = 'cab_hailing';
+    const  GROCERY                              = 'grocery';
+    const  PAAS                                 = 'paas';
+    const  SAAS                                 = 'saas';
+    const  WEB_DEVELOPMENT                      = 'web_development';
+    const  CHARITY                              = 'charity';
+    const  FASHION_AND_LIFESTYLE                = 'fashion_and_lifestyle';
+    const  DROP_SHIPPING                        = 'drop_shipping';
+    const  CONSULTING_AND_OUTSOURCING           = 'consulting_and_outsourcing';
+    const  CATERING                             = 'catering';
+    const  HEALTH_COACHING                      = 'health_coaching';
+    const  COMPUTER_PROGRAMMING_DATA_PROCESSING = 'computer_programming_data_processing';
+    const  UTILITIES_ELECTRIC_GAS_OIL_WATER     = 'utilities_electric_gas_oil_water';
+
+
     // Business Category Descriptions
     const DESCRIPTIONS = [
-        self::FINANCIAL_SERVICES      => 'Financial Services',
-        self::EDUCATION               => 'Education',
-        self::HEALTHCARE              => 'Healthcare',
-        self::UTILITIES               => 'Utilities',
-        self::GOVERNMENT              => 'Government Bodies',
-        self::LOGISTICS               => 'Logistics',
-        self::TOURS_AND_TRAVEL        => 'Tours and Travel',
-        self::TRANSPORT               => 'Transport',
-        self::ECOMMERCE               => 'Ecommerce',
-        self::FOOD                    => 'Food and Beverage',
-        self::IT_AND_SOFTWARE         => 'IT and Software',
-        self::GAMING                  => 'Gaming',
-        self::MEDIA_AND_ENTERTAINMENT => 'Media and Entertainment',
-        self::SERVICES                => 'Services',
-        self::HOUSING                 => 'Housing and Real Estate',
-        self::NOT_FOR_PROFIT          => 'Not-For-Profit',
-        self::SOCIAL                  => 'Social',
-        self::OTHERS                  => 'Others',
+        self::FINANCIAL_SERVICES         => 'Financial Services',
+        self::EDUCATION                  => 'Education',
+        self::HEALTHCARE                 => 'Healthcare',
+        self::UTILITIES                  => 'Utilities-General',
+        self::GOVERNMENT                 => 'Government Bodies',
+        self::LOGISTICS                  => 'Logistics',
+        self::TOURS_AND_TRAVEL           => 'Tours and Travel',
+        self::TRANSPORT                  => 'Transport',
+        self::ECOMMERCE                  => 'Ecommerce',
+        self::FOOD                       => 'Food and Beverage',
+        self::IT_AND_SOFTWARE            => 'IT and Software',
+        self::GAMING                     => 'Gaming',
+        self::MEDIA_AND_ENTERTAINMENT    => 'Media and Entertainment',
+        self::SERVICES                   => 'Services',
+        self::HOUSING                    => 'Housing and Real Estate',
+        self::NOT_FOR_PROFIT             => 'Not-For-Profit',
+        self::SOCIAL                     => 'Social',
+        self::OTHERS                     => 'Others',
+
+        self::COUPONS                              => 'Ad/Coupons/Deals Services',
+        self::REPAIR_AND_CLEANING                  => 'Automotive Repair Shops',
+        self::ACCOUNTING                           => 'Accounting Services',
+        self::TELECOMMUNICATION_SERVICE            => 'Pre/Post Paid/Telecom Services',
+        self::SERVICE_CENTRE                       => 'Service Centre',
+        self::COWORKING                            => 'Real Estate Agents/Rentals',
+        self::CAB_HAILING                          => 'Cab Service',
+        self::GROCERY                              => 'Grocery',
+        self::PAAS                                 => 'Platform as a Service',
+        self::SAAS                                 => 'Software as a Service',
+        self::WEB_DEVELOPMENT                      => 'Web designing/Development',
+        self::CHARITY                              => 'Charity',
+        self::FASHION_AND_LIFESTYLE                => 'Fashion and Lifestyle',
+        self::DROP_SHIPPING                        => 'General Merchandise Stores',
+        self::CONSULTING_AND_OUTSOURCING           => 'Consulting/PR Services',
+        self::CATERING                             => 'Caterers',
+        self::HEALTH_COACHING                      => 'Health and Beauty Spas',
+        self::COMPUTER_PROGRAMMING_DATA_PROCESSING => 'Computer Programming/Data Processing',
+        self::UTILITIES_ELECTRIC_GAS_OIL_WATER     => 'Utilities–Electric, Gas, Water, Oil',
     ];
 
     // Business Category to Subcategories Details mapping
     const SUBCATEGORY_MAP = [
-        self::FINANCIAL_SERVICES => [
-            Sub::MUTUAL_FUND,
-            Sub::LENDING,
-            Sub::CRYPTOCURRENCY,
-            Sub::INSURANCE,
-            Sub::NBFC,
-            Sub::COOPERATIVES,
-            Sub::PENSION_FUND,
-            Sub::FOREX,
-            Sub::SECURITIES,
-            Sub::COMMODITIES,
+        self::ACCOUNTING => [
             Sub::ACCOUNTING,
-            Sub::FINANCIAL_ADVISOR,
-            Sub::CROWDFUNDING,
-            Sub::TRADING,
-            Sub::BETTING,
-            Sub::GET_RICH_SCHEMES,
-            Sub::MONEYSEND_FUNDING,
-            Sub::WIRE_TRANSFERS_AND_MONEY_ORDERS,
-            Sub::TAX_PREPARATION_SERVICES,
-            Sub::TAX_PAYMENTS,
-            Sub::DIGITAL_GOODS,
-            Sub::ATMS,
         ],
 
-        self::EDUCATION => [
-            Sub::COLLEGE,
-            Sub::SCHOOLS,
-            Sub::UNIVERSITY,
-            Sub::PROFESSIONAL_COURSES,
-            Sub::DISTANCE_LEARNING,
-            Sub::DAY_CARE,
-            Sub::COACHING,
-            Sub::ELEARNING,
-            Sub::VOCATIONAL_AND_TRADE_SCHOOLS,
-            Sub::SPORTING_CLUBS,
-            Sub::DANCE_HALLS_STUDIOS_AND_SCHOOLS,
-            Sub::CORRESPONDENCE_SCHOOLS,
+        self::COUPONS => [
+            Sub::COUPONS,
         ],
 
-        self::HEALTHCARE => [
-            Sub::PHARMACY,
-            Sub::CLINIC,
-            Sub::HOSPITAL,
-            Sub::LAB,
-            Sub::DIETICIAN,
-            Sub::FITNESS,
-            Sub::HEALTH_COACHING,
-            Sub::HEALTH_PRODUCTS,
-            Sub::HEALTHCARE_MARKETPLACE,
-            Sub::OSTEOPATHS,
-            Sub::MEDICAL_EQUIPMENT_AND_SUPPLY_STORES,
-            Sub::DRUG_STORES,
-            Sub::PODIATRISTS_AND_CHIROPODISTS,
-            Sub::DENTISTS_AND_ORTHODONTISTS,
-            Sub::HARDWARE_STORES,
-            Sub::OPHTHALMOLOGISTS,
-            Sub::ORTHOPEDIC_GOODS_STORES,
-            Sub::HEALTH_PRACTITIONERS_MEDICAL_SERVICES,
-            Sub::TESTING_LABORATORIES,
-            Sub::DOCTORS,
+        self::REPAIR_AND_CLEANING => [
+            Sub::REPAIR_AND_CLEANING,
         ],
 
-        self::UTILITIES => [
-            Sub::ELECTRICITY,
-            Sub::GAS,
-            Sub::TELECOM,
-            Sub::WATER,
-            Sub::CABLE,
-            Sub::BROADBAND,
-            Sub::DTH,
-            Sub::INTERNET_PROVIDER,
-            Sub::BILL_AND_RECHARGE_AGGREGATORS,
-        ],
-
-        self::GOVERNMENT => [
-            Sub::CENTRAL,
-            Sub::STATE,
-            Sub::INTRA_GOVERNMENT_PURCHASES,
-            Sub::GOVERMENT_POSTAL_SERVICES,
-        ],
-
-        self::LOGISTICS => [
-            Sub::FREIGHT,
-            Sub::COURIER,
-            Sub::WAREHOUSING,
-            Sub::DISTRIBUTION,
-            Sub::END_TO_END_LOGISTICS,
-            Sub::COURIER_SERVICES,
-        ],
-
-        self::TOURS_AND_TRAVEL => [
-            Sub::AVIATION,
-            Sub::ACCOMMODATION,
-            Sub::OTA,
-            Sub::TRAVEL_AGENCY,
-            Sub::TOURIST_ATTRACTIONS_AND_EXHIBITS,
-            Sub::AQUARIUMS_DOLPHINARIUMS_AND_SEAQUARIUMS,
-            Sub::TIMESHARES,
-        ],
-
-        self::TRANSPORT => [
+        self::CAB_HAILING => [
             Sub::CAB_HAILING,
-            Sub::BUS,
-            Sub::TRAIN_AND_METRO,
-            Sub::AUTOMOBILE_RENTALS,
-            Sub::CRUISE_LINES,
-            Sub::PARKING_LOTS_AND_GARAGES,
-            Sub::BRIDGE_AND_ROAD_TOLLS,
-            Sub::FREIGHT_TRANSPORT,
-            Sub::TRUCK_AND_UTILITY_TRAILER_RENTALS,
-            Sub::TRANSPORTATION,
+        ],
+
+        self::CATERING => [
+            Sub::CATERING,
+        ],
+
+        self::CHARITY => [
+            Sub::CHARITY,
+        ],
+
+        self::COMPUTER_PROGRAMMING_DATA_PROCESSING => [
+            Sub::COMPUTER_PROGRAMMING_DATA_PROCESSING,
+        ],
+
+        self::CONSULTING_AND_OUTSOURCING => [
+            Sub::CONSULTING_AND_OUTSOURCING,
         ],
 
         self::ECOMMERCE => [
@@ -277,6 +237,50 @@ class BusinessCategory
             sub::FURNITURE_AND_HOME_FURNISHING_STORE,
         ],
 
+        self::EDUCATION => [
+            Sub::COLLEGE,
+            Sub::SCHOOLS,
+            Sub::UNIVERSITY,
+            Sub::PROFESSIONAL_COURSES,
+            Sub::DISTANCE_LEARNING,
+            Sub::DAY_CARE,
+            Sub::COACHING,
+            Sub::ELEARNING,
+            Sub::VOCATIONAL_AND_TRADE_SCHOOLS,
+            Sub::SPORTING_CLUBS,
+            Sub::DANCE_HALLS_STUDIOS_AND_SCHOOLS,
+            Sub::CORRESPONDENCE_SCHOOLS,
+        ],
+
+        self::FASHION_AND_LIFESTYLE => [
+            Sub::FASHION_AND_LIFESTYLE,
+        ],
+
+        self::FINANCIAL_SERVICES => [
+            Sub::MUTUAL_FUND,
+            Sub::LENDING,
+            Sub::CRYPTOCURRENCY,
+            Sub::INSURANCE,
+            Sub::NBFC,
+            Sub::COOPERATIVES,
+            Sub::PENSION_FUND,
+            Sub::FOREX,
+            Sub::SECURITIES,
+            Sub::COMMODITIES,
+            Sub::ACCOUNTING,
+            Sub::FINANCIAL_ADVISOR,
+            Sub::CROWDFUNDING,
+            Sub::TRADING,
+            Sub::BETTING,
+            Sub::GET_RICH_SCHEMES,
+            Sub::MONEYSEND_FUNDING,
+            Sub::WIRE_TRANSFERS_AND_MONEY_ORDERS,
+            Sub::TAX_PREPARATION_SERVICES,
+            Sub::TAX_PAYMENTS,
+            Sub::DIGITAL_GOODS,
+            Sub::ATMS,
+        ],
+
         self::FOOD => [
             Sub::ONLINE_FOOD_ORDERING,
             Sub::RESTAURANT,
@@ -286,6 +290,65 @@ class BusinessCategory
             Sub::RESTAURANT_SEARCH_AND_BOOKING,
             Sub::DAIRY_PRODUCTS,
             Sub::BAKERIES,
+        ],
+
+        self::GAMING => [
+            Sub::GAME_DEVELOPER,
+            Sub::ESPORTS,
+            Sub::ONLINE_CASINO,
+            Sub::FANTASY_SPORTS,
+            Sub::GAMING_MARKETPLACE,
+        ],
+
+        self::DROP_SHIPPING => [
+            Sub::DROP_SHIPPING,
+        ],
+
+        self::GOVERNMENT => [
+            Sub::CENTRAL,
+            Sub::STATE,
+            Sub::INTRA_GOVERNMENT_PURCHASES,
+            Sub::GOVERMENT_POSTAL_SERVICES,
+        ],
+
+        self::GROCERY => [
+            Sub::GROCERY,
+        ],
+
+        self::HEALTH_COACHING => [
+            Sub::HEALTH_COACHING,
+        ],
+
+        self::HEALTHCARE => [
+            Sub::PHARMACY,
+            Sub::CLINIC,
+            Sub::HOSPITAL,
+            Sub::LAB,
+            Sub::DIETICIAN,
+            Sub::FITNESS,
+            Sub::HEALTH_COACHING,
+            Sub::HEALTH_PRODUCTS,
+            Sub::HEALTHCARE_MARKETPLACE,
+            Sub::OSTEOPATHS,
+            Sub::MEDICAL_EQUIPMENT_AND_SUPPLY_STORES,
+            Sub::DRUG_STORES,
+            Sub::PODIATRISTS_AND_CHIROPODISTS,
+            Sub::DENTISTS_AND_ORTHODONTISTS,
+            Sub::HARDWARE_STORES,
+            Sub::OPHTHALMOLOGISTS,
+            Sub::ORTHOPEDIC_GOODS_STORES,
+            Sub::HEALTH_PRACTITIONERS_MEDICAL_SERVICES,
+            Sub::TESTING_LABORATORIES,
+            Sub::DOCTORS,
+        ],
+
+        self::HOUSING => [
+            Sub::DEVELOPER,
+            Sub::FACILITY_MANAGEMENT,
+            Sub::RWA,
+            Sub::COWORKING,
+            Sub::REALESTATE_CLASSIFIEDS,
+            Sub::SPACE_RENTAL,
         ],
 
         self::IT_AND_SOFTWARE => [
@@ -298,12 +361,13 @@ class BusinessCategory
             Sub::DATA_PROCESSING,
         ],
 
-        self::GAMING => [
-            Sub::GAME_DEVELOPER,
-            Sub::ESPORTS,
-            Sub::ONLINE_CASINO,
-            Sub::FANTASY_SPORTS,
-            Sub::GAMING_MARKETPLACE,
+        self::LOGISTICS => [
+            Sub::FREIGHT,
+            Sub::COURIER,
+            Sub::WAREHOUSING,
+            Sub::DISTRIBUTION,
+            Sub::END_TO_END_LOGISTICS,
+            Sub::COURIER_SERVICES,
         ],
 
         self::MEDIA_AND_ENTERTAINMENT => [
@@ -319,6 +383,32 @@ class BusinessCategory
             Sub::BILLIARD_AND_POOL_ESTABLISHMENTS,
             Sub::AMUSEMENT_PARKS_AND_CIRCUSES,
             Sub::TICKET_AGENCIES,
+        ],
+
+        self::NOT_FOR_PROFIT => [
+            Sub::CHARITY,
+            Sub::EDUCATIONAL,
+            Sub::RELIGIOUS,
+            Sub::PERSONAL,
+        ],
+
+        self::OTHERS => [
+        ],
+
+        self::PAAS => [
+            Sub::PAAS,
+        ],
+
+        self::COWORKING => [
+            Sub::COWORKING,
+        ],
+
+        self::SAAS => [
+            Sub::SAAS,
+        ],
+
+        self::SERVICE_CENTRE => [
+            Sub::SERVICE_CENTRE,
         ],
 
         self::SERVICES => [
@@ -416,22 +506,6 @@ class BusinessCategory
             sub::PROFESSIONAL_SERVICES,
         ],
 
-        self::HOUSING => [
-            Sub::DEVELOPER,
-            Sub::FACILITY_MANAGEMENT,
-            Sub::RWA,
-            Sub::COWORKING,
-            Sub::REALESTATE_CLASSIFIEDS,
-            Sub::SPACE_RENTAL,
-        ],
-
-        self::NOT_FOR_PROFIT => [
-            Sub::CHARITY,
-            Sub::EDUCATIONAL,
-            Sub::RELIGIOUS,
-            Sub::PERSONAL,
-        ],
-
         self::SOCIAL => [
             Sub::MATCHMAKING,
             Sub::SOCIAL_NETWORK,
@@ -444,7 +518,51 @@ class BusinessCategory
             Sub::ASSOCIATIONS_AND_MEMBERSHIP,
         ],
 
-        self::OTHERS => [
+        self::TELECOMMUNICATION_SERVICE => [
+            Sub::TELECOMMUNICATION_SERVICE,
+        ],
+
+        self::TOURS_AND_TRAVEL => [
+            Sub::AVIATION,
+            Sub::ACCOMMODATION,
+            Sub::OTA,
+            Sub::TRAVEL_AGENCY,
+            Sub::TOURIST_ATTRACTIONS_AND_EXHIBITS,
+            Sub::AQUARIUMS_DOLPHINARIUMS_AND_SEAQUARIUMS,
+            Sub::TIMESHARES,
+        ],
+
+        self::TRANSPORT => [
+            Sub::CAB_HAILING,
+            Sub::BUS,
+            Sub::TRAIN_AND_METRO,
+            Sub::AUTOMOBILE_RENTALS,
+            Sub::CRUISE_LINES,
+            Sub::PARKING_LOTS_AND_GARAGES,
+            Sub::BRIDGE_AND_ROAD_TOLLS,
+            Sub::FREIGHT_TRANSPORT,
+            Sub::TRUCK_AND_UTILITY_TRAILER_RENTALS,
+            Sub::TRANSPORTATION,
+        ],
+
+        self::UTILITIES => [
+            Sub::ELECTRICITY,
+            Sub::GAS,
+            Sub::TELECOM,
+            Sub::WATER,
+            Sub::CABLE,
+            Sub::BROADBAND,
+            Sub::DTH,
+            Sub::INTERNET_PROVIDER,
+            Sub::BILL_AND_RECHARGE_AGGREGATORS,
+        ],
+
+        self::UTILITIES_ELECTRIC_GAS_OIL_WATER => [
+            Sub::UTILITIES_ELECTRIC_GAS_OIL_WATER,
+        ],
+
+        self::WEB_DEVELOPMENT => [
+            Sub::WEB_DEVELOPMENT,
         ],
     ];
 

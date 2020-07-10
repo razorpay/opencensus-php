@@ -257,7 +257,7 @@ return [
                         ],
                 ],
                 'utilities'               => [
-                    'description'   => 'Utilities',
+                    'description'   => 'Utilities-General',
                     'subcategories' => [
                         'electricity'                   => [
                             'category'                 => '4900',
