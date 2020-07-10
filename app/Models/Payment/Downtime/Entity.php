@@ -129,7 +129,16 @@ class Entity extends Base\PublicEntity
         switch ($this->getMethod())
         {
             case Method::CARD:
-                $instrument[self::NETWORK] = $this->getNetwork();
+                $network = $this->getNetwork();
+                if (isset($network) === true)
+                {
+                    $instrument[self::NETWORK] = $network;
+                }
+                $issuer = $this->getIssuer();
+                if (isset($issuer) === true)
+                {
+                    $instrument[self::ISSUER] = $issuer;
+                }
                 break;
 
             case Method::NETBANKING:
