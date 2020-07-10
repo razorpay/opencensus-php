@@ -22,7 +22,7 @@ export default ({
     <ModalMask>
       <Modal className="instant-activations-success" onClose={onClose}>
         <modal-header>
-          <h1>{title || 'Account Activated'}</h1>
+          <h1>{title || 'Payments Enabled'}</h1>
           <p>{subtitle || defaultSubtitle}</p>
         </modal-header>
         <modal-body>
@@ -30,11 +30,13 @@ export default ({
             <p>{content}</p>
           ) : (
             <>
-              <p>Congratulations, your account has been instantly activated.</p>
               <p>
-                You can start using our products to accept payments right away.
-                Go ahead and make your first transaction, meanwhile we will
-                await your KYC details.
+                Congratulations, your account has been enabled for payments.
+              </p>
+              <p>
+                You can start using our products right away. Go ahead and make
+                your first transaction, meanwhile we will await your KYC details
+                to enable settlements for your account.
               </p>
             </>
           )}

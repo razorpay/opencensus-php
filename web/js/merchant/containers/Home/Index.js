@@ -861,6 +861,16 @@ export default class HomeContainer extends Component {
             onGoToDashboard={() => {
               this.onInstantActivationSuccess();
             }}
+            onCompleteKYC={() => {
+              tracking.trackEvent(
+                window.rzpQ.onbr().initiated('kyc.form_fill', {
+                  clickSource: 'Complete_kyc',
+                })
+              );
+              this.onInstantActivationSuccess(
+                `/app/activation?basePath=${encodeURIComponent('/dashboard')}`
+              );
+            }}
             user={user}
           />
         )}

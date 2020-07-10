@@ -2,19 +2,11 @@ import React from 'react';
 import Banner from 'common/ui/Banner';
 
 const onHoldBanner = ({ ctaOnClick, user, payments }) => {
-  if (
-    user.instantActivation.isWhitelistFlow &&
-    payments &&
-    payments.items.length === 0
-  ) {
-    return null;
-  }
-
   let content = (
     <>Your settlements are not being processed. They have been put on hold.</>
   );
 
-  if (user.instantActivation.isWhitelistFlow) {
+  if (user.instantActivation.isWhitelistFlow || user.isUnregisteredBusiness) {
     if (user.activation_status === 'under_review') {
       content = (
         <>

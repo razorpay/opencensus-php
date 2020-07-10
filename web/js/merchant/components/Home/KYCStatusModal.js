@@ -2,6 +2,41 @@ import React from 'react';
 import { ModalMask, Modal } from 'common/new-ui/Modal';
 import { activationDuration } from 'merchant/helpers/data';
 
+function getKycActivationSubmitBody(args) {
+  if (args.isWhitelistFlow) {
+    return (
+      <div>
+        <p>You can start using our products to accept payments right away.</p>
+        <br />
+        <p>
+          KYC Review process usually takes 1-2 working days from the date of the
+          first transaction, we will reach out to you on your registered email
+          ID if we need any clarifications. Your settlements will be enabled
+          post KYC is reviewed and approved.
+        </p>
+      </div>
+    );
+  }
+
+  if (args.isUnregisteredBusiness) {
+    return (
+      <div>
+        We will reach out on your contact email for further clarifications if
+        needed. The review process usually takes 1-2 working days after your
+        first transaction. Your settlements will be enabled post KYC is reviewed
+        and approved.
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      We will reach out on your contact email for further clarifications if
+      needed. The review process usually takes 1-2 working days.
+    </div>
+  );
+}
+
 const MODAL_CONTENT = {
   KYC_ACTIVATION_SUBMIT_MODAL: {
     title: args =>
@@ -10,28 +45,7 @@ const MODAL_CONTENT = {
       args.isWhitelistFlow
         ? 'KYC will be processed post your first transaction'
         : 'Your KYC Form is submitted',
-    body: args => (
-      <div>
-        {args.isWhitelistFlow ? (
-          <div>
-            <p>
-              You can start using our products to accept payments right away.
-            </p>
-            <br />
-            <p>
-              KYC Review process usually takes 1-2 days from the date of the
-              first transaction, we will reach out to you on your registered
-              email ID if we need any clarifications.
-            </p>
-          </div>
-        ) : (
-          <div>
-            We will reach out on your contact email for further clarifications
-            if needed. The review process usually takes {activationDuration}.
-          </div>
-        )}
-      </div>
-    ),
+    body: args => <div>{getKycActivationSubmitBody(args)}</div>,
     background: 'pending',
   },
   KYC_CLARIFICATION_SUBMIT_MODAL: {
@@ -87,6 +101,7 @@ const KYCStatusModal = ({ onClose, onGoToDashboard, user, modalType }) => {
 
   const args = {
     isWhitelistFlow: user.instantActivation.isWhitelistFlow,
+    isUnregisteredBusiness: user.isUnregisteredBusiness,
     onGoToDashboard: onGoToDashboard,
   };
 

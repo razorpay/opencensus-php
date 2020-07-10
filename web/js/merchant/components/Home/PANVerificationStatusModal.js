@@ -22,21 +22,61 @@ const MODAL_CONTENT = {
     background: 'pending',
   },
   PAN_SUCCESS: {
-    title: 'Account Activated',
-    subtitle: 'PAN successfully verified',
+    title: 'Payments Enabled',
+    subtitle: 'Ready to accept domestic payments',
     body: () => (
-      <p>
-        Congratulations! You are ready to accept payments. You can integrate
-        with a website/app or use one of our products.
-      </p>
+      <>
+        <p>Congratulations, your account has been enabled for payments.</p>
+        <p>
+          You can start using our products right away. Go ahead and make your
+          first transaction, meanwhile we will await your KYC details to enable
+          settlements for your account.
+        </p>
+      </>
     ),
     background: 'success',
   },
 };
 
-const PANVerificationStatusModal = ({ user, onClose, onGoToDashboard }) => {
+const ModalButtons = ({ args }) => {
+  if (VERIFICATION_STATUS[args.poiVerificationStatus] === PAN_SUCCESS) {
+    return (
+      <>
+        <button
+          className="btn btn-default KYC__more_details"
+          onClick={args.onCompleteKYC}
+        >
+          Complete KYC
+        </button>
+        <button className="btn btn-primary" onClick={args.onGoToDashboard}>
+          Accept Payments
+        </button>
+      </>
+    );
+  }
+
+  return (
+    <button className="btn btn-primary" onClick={args.onGoToDashboard}>
+      Go to Dashboard
+    </button>
+  );
+};
+
+const PANVerificationStatusModal = ({
+  user,
+  onClose,
+  onGoToDashboard,
+  onCompleteKYC,
+}) => {
   const content =
     MODAL_CONTENT[VERIFICATION_STATUS[user.poi_verification_status]];
+
+  const args = {
+    onGoToDashboard: onGoToDashboard,
+    onCompleteKYC: onCompleteKYC,
+    poiVerificationStatus: user.poi_verification_status,
+  };
+
   return (
     <ModalMask>
       <Modal className="pan-status-modal" onClose={onClose}>
@@ -46,9 +86,7 @@ const PANVerificationStatusModal = ({ user, onClose, onGoToDashboard }) => {
         </div>
         <div className="modal-body">
           <div className="modal-description">{content.body()}</div>
-          <button className="btn btn-primary" onClick={onGoToDashboard}>
-            Go to Dashboard
-          </button>
+          <ModalButtons args={args} />
         </div>
       </Modal>
     </ModalMask>

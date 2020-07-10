@@ -36,16 +36,18 @@ export default class InstantActivationAnnouncements extends Component {
           content = (
             <span>
               You can start using our products to accept payments right away.
-              Meanwhile, we will await your KYC Details, that can be filled{' '}
-              <Link to="/activation">here</Link>.
+              Meanwhile we will await your KYC details to enable settlements for
+              your account.
+              <span class="big-dot-separator" />
+              <Link to="/activation">Fill KYC Form</Link>
             </span>
           );
         } else if (payments && payments.items.length > 0) {
           title = 'Enable Settlements';
           content = (
             <span>
-              Your settlements are on hold, kindly fill your KYC Form to enabled
-              settlements.
+              You can keep accepting payments but to enable settlements for your
+              account kindly fill your KYC Form.
               <span class="big-dot-separator" />
               <Link to="/activation">Fill KYC Form</Link>
             </span>
@@ -72,9 +74,16 @@ export default class InstantActivationAnnouncements extends Component {
       } else if (user.business_type == 11) {
         if (user.isActivated && user.poi_verification_status == 'verified') {
           theme = 'success';
-          title = 'Account Activated';
-          content =
-            'PAN verification successful. You can start accepting domestic payments.';
+          title = 'Accept Payments';
+          content = content = (
+            <span>
+              Your PAN was successfully verified and you can start accepting
+              domestic payments now. Meanwhile we will await your KYC details to
+              enable settlements for your account.
+              <span class="big-dot-separator" />
+              <Link to="/activation">Fill KYC Form</Link>
+            </span>
+          );
         } else if (user.poi_verification_status == 'failed') {
           theme = 'danger';
           title = 'Unable To Verify PAN';
@@ -152,15 +161,17 @@ export default class InstantActivationAnnouncements extends Component {
         title = 'KYC Under Review';
         if (user.instantActivation.isWhitelistFlow) {
           if (payments && payments.items.length > 0 && mode === 'live') {
-            content = `We are reviewing your KYC details. This process usually takes 1-2 days from the date of the first transaction, we will reach out to you on your registered email ID if we need any clarifications.`;
+            content = `We are reviewing your KYC details. This process usually takes 1-2 days from the date of the first transaction, we will reach out to you on your registered email ID if we need any clarifications.
+                       Your settlements will be enabled after your KYC is reviewed and approved.`;
           } else {
             title = 'Accept Payments';
             content = (
               <React.Fragment>
-                You can start using our products to accept payments right away.
-                KYC Review process usually takes 1-2 days from the date of the
-                first transaction, we will reach out to you on your registered
-                email ID if we need any clarifications.
+                You can start using our products to accept payments right away,
+                however your settlements will be enabled after your KYC is
+                reviewed. KYC Review process usually takes 1-2 days from the
+                date of the first transaction, we will reach out to you on your
+                registered email ID if we need any clarifications.
                 <span class="big-dot-separator" />
                 <a
                   href="https://razorpay.freshdesk.com/support/solutions/articles/11000092582"
@@ -171,8 +182,10 @@ export default class InstantActivationAnnouncements extends Component {
               </React.Fragment>
             );
           }
+        } else if (user.isUnregisteredBusiness) {
+          content = `We are reviewing your KYC Details. This process usually takes 1-2 working days post your first transaction. If we need any more information, we will reach out to you on your registered email address.`;
         } else {
-          content = `We are reviewing your KYC details. This process usually takes ${activationDuration}.`;
+          content = `We are reviewing your KYC Details. This process usually takes 1-2 working days post your KYC Submission. If we need any more information, we will reach out to you on your registered email address.`;
         }
       }
     }
