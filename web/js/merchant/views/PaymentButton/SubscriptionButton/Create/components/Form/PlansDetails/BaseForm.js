@@ -6,7 +6,7 @@ import EditorModal from '../components/EditorModal';
 import InputDropdown from 'merchant/views/PaymentButton/PaymentButton/Create/components/Form/components/InputDropdown';
 
 import { getCurrency } from 'common/ui/Amount';
-import { classList } from 'common/utils/rzp-utils';
+import { classList, paiseToRupees } from 'common/utils/rzp-utils';
 import { getPeriodLabel } from '../../../constants/billingCycle';
 // import track from '../../../track';
 
@@ -87,7 +87,8 @@ export default class BaseForm extends React.Component {
       <div class="option-title">{option.item.name}</div>
       <div class="option-description">
         <span>
-          {this.currencySymbol} {Number(option.item.amount).toFixed(2)}
+          {this.currencySymbol}{' '}
+          {paiseToRupees(Number(option.item.amount)).toFixed(2)}
         </span>
         <span class="big-dot-separator" />
         <span>Charged {getPeriodLabel(option.period, option.interval)}</span>
@@ -141,7 +142,7 @@ export default class BaseForm extends React.Component {
         <span>
           <b>
             {this.currencySymbol}{' '}
-            {Number(selectedPlanOption.item.amount).toFixed(2)}
+            {paiseToRupees(Number(selectedPlanOption.item.amount)).toFixed(2)}
           </b>{' '}
           to be charged{' '}
           {getPeriodLabel(

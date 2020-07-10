@@ -149,16 +149,7 @@ export default function(state = initialState, action) {
       entityData.settings.allow_social_share =
         entityData.settings.allow_social_share === '1';
 
-      // 3.
-      entityData.payment_page_items.forEach(pi => {
-        // While creation/editing, all amounts are converted to Paisa (or smaller unit)
-
-        if (pi.item.amount) {
-          pi.item.amount = paiseToRupees(pi.item.amount); // Convert in Rupees (or bigger unit)
-        }
-      });
-
-      // 4. If intention while fetching is to duplicate, then delete existing entity specific data
+      // 3. If intention while fetching is to duplicate, then delete existing entity specific data
       if (action.isIntentDuplicate) {
         // 3-1. Remove id for each of payment page item
         entityData.payment_page_items.forEach(fi => {
@@ -169,14 +160,14 @@ export default function(state = initialState, action) {
           delete fi.item.id;
         });
 
-        // 4-2.
+        // 3-2.
         delete entityData.id;
       }
 
-      // 5. No concept of slug for Payment Button product
+      // 4. No concept of slug for Payment Button product
       delete entityData.slug;
 
-      // 6.
+      // 5.
       const udfSchema = JSON.parse(entityData.settings.udf_schema);
       const udfFields = udfSchema.sort(function(a, b) {
         const positionA = a.settings.position;
@@ -185,7 +176,7 @@ export default function(state = initialState, action) {
         return Number(positionA) - Number(positionB);
       });
 
-      // 7.
+      // 6.
       const planItems = entityData.payment_page_items;
       const planFields = planItems.sort(function(a, b) {
         const positionA = a.settings.position;
@@ -194,7 +185,7 @@ export default function(state = initialState, action) {
         return Number(positionA) - Number(positionB);
       });
 
-      // 8. Currently, receipt settings are mixed with settings, and in scattered form, hence consolidating
+      // 7. Currently, receipt settings are mixed with settings, and in scattered form, hence consolidating
       const receiptSettings = {
         enable_receipt: entityData.settings.enable_receipt || '1',
         selected_udf_field: entityData.settings.selected_udf_field || '',
@@ -217,7 +208,7 @@ export default function(state = initialState, action) {
         },
       };
 
-      // 9. If intention while fetching is not to duplicate, then only add subscriptionButtonId
+      // 8. If intention while fetching is not to duplicate, then only add subscriptionButtonId
       if (!action.isIntentDuplicate) {
         storeState.subscriptionButtonId = entityData.id;
       }

@@ -1,4 +1,5 @@
 import { getCurrency } from 'common/ui/Amount';
+import { paiseToRupees } from 'common/utils/rzp-utils';
 import ButtonDetailsPreview from './ButtonDetailsPreview';
 
 export default class WidgetPreview extends React.Component {
@@ -11,7 +12,7 @@ export default class WidgetPreview extends React.Component {
     let amountToDisplay;
 
     if (amount) {
-      const _amount = Number(amount).toFixed(2);
+      const _amount = paiseToRupees(Number(amount)).toFixed(2);
       const _amountToDisplay = _amount.split('.');
 
       amountToDisplay = (

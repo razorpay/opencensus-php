@@ -97,7 +97,8 @@ export default class EditableDisplayField extends React.Component {
       descriptionOfPlanFrequency = (
         <span>
           <b>
-            {this.currencySymbol} {Number(field.item.amount).toFixed(2)}
+            {this.currencySymbol}{' '}
+            {paiseToRupees(Number(field.item.amount)).toFixed(2)}
           </b>{' '}
           to be charged{' '}
           {getPeriodLabel(planDetails.period, planDetails.interval)}
