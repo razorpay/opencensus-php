@@ -170,6 +170,11 @@ const businessModel = [
       info:
         "Business model description should be at least 50 characters. Please select others only if you can't find your category and sub-category, as this will delay your account activation by a few days.",
       _cmp: Input.Textarea,
+      validator: val => {
+        if (val && val.length < 50) {
+          return 'Please enter business model description with at least 50 characters.';
+        }
+      },
       _when: activation => {
         let { state, props } = activation;
 
@@ -229,7 +234,7 @@ const businessModel = [
       },
       _when: activation => {
         let { state, props } = activation;
-        let hasBusinessCategory = false;
+        let showSubcategory = false;
 
         let businessCategory =
           state.dirty.business_category != null
@@ -237,11 +242,14 @@ const businessModel = [
             : props.data.business_category;
 
         if (businessCategory) {
-          hasBusinessCategory = businessCategory !== 'others';
+          showSubcategory = businessCategory !== 'others';
+          let subcategories = props.categories[businessCategory].subcategories;
+          if(Object.keys(subcategories).length === 1) {
+            showSubcategory = false;
+          }
         }
-
         // 'Others' business_category has no sub_category
-        return hasBusinessCategory;
+        return showSubcategory;
       },
       _disabledWhen: activation => {
         if (isRXV2Onboarding(activation)) {

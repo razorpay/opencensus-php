@@ -1145,6 +1145,21 @@ export default class ActivationWizard extends React.Component {
     }, delay || 7000); // Success states can be removed in 3sec.
   };
 
+  getSingleSubcategory = (fieldValue) => {
+    const subcategories =  this.props.categories[fieldValue].subcategories;
+    if(!subcategories) {
+      return null;
+    }
+    let keys = Object.keys(subcategories);
+    if(subcategories && keys.length !== 1) {
+      return null;
+    }
+    return {
+      value : keys[0],
+      label : subcategories[keys[0]].description
+    };
+  }
+
   onChange = ({ target }) => {
     const stateName = target.getAttribute('data-name');
     let fieldValue = target.value;
@@ -1234,18 +1249,21 @@ export default class ActivationWizard extends React.Component {
     }
 
     /* Step 5: Business category and sub category are always marked dirty in pairs. BE validates them in pair. */
-    if (fieldName === 'business_category') {
+    if (fieldName === 'business_category') {  
       // Set first option in new set of subcategory. It remains '', it would convert to null before making api call.
-      sideEffectFieldsToUpdate.business_subcategory = '';
       sideEffectFieldsToUpdate.business_model = ''; // Reset Business Model as well.
-
-      // Update Business Subcategory in view
+      const singleSubcategory = this.getSingleSubcategory(fieldValue);
+      if(singleSubcategory) {
+        sideEffectFieldsToUpdate.business_subcategory = singleSubcategory.value;
+      } else {
+        sideEffectFieldsToUpdate.business_subcategory = '';
+        // Update Business Subcategory in view
+      }
       let el = document.querySelector(
         '.form-container [name=business_subcategory]'
-      );
+        );
       el && (el.value = '');
-
-      // Update Business Model in view
+        // Update Business Model in view
       el = document.querySelector('.form-container [name=business_model]');
       el && (el.value = '');
     }
