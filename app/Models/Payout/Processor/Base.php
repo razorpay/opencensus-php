@@ -20,6 +20,7 @@ use RZP\Models\Transaction;
 use RZP\Models\Payout\Status;
 use RZP\Models\Admin\Permission;
 use RZP\Models\Merchant\Balance;
+use RZP\Models\Payout\Notifications;
 use RZP\Models\Base\Core as BaseCore;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Workflow\PayoutAmountRules;
@@ -357,6 +358,10 @@ class Base extends BaseCore
                                 'transaction_id' => $payout->getTransactionId(),
                                 'payout_status'  => $payout->getStatus(),
                             ]);
+
+                        // We have only implemented the email function. No SMS will be sent.
+                        (new Notifications\Factory)->getNotifier(Notifications\Type::PAYOUT_FAILED, $payout)
+                                                   ->notify();
 
                         return $payout;
                     }

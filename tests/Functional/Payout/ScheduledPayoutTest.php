@@ -9,8 +9,10 @@ use RZP\Models\Feature;
 use RZP\Models\Pricing\Fee;
 use RZP\Constants\Timezone;
 use RZP\Models\Payout\Status;
+use RZP\Mail\Payout\FailedPayout;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Merchant\Webhook\Event;
+use RZP\Mail\Payout\AutoRejectedPayout;
 use RZP\Models\Merchant\Balance\Channel;
 use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Tests\Functional\Fixtures\Entity\User;
@@ -654,6 +656,8 @@ class ScheduledPayoutTest extends TestCase
 
     public function testScheduledPayoutProcessingLowBalance()
     {
+        Mail::fake();
+
         // Timestamp of 9 AM, 2 months from current time
         $scheduledAtTime = Carbon::now(Timezone::IST)->hour(9)->addMonths(2)->getTimestamp();
         $scheduledAtStartOfHour = Carbon::createFromTimestamp($scheduledAtTime, Timezone::IST)->startOfHour()->getTimestamp();
@@ -691,10 +695,14 @@ class ScheduledPayoutTest extends TestCase
 
         // Assert that the scheduled payout has now gone to the processing state
         $this->assertEquals(Status::FAILED, $updatedScheduledPayout['status']);
+
+        Mail::assertQueued(FailedPayout::class);
     }
 
     public function testScheduledPayoutProcessingAutoReject()
     {
+        Mail::fake();
+
         // Timestamp of 9 AM, 2 months from current time
         $scheduledAtTime = Carbon::now(Timezone::IST)->hour(9)->addMonths(2)->getTimestamp();
         $scheduledAtStartOfHour = Carbon::createFromTimestamp($scheduledAtTime, Timezone::IST)->startOfHour()->getTimestamp();
@@ -737,6 +745,8 @@ class ScheduledPayoutTest extends TestCase
 
         // Assert that the scheduled payout has now gone to the processing state
         $this->assertEquals(Status::REJECTED, $updatedScheduledPayout['status']);
+
+        Mail::assertQueued(AutoRejectedPayout::class);
     }
 
     public function testGetScheduleTimeSlotsForDashboard()

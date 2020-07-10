@@ -40,6 +40,7 @@ use RZP\Models\Currency\Currency;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Jobs\QueuedPayoutsInitiate;
 use RZP\Models\FundTransfer\Attempt;
+use RZP\Models\Payout\Notifications;
 use RZP\Jobs\ScheduledPayoutsProcess;
 use RZP\Exception\BadRequestException;
 use RZP\Models\BankingAccountStatement;
@@ -791,7 +792,9 @@ class Core extends Base\Core
                             'payout_id' => $payout->getId(),
                         ]);
 
-                    $this->app->events->fire('api.payout.rejected', [$payout]);
+                    // We have only implemented the email function. No SMS will be sent.
+                    (new Notifications\Factory)->getNotifier(Notifications\Type::PAYOUT_AUTO_REJECTED, $payout)
+                                               ->notify();
 
                     return $payout;
                 }

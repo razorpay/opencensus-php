@@ -1813,4 +1813,61 @@ class Entity extends Base\PublicEntity
 
         return $role;
     }
+
+    /**
+     * Scheduled_for is what we show in emails and FE. This function is called by the email template and returns the
+     * date in the format :
+     *
+     * 1 July 2020, 1pm - 2pm
+     *
+     */
+    public function getFormattedScheduledFor()
+    {
+        $scheduledAt = $this->getScheduledAt();
+
+        $dateAndTime = Carbon::createFromTimestamp($scheduledAt, Timezone::IST);
+
+        $month = $dateAndTime->englishMonth;
+
+        $year = $dateAndTime->year;
+
+        $day = $dateAndTime->day;
+
+        $hour = $dateAndTime->hour;
+
+        $formattedScheduledTimeSlot = '';
+
+        //
+        // Carbon has a lot of format functions, but they only work for a point of time and not for a period,
+        // hence having to do this manually.
+        //
+        if (($hour >= 1) and
+            ($hour <= 10))
+        {
+            $formattedScheduledTimeSlot = sprintf('%sam - %sam', $hour, $hour+1);
+        }
+        else if ($hour == 11)
+        {
+            $formattedScheduledTimeSlot = sprintf('%sam - %spm', $hour, $hour+1);
+        }
+        else if ($hour == 12)
+        {
+            $formattedScheduledTimeSlot = sprintf('%spm - %spm', $hour, $hour-12);
+        }
+        else if (($hour >= 13) and
+                 ($hour <= 22))
+        {
+            $formattedScheduledTimeSlot = sprintf('%spm - %spm', $hour-12, $hour-11);
+        }
+        else if ($hour == 23)
+        {
+            $formattedScheduledTimeSlot = sprintf('%spm - %sam', $hour-12, 12);
+        }
+        else if ($hour == 0)
+        {
+            $formattedScheduledTimeSlot = sprintf('%sam - %sam', 12, $hour+1);
+        }
+
+        return sprintf('%s %s %s, %s ', $day, $month, $year, $formattedScheduledTimeSlot);
+    }
 }
