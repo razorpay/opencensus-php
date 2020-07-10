@@ -121,7 +121,7 @@ class Validator extends Base\Validator
         Entity::LOCKED                          => 'sometimes|boolean',
         Entity::COMMENT                         => 'sometimes|max:255',
         Entity::SUBMIT                          => 'sometimes',
-        Entity::ADDITIONAL_WEBSITES             => 'sometimes|array|max:9',
+        Entity::ADDITIONAL_WEBSITES             => 'sometimes|array|max:15',
         Entity::ADDITIONAL_WEBSITES. '.*'       => 'required_with:'. Entity::ADDITIONAL_WEBSITES . '|string|active_url',
     ];
 
@@ -209,7 +209,7 @@ class Validator extends Base\Validator
         Entity::LIVE_TRANSACTION_DONE                    => 'filled|numeric|in:0,1,2',
         Entity::KYC_CLARIFICATION_REASONS                => 'sometimes|array|custom',
         Entity::KYC_ADDITIONAL_DETAILS                   => 'sometimes|array|custom',
-        Entity::ADDITIONAL_WEBSITES                      => 'sometimes|array|max:9',
+        Entity::ADDITIONAL_WEBSITES                      => 'sometimes|array|max:15',
         Entity::ADDITIONAL_WEBSITES . '.*'               => 'required_with:' . Entity::ADDITIONAL_WEBSITES . '|string|active_url',
         Entity::ESTD_YEAR                                => 'sometimes|max:4',
         Entity::DATE_OF_ESTABLISHMENT                    => 'filled|date_format:"Y-m-d"|before:"today"',

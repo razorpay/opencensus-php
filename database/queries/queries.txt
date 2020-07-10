@@ -5851,3 +5851,6 @@ ALTER TABLE payment_meta
 
 ALTER TABLE payment_page_items
     ADD COLUMN product_config json DEFAULT NULL;
+
+ALTER TABLE merchant_details
+    MODIFY COLUMN additional_websites TEXT default NULL;

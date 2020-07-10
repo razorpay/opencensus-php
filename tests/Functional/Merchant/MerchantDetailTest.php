@@ -1567,6 +1567,37 @@ class MerchantDetailTest extends OAuthTestCase
         $this->assertContains('example.com', $merchant->getWhitelistedDomains());
     }
 
+    public function testAdditionalWebsiteMaxLimitFailure()
+    {
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        $websites = $this->getCollectionOfWebsites(15);
+
+        $this->fixtures->create('merchant_detail', ['merchant_id' => $merchantId, 'additional_websites' => $websites]);
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = "/merchant/$merchantId/websites";
+
+        $this->setAdminForInternalAuth();
+
+        $this->ba->adminAuth('test', $this->authToken, $this->org->getPublicId());
+
+        $this->startTest();
+    }
+
+    public function getCollectionOfWebsites(int $count): array
+    {
+        $websites = [];
+
+        for ($i = 0; $i < $count; $i++)
+        {
+            $websites[] = ['http://webhook.com'];
+        }
+
+        return $websites;
+    }
+
     public function testPutPreSignUpDetailsWithReferralCode()
     {
         $this->fixtures->merchant->edit(self::DEFAULT_MERCHANT_ID, ['partner_type' => 'reseller']);

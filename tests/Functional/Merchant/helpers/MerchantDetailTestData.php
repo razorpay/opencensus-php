@@ -1409,6 +1409,28 @@ return [
         ],
     ],
 
+    'testAdditionalWebsiteMaxLimitFailure' => [
+        'request'   => [
+            'content' => [
+                'additional_website' => 'https://example.com',
+            ],
+            'method'  => 'PUT',
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The additional websites may not have more than 15 items.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testPutPreSignUpDetailsWithReferralCode' => [
         'request' => [
             'content' => [
