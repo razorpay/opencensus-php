@@ -86,7 +86,7 @@ class Validator extends Base\Core
                                                         . "(0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[0-2])\/20[0-9]{2}/"],
         RequestProcessor\Base::UPI_HDFC           => [ "/Merchant Payout Report/"],
         RequestProcessor\Base::CARD_FSS_HDFC      => ["/^Settlement Report FSSPaY - Razorpay/"],
-        RequestProcessor\Base::CARD_FSS_SBI       => ["/IPAY MIS dated [0-9]{2}-[0-9]{2}-20[0-9]{2}/"],
+        RequestProcessor\Base::CARD_FSS_SBI       => ["/IPAY MIS FILE dated [0-9]{2}-[0-9]{2}-20[0-9]{2}/"],
         RequestProcessor\Base::UPI_HULK           => ["/Razorpay_Transaction_Details_[0-9]{2}-(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)-20[0-9]{2}/"],
         RequestProcessor\Base::EMANDATE_AXIS      => ["/axis e[\-]?mandate debit file/i"],
         RequestProcessor\Base::NETBANKING_ALLAHABAD   => ["/Recon file for [0-9]{2}.[0-9]{2}.20[0-9]{2}/"],
@@ -142,7 +142,7 @@ class Validator extends Base\Core
                                                             "/Please find attached All transaction Report & Settlement Report "
                                                             . "for transactions done/"
                                                           ],
-        RequestProcessor\Base::CARD_FSS_SBI            => ["/Kindly find IPAY MIS file/"],
+        RequestProcessor\Base::CARD_FSS_SBI            => ["/Kindly find attached IPAY MIS file/"],
         RequestProcessor\Base::UPI_HULK                => ["/PFA transaction details for the date "
                                                             . "of  [0-9]{2}-(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)-20[0-9]{2}/"],
         RequestProcessor\Base::CARDLESS_EMI_FLEXMONEY  => ["/Attached are the recon and refund files for [0-9]{2}\/[0-9]{2}\/[0-9]{2}/"],
