@@ -578,9 +578,6 @@ const bankAccountFields = [
       info: getAccountNumberInfo,
       autoComplete: 'new-password',
       type: 'password',
-      onPaste: function(e) {
-        e.preventDefault();
-      }, // Disable copy-paste in this field
       onFocus: e => {
         document.getElementsByName('bank_account_number')[0].type = 'text';
       },
@@ -601,20 +598,10 @@ const bankAccountFields = [
     {
       _name: 'account_no',
       label: 'Re-Enter Account Number',
-      type: 'password',
       required: false,
       autoComplete: 'new-password',
       info: 'Please re-enter the bank account number.',
       _autoRenderImpure: true, // Re-render to show the error
-      onPaste: function(e) {
-        e.preventDefault();
-      }, // Disable copy-paste in this field
-      onFocus: e => {
-        document.querySelector('[data-name="account_no"]').type = 'text';
-      },
-      onBlur: e => {
-        document.querySelector('[data-name="account_no"]').type = 'password';
-      },
       validator: function(value) {
         if (!value) {
           return;
