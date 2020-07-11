@@ -77,14 +77,14 @@ return [
 
         'query_cache_test' => [
             'driver'     => 'redis',
-            'connection' => 'query_cache_redis',
-            'prefix'     => '{query_cache_test}',
+            'connection' => 'default',
+            'prefix'     => 'test',
         ],
 
         'query_cache_live' => [
             'driver'     => 'redis',
-            'connection' => 'query_cache_redis',
-            'prefix'     => '{query_cache_live}',
+            'connection' => 'default',
+            'prefix'     => 'live',
         ],
 
         'session' => [
