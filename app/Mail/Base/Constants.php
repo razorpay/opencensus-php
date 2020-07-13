@@ -7,6 +7,7 @@ class Constants
     const SUPPORT                       = 'support';
     const X_SUPPORT                     = 'x_support';
     const SCORECARD                     = 'scorecard';
+    const BANKING_SCORECARD             = 'banking_scorecard';
     const REFUNDS                       = 'refunds';
     const SETTLEMENTS                   = 'settlements';
     const INVOICES                      = 'invoices';
@@ -58,6 +59,7 @@ class Constants
         self::SUPPORT                   => 'support@razorpay.com',
         self::X_SUPPORT                 => 'x.support@razorpay.com',
         self::SCORECARD                 => 'scorecard@razorpay.com',
+        self::BANKING_SCORECARD         => 'x.scorecard@razorpay.com',
         self::REFUNDS                   => 'refunds@razorpay.com',
         self::SETTLEMENTS               => 'settlements@razorpay.com',
         self::INVOICES                  => 'invoices@razorpay.com',
@@ -105,6 +107,7 @@ class Constants
         self::SUPPORT                 => 'Team Razorpay',
         self::X_SUPPORT               => 'Team RazorpayX',
         self::SCORECARD               => 'Razorpay Scorecard',
+        self::BANKING_SCORECARD       => 'Razorpay Banking Scorecard',
         self::REFUNDS                 => 'Refunds File',
         self::SETTLEMENTS             => 'Settlements File',
         self::INVOICES                => 'Razorpay Invoices',

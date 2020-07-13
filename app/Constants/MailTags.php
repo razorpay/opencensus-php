@@ -123,6 +123,7 @@ class MailTags
     const EMI_FILE                         = 'emi_file';
 
     const SCORECARD                        = 'scorecard';
+    const BANKING_SCORECARD                = 'banking_scorecard';
     const CRITICAL_ERROR                   = 'critical_error';
 
     const ACCOUNT_CHANGED                  = 'account_changed';

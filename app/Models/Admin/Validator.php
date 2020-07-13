@@ -146,6 +146,10 @@ class Validator extends Base\Validator
         'count'             => 'required|integer|max:100'
     ];
 
+    protected static $bankingScorecardRules = [
+        'count'             => 'required|integer|max:100'
+    ];
+
     protected static $updateConfigKeyRules = [
         'key'   => 'required|in:merchant_enach_configs',
         'path'  => 'required|string',

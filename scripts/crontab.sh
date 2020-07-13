@@ -57,6 +57,7 @@ add_cron "5 0 * * *"       "mrchnt_daily_report_prod"  POST "$BASE_URL/merchants
 add_cron "0 14 * * *"      "authorized_reminder_live"  GET  "$BASE_URL/payments/all/reminder"            ""                              $LIVE_AUTH
 add_cron "0 3 * * *"       "emi_excel_generate"        POST "$BASE_URL/emi/generate/excel"               ""                              $LIVE_AUTH
 add_cron "5 0 * * *"       "scorecard_prod"            POST "$BASE_URL/scorecard"                        ""                              $LIVE_AUTH
+add_cron "5 0 * * *"       "banking_scorecard_prod"    POST "$BASE_URL/banking_scorecard"                ""                              $LIVE_AUTH
 add_cron "0 * * * *"       "prod_international_curren" POST "$BASE_URL/international/USD/rates"          ""                              $LIVE_AUTH
 add_cron "22 */2 * * *"    "payment_update_on_hold"    POST "$BASE_URL/payments/on_hold/update"          ""                              $LIVE_AUTH
 

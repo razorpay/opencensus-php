@@ -558,6 +558,17 @@ class Service extends Base\Service
         return $data;
     }
 
+    public function generateBankingScorecard(array $input)
+    {
+        $bankingScoreCardObj = new BankingScorecard;
+
+        $data = $bankingScoreCardObj->generateBankingScorecardData($input);
+
+        $bankingScoreCardObj->sendMail($data);
+
+        return ['success' => true];
+    }
+
     public function processMailgunCallback($type, $input)
     {
         $validator = new Validator;

@@ -164,6 +164,15 @@ class AdminController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function generateBankingScorecard()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->generateBankingScorecard($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function postMailgunCallback($type)
     {
         $input = Request::all();

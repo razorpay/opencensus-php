@@ -12,6 +12,7 @@ use RZP\Models\State;
 use RZP\Models\Payout;
 use RZP\Models\Contact;
 use RZP\Base\BuilderEx;
+use RZP\Constants\Table;
 use RZP\Models\Merchant;
 use RZP\Models\Workflow;
 use RZP\Models\Admin\Org;
@@ -1039,5 +1040,108 @@ class Repository extends Base\Repository
 
         return $query->limit(self::SCHEDULED_PAYOUTS_FETCH_LIMIT)
                      ->get();
+    }
+
+    /**
+     * get yesterday's total payout amount and tax count
+     *
+     */
+    public function getPayoutAmountAndTaxCountForYesterday()
+    {
+        $yesterdayStartOfDay = Carbon::yesterday(Timezone::IST)->startOfDay()->getTimestamp();
+        $yesterdayEndOfDay = Carbon::yesterday(Timezone::IST)->endOfDay()->getTimestamp();
+
+        return $this->getPayoutAmountAndTaxCountBetweenTimestamp($yesterdayStartOfDay, $yesterdayEndOfDay);
+    }
+
+    /**
+     * get total payout amount and tax count for month
+     *
+     */
+    public function getPayoutAmountAndTaxCountForMonth()
+    {
+        $from = Carbon::yesterday(Timezone::IST)->startOfMonth()->startOfDay()->getTimestamp();
+        $to = Carbon::yesterday(Timezone::IST)->endOfMonth()->endOfDay()->getTimestamp();
+
+        return $this->getPayoutAmountAndTaxCountBetweenTimestamp($from, $to);
+    }
+
+    /**
+     * get total payout amount and tax count between two time stamp
+     *
+     * @param $from
+     * @param $to
+     *
+     * @return array
+     */
+    protected function getPayoutAmountAndTaxCountBetweenTimestamp($from, $to)
+    {
+        $balanceIdColumn            = $this->repo->balance->dbColumn(Balance\Entity::ID);
+        $balanceTypeColumn          = $this->repo->balance->dbColumn(Balance\Entity::TYPE);
+
+        $merchantIdColumn           = $this->repo->merchant->dbColumn(Merchant\Entity::ID);
+        $merchantEmailColumn        = $this->repo->merchant->dbColumn(Merchant\Entity::EMAIL);
+
+        $payoutStatusColumn         = $this->repo->payout->dbColumn(Entity::STATUS);
+        $payoutsBalanceIdColumn     = $this->repo->payout->dbColumn(Entity::BALANCE_ID);
+        $payoutsMerchantIdColumn    = $this->repo->payout->dbColumn(Entity::MERCHANT_ID);
+
+        return $this->newQuery()
+                    ->join(Table::BALANCE, $balanceIdColumn, '=', $payoutsBalanceIdColumn)
+                    ->join(Table::MERCHANT, $merchantIdColumn, '=', $payoutsMerchantIdColumn)
+                    ->betweenTime($from, $to)
+                    ->selectRaw('COALESCE(ROUND(SUM(' . Entity::AMOUNT . '* 1.0 / 1000000000), 2), 0)AS payout_amount_cr' . ','.
+                                'COUNT(' . Entity::AMOUNT . ') AS payout_count')
+                    ->where($payoutStatusColumn, '=', Status::PROCESSED)
+                    ->where($merchantEmailColumn, 'not like', '%@razorpay.com')
+                    ->where($balanceTypeColumn, '=', Balance\Type::BANKING)
+                    ->first();
+    }
+
+    /**
+     * get yesterday's total payout amount and tax count for merchants
+     *
+     * @param int $limit
+     *
+     * @return array
+     */
+    public function getYesterdayMerchantsPayoutAmountAndTaxCountGroupByMerchant(int $limit)
+    {
+        $from                          = Carbon::yesterday(Timezone::IST)->startOfDay()->getTimestamp();
+        $to                            = Carbon::yesterday(Timezone::IST)->endOfDay()->getTimestamp();
+
+        $balanceIdColumn               = $this->repo->balance->dbColumn(Balance\Entity::ID);
+        $balanceTypeColumn             = $this->repo->balance->dbColumn(Balance\Entity::TYPE);
+
+        $merchantIdColumn              = $this->repo->merchant->dbColumn(Merchant\Entity::ID);
+        $merchantNameColumn            = $this->repo->merchant->dbColumn(Merchant\Entity::NAME);
+        $merchantEmailColumn           = $this->repo->merchant->dbColumn(Merchant\Entity::EMAIL);
+        $merchantBillingLabelColumn    = $this->repo->merchant->dbColumn(Merchant\Entity::BILLING_LABEL);
+        $merchantBusinessBankingColumn = $this->repo->merchant->dbColumn(Merchant\Entity::BUSINESS_BANKING);
+
+        $payoutStatusColumn            = $this->repo->payout->dbColumn(Entity::STATUS);
+        $payoutsBalanceIdColumn        = $this->repo->payout->dbColumn(Entity::BALANCE_ID);
+        $payoutsMerchantIdColumn       = $this->repo->payout->dbColumn(Entity::MERCHANT_ID);
+
+        return $this->newQuery()
+                    ->join(Table::BALANCE, $balanceIdColumn, '=', $payoutsBalanceIdColumn)
+                    ->join(Table::MERCHANT, $merchantIdColumn, '=', $payoutsMerchantIdColumn)
+                    ->betweenTime($from, $to)
+                    ->selectRaw(
+                        $payoutsMerchantIdColumn .' as x_merchant_id' . ',' .
+                        'COALESCE('. $merchantBillingLabelColumn .',' . $merchantNameColumn .') as x_merchant_display_name'. ',' .
+                        'COUNT(*) AS payout_count' . ',' .
+                        'COALESCE(ROUND(SUM(' . Entity::AMOUNT . '* 1.0 / 1000000000), 2), 0) AS payout_amount_cr'
+                    )
+                    ->where($merchantBusinessBankingColumn, '=', 1)
+                    ->where($payoutStatusColumn, '=', Status::PROCESSED)
+                    ->where($balanceTypeColumn, '=', Balance\Type::BANKING)
+                    ->where($merchantEmailColumn, 'not like', '%@razorpay.com')
+                    ->groupBy(
+                        'x_merchant_id',
+                        'x_merchant_display_name')
+                    ->orderBy('payout_count', 'desc')
+                    ->limit($limit)
+                    ->get();
     }
 }
