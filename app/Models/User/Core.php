@@ -1137,26 +1137,34 @@ class Core extends Base\Core
 
         $context = sprintf('%s:%s:%s:%s', $merchant->getId(), $user->getId(), $input[Entity::ACTION], $token);
 
+        // Should have used api.user.{action} similar to post sms request to Raven. But in Raven otp.source is 10 char.
+        $source = 'api';
+
         if ($input[Entity::ACTION] === 'verify_email')
         {
             $expires_at = 20;
 
             $receiver = $user->getEmail();
+
+            $response = compact(
+                'token',
+                'receiver',
+                'context',
+                'source',
+                'expires_at');
         }
         else
         {
             $receiver = $input[Entity::CONTACT_MOBILE] ?? $user->getContactMobile();
-        }
 
-        // Should have used api.user.{action} similar to post sms request to Raven. But in Raven otp.source is 10 char.
-        $source = 'api';
+            $response = compact(
+                'token',
+                'receiver',
+                'context',
+                'source');
+        }
         
-        return compact(
-            'token',
-            'receiver',
-            'context',
-            'source',
-            'expires_at');
+        return $response;
     }
 
     protected function upsertSettings(Entity $user, array $settings)
