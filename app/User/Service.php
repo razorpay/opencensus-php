@@ -1106,9 +1106,8 @@ class Service extends Base\Service
     {
         $merchantService = new Merchant\Service;
 
-        // TODO: update timestamp before release
-        // Timestamp - "07 Jul 2020, 12:00:00 AM IST"
-        if ($merchant['created_at'] > 1594060200)
+        // Timestamp - "13 Jul 2020, 01:00:00 PM"
+        if ($merchant['created_at'] > 1594625400)
         {
             $data['experiments']['rx_onboarding_v2'] = $merchantService->getTreatment('rx_onboarding_v2');
         }
