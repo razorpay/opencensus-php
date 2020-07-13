@@ -224,31 +224,34 @@ export default class OndemandModal extends Component {
       amount: this.state.amount * 100,
       currency: 'INR',
     };
-    return ajax(
-      {
-        url: this.getFeesUrl(),
-        method: 'GET',
-        data: payload,
-      },
-      {},
-      '/merchant/api'
-    )
-      .then(response => {
-        this.setState({
-          isLoadingBreakup: false,
-          tax: response.data.items[1].amount,
-          instantFeePercent: response.data.items[0].pricing_rule.percent_rate,
-          taxPercent: response.data.items[1].percentage,
-          instantFee: response.data.items[0].amount,
+    if(this.state.validAmount)
+    {
+      return ajax(
+        {
+          url: this.getFeesUrl(),
+          method: 'GET',
+          data: payload,
+        },
+        {},
+        '/merchant/api'
+      )
+        .then(response => {
+          this.setState({
+            isLoadingBreakup: false,
+            tax: response.data.items[1].amount,
+            instantFeePercent: response.data.items[0].pricing_rule.percent_rate,
+            taxPercent: response.data.items[1].percentage,
+            instantFee: response.data.items[0].amount,
+          });
+          this.props.fetchCurrentBalance();
+        })
+        .catch(response => {
+          this.setState({
+            errors: response.errors,
+          });
         });
-        this.props.fetchCurrentBalance();
-      })
-      .catch(response => {
-        this.setState({
-          errors: response.errors,
-        });
-      });
-  };
+    }
+  }
 
   componentDidMount() {
     document.addEventListener('keydown', this.escFunction);
@@ -302,32 +305,35 @@ export default class OndemandModal extends Component {
         amount: this.state.amount * 100,
         currency: 'INR',
       };
-      return ajax(
-        {
-          url: this.getFeesUrl(),
-          method: 'GET',
-          data: payload,
-        },
-        {},
-        '/merchant/api'
-      )
-        .then(response => {
-          this.setState({
-            breakupShow: true,
-            checkedBreakup: true,
-            needFetch: false,
-            tax: response.data.items[1].amount,
-            instantFee: response.data.items[0].amount,
+      if(this.state.validAmount)
+      {
+        return ajax(
+          {
+            url: this.getFeesUrl(),
+            method: 'GET',
+            data: payload,
+          },
+          {},
+          '/merchant/api'
+        )
+          .then(response => {
+            this.setState({
+              breakupShow: true,
+              checkedBreakup: true,
+              needFetch: false,
+              tax: response.data.items[1].amount,
+              instantFee: response.data.items[0].amount,
+            });
+            this.props.fetchCurrentBalance();
+          })
+          .catch(response => {
+            this.setState({
+              breakupShow: false,
+              needFetch: true,
+              errors: response.errors,
+            });
           });
-          this.props.fetchCurrentBalance();
-        })
-        .catch(response => {
-          this.setState({
-            breakupShow: false,
-            needFetch: true,
-            errors: response.errors,
-          });
-        });
+      }
     } else {
       var st = this.state.breakupShow;
       this.setState({
@@ -508,10 +514,10 @@ export default class OndemandModal extends Component {
             </div>
             <div>
               <span>
-                <div class="grey-border">
-                  <span>
-                    {this.state.isLoadingBreakup === false ? (
-                      this.state.validAmount ? (
+                <span>
+                  {this.state.isLoadingBreakup === false ? (
+                    <div class="grey-border">
+                      {this.state.validAmount ? (
                         <div>
                           <p> After Deduction : </p>
                           <Amount
@@ -526,12 +532,16 @@ export default class OndemandModal extends Component {
                         </div>
                       ) : (
                         <React.Fragment />
-                      )
-                    ) : (
+                      )}
+                      </div>
+                  ) : (
+                    this.state.validAmount ? (
                       <div class="loader" />
-                    )}
-                  </span>
-                </div>
+                    ) : (
+                    <React.Fragment />
+                    )
+                  )}
+                </span>
               </span>
             </div>
           </div>
@@ -573,9 +583,7 @@ export default class OndemandModal extends Component {
           <div class="overflow-box">
             {this.breakup()}
             <div class="help-block">
-              Your settlement has been initiated. Amounts up to 2 Lacs will be
-              settled instantly. All other amounts to be settled within 3
-              working hours{` `}
+              Your settlement has been initiated and should reflect on your bank account in some time
               <i class="i i-info-circle" />
               <Popover
                 align="right"
