@@ -182,9 +182,9 @@ trait TestsBusinessBanking
             ]);
     }
 
-    protected function createPayout(array $extraPayoutParams = [])
+    protected function createPayout(array $extraPayoutParams = [], array $contact = [])
     {
-        $this->createContact();
+        $this->createContact($contact);
 
         $this->createFundAccount();
 
@@ -215,16 +215,20 @@ trait TestsBusinessBanking
         ]);
     }
 
-    public function createContact()
+    public function createContact(array $contact = [])
     {
-        $this->contact = $this->fixtures->create(
-            'contact',
-            [
-                'id'      => '1000010contact',
-                'email'   => 'contact@razorpay.com',
-                'contact' => '8888888888',
-                'name'    => 'test user'
-            ]);
+        if (empty($contact)) {
+            $this->contact = $this->fixtures->create(
+                'contact',
+                [
+                    'id' => '1000010contact',
+                    'email' => 'contact@razorpay.com',
+                    'contact' => '8888888888',
+                    'name' => 'test user'
+                ]);
+        } else{
+            $this->contact = $this->fixtures->create('contact', $contact);
+        }
     }
 
     protected function createFundAccount()

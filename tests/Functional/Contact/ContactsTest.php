@@ -46,10 +46,30 @@ class ContactsTest extends TestCase
         $this->startTest();
     }
 
+    public function testFetchContactsWithEmailsFetchesExactMatchesOnly()
+    {
+        $this->fixtures->create('contact', ['id' => '1000005contact', 'name' => 'Contact1A', 'email' => 'contact1@test.com']);
+        $this->fixtures->create('contact', ['id' => '1000006contact', 'name' => 'Contact2B', 'email' => 'contact2@test.com']);
+
+        $this->createEsMockAndSetExpectations(__FUNCTION__);
+
+        $this->startTest();
+    }
+
     public function testFetchContactsByEmail()
     {
         $this->fixtures->create('contact', ['id' => '1000001contact', 'email' => 'test@test1.com']);
         $this->fixtures->create('contact', ['id' => '1000002contact', 'email' => 'random@test.com']);
+
+        $this->createEsMockAndSetExpectations(__FUNCTION__);
+
+        $this->startTest();
+    }
+
+    public function testFetchContactsByEmailDifferentDomainSameName()
+    {
+        $this->fixtures->create('contact', ['id' => '1000001contact', 'email' => 'test@test1.com']);
+        $this->fixtures->create('contact', ['id' => '1000002contact', 'email' => 'test@test.com']);
 
         $this->createEsMockAndSetExpectations(__FUNCTION__);
 

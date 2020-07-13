@@ -36,6 +36,9 @@ class Entity extends Transaction\Entity
 
     const ACTION = 'action';
 
+    //Used Exclusively for the ES raw searching of Email
+    const CONTACT_EMAIL_RAW = 'contact_email.raw';
+
     protected $entity = 'statement';
 
     protected $public = [

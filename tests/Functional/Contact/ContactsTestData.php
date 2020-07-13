@@ -64,6 +64,99 @@ return [
         ],
     ],
 
+    'testFetchContactsByEmailDifferentDomainSameName' => [
+        'request'  => [
+            'url'    => '/contacts?email=test@test.com',
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
+                    [
+                        'id'     => 'cont_1000002contact',
+                        'entity' => 'contact',
+                        'email'  => 'test@test.com',
+                    ],
+                ],
+            ]
+        ],
+    ],
+
+    'testFetchContactsWithEmailsFetchesExactMatchesOnly' => [
+        'request' => [
+            'url' => '/contacts?email=contact1@test.com',
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count' => 1,
+                'items' => [
+                    [
+                        'id' => 'cont_1000005contact',
+                        'entity' => 'contact',
+                        'name' => 'Contact1A',
+                        'email' => 'contact1@test.com',
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testFetchContactsWithEmailsFetchesExactMatchesOnlyExpectedSearchParams' => [
+        'index' => env('ES_ENTITY_TYPE_PREFIX').'contact_test',
+        'type'  => env('ES_ENTITY_TYPE_PREFIX').'contact_test',
+        'body'  => [
+            '_source' => false,
+            'from'    => 0,
+            'size'    => 10,
+            'query'=> [
+                'bool'=> [
+                    'filter'=> [
+                        'bool'=> [
+                            'must'=> [
+                                [
+                                    'term'=> [
+                                        'email.raw'=> [
+                                            'value'=> 'contact1@test.com'
+                                        ]
+                                    ]
+                                ],
+                                [
+                                    'term'=> [
+                                        'merchant_id'=> [
+                                            'value'=> '10000000000000'
+                                        ]
+                                    ]
+                                ]
+                            ]
+                        ]
+                    ]
+                ]
+            ],
+            'sort' => [
+                '_score' => [
+                    'order' => 'desc',
+                ],
+                'created_at' => [
+                    'order' => 'desc',
+                ],
+            ],
+        ],
+    ],
+
+    'testFetchContactsWithEmailsFetchesExactMatchesOnlyExpectedSearchResponse' => [
+        'hits' => [
+            'hits' => [
+                [
+                    '_id' => '1000005contact',
+                ],
+            ],
+        ],
+    ],
+
     'testContactsWithExpiredKey' => [
         'request'  => [],
         'response'  => [
@@ -395,33 +488,71 @@ return [
             '_source' => false,
             'from'    => 0,
             'size'    => 10,
-            'query'   => [
-                'bool' => [
-                    'must' => [
-                        [
-                            'match' => [
-                                'email' => [
-                                    'query'                =>'random@test.com',
-                                    'boost'                => 2,
-                                    'minimum_should_match' => '75%',
-                                ],
-                            ],
-                        ],
-                    ],
-                    'filter' => [
-                        'bool' => [
-                            'must' => [
+            'query'=> [
+                'bool'=> [
+                    'filter'=> [
+                        'bool'=> [
+                            'must'=> [
                                 [
-                                    'term' => [
-                                        'merchant_id' => [
-                                            'value' => '10000000000000',
-                                        ],
-                                    ],
+                                    'term'=> [
+                                        'email.raw'=> [
+                                            'value'=> 'random@test.com'
+                                        ]
+                                    ]
                                 ],
-                            ],
-                        ],
-                    ],
+                                [
+                                    'term'=> [
+                                        'merchant_id'=> [
+                                            'value'=> '10000000000000'
+                                        ]
+                                    ]
+                                ]
+                            ]
+                        ]
+                    ]
+                ]
+            ],
+            'sort' => [
+                '_score' => [
+                    'order' => 'desc',
                 ],
+                'created_at' => [
+                    'order' => 'desc',
+                ],
+            ],
+        ],
+    ],
+
+    'testFetchContactsByEmailDifferentDomainSameNameExpectedSearchParams' => [
+        'index' => env('ES_ENTITY_TYPE_PREFIX').'contact_test',
+        'type'  => env('ES_ENTITY_TYPE_PREFIX').'contact_test',
+        'body'  => [
+            '_source' => false,
+            'from'    => 0,
+            'size'    => 10,
+            'query'=> [
+                'bool'=> [
+                    'filter'=> [
+                        'bool'=> [
+                            'must'=> [
+                                [
+                                    'term'=> [
+                                        'email.raw'=> [
+                                            'value'=> 'test@test.com'
+                                        ]
+                                    ]
+                                ],
+                                [
+                                    'term'=> [
+                                        'merchant_id'=> [
+                                            'value'=> '10000000000000'
+                                        ]
+                                    ]
+                                ]
+                            ]
+                        ]
+                    ]
+                ]
             ],
             'sort' => [
                 '_score' => [
@@ -435,6 +566,17 @@ return [
     ],
 
     'testFetchContactsByEmailExpectedSearchResponse' => [
+        'hits' => [
+            'hits' => [
+                [
+                    '_id' => '1000002contact',
+                ],
+            ],
+        ],
+    ],
+
+
+    'testFetchContactsByEmailDifferentDomainSameNameExpectedSearchResponse' => [
         'hits' => [
             'hits' => [
                 [

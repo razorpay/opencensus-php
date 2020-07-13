@@ -28,13 +28,23 @@ class EsRepository extends Base\EsRepository
         Entity::CONTACT,
     ];
 
-    public function buildQueryForActive(array & $query, bool $value)
+    public function buildQueryForActive(array &$query, bool $value)
     {
         $this->addTermFilter($query, Entity::ACTIVE, $value);
     }
 
-    public function buildQueryForType(array & $query, string $value)
+    public function buildQueryForType(array &$query, string $value)
     {
         $this->addTermFilter($query, Entity::TYPE, $value);
     }
+
+    public function buildQueryForEmail(array &$query, string $value)
+    {
+        if (empty($value) == true) {
+            return;
+        }
+        // email.raw is the non-indexed format of email specifically for the case of exact match
+        $this->addTermFilter($query, Entity::EMAIL_RAW, $value);
+    }
+
 }

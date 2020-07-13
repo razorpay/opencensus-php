@@ -2,7 +2,6 @@
 
 namespace RZP\Models\Transaction\Statement;
 
-use RZP\Models\Base;
 use RZP\Models\Transaction;
 use RZP\Constants\Entity as E;
 
@@ -24,5 +23,14 @@ class EsRepository extends Transaction\EsRepository
     public function getIndexSuffix(): string
     {
         return E::TRANSACTION . '_' . $this->mode;
+    }
+
+    protected function buildQueryForContactEmail(array &$query, $value)
+    {
+        if (empty($value) === true) {
+            return;
+        }
+
+        $this->addTermFilter($query, Entity::CONTACT_EMAIL_RAW, $value);
     }
 }

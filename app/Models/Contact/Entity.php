@@ -47,6 +47,9 @@ class Entity extends Base\PublicEntity
 
     const RESPONSE_CODE   = 'response_code';
 
+    // Raw Email used exclusively for ES
+    const EMAIL_RAW = 'email.raw';
+
     protected $generateIdOnCreate = true;
 
     protected $fillable = [

@@ -220,9 +220,18 @@ class StatementTest extends TestCase
     {
         $this->createPayout();
 
-        $this->testData[__FUNCTION__]['request']['url'] = '/transactions?contact_email=' . $this->contact['email'];
+        //Create another Payout with a different Contact Details
+        $this->createPayout([], [
+            'id' => '1000015contact',
+            'email' => 'contact2@razorpay.com',
+            'contact' => '8888888888',
+            'name' => 'test user'
+        ]);
 
-        // Sets ES fetch expected retunr values.
+        //Fetch the Transactions of the first Contact
+        $this->testData[__FUNCTION__]['request']['url'] = '/transactions?contact_email=contact@razorpay.com';
+
+        // Sets ES fetch expected return values.
         $this->testData[__FUNCTION__ . 'ExpectedSearchResponse']['hits']['hits'][0]['_id'] = str_after($this->transaction['id'], 'txn_');
         $this->createEsMockAndSetExpectations(__FUNCTION__);
 
