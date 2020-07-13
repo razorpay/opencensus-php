@@ -1,4 +1,5 @@
 import { connect } from 'react-redux';
+import { withRouter } from 'react-router-dom';
 import RTracking from 'react-tracking';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import Form from 'common/new-ui/Form';
@@ -9,7 +10,9 @@ import {
   saveReceipt,
 } from 'merchant/views/PaymentPages/PaymentPages/model';
 import { showNotification } from 'merchant_common/reducers/notifications';
+import { getURLQueryParams } from 'common/utils/rzp-utils';
 
+@withRouter
 @connect(null, {
   showNotification,
 })
@@ -21,6 +24,13 @@ export default class PaymentReceipt extends React.Component {
     receipt: null, // null => manual receipt, or if  payment_id => automatic receipt
     showCustomReceiptInput: false,
   };
+
+  constructor(props) {
+    super(props);
+
+    const queryParams = getURLQueryParams(this.props.location.search);
+    this.sourceType = queryParams.source_type;
+  }
 
   componentDidMount() {
     getReceiptDetails(this.props.payment.id).then(res => {
@@ -157,10 +167,12 @@ export default class PaymentReceipt extends React.Component {
 
   render() {
     const { payment } = this.props;
-    const hideReceiptActions = !this.state.invoiceId;
+    const showReceiptActions =
+      !!this.state.invoiceId &&
+      ['paymentpages', 'paymentbuttons'].indexOf(this.sourceType) > -1; // TODO: Must add support for product names as constants in dashboard
 
     // Payment Receipt Actions only to be shown for payment pages for which invoice id exists in GET /receipt call
-    if (hideReceiptActions) {
+    if (!showReceiptActions) {
       return null;
     }
 

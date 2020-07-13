@@ -192,7 +192,9 @@ export const role = {
 export const buttonTitle = {
   title: 'Title',
   value: item => (
-    <NavLink to={`/paymentbuttons/${item.id}/payments`}>{item.title}</NavLink>
+    <NavLink to={`/paymentbuttons/${item.id}/payments#paymentbuttons`}>
+      {item.title}
+    </NavLink>
   ),
 };
 export const itemName = {

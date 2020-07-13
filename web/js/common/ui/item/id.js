@@ -42,6 +42,13 @@ export const idLink = (id, label, _baseUrl = baseUrl) => {
   var item = label || idItem(id);
   if (url) {
     url += id;
+
+    // Currently, being used in details view of payment page, in order to maintain the context that transactions tab is opened via payment page's detail view.
+    const hash = window.location.hash;
+    if (hash) {
+      url += `?source_type=${hash.substring(1)}`;
+    }
+
     return <Link to={url}>{item}</Link>;
   }
   return item;

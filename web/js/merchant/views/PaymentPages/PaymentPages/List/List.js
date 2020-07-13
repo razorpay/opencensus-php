@@ -38,7 +38,7 @@ export default ({ paymentPages, loading }) => {
             <EntityItemRow id={item.id} key={item.id}>
               <td>
                 <NavLink
-                  to={`/paymentpages/${item.id}/payments`}
+                  to={`/paymentpages/${item.id}/payments#paymentpages`}
                   onClick={() => {
                     trackListActions('Title Click');
                   }}
