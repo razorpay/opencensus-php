@@ -53,10 +53,6 @@ class RequestHandler
      */
     private $tracer;
 
-
-    //added now
-    private $propagator;    
-
     /**
      * @var Span The primary span for this request
      */
@@ -106,7 +102,6 @@ class RequestHandler
 
         // If the request was provided with a trace context header, we need to send it back with the response
         // including whether the request was sampled or not.
-
         if ($spanContext->fromHeader()) {
             $propagator->inject($spanContext, $this->headers);
         }
@@ -279,7 +274,7 @@ class RequestHandler
                 'spanId' => $this->rootSpan->spanId()
             ]);
             if ($responseCode >= 400) {
-                $this->tracer->addAttribute('error', 'true', [
+                $this->tracer->addAttribute('error', True, [
                     'spanId' => $this->rootSpan->spanId()
                 ]);
             }
@@ -293,19 +288,21 @@ class RequestHandler
             }
         }
 
-        // add all query parameters as tags
-        parse_str($headers['QUERY_STRING'], $queryParams);
+        if (array_key_exists('QUERY_STRING', $headers)){
+            // add all query parameters as tags
+            parse_str($headers['QUERY_STRING'], $queryParams);
 
-        foreach ($queryParams as $key => $value) {
-            if(is_array($value)){
-                $value = implode(', ', $value);
+            foreach ($queryParams as $key => $value) {
+                if(is_array($value)){
+                    $value = implode(', ', $value);
+                }
+
+                $key = 'http.query.params.' . $key;
+
+                $this->tracer->addAttribute($key, $value, [
+                    'spanId' => $this->rootSpan->spanId()
+                ]);
             }
-
-            $key = 'http.query.params.' . $key;
-
-            $this->tracer->addAttribute($key, $value, [
-                'spanId' => $this->rootSpan->spanId()
-            ]);
         }
     }
 
@@ -339,7 +336,8 @@ class RequestHandler
 
     private function nameFromHeaders(array $headers): string
     {
-        if (array_key_exists('REQUEST_URI', $headers)) {
+        // omit query parameters in the span name
+        if (array_key_exists('REQUEST_URI', $headers) and ($headers['REQUEST_URI'])) {
             return strtok($headers['REQUEST_URI'], '?');
         }
         else {

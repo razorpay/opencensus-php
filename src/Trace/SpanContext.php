@@ -46,7 +46,6 @@ class SpanContext
      */
     private $spanId;
 
-
     /**
      * @var bool Whether or not tracing is enabled for this request.
      */

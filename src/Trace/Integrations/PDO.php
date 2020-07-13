@@ -31,19 +31,15 @@ use OpenCensus\Trace\Span;
  */
 class PDO implements IntegrationInterface
 {
-    public static $serviceName = '';
-
     /**
      * Static method to add instrumentation to the PDO requests
      */
-    public static function load($serviceName='')
+    public static function load()
     {
         if (!extension_loaded('opencensus')) {
             trigger_error('opencensus extension required to load PDO integrations.', E_USER_WARNING);
             return;
         }
-
-        self::$serviceName = $serviceName;
 
         // public int PDO::exec(string $query)
         opencensus_trace_method('PDO', 'exec', [static::class, 'handleQuery']);
@@ -90,10 +86,9 @@ class PDO implements IntegrationInterface
      */
     public static function handleConnect($pdo, $dsn)
     {
-        return [
-            'attributes' => ['dsn' => $dsn,
-                            'peer.service' => self::$serviceName,
-                            'db.type' => 'sql'],
+        $attributes = ['dsn' => $dsn, 'db.type' => 'sql'];
+
+        return [ 'attributes' => $attributes,
             'kind' => Span::KIND_CLIENT,
         ];
     }
@@ -112,17 +107,14 @@ class PDO implements IntegrationInterface
             https://docstore.mik.ua/orelly/java-ent/jenut/ch08_06.htm
         */
 
-        $rowCount = (string) $statement->rowCount();
-        $errorCode = (string) $statement->errorCode();
+        $rowCount = $statement->rowCount();
+        $errorCode = $statement->errorCode();
         $error =  substr($errorCode, 0, 2);
-        $error_tags = [];
+        $errorTags = [];
 
         switch ($error) {
-            case (string) '00':
-                $error_tags = ['error' => 'false'];
-                break;
             case (string) '01':
-                $error_tags = ['warning'=>'true', 'warning.code' => $errorCode];
+                $errorTags = ['warning' => True, 'warning.code' => $errorCode];
                 break;
         };
 
@@ -156,15 +148,15 @@ class PDO implements IntegrationInterface
         ];
 
         if (array_key_exists($error, $errorCodeMsgArray)){
-            $error_tags['error'] = 'true';
-            $error_tags['error.code'] = $errorCode;
-            $error_tags['error.message'] = $errorCodeMsgArray[$error];
+            $errorTags['error'] = True;
+            $errorTags['error.code'] = $errorCode;
+            $errorTags['error.message'] = $errorCodeMsgArray[$error] ?? '';
         }
 
         $tags = ['db.statement' => $statement->queryString, 'db.row_count' => $rowCount];
 
         return [
-            'attributes' => $tags + $error_tags,
+            'attributes' => $tags + $errorTags,
             'kind' => Span::KIND_CLIENT
         ];
     }

@@ -46,7 +46,7 @@ class JaegerPropagator implements PropagatorInterface
 
 
     /**
-     * Create a new TraceContextPropagator
+     * Create a new JaegerHeaderPropagator
      *
      * @param FormatterInterface $formatter The formatter used to serialize and
      *        deserialize SpanContext. **Defaults to** a new TraceContextFormatter.
