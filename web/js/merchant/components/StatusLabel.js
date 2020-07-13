@@ -122,6 +122,11 @@ export const commissionInvoiceStatusMap = {
   processed: 'label-success',
 };
 
+export const SubmerchantSettlementStatusMap = {
+  active: 'label-success',
+  inactive: 'label-muted',
+};
+
 const entityMap = {
   payment: paymentStatusMap,
   refund: refundStatusMap,
@@ -158,6 +163,9 @@ export const RefundStatusLabel = StatusLabel(refundStatusMap);
 export const InternationalStatusLabel = StatusLabel(internationalStatusMap);
 export const CommissionInvoiceStatusLabel = StatusLabel(
   commissionInvoiceStatusMap
+);
+export const SubmerchantSettlementLabel = StatusLabel(
+  SubmerchantSettlementStatusMap
 );
 
 export default item => StatusLabel(entityMap[item.entity])(item);

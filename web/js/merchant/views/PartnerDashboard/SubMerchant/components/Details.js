@@ -8,7 +8,10 @@ import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import ShowWhen from 'merchant/components/ShowWhen';
 import AsyncButton from 'react-async-button';
 
-import { ActivationStatusLabel } from 'merchant/components/StatusLabel';
+import {
+  ActivationStatusLabel,
+  SubmerchantSettlementLabel,
+} from 'merchant/components/StatusLabel';
 
 export default props => {
   const { submerchant, isLoading, error, onResendInvite } = props;
@@ -67,6 +70,13 @@ export default props => {
                       Not Submitted
                     </span>
                   )}
+                </EntityDetailRow>
+
+                {/* Status of Settlement */}
+                <EntityDetailRow label="Settlement Status">
+                  <SubmerchantSettlementLabel
+                    status={submerchant.hold_funds ? 'inactive' : 'active'}
+                  />
                 </EntityDetailRow>
 
                 {/* application details for pure platform partners */}

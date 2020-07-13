@@ -17,7 +17,10 @@ import Popover, { PopoverBody } from 'common/ui/Popover';
 
 import ShowWhen from 'merchant/components/ShowWhen';
 import { getTime } from 'common/ui/item';
-import { ActivationStatusLabel } from 'merchant/components/StatusLabel';
+import {
+  ActivationStatusLabel,
+  SubmerchantSettlementLabel,
+} from 'merchant/components/StatusLabel';
 import {
   submerchant as submerchantColumn,
   submerchantId as id,
@@ -95,6 +98,28 @@ const activationStatus = {
     ) : (
       <span class="status-label label label-warning">Not Submitted</span>
     ),
+};
+
+const settlementStatus = {
+  title: (
+    <Fragment>
+      Settlement Status&nbsp;
+      <span>
+        <i class="i i-info-circle" />
+        &nbsp;
+        <Popover align="top" theme="dark">
+          <PopoverBody>
+            Current status of whether the merchant can receive the settlement
+          </PopoverBody>
+        </Popover>
+      </span>
+    </Fragment>
+  ),
+  value: submerchant => (
+    <SubmerchantSettlementLabel
+      status={submerchant.hold_funds ? 'inactive' : 'active'}
+    />
+  ),
 };
 
 const switchMerchantActionBtn = handleSwitchMerchant => ({
@@ -327,6 +352,7 @@ export default class SubMerchantsList extends ListContainer {
                         ...appIdColumn,
                         addedOn,
                         activationStatus,
+                        settlementStatus,
                         ...switchMerchantColumn,
                       ]}
                       {...this.props}
