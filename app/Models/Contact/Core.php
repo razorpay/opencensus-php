@@ -67,7 +67,8 @@ class Core extends Base\Core
 
         $contact->merchant()->associate($merchant);
 
-        if ($allowRZPFeesContactCreation === true)
+        if (($allowRZPFeesContactCreation === true) or
+            ($this->isTaxPaymentContactRequest($contact) === true))
         {
             (new Type)->setTypeForInternalContact($contact, $input[Entity::TYPE]);
         }
@@ -89,6 +90,24 @@ class Core extends Base\Core
             ]);
 
         return $contact;
+    }
+
+    /**
+     * This function will check that this is trying to create the TaxPayment internal contact
+     * Also checks if the request source is valid
+     *
+     * @param Entity $contact
+     * @return bool
+     */
+    protected function isTaxPaymentContactRequest(Entity $contact): bool
+    {
+        if (($contact->getType() === Type::TAX_PAYMENT_INTERNAL_CONTACT) and
+            ($this->app['basicauth']->isVendorPaymentApp() === true))
+        {
+            return true;
+        }
+
+        return false;
     }
 
     public function update(Entity $contact, array $input): Entity
@@ -144,8 +163,10 @@ class Core extends Base\Core
 
         $type = $input[Entity::TYPE] ?? null;
 
-        if (empty($input[Entity::TYPE]) === true) {
+        if (empty($input[Entity::TYPE]) === true)
+        {
             $contact->setType(null);
+
             return;
         }
 

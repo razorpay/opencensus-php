@@ -4,10 +4,11 @@ namespace RZP\Tests\Functional\TaxPayments;
 
 use App;
 use Mockery;
+use RZP\Models\Contact\Type;
+use RZP\Models\Contact\Entity;
 use RZP\Models\Settings\Accessor;
 use RZP\Models\Feature\Constants;
 use RZP\Tests\Functional\TestCase;
-use RZP\Models\Payout\SourceUpdater;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 
@@ -25,6 +26,12 @@ class TaxPaymentTests extends TestCase
         parent::setUp();
 
         $this->config = App::getFacadeRoot()['config'];
+
+        $this->fixtures->create('feature',
+                                [
+                                    'name'      => Constants::RX_VENDOR_PAYMENTS,
+                                    'entity_id' => '10000000000000'
+                                ]);
     }
 
     public function testSettingsInternalApiAddOrUpdate()
@@ -116,5 +123,86 @@ class TaxPaymentTests extends TestCase
 
         // assert that the Payout Update Status was called when feature was enabled
         $tpMock->shouldHaveReceived('listTaxPayments');
+    }
+
+    /**
+     * This is to test that the Tax Payment Internal Contact can only be created from VendorPayments app
+     *
+     */
+    public function testTaxPayContactCreationFailsWhenNotVendorPaymentApp()
+    {
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testTaxContactCreationSuccessWithTheRightVendorApp()
+    {
+        $this->ba->appAuthTest($this->config['applications.vendor_payments.secret']);
+
+        $this->startTest();
+    }
+
+    public function testTaxPayFundAccountCreationFailsWhenNotVendorPaymentApp()
+    {
+        // first create an internal contact
+        $contact = $this->fixtures->create('contact',
+                                           [
+                                               'name' => 'some test name',
+                                               'type' => Type::TAX_PAYMENT_INTERNAL_CONTACT
+                                           ]);
+
+        $this->testData[__FUNCTION__]['request']['content']['contact_id'] = $contact->getPublicId();
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testTaxFundAccountCreationSuccessWithTheRightVendorApp()
+    {
+        $contact = $this->fixtures->create('contact',
+                                           [
+                                               'name' => 'some test name',
+                                               'type' => Type::TAX_PAYMENT_INTERNAL_CONTACT
+                                           ]);
+
+        $this->testData[__FUNCTION__]['request']['content']['contact_id'] = $contact->getPublicId();
+
+        $this->testData[__FUNCTION__]['response']['content']['contact_id'] = $contact->getPublicId();
+
+        $this->ba->appAuthTest($this->config['applications.vendor_payments.secret']);
+
+        $this->startTest();
+    }
+
+    public function testTaxPaymentInternalContactUpdateForbidden()
+    {
+        $contact = $this->fixtures->create('contact',
+                                           [
+                                               'name' => 'some test name',
+                                               'type' => Type::TAX_PAYMENT_INTERNAL_CONTACT
+                                           ]);
+
+        $this->testData[__FUNCTION__]['request']['url'] .= $contact->getPublicId();
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testUpdatingContactTypeToInternalContactForbidden()
+    {
+        $contact = $this->fixtures->create('contact',
+                                           [
+                                               'name' => 'some test name',
+                                               'type' => 'employee'
+                                           ]);
+
+        $this->testData[__FUNCTION__]['request']['url'] .= $contact->getPublicId();
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
     }
 }

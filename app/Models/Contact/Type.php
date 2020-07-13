@@ -20,6 +20,7 @@ final class Type
     const VENDOR   = 'vendor';
     const SELF     = 'self';
     const RZP_FEES = 'rzp_fees';
+    const TAX_PAYMENT_INTERNAL_CONTACT = 'rzp_tax_pay';
 
     // Settings module key
     const TYPES = 'types';
@@ -33,6 +34,7 @@ final class Type
 
     public static $internal = [
         self::RZP_FEES,
+        self::TAX_PAYMENT_INTERNAL_CONTACT,
     ];
 
     public static function isInDefaults(string $type): bool
@@ -134,7 +136,6 @@ final class Type
                 "Type '$type' is an internal contact type used by Razorpay and cannot be added.",
                 Entity::TYPE);
         }
-
 
         if ((self::isInDefaults(strtolower($type))) or
             (array_search_ci($type, $allCustomKeys) !== false))

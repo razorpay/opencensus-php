@@ -62,25 +62,30 @@ class Core extends Base\Core
         }
 
         // allowRZPFeesFundAccountCreation is only set to true when fund account is created at merchant activation.
-        if ($allowRZPFeesFundAccountCreation === false)
+        if ((empty($source) === false) and
+            ($source->getEntityName() === Entity::CONTACT))
         {
-            // If the corresponding contact is of type 'rzp_fees', we won't allow the merchant to create the fund account
-            if ((empty($source) === false) and
-                ($source->getEntityName() === Entity::CONTACT))
+            if ($allowRZPFeesFundAccountCreation === false)
             {
+                // If the corresponding contact is of type 'rzp_fees', we won't allow the merchant
+                // to create the fund account
+
                 $contactType = $source->getType();
 
-                if (Contact\Type::isInInternal($contactType) === true)
+                if ((Contact\Type::isInInternal($contactType) === true) and
+                    ($contactType === Contact\Type::RZP_FEES))
                 {
                     throw new BadRequestException(
                         ErrorCode::BAD_REQUEST_INTERNAL_FUND_ACCOUNT_CREATION_NOT_PERMITTED,
                         null,
                         [
-                            'contact_id'   => $source->getId(),
-                            'input'        => $traceRequest
+                            'contact_id' => $source->getId(),
+                            'input'      => $traceRequest
                         ]);
                 }
             }
+
+            $this->internalContactChecks($source, $traceRequest);
         }
 
         if (($merchant->getId() === Merchant\Account::MEDLIFE) or
@@ -357,5 +362,21 @@ class Core extends Base\Core
         ];
 
         $this->create($fundAccountData, $merchant, $contact, false, null, true);
+    }
+
+    protected function internalContactChecks(Base\PublicEntity $source = null, array $traceRequest = [])
+    {
+        // we have to validate that this operation is allowed
+        if (($source->getType() === Contact\Type::TAX_PAYMENT_INTERNAL_CONTACT) and
+            ($this->app['basicauth']->isVendorPaymentApp() === false))
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_INTERNAL_FUND_ACCOUNT_CREATION_NOT_PERMITTED,
+                null,
+                [
+                    'contact_id' => $source->getId(),
+                    'input'      => $traceRequest
+                ]);
+        }
     }
 }

@@ -4499,6 +4499,7 @@ class Route
             'vendor_payment_composite_expands_helper',
             'settings_fetch_internal',
             'settings_upsert_internal',
+            'fund_account_create_internal',
         ],
 
         'dashboard' => [
