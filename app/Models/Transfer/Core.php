@@ -94,22 +94,36 @@ class Core extends Base\Core
 
         (new Validator)->validateTransfers($payment, $input, $orderTransfers);
 
+        $totalTransferAmount = 0;
+
+        $isasyncTransferEnabled = true;
+
         foreach ($input as $transfer)
         {
-            $transfer = $this->makeTransfer($transfer, $payment, $merchant,true);
+            $transfer = $this->makeTransfer($transfer, $payment, $merchant,$isasyncTransferEnabled);
+
+            $totalTransferAmount += $transfer['amount'];
 
             $transfers->push($transfer);
         }
 
+        if($isasyncTransferEnabled === false)
+        {
+            $this->updatePaymentAmountTransferred($payment, $totalTransferAmount);
 
-        $this->trace->info(
-                TraceCode::PAYMENT_TRANSFER_RAZORX_SQS_PUSH,
-                ['transfer' => $input,
-                'paymentId' =>$payment->getId(),
-                'transferId'=>$transfer->getId()
-                ]);
+            (new Metric)->pushCreateSuccessMetrics(current($input));
+        }
+        else
+        {
+                $this->trace->info(
+                    TraceCode::PAYMENT_TRANSFER_RAZORX_SQS_PUSH,
+                    ['transfer' => $input,
+                        'paymentId' =>$payment->getId(),
+                        'transferId'=>$transfer->getId()
+                    ]);
 
-        TransferProcess::dispatch($this->mode, $payment->getId(), Constant::PAYMENT);
+            TransferProcess::dispatch($this->mode, $payment->getId(), Constant::PAYMENT);
+        }
 
 
         return $transfers;
@@ -305,7 +319,7 @@ class Core extends Base\Core
      * @throws Exception\BadRequestException
      * @throws Exception\BadRequestValidationFailureException
      */
-    protected function makeTransfer(array $input, Base\Entity $source, Merchant\Entity $merchant, $asyncTransfer = false) : Entity
+    protected function makeTransfer(array $input, Base\Entity $source, Merchant\Entity $merchant, &$asyncTransfer = false) : Entity
     {
         $validator = new Validator;
 
@@ -314,6 +328,8 @@ class Core extends Base\Core
         if (isset($input[ToType::CUSTOMER]) === true)
         {
             $id = $input[ToType::CUSTOMER];
+
+            $asyncTransfer = false;
 
             return $this->customerTransfer($id, $source, $input, $merchant);
         }
