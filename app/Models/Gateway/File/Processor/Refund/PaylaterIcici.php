@@ -112,8 +112,9 @@ class PaylaterIcici extends Base
         $input = [
             RefundConstants::SCROOGE_QUERY => [
                 RefundConstants::SCROOGE_REFUNDS => [
-                    RefundConstants::SCROOGE_GATEWAY => static::PAYLATER,
-                    RefundConstants::SCROOGE_CREATED_AT => [
+                    RefundConstants::SCROOGE_GATEWAY          => static::PAYLATER,
+                    RefundConstants::SCROOGE_GATEWAY_ACQUIRER => static::ACQUIRER,
+                    RefundConstants::SCROOGE_CREATED_AT       => [
                         RefundConstants::SCROOGE_GTE => $from,
                         RefundConstants::SCROOGE_LTE => $to,
                     ],
