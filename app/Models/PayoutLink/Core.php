@@ -4,6 +4,8 @@ namespace RZP\Models\PayoutLink;
 
 use View;
 use Mail;
+use Config;
+
 
 use Razorpay\Trace\Logger as Trace;
 
@@ -90,7 +92,11 @@ class Core extends Base\Core
 
         $settingsAccessor = $this->getSettingsAccessor($merchant);
 
+        $oldSettings = $settingsAccessor->all()->toArray();
+
         $settingsAccessor->upsert($input)->save();
+
+        $this->notifyPayoutModeSettingChangeOnSlack($merchant->getPublicId(), $oldSettings, $input);
 
         return $settingsAccessor->all()->toArray();
     }
@@ -990,6 +996,117 @@ class Core extends Base\Core
                                              NotificationType::PAYOUT_LINK_PROCESSING_FAILED,
                                              $payoutLink->getPublicId());
         }
+    }
+
+    /**
+     * Checks if the given key's value is changed in the new array or not. If the value in new array is same as the
+     * default value passed, it is assumed that the value is not changed.
+     * @param string    $key
+     * @param array     $oldArray
+     * @param array     $newArray
+     * @param bool      $defaultValue
+     * @return bool
+     */
+    protected function isBooleanValueChanged($key, $oldArray, $newArray, $defaultValue = false)
+    {
+        $isValueChanged = false;
+
+        if(key_exists($key, $oldArray))
+        {
+            if(boolval($oldArray[$key]) !== boolval($newArray[$key]) )
+            {
+                $isValueChanged = true;
+            }
+        }
+        else
+        {
+            if(boolval($newArray[$key]) !== boolval($defaultValue))
+            {
+                $isValueChanged = true;
+            }
+        }
+
+        return $isValueChanged;
+
+    }
+
+    /**
+     * Pushes a notification to slack channel "operations_log" whenever a Payout Mode is enabled/disabled for a
+     * merchant
+     * @param string    $merchantId
+     * @param array     $oldSettings
+     * @param array     $newSettings
+     * @return void
+     */
+    protected function notifyPayoutModeSettingChangeOnSlack($merchantId, $oldSettings, $newSettings)
+    {
+        $isImpsModeChanged = $this->isBooleanValueChanged(Entity::IMPS,
+                                                          $oldSettings,
+                                                          $newSettings,
+                                                          true);
+
+        if($isImpsModeChanged === true)
+        {
+            $this->sendPayoutModeNotificationOnSlack($merchantId,
+                                                     Entity::IMPS,
+                                                     boolval($newSettings[Entity::IMPS]));
+        }
+
+        $isUPIModeChanged = $this->isBooleanValueChanged(Entity::UPI,
+                                                         $oldSettings,
+                                                         $newSettings,
+                                                         true);
+
+        if($isUPIModeChanged === true)
+        {
+            $this->sendPayoutModeNotificationOnSlack($merchantId,
+                                                     Entity::UPI,
+                                                     boolval($newSettings[Entity::UPI]));
+        }
+    }
+
+    /**
+     * Places the notification message on the slack app queue
+     * @param string    $merchantId
+     * @param string    $payoutMode
+     * @param bool      $modeEnabled
+     */
+    protected function sendPayoutModeNotificationOnSlack($merchantId, $payoutMode, $modeEnabled)
+    {
+        $message = "Payout Mode ";
+
+        $message .= $payoutMode;
+
+        if ($modeEnabled === true)
+        {
+            $message .= ' enabled for ';
+        }
+        else
+        {
+            $message .= ' disabled for ';
+        }
+
+        $user = $this->getInternalUsernameOrEmail();
+
+        $message .= $merchantId . ' by ' . $user;
+
+        $this->trace->info(
+            TraceCode::PAYOUT_LINK_SETTINGS_UPDATE,
+            [
+                'merchant_id' => $merchantId,
+                'message'     => $message
+            ]
+        );
+
+        $this->app['slack']->queue(
+            $message,
+            [],
+            [
+                'channel'  => Config::get('slack.channels.operations_log'),
+                'username' => 'Jordan Belfort',
+                'icon'     => ':boom:'
+            ]
+        );
     }
 
     // this will get the count of PayoutLinks filtered with status and merchant_id

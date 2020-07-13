@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\PayoutLink;
 
 use App;
 use Mail;
+use Config;
 use Mockery;
 use Exception;
 use RZP\Models\Payout;
@@ -773,16 +774,59 @@ class PayoutLinkTest extends TestCase
         $this->startTest();
     }
 
-    public function testMerchantSettingsUpdateApi()
+    public function testMerchantSettingsUpdateApiForIMPSDisabled()
     {
+        $queueMethodOutput = [
+            "Payout Mode IMPS disabled for 10000000000000 by DASHBOARD_INTERNAL",
+            [],
+            [
+                'channel'  => Config::get('slack.channels.operations_log'),
+                'username' => 'Jordan Belfort',
+                'icon'     => ':boom:'
+            ]
+        ];
+
+        $slackMock = Mockery::mock();
+
+        $slackMock->shouldReceive('queue');
+
+        $this->app->instance('slack', $slackMock);
+
         $this->ba->proxyAuth();
 
         $this->startTest();
+
+        $slackMock->shouldHaveReceived('queue')->withArgs($queueMethodOutput);
+    }
+
+    public function testMerchantSettingsUpdateApiForUPIDisabled()
+    {
+        $queueMethodOutput = [
+            "Payout Mode UPI disabled for 10000000000000 by DASHBOARD_INTERNAL",
+            [],
+            [
+                'channel'  => Config::get('slack.channels.operations_log'),
+                'username' => 'Jordan Belfort',
+                'icon'     => ':boom:'
+            ]
+        ];
+
+        $slackMock = Mockery::mock();
+
+        $slackMock->shouldReceive('queue');
+
+        $this->app->instance('slack', $slackMock);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+
+        $slackMock->shouldHaveReceived('queue')->withArgs($queueMethodOutput);
     }
 
     public function testMerchantSettingsGetApi()
     {
-        $this->testMerchantSettingsUpdateApi();
+        $this->testMerchantSettingsUpdateApiForIMPSDisabled();
 
         $this->startTest();
     }

@@ -174,7 +174,7 @@ return [
         ]
     ],
 
-    'testMerchantSettingsUpdateApi' => [
+    'testMerchantSettingsUpdateApiForIMPSDisabled' => [
         'request'  => [
             'method'  => 'POST',
             'url'     => '/payout-links/merchant/dashboardsettings',
@@ -192,6 +192,31 @@ return [
                 'UPI'             => '1',
                 'IMPS'            => '0',
                 'support_email'   => 'anubhav@f.com',
+                'support_url'     => 'http://dsjsd',
+                'support_contact' => '1212121212',
+                'ticket_id'       => '128'
+            ]
+        ]
+    ],
+
+    'testMerchantSettingsUpdateApiForUPIDisabled' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payout-links/merchant/dashboardsettings',
+            'content' => [
+                'UPI'             => "0",
+                'IMPS'            => '1',
+                'support_email'   => 'amit@gmail.com',
+                'support_url'     => 'http://dsjsd',
+                'support_contact' => '1212121212',
+                'ticket_id'       => '128'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'UPI'             => '0',
+                'IMPS'            => '1',
+                'support_email'   => 'amit@gmail.com',
                 'support_url'     => 'http://dsjsd',
                 'support_contact' => '1212121212',
                 'ticket_id'       => '128'
