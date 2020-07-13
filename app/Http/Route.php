@@ -768,6 +768,7 @@ class Route
         'payment_links_demo'                       => ['post',     'payment_links_demo',                             'PlinkController@plDemo'                                            ],
         'payment_links_demo_cors'                  => ['options',  'payment_links_demo',                             'PlinkController@plDemoCors'                                        ],
         'payment_links_bulk_expire'                => ['post',     'payment_links_bulk_expire',                      'PlinkController@sendRequest'                                       ],
+        'payment_links_sign_payload'               => ['post',     'payment_links_sign_payload',                     'PlinkController@signPayload'                                       ],
         'payment_links_payment_by_id'              => ['get',      'payment_links_payment/{id}',                     'PlinkController@fetchPaymentDetails'                               ],
         // end of payment link service end points
         'app_delete_token'                         => ['delete',   'apps/tokens/{token}',                            'CustomerController@deleteTokenForGlobalCustomer'                   ],
@@ -2830,6 +2831,8 @@ class Route
         'tax_payments_list',
         'tax_payments_get_by_id',
         'payouts_scheduled_time_slots',
+
+        'payment_links_sign_payload',
     ];
 
     //
@@ -4744,6 +4747,7 @@ class Route
             'customer_create',
             'order_fetch_by_id',
             'merchant_features_fetch',
+            'payment_links_sign_payload',
             'payment_links_payment_by_id',
         ],
 

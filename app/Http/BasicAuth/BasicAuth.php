@@ -1987,7 +1987,7 @@ class BasicAuth
         }
         else
         {
-            $secret = Crypt::decrypt($key->getSecret());
+        	$secret = Crypt::decrypt($key->getSecret());
         }
 
         return hash_hmac(self::HMAC_ALGO, $str, $secret);

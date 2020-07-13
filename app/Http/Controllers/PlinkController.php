@@ -5,6 +5,7 @@ namespace RZP\Http\Controllers;
 use App;
 use Requests;
 use ApiResponse;
+use Request as Req;
 use Illuminate\Http\Request;
 
 use RZP\Exception;
@@ -254,6 +255,26 @@ class PlinkController extends Controller
 
         return $response;
     }
+
+    // This function would generate the razorpay signature for a given payload
+	public function signPayload()
+	{
+        $input = Req::all();
+
+        ksort($input);
+
+        $str = implode('|', $input);
+
+        $merchant = $this->ba->getMerchant();
+
+        $key = $this->repo->key->getFirstActiveKeyForMerchant($merchant->getId());
+
+        $this->ba->authCreds->setKeyEntity($key);
+
+        $response['razorpay_signature'] = $this->ba->sign($str);
+
+        return $response;
+	}
 
     public function fetchPaymentDetails($id)
     {
