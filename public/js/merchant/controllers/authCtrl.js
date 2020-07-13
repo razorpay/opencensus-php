@@ -1164,6 +1164,9 @@ app
             user.identity().then(function(userDetails) {
               $scope.isLoggedIn = true;
               $scope.login.data.email = userDetails.email;
+              $scope.signup.mid = userDetails.current;
+              $scope.signup.userid = userDetails.user.id;
+              $scope.signup.data.email = userDetails.email;
               $scope.signup.settings.partner_intent =
                 userDetails.partner_intent;
               if (!user.isPreSignupDone()) {
@@ -1243,6 +1246,9 @@ app
           $scope.rightLayout = true;
           $scope.isLoggedIn = true;
           $scope.login.data.email = userDetails.email;
+          $scope.signup.mid = userDetails.current;
+          $scope.signup.userid = userDetails.user.id;
+          $scope.signup.data.email = userDetails.email;
           Object.assign($scope.signup.merchantData, userDetails.pre_signup);
           $scope.login.currentStep = 2;
           goToRelevantQuestion();
