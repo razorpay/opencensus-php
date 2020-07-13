@@ -43,8 +43,10 @@ class Core extends Base\Core
         {
             $merchantDetails = $this->merchant->merchantDetail;
 
+            $name = str_limit(preg_replace('/[^a-zA-Z0-9 ]+/', '', $merchantDetails[Detail\Entity::CONTACT_NAME]), 50, '');
+
             $data = [
-                'name'      => $merchantDetails[Detail\Entity::CONTACT_NAME],
+                'name'      => $name,
                 'email'     => $merchantDetails[Detail\Entity::CONTACT_EMAIL],
                 'contact'   => $merchantDetails[Detail\Entity::CONTACT_MOBILE],
                 'type'      => self::CUSTOMER,

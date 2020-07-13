@@ -174,7 +174,7 @@ class Core extends Base\Core
 
     public function updateOndemandOnPayoutReversal($settlementOndemand, $settlementOndemandPayout)
     {
-        $settlementOndemand->addToTotalAmountReversed($settlementOndemandPayout->getAmountToBeSettled());
+        $settlementOndemand->addToTotalAmountReversed($settlementOndemandPayout->getAmount());
 
         //this is in the case RazorpayX send the status as reversed after it have already sent processed status
         if (is_null($settlementOndemandPayout->getProcessedAt()) === true)
@@ -186,7 +186,7 @@ class Core extends Base\Core
             $settlementOndemand->deductFromTotalAmountSettled($settlementOndemandPayout->getAmountToBeSettled());
         }
 
-        if ($settlementOndemand->getTotalAmountReversed() === $settlementOndemand->getAmountToBeSettled())
+        if ($settlementOndemand->getTotalAmountReversed() === $settlementOndemand->getAmount())
         {
             $settlementOndemand->setStatus(Status::REVERSED);
         }

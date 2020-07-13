@@ -786,6 +786,8 @@ class ApiServiceProvider extends BaseServiceProvider
             'banking_account'           => BankingAccount\Entity::class,
 
             'balance'                   => Merchant\Balance\Entity::class,
+
+            'settlement.ondemand'       => Settlement\Ondemand\Entity::class,
         ]);
     }
 

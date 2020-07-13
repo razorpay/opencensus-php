@@ -375,7 +375,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Amount requested for the on_demand settlement exceeds the settlement balance.',
+                    'description' => 'Amount requested for the ondemand settlement exceeds the settlement balance.',
                 ],
             ],
             'status_code' => 400,

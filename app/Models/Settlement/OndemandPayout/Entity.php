@@ -44,7 +44,6 @@ class Entity extends Base\PublicEntity
         self::MERCHANT_ID,
         self::USER_ID,
         self::SETTLEMENT_ONDEMAND_ID,
-        self::PAYOUT_ID,
         self::MODE,
         self::INITIATED_AT,
         self::PROCESSED_AT,
