@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 
 use RZP\Exception;
 use RZP\Error\ErrorCode;
+use RZP\Models\Payment\Entity;
 use RZP\Trace\TraceCode;
 
 class PlinkController extends Controller
@@ -252,6 +253,20 @@ class PlinkController extends Controller
         $response->headers->set('Access-Control-Allow-Headers', 'Content-Type');
 
         return $response;
+    }
+
+    public function fetchPaymentDetails($id)
+    {
+        $id = Entity::stripSignWithoutValidation($id);
+
+        $payment = $this->repo->payment->findOrFailPublic($id);
+
+        $response = [
+            'payment'  => $payment->toArray(),
+            'discount' => isset($payment->discount) ? $payment->discount->toArrayPublic() : null,
+        ];
+
+        return ApiResponse::json($response);
     }
 }
 

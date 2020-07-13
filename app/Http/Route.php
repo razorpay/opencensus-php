@@ -768,6 +768,7 @@ class Route
         'payment_links_demo'                       => ['post',     'payment_links_demo',                             'PlinkController@plDemo'                                            ],
         'payment_links_demo_cors'                  => ['options',  'payment_links_demo',                             'PlinkController@plDemoCors'                                        ],
         'payment_links_bulk_expire'                => ['post',     'payment_links_bulk_expire',                      'PlinkController@sendRequest'                                       ],
+        'payment_links_payment_by_id'              => ['get',      'payment_links_payment/{id}',                     'PlinkController@fetchPaymentDetails'                               ],
         // end of payment link service end points
         'app_delete_token'                         => ['delete',   'apps/tokens/{token}',                            'CustomerController@deleteTokenForGlobalCustomer'                   ],
         'app_fetch_tokens'                         => ['get',      'apps/tokens',                                    'CustomerController@fetchTokensForGlobalCustomer'                   ],
@@ -2514,6 +2515,7 @@ class Route
         'los_service',
         'user_fetch_for_merchant',
         'send_email_for_pl_service',
+        'payment_links_payment_by_id',
         'oauth_token_create',
         'merchant_activation_update_website_status',
         'reminder_next_run',
@@ -4742,6 +4744,7 @@ class Route
             'customer_create',
             'order_fetch_by_id',
             'merchant_features_fetch',
+            'payment_links_payment_by_id',
         ],
 
         'kotak' => [
