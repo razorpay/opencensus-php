@@ -114,7 +114,7 @@ class PDO implements IntegrationInterface
 
         switch ($error) {
             case (string) '01':
-                $errorTags = ['warning' => True, 'warning.code' => $errorCode];
+                $errorTags = ['warning' => 'true', 'warning.code' => $errorCode];
                 break;
         };
 
@@ -148,7 +148,7 @@ class PDO implements IntegrationInterface
         ];
 
         if (array_key_exists($error, $errorCodeMsgArray)){
-            $errorTags['error'] = True;
+            $errorTags['error'] = 'true';
             $errorTags['error.code'] = $errorCode;
             $errorTags['error.message'] = $errorCodeMsgArray[$error] ?? '';
         }

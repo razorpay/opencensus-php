@@ -274,7 +274,7 @@ class RequestHandler
                 'spanId' => $this->rootSpan->spanId()
             ]);
             if ($responseCode >= 400) {
-                $this->tracer->addAttribute('error', True, [
+                $this->tracer->addAttribute('error', 'true', [
                     'spanId' => $this->rootSpan->spanId()
                 ]);
             }
@@ -317,7 +317,7 @@ class RequestHandler
         return null;
     }
 
-    private function nameFromOptions(array $options): string
+    private function nameFromOptions(array $options)
     {
         $rootSpanOptions = array_key_exists('root_span_options', $options)
                             ? $options['root_span_options']
