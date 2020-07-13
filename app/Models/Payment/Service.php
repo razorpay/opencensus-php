@@ -2378,6 +2378,57 @@ class Service extends Base\Service
         $this->getNewProcessor($payment->merchant)->updateMerchantBalance($payment, $transaction);
     }
 
+
+    public function fetchpaymentwithSubscription(string $subscriptionId): array
+    {
+        $payment = $this->repo->payment->fetchBySubscriptionId($subscriptionId);
+
+        $payload = [];
+
+        if($payment != null) {
+
+
+            $payload = $payment->toArrayAdmin();
+
+            $payload['merchant'] = [
+                Merchant\Entity::BILLING_LABEL => $payment->merchant->getBillingLabel(),
+                Merchant\Entity::WEBSITE => $payment->merchant->getWebsite(),
+                Merchant\Entity::EMAIL => $payment->merchant->getTransactionReportEmail(),
+            ];
+
+            $payload['customer'] = [
+                'email' => $payment->customer->getEmail(),
+                'phone' => $payment->customer->getContact(),
+            ];
+
+            if ($payment->hasCard() === true) {
+                $card = $payment->card;
+                $expiryMonth = str_pad($card->getExpiryMonth(), 2, '0', STR_PAD_LEFT);
+
+                $cardDetails = $card->toArrayPublic();
+
+                $cardFormatted = [
+                    'number' => '**** **** **** ' . $card->getLast4(),
+                    'expiry' => $expiryMonth . '/' . $card->getExpiryYear(),
+                    'network' => $card->getNetworkCode(),
+                    'color' => $card->getNetworkColorCode()
+                ];
+
+                $payload['card'] = array_merge($cardDetails, $cardFormatted);
+            }
+
+            if ($payment->hasInvoice() === true)
+            {
+                $payload['invoice'] = [
+                    Invoice\Entity::BILLING_START => $payment->invoice->getBillingStart(),
+                    Invoice\Entity::BILLING_END => $payment->invoice->getBillingEnd()
+                ];
+            }
+        }
+        return $payload;
+    }
+
+
     public function fetchForSubscription(string $paymentId, string $subscriptionId): array
     {
         $payment = $this->repo->payment->fetchByIdandSubscriptionId($paymentId, $subscriptionId);

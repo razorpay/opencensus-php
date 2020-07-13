@@ -1953,6 +1953,15 @@ class Repository extends Base\Repository
         return null;
     }
 
+    public function fetchBySubscriptionId(string $subscriptionId)
+    {
+        $subscriptionId = Base\PublicEntity::stripDefaultSign($subscriptionId);
+
+        return $this->newQuery()
+                    ->where(Entity::SUBSCRIPTION_ID, $subscriptionId)
+                    ->first();
+    }
+
     public function fetchByIdandSubscriptionId(string $paymentId, string $subscriptionId)
     {
         Entity::verifyIdAndStripSign($paymentId);
@@ -1963,7 +1972,7 @@ class Repository extends Base\Repository
                     ->where(Entity::SUBSCRIPTION_ID, $subscriptionId)
                     ->findOrFailPublic($paymentId);
     }
-
+    
     public function fetchLastNPaymentsForDowntime($from, $to, $type, $key, $value, $limit)
     {
         $paymentCreatedAtCol = $this->repo->payment->dbColumn(Payment\Entity::CREATED_AT);
