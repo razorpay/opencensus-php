@@ -163,11 +163,11 @@ class Core extends Base\Core
                 EventEntity::CONTAINS   => array_keys($payload),
                 EventEntity::CREATED_AT => Carbon::now()->getTimestamp(),
             ];
-            $event = new EventEntity($eventAttrs);
-            $event->setPayload($payload);
-            $event->merchant()->associate($merchant);
+            $eventEntity = new EventEntity($eventAttrs);
+            $eventEntity->setPayload($payload);
+            $eventEntity->merchant()->associate($merchant);
 
-            (new Stork)->processEventSafe($event, $this->mode);
+            (new Stork)->processEventSafe($eventEntity, $this->mode);
         }
     }
 
