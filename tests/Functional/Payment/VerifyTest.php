@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Payment;
 
 use DB;
+use Redis;
 use Carbon\Carbon;
 use RZP\Models\Payment;
 use RZP\Constants\Timezone;
@@ -503,7 +504,7 @@ class VerifyTest extends TestCase
         $payment = $this->fixtures->create(
             'payment:netbanking_failed', ['created_at' => $createdAt]);
 
-        $createdAt = Carbon::now()->subMinutes(3)->getTimestamp();
+        $createdAt = Carbon::now()->subMinutes(4)->getTimestamp();
 
         $payment2 = $this->fixtures->create(
             'payment:netbanking_failed', ['created_at' => $createdAt]);
@@ -1696,12 +1697,11 @@ class VerifyTest extends TestCase
 
     protected function setupRedisMock($paymentArray = [])
     {
-        $redisMock = $this->getMockBuilder(RedisDualWrite::class)
-            ->setConstructorArgs([$this->app])
-            ->setMethods(['hGetAll','set', 'get', 'setex', 'client', 'exists', 'hDel', 'hSet', 'incr', 'expire', 'hGet'])
+        $redisMock = $this->getMockBuilder(Redis::class)->setMethods(['hGetAll', 'set', 'get', 'setex', 'client', 'exists', 'hDel', 'hSet', 'incr', 'expire', 'hGet'])
                           ->getMock();
 
-        $this->app->instance('redisdualwrite', $redisMock);
+        Redis::shouldReceive('connection')
+            ->andReturn($redisMock);
 
         $redisMock->method('hGetAll')
             ->willReturn([]);
