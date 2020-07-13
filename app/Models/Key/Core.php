@@ -25,7 +25,14 @@ class Core extends Base\Core
                 ErrorCode::BAD_REQUEST_MERCHANT_KEY_ALREADY_CREATED);
         }
 
-        return $this->createAndReturnWithSecret($merchant, $mode);
+        return $this->repo->transaction(function() use ($merchant, $mode)
+        {
+            $key = $this->create($merchant, $mode);
+
+            (new Credcase)->migrate($key, $mode);
+
+            return $key->toArrayPublicWithSecret();
+        });
     }
 
     /**
@@ -35,11 +42,13 @@ class Core extends Base\Core
      *
      * @param $merchant
      * @param $mode
-     * @return array
+     * @return Entity
      * @throws Exception\BadRequestException
      */
-    public function createAndReturnWithSecret($merchant, $mode)
+    public function create($merchant, $mode): Entity
     {
+        $this->repo->assertTransactionActive();
+
         $key = new Key\Entity;
 
         if (($mode === Mode::LIVE) and
@@ -60,16 +69,15 @@ class Core extends Base\Core
 
         $this->writeCache($key);
 
-        $keyData = $key->toArrayPublic();
-        $keyData[Key\Entity::SECRET] = $secret;
-
         $this->app['drip']->sendDripMerchantInfo($merchant, $this->app['drip']::KEY_GENERATED);
 
-        return $keyData;
+        return $key;
     }
 
     public function expireKey(Key\Entity $key, $delay)
     {
+        $this->repo->assertTransactionActive();
+
         $key->checkAndSetExpired($delay);
 
         $this->repo->key->saveOrFail($key);
@@ -97,15 +105,20 @@ class Core extends Base\Core
 
         unset($input['delay_roll']);
 
-        $this->expireKey($old, $delay);
+        return $this->repo->transaction(function() use ($old, $delay, $mode)
+        {
+            $this->expireKey($old, $delay);
 
-        $keyData = $this->createAndReturnWithSecret($old->merchant, $mode);
+            $key = $this->create($old->merchant, $mode);
 
-        $keysData['old'] = $old->toArrayPublic();
+            (new Credcase)->rotate($old, $key, $mode);
 
-        $keysData['new'] = $keyData;
+            $keysData['old'] = $old->toArrayPublic();
 
-        return $keysData;
+            $keysData['new'] = $key->toArrayPublicWithSecret();
+
+            return $keysData;
+        });
     }
 
     public function getKeySecret($keyId)

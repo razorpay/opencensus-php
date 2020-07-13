@@ -2766,6 +2766,11 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PASSPORT_JWT_PARSE_FAILED                             = 'PASSPORT_JWT_PARSE_FAILED';
     const PASSPORT_ATTRS_MISMATCH                               = 'PASSPORT_ATTRS_MISMATCH';
 
+    // Api<>credcase integration.
+    const CREDCASE_REQUEST_FAILED                               = 'CREDCASE_REQUEST_FAILED';
+    const CREDCASE_REQUEST_MIGRATE                              = 'CREDCASE_REQUEST_MIGRATE';
+    const CREDCASE_REQUEST_ROTATE                               = 'CREDCASE_REQUEST_ROTATE';
+
     // Terminal Onboarding
     const TERMINAL_ENABLE_REQUEST                                  = 'TERMINAL_ENABLE_REQUEST';
     const TERMINAL_DISABLE_REQUEST                                 = 'TERMINAL_DISABLE_REQUEST';

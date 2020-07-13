@@ -22,6 +22,43 @@ return [
         ]
     ],
 
+    'testCreateKeyWhenDualWriteToCredcaseFails' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/keys',
+            'content' => [
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::SERVER_ERROR,
+                    'description' => 'The server encountered an error. The incident has been reported to admins.',
+                ],
+            ],
+            'status_code' => 500,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\ServerErrorException::class,
+            'internal_error_code' => ErrorCode::SERVER_ERROR_CREDCASE_REQUEST_FAILED,
+        ],
+    ],
+
+    'testCreateKeyWhenDualWriteToCredcaseFailsTemporarily' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/keys',
+            'content' => [
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'entity'     => 'key',
+                'expired_at' => null,
+            ]
+        ],
+    ],
+
     'testEditBulkMerchantAttributes' => [
         'request'  => [
             'method'  => 'PUT',
@@ -273,6 +310,26 @@ return [
         'exception' => [
             'class' => RZP\Exception\BadRequestException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_KEY_EXPIRED,
+        ],
+    ],
+
+    'testUpdateKeyWhenDualWriteToCredcaseFails' => [
+        'request' => [
+            'method' => 'PUT',
+            'url'    => '/keys/rzp_test_TheTestAuthKey',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::SERVER_ERROR,
+                    'description' => 'The server encountered an error. The incident has been reported to admins.',
+                ],
+            ],
+            'status_code' => 500,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\ServerErrorException::class,
+            'internal_error_code' => ErrorCode::SERVER_ERROR_CREDCASE_REQUEST_FAILED,
         ],
     ],
 

@@ -5,13 +5,16 @@ namespace RZP\Services;
 use RZP;
 use Cache;
 use Swift_Mailer;
+use Buzz\Client\MultiCurl;
 use Razorpay\OAuth\Application;
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Database\Connection;
 use Http\Mock\Client as MockHttplug;
+use Http\Discovery\Psr17FactoryDiscovery;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\ServiceProvider as BaseServiceProvider;
 use Illuminate\Database\MySqlConnection as IlluminateMySqlConnection;
+
 
 use RZP\Models\Vpa;
 use RZP\Models\Card;
@@ -50,6 +53,7 @@ use RZP\Gateway\GatewayManager;
 use RZP\Models\Workflow\Action;
 use RZP\Models\VirtualAccountTpv;
 use RZP\Models\Plan\Subscription;
+use RZP\Base\Http\Psr18ClientMock;
 use RZP\Models\Partner\Commission;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Base\Database\MySqlConnection;
@@ -388,6 +392,8 @@ class ApiServiceProvider extends BaseServiceProvider
         $this->registerCustomCacheProvider();
 
         $this->registerSettlementsDashboard();
+
+        $this->registerHttpClients();
     }
 
     /**
@@ -439,7 +445,8 @@ class ApiServiceProvider extends BaseServiceProvider
             'freshdesk_client',
             'token_service',
             'terminals_service',
-            'paymentlinkservice'
+            'paymentlinkservice',
+            'credcase_http_client',
         ];
     }
 
@@ -1037,6 +1044,27 @@ class ApiServiceProvider extends BaseServiceProvider
         $this->app->singleton('settlements_dashboard', function($app)
         {
             return new Settlements\Dashboard($app);
+        });
+    }
+
+    /**
+     * Registers various http clients. E.g. for twirp client sdk's http client, for credcase.
+     * It helps replacing http client implementation for tests, helping assert remote request/response.
+     * @return void
+     */
+    protected function registerHttpClients()
+    {
+        $this->app->singleton('credcase_http_client', function ($app)
+        {
+            if ($app->runningUnitTests() === true)
+            {
+                return new Psr18ClientMock;
+            }
+
+            $responseFactory = Psr17FactoryDiscovery::findResponseFactory();
+            $options = ['timeout' => 1];
+            $client = new MultiCurl($responseFactory, $options);
+            return $client;
         });
     }
 }

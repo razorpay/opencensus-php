@@ -146,6 +146,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::EXPIRED_AT, $expiredAt);
     }
 
+    public function getExpiredAt()
+    {
+        return $this->getAttribute(self::EXPIRED_AT);
+    }
+
     /**
      * generates the key secret uses a
      * cryptographically strong algorithm.
@@ -221,5 +226,14 @@ class Entity extends Base\PublicEntity
         $id = substr($id, $len);
 
         return true;
+    }
+
+    /**
+     * Serializes entity with public attributes and secret, exceptionally, and returns.
+     * @return array
+     */
+    public function toArrayPublicWithSecret(): array
+    {
+        return $this->toArrayPublic() + [self::SECRET => Crypt::decrypt($this->getSecret())];
     }
 }

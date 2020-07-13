@@ -1778,4 +1778,6 @@ class ErrorCode
     const BAD_REQUEST_CRED_CUSTOMER_NOT_ELIGIBLE                                    = 'BAD_REQUEST_CRED_CUSTOMER_NOT_ELIGIBLE';
     const BAD_REQUEST_MISSING_HEADERS                                               = 'BAD_REQUEST_MISSING_HEADERS';
     const BAD_REQUEST_INVALID_TRACKING_ID                                           = 'BAD_REQUEST_INVALID_TRACKING_ID';
+
+    const SERVER_ERROR_CREDCASE_REQUEST_FAILED                                      = 'SERVER_ERROR_CREDCASE_REQUEST_FAILED';
 }

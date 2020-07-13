@@ -65,4 +65,12 @@ return [
         'base_url'              => env('EXCEL_STORE_BASE_URL'),
         'secret'                => env('EXCEL_STORE_SECRET'),
     ],
+
+    // See razorpay/credcase.
+    'credcase' => [
+        'dual_write_enabled' => env('CREDCASE_DUAL_WRITE_ENABLED', true),
+        'host'               => env('CREDCASE_HOST', 'https://credcase.razorpay.com'),
+        'user'               => env('CREDCASE_USER'),
+        'password'           => env('CREDCASE_PASSWORD'),
+    ],
 ];

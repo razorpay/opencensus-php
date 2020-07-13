@@ -13,6 +13,8 @@ use Illuminate\Cache\Events\KeyWritten;
 use Illuminate\Cache\Events\CacheMissed;
 use Illuminate\Cache\Events\KeyForgotten;
 use Illuminate\Database\Eloquent\Factory;
+use Rzp\Credcase\Migrate\V1\RotateApiKeyRequest;
+use Rzp\Credcase\Migrate\V1\MigrateApiKeyRequest;
 use Illuminate\Foundation\Testing\Concerns\InteractsWithSession;
 
 use RZP\Models\Feature\Constants;
@@ -111,7 +113,32 @@ class MerchantTest extends TestCase
 
         $this->ba->proxyAuth('rzp_test_1X4hRFHFx4UiXt', $user->getId());
 
-        $this->startTest();
+        $this->enableRazorXTreatmentForCredcaseDualWrite();
+
+        $res = $this->startTest();
+        $this->assertRegexp('/rzp_test_\w{14}/', $res['id']);
+        $this->assertRegexp('/\w{24}/', $res['secret']);
+
+        // 1. Asserts dual write to credcase.
+        $httpClient = $this->app['credcase_http_client'];
+        $this->assertCount(1, $httpClient->getRequests());
+        $req = $httpClient->getRequests()[0];
+
+        // 1A. Asserts http request uri and headers.
+        $this->assertSame('POST', $req->getMethod());
+        $this->assertSame('https://credcase.razorpay.com/twirp/rzp.credcase.migrate.v1.MigrateAPI/MigrateApiKey', (string) $req->getUri());
+        $this->assertSame('Basic YXBpOmFwaV9wYXNzd29yZA==', $req->getHeader('Authorization')[0]);
+        $this->assertSame('application/protobuf', $req->getHeader('Content-Type')[0]);
+
+        // 1B. Asserts request body.
+        $migrateApiKeyRequest = new MigrateApiKeyRequest;
+        $migrateApiKeyRequest->mergeFromString((string) $req->getBody());
+        $this->assertSame(str_after($res['id'], 'rzp_test_'), $migrateApiKeyRequest->getId());
+        $this->assertSame($res['secret'], $migrateApiKeyRequest->getSecret());
+        $this->assertSame(1, $migrateApiKeyRequest->getMode());
+        $this->assertSame('1X4hRFHFx4UiXt', $migrateApiKeyRequest->getMerchantId());
+        $this->assertNotNull($migrateApiKeyRequest->getCreatedAt());
+        $this->assertSame(0, $migrateApiKeyRequest->getExpiredAt());
     }
 
     public function testCreateKeyForNonActivatedMerchant()
@@ -126,7 +153,66 @@ class MerchantTest extends TestCase
 
         $this->ba->proxyAuth('rzp_live_1X4hRFHFx4UiXt', $user['id']);
 
+        $this->enableRazorXTreatmentForCredcaseDualWrite();
+
         $this->startTest();
+
+        // 1. Asserts NO dual write to credcase.
+        $httpClient = $this->app['credcase_http_client'];
+        $this->assertCount(0, $httpClient->getRequests());
+    }
+
+    public function testCreateKeyWhenDualWriteToCredcaseFails()
+    {
+        $this->createMerchant();
+
+        $user = $this->fixtures->user->createUserForMerchant('1X4hRFHFx4UiXt');
+
+        $this->ba->proxyAuth('rzp_test_1X4hRFHFx4UiXt', $user->getId());
+
+        // Sets expectation to throw exception on dual write.
+        $httpClient = $this->app['credcase_http_client'];
+        $httpClient->addException(new \Exception('Failed to complete request to credcase'));
+        // There exists a retry.
+        $httpClient->addException(new \Exception('Failed to complete request to credcase'));
+
+        $this->enableRazorXTreatmentForCredcaseDualWrite();
+
+        $this->startTest();
+
+        // Asserts NO keys persisted in api's db.
+        $this->assertCount(1, $this->getDbEntities('key', [], 'test'));
+
+        // 1. Asserts dual write to credcase.
+        $this->assertCount(2, $httpClient->getRequests());
+        // Skips duplicate assertions here. See testCreateKey().
+    }
+
+    public function testCreateKeyWhenDualWriteToCredcaseFailsTemporarily()
+    {
+        $this->createMerchant();
+
+        $user = $this->fixtures->user->createUserForMerchant('1X4hRFHFx4UiXt');
+
+        $this->ba->proxyAuth('rzp_test_1X4hRFHFx4UiXt', $user->getId());
+
+        // Sets expectation to throw exception on dual write.
+        $httpClient = $this->app['credcase_http_client'];
+        // It will throw exception for the first time.
+        $httpClient->addException(new \Exception('Failed to complete request to credcase'));
+
+        $this->enableRazorXTreatmentForCredcaseDualWrite();
+
+        $res = $this->startTest();
+        $this->assertRegexp('/rzp_test_\w{14}/', $res['id']);
+        $this->assertRegexp('/\w{24}/', $res['secret']);
+
+        // Asserts new key persisted in api's db.
+        $this->assertCount(2, $this->getDbEntities('key', [], 'test'));
+
+        // 1. Asserts dual write to credcase.
+        $this->assertCount(2, $httpClient->getRequests());
+        // Skips duplicate assertions here. See testCreateKey().
     }
 
     public function testGetMerchant()
@@ -226,22 +312,91 @@ class MerchantTest extends TestCase
     {
         $this->ba->proxyAuthTest();
 
+        $this->enableRazorXTreatmentForCredcaseDualWrite();
+
         $content = $this->startTest();
 
         $expired = time() + 1;
 
         $this->assertLessThan($expired, $content['old']['expired_at']);
+
+        // 1. Asserts dual write to credcase.
+        $httpClient = $this->app['credcase_http_client'];
+        $this->assertCount(1, $httpClient->getRequests());
+        $req = $httpClient->getRequests()[0];
+
+        // 1A. Asserts http request uri and headers.
+        $this->assertSame('POST', $req->getMethod());
+        $this->assertSame('https://credcase.razorpay.com/twirp/rzp.credcase.migrate.v1.MigrateAPI/RotateApiKey', (string) $req->getUri());
+        $this->assertSame('Basic YXBpOmFwaV9wYXNzd29yZA==', $req->getHeader('Authorization')[0]);
+        $this->assertSame('application/protobuf', $req->getHeader('Content-Type')[0]);
+
+        // 1B. Asserts request body.
+        $rotateApiKeyRequest = new RotateApiKeyRequest;
+        $rotateApiKeyRequest->mergeFromString((string) $req->getBody());
+        $migrateApiKeyRequest = $rotateApiKeyRequest->getCreateKey();
+        $this->assertSame(str_after($content['new']['id'], 'rzp_test_'), $migrateApiKeyRequest->getId());
+        $this->assertSame($content['new']['secret'], $migrateApiKeyRequest->getSecret());
+        $this->assertSame(1, $migrateApiKeyRequest->getMode());
+        $this->assertSame('10000000000000', $migrateApiKeyRequest->getMerchantId());
+        $this->assertNotNull($migrateApiKeyRequest->getCreatedAt());
+        $this->assertSame(0, $migrateApiKeyRequest->getExpiredAt());
+        $expireApiKeyRequest = $rotateApiKeyRequest->getExpireKey();
+        $this->assertSame(str_after($content['old']['id'], 'rzp_test_'), $expireApiKeyRequest->getId());
+        $this->assertSame($content['old']['expired_at'], $expireApiKeyRequest->getExpiredAt());
     }
 
     public function testUpdateKeyExpireInFuture()
     {
         $this->ba->proxyAuthTest();
 
+        $this->enableRazorXTreatmentForCredcaseDualWrite();
+
         $content = $this->startTest();
 
         $expired = time() + 10;
 
         $this->assertGreaterThan($expired, $content['old']['expired_at']);
+
+        // 1. Asserts dual write to credcase.
+        $httpClient = $this->app['credcase_http_client'];
+        $this->assertCount(1, $httpClient->getRequests());
+        $req = $httpClient->getRequests()[0];
+
+        // 1A. Asserts http request uri and headers.
+        // Skips duplicate assertions here. See testUpdateKeyExpireNow().
+        $this->assertSame('https://credcase.razorpay.com/twirp/rzp.credcase.migrate.v1.MigrateAPI/RotateApiKey', (string) $req->getUri());
+
+        // 1B. Asserts request body.
+        $rotateApiKeyRequest = new RotateApiKeyRequest;
+        $rotateApiKeyRequest->mergeFromString((string) $req->getBody());
+        $expireApiKeyRequest = $rotateApiKeyRequest->getExpireKey();
+        $this->assertSame(str_after($content['old']['id'], 'rzp_test_'), $expireApiKeyRequest->getId());
+        $this->assertSame($content['old']['expired_at'], $expireApiKeyRequest->getExpiredAt());
+    }
+
+    public function testUpdateKeyWhenDualWriteToCredcaseFails()
+    {
+        $this->ba->proxyAuthTest();
+
+        // Sets expectation to throw exception on dual write.
+        $httpClient = $this->app['credcase_http_client'];
+        $httpClient->addException(new \Exception('Failed to complete request to credcase'));
+        // There exists a retry.
+        $httpClient->addException(new \Exception('Failed to complete request to credcase'));
+
+        $this->enableRazorXTreatmentForCredcaseDualWrite();
+
+        $this->startTest();
+
+        // Asserts NO keys persisted in api's db, and that old key is still valid.
+        $keys = $this->getDbEntities('key', [], 'test');
+        $this->assertCount(1, $keys);
+        $this->assertNull($keys[0]->getExpiredAt());
+
+        // 1. Asserts dual write to credcase.
+        $this->assertCount(2, $httpClient->getRequests());
+        // Skips duplicate assertions here. See testUpdateKey().
     }
 
     public function testUpdateKeyTwice()
@@ -276,7 +431,13 @@ class MerchantTest extends TestCase
 
         $this->ba->proxyAuthTest();
 
+        $this->enableRazorXTreatmentForCredcaseDualWrite();
+
         $this->startTest();
+
+        // 1. Asserts NO dual write to credcase.
+        $httpClient = $this->app['credcase_http_client'];
+        $this->assertCount(0, $httpClient->getRequests());
     }
 
     public function testEditMerchant()
@@ -6871,6 +7032,24 @@ class MerchantTest extends TestCase
 
                                   return 'off';
                               }));
+    }
+
+    protected function enableRazorXTreatmentForCredcaseDualWrite()
+    {
+        $mock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $mock->method('getTreatment')
+            ->will(
+                $this->returnCallback(
+                    function (string $mid, string $feature, string $mode)
+                    {
+                        return $feature === Merchant\RazorxTreatment::CREDCASE_DUAL_WRITE_ENABLED ? 'on' : 'control';
+                    }));
+
+        $this->app->instance('razorx', $mock);
     }
 
     public function testMerchantInternationalDisableAction()

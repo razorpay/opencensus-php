@@ -141,4 +141,6 @@ final class RazorxTreatment
     // Added to gradually route the webhook requests to the new path
     // which makes request to stork & then dual writes to API.
     const API_WEBHOOK_V2_PATH = 'api_webhook_v2_path';
+
+    const CREDCASE_DUAL_WRITE_ENABLED = 'credcase_dual_write_enabled';
 }
