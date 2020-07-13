@@ -527,7 +527,13 @@ return [
 
     E::ORDER => [],
 
-    E::P2P_DEVICE => [],
+    E::P2P_DEVICE => [
+        Type::PRIVILEGE_AUTH  => [
+            [
+                'contact'   => '919876543210',
+            ],
+        ],
+    ],
 
     E::P2P_DEVICE_TOKEN => [],
 

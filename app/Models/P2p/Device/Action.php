@@ -59,6 +59,21 @@ class Action extends Base\Action
         self::GET_TOKEN_SUCCESS               => [
             Entity::AUTH_TOKEN                => 'default',
         ],
+        self::VERIFICATION                    => [
+            'sdk'                             => [
+                'customerMobileNumber'        => 'phone',
+            ],
+        ],
+        self::GET_TOKEN                       => [
+            'sdk'                             => [
+                'customerMobileNumber'        => 'phone',
+            ],
+        ],
+        self::DEREGISTER                      => [
+            'payload'                         => [
+                'customerMobileNumber'        => 'phone',
+            ]
+        ],
     ];
 
     protected static $updateAllowedActions = [

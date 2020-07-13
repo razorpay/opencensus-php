@@ -13,6 +13,7 @@ use Symfony\Component\DomCrawler\Crawler;
 use RZP\Exception;
 use RZP\Http\Route;
 use Requests_Hooks;
+use RZP\Gateway\Upi;
 use RZP\Models\Card;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
@@ -1874,6 +1875,62 @@ class Gateway
                 null,
                 $this->action);
         }
+    }
+
+    /**
+     * @param array $data Data to mask
+     * @param array $keys Keys in the data with dot notation
+     * @return array
+     */
+    protected function maskUpiDataForTracing(array $data, array $keys): array
+    {
+        $output = $data;
+
+        try
+        {
+            foreach ($keys as $name => $key)
+            {
+                $value = array_get($data, $key);
+
+                // Default rule for masking
+                $masked = '[' . gettype($value) . ']';
+
+                // PHP can convert null, numeric and boolean to string
+                if (is_scalar($value) === true)
+                {
+                    // Forcing to string to make sure making functions do not fail
+                    $value = (string) $value;
+
+                    switch ($name)
+                    {
+                        case Upi\Base\Entity::VPA:
+                            $masked = mask_vpa($value);
+                            break;
+                        case Upi\Base\Entity::CONTACT:
+                            $masked = mask_phone($value);
+                            break;
+                        default:
+                            // Asterisk is being used in vpa and phone, thus forcing it by default
+                            $masked = mask_except_last4($value, '*');
+                    }
+                }
+
+                array_set($output, $key, $masked);
+            }
+        }
+        catch (\Throwable $throwable)
+        {
+            $this->trace->traceException(
+                $throwable,
+                Trace::CRITICAL,
+                TraceCode::ERROR_INVALID_ARGUMENT,
+                $keys);
+
+            // As a fallback we can unset the values
+            $output = array_except($output, array_values($keys));
+        }
+
+        return $output;
     }
 
     public function isMandateUpdateCallback($input)

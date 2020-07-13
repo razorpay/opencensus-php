@@ -52,4 +52,12 @@ class Action extends Base\Action
         self::INITIATE_AUTHORIZE        => Requests::P2P_CUSTOMER_TRANSACTIONS_AUTHORIZE,
         self::INITIATE_REJECT           => Requests::P2P_CUSTOMER_TRANSACTIONS_AUTHORIZE,
     ];
+
+    protected $redactRules = [
+        self::AUTHORIZE_TRANSACTION     => [
+            'sdk'                       => [
+                'customerMobileNumber'  => 'phone',
+            ]
+        ]
+    ];
 }

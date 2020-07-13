@@ -60,7 +60,14 @@ class Action extends Base\Action
 
         self::FETCH_BALANCE                         => [
             'sdk'                                   => [
+                'customerMobileNumber'              => 'phone',
                 'balance'                           => 'default',
+            ],
+        ],
+
+        self::SET_UPI_PIN                         => [
+            'sdk'                                   => [
+                'customerMobileNumber'              => 'phone',
             ],
         ],
 

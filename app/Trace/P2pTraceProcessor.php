@@ -19,11 +19,11 @@ class P2pTraceProcessor
     public function __invoke(array $record)
     {
         $record['p2p'] = [
-            'handle'            => $this->getHandleCode(),
-            'request_id'        => $this->getRequestId(),
-            'merchant_id'       => $this->getMerchantId(),
-            'device_id'         => $this->getDeviceId(),
-            'device_contact_no' => $this->getDeviceContactNumber(),
+            'p2p_handle_acquirer'   => $this->getHandleAcquirer(),
+            'handle'                => $this->getHandleCode(),
+            'request_id'            => $this->getRequestId(),
+            'merchant_id'           => $this->getMerchantId(),
+            'device_id'             => $this->getDeviceId(),
         ];
 
         return $record;
@@ -47,9 +47,17 @@ class P2pTraceProcessor
 
     public function getHandleCode()
     {
-        if ($this->context->isContextMerchant())
+        if ($this->context->getHandle())
         {
             return $this->context->handleCode();
+        }
+    }
+
+    public function getHandleAcquirer()
+    {
+        if ($this->context->getHandle())
+        {
+            return $this->context->getHandle()->getAcquirer();
         }
     }
 

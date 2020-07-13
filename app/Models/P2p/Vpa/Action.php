@@ -38,4 +38,12 @@ class Action extends Base\Action
         self::ADD_SUCCESS                       => Requests::P2P_CUSTOMER_VPA_CREATE,
         self::INITIATE_CHECK_AVAILABILITY       => Requests::P2P_CUSTOMER_VPA_CHECK_AVAILABILITY,
     ];
+
+    protected $redactRules = [
+        self::ADD                       => [
+            'sdk'                             => [
+                'customerMobileNumber'        => 'phone',
+            ],
+        ],
+    ];
 }

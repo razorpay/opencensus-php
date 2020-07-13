@@ -2663,6 +2663,13 @@ class AdminFetch
                     Fetch::TYPE => Fetch::TYPE_STRING,
                 ],
             ],
+
+            Entity::P2P_DEVICE  => [
+                'contact'       => [
+                    Fetch::LABEL    => 'Contact',
+                    Fetch::TYPE     => Fetch::TYPE_STRING,
+                ],
+            ],
         ];
 
         //

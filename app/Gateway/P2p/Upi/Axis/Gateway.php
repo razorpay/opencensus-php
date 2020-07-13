@@ -241,7 +241,7 @@ class Gateway extends Upi\Gateway
             'action'    => $this->action,
             'entity'    => $entity,
             'gateway'   => $this->gateway,
-            'request'   => $request,
+            'request'   => $this->maskUpiAxisRequest($request),
             'source'    => $s2sRequest->source(),
             'mock'      => $this->mock,
         ]);
@@ -258,7 +258,7 @@ class Gateway extends Upi\Gateway
             'action'    => $this->action,
             'entity'    => $entity,
             'gateway'   => $this->gateway,
-            'response'  => $response,
+            'response'  => $this->maskUpiAxisResponse($response),
             'source'    => $s2sRequest->source(),
             'mock'      => $this->mock,
         ]);
@@ -345,6 +345,32 @@ class Gateway extends Upi\Gateway
         $action = strtr(static::class, ['RZP\Gateway\P2p\Upi\Axis\\' => '', 'Gateway' => '']);
 
         return snake_case($action);
+    }
+
+    protected function maskUpiAxisRequest(array $request)
+    {
+        $content = json_decode(array_pull($request, 'content'), true);
+
+        $keys = [
+            'contact' => 'customerMobileNumber',
+        ];
+
+        $masked = $this->maskUpiDataForTracing($content, $keys);
+
+        $request['content'] = $masked;
+
+        return $request;
+    }
+
+    protected function maskUpiAxisResponse(ArrayBag $response)
+    {
+        $keys = [
+            'contact' => 'payload.customerMobileNumber',
+        ];
+
+        $masked = $this->maskUpiDataForTracing($response->toArray(), $keys);
+
+        return $masked;
     }
 
     public function syncGatewayTransactionDataFromCps(array $attributes, array $input)
