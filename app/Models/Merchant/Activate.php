@@ -14,7 +14,6 @@ use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
-use RZP\Error\ErrorCode;
 use RZP\Constants\Product;
 use RZP\Models\VirtualAccount;
 use RZP\Models\BankingAccount;
