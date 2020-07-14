@@ -97,7 +97,7 @@ class Validator extends Base\Core
         RequestProcessor\Base::YES_BANK           => ["/Yes Bank_ MPR [0-9]{2}-[0-9]{2}-20[0-9]{2}/"],
         RequestProcessor\Base::HDFC_DEBIT_EMI     => ["/^DCEMI Reconciliation & Payment Summary Report/"],
         RequestProcessor\Base::UPI_JUSPAY         => ["/BAJAJ TXN DETAILS/"],
-        RequestProcessor\Base::NETBANKING_SVC     => ['/Razor pay file [0-9]{2}.[0-9]{2}.20[0-9]{2} to [0-9]{2}.[0-9]{2}.20[0-9]{2}/'],
+        RequestProcessor\Base::NETBANKING_SVC     => ['/Recon file for the date [0-9]{2}.[0-9]{2}.20[0-9]{2} to [0-9]{2}.[0-9]{2}.20[0-9]{2}'],
         RequestProcessor\Base::NETBANKING_JSB     => ["/Payment Gateway Reconcilation File from JFS/"],
     ];
 
@@ -168,7 +168,7 @@ class Validator extends Base\Core
         RequestProcessor\Base::CARDLESS_EMI_FLEXMONEY   => 2,
         RequestProcessor\Base::PHONEPE                  => 1,
         RequestProcessor\Base::HDFC_DEBIT_EMI           => 1,
-        RequestProcessor\Base::NETBANKING_SVC           => 1,
+        RequestProcessor\Base::NETBANKING_SVC           => 2,
         RequestProcessor\Base::NETBANKING_JSB           => 1,
     ];
 
