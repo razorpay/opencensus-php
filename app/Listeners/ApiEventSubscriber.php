@@ -23,6 +23,7 @@ use RZP\Models\Terminal;
 use RZP\Models\Customer\Token;
 use RZP\Models\VirtualAccount;
 use RZP\Models\Payment\Downtime;
+use RZP\Models\Order\ProductType;
 use RZP\Models\Merchant\Webhook\Stork;
 use RZP\Exception\ServerErrorException;
 use RZP\Jobs\Invoice\Job as InvoiceJob;
@@ -900,6 +901,22 @@ class ApiEventSubscriber extends Base\Core
                 'entity' => $payment->toArrayPublic(),
             ],
         ];
+
+        $order = $payment->order;
+
+        $merchant = $payment->merchant;
+
+        // for backward compatibility with new pl service, payment entity needs to have invoice_id in webhook payload
+        // as few merchants depend on this field.
+        if ((isset($order) === true) and
+            (isset($merchant) === true) and
+            ($order->getProductType() === ProductType::PAYMENT_LINK_V2) and
+            ($merchant->isFeatureEnabled(Feature\Constants::PAYMENTLINKS_COMPATIBILITY_V2) === true))
+        {
+            $invoiceId = $order->getProductId();
+
+            $payload[Constants\Entity::PAYMENT]['entity'][Payment\Entity::INVOICE_ID] = Invoice\Entity::getSignedId($invoiceId);
+        }
 
         return $payload;
     }
