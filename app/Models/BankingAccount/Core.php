@@ -13,6 +13,7 @@ use RZP\Models\Contact;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
+use RZP\Constants\Product;
 use RZP\Models\Admin\Admin;
 use RZP\Models\BankAccount;
 use RZP\Models\FundAccount;
@@ -525,7 +526,57 @@ class Core extends Base\Core
             return $bankingAccount;
         });
 
+        $this->sendBankingCaActivationSmsIfApplicable($bankingAccount);
+
         return $bankingAccount;
+    }
+
+    /**
+     * Sends banking current account activation sms to the merchant
+     *
+     * @param Entity $bankingAccount
+     *
+     */
+    public function sendBankingCaActivationSmsIfApplicable(Entity $bankingAccount)
+    {
+        $this->trace->info(TraceCode::BANKING_ACTIVATION_CONFIRMATION_SMS_CA_REQUEST,
+            [
+                'merchant_id' => $bankingAccount->merchant->getId(),
+            ]);
+
+        try
+        {
+            $users = $bankingAccount->merchant->ownersAndAdmins(Product::BANKING);
+
+            if ($users === null)
+            {
+                throw new BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_USER_NOT_PRESENT);
+            }
+
+            foreach ($users as $user)
+            {
+                $payload = [
+                    'receiver' => $user->getContactMobile(),
+                    'source'   => "api",
+                    'template' => 'sms.account.activate_banking_ca',
+                    'params'   => [
+                        'account_number' => $bankingAccount->getAccountNumber(),
+                    ],
+                ];
+
+                $this->app->raven->sendSms($payload);
+            }
+        }
+        catch (\Exception $ex)
+        {
+            $this->trace->traceException(
+                $ex,
+                Trace::ERROR,
+                TraceCode::BANKING_ACTIVATION_CONFIRMATION_SMS_CA_FAILED,
+                [
+                    'merchant_id' => $bankingAccount->merchant->getId(),
+                ]);
+        }
     }
 
     public function createRZPFeesContactAndFundAccount(Merchant\Entity $merchant)

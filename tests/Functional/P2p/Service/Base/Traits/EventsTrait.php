@@ -29,7 +29,7 @@ trait EventsTrait
                 ];
 
                 return $response;
-            });
+            })->between(1, 10);
 
         $this->app->instance('raven', $raven);
     }

@@ -114,7 +114,10 @@ class Raven
      * @param bool|boolean $mockInTestMode
      *
      * @return array
+     * @throws Exception\BadRequestException
+     * @throws Exception\BadRequestValidationFailureException
      * @throws Exception\RuntimeException
+     * @throws \Requests_Exception
      */
     public function sendSms(array $input, bool $mockInTestMode = true): array
     {
@@ -191,6 +194,17 @@ class Raven
         return $response;
     }
 
+    /**
+     * @param      $url
+     * @param      $method
+     * @param null $data
+     *
+     * @return array|mixed
+     * @throws Exception\BadRequestException
+     * @throws Exception\BadRequestValidationFailureException
+     * @throws Exception\RuntimeException
+     * @throws \Requests_Exception
+     */
     public function sendRequest($url, $method, $data = null)
     {
         $url = $this->baseUrl . $url;

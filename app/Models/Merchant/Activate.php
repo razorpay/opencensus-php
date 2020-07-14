@@ -11,12 +11,14 @@ use RZP\Models\Admin;
 use RZP\Constants\Mode;
 use RZP\Models\Feature;
 use RZP\Models\Merchant;
+use RZP\Error\ErrorCode;
 use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Product;
 use RZP\Models\VirtualAccount;
 use RZP\Models\BankingAccount;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Exception\BadRequestException;
 use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\Admin\Org\Entity as OrgEntity;
 use RZP\Models\Merchant\Detail\ActivationFlow;
@@ -435,6 +437,58 @@ class Activate extends Base\Core
         }
     }
 
+    /**
+     * Sends banking activation sms to the merchant If
+     * Business Banking is Enabled AND Merchant is Activated
+     *
+     * @param Entity $merchant
+     */
+    public function sendBankingVaActivationSmsIfApplicable(Entity $merchant)
+    {
+        $this->trace->info(TraceCode::BANKING_ACTIVATION_CONFIRMATION_SMS_VA_REQUEST,
+            [
+                'merchant_id' => $merchant->getId(),
+            ]);
+
+        if (($merchant->isActivated() === false) || ($merchant->isBusinessBankingEnabled() === false))
+        {
+            return;
+        }
+
+        try
+        {
+            $users = $merchant->ownersAndAdmins(Product::BANKING);
+
+            if ($users === null)
+            {
+                throw new BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_USER_NOT_PRESENT);
+            }
+
+            foreach ($users as $user)
+            {
+                $payload = [
+                    'receiver' => $user->getContactMobile(),
+                    'source'   => "api",
+                    'template' => 'sms.account.activate_banking_va',
+                    'params'   => [
+                    ],
+                ];
+
+                $this->app->raven->sendSms($payload);
+            }
+        }
+        catch (\Exception $ex)
+        {
+            $this->trace->traceException(
+                $ex,
+                Trace::ERROR,
+                TraceCode::BANKING_ACTIVATION_CONFIRMATION_SMS_VA_FAILED,
+                [
+                    'merchant_id' => $merchant->getId(),
+                ]);
+        }
+    }
+
     public function notifyMerchantForInstantActivation(Entity $merchant)
     {
         $instantActivationMail = null;
@@ -492,7 +546,7 @@ class Activate extends Base\Core
      * @param Entity $merchant
      *
      * @return Entity
-     * @throws Exception\LogicException
+     * @throws Throwable
      */
     public function activateBusinessBankingIfApplicable(Entity $merchant): Entity
     {
@@ -530,6 +584,8 @@ class Activate extends Base\Core
         });
 
         $this->setDbAndModelConnectionWithMode($originalMode, $merchant);
+
+        $this->sendBankingVaActivationSmsIfApplicable($merchant);
 
         // Refreshing merchant here so that relations for original mode are fetched again
         return $merchant->refresh();

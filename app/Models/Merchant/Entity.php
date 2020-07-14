@@ -2235,6 +2235,11 @@ class Entity extends Base\PublicEntity
         return $this->users()->where('role','owner')->where(self::PRODUCT, $product);
     }
 
+    public function ownersAndAdmins(string $product)
+    {
+        return $this->users()->whereIn('role',['owner', 'admin'])->where(self::PRODUCT, $product)->get();
+    }
+
     /**
      * Get the primary linked account owner.
      */

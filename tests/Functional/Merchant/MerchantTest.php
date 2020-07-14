@@ -47,6 +47,7 @@ use RZP\Tests\Functional\Fixtures\Entity\User;
 use RZP\Tests\Functional\Partner\PartnerTrait;
 use RZP\Tests\Functional\Helpers\MocksDnsTrait;
 use RZP\Models\BankAccount\Entity as BankAccount;
+use RZP\Tests\P2p\Service\Base\Traits\EventsTrait;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Models\Merchant\Balance\Entity as Balance;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -74,6 +75,7 @@ class MerchantTest extends TestCase
     use CreatesInvoice;
     use PartnerTrait;
     use TestsWebhookEvents;
+    use EventsTrait;
 
     const CAPITAL_SUPPORT_EMAIL = 'capital.support@razorpay.com';
 
@@ -5445,7 +5447,11 @@ class MerchantTest extends TestCase
     {
         $this->enableRazorXTreatmentForXOnboarding($expValue);
 
-        $user = (new User())->createUserForMerchant();
+        $user = (new User())->createUserForMerchant('10000000000000', [
+            'contact_mobile' => '8888888888',
+        ]);
+
+        $this->mockRaven();
 
         $this->fixtures->edit('merchant',
                               '10000000000000',

@@ -7,6 +7,8 @@ use RZP\Models\BankingAccount\Entity;
 use RZP\Models\BankingAccount\Gateway\Rbl;
 use RZP\Models\BankingAccount\AccountType;
 use RZP\Mail\BankingAccount\XProActivation;
+use RZP\Tests\Functional\Fixtures\Entity\User;
+use RZP\Tests\P2p\Service\Base\Traits\EventsTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Mail\BankingAccount\StatusNotifications\Created;
@@ -21,6 +23,7 @@ class BankingAccountTest extends TestCase
 {
     use PaymentTrait;
     use DbEntityFetchTrait;
+    use EventsTrait;
 
     public function setUp()
     {
@@ -233,6 +236,8 @@ class BankingAccountTest extends TestCase
     {
         Mail::fake();
 
+        $this->mockRaven();
+
         $attribute = ['activation_status' => 'activated'];
 
         $merchantDetail = $this->fixtures->create('merchant_detail', $attribute);
@@ -240,6 +245,10 @@ class BankingAccountTest extends TestCase
         $this->ba->proxyAuth('rzp_test_' . $merchantDetail->merchant['id']);
 
         $this->createBankingAccount();
+
+        (new User())->createBankingUserForMerchant($merchantDetail->merchant['id'], [
+            'contact_mobile' => '8888888888',
+        ]);
 
         $bankingAccount = $this->getDbLastEntity('banking_account');
 
