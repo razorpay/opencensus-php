@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Settlement\Ondemand;
 
+use RZP\Models\Base\Traits\NotesTrait;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 use RZP\Exception;
@@ -14,6 +15,7 @@ use RZP\Models\Settlement\OndemandPayout;
 class Entity extends Base\PublicEntity
 {
     use SoftDeletes;
+    use NotesTrait;
 
     protected $generateIdOnCreate = true;
 
@@ -181,12 +183,12 @@ class Entity extends Base\PublicEntity
     {
         return $this->getAttribute(self::TOTAL_AMOUNT_REVERSED);
     }
- 
+
     public function getStatus()
     {
         return $this->getAttribute(self::STATUS);
     }
-  
+
     public function getTotalAmountPending()
     {
         return $this->getAttribute(self::TOTAL_AMOUNT_PENDING);

@@ -25,7 +25,7 @@ class Validator extends Base\Validator
         Entity::CURRENCY              => 'sometimes|size:3',
         Entity::NARRATION             => 'sometimes|nullable|string',
         Entity::REMARKS               => 'sometimes|nullable|string',
-        Entity::NOTES                 => 'sometimes|nullable|json',
+        Entity::NOTES                 => 'sometimes|nullable|array',
         Entity::MAX_BALANCE           => 'sometimes|boolean',
         Entity::STATUS                => 'required',
     ];
@@ -35,7 +35,7 @@ class Validator extends Base\Validator
         Entity::MAX_BALANCE         => 'required_without:amount|boolean',
         Entity::CURRENCY            => 'sometimes|in:INR',
         Entity::NARRATION           => 'sometimes|nullable|string',
-        Entity::NOTES               => 'sometimes|nullable|json',
+        Entity::NOTES               => 'sometimes|nullable|array',
         'expand'                    => 'sometimes|boolean',
     ];
 

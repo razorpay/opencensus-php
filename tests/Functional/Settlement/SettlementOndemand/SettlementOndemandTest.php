@@ -207,7 +207,10 @@ class SettlementOndemandTest extends TestCase
             'currency'              => 'INR',
             'status'                => 'initiated',
             'narration'             => 'Demo Narration - optional',
-            'notes'                 => '{"1":"note1","2":"note2"}',
+            'notes'                 => [
+                                            'key1' => 'note3',
+                                            'key2' => 'note5',
+                                        ],
 //            'transaction_id'        => 'F0qG7d1MGiNbmc',
             'transaction_type'      => 'transaction',
 //            'created_at'            => 1582000200,

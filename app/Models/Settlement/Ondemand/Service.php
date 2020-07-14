@@ -44,11 +44,6 @@ class Service extends Base\Service
 
     public function create(array $input): array
     {
-        if (isset($input['notes']) === true)
-        {
-            $input['notes'] = json_encode($input['notes']);
-        }
-
         (new Validator)->validateInput(Validator::SETTLEMENT_ONDEMAND_INPUT, $input);
 
         $this->trace->info(TraceCode::SETTLEMENT_ONDEMAND_CREATE, [
@@ -144,11 +139,6 @@ class Service extends Base\Service
 
     public function getResponse($settlementOndemand, $settlementOndemandPayouts = null)
     {
-        if (isset($settlementOndemand['notes']) === true)
-        {
-            $settlementOndemand['notes'] = json_decode($settlementOndemand['notes']);
-        }
-
         if (isset($settlementOndemandPayouts) === true)
         {
             $settlementOndemandPayoutArray = [];

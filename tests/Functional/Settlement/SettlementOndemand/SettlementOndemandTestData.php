@@ -51,8 +51,8 @@ return [
                 'amount'    => 20030000,
                 'narration' => 'Demo Narration - optional',
                 'notes'     => [
-                                '1' => 'note1',
-                                '2' => 'note2'
+                                'key1' => 'note3',
+                                'key2' => 'note5'
                             ],
                 'expand'    => true
             ],
@@ -68,9 +68,9 @@ return [
                 'status'               => 'initiated',
                 'narration'            => 'Demo Narration - optional',
                 'notes'                => [
-                                            '1' => 'note1',
-                                            '2' => 'note2'
-                                        ],
+                    'key1' => 'note3',
+                    'key2' => 'note5'
+                ],
 //                'created_at'         => 1582000200,
                 'payouts' => [
                     [
