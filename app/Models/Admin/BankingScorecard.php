@@ -55,6 +55,6 @@ class BankingScorecard extends Base\Core
     {
         $bankingScorecardMail = new BankingScorecardMail($data);
 
-        Mail::send($bankingScorecardMail);
+        Mail::queue($bankingScorecardMail);
     }
 }

@@ -36,7 +36,7 @@ class BankingScorecardTest extends TestCase
 
         $this->startTest();
 
-        Mail::assertSent(XScorecardMail::class);
+        Mail::assertQueued(XScorecardMail::class);
     }
 
     public function createPayoutEntities()
