@@ -197,7 +197,8 @@ class Generator extends Base\Core
 
     protected function setTerminalConfigsForVpa(Entity $vpa): Terminal\Entity
     {
-        $variant = 'off';
+        $variant = 'on';
+        
         try
         {
             $variant = $this->app->razorx->getTreatment($this->merchant->getId(),
