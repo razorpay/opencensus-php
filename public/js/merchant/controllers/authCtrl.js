@@ -887,6 +887,18 @@ app
       })();
 
       /**
+       * Invokes ColumbiaTech pixel for coupon code campaign
+       */
+      const invokeColumbiaTech = function invokeColumbiaTech() {
+        if (!isProd) return;
+
+        var colombiaPixelURL = `https://ade.clmbtech.com/cde/eventTracking.htm?pixelId=3913&_w=1&rd=${new Date().getTime()}`;
+        var pixel = new Image();
+        pixel.src = colombiaPixelURL;
+        document.body.appendChild(pixel);
+      };
+
+      /**
        * The script is a tiny bit modified than what AdRoll gives,
        * specifically onload event listener part.
        */
@@ -2119,9 +2131,30 @@ app
         }
       };
 
+      function shouldAutoApplyOffer() {
+        var isMerchantX = false;
+        if (window.top !== window.self) {
+          isMerchantX = true;
+        }
+        if ($scope.signup.settings.partner_intent || isMerchantX) {
+          return false;
+        }
+        var startDate = new Date('July 15, 2020 00:00:00').getTime();
+        var endDate = new Date('August 1, 2020 00:00:00').getTime();
+        var now = new Date().getTime();
+        if (now > startDate && now < endDate) {
+          return true;
+        }
+        return false;
+      }
+
       function shouldRenderCouponCode() {
         var coupon_code = $location.search().coupon_code;
         var shouldRender = false;
+
+        if (!coupon_code && shouldAutoApplyOffer()) {
+          coupon_code = 'UNLCKGRWTH';
+        }
 
         if (isHostedInBB) {
           shouldRender = false;
@@ -2185,6 +2218,10 @@ app
         // IMPORTANT: DO NOT REMOVE THESE (USED FOR MARKETING PURPOSES - TRACK SIGNUP ATTEMPTS)
         window.ga && ga('send', 'event', 'sign-up-form-success');
         window.ga && ga('old.send', 'event', 'sign-up-form-success');
+
+        if (shouldAutoApplyOffer()) {
+          invokeColumbiaTech();
+        }
 
         window.rzpQ &&
           window.rzpQ.push(
