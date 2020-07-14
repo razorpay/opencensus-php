@@ -156,13 +156,13 @@ class NbplusNetbankingAllahabadGatewayTest extends NbPlusPaymentServiceTest
 
         $actualAmount = number_format($payment1['amount'] / 100, 2, '.', '');
 
-        $this->assertEquals($refundsFileRow1[8], $actualAmount);
+        $this->assertEquals($refundsFileRow1[8], floatval($actualAmount));
 
         $this->assertEquals($payment1['id'], $refundsFileRow1[7]);
 
         $refundAmount = number_format($fullRefund['amount'] / 100, 2, '.', '');
 
-        $this->assertEquals($refundAmount, trim($refundsFileRow1[9]));
+        $this->assertEquals(floatval($refundAmount), trim($refundsFileRow1[9]));
 
         $this->assertCount(10, $refundsFileRow2);
 
@@ -174,10 +174,10 @@ class NbplusNetbankingAllahabadGatewayTest extends NbPlusPaymentServiceTest
 
         $actualAmount = number_format($payment2['amount'] / 100, 2, '.', '');
 
-        $this->assertEquals($refundsFileRow2[8], $actualAmount);
+        $this->assertEquals($refundsFileRow2[8], floatval($actualAmount));
 
         $refundAmount = number_format($partialRefund['amount'] / 100, 2, '.', '');
 
-        $this->assertEquals($refundAmount, trim($refundsFileRow2[9]));
+        $this->assertEquals(floatval($refundAmount), trim($refundsFileRow2[9]));
     }
 }

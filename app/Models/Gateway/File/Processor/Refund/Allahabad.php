@@ -104,7 +104,9 @@ class Allahabad extends Base
 
     public function formatAmount($amount): string
     {
-        return number_format($amount , 2, '.', '');
+        $number = number_format($amount , 2, '.', '');
+
+        return floatval($number);
     }
 
     protected function loadGatewayConfig()
