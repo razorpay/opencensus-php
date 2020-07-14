@@ -342,6 +342,67 @@ class BankingAccountTest extends TestCase
         Mail::assertQueued(Activated::class);
     }
 
+    public function testActivateFailedDueToMozartGatewayException()
+    {
+        Mail::fake();
+
+        $attribute = ['activation_status' => 'activated'];
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', $attribute);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail->merchant['id']);
+
+        $this->createBankingAccount();
+
+        $bankingAccount = $this->getDbLastEntity('banking_account');
+
+        $this->fixtures->edit('banking_account', $bankingAccount->getId(), [
+            'account_number'        => '1234567890',
+            'beneficiary_state'     => 'karnataka',
+            'beneficiary_country'   => 'india',
+        ]);
+
+        $this->setupDataForActivation($bankingAccount);
+
+        $schedule = $this->setupDefaultScheduleForFeeRecovery();
+
+        $dataToReplace = [
+            'request' => [
+                'url' => '/banking_accounts/' . $bankingAccount->getPublicId() . '/activate'
+            ]
+        ];
+
+        $this->mockFundAccountService();
+
+        $this->mockCardVault(function ()
+        {
+            return [
+                'success' => true,
+                'token'   => 'random'
+            ];
+        });
+
+        $content = [
+            'error' => [
+                'gateway_error_code' => 'ERR_PG_003'
+            ],
+            'data' => [
+                'moreInformation' => 'something'
+            ]
+        ];
+
+        $exception = new \RZP\Exception\GatewayErrorException('GATEWAY_ERROR_AUTHENTICATION_FAILED',
+                                                              null,
+                                                              '',
+                                                               $content);
+
+        $this->setMozartMockResponseException($exception);
+
+        $this->ba->adminAuth();
+
+        $this->startTest($dataToReplace);
+    }
+
     public function testActivateFailedDueToFtsFailure()
     {
         $attribute = ['activation_status' => 'activated'];
@@ -1223,6 +1284,15 @@ class BankingAccountTest extends TestCase
         $mock->shouldReceive([
             'sendMozartRequest' => $mockedResponse
         ]);
+
+        $this->app->instance('mozart', $mock);
+    }
+
+    protected function setMozartMockResponseException($exception)
+    {
+        $mock = Mockery::mock(Mozart::class)->makePartial();
+
+        $mock->shouldReceive('sendMozartRequest')->andThrow($exception);
 
         $this->app->instance('mozart', $mock);
     }

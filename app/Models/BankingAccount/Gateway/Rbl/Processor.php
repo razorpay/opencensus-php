@@ -297,27 +297,11 @@ class Processor extends BankingAccount\Gateway\Processor
                         'channel' => BankingAccount\Channel::RBL,
                     ]);
 
-                $content = $ex->getData();
-
-                $error = $content[Mozart::ERROR];
-
-                $data = $content[Mozart::DATA];
-
-                $shouldInformUser = $this->shouldInformUserForErrorFromMozartResponse($data, $error);
-
-                if ($shouldInformUser === true)
-                {
-                    throw new BadRequestException(
-                        ErrorCode::BAD_REQUEST_ERROR_WRONG_BANKING_ACCOUNT_CREDENTIALS,
-                        null,
-                        ['response' => $response, 'channel' => BankingAccount\Channel::RBL]);
-                }
-
-                // throwing a generic error since there is no issue with user entered information
+                // throwing a generic error with mozart error data since there is no issue with user entered information
                 throw new BadRequestException(
                     ErrorCode::BAD_REQUEST_ERROR_BANKING_ACCOUNT_ACTIVATION_FAILED,
                     null,
-                    ['response' => $response, 'channel' => BankingAccount\Channel::RBL]);
+                    ['data' => $ex->getData(), 'channel' => BankingAccount\Channel::RBL]);
             }
             catch (\Throwable $exception)
             {
@@ -476,39 +460,6 @@ class Processor extends BankingAccount\Gateway\Processor
     protected function shouldRetryMozartRequest(string $errorCode): bool
     {
         if (in_array($errorCode, $this->mozartRetryCode, true) === true)
-        {
-            return true;
-        }
-
-        return false;
-    }
-
-    protected function handleErrorForFetchBalance(array $response)
-    {
-        if ($this->shouldInformUserForErrorFromMozartResponse($response) === true)
-        {
-            throw new BadRequestException(
-                ErrorCode::BAD_REQUEST_ERROR_WRONG_BANKING_ACCOUNT_CREDENTIALS,
-                null,
-                ['response' => $response, 'channel' => BankingAccount\Channel::RBL]);
-        }
-
-        // throwing a generic error since there is no issue with user entered information
-        throw new BadRequestException(
-            ErrorCode::BAD_REQUEST_ERROR_BANKING_ACCOUNT_ACTIVATION_FAILED,
-            null,
-            ['response' => $response, 'channel' => BankingAccount\Channel::RBL]);
-    }
-
-    protected function shouldInformUserForErrorFromMozartResponse(array $data, array $error)
-    {
-        $gatewayErrorCode = $error[Mozart::GATEWAY_ERROR_CODE] ?? 'gateway_error_code';
-
-        $errorInformation = $data[Mozart::MORE_INFORMATION] ?? 'moreInformation';
-
-        // adding this dirty check for now to prompt the user with appropriate error message
-        if ((in_array($errorInformation, $this->mozartErrorInformation, true) === true) or
-            (in_array($gatewayErrorCode, $this->mozartGatewayErrorCodes, true) === true))
         {
             return true;
         }
