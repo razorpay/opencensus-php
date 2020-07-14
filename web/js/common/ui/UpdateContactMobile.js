@@ -1,4 +1,5 @@
 import { connect } from 'react-redux';
+import RTracking from 'react-tracking';
 
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
@@ -21,6 +22,7 @@ import { isPhone } from 'common/utils/validators';
     showNotification,
   }
 )
+@RTracking(() => window.rzpQ.component('UpdateContactMobile'))
 export default class UpdateContactMobile extends React.Component {
   state = {
     contactMobile: this.props.contactMobile,
@@ -34,6 +36,11 @@ export default class UpdateContactMobile extends React.Component {
     return this.props.onSubmit(data);
   };
 
+  @RTracking(props => {
+    return props.tracking.trackEvent(
+      window.rzpQ.merchantActions().success('change_contact_mobile')
+    );
+  })
   onComplete = () => {
     // Passing contact_mobile_verified hardcoded as true in callback
     // Ideally this should come from API, but BE is unable send that as response
@@ -57,6 +64,7 @@ export default class UpdateContactMobile extends React.Component {
               onSuccess={this.onComplete}
               onClose={this.props.onClose}
               onConfirm={this.props.onOtpConfirm}
+              onWrongOtp={this.onWrongOtp}
               onResend={this.onSubmit}
             />
           ),
@@ -128,4 +136,10 @@ export default class UpdateContactMobile extends React.Component {
       </div>
     );
   }
+
+  onWrongOtp = () => {
+    this.props.tracking.trackEvent(
+      window.rzpQ.merchantActions().failed('changed_contact_mobile.wrong_otp')
+    );
+  };
 }

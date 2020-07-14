@@ -9,7 +9,8 @@ import { closeModal } from 'merchant_common/reducers/modals';
 @connect(null, { closeModal })
 export default class TwoFactorVerificationOTP extends React.Component {
   static defaultProps = {
-    extraData: {},
+    onWrongOtp: () => {},
+    onSuccess: () => {},
   };
 
   state = {};
@@ -32,7 +33,8 @@ export default class TwoFactorVerificationOTP extends React.Component {
         this.onCloseClick();
         this.props.onSuccess();
       })
-      .catch(() => {
+      .catch(({ errors }) => {
+        this.props.onWrongOtp({ errors });
         this.setState({ wrongOtp: true });
       });
   };

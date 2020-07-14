@@ -89,7 +89,7 @@ export default class PaymentReceipt extends React.Component {
     });
   };
 
-get80gDetails = data => {
+  get80gDetails = data => {
     this.setState({
       '80_details': data,
     });
