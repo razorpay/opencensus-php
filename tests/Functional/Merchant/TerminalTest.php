@@ -449,6 +449,26 @@ class TerminalTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateGooglePayTerminalDuplicateVpa()
+    {
+        $this->fixtures->create(
+            'terminal',
+            [
+                'id' => 'AqdfGh5460opVt',
+                'merchant_id' => '10000000000000',
+                'gateway' => 'upi_sbi',
+                'gateway_merchant_id' => '250000002',
+                'enabled' => 1,
+                'vpa' => 'abc@sbi',
+                'upi' => 1,
+            ]);
+        $url = '/merchants/100000Razorpay/terminals';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
     public function testCreateTpvTerminalWithInvalidMethod()
     {
         $url = '/merchants/100000Razorpay/terminals';

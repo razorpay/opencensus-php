@@ -977,6 +977,28 @@ return [
         ],
     ],
 
+    'testCreateGooglePayTerminalDuplicateVpa' => [
+        'request'  => [
+            'content' => [
+                'gateway'              => 'google_pay',
+                'omnichannel'          => 1,
+                'gateway_merchant_id'  => 'razorpay upi',
+                'gateway_merchant_id2' => 'abc@sbi',
+                'vpa'                  => 'abc@sbi',
+                'capability'           => 1,
+            ],
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'gateway'       => 'google_pay',
+                'upi'           => false,
+                'omnichannel'   => true,
+                'enabled'       => true,
+            ],
+        ],
+    ],
+
     'testCreateTpvTerminalWithInvalidMethod' => [
         'request' => [
             'content' => [

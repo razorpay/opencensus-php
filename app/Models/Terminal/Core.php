@@ -507,7 +507,9 @@ class Core extends Base\Core
             }
         }
 
-        if (empty($terminal->getVpa()) === false)
+        // omnichannel terminals will have duplicate vpa, as existing upi terminal with vpa are whitelisted on provider(google)
+        if ((empty($terminal->getVpa()) === false) and
+            ($terminal->isOmnichannelEnabled() === false))
         {
             $params =  [Entity::VPA => $terminal->getVpa()];
 
