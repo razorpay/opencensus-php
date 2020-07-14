@@ -1087,6 +1087,7 @@ class Service extends Base\Service
             'validate_user_2fa_status',
             'enable_payment_buttons',
             'enable_subscription_buttons',
+            'batch_scheduling_options',
         ];
 
         $experimentsResults = $merchantService->getBulkTreatment($features);

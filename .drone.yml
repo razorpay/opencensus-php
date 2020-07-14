@@ -507,24 +507,24 @@ pipeline:
 #      environment: prod
 #      event: deployment
 #for deploy-qa-func image is being set manually
-  build-notify:
-    image: plugins/slack
-    secrets: [slack_webhook]
-    channel: tech_builds
-    username: drone
-    icon_url: https://avatars2.githubusercontent.com/u/2181346?s=200&v=4
-    template: >
-      {{#success build.status}}
-        Build succeeded.
-      {{else}}
-        Build failed.
-      {{/success}}
-        Build No:{{build.number}}
-        Branch: {{build.branch}}
-        Commit: {{build.commit}}
-        Author: {{build.author}}
-        Started at: {{build.started}}
-        Time taken: {{since build.started}}
-        Link: {{build.link}}
-    when:
-      event: [push, tag]
+  # build-notify:
+  #   image: plugins/slack
+  #   secrets: [slack_webhook]
+  #   channel: tech_builds
+  #   username: drone
+  #   icon_url: https://avatars2.githubusercontent.com/u/2181346?s=200&v=4
+  #   template: >
+  #     {{#success build.status}}
+  #       Build succeeded.
+  #     {{else}}
+  #       Build failed.
+  #     {{/success}}
+  #       Build No:{{build.number}}
+  #       Branch: {{build.branch}}
+  #       Commit: {{build.commit}}
+  #       Author: {{build.author}}
+  #       Started at: {{build.started}}
+  #       Time taken: {{since build.started}}
+  #       Link: {{build.link}}
+  #   when:
+  #     event: [push, tag]
