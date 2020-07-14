@@ -2,6 +2,8 @@ import { Component } from 'react';
 import { connect } from 'react-redux';
 import { Field } from 'redux-form';
 import RTracking from 'react-tracking';
+import moment from 'moment';
+
 import { showNotification } from 'merchant_common/reducers/notifications';
 
 import BatchCreateModal from 'merchant/components/BatchNew/CreateModal';
@@ -18,10 +20,29 @@ export default class BatchCreate extends Component {
       action: 'Initiate_Batch_PL_Generation',
     })
   )
-  handleBatchCreate = props => {
-    let data = { ...props };
+  handleBatchCreate = ({
+    processing,
+    scheduleDate,
+    scheduleTime,
+    ...props
+  }) => {
+    const data = {
+      file_id: this.props.batch.file_id,
+      ...props,
+    };
 
-    data.file_id = this.props.batch.file_id;
+    if (processing === 'scheduled') {
+      const scheduleDateTs = scheduleDate
+        .clone()
+        .startOf('day')
+        .valueOf();
+      const scheduleTimeTs = scheduleTime.diff(
+        scheduleTime.clone().startOf('day'),
+        'milliseconds'
+      );
+      data.schedule = scheduleDateTs + scheduleTimeTs;
+    }
+
     this.props.trackUploadBatch('Create');
     return this.props
       .createBatch(data)
@@ -52,19 +73,32 @@ export default class BatchCreate extends Component {
       },
     } = this;
 
+    const initialValues = {
+      name: batchName,
+      ...batchFormInitialValues,
+      ...batchFormDefaults,
+    };
+
     return (
       <BatchCreateModal
         closeModal={closeModal}
         parsedEntries={batch.parsed_entries}
         batchType={batchType}
         onCreateBatch={handleBatchCreate}
-        initialValues={{ name: batchName, ...batchFormInitialValues }}
+        initialValues={initialValues}
         ctaText={ctaText}
         pendingText={pendingText}
         trackSampleInterpretation={trackSampleInterpretation}
+        processingOptions={this.props.processingOptions}
       >
         {renderBatchCreationForm && renderBatchCreationForm()}
       </BatchCreateModal>
     );
   }
 }
+
+const batchFormDefaults = {
+  processing: 'immediate',
+  scheduleDate: moment(),
+  scheduleTime: moment(),
+};

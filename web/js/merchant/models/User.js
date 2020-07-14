@@ -587,6 +587,10 @@ export default class User {
     return this.getExpStatus('validate_user_2fa_status');
   }
 
+  get isBatchSchedulingOptionsExperimentEnabled() {
+    return this.getExpStatus('batch_scheduling_options');
+  }
+
   get isSubscriptionButtonEnabledByRazorX() {
     return this.getExpStatus('enable_subscription_buttons');
   }

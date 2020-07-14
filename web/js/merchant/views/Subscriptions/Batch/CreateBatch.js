@@ -33,6 +33,7 @@ export default class CreateHostedMandateBatch extends Component {
       batchType="recurring_charge"
       docUrl="https://razorpay.com/docs/recurring-payments/"
       sampleUrl="https://cdn.razorpay.com/dashboard/sample_recurring_payments.csv"
+      processingOptions={true}
     />
   );
 

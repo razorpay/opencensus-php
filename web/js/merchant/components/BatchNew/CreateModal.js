@@ -1,9 +1,13 @@
 import { Component, Fragment } from 'react';
 import { Field, reduxForm } from 'redux-form';
+import AsyncButton from 'react-async-button';
 
 import InputField from 'common/ui/Forms/InputField';
 import TableSlider from 'common/ui/TableSlider';
-import AsyncButton from 'react-async-button';
+
+import ShowWhen from 'merchant/components/ShowWhen';
+
+import ProcessingOptions from './ProcessingOptions';
 
 import { required } from 'common/utils/validators';
 @reduxForm({
@@ -68,6 +72,12 @@ export default class BatchCreateModal extends Component {
                 onFocus={this.moveCaretAtEnd}
               />
             </div>
+
+            <ShowWhen
+              additionalCondition={user => user.isBatchSchedulingOptionsEnabled}
+            >
+              {this.props.processingOptions && <ProcessingOptions />}
+            </ShowWhen>
 
             {/* extra fields sent with create batch */}
             {children}

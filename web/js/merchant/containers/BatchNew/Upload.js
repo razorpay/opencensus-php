@@ -84,6 +84,7 @@ export default class BatchUpload extends Component {
                   }
                   docUrl={this.props.docUrl}
                   sampleUrl={this.props.sampleUrl}
+                  processingOptions={this.props.processingOptions}
                 />
               );
             case 'success':
