@@ -15,7 +15,7 @@
     "@babel/plugin-transform-react-jsx-source": "^7.9.0",
     "@babel/preset-env": "^7.9.0",
     "@babel/preset-react": "^7.9.4",
-    "@commander/shield": "0.0.69",
+    "@commander/shield": "0.0.70",
     "@razorpay/blade": "https://github.com/razorpay/blade.git#e9e9d8b",
     "axios": "^0.19.2",
     "babel-loader": "^8.1.0",
@@ -57,7 +57,8 @@
     "react-transition-group": "^2.2.1",
     "redux": "^4.0.1",
     "redux-form": "6.8.0",
-    "regenerator-runtime": "^0.13.5"
+    "regenerator-runtime": "^0.13.5",
+    "styled-components": "^5.0.1"
   },
   "scripts": {
     "start": "externals=`./scripts/vendor.sh` webpack -w & gulp watch; kill -9 $!",
@@ -68,15 +69,15 @@
   "devDependencies": {
     "chai": "^4.2.0",
     "file-loader": "^6.0.0",
-    "gulp-stylus": "^2.7.0",
     "gulp": "^4.0.2",
+    "gulp-stylus": "^2.7.0",
     "it-each": "^0.4.0",
     "livereload": "^0.9.1",
     "mocha": "^5.2.0",
     "nyc": "^14.1.1",
     "stylus-loader": "^3.0.2",
     "svg-url-loader": "^6.0.0",
-    "webpack-cli": "^3.3.11",
-    "webpack": "^4.42.1"
+    "webpack": "^4.42.1",
+    "webpack-cli": "^3.3.11"
   }
 }
