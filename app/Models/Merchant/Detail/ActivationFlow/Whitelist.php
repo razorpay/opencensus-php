@@ -23,6 +23,7 @@ class Whitelist extends Base implements ActivationFlowInterface
      *
      * @throws \RZP\Exception\BadRequestException
      * @throws \RZP\Exception\LogicException
+     * @throws \Throwable
      */
     public function process(Entity $merchant)
     {

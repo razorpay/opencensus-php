@@ -161,6 +161,8 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
     // Other general use input constants
     const FILE = 'file';
 
+    const SEND_ACTIVATION_EMAIL='send_activation_email';
+
     protected $entity = 'merchant_detail';
 
     protected $primaryKey = self::MERCHANT_ID;

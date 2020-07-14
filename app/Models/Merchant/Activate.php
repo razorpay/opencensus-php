@@ -14,6 +14,7 @@ use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
+use RZP\Error\ErrorCode;
 use RZP\Constants\Product;
 use RZP\Models\VirtualAccount;
 use RZP\Models\BankingAccount;
@@ -144,16 +145,16 @@ class Activate extends Base\Core
     }
 
     /**
-     * @param Entity $merchant
+     * @param Entity        $merchant
      * @param Detail\Entity $merchantDetails
+     * @param bool          $sendActivationMail
      *
      * @return array
-     *
      * @throws Exception\BadRequestException
      * @throws Exception\LogicException
      * @throws Throwable
      */
-    public function instantlyActivate(Entity $merchant, Detail\Entity $merchantDetails): array
+    public function instantlyActivate(Entity $merchant, Detail\Entity $merchantDetails, bool $sendActivationMail = true): array
     {
         $detailCore = new Detail\Core;
 
@@ -204,7 +205,10 @@ class Activate extends Base\Core
 
         $this->activateMerchantPromotions($merchant);
 
-        $this->notifyMerchantForInstantActivation($merchant);
+        if ($sendActivationMail === true)
+        {
+            $this->notifyMerchantForInstantActivation($merchant);
+        }
 
         return $merchant->toArrayPublic();
     }

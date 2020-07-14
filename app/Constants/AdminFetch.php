@@ -272,6 +272,7 @@ class AdminFetch
                         'reconciliation',
                         'merchant_status_action',
                         'admin_batch',
+                        'merchant_activation'
                     ],
                 ],
             ],

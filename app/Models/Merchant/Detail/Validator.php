@@ -296,6 +296,22 @@ class Validator extends Base\Validator
         Entity::BUSINESS_REGISTERED_PIN     => 'sometimes|size:6',
     ];
 
+    protected static $instantActivationBatchRules = [
+        Entity::BUSINESS_CATEGORY           => 'required|max:255|custom',
+        Entity::BUSINESS_SUBCATEGORY        => 'sometimes|max:255|custom',
+        Entity::BUSINESS_NAME               => 'required|string|max:255',
+        Entity::BUSINESS_DBA                => 'required|string|max:255',
+        Entity::BUSINESS_TYPE               => 'required|numeric|digits_between:1,10',
+        Entity::BUSINESS_REGISTERED_ADDRESS => 'required|max:255',
+        Entity::BUSINESS_REGISTERED_STATE   => 'required|alpha_space|max:255',
+        Entity::BUSINESS_REGISTERED_CITY    => 'required|alpha_space|max:255',
+        Entity::BUSINESS_REGISTERED_PIN     => 'required|size:6',
+        Entity::BUSINESS_OPERATION_ADDRESS  => 'required|max:255',
+        Entity::BUSINESS_OPERATION_STATE    => 'required|alpha_space|max:255',
+        Entity::BUSINESS_OPERATION_CITY     => 'required|alpha_space|max:255',
+        Entity::BUSINESS_OPERATION_PIN      => 'required|size:6',
+    ];
+
     protected static $instantActivationValidators = [
         'registered_business_rules',
         'unregistered_business_rules',
@@ -331,6 +347,23 @@ class Validator extends Base\Validator
         Entity::BUSINESS_NAME               => 'filled|max:255',
         Entity::BUSINESS_REGISTERED_ADDRESS => 'filled|max:255',
         Entity::BUSINESS_REGISTERED_STATE   => 'filled|max:255',
+    ];
+
+    protected static $batchInstantActivationRules = [
+        Entity::BUSINESS_CATEGORY           => 'sometimes|max:255|custom',
+        Entity::BUSINESS_SUBCATEGORY        => 'sometimes|max:255|custom',
+        Entity::BUSINESS_NAME               => 'sometimes|string|max:255',
+        Entity::BUSINESS_DBA                => 'sometimes|string|max:255',
+        Entity::BUSINESS_TYPE               => 'sometimes|numeric|digits_between:1,10',
+        Entity::BUSINESS_REGISTERED_ADDRESS => 'sometimes|max:255',
+        Entity::BUSINESS_REGISTERED_STATE   => 'sometimes|alpha_space|max:255',
+        Entity::BUSINESS_REGISTERED_CITY    => 'sometimes|alpha_space|max:255',
+        Entity::BUSINESS_REGISTERED_PIN     => 'sometimes|size:6',
+        Entity::BUSINESS_OPERATION_ADDRESS  => 'sometimes|max:255',
+        Entity::BUSINESS_OPERATION_STATE    => 'sometimes|alpha_space|max:255',
+        Entity::BUSINESS_OPERATION_CITY     => 'sometimes|alpha_space|max:255',
+        Entity::BUSINESS_OPERATION_PIN      => 'sometimes|size:6',
+        Entity::SEND_ACTIVATION_EMAIL       => 'sometimes|in:0,1',
     ];
 
     public function validateDocumentUpload(array $input)

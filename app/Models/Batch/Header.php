@@ -881,6 +881,13 @@ class Header
     // PL Service
     const PL_V2_REFERENCE_ID        = 'Reference Id';
 
+    //Merchant activation Header
+    const BUSINESS_TYPE            = Detail\Entity::BUSINESS_TYPE;
+    const BUSINESS_SUBCATEGORY     = Detail\Entity::BUSINESS_SUBCATEGORY;
+    const BUSINESS_REGISTERED_CITY = Detail\Entity::BUSINESS_REGISTERED_CITY;
+    const BUSINESS_REGISTERED_PIN  = Detail\Entity::BUSINESS_REGISTERED_PIN;
+    const SEND_ACTIVATION_EMAIL    = 'send_activation_email';
+
     /**
      * Input and output file headers
      * The keys need to be like <type>_<sub-type>_<gateway>.
@@ -1005,7 +1012,7 @@ class Header
                 self::TERMINAL_CREATION_GATEWAY_CLIENT_CERTIFICATE,
                 self::TERMINAL_CREATION_MC_MPAN,
                 self::TERMINAL_CREATION_VISA_MPAN,
-                self::TERMINAL_CREATION_RUPAY_MPAN,   
+                self::TERMINAL_CREATION_RUPAY_MPAN,
                 self::TERMINAL_CREATION_ACCOUNT_NUMBER,
             ],
         ],
@@ -2779,6 +2786,29 @@ class Header
         Type::MERCHANT_STATUS_ACTION => [
             self::INPUT => [
                 self::ID,
+            ],
+
+            self::OUTPUT => [
+                self::ID,
+                self::STATUS,
+                self::ERROR_CODE,
+                self::ERROR_DESCRIPTION,
+            ]
+        ],
+
+        Type::MERCHANT_ACTIVATION => [
+            self::INPUT => [
+                self::ID,
+                self::BUSINESS_NAME,
+                self::BUSINESS_CATEGORY,
+                self::BUSINESS_SUBCATEGORY,
+                self::BUSINESS_TYPE,
+                self::BILLING_LABEL,
+                self::BUSINESS_REGISTERED_ADDRESS,
+                self::BUSINESS_REGISTERED_STATE,
+                self::BUSINESS_REGISTERED_CITY,
+                self::BUSINESS_REGISTERED_PIN,
+                self::SEND_ACTIVATION_EMAIL
             ],
 
             self::OUTPUT => [

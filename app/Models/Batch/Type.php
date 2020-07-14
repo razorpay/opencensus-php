@@ -96,7 +96,9 @@ class Type
 
     const ADMIN_BATCH           = 'admin_batch';
 
-    const ENTITY_UPDATE_ACTION = 'entity_update_action';
+    const ENTITY_UPDATE_ACTION  = 'entity_update_action';
+
+    const MERCHANT_ACTIVATION   = 'merchant_activation';
 
     const MERCHANT_STATUS_ACTION  = 'merchant_status_action';
 
@@ -149,6 +151,7 @@ class Type
         self::CREDIT,
         self::MERCHANT_STATUS_ACTION,
         self::NACH_MIGRATION,
+        self::MERCHANT_ACTIVATION,
     ];
 
     /**
@@ -338,6 +341,7 @@ class Type
         self::MERCHANT_STATUS_ACTION,
         self::NACH_MIGRATION,
         self::MPAN,
+        self::MERCHANT_ACTIVATION,
     ];
 
     // For following batches, sensitive data is encrypted in storeInputFileAndSaveBatchWithSettings() so that file with sensitive/PCI data

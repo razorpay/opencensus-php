@@ -289,14 +289,17 @@ class Core extends Base\Core
      *
      * For unregistered business bucket we skip activation flow
      *
-     * @param Merchant\Entity $merchant
+     * @param Merchant\Entity      $merchant
      *
-     * @param Merchant\Entity $partner
-     * @param array           $activationFlowTypes
+     * @param Merchant\Entity|null $partner
+     * @param array|string[]       $activationFlowTypes
+     * @param bool                 $batchFlow
      */
     public function autoUpdateMerchantActivationFlows(Merchant\Entity $merchant,
                                                       Merchant\Entity $partner = null,
-                                                      array $activationFlowTypes = Detail\Constants::ACTIVATION_FLOWS
+                                                      array $activationFlowTypes = Detail\Constants::ACTIVATION_FLOWS,
+                                                      bool $batchFlow = false
+
     )
     {
         $this->repo->assertTransactionActive();
@@ -312,7 +315,7 @@ class Core extends Base\Core
             return;
         }
 
-        $this->updateActivationFlows($merchant, $partner, $activationFlowTypes);
+        $this->updateActivationFlows($merchant, $partner, $activationFlowTypes, $batchFlow);
 
         $eventAttributes['activation_flow'] = $merchantDetails->getActivationFlow();
 
@@ -329,7 +332,7 @@ class Core extends Base\Core
                                                  $eventAttributes);
     }
 
-    protected function autoUpdateActivationFlow(Merchant\Entity $merchant, $partner = null)
+    protected function autoUpdateActivationFlow(Merchant\Entity $merchant, $partner = null, bool $batchFlow = false)
     {
         $merchantDetails = $this->getMerchantDetails($merchant);
 
@@ -337,13 +340,19 @@ class Core extends Base\Core
         // if request comes via on-boarding api, it will always be grey-list as on-boarding api
         // does not support instant activation flow
         //
-        if (empty($partner) === false)
+        if ($batchFlow === true)
+        {
+            // Making ActivationFlow Whitelist for the batchFlow Merchants though there KYC has not been verified
+            $activationFlow = ActivationFlow::WHITELIST;
+        }
+        elseif (empty($partner) === false)
         {
             $activationFlow = ActivationFlow::GREYLIST;
         }
         else
         {
             $subcategory = $merchantDetails->getBusinessSubcategory();
+
             $category    = $merchantDetails->getBusinessCategory();
 
             $subcategoryMetaData = BusinessSubCategoryMetaData::getSubCategoryMetaData($category, $subcategory);
@@ -459,8 +468,28 @@ class Core extends Base\Core
         // do business pan validation
         $this->verifyCompanyPanDetailsIfApplicable($merchantDetails, $merchant, $input);
 
+        return $this->transactionInstantActivationDetails($input,$merchantDetails, $merchant);
+    }
 
-        return $this->repo->transactionOnLiveAndTest(function() use ($input, $merchantDetails, $merchant) {
+    /**
+     * This function make all the DB transaction for saving all Instant Activation Details
+     *
+     * @param array           $input
+     * @param Entity          $merchantDetails
+     * @param Merchant\Entity $merchant
+     * @param bool            $batchFlow
+     * @param bool            $sendActivationMail
+     *
+     * @return mixed
+     * @throws \Throwable
+     */
+    public function transactionInstantActivationDetails(array $input, Merchant\Detail\Entity $merchantDetails,
+                                                        Merchant\Entity $merchant, bool $batchFlow = false,
+                                                        bool $sendActivationMail = true)
+    {
+        return $this->repo->transactionOnLiveAndTest(function() use (
+            $input, $merchantDetails, $merchant, $batchFlow, $sendActivationMail
+        ) {
             // The function below, uses isDirty() and hence must be called before saveOrFail over merchantDetails
             $this->autoUpdateMerchantCategoryDetailsIfApplicable($merchantDetails, $merchant);
 
@@ -474,16 +503,25 @@ class Core extends Base\Core
             // Sync few input fields to merchant entity
             $merchant = $merchantCore->syncMerchantEntityFields($merchant, $input);
 
-            if ($merchantCore->isAutoKycEnabled($merchantDetails, $merchant) === true)
+            // IN Batch Flow we skip the merchant category sub category check for grey list or blacklist
+            // As desired by the use case
+            if ($batchFlow === true)
             {
-                if ($this->canProcessInstantActivation($merchantDetails) === true)
-                {
-                    $this->processInstantActivation($merchant, $merchantDetails);
-                }
+                $this->processInstantActivationBatch($merchant, $sendActivationMail, $batchFlow);
             }
             else
             {
-                $this->processInstantActivation($merchant, $merchantDetails);
+                if ($merchantCore->isAutoKycEnabled($merchantDetails, $merchant) === true)
+                {
+                    if ($this->canProcessInstantActivation($merchantDetails) === true)
+                    {
+                        $this->processInstantActivation($merchant, $merchantDetails);
+                    }
+                }
+                else
+                {
+                    $this->processInstantActivation($merchant, $merchantDetails);
+                }
             }
 
             $response = $this->createResponse($merchantDetails);
@@ -502,6 +540,29 @@ class Core extends Base\Core
 
             return $response;
         });
+    }
+
+    public function saveInstantActivationDetailsBatch(array $input, Merchant\Entity $merchant): array
+    {
+        $this->trace->info(
+            TraceCode::MERCHANT_SAVE_INSTANT_ACTIVATION_DETAILS,
+            [
+                'input' => $input,
+            ]);
+
+        $sendActivationMail = filter_var($input["send_activation_email"], FILTER_VALIDATE_BOOLEAN);
+
+        $batchFlow = true;
+
+        unset($input['send_activation_email']);
+
+        $merchantDetails = $this->getMerchantDetails($merchant, $input);
+
+        $merchantDetails->getValidator()->performInstantActivationValidations($input);
+
+        $merchantDetails->edit($input, 'instant_activation_batch');
+
+        return $this->transactionInstantActivationDetails($input, $merchantDetails, $merchant, $batchFlow, $sendActivationMail);
     }
 
     /**
@@ -531,6 +592,27 @@ class Core extends Base\Core
         }
     }
 
+    /**
+     * Bypassing all the validation black list or greylist Merchants
+     *
+     * @param Merchant\Entity $merchant
+     * @param bool            $sendActivationMail
+     * @param bool            $batchFlow
+     *
+     * @throws LogicException
+     * @throws \RZP\Exception\BadRequestException
+     * @throws \Throwable
+     */
+    protected function processInstantActivationBatch(Merchant\Entity $merchant, $sendActivationMail = true, bool $batchFlow = true)
+    {
+        $this->autoUpdateMerchantActivationFlows($merchant, null, Detail\Constants::ACTIVATION_FLOWS, $batchFlow);
+
+        $this->trace->info(TraceCode::MERCHANT_PROCESS_WHITELIST_ACTIVATION);
+
+        $merchantDetails = $merchant->merchantDetail;
+
+        (new Merchant\Activate)->instantlyActivate($merchant, $merchantDetails, $sendActivationMail);
+    }
     /**
      * Contains preconditions for Processing Instant activation
      *
@@ -2049,11 +2131,13 @@ class Core extends Base\Core
     /**
      * @param Merchant\Entity      $merchant
      * @param Merchant\Entity|null $partner
-     * @param array                $activationFlowTypes
+     * @param array|string[]       $activationFlowTypes
+     * @param bool                 $batchFlow
      */
     protected function updateActivationFlows(Merchant\Entity $merchant,
                                              Merchant\Entity $partner = null,
-                                             array $activationFlowTypes = Detail\Constants::ACTIVATION_FLOWS): void
+                                             array $activationFlowTypes = Detail\Constants::ACTIVATION_FLOWS,
+                                             bool $batchFlow = false): void
     {
         foreach ($activationFlowTypes as $activationFlowType)
         {
@@ -2061,7 +2145,7 @@ class Core extends Base\Core
             {
                 case Detail\Constants::ACTIVATION:
 
-                    $this->autoUpdateActivationFlow($merchant, $partner);
+                    $this->autoUpdateActivationFlow($merchant, $partner, $batchFlow);
 
                     break;
                 case Detail\Constants::INTERNATIONAL_ACTIVATION:
@@ -2499,7 +2583,7 @@ class Core extends Base\Core
                 $merchantDetails = $this->repo->merchant_detail->findOrFail($merchant->getId());
 
                 $merchant = $merchantDetails->merchant;
-                
+
                 $merchantDetails->edit($input, 'cin_verification');
 
                 $this->verifyCINDetailsIfApplicable($merchantDetails, $merchant);
@@ -2512,6 +2596,86 @@ class Core extends Base\Core
                 throw new LogicException(
                     ErrorCode::BAD_REQUEST_INVALID_VERIFICATION_TYPE,
                     ['verification_type' => $verificationType]);
+        }
+    }
+
+    /**
+     * this function is called dynamically to activate merchant in spite of merchant belongs to greylist or blacklist,
+     * through batch action.
+     * This function name is derived from action name.
+     *
+     * @param string $merchantId
+     * @param array  $input
+     */
+    public function batchInstantActivation(string $merchantId, array $input)
+    {
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        $this->batchActivationInputUpdate($merchant, $input);
+
+        (new Validator())->validateInput('batch_instant_activation', $input);
+
+        $this->trace->info(TraceCode::MERCHANT_PROCESS_BATCH_ACTIVATION, ['MerchantId' => $merchantId]);
+
+        $this->saveInstantActivationDetailsBatch($input, $merchant);
+    }
+
+    /**
+     * @param array  $input
+     * @param Entity $merchantDetails
+     * @param string $key
+     */
+    public function batchBusinessDetails(array &$input, array $merchantDetails, string $key)
+    {
+        if (empty($merchantDetails[$key]) === false)
+        {
+            $input[$key] = $merchantDetails[$key];
+        }
+    }
+
+    /**
+     * Modifying the external input of Merchant Details based on Previous Merchant Details Data
+     *
+     * @param Merchant\Entity $merchant
+     * @param array           $input
+     */
+    public function batchActivationInputUpdate(Merchant\Entity $merchant, array &$input)
+    {
+        $businessDba = $input[Merchant\Entity::BILLING_LABEL];
+
+        unset($input[Merchant\Entity::BILLING_LABEL]);
+
+        $input[Entity::BUSINESS_DBA] = $businessDba;
+
+        $merchantDetails = $merchant->merchantDetail->toArrayPublic();
+
+        $merchantAttributes = [
+            Entity::BUSINESS_DBA,
+            Entity::BUSINESS_CATEGORY,
+            Entity::BUSINESS_SUBCATEGORY,
+            Entity::BUSINESS_TYPE,
+            Entity::BUSINESS_NAME,
+            Entity::BUSINESS_REGISTERED_ADDRESS,
+            Entity::BUSINESS_REGISTERED_STATE,
+            Entity::BUSINESS_REGISTERED_CITY,
+            Entity::BUSINESS_REGISTERED_PIN,
+        ];
+
+        foreach ($merchantAttributes as $key)
+        {
+            $this->batchBusinessDetails($input, $merchantDetails, $key);
+        }
+
+        $addressMerchant = [
+            Entity::BUSINESS_OPERATION_ADDRESS => Entity::BUSINESS_REGISTERED_ADDRESS,
+            Entity::BUSINESS_OPERATION_STATE   => Entity::BUSINESS_REGISTERED_STATE,
+            Entity::BUSINESS_OPERATION_CITY    => Entity::BUSINESS_REGISTERED_CITY,
+            Entity::BUSINESS_OPERATION_PIN     => Entity::BUSINESS_REGISTERED_PIN,
+        ];
+
+        foreach ($addressMerchant as $key => $value)
+        {
+            $input[$key] = $input[$value];
         }
     }
 }

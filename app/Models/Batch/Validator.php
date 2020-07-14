@@ -459,6 +459,12 @@ class Validator extends Base\Validator
         Entity::SCHEDULE    => 'sometimes|numeric',
     ];
 
+    protected static $merchantActivationCreateRules = [
+        Entity::TYPE   => 'required|in:merchant_activation',
+        Entity::NAME   => 'filled|string|max:255',
+        Entity::FILE   => 'required|file|max:3072' . self::DEFAULT_MIME_RULE,
+        Entity::CONFIG => 'required|array|custom',
+    ];
 
     protected static $ecollectRblCreateRules = [
         Entity::TYPE                 => 'required|in:ecollect_rbl',
